@@ -183,7 +183,7 @@ void MivDecoder::checkCapabilities() const {
                 MivBitstream::PtlProfileReconstructionIdc::MIV_Main);
 
   VERIFY_MIVBITSTREAM(m_au.vps.vps_miv_extension_present_flag());
-  VERIFY_V3CBITSTREAM(m_au.vps.vps_extension_7bits() == 0);
+  VERIFY_V3CBITSTREAM(m_au.vps.vps_extension_6bits() == 0);
 
   for (size_t k = 0; k <= m_au.vps.vps_atlas_count_minus1(); ++k) {
     const auto j = m_au.vps.vps_atlas_id(k);

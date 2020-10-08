@@ -40,6 +40,7 @@
 #include <TMIV/MivBitstream/CommonAtlasFrameRBSP.h>
 #include <TMIV/MivBitstream/GeometryUpscalingParameters.h>
 #include <TMIV/MivBitstream/RecViewport.h>
+#include <TMIV/MivBitstream/SceneObjectInformation.h>
 #include <TMIV/MivBitstream/SeiRBSP.h>
 #include <TMIV/MivBitstream/V3cSampleStreamFormat.h>
 #include <TMIV/MivBitstream/V3cUnit.h>
@@ -49,7 +50,6 @@
 #include <fstream>
 #include <iostream>
 #include <optional>
-#include <sstream>
 #include <stdexcept>
 #include <variant>
 #include <vector>
@@ -200,6 +200,8 @@ public:
       return parseGeometryUpscalingParametersSei(bitstream);
     case TMIV::MivBitstream::PayloadType::atlas_object_association:
       return parseAtlasObjectAssociationSei(bitstream);
+    case TMIV::MivBitstream::PayloadType::scene_object_information:
+      return parseSceneObjectInformationSei(bitstream);
     default:
       std::cout << "Unknown SEI message:\n" << message;
     }
@@ -223,6 +225,11 @@ public:
   void parseAtlasObjectAssociationSei(TMIV::Common::InputBitstream &bitstream) {
     const auto aoa = TMIV::MivBitstream::AtlasObjectAssociation::decodeFrom(bitstream);
     m_log << aoa;
+  }
+
+  void parseSceneObjectInformationSei(TMIV::Common::InputBitstream &bitstream) {
+    const auto soi = TMIV::MivBitstream::SceneObjectInformation::decodeFrom(bitstream);
+    m_log << soi;
   }
 
 private:

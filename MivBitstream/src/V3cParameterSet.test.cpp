@@ -237,19 +237,19 @@ pin_region_rotation_flag(4,0)=false
     unit.pin_regions_count_minus1(1);
     for (std::size_t i = 0; i <= unit.pin_regions_count_minus1(); ++i) {
       // Pseudorandom values
-      unit.pin_region_tile_id(i, i + 5);
-      unit.pin_region_top_left_y(i, i + 6);
-      unit.pin_region_width_minus1(i, 2 * i + 6);
+      unit.pin_region_tile_id(i, static_cast<uint8_t>(i + 5));
+      unit.pin_region_top_left_y(i, static_cast<uint16_t>(i + 6));
+      unit.pin_region_width_minus1(i, static_cast<uint16_t>(2 * i + 6));
       // Testing with V3C_AVD an V3C_GVD
       unit.pin_region_type_id_minus2(
           i, static_cast<VuhUnitType>(static_cast<std::uint8_t>(VuhUnitType::V3C_AVD) - 2U -
                                       static_cast<unsigned>(i)));
       unit.pin_region_auxiliary_data_flag(i, static_cast<bool>(i));
       if (i == 0) {
-        unit.pin_region_attr_type_id(i, i + 1);
+        unit.pin_region_attr_type_id(i, static_cast<uint8_t>(i + 1));
         unit.pin_region_attr_partitions_flag(i, true);
         unit.pin_region_attr_partition_index(i, 0);
-        unit.pin_region_attr_partitions_minus1(i, i + 3);
+        unit.pin_region_attr_partitions_minus1(i, static_cast<uint8_t>(i + 3));
       }
     }
 
@@ -318,6 +318,7 @@ TEST_CASE("v3c_parameter_set", "[V3C Parameter Set]") {
     vps.vps_frame_width({}, 1920);
     vps.vps_frame_height({}, 1080);
     vps.vps_extension_present_flag(true);
+    vps.vps_packing_information_present_flag(false);
     vps.vps_miv_extension_present_flag(true);
     vps.vps_miv_extension()
         .vme_depth_low_quality_flag(true)
@@ -346,8 +347,9 @@ vps_occupancy_video_present_flag( 0 )=false
 vps_geometry_video_present_flag( 0 )=false
 vps_attribute_video_present_flag( 0 )=false
 vps_extension_present_flag=true
+vps_packing_information_present_flag=false
 vps_miv_extension_present_flag=true
-vps_extension_7bits=0
+vps_extension_6bits=0
 vme_depth_low_quality_flag=true
 vme_geometry_scale_enabled_flag=true
 vme_num_groups_minus1=3
@@ -381,8 +383,14 @@ vme_embedded_occupancy_flag=true
         .attribute_information(j2, {})
         .vps_extension_present_flag(true)
         .vps_miv_extension_present_flag(true)
+        .vps_packing_information_present_flag(true)
+        .vps_packed_video_present_flag(j0, true)
+        .packing_information(j0, {})
+        .vps_packed_video_present_flag(j1, false)
+        .vps_packed_video_present_flag(j2, true)
+        .packing_information(j2, {})
         .vps_miv_extension(VpsMivExtension{})
-        .vps_extension_7bits(127)
+        .vps_extension_6bits(63)
         .vpsExtensionData({2, 250, 15});
 
     REQUIRE(toString(vps) == R"(ptl_tier_flag=false
@@ -430,8 +438,32 @@ vps_geometry_video_present_flag( 32 )=false
 vps_attribute_video_present_flag( 32 )=true
 ai_attribute_count( 32 )=0
 vps_extension_present_flag=true
+vps_packing_information_present_flag=true
 vps_miv_extension_present_flag=true
-vps_extension_7bits=127
+vps_extension_6bits=63
+vps_packed_video_present_flag( 30 )=true
+pin_codec_id(30)=0
+pin_regions_count_minus1(30)=0
+pin_region_tile_id(30,0)=0
+pin_region_type_id_minus2(30,0)=V3C_VPS
+pin_region_top_left_x(30,0)=0
+pin_region_top_left_y(30,0)=0
+pin_region_width_minus1(30,0)=0
+pin_region_height_minus1(30,0)=0
+pin_region_map_index(30,0)=0
+pin_region_rotation_flag(30,0)=false
+vps_packed_video_present_flag( 31 )=false
+vps_packed_video_present_flag( 32 )=true
+pin_codec_id(32)=0
+pin_regions_count_minus1(32)=0
+pin_region_tile_id(32,0)=0
+pin_region_type_id_minus2(32,0)=V3C_VPS
+pin_region_top_left_x(32,0)=0
+pin_region_top_left_y(32,0)=0
+pin_region_width_minus1(32,0)=0
+pin_region_height_minus1(32,0)=0
+pin_region_map_index(32,0)=0
+pin_region_rotation_flag(32,0)=false
 vme_depth_low_quality_flag=false
 vme_geometry_scale_enabled_flag=false
 vme_num_groups_minus1=0
@@ -442,8 +474,9 @@ vps_extension_data_byte=2
 vps_extension_data_byte=250
 vps_extension_data_byte=15
 )");
-
-    REQUIRE(byteCodingTest(vps, 41));
+    const std::size_t expected_number_of_bytes = 41 // TODO deconstruct this for explanation
+                                                 + (2 * 11); // two times packing_information
+    REQUIRE(byteCodingTest(vps, expected_number_of_bytes));
   }
 }
 } // namespace TMIV::MivBitstream

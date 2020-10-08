@@ -162,6 +162,7 @@ For this example, we will be using the [miv_anchor config](/ctc_config/miv_ancho
     1. Vertical resolution of the video
 
     such that a texture video file from camera `v0` with resolution 4096x2048 pixels should be named `v0_texture_4096x2048_yuv420p10le.yuv`.
+1. Set `SourceGeometryBitDepth` to the bits per color channel in your source geometry file.
 1. Point to the video file directory by providing the path to configuration variable `SourceDirectory`.
 1. You may set `OutputDirectory` to a custom existing directory.
 
@@ -170,6 +171,11 @@ Finally, assuming that you built and installed the encoder application, you can 
 ```shell
 /Workspace/tm1_install/bin/Encoder -c /Workspace/TM1/ctc_config/miv_anchor/TMIV_A17_SA.json
 ```
+
+This will result in the following files in the `OutputDirectory`:
+
+* One Bitstream.bit, as defined by `BitstreamPath`. Contains Atlas metadata
+* yuv files: for each atlas, video data from attributes, Geometry and possibly occupancy, respectively
 
 ## Structure of the test model
 

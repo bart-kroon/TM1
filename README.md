@@ -183,9 +183,27 @@ You can choose to render to either a camera defined in `SourceCameraNames` above
 
 ### Decode from Encoder result (best reference)
 
-There must be a folder with your encoding results. In your encoder config file (e.g. [ctc_config/best_reference/TMIV_R17_SA_p01.json](/ctc_config/best_reference/TMIV_R17_SA_p01.json)), adjust the `Path`s and `PathFmt`s to point to the correct directories and filter the correct file format. Make sure to set parameter `PoseTracepath`.
+There must be a folder with your encoding results. In your encoder config file (e.g. [ctc_config/best_reference/TMIV_R17_SA_p01.json](/ctc_config/best_reference/TMIV_R17_SA_p01.json)), adjust the `Path`s and `PathFmt`s to point to the correct directories and filter the correct file format. Make sure to set `OutputCameraName` to `viewport` and parameter `PoseTracepath` to where your pose trace is.
+
+If you want to render to a camera, set `OutputCameraName` to the corresponding camera name.
 
 ### Decode from multiplexed stream
+
+After TMIV encoding, run HM on **all** resulting yuv files, e.g.
+
+```shell
+TAppEncoder -c /Workspace/ctc_config/miv_anchor/encoder_randomaccess_main10.cfg -c /Workspace/ctc_config/miv_anchor/HM_A17_TT_SA.cfg -f 100 -wdt 2320 -hgt 960 -i TG_00_960x2320_yuv420p10le.yuv -o out_tg_01.yuv -b tg_01.bin
+```
+
+The order of config files for HM is important! Later ones overwrite earlier ones, command line parameters overwrite config files.
+
+Afterwards, run the TMIV multiplexer. Correctly set everything in the multiplexer configuration file, for an example see [ctc_config/miv_anchor/Mux_A17_SA.json](/ctc_config/miv_anchor/Mux_A17_SA.json).
+
+```shell
+/Workspace/tm1_install/bin/Multiplexer -c /Workspace/ctc_config/miv_anchor/Mux_A17.json
+```
+
+Finally, to run the decoder on the multiplexed bitstream, you only need to provide `BitstreamPath` in the configuration file (e.g. [ctc_config/miv_anchor/TMIV_A17_SA_v0.json](/ctc_config/miv_anchor/TMIV_A17_SA_v0.json)), but neither `AttributeVideoDataPathFmt` nor `GeometryVideoDataPathFmt`.
 
 ## Structure of the test model
 

@@ -122,7 +122,7 @@ HM_BUILD_TAPPDECODER and HM_BUILD_TAPPENCODER are selected, then the
 TAppDecoder and TAppEncoder tools respectively will also be installed to this
 directory.
 
-If you don't want to debug your build binaries, make sure to build in release mode with optimizations enabled, e.g. `cmake -DCMAKE_INSTALL_PREFIX=... -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-O3" ..`. This shows approximately a 20 times reduction in encoding duration, depending on your platform and compiler.
+If you don't want to debug your built binaries, make sure to build in release mode with optimizations enabled, e.g. `cmake -DCMAKE_INSTALL_PREFIX=<your desired location> -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-O3" ..`. This shows approximately a 20 times reduction in encoding duration, depending on your platform and compiler.
 
 ## Instructions to run TMIV
 
@@ -147,6 +147,8 @@ Use the following steps for uncoded video (i.e. best_reference):
 
 1. Run TMIV encoder
 1. Run TMIV decoder to render a viewport
+
+For more details, see the example below
 
 ### Example for running TMIV encoder
 
@@ -174,25 +176,25 @@ Finally, assuming that you built and installed the encoder application, you can 
 
 This will result in the following files in the `OutputDirectory`:
 
-* One Bitstream.bit, as defined by `BitstreamPath`. Contains Atlas metadata
-* yuv files: for each atlas, video data from attributes, Geometry and possibly occupancy, respectively
+* One Bitstream.bit file, as defined by `BitstreamPath`. Contains Atlas metadata.
+* yuv files for each atlas. Video data from attributes, geometry and possibly occupancy, respectively.
 
-## Example for running the decoder
+### Example for running the decoder
 
-You can choose to render to either a camera defined in `SourceCameraNames` above, or to a pose trace. Cameras must be given in the source files by setting the correct `SourceCameraParameters` path. Pose traces for the CTCs are given in [ctc_config/pose_traces](/ctc_config/pose_traces).
+You can choose to render to either a camera defined in `SourceCameraNames` above, or to a pose trace. Pose traces for the CTCs are given in [ctc_config/pose_traces](/ctc_config/pose_traces).
 
-### Decode from Encoder result (best reference)
+#### Decode from Encoder result (best reference)
 
 There must be a folder with your encoding results. In your encoder config file (e.g. [ctc_config/best_reference/TMIV_R17_SA_p01.json](/ctc_config/best_reference/TMIV_R17_SA_p01.json)), adjust the `Path`s and `PathFmt`s to point to the correct directories and filter the correct file format. Make sure to set `OutputCameraName` to `viewport` and parameter `PoseTracepath` to where your pose trace is. You can adjust other decoder parameters as you wish; the given ones provide the anchor.
 
 If you want to render to a camera, set `OutputCameraName` to the corresponding camera name. In that case, you also need to provide `SourceCameraParameters`
 
-### Decode from multiplexed stream
+#### Decode from multiplexed stream
 
-After TMIV encoding, run HM on **all** resulting yuv files, e.g.
+After TMIV encoding, run HM on **all** resulting yuv files. You must have configured the project with `BUILD_HM=ON, BUILD_TAppEncoder=TRUE, and BUILD_TAppDecoder=TRUE`. Then, to encode one yuv sequence, run e.g.
 
 ```shell
-TAppEncoder -c /Workspace/ctc_config/miv_anchor/encoder_randomaccess_main10.cfg -c /Workspace/ctc_config/miv_anchor/HM_A17_TT_SA.cfg -f 100 -wdt 2320 -hgt 960 -i TG_00_960x2320_yuv420p10le.yuv -o out_tg_01.yuv -b tg_01.bin
+/Workspace/tm1_install/bin/TAppEncoder -c /Workspace/ctc_config/miv_anchor/encoder_randomaccess_main10.cfg -c /Workspace/ctc_config/miv_anchor/HM_A17_TT_SA.cfg -f 100 -wdt 2320 -hgt 960 -i TG_00_960x2320_yuv420p10le.yuv -o out_tg_01.yuv -b tg_01.bin
 ```
 
 The order of config files for HM is important! Later ones overwrite earlier ones, command line parameters overwrite config files.
@@ -206,8 +208,10 @@ Afterwards, run the TMIV multiplexer. Correctly set everything in the multiplexe
 Finally, to run the decoder on the multiplexed bitstream, you only need to provide `BitstreamPath` in the configuration file (e.g. [ctc_config/miv_anchor/TMIV_A17_SA_v0.json](/ctc_config/miv_anchor/TMIV_A17_SA_v0.json)), but neither `AttributeVideoDataPathFmt` nor `GeometryVideoDataPathFmt`. Otherwise, the rules from [best reference decoding](#decode-from-encoder-result-(best-reference)) hold.
 
 ```shell
-/Workspace/tm1_install/bin/Deoder -c /Workspace/ctc_config/miv_anchor/TMIV_A17_SA_v0.json
+/Workspace/tm1_install/bin/Decoder -c /Workspace/ctc_config/miv_anchor/TMIV_A17_SA_v0.json
 ```
+
+Now, you can enjoy the yuv files that the decoder created.
 
 ## Structure of the test model
 

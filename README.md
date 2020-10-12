@@ -148,7 +148,7 @@ Use the following steps for uncoded video (i.e. best_reference):
 1. Run TMIV encoder
 1. Run TMIV decoder to render a viewport
 
-For more details, see the example below
+For more details, see the example below.
 
 ### Example for running TMIV encoder
 

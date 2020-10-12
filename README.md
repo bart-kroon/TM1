@@ -183,9 +183,9 @@ You can choose to render to either a camera defined in `SourceCameraNames` above
 
 ### Decode from Encoder result (best reference)
 
-There must be a folder with your encoding results. In your encoder config file (e.g. [ctc_config/best_reference/TMIV_R17_SA_p01.json](/ctc_config/best_reference/TMIV_R17_SA_p01.json)), adjust the `Path`s and `PathFmt`s to point to the correct directories and filter the correct file format. Make sure to set `OutputCameraName` to `viewport` and parameter `PoseTracepath` to where your pose trace is.
+There must be a folder with your encoding results. In your encoder config file (e.g. [ctc_config/best_reference/TMIV_R17_SA_p01.json](/ctc_config/best_reference/TMIV_R17_SA_p01.json)), adjust the `Path`s and `PathFmt`s to point to the correct directories and filter the correct file format. Make sure to set `OutputCameraName` to `viewport` and parameter `PoseTracepath` to where your pose trace is. You can adjust other decoder parameters as you wish; the given ones provide the anchor.
 
-If you want to render to a camera, set `OutputCameraName` to the corresponding camera name.
+If you want to render to a camera, set `OutputCameraName` to the corresponding camera name. In that case, you also need to provide `SourceCameraParameters`
 
 ### Decode from multiplexed stream
 
@@ -197,13 +197,17 @@ TAppEncoder -c /Workspace/ctc_config/miv_anchor/encoder_randomaccess_main10.cfg 
 
 The order of config files for HM is important! Later ones overwrite earlier ones, command line parameters overwrite config files.
 
-Afterwards, run the TMIV multiplexer. Correctly set everything in the multiplexer configuration file, for an example see [ctc_config/miv_anchor/Mux_A17_SA.json](/ctc_config/miv_anchor/Mux_A17_SA.json).
+Afterwards, run the TMIV multiplexer. Correctly set everything in the multiplexer configuration file, for an example see [ctc_config/miv_anchor/Mux_A17_SA.json](/ctc_config/miv_anchor/Mux_A17_SA.json). Careful: there is no input folder for this. Make sure that variables `AttributeVideoDataSubBitstreamPathFmt` and `GeometryVideoDataSubBitstreamPathFmt` are either correct relative paths to you call location, or the correct absolute paths. Then, run
 
 ```shell
 /Workspace/tm1_install/bin/Multiplexer -c /Workspace/ctc_config/miv_anchor/Mux_A17.json
 ```
 
-Finally, to run the decoder on the multiplexed bitstream, you only need to provide `BitstreamPath` in the configuration file (e.g. [ctc_config/miv_anchor/TMIV_A17_SA_v0.json](/ctc_config/miv_anchor/TMIV_A17_SA_v0.json)), but neither `AttributeVideoDataPathFmt` nor `GeometryVideoDataPathFmt`.
+Finally, to run the decoder on the multiplexed bitstream, you only need to provide `BitstreamPath` in the configuration file (e.g. [ctc_config/miv_anchor/TMIV_A17_SA_v0.json](/ctc_config/miv_anchor/TMIV_A17_SA_v0.json)), but neither `AttributeVideoDataPathFmt` nor `GeometryVideoDataPathFmt`. Otherwise, the rules from [best reference decoding](#decode-from-encoder-result-(best-reference)) hold.
+
+```shell
+/Workspace/tm1_install/bin/Deoder -c /Workspace/ctc_config/miv_anchor/TMIV_A17_SA_v0.json
+```
 
 ## Structure of the test model
 

@@ -3,6 +3,8 @@ cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
 option(BUILD_HM "Build and use HM in TMIV" ON)
 
 if (BUILD_HM)
+    set(HAVE_HM ON)  # required to link TMIV to HM
+
     include(FetchContent)
     fetchcontent_declare(HM
         GIT_REPOSITORY https://vcgit.hhi.fraunhofer.de/jct-vc/HM.git
@@ -80,4 +82,6 @@ if (BUILD_HM)
         add_hm_executable(TAppEncoder)
         target_link_libraries(TAppEncoder PRIVATE TLibEncoder TAppCommon TLibVideoIO)
     endif()
+else()
+    message(WARNING "HM is disabled.")
 endif()

@@ -145,7 +145,7 @@ public:
   void addFrameListener(FrameListener listener) { m_frameListeners.push_back(std::move(listener)); }
 
 private:
-  void xWriteOutput(TComList<TComPic *> &pcListPic, unsigned tId) {
+  void xWriteOutput(TComList<TComPic *> &pcListPic, unsigned  /*tId*/) {
     if (pcListPic.empty()) {
       return;
     }

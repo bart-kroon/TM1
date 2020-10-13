@@ -101,7 +101,7 @@ public:
         m_cTDecTop.setFirstSliceInPicture(true);
       }
 
-      if (pcListPic) {
+      if (pcListPic != nullptr) {
         if (m_outputBitDepth.front() == 0) {
           const auto &recon = pcListPic->front()->getPicSym()->getSPS().getBitDepths().recon;
           std::copy(std::cbegin(recon), std::cend(recon), std::begin(m_outputBitDepth));

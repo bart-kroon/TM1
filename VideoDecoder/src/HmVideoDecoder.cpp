@@ -171,7 +171,7 @@ private:
           (numPicsNotYetDisplayed > numReorderPicsHighestTid ||
            dpbFullness > maxDecPicBufferingHighestTid)) {
         numPicsNotYetDisplayed--;
-        if (pcPic->getSlice(0)->isReferenced() == false) {
+        if (!pcPic->getSlice(0)->isReferenced()) {
           dpbFullness--;
         }
 

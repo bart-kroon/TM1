@@ -862,24 +862,19 @@ private:
       int x = static_cast<int>(std::floor(p.first.x()));
       int y = static_cast<int>(std::floor(p.first.y()));
 
-      for (const auto &offset : offsetList) {
+      return std::any_of(offsetList.cbegin(), offsetList.cend(), [&] (const auto & offset) {
         int xo = std::clamp(x + offset.x(), 0, w_last);
         int yo = std::clamp(y + offset.y(), 0, h_last);
 
         float z = m_sourceDepth[sourceId](yo, xo);
 
-        if (sourceHelperList[sourceId].isValidDepth(z)) {
-          auto OQ = m_sourceRayDirection[sourceId](yo, xo);
-
-          if (2.F * m_cameraDistortion[sourceId] < std::abs(std::acos(dot(OP, OQ)))) {
-            return true;
-          }
-        } else {
+        if (!sourceHelperList[sourceId].isValidDepth(z)) {
           return true;
         }
-      }
-
-      return false;
+        
+        auto OQ = m_sourceRayDirection[sourceId](yo, xo);
+        return 2.F * m_cameraDistortion[sourceId] < std::abs(std::acos(dot(OP, OQ)));
+      });
     };
 
     static const std::array<Common::Vec2i, 9> offsetList = {

@@ -33,7 +33,6 @@
 
 #include <TMIV/MivBitstream/V3cParameterSet.h>
 
-#include <TMIV/MivBitstream/MivDecoderMode.h>
 #include <TMIV/MivBitstream/verify.h>
 
 #include <type_traits>

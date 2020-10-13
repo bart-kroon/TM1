@@ -79,7 +79,7 @@ public:
   constexpr auto aoa_reset_flag(bool value) noexcept -> auto &;
   constexpr auto aoa_num_atlases_minus1(std::uint8_t value) noexcept -> auto &;
   auto aoa_num_updates(std::size_t value) noexcept -> auto &;
-  constexpr auto aoa_log2_max_object_idx_tracked_minus1(std::uint8_t value) noexcept -> auto &;
+  auto aoa_log2_max_object_idx_tracked_minus1(std::uint8_t value) noexcept -> auto &;
   auto push_back_aoa_atlas_id(std::uint8_t value) noexcept -> auto &;
   auto aoa_object_idx(std::size_t i, std::uint8_t value) noexcept -> auto &;
   auto aoa_object_in_atlas(std::size_t i, std::size_t j, bool value) noexcept -> auto &;

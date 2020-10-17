@@ -838,13 +838,13 @@ auto operator<<(std::ostream &stream, const CommonAtlasFrameRBSP &x) -> std::ost
   stream << "caf_atlas_adaptation_parameter_set_id="
          << int{x.caf_atlas_adaptation_parameter_set_id()} << '\n';
   stream << "caf_frm_order_cnt_lsb=" << x.caf_frm_order_cnt_lsb() << '\n';
-  stream << "caf_irap_flag=" << boolalpha << x.caf_irap_flag() << '\n';
+  stream << "caf_irap_flag=" << std::boolalpha << x.caf_irap_flag() << '\n';
   if (x.caf_irap_flag()) {
     stream << x.miv_view_params_list();
   } else {
-    stream << "caf_update_extrinsics_flag=" << boolalpha << x.caf_update_extrinsics_flag() << '\n';
-    stream << "caf_update_intrinsics_flag=" << boolalpha << x.caf_update_intrinsics_flag() << '\n';
-    stream << "caf_update_depth_quantization_flag=" << boolalpha
+    stream << "caf_update_extrinsics_flag=" << std::boolalpha << x.caf_update_extrinsics_flag() << '\n';
+    stream << "caf_update_intrinsics_flag=" << std::boolalpha << x.caf_update_intrinsics_flag() << '\n';
+    stream << "caf_update_depth_quantization_flag=" << std::boolalpha
            << x.caf_update_depth_quantization_flag() << '\n';
     if (x.caf_update_extrinsics_flag()) {
       stream << x.miv_view_params_update_extrinsics();

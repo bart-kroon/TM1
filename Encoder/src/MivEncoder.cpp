@@ -178,7 +178,7 @@ auto MivEncoder::commonAtlasFrame() const -> MivBitstream::CommonAtlasFrameRBSP 
 
 auto MivEncoder::mivViewParamsList() const -> MivBitstream::MivViewParamsList {
   auto mvpl = MivBitstream::MivViewParamsList{};
-  auto &vpl = m_params.viewParamsList;
+  const auto &vpl = m_params.viewParamsList;
 
   assert(!vpl.empty());
   mvpl.mvp_num_views_minus1(static_cast<uint16_t>(vpl.size() - 1));

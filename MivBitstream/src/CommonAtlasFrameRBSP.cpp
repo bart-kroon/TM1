@@ -885,6 +885,11 @@ auto CommonAtlasFrameRBSP::operator==(const CommonAtlasFrameRBSP &other) const n
       return false;
     }
   } else {
+    if (caf_update_extrinsics_flag() != other.caf_update_extrinsics_flag() ||
+        caf_update_intrinsics_flag() != other.caf_update_intrinsics_flag() ||
+        caf_update_depth_quantization_flag() != other.caf_update_depth_quantization_flag()) {
+      return false;
+    }
     if (caf_update_extrinsics_flag() &&
         miv_view_params_update_extrinsics() != other.miv_view_params_update_extrinsics()) {
       return false;

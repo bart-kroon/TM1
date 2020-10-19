@@ -54,6 +54,55 @@ void AapsVpccExtension::encodeTo(Common::OutputBitstream &bitstream) {
   bitstream.putFlag(aaps_vpcc_camera_parameters_present_flag);
 }
 
+auto AapsMivExtension::vui_parameters() const noexcept -> const VuiParameters & {
+  VERIFY_MIVBITSTREAM(aame_vui_params_present_flag());
+  VERIFY_MIVBITSTREAM(m_vui_parameters.has_value());
+  return *m_vui_parameters;
+}
+
+auto AapsMivExtension::vui_parameters(const VuiParameters &value) noexcept -> AapsMivExtension & {
+  VERIFY_MIVBITSTREAM(aame_vui_params_present_flag());
+  m_vui_parameters = value;
+  return *this;
+}
+
+auto operator<<(std::ostream &stream, const AapsMivExtension &x) -> std::ostream & {
+  stream << "aame_omaf_v1_compatible_flag=" << std::boolalpha << x.aame_omaf_v1_compatible_flag()
+         << '\n';
+  stream << "aame_vui_params_present_flag=" << std::boolalpha << x.aame_vui_params_present_flag()
+         << '\n';
+  if (x.aame_vui_params_present_flag()) {
+    stream << x.vui_parameters();
+  }
+  return stream;
+}
+
+auto AapsMivExtension::operator==(const AapsMivExtension &other) const noexcept -> bool {
+  return aame_omaf_v1_compatible_flag() == other.aame_omaf_v1_compatible_flag();
+}
+
+auto AapsMivExtension::operator!=(const AapsMivExtension &other) const noexcept -> bool {
+  return !operator==(other);
+}
+
+auto AapsMivExtension::decodeFrom(Common::InputBitstream &bitstream) -> AapsMivExtension {
+  auto x = AapsMivExtension{};
+  x.aame_omaf_v1_compatible_flag(bitstream.getFlag());
+  x.aame_vui_params_present_flag(bitstream.getFlag());
+  if (x.aame_vui_params_present_flag()) {
+    x.vui_parameters(VuiParameters::decodeFrom(bitstream, nullptr));
+  }
+  return x;
+}
+
+void AapsMivExtension::encodeTo(Common::OutputBitstream &bitstream) const {
+  bitstream.putFlag(aame_omaf_v1_compatible_flag());
+  bitstream.putFlag(aame_vui_params_present_flag());
+  if (aame_vui_params_present_flag()) {
+    vui_parameters().encodeTo(bitstream, nullptr);
+  }
+}
+
 auto AtlasAdaptationParameterSetRBSP::aaps_log2_max_atlas_frame_order_cnt_lsb_minus4()
     const noexcept -> uint8_t {
   VERIFY_V3CBITSTREAM(aaps_log2_max_afoc_present_flag());
@@ -68,9 +117,16 @@ auto AtlasAdaptationParameterSetRBSP::aaps_vpcc_extension() const noexcept
   return *m_aaps_vpcc_extension;
 }
 
+auto AtlasAdaptationParameterSetRBSP::aaps_miv_extension() const noexcept
+    -> const AapsMivExtension & {
+  VERIFY_V3CBITSTREAM(aaps_miv_extension_present_flag());
+  VERIFY_V3CBITSTREAM(m_aaps_miv_extension.has_value());
+  return *m_aaps_miv_extension;
+}
+
 auto AtlasAdaptationParameterSetRBSP::aapsExtensionData() const noexcept
     -> const std::vector<bool> & {
-  VERIFY_V3CBITSTREAM(aaps_extension_7bits() != 0);
+  VERIFY_V3CBITSTREAM(aaps_extension_6bits() != 0);
   VERIFY_V3CBITSTREAM(m_aapsExtensionData.has_value());
   return *m_aapsExtensionData;
 }
@@ -89,10 +145,17 @@ auto AtlasAdaptationParameterSetRBSP::aaps_vpcc_extension_present_flag(bool valu
   return *this;
 }
 
-auto AtlasAdaptationParameterSetRBSP::aaps_extension_7bits(std::uint8_t value) noexcept
+auto AtlasAdaptationParameterSetRBSP::aaps_miv_extension_present_flag(bool value) noexcept
     -> AtlasAdaptationParameterSetRBSP & {
   VERIFY_V3CBITSTREAM(aaps_extension_present_flag());
-  m_aaps_extension_7bits = value;
+  m_aaps_miv_extension_present_flag = value;
+  return *this;
+}
+
+auto AtlasAdaptationParameterSetRBSP::aaps_extension_6bits(std::uint8_t value) noexcept
+    -> AtlasAdaptationParameterSetRBSP & {
+  VERIFY_V3CBITSTREAM(aaps_extension_present_flag());
+  m_aaps_extension_6bits = value;
   return *this;
 }
 
@@ -103,11 +166,26 @@ auto AtlasAdaptationParameterSetRBSP::aaps_vpcc_extension(const AapsVpccExtensio
   return *this;
 }
 
+auto AtlasAdaptationParameterSetRBSP::aaps_miv_extension(AapsMivExtension value) noexcept
+    -> AtlasAdaptationParameterSetRBSP & {
+  VERIFY_V3CBITSTREAM(aaps_miv_extension_present_flag());
+  m_aaps_miv_extension = value;
+  return *this;
+}
+
 auto AtlasAdaptationParameterSetRBSP::aapsExtensionData(std::vector<bool> value) noexcept
     -> AtlasAdaptationParameterSetRBSP & {
-  VERIFY_V3CBITSTREAM(aaps_extension_7bits() != 0);
+  VERIFY_V3CBITSTREAM(aaps_extension_6bits() != 0);
   m_aapsExtensionData = std::move(value);
   return *this;
+}
+
+auto AtlasAdaptationParameterSetRBSP::aaps_miv_extension() noexcept -> AapsMivExtension & {
+  VERIFY_V3CBITSTREAM(aaps_miv_extension_present_flag());
+  if (!m_aaps_miv_extension) {
+    m_aaps_miv_extension = AapsMivExtension{};
+  }
+  return *m_aaps_miv_extension;
 }
 
 auto operator<<(std::ostream &stream, const AtlasAdaptationParameterSetRBSP &x) -> std::ostream & {
@@ -124,12 +202,17 @@ auto operator<<(std::ostream &stream, const AtlasAdaptationParameterSetRBSP &x) 
   if (x.aaps_extension_present_flag()) {
     stream << "aaps_vpcc_extension_present_flag=" << std::boolalpha
            << x.aaps_vpcc_extension_present_flag() << '\n';
-    stream << "aaps_extension_7bits=" << int{x.aaps_extension_7bits()} << '\n';
+    stream << "aaps_miv_extension_present_flag=" << std::boolalpha
+           << x.aaps_miv_extension_present_flag() << '\n';
+    stream << "aaps_extension_6bits=" << int{x.aaps_extension_6bits()} << '\n';
   }
   if (x.aaps_vpcc_extension_present_flag()) {
     stream << x.aaps_vpcc_extension();
   }
-  if (x.aaps_extension_7bits() != 0U) {
+  if (x.aaps_miv_extension_present_flag()) {
+    stream << x.aaps_miv_extension();
+  }
+  if (x.aaps_extension_6bits() != 0U) {
     for (auto bit : x.aapsExtensionData()) {
       stream << "aaps_extension_data_flag=" << std::boolalpha << bit << '\n';
     }
@@ -143,7 +226,8 @@ auto AtlasAdaptationParameterSetRBSP::operator==(
       aaps_log2_max_afoc_present_flag() != other.aaps_log2_max_afoc_present_flag() ||
       aaps_extension_present_flag() != other.aaps_extension_present_flag() ||
       aaps_vpcc_extension_present_flag() != other.aaps_vpcc_extension_present_flag() ||
-      aaps_extension_7bits() != other.aaps_extension_7bits()) {
+      aaps_miv_extension_present_flag() != other.aaps_miv_extension_present_flag() ||
+      aaps_extension_6bits() != other.aaps_extension_6bits()) {
     return false;
   }
   if (aaps_log2_max_afoc_present_flag() &&
@@ -154,7 +238,10 @@ auto AtlasAdaptationParameterSetRBSP::operator==(
   if (aaps_vpcc_extension_present_flag() && aaps_vpcc_extension() != other.aaps_vpcc_extension()) {
     return false;
   }
-  if (aaps_extension_7bits() != 0 && aapsExtensionData() != other.aapsExtensionData()) {
+  if (aaps_miv_extension_present_flag() && aaps_miv_extension() != other.aaps_miv_extension()) {
+    return false;
+  }
+  if (aaps_extension_6bits() != 0 && aapsExtensionData() != other.aapsExtensionData()) {
     return false;
   }
   return true;
@@ -181,12 +268,16 @@ auto AtlasAdaptationParameterSetRBSP::decodeFrom(std::istream &stream)
 
   if (x.aaps_extension_present_flag()) {
     x.aaps_vpcc_extension_present_flag(bitstream.getFlag());
-    x.aaps_extension_7bits(bitstream.readBits<uint8_t>(7));
+    x.aaps_miv_extension_present_flag(bitstream.getFlag());
+    x.aaps_extension_6bits(bitstream.readBits<uint8_t>(6));
   }
   if (x.aaps_vpcc_extension_present_flag()) {
     x.aaps_vpcc_extension(AapsVpccExtension::decodeFrom(bitstream));
   }
-  if (x.aaps_extension_7bits() != 0) {
+  if (x.aaps_miv_extension_present_flag()) {
+    x.aaps_miv_extension(AapsMivExtension::decodeFrom(bitstream));
+  }
+  if (x.aaps_extension_6bits() != 0) {
     auto aapsExtensionData = std::vector<bool>{};
     while (bitstream.moreRbspData()) {
       aapsExtensionData.push_back(bitstream.getFlag());
@@ -211,12 +302,16 @@ void AtlasAdaptationParameterSetRBSP::encodeTo(std::ostream &stream) const {
 
   if (aaps_extension_present_flag()) {
     bitstream.putFlag(aaps_vpcc_extension_present_flag());
-    bitstream.writeBits(aaps_extension_7bits(), 7);
+    bitstream.putFlag(aaps_miv_extension_present_flag());
+    bitstream.writeBits(aaps_extension_6bits(), 6);
   }
   if (aaps_vpcc_extension_present_flag()) {
     aaps_vpcc_extension().encodeTo(bitstream);
   }
-  if (aaps_extension_7bits() != 0) {
+  if (aaps_miv_extension_present_flag()) {
+    aaps_miv_extension().encodeTo(bitstream);
+  }
+  if (aaps_extension_6bits() != 0) {
     for (auto bit : aapsExtensionData()) {
       bitstream.putFlag(bit);
     }

@@ -43,6 +43,24 @@ constexpr auto AapsVpccExtension::operator!=(const AapsVpccExtension & /* other 
   return false;
 }
 
+constexpr auto AapsMivExtension::aame_omaf_v1_compatible_flag() const noexcept {
+  return m_aame_omaf_v1_compatible_flag;
+}
+
+constexpr auto AapsMivExtension::aame_vui_params_present_flag() const noexcept {
+  return m_aame_vui_params_present_flag;
+}
+
+constexpr auto AapsMivExtension::aame_omaf_v1_compatible_flag(bool value) noexcept -> auto & {
+  m_aame_omaf_v1_compatible_flag = value;
+  return *this;
+}
+
+constexpr auto AapsMivExtension::aame_vui_params_present_flag(bool value) noexcept -> auto & {
+  m_aame_vui_params_present_flag = value;
+  return *this;
+}
+
 constexpr auto
 AtlasAdaptationParameterSetRBSP::aaps_atlas_adaptation_parameter_set_id() const noexcept {
   return m_aaps_atlas_adaptation_parameter_set_id;
@@ -60,8 +78,12 @@ constexpr auto AtlasAdaptationParameterSetRBSP::aaps_vpcc_extension_present_flag
   return m_aaps_vpcc_extension_present_flag.value_or(false);
 }
 
-constexpr auto AtlasAdaptationParameterSetRBSP::aaps_extension_7bits() const noexcept {
-  return m_aaps_extension_7bits.value_or(0);
+constexpr auto AtlasAdaptationParameterSetRBSP::aaps_miv_extension_present_flag() const noexcept {
+  return m_aaps_miv_extension_present_flag.value_or(false);
+}
+
+constexpr auto AtlasAdaptationParameterSetRBSP::aaps_extension_6bits() const noexcept {
+  return m_aaps_extension_6bits.value_or(0);
 }
 
 constexpr auto AtlasAdaptationParameterSetRBSP::aaps_atlas_adaptation_parameter_set_id(

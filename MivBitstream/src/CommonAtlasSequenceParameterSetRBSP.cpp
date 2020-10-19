@@ -84,4 +84,4 @@ void CaspsMivExtension::encodeTo(Common::OutputBitstream &bitstream) const {
   }
 }
 
-}
+} // namespace TMIV::MivBitstream

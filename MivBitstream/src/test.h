@@ -44,7 +44,7 @@
 
 namespace {
 template <typename Type, typename... Args>
-auto byteCodingTest(const Type &reference, int size, Args &&... args) -> bool {
+auto byteCodingTest(const Type &reference, int size, Args &&...args) -> bool {
   std::stringstream stream;
   reference.encodeTo(stream, args...);
   REQUIRE(size == stream.tellp());
@@ -56,7 +56,7 @@ auto byteCodingTest(const Type &reference, int size, Args &&... args) -> bool {
 }
 
 template <typename Type, typename... Args>
-auto unitCodingTest(const Type &reference, int size, Args &&... args) -> bool {
+auto unitCodingTest(const Type &reference, int size, Args &&...args) -> bool {
   std::stringstream stream;
   REQUIRE(size == static_cast<int>(reference.encodeTo(stream, args...)));
   REQUIRE(size == stream.tellp());
@@ -68,7 +68,7 @@ auto unitCodingTest(const Type &reference, int size, Args &&... args) -> bool {
 }
 
 template <typename Type, typename... Args>
-auto bitCodingTest(const Type &reference, int bitsize, Args &&... args) -> bool {
+auto bitCodingTest(const Type &reference, int bitsize, Args &&...args) -> bool {
   std::stringstream stream;
   TMIV::Common::OutputBitstream obitstream{stream};
   reference.encodeTo(obitstream, args...);
@@ -89,7 +89,7 @@ template <typename Type> auto toString(const Type &metadata) -> std::string {
 }
 
 template <typename Type, typename... Args>
-auto toString(const Type &metadata, Args &&... args) -> std::string {
+auto toString(const Type &metadata, Args &&...args) -> std::string {
   std::ostringstream stream;
   metadata.printTo(stream, std::forward<Args>(args)...);
   return stream.str();

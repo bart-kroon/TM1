@@ -270,10 +270,10 @@ private:
 
 AdditiveSynthesizer::AdditiveSynthesizer(const Common::Json & /*rootNode*/,
                                          const Common::Json &componentNode)
-    : m_impl(new Impl(componentNode.require("rayAngleParameter").asFloat(),
-                      componentNode.require("depthParameter").asFloat(),
-                      componentNode.require("stretchingParameter").asFloat(),
-                      componentNode.require("maxStretching").asFloat())) {}
+    : m_impl(new Impl(componentNode.require("rayAngleParameter").as<float>(),
+                      componentNode.require("depthParameter").as<float>(),
+                      componentNode.require("stretchingParameter").as<float>(),
+                      componentNode.require("maxStretching").as<float>())) {}
 
 AdditiveSynthesizer::AdditiveSynthesizer(float rayAngleParam, float depthParam,
                                          float stretchingParam, float maxStretching)

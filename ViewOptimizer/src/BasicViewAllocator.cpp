@@ -57,11 +57,11 @@ namespace {
 BasicViewAllocator::BasicViewAllocator(const Common::Json &rootNode,
                                        const Common::Json &componentNode)
     : AbstractViewSelector{rootNode, componentNode}
-    , m_numGroups{rootNode.require("numGroups").asInt()}
-    , m_maxLumaPictureSize{rootNode.require("maxLumaPictureSize").asInt()}
-    , m_maxAtlases{rootNode.require("maxAtlases").asInt()}
-    , m_minNonCodedViews{componentNode.require("minNonCodedViews").asInt()}
-    , m_maxBasicViewFraction{componentNode.require("maxBasicViewFraction").asDouble()} {
+    , m_numGroups{rootNode.require("numGroups").as<int>()}
+    , m_maxLumaPictureSize{rootNode.require("maxLumaPictureSize").as<int>()}
+    , m_maxAtlases{rootNode.require("maxAtlases").as<int>()}
+    , m_minNonCodedViews{componentNode.require("minNonCodedViews").as<int>()}
+    , m_maxBasicViewFraction{componentNode.require("maxBasicViewFraction").as<double>()} {
   VERIFY(0 < m_numGroups && m_numGroups <= m_maxAtlases);
   VERIFY(0 < m_maxLumaPictureSize);
   VERIFY(0 <= m_minNonCodedViews);

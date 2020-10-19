@@ -40,7 +40,7 @@
 namespace TMIV::Encoder {
 GroupBasedEncoder::GroupBasedEncoder(const Common::Json &rootNode,
                                      const Common::Json &componentNode) {
-  const auto numGroups_ = static_cast<size_t>(rootNode.require("numGroups").asInt());
+  const auto numGroups_ = static_cast<size_t>(rootNode.require("numGroups").as<int>());
 
   while (m_encoders.size() < numGroups_) {
     m_encoders.emplace_back(rootNode, componentNode);

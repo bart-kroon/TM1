@@ -44,15 +44,15 @@
 
 namespace TMIV::Common {
 namespace detail {
-inline auto findReplacementField(const std::string &fmt, size_t pos)
+inline auto findReplacementField(std::string_view fmt, size_t pos)
     -> std::optional<std::pair<std::size_t, std::size_t>> {
   const auto open = fmt.find('{', pos);
-  if (open == std::string::npos) {
+  if (open == std::string_view::npos) {
     return {};
   }
 
   const auto close = fmt.find('}', open + 1);
-  if (close == std::string::npos) {
+  if (close == std::string_view::npos) {
     std::ostringstream what;
     what << "Missing '}' in format(fmt, ...) with fmt=\"" << fmt << '"';
     throw std::runtime_error(what.str());
@@ -65,28 +65,28 @@ inline auto findReplacementField(const std::string &fmt, size_t pos)
 // and frame sizes. A more complete implementation of formatReplacementField<Arg> could use
 // std::regex to parse the field.
 template <typename Arg>
-void formatReplacementField(std::ostream &stream, const std::string &field, Arg &&arg) {
-  using namespace std::string_literals;
+void formatReplacementField(std::ostream &stream, std::string_view field, Arg &&arg) {
+  using namespace std::string_view_literals;
   const auto fill = stream.fill('0');
-  if (field == "{}"s) {
+  if (field == "{}"sv) {
     stream << std::forward<Arg>(arg);
-  } else if (field == "{:02}"s) {
+  } else if (field == "{:02}"sv) {
     stream << std::setw(2) << std::forward<Arg>(arg);
-  } else if (field == "{:03}"s) { // enough for fixed width printing of uint8_t
+  } else if (field == "{:03}"sv) { // enough for fixed width printing of uint8_t
     stream << std::setw(3) << std::forward<Arg>(arg);
-  } else if (field == "{:04}"s) {
+  } else if (field == "{:04}"sv) {
     stream << std::setw(4) << std::forward<Arg>(arg);
-  } else if (field == "{:05}"s) { // enough for fixed width printing of uint16_t
+  } else if (field == "{:05}"sv) { // enough for fixed width printing of uint16_t
     stream << std::setw(5) << std::forward<Arg>(arg);
   } else {
     std::ostringstream what;
-    what << "Incorrect or unsupported replacement field " << field;
+    what << "Incorrect or unsupported replacement field "sv << field;
     throw std::runtime_error(what.str());
   }
   stream.fill(fill);
 }
 
-inline void format(std::ostream &stream, const std::string &fmt, size_t pos) {
+inline void format(std::ostream &stream, std::string_view fmt, size_t pos) {
   if (findReplacementField(fmt, pos)) {
     std::ostringstream what;
     what << "Not enough arguments provided to format(fmt, ...) with fmt=\"" << fmt << '"';
@@ -99,8 +99,7 @@ inline void format(std::ostream &stream, const std::string &fmt, size_t pos) {
 }
 
 template <typename Arg0, typename... Args>
-void format(std::ostream &stream, const std::string &fmt, size_t pos, Arg0 &&arg0,
-            Args &&... args) {
+void format(std::ostream &stream, std::string_view fmt, size_t pos, Arg0 &&arg0, Args &&...args) {
   const auto f = findReplacementField(fmt, pos);
 
   if (!f) {
@@ -120,7 +119,7 @@ void format(std::ostream &stream, const std::string &fmt, size_t pos, Arg0 &&arg
 }
 } // namespace detail
 
-template <typename... Args> auto format(const std::string &fmt, Args &&... args) -> std::string {
+template <typename... Args> auto format(std::string_view fmt, Args &&...args) -> std::string {
   std::ostringstream stream;
   detail::format(stream, fmt, 0, std::forward<Args>(args)...);
   return stream.str();

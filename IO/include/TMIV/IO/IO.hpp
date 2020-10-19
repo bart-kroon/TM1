@@ -44,9 +44,9 @@
 namespace TMIV::IO {
 template <typename... Args>
 auto getFullPath(const Common::Json &config, const std::string &baseDirectoryField,
-                 const std::string &fileNameField, Args &&... args) -> std::string {
+                 const std::string &fileNameField, Args &&...args) -> std::string {
   std::string baseDirectory;
-  auto fileName = Common::format(config.require(fileNameField).asString(), args...);
+  auto fileName = Common::format(config.require(fileNameField).as<std::string>(), args...);
 
   // Detect absolute paths for /POSIX, \Windows and C:\Windows
   if ((!fileName.empty() && (fileName.front() == '/' || fileName.front() == '\\')) ||
@@ -54,8 +54,8 @@ auto getFullPath(const Common::Json &config, const std::string &baseDirectoryFie
     return fileName;
   }
 
-  if (auto subnode = config.optional(baseDirectoryField)) {
-    baseDirectory = subnode.asString() + "/";
+  if (const auto &subnode = config.optional(baseDirectoryField)) {
+    baseDirectory = subnode.as<std::string>() + "/";
   }
 
   return baseDirectory + fileName;
@@ -64,7 +64,7 @@ auto getFullPath(const Common::Json &config, const std::string &baseDirectoryFie
 template <typename FORMAT, typename... Args>
 auto readFrame(const Common::Json &config, const std::string &baseDirectoryField,
                const std::string &fileNameField, int frameIndex, Common::Vec2i resolution,
-               Args &&... args) -> Common::Frame<FORMAT> {
+               Args &&...args) -> Common::Frame<FORMAT> {
   auto result = Common::Frame<FORMAT>(resolution.x(), resolution.y());
 
   const auto path = getFullPath(config, baseDirectoryField, fileNameField,
@@ -99,7 +99,7 @@ template <typename FORMAT> void padChroma(std::ostream &stream, int bytes) {
 
 template <typename FORMAT, typename... Args>
 void writeFrame(const Common::Json &config, const std::string &fileNameField,
-                const Common::Frame<FORMAT> &frame, int frameIndex, Args &&... args) {
+                const Common::Frame<FORMAT> &frame, int frameIndex, Args &&...args) {
   const auto path = getFullPath(config, "OutputDirectory", fileNameField,
                                 std::forward<Args>(args)..., frame.getWidth(), frame.getHeight());
   std::cout << "Writing frame " << frameIndex << " to " << path << '\n';

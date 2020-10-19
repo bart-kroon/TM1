@@ -40,8 +40,8 @@ namespace TMIV::Decoder {
 EntityBasedPatchMapFilter::EntityBasedPatchMapFilter(const Common::Json & /*rootNode*/,
                                                      const Common::Json &componentNode) {
   m_entityFiltering = false;
-  if (auto subnode = componentNode.optional("EntityDecodeRange")) {
-    m_entityDecodeRange = subnode.asIntVector<2>();
+  if (const auto &subnode = componentNode.optional("EntityDecodeRange")) {
+    m_entityDecodeRange = subnode.asVec<int, 2>();
     m_entityFiltering = true;
   }
 }

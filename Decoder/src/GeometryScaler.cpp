@@ -378,9 +378,10 @@ private:
 GeometryScaler::GeometryScaler(const Common::Json & /*rootNode*/,
                                const Common::Json &componentNode) {
   m_defaultGup.gup_type(MivBitstream::GupType::HVR)
-      .gup_erode_threshold(Common::Half(componentNode.require("minForegroundConfidence").asFloat()))
-      .gup_delta_threshold(componentNode.require("geometryEdgeMagnitudeTh").asInt())
-      .gup_max_curvature(static_cast<uint8_t>(componentNode.require("maxCurvature").asInt()));
+      .gup_erode_threshold(
+          Common::Half(componentNode.require("minForegroundConfidence").as<float>()))
+      .gup_delta_threshold(componentNode.require("geometryEdgeMagnitudeTh").as<int>())
+      .gup_max_curvature(static_cast<uint8_t>(componentNode.require("maxCurvature").as<int>()));
 }
 
 auto GeometryScaler::scale(const AtlasAccessUnit &atlas,

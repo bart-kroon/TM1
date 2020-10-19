@@ -100,7 +100,7 @@ private:
   // Returns a frame index. If frameIndex is strictly less than the actual number of frames in the
   // encoded stream, then regular values are returned else mirrored indices are computed.
   static auto getExtendedIndex(const Common::Json &config, int frameIndex) -> int {
-    int numberOfFrames = config.require("numberOfFrames").asInt();
+    int numberOfFrames = config.require("numberOfFrames").as<int>();
     int frameGroupId = frameIndex / numberOfFrames;
     int frameRelativeId = frameIndex % numberOfFrames;
     return (frameGroupId % 2) != 0 ? (numberOfFrames - (frameRelativeId + 1)) : frameRelativeId;
@@ -109,21 +109,21 @@ private:
   static auto mapInputToOutputFrames(const Common::Json &config) -> std::multimap<int, int> {
     auto x = std::multimap<int, int>{};
 
-    const auto numberOfFrames = config.require("numberOfFrames").asInt();
+    const auto numberOfFrames = config.require("numberOfFrames").as<int>();
     auto extraFrames = 0;
     auto firstOutputFrame = 0;
     auto outputFrameStep = 1;
 
-    if (auto subnode = config.optional("extraNumberOfFrames"); subnode) {
-      extraFrames = subnode.asInt();
+    if (const auto &subnode = config.optional("extraNumberOfFrames")) {
+      extraFrames = subnode.as<int>();
     }
 
-    if (auto subnode = config.optional("firstOutputFrame"); subnode) {
-      firstOutputFrame = subnode.asInt();
+    if (const auto &subnode = config.optional("firstOutputFrame")) {
+      firstOutputFrame = subnode.as<int>();
     }
 
-    if (auto subnode = config.optional("outputFrameStep"); subnode) {
-      outputFrameStep = subnode.asInt();
+    if (const auto &subnode = config.optional("outputFrameStep")) {
+      outputFrameStep = subnode.as<int>();
     }
 
     for (int outputFrame = firstOutputFrame; outputFrame < numberOfFrames + extraFrames;

@@ -148,12 +148,12 @@ private:
 
 public:
   explicit Impl(const Common::Json &componentNode) {
-    m_angularScaling = componentNode.require("angularScaling").asFloat();
-    m_minimalWeight = componentNode.require("minimalWeight").asFloat();
-    m_stretchFactor = componentNode.require("stretchFactor").asFloat();
-    m_blendingFactor = componentNode.require("blendingFactor").asFloat();
-    m_overloadFactor = componentNode.require("overloadFactor").asFloat();
-    m_filteringPass = componentNode.require("filteringPass").asInt();
+    m_angularScaling = componentNode.require("angularScaling").as<float>();
+    m_minimalWeight = componentNode.require("minimalWeight").as<float>();
+    m_stretchFactor = componentNode.require("stretchFactor").as<float>();
+    m_blendingFactor = componentNode.require("blendingFactor").as<float>();
+    m_overloadFactor = componentNode.require("overloadFactor").as<float>();
+    m_filteringPass = componentNode.require("filteringPass").as<int>();
   }
 
   Impl(float angularScaling, float minimalWeight, float stretchFactor, float blendingFactor,

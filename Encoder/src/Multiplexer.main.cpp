@@ -49,15 +49,15 @@ class Multiplexer : public Common::Application {
 public:
   explicit Multiplexer(std::vector<const char *> argv)
       : Common::Application{"Multiplexer", std::move(argv)}
-      , m_intermediateBitstreamPath{json().require("IntermediateBitstreamPath").asString()}
-      , m_outputBitstreamPath{json().require("OutputBitstreamPath").asString()}
+      , m_intermediateBitstreamPath{json().require("IntermediateBitstreamPath").as<std::string>()}
+      , m_outputBitstreamPath{json().require("OutputBitstreamPath").as<std::string>()}
       , m_gvdSubBitstreamPathFmt{
-            json().require("GeometryVideoDataSubBitstreamPathFmt").asString()} {
-    if (auto node = json().optional("AttributeVideoDataSubBitstreamPathFmt"); node) {
-      m_avdSubBitstreamPathFmt = node.asString();
+            json().require("GeometryVideoDataSubBitstreamPathFmt").as<std::string>()} {
+    if (const auto &node = json().optional("AttributeVideoDataSubBitstreamPathFmt")) {
+      m_avdSubBitstreamPathFmt = node.as<std::string>();
     }
-    if (auto node = json().optional("OccupancyVideoDataSubBitstreamPathFmt"); node) {
-      m_ovdSubBitstreamPathFmt = node.asString();
+    if (const auto &node = json().optional("OccupancyVideoDataSubBitstreamPathFmt")) {
+      m_ovdSubBitstreamPathFmt = node.as<std::string>();
     }
     checkParameters();
   }

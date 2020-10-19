@@ -68,7 +68,7 @@ Application::Application(const char *tool, std::vector<const char *> argv) : m_s
       const auto *arg2 = take();
       add_parameter(arg1, arg2);
     } else if (helpOption == option) {
-      m_json.reset();
+      m_json = Json{};
       break;
     } else {
       std::ostringstream what;
@@ -86,7 +86,7 @@ Application::Application(const char *tool, std::vector<const char *> argv) : m_s
 
 auto Application::json() const -> const Json & {
   assert(m_json);
-  return *m_json;
+  return m_json;
 }
 
 void Application::add_file(const std::string &path) {
@@ -115,11 +115,10 @@ void Application::add_parameter(const std::string &key, std::string value) {
 }
 
 void Application::add_stream(std::istream &stream) {
-  auto root = Json{stream};
   if (m_json) {
-    m_json->setOverrides(root);
+    m_json.update(Json::loadFrom(stream));
   } else {
-    m_json = std::make_shared<Json>(std::move(root));
+    m_json = Json::loadFrom(stream);
   }
 }
 void Application::startTime() { m_startTime = clock(); }

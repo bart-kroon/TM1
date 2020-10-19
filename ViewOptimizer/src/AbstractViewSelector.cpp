@@ -41,7 +41,7 @@
 namespace TMIV::ViewOptimizer {
 AbstractViewSelector::AbstractViewSelector(const Common::Json & /* rootNode */,
                                            const Common::Json &componentNode)
-    : m_outputAdditionalViews{componentNode.require("outputAdditionalViews").asBool()} {}
+    : m_outputAdditionalViews{componentNode.require("outputAdditionalViews").as<bool>()} {}
 
 auto AbstractViewSelector::optimizeParams(MivBitstream::EncoderParams params)
     -> const MivBitstream::EncoderParams & {

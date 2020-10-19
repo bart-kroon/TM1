@@ -47,7 +47,7 @@ auto haveTexture(const Common::Json &config) { return !config.optional("noTextur
 
 // check if explicit occupancy coding mode
 auto explicitOccupancy(const Common::Json &config) {
-  return config.require("explicitOccupancy").asBool();
+  return config.require("explicitOccupancy").as<bool>();
 }
 } // namespace
 
@@ -60,35 +60,35 @@ auto loadSourceParams(const Common::Json &config) -> MivBitstream::EncoderParams
   if (!stream.good()) {
     throw std::runtime_error("Failed to load source camera parameters\n" + viewPath);
   }
-  const auto sequenceConfig = Common::Json{stream};
+  const auto sequenceConfig = Common::Json::loadFrom(stream);
 
   x.viewParamsList = MivBitstream::ViewParamsList::loadFromJson(
-      sequenceConfig.require("cameras"), config.require("SourceCameraNames").asStringVector());
+      sequenceConfig.require("cameras"),
+      config.require("SourceCameraNames").asVector<std::string>());
 
-  if (config.isPresent("depthLowQualityFlag")) {
-    auto node = config.optional("depthLowQualityFlag");
-    x.vme().vme_depth_low_quality_flag(node.asBool());
+  if (const auto &node = config.optional("depthLowQualityFlag")) {
+    x.vme().vme_depth_low_quality_flag(node.as<bool>());
   }
 
-  const auto numGroups = static_cast<unsigned>(config.require("numGroups").asInt());
+  const auto numGroups = static_cast<unsigned>(config.require("numGroups").as<int>());
   if (numGroups < 1) {
     throw std::runtime_error("Require numGroups >= 1");
   }
   x.vme().vme_num_groups_minus1(numGroups - 1U);
 
-  const auto maxEntities = static_cast<unsigned>(config.require("maxEntities").asInt());
+  const auto maxEntities = static_cast<unsigned>(config.require("maxEntities").as<int>());
   if (maxEntities < 1) {
     throw std::runtime_error("Require maxEntities >= 1");
   }
   x.vme().vme_max_entities_minus1(maxEntities - 1U);
 
-  if (auto subnode = config.optional("ViewingSpace"); subnode) {
+  if (const auto &subnode = config.optional("ViewingSpace")) {
     x.viewingSpace = MivBitstream::ViewingSpace::loadFromJson(subnode, config);
   }
 
-  x.frameRate = sequenceConfig.require("Fps").asDouble();
+  x.frameRate = sequenceConfig.require("Fps").as<double>();
 
-  if (config.require("OmafV1CompatibleFlag").asBool()) {
+  if (config.require("OmafV1CompatibleFlag").as<bool>()) {
     x.aaps.aaps_miv_extension_present_flag(true).aaps_miv_extension().aame_omaf_v1_compatible_flag(
         true);
   }
@@ -131,7 +131,7 @@ auto loadSourceDepth_(int bits, const Common::Json &config, const Common::Vec2i 
 
 auto loadSourceDepth(const Common::Json &config, const Common::Vec2i &size,
                      const std::string &viewName, int frameIndex) {
-  const auto bits = config.require("SourceGeometryBitDepth").asInt();
+  const auto bits = config.require("SourceGeometryBitDepth").as<int>();
 
   if (0 < bits && bits <= 8) {
     return loadSourceDepth_<Common::YUV400P8>(bits, config, size, viewName, frameIndex);
@@ -161,8 +161,8 @@ auto loadSourceEntities_(const Common::Json &config, const Common::Vec2i size,
 
 auto loadSourceEntities(const Common::Json &config, const Common::Vec2i size,
                         const std::string &viewName, int frameIndex) {
-  if (auto node = config.optional("SourceEntityBitDepth"); node) {
-    const auto bits = node.asInt();
+  if (const auto &node = config.optional("SourceEntityBitDepth")) {
+    const auto bits = node.as<int>();
     if (0 < bits && bits <= 8) {
       return loadSourceEntities_<Common::YUV400P8>(config, size, viewName, frameIndex);
     }
@@ -179,9 +179,9 @@ auto loadSourceFrame(const Common::Json &config, const Common::SizeVector &sizes
     -> Common::MVD16Frame {
   auto frame = Common::MVD16Frame(sizes.size());
 
-  frameIndex += config.require("startFrame").asInt();
+  frameIndex += config.require("startFrame").as<int>();
 
-  const auto viewNames = config.require("SourceCameraNames").asStringVector();
+  const auto viewNames = config.require("SourceCameraNames").asVector<std::string>();
   assert(viewNames.size() == sizes.size());
 
   for (size_t viewId = 0; viewId < frame.size(); ++viewId) {
@@ -282,10 +282,10 @@ auto loadViewportMetadata(const Common::Json &config, int frameIndex) -> MivBits
     throw std::runtime_error("Failed to load camera parameters\n " + cameraPath);
   }
 
-  auto outputviewName = config.require("OutputCameraName").asString();
+  auto outputviewName = config.require("OutputCameraName").as<std::string>();
 
   auto viewParamsList = MivBitstream::ViewParamsList::loadFromJson(
-      Common::Json{stream}.require("cameras"), {outputviewName});
+      Common::Json::loadFrom(stream).require("cameras"), {outputviewName});
 
   if (viewParamsList.empty()) {
     throw std::runtime_error("Unknown OutputCameraName " + outputviewName);
@@ -296,7 +296,7 @@ auto loadViewportMetadata(const Common::Json &config, int frameIndex) -> MivBits
   // The result may have invalid depth values
   result.hasOccupancy = true;
 
-  if (auto nodeOutputCameraPoseTrace = config.optional("PoseTracePath")) {
+  if (config.optional("PoseTracePath")) {
     std::string poseTracePath = getFullPath(config, "SourceDirectory", "PoseTracePath");
     std::ifstream stream{poseTracePath};
 

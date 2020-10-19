@@ -375,7 +375,7 @@ void MivEncoder::writeV3cUnit(MivBitstream::VuhUnitType vut, MivBitstream::Atlas
 
 template <typename Payload, typename... Args>
 void MivEncoder::writeNalUnit(MivBitstream::AtlasSubBitstream &asb, MivBitstream::NalUnitHeader nuh,
-                              Payload &&payload, Args &&... args) {
+                              Payload &&payload, Args &&...args) {
   std::ostringstream substream1;
   payload.encodeTo(substream1, std::forward<Args>(args)...);
   asb.nal_units().emplace_back(nuh, substream1.str());

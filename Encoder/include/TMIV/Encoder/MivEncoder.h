@@ -65,7 +65,7 @@ private:
                     Payload &&payload);
   template <typename Payload, typename... Args>
   void writeNalUnit(MivBitstream::AtlasSubBitstream &asb, MivBitstream::NalUnitHeader nuh,
-                    Payload &&payload, Args &&... args);
+                    Payload &&payload, Args &&...args);
 
   std::ostream &m_stream;
   MivBitstream::SampleStreamV3cHeader m_ssvh{2};

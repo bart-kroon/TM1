@@ -39,6 +39,7 @@
 #include <TMIV/MivBitstream/AtlasTileLayerRBSP.h>
 #include <TMIV/MivBitstream/CommonAtlasFrameRBSP.h>
 #include <TMIV/MivBitstream/GeometryUpscalingParameters.h>
+#include <TMIV/MivBitstream/PackedIndependentRegions.h>
 #include <TMIV/MivBitstream/RecViewport.h>
 #include <TMIV/MivBitstream/SceneObjectInformation.h>
 #include <TMIV/MivBitstream/SeiRBSP.h>
@@ -192,34 +193,21 @@ public:
     TMIV::Common::InputBitstream bitstream{stream};
 
     switch (message.payloadType()) {
-    case TMIV::MivBitstream::PayloadType::viewing_space_handling:
-      return parseViewingSpaceHandlingSei(bitstream);
-    case TMIV::MivBitstream::PayloadType::rec_viewport:
-      return parseRecViewportSei(bitstream);
-    case TMIV::MivBitstream::PayloadType::geometry_upscaling_parameters:
-      return parseGeometryUpscalingParametersSei(bitstream);
     case TMIV::MivBitstream::PayloadType::atlas_object_association:
       return parseAtlasObjectAssociationSei(bitstream);
+    case TMIV::MivBitstream::PayloadType::geometry_upscaling_parameters:
+      return parseGeometryUpscalingParametersSei(bitstream);
+    case TMIV::MivBitstream::PayloadType::packed_independent_regions:
+      return parsePackedIndependentRegionSei(bitstream);
+    case TMIV::MivBitstream::PayloadType::rec_viewport:
+      return parseRecViewportSei(bitstream);
     case TMIV::MivBitstream::PayloadType::scene_object_information:
       return parseSceneObjectInformationSei(bitstream);
+    case TMIV::MivBitstream::PayloadType::viewing_space_handling:
+      return parseViewingSpaceHandlingSei(bitstream);
     default:
       std::cout << "Unknown SEI message:\n" << message;
     }
-  }
-
-  void parseViewingSpaceHandlingSei(TMIV::Common::InputBitstream &bitstream) {
-    const auto vsh = TMIV::MivBitstream::ViewingSpaceHandling::decodeFrom(bitstream);
-    m_log << vsh;
-  }
-
-  void parseRecViewportSei(TMIV::Common::InputBitstream &bitstream) {
-    const auto rv = TMIV::MivBitstream::RecViewport::decodeFrom(bitstream);
-    m_log << rv;
-  }
-
-  void parseGeometryUpscalingParametersSei(TMIV::Common::InputBitstream &bitstream) {
-    const auto gup = TMIV::MivBitstream::GeometryUpscalingParameters::decodeFrom(bitstream);
-    m_log << gup;
   }
 
   void parseAtlasObjectAssociationSei(TMIV::Common::InputBitstream &bitstream) {
@@ -227,9 +215,29 @@ public:
     m_log << aoa;
   }
 
+  void parseGeometryUpscalingParametersSei(TMIV::Common::InputBitstream &bitstream) {
+    const auto gup = TMIV::MivBitstream::GeometryUpscalingParameters::decodeFrom(bitstream);
+    m_log << gup;
+  }
+
+  void parsePackedIndependentRegionSei(TMIV::Common::InputBitstream &bitstream) {
+    const auto pir = TMIV::MivBitstream::PackedIndependentRegions::decodeFrom(bitstream);
+    m_log << pir;
+  }
+
+  void parseRecViewportSei(TMIV::Common::InputBitstream &bitstream) {
+    const auto rv = TMIV::MivBitstream::RecViewport::decodeFrom(bitstream);
+    m_log << rv;
+  }
+
   void parseSceneObjectInformationSei(TMIV::Common::InputBitstream &bitstream) {
     const auto soi = TMIV::MivBitstream::SceneObjectInformation::decodeFrom(bitstream);
     m_log << soi;
+  }
+
+  void parseViewingSpaceHandlingSei(TMIV::Common::InputBitstream &bitstream) {
+    const auto vsh = TMIV::MivBitstream::ViewingSpaceHandling::decodeFrom(bitstream);
+    m_log << vsh;
   }
 
 private:

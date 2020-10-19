@@ -37,7 +37,6 @@
 #include <TMIV/GeometryQuantizer/GeometryQuantizer.h>
 
 #include <TMIV/Common/Common.h>
-#include <TMIV/MivBitstream/MivDecoderMode.h>
 
 namespace TMIV::GeometryQuantizer {
 SCENARIO("Geometry quantization") {

@@ -36,7 +36,7 @@
 #include <TMIV/Common/Common.h>
 #include <TMIV/ViewingSpace/SignedDistance.h>
 
-#define _VERBOSE
+#define VERBOSE
 #include <fstream>
 #include <iostream>
 
@@ -237,7 +237,7 @@ auto interpolateShape(const MivBitstream::PrimitiveShape a, const MivBitstream::
     Common::Vec3f rb = std::get<MivBitstream::Spheroid>(b.primitive).radius;
     std::get<MivBitstream::Spheroid>(output.primitive).radius = (1.F - w) * ra + w * rb;
     std::get<MivBitstream::Spheroid>(output.primitive).center = center;
-#ifdef _VERBOSE
+#ifdef VERBOSE
     std::cout << "interpolated shape:" << std::endl;
     std::cout << "  center = " << center << std::endl;
     std::cout << "  radius = " << std::get<MivBitstream::Spheroid>(output.primitive).radius
@@ -254,20 +254,20 @@ auto interpolateShape(const MivBitstream::PrimitiveShape a, const MivBitstream::
   const auto rota = a.rotation.value_or(Common::QuatF{0.F, 0.F, 0.F, 1.F});
   const auto rotb = b.rotation.value_or(Common::QuatF{0.F, 0.F, 0.F, 1.F});
   output.rotation = (1. - w) * rota + w * rotb;
-#ifdef _VERBOSE
+#ifdef VERBOSE
   std::cout << "  rotation = " << output.rotation.value() << std::endl;
 #endif
   // guard band size
   const float gba = a.guardBandSize.value_or(0.F);
   const float gbb = b.guardBandSize.value_or(0.F);
   output.guardBandSize = (1.F - w) * gba + w * gbb;
-#ifdef _VERBOSE
+#ifdef VERBOSE
   std::cout << "  guard band = " << output.guardBandSize.value() << std::endl;
 #endif
   // viewing direction constraint
   output.viewingDirectionConstraint =
       blend(a.viewingDirectionConstraint.value(), b.viewingDirectionConstraint.value(), w);
-#ifdef _VERBOSE
+#ifdef VERBOSE
   std::cout << "  direction rotation = "
             << output.viewingDirectionConstraint.value().directionRotation << std::endl
             << "  yaw range = " << output.viewingDirectionConstraint.value().yawRange << std::endl
@@ -278,7 +278,7 @@ auto interpolateShape(const MivBitstream::PrimitiveShape a, const MivBitstream::
   const float vgba = a.viewingDirectionConstraint.value().guardBandDirectionSize.value_or(0.F);
   const float vgbb = b.viewingDirectionConstraint.value().guardBandDirectionSize.value_or(0.F);
   output.viewingDirectionConstraint.value().guardBandDirectionSize = (1.F - w) * vgba + w * vgbb;
-#ifdef _VERBOSE
+#ifdef VERBOSE
   std::cout << "  viewing direction guard band = "
             << output.viewingDirectionConstraint.value().guardBandDirectionSize.value()
             << std::endl;
@@ -340,7 +340,7 @@ static auto evaluateInterpolation(const MivBitstream::PrimitiveShapeVector &prim
     Common::Vec3f n_start({bisect[start][0], bisect[start][1], bisect[start][2]});
     Common::Vec3f n_end({bisect[end][0], bisect[end][1], bisect[end][2]});
     Common::Vec3f n_proj = w * n_end + (1 - w) * n_start;
-#ifdef _VERBOSE
+#ifdef VERBOSE
     std::cout << "segment <" << start << "," << end << "> ";
     std::cout << "weight = " << w << std::endl;
 #endif
@@ -356,7 +356,7 @@ static auto evaluateInterpolation(const MivBitstream::PrimitiveShapeVector &prim
   } else {
     result = evaluate(primitives[0], viewingParams);
   }
-#ifdef _VERBOSE
+#ifdef VERBOSE
   std::cout << "signed distance = " << result.sdBoundary.value << std::endl;
   std::cout << "signed distance + guard band = " << result.sdGuardBand.value << std::endl;
   std::cout << "isInside = " << result.sdBoundary.isInside() << std::endl;
@@ -448,7 +448,7 @@ auto ViewingSpaceEvaluator::computeInclusion(const MivBitstream::ViewingSpace &v
       angleInclusion(vpd.pitch - dcd.pitch, dc.pitchRange, dc.guardBandDirectionSize.value_or(0.F));
   const float result = kPosition * kYaw * kPitch;
 
-#ifdef _VERBOSE
+#ifdef VERBOSE
   std::cout << "kPosition = " << kPosition << std::endl;
   if (kPosition != 0.F) {
     std::cout << "kYaw = " << kYaw << std::endl;

@@ -96,8 +96,8 @@ public:
   explicit Json(const T &value);
 
   // In-place value constructors
-  template <typename... Args> explicit Json(std::in_place_type_t<Object> tag, Args &&... args);
-  template <typename... Args> explicit Json(std::in_place_type_t<Array> tag, Args &&... args);
+  template <typename... Args> explicit Json(std::in_place_type_t<Object> tag, Args &&...args);
+  template <typename... Args> explicit Json(std::in_place_type_t<Array> tag, Args &&...args);
 
   // Converting assignment operators
   auto operator=(bool value) -> Json &;
@@ -155,11 +155,11 @@ public:
 
   // Copy JSON array of unknown length to std::vector<T> for given type T
   //  * When this node is not a JSON array, throws a `std::runtime_error`.
-  template <typename T>[[nodiscard]] auto asVector() const -> std::vector<T>;
+  template <typename T> [[nodiscard]] auto asVector() const -> std::vector<T>;
 
   // Copy JSON array of known length M to a stack::Vector<T, M> for given type T and M
   //  * When this node is not a JSON array, throws a `std::runtime_error`.
-  template <typename T, std::size_t M>[[nodiscard]] auto asVec() const -> stack::Vector<T, M>;
+  template <typename T, std::size_t M> [[nodiscard]] auto asVec() const -> stack::Vector<T, M>;
 };
 } // namespace TMIV::Common
 

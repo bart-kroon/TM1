@@ -64,11 +64,11 @@ template <typename T, typename> Json::Json(const T &value) {
 }
 
 template <typename... Args>
-Json::Json(std::in_place_type_t<Object> /* tag */, Args &&... args)
+Json::Json(std::in_place_type_t<Object> /* tag */, Args &&...args)
     : m_node{Object{std::forward<Args>(args)...}} {}
 
 template <typename... Args>
-Json::Json(std::in_place_type_t<Array> /* tag */, Args &&... args)
+Json::Json(std::in_place_type_t<Array> /* tag */, Args &&...args)
     : m_node{Array{std::forward<Args>(args)...}} {}
 
 inline auto Json::operator=(bool value) -> Json & {

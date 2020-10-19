@@ -401,22 +401,15 @@ private:
   std::vector<DepthQuantization> m_depth_quantization;
 };
 
-// 23090-12: ap_miv_view_params_list_update_mode
-enum class MvpUpdateMode : std::uint8_t {
-  VPL_INITLIST,
-  VPL_UPD_EXT,
-  VPL_UPD_INT,
-  VPL_UPD_DQ,
-  VPL_ALL
-};
-auto operator<<(std::ostream &stream, const MvpUpdateMode x) -> std::ostream &;
-
 // 23090-12: common_atlas_frame_rbsp( )
 class CommonAtlasFrameRBSP {
 public:
   [[nodiscard]] constexpr auto caf_atlas_adaptation_parameter_set_id() const noexcept;
   [[nodiscard]] constexpr auto caf_frm_order_cnt_lsb() const noexcept;
-  [[nodiscard]] constexpr auto caf_miv_view_params_list_update_mode() const noexcept;
+  [[nodiscard]] constexpr auto caf_irap_flag() const noexcept;
+  [[nodiscard]] auto caf_update_extrinsics_flag() const noexcept -> bool;
+  [[nodiscard]] auto caf_update_intrinsics_flag() const noexcept -> bool;
+  [[nodiscard]] auto caf_update_depth_quantization_flag() const noexcept -> bool;
   [[nodiscard]] auto miv_view_params_list() const noexcept -> const MivViewParamsList &;
   [[nodiscard]] auto miv_view_params_update_extrinsics() const noexcept
       -> const MivViewParamsUpdateExtrinsics &;
@@ -430,7 +423,10 @@ public:
 
   constexpr auto caf_atlas_adaptation_parameter_set_id(std::uint8_t value) noexcept -> auto &;
   constexpr auto caf_frm_order_cnt_lsb(std::uint16_t value) noexcept -> auto &;
-  constexpr auto caf_miv_view_params_list_update_mode(MvpUpdateMode value) noexcept -> auto &;
+  constexpr auto caf_irap_flag(bool value) noexcept -> auto &;
+  auto caf_update_extrinsics_flag(bool value) noexcept -> CommonAtlasFrameRBSP &;
+  auto caf_update_intrinsics_flag(bool value) noexcept -> CommonAtlasFrameRBSP &;
+  auto caf_update_depth_quantization_flag(bool value) noexcept -> CommonAtlasFrameRBSP &;
   [[nodiscard]] auto miv_view_params_list() noexcept -> MivViewParamsList &;
   [[nodiscard]] auto miv_view_params_update_extrinsics() noexcept
       -> MivViewParamsUpdateExtrinsics &;
@@ -456,7 +452,10 @@ public:
 private:
   std::uint8_t m_caf_atlas_adaptation_parameter_set_id{};
   std::uint16_t m_caf_frm_order_cnt_lsb{};
-  MvpUpdateMode m_caf_miv_view_params_list_update_mode{};
+  bool m_caf_irap_flag{true};
+  bool m_caf_update_extrinsics_flag{};
+  bool m_caf_update_intrinsics_flag{};
+  bool m_caf_update_depth_quantization_flag{};
   std::optional<MivViewParamsList> m_miv_view_params_list;
   std::optional<MivViewParamsUpdateExtrinsics> m_miv_view_params_update_extrinsics;
   std::optional<MivViewParamsUpdateIntrinsics> m_miv_view_params_update_intrinsics;

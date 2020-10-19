@@ -50,31 +50,16 @@ aaps_extension_present_flag=false
     x.aaps_atlas_adaptation_parameter_set_id(63)
         .aaps_log2_max_afoc_present_flag(true)
         .aaps_log2_max_atlas_frame_order_cnt_lsb_minus4(12)
-        .aaps_extension_present_flag(true)
-        .aaps_vpcc_extension_present_flag(true)
-        .aaps_vpcc_extension({})
-        .aaps_miv_extension_present_flag(true)
-        .aaps_extension_6bits(63)
-        .aapsExtensionData({true})
-        .aaps_miv_extension()
-        .aame_omaf_v1_compatible_flag(false);
+        .aaps_extension_present_flag(false);
 
     REQUIRE(toString(x) == R"(aaps_atlas_adaptation_parameter_set_id=63
 aaps_log2_max_afoc_present_flag=true
 aaps_log2_max_atlas_frame_order_cnt_lsb_minus4=12
-aaps_extension_present_flag=true
-aaps_vpcc_extension_present_flag=true
-aaps_miv_extension_present_flag=true
-aaps_extension_6bits=63
-aaps_vpcc_camera_parameters_present_flag=false
-aame_omaf_v1_compatible_flag=false
-aame_vui_params_present_flag=false
-aaps_extension_data_flag=true
+aaps_extension_present_flag=false
 )");
 
-    REQUIRE(byteCodingTest(x, 5));
+    REQUIRE(byteCodingTest(x, 3));
   }
-
   SECTION("Example 2") {
     x.aaps_atlas_adaptation_parameter_set_id(63)
         .aaps_log2_max_afoc_present_flag(true)
@@ -82,34 +67,20 @@ aaps_extension_data_flag=true
         .aaps_extension_present_flag(true)
         .aaps_vpcc_extension_present_flag(true)
         .aaps_vpcc_extension({})
-        .aaps_miv_extension_present_flag(true)
-        .aaps_extension_6bits(63)
-        .aapsExtensionData({true})
-        .aaps_miv_extension()
-        .aame_omaf_v1_compatible_flag(true)
-        .aame_vui_params_present_flag(true)
-        .vui_parameters({});
+        .aaps_extension_7bits(127)
+        .aapsExtensionData({true});
 
     REQUIRE(toString(x) == R"(aaps_atlas_adaptation_parameter_set_id=63
 aaps_log2_max_afoc_present_flag=true
 aaps_log2_max_atlas_frame_order_cnt_lsb_minus4=12
 aaps_extension_present_flag=true
 aaps_vpcc_extension_present_flag=true
-aaps_miv_extension_present_flag=true
-aaps_extension_6bits=63
+aaps_extension_7bits=127
 aaps_vpcc_camera_parameters_present_flag=false
-aame_omaf_v1_compatible_flag=true
-aame_vui_params_present_flag=true
-vui_timing_info_present_flag=false
-vui_bitstream_restriction_present_flag=false
-vui_coordinate_system_parameters_present_flag=false
-vui_unit_in_metres_flag=false
-vui_display_box_info_present_flag=false
-vui_anchor_point_present_flag=false
 aaps_extension_data_flag=true
 )");
 
-    REQUIRE(byteCodingTest(x, 6));
+    REQUIRE(byteCodingTest(x, 5));
   }
 }
 } // namespace TMIV::MivBitstream

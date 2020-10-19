@@ -31,54 +31,27 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_MIVBITSTREAM_ATLASADAPTATIONPARAMETERSETRBSP_H_
+#ifndef _TMIV_MIVBITSTREAM_COMMONATLASSEQUENCEPARAMETERSETRBSP_H_
 #error "Include the .h, not the .hpp"
 #endif
 
 namespace TMIV::MivBitstream {
-constexpr auto AapsVpccExtension::operator==(const AapsVpccExtension & /* other */) const noexcept {
-  return true;
-}
-constexpr auto AapsVpccExtension::operator!=(const AapsVpccExtension & /* other */) const noexcept {
-  return false;
+constexpr auto CaspsMivExtension::casme_omaf_v1_compatible_flag() const noexcept {
+  return m_casme_omaf_v1_compatible_flag;
 }
 
-constexpr auto
-AtlasAdaptationParameterSetRBSP::aaps_atlas_adaptation_parameter_set_id() const noexcept {
-  return m_aaps_atlas_adaptation_parameter_set_id;
+constexpr auto CaspsMivExtension::casme_vui_params_present_flag() const noexcept {
+  return m_casme_vui_params_present_flag;
 }
 
-constexpr auto AtlasAdaptationParameterSetRBSP::aaps_log2_max_afoc_present_flag() const noexcept {
-  return m_aaps_log2_max_afoc_present_flag;
-}
-
-constexpr auto AtlasAdaptationParameterSetRBSP::aaps_extension_present_flag() const noexcept {
-  return m_aaps_extension_present_flag;
-}
-
-constexpr auto AtlasAdaptationParameterSetRBSP::aaps_vpcc_extension_present_flag() const noexcept {
-  return m_aaps_vpcc_extension_present_flag.value_or(false);
-}
-
-constexpr auto AtlasAdaptationParameterSetRBSP::aaps_extension_7bits() const noexcept {
-  return m_aaps_extension_7bits.value_or(0);
-}
-
-constexpr auto AtlasAdaptationParameterSetRBSP::aaps_atlas_adaptation_parameter_set_id(
-    const std::uint8_t value) noexcept -> auto & {
-  m_aaps_atlas_adaptation_parameter_set_id = value;
+constexpr auto CaspsMivExtension::casme_omaf_v1_compatible_flag(bool value) noexcept -> auto & {
+  m_casme_omaf_v1_compatible_flag = value;
   return *this;
 }
 
-constexpr auto AtlasAdaptationParameterSetRBSP::aaps_log2_max_afoc_present_flag(bool value) noexcept
-    -> auto & {
-  m_aaps_log2_max_afoc_present_flag = value;
+constexpr auto CaspsMivExtension::casme_vui_params_present_flag(bool value) noexcept -> auto & {
+  m_casme_vui_params_present_flag = value;
   return *this;
 }
 
-constexpr auto AtlasAdaptationParameterSetRBSP::aaps_extension_present_flag(bool value) noexcept
-    -> auto & {
-  m_aaps_extension_present_flag = value;
-  return *this;
-}
 } // namespace TMIV::MivBitstream

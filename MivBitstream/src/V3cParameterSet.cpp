@@ -633,7 +633,7 @@ auto PackingInformation::pin_region_attr_partitions_minus1(std::size_t i) const 
 
 // TODO(christoph_bachhuber) extract this method to common
 template <typename T>
-auto putTwiceIndexedField(std::ostream &stream, const AtlasId &j, unsigned i,
+auto putTwiceIndexedField(std::ostream &stream, const AtlasId &j, std::size_t i,
                           const std::string &fieldName, T &&fieldValue) {
   stream << fieldName << "(" << j << "," << i << ")=";
   if constexpr (std::is_same_v<std::uint8_t, std::decay_t<T>>) {

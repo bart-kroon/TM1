@@ -37,7 +37,7 @@
 
 namespace TMIV::MivBitstream {
 TEST_CASE("packed_independent_regions", "[Packed Independent Regions SEI payload syntax]") {
-  std::size_t expected_number_of_bits = 5; // pir_num_packed_frames_minus1
+  auto expected_number_of_bits = 5; // pir_num_packed_frames_minus1
 
   SECTION("Default constructor") {
     const PackedIndependentRegions unit{};
@@ -60,19 +60,19 @@ pir_bottom_right_tile_idx(0,0)=0
 
   SECTION("Frames with tile and subpic regions") {
     PackedIndependentRegions unit{};
-    const std::size_t number_of_frames = 3;
+    const std::uint8_t number_of_frames = 3;
     unit.pir_num_packed_frames_minus1(number_of_frames - 1);
-    for (std::size_t j = 0; j < number_of_frames; ++j) {
-      unit.pir_packed_frame_id(j, number_of_frames - j - 1);
+    for (std::uint8_t j = 0; j < number_of_frames; ++j) {
+      unit.pir_packed_frame_id(j, static_cast<uint8_t>(number_of_frames - j - 1));
       const auto k = unit.pir_packed_frame_id(j);
       unit.pir_description_type_idc(k, k % 2);
       unit.pir_num_regions_minus1(k, k % 3);
-      for (std::size_t i = 0; i <= unit.pir_num_regions_minus1(k); ++i) {
+      for (std::uint8_t i = 0; i <= unit.pir_num_regions_minus1(k); ++i) {
         if (unit.pir_description_type_idc(k) == 0) {
-          unit.pir_top_left_tile_idx(k, i, (k + 1) * (i + 1));
-          unit.pir_bottom_right_tile_idx(k, i, (k + 2) * (i + 3));
+          unit.pir_top_left_tile_idx(k, i, (k + size_t{1}) * (i + size_t{1}));
+          unit.pir_bottom_right_tile_idx(k, i, (k + size_t{2}) * (i + size_t{3}));
         } else {
-          unit.pir_subpic_id(k, i, (k + 1) * (i + 1));
+          unit.pir_subpic_id(k, i, (k + size_t{1}) * (i + size_t{1}));
         }
       }
     }

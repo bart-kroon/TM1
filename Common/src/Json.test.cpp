@@ -242,8 +242,9 @@ TEST_CASE("Format a JSON") {
     REQUIRE(Json{INT64_MIN}.format() == "-9223372036854775808"s);
     REQUIRE(Json{INT64_MAX}.format() == "9223372036854775807"s);
     REQUIRE(Json{0.0}.format() == "0"s);
-    REQUIRE(Json{42E-002}.format() == "0.42"s);
+    REQUIRE(Json{42E-002}.format() == "0.41999999999999998"s);
     REQUIRE(Json{2.4E+3}.format() == "2400"s);
+    REQUIRE(Json{M_PI}.format() == "3.1415926535897931"s);
   }
 
   SECTION("array") {
@@ -251,7 +252,7 @@ TEST_CASE("Format a JSON") {
     REQUIRE(Json{std::in_place_type_t<Json::Array>{}, Json{4}}.format() == "[ 4 ]"s);
     REQUIRE(Json{std::in_place_type_t<Json::Array>{}, Json{4}, Json{2}}.format() == "[ 4, 2 ]"s);
     REQUIRE(Json{std::in_place_type_t<Json::Array>{}, Json{2}, Json{4.2}}.format() ==
-            "[ 2, 4.2 ]"s);
+            "[ 2, 4.2000000000000002 ]"s);
   }
 
   SECTION("object") {

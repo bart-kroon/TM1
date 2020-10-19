@@ -269,6 +269,7 @@ auto Json::loadFrom(std::istream &stream) -> Json {
 
 auto Json::format() const -> std::string {
   std::ostringstream stream;
+  stream.precision(std::numeric_limits<Json::Number>::max_digits10);
   saveTo(stream);
   return stream.str();
 }
@@ -289,8 +290,8 @@ auto saveValue(std::tuple<Json::Number> /* tag */, std::ostream &stream, Json::N
   return stream << value;
 }
 
-auto saveValue(const std::tuple<std::string>& /* tag */, std::ostream &stream, const std::string &value,
-               int /* level */) -> std::ostream & {
+auto saveValue(const std::tuple<std::string> & /* tag */, std::ostream &stream,
+               const std::string &value, int /* level */) -> std::ostream & {
   stream << '"';
   for (const auto ch : value) {
     if (ch == '"') {
@@ -316,8 +317,8 @@ auto saveValue(const std::tuple<std::string>& /* tag */, std::ostream &stream, c
   return stream << '"';
 }
 
-auto saveValue(const std::tuple<Json::Object>& /* tag */, std::ostream &stream, const Json::Object &object,
-               int level) -> std::ostream & {
+auto saveValue(const std::tuple<Json::Object> & /* tag */, std::ostream &stream,
+               const Json::Object &object, int level) -> std::ostream & {
   if (object.empty()) {
     return stream << "{ }";
   }
@@ -332,8 +333,8 @@ auto saveValue(const std::tuple<Json::Object>& /* tag */, std::ostream &stream, 
   return stream << "\n" << indent << '}';
 }
 
-auto saveValue(const std::tuple<Json::Array>& /* tag */, std::ostream &stream, const Json::Array &array,
-               int level) -> std::ostream & {
+auto saveValue(const std::tuple<Json::Array> & /* tag */, std::ostream &stream,
+               const Json::Array &array, int level) -> std::ostream & {
   stream << '[';
   auto sep = " "sv;
   for (const auto &value : array) {

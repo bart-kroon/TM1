@@ -862,7 +862,7 @@ private:
       int x = static_cast<int>(std::floor(p.first.x()));
       int y = static_cast<int>(std::floor(p.first.y()));
 
-      return std::any_of(offsetList.cbegin(), offsetList.cend(), [&] (const auto & offset) {
+      return std::any_of(offsetList.cbegin(), offsetList.cend(), [&](const auto &offset) {
         int xo = std::clamp(x + offset.x(), 0, w_last);
         int yo = std::clamp(y + offset.y(), 0, h_last);
 
@@ -871,7 +871,7 @@ private:
         if (!sourceHelperList[sourceId].isValidDepth(z)) {
           return true;
         }
-        
+
         auto OQ = m_sourceRayDirection[sourceId](yo, xo);
         return 2.F * m_cameraDistortion[sourceId] < std::abs(std::acos(dot(OP, OQ)));
       });

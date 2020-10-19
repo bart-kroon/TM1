@@ -842,8 +842,10 @@ auto operator<<(std::ostream &stream, const CommonAtlasFrameRBSP &x) -> std::ost
   if (x.caf_irap_flag()) {
     stream << x.miv_view_params_list();
   } else {
-    stream << "caf_update_extrinsics_flag=" << std::boolalpha << x.caf_update_extrinsics_flag() << '\n';
-    stream << "caf_update_intrinsics_flag=" << std::boolalpha << x.caf_update_intrinsics_flag() << '\n';
+    stream << "caf_update_extrinsics_flag=" << std::boolalpha << x.caf_update_extrinsics_flag()
+           << '\n';
+    stream << "caf_update_intrinsics_flag=" << std::boolalpha << x.caf_update_intrinsics_flag()
+           << '\n';
     stream << "caf_update_depth_quantization_flag=" << std::boolalpha
            << x.caf_update_depth_quantization_flag() << '\n';
     if (x.caf_update_extrinsics_flag()) {

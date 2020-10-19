@@ -61,4 +61,15 @@ vui_anchor_point_present_flag=false
     REQUIRE(bitCodingTest(unit, 8));
   }
 }
+TEST_CASE("common_atlas_sequence_parameter_set_rbsp",
+          "[Common Atlas Sequence Parameter Set RBSP]") {
+  SECTION("Default Constructor") {
+    const CommonAtlasSequenceParameterSetRBSP unit{};
+    REQUIRE(toString(unit) == R"(casps_common_atlas_sequence_parameter_set_id=0
+casps_log2_max_common_atlas_frame_order_cnt_lsb_minus4=0
+casps_extension_present_flag=false
+)");
+    REQUIRE(bitCodingTest(unit, 6));
+  }
+}
 } // namespace TMIV::MivBitstream

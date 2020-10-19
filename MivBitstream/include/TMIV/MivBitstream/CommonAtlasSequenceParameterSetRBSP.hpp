@@ -54,4 +54,35 @@ constexpr auto CaspsMivExtension::casme_vui_params_present_flag(bool value) noex
   return *this;
 }
 
+constexpr auto
+CommonAtlasSequenceParameterSetRBSP::casps_common_atlas_sequence_parameter_set_id() const noexcept {
+  return m_casps_common_atlas_sequence_parameter_set_id;
+}
+
+constexpr auto
+CommonAtlasSequenceParameterSetRBSP::casps_log2_max_common_atlas_frame_order_cnt_lsb_minus4()
+    const noexcept {
+  return m_casps_log2_max_common_atlas_frame_order_cnt_lsb_minus4;
+}
+
+constexpr auto CommonAtlasSequenceParameterSetRBSP::casps_extension_present_flag() const noexcept {
+  return m_casps_extension_present_flag;
+}
+
+constexpr auto CommonAtlasSequenceParameterSetRBSP::casps_common_atlas_sequence_parameter_set_id(
+    std::uint8_t value) noexcept -> auto & {
+  m_casps_common_atlas_sequence_parameter_set_id = value;
+  return *this;
+}
+constexpr auto
+CommonAtlasSequenceParameterSetRBSP::casps_log2_max_common_atlas_frame_order_cnt_lsb_minus4(
+    std::size_t value) noexcept -> auto & {
+  m_casps_log2_max_common_atlas_frame_order_cnt_lsb_minus4 = value;
+  return *this;
+}
+constexpr auto CommonAtlasSequenceParameterSetRBSP::casps_extension_present_flag(bool flag) noexcept
+    -> auto & {
+  m_casps_extension_present_flag = flag;
+  return *this;
+}
 } // namespace TMIV::MivBitstream

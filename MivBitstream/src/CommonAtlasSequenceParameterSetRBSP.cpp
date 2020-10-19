@@ -84,4 +84,57 @@ void CaspsMivExtension::encodeTo(Common::OutputBitstream &bitstream) const {
   }
 }
 
+// TODO (CB) extract this method to common
+template <typename T>
+auto putField(std::ostream &stream, const std::string &fieldName, T &&fieldValue) {
+  stream << fieldName << "=";
+  if constexpr (std::is_same_v<std::uint8_t, std::decay_t<T>>) {
+    stream << static_cast<unsigned>(fieldValue) << "\n";
+  } else if (std::is_same_v<bool, std::decay_t<T>>) {
+    stream << std::boolalpha << fieldValue << "\n";
+  } else {
+    stream << fieldValue << "\n";
+  }
+}
+
+auto operator<<(std::ostream &stream, const CommonAtlasSequenceParameterSetRBSP &x)
+    -> std::ostream & {
+  putField(stream, "casps_common_atlas_sequence_parameter_set_id",
+           x.casps_common_atlas_sequence_parameter_set_id());
+  putField(stream, "casps_log2_max_common_atlas_frame_order_cnt_lsb_minus4",
+           x.casps_log2_max_common_atlas_frame_order_cnt_lsb_minus4());
+  putField(stream, "casps_extension_present_flag", x.casps_extension_present_flag());
+  return stream;
+}
+
+auto CommonAtlasSequenceParameterSetRBSP::operator==(
+    const CommonAtlasSequenceParameterSetRBSP &other) const noexcept -> bool {
+  return (m_casps_common_atlas_sequence_parameter_set_id ==
+          other.m_casps_common_atlas_sequence_parameter_set_id) &&
+         (m_casps_log2_max_common_atlas_frame_order_cnt_lsb_minus4 ==
+          other.m_casps_log2_max_common_atlas_frame_order_cnt_lsb_minus4) &&
+         (m_casps_extension_present_flag == other.m_casps_extension_present_flag);
+}
+
+auto CommonAtlasSequenceParameterSetRBSP::operator!=(
+    const CommonAtlasSequenceParameterSetRBSP &other) const noexcept -> bool {
+  return !operator==(other);
+}
+
+auto CommonAtlasSequenceParameterSetRBSP::decodeFrom(Common::InputBitstream &bitstream)
+    -> CommonAtlasSequenceParameterSetRBSP {
+  CommonAtlasSequenceParameterSetRBSP result{};
+  result.casps_common_atlas_sequence_parameter_set_id(bitstream.readBits<std::uint8_t>(4));
+  result.casps_log2_max_common_atlas_frame_order_cnt_lsb_minus4(
+      bitstream.getUExpGolomb<std::size_t>());
+  result.casps_extension_present_flag(bitstream.getFlag());
+  return result;
+}
+
+void CommonAtlasSequenceParameterSetRBSP::encodeTo(Common::OutputBitstream &stream) const {
+  stream.writeBits(casps_common_atlas_sequence_parameter_set_id(), 4);
+  stream.putUExpGolomb(casps_log2_max_common_atlas_frame_order_cnt_lsb_minus4());
+  stream.putFlag(casps_extension_present_flag());
+}
+
 } // namespace TMIV::MivBitstream

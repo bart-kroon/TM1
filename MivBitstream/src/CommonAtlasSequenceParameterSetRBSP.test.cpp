@@ -36,6 +36,29 @@
 
 namespace TMIV::MivBitstream {
 TEST_CASE("casps_miv_extension", "[Common Atlas Sequence Parameter Set RBSP]") {
-  SECTION("Default constructor") { REQUIRE(true); }
+  SECTION("Default constructor") {
+    const CaspsMivExtension unit{};
+    REQUIRE(toString(unit) == R"(casme_omaf_v1_compatible_flag=false
+casme_vui_params_present_flag=false
+)");
+
+    REQUIRE(bitCodingTest(unit, 2));
+  }
+
+  SECTION("Include default VUI Parameters") {
+    CaspsMivExtension unit{};
+    unit.casme_omaf_v1_compatible_flag(true).casme_vui_params_present_flag(true).vui_parameters({});
+    REQUIRE(toString(unit) == R"(casme_omaf_v1_compatible_flag=true
+casme_vui_params_present_flag=true
+vui_timing_info_present_flag=false
+vui_bitstream_restriction_present_flag=false
+vui_coordinate_system_parameters_present_flag=false
+vui_unit_in_metres_flag=false
+vui_display_box_info_present_flag=false
+vui_anchor_point_present_flag=false
+)");
+
+    REQUIRE(bitCodingTest(unit, 8));
+  }
 }
 } // namespace TMIV::MivBitstream

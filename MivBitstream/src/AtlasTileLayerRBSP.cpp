@@ -33,7 +33,6 @@
 
 #include <TMIV/MivBitstream/AtlasTileLayerRBSP.h>
 
-#include <TMIV/MivBitstream/MivDecoderMode.h>
 #include <TMIV/MivBitstream/verify.h>
 
 #include <TMIV/Common/Common.h>

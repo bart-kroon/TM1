@@ -101,7 +101,7 @@ public:
         m_cTDecTop.setFirstSliceInPicture(true);
       }
 
-      if (pcListPic) {
+      if (pcListPic != nullptr) {
         if (m_outputBitDepth.front() == 0) {
           const auto &recon = pcListPic->front()->getPicSym()->getSPS().getBitDepths().recon;
           std::copy(std::cbegin(recon), std::cend(recon), std::begin(m_outputBitDepth));
@@ -145,7 +145,7 @@ public:
   void addFrameListener(FrameListener listener) { m_frameListeners.push_back(std::move(listener)); }
 
 private:
-  void xWriteOutput(TComList<TComPic *> &pcListPic, unsigned tId) {
+  void xWriteOutput(TComList<TComPic *> &pcListPic, unsigned /*tId*/) {
     if (pcListPic.empty()) {
       return;
     }
@@ -171,7 +171,7 @@ private:
           (numPicsNotYetDisplayed > numReorderPicsHighestTid ||
            dpbFullness > maxDecPicBufferingHighestTid)) {
         numPicsNotYetDisplayed--;
-        if (pcPic->getSlice(0)->isReferenced() == false) {
+        if (!pcPic->getSlice(0)->isReferenced()) {
           dpbFullness--;
         }
 

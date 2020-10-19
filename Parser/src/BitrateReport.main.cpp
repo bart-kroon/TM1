@@ -167,20 +167,20 @@ public:
   void parseV3cUnit(std::istream &stream, std::size_t numBytesInV3CUnit) {
     auto vu = TMIV::MivBitstream::V3cUnit::decodeFrom(stream, numBytesInV3CUnit);
     m_report.add(vu.v3c_unit_header(), numBytesInV3CUnit);
-    std::visit([this](const auto &x) { parseV3cPayload(x); }, vu.v3c_payload().payload());
+    std::visit([this](const auto &x) { parseV3cUnitPayload(x); }, vu.v3c_unit_payload().payload());
   }
 
-  void parseV3cPayload(const std::monostate & /* unused */) {}
+  void parseV3cUnitPayload(const std::monostate & /* unused */) {}
 
-  void parseV3cPayload(const TMIV::MivBitstream::V3cParameterSet & /* vps */) {}
+  void parseV3cUnitPayload(const TMIV::MivBitstream::V3cParameterSet & /* vps */) {}
 
-  void parseV3cPayload(const TMIV::MivBitstream::AtlasSubBitstream &asb) {
+  void parseV3cUnitPayload(const TMIV::MivBitstream::AtlasSubBitstream &asb) {
     for (const auto &nu : asb.nal_units()) {
       m_report.add(nu.nal_unit_header(), nu.size());
     }
   }
 
-  void parseV3cPayload(const TMIV::MivBitstream::VideoSubBitstream & /* unused */) {}
+  void parseV3cUnitPayload(const TMIV::MivBitstream::VideoSubBitstream & /* unused */) {}
 
   [[nodiscard]] auto report() const -> auto & { return m_report; }
 

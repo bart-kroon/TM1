@@ -126,7 +126,7 @@ auto MivDecoder::decodeVps() -> bool {
   if (!vu) {
     return false;
   }
-  m_au.vps = vu->v3c_payload().v3c_parameter_set();
+  m_au.vps = vu->v3c_unit_payload().v3c_parameter_set();
 
   summarizeVps();
   checkCapabilities();
@@ -183,7 +183,7 @@ void MivDecoder::checkCapabilities() const {
                 MivBitstream::PtlProfileReconstructionIdc::MIV_Main);
 
   VERIFY_MIVBITSTREAM(m_au.vps.vps_miv_extension_present_flag());
-  VERIFY_V3CBITSTREAM(m_au.vps.vps_extension_7bits() == 0);
+  VERIFY_V3CBITSTREAM(m_au.vps.vps_extension_6bits() == 0);
 
   for (size_t k = 0; k <= m_au.vps.vps_atlas_count_minus1(); ++k) {
     const auto j = m_au.vps.vps_atlas_id(k);
@@ -200,7 +200,7 @@ auto MivDecoder::startVideoDecoder(const MivBitstream::V3cUnitHeader &vuh, doubl
     // short enough to fit in memory. The reason for this shortcut is that the change requires
     // parsing of the Annex B byte stream, which can be easily done but it requires an additional
     // implementation effort.
-    data += vu->v3c_payload().video_sub_bitstream().data();
+    data += vu->v3c_unit_payload().video_sub_bitstream().data();
   }
   if (data.empty()) {
     return {}; // Out-of-band?
@@ -222,26 +222,18 @@ void MivDecoder::decodeCommonAtlas() {
 }
 
 void MivDecoder::decodeViewParamsList() {
-  switch (m_commonAtlasAu->caf.caf_miv_view_params_list_update_mode()) {
-  case MivBitstream::MvpUpdateMode::VPL_INITLIST:
+  if (m_commonAtlasAu->caf.caf_irap_flag()) {
     decodeMvpl(m_commonAtlasAu->caf.miv_view_params_list());
-    break;
-  case MivBitstream::MvpUpdateMode::VPL_UPD_EXT:
-    decodeMvpue(m_commonAtlasAu->caf.miv_view_params_update_extrinsics());
-    break;
-  case MivBitstream::MvpUpdateMode::VPL_UPD_INT:
-    decodeMvpui(m_commonAtlasAu->caf.miv_view_params_update_intrinsics());
-    break;
-  case MivBitstream::MvpUpdateMode::VPL_UPD_DQ:
-    decodeMvpudq(m_commonAtlasAu->caf.miv_view_params_update_depth_quantization());
-    break;
-  case MivBitstream::MvpUpdateMode::VPL_ALL:
-    decodeMvpue(m_commonAtlasAu->caf.miv_view_params_update_extrinsics());
-    decodeMvpui(m_commonAtlasAu->caf.miv_view_params_update_intrinsics());
-    decodeMvpudq(m_commonAtlasAu->caf.miv_view_params_update_depth_quantization());
-    break;
-  default:
-    MIVBITSTREAM_ERROR("Unknown MVP update mode");
+  } else {
+    if (m_commonAtlasAu->caf.caf_update_extrinsics_flag()) {
+      decodeMvpue(m_commonAtlasAu->caf.miv_view_params_update_extrinsics());
+    }
+    if (m_commonAtlasAu->caf.caf_update_intrinsics_flag()) {
+      decodeMvpui(m_commonAtlasAu->caf.miv_view_params_update_intrinsics());
+    }
+    if (m_commonAtlasAu->caf.caf_update_depth_quantization_flag()) {
+      decodeMvpudq(m_commonAtlasAu->caf.miv_view_params_update_depth_quantization());
+    }
   }
 
   if (m_commonAtlasAu->aaps.aaps_miv_extension_present_flag()) {

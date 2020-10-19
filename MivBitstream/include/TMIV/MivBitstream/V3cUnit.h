@@ -86,14 +86,14 @@ private:
   bool m_vuh_auxiliary_video_flag{};
 };
 
-// 23090-5: v3c_payload()
-class V3cPayload {
+// 23090-5: v3c_unit_payload()
+class V3cUnitPayload {
 public:
   using Payload =
       std::variant<std::monostate, V3cParameterSet, AtlasSubBitstream, VideoSubBitstream>;
 
   template <typename Value>
-  constexpr explicit V3cPayload(Value &&value) : m_payload{std::forward<Value>(value)} {}
+  constexpr explicit V3cUnitPayload(Value &&value) : m_payload{std::forward<Value>(value)} {}
 
   [[nodiscard]] constexpr auto payload() const noexcept -> auto & { return m_payload; }
 
@@ -101,12 +101,12 @@ public:
   [[nodiscard]] auto atlas_sub_bitstream() const noexcept -> const AtlasSubBitstream &;
   [[nodiscard]] auto video_sub_bitstream() const noexcept -> const VideoSubBitstream &;
 
-  friend auto operator<<(std::ostream &stream, const V3cPayload &x) -> std::ostream &;
+  friend auto operator<<(std::ostream &stream, const V3cUnitPayload &x) -> std::ostream &;
 
-  auto operator==(const V3cPayload &other) const noexcept -> bool;
-  auto operator!=(const V3cPayload &other) const noexcept -> bool;
+  auto operator==(const V3cUnitPayload &other) const noexcept -> bool;
+  auto operator!=(const V3cUnitPayload &other) const noexcept -> bool;
 
-  static auto decodeFrom(std::istream &stream, const V3cUnitHeader &vuh) -> V3cPayload;
+  static auto decodeFrom(std::istream &stream, const V3cUnitHeader &vuh) -> V3cUnitPayload;
 
   void encodeTo(std::ostream &stream, const V3cUnitHeader &vuh) const;
 
@@ -119,12 +119,14 @@ class V3cUnit {
 public:
   template <typename Payload>
   V3cUnit(const V3cUnitHeader &v3c_unit_header, Payload &&payload)
-      : m_v3c_unit_header{v3c_unit_header}, m_v3c_payload{std::forward<Payload>(payload)} {}
+      : m_v3c_unit_header{v3c_unit_header}, m_v3c_unit_payload{std::forward<Payload>(payload)} {}
 
   [[nodiscard]] constexpr auto v3c_unit_header() const noexcept -> auto & {
     return m_v3c_unit_header;
   }
-  [[nodiscard]] constexpr auto v3c_payload() const noexcept -> auto & { return m_v3c_payload; }
+  [[nodiscard]] constexpr auto v3c_unit_payload() const noexcept -> auto & {
+    return m_v3c_unit_payload;
+  }
 
   friend auto operator<<(std::ostream &stream, const V3cUnit &x) -> std::ostream &;
 
@@ -137,7 +139,7 @@ public:
 
 private:
   V3cUnitHeader m_v3c_unit_header;
-  V3cPayload m_v3c_payload;
+  V3cUnitPayload m_v3c_unit_payload;
 };
 } // namespace TMIV::MivBitstream
 

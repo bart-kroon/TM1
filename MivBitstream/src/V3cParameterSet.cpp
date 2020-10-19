@@ -33,7 +33,6 @@
 
 #include <TMIV/MivBitstream/V3cParameterSet.h>
 
-#include <TMIV/MivBitstream/MivDecoderMode.h>
 #include <TMIV/MivBitstream/verify.h>
 
 #include <type_traits>
@@ -685,6 +684,10 @@ auto PackingInformation::operator==(const PackingInformation &other) const noexc
   return (m_pin_codec_id == other.m_pin_codec_id) && (m_pinRegions == other.m_pinRegions);
 }
 
+auto PackingInformation::operator!=(const PackingInformation &other) const noexcept -> bool {
+  return !operator==(other);
+}
+
 auto PackingInformation::decodeFrom(Common::InputBitstream &bitstream) -> PackingInformation {
   PackingInformation result{};
   result.pin_codec_id(bitstream.getUint8());
@@ -862,6 +865,17 @@ auto V3cParameterSet::attribute_information(AtlasId j) const -> const AttributeI
   return *atlas(j).attribute_information;
 }
 
+auto V3cParameterSet::vps_packed_video_present_flag(const AtlasId &j) const {
+  VERIFY_V3CBITSTREAM(vps_packing_information_present_flag());
+  return atlas(j).vps_packed_video_present_flag;
+}
+
+auto V3cParameterSet::packing_information(const AtlasId &j) const {
+  VERIFY_V3CBITSTREAM(vps_packed_video_present_flag(j));
+  VERIFY_V3CBITSTREAM(atlas(j).packing_information.has_value());
+  return *atlas(j).packing_information;
+}
+
 auto V3cParameterSet::vps_miv_extension() const noexcept -> const VpsMivExtension & {
   VERIFY_V3CBITSTREAM(vps_miv_extension_present_flag());
   VERIFY_V3CBITSTREAM(m_vps_miv_extension.has_value());
@@ -869,13 +883,13 @@ auto V3cParameterSet::vps_miv_extension() const noexcept -> const VpsMivExtensio
 }
 
 auto V3cParameterSet::vps_extension_length_minus1() const noexcept -> size_t {
-  VERIFY_V3CBITSTREAM(vps_extension_7bits());
+  VERIFY_V3CBITSTREAM(vps_extension_6bits());
   VERIFY_V3CBITSTREAM(m_vpsExtensionData.has_value());
   return m_vpsExtensionData->size() - 1;
 }
 
 auto V3cParameterSet::vpsExtensionData() const noexcept -> const std::vector<uint8_t> & {
-  VERIFY_V3CBITSTREAM(vps_extension_7bits());
+  VERIFY_V3CBITSTREAM(vps_extension_6bits());
   return *m_vpsExtensionData;
 }
 
@@ -951,16 +965,37 @@ auto V3cParameterSet::attribute_information(AtlasId j, AttributeInformation valu
   return *this;
 }
 
+auto V3cParameterSet::vps_packing_information_present_flag(bool value) noexcept
+    -> V3cParameterSet & {
+  VERIFY_V3CBITSTREAM(vps_extension_present_flag());
+  m_vps_packing_information_present_flag = value;
+  return *this;
+}
+
 auto V3cParameterSet::vps_miv_extension_present_flag(bool value) noexcept -> V3cParameterSet & {
   VERIFY_V3CBITSTREAM(vps_extension_present_flag());
   m_vps_miv_extension_present_flag = value;
   return *this;
 }
 
-auto V3cParameterSet::vps_extension_7bits(uint8_t value) noexcept -> V3cParameterSet & {
+auto V3cParameterSet::vps_extension_6bits(uint8_t value) noexcept -> V3cParameterSet & {
   VERIFY_V3CBITSTREAM(vps_extension_present_flag());
   VERIFY_V3CBITSTREAM(value < 0x80);
   m_vps_extension_7bits = value;
+  return *this;
+}
+
+auto V3cParameterSet::vps_packed_video_present_flag(const AtlasId &j, bool value)
+    -> V3cParameterSet & {
+  VERIFY_V3CBITSTREAM(vps_packing_information_present_flag());
+  atlas(j).vps_packed_video_present_flag = value;
+  return *this;
+}
+
+auto V3cParameterSet::packing_information(const AtlasId &j, PackingInformation value)
+    -> V3cParameterSet & {
+  VERIFY_V3CBITSTREAM(vps_packed_video_present_flag(j));
+  atlas(j).packing_information.emplace(std::move(value));
   return *this;
 }
 
@@ -972,7 +1007,7 @@ auto V3cParameterSet::vps_miv_extension(VpsMivExtension value) noexcept -> V3cPa
 
 auto V3cParameterSet::vpsExtensionData(std::vector<std::uint8_t> value) noexcept
     -> V3cParameterSet & {
-  VERIFY_V3CBITSTREAM(vps_extension_7bits() != 0);
+  VERIFY_V3CBITSTREAM(vps_extension_6bits() != 0);
   VERIFY_V3CBITSTREAM(!value.empty());
   m_vpsExtensionData = std::move(value);
   return *this;
@@ -1051,14 +1086,26 @@ auto operator<<(std::ostream &stream, const V3cParameterSet &x) -> std::ostream 
   stream << "vps_extension_present_flag=" << std::boolalpha << x.vps_extension_present_flag()
          << '\n';
   if (x.vps_extension_present_flag()) {
+    stream << "vps_packing_information_present_flag=" << std::boolalpha
+           << x.vps_packing_information_present_flag() << '\n';
     stream << "vps_miv_extension_present_flag=" << std::boolalpha
            << x.vps_miv_extension_present_flag() << '\n';
-    stream << "vps_extension_7bits=" << int{x.vps_extension_7bits()} << '\n';
+    stream << "vps_extension_6bits=" << int{x.vps_extension_6bits()} << '\n';
+  }
+  if (x.vps_packing_information_present_flag()) {
+    for (size_t k = 0; k <= x.vps_atlas_count_minus1(); ++k) {
+      const auto j = x.vps_atlas_id(k);
+      stream << "vps_packed_video_present_flag( " << j << " )=" << std::boolalpha
+             << x.vps_packed_video_present_flag(j) << '\n';
+      if (x.vps_packed_video_present_flag(j)) {
+        x.packing_information(j).printTo(stream, j);
+      }
+    }
   }
   if (x.vps_miv_extension_present_flag()) {
     stream << x.vps_miv_extension();
   }
-  if (x.vps_extension_7bits() != 0) {
+  if (x.vps_extension_6bits() != 0) {
     stream << "vps_extension_length_minus1=" << x.vps_extension_length_minus1() << '\n';
     for (uint8_t byte : x.vpsExtensionData()) {
       stream << "vps_extension_data_byte=" << int{byte} << '\n';
@@ -1073,7 +1120,7 @@ auto V3cParameterSet::operator==(const V3cParameterSet &other) const noexcept ->
       vps_atlas_count_minus1() != other.vps_atlas_count_minus1() ||
       vps_extension_present_flag() != other.vps_extension_present_flag() ||
       vps_miv_extension_present_flag() != other.vps_miv_extension_present_flag() ||
-      vps_extension_7bits() != other.vps_extension_7bits()) {
+      vps_extension_6bits() != other.vps_extension_6bits()) {
     return false;
   }
   for (size_t k = 0; k <= vps_atlas_count_minus1(); ++k) {
@@ -1103,10 +1150,23 @@ auto V3cParameterSet::operator==(const V3cParameterSet &other) const noexcept ->
       return false;
     }
   }
+  if (vps_packing_information_present_flag() != other.vps_packing_information_present_flag()) {
+    return false;
+    for (size_t k = 0; k <= vps_atlas_count_minus1(); ++k) {
+      const auto j = vps_atlas_id(k);
+      if (vps_packed_video_present_flag(j) != other.vps_packed_video_present_flag(j)) {
+        return false;
+      }
+      if (vps_packed_video_present_flag(j) &&
+          (packing_information(j) != other.packing_information(j))) {
+        return false;
+      }
+    }
+  }
   if (vps_miv_extension_present_flag() && vps_miv_extension() != other.vps_miv_extension()) {
     return false;
   }
-  if (vps_extension_7bits() != 0U && vpsExtensionData() != other.vpsExtensionData()) {
+  if (vps_extension_6bits() != 0U && vpsExtensionData() != other.vpsExtensionData()) {
     return false;
   }
   return true;
@@ -1156,13 +1216,23 @@ auto V3cParameterSet::decodeFrom(std::istream &stream) -> V3cParameterSet {
   x.vps_extension_present_flag(bitstream.getFlag());
 
   if (x.vps_extension_present_flag()) {
+    x.vps_packing_information_present_flag(bitstream.getFlag());
     x.vps_miv_extension_present_flag(bitstream.getFlag());
-    x.vps_extension_7bits(bitstream.readBits<uint8_t>(7));
+    x.vps_extension_6bits(bitstream.readBits<uint8_t>(6));
   }
   if (x.vps_miv_extension_present_flag()) {
     x.vps_miv_extension(VpsMivExtension::decodeFrom(bitstream, x));
   }
-  if (x.vps_extension_7bits() != 0U) {
+  if (x.vps_packing_information_present_flag()) {
+    for (size_t k = 0; k <= x.vps_atlas_count_minus1(); ++k) {
+      const auto j = x.vps_atlas_id(k);
+      x.vps_packed_video_present_flag(j, bitstream.getFlag());
+      if (x.vps_packed_video_present_flag(j)) {
+        x.packing_information(j, PackingInformation::decodeFrom(bitstream));
+      }
+    }
+  }
+  if (x.vps_extension_6bits() != 0U) {
     const auto vps_extension_length_minus1 = bitstream.getUExpGolomb<size_t>();
     auto vpsExtensionData = std::vector<uint8_t>();
     vpsExtensionData.reserve(vps_extension_length_minus1 + 1);
@@ -1213,13 +1283,23 @@ void V3cParameterSet::encodeTo(std::ostream &stream) const {
   bitstream.putFlag(vps_extension_present_flag());
 
   if (vps_extension_present_flag()) {
+    bitstream.putFlag(vps_packing_information_present_flag());
     bitstream.putFlag(vps_miv_extension_present_flag());
-    bitstream.writeBits(vps_extension_7bits(), 7);
+    bitstream.writeBits(vps_extension_6bits(), 6);
   }
   if (vps_miv_extension_present_flag()) {
     vps_miv_extension().encodeTo(bitstream, *this);
   }
-  if (vps_extension_7bits() != 0U) {
+  if (vps_packing_information_present_flag()) {
+    for (size_t k = 0; k <= vps_atlas_count_minus1(); ++k) {
+      const auto j = vps_atlas_id(k);
+      bitstream.putFlag(vps_packed_video_present_flag(j));
+      if (vps_packed_video_present_flag(j)) {
+        packing_information(j).encodeTo(bitstream);
+      }
+    }
+  }
+  if (vps_extension_6bits() != 0U) {
     bitstream.putUExpGolomb(vps_extension_length_minus1());
     for (uint8_t byte : vpsExtensionData()) {
       bitstream.putUint8(byte);

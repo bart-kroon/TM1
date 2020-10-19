@@ -98,8 +98,7 @@ auto AtlasObjectAssociation::aoa_num_updates(std::size_t value) noexcept -> auto
   return *this;
 }
 
-constexpr auto
-AtlasObjectAssociation::aoa_log2_max_object_idx_tracked_minus1(std::uint8_t value) noexcept
+auto AtlasObjectAssociation::aoa_log2_max_object_idx_tracked_minus1(std::uint8_t value) noexcept
     -> auto & {
   m_aoa_parameters->aoa_log2_max_object_idx_tracked_minus1 = value;
   return *this;

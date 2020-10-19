@@ -165,12 +165,52 @@ vuh_auxiliary_video_flag=false
       REQUIRE(byteCodingTest(x, 4));
     }
   }
+
+  SECTION("CAD") {
+    auto unit = V3cUnitHeader{VuhUnitType::V3C_CAD};
+    REQUIRE(toString(unit) == R"(vuh_unit_type=V3C_CAD
+vuh_v3c_parameter_set_id=0
+)");
+
+    REQUIRE(byteCodingTest(unit, 4));
+
+    SECTION("Example") {
+      unit.vuh_v3c_parameter_set_id(2);
+
+      REQUIRE(toString(unit) == R"(vuh_unit_type=V3C_CAD
+vuh_v3c_parameter_set_id=2
+)");
+
+      REQUIRE(byteCodingTest(unit, 4));
+    }
+  }
+
+  SECTION("PVD") {
+    auto unit = V3cUnitHeader{VuhUnitType::V3C_PVD};
+    REQUIRE(toString(unit) == R"(vuh_unit_type=V3C_PVD
+vuh_v3c_parameter_set_id=0
+vuh_atlas_id=0
+)");
+
+    REQUIRE(byteCodingTest(unit, 4));
+
+    SECTION("Example") {
+      unit.vuh_v3c_parameter_set_id(2).vuh_atlas_id({});
+
+      REQUIRE(toString(unit) == R"(vuh_unit_type=V3C_PVD
+vuh_v3c_parameter_set_id=2
+vuh_atlas_id=0
+)");
+
+      REQUIRE(byteCodingTest(unit, 4));
+    }
+  }
 }
 
 TEST_CASE("v3c_unit_payload", "[V3C Unit]") {
   SECTION("VPS") {
     const auto vuh = V3cUnitHeader{VuhUnitType::V3C_VPS};
-    const auto x = V3cPayload{examples::vps()};
+    const auto x = V3cUnitPayload{examples::vps()};
 
     REQUIRE(toString(x) == R"(ptl_tier_flag=false
 ptl_profile_codec_group_idc=AVC Progressive High
@@ -196,8 +236,9 @@ gi_geometry_2d_bit_depth_minus1( 0 )=8
 gi_geometry_MSB_align_flag( 0 )=false
 gi_geometry_3d_coordinates_bit_depth_minus1( 0 )=10
 vps_extension_present_flag=true
+vps_packing_information_present_flag=false
 vps_miv_extension_present_flag=false
-vps_extension_7bits=0
+vps_extension_6bits=0
 )");
 
     REQUIRE(byteCodingTest(x, 21, vuh));
@@ -205,7 +246,7 @@ vps_extension_7bits=0
 
   SECTION("AD") {
     const auto vuh = V3cUnitHeader{VuhUnitType::V3C_AD};
-    const auto x = V3cPayload{AtlasSubBitstream{SampleStreamNalHeader{4}}};
+    const auto x = V3cUnitPayload{AtlasSubBitstream{SampleStreamNalHeader{4}}};
 
     REQUIRE(toString(x) == R"(ssnh_unit_size_precision_bytes_minus1=4
 )");
@@ -215,7 +256,7 @@ vps_extension_7bits=0
 
   SECTION("OVD") {
     const auto vuh = V3cUnitHeader{VuhUnitType::V3C_OVD};
-    const auto x = V3cPayload{VideoSubBitstream{}};
+    const auto x = V3cUnitPayload{VideoSubBitstream{}};
 
     REQUIRE(toString(x).empty());
 
@@ -224,7 +265,7 @@ vps_extension_7bits=0
 
   SECTION("GVD") {
     const auto vuh = V3cUnitHeader{VuhUnitType::V3C_GVD};
-    const auto x = V3cPayload{VideoSubBitstream{}};
+    const auto x = V3cUnitPayload{VideoSubBitstream{}};
 
     REQUIRE(toString(x).empty());
 
@@ -233,7 +274,7 @@ vps_extension_7bits=0
 
   SECTION("AVD") {
     const auto vuh = V3cUnitHeader{VuhUnitType::V3C_AVD};
-    const auto x = V3cPayload{VideoSubBitstream{}};
+    const auto x = V3cUnitPayload{VideoSubBitstream{}};
 
     REQUIRE(toString(x).empty());
 
@@ -271,8 +312,9 @@ gi_geometry_2d_bit_depth_minus1( 0 )=8
 gi_geometry_MSB_align_flag( 0 )=false
 gi_geometry_3d_coordinates_bit_depth_minus1( 0 )=10
 vps_extension_present_flag=true
+vps_packing_information_present_flag=false
 vps_miv_extension_present_flag=false
-vps_extension_7bits=0
+vps_extension_6bits=0
 )");
 
     REQUIRE(unitCodingTest(x, 25));

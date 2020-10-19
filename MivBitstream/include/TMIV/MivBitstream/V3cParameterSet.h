@@ -366,6 +366,7 @@ public:
   auto printTo(std::ostream &stream, const AtlasId &j) const -> std::ostream &;
 
   auto operator==(const PackingInformation &other) const noexcept -> bool;
+  auto operator!=(const PackingInformation &other) const noexcept -> bool;
 
   static auto decodeFrom(Common::InputBitstream &bitstream) -> PackingInformation;
 
@@ -432,8 +433,11 @@ public:
   [[nodiscard]] auto geometry_information(AtlasId j) const -> const GeometryInformation &;
   [[nodiscard]] auto attribute_information(AtlasId j) const -> const AttributeInformation &;
   [[nodiscard]] constexpr auto vps_extension_present_flag() const noexcept;
+  [[nodiscard]] constexpr auto vps_packing_information_present_flag() const noexcept;
   [[nodiscard]] constexpr auto vps_miv_extension_present_flag() const noexcept;
-  [[nodiscard]] constexpr auto vps_extension_7bits() const noexcept;
+  [[nodiscard]] constexpr auto vps_extension_6bits() const noexcept;
+  [[nodiscard]] auto vps_packed_video_present_flag(const AtlasId &j) const;
+  [[nodiscard]] auto packing_information(const AtlasId &j) const;
   [[nodiscard]] auto vps_miv_extension() const noexcept -> const VpsMivExtension &;
   [[nodiscard]] auto vps_extension_length_minus1() const noexcept -> std::size_t;
   [[nodiscard]] auto vpsExtensionData() const noexcept -> const std::vector<std::uint8_t> &;
@@ -453,8 +457,11 @@ public:
   auto geometry_information(AtlasId j, GeometryInformation value) -> V3cParameterSet &;
   auto attribute_information(AtlasId j, AttributeInformation value) -> V3cParameterSet &;
   constexpr auto vps_extension_present_flag(bool value) noexcept -> auto &;
+  auto vps_packing_information_present_flag(bool value) noexcept -> V3cParameterSet &;
   auto vps_miv_extension_present_flag(bool value) noexcept -> V3cParameterSet &;
-  auto vps_extension_7bits(std::uint8_t value) noexcept -> V3cParameterSet &;
+  auto vps_extension_6bits(std::uint8_t value) noexcept -> V3cParameterSet &;
+  auto vps_packed_video_present_flag(const AtlasId &j, bool value) -> V3cParameterSet &;
+  auto packing_information(const AtlasId &j, PackingInformation value) -> V3cParameterSet &;
   auto vps_miv_extension(VpsMivExtension value) noexcept -> V3cParameterSet &;
   auto vpsExtensionData(std::vector<std::uint8_t> value) noexcept -> V3cParameterSet &;
 
@@ -486,9 +493,11 @@ private:
     bool vps_occupancy_video_present_flag{};
     bool vps_geometry_video_present_flag{};
     bool vps_attribute_video_present_flag{};
+    bool vps_packed_video_present_flag{};
     std::optional<OccupancyInformation> occupancy_information{};
     std::optional<GeometryInformation> geometry_information{};
     std::optional<AttributeInformation> attribute_information{};
+    std::optional<PackingInformation> packing_information{};
   };
 
   [[nodiscard]] auto atlas(AtlasId atlasId) const noexcept -> const VpsAtlas &;
@@ -498,6 +507,7 @@ private:
   std::uint8_t m_vps_v3c_parameter_set_id{};
   std::vector<VpsAtlas> m_vpsAtlases{VpsAtlas{}};
   bool m_vps_extension_present_flag{};
+  std::optional<bool> m_vps_packing_information_present_flag{};
   std::optional<bool> m_vps_miv_extension_present_flag{};
   std::optional<std::uint8_t> m_vps_extension_7bits{};
   std::optional<VpsMivExtension> m_vps_miv_extension;

@@ -10,7 +10,6 @@ add_library(MivBitstreamLib
     "src/CommonAtlasFrameRBSP.cpp"
     "src/EncoderParams.cpp"
     "src/GeometryUpscalingParameters.cpp"
-    "src/MivDecoderMode.cpp"
     "src/VuiParameters.cpp"
     "src/NalSampleStreamFormat.cpp"
     "src/NalUnit.cpp"

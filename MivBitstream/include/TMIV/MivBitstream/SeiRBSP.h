@@ -59,14 +59,15 @@ enum class PayloadType : std::uint16_t {
   atlas_object_association,
   viewport_camera_parameters,
   viewport_position,
+  packed_independent_regions,
   attribute_transformation_params = 64, // V-PCC
   occupancy_synthesis,
   geometry_smoothing,
   attribute_smoothing,
   viewing_space = 128, // MIV
-  rec_viewport,
   viewing_space_handling,
-  geometry_upscaling_parameters
+  geometry_upscaling_parameters,
+  rec_viewport // TODO(christoph_bachhuber) remove once removed from part 12 specs
 };
 
 auto operator<<(std::ostream &stream, PayloadType pt) -> std::ostream &;

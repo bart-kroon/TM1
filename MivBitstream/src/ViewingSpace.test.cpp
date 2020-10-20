@@ -173,9 +173,9 @@ namespace {
 template <typename Type>
 auto loadJson(const std::string &strNode, const std::string &strConfig) -> Type {
   std::istringstream streamNode(strNode);
-  Common::Json jsonNode(streamNode);
+  const auto jsonNode = Common::Json::loadFrom(streamNode);
   std::istringstream streamConfig(strConfig);
-  Common::Json jsonConfig(streamConfig);
+  const auto jsonConfig = Common::Json::loadFrom(streamConfig);
   return Type::loadFromJson(jsonNode, jsonConfig);
 }
 } // namespace

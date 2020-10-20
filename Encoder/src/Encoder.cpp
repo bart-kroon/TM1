@@ -70,25 +70,25 @@ Encoder::Encoder(const Common::Json &rootNode, const Common::Json &componentNode
     , m_geometryQuantizer{create<IGeometryQuantizer>("GeometryQuantizer", rootNode, componentNode)}
     , m_geometryDownscaler{rootNode, componentNode} {
   // Parameters
-  m_intraPeriod = rootNode.require("intraPeriod").asInt();
-  const auto numGroups = rootNode.require("numGroups").asInt();
+  m_intraPeriod = rootNode.require("intraPeriod").as<int>();
+  const auto numGroups = rootNode.require("numGroups").as<int>();
   m_blockSizeDepthQualityDependent =
-      rootNode.require("blockSizeDepthQualityDependent").asIntVector<2>();
-  m_maxLumaSampleRate = rootNode.require("maxLumaSampleRate").asDouble();
-  m_maxLumaPictureSize = rootNode.require("maxLumaPictureSize").asInt();
-  const auto maxAtlases = rootNode.require("maxAtlases").asInt();
-  m_geometryScaleEnabledFlag = rootNode.require("geometryScaleEnabledFlag").asBool();
+      rootNode.require("blockSizeDepthQualityDependent").asVec<int, 2>();
+  m_maxLumaSampleRate = rootNode.require("maxLumaSampleRate").as<double>();
+  m_maxLumaPictureSize = rootNode.require("maxLumaPictureSize").as<int>();
+  const auto maxAtlases = rootNode.require("maxAtlases").as<int>();
+  m_geometryScaleEnabledFlag = rootNode.require("geometryScaleEnabledFlag").as<bool>();
 
-  if (auto node = componentNode.optional("dilate"); node) {
-    m_dilationIter = node.asInt();
+  if (const auto &node = componentNode.optional("dilate")) {
+    m_dilationIter = node.as<int>();
   }
 
-  if (auto node = componentNode.optional("overrideAtlasFrameSizes"); node) {
+  if (const auto &node = componentNode.optional("overrideAtlasFrameSizes")) {
     std::cout
         << "WARNING: Overriding atlas frame sizes is meant for internal/preliminary experiments "
            "only.\n";
-    for (size_t i = 0; i < node.size(); ++i) {
-      m_overrideAtlasFrameSizes.push_back(node.at(i).asIntVector<2>());
+    for (const auto & subnode : node.as<Common::Json::Array>()) {
+      m_overrideAtlasFrameSizes.push_back(subnode.asVec<int, 2>());
     }
   }
 
@@ -107,15 +107,15 @@ Encoder::Encoder(const Common::Json &rootNode, const Common::Json &componentNode
   m_maxAtlases = maxAtlases / numGroups;
 
   // Read the entity encoding range if exisited
-  if (auto subnode = componentNode.optional("EntityEncodeRange")) {
-    m_entityEncRange = subnode.asIntVector<2>();
+  if (const auto &subnode = componentNode.optional("EntityEncodeRange")) {
+    m_entityEncRange = subnode.asVec<int, 2>();
   }
 
   if (m_intraPeriod > maxIntraPeriod) {
     throw std::runtime_error("The intraPeriod parameter cannot be greater than maxIntraPeriod.");
   }
 
-  m_explicitOccupancy = rootNode.require("explicitOccupancy").asBool();
+  m_explicitOccupancy = rootNode.require("explicitOccupancy").as<bool>();
 }
 
 auto Encoder::maxLumaSamplesPerFrame() const -> size_t { return m_maxLumaSamplesPerFrame; }

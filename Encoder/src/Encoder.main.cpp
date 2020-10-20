@@ -63,14 +63,14 @@ public:
       , m_depthQualityAssessor{create<DepthQualityAssessor::IDepthQualityAssessor>(
             "DepthQualityAssessor")}
       , m_metadataWriter{json()}
-      , m_numberOfFrames{json().require("numberOfFrames").asInt()}
-      , m_intraPeriod{json().require("intraPeriod").asInt()} {}
+      , m_numberOfFrames{json().require("numberOfFrames").as<int>()}
+      , m_intraPeriod{json().require("intraPeriod").as<int>()} {}
 
   void run() override {
     auto sourceParams = IO::loadSourceParams(json());
     m_viewSizes = sourceParams.viewParamsList.viewSizes();
 
-    if (!json().isPresent("depthLowQualityFlag")) {
+    if (!json().optional("depthLowQualityFlag")) {
       sourceParams.vme().vme_depth_low_quality_flag(m_depthQualityAssessor->isLowDepthQuality(
           sourceParams, IO::loadSourceFrame(json(), m_viewSizes, 0)));
     }

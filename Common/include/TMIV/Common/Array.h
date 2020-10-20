@@ -356,7 +356,7 @@ public:
   static constexpr auto diag_step() -> size_type {
     return step(1) + _Array<D - 1, T, N, I...>::diag_step();
   }
-  template <typename... J>[[nodiscard]] auto get(size_type first, J... next) const -> T {
+  template <typename... J> [[nodiscard]] auto get(size_type first, J... next) const -> T {
     return m_v[first].get(next...);
   }
   template <typename... J> auto get(size_type first, J... next) -> T & {

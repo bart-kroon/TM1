@@ -33,356 +33,270 @@
 
 #include <TMIV/Common/Json.h>
 
-#include <cctype>
-#include <cmath>
-#include <iostream>
-#include <map>
-#include <memory>
-#include <sstream>
-#include <string>
-#include <utility>
-#include <vector>
+#include <TMIV/Common/Common.h>
+
+#include <regex>
+
+using namespace std::string_view_literals;
 
 namespace TMIV::Common {
 namespace {
-void skipWhitespaceAndLineComments(std::istream &stream) {
-  for (;;) {
-    // Skip whitespace
-    while (!stream.eof() && (isspace(stream.peek()) != 0)) {
-      stream.get();
-    }
+auto parseObject(std::string_view &text) -> Json::Object;
+auto parseArray(std::string_view &text) -> Json::Array;
+auto parseValue(std::string_view &text) -> Json;
+auto parseString(std::string_view &text) -> std::string;
+auto parseNumber(std::string_view &text) -> Json; // Json::Integer or Json::Number
+void parseWhitespace(std::string_view &text);
 
-    if (stream.eof() || stream.peek() != '/') {
-      // No line comment
-      return;
-    }
-
-    // Skip line comment
-    stream.get();
-    if (stream.eof()) {
-      throw std::runtime_error("Stray '/' at end of file");
-    }
-    if (stream.peek() != '/') {
-      std::ostringstream what;
-      what << "Stray character 0x" << std::hex << stream.peek() << " at std::end of file\n";
-      throw std::runtime_error(what.str());
-    }
-    while (!stream.eof() && stream.peek() != '\n') {
-      stream.get();
-    }
+[[nodiscard]] auto peekCharacter(std::string_view &text) -> char {
+  if (text.empty()) {
+    throw std::runtime_error("JSON parser: truncated input");
   }
+  return text.front();
 }
 
-void matchCharacter(std::istream &stream, std::istream::int_type expected) {
-  auto actual = stream.get();
+[[nodiscard]] auto parseCharacter(std::string_view &text) {
+  const auto ch = peekCharacter(text);
+  text.remove_prefix(1);
+  return ch;
+}
+
+void parseFixedCharacter(std::string_view &text, char expected) {
+  const auto actual = parseCharacter(text);
 
   if (actual != expected) {
     std::ostringstream what;
-    what << "Expected '" << static_cast<char>(expected) << "' but found '"
-         << static_cast<char>(actual) << "' (0x" << std::hex << actual << ")";
+    what << "Expected '" << expected << "' but found '" << actual << "' (0x" << std::hex
+         << int{actual} << ")";
     throw std::runtime_error(what.str());
   }
 }
 
-void matchText(std::istream &stream, std::string const &text) {
-  for (auto ch : text) {
-    matchCharacter(stream, ch);
+void parseFixedText(std::string_view &text, std::string_view expected) {
+  for (const auto ch : expected) {
+    parseFixedCharacter(text, ch);
+  }
+}
+
+auto parseObject(std::string_view &text) -> Json::Object {
+  auto x = Json::Object{};
+
+  parseFixedCharacter(text, '{');
+  parseWhitespace(text);
+
+  auto first = true;
+
+  while (peekCharacter(text) != '}') {
+    if (!first) {
+      parseFixedCharacter(text, ',');
+      parseWhitespace(text);
+    }
+    first = false;
+
+    auto key = parseString(text);
+    parseWhitespace(text);
+    parseFixedCharacter(text, ':');
+    auto value = parseValue(text);
+
+    if (!x.emplace(key, std::move(value)).second) {
+      throw std::runtime_error(format("JSON parser: duplicate key '{}'", key));
+    }
+  }
+
+  parseFixedCharacter(text, '}');
+  return x;
+}
+
+auto parseArray(std::string_view &text) -> Json::Array {
+  auto x = Json::Array{};
+
+  parseFixedCharacter(text, '[');
+  parseWhitespace(text);
+
+  auto first = true;
+
+  while (peekCharacter(text) != ']') {
+    if (!first) {
+      parseFixedCharacter(text, ',');
+    }
+    first = false;
+
+    x.emplace_back(parseValue(text));
+  }
+
+  parseFixedCharacter(text, ']');
+  return x;
+}
+
+// NOTE(BK): std::isdigit is codepage dependent
+constexpr auto isDigit(char ch) noexcept -> bool {
+  switch (ch) {
+  case '0':
+  case '1':
+  case '2':
+  case '3':
+  case '4':
+  case '5':
+  case '6':
+  case '7':
+  case '8':
+  case '9':
+    return true;
+  default:
+    return false;
+  }
+}
+
+auto parseValue(std::string_view &text) -> Json {
+  auto x = Json{};
+
+  parseWhitespace(text);
+
+  const auto ch = peekCharacter(text);
+
+  if (ch == '"') {
+    x = parseString(text);
+  } else if (ch == '-' || isDigit(ch)) {
+    x = parseNumber(text);
+  } else if (ch == '{') {
+    x = parseObject(text);
+  } else if (ch == '[') {
+    x = parseArray(text);
+  } else if (ch == 't') {
+    parseFixedText(text, "true"sv);
+    x = true;
+  } else if (ch == 'f') {
+    parseFixedText(text, "false"sv);
+    x = false;
+  } else {
+    parseFixedText(text, "null"sv);
+  }
+
+  parseWhitespace(text);
+  return x;
+}
+
+auto parseString(std::string_view &text) -> std::string {
+  auto x = std::string{};
+
+  parseFixedCharacter(text, '"');
+
+  while (true) {
+    const auto ch1 = parseCharacter(text);
+
+    if (ch1 == '"') {
+      return x;
+    }
+    if (ch1 == '\\') {
+      const auto ch2 = parseCharacter(text);
+
+      if (ch2 == '"' || ch2 == '\\' || ch2 == '/') {
+        x.push_back(ch2);
+      } else if (ch2 == 'b') {
+        x.push_back('\b');
+      } else if (ch2 == 'f') {
+        x.push_back('\f');
+      } else if (ch2 == 'n') {
+        x.push_back('\n');
+      } else if (ch2 == 'r') {
+        x.push_back('\r');
+      } else if (ch2 == 't') {
+        x.push_back('\t');
+      } else if (ch2 == 'u') {
+        throw std::logic_error("JSON parser: unicode character codes are not yet supported");
+      } else {
+        throw std::runtime_error(format("JSON parser: invalid string escape character '{}'", ch2));
+      }
+    } else if ('\0' <= ch1 && ch1 < ' ') {
+      throw std::runtime_error("JSON parser: control character within string");
+    } else {
+      x.push_back(ch1);
+    }
+  }
+}
+
+auto parseNumber(std::string_view &text) -> Json {
+  constexpr auto number = 0;
+  constexpr auto fraction = 2;
+  constexpr auto exponent = 3;
+  static const auto pattern = std::regex(R"(^(0|[\-1-9][0-9]*)(\.[0-9]+)?([eE][\-+]?[0-9]+)?)",
+                                         std::regex_constants::optimize);
+
+  auto match = std::match_results<std::string_view::const_iterator>{};
+
+  if (std::regex_search(text.cbegin(), text.cend(), match, pattern)) {
+    text.remove_prefix(static_cast<std::size_t>(match[0].length()));
+
+    if (match[fraction].matched || match[exponent].matched) {
+      static_assert(std::is_same_v<double, Json::Number>);
+      return Json{std::stod(match[number])};
+    }
+
+    static_assert(std::is_same_v<long long, Json::Integer>);
+    return Json{std::stoll(match[number])};
+  }
+
+  throw std::runtime_error("JSON parser: failed to parse number");
+}
+
+void parseWhitespace(std::string_view &text) {
+  const auto n = text.find_first_not_of(" \n\r\t"sv);
+  if (n == std::string_view::npos) {
+    text.remove_prefix(text.size());
+  } else {
+    text.remove_prefix(n);
   }
 }
 } // namespace
 
-static auto readValue(std::istream &stream) -> std::shared_ptr<impl::Value>;
+const Json Json::null;
 
-namespace impl {
-struct Value {
-  explicit Value(Json::Type type) : type(type) {}
-  Value(Value const &) = default;
-  Value(Value &&) = default;
-  auto operator=(Value const &) -> Value & = default;
-  auto operator=(Value &&) -> Value & = default;
-  virtual ~Value() = default;
+auto Json::parse(std::string_view text) -> Json {
+  auto x = parseValue(text);
 
-  Json::Type type;
-};
+  if (!text.empty()) {
+    throw std::runtime_error("JSON parser: stray characters at the end");
+  }
+  return x;
+}
 
-struct String : public Value {
-public:
-  explicit String(std::istream &stream) : Value(Json::Type::string) {
-    matchCharacter(stream, '"');
-    auto ch = stream.get();
+auto Json::loadFrom(std::istream &stream) -> Json {
+  std::ostringstream buffer;
+  buffer << stream.rdbuf();
+  return parse(buffer.str());
+}
 
-    while (ch != '"') {
-      if (ch == '\\') {
-        switch (stream.get()) {
-        case '"':
-          value.push_back('"');
-          break;
-        case '\\':
-          value.push_back('\\');
-          break;
-        case '/':
-          value.push_back('/');
-          break;
-        case 'b':
-          value.push_back('\b');
-          break;
-        case 'f':
-          value.push_back('\f');
-          break;
-        case 'n':
-          value.push_back('\n');
-          break;
-        case 'r':
-          value.push_back('\r');
-          break;
-        case 't':
-          value.push_back('\t');
-          break;
-        case 'u':
-          throw std::runtime_error("JSON parser: unicode std::string escaping not yet implemented");
-        default:
-          throw std::runtime_error("JSON parser: invalid std::string escape character");
-        }
-      } else {
-        value.push_back(static_cast<char>(ch));
-      }
-      ch = stream.get();
+auto Json::update(const Json &other) -> Json & {
+  // Update strategy for JSON null: copy non-null over null
+  if (!m_node.has_value() || !other.m_node.has_value()) {
+    if (other.m_node.has_value()) {
+      m_node = other.m_node;
+    }
+    return *this;
+  }
+
+  // Update strategy for JSON object: merge
+  {
+    auto *thisObject = std::any_cast<Object>(&m_node);
+    const auto *otherObject = std::any_cast<Object>(&other.m_node);
+
+    if ((thisObject != nullptr) && (otherObject != nullptr)) {
+      mergeObject(*thisObject, *otherObject);
+      return *this;
+    }
+    if ((thisObject != nullptr) || (otherObject != nullptr)) {
+      throw std::runtime_error("JSON: Update objects with objects.");
     }
   }
 
-  std::string value;
-};
-
-struct Number : public Value {
-  explicit Number(std::istream &stream) : Value(Json::Type::number) { stream >> value; }
-
-  double value{};
-};
-
-struct Object : public Value {
-  explicit Object(std::istream &stream) : Value(Json::Type::object) {
-    matchCharacter(stream, '{');
-    skipWhitespaceAndLineComments(stream);
-
-    while (stream.peek() != '}') {
-      if (!value.empty()) {
-        matchCharacter(stream, ',');
-        skipWhitespaceAndLineComments(stream);
-      }
-
-      auto key = String(stream);
-      skipWhitespaceAndLineComments(stream);
-      matchCharacter(stream, ':');
-      skipWhitespaceAndLineComments(stream);
-      value[key.value] = readValue(stream);
-      skipWhitespaceAndLineComments(stream);
-    }
-
-    stream.get();
-  }
-
-  std::map<std::string, std::shared_ptr<Value>> value;
-};
-
-struct Array : public Value {
-  explicit Array(std::istream &stream) : Value(Json::Type::array) {
-    matchCharacter(stream, '[');
-    skipWhitespaceAndLineComments(stream);
-
-    if (stream.peek() != ']') {
-      value.push_back(readValue(stream));
-      skipWhitespaceAndLineComments(stream);
-
-      while (stream.peek() == ',') {
-        stream.get();
-        value.push_back(readValue(stream));
-        skipWhitespaceAndLineComments(stream);
-      }
-    }
-
-    matchCharacter(stream, ']');
-  }
-
-  std::vector<std::shared_ptr<Value>> value;
-};
-
-struct Bool : public Value {
-public:
-  explicit Bool(std::istream &stream) : Value(Json::Type::boolean) {
-    value = stream.peek() == 't';
-    matchText(stream, value ? "true" : "false");
-  }
-
-  bool value;
-};
-
-struct Null : public Value {
-  Null() : Value(Json::Type::null) {}
-
-  explicit Null(std::istream &stream) : Null() { matchText(stream, "null"); }
-};
-} // namespace impl
-
-Json::Json() : m_value(new impl::Null) {}
-
-Json::Json(std::shared_ptr<impl::Value> value) : m_value(std::move(value)) {}
-
-Json::Json(std::istream &stream) {
-  try {
-    stream.exceptions(std::ios::badbit | std::ios::failbit);
-    auto value = readValue(stream);
-    skipWhitespaceAndLineComments(stream);
-
-    if (!stream.eof()) {
-      auto ch = stream.get();
-      std::ostringstream what;
-      what << "Stray character " << static_cast<char>(ch) << " (0x" << std::ios::hex << ch << ")";
-      throw std::runtime_error(what.str());
-    }
-
-    m_value = std::move(value);
-  } catch (std::runtime_error &e) {
-    throw std::runtime_error(std::string("JSON parser: ") + e.what());
-  }
+  // Default strategy: copy
+  m_node = other.m_node;
+  return *this;
 }
 
-void Json::setOverrides(const Json &overrides) {
-  if (type() == Type::object && overrides.type() == Type::object) {
-    for (const auto &kvp : dynamic_cast<const impl::Object &>(*overrides.m_value).value) {
-      dynamic_cast<impl::Object &>(*m_value).value[kvp.first] = kvp.second;
-    }
-  } else {
-    throw std::runtime_error("Overrides should be a JSON object, e.g. {...}");
+void Json::mergeObject(Json::Object &first, const Json::Object &second) {
+  for (const auto &[key, value] : second) {
+    first[key].update(value);
   }
-}
-
-auto Json::type() const -> Json::Type { return m_value->type; }
-
-auto Json::optional(std::string const &key) const -> Json {
-  try {
-    return Json{dynamic_cast<impl::Object &>(*m_value).value.at(key)};
-  } catch (std::out_of_range &) {
-    return {};
-  } catch (std::bad_cast &) {
-    std::ostringstream what;
-    what << "JSON parser: Querying optional key '" << key << "', but node is not an object";
-    throw std::runtime_error(what.str());
-  }
-}
-
-auto Json::require(std::string const &key) const -> Json {
-  auto node = optional(key);
-  if (node.type() != Type::null) {
-    return node;
-  }
-  std::ostringstream stream;
-  stream << "JSON parser: Parameter " << key << " is required but missing";
-  throw std::runtime_error(stream.str());
-}
-
-auto Json::isPresent(std::string const &key) const -> bool {
-  auto node = optional(key);
-  return node.type() != Type::null;
-}
-
-auto Json::at(size_t index) const -> Json {
-  if (type() != Type::array) {
-    throw std::runtime_error("JSON parser: Expected an array");
-  }
-  return Json{dynamic_cast<impl::Array &>(*m_value).value.at(index)};
-}
-
-auto Json::size() const -> size_t {
-  switch (type()) {
-  case Type::array:
-    return dynamic_cast<impl::Array &>(*m_value).value.size();
-  case Type::object:
-    return dynamic_cast<impl::Object &>(*m_value).value.size();
-  default:
-    throw std::runtime_error("JSON parser: Expected an array or object");
-  }
-}
-
-auto Json::asDouble() const -> double {
-  if (type() != Type::number) {
-    throw std::runtime_error("JSON parser: Expected a number");
-  }
-  return dynamic_cast<impl::Number &>(*m_value).value;
-}
-
-auto Json::asFloat() const -> float { return static_cast<float>(asDouble()); }
-
-auto Json::asInt() const -> int {
-  auto value = asDouble();
-  auto rounded = static_cast<int>(std::lround(value));
-  auto error = value - rounded;
-  constexpr auto eps = 1e-6;
-  if (error > eps) {
-    throw std::runtime_error("JSON parser: Expected an integer value");
-  }
-  return rounded;
-}
-
-auto Json::asString() const -> std::string const & {
-  if (type() != Type::string) {
-    throw std::runtime_error("JSON parser: Expected a std::string");
-  }
-  return dynamic_cast<impl::String &>(*m_value).value;
-}
-
-auto Json::asBool() const -> bool {
-  if (type() != Type::boolean) {
-    throw std::runtime_error("JSON parser: Expected a boolean");
-  }
-  return dynamic_cast<impl::Bool &>(*m_value).value;
-}
-
-auto Json::asStringVector() const -> std::vector<std::string> {
-  auto v = std::vector<std::string>();
-  v.reserve(size());
-  for (size_t i = 0; i < size(); ++i) {
-    v.emplace_back(at(i).asString());
-  }
-  return v;
-}
-
-Json::operator bool() const {
-  switch (type()) {
-  case Type::null:
-    return false;
-  case Type::boolean:
-    return asBool();
-  default:
-    return true;
-  }
-}
-
-static auto readValue(std::istream &stream) -> std::shared_ptr<impl::Value> {
-  skipWhitespaceAndLineComments(stream);
-  auto ch = stream.peek();
-
-  switch (ch) {
-  case '{':
-    return std::make_shared<impl::Object>(stream);
-  case '[':
-    return std::make_shared<impl::Array>(stream);
-  case '"':
-    return std::make_shared<impl::String>(stream);
-  case 't':
-  case 'f':
-    return std::make_shared<impl::Bool>(stream);
-  case 'n':
-    return std::make_shared<impl::Null>(stream);
-  default:
-    break;
-  }
-
-  if (ch == '-' || (isdigit(ch) != 0)) {
-    return std::make_shared<impl::Number>(stream);
-  }
-
-  std::ostringstream what;
-  what << "Invalid character " << static_cast<char>(ch) << " (0x" << std::ios::hex << ch << ")";
-  throw std::runtime_error(what.str());
 }
 } // namespace TMIV::Common

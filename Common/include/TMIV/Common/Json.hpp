@@ -35,25 +35,145 @@
 #error "Include the .h, not the .hpp"
 #endif
 
+#include <TMIV/Common/Common.h>
+
 namespace TMIV::Common {
-template <stack::size_type M> auto Json::asFloatVector() const -> stack::Vector<float, M> {
-  stack::Vector<float, M> result;
-  if (size() != M) {
-    throw std::runtime_error("JSON float vector has wrong length");
-  }
-  for (stack::size_type i = 0; i != M; ++i) {
-    result[i] = at(i).asFloat();
-  }
-  return result;
+inline Json::operator bool() const { return m_node.has_value(); }
+
+inline Json::Json(bool value) : m_node{value} {}
+
+inline Json::Json(const char *value) : m_node{std::string{value}} {}
+
+inline Json::Json(std::string_view value) : m_node{std::string{value}} {}
+
+inline Json::Json(const std::string &value) : m_node{value} {}
+
+inline Json::Json(const Object &value) : m_node{value} {}
+
+inline Json::Json(const Array &value) : m_node{value} {}
+
+inline Json::Json(Object &&value) : m_node{std::move(value)} {}
+
+inline Json::Json(std::string &&value) : m_node{std::move(value)} {}
+
+inline Json::Json(Array &&value) : m_node{std::move(value)} {}
+
+template <typename T, typename> Json::Json(const T &value) {
+  using ValueType = std::conditional_t<std::is_integral_v<T>, Json::Integer, Json::Number>;
+  m_node = ValueType{value};
 }
 
-template <stack::size_type M> auto Json::asIntVector() const -> stack::Vector<int, M> {
-  stack::Vector<int, M> result;
-  if (size() != M) {
+template <typename... Args>
+Json::Json(std::in_place_type_t<Object> /* tag */, Args &&... args)
+    : m_node{Object{std::forward<Args>(args)...}} {}
+
+template <typename... Args>
+Json::Json(std::in_place_type_t<Array> /* tag */, Args &&... args)
+    : m_node{Array{std::forward<Args>(args)...}} {}
+
+inline auto Json::operator=(bool value) -> Json & {
+  m_node = value;
+  return *this;
+}
+
+inline auto Json::operator=(const char *value) -> Json & {
+  m_node = std::make_any<std::string>(value);
+  return *this;
+}
+
+inline auto Json::operator=(std::string_view value) -> Json & {
+  m_node = std::make_any<std::string>(value);
+  return *this;
+}
+
+inline auto Json::operator=(const std::string &value) -> Json & {
+  m_node = value;
+  return *this;
+}
+
+inline auto Json::operator=(const Object &value) -> Json & {
+  m_node = value;
+  return *this;
+}
+
+inline auto Json::operator=(const Array &value) -> Json & {
+  m_node = value;
+  return *this;
+}
+
+inline auto Json::operator=(Object &&value) -> Json & {
+  m_node = std::move(value);
+  return *this;
+}
+
+inline auto Json::operator=(std::string &&value) -> Json & {
+  m_node = std::move(value);
+  return *this;
+}
+
+inline auto Json::operator=(Array &&value) -> Json & {
+  m_node = std::move(value);
+  return *this;
+}
+
+template <typename T, typename> inline auto Json::operator=(const T &value) -> Json & {
+  using ValueType = std::conditional_t<std::is_integral_v<T>, Json::Integer, Json::Number>;
+  m_node = ValueType{value};
+  return *this;
+}
+
+template <typename T> decltype(auto) Json::as() const {
+  try {
+    if constexpr (std::is_same_v<T, bool>) {
+      return std::any_cast<bool>(m_node);
+    } else if constexpr (std::is_integral_v<T>) {
+      return static_cast<T>(std::any_cast<Integer>(m_node)); // TODO(BK): check bounds (#273)
+    } else if constexpr (std::is_floating_point_v<T>) {
+      if (const auto *value = std::any_cast<Integer>(&m_node)) {
+        return static_cast<T>(*value); // cast integer to float
+      }
+      return static_cast<T>(std::any_cast<Number>(m_node)); // TODO(BK): check bounds (#273)
+    } else {
+      return std::any_cast<const T &>(m_node);
+    }
+  } catch (std::bad_any_cast & /* unused */) {
+    throw std::runtime_error("JSON: value has wrong type");
+  }
+}
+
+inline auto Json::optional(const std::string &key) const -> const Json & {
+  const auto &object = as<Object>();
+  const auto kvp = object.find(key);
+  if (kvp == object.cend()) {
+    return null;
+  }
+  return std::get<1>(*kvp);
+}
+
+inline auto Json::require(const std::string &key) const -> const Json & {
+  if (const auto &m_node = optional(key)) {
+    return m_node;
+  }
+  using namespace std::string_view_literals;
+  throw std::runtime_error(format("JSON: Parameter '{}' is required but missing"sv, key));
+}
+
+template <typename T> auto Json::asVector() const -> std::vector<T> {
+  const auto &a = as<Array>();
+  auto v = std::vector<T>(a.size());
+  std::transform(a.cbegin(), a.cend(), v.begin(),
+                 [](const Json &m_node) { return m_node.as<T>(); });
+  return v;
+}
+
+template <typename T, std::size_t M> auto Json::asVec() const -> stack::Vector<T, M> {
+  stack::Vector<T, M> result;
+  const auto &a = as<Array>();
+  if (a.size() != M) {
     throw std::runtime_error("JSON int vector has wrong length");
   }
   for (stack::size_type i = 0; i != M; ++i) {
-    result[i] = at(i).asInt();
+    result[i] = a[i].as<T>();
   }
   return result;
 }

@@ -292,7 +292,7 @@ public:
   AtlasTileDataUnit() = default;
 
   template <typename... Args>
-  explicit AtlasTileDataUnit(Args &&... args) : m_vector{std::forward<Args>(args)...} {}
+  explicit AtlasTileDataUnit(Args &&...args) : m_vector{std::forward<Args>(args)...} {}
 
   [[nodiscard]] auto atduTotalNumberOfPatches() const noexcept -> std::size_t;
   [[nodiscard]] auto atdu_patch_mode(std::size_t p) const -> AtduPatchMode;

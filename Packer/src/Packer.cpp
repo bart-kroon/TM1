@@ -41,14 +41,14 @@
 
 namespace TMIV::Packer {
 Packer::Packer(const Common::Json &rootNode, const Common::Json &componentNode) {
-  m_minPatchSize = componentNode.require("MinPatchSize").asInt();
-  m_overlap = componentNode.require("Overlap").asInt();
-  m_pip = componentNode.require("PiP").asInt() != 0;
-  m_enableMerging = componentNode.require("enableMerging").asBool();
-  m_maxEntities = rootNode.require("maxEntities").asInt();
+  m_minPatchSize = componentNode.require("MinPatchSize").as<int>();
+  m_overlap = componentNode.require("Overlap").as<int>();
+  m_pip = componentNode.require("PiP").as<int>() != 0;
+  m_enableMerging = componentNode.require("enableMerging").as<bool>();
+  m_maxEntities = rootNode.require("maxEntities").as<int>();
   if (m_maxEntities > 1) {
     m_entityEncodeRange =
-        rootNode.require("GroupBasedEncoder").require("EntityEncodeRange").asIntVector<2>();
+        rootNode.require("GroupBasedEncoder").require("EntityEncodeRange").asVec<int, 2>();
   }
 }
 

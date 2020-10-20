@@ -39,11 +39,13 @@ using Catch::Matchers::Contains;
 #include <TMIV/Common/Application.h>
 #include <TMIV/Common/Common.h>
 #include <TMIV/Common/Half.h>
-#include <TMIV/Common/Json.h>
 #include <TMIV/Common/LinAlg.h>
 
 #include <iostream>
 #include <sstream>
+
+using namespace std::string_literals;
+using namespace std::string_view_literals;
 
 namespace TMIV::Common {
 TEST_CASE("Array, Vector, Matrix, LinAlg") {
@@ -127,20 +129,6 @@ TEST_CASE("Array, Vector, Matrix, LinAlg") {
   REQUIRE(fabs(trace(m1)) < EPS);
 }
 
-TEST_CASE("Reading a Json", "[Json]") {
-  std::istringstream stream{R"({ "alpha": true, "beta": false })"};
-  auto json = Json{stream};
-  SECTION("Read booleans") {
-    REQUIRE(json.require("alpha").asBool());
-    REQUIRE(!json.require("beta").asBool());
-    REQUIRE(json.optional("alpha"));
-    REQUIRE(!json.optional("beta"));
-    REQUIRE(json.optional("beta").type() == Json::Type::boolean);
-    REQUIRE(!json.optional("gamma"));
-    REQUIRE(json.optional("gamma").type() == Json::Type::null);
-  }
-}
-
 namespace {
 class FakeApplication : public Application {
 public:
@@ -164,13 +152,13 @@ TEST_CASE("Parsing the command-line", "[Application]") {
 
   SECTION("Specifying parameters with -p KEY VALUE") {
     FakeApplication app{"Fake", {"command", "-p", "Color", "green", "-p", "Shape", "circular"}};
-    REQUIRE(app.json().require("Color").asString() == "green");
-    REQUIRE(app.json().require("Shape").asString() == "circular");
+    REQUIRE(app.json().require("Color").as<std::string>() == "green"s);
+    REQUIRE(app.json().require("Shape").as<std::string>() == "circular"s);
   }
 
   SECTION("Right has preference over left") {
     FakeApplication app{"Fake", {"command", "-p", "Color", "green", "-p", "Color", "red"}};
-    REQUIRE(app.json().require("Color").asString() == "red");
+    REQUIRE(app.json().require("Color").as<std::string>() == "red"s);
   }
 }
 

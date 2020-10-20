@@ -41,9 +41,9 @@
 namespace TMIV::GeometryQuantizer {
 ExplicitOccupancy::ExplicitOccupancy(const Common::Json & /*unused*/,
                                      const Common::Json &componentNode) {
-  if (auto subnode = componentNode.optional("occupancyScale")) {
+  if (const auto &subnode = componentNode.optional("occupancyScale")) {
     m_occupancyScaleConfig = true;
-    m_occupancyScale = subnode.asIntVector<2>();
+    m_occupancyScale = subnode.asVec<int, 2>();
   } else {
     m_occupancyScaleConfig = false;
   }

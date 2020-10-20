@@ -87,15 +87,15 @@ private:
 
 public:
   explicit Impl(const Common::Json &nodeConfig)
-      : m_maxDepthError{nodeConfig.require("maxDepthError").asFloat()}
-      , m_maxLumaError{nodeConfig.require("maxLumaError").asFloat()}
-      , m_maxStretching{nodeConfig.require("maxStretching").asFloat()}
-      , m_erode{nodeConfig.require("erode").asInt()}
-      , m_dilate{nodeConfig.require("dilate").asInt()}
-      , m_maxBasicViewsPerGraph{nodeConfig.require("maxBasicViewsPerGraph").asInt()}
-      , m_config{nodeConfig.require("rayAngleParameter").asFloat(),
-                 nodeConfig.require("depthParameter").asFloat(),
-                 nodeConfig.require("stretchingParameter").asFloat(), m_maxStretching} {}
+      : m_maxDepthError{nodeConfig.require("maxDepthError").as<float>()}
+      , m_maxLumaError{nodeConfig.require("maxLumaError").as<float>()}
+      , m_maxStretching{nodeConfig.require("maxStretching").as<float>()}
+      , m_erode{nodeConfig.require("erode").as<int>()}
+      , m_dilate{nodeConfig.require("dilate").as<int>()}
+      , m_maxBasicViewsPerGraph{nodeConfig.require("maxBasicViewsPerGraph").as<int>()}
+      , m_config{nodeConfig.require("rayAngleParameter").as<float>(),
+                 nodeConfig.require("depthParameter").as<float>(),
+                 nodeConfig.require("stretchingParameter").as<float>(), m_maxStretching} {}
 
   static void assignAdditionalViews(const Common::Mat<float> &overlap,
                                     const MivBitstream::ViewParamsList &viewParamsList,

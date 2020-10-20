@@ -388,12 +388,12 @@ auto ViewingSpace::loadFromJson(const Common::Json &node, const Common::Json &co
   };
 
   ViewingSpace viewingSpace{};
-  const auto elementaryShapes = node.require("ElementaryShapes");
+  const auto &elementaryShapes = node.require("ElementaryShapes").as<Json::Array>();
 
-  for (size_t i = 0; i < elementaryShapes.size(); ++i) {
+  for (const auto & elementaryShape : elementaryShapes) {
     viewingSpace.elementaryShapes.emplace_back(
-        parseOperation(elementaryShapes.at(i).require("ElementaryShapeOperation").asString()),
-        ElementaryShape::loadFromJson(elementaryShapes.at(i).require("ElementaryShape"), config));
+        parseOperation(elementaryShape.require("ElementaryShapeOperation").as<std::string>()),
+        ElementaryShape::loadFromJson(elementaryShape.require("ElementaryShape"), config));
   }
 
   // consolidate the optional values across all primitives in each elementary shape
@@ -447,9 +447,9 @@ auto ElementaryShape::loadFromJson(const Common::Json &node, const Common::Json 
 
   // added for m52412 inferred_views implementation
   bool inferredView = false;
-  const auto sourceCameraNames = (config.require("SourceCameraNames").asStringVector());
-  if (auto subsubnode = node.optional("InferringViews"); subsubnode) {
-    std::vector<std::string> views = subsubnode.asStringVector();
+  const auto sourceCameraNames = (config.require("SourceCameraNames").asVector<std::string>());
+  if (const auto &subsubnode = node.optional("InferringViews")) {
+    std::vector<std::string> views = subsubnode.asVector<std::string>();
     for (const auto &v : views) {
       size_t idx = 0;
       for (; idx < sourceCameraNames.size(); idx++) {
@@ -467,13 +467,13 @@ auto ElementaryShape::loadFromJson(const Common::Json &node, const Common::Json 
 
   // primitive shape operation
   elementaryShape.primitiveOperation =
-      parseOperation(node.require("PrimitiveShapeOperation").asString());
+      parseOperation(node.require("PrimitiveShapeOperation").as<std::string>());
 
   // primitive shapes
-  const auto primitiveShapes = node.require("PrimitiveShapes");
-  for (size_t i = 0; i < primitiveShapes.size(); ++i) {
+  const auto &primitiveShapes = node.require("PrimitiveShapes").as<Json::Array>();
+  for (const auto & primitiveShape : primitiveShapes) {
     elementaryShape.primitives.push_back(
-        PrimitiveShape::loadFromJson(primitiveShapes.at(i), inferredView));
+        PrimitiveShape::loadFromJson(primitiveShape, inferredView));
   }
 
   // check consistency
@@ -488,7 +488,7 @@ auto ElementaryShape::loadFromJson(const Common::Json &node, const Common::Json 
 
 auto PrimitiveShape::loadFromJson(const Common::Json &node, bool inferredView) -> PrimitiveShape {
   PrimitiveShape primitiveShape{};
-  const auto &shapeType = node.require("PrimitiveShapeType").asString();
+  const auto &shapeType = node.require("PrimitiveShapeType").as<std::string>();
   if (shapeType == "cuboid") {
     primitiveShape.primitive = Cuboid::loadFromJson(node, inferredView);
   }
@@ -498,28 +498,28 @@ auto PrimitiveShape::loadFromJson(const Common::Json &node, bool inferredView) -
   if (shapeType == "halfspace") {
     primitiveShape.primitive = Halfspace::loadFromJson(node, inferredView);
   }
-  if (auto subnode = node.optional("GuardBandSize"); subnode) {
-    primitiveShape.guardBandSize = subnode.asFloat();
+  if (const auto &subnode = node.optional("GuardBandSize")) {
+    primitiveShape.guardBandSize = subnode.as<float>();
   }
-  if (auto subnode = node.optional("Rotation"); subnode) {
-    primitiveShape.rotation = Common::euler2quat(Common::radperdeg * subnode.asFloatVector<3>());
+  if (const auto &subnode = node.optional("Rotation")) {
+    primitiveShape.rotation = Common::euler2quat(Common::radperdeg * subnode.asVec<float, 3>());
   }
-  if (auto subnode = node.optional("ViewingDirectionConstraint"); subnode) {
+  if (const auto &subnode = node.optional("ViewingDirectionConstraint")) {
     primitiveShape.viewingDirectionConstraint = PrimitiveShape::ViewingDirectionConstraint();
-    if (auto subsubnode = subnode.optional("GuardBandDirectionSize"); subsubnode) {
+    if (const auto &subsubnode = subnode.optional("GuardBandDirectionSize")) {
       primitiveShape.viewingDirectionConstraint.value().guardBandDirectionSize =
-          subsubnode.asFloat();
+          subsubnode.as<float>();
     }
     if (!inferredView) {
-      const float directionYaw = subnode.require("YawCenter").asFloat();
-      const float directionPitch = subnode.require("PitchCenter").asFloat();
+      const float directionYaw = subnode.require("YawCenter").as<float>();
+      const float directionPitch = subnode.require("PitchCenter").as<float>();
       primitiveShape.viewingDirectionConstraint.value().directionRotation =
           Common::euler2quat(Common::radperdeg * Common::Vec3f{directionYaw, directionPitch, 0.F});
     }
     primitiveShape.viewingDirectionConstraint.value().yawRange =
-        subnode.require("YawRange").asFloat();
+        subnode.require("YawRange").as<float>();
     primitiveShape.viewingDirectionConstraint.value().pitchRange =
-        subnode.require("PitchRange").asFloat();
+        subnode.require("PitchRange").as<float>();
   }
   return primitiveShape;
 }
@@ -527,25 +527,25 @@ auto PrimitiveShape::loadFromJson(const Common::Json &node, bool inferredView) -
 auto Cuboid::loadFromJson(const Common::Json &node, bool inferredView) -> Cuboid {
   Cuboid cuboid;
   if (!inferredView) {
-    cuboid.center = node.require("Center").asFloatVector<3>();
+    cuboid.center = node.require("Center").asVec<float, 3>();
   }
-  cuboid.size = node.require("Size").asFloatVector<3>();
+  cuboid.size = node.require("Size").asVec<float, 3>();
   return cuboid;
 }
 
 auto Spheroid::loadFromJson(const Common::Json &node, bool inferredView) -> Spheroid {
   Spheroid spheroid;
   if (!inferredView) {
-    spheroid.center = node.require("Center").asFloatVector<3>();
+    spheroid.center = node.require("Center").asVec<float, 3>();
   }
-  spheroid.radius = node.require("Radius").asFloatVector<3>();
+  spheroid.radius = node.require("Radius").asVec<float, 3>();
   return spheroid;
 }
 
 auto Halfspace::loadFromJson(const Common::Json &node, bool /*inferredView*/) -> Halfspace {
   Halfspace plane;
-  plane.normal = node.require("Normal").asFloatVector<3>();
-  plane.distance = node.require("Distance").asFloat();
+  plane.normal = node.require("Normal").asVec<float, 3>();
+  plane.distance = node.require("Distance").as<float>();
   return plane;
 }
 

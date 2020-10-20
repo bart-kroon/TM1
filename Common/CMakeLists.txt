@@ -56,7 +56,9 @@ if (CMAKE_TESTING_ENABLED)
     add_executable(CommonTest
         "src/Bitstream.test.cpp"
         "src/Quaternion.test.cpp"
-        "src/Common.test.cpp")
+        "src/Common.test.cpp"
+        "src/Json.test.cpp"
+        )
 
     target_link_libraries(CommonTest
         PRIVATE

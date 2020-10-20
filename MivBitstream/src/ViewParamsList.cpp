@@ -63,28 +63,28 @@ auto ViewParams::operator==(const ViewParams &other) const -> bool {
 
 auto ViewParams::loadFromJson(const Common::Json &node) -> ViewParams {
   auto x = ViewParams{};
-  x.name = node.require("Name").asString();
+  x.name = node.require("Name").as<std::string>();
 
-  const auto resolution = node.require("Resolution").asIntVector<2>();
+  const auto resolution = node.require("Resolution").asVec<int, 2>();
   x.ci.ci_projection_plane_width_minus1(resolution.x() - 1);
   x.ci.ci_projection_plane_height_minus1(resolution.y() - 1);
 
-  x.ce.position(node.require("Position").asFloatVector<3>());
-  x.ce.rotation(euler2quat(Common::radperdeg * node.require("Rotation").asFloatVector<3>()));
+  x.ce.position(node.require("Position").asVec<float, 3>());
+  x.ce.rotation(euler2quat(Common::radperdeg * node.require("Rotation").asVec<float, 3>()));
 
-  const auto depthRange = node.require("Depth_range").asFloatVector<2>();
+  const auto depthRange = node.require("Depth_range").asVec<float, 2>();
   constexpr auto kilometer = 1000.F;
   x.dq.dq_norm_disp_low(depthRange.y() < kilometer ? 1.F / depthRange.y() : 0.F);
   x.dq.dq_norm_disp_high(depthRange.x() < kilometer ? 1.F / depthRange.x() : 0.F);
 
-  if (auto subnode = node.optional("HasInvalidDepth"); subnode) {
-    x.hasOccupancy = subnode.asBool();
+  if (const auto &subnode = node.optional("HasInvalidDepth")) {
+    x.hasOccupancy = subnode.as<bool>();
   }
 
-  auto proj = node.require("Projection").asString();
+  auto proj = node.require("Projection").as<std::string>();
   if (proj == "Equirectangular") {
-    const auto phiRange = Common::radperdeg * node.require("Hor_range").asFloatVector<2>();
-    const auto thetaRange = Common::radperdeg * node.require("Ver_range").asFloatVector<2>();
+    const auto phiRange = Common::radperdeg * node.require("Hor_range").asVec<float, 2>();
+    const auto thetaRange = Common::radperdeg * node.require("Ver_range").asVec<float, 2>();
 
     x.ci.ci_cam_type(CiCamType::equirectangular);
     x.ci.ci_erp_phi_min(phiRange.x());
@@ -93,8 +93,8 @@ auto ViewParams::loadFromJson(const Common::Json &node) -> ViewParams {
     x.ci.ci_erp_theta_max(thetaRange.y());
 
   } else if (proj == "Perspective") {
-    const auto focal = node.require("Focal").asFloatVector<2>();
-    const auto center = node.require("Principle_point").asFloatVector<2>();
+    const auto focal = node.require("Focal").asVec<float, 2>();
+    const auto center = node.require("Principle_point").asVec<float, 2>();
 
     x.ci.ci_cam_type(CiCamType::perspective);
     x.ci.ci_perspective_focal_hor(focal.x());
@@ -104,8 +104,8 @@ auto ViewParams::loadFromJson(const Common::Json &node) -> ViewParams {
 
   } else if (proj == "Orthographic") {
     x.ci.ci_cam_type(CiCamType::orthographic);
-    x.ci.ci_ortho_width(node.require("OrthoWidth").asFloat());
-    x.ci.ci_ortho_width(node.require("OrthoHeight").asFloat());
+    x.ci.ci_ortho_width(node.require("OrthoWidth").as<float>());
+    x.ci.ci_ortho_width(node.require("OrthoHeight").as<float>());
 
   } else {
     throw std::runtime_error("Unknown projection type in metadata JSON file");
@@ -138,10 +138,11 @@ auto ViewParamsList::operator==(const ViewParamsList &other) const -> bool {
 auto ViewParamsList::loadFromJson(const Common::Json &node, const std::vector<std::string> &names)
     -> ViewParamsList {
   ViewParamsList result;
+  const auto &a = node.as<Common::Json::Array>();
   for (const auto &name : names) {
-    for (size_t i = 0; i != node.size(); ++i) {
-      if (name == node.at(i).require("Name").asString()) {
-        result.push_back(ViewParams::loadFromJson(node.at(i)));
+    for (size_t i = 0; i != a.size(); ++i) {
+      if (name == a[i].require("Name").as<std::string>()) {
+        result.push_back(ViewParams::loadFromJson(a[i]));
         break;
       }
     }

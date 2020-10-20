@@ -36,58 +36,124 @@
 
 #include <TMIV/Common/Vector.h>
 
+#include <any>
 #include <iosfwd>
-#include <memory>
+#include <map>
 #include <string>
+#include <string_view>
+#include <type_traits>
 #include <vector>
 
 namespace TMIV::Common {
-namespace impl {
-struct Value;
-struct Object;
-} // namespace impl
-
+// https://www.json.org/
 class Json {
+private:
+  // NOTE(BK): At first I tried to use std::variant and std::unique_ptr but any small mistake
+  // resulted in pages of compiler errors so I gave up on that. The benefit of std::any is that it
+  // is a copyable non-template class and thus Json is copyable (behaves like a value) and error
+  // messages are readable. The small price to pay is that the type erasure moves some of the type
+  // checking to runtime. This creates a class invariant and thus m_node had to be made private and
+  // we need to have many constructors (instead of almost none).
+  std::any m_node;
+
 public:
-  enum class Type { number, string, array, object, boolean, null };
+  using Object = std::map<std::string, Json>;
+  using Array = std::vector<Json>;
+  using Integer = long long;
+  using Number = double;
 
-  // Initialize as a null node
-  Json();
+  // Default construction corresponds to JSON null
+  Json() = default;
 
-  // Initialize from an input stream
-  explicit Json(std::istream &stream);
+  // An lvalue Json that is default-constructed
+  static const Json null;
 
-  // For a Json of type Object specify another Json of Type Object that
-  // overrides this one for all keys
-  void setOverrides(const Json &overrides);
-
-  [[nodiscard]] auto type() const -> Type;
-  [[nodiscard]] auto optional(std::string const &key) const -> Json;
-  [[nodiscard]] auto require(std::string const &key) const -> Json;
-  [[nodiscard]] auto isPresent(std::string const &key) const -> bool;
-
-  // Index into an array
-  [[nodiscard]] auto at(size_t index) const -> Json;
-
-  // Return the number of elements in an object or array
-  [[nodiscard]] auto size() const -> size_t;
-
-  [[nodiscard]] auto asDouble() const -> double;
-  [[nodiscard]] auto asFloat() const -> float;
-  [[nodiscard]] auto asInt() const -> int;
-  [[nodiscard]] auto asString() const -> std::string const &;
-  [[nodiscard]] auto asBool() const -> bool;
-  [[nodiscard]] auto asStringVector() const -> std::vector<std::string>;
-  template <stack::size_type M> auto asIntVector() const -> stack::Vector<int, M>;
-  template <stack::size_type M> auto asFloatVector() const -> stack::Vector<float, M>;
-
-  // Anything apart from false and null is true
+  // Returns true unless the value is JSON null
+  //  * This behaviour is different from previous releases whereby the JSON value `false` also
+  //    returned false.
   explicit operator bool() const;
 
-private:
-  explicit Json(std::shared_ptr<impl::Value> value);
+  // Rule of 5
+  Json(const Json &other) = default;
+  Json(Json &&other) = default;
+  auto operator=(const Json &other) -> Json & = default;
+  auto operator=(Json &&other) -> Json & = default;
+  ~Json() = default;
 
-  std::shared_ptr<impl::Value> m_value;
+  // Value constructors
+  explicit Json(bool value);
+  explicit Json(const char *value);
+  explicit Json(std::string_view value);
+  explicit Json(const std::string &value);
+  explicit Json(const Object &value);
+  explicit Json(const Array &value);
+  explicit Json(Object &&value);
+  explicit Json(std::string &&value);
+  explicit Json(Array &&value);
+
+  // Value construction with numeric promotion
+  template <typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
+  explicit Json(const T &value);
+
+  // In-place value constructors
+  template <typename... Args> explicit Json(std::in_place_type_t<Object> tag, Args &&...args);
+  template <typename... Args> explicit Json(std::in_place_type_t<Array> tag, Args &&...args);
+
+  // Converting assignment operators
+  auto operator=(bool value) -> Json &;
+  auto operator=(const char *value) -> Json &;
+  auto operator=(std::string_view value) -> Json &;
+  auto operator=(const std::string &value) -> Json &;
+  auto operator=(const Object &value) -> Json &;
+  auto operator=(const Array &value) -> Json &;
+  auto operator=(Object &&value) -> Json &;
+  auto operator=(std::string &&value) -> Json &;
+  auto operator=(Array &&value) -> Json &;
+
+  // Converting assignment with numeric promotion
+  template <typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
+  auto operator=(const T &value) -> Json &;
+
+  // Parse a JSON
+  static auto parse(std::string_view text) -> Json;
+
+  // Load a JSON from a stream
+  static auto loadFrom(std::istream &stream) -> Json;
+
+  // Update a JSON with another one
+  //  * merges objects
+  //  * copies non-null values
+  auto update(const Json &other) -> Json &;
+
+  // Merge of the second JSON object into the first
+  //  1. Keys missing in first are added
+  //  2. Matching keys are updated
+  static void mergeObject(Object &first, const Object &second);
+
+  // Access JSON value
+  //  * with numeric conversions, e.g. as<uint16>(), as<float>(), etc.
+  //  * When this node is not a JSON number, throws a `std::runtime_error`.
+  //  * Numbers without mantissa and exponent are stored as Json::Integer, others as Json::Number
+  //    which is a floating-point type.
+  template <typename T> decltype(auto) as() const;
+
+  // Access a JSON object by key
+  //  * When a key is missing, returns `null`.
+  //  * When this node is not a JSON object, throws a `std::runtime_error`.
+  [[nodiscard]] auto optional(const std::string &key) const -> const Json &;
+
+  // Access a JSON object by key
+  //  * When a key is missing, throws a `std::runtime_error`.
+  //  * When this node is not a JSON object, throws a `std::runtime_error`.
+  [[nodiscard]] auto require(const std::string &key) const -> const Json &;
+
+  // Copy JSON array of unknown length to std::vector<T> for given type T
+  //  * When this node is not a JSON array, throws a `std::runtime_error`.
+  template <typename T> [[nodiscard]] auto asVector() const -> std::vector<T>;
+
+  // Copy JSON array of known length M to a stack::Vector<T, M> for given type T and M
+  //  * When this node is not a JSON array, throws a `std::runtime_error`.
+  template <typename T, std::size_t M> [[nodiscard]] auto asVec() const -> stack::Vector<T, M>;
 };
 } // namespace TMIV::Common
 

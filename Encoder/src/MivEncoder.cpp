@@ -129,6 +129,7 @@ const auto nuhAfps = MivBitstream::NalUnitHeader{MivBitstream::NalUnitType::NAL_
 const auto nuhIdr = MivBitstream::NalUnitHeader{MivBitstream::NalUnitType::NAL_IDR_N_LP, 0, 1};
 const auto nuhCra = MivBitstream::NalUnitHeader{MivBitstream::NalUnitType::NAL_CRA, 0, 1};
 const auto nuhCaf = MivBitstream::NalUnitHeader{MivBitstream::NalUnitType::NAL_CAF, 0, 1};
+// TODO (CB) add NAL_CASPS here?
 } // namespace
 
 auto MivEncoder::commonAtlasSubBitstream() -> MivBitstream::AtlasSubBitstream {

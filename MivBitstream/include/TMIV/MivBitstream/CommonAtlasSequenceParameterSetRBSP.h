@@ -70,12 +70,13 @@ private:
 // 23090-5 common_atlas_sequence_parameter_set_rbsp()
 class CommonAtlasSequenceParameterSetRBSP {
 public:
+  // TODO check if anything is inferred if not present!
   [[nodiscard]] constexpr auto casps_common_atlas_sequence_parameter_set_id() const noexcept;
   [[nodiscard]] constexpr auto
   casps_log2_max_common_atlas_frame_order_cnt_lsb_minus4() const noexcept;
   [[nodiscard]] constexpr auto casps_extension_present_flag() const noexcept;
-  [[nodiscard]] constexpr auto casps_miv_extension_present_flag() const noexcept;
-  [[nodiscard]] constexpr auto casps_extension_7bits() const noexcept;
+  [[nodiscard]] auto casps_miv_extension_present_flag() const noexcept;
+  [[nodiscard]] auto casps_extension_7bits() const noexcept;
   [[nodiscard]] auto casps_miv_extension() const noexcept;
   [[nodiscard]] auto caspsExtensionData() const noexcept
       -> const std::vector<bool> &; // to access multiple casps_extension_data_flags
@@ -85,10 +86,10 @@ public:
   constexpr auto casps_log2_max_common_atlas_frame_order_cnt_lsb_minus4(std::size_t value) noexcept
       -> auto &;
   constexpr auto casps_extension_present_flag(bool flag) noexcept -> auto &;
-  constexpr auto casps_miv_extension_present_flag(bool flag) noexcept -> auto &;
-  constexpr auto casps_extension_7bits(std::uint8_t value) noexcept -> auto &;
-  auto casps_miv_extension(CaspsMivExtension value) noexcept -> CaspsMivExtension &;
-  auto caspsExtensionData(std::vector<bool> value) noexcept -> auto &;
+  auto casps_miv_extension_present_flag(bool flag) noexcept -> CommonAtlasSequenceParameterSetRBSP &;
+  auto casps_extension_7bits(std::uint8_t value) noexcept -> CommonAtlasSequenceParameterSetRBSP &;
+  auto casps_miv_extension() noexcept -> CaspsMivExtension &;
+  auto caspsExtensionData(std::vector<bool> value) noexcept -> CommonAtlasSequenceParameterSetRBSP &;
 
   friend auto operator<<(std::ostream &stream, const CommonAtlasSequenceParameterSetRBSP &x)
       -> std::ostream &;
@@ -96,9 +97,9 @@ public:
   auto operator==(const CommonAtlasSequenceParameterSetRBSP &other) const noexcept -> bool;
   auto operator!=(const CommonAtlasSequenceParameterSetRBSP &other) const noexcept -> bool;
 
-  static auto decodeFrom(Common::InputBitstream &bitstream) -> CommonAtlasSequenceParameterSetRBSP;
+  static auto decodeFrom(std::istream &stream) -> CommonAtlasSequenceParameterSetRBSP;
 
-  void encodeTo(Common::OutputBitstream &stream) const;
+  void encodeTo(std::ostream &stream) const;
 
 private:
   std::uint8_t m_casps_common_atlas_sequence_parameter_set_id{};

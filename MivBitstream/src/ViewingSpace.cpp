@@ -390,7 +390,7 @@ auto ViewingSpace::loadFromJson(const Common::Json &node, const Common::Json &co
   ViewingSpace viewingSpace{};
   const auto &elementaryShapes = node.require("ElementaryShapes").as<Json::Array>();
 
-  for (const auto & elementaryShape : elementaryShapes) {
+  for (const auto &elementaryShape : elementaryShapes) {
     viewingSpace.elementaryShapes.emplace_back(
         parseOperation(elementaryShape.require("ElementaryShapeOperation").as<std::string>()),
         ElementaryShape::loadFromJson(elementaryShape.require("ElementaryShape"), config));
@@ -471,7 +471,7 @@ auto ElementaryShape::loadFromJson(const Common::Json &node, const Common::Json 
 
   // primitive shapes
   const auto &primitiveShapes = node.require("PrimitiveShapes").as<Json::Array>();
-  for (const auto & primitiveShape : primitiveShapes) {
+  for (const auto &primitiveShape : primitiveShapes) {
     elementaryShape.primitives.push_back(
         PrimitiveShape::loadFromJson(primitiveShape, inferredView));
   }

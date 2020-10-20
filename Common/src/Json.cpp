@@ -99,7 +99,7 @@ auto parseObject(std::string_view &text) -> Json::Object {
     auto value = parseValue(text);
 
     if (!x.emplace(key, std::move(value)).second) {
-      throw std::runtime_error(format("JSON parser: duplicate key '{}'", key));
+      throw std::runtime_error(Common::format("JSON parser: duplicate key '{}'", key));
     }
   }
 
@@ -205,7 +205,8 @@ auto parseString(std::string_view &text) -> std::string {
       } else if (ch2 == 'u') {
         throw std::logic_error("JSON parser: unicode character codes are not yet supported");
       } else {
-        throw std::runtime_error(format("JSON parser: invalid string escape character '{}'", ch2));
+        throw std::runtime_error(
+            Common::format("JSON parser: invalid string escape character '{}'", ch2));
       }
     } else if ('\0' <= ch1 && ch1 < ' ') {
       throw std::runtime_error("JSON parser: control character within string");
@@ -264,6 +265,109 @@ auto Json::loadFrom(std::istream &stream) -> Json {
   std::ostringstream buffer;
   buffer << stream.rdbuf();
   return parse(buffer.str());
+}
+
+auto Json::format() const -> std::string {
+  std::ostringstream stream;
+  stream.precision(std::numeric_limits<Json::Number>::max_digits10);
+  saveTo(stream);
+  return stream.str();
+}
+
+namespace {
+auto saveValue(std::tuple<bool> /* tag */, std::ostream &stream, bool value, int /* level */)
+    -> std::ostream & {
+  return stream << std::boolalpha << value;
+}
+
+auto saveValue(std::tuple<Json::Integer> /* tag */, std::ostream &stream, Json::Integer value,
+               int /* level */) -> std::ostream & {
+  return stream << value;
+}
+
+auto saveValue(std::tuple<Json::Number> /* tag */, std::ostream &stream, Json::Number value,
+               int /* level */) -> std::ostream & {
+  return stream << value;
+}
+
+auto saveValue(const std::tuple<std::string> & /* tag */, std::ostream &stream,
+               const std::string &value, int /* level */) -> std::ostream & {
+  stream << '"';
+  for (const auto ch : value) {
+    if (ch == '"') {
+      stream << "\\\"";
+    } else if (ch == '\\') {
+      stream << "\\\\";
+    } else if (ch == '\b') {
+      stream << "\\b";
+    } else if (ch == '\f') {
+      stream << "\\f";
+    } else if (ch == '\n') {
+      stream << "\\n";
+    } else if (ch == '\r') {
+      stream << "\\r";
+    } else if (ch == '\t') {
+      stream << "\\t";
+    } else if ('\0' <= ch && ch < ' ') {
+      throw std::runtime_error("JSON formatter: control character within string");
+    } else {
+      stream << ch;
+    }
+  }
+  return stream << '"';
+}
+
+auto saveValue(const std::tuple<Json::Object> & /* tag */, std::ostream &stream,
+               const Json::Object &object, int level) -> std::ostream & {
+  if (object.empty()) {
+    return stream << "{ }";
+  }
+  const auto indent = std::string(std::size_t{4} * level, ' ');
+  auto sep = "{\n"sv;
+  for (const auto &[key, value] : object) {
+    stream << sep << indent << "    ";
+    Json{key}.saveTo(stream) << ": ";
+    value.saveTo(stream, level + 1);
+    sep = ",\n"sv;
+  }
+  return stream << "\n" << indent << '}';
+}
+
+auto saveValue(const std::tuple<Json::Array> & /* tag */, std::ostream &stream,
+               const Json::Array &array, int level) -> std::ostream & {
+  stream << '[';
+  auto sep = " "sv;
+  for (const auto &value : array) {
+    stream << sep;
+    value.saveTo(stream, level);
+    sep = ", "sv;
+  }
+  return stream << " ]";
+}
+
+template <typename Type>
+auto saveIf(const std::any &node, std::ostream &stream, int level) -> bool {
+  if (const auto *value = std::any_cast<Type>(&node)) {
+    return saveValue(std::tuple<Type>{}, stream, *value, level).good();
+  }
+  return false;
+}
+
+template <typename... Type>
+auto saveAny(const std::any &node, std::ostream &stream, int level) -> std::ostream & {
+  if ((saveIf<Type>(node, stream, level) || ...)) {
+    return stream;
+  }
+  throw std::runtime_error("JSON: Failed to write JSON node to stream");
+}
+} // namespace
+
+auto Json::saveTo(std::ostream &stream, int level) const -> std::ostream & {
+  if (m_node.has_value()) {
+    return saveAny<bool, Json::Integer, Json::Number, std::string, Json::Object, Json::Array>(
+        m_node, stream, level);
+  }
+  return stream << "null";
 }
 
 auto Json::update(const Json &other) -> Json & {

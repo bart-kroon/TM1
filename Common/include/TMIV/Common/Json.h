@@ -120,6 +120,12 @@ public:
   // Load a JSON from a stream
   static auto loadFrom(std::istream &stream) -> Json;
 
+  // Format a JSON
+  auto format() const -> std::string;
+
+  // Save a JSON to a stream
+  auto saveTo(std::ostream &stream, int level = 0) const -> std::ostream &;
+
   // Update a JSON with another one
   //  * merges objects
   //  * copies non-null values

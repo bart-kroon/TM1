@@ -221,6 +221,96 @@ TEST_CASE("Parse a JSON") {
   }
 }
 
+TEST_CASE("Format a JSON") {
+  SECTION("null") { REQUIRE(Json::null.format() == "null"s); }
+
+  SECTION("false") { REQUIRE(Json{false}.format() == "false"s); }
+
+  SECTION("true") { REQUIRE(Json{true}.format() == "true"s); }
+
+  SECTION("string") {
+    REQUIRE(Json{"Hello, world!"s}.format() == "\"Hello, world!\""s);
+
+    REQUIRE(Json{"Escape \\ / \n \r \b \f \t \r \" the string"s}.format() ==
+            "\"Escape \\\\ / \\n \\r \\b \\f \\t \\r \\\" the string\""s);
+  }
+
+  SECTION("number") {
+    REQUIRE(Json{0}.format() == "0"s);
+    REQUIRE(Json{-1234}.format() == "-1234"s);
+    REQUIRE(Json{774}.format() == "774"s);
+    REQUIRE(Json{INT64_MIN}.format() == "-9223372036854775808"s);
+    REQUIRE(Json{INT64_MAX}.format() == "9223372036854775807"s);
+    REQUIRE(Json{0.0}.format() == "0"s);
+    REQUIRE(Json{42E-002}.format() == "0.41999999999999998"s);
+    REQUIRE(Json{2.4E+3}.format() == "2400"s);
+    REQUIRE(Json{M_PI}.format() == "3.1415926535897931"s);
+  }
+
+  SECTION("array") {
+    REQUIRE(Json{Json::Array{}}.format() == "[ ]"s);
+    REQUIRE(Json{std::in_place_type_t<Json::Array>{}, Json{4}}.format() == "[ 4 ]"s);
+    REQUIRE(Json{std::in_place_type_t<Json::Array>{}, Json{4}, Json{2}}.format() == "[ 4, 2 ]"s);
+    REQUIRE(Json{std::in_place_type_t<Json::Array>{}, Json{2}, Json{4.2}}.format() ==
+            "[ 2, 4.2000000000000002 ]"s);
+  }
+
+  SECTION("object") {
+    REQUIRE(Json{Json::Object{}}.format() == "{ }"s);
+    REQUIRE(Json{std::in_place_type_t<Json::Object>{}, std::pair{"test"s, Json{true}}}.format() ==
+            R"({
+    "test": true
+})");
+    REQUIRE(Json{std::in_place_type_t<Json::Object>{}, std::pair{"fail"s, Json{}},
+                 std::pair{"empty"s, Json{Json::Object{}}}}
+                .format() ==
+            R"({
+    "empty": { },
+    "fail": null
+})");
+  }
+
+  SECTION("Indenting with object within array within object") {
+    const auto inner = Json{std::in_place_type_t<Json::Object>{}, std::pair{"fail"s, Json{}},
+                            std::pair{"empty"s, Json{Json::Object{}}}};
+    const auto middle =
+        Json{std::in_place_type_t<Json::Array>{}, inner, inner, Json{"break"}, inner};
+    const auto outer =
+        Json{std::in_place_type_t<Json::Object>{}, std::pair{"middle"s, middle},
+             std::pair{"intermezzo"s, Json{Json::Array{}}}, std::pair{"first"s, middle}};
+    REQUIRE(outer.format() == R"({
+    "first": [ {
+        "empty": { },
+        "fail": null
+    }, {
+        "empty": { },
+        "fail": null
+    }, "break", {
+        "empty": { },
+        "fail": null
+    } ],
+    "intermezzo": [ ],
+    "middle": [ {
+        "empty": { },
+        "fail": null
+    }, {
+        "empty": { },
+        "fail": null
+    }, "break", {
+        "empty": { },
+        "fail": null
+    } ]
+})");
+  }
+}
+
+TEST_CASE("Save a JSON to a stream") {
+  std::ostringstream stream;
+  stream << '|';
+  Json{}.saveTo(stream) << "|";
+  REQUIRE(stream.str() == "|null|"s);
+}
+
 TEST_CASE("Load a JSON from a stream") {
   std::istringstream stream{"true"};
   const auto json = Json::loadFrom(stream);

@@ -142,7 +142,7 @@ auto CommonAtlasSequenceParameterSetRBSP::casps_extension_7bits(std::uint8_t val
 auto CommonAtlasSequenceParameterSetRBSP::casps_miv_extension(CaspsMivExtension value) noexcept
     -> CommonAtlasSequenceParameterSetRBSP & {
   VERIFY_V3CBITSTREAM(casps_miv_extension_present_flag());
-  m_casps_miv_extension = std::move(value);
+  m_casps_miv_extension = value;
   return *this;
 }
 

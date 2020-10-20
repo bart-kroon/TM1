@@ -70,7 +70,6 @@ private:
 // 23090-5 common_atlas_sequence_parameter_set_rbsp()
 class CommonAtlasSequenceParameterSetRBSP {
 public:
-  // TODO check if anything is inferred if not present!
   [[nodiscard]] constexpr auto casps_common_atlas_sequence_parameter_set_id() const noexcept;
   [[nodiscard]] constexpr auto
   casps_log2_max_common_atlas_frame_order_cnt_lsb_minus4() const noexcept;

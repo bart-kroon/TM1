@@ -104,6 +104,7 @@ Open the CMake GUI and specify:
 
 * Where the source directory is: /Workspace/TM1
 * Where to build the binaries: /Workspace/TM1/build
+* Do not change any flags starting with `CATCH_`
 * Click Configure, Yes, Finish
 * Set CMAKE_INSTALL_PREFIX to /Workspace/tm1_install
 * Click Generate

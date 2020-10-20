@@ -140,7 +140,7 @@ TEST_CASE("Converting assignment operator with numeric promotion") {
   auto json = Json{};
 
   json = 1;
-  REQUIRE(json.as<int>() == 1.);
+  REQUIRE(json.as<int>() == 1);
 
   json = 1.;
   REQUIRE(json.as<double>() == 1.);
@@ -285,7 +285,7 @@ TEST_CASE("Json::optional()") {
   }
 }
 
-TEST_CASE("Json::rquire()") {
+TEST_CASE("Json::require()") {
   auto json = Json{std::in_place_type_t<Json::Object>(), std::pair{"x"s, Json{3}},
                    std::pair{"y"s, Json{4}}};
 

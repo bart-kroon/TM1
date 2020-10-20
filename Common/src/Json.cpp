@@ -226,7 +226,7 @@ auto parseNumber(std::string_view &text) -> Json {
   auto match = std::match_results<std::string_view::const_iterator>{};
 
   if (std::regex_search(text.cbegin(), text.cend(), match, pattern)) {
-    text.remove_prefix(match[0].length());
+    text.remove_prefix(static_cast<std::size_t>(match[0].length()));
 
     if (match[fraction].matched || match[exponent].matched) {
       static_assert(std::is_same_v<double, Json::Number>);

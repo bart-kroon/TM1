@@ -87,7 +87,7 @@ Encoder::Encoder(const Common::Json &rootNode, const Common::Json &componentNode
     std::cout
         << "WARNING: Overriding atlas frame sizes is meant for internal/preliminary experiments "
            "only.\n";
-    for (const auto & subnode : node.as<Common::Json::Array>()) {
+    for (const auto &subnode : node.as<Common::Json::Array>()) {
       m_overrideAtlasFrameSizes.push_back(subnode.asVec<int, 2>());
     }
   }

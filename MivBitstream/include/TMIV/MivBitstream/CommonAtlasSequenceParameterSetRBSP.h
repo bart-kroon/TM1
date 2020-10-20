@@ -86,10 +86,13 @@ public:
   constexpr auto casps_log2_max_common_atlas_frame_order_cnt_lsb_minus4(std::size_t value) noexcept
       -> auto &;
   constexpr auto casps_extension_present_flag(bool flag) noexcept -> auto &;
-  auto casps_miv_extension_present_flag(bool flag) noexcept -> CommonAtlasSequenceParameterSetRBSP &;
+  auto casps_miv_extension_present_flag(bool flag) noexcept
+      -> CommonAtlasSequenceParameterSetRBSP &;
   auto casps_extension_7bits(std::uint8_t value) noexcept -> CommonAtlasSequenceParameterSetRBSP &;
-  auto casps_miv_extension() noexcept -> CaspsMivExtension &;
-  auto caspsExtensionData(std::vector<bool> value) noexcept -> CommonAtlasSequenceParameterSetRBSP &;
+  auto casps_miv_extension(CaspsMivExtension value) noexcept
+      -> CommonAtlasSequenceParameterSetRBSP &;
+  auto caspsExtensionData(std::vector<bool> value) noexcept
+      -> CommonAtlasSequenceParameterSetRBSP &;
 
   friend auto operator<<(std::ostream &stream, const CommonAtlasSequenceParameterSetRBSP &x)
       -> std::ostream &;

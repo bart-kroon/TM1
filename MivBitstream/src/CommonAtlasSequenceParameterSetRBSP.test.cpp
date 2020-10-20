@@ -73,16 +73,53 @@ casps_extension_present_flag=false
     REQUIRE(byteCodingTest(unit, 1));
   }
 
-  SECTION("Extension present, but no MIV extension") {
+  SECTION("Extension present, MIV extension flag unset") {
     CommonAtlasSequenceParameterSetRBSP unit{};
-    unit.casps_extension_present_flag(true).casps_miv_extension_present_flag(false).casps_extension_7bits(127);
+    unit.casps_extension_present_flag(true)
+        .casps_miv_extension_present_flag(false)
+        .casps_extension_7bits(0);
+    REQUIRE(toString(unit) == R"(casps_common_atlas_sequence_parameter_set_id=0
+casps_log2_max_common_atlas_frame_order_cnt_lsb_minus4=0
+casps_extension_present_flag=true
+casps_miv_extension_present_flag=false
+casps_extension_7bits=0
+)");
+    REQUIRE(byteCodingTest(unit, 2));
+  }
+
+  SECTION("Extension present, MIV extension flag true") {
+    CommonAtlasSequenceParameterSetRBSP unit{};
+    unit.casps_extension_present_flag(true)
+        .casps_miv_extension_present_flag(true)
+        .casps_extension_7bits(0)
+        .casps_miv_extension({});
+    REQUIRE(toString(unit) == R"(casps_common_atlas_sequence_parameter_set_id=0
+casps_log2_max_common_atlas_frame_order_cnt_lsb_minus4=0
+casps_extension_present_flag=true
+casps_miv_extension_present_flag=true
+casps_extension_7bits=0
+casme_omaf_v1_compatible_flag=false
+casme_vui_params_present_flag=false
+)");
+    REQUIRE(byteCodingTest(unit, 3));
+  }
+
+  SECTION("Extension present, casps_extension_7bits nonzero") {
+    CommonAtlasSequenceParameterSetRBSP unit{};
+    unit.casps_extension_present_flag(true)
+        .casps_miv_extension_present_flag(false)
+        .casps_extension_7bits(127)
+        .caspsExtensionData({true, true, false});
     REQUIRE(toString(unit) == R"(casps_common_atlas_sequence_parameter_set_id=0
 casps_log2_max_common_atlas_frame_order_cnt_lsb_minus4=0
 casps_extension_present_flag=true
 casps_miv_extension_present_flag=false
 casps_extension_7bits=127
+casps_extension_data_flag=true
+casps_extension_data_flag=true
+casps_extension_data_flag=false
 )");
-    REQUIRE(byteCodingTest(unit, 2));
+    REQUIRE(byteCodingTest(unit, 3));
   }
 }
 } // namespace TMIV::MivBitstream

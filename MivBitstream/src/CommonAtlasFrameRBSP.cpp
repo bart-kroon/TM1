@@ -990,7 +990,7 @@ void CommonAtlasFrameRBSP::encodeTo(std::ostream &stream, const V3cParameterSet 
     bitstream.writeBits(caf_extension_8bits(), 8);
   }
   if (caf_extension_8bits() != 0) {
-    for (auto bit : cafExtensionData()) {
+    for (const auto bit : cafExtensionData()) {
       bitstream.putFlag(bit);
     }
   }

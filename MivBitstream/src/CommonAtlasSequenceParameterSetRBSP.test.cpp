@@ -61,4 +61,65 @@ vui_anchor_point_present_flag=false
     REQUIRE(bitCodingTest(unit, 8));
   }
 }
+
+TEST_CASE("common_atlas_sequence_parameter_set_rbsp",
+          "[Common Atlas Sequence Parameter Set RBSP]") {
+  SECTION("Default Constructor") {
+    const CommonAtlasSequenceParameterSetRBSP unit{};
+    REQUIRE(toString(unit) == R"(casps_common_atlas_sequence_parameter_set_id=0
+casps_log2_max_common_atlas_frame_order_cnt_lsb_minus4=0
+casps_extension_present_flag=false
+)");
+    REQUIRE(byteCodingTest(unit, 1));
+  }
+
+  CommonAtlasSequenceParameterSetRBSP unit{};
+  SECTION("Extension present, MIV extension flag unset") {
+    unit.casps_extension_present_flag(true)
+        .casps_miv_extension_present_flag(false)
+        .casps_extension_7bits(0);
+    REQUIRE(toString(unit) == R"(casps_common_atlas_sequence_parameter_set_id=0
+casps_log2_max_common_atlas_frame_order_cnt_lsb_minus4=0
+casps_extension_present_flag=true
+casps_miv_extension_present_flag=false
+casps_extension_7bits=0
+)");
+    REQUIRE(byteCodingTest(unit, 2));
+  }
+
+  SECTION("Extension present, MIV extension flag true") {
+    unit.casps_common_atlas_sequence_parameter_set_id(5)
+        .casps_extension_present_flag(true)
+        .casps_miv_extension_present_flag(true)
+        .casps_extension_7bits(0)
+        .casps_miv_extension({});
+    REQUIRE(toString(unit) == R"(casps_common_atlas_sequence_parameter_set_id=5
+casps_log2_max_common_atlas_frame_order_cnt_lsb_minus4=0
+casps_extension_present_flag=true
+casps_miv_extension_present_flag=true
+casps_extension_7bits=0
+casme_omaf_v1_compatible_flag=false
+casme_vui_params_present_flag=false
+)");
+    REQUIRE(byteCodingTest(unit, 3));
+  }
+
+  SECTION("Extension present, casps_extension_7bits nonzero") {
+    unit.casps_log2_max_common_atlas_frame_order_cnt_lsb_minus4(3)
+        .casps_extension_present_flag(true)
+        .casps_miv_extension_present_flag(false)
+        .casps_extension_7bits(127)
+        .caspsExtensionData({true, true, false});
+    REQUIRE(toString(unit) == R"(casps_common_atlas_sequence_parameter_set_id=0
+casps_log2_max_common_atlas_frame_order_cnt_lsb_minus4=3
+casps_extension_present_flag=true
+casps_miv_extension_present_flag=false
+casps_extension_7bits=127
+casps_extension_data_flag=true
+casps_extension_data_flag=true
+casps_extension_data_flag=false
+)");
+    REQUIRE(byteCodingTest(unit, 3));
+  }
+}
 } // namespace TMIV::MivBitstream

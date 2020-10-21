@@ -46,6 +46,11 @@ struct ViewParams {
   DepthQuantization dq;
   std::optional<PruningParents> pp;
 
+  ViewParams() = default;
+  ViewParams(const CameraIntrinsics &ci, const CameraExtrinsics &ce, const DepthQuantization &dq,
+             std::optional<PruningParents> pp, std::string name)
+      : ci{ci}, ce{ce}, dq{dq}, pp{std::move(pp)}, name{std::move(name)} {}
+
   // Not in the specification. Just to improve screen output
   std::string name{};
 
@@ -62,7 +67,9 @@ struct ViewParams {
   // Load a single (source) camera from a JSON metadata file (RVS 3.x format)
   //
   // The parameter is a an item of the viewParamsList node (a JSON object).
-  static auto loadFromJson(const Common::Json &node) -> ViewParams;
+  explicit ViewParams(const Common::Json &node);
+
+  explicit operator Common::Json() const;
 };
 
 // Data type that corresponds to camera_params_list of specification

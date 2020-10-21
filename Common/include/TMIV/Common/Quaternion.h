@@ -108,6 +108,25 @@ template <typename T> auto euler2quat(const stack::Vec3<T> &eulerAngles) {
   return qy * qp * qr;
 }
 
+template <typename T> auto quat2euler(const Quaternion<T> &q) {
+  constexpr auto one = T(1.);
+  constexpr auto two = T(2.);
+  constexpr auto halfPi = T(M_PI2);
+
+  const auto cYaw = one - two * (sqr(q.y()) + sqr(q.z()));
+  const auto sYaw = two * (q.w() * q.z() + q.x() * q.y());
+  const auto yaw = std::atan2(sYaw, cYaw);
+
+  const auto sPitch = two * (q.w() * q.y() - q.z() * q.x());
+  const auto pitch = std::abs(sPitch) < one ? std::asin(sPitch) : std::copysign(halfPi, sPitch);
+
+  const auto cRoll = one - two * (sqr(q.x()) + sqr(q.y()));
+  const auto sRoll = two * (q.w() * q.x() + q.y() * q.z());
+  const auto roll = std::atan2(sRoll, cRoll);
+
+  return stack::Vec3<T>{yaw, pitch, roll};
+}
+
 // Unit quaternion (q) to rotation matrix (R) conversion
 //
 // The matrix R has the following property:

@@ -60,3 +60,17 @@ install(
 install(
     DIRECTORY "include/"
     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+   
+if (CMAKE_TESTING_ENABLED)
+    add_executable(DecoderTest
+        "src/AccessUnit.test.cpp"
+        "src/Decoder.test.cpp"
+        )
+
+    target_link_libraries(DecoderTest
+        PRIVATE
+            Catch2::Catch2
+            TMIV::DecoderLib)
+
+    catch_discover_tests(DecoderTest)
+endif()

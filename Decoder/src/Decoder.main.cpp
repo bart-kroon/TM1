@@ -36,6 +36,7 @@
 #include <TMIV/Common/Application.h>
 #include <TMIV/Common/Factory.h>
 #include <TMIV/IO/IO.h>
+#include <TMIV/MivBitstream/SequenceConfig.h>
 #include <TMIV/MivBitstream/ViewingSpace.h>
 #include <TMIV/Renderer/RecoverPrunedViews.h>
 
@@ -53,6 +54,7 @@ private:
   IvMetadataReader m_metadataReader;
   std::unique_ptr<IDecoder> m_decoder;
   std::multimap<int, int> m_inputToOutputFrameIdMap;
+  MivBitstream::SequenceConfig m_sequenceConfig;
 
 public:
   explicit Application(std::vector<const char *> argv)
@@ -65,11 +67,12 @@ public:
     while (auto frame = m_metadataReader.decoder()()) {
       auto range = m_inputToOutputFrameIdMap.equal_range(frame->foc);
       if (range.first == range.second) {
-        return; // TODO(BK): Test with A97 pose trace, then remove this comment
+        return;
       }
       for (auto i = range.first; i != range.second; ++i) {
         renderDecodedFrame(*frame, i->second);
       }
+      outputSequenceConfig(frame->sequenceConfig(), frame->foc);
     }
   }
 
@@ -94,6 +97,21 @@ private:
         || json().optional("PrunedViewMaskPathFmt")) {  // format: yuv420p
       std::cout << "Dumping recovered pruned views to disk" << std::endl;
       IO::savePrunedFrame(json(), outputFrameId, Renderer::recoverPrunedViewAndMask(frame));
+    }
+  }
+
+  void outputSequenceConfig(MivBitstream::SequenceConfig sc, std::int32_t foc) {
+    if (m_sequenceConfig != sc) {
+      m_sequenceConfig = std::move(sc);
+      if (json().optional("OutputSequenceConfigPathFmt")) {
+        const auto path =
+            IO::getFullPath(json(), "OutputDirectory", "OutputSequenceConfigPathFmt", foc);
+        std::cout << "Writing reconstructed sequence configuration for frame " << foc << "to disk"
+                  << std::endl;
+        std::ofstream stream{path};
+        const auto json = Common::Json{m_sequenceConfig};
+        json.saveTo(stream);
+      }
     }
   }
 
@@ -148,5 +166,8 @@ auto main(int argc, char *argv[]) -> int {
   } catch (std::runtime_error &e) {
     std::cerr << e.what() << std::endl;
     return 1;
+  } catch (std::logic_error &e) {
+    std::cerr << e.what() << std::endl;
+    return 3;
   }
 }

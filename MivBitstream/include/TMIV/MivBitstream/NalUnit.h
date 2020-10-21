@@ -88,13 +88,13 @@ enum class NalUnitType : std::uint8_t {
   NAL_RSV_NACL_54,
   NAL_RSV_NACL_55,
   NAL_UNSPEC_56 = 56,
-//  NAL_UNSPEC_57,
-//  NAL_UNSPEC_58,
+  //  NAL_UNSPEC_57,
+  //  NAL_UNSPEC_58,
   NAL_UNSPEC_59 = 59,
   NAL_UNSPEC_60,
   NAL_UNSPEC_61,
   NAL_UNSPEC_62,
-//  NAL_UNSPEC_63
+  //  NAL_UNSPEC_63
 };
 
 auto operator<<(std::ostream &stream, NalUnitType x) -> std::ostream &;

@@ -1,4 +1,8 @@
 build:
+  stage: prepare
+  script:
+    - sudo apt-get install cmake
+
   stage: build
   script:
     - mkdir -p build && cd build

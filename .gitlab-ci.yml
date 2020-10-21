@@ -1,4 +1,4 @@
-test:
-  script:
-  - apt-get update -qy
-  - apt-get install -y build-essential cmake git 
+build:
+  build:
+  - mkdir -p build && cd build
+

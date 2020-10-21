@@ -1,6 +1,7 @@
 build:
   stage: build
   script:
+    - apt-get update -qy
     - apt-get install cmake
     - mkdir -p build && cd build
     - cmake ..

@@ -15,4 +15,5 @@ clang-11:
     - mkdir -p build && cd build
     - cmake -DCMAKE_CXX_FLAGS="-Wall -Wextra -Wpedantic -Werror" ..
     - make -j $(nproc)
+    - cmake --build . --target clang_format
     - ctest

@@ -160,7 +160,7 @@ For this example, we will be using the [miv_anchor config](/ctc_config/miv_ancho
 1. Put the color and depth videos in a folder, make sure to comply to the naming scheme defined in `SourceGeometryPathFmt` and `SourceTexturePathFmt`. Your organization or one of the maintainers of this repository should be able to provide the test sequences to you.
 
 1. The files' naming scheme can for example be `{}_depth_{}x{}_yuv420p16le.yuv`. The curly braces are placeholders for (in sequence)
-    1. camera name, as defined in `SourceCameraNames` in the [config file](/ctc_config/miv_anchor/TMIV_A17_SA.json)
+    1. camera name, as defined in the sequence-specific configuration files, e.g. v13
     1. Horizontal resolution of the video
     1. Vertical resolution of the video
 

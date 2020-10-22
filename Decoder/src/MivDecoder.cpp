@@ -261,6 +261,8 @@ void MivDecoder::decodeMvpl(const MivBitstream::MivViewParamsList &mvpl) {
     if (mvpl.mvp_pruning_graph_params_present_flag()) {
       m_au.viewParamsList[viewId].pp = mvpl.pruning_parent(viewId);
     }
+
+    m_au.viewParamsList[viewId].name = Common::format("d{:02}", viewId);
   }
 }
 

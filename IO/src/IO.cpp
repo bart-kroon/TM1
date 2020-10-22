@@ -33,6 +33,8 @@
 
 #include <TMIV/IO/IO.h>
 
+#include <TMIV/MivBitstream/SequenceConfig.h>
+
 #include <cassert>
 #include <functional>
 #include <iomanip>
@@ -60,11 +62,18 @@ auto loadSourceParams(const Common::Json &config) -> MivBitstream::EncoderParams
   if (!stream.good()) {
     throw std::runtime_error("Failed to load source camera parameters\n" + viewPath);
   }
-  const auto sequenceConfig = Common::Json::loadFrom(stream);
 
-  x.viewParamsList = MivBitstream::ViewParamsList::loadFromJson(
-      sequenceConfig.require("cameras"),
-      config.require("SourceCameraNames").asVector<std::string>());
+  auto sequenceConfig = MivBitstream::SequenceConfig{stream};
+
+  if (const auto &node = config.optional("SourceCameraNames")) {
+    std::cout << "WARNING: Source camera names are derived from the sequence configuration. This "
+                 "functionality to override source camera names is only for internal testing, e.g. "
+                 "to test with a subset of views.\n";
+    sequenceConfig.sourceCameraNames = node.asVector<std::string>();
+  }
+
+  x.viewParamsList = sequenceConfig.sourceViewParams();
+  x.frameRate = sequenceConfig.frameRate;
 
   if (const auto &node = config.optional("depthLowQualityFlag")) {
     x.vme().vme_depth_low_quality_flag(node.as<bool>());
@@ -85,8 +94,6 @@ auto loadSourceParams(const Common::Json &config) -> MivBitstream::EncoderParams
   if (const auto &subnode = config.optional("ViewingSpace")) {
     x.viewingSpace = MivBitstream::ViewingSpace::loadFromJson(subnode, config);
   }
-
-  x.frameRate = sequenceConfig.require("Fps").as<double>();
 
   if (config.require("OmafV1CompatibleFlag").as<bool>()) {
     x.aaps.aaps_miv_extension_present_flag(true).aaps_miv_extension().aame_omaf_v1_compatible_flag(

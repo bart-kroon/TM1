@@ -40,6 +40,7 @@
 #include <TMIV/MivBitstream/AtlasTileLayerRBSP.h>
 #include <TMIV/MivBitstream/GeometryUpscalingParameters.h>
 #include <TMIV/MivBitstream/PatchParamsList.h>
+#include <TMIV/MivBitstream/SequenceConfig.h>
 #include <TMIV/MivBitstream/V3cParameterSet.h>
 #include <TMIV/MivBitstream/ViewParamsList.h>
 #include <TMIV/MivBitstream/ViewingSpace.h>
@@ -84,6 +85,8 @@ struct AccessUnit {
   std::optional<MivBitstream::ViewingSpace> vs;
   std::optional<MivBitstream::VuiParameters> vui;
   std::optional<MivBitstream::GeometryUpscalingParameters> gup;
+
+  auto sequenceConfig() const -> MivBitstream::SequenceConfig;
 };
 } // namespace TMIV::Decoder
 

@@ -38,7 +38,11 @@
 
 #include <stdexcept>
 
+using namespace std::string_literals;
+
 namespace TMIV::MivBitstream {
+constexpr auto kilometer = 1000.F;
+
 auto ViewParams::printTo(std::ostream &stream, uint16_t viewId) const -> std::ostream & {
   if (!name.empty()) {
     stream << "name[ " << viewId << " ]=\"" << name << "\"  # informative\n";
@@ -61,24 +65,22 @@ auto ViewParams::operator==(const ViewParams &other) const -> bool {
   return ci == other.ci && ce == other.ce && dq == other.dq && pp == other.pp;
 }
 
-auto ViewParams::loadFromJson(const Common::Json &node) -> ViewParams {
-  auto x = ViewParams{};
-  x.name = node.require("Name").as<std::string>();
+ViewParams::ViewParams(const Common::Json &node) {
+  name = node.require("Name").as<std::string>();
 
   const auto resolution = node.require("Resolution").asVec<int, 2>();
-  x.ci.ci_projection_plane_width_minus1(resolution.x() - 1);
-  x.ci.ci_projection_plane_height_minus1(resolution.y() - 1);
+  ci.ci_projection_plane_width_minus1(resolution.x() - 1);
+  ci.ci_projection_plane_height_minus1(resolution.y() - 1);
 
-  x.ce.position(node.require("Position").asVec<float, 3>());
-  x.ce.rotation(euler2quat(Common::radperdeg * node.require("Rotation").asVec<float, 3>()));
+  ce.position(node.require("Position").asVec<float, 3>());
+  ce.rotation(euler2quat(Common::radperdeg * node.require("Rotation").asVec<float, 3>()));
 
   const auto depthRange = node.require("Depth_range").asVec<float, 2>();
-  constexpr auto kilometer = 1000.F;
-  x.dq.dq_norm_disp_low(depthRange.y() < kilometer ? 1.F / depthRange.y() : 0.F);
-  x.dq.dq_norm_disp_high(depthRange.x() < kilometer ? 1.F / depthRange.x() : 0.F);
+  dq.dq_norm_disp_low(depthRange.y() < kilometer ? 1.F / depthRange.y() : 0.F);
+  dq.dq_norm_disp_high(depthRange.x() < kilometer ? 1.F / depthRange.x() : 0.F);
 
   if (const auto &subnode = node.optional("HasInvalidDepth")) {
-    x.hasOccupancy = subnode.as<bool>();
+    hasOccupancy = subnode.as<bool>();
   }
 
   auto proj = node.require("Projection").as<std::string>();
@@ -86,31 +88,72 @@ auto ViewParams::loadFromJson(const Common::Json &node) -> ViewParams {
     const auto phiRange = Common::radperdeg * node.require("Hor_range").asVec<float, 2>();
     const auto thetaRange = Common::radperdeg * node.require("Ver_range").asVec<float, 2>();
 
-    x.ci.ci_cam_type(CiCamType::equirectangular);
-    x.ci.ci_erp_phi_min(phiRange.x());
-    x.ci.ci_erp_phi_max(phiRange.y());
-    x.ci.ci_erp_theta_min(thetaRange.x());
-    x.ci.ci_erp_theta_max(thetaRange.y());
+    ci.ci_cam_type(CiCamType::equirectangular);
+    ci.ci_erp_phi_min(phiRange.x());
+    ci.ci_erp_phi_max(phiRange.y());
+    ci.ci_erp_theta_min(thetaRange.x());
+    ci.ci_erp_theta_max(thetaRange.y());
 
   } else if (proj == "Perspective") {
     const auto focal = node.require("Focal").asVec<float, 2>();
     const auto center = node.require("Principle_point").asVec<float, 2>();
 
-    x.ci.ci_cam_type(CiCamType::perspective);
-    x.ci.ci_perspective_focal_hor(focal.x());
-    x.ci.ci_perspective_focal_ver(focal.y());
-    x.ci.ci_perspective_center_hor(center.x());
-    x.ci.ci_perspective_center_ver(center.y());
+    ci.ci_cam_type(CiCamType::perspective);
+    ci.ci_perspective_focal_hor(focal.x());
+    ci.ci_perspective_focal_ver(focal.y());
+    ci.ci_perspective_center_hor(center.x());
+    ci.ci_perspective_center_ver(center.y());
 
   } else if (proj == "Orthographic") {
-    x.ci.ci_cam_type(CiCamType::orthographic);
-    x.ci.ci_ortho_width(node.require("OrthoWidth").as<float>());
-    x.ci.ci_ortho_width(node.require("OrthoHeight").as<float>());
+    ci.ci_cam_type(CiCamType::orthographic);
+    ci.ci_ortho_width(node.require("OrthoWidth").as<float>());
+    ci.ci_ortho_width(node.require("OrthoHeight").as<float>());
 
   } else {
     throw std::runtime_error("Unknown projection type in metadata JSON file");
   }
-  return x;
+}
+
+ViewParams::operator Common::Json() const {
+  using Common::Json;
+  using Array = Json::Array;
+
+  auto root = Json::Object{};
+
+  root["Name"s] = name;
+  root["Resolution"s] = Array{Json{ci.ci_projection_plane_width_minus1() + 1},
+                              Json{ci.ci_projection_plane_height_minus1() + 1}};
+  root["Position"s] =
+      Array{Json{ce.ce_view_pos_x()}, Json{ce.ce_view_pos_y()}, Json{ce.ce_view_pos_z()}};
+
+  const auto euler = quat2euler(Common::QuatD{ce.rotation()});
+  root["Rotation"s] = Array{Json{Common::rad2deg(euler.x())}, Json{Common::rad2deg(euler.y())},
+                            Json{Common::rad2deg(euler.z())}};
+
+  root["Depth_range"s] =
+      Array{Json{dq.dq_norm_disp_high() == 0.F ? kilometer : 1. / dq.dq_norm_disp_high()},
+            Json{dq.dq_norm_disp_low() == 0.F ? kilometer : 1. / dq.dq_norm_disp_low()}};
+
+  root["HasInvalidDepth"] = hasOccupancy;
+
+  if (ci.ci_cam_type() == CiCamType::equirectangular) {
+    root["Projection"] = "Equirectangular";
+    root["Hor_range"] = Array{Json{Common::degperrad * ci.ci_erp_phi_min()},
+                              Json{Common::degperrad * ci.ci_erp_phi_max()}};
+    root["Ver_range"] = Array{Json{Common::degperrad * ci.ci_erp_theta_min()},
+                              Json{Common::degperrad * ci.ci_erp_theta_max()}};
+  } else if (ci.ci_cam_type() == CiCamType::perspective) {
+    root["Projection"] = "Perspective";
+    root["Focal"] = Array{Json{ci.ci_perspective_focal_hor()}, Json{ci.ci_perspective_focal_ver()}};
+    root["Principle_point"] =
+        Array{Json{ci.ci_perspective_center_hor()}, Json{ci.ci_perspective_center_ver()}};
+  } else {
+    root["Projection"] = "Orthographic";
+    root["OrthoWidth"] = ci.ci_ortho_width();
+    root["OrthoHeight"] = ci.ci_ortho_height();
+  }
+
+  return Json{root};
 }
 
 ViewParamsList::ViewParamsList(std::vector<ViewParams> viewParamsList)
@@ -142,7 +185,7 @@ auto ViewParamsList::loadFromJson(const Common::Json &node, const std::vector<st
   for (const auto &name : names) {
     for (size_t i = 0; i != a.size(); ++i) {
       if (name == a[i].require("Name").as<std::string>()) {
-        result.push_back(ViewParams::loadFromJson(a[i]));
+        result.push_back(ViewParams{a[i]});
         break;
       }
     }

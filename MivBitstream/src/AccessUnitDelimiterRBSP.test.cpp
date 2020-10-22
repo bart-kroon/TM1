@@ -46,7 +46,7 @@ TEST_CASE("access_unit_delimiter_rbsp", "[Access Unit Delimiter RBSP]") {
   SECTION("Example 1") {
     x.aframe_type(AframeType::SKIP_P_and_I);
 
-    REQUIRE(toString(x) == R"(frame_type=SKIP_TILE, P_TILE and I_TILE
+    REQUIRE(toString(x) == R"(aframe_type=SKIP_TILE, P_TILE and I_TILE
 )");
 
     REQUIRE(byteCodingTest(x, 1));

@@ -1,8 +1,7 @@
 build:
-  stage: build
+  stage: build-clang-11
+  image: silkeh/clang:11
   script:
-    - apt-get update -qy
-    - apt-get install cmake -y
     - mkdir -p build && cd build
     - cmake ..
 

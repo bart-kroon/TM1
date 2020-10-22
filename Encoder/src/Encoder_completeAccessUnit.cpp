@@ -150,6 +150,7 @@ void Encoder::constructVideoFrames() {
                  Common::Depth16Frame(frameWidth, frameHeight)};
       }
 
+      int i = 0;
       frame.texture.fillNeutral();
       frame.depth.fillZero();
       if (m_params.vps.vps_occupancy_video_present_flag(j)) {

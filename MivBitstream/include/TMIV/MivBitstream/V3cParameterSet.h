@@ -34,7 +34,6 @@
 #ifndef _TMIV_MIVBITSTREAM_V3CPARAMETERSET_H_
 #define _TMIV_MIVBITSTREAM_V3CPARAMETERSET_H_
 
-#define DEF pin_region_unpack_top_left_y(std::size_t i, std::uint16_t value)->auto &
 #include <TMIV/Common/Bitstream.h>
 #include <TMIV/MivBitstream/Types.h>
 

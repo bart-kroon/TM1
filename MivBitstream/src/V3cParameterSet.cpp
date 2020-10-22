@@ -597,11 +597,13 @@ auto PackingInformation::pin_region_unpack_top_left_x(std::size_t i) const noexc
   VERIFY_V3CBITSTREAM(i <= pin_regions_count_minus1());
   return m_pinRegions[i].pin_region_unpack_top_left_x;
 }
+
 auto PackingInformation::pin_region_unpack_top_left_y(std::size_t i) const noexcept
     -> std::uint16_t {
   VERIFY_V3CBITSTREAM(i <= pin_regions_count_minus1());
   return m_pinRegions[i].pin_region_unpack_top_left_y;
 }
+
 auto PackingInformation::pin_region_map_index(std::size_t i) const noexcept -> std::uint8_t {
   VERIFY_V3CBITSTREAM(i <= pin_regions_count_minus1());
   return m_pinRegions[i].pin_region_map_index;

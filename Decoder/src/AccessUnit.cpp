@@ -33,8 +33,6 @@
 
 #include <TMIV/Decoder/AccessUnit.h>
 
-#include <set>
-
 namespace TMIV::Decoder {
 auto AtlasAccessUnit::frameSize() const noexcept -> Common::Vec2i {
   return Common::Vec2i{asps.asps_frame_width(), asps.asps_frame_height()};

@@ -1,8 +1,4 @@
-stages:
-  - build
-  - test
-
-build:
+clang-11:
   stage: build
   image: ubuntu:20.04
   script:
@@ -19,12 +15,4 @@ build:
     - mkdir -p build && cd build
     - cmake -DCMAKE_CXX_FLAGS="-Wall -Wextra -Wpedantic -Werror" ..
     - make -j $(nproc)
-
-test:
-  stage: test
-  script:
-    - export DEBIAN_FRONTEND=noninteractive
-    - apt-get update -qy
-    - apt-get install -y cmake
-    - cd build
     - ctest

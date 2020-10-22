@@ -1,4 +1,8 @@
-clang-11:
+stages:
+  - build
+  - test
+
+build:
   stage: build
   image: ubuntu:20.04
   script:
@@ -16,6 +20,7 @@ clang-11:
     - cmake -DCMAKE_CXX_FLAGS="-Wall -Wextra -Wpedantic -Werror" ..
     - make -j $(nproc)
 
+test:
   stage: test
   script:
     - ctest

@@ -187,7 +187,8 @@ public:
   void parseCasps(std::istream &stream) {
     const auto casps = TMIV::MivBitstream::CommonAtlasSequenceParameterSetRBSP::decodeFrom(stream);
     m_log << casps;
-    // TODO (CB) anything to be done here?
+    m_maxCommonAtlasFrmOrderCntLsb =
+        1U << (casps.casps_log2_max_common_atlas_frame_order_cnt_lsb_minus4() + 4U);
   }
 
   void parseCaf(std::istream &stream) {

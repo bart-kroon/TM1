@@ -2,6 +2,14 @@ stages:
   - build
   - test
 
+gcc-9:
+  stage: build
+  image: rikorose/gcc-cmake:gcc-9
+  script:
+    - mkdir -p build && cd build
+    - cmake -DCMAKE_CXX_FLAGS="-Wall -Wextra -Wpedantic -Werror" -DENABLE_CLANG_TIDY=OFF ..
+    - make -j $(nproc)
+
 clang-11:
   stage: build
   image: ubuntu:20.04
@@ -28,17 +36,12 @@ clang-11:
       paths:
           - build/
 
-gcc-9:
-  stage: build
-  image: rikorose/gcc-cmake:gcc-9
-  script:
-    - mkdir -p build && cd build
-    - cmake -DCMAKE_CXX_FLAGS="-Wall -Wextra -Wpedantic -Werror" -DENABLE_CLANG_TIDY=OFF ..
-    - make -j $(nproc)
-
 ctest:
   stage: test
   image: ubuntu:20.04
+  needs:
+    - job: clang-11
+      artifacts: true
   script:
     - export DEBIAN_FRONTEND=noninteractive
     - apt-get update -qy

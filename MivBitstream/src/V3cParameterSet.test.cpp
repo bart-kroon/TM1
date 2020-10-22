@@ -461,6 +461,8 @@ pin_region_type_id_minus2(30,0)=V3C_VPS
 pin_region_top_left_x(30,0)=0
 pin_region_top_left_y(30,0)=0
 pin_region_width_minus1(30,0)=0
+pin_region_unpack_top_left_x(30,0)=0
+pin_region_unpack_top_left_y(30,0)=0
 pin_region_height_minus1(30,0)=0
 pin_region_map_index(30,0)=0
 pin_region_rotation_flag(30,0)=false
@@ -473,6 +475,8 @@ pin_region_type_id_minus2(32,0)=V3C_VPS
 pin_region_top_left_x(32,0)=0
 pin_region_top_left_y(32,0)=0
 pin_region_width_minus1(32,0)=0
+pin_region_unpack_top_left_x(32,0)=0
+pin_region_unpack_top_left_y(32,0)=0
 pin_region_height_minus1(32,0)=0
 pin_region_map_index(32,0)=0
 pin_region_rotation_flag(32,0)=false
@@ -487,7 +491,7 @@ vps_extension_data_byte=250
 vps_extension_data_byte=15
 )");
     const std::size_t expected_number_of_bytes = 41 // TODO deconstruct this for explanation
-                                                 + (2 * 11); // two times packing_information
+                                                 + (2 * 15); // two times packing_information
     REQUIRE(byteCodingTest(vps, expected_number_of_bytes));
   }
 }

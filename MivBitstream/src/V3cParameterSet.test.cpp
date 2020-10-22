@@ -211,6 +211,8 @@ pin_region_type_id_minus2(4,0)=V3C_VPS
 pin_region_top_left_x(4,0)=0
 pin_region_top_left_y(4,0)=0
 pin_region_width_minus1(4,0)=0
+pin_region_unpack_top_left_x(4,0)=0
+pin_region_unpack_top_left_y(4,0)=0
 pin_region_height_minus1(4,0)=0
 pin_region_map_index(4,0)=0
 pin_region_rotation_flag(4,0)=false
@@ -225,6 +227,8 @@ pin_region_rotation_flag(4,0)=false
                                                        + 16  // pin_region_top_left_y
                                                        + 16  // pin_region_width_minus1
                                                        + 16  // pin_region_height_minus1
+                                                       + 16  // pin_region_unpack_top_left_x
+                                                       + 16  // pin_region_unpack_top_left_y
                                                        + 4   // pin_region_map_index
                                                        + 1); // pin_region_rotation_flag
 
@@ -260,6 +264,8 @@ pin_region_type_id_minus2(3,0)=V3C_OVD
 pin_region_top_left_x(3,0)=0
 pin_region_top_left_y(3,0)=6
 pin_region_width_minus1(3,0)=6
+pin_region_unpack_top_left_x(3,0)=0
+pin_region_unpack_top_left_y(3,0)=0
 pin_region_height_minus1(3,0)=0
 pin_region_map_index(3,0)=0
 pin_region_rotation_flag(3,0)=false
@@ -273,6 +279,8 @@ pin_region_type_id_minus2(3,1)=V3C_AD
 pin_region_top_left_x(3,1)=0
 pin_region_top_left_y(3,1)=7
 pin_region_width_minus1(3,1)=8
+pin_region_unpack_top_left_x(3,1)=0
+pin_region_unpack_top_left_y(3,1)=0
 pin_region_height_minus1(3,1)=0
 pin_region_map_index(3,1)=0
 pin_region_rotation_flag(3,1)=false
@@ -288,6 +296,8 @@ pin_region_auxiliary_data_flag(3,1)=true
                                                        + 16  // pin_region_top_left_y
                                                        + 16  // pin_region_width_minus1
                                                        + 16  // pin_region_height_minus1
+                                                       + 16  // pin_region_unpack_top_left_x
+                                                       + 16  // pin_region_unpack_top_left_y
                                                        + 4   // pin_region_map_index
                                                        + 1   // pin_region_rotation_flag
                                                        + 1)  // pin_region_auxiliary_data_flag
@@ -298,6 +308,8 @@ pin_region_auxiliary_data_flag(3,1)=true
                                                        + 16  // pin_region_top_left_y
                                                        + 16  // pin_region_width_minus1
                                                        + 16  // pin_region_height_minus1
+                                                       + 16  // pin_region_unpack_top_left_x
+                                                       + 16  // pin_region_unpack_top_left_y
                                                        + 4   // pin_region_map_index
                                                        + 1   // pin_region_rotation_flag
                                                        + 1   // pin_region_auxiliary_data_flag

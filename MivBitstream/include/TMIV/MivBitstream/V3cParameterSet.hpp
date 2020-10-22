@@ -234,6 +234,18 @@ inline auto PackingInformation::pin_region_height_minus1(std::size_t i, std::uin
   return *this;
 }
 
+inline auto PackingInformation::pin_region_unpack_top_left_x(std::size_t i, std::uint16_t value)
+    -> auto & {
+  VERIFY_V3CBITSTREAM(i <= pin_regions_count_minus1());
+  m_pinRegions[i].pin_region_unpack_top_left_x = value;
+  return *this;
+}
+inline auto PackingInformation::pin_region_unpack_top_left_y(std::size_t i, std::uint16_t value)
+    -> auto & {
+  VERIFY_V3CBITSTREAM(i <= pin_regions_count_minus1());
+  m_pinRegions[i].pin_region_unpack_top_left_y = value;
+  return *this;
+}
 inline auto PackingInformation::pin_region_map_index(std::size_t i, std::uint8_t value) -> auto & {
   VERIFY_V3CBITSTREAM(i <= pin_regions_count_minus1());
   m_pinRegions[i].pin_region_map_index = value;

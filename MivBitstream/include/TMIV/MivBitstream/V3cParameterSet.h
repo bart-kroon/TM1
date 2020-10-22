@@ -34,6 +34,7 @@
 #ifndef _TMIV_MIVBITSTREAM_V3CPARAMETERSET_H_
 #define _TMIV_MIVBITSTREAM_V3CPARAMETERSET_H_
 
+#define DEF pin_region_unpack_top_left_y(std::size_t i, std::uint16_t value)->auto &
 #include <TMIV/Common/Bitstream.h>
 #include <TMIV/MivBitstream/Types.h>
 
@@ -301,6 +302,8 @@ struct PinRegion {
            (pin_region_top_left_y == other.pin_region_top_left_y) &&
            (pin_region_width_minus1 == other.pin_region_width_minus1) &&
            (pin_region_height_minus1 == other.pin_region_height_minus1) &&
+           (pin_region_top_left_x == other.pin_region_unpack_top_left_y) &&
+           (pin_region_unpack_top_left_y == other.pin_region_unpack_top_left_y) &&
            (pin_region_map_index == other.pin_region_map_index) &&
            (pin_region_rotation_flag == other.pin_region_rotation_flag) &&
            (pin_region_auxiliary_data_flag == other.pin_region_auxiliary_data_flag) &&
@@ -316,6 +319,8 @@ struct PinRegion {
   std::uint16_t pin_region_top_left_y{};
   std::uint16_t pin_region_width_minus1{};
   std::uint16_t pin_region_height_minus1{};
+  std::uint16_t pin_region_unpack_top_left_x{};
+  std::uint16_t pin_region_unpack_top_left_y{};
   std::uint8_t pin_region_map_index{};
   bool pin_region_rotation_flag{};
   std::optional<bool> pin_region_auxiliary_data_flag{};
@@ -339,6 +344,8 @@ public:
   [[nodiscard]] auto pin_region_top_left_y(std::size_t i) const noexcept -> std::uint16_t;
   [[nodiscard]] auto pin_region_width_minus1(std::size_t i) const noexcept -> std::uint16_t;
   [[nodiscard]] auto pin_region_height_minus1(std::size_t i) const noexcept -> std::uint16_t;
+  [[nodiscard]] auto pin_region_unpack_top_left_x(std::size_t i) const noexcept -> std::uint16_t;
+  [[nodiscard]] auto pin_region_unpack_top_left_y(std::size_t i) const noexcept -> std::uint16_t;
   [[nodiscard]] auto pin_region_map_index(std::size_t i) const noexcept -> std::uint8_t;
   [[nodiscard]] auto pin_region_rotation_flag(std::size_t i) const noexcept -> bool;
   [[nodiscard]] auto pin_region_auxiliary_data_flag(std::size_t i) const -> bool;
@@ -355,6 +362,8 @@ public:
   auto pin_region_top_left_y(std::size_t i, std::uint16_t value) -> auto &;
   auto pin_region_width_minus1(std::size_t i, std::uint16_t value) -> auto &;
   auto pin_region_height_minus1(std::size_t i, std::uint16_t value) -> auto &;
+  auto pin_region_unpack_top_left_x(std::size_t i, std::uint16_t value) -> auto &;
+  auto pin_region_unpack_top_left_y(std::size_t i, std::uint16_t value) -> auto &;
   auto pin_region_map_index(std::size_t i, std::uint8_t value) -> auto &;
   auto pin_region_rotation_flag(std::size_t i, bool value) -> auto &;
   auto pin_region_auxiliary_data_flag(std::size_t i, bool value) -> auto &;

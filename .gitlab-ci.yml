@@ -5,7 +5,7 @@ stages:
 clang-11:
   stage: build
   image: ubuntu:20.04
-  # only:
+  # only:  # TODO enable when opening MR
     # - merge_requests
     # - v7.0-dev
   script:
@@ -27,6 +27,14 @@ clang-11:
       expire_in: 3 days
       paths:
           - build/
+
+gcc-9:
+  stage: build
+  image: rikorose/gcc-cmake:gcc-9
+  script:
+    - mkdir -p build && cd build
+    - cmake -DCMAKE_CXX_FLAGS="-Wall -Wextra -Wpedantic -Werror" ..
+    - make -j $(nproc)
 
 ctest:
   stage: test

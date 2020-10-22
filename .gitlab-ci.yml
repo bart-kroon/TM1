@@ -1,7 +1,6 @@
-build:
-  stage: build-clang-11
+clang-11:
+  stage: build
   image: silkeh/clang:11
   script:
     - mkdir -p build && cd build
     - cmake ..
-

@@ -33,5 +33,5 @@ ctest:
   stage: test
   image: ubuntu:20.04
   script:
-    - pwd
+    - cd build
     - ls -la

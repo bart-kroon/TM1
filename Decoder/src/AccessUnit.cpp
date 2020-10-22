@@ -52,8 +52,7 @@ auto AtlasAccessUnit::decGeoFrameSize(const MivBitstream::V3cParameterSet &vps) 
   return frameSize();
 }
 
-auto AtlasAccessUnit::decOccFrameSize(const MivBitstream::V3cParameterSet &vps) const noexcept
-    -> Common::Vec2i {
+auto AtlasAccessUnit::decOccFrameSize(const MivBitstream::V3cParameterSet &vps) const noexcept -> Common::Vec2i {
   if (vps.vps_miv_extension_present_flag()) {
     const auto &vme = vps.vps_miv_extension();
     if (!vme.vme_embedded_occupancy_flag() && vme.vme_occupancy_scale_enabled_flag()) {

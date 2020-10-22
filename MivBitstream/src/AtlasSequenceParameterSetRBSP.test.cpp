@@ -169,7 +169,7 @@ asps_extension_6bits=0
         .vme_embedded_occupancy_flag(true)
         .vme_num_groups_minus1(10);
 
-    x.asps_atlas_sequence_parameter_set_id(15)
+    x.asps_atlas_sequence_parameter_set_id(63)
         .asps_frame_width(0xFFFF)
         .asps_frame_height(0xFFFF)
         .asps_geometry_3d_bit_depth_minus1(10)
@@ -200,7 +200,7 @@ asps_extension_6bits=0
         .asme_patch_constant_depth_flag(true);
     x.aspsExtensionData({false, true, true});
 
-    REQUIRE(toString(x) == R"(asps_atlas_sequence_parameter_set_id=15
+    REQUIRE(toString(x) == R"(asps_atlas_sequence_parameter_set_id=63
 asps_frame_width=65535
 asps_frame_height=65535
 asps_geometry_3d_bit_depth_minus1=10
@@ -239,7 +239,7 @@ asps_extension_data_flag=true
 asps_extension_data_flag=true
 )");
 
-    REQUIRE(byteCodingTest(x, 16, vuh, vps));
+    REQUIRE(byteCodingTest(x, 17, vuh, vps));
   }
 }
 } // namespace TMIV::MivBitstream

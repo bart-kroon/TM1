@@ -278,6 +278,7 @@ constexpr auto CommonAtlasFrameRBSP::caf_extension_8bits() const noexcept {
 constexpr auto
 CommonAtlasFrameRBSP::caf_atlas_adaptation_parameter_set_id(const std::uint8_t value) noexcept
     -> auto & {
+  VERIFY_MIVBITSTREAM(value <= 63U);
   m_caf_atlas_adaptation_parameter_set_id = value;
   return *this;
 }

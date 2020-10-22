@@ -39,9 +39,9 @@ clang-11:
 ctest:
   stage: test
   image: ubuntu:20.04
-  needs:
-    - job: clang-11
-      artifacts: true
+  # needs:  # TODO fix
+    # - job: clang-11
+      # artifacts: true
   script:
     - export DEBIAN_FRONTEND=noninteractive
     - apt-get update -qy

@@ -1,6 +1,7 @@
 .only-default: &only-default
   only:
-    - merge_requests
+    refs:
+      - merge_requests
 
 stages:
   - build

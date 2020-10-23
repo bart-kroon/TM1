@@ -1,13 +1,15 @@
-.only-default:
+.only-default: &only-default
   only:
+    - master
     - merge_requests
+    - tags
 
 stages:
   - build
   - test
 
 gcc-9:
-  extends: .only-default
+  <<: *only-default
   stage: build
   image: rikorose/gcc-cmake:gcc-9
   tags:
@@ -18,7 +20,7 @@ gcc-9:
     - make -j $(nproc)
 
 clang-11:
-  extends: .only-default
+  <<: *only-default
   stage: build
   image: cbachhuber/clang:11
   tags:
@@ -34,7 +36,7 @@ clang-11:
           - build/
 
 unit-tests:
-  extends: .only-default
+  <<: *only-default
   stage: test
   image: rikorose/gcc-cmake:gcc-9
   tags:
@@ -44,7 +46,7 @@ unit-tests:
     - ctest
 
 clang-format:
-  extends: .only-default
+  <<: *only-default
   stage: test
   image: cbachhuber/clang:11
   tags:

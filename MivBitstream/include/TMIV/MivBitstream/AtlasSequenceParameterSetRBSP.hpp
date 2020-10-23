@@ -240,6 +240,7 @@ constexpr auto AtlasSequenceParameterSetRBSP::asps_extension_6bits() const noexc
 constexpr auto
 AtlasSequenceParameterSetRBSP::asps_atlas_sequence_parameter_set_id(const uint8_t value) noexcept
     -> auto & {
+  VERIFY_MIVBITSTREAM(value <= 63U);
   m_asps_atlas_sequence_parameter_set_id = value;
   return *this;
 }

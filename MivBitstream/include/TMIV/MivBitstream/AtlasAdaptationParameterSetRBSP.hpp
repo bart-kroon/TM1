@@ -88,6 +88,7 @@ constexpr auto AtlasAdaptationParameterSetRBSP::aaps_extension_6bits() const noe
 
 constexpr auto AtlasAdaptationParameterSetRBSP::aaps_atlas_adaptation_parameter_set_id(
     const std::uint8_t value) noexcept -> auto & {
+  VERIFY_MIVBITSTREAM(value <= 63U);
   m_aaps_atlas_adaptation_parameter_set_id = value;
   return *this;
 }

@@ -80,13 +80,13 @@ afps_extension_present_flag=false
   SECTION("Example 2") {
     auto aspsV = std::vector<AtlasSequenceParameterSetRBSP>(3);
     aspsV.back()
-        .asps_atlas_sequence_parameter_set_id(12)
+        .asps_atlas_sequence_parameter_set_id(63)
         .asps_geometry_3d_bit_depth_minus1(31)
         .asps_log2_max_atlas_frame_order_cnt_lsb_minus4(3)
         .asps_long_term_ref_atlas_frames_flag(true);
 
     x.afps_atlas_frame_parameter_set_id(63)
-        .afps_atlas_sequence_parameter_set_id(12)
+        .afps_atlas_sequence_parameter_set_id(63)
         .afps_output_flag_present_flag(true)
         .afps_num_ref_idx_default_active_minus1(14)
         .afps_additional_lt_afoc_lsb_len(25)
@@ -99,7 +99,7 @@ afps_extension_present_flag=false
         .afpsExtensionData({false, true});
 
     REQUIRE(toString(x) == R"(afps_atlas_frame_parameter_set_id=63
-afps_atlas_sequence_parameter_set_id=12
+afps_atlas_sequence_parameter_set_id=63
 afti_single_tile_in_atlas_frame_flag=true
 afti_signalled_tile_id_flag=false
 afps_output_flag_present_flag=true
@@ -114,7 +114,7 @@ afps_extension_data_flag=false
 afps_extension_data_flag=true
 )");
 
-    REQUIRE(byteCodingTest(x, 7, aspsV));
+    REQUIRE(byteCodingTest(x, 8, aspsV));
   }
 }
 } // namespace TMIV::MivBitstream

@@ -12,21 +12,11 @@ gcc-9:
 
 clang-11:
   stage: build
-  image: ubuntu:20.04
+  image: cbachhuber/clang:11
   # only:  # TODO enable when opening MR
     # - merge_requests
     # - v7.0-dev
   script:
-    - export DEBIAN_FRONTEND=noninteractive
-    - apt-get update -qy
-    - apt-get install -y wget gnupg2
-    - echo "deb http://apt.llvm.org/focal/ llvm-toolchain-focal-11 main" >> /etc/apt/sources.list
-    - echo "deb-src http://apt.llvm.org/focal/ llvm-toolchain-focal-11 main" >> /etc/apt/sources.list
-    - wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add -
-    - apt-get update -qy
-    - apt-get install -y clang-11 clang-tidy-11 clang-format-11 cmake git
-    - export CC=/usr/bin/clang-11
-    - export CXX=/usr/bin/clang++-11
     - mkdir -p build && cd build
     - cmake -DCMAKE_CXX_FLAGS="-Wall -Wextra -Wpedantic -Werror" ..
     - make -j $(nproc)

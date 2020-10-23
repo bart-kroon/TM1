@@ -447,8 +447,9 @@ auto ElementaryShape::loadFromJson(const Common::Json &node, const Common::Json 
 
   // added for m52412 inferred_views implementation
   bool inferredView = false;
-  const auto sourceCameraNames = (config.require("SourceCameraNames").asVector<std::string>());
   if (const auto &subsubnode = node.optional("InferringViews")) {
+    // TODO(BK): Use ID instead of index? Not sure how to fix this code.
+    const auto sourceCameraNames = config.require("SourceCameraNames").asVector<std::string>();
     std::vector<std::string> views = subsubnode.asVector<std::string>();
     for (const auto &v : views) {
       size_t idx = 0;

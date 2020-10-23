@@ -75,4 +75,44 @@ auto AtlasAccessUnit::patchId(unsigned row, unsigned column) const -> std::uint1
   const auto k = asps.asps_log2_patch_packing_block_size();
   return blockToPatchMap.getPlane(0)(row >> k, column >> k);
 }
+
+auto AccessUnit::sequenceConfig() const -> MivBitstream::SequenceConfig {
+  auto x = MivBitstream::SequenceConfig{};
+
+  x.contentName = "decoded";
+
+  if (vui && vui->vui_timing_info_present_flag()) {
+    x.frameRate = static_cast<double>(vui->vui_time_scale()) /
+                  static_cast<double>(vui->vui_num_units_in_tick());
+  }
+
+  x.cameras.resize(viewParamsList.size());
+
+  std::transform(viewParamsList.cbegin(), viewParamsList.cend(), x.cameras.begin(),
+                 [](const MivBitstream::ViewParams &vp) {
+                   auto c = MivBitstream::CameraConfig{};
+                   c.viewParams = vp;
+                   c.bitDepthColor = 10;
+                   c.bitDepthDepth = 10;
+                   return c;
+                 });
+
+  x.boundingBoxCenter = std::accumulate(
+      viewParamsList.cbegin(), viewParamsList.cend(), Common::Vec3d{},
+      [Z = 1. / static_cast<double>(viewParamsList.size())](const Common::Vec3d &init,
+                                                            const MivBitstream::ViewParams &vp) {
+        return init + Common::Vec3d{Z * vp.ce.ce_view_pos_x(), Z * vp.ce.ce_view_pos_y(),
+                                    Z * vp.ce.ce_view_pos_z()};
+      });
+
+  std::transform(viewParamsList.cbegin(), viewParamsList.cend(),
+                 std::inserter(x.sourceCameraNames, x.sourceCameraNames.end()), [](const auto &vp) {
+                   if (vp.name.empty()) {
+                     throw std::runtime_error("The decoder needs to assign view names");
+                   }
+                   return vp.name;
+                 });
+
+  return x;
+}
 } // namespace TMIV::Decoder

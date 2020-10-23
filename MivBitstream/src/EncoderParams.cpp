@@ -48,18 +48,25 @@ auto EncoderAtlasParams::asme() noexcept -> AspsMivExtension & {
       .asps_miv_extension();
 }
 
-EncoderParams::EncoderParams() : EncoderParams{false, false} {}
+EncoderParams::EncoderParams() : EncoderParams{false, false, false} {}
 
-EncoderParams::EncoderParams(bool haveTexture, bool haveOccupancy)
-    : EncoderParams{Common::SizeVector{{0xFFFF, 0xFFFF}}, haveTexture, haveOccupancy} {}
+// TODO(BK): Move to Encoder class
+EncoderParams::EncoderParams(bool haveTextureVideo, bool haveGeometryVideo, bool haveOccupancyVideo)
+    : EncoderParams{Common::SizeVector{{0xFFFF, 0xFFFF, 0xFFFF}}, haveTextureVideo, haveGeometryVideo,
+                    haveOccupancyVideo} {}
 
-EncoderParams::EncoderParams(const Common::SizeVector &atlasSizes, bool haveTexture,
-                             bool haveOccupancy) {
+// TODO(BK): Move to Encoder class
+EncoderParams::EncoderParams(const Common::SizeVector &atlasSizes, bool haveTextureVideo,
+                             bool haveGeometryVideo, bool haveOccupancyVideo) {
   vps.profile_tier_level()
       .ptl_level_idc(PtlLevelIdc::Level_3_5)
       .ptl_profile_codec_group_idc(PtlProfileCodecGroupIdc::HEVC_Main10)
-      .ptl_profile_toolset_idc(PtlProfilePccToolsetIdc::MIV_Main)
       .ptl_profile_reconstruction_idc(PtlProfileReconstructionIdc::MIV_Main);
+
+  vps.profile_tier_level().ptl_profile_toolset_idc(
+      haveGeometryVideo ? (haveOccupancyVideo ? PtlProfilePccToolsetIdc::MIV_Extended
+                                    : PtlProfilePccToolsetIdc::MIV_Main)
+                   : PtlProfilePccToolsetIdc::MIV_Geometry_Absent);
 
   VERIFY_MIVBITSTREAM(!atlasSizes.empty());
   vps.vps_atlas_count_minus1(static_cast<uint8_t>(atlasSizes.size() - 1));
@@ -69,13 +76,15 @@ EncoderParams::EncoderParams(const Common::SizeVector &atlasSizes, bool haveText
     vps.vps_atlas_id(k, j)
         .vps_frame_width(j, atlasSizes[k].x())
         .vps_frame_height(j, atlasSizes[k].y())
-        .vps_geometry_video_present_flag(j, true)
-        .vps_occupancy_video_present_flag(j, haveOccupancy)
-        .vps_attribute_video_present_flag(j, haveTexture);
+        .vps_geometry_video_present_flag(j, haveGeometryVideo)
+        .vps_occupancy_video_present_flag(j, haveOccupancyVideo)
+        .vps_attribute_video_present_flag(j, haveTextureVideo);
 
-    vps.geometry_information(j).gi_geometry_2d_bit_depth_minus1(9);
+    if (haveGeometryVideo) {
+      vps.geometry_information(j).gi_geometry_2d_bit_depth_minus1(9);
+    }
 
-    if (haveOccupancy) {
+    if (haveOccupancyVideo) {
       vps.occupancy_information(j)
           .oi_occupancy_codec_id(0)
           .oi_lossy_occupancy_compression_threshold(0) // set similar to V-PCC
@@ -84,7 +93,7 @@ EncoderParams::EncoderParams(const Common::SizeVector &atlasSizes, bool haveText
           .oi_occupancy_MSB_align_flag(false);
     }
 
-    if (haveTexture) {
+    if (haveTextureVideo) {
       vps.attribute_information(j)
           .ai_attribute_count(1)
           .ai_attribute_type_id(0, AiAttributeTypeId::ATTR_TEXTURE)

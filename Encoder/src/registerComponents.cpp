@@ -40,6 +40,7 @@
 #include <TMIV/GeometryQuantizer/GeometryQuantizer.h>
 #include <TMIV/Packer/Packer.h>
 #include <TMIV/Pruner/HierarchicalPruner.h>
+#include <TMIV/Pruner/NoPruner.h>
 #include <TMIV/ViewOptimizer/BasicViewAllocator.h>
 #include <TMIV/ViewOptimizer/NoViewOptimizer.h>
 
@@ -64,6 +65,7 @@ void registerComponents() {
 
   auto &pruners = Common::Factory<Pruner::IPruner>::getInstance();
   pruners.registerAs<Pruner::HierarchicalPruner>("HierarchicalPruner");
+  pruners.registerAs<Pruner::NoPruner>("NoPruner");
 
   auto &viewOptimizers = Common::Factory<ViewOptimizer::IViewOptimizer>::getInstance();
   viewOptimizers.registerAs<ViewOptimizer::BasicViewAllocator>("BasicViewAllocator");

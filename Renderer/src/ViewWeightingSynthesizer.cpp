@@ -967,7 +967,7 @@ private:
 
 ViewWeightingSynthesizer::ViewWeightingSynthesizer(const Common::Json & /*rootNode*/,
                                                    const Common::Json &componentNode)
-    : m_impl(new Impl(componentNode)) {}
+    : m_impl(new Impl{componentNode}) {}
 
 ViewWeightingSynthesizer::ViewWeightingSynthesizer(float angularScaling, float minimalWeight,
                                                    float stretchFactor, float blendingFactor,

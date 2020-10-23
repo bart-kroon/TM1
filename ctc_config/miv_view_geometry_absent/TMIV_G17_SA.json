@@ -1,0 +1,54 @@
+{
+    "BitstreamPath": "ATL_SA.bit",
+    "AttributeVideoDataPathFmt": "ATL_SA_T{}_c{:02}_{}x{}_yuv420p10le.yuv",
+    "DepthQualityAssessor": {
+        "blendingFactor": 0.03,
+        "maxOutlierRatio": 0.001
+    },
+    "DepthQualityAssessorMethod": "DepthQualityAssessor",
+    "EncoderMethod": "GroupBasedEncoder",
+    "GroupBasedEncoder": {
+        "Aggregator": {},
+        "AggregatorMethod": "Aggregator",
+        "GeometryQuantizer": {
+            "depthOccThresholdIfSet": 64
+        },
+        "GeometryQuantizerMethod": "GeometryQuantizer",
+        "NoPruner": {},
+        "Packer": {
+            "MinPatchSize": 16,
+            "Overlap": 1,
+            "PiP": 1,
+            "enableMerging": true
+        },
+        "PackerMethod": "Packer",
+        "PrunerMethod": "NoPruner",
+        "ViewOptimizerMethod": "BasicViewAllocator",
+        "BasicViewAllocator": {
+            "maxBasicViewFraction": 1.0,
+            "outputAdditionalViews": false,
+            "minNonCodedViews": 3
+        },
+        "dilate": 16
+    },
+    "OmafV1CompatibleFlag": false,
+    "OutputDirectory": ".",
+    "SourceCameraParameters": "ClassroomVideo.json",
+    "SourceDirectory": ".",
+    "SourceTexturePathFmt": "{}_texture_{}x{}_yuv420p10le.yuv",
+    "blockSizeDepthQualityDependent": [ 8, 8 ],
+    "dynamicDepthRange": false,
+    "geometryScaleEnabledFlag": false,
+    "haveTextureVideo": true,
+    "haveGeometryVideo": false,
+    "haveOccupancyVideo": false,
+    "intraPeriod": 32,
+    "maxAtlases": 4,
+    "maxEntities": 1,
+    "maxLumaSampleRate": 1069547520.0,
+    "maxLumaPictureSize": 8912896,
+    "numGroups": 1,
+    "numberOfFrames": 17,
+    "oneViewPerAtlasFlag": false,
+    "startFrame": 23
+}

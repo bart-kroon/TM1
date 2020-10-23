@@ -50,7 +50,8 @@ namespace TMIV::IO {
 auto loadSourceParams(const Common::Json &config) -> MivBitstream::EncoderParams;
 
 // Loads a source frame including entity maps when applicable
-auto loadSourceFrame(const Common::Json &config, const Common::SizeVector &sizes, int frameIndex)
+auto loadSourceFrame(const Common::Json &config, const Common::SizeVector &sizes,
+                     const std::vector<std::string> &viewNames, int frameIndex)
     -> Common::MVD16Frame;
 
 void saveAtlas(const Common::Json &config, int frameIndex, const Common::MVD10Frame &frame);

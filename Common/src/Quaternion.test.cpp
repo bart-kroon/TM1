@@ -115,6 +115,15 @@ TEST_CASE("Quanternion<T>", "[quaternion]") {
     REQUIRE(quat.w() == Approx(0.9715195367398130));
   }
 
+  SECTION("Convert quaternion to Euler angles") {
+    const auto euler = quat2euler(
+        QuatD{0.0139933465964437, 0.0143176961628196, -0.2361122181516230, 0.9715195367398130});
+
+    CHECK(euler.x() == Approx(-0.4764713951)); // yaw [raw]
+    CHECK(euler.y() == Approx(0.0344346480));  // pitch [rad]
+    CHECK(euler.z() == Approx(0.0204419943));  // roll [rad]
+  }
+
   SECTION("Convert quaternion to rotation matrix") {
     REQUIRE(rotationMatrix(u) == Mat3x3f::eye());
 

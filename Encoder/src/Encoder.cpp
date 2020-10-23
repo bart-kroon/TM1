@@ -54,12 +54,6 @@ auto create(const char *name, const Common::Json &rootNode, const Common::Json &
   const auto &instance = Common::Factory<Interface>::getInstance();
   return instance.create(name, rootNode, componentNode);
 }
-
-void runtimeCheck(bool cond, const char *what) {
-  if (!cond) {
-    throw std::runtime_error(what);
-  }
-}
 } // namespace
 
 Encoder::Encoder(const Common::Json &rootNode, const Common::Json &componentNode)
@@ -68,20 +62,17 @@ Encoder::Encoder(const Common::Json &rootNode, const Common::Json &componentNode
     , m_aggregator{create<IAggregator>("Aggregator", rootNode, componentNode)}
     , m_packer{create<IPacker>("Packer", rootNode, componentNode)}
     , m_geometryQuantizer{create<IGeometryQuantizer>("GeometryQuantizer", rootNode, componentNode)}
-    , m_geometryDownscaler{rootNode, componentNode} {
-  // Parameters
-  m_intraPeriod = rootNode.require("intraPeriod").as<int>();
-  const auto numGroups = rootNode.require("numGroups").as<int>();
-  m_blockSizeDepthQualityDependent =
-      rootNode.require("blockSizeDepthQualityDependent").asVec<int, 2>();
-  m_maxLumaSampleRate = rootNode.require("maxLumaSampleRate").as<double>();
-  m_maxLumaPictureSize = rootNode.require("maxLumaPictureSize").as<int>();
-  const auto maxAtlases = rootNode.require("maxAtlases").as<int>();
-  m_geometryScaleEnabledFlag = rootNode.require("geometryScaleEnabledFlag").as<bool>();
-
-  if (const auto &node = componentNode.optional("dilate")) {
-    m_dilationIter = node.as<int>();
-  }
+    , m_geometryDownscaler{rootNode, componentNode}
+    , m_intraPeriod{rootNode.require("intraPeriod").as<int>()}
+    , m_blockSizeDepthQualityDependent{rootNode.require("blockSizeDepthQualityDependent")
+                                           .asVec<int, 2>()}
+    , m_haveTexture{rootNode.require("haveTextureVideo").as<bool>()}
+    , m_haveGeometry{rootNode.require("haveGeometryVideo").as<bool>()}
+    , m_haveOccupancy{rootNode.require("haveOccupancyVideo").as<bool>()}
+    , m_oneViewPerAtlasFlag{rootNode.require("oneViewPerAtlasFlag").as<bool>()}
+    , m_geometryScaleEnabledFlag{rootNode.require("geometryScaleEnabledFlag").as<bool>()}
+    , m_dilationIter{componentNode.require("dilate").as<int>()}
+    , m_dynamicDepthRange{rootNode.require("dynamicDepthRange").as<bool>()} {
 
   if (const auto &node = componentNode.optional("overrideAtlasFrameSizes")) {
     std::cout
@@ -90,21 +81,13 @@ Encoder::Encoder(const Common::Json &rootNode, const Common::Json &componentNode
     for (const auto &subnode : node.as<Common::Json::Array>()) {
       m_overrideAtlasFrameSizes.push_back(subnode.asVec<int, 2>());
     }
+  } else if (!m_oneViewPerAtlasFlag) {
+    m_maxLumaSampleRate = rootNode.require("maxLumaSampleRate").as<double>();
+    m_maxLumaPictureSize = rootNode.require("maxLumaPictureSize").as<int>();
+    const int maxAtlases = rootNode.require("maxAtlases").as<int>();
+    const auto numGroups = rootNode.require("numGroups").as<int>();
+    m_maxAtlases = maxAtlases / numGroups;
   }
-
-  // Check parameters
-  runtimeCheck(1 <= numGroups, "numGroups should be at least one");
-  if (m_maxLumaSampleRate == 0) {
-    runtimeCheck(m_maxLumaPictureSize == 0 && maxAtlases == 0,
-                 "Either specify all constraints or none");
-  } else {
-    runtimeCheck(m_maxLumaPictureSize > 0 && maxAtlases > 0,
-                 "Either specify all constraints or none");
-    runtimeCheck(numGroups <= maxAtlases, "There should be at least one atlas per group");
-  }
-
-  // Translate parameters to concrete constraints
-  m_maxAtlases = maxAtlases / numGroups;
 
   // Read the entity encoding range if exisited
   if (const auto &subnode = componentNode.optional("EntityEncodeRange")) {
@@ -114,8 +97,6 @@ Encoder::Encoder(const Common::Json &rootNode, const Common::Json &componentNode
   if (m_intraPeriod > maxIntraPeriod) {
     throw std::runtime_error("The intraPeriod parameter cannot be greater than maxIntraPeriod.");
   }
-
-  m_explicitOccupancy = rootNode.require("explicitOccupancy").as<bool>();
 }
 
 auto Encoder::maxLumaSamplesPerFrame() const -> size_t { return m_maxLumaSamplesPerFrame; }

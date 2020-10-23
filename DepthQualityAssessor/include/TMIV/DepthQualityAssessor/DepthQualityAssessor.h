@@ -47,7 +47,7 @@ public:
   auto operator=(DepthQualityAssessor &&) -> DepthQualityAssessor & = default;
   ~DepthQualityAssessor() override = default;
 
-  auto isLowDepthQuality(const MivBitstream::EncoderParams &params,
+  auto isLowDepthQuality(const MivBitstream::ViewParamsList &vpl,
                          const Common::MVD16Frame &sourceViews) -> bool override;
 
 private:

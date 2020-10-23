@@ -61,8 +61,9 @@ auto GeometryQuantizer::setOccupancyParams(MivBitstream::EncoderParams params)
     -> const MivBitstream::EncoderParams & {
   m_inParams = std::move(params);
   m_outParams = m_inParams;
-
-  m_outParams.vme().vme_embedded_occupancy_flag(true);
+  m_outParams.vme().vme_embedded_occupancy_flag(
+      m_outParams.vps.profile_tier_level().ptl_profile_toolset_idc() !=
+      MivBitstream::PtlProfilePccToolsetIdc::MIV_Geometry_Absent);
   return m_outParams;
 }
 

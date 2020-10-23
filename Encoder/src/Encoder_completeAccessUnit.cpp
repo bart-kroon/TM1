@@ -33,13 +33,15 @@
 
 #include <TMIV/Encoder/Encoder.h>
 
+#include <cassert>
 #include <iostream>
 
 namespace TMIV::Encoder {
 void Encoder::scaleGeometryDynamicRange() {
-  auto lowDepthQuality = m_params.vps.vps_miv_extension().vme_depth_low_quality_flag();
-  auto numOfFrames = m_transportViews.size();
-  auto numOfViews = m_transportViews[0].size();
+  assert(m_dynamicDepthRange);
+  const auto lowDepthQuality = m_params.vps.vps_miv_extension().vme_depth_low_quality_flag();
+  const auto numOfFrames = m_transportViews.size();
+  const auto numOfViews = m_transportViews[0].size();
 
   for (size_t v = 0; v < numOfViews; v++) {
     int minDepthMapValWithinGOP = 65535;
@@ -66,7 +68,6 @@ void Encoder::scaleGeometryDynamicRange() {
         }
       }
     }
-
     const double normDispHighOrig = m_transportParams.viewParamsList[v].dq.dq_norm_disp_high();
     const double normDispLowOrig = m_transportParams.viewParamsList[v].dq.dq_norm_disp_low();
 
@@ -82,7 +83,7 @@ void Encoder::scaleGeometryDynamicRange() {
     m_params.viewParamsList[v].dq.dq_norm_disp_high(static_cast<float>(normDispHigh));
     m_params.viewParamsList[v].dq.dq_norm_disp_low(static_cast<float>(normDispLow));
   }
-} // namespace TMIV::Encoder
+}
 
 auto Encoder::completeAccessUnit() -> const MivBitstream::EncoderParams & {
   m_aggregator->completeAccessUnit();
@@ -90,7 +91,9 @@ auto Encoder::completeAccessUnit() -> const MivBitstream::EncoderParams & {
 
   updateAggregationStatistics(aggregatedMask);
 
-  scaleGeometryDynamicRange();
+  if (m_dynamicDepthRange) {
+    scaleGeometryDynamicRange();
+  }
 
   if (m_params.vme().vme_max_entities_minus1() > 0) {
     m_packer->updateAggregatedEntityMasks(m_aggregatedEntityMask);
@@ -120,47 +123,45 @@ void Encoder::updateAggregationStatistics(const Common::MaskList &aggregatedMask
 
 void Encoder::constructVideoFrames() {
   int frame = 0;
+  const auto &vps = m_params.vps;
+  const auto &vme = vps.vps_miv_extension();
+
   for (const auto &views : m_transportViews) {
     Common::MVD16Frame atlasList;
 
-    for (size_t k = 0; k <= m_params.vps.vps_atlas_count_minus1(); ++k) {
-      const auto j = m_params.vps.vps_atlas_id(k);
-      const auto frameWidth = m_params.vps.vps_frame_width(j);
-      const auto frameHeight = m_params.vps.vps_frame_height(j);
-      Common::TextureDepth16Frame frame;
-      if (m_params.vps.vps_occupancy_video_present_flag(j)) {
-        if (m_params.vps.vps_miv_extension().vme_occupancy_scale_enabled_flag()) {
-          int codedOccupancyWidth =
-              frameWidth / (m_params.atlas[k].asme().asme_occupancy_scale_factor_x_minus1() + 1);
-          int codedOccupancyHeight =
-              frameHeight / (m_params.atlas[k].asme().asme_occupancy_scale_factor_y_minus1() + 1);
-          // make sure coded occupancy maps are divisible by 2 for HM coding functionality
-          codedOccupancyWidth = codedOccupancyWidth + codedOccupancyWidth % 2;
-          codedOccupancyHeight = codedOccupancyHeight + codedOccupancyHeight % 2;
-          frame = {Common::TextureFrame(frameWidth, frameHeight),
-                   Common::Depth16Frame(frameWidth, frameHeight),
-                   Common::Occupancy10Frame(codedOccupancyWidth, codedOccupancyHeight)};
-        } else {
-          frame = {Common::TextureFrame(frameWidth, frameHeight),
-                   Common::Depth16Frame(frameWidth, frameHeight),
-                   Common::Occupancy10Frame(frameWidth, frameHeight)};
-        }
-      } else {
-        frame = {Common::TextureFrame(frameWidth, frameHeight),
-                 Common::Depth16Frame(frameWidth, frameHeight)};
+    for (size_t k = 0; k <= vps.vps_atlas_count_minus1(); ++k) {
+      auto &frame = atlasList.emplace_back();
+      const auto j = vps.vps_atlas_id(k);
+      const auto frameWidth = vps.vps_frame_width(j);
+      const auto frameHeight = vps.vps_frame_height(j);
+
+      // TODO(BK): surround with if ( vps_attribute_video_present_flag ) { }
+      frame.texture.resize(frameWidth, frameHeight);
+      frame.texture.fillNeutral();
+
+      if (m_haveGeometry) {
+        frame.depth.resize(frameWidth, frameHeight);
+        frame.depth.fillZero();
       }
 
-      frame.texture.fillNeutral();
-      frame.depth.fillZero();
-      if (m_params.vps.vps_occupancy_video_present_flag(j)) {
+      if (vps.vps_occupancy_video_present_flag(j)) {
+        int occFrameWidth = frameWidth;
+        int occFrameHeight = frameHeight;
+
+        if (vme.vme_occupancy_scale_enabled_flag()) {
+          const auto &asme = m_params.atlas[k].asme();
+          occFrameWidth /= asme.asme_occupancy_scale_factor_x_minus1() + 1;
+          occFrameHeight /= asme.asme_occupancy_scale_factor_y_minus1() + 1;
+        }
+        frame.occupancy.resize(Common::align(occFrameWidth, 2), Common::align(occFrameHeight, 2));
         frame.occupancy.fillZero();
       }
-      atlasList.push_back(std::move(frame));
     }
 
     for (const auto &patch : m_params.patchParamsList) {
       const auto &view = views[patch.atlasPatchProjectionId()];
-      if (m_params.vme().vme_max_entities_minus1() > 0) {
+
+      if (0 < vme.vme_max_entities_minus1()) {
         Common::MVD16Frame tempViews;
         tempViews.push_back(view);
         const auto &entityViews = entitySeparator(tempViews, *patch.atlasPatchEntityId());
@@ -170,7 +171,7 @@ void Encoder::constructVideoFrames() {
       }
     }
     m_videoFrameBuffer.push_back(std::move(atlasList));
-    frame++;
+    ++frame;
   }
 }
 
@@ -236,7 +237,7 @@ void Encoder::writePatchInAtlas(const MivBitstream::PatchParams &patchParams,
             continue;
           }
 
-          if (!isAggregatedMaskBlockNonEmpty) {
+          if (!isAggregatedMaskBlockNonEmpty && m_haveGeometry) {
             depthAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x()) = 0;
             if (m_params.vps.vps_occupancy_video_present_flag(patchParams.atlasId)) {
               occupancyAtlasMap.getPlane(0)(yOcc, xOcc) = 0;
@@ -256,15 +257,17 @@ void Encoder::writePatchInAtlas(const MivBitstream::PatchParams &patchParams,
           }
 
           // Depth
-          auto depth = depthViewMap.getPlane(0)(pView.y(), pView.x());
-          if (depth == 0 && !inViewParams.hasOccupancy && outViewParams.hasOccupancy &&
-              m_params.vme().vme_max_entities_minus1() == 0) {
-            depth = 1; // Avoid marking valid depth as invalid
+          if (m_haveGeometry) {
+            auto depth = depthViewMap.getPlane(0)(pView.y(), pView.x());
+            if (depth == 0 && !inViewParams.hasOccupancy && outViewParams.hasOccupancy &&
+                m_params.vme().vme_max_entities_minus1() == 0) {
+              depth = 1; // Avoid marking valid depth as invalid
+            }
+            depthAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x()) = depth;
+            if (depth > 0 && m_params.vps.vps_occupancy_video_present_flag(patchParams.atlasId)) {
+              occupancyAtlasMap.getPlane(0)(yOcc, xOcc) = 1;
+            };
           }
-          depthAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x()) = depth;
-          if (depth > 0 && m_params.vps.vps_occupancy_video_present_flag(patchParams.atlasId)) {
-            occupancyAtlasMap.getPlane(0)(yOcc, xOcc) = 1;
-          };
         }
       }
     }

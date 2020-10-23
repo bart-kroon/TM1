@@ -54,7 +54,13 @@ enum class PtlProfileCodecGroupIdc : std::uint8_t {
   MP4RA = 127
 };
 
-enum class PtlProfilePccToolsetIdc : std::uint8_t { VPCC_Basic, VPCC_Extended, MIV_Main = 64 };
+enum class PtlProfilePccToolsetIdc : std::uint8_t {
+  VPCC_Basic,
+  VPCC_Extended,
+  MIV_Main = 64,
+  MIV_Extended,
+  MIV_Geometry_Absent
+};
 enum class PtlProfileReconstructionIdc : std::uint8_t {
   Rec0, // (V-PCC)
   Rec1, // (V-PCC)
@@ -62,6 +68,7 @@ enum class PtlProfileReconstructionIdc : std::uint8_t {
   MIV_Main = 64,
   Rec_Unconstrained = 255
 };
+
 enum class PtlMaxDecodesIdc : std::uint8_t {
   max_1,
   max_2,
@@ -301,6 +308,8 @@ struct PinRegion {
            (pin_region_top_left_y == other.pin_region_top_left_y) &&
            (pin_region_width_minus1 == other.pin_region_width_minus1) &&
            (pin_region_height_minus1 == other.pin_region_height_minus1) &&
+           (pin_region_top_left_x == other.pin_region_unpack_top_left_y) &&
+           (pin_region_unpack_top_left_y == other.pin_region_unpack_top_left_y) &&
            (pin_region_map_index == other.pin_region_map_index) &&
            (pin_region_rotation_flag == other.pin_region_rotation_flag) &&
            (pin_region_auxiliary_data_flag == other.pin_region_auxiliary_data_flag) &&
@@ -316,6 +325,8 @@ struct PinRegion {
   std::uint16_t pin_region_top_left_y{};
   std::uint16_t pin_region_width_minus1{};
   std::uint16_t pin_region_height_minus1{};
+  std::uint16_t pin_region_unpack_top_left_x{};
+  std::uint16_t pin_region_unpack_top_left_y{};
   std::uint8_t pin_region_map_index{};
   bool pin_region_rotation_flag{};
   std::optional<bool> pin_region_auxiliary_data_flag{};
@@ -339,6 +350,8 @@ public:
   [[nodiscard]] auto pin_region_top_left_y(std::size_t i) const noexcept -> std::uint16_t;
   [[nodiscard]] auto pin_region_width_minus1(std::size_t i) const noexcept -> std::uint16_t;
   [[nodiscard]] auto pin_region_height_minus1(std::size_t i) const noexcept -> std::uint16_t;
+  [[nodiscard]] auto pin_region_unpack_top_left_x(std::size_t i) const noexcept -> std::uint16_t;
+  [[nodiscard]] auto pin_region_unpack_top_left_y(std::size_t i) const noexcept -> std::uint16_t;
   [[nodiscard]] auto pin_region_map_index(std::size_t i) const noexcept -> std::uint8_t;
   [[nodiscard]] auto pin_region_rotation_flag(std::size_t i) const noexcept -> bool;
   [[nodiscard]] auto pin_region_auxiliary_data_flag(std::size_t i) const -> bool;
@@ -355,6 +368,8 @@ public:
   auto pin_region_top_left_y(std::size_t i, std::uint16_t value) -> auto &;
   auto pin_region_width_minus1(std::size_t i, std::uint16_t value) -> auto &;
   auto pin_region_height_minus1(std::size_t i, std::uint16_t value) -> auto &;
+  auto pin_region_unpack_top_left_x(std::size_t i, std::uint16_t value) -> auto &;
+  auto pin_region_unpack_top_left_y(std::size_t i, std::uint16_t value) -> auto &;
   auto pin_region_map_index(std::size_t i, std::uint8_t value) -> auto &;
   auto pin_region_rotation_flag(std::size_t i, bool value) -> auto &;
   auto pin_region_auxiliary_data_flag(std::size_t i, bool value) -> auto &;

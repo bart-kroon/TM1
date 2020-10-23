@@ -80,14 +80,14 @@ ath_ref_atlas_frame_list_asps_flag=true
         .ath_ref_atlas_frame_list_asps_flag(true)
         .ath_patch_size_x_info_quantizer(6)
         .ath_patch_size_y_info_quantizer(5)
-        .ath_atlas_adaptation_parameter_set_id(4)
+        .ath_atlas_adaptation_parameter_set_id(63)
         .ath_pos_min_d_quantizer(3)
         .ath_pos_delta_max_d_quantizer(7);
 
     const auto nuh = NalUnitHeader{NalUnitType::NAL_TSA_R, 0, 2};
 
     REQUIRE(toString(x) == R"(ath_atlas_frame_parameter_set_id=0
-ath_atlas_adaptation_parameter_set_id=4
+ath_atlas_adaptation_parameter_set_id=63
 ath_id=0
 ath_type=I_TILE
 ath_atlas_frm_order_cnt_lsb=0
@@ -98,7 +98,7 @@ ath_patch_size_x_info_quantizer=6
 ath_patch_size_y_info_quantizer=5
 )");
 
-    REQUIRE(bitCodingTest(x, 32, nuh, aspsV, afpsV));
+    REQUIRE(bitCodingTest(x, 40, nuh, aspsV, afpsV));
   }
 }
 

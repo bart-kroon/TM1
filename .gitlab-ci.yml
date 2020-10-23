@@ -30,7 +30,7 @@ clang-11:
       paths:
           - build/
 
-ctest:
+unit-tests:
   stage: test
   image: rikorose/gcc-cmake::gcc-9
   tags:

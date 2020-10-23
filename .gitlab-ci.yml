@@ -32,16 +32,12 @@ clang-11:
 
 ctest:
   stage: test
-  image: ubuntu:20.04
+  image: rikorose/gcc-cmake::gcc-9
   tags:
     - linux
   # needs:  # TODO fix
     # - job: clang-11
       # artifacts: true
   script:
-    - export DEBIAN_FRONTEND=noninteractive
-    - apt-get update -qy
-    - apt-get install -y cmake
     - cd build
-    - ls -la
     - ctest

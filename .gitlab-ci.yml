@@ -1,11 +1,3 @@
-workflow:
-  rules:
-    - if: $CI_MERGE_REQUEST_ID               # Execute jobs in merge request context
-    - if: $CI_COMMIT_BRANCH == 'v7.0-dev'    # Execute jobs when a new commit is pushed to v7.0-dev
-
-variables:
-  default_branch: "v7.0-dev"
-
 stages:
   - build
   - test
@@ -15,6 +7,8 @@ gcc-9:
   image: rikorose/gcc-cmake:gcc-9
   tags:
     - linux
+  only:
+    - merge_requests
   script:
     - mkdir -p build && cd build
     - cmake -DCMAKE_CXX_FLAGS="-Wall -Wextra -Wpedantic -Werror" -DENABLE_CLANG_TIDY=OFF ..
@@ -25,6 +19,8 @@ clang-11:
   image: cbachhuber/clang:11
   tags:
     - linux
+  only:
+    - merge_requests
   script:
     - mkdir -p build && cd build
     - cmake -DCMAKE_CXX_FLAGS="-Wall -Wextra -Wpedantic -Werror" ..
@@ -40,6 +36,8 @@ unit-tests:
   image: rikorose/gcc-cmake:gcc-9
   tags:
     - linux
+  only:
+    - merge_requests
   script:
     - cd build
     - ctest
@@ -49,6 +47,8 @@ clang-format:
   image: cbachhuber/clang:11
   tags:
     - linux
+  only:
+    - merge_requests
   script:
     - cd build
     - cmake --build . --target clang_format

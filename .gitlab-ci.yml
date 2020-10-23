@@ -5,6 +5,8 @@ stages:
 gcc-9:
   stage: build
   image: rikorose/gcc-cmake:gcc-9
+  tags:
+    - linux
   script:
     - mkdir -p build && cd build
     - cmake -DCMAKE_CXX_FLAGS="-Wall -Wextra -Wpedantic -Werror" -DENABLE_CLANG_TIDY=OFF ..
@@ -13,6 +15,8 @@ gcc-9:
 clang-11:
   stage: build
   image: cbachhuber/clang:11
+  tags:
+    - linux
   # only:  # TODO enable when opening MR
     # - merge_requests
     # - v7.0-dev
@@ -29,6 +33,8 @@ clang-11:
 ctest:
   stage: test
   image: ubuntu:20.04
+  tags:
+    - linux
   # needs:  # TODO fix
     # - job: clang-11
       # artifacts: true

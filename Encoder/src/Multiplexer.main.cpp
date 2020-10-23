@@ -50,9 +50,10 @@ public:
   explicit Multiplexer(std::vector<const char *> argv)
       : Common::Application{"Multiplexer", std::move(argv)}
       , m_intermediateBitstreamPath{json().require("IntermediateBitstreamPath").as<std::string>()}
-      , m_outputBitstreamPath{json().require("OutputBitstreamPath").as<std::string>()}
-      , m_gvdSubBitstreamPathFmt{
-            json().require("GeometryVideoDataSubBitstreamPathFmt").as<std::string>()} {
+      , m_outputBitstreamPath{json().require("OutputBitstreamPath").as<std::string>()} {
+    if (const auto &node = json().optional("GeometryVideoDataSubBitstreamPathFmt")) {
+      m_gvdSubBitstreamPathFmt = node.as<std::string>();
+    }
     if (const auto &node = json().optional("AttributeVideoDataSubBitstreamPathFmt")) {
       m_avdSubBitstreamPathFmt = node.as<std::string>();
     }

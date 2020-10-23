@@ -50,8 +50,11 @@
     "SourceDirectory": ".",
     "SourceTexturePathFmt": "{}_texture_{}x{}_yuv420p10le.yuv",
     "blockSizeDepthQualityDependent": [ 8, 8 ],
+    "dynamicDepthRange": true,
+    "haveTextureVideo": true,
+    "haveGeometryVideo": true,
+    "haveOccupancyVideo": false,
     "geometryScaleEnabledFlag": true,
-    "explicitOccupancy": false,
     "intraPeriod": 32,
     "maxAtlases": 2,
     "maxEntities": 1,
@@ -59,5 +62,6 @@
     "maxLumaPictureSize": 8912896,
     "numGroups": 1,
     "numberOfFrames": 17,
+    "oneViewPerAtlasFlag": false,
     "startFrame": 23
 }

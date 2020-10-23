@@ -31,33 +31,44 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_PRUNER_HIERARCHICALPRUNER_H_
-#define _TMIV_PRUNER_HIERARCHICALPRUNER_H_
+#include <TMIV/Common/Factory.h>
+#include <TMIV/DepthQualityAssessor/DepthQualityAssessor.h>
+#include <TMIV/Renderer/AdditiveSynthesizer.h>
+#include <TMIV/Renderer/Inpainter.h>
+#include <TMIV/Renderer/NoCuller.h>
+#include <TMIV/Renderer/NoInpainter.h>
+#include <TMIV/Renderer/NoSynthesizer.h>
+#include <TMIV/Renderer/Renderer.h>
+#include <TMIV/Renderer/SubBlockCuller.h>
+#include <TMIV/Renderer/ViewWeightingSynthesizer.h>
+#include <TMIV/Renderer/ViewingSpaceController.h>
 
-#include <TMIV/Pruner/IPruner.h>
+namespace TMIV::Renderer {
+void registerComponents() {
+  using Common::Factory;
 
-#include <TMIV/Common/Json.h>
+  auto &cullers = Common::Factory<ICuller>::getInstance();
+  cullers.registerAs<NoCuller>("NoCuller");
+  cullers.registerAs<SubBlockCuller>("SubBlockCuller");
 
-#include <memory>
+  auto &inpainters = Common::Factory<IInpainter>::getInstance();
+  inpainters.registerAs<Inpainter>("Inpainter");
+  inpainters.registerAs<NoInpainter>("NoInpainter");
 
-namespace TMIV::Pruner {
-class HierarchicalPruner : public IPruner {
-public:
-  HierarchicalPruner(const Common::Json &rootConfig, const Common::Json &nodeConfig);
-  HierarchicalPruner(const HierarchicalPruner &) = delete;
-  HierarchicalPruner(HierarchicalPruner &&) = delete;
-  auto operator=(const HierarchicalPruner &) -> HierarchicalPruner & = delete;
-  auto operator=(HierarchicalPruner &&) -> HierarchicalPruner & = delete;
-  ~HierarchicalPruner() override;
+  auto &renderers = Common::Factory<Renderer::IRenderer>::getInstance();
+  renderers.registerAs<Renderer>("Renderer");
 
-  void registerPruningRelation(MivBitstream::EncoderParams &params) override;
-  auto prune(const MivBitstream::EncoderParams &params, const Common::MVD16Frame &views,
-             const int blockSize) -> Common::MaskList override;
+  auto &synthesizers = Common::Factory<ISynthesizer>::getInstance();
+  synthesizers.registerAs<AdditiveSynthesizer>("AdditiveSynthesizer");
+  synthesizers.registerAs<NoSynthesizer>("NoSynthesizer");
+  synthesizers.registerAs<ViewWeightingSynthesizer>("ViewWeightingSynthesizer");
 
-private:
-  class Impl;
-  const std::unique_ptr<Impl> m_impl;
-};
-} // namespace TMIV::Pruner
+  auto &viewingSpaceControllers = Common::Factory<IViewingSpaceController>::getInstance();
+  viewingSpaceControllers.registerAs<ViewingSpaceController>("ViewingSpaceController");
 
-#endif
+  auto &depthQualityAssessors =
+      Common::Factory<DepthQualityAssessor::IDepthQualityAssessor>::getInstance();
+  depthQualityAssessors.registerAs<DepthQualityAssessor::DepthQualityAssessor>(
+      "DepthQualityAssessor");
+}
+} // namespace TMIV::Renderer

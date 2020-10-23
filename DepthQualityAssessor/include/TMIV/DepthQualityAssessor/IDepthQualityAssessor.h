@@ -34,7 +34,8 @@
 #ifndef _TMIV_DEPTHQUALITYASSESSOR_IDEPTHQUALITYASSESSOR_H_
 #define _TMIV_DEPTHQUALITYASSESSOR_IDEPTHQUALITYASSESSOR_H_
 
-#include <TMIV/MivBitstream/EncoderParams.h>
+#include <TMIV/Common/Frame.h>
+#include <TMIV/MivBitstream/ViewParamsList.h>
 
 namespace TMIV::DepthQualityAssessor {
 class IDepthQualityAssessor {
@@ -46,7 +47,7 @@ public:
   auto operator=(IDepthQualityAssessor &&) -> IDepthQualityAssessor & = default;
   virtual ~IDepthQualityAssessor() = default;
 
-  virtual auto isLowDepthQuality(const MivBitstream::EncoderParams &params,
+  virtual auto isLowDepthQuality(const MivBitstream::ViewParamsList &vpl,
                                  const Common::MVD16Frame &sourceViews) -> bool = 0;
 };
 } // namespace TMIV::DepthQualityAssessor

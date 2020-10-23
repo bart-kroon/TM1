@@ -28,7 +28,7 @@
     "OutputCameraName": "v0",
     "OutputDirectory": ".",
     "OutputAttributePath": "A17_SA_T{}_v0_{}x{}_yuv420p10le.yuv",
-    "SourceCameraParameters": "ClassroomVideo.json",
+    "ViewportCameraParameters": "ClassroomVideo.json",
     "SourceDirectory": ".",
     "numberOfFrames": 17
 }

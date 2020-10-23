@@ -53,7 +53,10 @@ void Encoder::prepareSequence(MivBitstream::EncoderParams sourceParams) {
   runtimeCheck(2 <= m_blockSize, "blockSize should be at least two");
   runtimeCheck((m_blockSize & (m_blockSize - 1)) == 0, "blockSize should be a power of two");
 
-  const auto lumaSamplesPerAtlasSample = m_geometryScaleEnabledFlag ? 1.25 : 2.;
+  // TODO(BK): To account for the occupancy maps, the scaling factor needs to be known before this
+  // point.
+  const auto lumaSamplesPerAtlasSample =
+      (m_haveTexture ? 1. : 0.) + (m_haveGeometry ? (m_geometryScaleEnabledFlag ? 0.25 : 1.) : 0.);
   m_maxBlockRate = m_maxLumaSampleRate / ((sourceParams.vme().vme_num_groups_minus1() + 1.) *
                                           lumaSamplesPerAtlasSample * Common::sqr(m_blockSize));
   m_maxBlocksPerAtlas = m_maxLumaPictureSize / Common::sqr(m_blockSize);
@@ -70,7 +73,9 @@ void Encoder::prepareSequence(MivBitstream::EncoderParams sourceParams) {
   std::cout << " }\n";
 
   // Create IVS with VPS with right number of atlases but copy other parts from input IVS
-  m_params = MivBitstream::EncoderParams{atlasFrameSizes, haveTexture(), haveOccupancy()};
+  m_params =
+      MivBitstream::EncoderParams{atlasFrameSizes, m_haveTexture, m_haveGeometry, m_haveOccupancy};
+
   m_params.vme() = m_transportParams.vme();
   m_params.viewParamsList = m_transportParams.viewParamsList;
   m_params.frameRate = m_transportParams.frameRate;
@@ -98,7 +103,7 @@ void Encoder::prepareSequence(MivBitstream::EncoderParams sourceParams) {
 // Calculate atlas frame sizes [MPEG/M52994 v2]
 auto Encoder::calculateNominalAtlasFrameSizes(const MivBitstream::EncoderParams &params) const
     -> Common::SizeVector {
-  if (m_maxBlockRate == 0) {
+  if (m_oneViewPerAtlasFlag) {
     // No constraints: one atlas per transport view
     auto result = Common::SizeVector(params.viewParamsList.size());
     std::transform(std::cbegin(params.viewParamsList), std::cend(params.viewParamsList),
@@ -183,19 +188,12 @@ void Encoder::setGiGeometry3dCoordinatesBitdepthMinus1() {
   }
   for (size_t k = 0; k <= m_params.vps.vps_atlas_count_minus1(); ++k) {
     const auto j = m_params.vps.vps_atlas_id(k);
-    m_params.vps.geometry_information(j).gi_geometry_3d_coordinates_bit_depth_minus1(numBitsMinus1);
+    if (m_params.vps.vps_geometry_video_present_flag(j)) {
+      m_params.vps.geometry_information(j).gi_geometry_3d_coordinates_bit_depth_minus1(
+          numBitsMinus1);
+    }
   }
 }
-
-auto Encoder::haveTexture() const -> bool {
-  assert(m_transportParams.vps.vps_atlas_count_minus1() == 0);
-  const auto j0 = m_transportParams.vps.vps_atlas_id(0);
-  const auto &ai = m_transportParams.vps.attribute_information(j0);
-  return ai.ai_attribute_count() >= 1 &&
-         ai.ai_attribute_type_id(0) == MivBitstream::AiAttributeTypeId::ATTR_TEXTURE;
-}
-
-auto Encoder::haveOccupancy() const -> bool { return m_explicitOccupancy; }
 
 void Encoder::enableOccupancyPerView() {
   for (size_t viewId = 0; viewId < m_params.viewParamsList.size(); ++viewId) {
@@ -212,13 +210,10 @@ void Encoder::prepareIvau() {
   for (size_t k = 0; k <= m_params.vps.vps_atlas_count_minus1(); ++k) {
     auto &atlas = m_params.atlas[k];
     const auto j = m_params.vps.vps_atlas_id(k);
-    const auto &gi = m_params.vps.geometry_information(j);
 
     // Set ASPS parameters
     atlas.asps.asps_frame_width(m_params.vps.vps_frame_width(j))
         .asps_frame_height(m_params.vps.vps_frame_height(j))
-        .asps_geometry_3d_bit_depth_minus1(gi.gi_geometry_3d_coordinates_bit_depth_minus1())
-        .asps_geometry_2d_bit_depth_minus1(gi.gi_geometry_2d_bit_depth_minus1())
         .asps_log2_max_atlas_frame_order_cnt_lsb_minus4(log2FocLsbMinus4())
         .asps_use_eight_orientations_flag(true)
         .asps_extended_projection_enabled_flag(true)
@@ -226,6 +221,12 @@ void Encoder::prepareIvau() {
         .asps_max_number_projections_minus1(
             static_cast<uint16_t>(m_params.viewParamsList.size() - 1))
         .asps_log2_patch_packing_block_size(Common::ceilLog2(m_blockSize));
+
+    if (m_params.vps.vps_geometry_video_present_flag(j)) {
+      const auto &gi = m_params.vps.geometry_information(j);
+      atlas.asps.asps_geometry_3d_bit_depth_minus1(gi.gi_geometry_3d_coordinates_bit_depth_minus1())
+          .asps_geometry_2d_bit_depth_minus1(gi.gi_geometry_2d_bit_depth_minus1());
+    }
 
     // Signalling pdu_entity_id requires ASME to be present
     if (m_params.vps.vps_miv_extension_present_flag() &&

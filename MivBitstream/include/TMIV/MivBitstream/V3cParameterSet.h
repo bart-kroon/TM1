@@ -54,7 +54,13 @@ enum class PtlProfileCodecGroupIdc : std::uint8_t {
   MP4RA = 127
 };
 
-enum class PtlProfilePccToolsetIdc : std::uint8_t { VPCC_Basic, VPCC_Extended, MIV_Main = 64 };
+enum class PtlProfilePccToolsetIdc : std::uint8_t {
+  VPCC_Basic,
+  VPCC_Extended,
+  MIV_Main = 64,
+  MIV_Extended,
+  MIV_Geometry_Absent
+};
 enum class PtlProfileReconstructionIdc : std::uint8_t {
   Rec0, // (V-PCC)
   Rec1, // (V-PCC)
@@ -62,6 +68,7 @@ enum class PtlProfileReconstructionIdc : std::uint8_t {
   MIV_Main = 64,
   Rec_Unconstrained = 255
 };
+
 enum class PtlMaxDecodesIdc : std::uint8_t {
   max_1,
   max_2,

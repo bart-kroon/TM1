@@ -63,12 +63,15 @@ void checkRestrictions(const AccessUnit &frame) {
 }
 } // namespace
 
-auto Decoder::decodeFrame(AccessUnit &frame, const MivBitstream::ViewParams &viewportParams) const
-    -> Common::Texture444Depth16Frame {
+void Decoder::recoverFrame(AccessUnit &frame) {
   checkRestrictions(frame);
   m_geometryScaler.inplaceScale(frame);
   OccupancyReconstructor::reconstruct(frame);
   m_entityBasedPatchMapFilter.inplaceFilterBlockToPatchMaps(frame);
+}
+
+auto Decoder::renderFrame(AccessUnit &frame, const MivBitstream::ViewParams &viewportParams) const
+    -> Common::Texture444Depth16Frame {
   m_culler->inplaceFilterBlockToPatchMaps(frame, viewportParams);
   return m_renderer->renderFrame(frame, viewportParams);
 }

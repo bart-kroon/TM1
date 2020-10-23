@@ -44,8 +44,8 @@ auto GeometryDownscaler::transformParams(MivBitstream::EncoderParams params)
     -> const MivBitstream::EncoderParams & {
   m_params = std::move(params);
 
-  if (m_geometryScaleEnabledFlag) {
-    m_params.vps.vps_miv_extension_present_flag(true);
+  if (m_geometryScaleEnabledFlag && (m_params.vps.profile_tier_level().ptl_profile_toolset_idc() !=
+                                     MivBitstream::PtlProfilePccToolsetIdc::MIV_Geometry_Absent)) {
     m_params.vme().vme_geometry_scale_enabled_flag(true);
 
     for (auto &atlas : m_params.atlas) {

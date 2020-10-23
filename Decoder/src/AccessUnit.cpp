@@ -76,25 +76,6 @@ auto AtlasAccessUnit::patchId(unsigned row, unsigned column) const -> std::uint1
   return blockToPatchMap.getPlane(0)(row >> k, column >> k);
 }
 
-namespace {
-void requireUniqueCameraNames(const MivBitstream::ViewParamsList &vpl) {
-  // Copy the names into a vector
-  std::vector<std::string> names;
-  std::transform(vpl.cbegin(), vpl.cend(), std::inserter(names, names.end()), [](const auto &vp) {
-    if (vp.name.empty()) {
-      throw std::runtime_error("The decoder needs to assign view names");
-    }
-    return vp.name;
-  });
-
-  // Test for uniqueness
-  std::sort(names.begin(), names.end());
-  if (std::unique(names.begin(), names.end()) != names.end()) {
-    throw std::runtime_error("The decoder needs to assign unique view names");
-  }
-}
-} // namespace
-
 auto AccessUnit::sequenceConfig() const -> MivBitstream::SequenceConfig {
   auto x = MivBitstream::SequenceConfig{};
 
@@ -124,7 +105,13 @@ auto AccessUnit::sequenceConfig() const -> MivBitstream::SequenceConfig {
                                     Z * vp.ce.ce_view_pos_z()};
       });
 
-  requireUniqueCameraNames(viewParamsList);
+  std::transform(viewParamsList.cbegin(), viewParamsList.cend(),
+                 std::inserter(x.sourceCameraNames, x.sourceCameraNames.end()), [](const auto &vp) {
+                   if (vp.name.empty()) {
+                     throw std::runtime_error("The decoder needs to assign view names");
+                   }
+                   return vp.name;
+                 });
 
   return x;
 }

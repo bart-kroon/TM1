@@ -31,33 +31,15 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_PRUNER_HIERARCHICALPRUNER_H_
-#define _TMIV_PRUNER_HIERARCHICALPRUNER_H_
-
-#include <TMIV/Pruner/IPruner.h>
+#ifndef _TMIV_RENDERER_MAPINPUTTOOUTPUTFRAMES_H_
+#define _TMIV_RENDERER_MAPINPUTTOOUTPUTFRAMES_H_
 
 #include <TMIV/Common/Json.h>
 
-#include <memory>
+#include <map>
 
-namespace TMIV::Pruner {
-class HierarchicalPruner : public IPruner {
-public:
-  HierarchicalPruner(const Common::Json &rootConfig, const Common::Json &nodeConfig);
-  HierarchicalPruner(const HierarchicalPruner &) = delete;
-  HierarchicalPruner(HierarchicalPruner &&) = delete;
-  auto operator=(const HierarchicalPruner &) -> HierarchicalPruner & = delete;
-  auto operator=(HierarchicalPruner &&) -> HierarchicalPruner & = delete;
-  ~HierarchicalPruner() override;
-
-  void registerPruningRelation(MivBitstream::EncoderParams &params) override;
-  auto prune(const MivBitstream::EncoderParams &params, const Common::MVD16Frame &views,
-             const int blockSize) -> Common::MaskList override;
-
-private:
-  class Impl;
-  const std::unique_ptr<Impl> m_impl;
-};
-} // namespace TMIV::Pruner
+namespace TMIV::Renderer {
+auto mapInputToOutputFrames(const Common::Json &config) -> std::multimap<int, int>;
+} // namespace TMIV::Decoder
 
 #endif

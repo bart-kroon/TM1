@@ -4,8 +4,10 @@ add_library(PrunerLib
     "src/HierarchicalPruner.cpp"
     "src/PrunedMesh.cpp"
     "src/PrunedMesh.h"
+    "src/NoPruner.cpp"
     "include/TMIV/Pruner/IPruner.h"
     "include/TMIV/Pruner/HierarchicalPruner.h"
+    "include/TMIV/Pruner/NoPruner.h"
     )
 
 add_library(TMIV::PrunerLib

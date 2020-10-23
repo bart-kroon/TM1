@@ -1,3 +1,8 @@
+workflow:
+  rules:
+    - if: $CI_MERGE_REQUEST_ID               # Execute jobs in merge request context
+    - if: $CI_COMMIT_BRANCH == 'v7.0-dev'    # Execute jobs when a new commit is pushed to v7.0-dev
+
 variables:
   default_branch: "v7.0-dev"
 

@@ -117,6 +117,7 @@ struct SceneObjectUpdate {
   std::optional<std::uint8_t> soi_point_shape_id{};
   std::optional<std::uint16_t> soi_point_size{};
   std::optional<bool> soi_material_id_update_flag{};
+  std::optional<std::uint16_t> soi_material_id{};
 };
 
 // 23090-12: scene_object_information ( payloadSize )

@@ -13,7 +13,6 @@ gcc-9:
   only:
     - merge_requests
     - $default_branch
-    - feature/first-ci-setup
   script:
     - mkdir -p build && cd build
     - cmake -DCMAKE_CXX_FLAGS="-Wall -Wextra -Wpedantic -Werror" -DENABLE_CLANG_TIDY=OFF ..
@@ -27,7 +26,6 @@ clang-11:
   only:
     - merge_requests
     - $default_branch
-    - feature/first-ci-setup
   script:
     - mkdir -p build && cd build
     - cmake -DCMAKE_CXX_FLAGS="-Wall -Wextra -Wpedantic -Werror" ..

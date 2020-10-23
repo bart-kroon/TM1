@@ -295,13 +295,13 @@ auto makeUpdates(std::size_t soi_num_object_updates, bool soi_simple_objects_fla
                  bool soiObjectDataPresentFlags, bool fillAllFields)
     -> std::vector<SceneObjectUpdate>;
 
-SceneObjectInformation makeSceneObjectInformation(bool soi_persistence_flag, bool soi_reset_flag,
+auto makeSceneObjectInformation(bool soi_persistence_flag, bool soi_reset_flag,
                                 bool soi_simple_objects_flag, bool soiObjectDataPresentFlags,
                                 std::size_t soi_num_object_updates,
                                 std::uint8_t soi_log2_max_object_idx_updated_minus1,
                                 std::uint8_t soi_3d_bounding_box_scale_log2,
                                 std::uint8_t soi_log2_max_object_dependency_idx,
-                                bool fillAllUpdateFields) {
+                                bool fillAllUpdateFields) -> SceneObjectInformation {
   SceneObjectInformation soi{};
   soi.soi_persistence_flag(soi_persistence_flag);
   soi.soi_reset_flag(soi_reset_flag);

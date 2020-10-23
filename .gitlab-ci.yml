@@ -32,7 +32,7 @@ clang-11:
 
 unit-tests:
   stage: test
-  image: rikorose/gcc-cmake::gcc-9
+  image: rikorose/gcc-cmake:gcc-9
   tags:
     - linux
   # needs:  # TODO fix

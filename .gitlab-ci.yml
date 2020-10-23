@@ -41,3 +41,14 @@ ctest:
   script:
     - cd build
     - ctest
+
+clang-format:
+  stage: test
+  image: cbachhuber/clang:11
+  tags:
+    - linux
+  script:
+    - cd build
+    - cmake --build . --target clang_format
+    - git diff
+    - if [[ $(git diff) ]]; then echo "Formatting is wrong! See above."; return 1; fi

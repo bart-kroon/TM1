@@ -1,26 +1,28 @@
+.only-default:
+  only:
+    - merge_requests
+
 stages:
   - build
   - test
 
 gcc-9:
+  extends: .only-default
   stage: build
   image: rikorose/gcc-cmake:gcc-9
   tags:
     - linux
-  only:
-    - merge_requests
   script:
     - mkdir -p build && cd build
     - cmake -DCMAKE_CXX_FLAGS="-Wall -Wextra -Wpedantic -Werror" -DENABLE_CLANG_TIDY=OFF ..
     - make -j $(nproc)
 
 clang-11:
+  extends: .only-default
   stage: build
   image: cbachhuber/clang:11
   tags:
     - linux
-  only:
-    - merge_requests
   script:
     - mkdir -p build && cd build
     - cmake -DCMAKE_CXX_FLAGS="-Wall -Wextra -Wpedantic -Werror" ..
@@ -32,23 +34,21 @@ clang-11:
           - build/
 
 unit-tests:
+  extends: .only-default
   stage: test
   image: rikorose/gcc-cmake:gcc-9
   tags:
     - linux
-  only:
-    - merge_requests
   script:
     - cd build
     - ctest
 
 clang-format:
+  extends: .only-default
   stage: test
   image: cbachhuber/clang:11
   tags:
     - linux
-  only:
-    - merge_requests
   script:
     - cd build
     - cmake --build . --target clang_format

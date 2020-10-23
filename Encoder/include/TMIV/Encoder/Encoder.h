@@ -72,8 +72,6 @@ private: // Encoder_prepareSequence.cpp
       -> Common::Vec2i;
   auto vuiParameters() const -> MivBitstream::VuiParameters;
   void setGiGeometry3dCoordinatesBitdepthMinus1();
-  [[nodiscard]] auto haveTexture() const -> bool;
-  [[nodiscard]] auto haveOccupancy() const -> bool;
   void enableOccupancyPerView();
   void prepareIvau();
   auto log2FocLsbMinus4() const -> std::uint8_t;
@@ -114,7 +112,7 @@ private: // Encoder_popFrame.cpp
   GeometryDownscaler m_geometryDownscaler;
 
   // Encoder parameters
-  int m_intraPeriod{};
+  int m_intraPeriod;
   int m_blockSize{};
   Common::Vec2i m_blockSizeDepthQualityDependent;
   double m_maxLumaSampleRate{};
@@ -122,11 +120,15 @@ private: // Encoder_popFrame.cpp
   double m_maxBlockRate{};
   int m_maxBlocksPerAtlas{};
   int m_maxAtlases{};
+  bool m_haveTexture;
+  bool m_haveGeometry;
+  bool m_haveOccupancy;
+  bool m_oneViewPerAtlasFlag;
   std::vector<Common::Vec2i> m_overrideAtlasFrameSizes{};
-  bool m_geometryScaleEnabledFlag{};
-  int m_dilationIter{};
+  bool m_geometryScaleEnabledFlag;
+  int m_dilationIter;
   Common::Vec2i m_entityEncRange;
-  bool m_explicitOccupancy{};
+  bool m_dynamicDepthRange;
 
   // View-optimized encoder input
   MivBitstream::EncoderParams m_transportParams;

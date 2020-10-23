@@ -35,9 +35,9 @@
 
 #include <TMIV/Common/Application.h>
 #include <TMIV/Common/Factory.h>
+#include <TMIV/Renderer/mapInputToOutputFrames.h>
 #include <TMIV/IO/IO.h>
 #include <TMIV/MivBitstream/SequenceConfig.h>
-#include <TMIV/MivBitstream/ViewingSpace.h>
 #include <TMIV/Renderer/RecoverPrunedViews.h>
 
 #include "IvMetadataReader.h"
@@ -61,18 +61,44 @@ public:
       : Common::Application{"Decoder", std::move(argv)}
       , m_metadataReader{json()}
       , m_decoder{create<IDecoder>("Decoder")}
-      , m_inputToOutputFrameIdMap{mapInputToOutputFrames(json())} {}
+      , m_inputToOutputFrameIdMap{Renderer::mapInputToOutputFrames(json())} {}
 
   void run() override {
     while (auto frame = m_metadataReader.decoder()()) {
-      auto range = m_inputToOutputFrameIdMap.equal_range(frame->foc);
+      // Check which frames to render if we would
+      const auto range = m_inputToOutputFrameIdMap.equal_range(frame->foc);
       if (range.first == range.second) {
         return;
       }
-      for (auto i = range.first; i != range.second; ++i) {
-        renderDecodedFrame(*frame, i->second);
+
+      // Recover geometry, occupancy, and filter blockToPatchMap
+      m_decoder->recoverFrame(*frame);
+
+      // Output reconstructed content configuration if changed
+      if (json().optional("OutputSequenceConfigPathFmt")) {
+        outputSequenceConfig(frame->sequenceConfig(), frame->foc);
       }
-      outputSequenceConfig(frame->sequenceConfig(), frame->foc);
+
+      // Output block to patch map
+      if (json().optional("AtlasPatchOccupancyMapFmt")) {
+        std::cout << "Dumping patch ID maps to disk" << std::endl;
+        IO::saveBlockToPatchMaps(json(), frame->foc, *frame);
+      }
+
+      // Output pruned frames
+      if (json().optional("PrunedViewAttributePathFmt") ||
+          json().optional("PrunedViewGeometryPathFmt") ||
+          json().optional("PrunedViewMaskPathFmt")) {
+        std::cout << "Dumping recovered pruned views to disk" << std::endl;
+        IO::savePrunedFrame(json(), frame->foc, Renderer::recoverPrunedViewAndMask(*frame));
+      }
+
+      // Render multiple frames
+      if (json().optional("OutputCameraName")) {
+        for (auto i = range.first; i != range.second; ++i) {
+          renderDecodedFrame(*frame, i->second);
+        }
+      }
     }
   }
 
@@ -82,22 +108,9 @@ private:
               << ", with target viewport:\n";
     const auto viewportParams = IO::loadViewportMetadata(json(), outputFrameId);
     viewportParams.printTo(std::cout, 0);
-
-    const auto viewport = m_decoder->decodeFrame(frame, viewportParams);
-
+    
+    const auto viewport = m_decoder->renderFrame(frame, viewportParams);
     IO::saveViewport(json(), outputFrameId, {yuv420p(viewport.first), viewport.second});
-
-    if (json().optional("AtlasPatchOccupancyMapFmt")) {
-      std::cout << "Dumping patch ID maps to disk" << std::endl;
-      IO::saveBlockToPatchMaps(json(), outputFrameId, frame);
-    }
-
-    if (json().optional("PrunedViewAttributePathFmt")   // format: yuv444p10
-        || json().optional("PrunedViewGeometryPathFmt") // format: yuv420p10
-        || json().optional("PrunedViewMaskPathFmt")) {  // format: yuv420p
-      std::cout << "Dumping recovered pruned views to disk" << std::endl;
-      IO::savePrunedFrame(json(), outputFrameId, Renderer::recoverPrunedViewAndMask(frame));
-    }
   }
 
   void outputSequenceConfig(MivBitstream::SequenceConfig sc, std::int32_t foc) {
@@ -106,51 +119,13 @@ private:
       if (json().optional("OutputSequenceConfigPathFmt")) {
         const auto path =
             IO::getFullPath(json(), "OutputDirectory", "OutputSequenceConfigPathFmt", foc);
-        std::cout << "Writing reconstructed sequence configuration for frame " << foc << "to disk"
+        std::cout << "Writing reconstructed sequence configuration for frame " << foc << " to disk"
                   << std::endl;
         std::ofstream stream{path};
         const auto json = Common::Json{m_sequenceConfig};
         json.saveTo(stream);
       }
     }
-  }
-
-  // Returns a frame index. If frameIndex is strictly less than the actual number of frames in the
-  // encoded stream, then regular values are returned else mirrored indices are computed.
-  static auto getExtendedIndex(const Common::Json &config, int frameIndex) -> int {
-    int numberOfFrames = config.require("numberOfFrames").as<int>();
-    int frameGroupId = frameIndex / numberOfFrames;
-    int frameRelativeId = frameIndex % numberOfFrames;
-    return (frameGroupId % 2) != 0 ? (numberOfFrames - (frameRelativeId + 1)) : frameRelativeId;
-  }
-
-  static auto mapInputToOutputFrames(const Common::Json &config) -> std::multimap<int, int> {
-    auto x = std::multimap<int, int>{};
-
-    const auto numberOfFrames = config.require("numberOfFrames").as<int>();
-    auto extraFrames = 0;
-    auto firstOutputFrame = 0;
-    auto outputFrameStep = 1;
-
-    if (const auto &subnode = config.optional("extraNumberOfFrames")) {
-      extraFrames = subnode.as<int>();
-    }
-
-    if (const auto &subnode = config.optional("firstOutputFrame")) {
-      firstOutputFrame = subnode.as<int>();
-    }
-
-    if (const auto &subnode = config.optional("outputFrameStep")) {
-      outputFrameStep = subnode.as<int>();
-    }
-
-    for (int outputFrame = firstOutputFrame; outputFrame < numberOfFrames + extraFrames;
-         outputFrame += outputFrameStep) {
-      const auto inputFrame = getExtendedIndex(config, outputFrame);
-      x.emplace(inputFrame, outputFrame);
-    }
-
-    return x;
   }
 };
 } // namespace TMIV::Decoder

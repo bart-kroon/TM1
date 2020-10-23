@@ -37,10 +37,19 @@ namespace TMIV::Encoder {
 auto Encoder::popAtlas() -> Common::MVD10Frame {
   incrementFoc();
 
-  auto atlas = m_geometryDownscaler.transformFrame(
-      m_geometryQuantizer->transformAtlases(m_videoFrameBuffer.front()));
+  if (m_haveGeometry) {
+    auto frame = m_geometryDownscaler.transformFrame(
+        m_geometryQuantizer->transformAtlases(m_videoFrameBuffer.front()));
+    m_videoFrameBuffer.pop_front();
+    return frame;
+  }
+
+  auto frame = Common::MVD10Frame(m_videoFrameBuffer.front().size());
+  for (size_t i = 0; i < frame.size(); ++i) {
+    frame[i].texture = std::move(m_videoFrameBuffer.front()[i].texture);
+  }
   m_videoFrameBuffer.pop_front();
-  return atlas;
+  return frame;
 }
 
 void Encoder::incrementFoc() {

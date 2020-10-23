@@ -1,8 +1,9 @@
 {
-    "BitstreamPath": "ATL_SB.bit",
+    "BitstreamPath": "ATL_SA.bit",
     "Decoder": {
         "AtlasDeconstructorMethod": "AtlasDeconstructor",
-        "CullerMethod": "SubBlockCuller",
+        "NoCuller": {},
+        "CullerMethod": "NoCuller",
         "Renderer": {
             "Inpainter": {},
             "InpainterMethod": "Inpainter",
@@ -19,18 +20,14 @@
             "ViewingSpaceControllerMethod": "ViewingSpaceController"
         },
         "RendererMethod": "Renderer",
-        "SubBlockCuller": {},
         "geometryEdgeMagnitudeTh": 10,
         "maxCurvature": 5,
-        "minForegroundConfidence": 0.5,
-	"EntityDecodeRange": [9, 11]
+        "minForegroundConfidence": 0.5
     },
     "DecoderMethod": "Decoder",
-    "OutputCameraName": "viewport",
     "OutputDirectory": ".",
-    "OutputAttributePath": "E17_SB_T{}_p01_{}x{}_yuv420p10le.yuv",
-    "PoseTracePath": "Bp01.csv",
-    "ViewportCameraParameters": "Museum.json",
+    "PrunedViewAttributePathFmt": "G17_SA_T{}_pv{:02}_{}x{}_yuv420p10le.yuv",
+    "OutputSequenceConfigPathFmt": "G17_SA-SC-{:04}.json",
     "SourceDirectory": ".",
     "numberOfFrames": 17
 }

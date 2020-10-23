@@ -31,32 +31,25 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_PRUNER_HIERARCHICALPRUNER_H_
-#define _TMIV_PRUNER_HIERARCHICALPRUNER_H_
+#ifndef _TMIV_PRUNER_NOPRUNER_H_
+#define _TMIV_PRUNER_NOPRUNER_H_
 
 #include <TMIV/Pruner/IPruner.h>
 
-#include <TMIV/Common/Json.h>
-
-#include <memory>
-
 namespace TMIV::Pruner {
-class HierarchicalPruner : public IPruner {
+class NoPruner : public IPruner {
 public:
-  HierarchicalPruner(const Common::Json &rootConfig, const Common::Json &nodeConfig);
-  HierarchicalPruner(const HierarchicalPruner &) = delete;
-  HierarchicalPruner(HierarchicalPruner &&) = delete;
-  auto operator=(const HierarchicalPruner &) -> HierarchicalPruner & = delete;
-  auto operator=(HierarchicalPruner &&) -> HierarchicalPruner & = delete;
-  ~HierarchicalPruner() override;
+  NoPruner(const Common::Json & /* rootConfig */, const Common::Json & /* nodeConfig */);
+  NoPruner(const NoPruner &) = delete;
+  NoPruner(NoPruner &&) = default;
+  auto operator=(const NoPruner &) -> NoPruner & = delete;
+  auto operator=(NoPruner &&) -> NoPruner & = default;
+  ~NoPruner() override = default;
 
-  void registerPruningRelation(MivBitstream::EncoderParams &params) override;
-  auto prune(const MivBitstream::EncoderParams &params, const Common::MVD16Frame &views,
-             const int blockSize) -> Common::MaskList override;
+  void registerPruningRelation(MivBitstream::EncoderParams & /* params */) override;
 
-private:
-  class Impl;
-  const std::unique_ptr<Impl> m_impl;
+  auto prune(const MivBitstream::EncoderParams &params, const Common::MVD16Frame & /* views */,
+             const int /* blockSize */) -> Common::MaskList override;
 };
 } // namespace TMIV::Pruner
 

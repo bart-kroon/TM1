@@ -14,17 +14,7 @@
         "AggregatorMethod": "Aggregator",
         "ExplicitOccupancy": {},
         "GeometryQuantizerMethod": "ExplicitOccupancy",
-        "HierarchicalPruner": {
-            "depthParameter": 50,
-            "dilate": 5,
-            "erode": 2,
-            "maxBasicViewsPerGraph": 3,
-            "maxDepthError": 0.1,
-            "maxLumaError": 0.04,
-            "maxStretching": 5,
-            "rayAngleParameter": 10,
-            "stretchingParameter": 3
-        },
+        "NoPruner": {},
         "Packer": {
             "MinPatchSize": 16,
             "Overlap": 1,
@@ -32,7 +22,7 @@
             "enableMerging": true
         },
         "PackerMethod": "Packer",
-        "PrunerMethod": "HierarchicalPruner",
+        "PrunerMethod": "NoPruner",
         "ViewOptimizerMethod": "BasicViewAllocator",
         "BasicViewAllocator": {
             "maxBasicViewFraction": 1.0,
@@ -49,8 +39,11 @@
     "SourceDirectory": ".",
     "SourceTexturePathFmt": "{}_texture_{}x{}_yuv420p10le.yuv",
     "blockSizeDepthQualityDependent": [ 8, 8 ],
+    "dynamicDepthRange": true,
+    "haveTextureVideo": true,
+    "haveGeometryVideo": true,
+    "haveOccupancyVideo": true,
     "geometryScaleEnabledFlag": true,
-    "explicitOccupancy": true,
     "intraPeriod": 32,
     "maxAtlases": 2,
     "maxEntities": 1,
@@ -58,5 +51,6 @@
     "maxLumaPictureSize": 8912896,
     "numGroups": 1,
     "numberOfFrames": 17,
+    "oneViewPerAtlasFlag": false,
     "startFrame": 23
 }

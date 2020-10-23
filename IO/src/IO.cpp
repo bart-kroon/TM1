@@ -42,19 +42,12 @@
 #include <regex>
 
 namespace TMIV::IO {
-namespace {
-// The TMIV encoder always loads texture (and may use it internally) but attribute video data (AVD)
-// is an optional output in MIV WD4.
-auto haveTexture(const Common::Json &config) { return !config.optional("noTexture"); }
-
-// check if explicit occupancy coding mode
-auto explicitOccupancy(const Common::Json &config) {
-  return config.require("explicitOccupancy").as<bool>();
-}
-} // namespace
-
+// TODO(BK): Move this function into EncoderLib
 auto loadSourceParams(const Common::Json &config) -> MivBitstream::EncoderParams {
-  auto x = MivBitstream::EncoderParams{haveTexture(config), explicitOccupancy(config)};
+  const auto haveTextureVideo = config.require("haveTextureVideo").as<bool>();
+  const auto haveGeometryVideo = config.require("haveGeometryVideo").as<bool>();
+  const auto haveOccupancyVideo = config.require("haveOccupancyVideo").as<bool>();
+  auto x = MivBitstream::EncoderParams{haveTextureVideo, haveGeometryVideo, haveOccupancyVideo};
 
   std::string viewPath = getFullPath(config, "SourceDirectory", "SourceCameraParameters");
 
@@ -168,34 +161,35 @@ auto loadSourceEntities_(const Common::Json &config, const Common::Vec2i size,
 
 auto loadSourceEntities(const Common::Json &config, const Common::Vec2i size,
                         const std::string &viewName, int frameIndex) {
-  if (const auto &node = config.optional("SourceEntityBitDepth")) {
-    const auto bits = node.as<int>();
-    if (0 < bits && bits <= 8) {
-      return loadSourceEntities_<Common::YUV400P8>(config, size, viewName, frameIndex);
-    }
-    if (8 < bits && bits <= 16) {
-      return loadSourceEntities_<Common::YUV400P16>(config, size, viewName, frameIndex);
-    }
-    throw std::runtime_error("Invalid SourceEntityBitDepth");
+  const auto bits = config.require("SourceEntityBitDepth").as<int>();
+  if (0 < bits && bits <= 8) {
+    return loadSourceEntities_<Common::YUV400P8>(config, size, viewName, frameIndex);
   }
-  return Common::EntityMap{};
+  if (8 < bits && bits <= 16) {
+    return loadSourceEntities_<Common::YUV400P16>(config, size, viewName, frameIndex);
+  }
+  throw std::runtime_error("Invalid SourceEntityBitDepth");
 }
 } // namespace
 
-auto loadSourceFrame(const Common::Json &config, const Common::SizeVector &sizes, int frameIndex)
+auto loadSourceFrame(const Common::Json &config, const Common::SizeVector &sizes,
+                     const std::vector<std::string> &viewNames, int frameIndex)
     -> Common::MVD16Frame {
   auto frame = Common::MVD16Frame(sizes.size());
 
   frameIndex += config.require("startFrame").as<int>();
 
-  const auto viewNames = config.require("SourceCameraNames").asVector<std::string>();
   assert(viewNames.size() == sizes.size());
 
   for (size_t viewId = 0; viewId < frame.size(); ++viewId) {
     auto &view = frame[viewId];
     view.texture = loadSourceTexture(config, sizes[viewId], viewNames[viewId], frameIndex);
-    view.depth = loadSourceDepth(config, sizes[viewId], viewNames[viewId], frameIndex);
-    view.entities = loadSourceEntities(config, sizes[viewId], viewNames[viewId], frameIndex);
+    if (config.optional("SourceGeometryPathFmt")) {
+      view.depth = loadSourceDepth(config, sizes[viewId], viewNames[viewId], frameIndex);
+    }
+    if (config.optional("SourceEntityPathFmt")) {
+      view.entities = loadSourceEntities(config, sizes[viewId], viewNames[viewId], frameIndex);
+    }
   }
 
   return frame;
@@ -203,13 +197,15 @@ auto loadSourceFrame(const Common::Json &config, const Common::SizeVector &sizes
 
 void saveAtlas(const Common::Json &config, int frameIndex, const Common::MVD10Frame &frame) {
   for (size_t atlasId = 0; atlasId < frame.size(); ++atlasId) {
-    if (haveTexture(config)) {
+    if (config.optional("AttributeVideoDataPathFmt")) {
       writeFrame(config, "AttributeVideoDataPathFmt", frame[atlasId].texture, frameIndex, "T",
                  static_cast<int>(atlasId));
     }
-    writeFrame(config, "GeometryVideoDataPathFmt", frame[atlasId].depth, frameIndex,
-               static_cast<int>(atlasId));
-    if (!frame[atlasId].occupancy.empty()) {
+    if (config.optional("GeometryVideoDataPathFmt")) {
+      writeFrame(config, "GeometryVideoDataPathFmt", frame[atlasId].depth, frameIndex,
+                 static_cast<int>(atlasId));
+    }
+    if (config.optional("OccupancyVideoDataPathFmt")) {
       writeFrame(config, "OccupancyVideoDataPathFmt", frame[atlasId].occupancy, frameIndex,
                  static_cast<int>(atlasId));
     }
@@ -230,7 +226,8 @@ void savePrunedFrame(const Common::Json &config, int frameIndex,
   for (size_t viewId = 0; viewId < prunedViewsAndMasks.first.size(); ++viewId) {
     const auto &view = prunedViewsAndMasks.first[viewId];
     if (config.optional("PrunedViewAttributePathFmt")) {
-      IO::writeFrame(config, "PrunedViewAttributePathFmt", view.first, frameIndex, "T", viewId);
+      IO::writeFrame(config, "PrunedViewAttributePathFmt", yuv420p(view.first), frameIndex, "T",
+                     viewId);
     }
     if (config.optional("PrunedViewGeometryPathFmt")) {
       IO::writeFrame(config, "PrunedViewGeometryPathFmt", view.second, frameIndex, viewId);
@@ -282,7 +279,7 @@ auto loadPoseFromCSV(std::istream &stream, int frameIndex) -> Pose {
 } // namespace
 
 auto loadViewportMetadata(const Common::Json &config, int frameIndex) -> MivBitstream::ViewParams {
-  const auto cameraPath = getFullPath(config, "SourceDirectory", "SourceCameraParameters");
+  const auto cameraPath = getFullPath(config, "SourceDirectory", "ViewportCameraParameters");
 
   std::ifstream stream{cameraPath};
   if (!stream.good()) {

@@ -31,7 +31,7 @@
     "OutputDirectory": ".",
     "OutputAttributePath": "R17_SA_T{}_p01_{}x{}_yuv420p10le.yuv",
     "PoseTracePath": "Ap01.csv",
-    "SourceCameraParameters": "ClassroomVideo.json",
+    "ViewportCameraParameters": "ClassroomVideo.json",
     "SourceDirectory": ".",
     "numberOfFrames": 17
 }

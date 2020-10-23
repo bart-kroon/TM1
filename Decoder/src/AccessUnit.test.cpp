@@ -45,17 +45,7 @@ TEST_CASE("Convert AccessUnit to SequenceConfig") {
     au.viewParamsList.front().ce.ce_view_pos_x(2.).ce_view_pos_y(-3.).ce_view_pos_z(7.);
     au.viewParamsList.back().ce.ce_view_pos_x(6.).ce_view_pos_y(13.).ce_view_pos_z(5.);
 
-    SECTION("The conversion needs to check that views have names") {
-      REQUIRE_THROWS(au.sequenceConfig());
-    }
-
     au.viewParamsList.front().name = "front"s;
-    au.viewParamsList.back().name = "front"s;
-
-    SECTION("The conversion needs to check that views have unique names") {
-      REQUIRE_THROWS(au.sequenceConfig());
-    }
-
     au.viewParamsList.back().name = "back"s;
 
     const TMIV::MivBitstream::SequenceConfig sc = au.sequenceConfig();

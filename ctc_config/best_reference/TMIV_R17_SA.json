@@ -35,18 +35,22 @@
         },
         "PackerMethod": "Packer",
         "PrunerMethod": "HierarchicalPruner",
-        "ViewOptimizerMethod": "NoViewOptimizer"
+        "ViewOptimizerMethod": "NoViewOptimizer",
+        "dilate": 0
     },
     "OmafV1CompatibleFlag": false,
     "OutputDirectory": ".",
-    "SourceCameraParameters": "ClassroomVideo.json",
+    "ViewportCameraParameters": "ClassroomVideo.json",
     "SourceGeometryBitDepth": 16,
     "SourceGeometryPathFmt": "{}_depth_{}x{}_yuv420p16le.yuv",
     "SourceDirectory": ".",
     "SourceTexturePathFmt": "{}_texture_{}x{}_yuv420p10le.yuv",
     "blockSizeDepthQualityDependent": [ 8, 8 ],
+    "dynamicDepthRange": true,
+    "haveTextureVideo": true,
+    "haveGeometryVideo": true,
+    "haveOccupancyVideo": false,
     "geometryScaleEnabledFlag": false,
-    "explicitOccupancy": false,
     "intraPeriod": 32,
     "maxAtlases": 0,
     "maxEntities": 1,
@@ -54,5 +58,6 @@
     "maxLumaSampleRate": 0.0,
     "numGroups": 1,
     "numberOfFrames": 17,
+    "oneViewPerAtlasFlag": true,
     "startFrame": 23
 }

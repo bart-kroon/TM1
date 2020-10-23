@@ -31,33 +31,46 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_PRUNER_HIERARCHICALPRUNER_H_
-#define _TMIV_PRUNER_HIERARCHICALPRUNER_H_
+#include <TMIV/Renderer/mapInputToOutputFrames.h>
 
-#include <TMIV/Pruner/IPruner.h>
+namespace TMIV::Renderer {
+namespace {
+// Returns a frame index. If frameIndex is strictly less than the actual number of frames in the
+// encoded stream, then regular values are returned else mirrored indices are computed.
+auto getExtendedIndex(const Common::Json &config, int frameIndex) -> int {
+  int numberOfFrames = config.require("numberOfFrames").as<int>();
+  int frameGroupId = frameIndex / numberOfFrames;
+  int frameRelativeId = frameIndex % numberOfFrames;
+  return (frameGroupId % 2) != 0 ? (numberOfFrames - (frameRelativeId + 1)) : frameRelativeId;
+}
+} // namespace
 
-#include <TMIV/Common/Json.h>
+auto mapInputToOutputFrames(const Common::Json &config) -> std::multimap<int, int> {
+  auto x = std::multimap<int, int>{};
 
-#include <memory>
+  const auto numberOfFrames = config.require("numberOfFrames").as<int>();
+  auto extraFrames = 0;
+  auto firstOutputFrame = 0;
+  auto outputFrameStep = 1;
 
-namespace TMIV::Pruner {
-class HierarchicalPruner : public IPruner {
-public:
-  HierarchicalPruner(const Common::Json &rootConfig, const Common::Json &nodeConfig);
-  HierarchicalPruner(const HierarchicalPruner &) = delete;
-  HierarchicalPruner(HierarchicalPruner &&) = delete;
-  auto operator=(const HierarchicalPruner &) -> HierarchicalPruner & = delete;
-  auto operator=(HierarchicalPruner &&) -> HierarchicalPruner & = delete;
-  ~HierarchicalPruner() override;
+  if (const auto &subnode = config.optional("extraNumberOfFrames")) {
+    extraFrames = subnode.as<int>();
+  }
 
-  void registerPruningRelation(MivBitstream::EncoderParams &params) override;
-  auto prune(const MivBitstream::EncoderParams &params, const Common::MVD16Frame &views,
-             const int blockSize) -> Common::MaskList override;
+  if (const auto &subnode = config.optional("firstOutputFrame")) {
+    firstOutputFrame = subnode.as<int>();
+  }
 
-private:
-  class Impl;
-  const std::unique_ptr<Impl> m_impl;
-};
-} // namespace TMIV::Pruner
+  if (const auto &subnode = config.optional("outputFrameStep")) {
+    outputFrameStep = subnode.as<int>();
+  }
 
-#endif
+  for (int outputFrame = firstOutputFrame; outputFrame < numberOfFrames + extraFrames;
+       outputFrame += outputFrameStep) {
+    const auto inputFrame = getExtendedIndex(config, outputFrame);
+    x.emplace(inputFrame, outputFrame);
+  }
+
+  return x;
+}
+} // namespace TMIV::Decoder

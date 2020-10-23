@@ -23,13 +23,13 @@
         "geometryEdgeMagnitudeTh": 10,
         "maxCurvature": 5,
         "minForegroundConfidence": 0.5,
-		"EntityDecodeRange": [9, 11]
+        "EntityDecodeRange": [ 9, 11 ]
     },
     "DecoderMethod": "Decoder",
     "OutputCameraName": "v0",
     "OutputDirectory": ".",
     "OutputAttributePath": "E17_SB_T{}_v0_{}x{}_yuv420p10le.yuv",
-    "SourceCameraParameters": "Museum.json",
+    "ViewportCameraParameters": "Museum.json",
     "SourceDirectory": ".",
     "numberOfFrames": 17
 }

@@ -64,6 +64,10 @@ auto operator<<(std::ostream &stream, const PtlProfilePccToolsetIdc &x) -> std::
     return stream << "V-PCC Extended";
   case PtlProfilePccToolsetIdc::MIV_Main:
     return stream << "MIV Main";
+  case PtlProfilePccToolsetIdc::MIV_Extended:
+    return stream << "MIV Extended";
+  case PtlProfilePccToolsetIdc::MIV_Geometry_Absent:
+    return stream << "MIV Geometry Absent";
   default:
     return stream << "[unknown:" << static_cast<int>(x) << "]";
   }

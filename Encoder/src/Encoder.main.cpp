@@ -55,6 +55,7 @@ private:
   int m_numberOfFrames{};
   int m_intraPeriod{};
   Common::SizeVector m_viewSizes;
+  std::vector<std::string> m_viewNames;
 
 public:
   explicit Application(std::vector<const char *> argv)
@@ -69,10 +70,12 @@ public:
   void run() override {
     auto sourceParams = IO::loadSourceParams(json());
     m_viewSizes = sourceParams.viewParamsList.viewSizes();
+    m_viewNames = sourceParams.viewParamsList.viewNames();
 
-    if (!json().optional("depthLowQualityFlag")) {
+    if (!json().optional("depthLowQualityFlag") &&
+        json().optional("haveGeometryVideo").as<bool>()) {
       sourceParams.vme().vme_depth_low_quality_flag(m_depthQualityAssessor->isLowDepthQuality(
-          sourceParams, IO::loadSourceFrame(json(), m_viewSizes, 0)));
+          sourceParams.viewParamsList, IO::loadSourceFrame(json(), m_viewSizes, m_viewNames, 0)));
     }
     m_encoder->prepareSequence(sourceParams);
 
@@ -97,7 +100,7 @@ private:
 
   void pushFrames(int firstFrame, int lastFrame) {
     for (int i = firstFrame; i < lastFrame; ++i) {
-      m_encoder->pushFrame(IO::loadSourceFrame(json(), m_viewSizes, i));
+      m_encoder->pushFrame(IO::loadSourceFrame(json(), m_viewSizes, m_viewNames, i));
     }
   }
 

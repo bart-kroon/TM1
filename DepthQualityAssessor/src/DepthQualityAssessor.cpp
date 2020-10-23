@@ -70,10 +70,10 @@ auto textureNeighbourhood(const MAT &m, const Common::Vec2f &p)
   return fetchedValues;
 }
 
-auto isLowDepthQuality(const MivBitstream::EncoderParams &params,
+auto isLowDepthQuality(const MivBitstream::ViewParamsList &vpl,
                        const Common::MVD16Frame &sourceViews, float blendingFactor,
                        float maxOutlierRatio) -> bool {
-  const auto sourceHelperList = Renderer::ProjectionHelperList{params.viewParamsList};
+  const auto sourceHelperList = Renderer::ProjectionHelperList{vpl};
 
   // Expand depth
   std::vector<Common::Mat<float>> sourceDepthExpandedList;
@@ -171,9 +171,9 @@ DepthQualityAssessor::DepthQualityAssessor(const Common::Json & /*unused*/,
   m_maxOutlierRatio = componentNode.require("maxOutlierRatio").as<float>();
 }
 
-auto DepthQualityAssessor::isLowDepthQuality(const MivBitstream::EncoderParams &params,
+auto DepthQualityAssessor::isLowDepthQuality(const MivBitstream::ViewParamsList &vpl,
                                              const Common::MVD16Frame &sourceViews) -> bool {
-  return TMIV::DepthQualityAssessor::isLowDepthQuality(params, sourceViews, m_blendingFactor,
+  return TMIV::DepthQualityAssessor::isLowDepthQuality(vpl, sourceViews, m_blendingFactor,
                                                        m_maxOutlierRatio);
 }
 } // namespace TMIV::DepthQualityAssessor

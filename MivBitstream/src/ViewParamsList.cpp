@@ -167,6 +167,13 @@ auto ViewParamsList::viewSizes() const -> Common::SizeVector {
   return sizes;
 }
 
+auto ViewParamsList::viewNames() const -> std::vector<std::string> {
+  auto names = std::vector<std::string>(size());
+  std::transform(cbegin(), cend(), names.begin(),
+                 [](const ViewParams &viewParams) { return viewParams.name; });
+  return names;
+}
+
 auto operator<<(std::ostream &stream, const ViewParamsList &viewParamsList) -> std::ostream & {
   for (size_t viewId = 0; viewId < viewParamsList.size(); ++viewId) {
     viewParamsList[viewId].printTo(stream, static_cast<uint16_t>(viewId));

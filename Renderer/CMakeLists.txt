@@ -13,6 +13,7 @@ add_library(RendererLib
     "src/ViewWeightingSynthesizer.cpp"
     "src/NoSynthesizer.cpp"
     "src/RecoverPrunedViews.cpp"
+    "src/mapInputToOutputFrames.cpp"
     "include/TMIV/Renderer/IRenderer.h"
     "include/TMIV/Renderer/IInpainter.h"
     "include/TMIV/Renderer/ISynthesizer.h"
@@ -37,6 +38,7 @@ add_library(RendererLib
     "include/TMIV/Renderer/ViewWeightingSynthesizer.h"
     "include/TMIV/Renderer/NoSynthesizer.h"
     "include/TMIV/Renderer/RecoverPrunedViews.h"
+    "include/TMIV/Renderer/mapInputToOutputFrames.h"
     )
 
 add_library(TMIV::RendererLib
@@ -54,11 +56,24 @@ target_include_directories(RendererLib
     PUBLIC
         "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>")
     
+add_executable(Renderer
+    "src/Renderer.main.cpp"
+    "src/registerComponents.cpp"
+    )
+
+target_link_libraries(Renderer
+    PRIVATE
+        TMIV::RendererLib
+        TMIV::DepthQualityAssessorLib
+        TMIV::IOLib)
+
 install(
     TARGETS
+        Renderer
         RendererLib
     EXPORT TMIVTargets
-    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
 install(
     DIRECTORY "include/"

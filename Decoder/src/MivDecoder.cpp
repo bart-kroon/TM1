@@ -182,7 +182,11 @@ void MivDecoder::checkCapabilities() const {
   CONSTRAIN_PTL(m_au.vps.profile_tier_level().ptl_profile_codec_group_idc() ==
                 MivBitstream::PtlProfileCodecGroupIdc::HEVC_Main10);
   CONSTRAIN_PTL(m_au.vps.profile_tier_level().ptl_profile_toolset_idc() ==
-                MivBitstream::PtlProfilePccToolsetIdc::MIV_Main);
+                    MivBitstream::PtlProfilePccToolsetIdc::MIV_Main ||
+                m_au.vps.profile_tier_level().ptl_profile_toolset_idc() ==
+                    MivBitstream::PtlProfilePccToolsetIdc::MIV_Extended ||
+                m_au.vps.profile_tier_level().ptl_profile_toolset_idc() ==
+                    MivBitstream::PtlProfilePccToolsetIdc::MIV_Geometry_Absent);
   CONSTRAIN_PTL(m_au.vps.profile_tier_level().ptl_profile_reconstruction_idc() ==
                 MivBitstream::PtlProfileReconstructionIdc::MIV_Main);
 
@@ -262,7 +266,7 @@ void MivDecoder::decodeMvpl(const MivBitstream::MivViewParamsList &mvpl) {
       m_au.viewParamsList[viewId].pp = mvpl.pruning_parent(viewId);
     }
 
-    m_au.viewParamsList[viewId].name = Common::format("d{:02}", viewId);
+    m_au.viewParamsList[viewId].name = Common::format("pv{:02}", viewId);
   }
 }
 

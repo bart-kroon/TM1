@@ -52,8 +52,8 @@ EncoderParams::EncoderParams() : EncoderParams{false, false, false} {}
 
 // TODO(BK): Move to Encoder class
 EncoderParams::EncoderParams(bool haveTextureVideo, bool haveGeometryVideo, bool haveOccupancyVideo)
-    : EncoderParams{Common::SizeVector{{0xFFFF, 0xFFFF, 0xFFFF}}, haveTextureVideo, haveGeometryVideo,
-                    haveOccupancyVideo} {}
+    : EncoderParams{Common::SizeVector{{0xFFFF, 0xFFFF, 0xFFFF}}, haveTextureVideo,
+                    haveGeometryVideo, haveOccupancyVideo} {}
 
 // TODO(BK): Move to Encoder class
 EncoderParams::EncoderParams(const Common::SizeVector &atlasSizes, bool haveTextureVideo,
@@ -65,8 +65,8 @@ EncoderParams::EncoderParams(const Common::SizeVector &atlasSizes, bool haveText
 
   vps.profile_tier_level().ptl_profile_toolset_idc(
       haveGeometryVideo ? (haveOccupancyVideo ? PtlProfilePccToolsetIdc::MIV_Extended
-                                    : PtlProfilePccToolsetIdc::MIV_Main)
-                   : PtlProfilePccToolsetIdc::MIV_Geometry_Absent);
+                                              : PtlProfilePccToolsetIdc::MIV_Main)
+                        : PtlProfilePccToolsetIdc::MIV_Geometry_Absent);
 
   VERIFY_MIVBITSTREAM(!atlasSizes.empty());
   vps.vps_atlas_count_minus1(static_cast<uint8_t>(atlasSizes.size() - 1));

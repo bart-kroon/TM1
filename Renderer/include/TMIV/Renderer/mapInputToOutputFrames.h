@@ -40,6 +40,6 @@
 
 namespace TMIV::Renderer {
 auto mapInputToOutputFrames(const Common::Json &config) -> std::multimap<int, int>;
-} // namespace TMIV::Decoder
+} // namespace TMIV::Renderer
 
 #endif

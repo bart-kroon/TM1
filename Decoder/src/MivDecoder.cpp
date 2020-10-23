@@ -162,7 +162,7 @@ auto MivDecoder::decodeVps() -> bool {
       auto vuh = MivBitstream::V3cUnitHeader{MivBitstream::VuhUnitType::V3C_GVD};
       vuh.vuh_v3c_parameter_set_id(m_au.vps.vps_v3c_parameter_set_id()).vuh_atlas_id(j);
       m_geoVideoDecoder.push_back(startVideoDecoder(vuh, m_totalGeoVideoDecodingTime));
-    }else {
+    } else {
       m_geoVideoDecoder.push_back(nullptr);
     }
 
@@ -170,7 +170,7 @@ auto MivDecoder::decodeVps() -> bool {
       auto vuh = MivBitstream::V3cUnitHeader{MivBitstream::VuhUnitType::V3C_AVD};
       vuh.vuh_v3c_parameter_set_id(m_au.vps.vps_v3c_parameter_set_id()).vuh_atlas_id(j);
       m_attrVideoDecoder.push_back(startVideoDecoder(vuh, m_totalAttrVideoDecodingTime));
-    }else {
+    } else {
       m_attrVideoDecoder.push_back(nullptr);
     }
   }

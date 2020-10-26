@@ -46,7 +46,7 @@
 namespace TMIV::IO {
 template <typename... Args>
 auto getFullPath(const Common::Json &config, const std::string &baseDirectoryField,
-                 const std::string &fileNameField, Args &&... args) -> std::string {
+                 const std::string &fileNameField, Args &&...args) -> std::string {
   std::string baseDirectory;
   auto fileName =
       fmt::format(config.require(fileNameField).as<std::string>(), std::forward<Args>(args)...);

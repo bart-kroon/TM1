@@ -131,6 +131,10 @@ auto operator<<(std::ostream &stream, const PtlLevelIdc &x) -> std::ostream & {
     return stream << "Level 3.0";
   case PtlLevelIdc::Level_3_5:
     return stream << "Level 3.5";
+  case PtlLevelIdc::Level_4_0:
+    return stream << "Level 4.0";
+  case PtlLevelIdc::Level_4_5:
+    return stream << "Level 4.5";
   default:
     return stream << "[unknown:" << static_cast<int>(x) << "]";
   }

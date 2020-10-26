@@ -87,7 +87,9 @@ enum class PtlLevelIdc : std::uint8_t {
   Level_2_0 = 60,
   Level_2_5 = 75,
   Level_3_0 = 90,
-  Level_3_5 = 105
+  Level_3_5 = 105,
+  Level_4_0 = 120,
+  Level_4_5 = 135
 };
 
 enum class AiAttributeTypeId : std::uint8_t {

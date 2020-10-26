@@ -42,9 +42,12 @@ target_include_directories(CommonLib
 target_compile_features(CommonLib
     PUBLIC cxx_std_17)
 
+target_link_libraries(CommonLib PUBLIC fmt::fmt)
+
 install(
     TARGETS
         CommonLib
+        fmt
     EXPORT TMIVTargets
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
 

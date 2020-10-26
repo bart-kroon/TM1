@@ -37,6 +37,8 @@
 
 #include <TMIV/Common/Common.h>
 
+#include <fmt/format.h>
+
 #include <cstring>
 #include <fstream>
 #include <iostream>
@@ -44,9 +46,10 @@
 namespace TMIV::IO {
 template <typename... Args>
 auto getFullPath(const Common::Json &config, const std::string &baseDirectoryField,
-                 const std::string &fileNameField, Args &&...args) -> std::string {
+                 const std::string &fileNameField, Args &&... args) -> std::string {
   std::string baseDirectory;
-  auto fileName = Common::format(config.require(fileNameField).as<std::string>(), args...);
+  auto fileName =
+      fmt::format(config.require(fileNameField).as<std::string>(), std::forward<Args>(args)...);
 
   // Detect absolute paths for /POSIX, \Windows and C:\Windows
   if ((!fileName.empty() && (fileName.front() == '/' || fileName.front() == '\\')) ||

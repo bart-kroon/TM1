@@ -37,6 +37,8 @@
 #include <TMIV/Common/Bitstream.h>
 #include <TMIV/MivBitstream/Types.h>
 
+#include <fmt/format.h>
+
 #include <cstdint>
 #include <cstdlib>
 #include <functional>
@@ -120,9 +122,27 @@ public:
   void encodeTo(Common::OutputBitstream &bitstream) const;
 
 private:
+  friend struct fmt::formatter<TMIV::MivBitstream::AtlasId>;
+
   std::uint8_t m_atlasId{};
 };
+} // namespace TMIV::MivBitstream
 
+template <> struct fmt::formatter<TMIV::MivBitstream::AtlasId> {
+  constexpr auto parse(format_parse_context &ctx) {
+    if (ctx.begin() != ctx.end() && *ctx.begin() != '}') {
+      throw format_error("invalid format for AtlasId");
+    }
+    return ctx.begin();
+  }
+
+  template <typename FormatContext>
+  auto format(const TMIV::MivBitstream::AtlasId &id, FormatContext &ctx) {
+    return fmt::format_to(ctx.out(), "{}", id.m_atlasId);
+  }
+};
+
+namespace TMIV::MivBitstream {
 auto operator<<(std::ostream &stream, const PtlProfileCodecGroupIdc &x) -> std::ostream &;
 auto operator<<(std::ostream &stream, const PtlProfilePccToolsetIdc &x) -> std::ostream &;
 auto operator<<(std::ostream &stream, const PtlProfileReconstructionIdc &x) -> std::ostream &;

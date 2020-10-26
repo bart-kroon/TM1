@@ -35,10 +35,10 @@
 
 #include <TMIV/Common/Application.h>
 #include <TMIV/Common/Factory.h>
-#include <TMIV/Renderer/mapInputToOutputFrames.h>
 #include <TMIV/IO/IO.h>
 #include <TMIV/MivBitstream/SequenceConfig.h>
 #include <TMIV/Renderer/RecoverPrunedViews.h>
+#include <TMIV/Renderer/mapInputToOutputFrames.h>
 
 #include "IvMetadataReader.h"
 
@@ -108,7 +108,7 @@ private:
               << ", with target viewport:\n";
     const auto viewportParams = IO::loadViewportMetadata(json(), outputFrameId);
     viewportParams.printTo(std::cout, 0);
-    
+
     const auto viewport = m_decoder->renderFrame(frame, viewportParams);
     IO::saveViewport(json(), outputFrameId, {yuv420p(viewport.first), viewport.second});
   }

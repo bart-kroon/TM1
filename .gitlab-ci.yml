@@ -1,0 +1,48 @@
+stages:
+  - build
+  - test
+
+gcc-9:
+  stage: build
+  image: rikorose/gcc-cmake:gcc-9
+  tags:
+    - linux
+  script:
+    - mkdir -p build && cd build
+    - cmake -DCMAKE_CXX_FLAGS="-Wall -Wextra -Wpedantic -Werror" -DENABLE_CLANG_TIDY=OFF ..
+    - make -j $(nproc)
+
+clang-11:
+  stage: build
+  image: cbachhuber/clang:11
+  tags:
+    - linux
+  script:
+    - mkdir -p build && cd build
+    - cmake -DCMAKE_CXX_FLAGS="-Wall -Wextra -Wpedantic -Werror" ..
+    - make -j $(nproc)
+  artifacts:
+      untracked: true
+      expire_in: 3 days
+      paths:
+          - build/
+
+unit-tests:
+  stage: test
+  image: rikorose/gcc-cmake:gcc-9
+  tags:
+    - linux
+  script:
+    - cd build
+    - ctest
+
+clang-format:
+  stage: test
+  image: cbachhuber/clang:11
+  tags:
+    - linux
+  script:
+    - cd build
+    - cmake --build . --target clang_format
+    - git diff
+    - if [[ $(git diff) ]]; then echo "Formatting is wrong! See above."; return 1; fi

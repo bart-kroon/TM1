@@ -140,7 +140,9 @@ template <typename T> decltype(auto) Json::as() const {
       return std::any_cast<const T &>(m_node);
     }
   } catch (std::bad_any_cast & /* unused */) {
-    throw std::runtime_error("JSON: value has wrong type");
+    throw std::runtime_error(fmt::format("JSON: value has wrong type:\n  * The expected type is "
+                                         "{}\n  * The value is: {}",
+                                         typeid(T).name(), format()));
   }
 }
 

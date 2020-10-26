@@ -125,14 +125,21 @@ TEST_CASE("Json::Number is a sufficiently large floating-point number") {
 }
 
 TEST_CASE("Json::as<T>() supports numeric conversion of floats") {
-  auto json = Json{30.F};
-  REQUIRE(json.as<float>() == 30.F);
-  REQUIRE(json.as<double>() == 30.);
+  auto json = Json{30.4F};
+  REQUIRE(json.as<float>() == Approx(30.4F));
+  REQUIRE(json.as<double>() == Approx(30.4));
   // NOTE(BK): Optional bounds checking to be added as part of #273
 
   SECTION("Converting a float to an integer is not allowed") {
     REQUIRE_THROWS(json.as<int>());
     REQUIRE_THROWS(json.as<char>());
+
+    // The exact message is implementation-defined, so the message is printed for visual inspection.
+    try {
+      json.as<int>();
+    } catch (std::exception &e) {
+      std::cout << e.what() << '\n';
+    }
   }
 }
 

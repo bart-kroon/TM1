@@ -129,16 +129,13 @@ private:
 } // namespace TMIV::MivBitstream
 
 template <> struct fmt::formatter<TMIV::MivBitstream::AtlasId> {
-  constexpr auto parse(format_parse_context &ctx) {
-    if (ctx.begin() != ctx.end() && *ctx.begin() != '}') {
-      throw format_error("invalid format for AtlasId");
-    }
-    return ctx.begin();
-  }
+  fmt::formatter<int> base;
+
+  constexpr auto parse(format_parse_context &ctx) { return base.parse(ctx); }
 
   template <typename FormatContext>
   auto format(const TMIV::MivBitstream::AtlasId &id, FormatContext &ctx) {
-    return fmt::format_to(ctx.out(), "{}", id.m_atlasId);
+    return base.format(id.m_atlasId, ctx);
   }
 };
 

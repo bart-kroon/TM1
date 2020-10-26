@@ -38,6 +38,7 @@
 #include <TMIV/MivBitstream/AtlasSequenceParameterSetRBSP.h>
 #include <TMIV/MivBitstream/AtlasTileLayerRBSP.h>
 #include <TMIV/MivBitstream/CommonAtlasFrameRBSP.h>
+#include <TMIV/MivBitstream/CommonAtlasSequenceParameterSetRBSP.h>
 #include <TMIV/MivBitstream/GeometryUpscalingParameters.h>
 #include <TMIV/MivBitstream/PackedIndependentRegions.h>
 #include <TMIV/MivBitstream/RecViewport.h>
@@ -122,6 +123,8 @@ public:
       return parseSei(stream);
     case TMIV::MivBitstream::NalUnitType::NAL_AAPS:
       return parseAaps(stream);
+    case TMIV::MivBitstream::NalUnitType::NAL_CASPS:
+      return parseCasps(stream);
     case TMIV::MivBitstream::NalUnitType::NAL_CAF:
       return parseCaf(stream);
     default:
@@ -179,6 +182,13 @@ public:
       m_maxCommonAtlasFrmOrderCntLsb =
           1U << (aaps.aaps_log2_max_atlas_frame_order_cnt_lsb_minus4() + 4U);
     }
+  }
+
+  void parseCasps(std::istream &stream) {
+    const auto casps = TMIV::MivBitstream::CommonAtlasSequenceParameterSetRBSP::decodeFrom(stream);
+    m_log << casps;
+    m_maxCommonAtlasFrmOrderCntLsb =
+        1U << (casps.casps_log2_max_common_atlas_frame_order_cnt_lsb_minus4() + 4U);
   }
 
   void parseCaf(std::istream &stream) {

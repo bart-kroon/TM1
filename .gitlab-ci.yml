@@ -1,6 +1,5 @@
 stages:
   - build
-  - format
 
 gcc-9-release:
   stage: build
@@ -23,12 +22,10 @@ clang-11-debug:
     - cmake -DCMAKE_CXX_FLAGS="-Wall -Wextra -Wpedantic -Werror" -DCMAKE_BUILD_TYPE=Debug ..
     - make -j $(nproc)
     - make -j $(nproc) test
-  artifacts:
-      untracked: true
-      expire_in: 3 days
-      paths:
-          - build/
-
+    - cmake --build . --target clang_format
+    - git diff
+    - if [[ $(git diff) ]]; then echo "Formatting is wrong! See above."; return 1; fi
+    
 vc16-release:
     stage: build
     image: buildtools2019:latest
@@ -41,13 +38,3 @@ vc16-release:
       - 'cmake --build . --parallel --config Release --target ALL_BUILD'
       - 'cmake --build . --config Release --target RUN_TESTS'
 
-clang-format:
-  stage: format
-  image: cbachhuber/clang:11
-  tags:
-    - linux
-  script:
-    - cd build
-    - cmake --build . --target clang_format
-    - git diff
-    - if [[ $(git diff) ]]; then echo "Formatting is wrong! See above."; return 1; fi

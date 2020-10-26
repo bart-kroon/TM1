@@ -8,11 +8,6 @@ project(
 
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-option(SHOW_DOWNLOAD_PROGRESS "Show dependency download progress" ON)
-if(SHOW_DOWNLOAD_PROGRESS)
-    set(FETCHCONTENT_QUIET FALSE)
-endif()
-
 include(CMake/fmt.cmake)
 
 include(CMake/catch2.cmake)

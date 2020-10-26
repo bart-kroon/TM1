@@ -1,48 +1,37 @@
-stages:
-  - build
-  - test
-
-gcc-9:
+gcc-9-release:
   stage: build
   image: rikorose/gcc-cmake:gcc-9
   tags:
     - linux
   script:
     - mkdir -p build && cd build
-    - cmake -DCMAKE_CXX_FLAGS="-Wall -Wextra -Wpedantic -Werror" -DENABLE_CLANG_TIDY=OFF ..
+    - cmake -DCMAKE_CXX_FLAGS="-Wall -Wextra -Wpedantic -Werror" -DENABLE_CLANG_TIDY=OFF -DCMAKE_BUILD_TYPE=Release ..
     - make -j $(nproc)
+    - make -j $(nproc) test
 
-clang-11:
+clang-11-debug:
   stage: build
   image: cbachhuber/clang:11
   tags:
     - linux
   script:
     - mkdir -p build && cd build
-    - cmake -DCMAKE_CXX_FLAGS="-Wall -Wextra -Wpedantic -Werror" ..
+    - cmake -DCMAKE_CXX_FLAGS="-Wall -Wextra -Wpedantic -Werror" -DCMAKE_BUILD_TYPE=Debug ..
     - make -j $(nproc)
-  artifacts:
-      untracked: true
-      expire_in: 3 days
-      paths:
-          - build/
-
-unit-tests:
-  stage: test
-  image: rikorose/gcc-cmake:gcc-9
-  tags:
-    - linux
-  script:
-    - cd build
-    - ctest
-
-clang-format:
-  stage: test
-  image: cbachhuber/clang:11
-  tags:
-    - linux
-  script:
-    - cd build
+    - make -j $(nproc) test
     - cmake --build . --target clang_format
     - git diff
     - if [[ $(git diff) ]]; then echo "Formatting is wrong! See above."; return 1; fi
+    
+vc16-release:
+    stage: build
+    image: buildtools2019:latest
+    tags:
+      - windows
+    script:
+      - mkdir -p build
+      - cd build
+      - 'cmake -G "Visual Studio 16 2019" -DENABLE_CLANG_TIDY=OFF ..'
+      - 'cmake --build . --parallel --config Release --target ALL_BUILD'
+      - 'cmake --build . --config Release --target RUN_TESTS'
+

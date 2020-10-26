@@ -99,7 +99,7 @@ auto parseObject(std::string_view &text) -> Json::Object {
     auto value = parseValue(text);
 
     if (!x.emplace(key, std::move(value)).second) {
-      throw std::runtime_error(Common::format("JSON parser: duplicate key '{}'", key));
+      throw std::runtime_error(fmt::format("JSON parser: duplicate key '{}'", key));
     }
   }
 
@@ -206,7 +206,7 @@ auto parseString(std::string_view &text) -> std::string {
         throw std::logic_error("JSON parser: unicode character codes are not yet supported");
       } else {
         throw std::runtime_error(
-            Common::format("JSON parser: invalid string escape character '{}'", ch2));
+            fmt::format("JSON parser: invalid string escape character '{}'", ch2));
       }
     } else if ('\0' <= ch1 && ch1 < ' ') {
       throw std::runtime_error("JSON parser: control character within string");

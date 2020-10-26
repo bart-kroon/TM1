@@ -35,6 +35,8 @@
 
 #include <TMIV/MivBitstream/verify.h>
 
+#include <fmt/format.h>
+
 #include <ctime>
 #include <iostream>
 #include <utility>
@@ -266,7 +268,7 @@ void MivDecoder::decodeMvpl(const MivBitstream::MivViewParamsList &mvpl) {
       m_au.viewParamsList[viewId].pp = mvpl.pruning_parent(viewId);
     }
 
-    m_au.viewParamsList[viewId].name = Common::format("pv{:02}", viewId);
+    m_au.viewParamsList[viewId].name = fmt::format("pv{:02}", viewId);
   }
 }
 

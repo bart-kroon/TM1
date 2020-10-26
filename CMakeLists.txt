@@ -8,12 +8,12 @@ project(
 
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-include(CMake/clang_tidy.cmake)
-
 option(SHOW_DOWNLOAD_PROGRESS "Show dependency download progress" ON)
 if(SHOW_DOWNLOAD_PROGRESS)
     set(FETCHCONTENT_QUIET FALSE)
 endif()
+
+include(CMake/fmt.cmake)
 
 include(CMake/catch2.cmake)
 
@@ -26,6 +26,9 @@ endif()
 include(GNUInstallDirs)
 
 include(CMake/HM.cmake)
+
+# Optionally enable clang-tidy, but only for TMIV modules
+include(CMake/clang_tidy.cmake)
 
 foreach(subdir
         Common 

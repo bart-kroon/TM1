@@ -37,6 +37,9 @@
 
 #include <TMIV/Common/Common.h>
 
+#include <fmt/format.h>
+#include <fmt/printf.h>
+
 namespace TMIV::Common {
 inline Json::operator bool() const { return m_node.has_value(); }
 
@@ -155,7 +158,7 @@ inline auto Json::require(const std::string &key) const -> const Json & {
     return m_node;
   }
   using namespace std::string_view_literals;
-  throw std::runtime_error(Common::format("JSON: Parameter '{}' is required but missing"sv, key));
+  throw std::runtime_error(fmt::format("JSON: Parameter '{}' is required but missing"sv, key));
 }
 
 template <typename T> auto Json::asVector() const -> std::vector<T> {

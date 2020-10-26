@@ -16,7 +16,9 @@ add_library(TMIV::IOLib
 if (${CMAKE_CXX_COMPILER_ID} STREQUAL GNU AND ${CMAKE_CXX_COMPILER_VERSION} VERSION_LESS 9.1)
     set(CppFilesystemLib stdc++fs)
 elseif(${CMAKE_CXX_COMPILER_ID} STREQUAL Clang AND ${CMAKE_CXX_COMPILER_VERSION} VERSION_LESS 9.0)
-    set(CppFilesystemLib c++fs)
+    if(NOT(MSVC OR MSYS OR MINGW))  # don't include c++fs for clang-cl
+        set(CppFilesystemLib c++fs)
+    endif()
 endif()
 
 target_link_libraries(IOLib

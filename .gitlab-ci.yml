@@ -1,6 +1,3 @@
-stages:
-  - build
-
 gcc-9-release:
   stage: build
   image: rikorose/gcc-cmake:gcc-9

@@ -1,3 +1,5 @@
+[![pipeline status](http://mpegx.int-evry.fr/software/MPEG/MIV/RS/TM1/badges/v7.0-dev/pipeline.svg)](http://mpegx.int-evry.fr/software/MPEG/MIV/RS/TM1/commits/v7.0-dev)
+
 # Test Model for Immersive Video
 
 ## Introduction

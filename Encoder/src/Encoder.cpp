@@ -90,7 +90,7 @@ Encoder::Encoder(const Common::Json &rootNode, const Common::Json &componentNode
   }
 
   // Read the entity encoding range if exisited
-  if (const auto &subnode = componentNode.optional("EntityEncodeRange")) {
+  if (const auto &subnode = rootNode.optional("EntityEncodeRange")) {
     m_entityEncRange = subnode.asVec<int, 2>();
   }
 

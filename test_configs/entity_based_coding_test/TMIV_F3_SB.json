@@ -6,19 +6,19 @@
         "maxOutlierRatio": 0.001
     },
     "DepthQualityAssessorMethod": "DepthQualityAssessor",
-    "EncoderMethod": "GroupBasedEncoder",
+    "EntityEncodeRange": [
+        0,
+        25
+    ],
+    "EncoderMethod": "Encoder",
     "GeometryVideoDataPathFmt": "ATL_SB_TG_c{:02}_{}x{}_yuv420p10le.yuv",
-    "GroupBasedEncoder": {
+    "Encoder": {
         "Aggregator": {},
         "AggregatorMethod": "Aggregator",
         "GeometryQuantizer": {
             "depthOccThresholdIfSet": 64
         },
         "GeometryQuantizerMethod": "GeometryQuantizer",
-        "EntityEncodeRange": [
-            0,
-            25
-        ],
         "HierarchicalPruner": {
             "depthParameter": 50,
             "dilate": 5,

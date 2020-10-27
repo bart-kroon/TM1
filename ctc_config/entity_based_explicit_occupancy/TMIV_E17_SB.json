@@ -8,18 +8,18 @@
         "maxOutlierRatio": 0.001
     },
     "DepthQualityAssessorMethod": "DepthQualityAssessor",
-    "EncoderMethod": "GroupBasedEncoder",
-    "GroupBasedEncoder": {
+    "EntityEncodeRange": [
+        8,
+        16
+    ],
+    "EncoderMethod": "Encoder",
+    "Encoder": {
         "Aggregator": {},
         "AggregatorMethod": "Aggregator",
         "ExplicitOccupancy": {
             "occupancyScale": [ 1, 1 ]
         },
         "GeometryQuantizerMethod": "ExplicitOccupancy",
-        "EntityEncodeRange": [
-            8,
-            16
-        ],
         "HierarchicalPruner": {
             "depthParameter": 50,
             "dilate": 5,

@@ -88,7 +88,7 @@ public:
 private:
   void updateParams(std::int32_t foc) {
     const auto path =
-        IO::getFullPath(json(), "OutputDirectory", "SourceSequenceConfigPathFmt", foc);
+        IO::getFullPath(json(), "SourceDirectory", "SourceSequenceConfigPathFmt", foc);
     if (std::filesystem::exists(path)) {
       std::cout << "Updating parameters at frame " << foc << '\n';
       std::ifstream stream{path};

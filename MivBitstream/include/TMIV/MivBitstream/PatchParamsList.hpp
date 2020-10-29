@@ -66,6 +66,10 @@ constexpr auto PatchParams::atlasPatchDepthOccMapThreshold() const noexcept {
   return m_atlasPatchDepthOccMapThreshold;
 }
 
+inline auto PatchParams::atlasPatchAttributeOffset() const noexcept {
+  return m_atlasPatchAttributeOffset;
+}
+
 constexpr auto PatchParams::atlasPatch2dPosX(std::uint32_t value) noexcept -> PatchParams & {
   m_atlasPatch2dPosX = value;
   return *this;
@@ -128,6 +132,11 @@ constexpr auto PatchParams::atlasPatchDepthOccMapThreshold(std::uint32_t value) 
   return *this;
 }
 
+inline auto PatchParams::atlasPatchAttributeOffset(Common::Vec3i value) noexcept -> PatchParams & {
+  m_atlasPatchAttributeOffset = value;
+  return *this;
+}
+
 inline auto PatchParams::operator==(const PatchParams &other) const -> bool {
   return atlasId == other.atlasId && atlasPatch2dPosX() == other.atlasPatch2dPosX() &&
          atlasPatch2dPosY() == other.atlasPatch2dPosY() &&
@@ -140,7 +149,8 @@ inline auto PatchParams::operator==(const PatchParams &other) const -> bool {
          atlasPatchProjectionId() == other.atlasPatchProjectionId() &&
          atlasPatchOrientationIndex() == other.atlasPatchOrientationIndex() &&
          atlasPatchEntityId() == other.atlasPatchEntityId() &&
-         atlasPatchDepthOccMapThreshold() == other.atlasPatchDepthOccMapThreshold();
+         atlasPatchDepthOccMapThreshold() == other.atlasPatchDepthOccMapThreshold() &&
+         atlasPatchAttributeOffset() == other.atlasPatchAttributeOffset();
 }
 
 constexpr auto PatchParams::isRotated() const noexcept {

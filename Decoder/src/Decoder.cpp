@@ -61,10 +61,64 @@ void checkRestrictions(const AccessUnit &frame) {
     }
   }
 }
+
+void addAttributeOffset(AccessUnit &frame) {
+  for (std::uint8_t k = 0; k <= frame.vps.vps_atlas_count_minus1(); ++k) {
+    const auto atlasId = frame.vps.vps_atlas_id(k);
+    auto &atlas = frame.atlas[k];
+
+    if (!atlas.asps.asps_miv_extension().asme_patch_attribute_offset_flag()) {
+      return;
+    }
+
+    const auto &btpm = atlas.blockToPatchMap.getPlane(0);
+    auto &YUV = atlas.attrFrame.getPlanes();
+
+    const auto H = atlas.attrFrame.getHeight();
+    const auto W = atlas.attrFrame.getWidth();
+
+    const auto &ai = frame.vps.attribute_information(atlasId);
+    const auto inputBitCount = ai.ai_attribute_2d_bit_depth_minus1(0) + 1;
+    const auto inputMaxVal = (1 << inputBitCount) - 1;
+    const auto inputMedVal = 1 << (inputBitCount - 1);
+
+    const int scaledBitCount =
+        atlas.asps.asps_miv_extension().asme_patch_attribute_offset_bit_count_minus1() + 1;
+    const int bitShift = inputBitCount - scaledBitCount;
+
+    const int btpmScale = int(YUV[0].width() / btpm.width());
+
+    for (int h = 0; h < H; h++) {
+      const int hs = h / btpmScale;
+      for (int w = 0; w < W; w++) {
+        const int ws = w / btpmScale;
+        if (btpm(hs, ws) != 65535) {
+
+          for (int c = 0; c < 3; c++) {
+            const auto pduAttributeOffset = static_cast<int16_t>(
+                (atlas.patchParamsList[btpm(hs, ws)].atlasPatchAttributeOffset()->operator[](c)
+                 << bitShift) -
+                inputMedVal);
+
+            if (YUV[c](h, w) + pduAttributeOffset > inputMaxVal) {
+              YUV[c](h, w) = inputMaxVal;
+            } else if (YUV[c](h, w) + pduAttributeOffset < 0) {
+              YUV[c](h, w) = 0;
+            } else {
+              YUV[c](h, w) += (pduAttributeOffset);
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
 } // namespace
 
 void Decoder::recoverFrame(AccessUnit &frame) {
   checkRestrictions(frame);
+  addAttributeOffset(frame);
   m_geometryScaler.inplaceScale(frame);
   OccupancyReconstructor::reconstruct(frame);
   m_entityBasedPatchMapFilter.inplaceFilterBlockToPatchMaps(frame);

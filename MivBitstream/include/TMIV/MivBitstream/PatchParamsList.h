@@ -61,6 +61,7 @@ struct PatchParams {
   [[nodiscard]] constexpr auto atlasPatchOrientationIndex() const noexcept;
   [[nodiscard]] constexpr auto atlasPatchEntityId() const noexcept;
   [[nodiscard]] constexpr auto atlasPatchDepthOccMapThreshold() const noexcept;
+  [[nodiscard]] auto atlasPatchAttributeOffset() const noexcept;
 
   constexpr auto atlasPatch2dPosX(std::uint32_t value) noexcept -> PatchParams &;
   constexpr auto atlasPatch2dPosY(std::uint32_t value) noexcept -> PatchParams &;
@@ -75,6 +76,7 @@ struct PatchParams {
       -> PatchParams &;
   constexpr auto atlasPatchEntityId(std::uint16_t value) noexcept -> PatchParams &;
   constexpr auto atlasPatchDepthOccMapThreshold(std::uint32_t value) noexcept -> PatchParams &;
+  auto atlasPatchAttributeOffset(Common::Vec3i value) noexcept -> PatchParams &;
 
   // Is the patch rotated such that width and height swap?
   [[nodiscard]] constexpr auto isRotated() const noexcept;
@@ -103,6 +105,7 @@ private:
   FlexiblePatchOrientation m_atlasPatchOrientationIndex{FlexiblePatchOrientation::FPO_INVALID};
   std::optional<std::uint16_t> m_atlasPatchEntityId;
   std::optional<std::uint32_t> m_atlasPatchDepthOccMapThreshold;
+  std::optional<Common::Vec3i> m_atlasPatchAttributeOffset{};
 };
 
 using PatchParamsList = std::vector<PatchParams>;

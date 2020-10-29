@@ -111,6 +111,8 @@ public:
   [[nodiscard]] auto asme_occupancy_scale_factor_x_minus1() const noexcept -> uint16_t;
   [[nodiscard]] auto asme_occupancy_scale_factor_y_minus1() const noexcept -> uint16_t;
   [[nodiscard]] constexpr auto asme_patch_constant_depth_flag() const noexcept;
+  [[nodiscard]] constexpr auto asme_patch_attribute_offset_flag() const noexcept;
+  [[nodiscard]] auto asme_patch_attribute_offset_bit_count_minus1() const noexcept -> uint16_t;
 
   constexpr auto asme_group_id(unsigned value) noexcept -> auto &;
   constexpr auto asme_auxiliary_atlas_flag(bool value) noexcept -> auto &;
@@ -120,6 +122,9 @@ public:
   constexpr auto asme_occupancy_scale_factor_x_minus1(std::uint16_t value) noexcept -> auto &;
   constexpr auto asme_occupancy_scale_factor_y_minus1(std::uint16_t value) noexcept -> auto &;
   constexpr auto asme_patch_constant_depth_flag(bool value) noexcept -> auto &;
+  constexpr auto asme_patch_attribute_offset_flag(bool value) noexcept -> auto &;
+  constexpr auto asme_patch_attribute_offset_bit_count_minus1(std::uint16_t value) noexcept
+      -> auto &;
 
   friend auto operator<<(std::ostream &stream, const AspsMivExtension &) -> std::ostream &;
 
@@ -140,6 +145,8 @@ private:
   std::optional<std::uint16_t> m_asme_occupancy_scale_factor_x_minus1;
   std::optional<std::uint16_t> m_asme_occupancy_scale_factor_y_minus1;
   bool m_asme_patch_constant_depth_flag{};
+  bool m_asme_patch_attribute_offset_flag{};
+  std::optional<std::uint16_t> m_asme_patch_attribute_offset_bit_count_minus1;
 };
 
 // 23090-5: atlas_sequence_parameter_set_rbsp( )

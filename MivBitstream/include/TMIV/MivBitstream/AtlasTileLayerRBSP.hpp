@@ -179,6 +179,11 @@ constexpr auto PduMivExtension::pdu_depth_occ_threshold(std::uint32_t value) noe
   return *this;
 }
 
+inline auto PduMivExtension::pdu_attribute_offset(Common::Vec3i value) noexcept -> auto & {
+  m_pdu_attribute_offset = value;
+  return *this;
+}
+
 constexpr auto PduMivExtension::operator==(const PduMivExtension &other) const noexcept {
   return pdu_entity_id() == other.pdu_entity_id() &&
          m_pdu_depth_occ_threshold == other.m_pdu_depth_occ_threshold;
@@ -212,7 +217,7 @@ constexpr auto PatchDataUnit::pdu_orientation_index() const noexcept {
   return m_pdu_orientation_index;
 }
 
-constexpr auto PatchDataUnit::pdu_miv_extension() const noexcept -> PduMivExtension {
+inline auto PatchDataUnit::pdu_miv_extension() const noexcept -> PduMivExtension {
   return m_pdu_miv_extension.value_or(PduMivExtension{});
 }
 

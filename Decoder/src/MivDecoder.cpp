@@ -383,6 +383,7 @@ void MivDecoder::decodePatchParamsList(size_t k) {
         ppl[p].atlasPatchDepthOccMapThreshold(pdu.pdu_miv_extension().pdu_depth_occ_threshold());
       }
     }
+    ppl[p].atlasPatchAttributeOffset(pdu.pdu_miv_extension().pdu_attribute_offset());
   });
 }
 

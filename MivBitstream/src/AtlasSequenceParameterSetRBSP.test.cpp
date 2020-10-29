@@ -234,6 +234,7 @@ asme_depth_occ_map_threshold_flag=true
 asme_geometry_scale_factor_x_minus1=1
 asme_geometry_scale_factor_y_minus1=2
 asme_patch_constant_depth_flag=true
+asme_patch_attribute_offset_flag=false
 asps_extension_data_flag=false
 asps_extension_data_flag=true
 asps_extension_data_flag=true

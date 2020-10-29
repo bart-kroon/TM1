@@ -518,7 +518,7 @@ private:
   }
 
   auto getColorInconsistencyMask(const Common::Mat<Common::Vec3f>& referenceYUV, const Common::Mat<Common::Vec3f>& synthesizedYUV,
-                               const Common::Mat<uint8_t>& prunedMask) -> Common::Mat<uint8_t> {
+                               const Common::Mat<uint8_t>& prunedMask) -> Common::Mat<uint8_t> const{
     const int maxIterNum = 10;
     const double eps = 1E-10;
     Common::Mat<uint8_t> result{prunedMask.sizes()};

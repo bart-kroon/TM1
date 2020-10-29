@@ -36,7 +36,7 @@
     "SourceCameraParameters": "ClassroomVideo.json",
     "SourceDirectory": ".",
     "SourceTexturePathFmt": "{}_texture_{}x{}_yuv420p10le.yuv",
-    "blockSizeDepthQualityDependent": [ 8, 8 ],
+    "blockSizeDepthQualityDependent": [ 16, 32 ],
     "dynamicDepthRange": false,
     "geometryScaleEnabledFlag": false,
     "haveTextureVideo": true,

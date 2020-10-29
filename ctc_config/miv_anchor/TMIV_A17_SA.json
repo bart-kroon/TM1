@@ -51,7 +51,7 @@
     "SourceGeometryPathFmt": "{}_depth_{}x{}_yuv420p16le.yuv",
     "SourceDirectory": ".",
     "SourceTexturePathFmt": "{}_texture_{}x{}_yuv420p10le.yuv",
-    "blockSizeDepthQualityDependent": [ 8, 8 ],
+    "blockSizeDepthQualityDependent": [ 16, 32 ],
     "dynamicDepthRange": true,
     "haveTextureVideo": true,
     "haveGeometryVideo": true,

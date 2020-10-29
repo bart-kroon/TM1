@@ -157,8 +157,15 @@ TEST_CASE("Parsing the command-line", "[Application]") {
   }
 
   SECTION("Right has preference over left") {
-    FakeApplication app{"Fake", {"command", "-p", "Color", "green", "-p", "Color", "red"}};
-    REQUIRE(app.json().require("Color").as<std::string>() == "red"s);
+    FakeApplication app{"Fake", {"command", "-p", "Color", "5", "-p", "Color", "7"}};
+    REQUIRE(app.json().require("Color").as<int>() == 7);
+  }
+
+  SECTION("Structured values") {
+    FakeApplication app{"Fake",
+                        {"command", "-p", "Size", "[20, 30]", "-p", "Params", "{ \"a\": 3 }"}};
+    CHECK(app.json().require("Size").asVec<int, 2>() == Vec2i{20, 30});
+    CHECK(app.json().require("Params").require("a").as<int>() == 3);
   }
 }
 

@@ -64,7 +64,7 @@ protected:
 
 private:
   void add_file(const std::string &path);
-  void add_parameter(const std::string &key, std::string value);
+  void add_parameter(std::string key, std::string_view value);
   void add_stream(std::istream &stream);
   [[nodiscard]] auto getComponentParentAndName(const Json &node, const std::string &name) const
       -> std::pair<const Json &, std::string> {

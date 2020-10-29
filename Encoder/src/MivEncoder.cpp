@@ -354,6 +354,7 @@ auto MivEncoder::atlasTileLayer(size_t k) const -> MivBitstream::AtlasTileLayerR
       if (pp.atlasPatchDepthOccMapThreshold()) {
         pdu.pdu_miv_extension().pdu_depth_occ_threshold(*pp.atlasPatchDepthOccMapThreshold());
       }
+      pdu.pdu_miv_extension().pdu_attribute_offset(*pp.atlasPatchAttributeOffset());
       patchData.emplace_back(MivBitstream::AtduPatchMode::I_INTRA, pdu);
     }
   }

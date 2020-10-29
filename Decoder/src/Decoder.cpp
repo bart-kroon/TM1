@@ -61,10 +61,64 @@ void checkRestrictions(const AccessUnit &frame) {
     }
   }
 }
+
+void addAttributeOffset(AccessUnit &frame) {
+  for (auto &atlas : frame.atlas) {
+    if (!atlas.asps.asps_miv_extension().asme_patch_attribute_offset_flag()) {
+      return;
+    }
+
+    auto &btpm = atlas.blockToPatchMap.getPlane(0);
+    auto &YUV = atlas.attrFrame.getPlanes();
+
+    int H = atlas.attrFrame.getHeight();
+    int W = atlas.attrFrame.getWidth();
+
+    int inputBitCount = frame.vps.attribute_information(frame.vps.vps_atlas_id(0))
+                            .ai_attribute_2d_bit_depth_minus1(0) +
+                        1;
+    int inputMaxVal = (1 << inputBitCount) - 1;
+    int inputMedVal = 1 << (inputBitCount - 1);
+
+    int scaledBitCount =
+        atlas.asps.asps_miv_extension().asme_patch_attribute_offset_bit_count_minus1() + 1;
+    int bitShift = inputBitCount - scaledBitCount;
+
+    int btpmScale = int(YUV[0].width() / btpm.width());
+
+    for (int h = 0; h < H; h++) {
+      int hs = h / btpmScale;
+      for (int w = 0; w < W; w++) {
+        int ws = w / btpmScale;
+        if (btpm(hs, ws) != 65535) {
+
+          int16_t pduAttributeOffset = 0;
+          for (int c = 0; c < 3; c++) {
+
+            pduAttributeOffset = int16_t(
+                (atlas.patchParamsList[btpm(hs, ws)].atlasPatchAttributeOffset()->operator[](c)
+                 << bitShift) -
+                inputMedVal);
+
+            if (YUV[c](h, w) + pduAttributeOffset > inputMaxVal) {
+              YUV[c](h, w) = inputMaxVal;
+            } else if (YUV[c](h, w) + pduAttributeOffset < 0) {
+              YUV[c](h, w) = 0;
+            } else {
+              YUV[c](h, w) += (pduAttributeOffset);
+            }
+          }
+        }
+      } // w
+    }   // h
+  }     // a
+}
+
 } // namespace
 
 void Decoder::recoverFrame(AccessUnit &frame) {
   checkRestrictions(frame);
+  addAttributeOffset(frame);
   m_geometryScaler.inplaceScale(frame);
   OccupancyReconstructor::reconstruct(frame);
   m_entityBasedPatchMapFilter.inplaceFilterBlockToPatchMaps(frame);

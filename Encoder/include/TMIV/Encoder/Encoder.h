@@ -96,9 +96,12 @@ private: // Encoder_completeAccessUnit.cpp
   void scaleGeometryDynamicRange();
   void updateAggregationStatistics(const Common::MaskList &aggregatedMask);
   void constructVideoFrames();
-  void writePatchInAtlas(const MivBitstream::PatchParams &patchParams,
-                         const Common::TextureDepth16Frame &view, Common::MVD16Frame &atlas,
-                         int frameId);
+  void calculateAttributeOffset(
+      std::vector<std::array<std::array<int64_t, 4>, 3>> patchAttrOffsetValuesFullGOP);
+  std::array<std::array<int64_t, 4>, 3>
+  writePatchInAtlas(const MivBitstream::PatchParams &patchParams,
+                    const Common::TextureDepth16Frame &view, Common::MVD16Frame &atlas,
+                    int frameId);
 
 private: // Encoder_popFrame.cpp
   void incrementFoc();
@@ -129,6 +132,8 @@ private: // Encoder_popFrame.cpp
   int m_dilationIter;
   Common::Vec2i m_entityEncRange;
   bool m_dynamicDepthRange;
+  bool m_attributeOffsetFlag{};
+  int m_attributeOffsetBitCount{};
 
   // View-optimized encoder input
   MivBitstream::EncoderParams m_transportParams;

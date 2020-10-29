@@ -89,6 +89,17 @@ Encoder::Encoder(const Common::Json &rootNode, const Common::Json &componentNode
     m_maxAtlases = maxAtlases / numGroups;
   }
 
+  if (const auto &node = rootNode.optional("attributeOffsetEnabledFlag")) {
+    m_attributeOffsetFlag = node.as<bool>();
+  } else {
+    m_attributeOffsetFlag = true;
+  }
+  if (const auto &node = rootNode.optional("attributeOffsetBitCount")) {
+    m_attributeOffsetBitCount = node.as<int>();
+  } else {
+    m_attributeOffsetBitCount = 10;
+  }
+
   // Read the entity encoding range if exisited
   if (const auto &subnode = rootNode.optional("EntityEncodeRange")) {
     m_entityEncRange = subnode.asVec<int, 2>();

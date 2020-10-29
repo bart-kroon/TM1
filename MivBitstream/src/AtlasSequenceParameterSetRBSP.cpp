@@ -137,6 +137,11 @@ auto AspsMivExtension::asme_occupancy_scale_factor_y_minus1() const noexcept -> 
   return *m_asme_occupancy_scale_factor_y_minus1;
 }
 
+auto AspsMivExtension::asme_patch_attribute_offset_bit_count_minus1() const noexcept -> uint16_t {
+  VERIFY_MIVBITSTREAM(m_asme_patch_attribute_offset_bit_count_minus1.has_value());
+  return *m_asme_patch_attribute_offset_bit_count_minus1;
+}
+
 auto operator<<(std::ostream &stream, const AspsMivExtension &x) -> std::ostream & {
   stream << "asme_group_id=" << x.asme_group_id() << '\n';
   stream << "asme_auxiliary_atlas_flag=" << std::boolalpha << x.asme_auxiliary_atlas_flag() << '\n';
@@ -156,6 +161,12 @@ auto operator<<(std::ostream &stream, const AspsMivExtension &x) -> std::ostream
   }
   stream << "asme_patch_constant_depth_flag=" << std::boolalpha
          << x.asme_patch_constant_depth_flag() << '\n';
+  stream << "asme_patch_attribute_offset_flag=" << std::boolalpha
+         << x.asme_patch_attribute_offset_flag() << '\n';
+  if (x.asme_patch_attribute_offset_flag()) {
+    stream << "asme_patch_attribute_offset_bit_count_minus1="
+           << x.asme_patch_attribute_offset_bit_count_minus1() << '\n';
+  }
   return stream;
 }
 
@@ -177,6 +188,10 @@ auto AspsMivExtension::decodeFrom(Common::InputBitstream &bitstream, const V3cPa
     x.asme_occupancy_scale_factor_y_minus1(bitstream.getUExpGolomb<uint16_t>());
   }
   x.asme_patch_constant_depth_flag(bitstream.getFlag());
+  x.asme_patch_attribute_offset_flag(bitstream.getFlag());
+  if (x.asme_patch_attribute_offset_flag()) {
+    x.asme_patch_attribute_offset_bit_count_minus1(bitstream.getUExpGolomb<uint16_t>());
+  }
   return x;
 }
 
@@ -196,6 +211,10 @@ void AspsMivExtension::encodeTo(Common::OutputBitstream &bitstream,
     bitstream.putUExpGolomb(asme_occupancy_scale_factor_y_minus1());
   }
   bitstream.putFlag(asme_patch_constant_depth_flag());
+  bitstream.putFlag(asme_patch_attribute_offset_flag());
+  if (asme_patch_attribute_offset_flag()) {
+    bitstream.putUExpGolomb(asme_patch_attribute_offset_bit_count_minus1());
+  }
 }
 
 auto AtlasSequenceParameterSetRBSP::asps_num_ref_atlas_frame_lists_in_asps() const noexcept

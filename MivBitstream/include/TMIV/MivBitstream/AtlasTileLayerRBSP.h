@@ -40,6 +40,8 @@
 #include <TMIV/MivBitstream/V3cParameterSet.h>
 #include <TMIV/MivBitstream/V3cUnit.h>
 
+#include <TMIV/Common/Vector.h>
+
 #include <cstdint>
 #include <cstdlib>
 #include <iosfwd>
@@ -163,9 +165,11 @@ class PduMivExtension {
 public:
   [[nodiscard]] constexpr auto pdu_entity_id() const noexcept;
   [[nodiscard]] auto pdu_depth_occ_threshold() const noexcept -> std::uint32_t;
+  [[nodiscard]] auto pdu_attribute_offset() const noexcept -> Common::Vec3i;
 
   constexpr auto pdu_entity_id(std::uint32_t value) noexcept -> auto &;
   constexpr auto pdu_depth_occ_threshold(std::uint32_t value) noexcept -> auto &;
+  auto pdu_attribute_offset(Common::Vec3i value) noexcept -> auto &;
 
   auto printTo(std::ostream &stream, unsigned tileId, std::size_t patchIdx) const -> std::ostream &;
 
@@ -181,6 +185,7 @@ public:
 private:
   std::optional<std::uint32_t> m_pdu_entity_id;
   std::optional<std::uint32_t> m_pdu_depth_occ_threshold;
+  std::optional<Common::Vec3i> m_pdu_attribute_offset;
 };
 
 // 23090-12: patch_data_unit( patchIdx )
@@ -200,7 +205,7 @@ public:
   [[nodiscard]] auto pdu_3d_range_d() const noexcept -> std::uint32_t;
   [[nodiscard]] constexpr auto pdu_projection_id() const noexcept;
   [[nodiscard]] constexpr auto pdu_orientation_index() const noexcept;
-  [[nodiscard]] constexpr auto pdu_miv_extension() const noexcept -> PduMivExtension;
+  [[nodiscard]] auto pdu_miv_extension() const noexcept -> PduMivExtension;
 
   constexpr auto pdu_2d_pos_x(std::uint32_t value) noexcept -> auto &;
   constexpr auto pdu_2d_pos_y(std::uint32_t value) noexcept -> auto &;

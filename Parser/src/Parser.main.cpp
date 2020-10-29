@@ -126,6 +126,7 @@ public:
     case TMIV::MivBitstream::NalUnitType::NAL_CASPS:
       return parseCasps(stream);
     case TMIV::MivBitstream::NalUnitType::NAL_CAF:
+    case TMIV::MivBitstream::NalUnitType::NAL_IDR_CAF:
       return parseCaf(stream);
     default:
       std::cout << "Unknown NAL unit:\n" << nu;

@@ -37,6 +37,7 @@
 #include <TMIV/MivBitstream/AtlasAdaptationParameterSetRBSP.h>
 #include <TMIV/MivBitstream/AtlasSubBitstream.h>
 #include <TMIV/MivBitstream/CommonAtlasFrameRBSP.h>
+#include <TMIV/MivBitstream/CommonAtlasSequenceParameterSetRBSP.h>
 #include <TMIV/MivBitstream/GeometryUpscalingParameters.h>
 #include <TMIV/MivBitstream/SeiRBSP.h>
 #include <TMIV/MivBitstream/V3cUnit.h>
@@ -55,8 +56,9 @@ public:
   explicit CommonAtlasDecoder(V3cUnitSource source, MivBitstream::V3cParameterSet vps, int32_t foc);
 
   struct AccessUnit {
-    int32_t foc{};
-    MivBitstream::AtlasAdaptationParameterSetRBSP aaps;
+    bool irap{};
+    std::int32_t foc{};
+    MivBitstream::CommonAtlasSequenceParameterSetRBSP casps;
     MivBitstream::CommonAtlasFrameRBSP caf;
     MivBitstream::GeometryUpscalingParameters gup;
   };
@@ -69,7 +71,7 @@ private:
   void decodePrefixNalUnit(AccessUnit &au, const MivBitstream::NalUnit &nu);
   void decodeCafNalUnit(AccessUnit &au, const MivBitstream::NalUnit &nu);
   static void decodeSuffixNalUnit(AccessUnit &au, const MivBitstream::NalUnit &nu);
-  void decodeAaps(std::istream &stream);
+  void decodeCasps(std::istream &stream);
   static void decodeSei(AccessUnit &au, std::istream &stream);
   static void decodeSeiMessage(AccessUnit &au, const MivBitstream::SeiMessage &message);
 
@@ -77,10 +79,10 @@ private:
   MivBitstream::V3cParameterSet m_vps;
 
   std::list<MivBitstream::NalUnit> m_buffer;
-  int32_t m_foc{};
+  std::int32_t m_foc{};
 
-  std::vector<MivBitstream::AtlasAdaptationParameterSetRBSP> m_aapsV;
-  unsigned m_maxFrmOrderCntLsb{};
+  std::vector<MivBitstream::CommonAtlasSequenceParameterSetRBSP> m_caspsV;
+  std::int32_t m_maxCommonAtlasFrmOrderCntLsb{};
 };
 } // namespace TMIV::Decoder
 

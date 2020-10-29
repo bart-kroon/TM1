@@ -93,10 +93,8 @@ public:
       -> std::uint8_t;
   [[nodiscard]] constexpr auto aaps_extension_present_flag() const noexcept;
   [[nodiscard]] constexpr auto aaps_vpcc_extension_present_flag() const noexcept;
-  [[nodiscard]] constexpr auto aaps_miv_extension_present_flag() const noexcept;
-  [[nodiscard]] constexpr auto aaps_extension_6bits() const noexcept;
+  [[nodiscard]] constexpr auto aaps_extension_7bits() const noexcept;
   [[nodiscard]] auto aaps_vpcc_extension() const noexcept -> const AapsVpccExtension &;
-  [[nodiscard]] auto aaps_miv_extension() const noexcept -> const AapsMivExtension &;
   [[nodiscard]] auto aapsExtensionData() const noexcept -> const std::vector<bool> &;
 
   constexpr auto aaps_atlas_adaptation_parameter_set_id(std::uint8_t value) noexcept -> auto &;
@@ -105,14 +103,10 @@ public:
       -> AtlasAdaptationParameterSetRBSP &;
   constexpr auto aaps_extension_present_flag(bool value) noexcept -> auto &;
   auto aaps_vpcc_extension_present_flag(bool value) noexcept -> AtlasAdaptationParameterSetRBSP &;
-  auto aaps_miv_extension_present_flag(bool value) noexcept -> AtlasAdaptationParameterSetRBSP &;
-  auto aaps_extension_6bits(std::uint8_t value) noexcept -> AtlasAdaptationParameterSetRBSP &;
+  auto aaps_extension_7bits(std::uint8_t value) noexcept -> AtlasAdaptationParameterSetRBSP &;
   auto aaps_vpcc_extension(const AapsVpccExtension &value) noexcept
       -> AtlasAdaptationParameterSetRBSP &;
-  auto aaps_miv_extension(AapsMivExtension value) noexcept -> AtlasAdaptationParameterSetRBSP &;
   auto aapsExtensionData(std::vector<bool> value) noexcept -> AtlasAdaptationParameterSetRBSP &;
-
-  [[nodiscard]] auto aaps_miv_extension() noexcept -> AapsMivExtension &;
 
   friend auto operator<<(std::ostream &stream, const AtlasAdaptationParameterSetRBSP &x)
       -> std::ostream &;
@@ -130,15 +124,11 @@ private:
   std::optional<std::uint8_t> m_aaps_log2_max_atlas_frame_order_cnt_lsb_minus4{};
   bool m_aaps_extension_present_flag{};
   std::optional<bool> m_aaps_vpcc_extension_present_flag{};
-  std::optional<bool> m_aaps_miv_extension_present_flag{};
-  std::optional<std::uint8_t> m_aaps_extension_6bits{};
+  std::optional<std::uint8_t> m_aaps_extension_7bits{};
   std::optional<AapsVpccExtension> m_aaps_vpcc_extension{};
-  std::optional<AapsMivExtension> m_aaps_miv_extension{};
   std::optional<std::vector<bool>> m_aapsExtensionData{};
 };
 
-auto aapsById(const std::vector<AtlasAdaptationParameterSetRBSP> &aapsV, int id) noexcept
-    -> const AtlasAdaptationParameterSetRBSP &;
 } // namespace TMIV::MivBitstream
 
 #include "AtlasAdaptationParameterSetRBSP.hpp"

@@ -78,12 +78,8 @@ constexpr auto AtlasAdaptationParameterSetRBSP::aaps_vpcc_extension_present_flag
   return m_aaps_vpcc_extension_present_flag.value_or(false);
 }
 
-constexpr auto AtlasAdaptationParameterSetRBSP::aaps_miv_extension_present_flag() const noexcept {
-  return m_aaps_miv_extension_present_flag.value_or(false);
-}
-
-constexpr auto AtlasAdaptationParameterSetRBSP::aaps_extension_6bits() const noexcept {
-  return m_aaps_extension_6bits.value_or(0);
+constexpr auto AtlasAdaptationParameterSetRBSP::aaps_extension_7bits() const noexcept {
+  return m_aaps_extension_7bits.value_or(0);
 }
 
 constexpr auto AtlasAdaptationParameterSetRBSP::aaps_atlas_adaptation_parameter_set_id(

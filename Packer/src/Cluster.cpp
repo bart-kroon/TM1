@@ -33,7 +33,9 @@
 
 #include "Cluster.h"
 
-auto roundToAlignment(int val, int alignment) -> int { return ((val) / alignment + 1); }
+auto roundToAlignment(int val, int alignment) -> int {
+  return ((int(val - 1) / alignment + 1) * alignment);
+}
 
 namespace TMIV::Packer {
 static const uint16_t ACTIVE = 65534;
@@ -198,7 +200,7 @@ auto Cluster::splitCPatchVertically(const ClusteringMap &clusteringMap, std::vec
 
   if (static_cast<double>(numOfNonEmptyBlocks) / (numOfEmptyBlocks + numOfNonEmptyBlocks) <
       splitThresholdC) {
-    int bestSplitPos = roundToAlignment(W, alignment);
+    int bestSplitPos = roundToAlignment(W / 2, alignment);
 
     Cluster c1(c.getViewId(), c.isBasicView(), c.getClusterId(), c.getEntityId());
     Cluster c2(c.getViewId(), c.isBasicView(), c.getClusterId(), c.getEntityId());
@@ -266,7 +268,7 @@ auto Cluster::splitCPatchHorizontally(const ClusteringMap &clusteringMap, std::v
 
   if (static_cast<double>(numOfNonEmptyBlocks) / (numOfEmptyBlocks + numOfNonEmptyBlocks) <
       splitThresholdC) {
-    int bestSplitPos = roundToAlignment(H, alignment);
+    int bestSplitPos = roundToAlignment(H / 2, alignment);
 
     Cluster c1(c.getViewId(), c.isBasicView(), c.getClusterId(), c.getEntityId());
     Cluster c2(c.getViewId(), c.isBasicView(), c.getClusterId(), c.getEntityId());

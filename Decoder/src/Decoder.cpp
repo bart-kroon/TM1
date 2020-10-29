@@ -63,39 +63,39 @@ void checkRestrictions(const AccessUnit &frame) {
 }
 
 void addAttributeOffset(AccessUnit &frame) {
-  for (auto &atlas : frame.atlas) {
+  for (std::uint8_t k = 0; k <= frame.vps.vps_atlas_count_minus1(); ++k) {
+    const auto atlasId = frame.vps.vps_atlas_id(k);
+    auto &atlas = frame.atlas[k];
+
     if (!atlas.asps.asps_miv_extension().asme_patch_attribute_offset_flag()) {
       return;
     }
 
-    auto &btpm = atlas.blockToPatchMap.getPlane(0);
+    const auto &btpm = atlas.blockToPatchMap.getPlane(0);
     auto &YUV = atlas.attrFrame.getPlanes();
 
-    int H = atlas.attrFrame.getHeight();
-    int W = atlas.attrFrame.getWidth();
+    const auto H = atlas.attrFrame.getHeight();
+    const auto W = atlas.attrFrame.getWidth();
 
-    int inputBitCount = frame.vps.attribute_information(frame.vps.vps_atlas_id(0))
-                            .ai_attribute_2d_bit_depth_minus1(0) +
-                        1;
-    int inputMaxVal = (1 << inputBitCount) - 1;
-    int inputMedVal = 1 << (inputBitCount - 1);
+    const auto &ai = frame.vps.attribute_information(atlasId);
+    const auto inputBitCount = ai.ai_attribute_2d_bit_depth_minus1(0) + 1;
+    const auto inputMaxVal = (1 << inputBitCount) - 1;
+    const auto inputMedVal = 1 << (inputBitCount - 1);
 
-    int scaledBitCount =
+    const int scaledBitCount =
         atlas.asps.asps_miv_extension().asme_patch_attribute_offset_bit_count_minus1() + 1;
-    int bitShift = inputBitCount - scaledBitCount;
+    const int bitShift = inputBitCount - scaledBitCount;
 
-    int btpmScale = int(YUV[0].width() / btpm.width());
+    const int btpmScale = int(YUV[0].width() / btpm.width());
 
     for (int h = 0; h < H; h++) {
-      int hs = h / btpmScale;
+      const int hs = h / btpmScale;
       for (int w = 0; w < W; w++) {
-        int ws = w / btpmScale;
+        const int ws = w / btpmScale;
         if (btpm(hs, ws) != 65535) {
 
-          int16_t pduAttributeOffset = 0;
           for (int c = 0; c < 3; c++) {
-
-            pduAttributeOffset = int16_t(
+            const auto pduAttributeOffset = static_cast<int16_t>(
                 (atlas.patchParamsList[btpm(hs, ws)].atlasPatchAttributeOffset()->operator[](c)
                  << bitShift) -
                 inputMedVal);
@@ -109,9 +109,9 @@ void addAttributeOffset(AccessUnit &frame) {
             }
           }
         }
-      } // w
-    }   // h
-  }     // a
+      }
+    }
+  }
 }
 
 } // namespace

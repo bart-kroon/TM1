@@ -70,12 +70,12 @@ private:
 
   const float m_maxDepthError{};
   const float m_maxLumaError{};
-  const float m_maxColorError{};
   const float m_maxStretching{};
   const int m_erode{};
   const int m_dilate{};
   const int m_maxBasicViewsPerGraph{};
   const bool m_enable2ndPassPruner{};
+  const float m_maxColorError{};
   const Renderer::AccumulatingPixel<Common::Vec3f> m_config;
   MivBitstream::EncoderParams m_params;
   std::vector<std::unique_ptr<IncrementalSynthesizer>> m_synthesizers;

@@ -517,7 +517,7 @@ private:
     return result;
   }
 
-  auto getColorInconsistencyMask(const Common::Mat<Common::Vec3f>& referenceYUV, const Common::Mat<Common::Vec3f>& synthesizedYUV,
+  static auto getColorInconsistencyMask(const Common::Mat<Common::Vec3f>& referenceYUV, const Common::Mat<Common::Vec3f>& synthesizedYUV,
                                const Common::Mat<uint8_t>& prunedMask) -> Common::Mat<uint8_t> {
     const int maxIterNum = 10;
     const double eps = 1E-10;
@@ -569,43 +569,46 @@ private:
     Common::Mat<double> b3({ numPixels, 1 });
     Common::Mat<double> x3({ 4, 1 });
 
-    Common::Mat<double> A_t1, A_pseudo1;
-    Common::Mat<double> A_t2, A_pseudo2;
-    Common::Mat<double> A_t3, A_pseudo3;
+    Common::Mat<double> A_t1;
+    Common::Mat<double> A_t2;
+    Common::Mat<double> A_t3;
+    Common::Mat<double> A_pseudo1;
+    Common::Mat<double> A_pseudo2;
+    Common::Mat<double> A_pseudo3;
 
     double prevE = -1.0;
     for (int iter = 0; iter < maxIterNum; ++iter) {
       for (size_t i = 0; i < numPixels; ++i) {
-            size_t pixIdx = nonPrunedPixIndice[i];
-            auto rR = static_cast<double>(referenceRGB[pixIdx][0]);
-            auto rG = static_cast<double>(referenceRGB[pixIdx][1]);
-            auto rB = static_cast<double>(referenceRGB[pixIdx][2]);
-            auto sR = static_cast<double>(synthesizedRGB[pixIdx][0]);
-            auto sG = static_cast<double>(synthesizedRGB[pixIdx][1]);
-            auto sB = static_cast<double>(synthesizedRGB[pixIdx][2]);
+        size_t pixIdx = nonPrunedPixIndice[i];
+        auto rR = static_cast<double>(referenceRGB[pixIdx][0]);
+        auto rG = static_cast<double>(referenceRGB[pixIdx][1]);
+        auto rB = static_cast<double>(referenceRGB[pixIdx][2]);
+        auto sR = static_cast<double>(synthesizedRGB[pixIdx][0]);
+        auto sG = static_cast<double>(synthesizedRGB[pixIdx][1]);
+        auto sB = static_cast<double>(synthesizedRGB[pixIdx][2]);
 
-            auto wR = static_cast<double>(weightR[i]);
-            auto wG = static_cast<double>(weightG[i]);
-            auto wB = static_cast<double>(weightB[i]);
+        auto wR = static_cast<double>(weightR[i]);
+        auto wG = static_cast<double>(weightG[i]);
+        auto wB = static_cast<double>(weightB[i]);
 
-            A1(i, 0) = wR * rR;
-            A1(i, 1) = wR * rG;
-            A1(i, 2) = wR * rB;
-            A1(i, 3) = wR * 1.F;
-            b1(i, 0) = wR * sR;
+        A1(i, 0) = wR * rR;
+        A1(i, 1) = wR * rG;
+        A1(i, 2) = wR * rB;
+        A1(i, 3) = wR * 1.F;
+        b1(i, 0) = wR * sR;
 
-            A2(i, 0) = wG * rR;
-            A2(i, 1) = wG * rG;
-            A2(i, 2) = wG * rB;
-            A2(i, 3) = wG * 1.F;
-            b2(i, 0) = wG * sG;
+        A2(i, 0) = wG * rR;
+        A2(i, 1) = wG * rG;
+        A2(i, 2) = wG * rB;
+        A2(i, 3) = wG * 1.F;
+        b2(i, 0) = wG * sG;
 
-            A3(i, 0) = wB * rR;
-            A3(i, 1) = wB * rG;
-            A3(i, 2) = wB * rB;
-            A3(i, 3) = wB * 1.F;
-            b3(i, 0) = wB * sB;
-        }
+        A3(i, 0) = wB * rR;
+        A3(i, 1) = wB * rG;
+        A3(i, 2) = wB * rB;
+        A3(i, 3) = wB * 1.F;
+        b3(i, 0) = wB * sB;
+      }
 
       transpose(A1, A_t1);
       transquare(A1, A_pseudo1);

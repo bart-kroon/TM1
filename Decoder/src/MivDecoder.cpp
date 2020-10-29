@@ -300,6 +300,7 @@ void MivDecoder::decodeAtlas(size_t k) {
   m_au.atlas[k].afps = m_atlasAu[k]->afps;
   decodeBlockToPatchMap(k);
   decodePatchParamsList(k);
+  requireAllPatchesWithinProjectionPlaneBounds(m_au.viewParamsList, m_au.atlas[k].patchParamsList);
 }
 
 void MivDecoder::decodeBlockToPatchMap(size_t k) {

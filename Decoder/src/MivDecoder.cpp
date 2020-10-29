@@ -232,24 +232,29 @@ void MivDecoder::decodeCommonAtlas() {
 }
 
 void MivDecoder::decodeViewParamsList() {
-  if (m_commonAtlasAu->caf.caf_irap_flag()) {
-    decodeMvpl(m_commonAtlasAu->caf.miv_view_params_list());
-  } else {
-    if (m_commonAtlasAu->caf.caf_update_extrinsics_flag()) {
-      decodeMvpue(m_commonAtlasAu->caf.miv_view_params_update_extrinsics());
-    }
-    if (m_commonAtlasAu->caf.caf_update_intrinsics_flag()) {
-      decodeMvpui(m_commonAtlasAu->caf.miv_view_params_update_intrinsics());
-    }
-    if (m_commonAtlasAu->caf.caf_update_depth_quantization_flag()) {
-      decodeMvpudq(m_commonAtlasAu->caf.miv_view_params_update_depth_quantization());
+  const auto &caf = m_commonAtlasAu->caf;
+  if (caf.caf_extension_present_flag() && caf.caf_miv_extension_present_flag()) {
+    const auto &came = caf.caf_miv_extension();
+    if (m_commonAtlasAu->irap) {
+      decodeMvpl(came.miv_view_params_list());
+    } else {
+      if (came.came_update_extrinsics_flag()) {
+        decodeMvpue(came.miv_view_params_update_extrinsics());
+      }
+      if (came.came_update_intrinsics_flag()) {
+        decodeMvpui(came.miv_view_params_update_intrinsics());
+      }
+      if (came.came_update_depth_quantization_flag()) {
+        decodeMvpudq(came.miv_view_params_update_depth_quantization());
+      }
     }
   }
 
-  if (m_commonAtlasAu->aaps.aaps_miv_extension_present_flag()) {
-    const auto &aame = m_commonAtlasAu->aaps.aaps_miv_extension();
-    if (aame.aame_vui_params_present_flag()) {
-      const auto &vui = aame.vui_parameters();
+  if (m_commonAtlasAu->casps.casps_extension_present_flag() &&
+      m_commonAtlasAu->casps.casps_miv_extension_present_flag()) {
+    const auto &casme = m_commonAtlasAu->casps.casps_miv_extension();
+    if (casme.casme_vui_params_present_flag()) {
+      const auto &vui = casme.vui_parameters();
       VERIFY_MIVBITSTREAM(!m_au.vui || *m_au.vui == vui);
       m_au.vui = vui;
     }

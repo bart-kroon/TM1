@@ -89,8 +89,10 @@ auto loadSourceParams(const Common::Json &config) -> MivBitstream::EncoderParams
   }
 
   if (config.require("OmafV1CompatibleFlag").as<bool>()) {
-    x.aaps.aaps_miv_extension_present_flag(true).aaps_miv_extension().aame_omaf_v1_compatible_flag(
-        true);
+    x.casps.casps_extension_present_flag(true)
+        .casps_miv_extension_present_flag(true)
+        .casps_miv_extension()
+        .casme_omaf_v1_compatible_flag(true);
   }
   return x;
 }

@@ -37,6 +37,7 @@
 #include <TMIV/MivBitstream/AtlasAdaptationParameterSetRBSP.h>
 #include <TMIV/MivBitstream/AtlasTileLayerRBSP.h>
 #include <TMIV/MivBitstream/CommonAtlasFrameRBSP.h>
+#include <TMIV/MivBitstream/CommonAtlasSequenceParameterSetRBSP.h>
 #include <TMIV/MivBitstream/PatchParamsList.h>
 #include <TMIV/MivBitstream/V3cParameterSet.h>
 #include <TMIV/MivBitstream/ViewParamsList.h>
@@ -68,7 +69,7 @@ struct EncoderParams {
                 bool haveOccupancyVideo);
 
   V3cParameterSet vps;
-  AtlasAdaptationParameterSetRBSP aaps;
+  CommonAtlasSequenceParameterSetRBSP casps;
   std::optional<ViewingSpace> viewingSpace{};
 
   double frameRate{};

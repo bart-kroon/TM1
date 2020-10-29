@@ -88,6 +88,9 @@ struct AccessUnit {
 
   auto sequenceConfig() const -> MivBitstream::SequenceConfig;
 };
+
+void requireAllPatchesWithinProjectionPlaneBounds(const MivBitstream::ViewParamsList &vpl,
+                                                  const MivBitstream::PatchParamsList &ppl);
 } // namespace TMIV::Decoder
 
 #endif

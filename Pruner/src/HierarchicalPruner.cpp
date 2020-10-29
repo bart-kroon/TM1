@@ -518,9 +518,9 @@ private:
     return result;
   }
 
-  [[nodiscard]] auto getColorInconsistencyMask(const Common::Mat<Common::Vec3f>& referenceYUV,
-                                               const Common::Mat<Common::Vec3f>& synthesizedYUV,
-                                               const Common::Mat<uint8_t>& prunedMask) const
+  [[nodiscard]] auto getColorInconsistencyMask(const Common::Mat<Common::Vec3f> &referenceYUV,
+                                               const Common::Mat<Common::Vec3f> &synthesizedYUV,
+                                               const Common::Mat<uint8_t> &prunedMask) const
       -> Common::Mat<uint8_t> {
     const int maxIterNum = 10;
     const double eps = 1E-10;
@@ -533,7 +533,7 @@ private:
       referenceRGB[i][0] = 1.164F * (referenceYUV[i][0] - 16.F * inv_maxIntensity) +
                            2.018F * (referenceYUV[i][1] - 128.F * inv_maxIntensity);
       referenceRGB[i][1] = 1.164F * (referenceYUV[i][0] - 16.F * inv_maxIntensity) -
-                           0.813F * (referenceYUV[i][2] - 128.F * inv_maxIntensity) - 
+                           0.813F * (referenceYUV[i][2] - 128.F * inv_maxIntensity) -
                            0.391F * (referenceYUV[i][1] - 128.F * inv_maxIntensity);
       referenceRGB[i][2] = 1.164F * (referenceYUV[i][0] - 16.F * inv_maxIntensity) +
                            1.596F * (referenceYUV[i][2] - 128.F * inv_maxIntensity);

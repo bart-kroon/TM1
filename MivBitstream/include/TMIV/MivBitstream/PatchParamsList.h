@@ -78,10 +78,10 @@ struct PatchParams {
 
   // Is the patch rotated such that width and height swap?
   [[nodiscard]] constexpr auto isRotated() const noexcept;
-  [[nodiscard]] constexpr auto atlasPatch3dSizeU() const noexcept;
-  [[nodiscard]] constexpr auto atlasPatch3dSizeV() const noexcept;
-  constexpr auto atlasPatch3dSizeU(std::uint32_t value) noexcept;
-  constexpr auto atlasPatch3dSizeV(std::uint32_t value) noexcept;
+  [[nodiscard]] constexpr decltype(auto) atlasPatch3dSizeU() const noexcept;
+  [[nodiscard]] constexpr decltype(auto) atlasPatch3dSizeV() const noexcept;
+  constexpr decltype(auto) atlasPatch3dSizeU(std::uint32_t value) noexcept;
+  constexpr decltype(auto) atlasPatch3dSizeV(std::uint32_t value) noexcept;
 
   // Pixel position conversion from atlas to/from view
   [[nodiscard]] auto viewToAtlas(Common::Vec2i viewPosition) const -> Common::Vec2i;

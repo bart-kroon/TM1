@@ -24,7 +24,9 @@
             "maxLumaError": 0.04,
             "maxStretching": 5,
             "rayAngleParameter": 10,
-            "stretchingParameter": 3
+            "stretchingParameter": 3,
+            "enable2ndPassPruner": true,
+            "maxColorError": 0.1
         },
         "NoViewOptimizer": {},
         "Packer": {

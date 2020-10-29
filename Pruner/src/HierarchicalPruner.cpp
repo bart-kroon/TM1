@@ -53,17 +53,19 @@ private:
   struct IncrementalSynthesizer {
     IncrementalSynthesizer(const Renderer::AccumulatingPixel<Common::Vec3f> &config,
                            Common::Vec2i size, size_t index_, Common::Mat<float> reference_,
-                           Common::Mat<float> referenceY_)
+                           Common::Mat<float> referenceY_, Common::Mat<Common::Vec3f> referenceYUV_)
         : rasterizer{config, size}
         , index{index_}
         , reference{std::move(reference_)}
-        , referenceY{std::move(referenceY_)} {}
+        , referenceY{std::move(referenceY_)}
+        , referenceYUV{std::move(referenceYUV_)} {}
 
     Renderer::Rasterizer<Common::Vec3f> rasterizer;
     const size_t index;
     float maskAverage{0.F};
     const Common::Mat<float> reference;
     const Common::Mat<float> referenceY;
+    const Common::Mat<Common::Vec3f> referenceYUV;
   };
 
   const float m_maxDepthError{};
@@ -72,6 +74,8 @@ private:
   const int m_erode{};
   const int m_dilate{};
   const int m_maxBasicViewsPerGraph{};
+  const bool m_enable2ndPassPruner{};
+  const float m_maxColorError{};
   const Renderer::AccumulatingPixel<Common::Vec3f> m_config;
   MivBitstream::EncoderParams m_params;
   std::vector<std::unique_ptr<IncrementalSynthesizer>> m_synthesizers;
@@ -93,6 +97,8 @@ public:
       , m_erode{nodeConfig.require("erode").as<int>()}
       , m_dilate{nodeConfig.require("dilate").as<int>()}
       , m_maxBasicViewsPerGraph{nodeConfig.require("maxBasicViewsPerGraph").as<int>()}
+      , m_enable2ndPassPruner{nodeConfig.require("enable2ndPassPruner").as<bool>()}
+      , m_maxColorError{nodeConfig.require("maxColorError").as<float>()}
       , m_config{nodeConfig.require("rayAngleParameter").as<float>(),
                  nodeConfig.require("depthParameter").as<float>(),
                  nodeConfig.require("stretchingParameter").as<float>(), m_maxStretching} {}
@@ -389,7 +395,8 @@ private:
         const auto depthTransform = MivBitstream::DepthTransform<16>{m_params.viewParamsList[i].dq};
         m_synthesizers.emplace_back(std::make_unique<IncrementalSynthesizer>(
             m_config, m_params.viewParamsList[i].ci.projectionPlaneSize(), i,
-            depthTransform.expandDepth(views[i].depth), expandLuma(views[i].texture)));
+            depthTransform.expandDepth(views[i].depth), expandLuma(views[i].texture),
+            expandTexture(yuv444p(views[i].texture))));
       }
     }
   }
@@ -511,9 +518,198 @@ private:
     return result;
   }
 
+  [[nodiscard]] auto getColorInconsistencyMask(const Common::Mat<Common::Vec3f> &referenceYUV,
+                                               const Common::Mat<Common::Vec3f> &synthesizedYUV,
+                                               const Common::Mat<uint8_t> &prunedMask) const
+      -> Common::Mat<uint8_t> {
+    const int maxIterNum = 10;
+    const double eps = 1E-10;
+    Common::Mat<uint8_t> result{prunedMask.sizes()};
+    Common::Mat<Common::Vec3f> referenceRGB{prunedMask.sizes()};
+    Common::Mat<Common::Vec3f> synthesizedRGB{prunedMask.sizes()};
+
+    for (size_t i = 0; i < result.size(); ++i) {
+      const float inv_maxIntensity = 1.F / 255.F;
+      referenceRGB[i][0] = 1.164F * (referenceYUV[i][0] - 16.F * inv_maxIntensity) +
+                           2.018F * (referenceYUV[i][1] - 128.F * inv_maxIntensity);
+      referenceRGB[i][1] = 1.164F * (referenceYUV[i][0] - 16.F * inv_maxIntensity) -
+                           0.813F * (referenceYUV[i][2] - 128.F * inv_maxIntensity) -
+                           0.391F * (referenceYUV[i][1] - 128.F * inv_maxIntensity);
+      referenceRGB[i][2] = 1.164F * (referenceYUV[i][0] - 16.F * inv_maxIntensity) +
+                           1.596F * (referenceYUV[i][2] - 128.F * inv_maxIntensity);
+
+      synthesizedRGB[i][0] = 1.164F * (synthesizedYUV[i][0] - 16.F * inv_maxIntensity) +
+                             2.018F * (synthesizedYUV[i][1] - 128.F * inv_maxIntensity);
+      synthesizedRGB[i][1] = 1.164F * (synthesizedYUV[i][0] - 16.F * inv_maxIntensity) -
+                             0.813F * (synthesizedYUV[i][2] - 128.F * inv_maxIntensity) -
+                             0.391F * (synthesizedYUV[i][1] - 128.F * inv_maxIntensity);
+      synthesizedRGB[i][2] = 1.164F * (synthesizedYUV[i][0] - 16.F * inv_maxIntensity) +
+                             1.596F * (synthesizedYUV[i][2] - 128.F * inv_maxIntensity);
+
+      result[i] = 0;
+    }
+
+    std::vector<size_t> nonPrunedPixIndice;
+    for (size_t i = 0; i < prunedMask.size(); ++i) {
+      if (synthesizedYUV[i][0] < 0.1F && synthesizedYUV[i][1] < 0.1F &&
+          synthesizedYUV[i][2] < 0.1F) {
+        continue;
+      }
+      if (prunedMask[i] > 0) {
+        nonPrunedPixIndice.push_back(i);
+      }
+    }
+
+    if (nonPrunedPixIndice.empty()) {
+      return result;
+    }
+
+    size_t numPixels = nonPrunedPixIndice.size();
+    std::vector<float> weightR(numPixels, 1.F);
+    std::vector<float> weightG(numPixels, 1.F);
+    std::vector<float> weightB(numPixels, 1.F);
+
+    Common::Mat<double> A1({numPixels, 4});
+    Common::Mat<double> b1({numPixels, 1});
+    Common::Mat<double> x1({4, 1});
+
+    Common::Mat<double> A2({numPixels, 4});
+    Common::Mat<double> b2({numPixels, 1});
+    Common::Mat<double> x2({4, 1});
+
+    Common::Mat<double> A3({numPixels, 4});
+    Common::Mat<double> b3({numPixels, 1});
+    Common::Mat<double> x3({4, 1});
+
+    Common::Mat<double> A_t1;
+    Common::Mat<double> A_t2;
+    Common::Mat<double> A_t3;
+    Common::Mat<double> A_pseudo1;
+    Common::Mat<double> A_pseudo2;
+    Common::Mat<double> A_pseudo3;
+
+    double prevE = -1.0;
+    for (int iter = 0; iter < maxIterNum; ++iter) {
+      for (size_t i = 0; i < numPixels; ++i) {
+        size_t pixIdx = nonPrunedPixIndice[i];
+        auto rR = static_cast<double>(referenceRGB[pixIdx][0]);
+        auto rG = static_cast<double>(referenceRGB[pixIdx][1]);
+        auto rB = static_cast<double>(referenceRGB[pixIdx][2]);
+        auto sR = static_cast<double>(synthesizedRGB[pixIdx][0]);
+        auto sG = static_cast<double>(synthesizedRGB[pixIdx][1]);
+        auto sB = static_cast<double>(synthesizedRGB[pixIdx][2]);
+
+        auto wR = static_cast<double>(weightR[i]);
+        auto wG = static_cast<double>(weightG[i]);
+        auto wB = static_cast<double>(weightB[i]);
+
+        A1(i, 0) = wR * rR;
+        A1(i, 1) = wR * rG;
+        A1(i, 2) = wR * rB;
+        A1(i, 3) = wR * 1.F;
+        b1(i, 0) = wR * sR;
+
+        A2(i, 0) = wG * rR;
+        A2(i, 1) = wG * rG;
+        A2(i, 2) = wG * rB;
+        A2(i, 3) = wG * 1.F;
+        b2(i, 0) = wG * sG;
+
+        A3(i, 0) = wB * rR;
+        A3(i, 1) = wB * rG;
+        A3(i, 2) = wB * rB;
+        A3(i, 3) = wB * 1.F;
+        b3(i, 0) = wB * sB;
+      }
+
+      transpose(A1, A_t1);
+      transquare(A1, A_pseudo1);
+      A_pseudo1 += eps * Common::Mat<double>::eye(A_pseudo1.sizes());
+      mldivide(A_pseudo1, A_t1 * b1, x1);
+
+      transpose(A2, A_t2);
+      transquare(A2, A_pseudo2);
+      A_pseudo2 += eps * Common::Mat<double>::eye(A_pseudo2.sizes());
+      mldivide(A_pseudo2, A_t2 * b2, x2);
+
+      transpose(A3, A_t3);
+      transquare(A3, A_pseudo3);
+      A_pseudo3 += eps * Common::Mat<double>::eye(A_pseudo3.sizes());
+      mldivide(A_pseudo3, A_t3 * b3, x3);
+
+      double curE = 0;
+      double weightSum = 0;
+      for (size_t i = 0; i < numPixels; ++i) {
+        size_t pixIdx = nonPrunedPixIndice[i];
+        auto rR = static_cast<double>(referenceRGB[pixIdx][0]);
+        auto rG = static_cast<double>(referenceRGB[pixIdx][1]);
+        auto rB = static_cast<double>(referenceRGB[pixIdx][2]);
+        auto sR = static_cast<double>(synthesizedRGB[pixIdx][0]);
+        auto sG = static_cast<double>(synthesizedRGB[pixIdx][1]);
+        auto sB = static_cast<double>(synthesizedRGB[pixIdx][2]);
+
+        auto wR = static_cast<double>(weightR[i]);
+        auto wG = static_cast<double>(weightG[i]);
+        auto wB = static_cast<double>(weightB[i]);
+
+        double c1 = x1(0, 0) * rR + x1(1, 0) * rG + x1(2, 0) * rB + x1(3, 0);
+        double c2 = x2(0, 0) * rR + x2(1, 0) * rG + x2(2, 0) * rB + x2(3, 0);
+        double c3 = x3(0, 0) * rR + x3(1, 0) * rG + x3(2, 0) * rB + x3(3, 0);
+
+        double dr = std::abs(c1 - sR);
+        double dg = std::abs(c2 - sG);
+        double db = std::abs(c3 - sB);
+
+        curE += (wR * dr + wG * dg + wB * db) / 3.0;
+        weightSum += (wR + wG + wB) / 3.0;
+
+        dr = sqrt(dr * dr + eps);
+        dg = sqrt(dg * dg + eps);
+        db = sqrt(db * db + eps);
+
+        weightR[i] = static_cast<float>(std::min(1.0 / (2.0 * dr), 1.0));
+        weightG[i] = static_cast<float>(std::min(1.0 / (2.0 * dg), 1.0));
+        weightB[i] = static_cast<float>(std::min(1.0 / (2.0 * db), 1.0));
+
+        result[pixIdx] = 0;
+        if (std::abs(c1 - sR) > m_maxColorError) {
+          result[pixIdx] = 255;
+          continue;
+        }
+        if (std::abs(c2 - sG) > m_maxColorError) {
+          result[pixIdx] = 255;
+          continue;
+        }
+        if (std::abs(c3 - sB) > m_maxColorError) {
+          result[pixIdx] = 255;
+          continue;
+        }
+      }
+
+      curE /= weightSum;
+      if (prevE < 0) {
+        prevE = curE;
+        continue;
+      }
+      double update = std::abs(prevE - curE);
+      if (update < eps) {
+        break;
+      }
+      prevE = curE;
+    }
+    return result;
+  }
+
   void updateMask(IncrementalSynthesizer &synthesizer) {
     auto &mask = m_masks[synthesizer.index].getPlane(0);
     auto &status = m_status[synthesizer.index].getPlane(0);
+    Common::Mat<uint8_t> colorInconsistencyMask;
+    Common::Array::iterator<uint8_t> iColor;
+    if (m_enable2ndPassPruner) {
+      colorInconsistencyMask = getColorInconsistencyMask(
+          synthesizer.referenceYUV, synthesizer.rasterizer.attribute<0>(), mask);
+      iColor = std::begin(colorInconsistencyMask);
+    }
 
     auto i = std::begin(mask);
     auto j = std::begin(synthesizer.reference);
@@ -553,6 +749,10 @@ private:
             *i = 255;
           }
         }
+
+        if (m_enable2ndPassPruner && *iColor > 0) {
+          *i = 255;
+        }
       }
 
       i++;
@@ -560,6 +760,9 @@ private:
       jY++;
       k++;
       pp++;
+      if (m_enable2ndPassPruner) {
+        iColor++;
+      }
 
       return true;
     });

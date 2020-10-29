@@ -6,8 +6,8 @@
         "maxOutlierRatio": 0.001
     },
     "DepthQualityAssessorMethod": "DepthQualityAssessor",
-    "EncoderMethod": "GroupBasedEncoder",
-    "GroupBasedEncoder": {
+    "EncoderMethod": "Encoder",
+    "Encoder": {
         "Aggregator": {},
         "AggregatorMethod": "Aggregator",
         "GeometryQuantizer": {

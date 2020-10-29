@@ -79,12 +79,11 @@ void Encoder::prepareSequence(MivBitstream::EncoderParams sourceParams) {
   m_params.vme() = m_transportParams.vme();
   m_params.viewParamsList = m_transportParams.viewParamsList;
   m_params.frameRate = m_transportParams.frameRate;
-  m_params.aaps.aaps_log2_max_afoc_present_flag(true)
-      .aaps_log2_max_atlas_frame_order_cnt_lsb_minus4(log2FocLsbMinus4())
-      .aaps_extension_present_flag(true)
-      .aaps_miv_extension_present_flag(true)
-      .aaps_miv_extension()
-      .aame_vui_params_present_flag(true)
+  m_params.casps.casps_extension_present_flag(true)
+      .casps_miv_extension_present_flag(true)
+      .casps_log2_max_common_atlas_frame_order_cnt_lsb_minus4(log2FocLsbMinus4())
+      .casps_miv_extension()
+      .casme_vui_params_present_flag(true)
       .vui_parameters(vuiParameters());
   m_params.viewingSpace = m_transportParams.viewingSpace;
 

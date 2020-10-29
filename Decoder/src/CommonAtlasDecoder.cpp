@@ -68,6 +68,12 @@ auto CommonAtlasDecoder::decodeAsb() -> bool {
   return false;
 }
 
+namespace {
+constexpr auto isIrap(MivBitstream::NalUnitType nut) noexcept -> bool {
+  return nut == MivBitstream::NalUnitType::NAL_IDR_CAF;
+}
+} // namespace
+
 auto CommonAtlasDecoder::decodeAu() -> AccessUnit {
   auto au = AccessUnit{};
 
@@ -83,6 +89,7 @@ auto CommonAtlasDecoder::decodeAu() -> AccessUnit {
   }
 
   VERIFY_V3CBITSTREAM(!m_buffer.empty() && isCaf(nut()));
+  au.irap = isIrap(nut());
   decodeCafNalUnit(au, m_buffer.front());
   m_buffer.pop_front();
 
@@ -99,9 +106,9 @@ auto CommonAtlasDecoder::decodeAu() -> AccessUnit {
     m_buffer.pop_front();
   }
 
-  const auto focLsb = au.caf.caf_frm_order_cnt_lsb();
-  VERIFY_V3CBITSTREAM(focLsb < m_maxFrmOrderCntLsb);
-  while (++m_foc % m_maxFrmOrderCntLsb != focLsb) {
+  const auto focLsb = au.caf.caf_common_atlas_frm_order_cnt_lsb();
+  VERIFY_V3CBITSTREAM(focLsb < m_maxCommonAtlasFrmOrderCntLsb);
+  while (++m_foc % m_maxCommonAtlasFrmOrderCntLsb != focLsb) {
     // deliberately empty
   }
   std::cout << "Common atlas frame: foc=" << m_foc << '\n';
@@ -114,8 +121,8 @@ void CommonAtlasDecoder::decodePrefixNalUnit(AccessUnit &au, const MivBitstream:
   std::istringstream stream{nu.rbsp()};
 
   switch (nu.nal_unit_header().nal_unit_type()) {
-  case MivBitstream::NalUnitType::NAL_AAPS:
-    return decodeAaps(stream);
+  case MivBitstream::NalUnitType::NAL_CASPS:
+    return decodeCasps(stream);
   case MivBitstream::NalUnitType::NAL_PREFIX_ESEI:
   case MivBitstream::NalUnitType::NAL_PREFIX_NSEI:
     return decodeSei(au, stream);
@@ -127,9 +134,10 @@ void CommonAtlasDecoder::decodePrefixNalUnit(AccessUnit &au, const MivBitstream:
 void CommonAtlasDecoder::decodeCafNalUnit(AccessUnit &au, const MivBitstream::NalUnit &nu) {
   std::istringstream stream{nu.rbsp()};
 
-  VERIFY_MIVBITSTREAM(0 < m_maxFrmOrderCntLsb);
-  au.caf = MivBitstream::CommonAtlasFrameRBSP::decodeFrom(stream, m_vps, m_maxFrmOrderCntLsb);
-  au.aaps = aapsById(m_aapsV, au.caf.caf_atlas_adaptation_parameter_set_id());
+  VERIFY_MIVBITSTREAM(0 < m_maxCommonAtlasFrmOrderCntLsb);
+  au.caf = MivBitstream::CommonAtlasFrameRBSP::decodeFrom(
+      stream, m_vps, static_cast<unsigned>(m_maxCommonAtlasFrmOrderCntLsb));
+  au.casps = caspsById(m_caspsV, au.caf.caf_common_atlas_sequence_parameter_set_id());
 }
 
 void CommonAtlasDecoder::decodeSuffixNalUnit(AccessUnit &au, const MivBitstream::NalUnit &nu) {
@@ -146,23 +154,23 @@ void CommonAtlasDecoder::decodeSuffixNalUnit(AccessUnit &au, const MivBitstream:
   }
 }
 
-void CommonAtlasDecoder::decodeAaps(std::istream &stream) {
-  auto aaps = MivBitstream::AtlasAdaptationParameterSetRBSP::decodeFrom(stream);
+void CommonAtlasDecoder::decodeCasps(std::istream &stream) {
+  auto casps = MivBitstream::CommonAtlasSequenceParameterSetRBSP::decodeFrom(stream);
 
-  if (aaps.aaps_log2_max_afoc_present_flag()) {
-    const auto x = 1U << (aaps.aaps_log2_max_atlas_frame_order_cnt_lsb_minus4() + 4U);
-    VERIFY_MIVBITSTREAM(m_maxFrmOrderCntLsb == 0 || m_maxFrmOrderCntLsb == x);
-    m_maxFrmOrderCntLsb = x;
-  }
+  const auto maxCommonAtlasFrmOrderCntLsb = static_cast<std::int32_t>(
+      1U << (casps.casps_log2_max_common_atlas_frame_order_cnt_lsb_minus4() + 4U));
+  VERIFY_MIVBITSTREAM(m_maxCommonAtlasFrmOrderCntLsb == 0 ||
+                      m_maxCommonAtlasFrmOrderCntLsb == maxCommonAtlasFrmOrderCntLsb);
+  m_maxCommonAtlasFrmOrderCntLsb = maxCommonAtlasFrmOrderCntLsb;
 
-  for (auto &x : m_aapsV) {
-    if (x.aaps_atlas_adaptation_parameter_set_id() ==
-        aaps.aaps_atlas_adaptation_parameter_set_id()) {
-      x = std::move(aaps);
+  for (auto &storedCasps : m_caspsV) {
+    if (storedCasps.casps_common_atlas_sequence_parameter_set_id() ==
+        casps.casps_common_atlas_sequence_parameter_set_id()) {
+      storedCasps = std::move(casps);
       return;
     }
   }
-  return m_aapsV.push_back(aaps);
+  return m_caspsV.push_back(casps);
 }
 
 void CommonAtlasDecoder::decodeSei(AccessUnit &au, std::istream &stream) {

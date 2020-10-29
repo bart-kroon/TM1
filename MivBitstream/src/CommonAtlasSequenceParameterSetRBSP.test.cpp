@@ -92,7 +92,7 @@ casps_extension_7bits=0
         .casps_extension_present_flag(true)
         .casps_miv_extension_present_flag(true)
         .casps_extension_7bits(0)
-        .casps_miv_extension({});
+        .casps_miv_extension() = CaspsMivExtension{};
     REQUIRE(toString(unit) == R"(casps_common_atlas_sequence_parameter_set_id=5
 casps_log2_max_common_atlas_frame_order_cnt_lsb_minus4=0
 casps_extension_present_flag=true

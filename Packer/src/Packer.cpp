@@ -47,8 +47,7 @@ Packer::Packer(const Common::Json &rootNode, const Common::Json &componentNode) 
   m_enableMerging = componentNode.require("enableMerging").as<bool>();
   m_maxEntities = rootNode.require("maxEntities").as<int>();
   if (m_maxEntities > 1) {
-    m_entityEncodeRange =
-        rootNode.require("GroupBasedEncoder").require("EntityEncodeRange").asVec<int, 2>();
+    m_entityEncodeRange = rootNode.require("EntityEncodeRange").asVec<int, 2>();
   }
 }
 

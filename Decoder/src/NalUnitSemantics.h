@@ -46,6 +46,7 @@ constexpr auto isPrefixNalUnit(MivBitstream::NalUnitType nut) noexcept -> bool {
          nut == MivBitstream::NalUnitType::NAL_PREFIX_NSEI ||
          nut == MivBitstream::NalUnitType::NAL_PREFIX_ESEI ||
          nut == MivBitstream::NalUnitType::NAL_AAPS ||
+         nut == MivBitstream::NalUnitType::NAL_CASPS ||
          nut == MivBitstream::NalUnitType::NAL_RSV_NACL_51 ||
          nut == MivBitstream::NalUnitType::NAL_RSV_NACL_52 ||
          nut == MivBitstream::NalUnitType::NAL_RSV_NACL_53 ||
@@ -58,7 +59,8 @@ constexpr auto isAcl(MivBitstream::NalUnitType nut) noexcept -> bool {
 }
 
 constexpr auto isCaf(MivBitstream::NalUnitType nut) noexcept -> bool {
-  return nut == MivBitstream::NalUnitType::NAL_CAF;
+  return (nut == MivBitstream::NalUnitType::NAL_CAF) ||
+         (nut == MivBitstream::NalUnitType::NAL_IDR_CAF);
 }
 
 constexpr auto isSuffixNalUnit(MivBitstream::NalUnitType nut) noexcept -> bool {

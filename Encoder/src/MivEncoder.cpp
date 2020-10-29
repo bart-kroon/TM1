@@ -49,7 +49,8 @@ void MivEncoder::writeAccessUnit(const MivBitstream::EncoderParams &params) {
   if (m_irap) {
     m_params.vps.profile_tier_level().ptl_max_decodes_idc(ptlMaxDecodesIdc());
     writeV3cUnit(MivBitstream::VuhUnitType::V3C_VPS, {}, m_params.vps);
-    m_log2MaxFrmOrderCntLsbMinus4 = m_params.aaps.aaps_log2_max_atlas_frame_order_cnt_lsb_minus4();
+    m_log2MaxFrmOrderCntLsbMinus4 =
+        m_params.casps.casps_log2_max_common_atlas_frame_order_cnt_lsb_minus4();
   }
 
   m_frmOrderCntLsb = m_params.atlas.front().ath.ath_atlas_frm_order_cnt_lsb();
@@ -123,54 +124,60 @@ auto MivEncoder::ptlMaxDecodesIdc() const -> MivBitstream::PtlMaxDecodesIdc {
 }
 
 namespace {
-const auto nuhAaps = MivBitstream::NalUnitHeader{MivBitstream::NalUnitType::NAL_AAPS, 0, 1};
 const auto nuhAsps = MivBitstream::NalUnitHeader{MivBitstream::NalUnitType::NAL_ASPS, 0, 1};
 const auto nuhAfps = MivBitstream::NalUnitHeader{MivBitstream::NalUnitType::NAL_AFPS, 0, 1};
-const auto nuhIdr = MivBitstream::NalUnitHeader{MivBitstream::NalUnitType::NAL_IDR_N_LP, 0, 1};
-const auto nuhCra = MivBitstream::NalUnitHeader{MivBitstream::NalUnitType::NAL_CRA, 0, 1};
+const auto nuhCasps = MivBitstream::NalUnitHeader{MivBitstream::NalUnitType::NAL_CASPS, 0, 1};
 const auto nuhCaf = MivBitstream::NalUnitHeader{MivBitstream::NalUnitType::NAL_CAF, 0, 1};
+const auto nuhCra = MivBitstream::NalUnitHeader{MivBitstream::NalUnitType::NAL_CRA, 0, 1};
+const auto nuhIdr = MivBitstream::NalUnitHeader{MivBitstream::NalUnitType::NAL_IDR_N_LP, 0, 1};
+const auto nuhIdrCaf = MivBitstream::NalUnitHeader{MivBitstream::NalUnitType::NAL_IDR_CAF, 0, 1};
 } // namespace
 
 auto MivEncoder::commonAtlasSubBitstream() -> MivBitstream::AtlasSubBitstream {
   auto asb = MivBitstream::AtlasSubBitstream{m_ssnh};
 
   if (m_irap) {
-    writeNalUnit(asb, nuhAaps, m_params.aaps);
+    writeNalUnit(asb, nuhCasps, m_params.casps);
+    writeNalUnit(asb, nuhIdrCaf, commonAtlasFrame(), m_params.vps, maxFrmOrderCntLsb());
+  } else {
+    writeNalUnit(asb, nuhCaf, commonAtlasFrame(), m_params.vps, maxFrmOrderCntLsb());
   }
-
-  writeNalUnit(asb, nuhCaf, commonAtlasFrame(), m_params.vps, maxFrmOrderCntLsb());
   return asb;
 }
 
 auto MivEncoder::commonAtlasFrame() const -> MivBitstream::CommonAtlasFrameRBSP {
   auto caf = MivBitstream::CommonAtlasFrameRBSP{};
 
-  caf.caf_atlas_adaptation_parameter_set_id(0)
-      .caf_frm_order_cnt_lsb(m_frmOrderCntLsb)
-      .caf_irap_flag(m_irap);
+  caf.caf_common_atlas_sequence_parameter_set_id(0)
+      .caf_common_atlas_frm_order_cnt_lsb(m_frmOrderCntLsb)
+      .caf_extension_present_flag(true)
+      .caf_miv_extension_present_flag(true)
+      .caf_miv_extension()
+      .came_irap_flag(m_irap);
+  auto &came = caf.caf_miv_extension();
   if (m_irap) {
-    caf.miv_view_params_list() = mivViewParamsList();
+    came.miv_view_params_list() = mivViewParamsList();
   } else {
     VERIFY_MIVBITSTREAM(m_viewParamsList.size() == m_params.viewParamsList.size());
     for (size_t i = 0; i < m_viewParamsList.size(); ++i) {
       if (m_viewParamsList[i].ce != m_params.viewParamsList[i].ce) {
-        caf.caf_update_extrinsics_flag(true);
+        came.came_update_extrinsics_flag(true);
       }
       if (m_viewParamsList[i].ci != m_params.viewParamsList[i].ci) {
-        caf.caf_update_intrinsics_flag(true);
+        came.came_update_intrinsics_flag(true);
       }
       if (m_viewParamsList[i].dq != m_params.viewParamsList[i].dq) {
-        caf.caf_update_depth_quantization_flag(true);
+        came.came_update_depth_quantization_flag(true);
       }
     }
-    if (caf.caf_update_extrinsics_flag()) {
-      caf.miv_view_params_update_extrinsics() = mivViewParamsUpdateExtrinsics();
+    if (came.came_update_extrinsics_flag()) {
+      came.miv_view_params_update_extrinsics() = mivViewParamsUpdateExtrinsics();
     }
-    if (caf.caf_update_intrinsics_flag()) {
-      caf.miv_view_params_update_intrinsics() = mivViewParamsUpdateIntrinsics();
+    if (came.came_update_intrinsics_flag()) {
+      came.miv_view_params_update_intrinsics() = mivViewParamsUpdateIntrinsics();
     }
-    if (caf.caf_update_depth_quantization_flag()) {
-      caf.miv_view_params_update_depth_quantization() = mivViewParamsUpdateDepthQuantization();
+    if (came.came_update_depth_quantization_flag()) {
+      came.miv_view_params_update_depth_quantization() = mivViewParamsUpdateDepthQuantization();
     }
   }
   return caf;

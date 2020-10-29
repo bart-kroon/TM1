@@ -58,7 +58,7 @@ private:
         , index{index_}
         , reference{std::move(reference_)}
         , referenceY{std::move(referenceY_)}
-        , referenceYUV{std::move(referenceYUV_)}{}
+        , referenceYUV{std::move(referenceYUV_)} {}
 
     Renderer::Rasterizer<Common::Vec3f> rasterizer;
     const size_t index;
@@ -395,7 +395,8 @@ private:
         const auto depthTransform = MivBitstream::DepthTransform<16>{m_params.viewParamsList[i].dq};
         m_synthesizers.emplace_back(std::make_unique<IncrementalSynthesizer>(
             m_config, m_params.viewParamsList[i].ci.projectionPlaneSize(), i,
-            depthTransform.expandDepth(views[i].depth), expandLuma(views[i].texture), expandTexture(yuv444p(views[i].texture))));
+            depthTransform.expandDepth(views[i].depth), expandLuma(views[i].texture),
+            expandTexture(yuv444p(views[i].texture))));
       }
     }
   }
@@ -517,7 +518,8 @@ private:
     return result;
   }
 
-  [[nodiscard]] auto getColorInconsistencyMask(const Common::Mat<Common::Vec3f>& referenceYUV, const Common::Mat<Common::Vec3f>& synthesizedYUV,
+  [[nodiscard]] auto getColorInconsistencyMask(const Common::Mat<Common::Vec3f>& referenceYUV,
+                                               const Common::Mat<Common::Vec3f>& synthesizedYUV,
                                                const Common::Mat<uint8_t>& prunedMask) const
       -> Common::Mat<uint8_t> {
     const int maxIterNum = 10;
@@ -527,21 +529,30 @@ private:
     Common::Mat<Common::Vec3f> synthesizedRGB{prunedMask.sizes()};
 
     for (size_t i = 0; i < result.size(); ++i) {
-      const float inv_maxIntensity = 1.F/255.F;
-      referenceRGB[i][0] = 1.164F * (referenceYUV[i][0] - 16.F * inv_maxIntensity) + 2.018F * (referenceYUV[i][1] - 128.F * inv_maxIntensity);
-      referenceRGB[i][1] = 1.164F * (referenceYUV[i][0] - 16.F * inv_maxIntensity) - 0.813F * (referenceYUV[i][2] - 128.F * inv_maxIntensity) - 0.391F * (referenceYUV[i][1] - 128.F * inv_maxIntensity);
-      referenceRGB[i][2] = 1.164F * (referenceYUV[i][0] - 16.F * inv_maxIntensity) + 1.596F * (referenceYUV[i][2] - 128.F * inv_maxIntensity);
+      const float inv_maxIntensity = 1.F / 255.F;
+      referenceRGB[i][0] = 1.164F * (referenceYUV[i][0] - 16.F * inv_maxIntensity) +
+                           2.018F * (referenceYUV[i][1] - 128.F * inv_maxIntensity);
+      referenceRGB[i][1] = 1.164F * (referenceYUV[i][0] - 16.F * inv_maxIntensity) -
+                           0.813F * (referenceYUV[i][2] - 128.F * inv_maxIntensity) - 
+                           0.391F * (referenceYUV[i][1] - 128.F * inv_maxIntensity);
+      referenceRGB[i][2] = 1.164F * (referenceYUV[i][0] - 16.F * inv_maxIntensity) +
+                           1.596F * (referenceYUV[i][2] - 128.F * inv_maxIntensity);
 
-      synthesizedRGB[i][0] = 1.164F * (synthesizedYUV[i][0] - 16.F * inv_maxIntensity) + 2.018F * (synthesizedYUV[i][1] - 128.F * inv_maxIntensity);
-      synthesizedRGB[i][1] = 1.164F * (synthesizedYUV[i][0] - 16.F * inv_maxIntensity) - 0.813F * (synthesizedYUV[i][2] - 128.F * inv_maxIntensity) - 0.391F * (synthesizedYUV[i][1] - 128.F * inv_maxIntensity);
-      synthesizedRGB[i][2] = 1.164F * (synthesizedYUV[i][0] - 16.F * inv_maxIntensity) + 1.596F * (synthesizedYUV[i][2] - 128.F * inv_maxIntensity);
+      synthesizedRGB[i][0] = 1.164F * (synthesizedYUV[i][0] - 16.F * inv_maxIntensity) +
+                             2.018F * (synthesizedYUV[i][1] - 128.F * inv_maxIntensity);
+      synthesizedRGB[i][1] = 1.164F * (synthesizedYUV[i][0] - 16.F * inv_maxIntensity) -
+                             0.813F * (synthesizedYUV[i][2] - 128.F * inv_maxIntensity) -
+                             0.391F * (synthesizedYUV[i][1] - 128.F * inv_maxIntensity);
+      synthesizedRGB[i][2] = 1.164F * (synthesizedYUV[i][0] - 16.F * inv_maxIntensity) +
+                             1.596F * (synthesizedYUV[i][2] - 128.F * inv_maxIntensity);
 
       result[i] = 0;
     }
 
     std::vector<size_t> nonPrunedPixIndice;
     for (size_t i = 0; i < prunedMask.size(); ++i) {
-      if (synthesizedYUV[i][0] < 0.1F && synthesizedYUV[i][1] < 0.1F && synthesizedYUV[i][2] < 0.1F) {
+      if (synthesizedYUV[i][0] < 0.1F && synthesizedYUV[i][1] < 0.1F &&
+          synthesizedYUV[i][2] < 0.1F) {
         continue;
       }
       if (prunedMask[i] > 0) {
@@ -558,17 +569,17 @@ private:
     std::vector<float> weightG(numPixels, 1.F);
     std::vector<float> weightB(numPixels, 1.F);
 
-    Common::Mat<double> A1({ numPixels, 4 });
-    Common::Mat<double> b1({ numPixels, 1 });
-    Common::Mat<double> x1({ 4, 1 });
+    Common::Mat<double> A1({numPixels, 4});
+    Common::Mat<double> b1({numPixels, 1});
+    Common::Mat<double> x1({4, 1});
 
-    Common::Mat<double> A2({ numPixels, 4 });
-    Common::Mat<double> b2({ numPixels, 1 });
-    Common::Mat<double> x2({ 4, 1 });
+    Common::Mat<double> A2({numPixels, 4});
+    Common::Mat<double> b2({numPixels, 1});
+    Common::Mat<double> x2({4, 1});
 
-    Common::Mat<double> A3({ numPixels, 4 });
-    Common::Mat<double> b3({ numPixels, 1 });
-    Common::Mat<double> x3({ 4, 1 });
+    Common::Mat<double> A3({numPixels, 4});
+    Common::Mat<double> b3({numPixels, 1});
+    Common::Mat<double> x3({4, 1});
 
     Common::Mat<double> A_t1;
     Common::Mat<double> A_t2;
@@ -685,7 +696,7 @@ private:
         break;
       }
       prevE = curE;
-    }    
+    }
     return result;
   }
 
@@ -695,7 +706,8 @@ private:
     Common::Mat<uint8_t> colorInconsistencyMask;
     Common::Array::iterator<uint8_t> iColor;
     if (m_enable2ndPassPruner) {
-      colorInconsistencyMask = getColorInconsistencyMask(synthesizer.referenceYUV, synthesizer.rasterizer.attribute<0>(), mask);
+      colorInconsistencyMask = getColorInconsistencyMask(
+          synthesizer.referenceYUV, synthesizer.rasterizer.attribute<0>(), mask);
       iColor = std::begin(colorInconsistencyMask);
     }
 

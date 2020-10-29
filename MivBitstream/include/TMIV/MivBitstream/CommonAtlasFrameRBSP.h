@@ -34,7 +34,6 @@
 #ifndef _TMIV_MIVBITSTREAM_COMMONATLASFRAMERBSP_H_
 #define _TMIV_MIVBITSTREAM_COMMONATLASFRAMERBSP_H_
 
-// TODO (CB) remove this temporary include (only the next line) when adapting to m55208
 #include <TMIV/MivBitstream/CommonAtlasFrameMivExtension.h>
 #include <TMIV/MivBitstream/V3cParameterSet.h>
 
@@ -51,38 +50,20 @@ namespace TMIV::MivBitstream {
 // 23090-12: common_atlas_frame_rbsp( )
 class CommonAtlasFrameRBSP {
 public:
-  [[nodiscard]] constexpr auto caf_atlas_adaptation_parameter_set_id() const noexcept;
-  [[nodiscard]] constexpr auto caf_frm_order_cnt_lsb() const noexcept;
-  [[nodiscard]] constexpr auto caf_irap_flag() const noexcept;
-  [[nodiscard]] auto caf_update_extrinsics_flag() const noexcept -> bool;
-  [[nodiscard]] auto caf_update_intrinsics_flag() const noexcept -> bool;
-  [[nodiscard]] auto caf_update_depth_quantization_flag() const noexcept -> bool;
-  [[nodiscard]] auto miv_view_params_list() const noexcept -> const MivViewParamsList &;
-  [[nodiscard]] auto miv_view_params_update_extrinsics() const noexcept
-      -> const MivViewParamsUpdateExtrinsics &;
-  [[nodiscard]] auto miv_view_params_update_intrinsics() const noexcept
-      -> const MivViewParamsUpdateIntrinsics &;
-  [[nodiscard]] auto miv_view_params_update_depth_quantization() const noexcept
-      -> const MivViewParamsUpdateDepthQuantization &;
+  [[nodiscard]] constexpr auto caf_common_atlas_sequence_parameter_set_id() const noexcept;
+  [[nodiscard]] constexpr auto caf_common_atlas_frm_order_cnt_lsb() const noexcept;
   [[nodiscard]] constexpr auto caf_extension_present_flag() const noexcept;
-  [[nodiscard]] constexpr auto caf_extension_8bits() const noexcept;
+  [[nodiscard]] constexpr auto caf_miv_extension_present_flag() const noexcept;
+  [[nodiscard]] auto caf_miv_extension() const noexcept -> const CommonAtlasFrameMivExtension &;
+  [[nodiscard]] constexpr auto caf_extension_7bits() const noexcept;
   [[nodiscard]] auto cafExtensionData() const noexcept -> const std::vector<bool> &;
 
-  constexpr auto caf_atlas_adaptation_parameter_set_id(std::uint8_t value) noexcept -> auto &;
-  constexpr auto caf_frm_order_cnt_lsb(std::uint16_t value) noexcept -> auto &;
-  constexpr auto caf_irap_flag(bool value) noexcept -> auto &;
-  auto caf_update_extrinsics_flag(bool value) noexcept -> CommonAtlasFrameRBSP &;
-  auto caf_update_intrinsics_flag(bool value) noexcept -> CommonAtlasFrameRBSP &;
-  auto caf_update_depth_quantization_flag(bool value) noexcept -> CommonAtlasFrameRBSP &;
-  [[nodiscard]] auto miv_view_params_list() noexcept -> MivViewParamsList &;
-  [[nodiscard]] auto miv_view_params_update_extrinsics() noexcept
-      -> MivViewParamsUpdateExtrinsics &;
-  [[nodiscard]] auto miv_view_params_update_intrinsics() noexcept
-      -> MivViewParamsUpdateIntrinsics &;
-  [[nodiscard]] auto miv_view_params_update_depth_quantization() noexcept
-      -> MivViewParamsUpdateDepthQuantization &;
+  constexpr auto caf_common_atlas_sequence_parameter_set_id(std::uint8_t value) noexcept -> auto &;
+  constexpr auto caf_common_atlas_frm_order_cnt_lsb(std::uint16_t value) noexcept -> auto &;
   constexpr auto caf_extension_present_flag(bool value) noexcept -> auto &;
-  auto caf_extension_8bits(std::uint8_t value) noexcept -> CommonAtlasFrameRBSP &;
+  constexpr auto caf_miv_extension_present_flag(bool value) noexcept -> auto &;
+  auto caf_miv_extension() noexcept -> CommonAtlasFrameMivExtension &;
+  constexpr auto caf_extension_7bits(std::uint8_t value) noexcept -> CommonAtlasFrameRBSP &;
   auto cafExtensionData(std::vector<bool> value) noexcept -> CommonAtlasFrameRBSP &;
 
   friend auto operator<<(std::ostream &stream, const CommonAtlasFrameRBSP &x) -> std::ostream &;
@@ -97,18 +78,12 @@ public:
                 unsigned maxCommonAtlasFrmOrderCntLsb) const;
 
 private:
-  std::uint8_t m_caf_atlas_adaptation_parameter_set_id{};
-  std::uint16_t m_caf_frm_order_cnt_lsb{};
-  bool m_caf_irap_flag{true};
-  bool m_caf_update_extrinsics_flag{};
-  bool m_caf_update_intrinsics_flag{};
-  bool m_caf_update_depth_quantization_flag{};
-  std::optional<MivViewParamsList> m_miv_view_params_list;
-  std::optional<MivViewParamsUpdateExtrinsics> m_miv_view_params_update_extrinsics;
-  std::optional<MivViewParamsUpdateIntrinsics> m_miv_view_params_update_intrinsics;
-  std::optional<MivViewParamsUpdateDepthQuantization> m_miv_view_params_update_depth_quantization;
+  std::uint8_t m_caf_common_atlas_sequence_parameter_set_id{};
+  std::uint16_t m_caf_common_atlas_frm_order_cnt_lsb{};
   bool m_caf_extension_present_flag{};
-  std::optional<std::uint8_t> m_caf_extension_8bits{};
+  std::optional<bool> m_caf_miv_extension_present_flag{};
+  std::optional<CommonAtlasFrameMivExtension> m_caf_miv_extension{};
+  std::optional<std::uint8_t> m_caf_extension_7bits{};
   std::optional<std::vector<bool>> m_cafExtensionData{};
 };
 } // namespace TMIV::MivBitstream

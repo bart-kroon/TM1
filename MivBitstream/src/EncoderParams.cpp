@@ -114,7 +114,7 @@ auto EncoderParams::vme() noexcept -> VpsMivExtension & {
 }
 
 auto EncoderParams::operator==(const EncoderParams &other) const -> bool {
-  return vps == other.vps && aaps == other.aaps && viewingSpace == other.viewingSpace &&
+  return vps == other.vps && viewingSpace == other.viewingSpace &&
          viewParamsList == other.viewParamsList && atlas == other.atlas &&
          patchParamsList == other.patchParamsList;
 }

@@ -34,6 +34,8 @@
 #include <TMIV/MivBitstream/CommonAtlasSequenceParameterSetRBSP.h>
 #include <TMIV/MivBitstream/verify.h>
 
+#include <algorithm>
+
 // TODO (CB) extract this method to common
 template <typename T>
 auto putField(std::ostream &stream, const std::string &fieldName, T &&fieldValue) {
@@ -95,7 +97,8 @@ void CaspsMivExtension::encodeTo(Common::OutputBitstream &bitstream) const {
   }
 }
 
-auto CommonAtlasSequenceParameterSetRBSP::casps_miv_extension_present_flag() const noexcept {
+auto CommonAtlasSequenceParameterSetRBSP::casps_miv_extension_present_flag() const noexcept
+    -> bool {
   if (!m_casps_miv_extension_present_flag.has_value()) {
     return false;
   }
@@ -111,7 +114,8 @@ auto CommonAtlasSequenceParameterSetRBSP::casps_extension_7bits() const noexcept
   return *m_casps_extension_7bits;
 }
 
-auto CommonAtlasSequenceParameterSetRBSP::casps_miv_extension() const noexcept {
+auto CommonAtlasSequenceParameterSetRBSP::casps_miv_extension() const noexcept
+    -> const CaspsMivExtension & {
   VERIFY_V3CBITSTREAM(casps_miv_extension_present_flag());
   VERIFY_V3CBITSTREAM(m_casps_miv_extension.has_value());
   return *m_casps_miv_extension;
@@ -139,11 +143,12 @@ auto CommonAtlasSequenceParameterSetRBSP::casps_extension_7bits(std::uint8_t val
   return *this;
 }
 
-auto CommonAtlasSequenceParameterSetRBSP::casps_miv_extension(CaspsMivExtension value) noexcept
-    -> CommonAtlasSequenceParameterSetRBSP & {
+auto CommonAtlasSequenceParameterSetRBSP::casps_miv_extension() noexcept -> CaspsMivExtension & {
   VERIFY_V3CBITSTREAM(casps_miv_extension_present_flag());
-  m_casps_miv_extension = value;
-  return *this;
+  if (!m_casps_miv_extension.has_value()) {
+    m_casps_miv_extension = CaspsMivExtension{};
+  }
+  return *m_casps_miv_extension;
 }
 
 auto CommonAtlasSequenceParameterSetRBSP::caspsExtensionData(std::vector<bool> value) noexcept
@@ -207,7 +212,7 @@ auto CommonAtlasSequenceParameterSetRBSP::decodeFrom(std::istream &stream)
     result.casps_extension_7bits(bitstream.readBits<std::uint8_t>(7));
   }
   if (result.casps_miv_extension_present_flag()) {
-    result.casps_miv_extension(CaspsMivExtension::decodeFrom(bitstream));
+    result.casps_miv_extension() = CaspsMivExtension::decodeFrom(bitstream);
   }
   if (result.casps_extension_7bits() != 0) {
     auto caspsExtensionData = std::vector<bool>{};
@@ -239,6 +244,20 @@ void CommonAtlasSequenceParameterSetRBSP::encodeTo(std::ostream &stream) const {
     }
   }
   bitstream.rbspTrailingBits();
+}
+
+auto caspsById(const std::vector<CommonAtlasSequenceParameterSetRBSP> &caspsV, int id) noexcept
+    -> const CommonAtlasSequenceParameterSetRBSP & {
+
+  const auto result = std::find_if(std::cbegin(caspsV), std::cend(caspsV), [id](const auto &casps) {
+    return id == casps.casps_common_atlas_sequence_parameter_set_id();
+  });
+
+  if (result == std::cend(caspsV)) {
+    V3CBITSTREAM_ERROR("Unknown CASPS ID");
+  }
+
+  return *result;
 }
 
 } // namespace TMIV::MivBitstream

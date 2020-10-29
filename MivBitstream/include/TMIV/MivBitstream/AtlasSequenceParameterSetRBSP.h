@@ -186,41 +186,36 @@ public:
   [[nodiscard]] auto asps_miv_extension() const noexcept -> const AspsMivExtension &;
   [[nodiscard]] auto aspsExtensionData() const noexcept -> const std::vector<bool> &;
 
-  constexpr auto asps_atlas_sequence_parameter_set_id(const std::uint8_t value) noexcept -> auto &;
-  constexpr auto asps_frame_width(const std::uint16_t value) noexcept -> auto &;
-  constexpr auto asps_frame_height(const std::uint16_t value) noexcept -> auto &;
+  constexpr auto asps_atlas_sequence_parameter_set_id(std::uint8_t value) noexcept -> auto &;
+  constexpr auto asps_frame_width(std::uint16_t value) noexcept -> auto &;
+  constexpr auto asps_frame_height(std::uint16_t value) noexcept -> auto &;
   constexpr auto asps_geometry_3d_bit_depth_minus1(std::uint8_t value) noexcept -> auto &;
   constexpr auto asps_geometry_2d_bit_depth_minus1(std::uint8_t value) noexcept -> auto &;
-  auto asps_log2_max_atlas_frame_order_cnt_lsb_minus4(const std::uint8_t value) noexcept
+  auto asps_log2_max_atlas_frame_order_cnt_lsb_minus4(std::uint8_t value) noexcept
       -> AtlasSequenceParameterSetRBSP &;
-  constexpr auto asps_max_dec_atlas_frame_buffering_minus1(const std::uint8_t value) noexcept
-      -> auto &;
-  constexpr auto asps_long_term_ref_atlas_frames_flag(const bool value) noexcept -> auto &;
-  auto asps_num_ref_atlas_frame_lists_in_asps(const std::size_t value)
-      -> AtlasSequenceParameterSetRBSP &;
+  constexpr auto asps_max_dec_atlas_frame_buffering_minus1(std::uint8_t value) noexcept -> auto &;
+  constexpr auto asps_long_term_ref_atlas_frames_flag(bool value) noexcept -> auto &;
+  auto asps_num_ref_atlas_frame_lists_in_asps(std::size_t value) -> AtlasSequenceParameterSetRBSP &;
   auto ref_list_struct(std::uint8_t rlsIdx, RefListStruct value) -> AtlasSequenceParameterSetRBSP &;
-  constexpr auto asps_use_eight_orientations_flag(const bool value) noexcept -> auto &;
-  constexpr auto asps_extended_projection_enabled_flag(const bool value) noexcept -> auto &;
-  auto asps_max_number_projections_minus1(const unsigned value) noexcept
+  constexpr auto asps_use_eight_orientations_flag(bool value) noexcept -> auto &;
+  constexpr auto asps_extended_projection_enabled_flag(bool value) noexcept -> auto &;
+  auto asps_max_number_projections_minus1(unsigned value) noexcept
       -> AtlasSequenceParameterSetRBSP &;
-  constexpr auto asps_normal_axis_limits_quantization_enabled_flag(const bool value) noexcept
-      -> auto &;
-  constexpr auto asps_normal_axis_max_delta_value_enabled_flag(const bool value) noexcept -> auto &;
-  constexpr auto asps_patch_precedence_order_flag(const bool value) noexcept -> auto &;
-  constexpr auto asps_log2_patch_packing_block_size(const std::uint8_t value) noexcept -> auto &;
-  constexpr auto asps_patch_size_quantizer_present_flag(const bool value) noexcept -> auto &;
-  constexpr auto asps_map_count_minus1(const std::uint8_t value) noexcept -> auto &;
-  constexpr auto asps_pixel_deinterleaving_enabled_flag(const bool value) noexcept -> auto &;
-  constexpr auto asps_raw_patch_enabled_flag(const bool value) noexcept -> auto &;
-  constexpr auto asps_eom_patch_enabled_flag(const bool value) noexcept -> auto &;
-  constexpr auto asps_plr_enabled_flag(const bool value) noexcept -> auto &;
-  constexpr auto asps_vui_parameters_present_flag(const bool value) noexcept -> auto &;
-  constexpr auto asps_extension_present_flag(const bool value) noexcept -> auto &;
-  auto asps_vpcc_extension_present_flag(const bool value) noexcept
-      -> AtlasSequenceParameterSetRBSP &;
-  auto asps_miv_extension_present_flag(const bool value) noexcept
-      -> AtlasSequenceParameterSetRBSP &;
-  auto asps_extension_6bits(const std::uint8_t value) noexcept -> AtlasSequenceParameterSetRBSP &;
+  constexpr auto asps_normal_axis_limits_quantization_enabled_flag(bool value) noexcept -> auto &;
+  constexpr auto asps_normal_axis_max_delta_value_enabled_flag(bool value) noexcept -> auto &;
+  constexpr auto asps_patch_precedence_order_flag(bool value) noexcept -> auto &;
+  constexpr auto asps_log2_patch_packing_block_size(std::uint8_t value) noexcept -> auto &;
+  constexpr auto asps_patch_size_quantizer_present_flag(bool value) noexcept -> auto &;
+  constexpr auto asps_map_count_minus1(std::uint8_t value) noexcept -> auto &;
+  constexpr auto asps_pixel_deinterleaving_enabled_flag(bool value) noexcept -> auto &;
+  constexpr auto asps_raw_patch_enabled_flag(bool value) noexcept -> auto &;
+  constexpr auto asps_eom_patch_enabled_flag(bool value) noexcept -> auto &;
+  constexpr auto asps_plr_enabled_flag(bool value) noexcept -> auto &;
+  constexpr auto asps_vui_parameters_present_flag(bool value) noexcept -> auto &;
+  constexpr auto asps_extension_present_flag(bool value) noexcept -> auto &;
+  auto asps_vpcc_extension_present_flag(bool value) noexcept -> AtlasSequenceParameterSetRBSP &;
+  auto asps_miv_extension_present_flag(bool value) noexcept -> AtlasSequenceParameterSetRBSP &;
+  auto asps_extension_6bits(std::uint8_t value) noexcept -> AtlasSequenceParameterSetRBSP &;
   auto aspsExtensionData(std::vector<bool> data) noexcept -> AtlasSequenceParameterSetRBSP &;
 
   [[nodiscard]] auto ref_list_struct(std::uint8_t rlsIdx) -> RefListStruct &;

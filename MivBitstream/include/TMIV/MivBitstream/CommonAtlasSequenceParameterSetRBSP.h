@@ -74,9 +74,9 @@ public:
   [[nodiscard]] constexpr auto
   casps_log2_max_common_atlas_frame_order_cnt_lsb_minus4() const noexcept;
   [[nodiscard]] constexpr auto casps_extension_present_flag() const noexcept;
-  [[nodiscard]] auto casps_miv_extension_present_flag() const noexcept;
+  [[nodiscard]] auto casps_miv_extension_present_flag() const noexcept -> bool;
   [[nodiscard]] auto casps_extension_7bits() const noexcept;
-  [[nodiscard]] auto casps_miv_extension() const noexcept;
+  [[nodiscard]] auto casps_miv_extension() const noexcept -> const CaspsMivExtension &;
   [[nodiscard]] auto caspsExtensionData() const noexcept
       -> const std::vector<bool> &; // to access multiple casps_extension_data_flags
 
@@ -88,8 +88,7 @@ public:
   auto casps_miv_extension_present_flag(bool flag) noexcept
       -> CommonAtlasSequenceParameterSetRBSP &;
   auto casps_extension_7bits(std::uint8_t value) noexcept -> CommonAtlasSequenceParameterSetRBSP &;
-  auto casps_miv_extension(CaspsMivExtension value) noexcept
-      -> CommonAtlasSequenceParameterSetRBSP &;
+  auto casps_miv_extension() noexcept -> CaspsMivExtension &;
   auto caspsExtensionData(std::vector<bool> value) noexcept
       -> CommonAtlasSequenceParameterSetRBSP &;
 
@@ -112,6 +111,9 @@ private:
   std::optional<CaspsMivExtension> m_casps_miv_extension{};
   std::optional<std::vector<bool>> m_caspsExtensionData{};
 };
+
+auto caspsById(const std::vector<CommonAtlasSequenceParameterSetRBSP> &caspsV, int id) noexcept
+    -> const CommonAtlasSequenceParameterSetRBSP &;
 } // namespace TMIV::MivBitstream
 
 #include "CommonAtlasSequenceParameterSetRBSP.hpp"

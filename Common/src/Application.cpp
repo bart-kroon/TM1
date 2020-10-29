@@ -99,19 +99,15 @@ void Application::add_file(const std::string &path) {
   add_stream(stream);
 }
 
-void Application::add_parameter(const std::string &key, std::string value) {
-  std::stringstream stream;
-  stream << "{ \"" << key << "\": ";
-  if (value.empty()) {
-    stream << "\"\"";
-  } else if (value == "true" || value == "false" || value == "null" ||
-             (isdigit(value.front()) != 0)) {
-    stream << value;
-  } else {
-    stream << "\"" << value << "\"";
+void Application::add_parameter(std::string key, std::string_view value) {
+  auto json = Json{value};
+  try {
+    json = Json::parse(value);
+  } catch (std::runtime_error & /* unused */) {
   }
-  stream << " }";
-  add_stream(stream);
+  fmt::print("Override {}: {}\n", key, json.format());
+
+  m_json.update(Json{std::in_place_type<Json::Object>, std::pair{std::move(key), json}});
 }
 
 void Application::add_stream(std::istream &stream) {

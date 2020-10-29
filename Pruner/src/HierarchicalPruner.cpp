@@ -577,16 +577,16 @@ private:
     for (int iter = 0; iter < maxIterNum; ++iter) {
       for (size_t i = 0; i < numPixels; ++i) {
             size_t pixIdx = nonPrunedPixIndice[i];
-            double rR = static_cast<double>(referenceRGB[pixIdx][0]);
-            double rG = static_cast<double>(referenceRGB[pixIdx][1]);
-            double rB = static_cast<double>(referenceRGB[pixIdx][2]);
-            double sR = static_cast<double>(synthesizedRGB[pixIdx][0]);
-            double sG = static_cast<double>(synthesizedRGB[pixIdx][1]);
-            double sB = static_cast<double>(synthesizedRGB[pixIdx][2]);
+            auto rR = static_cast<double>(referenceRGB[pixIdx][0]);
+            auto rG = static_cast<double>(referenceRGB[pixIdx][1]);
+            auto rB = static_cast<double>(referenceRGB[pixIdx][2]);
+            auto sR = static_cast<double>(synthesizedRGB[pixIdx][0]);
+            auto sG = static_cast<double>(synthesizedRGB[pixIdx][1]);
+            auto sB = static_cast<double>(synthesizedRGB[pixIdx][2]);
 
-            double wR = static_cast<double>(weightR[i]);
-            double wG = static_cast<double>(weightG[i]);
-            double wB = static_cast<double>(weightB[i]);
+            auto wR = static_cast<double>(weightR[i]);
+            auto wG = static_cast<double>(weightG[i]);
+            auto wB = static_cast<double>(weightB[i]);
 
             A1(i, 0) = wR * rR;
             A1(i, 1) = wR * rG;
@@ -626,24 +626,24 @@ private:
       double weightSum = 0;
       for (size_t i = 0; i < numPixels; ++i) {
         size_t pixIdx = nonPrunedPixIndice[i];
-        double rR = static_cast<double>(referenceRGB[pixIdx][0]);
-        double rG = static_cast<double>(referenceRGB[pixIdx][1]);
-        double rB = static_cast<double>(referenceRGB[pixIdx][2]);
-        double sR = static_cast<double>(synthesizedRGB[pixIdx][0]);
-        double sG = static_cast<double>(synthesizedRGB[pixIdx][1]);
-        double sB = static_cast<double>(synthesizedRGB[pixIdx][2]);
+        auto rR = static_cast<double>(referenceRGB[pixIdx][0]);
+        auto rG = static_cast<double>(referenceRGB[pixIdx][1]);
+        auto rB = static_cast<double>(referenceRGB[pixIdx][2]);
+        auto sR = static_cast<double>(synthesizedRGB[pixIdx][0]);
+        auto sG = static_cast<double>(synthesizedRGB[pixIdx][1]);
+        auto sB = static_cast<double>(synthesizedRGB[pixIdx][2]);
 
-        double wR = static_cast<double>(weightR[i]);
-        double wG = static_cast<double>(weightG[i]);
-        double wB = static_cast<double>(weightB[i]);
+        auto wR = static_cast<double>(weightR[i]);
+        auto wG = static_cast<double>(weightG[i]);
+        auto wB = static_cast<double>(weightB[i]);
 
         double c1 = x1(0, 0) * rR + x1(1, 0) * rG + x1(2, 0) * rB + x1(3, 0);
         double c2 = x2(0, 0) * rR + x2(1, 0) * rG + x2(2, 0) * rB + x2(3, 0);
         double c3 = x3(0, 0) * rR + x3(1, 0) * rG + x3(2, 0) * rB + x3(3, 0);
 
-        double dr = abs(c1 - sR);
-        double dg = abs(c2 - sG);
-        double db = abs(c3 - sB);
+        double dr = std::abs(c1 - sR);
+        double dg = std::abs(c2 - sG);
+        double db = std::abs(c3 - sB);
 
         curE += (wR * dr + wG * dg + wB * db) / 3.0;
         weightSum += (wR + wG + wB) / 3.0;
@@ -657,15 +657,15 @@ private:
         weightB[i] = static_cast<float>(std::min(1.0 / (2.0 * db), 1.0));
 
         result[pixIdx] = 0;
-        if (abs(c1 - sR) > m_maxColorError) {
+        if (std::abs(c1 - sR) > m_maxColorError) {
           result[pixIdx] = 255;
           continue;
         }
-        if (abs(c2 - sG) > m_maxColorError) {
+        if (std::abs(c2 - sG) > m_maxColorError) {
           result[pixIdx] = 255;
           continue;
         }
-        if (abs(c3 - sB) > m_maxColorError) {
+        if (std::abs(c3 - sB) > m_maxColorError) {
           result[pixIdx] = 255;
           continue;
         }
@@ -676,7 +676,7 @@ private:
         prevE = curE;
         continue;
       }
-      double update = abs(prevE - curE);
+      double update = std::abs(prevE - curE);
       if (update < eps) {
         break;
       }

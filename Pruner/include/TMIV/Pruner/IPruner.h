@@ -48,8 +48,8 @@ public:
   virtual ~IPruner() = default;
 
   virtual void registerPruningRelation(MivBitstream::EncoderParams &params) = 0;
-  virtual auto prune(const MivBitstream::EncoderParams &params, const Common::MVD16Frame &views,
-                     const int blockSize) -> Common::MaskList = 0;
+  virtual auto prune(const MivBitstream::EncoderParams &params, const Common::MVD16Frame &views)
+      -> Common::MaskList = 0;
 };
 } // namespace TMIV::Pruner
 

@@ -328,64 +328,45 @@ public:
     }
   }
 
-  auto prune(const MivBitstream::EncoderParams &params, const Common::MVD16Frame &views,
-             const int blockSize) -> Common::MaskList {
+  auto prune(const MivBitstream::EncoderParams &params, const Common::MVD16Frame &views)
+      -> Common::MaskList {
     m_params = params;
 
-    prepareFrame(views, blockSize);
+    prepareFrame(views);
     pruneFrame(views);
 
     return std::move(m_masks);
   }
 
 private:
-  void prepareFrame(const Common::MVD16Frame &views, const int blockSize) {
-    createInitialMasks(views, blockSize);
+  void prepareFrame(const Common::MVD16Frame &views) {
+    createInitialMasks(views);
     createSynthesizerPerPartialView(views);
     synthesizeReferenceViews(views);
   }
 
-  void createInitialMasks(const Common::MVD16Frame &views, const int blockSize) {
+  void createInitialMasks(const Common::MVD16Frame &views) {
     m_masks.clear();
     m_masks.reserve(views.size());
-    std::transform(std::cbegin(m_params.viewParamsList), std::cend(m_params.viewParamsList),
-                   std::cbegin(views), back_inserter(m_masks),
-                   [blockSize](const MivBitstream::ViewParams &viewParams,
-                               const Common::TextureDepth16Frame &view) {
-                     auto mask = Common::Frame<Common::YUV400P8>{
-                         Common::align(viewParams.ci.projectionPlaneSize().x(), blockSize),
-                         Common::align(viewParams.ci.projectionPlaneSize().y(), blockSize)};
+    std::transform(
+        std::cbegin(m_params.viewParamsList), std::cend(m_params.viewParamsList),
+        std::cbegin(views), back_inserter(m_masks),
+        [](const MivBitstream::ViewParams &viewParams, const Common::TextureDepth16Frame &view) {
+          auto mask = Common::Frame<Common::YUV400P8>{
+              viewParams.ci.ci_projection_plane_width_minus1() + 1,
+              viewParams.ci.ci_projection_plane_height_minus1() + 1};
 
-                     std::transform(std::cbegin(view.depth.getPlane(0)),
-                                    std::cend(view.depth.getPlane(0)), std::begin(mask.getPlane(0)),
-                                    [ot = MivBitstream::OccupancyTransform{viewParams}](auto x) {
-                                      // #94: When there are invalid pixels in a basic view, these
-                                      // should be excluded from the pruning mask
-                                      return ot.occupant(x) ? uint8_t{255} : uint8_t{};
-                                    });
-                     return mask;
-                   });
+          std::transform(std::cbegin(view.depth.getPlane(0)), std::cend(view.depth.getPlane(0)),
+                         std::begin(mask.getPlane(0)),
+                         [ot = MivBitstream::OccupancyTransform{viewParams}](auto x) {
+                           // #94: When there are invalid pixels in a basic view, these
+                           // should be excluded from the pruning mask
+                           return ot.occupant(x) ? uint8_t{255} : uint8_t{};
+                         });
+          return mask;
+        });
 
-    m_status.clear();
-    m_status.reserve(views.size());
-    std::transform(std::cbegin(m_params.viewParamsList), std::cend(m_params.viewParamsList),
-                   std::cbegin(views), back_inserter(m_status),
-                   [blockSize](const MivBitstream::ViewParams &viewParams,
-                               const Common::TextureDepth16Frame &view) {
-                     auto status = Common::Frame<Common::YUV400P8>{
-                         Common::align(viewParams.ci.projectionPlaneSize().x(), blockSize),
-                         Common::align(viewParams.ci.projectionPlaneSize().y(), blockSize)};
-
-                     std::transform(std::cbegin(view.depth.getPlane(0)),
-                                    std::cend(view.depth.getPlane(0)),
-                                    std::begin(status.getPlane(0)),
-                                    [ot = MivBitstream::OccupancyTransform{viewParams}](auto x) {
-                                      // #94: When there are invalid pixels in a basic view, these
-                                      // should be freezed from pruning
-                                      return ot.occupant(x) ? uint8_t{255} : uint8_t{};
-                                    });
-                     return status;
-                   });
+    m_status = m_masks;
   }
 
   void createSynthesizerPerPartialView(const Common::MVD16Frame &views) {
@@ -789,8 +770,7 @@ void HierarchicalPruner::registerPruningRelation(MivBitstream::EncoderParams &pa
 }
 
 auto HierarchicalPruner::prune(const MivBitstream::EncoderParams &params,
-                               const Common::MVD16Frame &views, const int blockSize)
-    -> Common::MaskList {
-  return m_impl->prune(params, views, blockSize);
+                               const Common::MVD16Frame &views) -> Common::MaskList {
+  return m_impl->prune(params, views);
 }
 } // namespace TMIV::Pruner

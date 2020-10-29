@@ -221,6 +221,10 @@ void Encoder::prepareIvau() {
             static_cast<uint16_t>(m_params.viewParamsList.size() - 1))
         .asps_log2_patch_packing_block_size(Common::ceilLog2(m_blockSize));
 
+    const auto psq = patchSizeQuantizers();
+    atlas.asps.asps_patch_size_quantizer_present_flag(psq.x() != m_blockSize ||
+                                                      psq.y() != m_blockSize);
+
     if (m_params.vps.vps_geometry_video_present_flag(j)) {
       const auto &gi = m_params.vps.geometry_information(j);
       atlas.asps.asps_geometry_3d_bit_depth_minus1(gi.gi_geometry_3d_coordinates_bit_depth_minus1())
@@ -236,6 +240,10 @@ void Encoder::prepareIvau() {
 
     // Set ATH parameters
     atlas.ath.ath_ref_atlas_frame_list_asps_flag(true);
+    if (atlas.asps.asps_patch_size_quantizer_present_flag()) {
+      atlas.ath.ath_patch_size_x_info_quantizer(Common::ceilLog2(psq.x()));
+      atlas.ath.ath_patch_size_y_info_quantizer(Common::ceilLog2(psq.y()));
+    }
     atlas.ath.ath_pos_min_d_quantizer( // make pdu_3d_offset_d u(0)
         atlas.asps.asps_geometry_3d_bit_depth_minus1() + 1);
   }
@@ -244,5 +252,17 @@ void Encoder::prepareIvau() {
 auto Encoder::log2FocLsbMinus4() const -> std::uint8_t {
   // Avoid confusion but test MSB/LSB logic in decoder
   return std::max(4U, Common::ceilLog2(m_intraPeriod) + 1U) - 4U;
+}
+
+auto Encoder::patchSizeQuantizers() const -> Common::Vec2i {
+  auto quantizer = m_blockSize;
+
+  for (const auto &vp : m_params.viewParamsList) {
+    quantizer = std::gcd(quantizer, vp.ci.ci_projection_plane_width_minus1() + 1);
+    quantizer = std::gcd(quantizer, vp.ci.ci_projection_plane_height_minus1() + 1);
+  }
+
+  // NOTE(BK): There may be rotated patches of full width or height: same quantizer for x and y
+  return {quantizer, quantizer};
 }
 } // namespace TMIV::Encoder

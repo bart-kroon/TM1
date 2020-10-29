@@ -75,6 +75,7 @@ private: // Encoder_prepareSequence.cpp
   void enableOccupancyPerView();
   void prepareIvau();
   auto log2FocLsbMinus4() const -> std::uint8_t;
+  auto patchSizeQuantizers() const -> Common::Vec2i;
 
 private: // Encoder_prepareAccessUnit.cpp
   void resetNonAggregatedMask();

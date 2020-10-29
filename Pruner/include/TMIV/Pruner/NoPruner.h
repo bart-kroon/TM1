@@ -48,8 +48,8 @@ public:
 
   void registerPruningRelation(MivBitstream::EncoderParams & /* params */) override;
 
-  auto prune(const MivBitstream::EncoderParams &params, const Common::MVD16Frame & /* views */,
-             const int /* blockSize */) -> Common::MaskList override;
+  auto prune(const MivBitstream::EncoderParams &params, const Common::MVD16Frame & /* views */)
+      -> Common::MaskList override;
 };
 } // namespace TMIV::Pruner
 

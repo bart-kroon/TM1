@@ -158,9 +158,9 @@ void MaxRectPiP::updateOccupancyMap(const Cluster &c, const ClusteringMap &clust
   if (patchOverflow.y() > 0) {
     p0.y() -= patchOverflow.y();
   }
-  int xMin = p0.x();
+  int xMin = std::max(0, p0.x());
   int xMax = p0.x() + w - 1;
-  int yMin = p0.y();
+  int yMin = std::max(0, p0.y());
   int yMax = p0.y() + h - 1;
 
   auto p2q = [isRotated, w_align, p0, q0](const Common::Vec2i p) {

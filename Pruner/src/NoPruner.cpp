@@ -38,9 +38,8 @@ NoPruner::NoPruner(const Common::Json & /* rootConfig */, const Common::Json & /
 
 void NoPruner::registerPruningRelation(MivBitstream::EncoderParams & /*params */) {}
 
-auto NoPruner::prune(const MivBitstream::EncoderParams &params,
-                     const Common::MVD16Frame & /* views */, const int /* blockSize */)
-    -> Common::MaskList {
+auto NoPruner::prune(const MivBitstream::EncoderParams &params, const Common::MVD16Frame &
+                     /* views */) -> Common::MaskList {
   auto mask = Common::MaskList(params.viewParamsList.size());
   transform(params.viewParamsList.cbegin(), params.viewParamsList.cend(), mask.begin(),
             [](const MivBitstream::ViewParams &vp) {

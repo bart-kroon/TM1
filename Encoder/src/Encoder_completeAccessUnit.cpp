@@ -391,17 +391,14 @@ auto Encoder::writePatchInAtlas(const MivBitstream::PatchParams &patchParams,
   std::array<int64_t, 3> sumValInPatch = {0, 0, 0};
   std::array<int64_t, 3> cntValInPatch = {0, 0, 0};
 
+  assert(0 <= xM && xM + w <= inViewParams.ci.ci_projection_plane_width_minus1() + 1);
+  assert(0 <= yM && yM + h <= inViewParams.ci.ci_projection_plane_height_minus1() + 1);
+
   for (int dyAligned = 0; dyAligned < h; dyAligned += m_blockSize) {
     for (int dxAligned = 0; dxAligned < w; dxAligned += m_blockSize) {
       bool isAggregatedMaskBlockNonEmpty = false;
       for (int dy = dyAligned; dy < dyAligned + m_blockSize; dy++) {
-        if (dy + yM >= textureViewMap.getHeight() || dy + yM < 0) {
-          continue;
-        }
         for (int dx = dxAligned; dx < dxAligned + m_blockSize; dx++) {
-          if (dx + xM >= textureViewMap.getWidth() || dx + xM < 0) {
-            continue;
-          }
           if (m_nonAggregatedMask[patchParams.atlasPatchProjectionId()](dy + yM,
                                                                         dx + xM)[frameId]) {
             isAggregatedMaskBlockNonEmpty = true;

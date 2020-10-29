@@ -49,7 +49,7 @@ void Encoder::pushFrame(Common::MVD16Frame sourceViews) {
 
 void Encoder::pushSingleEntityFrame(Common::MVD16Frame sourceViews) {
   auto transportViews = m_viewOptimizer->optimizeFrame(std::move(sourceViews));
-  const auto masks = m_pruner->prune(m_transportParams, transportViews, m_blockSize);
+  const auto masks = m_pruner->prune(m_transportParams, transportViews);
   updateNonAggregatedMask(transportViews, masks);
   m_transportViews.push_back(std::move(transportViews));
   m_aggregator->pushMask(masks);
@@ -134,7 +134,7 @@ void Encoder::pushMultiEntityFrame(Common::MVD16Frame sourceViews) {
     std::cout << "Processing entity " << entityId << '\n';
 
     const auto transportEntityViews = entitySeparator(transportViews, entityId);
-    auto masks = m_pruner->prune(m_transportParams, transportEntityViews, m_blockSize);
+    auto masks = m_pruner->prune(m_transportParams, transportEntityViews);
     updateMasks(transportEntityViews, masks);
     aggregateEntityMasks(masks, entityId);
     mergeMasks(mergedMasks, masks);

@@ -33,7 +33,7 @@
 
 #include "Cluster.h"
 
-auto roundToAlignment(int val, int alignment) -> int { 
+auto roundToAlignment(int val, int alignment) -> int {
   return ((int(val - 1) / alignment + 1) * alignment);
 }
 

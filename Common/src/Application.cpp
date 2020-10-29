@@ -103,11 +103,9 @@ void Application::add_parameter(std::string key, std::string_view value) {
   auto json = Json{value};
   try {
     json = Json::parse(value);
-  } catch (std::runtime_error &e) {
-    fmt::print("WARNING: Interpreting command-line {} parameter overide as a string \"{}\" because "
-               "the JSON parser didn't like it:\n  {}\n",
-               key, value, e.what());
+  } catch (std::runtime_error & /* unused */) {
   }
+  fmt::print("Override {}: {}\n", key, json.format());
 
   m_json.update(Json{std::in_place_type<Json::Object>, std::pair{std::move(key), json}});
 }

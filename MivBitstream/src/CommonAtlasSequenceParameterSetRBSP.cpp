@@ -205,7 +205,7 @@ auto CommonAtlasSequenceParameterSetRBSP::decodeFrom(std::istream &stream)
 
   result.casps_common_atlas_sequence_parameter_set_id(bitstream.readBits<std::uint8_t>(4));
   result.casps_log2_max_common_atlas_frame_order_cnt_lsb_minus4(
-      bitstream.getUExpGolomb<std::size_t>());
+      bitstream.getUExpGolomb<std::uint8_t>());
   result.casps_extension_present_flag(bitstream.getFlag());
   if (result.casps_extension_present_flag()) {
     result.casps_miv_extension_present_flag(bitstream.getFlag());

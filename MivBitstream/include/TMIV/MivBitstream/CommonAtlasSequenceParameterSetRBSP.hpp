@@ -76,7 +76,7 @@ constexpr auto CommonAtlasSequenceParameterSetRBSP::casps_common_atlas_sequence_
 }
 constexpr auto
 CommonAtlasSequenceParameterSetRBSP::casps_log2_max_common_atlas_frame_order_cnt_lsb_minus4(
-    std::size_t value) noexcept -> auto & {
+    std::uint8_t value) noexcept -> auto & {
   m_casps_log2_max_common_atlas_frame_order_cnt_lsb_minus4 = value;
   return *this;
 }

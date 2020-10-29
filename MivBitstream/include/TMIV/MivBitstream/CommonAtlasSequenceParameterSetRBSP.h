@@ -82,7 +82,7 @@ public:
 
   constexpr auto casps_common_atlas_sequence_parameter_set_id(std::uint8_t value) noexcept
       -> auto &;
-  constexpr auto casps_log2_max_common_atlas_frame_order_cnt_lsb_minus4(std::size_t value) noexcept
+  constexpr auto casps_log2_max_common_atlas_frame_order_cnt_lsb_minus4(std::uint8_t value) noexcept
       -> auto &;
   constexpr auto casps_extension_present_flag(bool flag) noexcept -> auto &;
   auto casps_miv_extension_present_flag(bool flag) noexcept
@@ -104,7 +104,7 @@ public:
 
 private:
   std::uint8_t m_casps_common_atlas_sequence_parameter_set_id{};
-  std::size_t m_casps_log2_max_common_atlas_frame_order_cnt_lsb_minus4{};
+  std::uint8_t m_casps_log2_max_common_atlas_frame_order_cnt_lsb_minus4{};
   bool m_casps_extension_present_flag{};
   std::optional<bool> m_casps_miv_extension_present_flag{};
   std::optional<std::uint8_t> m_casps_extension_7bits{};

@@ -942,7 +942,8 @@ void CommonAtlasFrameMivExtension::encodeTo(
     if (came_update_intrinsics_flag()) {
       miv_view_params_update_intrinsics().encodeTo(bitstream);
     }
-    if (casps.casps_miv_extension().casme_depth_quantization_params_present_flag() &&
+    const auto &casme = casps.casps_miv_extension();
+    if (casme.casme_depth_quantization_params_present_flag() &&
         came_update_depth_quantization_flag()) {
       miv_view_params_update_depth_quantization().encodeTo(bitstream, vps);
     }

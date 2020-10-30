@@ -57,6 +57,7 @@ void MivEncoder::writeAccessUnit(const MivBitstream::EncoderParams &params) {
   VERIFY_MIVBITSTREAM(m_frmOrderCntLsb < maxFrmOrderCntLsb());
 
   // NOTE(#253): always write even for non-IRAP intra periods w/o view parameter updates
+  //             to avoid frame order count ambiguity
   writeV3cUnit(MivBitstream::VuhUnitType::V3C_CAD, {}, commonAtlasSubBitstream());
   m_viewParamsList = params.viewParamsList;
 

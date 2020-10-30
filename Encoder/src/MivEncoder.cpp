@@ -56,10 +56,9 @@ void MivEncoder::writeAccessUnit(const MivBitstream::EncoderParams &params) {
   m_frmOrderCntLsb = m_params.atlas.front().ath.ath_atlas_frm_order_cnt_lsb();
   VERIFY_MIVBITSTREAM(m_frmOrderCntLsb < maxFrmOrderCntLsb());
 
-  if (m_irap || m_viewParamsList != params.viewParamsList) {
-    writeV3cUnit(MivBitstream::VuhUnitType::V3C_CAD, {}, commonAtlasSubBitstream());
-    m_viewParamsList = params.viewParamsList;
-  }
+  // NOTE(#253): always write even for non-IRAP intra periods w/o view parameter updates
+  writeV3cUnit(MivBitstream::VuhUnitType::V3C_CAD, {}, commonAtlasSubBitstream());
+  m_viewParamsList = params.viewParamsList;
 
   for (uint8_t k = 0; k <= m_params.vps.vps_atlas_count_minus1(); ++k) {
     // Clause 7.4.5.3.2 of V-PCC DIS d85 [N19329]: AXPS regardless of atlas ID (and temporal ID)

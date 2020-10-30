@@ -57,6 +57,8 @@
     "haveGeometryVideo": true,
     "haveOccupancyVideo": false,
     "geometryScaleEnabledFlag": true,
+    "attributeOffsetEnabledFlag": true,
+    "attributeOffsetBitCount":  10,
     "intraPeriod": 32,
     "maxAtlases": 2,
     "maxEntities": 1,

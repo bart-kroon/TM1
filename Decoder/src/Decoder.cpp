@@ -88,32 +88,33 @@ void addAttributeOffset(AccessUnit &frame) {
 
     const int btpmScale = int(YUV[0].width() / btpm.width());
 
-    for (int h = 0; h < H; h++) {
-      const int hs = h / btpmScale;
-      for (int w = 0; w < W; w++) {
-        const int ws = w / btpmScale;
-        if (btpm(hs, ws) != 65535) {
+    for (int y = 0; y < H; y++) {
+      const int ys = y / btpmScale;
+      for (int x = 0; x < W; x++) {
+        const int xs = x / btpmScale;
+        const auto patchIndex = btpm(ys, xs);
+        if (patchIndex == Common::unusedPatchId) {
+          continue;
+        }
+        const auto &pp = atlas.patchParamsList[patchIndex];
 
-          for (int c = 0; c < 3; c++) {
-            const auto pduAttributeOffset = static_cast<int16_t>(
-                (atlas.patchParamsList[btpm(hs, ws)].atlasPatchAttributeOffset()->operator[](c)
-                 << bitShift) -
-                inputMedVal);
+        for (int c = 0; c < 3; c++) {
+          const auto pduAttributeOffset =
+              static_cast<int16_t>((pp.atlasPatchAttributeOffset()[c] << bitShift) - inputMedVal);
+          auto &value = YUV[c](y, x);
 
-            if (YUV[c](h, w) + pduAttributeOffset > inputMaxVal) {
-              YUV[c](h, w) = inputMaxVal;
-            } else if (YUV[c](h, w) + pduAttributeOffset < 0) {
-              YUV[c](h, w) = 0;
-            } else {
-              YUV[c](h, w) += (pduAttributeOffset);
-            }
+          if (value + pduAttributeOffset > inputMaxVal) {
+            value = inputMaxVal;
+          } else if (value + pduAttributeOffset < 0) {
+            value = 0;
+          } else {
+            value += pduAttributeOffset;
           }
         }
       }
     }
   }
 }
-
 } // namespace
 
 void Decoder::recoverFrame(AccessUnit &frame) {

@@ -67,7 +67,8 @@ constexpr auto PatchParams::atlasPatchDepthOccMapThreshold() const noexcept {
 }
 
 inline auto PatchParams::atlasPatchAttributeOffset() const noexcept {
-  return m_atlasPatchAttributeOffset;
+  VERIFY_MIVBITSTREAM(m_atlasPatchAttributeOffset.has_value());
+  return *m_atlasPatchAttributeOffset;
 }
 
 constexpr auto PatchParams::atlasPatch2dPosX(std::uint32_t value) noexcept -> PatchParams & {

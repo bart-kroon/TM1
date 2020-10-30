@@ -70,10 +70,14 @@ Encoder::Encoder(const Common::Json &rootNode, const Common::Json &componentNode
     , m_haveGeometry{rootNode.require("haveGeometryVideo").as<bool>()}
     , m_haveOccupancy{rootNode.require("haveOccupancyVideo").as<bool>()}
     , m_oneViewPerAtlasFlag{rootNode.require("oneViewPerAtlasFlag").as<bool>()}
-    , m_geometryScaleEnabledFlag{rootNode.require("geometryScaleEnabledFlag").as<bool>()}
+    , m_geometryScaleEnabledFlag{m_haveGeometry && m_haveTexture &&
+                                 rootNode.require("geometryScaleEnabledFlag").as<bool>()}
     , m_dilationIter{componentNode.require("dilate").as<int>()}
-    , m_dynamicDepthRange{rootNode.require("dynamicDepthRange").as<bool>()} {
-
+    , m_dynamicDepthRange{rootNode.require("dynamicDepthRange").as<bool>()}
+    , m_attributeOffsetFlag{m_haveTexture &&
+                            rootNode.require("attributeOffsetEnabledFlag").as<bool>()}
+    , m_attributeOffsetBitCount{
+          m_attributeOffsetFlag ? rootNode.require("attributeOffsetBitCount").as<int>() : 0} {
   if (const auto &node = componentNode.optional("overrideAtlasFrameSizes")) {
     std::cout
         << "WARNING: Overriding atlas frame sizes is meant for internal/preliminary experiments "
@@ -87,17 +91,6 @@ Encoder::Encoder(const Common::Json &rootNode, const Common::Json &componentNode
     const int maxAtlases = rootNode.require("maxAtlases").as<int>();
     const auto numGroups = rootNode.require("numGroups").as<int>();
     m_maxAtlases = maxAtlases / numGroups;
-  }
-
-  if (const auto &node = rootNode.optional("attributeOffsetEnabledFlag")) {
-    m_attributeOffsetFlag = node.as<bool>();
-  } else {
-    m_attributeOffsetFlag = true;
-  }
-  if (const auto &node = rootNode.optional("attributeOffsetBitCount")) {
-    m_attributeOffsetBitCount = node.as<int>();
-  } else {
-    m_attributeOffsetBitCount = 10;
   }
 
   // Read the entity encoding range if exisited

@@ -101,7 +101,7 @@ private: // Encoder_completeAccessUnit.cpp
       std::vector<std::array<std::array<int64_t, 4>, 3>> patchAttrOffsetValuesFullGOP);
   std::array<std::array<int64_t, 4>, 3>
   writePatchInAtlas(const MivBitstream::PatchParams &patchParams,
-                    const Common::TextureDepth16Frame &view, Common::MVD16Frame &atlas,
+                    const Common::TextureDepth16Frame &view, Common::MVD16Frame &frame,
                     int frameId);
 
 private: // Encoder_popFrame.cpp
@@ -133,8 +133,8 @@ private: // Encoder_popFrame.cpp
   int m_dilationIter;
   Common::Vec2i m_entityEncRange;
   bool m_dynamicDepthRange;
-  bool m_attributeOffsetFlag{};
-  int m_attributeOffsetBitCount{};
+  bool m_attributeOffsetFlag;
+  int m_attributeOffsetBitCount;
 
   // View-optimized encoder input
   MivBitstream::EncoderParams m_transportParams;

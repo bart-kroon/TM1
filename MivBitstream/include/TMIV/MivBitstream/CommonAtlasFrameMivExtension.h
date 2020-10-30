@@ -440,8 +440,8 @@ public:
                 const NalUnitHeader &nuh, const CommonAtlasSequenceParameterSetRBSP &casps) const;
 
 private:
-  bool m_came_update_extrinsics_flag{};
-  bool m_came_update_intrinsics_flag{};
+  std::optional<bool> m_came_update_extrinsics_flag{};
+  std::optional<bool> m_came_update_intrinsics_flag{};
   std::optional<bool> m_came_update_depth_quantization_flag{};
   std::optional<MivViewParamsList> m_miv_view_params_list{};
   std::optional<MivViewParamsUpdateExtrinsics> m_miv_view_params_update_extrinsics;

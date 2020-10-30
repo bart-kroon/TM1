@@ -431,14 +431,6 @@ TEST_CASE("caf_miv_extension", "[Common Atlas Frame MIV Extension]") {
   const auto nalCaf = NalUnitHeader{NalUnitType::NAL_CAF, 0, 1};
   const auto nalIdrCaf = NalUnitHeader{NalUnitType::NAL_IDR_CAF, 0, 1};
 
-  SECTION("Default Constructor") {
-    REQUIRE(toString(x) == R"(came_update_extrinsics_flag=false
-came_update_intrinsics_flag=false
-)");
-
-    REQUIRE(bitCodingTest(x, 2, vps, nalCaf, casps));
-  }
-
   SECTION("Initialize view parameters") {
     casps.casps_miv_extension().casme_depth_quantization_params_present_flag(true);
     x.miv_view_params_list()
@@ -494,8 +486,6 @@ mvp_pruning_graph_params_present_flag=true
 pp_is_root_flag[ 0 ]=true
 pp_is_root_flag[ 1 ]=true
 pp_is_root_flag[ 2 ]=true
-came_update_extrinsics_flag=false
-came_update_intrinsics_flag=false
 )");
 
     REQUIRE(bitCodingTest(x, 780, vps, nalIdrCaf, casps));
@@ -504,6 +494,7 @@ came_update_intrinsics_flag=false
   SECTION("Update extrinsics") {
     casps.casps_miv_extension().casme_depth_quantization_params_present_flag(true);
     x.came_update_depth_quantization_flag(false)
+        .came_update_intrinsics_flag(false)
         .came_update_extrinsics_flag(true)
         .miv_view_params_update_extrinsics()
         .mvpue_num_view_updates_minus1(0)
@@ -536,6 +527,7 @@ ce_view_quat_z[ 0 ]=6
     casps.casps_miv_extension().casme_depth_quantization_params_present_flag(true);
     x.came_update_depth_quantization_flag(false)
         .came_update_intrinsics_flag(true)
+        .came_update_extrinsics_flag(false)
         .miv_view_params_update_intrinsics()
         .mvpui_num_view_updates_minus1(0)
         .mvpui_view_idx(0, 6)
@@ -565,8 +557,9 @@ ci_erp_theta_max[ 0 ]=1
 
   SECTION("Update depth quantization") {
     casps.casps_miv_extension().casme_depth_quantization_params_present_flag(true);
-    x.came_update_depth_quantization_flag(false)
-        .came_update_depth_quantization_flag(true)
+    x.came_update_depth_quantization_flag(true)
+        .came_update_extrinsics_flag(false)
+        .came_update_intrinsics_flag(false)
         .miv_view_params_update_depth_quantization()
         .mvpudq_num_view_updates_minus1(0)
         .mvpudq_view_idx(0, 6)
@@ -591,6 +584,7 @@ dq_depth_occ_map_threshold_default[ 0 ]=64
 
   SECTION("came when casme_depth_quantization_params_present_flag=0") {
     casps.casps_miv_extension().casme_depth_quantization_params_present_flag(false);
+    x.came_update_intrinsics_flag(false).came_update_extrinsics_flag(false);
 
     REQUIRE(toString(x) == R"(came_update_extrinsics_flag=false
 came_update_intrinsics_flag=false

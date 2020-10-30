@@ -252,12 +252,4 @@ constexpr auto MivViewParamsList::ViewInAtlas::operator==(const ViewInAtlas &oth
 constexpr auto MivViewParamsList::ViewInAtlas::operator!=(const ViewInAtlas &other) const noexcept {
   return !operator==(other);
 }
-
-constexpr auto CommonAtlasFrameMivExtension::came_irap_flag() const noexcept {
-  return m_came_irap_flag;
-}
-constexpr auto CommonAtlasFrameMivExtension::came_irap_flag(bool value) noexcept -> auto & {
-  m_came_irap_flag = value;
-  return *this;
-}
 } // namespace TMIV::MivBitstream

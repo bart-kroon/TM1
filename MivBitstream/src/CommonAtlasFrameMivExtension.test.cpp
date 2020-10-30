@@ -428,30 +428,15 @@ TEST_CASE("caf_miv_extension", "[Common Atlas Frame MIV Extension]") {
   casps.casps_extension_present_flag(true);
   casps.casps_miv_extension_present_flag(true);
   casps.casps_miv_extension() = {};
+  const auto nalCaf = NalUnitHeader{NalUnitType::NAL_CAF, 0, 1};
+  const auto nalIdrCaf = NalUnitHeader{NalUnitType::NAL_IDR_CAF, 0, 1};
 
   SECTION("Default Constructor") {
-    REQUIRE(toString(x) == R"(came_irap_flag=true
-mvp_num_views_minus1=0
-mvp_view_enabled_present_flag=false
-mvp_explicit_view_id_flag=false
-ce_view_pos_x[ 0 ]=0
-ce_view_pos_y[ 0 ]=0
-ce_view_pos_z[ 0 ]=0
-ce_view_quat_x[ 0 ]=0
-ce_view_quat_y[ 0 ]=0
-ce_view_quat_z[ 0 ]=0
-mvp_intrinsic_params_equal_flag=false
-ci_cam_type[ 0 ]=equirectangular
-ci_projection_plane_width_minus1[ 0 ]=0
-ci_projection_plane_height_minus1[ 0 ]=0
-ci_erp_phi_min[ 0 ]=0
-ci_erp_phi_max[ 0 ]=0
-ci_erp_theta_min[ 0 ]=0
-ci_erp_theta_max[ 0 ]=0
-mvp_pruning_graph_params_present_flag=false
+    REQUIRE(toString(x) == R"(came_update_extrinsics_flag=false
+came_update_intrinsics_flag=false
 )");
 
-    REQUIRE(bitCodingTest(x, 381, vps, casps));
+    REQUIRE(bitCodingTest(x, 2, vps, nalCaf, casps));
   }
 
   SECTION("Initialize view parameters") {
@@ -470,8 +455,7 @@ mvp_pruning_graph_params_present_flag=false
         .ci_ortho_width(4.F)
         .ci_ortho_height(3.F);
 
-    REQUIRE(toString(x) == R"(came_irap_flag=true
-mvp_num_views_minus1=2
+    REQUIRE(toString(x) == R"(miv_view_params_list=mvp_num_views_minus1=2
 mvp_view_enabled_present_flag=true
 mvp_view_enabled_in_atlas_flag[ 0 ][ 0 ]=false
 mvp_view_enabled_in_atlas_flag[ 0 ][ 1 ]=false
@@ -510,16 +494,17 @@ mvp_pruning_graph_params_present_flag=true
 pp_is_root_flag[ 0 ]=true
 pp_is_root_flag[ 1 ]=true
 pp_is_root_flag[ 2 ]=true
+came_update_extrinsics_flag=false
+came_update_intrinsics_flag=false
 )");
 
-    REQUIRE(bitCodingTest(x, 781, vps, casps));
+    REQUIRE(bitCodingTest(x, 780, vps, nalIdrCaf, casps));
   }
 
   SECTION("Update extrinsics") {
     casps.casps_miv_extension().casme_depth_quantization_params_present_flag(true);
-    x.came_irap_flag(false)
+    x.came_update_depth_quantization_flag(false)
         .came_update_extrinsics_flag(true)
-        .came_update_depth_quantization_flag(false)
         .miv_view_params_update_extrinsics()
         .mvpue_num_view_updates_minus1(0)
         .mvpue_view_idx(0, 3)
@@ -531,8 +516,7 @@ pp_is_root_flag[ 2 ]=true
         .ce_view_quat_y(5.F)
         .ce_view_quat_z(6.F);
 
-    REQUIRE(toString(x) == R"(came_irap_flag=false
-came_update_extrinsics_flag=true
+    REQUIRE(toString(x) == R"(came_update_extrinsics_flag=true
 came_update_intrinsics_flag=false
 came_update_depth_quantization_flag=false
 mvpue_num_view_updates_minus1=0
@@ -545,14 +529,13 @@ ce_view_quat_y[ 0 ]=5
 ce_view_quat_z[ 0 ]=6
 )");
 
-    REQUIRE(bitCodingTest(x, 228, vps, casps));
+    REQUIRE(bitCodingTest(x, 227, vps, nalCaf, casps));
   }
 
   SECTION("Update camera intrinsics") {
     casps.casps_miv_extension().casme_depth_quantization_params_present_flag(true);
-    x.came_irap_flag(false)
+    x.came_update_depth_quantization_flag(false)
         .came_update_intrinsics_flag(true)
-        .came_update_depth_quantization_flag(false)
         .miv_view_params_update_intrinsics()
         .mvpui_num_view_updates_minus1(0)
         .mvpui_view_idx(0, 6)
@@ -563,8 +546,7 @@ ce_view_quat_z[ 0 ]=6
         .ci_erp_theta_min(-1.F)
         .ci_erp_theta_max(1.F);
 
-    REQUIRE(toString(x) == R"(came_irap_flag=false
-came_update_extrinsics_flag=false
+    REQUIRE(toString(x) == R"(came_update_extrinsics_flag=false
 came_update_intrinsics_flag=true
 came_update_depth_quantization_flag=false
 mvpui_num_view_updates_minus1=0
@@ -578,12 +560,12 @@ ci_erp_theta_min[ 0 ]=-1
 ci_erp_theta_max[ 0 ]=1
 )");
 
-    REQUIRE(bitCodingTest(x, 204, vps, casps));
+    REQUIRE(bitCodingTest(x, 203, vps, nalCaf, casps));
   }
 
   SECTION("Update depth quantization") {
     casps.casps_miv_extension().casme_depth_quantization_params_present_flag(true);
-    x.came_irap_flag(false)
+    x.came_update_depth_quantization_flag(false)
         .came_update_depth_quantization_flag(true)
         .miv_view_params_update_depth_quantization()
         .mvpudq_num_view_updates_minus1(0)
@@ -593,8 +575,7 @@ ci_erp_theta_max[ 0 ]=1
         .dq_norm_disp_low(1.F)
         .dq_norm_disp_high(100.F);
 
-    REQUIRE(toString(x) == R"(came_irap_flag=false
-came_update_extrinsics_flag=false
+    REQUIRE(toString(x) == R"(came_update_extrinsics_flag=false
 came_update_intrinsics_flag=false
 came_update_depth_quantization_flag=true
 mvpudq_num_view_updates_minus1=0
@@ -605,19 +586,17 @@ dq_norm_disp_high[ 0 ]=100
 dq_depth_occ_map_threshold_default[ 0 ]=64
 )");
 
-    REQUIRE(bitCodingTest(x, 121, vps, casps));
+    REQUIRE(bitCodingTest(x, 120, vps, nalCaf, casps));
   }
 
   SECTION("came when casme_depth_quantization_params_present_flag=0") {
     casps.casps_miv_extension().casme_depth_quantization_params_present_flag(false);
-    x.came_irap_flag(false);
 
-    REQUIRE(toString(x) == R"(came_irap_flag=false
-came_update_extrinsics_flag=false
+    REQUIRE(toString(x) == R"(came_update_extrinsics_flag=false
 came_update_intrinsics_flag=false
 )");
 
-    REQUIRE(bitCodingTest(x, 3, vps, casps));
+    REQUIRE(bitCodingTest(x, 2, vps, nalCaf, casps));
   }
 }
 

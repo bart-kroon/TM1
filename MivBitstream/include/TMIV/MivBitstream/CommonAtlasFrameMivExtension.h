@@ -35,6 +35,7 @@
 #define _TMIV_MIVBITSTREAM_COMMONATLASFRAMEMIVEXTENSION_H_
 
 #include <TMIV/MivBitstream/CommonAtlasSequenceParameterSetRBSP.h>
+#include <TMIV/MivBitstream/NalUnit.h>
 #include <TMIV/MivBitstream/V3cParameterSet.h>
 
 #include <TMIV/Common/Bitstream.h>
@@ -403,7 +404,6 @@ private:
 // 23090-12: caf_miv_extension( )
 class CommonAtlasFrameMivExtension {
 public:
-  [[nodiscard]] constexpr auto came_irap_flag() const noexcept;
   [[nodiscard]] auto came_update_extrinsics_flag() const noexcept -> bool;
   [[nodiscard]] auto came_update_intrinsics_flag() const noexcept -> bool;
   [[nodiscard]] auto came_update_depth_quantization_flag() const noexcept -> bool;
@@ -415,7 +415,6 @@ public:
   [[nodiscard]] auto miv_view_params_update_depth_quantization() const noexcept
       -> const MivViewParamsUpdateDepthQuantization &;
 
-  constexpr auto came_irap_flag(bool value) noexcept -> auto &;
   auto came_update_extrinsics_flag(bool value) noexcept -> CommonAtlasFrameMivExtension &;
   auto came_update_intrinsics_flag(bool value) noexcept -> CommonAtlasFrameMivExtension &;
   auto came_update_depth_quantization_flag(bool value) noexcept -> CommonAtlasFrameMivExtension &;
@@ -434,18 +433,17 @@ public:
   auto operator!=(const CommonAtlasFrameMivExtension &) const noexcept -> bool;
 
   static auto decodeFrom(Common::InputBitstream &bitstream, const V3cParameterSet &vps,
-                         const CommonAtlasSequenceParameterSetRBSP &casps)
+                         const NalUnitHeader &nuh, const CommonAtlasSequenceParameterSetRBSP &casps)
       -> CommonAtlasFrameMivExtension;
 
   void encodeTo(Common::OutputBitstream &bitstream, const V3cParameterSet &vps,
-                const CommonAtlasSequenceParameterSetRBSP &casps) const;
+                const NalUnitHeader &nuh, const CommonAtlasSequenceParameterSetRBSP &casps) const;
 
 private:
-  bool m_came_irap_flag{true};
   bool m_came_update_extrinsics_flag{};
   bool m_came_update_intrinsics_flag{};
   std::optional<bool> m_came_update_depth_quantization_flag{};
-  std::optional<MivViewParamsList> m_miv_view_params_list{MivViewParamsList{}};
+  std::optional<MivViewParamsList> m_miv_view_params_list{};
   std::optional<MivViewParamsUpdateExtrinsics> m_miv_view_params_update_extrinsics;
   std::optional<MivViewParamsUpdateIntrinsics> m_miv_view_params_update_intrinsics;
   std::optional<MivViewParamsUpdateDepthQuantization> m_miv_view_params_update_depth_quantization;

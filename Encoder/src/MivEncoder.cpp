@@ -138,10 +138,10 @@ auto MivEncoder::commonAtlasSubBitstream() -> MivBitstream::AtlasSubBitstream {
 
   if (m_irap) {
     writeNalUnit(asb, nuhCasps, m_params.casps);
-    writeNalUnit(asb, nuhIdrCaf, commonAtlasFrame(), m_params.vps, std::vector{m_params.casps},
-                 maxFrmOrderCntLsb());
+    writeNalUnit(asb, nuhIdrCaf, commonAtlasFrame(), m_params.vps, nuhIdrCaf,
+                 std::vector{m_params.casps}, maxFrmOrderCntLsb());
   } else {
-    writeNalUnit(asb, nuhCaf, commonAtlasFrame(), m_params.vps, std::vector{m_params.casps},
+    writeNalUnit(asb, nuhCaf, commonAtlasFrame(), m_params.vps, nuhCaf, std::vector{m_params.casps},
                  maxFrmOrderCntLsb());
   }
   return asb;
@@ -154,8 +154,7 @@ auto MivEncoder::commonAtlasFrame() const -> MivBitstream::CommonAtlasFrameRBSP 
       .caf_common_atlas_frm_order_cnt_lsb(m_frmOrderCntLsb)
       .caf_extension_present_flag(true)
       .caf_miv_extension_present_flag(true)
-      .caf_miv_extension()
-      .came_irap_flag(m_irap);
+      .caf_miv_extension();
   auto &came = caf.caf_miv_extension();
   if (m_irap) {
     came.miv_view_params_list() = mivViewParamsList();

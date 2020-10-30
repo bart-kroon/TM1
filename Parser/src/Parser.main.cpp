@@ -127,7 +127,7 @@ public:
       return parseCasps(stream);
     case TMIV::MivBitstream::NalUnitType::NAL_CAF:
     case TMIV::MivBitstream::NalUnitType::NAL_IDR_CAF:
-      return parseCaf(stream);
+      return parseCaf(stream, nu.nal_unit_header());
     default:
       std::cout << "Unknown NAL unit:\n" << nu;
     }
@@ -200,9 +200,9 @@ public:
         1U << (casps.casps_log2_max_common_atlas_frame_order_cnt_lsb_minus4() + 4U);
   }
 
-  void parseCaf(std::istream &stream) {
+  void parseCaf(std::istream &stream, const TMIV::MivBitstream::NalUnitHeader &nuh) {
     const auto caf = TMIV::MivBitstream::CommonAtlasFrameRBSP::decodeFrom(
-        stream, m_vps, m_caspsV, m_maxCommonAtlasFrmOrderCntLsb);
+        stream, m_vps, nuh, m_caspsV, m_maxCommonAtlasFrmOrderCntLsb);
     m_log << caf;
   }
 

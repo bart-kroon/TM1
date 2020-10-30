@@ -135,8 +135,8 @@ void CommonAtlasDecoder::decodeCafNalUnit(AccessUnit &au, const MivBitstream::Na
   std::istringstream stream{nu.rbsp()};
 
   VERIFY_MIVBITSTREAM(0 < m_maxCommonAtlasFrmOrderCntLsb);
-  au.caf = MivBitstream::CommonAtlasFrameRBSP::decodeFrom(stream, m_vps, m_caspsV,
-                                                          m_maxCommonAtlasFrmOrderCntLsb);
+  au.caf = MivBitstream::CommonAtlasFrameRBSP::decodeFrom(stream, m_vps, nu.nal_unit_header(),
+                                                          m_caspsV, m_maxCommonAtlasFrmOrderCntLsb);
   au.casps = caspsById(m_caspsV, au.caf.caf_common_atlas_sequence_parameter_set_id());
 }
 

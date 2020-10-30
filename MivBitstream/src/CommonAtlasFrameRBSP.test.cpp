@@ -38,6 +38,8 @@
 namespace TMIV::MivBitstream {
 TEST_CASE("common_atlas_frame_rbsp", "[Common Atlas Frame RBSP]") {
   auto x = CommonAtlasFrameRBSP{};
+  const auto nuhIdrCaf = NalUnitHeader{NalUnitType::NAL_IDR_CAF, 0, 1};
+  const auto nuhCaf = NalUnitHeader{NalUnitType::NAL_CAF, 0, 1};
   const auto maxCommonAtlasFrmOrderCntLsb = 32;
 
   auto vps = V3cParameterSet{};
@@ -63,7 +65,7 @@ caf_common_atlas_frm_order_cnt_lsb=0
 caf_extension_present_flag=false
 )");
 
-    REQUIRE(byteCodingTest(x, 2, vps, caspsV, maxCommonAtlasFrmOrderCntLsb));
+    REQUIRE(byteCodingTest(x, 2, vps, nuhIdrCaf, caspsV, maxCommonAtlasFrmOrderCntLsb));
   }
 
   SECTION("Extension present, but no MIV extension") {
@@ -83,7 +85,7 @@ caf_extension_data_flag=true
 caf_extension_data_flag=false
 )");
 
-    REQUIRE(byteCodingTest(x, 3, vps, caspsV, maxCommonAtlasFrmOrderCntLsb));
+    REQUIRE(byteCodingTest(x, 3, vps, nuhIdrCaf, caspsV, maxCommonAtlasFrmOrderCntLsb));
   }
 
   SECTION("MIV extension present") {
@@ -98,28 +100,11 @@ caf_common_atlas_frm_order_cnt_lsb=30
 caf_extension_present_flag=true
 caf_miv_extension_present_flag=true
 caf_extension_7bits=0
-came_irap_flag=true
-mvp_num_views_minus1=0
-mvp_view_enabled_present_flag=false
-mvp_explicit_view_id_flag=false
-ce_view_pos_x[ 0 ]=0
-ce_view_pos_y[ 0 ]=0
-ce_view_pos_z[ 0 ]=0
-ce_view_quat_x[ 0 ]=0
-ce_view_quat_y[ 0 ]=0
-ce_view_quat_z[ 0 ]=0
-mvp_intrinsic_params_equal_flag=false
-ci_cam_type[ 0 ]=equirectangular
-ci_projection_plane_width_minus1[ 0 ]=0
-ci_projection_plane_height_minus1[ 0 ]=0
-ci_erp_phi_min[ 0 ]=0
-ci_erp_phi_max[ 0 ]=0
-ci_erp_theta_min[ 0 ]=0
-ci_erp_theta_max[ 0 ]=0
-mvp_pruning_graph_params_present_flag=false
+came_update_extrinsics_flag=false
+came_update_intrinsics_flag=false
 )");
 
-    REQUIRE(byteCodingTest(x, 50, vps, caspsV, maxCommonAtlasFrmOrderCntLsb));
+    REQUIRE(byteCodingTest(x, 3, vps, nuhCaf, caspsV, maxCommonAtlasFrmOrderCntLsb));
   }
 }
 } // namespace TMIV::MivBitstream

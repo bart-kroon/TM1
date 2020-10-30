@@ -46,7 +46,7 @@ using QuatD = Quaternion<double>;
 // Quaternion product: a b
 template <typename T1, typename T2>
 auto operator*(const Quaternion<T1> &a, const Quaternion<T2> &b) {
-  using R = decltype(T1() * T2());
+  using R = std::common_type_t<T1, T2>;
   return Quaternion<R>{
       a.w() * b.x() + a.x() * b.w() + a.y() * b.z() - a.z() * b.y(), // x
       a.w() * b.y() - a.x() * b.z() + a.y() * b.w() + a.z() * b.x(), // y
@@ -62,7 +62,7 @@ template <typename T> auto conj(const Quaternion<T> &q) {
 
 // Unit quaternion test: ||q|| == 1
 template <typename T, typename Tolerance = T>
-auto normalized(const Quaternion<T> &q, Tolerance tol = T(1e-6F)) {
+auto normalized(const Quaternion<T> &q, Tolerance tol = static_cast<T>(1e-6F)) {
   return (norm(q) - 1) <= tol;
 }
 
@@ -98,8 +98,8 @@ template <typename T> auto euler2quat(const stack::Vec3<T> &eulerAngles) {
   const auto p = eulerAngles[1]; // pitch rotation [rad]
   const auto r = eulerAngles[2]; // roll rotation [rad]
 
-  constexpr auto zero = T();
-  constexpr auto half = T(0.5);
+  constexpr auto zero = T{};
+  constexpr auto half = T{0.5F};
 
   const auto qy = Q{zero, zero, sin(half * y), cos(half * y)};
   const auto qp = Q{zero, sin(half * p), zero, cos(half * p)};
@@ -109,9 +109,9 @@ template <typename T> auto euler2quat(const stack::Vec3<T> &eulerAngles) {
 }
 
 template <typename T> auto quat2euler(const Quaternion<T> &q) {
-  constexpr auto one = T(1.);
-  constexpr auto two = T(2.);
-  constexpr auto halfPi = T(M_PI2);
+  constexpr auto one = T{1.F};
+  constexpr auto two = T{2.F};
+  constexpr auto halfPi = static_cast<T>(M_PI2);
 
   const auto cYaw = one - two * (sqr(q.y()) + sqr(q.z()));
   const auto sYaw = two * (q.w() * q.z() + q.x() * q.y());
@@ -137,8 +137,8 @@ template <typename T> auto quat2euler(const Quaternion<T> &q) {
 template <typename T> auto rotationMatrix(const Quaternion<T> &q) {
   assert(normalized(q));
 
-  constexpr auto one = T(1);
-  constexpr auto two = T(2);
+  constexpr auto one = T{1};
+  constexpr auto two = T{2};
 
   return stack::Mat3x3<T>{one - two * (q.y() * q.y() + q.z() * q.z()),  // R_xx
                           two * (q.x() * q.y() - q.z() * q.w()),        // R_xy
@@ -160,7 +160,7 @@ auto greatCircleDistance(const Quaternion<T1> &q1, const Quaternion<T2> &q2) {
   using std::acos;
   using std::atan;
 
-  using R = decltype(T1() * T2());
+  using R = std::common_type_t<T1, T2>;
   const auto forward = stack::Vec3<R>{R(1), R(0), R(0)};
   const auto v1 = rotate(forward, q1);
   const auto v2 = rotate(forward, q2);

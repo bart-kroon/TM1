@@ -379,7 +379,7 @@ public:
   using size_type = stack::size_type;
   using container_type = Array<T, I...>;
   using tuple_type = std::array<stack::size_type, sizeof...(I)>;
-  template <typename U> using promoted_type = Array<decltype(T(0) * U(0)), I...>;
+  template <typename U> using promoted_type = Array<std::common_type_t<T, U>, I...>;
 
 protected:
   class Helper {
@@ -411,7 +411,7 @@ public:
   explicit Array(const OTHER &that) : Array() {
     if ((dim() == that.dim()) &&
         std::equal(that.sizes().begin(), that.sizes().end(), sizes().begin())) {
-      std::transform(that.begin(), that.end(), begin(), [](auto v) { return T(v); });
+      std::transform(that.begin(), that.end(), begin(), [](auto v) { return static_cast<T>(v); });
     }
   }
   //! \brief Move constructor.
@@ -441,7 +441,7 @@ public:
       assert(that.size(i) == 1);
     }
 #endif
-    std::transform(that.begin(), that.end(), begin(), [](auto v) { return T(v); });
+    std::transform(that.begin(), that.end(), begin(), [](auto v) { return static_cast<T>(v); });
     return *this;
   }
   //! \brief Move assignment.
@@ -647,7 +647,8 @@ public:
   }
   template <typename OTHER> static auto from(const OTHER &other) -> container_type {
     container_type out;
-    std::transform(other.begin(), other.end(), out.begin(), [](auto v) { return T(v); });
+    std::transform(other.begin(), other.end(), out.begin(),
+                   [](auto v) { return static_cast<T>(v); });
     return out;
   }
 };
@@ -674,7 +675,7 @@ public:
   using size_type = heap::size_type;
   using container_type = Array<D, T>;
   using tuple_type = std::array<heap::size_type, D>;
-  template <typename U> using promoted_type = Array<D, decltype(T{} * U{})>;
+  template <typename U> using promoted_type = Array<D, std::common_type_t<T, U>>;
 
 protected:
   std::array<size_type, D> m_size;
@@ -709,7 +710,7 @@ public:
     std::fill(sz.begin() + that.sizes().size(), sz.end(), 1);
 
     this->resize(sz);
-    std::transform(that.begin(), that.end(), begin(), [](auto v) { return T(v); });
+    std::transform(that.begin(), that.end(), begin(), [](auto v) { return static_cast<T>(v); });
 
     m_property = that.getProperty();
   }
@@ -734,7 +735,7 @@ public:
     std::fill(sz.begin() + that.sizes().size(), sz.end(), 1);
 
     this->resize(sz);
-    std::transform(that.begin(), that.end(), begin(), [](auto v) { return T(v); });
+    std::transform(that.begin(), that.end(), begin(), [](auto v) { return static_cast<T>(v); });
 
     m_property = that.getProperty();
 
@@ -1018,7 +1019,7 @@ public:
   using size_type = shallow::size_type;
   using container_type = Array<D, T>;
   using tuple_type = std::array<shallow::size_type, D>;
-  template <typename U> using promoted_type = Array<D, decltype(T(0) * U(0))>;
+  template <typename U> using promoted_type = Array<D, std::common_type_t<T, U>>;
 
 protected:
   std::array<size_type, D> m_size;
@@ -1080,7 +1081,7 @@ public:
       std::fill(sz.begin() + that.sizes().size(), sz.end(), 1);
 
       this->reshape(sz);
-      std::transform(that.begin(), that.end(), begin(), [](auto v) { return T(v); });
+      std::transform(that.begin(), that.end(), begin(), [](auto v) { return static_cast<T>(v); });
 
       m_property = that.getProperty();
     }

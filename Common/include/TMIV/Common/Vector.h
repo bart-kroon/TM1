@@ -144,8 +144,8 @@ auto operator<<(std::ostream &stream, const Vector<T, M> &v) -> std::ostream & {
 
 //! \brief Returns the cross-product of a and b.
 template <typename T, typename U>
-auto cross(const Vec3<T> &a, const Vec3<U> &b) -> Vec3<decltype(T(0) * U(0))> {
-  Vec3<decltype(T(0) * U(0))> out;
+auto cross(const Vec3<T> &a, const Vec3<U> &b) -> Vec3<std::common_type_t<T, U>> {
+  Vec3<std::common_type_t<T, U>> out;
 
   out[0] = a[1] * b[2] - a[2] * b[1];
   out[1] = a[2] * b[0] - a[0] * b[2];
@@ -156,7 +156,7 @@ auto cross(const Vec3<T> &a, const Vec3<U> &b) -> Vec3<decltype(T(0) * U(0))> {
 
 //! \brief Returns the triple-product of a, b and c (a . (b x c)).
 template <typename T, typename U, typename V>
-decltype(T(0) * U(0) * V(0)) triple(const Vec3<T> &a, const Vec3<U> &b, const Vec3<V> &c) {
+auto triple(const Vec3<T> &a, const Vec3<U> &b, const Vec3<V> &c) {
   return dot(a, cross(b, c));
 }
 
@@ -248,7 +248,7 @@ template <typename V> auto norm_inf(const V &v) {
       *std::max_element(v.begin(), v.end(), [](auto v1, auto v2) { return abs(v1) < abs(v2); }));
 }
 //! \brief Returns v / ||v|| and optionally ||v||.
-template <typename V, typename U = decltype(std::abs(std::declval<typename V::value_type>()))>
+template <typename V, typename U = typename V::value_type>
 auto unit(const V &v, U *n = nullptr) -> V {
   U m = norm(v);
   if (n) {
@@ -257,7 +257,7 @@ auto unit(const V &v, U *n = nullptr) -> V {
   return v / m;
 }
 //! \brief Normalizes v and optionally returns ||v||.
-template <typename V, typename U = decltype(std::abs(std::declval<typename V::value_type>()))>
+template <typename V, typename U = typename V::value_type>
 auto normalize(V &v, U *n = nullptr) -> V & {
   U m = norm(v);
   if (n) {
@@ -271,18 +271,20 @@ auto normalize(V &v, U *n = nullptr) -> V & {
 //
 // This is also known as the normalized inner product of two vectors, or the
 // cosine measure.
-template <typename V1, typename V2>
-decltype(typename V1::value_type(0) * typename V2::value_type(0)) cosAngle(const V1 &v1,
-                                                                           const V2 &v2) {
-  return dot(v1, v2) / sqrt(norm2(v1) * norm2(v2));
+template <typename V1, typename V2,
+          typename R = std::common_type_t<typename V1::value_type, typename V2::value_type>>
+auto cosAngle(const V1 &v1, const V2 &v2) -> R {
+  return static_cast<R>(dot(v1, v2) / sqrt(norm2(v1) * norm2(v2)));
 }
 
 //! \brief Returns the angle between the two vectors given as
 //! arguments.
-template <typename V1, typename V2> auto angle(const V1 &v1, const V2 &v2) {
+template <typename V1, typename V2,
+          typename R = std::common_type_t<typename V1::value_type, typename V2::value_type>>
+auto angle(const V1 &v1, const V2 &v2) -> R {
   using std::acos;
   using std::min;
-  return acos(min(1.F, cosAngle(v1, v2)));
+  return acos(min(R{1.F}, cosAngle(v1, v2)));
 }
 
 } // namespace TMIV::Common

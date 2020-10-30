@@ -34,42 +34,42 @@
 namespace TMIV::Common {
 namespace detail {
 template <typename R, typename T, typename X> auto elementwiseProduct(const T &A, X B) -> R {
-  auto result = R(A);
+  auto result = R{A};
   for (auto &y : result) {
     y *= B;
   }
   return result;
 }
 template <typename T, typename X> auto elementwiseMin(const T &A, X B) -> T {
-  auto result = T(A);
+  auto result = A;
   for (auto &y : result) {
     y = std::min(y, B);
   }
   return result;
 }
 template <typename T, typename X> auto elementwiseMax(const T &A, X B) -> T {
-  auto result = T(A);
+  auto result = A;
   for (auto &y : result) {
     y = std::max(y, B);
   }
   return result;
 }
 template <typename T> auto elementwiseMin(const T &A, const T &B) -> T {
-  auto result = T(A);
+  auto result = A;
   for (size_t i = 0; i < result.size(); ++i) {
     result[i] = std::min(result[i], B[i]);
   }
   return result;
 }
 template <typename T> auto elementwiseMax(const T &A, const T &B) -> T {
-  auto result = T(A);
+  auto result = A;
   for (size_t i = 0; i < result.size(); ++i) {
     result[i] = std::max(result[i], B[i]);
   }
   return result;
 }
 template <typename T> auto elementwiseAbs(const T &A) -> T {
-  auto result = T(A);
+  auto result = A;
   for (auto &y : result) {
     y = std::abs(y);
   }
@@ -78,50 +78,52 @@ template <typename T> auto elementwiseAbs(const T &A) -> T {
 } // namespace detail
 
 template <typename T, typename X, typename>
-auto operator*(const heap::Vector<T> &A, X B) -> heap::Vector<decltype(A(0) * B)> {
-  using R = heap::Vector<decltype(A(0) * B)>;
+auto operator*(const heap::Vector<T> &A, X B) -> heap::Vector<std::common_type_t<T, X>> {
+  using R = heap::Vector<std::common_type_t<T, X>>;
   return detail::elementwiseProduct<R>(A, B);
 }
 
 template <typename T, typename X, typename>
-auto operator*(X B, const heap::Vector<T> &A) -> heap::Vector<decltype(A(0) * B)> {
-  using R = heap::Vector<decltype(A(0) * B)>;
+auto operator*(X B, const heap::Vector<T> &A) -> heap::Vector<std::common_type_t<T, X>> {
+  using R = heap::Vector<std::common_type_t<T, X>>;
   return detail::elementwiseProduct<R>(A, B);
 }
 
 template <typename T, size_t M, typename X, typename>
-auto operator*(const stack::Vector<T, M> &A, X B) -> stack::Vector<decltype(A(0) * B), M> {
-  using R = stack::Vector<decltype(A(0) * B), M>;
+auto operator*(const stack::Vector<T, M> &A, X B) -> stack::Vector<std::common_type_t<T, X>, M> {
+  using R = stack::Vector<std::common_type_t<T, X>, M>;
   return detail::elementwiseProduct<R>(A, B);
 }
 
 template <typename T, size_t M, typename X, typename>
-auto operator*(X B, const stack::Vector<T, M> &A) -> stack::Vector<decltype(A(0) * B), M> {
-  using R = stack::Vector<decltype(A(0) * B), M>;
+auto operator*(X B, const stack::Vector<T, M> &A) -> stack::Vector<std::common_type_t<T, X>, M> {
+  using R = stack::Vector<std::common_type_t<T, X>, M>;
   return detail::elementwiseProduct<R>(A, B);
 }
 
 template <typename T, typename X, typename>
-auto operator*(const heap::Matrix<T> &A, X B) -> heap::Matrix<decltype(A(0, 0) * B)> {
-  using R = heap::Matrix<decltype(A(0) * B)>;
+auto operator*(const heap::Matrix<T> &A, X B) -> heap::Matrix<std::common_type_t<T, X>> {
+  using R = heap::Matrix<std::common_type_t<T, X>>;
   return detail::elementwiseProduct<R>(A, B);
 }
 
 template <typename T, typename X, typename>
-auto operator*(X B, const heap::Matrix<T> &A) -> heap::Matrix<decltype(A(0, 0) * B)> {
-  using R = heap::Matrix<decltype(A(0, 0) * B)>;
+auto operator*(X B, const heap::Matrix<T> &A) -> heap::Matrix<std::common_type_t<T, X>> {
+  using R = heap::Matrix<std::common_type_t<T, X>>;
   return detail::elementwiseProduct<R>(A, B);
 }
 
 template <typename T, size_t M, size_t N, typename X, typename>
-auto operator*(const stack::Matrix<T, M, N> &A, X B) -> stack::Matrix<decltype(A(0, 0) * B), M, N> {
-  using R = stack::Matrix<decltype(A(0, 0) * B), M, N>;
+auto operator*(const stack::Matrix<T, M, N> &A, X B)
+    -> stack::Matrix<std::common_type_t<T, X>, M, N> {
+  using R = stack::Matrix<std::common_type_t<T, X>, M, N>;
   return detail::elementwiseProduct<R>(A, B);
 }
 
 template <typename T, size_t M, size_t N, typename X, typename>
-auto operator*(X B, const stack::Matrix<T, M, N> &A) -> stack::Matrix<decltype(A(0, 0) * B), M, N> {
-  using R = stack::Matrix<decltype(A(0, 0) * B), M, N>;
+auto operator*(X B, const stack::Matrix<T, M, N> &A)
+    -> stack::Matrix<std::common_type_t<T, X>, M, N> {
+  using R = stack::Matrix<std::common_type_t<T, X>, M, N>;
   return detail::elementwiseProduct<R>(A, B);
 }
 
@@ -191,20 +193,20 @@ void matprod(shallow::Matrix<T> A, char mA, shallow::Matrix<T> B, char mB, shall
     if (mB == 'N') {
       for (size_type i = 0; i < C.m(); i++) {
         for (size_type j = 0; j < C.n(); j++) {
-          C(i, j) = std::inner_product(A.row_begin(i), A.row_end(i), B.col_begin(j), T(0));
+          C(i, j) = std::inner_product(A.row_begin(i), A.row_end(i), B.col_begin(j), T{});
         }
       }
     } else if (mB == 'T') {
       for (size_type i = 0; i < C.m(); i++) {
         for (size_type j = 0; j < C.n(); j++) {
-          C(i, j) = std::inner_product(A.row_begin(i), A.row_end(i), B.row_begin(j), T(0));
+          C(i, j) = std::inner_product(A.row_begin(i), A.row_end(i), B.row_begin(j), T{});
         }
       }
     } else {
       for (size_type i = 0; i < C.m(); i++) {
         for (size_type j = 0; j < C.n(); j++) {
           C(i, j) = std::inner_product(
-              A.row_begin(i), A.row_end(i), B.row_begin(j), T(0),
+              A.row_begin(i), A.row_end(i), B.row_begin(j), T{},
               [](const T &v1, const T &v2) { return (v1 + v2); },
               [](const T &v1, const T &v2) { return (v1 * conjugate(v2)); });
         }
@@ -214,20 +216,20 @@ void matprod(shallow::Matrix<T> A, char mA, shallow::Matrix<T> B, char mB, shall
     if (mB == 'N') {
       for (size_type i = 0; i < C.m(); i++) {
         for (size_type j = 0; j < C.n(); j++) {
-          C(i, j) = std::inner_product(A.col_begin(i), A.col_end(i), B.col_begin(j), T(0));
+          C(i, j) = std::inner_product(A.col_begin(i), A.col_end(i), B.col_begin(j), T{});
         }
       }
     } else if (mB == 'T') {
       for (size_type i = 0; i < C.m(); i++) {
         for (size_type j = 0; j < C.n(); j++) {
-          C(i, j) = std::inner_product(A.col_begin(i), A.col_end(i), B.row_begin(j), T(0));
+          C(i, j) = std::inner_product(A.col_begin(i), A.col_end(i), B.row_begin(j), T{});
         }
       }
     } else {
       for (size_type i = 0; i < C.m(); i++) {
         for (size_type j = 0; j < C.n(); j++) {
           C(i, j) = std::inner_product(
-              A.col_begin(i), A.col_end(i), B.row_begin(j), T(0),
+              A.col_begin(i), A.col_end(i), B.row_begin(j), T{},
               [](const T &v1, const T &v2) { return (v1 + v2); },
               [](const T &v1, const T &v2) { return (v1 * conjugate(v2)); });
         }
@@ -238,7 +240,7 @@ void matprod(shallow::Matrix<T> A, char mA, shallow::Matrix<T> B, char mB, shall
       for (size_type i = 0; i < C.m(); i++) {
         for (size_type j = 0; j < C.n(); j++) {
           C(i, j) = std::inner_product(
-              A.col_begin(i), A.col_end(i), B.col_begin(j), T(0),
+              A.col_begin(i), A.col_end(i), B.col_begin(j), T{},
               [](const T &v1, const T &v2) { return (v1 + v2); },
               [](const T &v1, const T &v2) { return (conjugate(v1) * v2); });
         }
@@ -247,7 +249,7 @@ void matprod(shallow::Matrix<T> A, char mA, shallow::Matrix<T> B, char mB, shall
       for (size_type i = 0; i < C.m(); i++) {
         for (size_type j = 0; j < C.n(); j++) {
           C(i, j) = std::inner_product(
-              A.col_begin(i), A.col_end(i), B.row_begin(j), T(0),
+              A.col_begin(i), A.col_end(i), B.row_begin(j), T{},
               [](const T &v1, const T &v2) { return (v1 + v2); },
               [](const T &v1, const T &v2) { return (conjugate(v1) * v2); });
         }
@@ -256,7 +258,7 @@ void matprod(shallow::Matrix<T> A, char mA, shallow::Matrix<T> B, char mB, shall
       for (size_type i = 0; i < C.m(); i++) {
         for (size_type j = 0; j < C.n(); j++) {
           C(i, j) = std::inner_product(
-              A.col_begin(i), A.col_end(i), B.row_begin(j), T(0),
+              A.col_begin(i), A.col_end(i), B.row_begin(j), T{},
               [](const T &v1, const T &v2) { return (v1 + v2); },
               [](const T &v1, const T &v2) { return (conjugate(v1) * conjugate(v2)); });
         }
@@ -282,57 +284,57 @@ template <typename MAT> auto matprod(const MAT &A, char mA, const MAT &B, char m
 
 template <typename T, typename U>
 auto operator*(const heap::Matrix<T> &A, const heap::Vector<U> &B)
-    -> heap::Vector<decltype(T(0) * U(0))> {
-  heap::Vector<decltype(T(0) * U(0))> out;
+    -> heap::Vector<std::common_type_t<T, U>> {
+  heap::Vector<std::common_type_t<T, U>> out;
   return matprod(A, 'N', B, 'N', out);
 }
 
 template <typename T, typename U, Array::size_type M>
 auto operator*(const heap::Matrix<T> &A, const stack::Vector<U, M> &B)
-    -> heap::Vector<decltype(T(0) * U(0))> {
-  heap::Vector<decltype(T(0) * U(0))> out;
+    -> heap::Vector<std::common_type_t<T, U>> {
+  heap::Vector<std::common_type_t<T, U>> out;
   return matprod(A, 'N', B, 'N', out);
 }
 
 template <typename T, typename U>
 auto operator*(const heap::Matrix<T> &A, const heap::Matrix<U> &B)
-    -> heap::Matrix<decltype(T(0) * U(0))> {
-  heap::Matrix<decltype(T(0) * U(0))> out;
+    -> heap::Matrix<std::common_type_t<T, U>> {
+  heap::Matrix<std::common_type_t<T, U>> out;
   return matprod(A, 'N', B, 'N', out);
 }
 
 template <typename T, typename U, Array::size_type M, Array::size_type N>
 auto operator*(const heap::Matrix<T> &A, const stack::Matrix<U, M, N> &B)
-    -> heap::Matrix<decltype(T(0) * U(0))> {
-  heap::Matrix<decltype(T(0) * U(0))> out;
+    -> heap::Matrix<std::common_type_t<T, U>> {
+  heap::Matrix<std::common_type_t<T, U>> out;
   return matprod(A, 'N', B, 'N', out);
 }
 
 template <typename T, typename U, Array::size_type M, Array::size_type N>
 auto operator*(const stack::Matrix<T, M, N> &A, const stack::Vector<U, N> &B)
-    -> stack::Vector<decltype(T(0) * U(0)), M> {
-  stack::Vector<decltype(T(0) * U(0)), M> out;
+    -> stack::Vector<std::common_type_t<T, U>, M> {
+  stack::Vector<std::common_type_t<T, U>, M> out;
   return matprod(A, 'N', B, 'N', out);
 }
 
 template <typename T, typename U, Array::size_type M, Array::size_type N>
 auto operator*(const stack::Matrix<T, M, N> &A, const heap::Vector<U> &B)
-    -> heap::Vector<decltype(T(0) * U(0))> {
-  heap::Vector<decltype(T(0) * U(0))> out;
+    -> heap::Vector<std::common_type_t<T, U>> {
+  heap::Vector<std::common_type_t<T, U>> out;
   return matprod(A, 'N', B, 'N', out);
 }
 
 template <typename T, typename U, Array::size_type M, Array::size_type N>
 auto operator*(const stack::Matrix<T, M, N> &A, const heap::Matrix<U> &B)
-    -> heap::Matrix<decltype(T(0) * U(0))> {
-  heap::Matrix<decltype(T(0) * U(0))> out;
+    -> heap::Matrix<std::common_type_t<T, U>> {
+  heap::Matrix<std::common_type_t<T, U>> out;
   return matprod(A, 'N', B, 'N', out);
 }
 
 template <typename T, typename U, Array::size_type M, Array::size_type N, Array::size_type O>
 auto operator*(const stack::Matrix<T, M, N> &A, const stack::Matrix<U, N, O> &B)
-    -> stack::Matrix<decltype(T(0) * U(0)), M, O> {
-  stack::Matrix<decltype(T(0) * U(0)), M, O> out;
+    -> stack::Matrix<std::common_type_t<T, U>, M, O> {
+  stack::Matrix<std::common_type_t<T, U>, M, O> out;
   return matprod(A, 'N', B, 'N', out);
 }
 
@@ -517,7 +519,7 @@ template <typename T> auto det(shallow::Matrix<T> A, int *info) -> T {
   heap::Matrix<T> LU;
   std::vector<int> P;
   int n = PLU(A, LU, P);
-  T d = std::accumulate(LU.diag_begin(), LU.diag_end(), T(1), [](T v1, T v2) { return (v1 * v2); });
+  T d = std::accumulate(LU.diag_begin(), LU.diag_end(), T{1}, [](T v1, T v2) { return (v1 * v2); });
 
   if (n % 2) {
     d = -d;
@@ -575,7 +577,7 @@ auto mldivide(shallow::Matrix<T> A, shallow::Matrix<T> B, shallow::Matrix<T> out
       Y(i, j) = B(P[i], j);
 
       if (0 < i) {
-        Y(i, j) -= std::inner_product(LU.row_begin(i), LU.row_begin(i) + i, Y.col_begin(j), T(0));
+        Y(i, j) -= std::inner_product(LU.row_begin(i), LU.row_begin(i) + i, Y.col_begin(j), T{});
       }
     }
   }
@@ -591,7 +593,7 @@ auto mldivide(shallow::Matrix<T> A, shallow::Matrix<T> B, shallow::Matrix<T> out
 
       if (0 < i) {
         out(k, j) -= std::inner_product(LU.row_begin(k) + m - i, LU.row_end(k),
-                                        out.col_begin(j) + m - i, T(0)) /
+                                        out.col_begin(j) + m - i, T{}) /
                      LU(k, k);
       }
     }
@@ -640,8 +642,8 @@ auto mrdivide(shallow::Matrix<T> A, shallow::Matrix<T> B, shallow::Matrix<T> out
       Y(i, j) = A(i, j) / LU(j, j);
 
       if (0 < j) {
-        Y(i, j) -= std::inner_product(Y.row_begin(i), Y.row_begin(i) + j, LU.col_begin(j), T(0)) /
-                   LU(j, j);
+        Y(i, j) -=
+            std::inner_product(Y.row_begin(i), Y.row_begin(i) + j, LU.col_begin(j), T{}) / LU(j, j);
       }
     }
   }
@@ -655,7 +657,7 @@ auto mrdivide(shallow::Matrix<T> A, shallow::Matrix<T> B, shallow::Matrix<T> out
 
       if (0 < j) {
         Y(i, k) -=
-            std::inner_product(Y.row_begin(i) + n - j, Y.row_end(i), LU.col_begin(k) + n - j, T(0));
+            std::inner_product(Y.row_begin(i) + n - j, Y.row_end(i), LU.col_begin(k) + n - j, T{});
       }
 
       out(i, P[k]) = Y(i, k);

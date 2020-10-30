@@ -41,13 +41,13 @@
 namespace TMIV::Common {
 // Vector x Scalar and Scalar x Vector
 template <typename T, typename X, typename = std::enable_if_t<std::is_arithmetic_v<X>>>
-auto operator*(const heap::Vector<T> &A, X B) -> heap::Vector<decltype(A(0) * B)>;
+auto operator*(const heap::Vector<T> &A, X B) -> heap::Vector<std::common_type_t<T, X>>;
 template <typename T, typename X, typename = std::enable_if_t<std::is_arithmetic_v<X>>>
-auto operator*(X B, const heap::Vector<T> &A) -> heap::Vector<decltype(A(0) * B)>;
+auto operator*(X B, const heap::Vector<T> &A) -> heap::Vector<std::common_type_t<T, X>>;
 template <typename T, size_t M, typename X, typename = std::enable_if_t<std::is_arithmetic_v<X>>>
-auto operator*(const stack::Vector<T, M> &A, X B) -> stack::Vector<decltype(A(0) * B), M>;
+auto operator*(const stack::Vector<T, M> &A, X B) -> stack::Vector<std::common_type_t<T, X>, M>;
 template <typename T, size_t M, typename X, typename = std::enable_if_t<std::is_arithmetic_v<X>>>
-auto operator*(X B, const stack::Vector<T, M> &A) -> stack::Vector<decltype(A(0) * B), M>;
+auto operator*(X B, const stack::Vector<T, M> &A) -> stack::Vector<std::common_type_t<T, X>, M>;
 
 // Vector-scalar & scalar-vector min
 template <typename T> auto min(const heap::Vector<T> &A, T B) -> heap::Vector<T>;
@@ -79,15 +79,17 @@ template <typename T, size_t M> auto abs(const stack::Vector<T, M> &A) -> stack:
 
 // Matrix x Scalar and Scalar x Matrix
 template <typename T, typename X, typename = std::enable_if_t<std::is_arithmetic_v<X>>>
-auto operator*(const heap::Matrix<T> &A, X B) -> heap::Matrix<decltype(A(0, 0) * B)>;
+auto operator*(const heap::Matrix<T> &A, X B) -> heap::Matrix<std::common_type_t<T, X>>;
 template <typename T, typename X, typename = std::enable_if_t<std::is_arithmetic_v<X>>>
-auto operator*(X B, const heap::Matrix<T> &A) -> heap::Matrix<decltype(A(0, 0) * B)>;
+auto operator*(X B, const heap::Matrix<T> &A) -> heap::Matrix<std::common_type_t<T, X>>;
 template <typename T, size_t M, size_t N, typename X,
           typename = std::enable_if_t<std::is_arithmetic_v<X>>>
-auto operator*(const stack::Matrix<T, M, N> &A, X B) -> stack::Matrix<decltype(A(0, 0) * B), M, N>;
+auto operator*(const stack::Matrix<T, M, N> &A, X B)
+    -> stack::Matrix<std::common_type_t<T, X>, M, N>;
 template <typename T, size_t M, size_t N, typename X,
           typename = std::enable_if_t<std::is_arithmetic_v<X>>>
-auto operator*(X B, const stack::Matrix<T, M, N> &A) -> stack::Matrix<decltype(A(0, 0) * B), M, N>;
+auto operator*(X B, const stack::Matrix<T, M, N> &A)
+    -> stack::Matrix<std::common_type_t<T, X>, M, N>;
 
 //! \brief Matrix product.
 template <typename MAT1, typename MAT2, typename MAT3>
@@ -97,29 +99,29 @@ template <typename MAT> auto matprod(const MAT &A, char mA, const MAT &B, char m
 //! \brief Matrix product operator
 template <typename T, typename U>
 auto operator*(const heap::Matrix<T> &A, const heap::Vector<U> &B)
-    -> heap::Vector<decltype(T(0) * U(0))>;
+    -> heap::Vector<std::common_type_t<T, U>>;
 template <typename T, typename U, Array::size_type M>
 auto operator*(const heap::Matrix<T> &A, const stack::Vector<U, M> &B)
-    -> heap::Vector<decltype(T(0) * U(0))>;
+    -> heap::Vector<std::common_type_t<T, U>>;
 template <typename T, typename U>
 auto operator*(const heap::Matrix<T> &A, const heap::Matrix<U> &B)
-    -> heap::Matrix<decltype(T(0) * U(0))>;
+    -> heap::Matrix<std::common_type_t<T, U>>;
 template <typename T, typename U, Array::size_type M, Array::size_type N>
 auto operator*(const heap::Matrix<T> &A, const stack::Matrix<U, M, N> &B)
-    -> heap::Matrix<decltype(T(0) * U(0))>;
+    -> heap::Matrix<std::common_type_t<T, U>>;
 
 template <typename T, typename U, Array::size_type M, Array::size_type N>
 auto operator*(const stack::Matrix<T, M, N> &A, const stack::Vector<U, N> &B)
-    -> stack::Vector<decltype(T(0) * U(0)), M>;
+    -> stack::Vector<std::common_type_t<T, U>, M>;
 template <typename T, typename U, Array::size_type M, Array::size_type N>
 auto operator*(const stack::Matrix<T, M, N> &A, const heap::Vector<U> &B)
-    -> heap::Vector<decltype(T(0) * U(0))>;
+    -> heap::Vector<std::common_type_t<T, U>>;
 template <typename T, typename U, Array::size_type M, Array::size_type N>
 auto operator*(const stack::Matrix<T, M, N> &A, const heap::Matrix<U> &B)
-    -> heap::Matrix<decltype(T(0) * U(0))>;
+    -> heap::Matrix<std::common_type_t<T, U>>;
 template <typename T, typename U, Array::size_type M, Array::size_type N, Array::size_type O>
 auto operator*(const stack::Matrix<T, M, N> &A, const stack::Matrix<U, N, O> &B)
-    -> stack::Matrix<decltype(T(0) * U(0)), M, O>;
+    -> stack::Matrix<std::common_type_t<T, U>, M, O>;
 
 //! \brief Computes and returns A * A'.
 template <typename T, Array::size_type M>

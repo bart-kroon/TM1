@@ -45,10 +45,12 @@ namespace TMIV::MivBitstream {
 class CaspsMivExtension {
 public:
   [[nodiscard]] constexpr auto casme_omaf_v1_compatible_flag() const noexcept;
+  [[nodiscard]] constexpr auto casme_depth_quantization_params_present_flag() const noexcept;
   [[nodiscard]] constexpr auto casme_vui_params_present_flag() const noexcept;
   [[nodiscard]] auto vui_parameters() const noexcept -> const VuiParameters &;
 
   constexpr auto casme_omaf_v1_compatible_flag(bool value) noexcept -> auto &;
+  constexpr auto casme_depth_quantization_params_present_flag(bool value) noexcept -> auto &;
   constexpr auto casme_vui_params_present_flag(bool value) noexcept -> auto &;
   auto vui_parameters(const VuiParameters &value) noexcept -> CaspsMivExtension &;
 
@@ -63,6 +65,7 @@ public:
 
 private:
   bool m_casme_omaf_v1_compatible_flag{};
+  bool m_casme_depth_quantization_params_present_flag{};
   bool m_casme_vui_params_present_flag{};
   std::optional<VuiParameters> m_vui_parameters;
 };

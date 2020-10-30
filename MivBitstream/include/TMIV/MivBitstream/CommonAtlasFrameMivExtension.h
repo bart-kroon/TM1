@@ -34,6 +34,7 @@
 #ifndef _TMIV_MIVBITSTREAM_COMMONATLASFRAMEMIVEXTENSION_H_
 #define _TMIV_MIVBITSTREAM_COMMONATLASFRAMEMIVEXTENSION_H_
 
+#include <TMIV/MivBitstream/CommonAtlasSequenceParameterSetRBSP.h>
 #include <TMIV/MivBitstream/V3cParameterSet.h>
 
 #include <TMIV/Common/Bitstream.h>
@@ -229,7 +230,7 @@ public:
   [[nodiscard]] constexpr auto mvp_explicit_view_id_flag() const noexcept;
   [[nodiscard]] auto mvp_view_id(std::uint16_t viewIdx) const noexcept -> std::uint16_t;
   [[nodiscard]] constexpr auto mvp_intrinsic_params_equal_flag() const noexcept;
-  [[nodiscard]] constexpr auto mvp_depth_quantization_params_equal_flag() const noexcept;
+  [[nodiscard]] auto mvp_depth_quantization_params_equal_flag() const noexcept -> bool;
   [[nodiscard]] constexpr auto mvp_pruning_graph_params_present_flag() const noexcept;
 
   [[nodiscard]] auto camera_extrinsics(std::uint16_t viewId) const noexcept
@@ -281,10 +282,11 @@ public:
   auto operator==(const MivViewParamsList &) const noexcept -> bool;
   auto operator!=(const MivViewParamsList &) const noexcept -> bool;
 
-  static auto decodeFrom(Common::InputBitstream &bitstream, const V3cParameterSet &vps)
-      -> MivViewParamsList;
+  static auto decodeFrom(Common::InputBitstream &bitstream, const V3cParameterSet &vps,
+                         const CommonAtlasSequenceParameterSetRBSP &casps) -> MivViewParamsList;
 
-  void encodeTo(Common::OutputBitstream &bitstream, const V3cParameterSet &vps) const;
+  void encodeTo(Common::OutputBitstream &bitstream, const V3cParameterSet &vps,
+                const CommonAtlasSequenceParameterSetRBSP &casps) const;
 
 private:
   struct ViewInAtlas {
@@ -301,7 +303,7 @@ private:
   std::vector<CameraExtrinsics> m_camera_extrinsics{std::vector<CameraExtrinsics>(1U)};
   bool m_mvp_intrinsic_params_equal_flag{};
   std::vector<CameraIntrinsics> m_camera_intrinsics{std::vector<CameraIntrinsics>(1U)};
-  bool m_mvp_depth_quantization_params_equal_flag{};
+  std::optional<bool> m_mvp_depth_quantization_params_equal_flag{};
   std::vector<DepthQuantization> m_depth_quantization{std::vector<DepthQuantization>(1U)};
   bool m_mvp_pruning_graph_params_present_flag{};
   std::vector<PruningParents> m_pruning_parent{};
@@ -431,16 +433,18 @@ public:
   auto operator==(const CommonAtlasFrameMivExtension &) const noexcept -> bool;
   auto operator!=(const CommonAtlasFrameMivExtension &) const noexcept -> bool;
 
-  static auto decodeFrom(Common::InputBitstream &bitstream, const V3cParameterSet &vps)
+  static auto decodeFrom(Common::InputBitstream &bitstream, const V3cParameterSet &vps,
+                         const CommonAtlasSequenceParameterSetRBSP &casps)
       -> CommonAtlasFrameMivExtension;
 
-  void encodeTo(Common::OutputBitstream &bitstream, const V3cParameterSet &vps) const;
+  void encodeTo(Common::OutputBitstream &bitstream, const V3cParameterSet &vps,
+                const CommonAtlasSequenceParameterSetRBSP &casps) const;
 
 private:
   bool m_came_irap_flag{true};
   bool m_came_update_extrinsics_flag{};
   bool m_came_update_intrinsics_flag{};
-  bool m_came_update_depth_quantization_flag{};
+  std::optional<bool> m_came_update_depth_quantization_flag{};
   std::optional<MivViewParamsList> m_miv_view_params_list{MivViewParamsList{}};
   std::optional<MivViewParamsUpdateExtrinsics> m_miv_view_params_update_extrinsics;
   std::optional<MivViewParamsUpdateIntrinsics> m_miv_view_params_update_intrinsics;

@@ -104,14 +104,17 @@ auto CommonAtlasFrameRBSP::operator!=(const CommonAtlasFrameRBSP &other) const n
   return !operator==(other);
 }
 
-auto CommonAtlasFrameRBSP::decodeFrom(std::istream &stream, const V3cParameterSet &vps,
-                                      unsigned maxCommonAtlasFrmOrderCntLsb)
-    -> CommonAtlasFrameRBSP {
+auto CommonAtlasFrameRBSP::decodeFrom(
+    std::istream &stream, const V3cParameterSet &vps,
+    const std::vector<CommonAtlasSequenceParameterSetRBSP> &caspsV,
+    unsigned maxCommonAtlasFrmOrderCntLsb) -> CommonAtlasFrameRBSP {
   Common::InputBitstream bitstream{stream};
 
   auto x = CommonAtlasFrameRBSP{};
 
   x.caf_common_atlas_sequence_parameter_set_id(bitstream.readBits<std::uint8_t>(4));
+  const auto &casps = caspsById(caspsV, x.caf_common_atlas_sequence_parameter_set_id());
+
   x.caf_common_atlas_frm_order_cnt_lsb(
       bitstream.getUVar<std::uint16_t>(maxCommonAtlasFrmOrderCntLsb));
   x.caf_extension_present_flag(bitstream.getFlag());
@@ -121,7 +124,7 @@ auto CommonAtlasFrameRBSP::decodeFrom(std::istream &stream, const V3cParameterSe
     x.caf_extension_7bits(bitstream.readBits<std::uint8_t>(7));
   }
   if (x.caf_miv_extension_present_flag()) {
-    x.caf_miv_extension() = CommonAtlasFrameMivExtension::decodeFrom(bitstream, vps);
+    x.caf_miv_extension() = CommonAtlasFrameMivExtension::decodeFrom(bitstream, vps, casps);
   }
   if (x.caf_extension_7bits() != 0) {
     auto cafExtensionData = std::vector<bool>{};
@@ -136,10 +139,13 @@ auto CommonAtlasFrameRBSP::decodeFrom(std::istream &stream, const V3cParameterSe
 }
 
 void CommonAtlasFrameRBSP::encodeTo(std::ostream &stream, const V3cParameterSet &vps,
+                                    const std::vector<CommonAtlasSequenceParameterSetRBSP> &caspsV,
                                     unsigned maxCommonAtlasFrmOrderCntLsb) const {
   Common::OutputBitstream bitstream{stream};
 
   bitstream.writeBits(caf_common_atlas_sequence_parameter_set_id(), 4);
+  const auto &casps = caspsById(caspsV, caf_common_atlas_sequence_parameter_set_id());
+
   bitstream.putUVar(caf_common_atlas_frm_order_cnt_lsb(), maxCommonAtlasFrmOrderCntLsb);
   bitstream.putFlag(caf_extension_present_flag());
 
@@ -148,7 +154,7 @@ void CommonAtlasFrameRBSP::encodeTo(std::ostream &stream, const V3cParameterSet 
     bitstream.writeBits(caf_extension_7bits(), 7);
   }
   if (caf_miv_extension_present_flag()) {
-    caf_miv_extension().encodeTo(bitstream, vps);
+    caf_miv_extension().encodeTo(bitstream, vps, casps);
   }
   if (caf_extension_7bits() != 0) {
     for (auto bit : cafExtensionData()) {

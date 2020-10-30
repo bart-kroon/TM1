@@ -188,13 +188,21 @@ public:
   void parseCasps(std::istream &stream) {
     const auto casps = TMIV::MivBitstream::CommonAtlasSequenceParameterSetRBSP::decodeFrom(stream);
     m_log << casps;
+    for (auto &x : m_caspsV) {
+      if (x.casps_common_atlas_sequence_parameter_set_id() ==
+          casps.casps_common_atlas_sequence_parameter_set_id()) {
+        x = casps;
+        return;
+      }
+    }
+    m_caspsV.push_back(casps);
     m_maxCommonAtlasFrmOrderCntLsb =
         1U << (casps.casps_log2_max_common_atlas_frame_order_cnt_lsb_minus4() + 4U);
   }
 
   void parseCaf(std::istream &stream) {
     const auto caf = TMIV::MivBitstream::CommonAtlasFrameRBSP::decodeFrom(
-        stream, m_vps, m_maxCommonAtlasFrmOrderCntLsb);
+        stream, m_vps, m_caspsV, m_maxCommonAtlasFrmOrderCntLsb);
     m_log << caf;
   }
 
@@ -253,6 +261,7 @@ public:
 
 private:
   std::ostream &m_log;
+  std::vector<TMIV::MivBitstream::CommonAtlasSequenceParameterSetRBSP> m_caspsV;
   std::vector<TMIV::MivBitstream::AtlasSequenceParameterSetRBSP> m_aspsV;
   std::vector<TMIV::MivBitstream::AtlasFrameParameterSetRBSP> m_afpsV;
   std::optional<TMIV::MivBitstream::V3cUnitHeader> m_vuh;

@@ -72,9 +72,11 @@ public:
   auto operator!=(const CommonAtlasFrameRBSP &) const noexcept -> bool;
 
   static auto decodeFrom(std::istream &stream, const V3cParameterSet &vps,
+                         const std::vector<CommonAtlasSequenceParameterSetRBSP> &caspsV,
                          unsigned maxCommonAtlasFrmOrderCntLsb) -> CommonAtlasFrameRBSP;
 
   void encodeTo(std::ostream &stream, const V3cParameterSet &vps,
+                const std::vector<CommonAtlasSequenceParameterSetRBSP> &caspsV,
                 unsigned maxCommonAtlasFrmOrderCntLsb) const;
 
 private:

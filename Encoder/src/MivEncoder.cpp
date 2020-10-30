@@ -138,9 +138,11 @@ auto MivEncoder::commonAtlasSubBitstream() -> MivBitstream::AtlasSubBitstream {
 
   if (m_irap) {
     writeNalUnit(asb, nuhCasps, m_params.casps);
-    writeNalUnit(asb, nuhIdrCaf, commonAtlasFrame(), m_params.vps, maxFrmOrderCntLsb());
+    writeNalUnit(asb, nuhIdrCaf, commonAtlasFrame(), m_params.vps, std::vector{m_params.casps},
+                 maxFrmOrderCntLsb());
   } else {
-    writeNalUnit(asb, nuhCaf, commonAtlasFrame(), m_params.vps, maxFrmOrderCntLsb());
+    writeNalUnit(asb, nuhCaf, commonAtlasFrame(), m_params.vps, std::vector{m_params.casps},
+                 maxFrmOrderCntLsb());
   }
   return asb;
 }

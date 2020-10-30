@@ -241,10 +241,6 @@ constexpr auto MivViewParamsList::mvp_intrinsic_params_equal_flag() const noexce
   return m_mvp_intrinsic_params_equal_flag;
 }
 
-constexpr auto MivViewParamsList::mvp_depth_quantization_params_equal_flag() const noexcept {
-  return m_mvp_depth_quantization_params_equal_flag;
-}
-
 constexpr auto MivViewParamsList::mvp_pruning_graph_params_present_flag() const noexcept {
   return m_mvp_pruning_graph_params_present_flag;
 }

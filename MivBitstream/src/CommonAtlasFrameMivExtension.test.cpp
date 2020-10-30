@@ -204,6 +204,10 @@ TEST_CASE("miv_view_params_list", "[Common Atlas Frame MIV Extension]") {
   vps.vps_extension_present_flag(true);
   vps.vps_miv_extension_present_flag(true);
   vps.vps_miv_extension() = {};
+  auto casps = CommonAtlasSequenceParameterSetRBSP{};
+  casps.casps_extension_present_flag(true);
+  casps.casps_miv_extension_present_flag(true);
+  casps.casps_miv_extension() = {};
 
   SECTION("Default constructor") {
     REQUIRE(toString(x) == R"(mvp_num_views_minus1=0
@@ -223,18 +227,14 @@ ci_erp_phi_min[ 0 ]=0
 ci_erp_phi_max[ 0 ]=0
 ci_erp_theta_min[ 0 ]=0
 ci_erp_theta_max[ 0 ]=0
-mvp_depth_quantization_params_equal_flag=false
-dq_quantization_law[ 0 ]=0
-dq_norm_disp_low[ 0 ]=0
-dq_norm_disp_high[ 0 ]=0
-dq_depth_occ_map_threshold_default[ 0 ]=0
 mvp_pruning_graph_params_present_flag=false
 )");
 
-    REQUIRE(bitCodingTest(x, 454, vps));
+    REQUIRE(bitCodingTest(x, 380, vps, casps));
   }
 
   SECTION("Example 1") {
+    casps.casps_miv_extension().casme_depth_quantization_params_present_flag(true);
     x.mvp_num_views_minus1(0)
         .mvp_view_enabled_in_atlas_flag(0, 0, true)
         .mvp_view_complete_in_atlas_flag(0, 0, true)
@@ -272,12 +272,12 @@ dq_depth_occ_map_threshold_default[ 0 ]=0
 mvp_pruning_graph_params_present_flag=false
 )");
 
-    REQUIRE(bitCodingTest(x, 392, vps));
+    REQUIRE(bitCodingTest(x, 392, vps, casps));
   }
 
   SECTION("Example 2") {
     vps.vps_atlas_count_minus1(1);
-
+    casps.casps_miv_extension().casme_depth_quantization_params_present_flag(true);
     x.mvp_num_views_minus1(2)
         .mvp_view_enabled_present_flag(true)
         .mvp_view_enabled_in_atlas_flag(0, 0, true)
@@ -351,10 +351,11 @@ pp_is_root_flag[ 1 ]=true
 pp_is_root_flag[ 2 ]=true
 )");
 
-    REQUIRE(bitCodingTest(x, 834, vps));
+    REQUIRE(bitCodingTest(x, 834, vps, casps));
   }
 
   SECTION("mvp_view_enabled_present_flag=0") {
+    casps.casps_miv_extension().casme_depth_quantization_params_present_flag(true);
     x.mvp_num_views_minus1(0)
         .mvp_intrinsic_params_equal_flag(false)
         .mvp_depth_quantization_params_equal_flag(false)
@@ -387,7 +388,33 @@ dq_depth_occ_map_threshold_default[ 0 ]=0
 mvp_pruning_graph_params_present_flag=false
 )");
 
-    REQUIRE(bitCodingTest(x, 390, vps));
+    REQUIRE(bitCodingTest(x, 390, vps, casps));
+  }
+
+  SECTION("mvp when casme_depth_quantization_params_present_flag=0") {
+    casps.casps_miv_extension().casme_depth_quantization_params_present_flag(false);
+
+    REQUIRE(toString(x) == R"(mvp_num_views_minus1=0
+mvp_view_enabled_present_flag=false
+mvp_explicit_view_id_flag=false
+ce_view_pos_x[ 0 ]=0
+ce_view_pos_y[ 0 ]=0
+ce_view_pos_z[ 0 ]=0
+ce_view_quat_x[ 0 ]=0
+ce_view_quat_y[ 0 ]=0
+ce_view_quat_z[ 0 ]=0
+mvp_intrinsic_params_equal_flag=false
+ci_cam_type[ 0 ]=equirectangular
+ci_projection_plane_width_minus1[ 0 ]=0
+ci_projection_plane_height_minus1[ 0 ]=0
+ci_erp_phi_min[ 0 ]=0
+ci_erp_phi_max[ 0 ]=0
+ci_erp_theta_min[ 0 ]=0
+ci_erp_theta_max[ 0 ]=0
+mvp_pruning_graph_params_present_flag=false
+)");
+
+    REQUIRE(bitCodingTest(x, 380, vps, casps));
   }
 }
 
@@ -397,6 +424,10 @@ TEST_CASE("caf_miv_extension", "[Common Atlas Frame MIV Extension]") {
   vps.vps_extension_present_flag(true);
   vps.vps_miv_extension_present_flag(true);
   vps.vps_miv_extension() = {};
+  auto casps = CommonAtlasSequenceParameterSetRBSP{};
+  casps.casps_extension_present_flag(true);
+  casps.casps_miv_extension_present_flag(true);
+  casps.casps_miv_extension() = {};
 
   SECTION("Default Constructor") {
     REQUIRE(toString(x) == R"(came_irap_flag=true
@@ -417,18 +448,14 @@ ci_erp_phi_min[ 0 ]=0
 ci_erp_phi_max[ 0 ]=0
 ci_erp_theta_min[ 0 ]=0
 ci_erp_theta_max[ 0 ]=0
-mvp_depth_quantization_params_equal_flag=false
-dq_quantization_law[ 0 ]=0
-dq_norm_disp_low[ 0 ]=0
-dq_norm_disp_high[ 0 ]=0
-dq_depth_occ_map_threshold_default[ 0 ]=0
 mvp_pruning_graph_params_present_flag=false
 )");
 
-    REQUIRE(bitCodingTest(x, 455, vps));
+    REQUIRE(bitCodingTest(x, 381, vps, casps));
   }
 
   SECTION("Initialize view parameters") {
+    casps.casps_miv_extension().casme_depth_quantization_params_present_flag(true);
     x.miv_view_params_list()
         .mvp_num_views_minus1(2)
         .mvp_view_enabled_in_atlas_flag(0, 0, false)
@@ -485,12 +512,14 @@ pp_is_root_flag[ 1 ]=true
 pp_is_root_flag[ 2 ]=true
 )");
 
-    REQUIRE(bitCodingTest(x, 781, vps));
+    REQUIRE(bitCodingTest(x, 781, vps, casps));
   }
 
   SECTION("Update extrinsics") {
+    casps.casps_miv_extension().casme_depth_quantization_params_present_flag(true);
     x.came_irap_flag(false)
         .came_update_extrinsics_flag(true)
+        .came_update_depth_quantization_flag(false)
         .miv_view_params_update_extrinsics()
         .mvpue_num_view_updates_minus1(0)
         .mvpue_view_idx(0, 3)
@@ -516,12 +545,14 @@ ce_view_quat_y[ 0 ]=5
 ce_view_quat_z[ 0 ]=6
 )");
 
-    REQUIRE(bitCodingTest(x, 228, vps));
+    REQUIRE(bitCodingTest(x, 228, vps, casps));
   }
 
   SECTION("Update camera intrinsics") {
+    casps.casps_miv_extension().casme_depth_quantization_params_present_flag(true);
     x.came_irap_flag(false)
         .came_update_intrinsics_flag(true)
+        .came_update_depth_quantization_flag(false)
         .miv_view_params_update_intrinsics()
         .mvpui_num_view_updates_minus1(0)
         .mvpui_view_idx(0, 6)
@@ -547,10 +578,11 @@ ci_erp_theta_min[ 0 ]=-1
 ci_erp_theta_max[ 0 ]=1
 )");
 
-    REQUIRE(bitCodingTest(x, 204, vps));
+    REQUIRE(bitCodingTest(x, 204, vps, casps));
   }
 
   SECTION("Update depth quantization") {
+    casps.casps_miv_extension().casme_depth_quantization_params_present_flag(true);
     x.came_irap_flag(false)
         .came_update_depth_quantization_flag(true)
         .miv_view_params_update_depth_quantization()
@@ -573,7 +605,19 @@ dq_norm_disp_high[ 0 ]=100
 dq_depth_occ_map_threshold_default[ 0 ]=64
 )");
 
-    REQUIRE(bitCodingTest(x, 121, vps));
+    REQUIRE(bitCodingTest(x, 121, vps, casps));
+  }
+
+  SECTION("came when casme_depth_quantization_params_present_flag=0") {
+    casps.casps_miv_extension().casme_depth_quantization_params_present_flag(false);
+    x.came_irap_flag(false);
+
+    REQUIRE(toString(x) == R"(came_irap_flag=false
+came_update_extrinsics_flag=false
+came_update_intrinsics_flag=false
+)");
+
+    REQUIRE(bitCodingTest(x, 3, vps, casps));
   }
 }
 

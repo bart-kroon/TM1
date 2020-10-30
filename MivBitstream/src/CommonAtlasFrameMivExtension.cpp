@@ -32,7 +32,7 @@
  */
 
 #include <TMIV/MivBitstream/CommonAtlasFrameMivExtension.h>
-
+#include <TMIV/MivBitstream/CommonAtlasSequenceParameterSetRBSP.h>
 #include <TMIV/MivBitstream/verify.h>
 
 #include <cmath>
@@ -564,13 +564,15 @@ auto operator<<(std::ostream &stream, const MivViewParamsList &x) -> std::ostrea
     }
   }
 
-  stream << "mvp_depth_quantization_params_equal_flag=" << std::boolalpha
-         << x.mvp_depth_quantization_params_equal_flag() << '\n';
-  if (x.mvp_depth_quantization_params_equal_flag()) {
-    x.depth_quantization(0).printTo(stream, 0);
-  } else {
-    for (uint16_t v = 0; v <= x.mvp_num_views_minus1(); ++v) {
-      x.depth_quantization(v).printTo(stream, v);
+  if (x.m_mvp_depth_quantization_params_equal_flag) {
+    stream << "mvp_depth_quantization_params_equal_flag=" << std::boolalpha
+           << x.mvp_depth_quantization_params_equal_flag() << '\n';
+    if (x.mvp_depth_quantization_params_equal_flag()) {
+      x.depth_quantization(0).printTo(stream, 0);
+    } else {
+      for (uint16_t v = 0; v <= x.mvp_num_views_minus1(); ++v) {
+        x.depth_quantization(v).printTo(stream, v);
+      }
     }
   }
 
@@ -601,7 +603,8 @@ auto MivViewParamsList::operator!=(const MivViewParamsList &other) const noexcep
   return !operator==(other);
 }
 
-auto MivViewParamsList::decodeFrom(Common::InputBitstream &bitstream, const V3cParameterSet &vps)
+auto MivViewParamsList::decodeFrom(Common::InputBitstream &bitstream, const V3cParameterSet &vps,
+                                   const CommonAtlasSequenceParameterSetRBSP &casps)
     -> MivViewParamsList {
   auto x = MivViewParamsList{};
 
@@ -640,13 +643,15 @@ auto MivViewParamsList::decodeFrom(Common::InputBitstream &bitstream, const V3cP
     }
   }
 
-  x.mvp_depth_quantization_params_equal_flag(bitstream.getFlag());
+  if (casps.casps_miv_extension().casme_depth_quantization_params_present_flag()) {
+    x.mvp_depth_quantization_params_equal_flag(bitstream.getFlag());
 
-  if (x.mvp_depth_quantization_params_equal_flag()) {
-    x.depth_quantization() = DepthQuantization::decodeFrom(bitstream, vps);
-  } else {
-    for (uint16_t v = 0; v <= x.mvp_num_views_minus1(); ++v) {
-      x.depth_quantization(v) = DepthQuantization::decodeFrom(bitstream, vps);
+    if (x.mvp_depth_quantization_params_equal_flag()) {
+      x.depth_quantization() = DepthQuantization::decodeFrom(bitstream, vps);
+    } else {
+      for (uint16_t v = 0; v <= x.mvp_num_views_minus1(); ++v) {
+        x.depth_quantization(v) = DepthQuantization::decodeFrom(bitstream, vps);
+      }
     }
   }
 
@@ -660,8 +665,8 @@ auto MivViewParamsList::decodeFrom(Common::InputBitstream &bitstream, const V3cP
   return x;
 }
 
-void MivViewParamsList::encodeTo(Common::OutputBitstream &bitstream,
-                                 const V3cParameterSet &vps) const {
+void MivViewParamsList::encodeTo(Common::OutputBitstream &bitstream, const V3cParameterSet &vps,
+                                 const CommonAtlasSequenceParameterSetRBSP &casps) const {
   bitstream.putUint16(mvp_num_views_minus1());
   bitstream.putFlag(mvp_view_enabled_present_flag());
 
@@ -697,16 +702,17 @@ void MivViewParamsList::encodeTo(Common::OutputBitstream &bitstream,
     }
   }
 
-  bitstream.putFlag(mvp_depth_quantization_params_equal_flag());
+  if (casps.casps_miv_extension().casme_depth_quantization_params_present_flag()) {
+    bitstream.putFlag(mvp_depth_quantization_params_equal_flag());
 
-  if (mvp_depth_quantization_params_equal_flag()) {
-    depth_quantization().encodeTo(bitstream, vps);
-  } else {
-    for (uint16_t v = 0; v <= mvp_num_views_minus1(); ++v) {
-      depth_quantization(v).encodeTo(bitstream, vps);
+    if (mvp_depth_quantization_params_equal_flag()) {
+      depth_quantization().encodeTo(bitstream, vps);
+    } else {
+      for (uint16_t v = 0; v <= mvp_num_views_minus1(); ++v) {
+        depth_quantization(v).encodeTo(bitstream, vps);
+      }
     }
   }
-
   bitstream.putFlag(mvp_pruning_graph_params_present_flag());
 
   if (mvp_pruning_graph_params_present_flag()) {
@@ -728,7 +734,8 @@ auto CommonAtlasFrameMivExtension::came_update_intrinsics_flag() const noexcept 
 
 auto CommonAtlasFrameMivExtension::came_update_depth_quantization_flag() const noexcept -> bool {
   VERIFY_MIVBITSTREAM(!came_irap_flag());
-  return m_came_update_depth_quantization_flag;
+  VERIFY_MIVBITSTREAM(m_came_update_depth_quantization_flag.has_value());
+  return *m_came_update_depth_quantization_flag;
 }
 
 auto CommonAtlasFrameMivExtension::miv_view_params_list() const noexcept
@@ -824,8 +831,10 @@ auto operator<<(std::ostream &stream, const CommonAtlasFrameMivExtension &x) -> 
            << '\n';
     stream << "came_update_intrinsics_flag=" << std::boolalpha << x.came_update_intrinsics_flag()
            << '\n';
-    stream << "came_update_depth_quantization_flag=" << std::boolalpha
-           << x.came_update_depth_quantization_flag() << '\n';
+    if (x.m_came_update_depth_quantization_flag) {
+      stream << "came_update_depth_quantization_flag=" << std::boolalpha
+             << x.came_update_depth_quantization_flag() << '\n';
+    }
     if (x.came_update_extrinsics_flag()) {
       stream << x.miv_view_params_update_extrinsics();
     }
@@ -879,18 +888,21 @@ auto CommonAtlasFrameMivExtension::operator!=(
 }
 
 auto CommonAtlasFrameMivExtension::decodeFrom(Common::InputBitstream &bitstream,
-                                              const V3cParameterSet &vps)
+                                              const V3cParameterSet &vps,
+                                              const CommonAtlasSequenceParameterSetRBSP &casps)
     -> CommonAtlasFrameMivExtension {
   auto x = CommonAtlasFrameMivExtension{};
 
   x.came_irap_flag(bitstream.getFlag());
 
   if (x.came_irap_flag()) {
-    x.miv_view_params_list() = MivViewParamsList::decodeFrom(bitstream, vps);
+    x.miv_view_params_list() = MivViewParamsList::decodeFrom(bitstream, vps, casps);
   } else {
     x.came_update_extrinsics_flag(bitstream.getFlag());
     x.came_update_intrinsics_flag(bitstream.getFlag());
-    x.came_update_depth_quantization_flag(bitstream.getFlag());
+    if (casps.casps_miv_extension().casme_depth_quantization_params_present_flag()) {
+      x.came_update_depth_quantization_flag(bitstream.getFlag());
+    }
 
     if (x.came_update_extrinsics_flag()) {
       x.miv_view_params_update_extrinsics() = MivViewParamsUpdateExtrinsics::decodeFrom(bitstream);
@@ -907,16 +919,19 @@ auto CommonAtlasFrameMivExtension::decodeFrom(Common::InputBitstream &bitstream,
   return x;
 }
 
-void CommonAtlasFrameMivExtension::encodeTo(Common::OutputBitstream &bitstream,
-                                            const V3cParameterSet &vps) const {
+void CommonAtlasFrameMivExtension::encodeTo(
+    Common::OutputBitstream &bitstream, const V3cParameterSet &vps,
+    const CommonAtlasSequenceParameterSetRBSP &casps) const {
   bitstream.putFlag(came_irap_flag());
 
   if (came_irap_flag()) {
-    miv_view_params_list().encodeTo(bitstream, vps);
+    miv_view_params_list().encodeTo(bitstream, vps, casps);
   } else {
     bitstream.putFlag(came_update_extrinsics_flag());
     bitstream.putFlag(came_update_intrinsics_flag());
-    bitstream.putFlag(came_update_depth_quantization_flag());
+    if (casps.casps_miv_extension().casme_depth_quantization_params_present_flag()) {
+      bitstream.putFlag(came_update_depth_quantization_flag());
+    }
 
     if (came_update_extrinsics_flag()) {
       miv_view_params_update_extrinsics().encodeTo(bitstream);
@@ -928,6 +943,11 @@ void CommonAtlasFrameMivExtension::encodeTo(Common::OutputBitstream &bitstream,
       miv_view_params_update_depth_quantization().encodeTo(bitstream, vps);
     }
   }
+}
+
+auto MivViewParamsList::mvp_depth_quantization_params_equal_flag() const noexcept -> bool {
+  VERIFY_MIVBITSTREAM(m_mvp_depth_quantization_params_equal_flag.has_value());
+  return *m_mvp_depth_quantization_params_equal_flag;
 }
 
 auto MivViewParamsUpdateExtrinsics::mvpue_num_view_updates_minus1() const noexcept -> uint16_t {

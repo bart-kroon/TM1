@@ -243,7 +243,7 @@ void Encoder::calculateAttributeOffset(
 
           if (patchid != 65535) {
 
-            if (depthAtlasMap.getPlane(0)(h, w) != 0 ||
+            if ((!depthAtlasMap.empty() && depthAtlasMap.getPlane(0)(h, w) != 0) ||
                 m_params.viewParamsList[m_params.patchParamsList[patchid].atlasPatchProjectionId()]
                     .isBasicView) {
               textureAtlasMap.getPlane(0)(h, w) -=

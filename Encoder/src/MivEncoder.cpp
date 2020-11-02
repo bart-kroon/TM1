@@ -160,6 +160,9 @@ auto MivEncoder::commonAtlasFrame() const -> MivBitstream::CommonAtlasFrameRBSP 
     came.miv_view_params_list() = mivViewParamsList();
   } else {
     VERIFY_MIVBITSTREAM(m_viewParamsList.size() == m_params.viewParamsList.size());
+    came.came_update_extrinsics_flag(false);
+    came.came_update_intrinsics_flag(false);
+    came.came_update_depth_quantization_flag(false);
     for (size_t i = 0; i < m_viewParamsList.size(); ++i) {
       if (m_viewParamsList[i].ce != m_params.viewParamsList[i].ce) {
         came.came_update_extrinsics_flag(true);

@@ -124,9 +124,9 @@ const auto viewingSpace = std::array{
                        PrimitiveShapeOperation::interpolate}}}},
 
     ViewingSpace{{{ElementaryShapeOperation::add,
-                   ElementaryShape{{PrimitiveShape{Spheroid{{}, {}}, // primitive
-                                                   {},               // guard band size
-                                                   {},               // orientation
+                   ElementaryShape{{PrimitiveShape{Spheroid{{}}, // primitive without center
+                                                   {},           // guard band size
+                                                   {},           // orientation
                                                    {}}},
                                    {},
                                    myInferringViews}}}}
@@ -162,11 +162,6 @@ const auto viewingSpaceJson = std::array{
 
 const auto configJson = std::array{R"({"SourceCameraNames": ["v00","v01","v02"]})"};
 
-const auto viewParamsList = TMIV::MivBitstream::ViewParamsList{std::vector<ViewParams>{
-    ViewParams{CameraIntrinsics{}, CameraExtrinsics{}, DepthQuantization{}, {}, "v00"},
-    ViewParams{CameraIntrinsics{}, CameraExtrinsics{}, DepthQuantization{}, {}, "v01"},
-    ViewParams{CameraIntrinsics{}, CameraExtrinsics{}, DepthQuantization{}, {}, "v02"}}};
-
 } // namespace examples
 
 namespace {
@@ -181,14 +176,14 @@ auto loadJson(const std::string &strNode, const std::string &strConfig) -> Type 
 } // namespace
 
 TEST_CASE("Viewing space coding") {
-  REQUIRE(bitCodingTest(examples::viewingSpace[0], 114, examples::viewParamsList));
-  REQUIRE(bitCodingTest(examples::viewingSpace[1], 197, examples::viewParamsList));
-  REQUIRE(bitCodingTest(examples::viewingSpace[2], 178, examples::viewParamsList));
-  REQUIRE(bitCodingTest(examples::viewingSpace[3], 194, examples::viewParamsList));
-  REQUIRE(bitCodingTest(examples::viewingSpace[4], 553, examples::viewParamsList));
-  REQUIRE(bitCodingTest(examples::viewingSpace[5], 114, examples::viewParamsList));
-  REQUIRE(bitCodingTest(examples::viewingSpace[6], 274, examples::viewParamsList));
-  REQUIRE(bitCodingTest(examples::viewingSpace[7], 82, examples::viewParamsList));
+  REQUIRE(bitCodingTest(examples::viewingSpace[0], 115));
+  REQUIRE(bitCodingTest(examples::viewingSpace[1], 199));
+  REQUIRE(bitCodingTest(examples::viewingSpace[2], 179));
+  REQUIRE(bitCodingTest(examples::viewingSpace[3], 195));
+  REQUIRE(bitCodingTest(examples::viewingSpace[4], 555));
+  REQUIRE(bitCodingTest(examples::viewingSpace[5], 115));
+  REQUIRE(bitCodingTest(examples::viewingSpace[6], 275));
+  REQUIRE(bitCodingTest(examples::viewingSpace[7], 83));
 }
 
 TEST_CASE("Viewing space JSON") {

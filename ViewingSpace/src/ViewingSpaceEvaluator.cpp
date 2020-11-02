@@ -199,9 +199,12 @@ static auto computeBisectPlanes(const MivBitstream::PrimitiveShapeVector &primit
   std::vector<Common::Vec3f> center(nvb);
   for (size_t i = 0; i < nvb; i++) {
     if (primitives[i].shapeType() == MivBitstream::PrimitiveShapeType::spheroid) {
-      center[i] = std::get<MivBitstream::Spheroid>(primitives[i].primitive).center;
+      const auto &spheroid = std::get<MivBitstream::Spheroid>(primitives[i].primitive);
+      center[i] =
+          Common::Vec3f{spheroid.sp_center_x(), spheroid.sp_center_y(), spheroid.sp_center_z()};
     } else if (primitives[i].shapeType() == MivBitstream::PrimitiveShapeType::cuboid) {
-      center[i] = std::get<MivBitstream::Cuboid>(primitives[i].primitive).center;
+      const auto &cuboid = std::get<MivBitstream::Cuboid>(primitives[i].primitive);
+      center[i] = Common::Vec3f{cuboid.cp_center_x(), cuboid.cp_center_y(), cuboid.cp_center_z()};
     }
   }
 
@@ -303,9 +306,12 @@ static auto evaluateInterpolation(const MivBitstream::PrimitiveShapeVector &prim
     std::vector<float> dist;
     for (auto i = 0; i < nvb; i++) {
       if (primitives[i].shapeType() == MivBitstream::PrimitiveShapeType::spheroid) {
-        center[i] = std::get<MivBitstream::Spheroid>(primitives[i].primitive).center;
+        const auto &spheriod = std::get<MivBitstream::Spheroid>(primitives[i].primitive);
+        center[i] =
+            Common::Vec3f{spheriod.sp_center_x(), spheriod.sp_center_y(), spheriod.sp_center_z()};
       } else if (primitives[i].shapeType() == MivBitstream::PrimitiveShapeType::cuboid) {
-        center[i] = std::get<MivBitstream::Cuboid>(primitives[i].primitive).center;
+        const auto &cuboid = std::get<MivBitstream::Cuboid>(primitives[i].primitive);
+        center[i] = Common::Vec3f{cuboid.cp_center_x(), cuboid.cp_center_y(), cuboid.cp_center_z()};
       }
       dist.push_back(norm(pos - center[i]));
     }

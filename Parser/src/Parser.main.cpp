@@ -46,6 +46,7 @@
 #include <TMIV/MivBitstream/SeiRBSP.h>
 #include <TMIV/MivBitstream/V3cSampleStreamFormat.h>
 #include <TMIV/MivBitstream/V3cUnit.h>
+#include <TMIV/MivBitstream/ViewingSpace.h>
 #include <TMIV/MivBitstream/ViewingSpaceHandling.h>
 
 #include <cstring>
@@ -222,6 +223,8 @@ public:
       return parseRecViewportSei(bitstream);
     case TMIV::MivBitstream::PayloadType::scene_object_information:
       return parseSceneObjectInformationSei(bitstream);
+    case TMIV::MivBitstream::PayloadType::viewing_space:
+      return parseViewingSpaceSei(bitstream);
     case TMIV::MivBitstream::PayloadType::viewing_space_handling:
       return parseViewingSpaceHandlingSei(bitstream);
     default:
@@ -252,6 +255,11 @@ public:
   void parseSceneObjectInformationSei(TMIV::Common::InputBitstream &bitstream) {
     const auto soi = TMIV::MivBitstream::SceneObjectInformation::decodeFrom(bitstream);
     m_log << soi;
+  }
+
+  void parseViewingSpaceSei(TMIV::Common::InputBitstream &bitstream) {
+    const auto vs = TMIV::MivBitstream::ViewingSpace::decodeFrom(bitstream);
+    m_log << vs;
   }
 
   void parseViewingSpaceHandlingSei(TMIV::Common::InputBitstream &bitstream) {

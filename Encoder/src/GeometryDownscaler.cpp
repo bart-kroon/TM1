@@ -37,8 +37,11 @@
 
 namespace TMIV::Encoder {
 GeometryDownscaler::GeometryDownscaler(const Common::Json &rootNode,
-                                       const Common::Json & /* componentNode */)
-    : m_geometryScaleEnabledFlag{rootNode.require("geometryScaleEnabledFlag").as<bool>()} {}
+                                       const Common::Json & /* componentNode */) {
+  if (const auto &node = rootNode.optional("geometryScaleEnabledFlag")) {
+    m_geometryScaleEnabledFlag = node.as<bool>();
+  }
+}
 
 auto GeometryDownscaler::transformParams(MivBitstream::EncoderParams params)
     -> const MivBitstream::EncoderParams & {

@@ -1,0 +1,37 @@
+{
+    "DepthQualityAssessor": {
+        "blendingFactor": 0.03,
+        "maxOutlierRatio": 0.001
+    },
+    "DepthQualityAssessorMethod": "DepthQualityAssessor",
+    "numberOfFrames": 17,
+    "OmafV1CompatibleFlag": false,
+    "OutputAttributePath": "R17_SA_T{}_p01_{}x{}_yuv420p10le.yuv",
+    "OutputCameraName": "viewport",
+    "OutputDirectory": ".",
+    "PoseTracePath": "Ap01.csv",
+    "Renderer": {
+        "Inpainter": {},
+        "InpainterMethod": "Inpainter",
+        "SynthesizerMethod": "ViewWeightingSynthesizer",
+        "ViewingSpaceController": {},
+        "ViewingSpaceControllerMethod": "ViewingSpaceController",
+        "ViewWeightingSynthesizer": {
+            "angularScaling": 1.5,
+            "blendingFactor": 0.03,
+            "filteringPass": 1,
+            "minimalWeight": 2.5,
+            "overloadFactor": 2.0,
+            "stretchFactor": 100.0
+        }
+    },
+    "RendererMethod": "Renderer",
+    "SourceDirectory": ".",
+    "SourceGeometryBitDepth": 16,
+    "SourceGeometryPathFmt": "{}_depth_{}x{}_yuv420p16le.yuv",
+    "SourceSequenceConfigPathFmt": "ClassroomVideo.json",
+    "SourceTexturePathFmt": "{}_texture_{}x{}_yuv420p10le.yuv",
+    "startFrame": 23,
+    "SubBlockCuller": {},
+    "ViewportCameraParameters": "ClassroomVideo.json"
+}

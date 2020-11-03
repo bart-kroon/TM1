@@ -298,47 +298,66 @@ void MivDecoder::decodeMvpudq(const MivBitstream::MivViewParamsUpdateDepthQuanti
 void MivDecoder::decodeAtlas(size_t k) {
   m_au.atlas[k].asps = m_atlasAu[k]->asps;
   m_au.atlas[k].afps = m_atlasAu[k]->afps;
-  decodeBlockToPatchMap(k);
-  decodePatchParamsList(k);
-  requireAllPatchesWithinProjectionPlaneBounds(m_au.viewParamsList, m_au.atlas[k].patchParamsList);
+  const auto &ppl = decodePatchParamsList(k, m_au.atlas[k].patchParamsList);
+  requireAllPatchesWithinProjectionPlaneBounds(m_au.viewParamsList, ppl);
+  m_au.atlas[k].blockToPatchMap = decodeBlockToPatchMap(k, ppl);
 }
 
-void MivDecoder::decodeBlockToPatchMap(size_t k) {
-  auto &btpm = m_au.atlas[k].blockToPatchMap;
+// NOTE(BK): Combined implementation of two processes because there is only a single tile in MIV
+// main profile:
+//  * [WG 07 N 0003:9.2.6]   Decoding process of the block to patch map
+//  * [WG 07 N 0003:9.2.7.2] Conversion of tile level blockToPatch information to atlas level
+//                           blockToPatch information
+auto MivDecoder::decodeBlockToPatchMap(size_t k, const MivBitstream::PatchParamsList &ppl) const
+    -> Common::BlockToPatchMap {
   const auto &asps = m_au.atlas[k].asps;
-  btpm = Common::BlockToPatchMap{
-      asps.asps_frame_width() >> asps.asps_log2_patch_packing_block_size(),
-      asps.asps_frame_height() >> asps.asps_log2_patch_packing_block_size()};
+
+  const std::int32_t log2PatchPackingBlockSize = asps.asps_log2_patch_packing_block_size();
+  const auto patchPackingBlockSize = 1 << log2PatchPackingBlockSize;
+  const auto offset = patchPackingBlockSize - 1;
+
+  const auto atlasBlockToPatchMapWidth = (asps.asps_frame_width() + offset) / patchPackingBlockSize;
+  const auto atlasBlockToPatchMapHeight =
+      (asps.asps_frame_height() + offset) / patchPackingBlockSize;
+
+  // All elements of TileBlockToPatchMap are first initialized to -1 as follows [9.2.6]
+  auto btpm = Common::BlockToPatchMap{atlasBlockToPatchMapWidth, atlasBlockToPatchMapHeight};
   std::fill(btpm.getPlane(0).begin(), btpm.getPlane(0).end(), Common::unusedPatchId);
 
-  m_atlasAu[k]->atl.atlas_tile_data_unit().visit(
-      [&btpm](size_t p, MivBitstream::AtduPatchMode /* unused */,
-              const MivBitstream::PatchInformationData &pid) {
-        const auto &pdu = pid.patch_data_unit();
-        const auto firstX = pdu.pdu_2d_pos_x();
-        const auto firstY = pdu.pdu_2d_pos_y();
-        const auto lastX = firstX + pdu.pdu_2d_size_x_minus1();
-        const auto lastY = firstY + pdu.pdu_2d_size_y_minus1();
+  // Then the AtlasBlockToPatchMap array is updated as follows:
+  for (std::size_t p = 0; p < ppl.size(); ++p) {
+    const std::size_t xOrg = ppl[p].atlasPatch2dPosX() / patchPackingBlockSize;
+    const std::size_t yOrg = ppl[p].atlasPatch2dPosY() / patchPackingBlockSize;
+    const std::size_t atlasPatchWidthBlk =
+        (ppl[p].atlasPatch2dSizeX() + offset) / patchPackingBlockSize;
+    const std::size_t atlasPatchHeightBlk =
+        (ppl[p].atlasPatch2dSizeY() + offset) / patchPackingBlockSize;
 
-        for (auto y = firstY; y <= lastY; ++y) {
-          for (auto x = firstX; x <= lastX; ++x) {
-            btpm.getPlane(0)(y, x) = static_cast<uint16_t>(p);
-          }
+    for (std::size_t y = 0; y < atlasPatchHeightBlk; ++y) {
+      for (std::size_t x = 0; x < atlasPatchWidthBlk; ++x) {
+        if (!asps.asps_patch_precedence_order_flag() ||
+            btpm.getPlane(0)(yOrg + y, xOrg + x) == Common::unusedPatchId) {
+          btpm.getPlane(0)(yOrg + y, xOrg + x) = static_cast<std::uint16_t>(p);
         }
-      });
+      }
+    }
+  }
+
+  return btpm;
 }
 
-void MivDecoder::decodePatchParamsList(size_t k) {
+auto MivDecoder::decodePatchParamsList(size_t k, MivBitstream::PatchParamsList &ppl) const
+    -> const MivBitstream::PatchParamsList & {
   const auto &ath = m_atlasAu[k]->atl.atlas_tile_header();
   VERIFY_MIVBITSTREAM(ath.ath_type() == MivBitstream::AthType::I_TILE ||
                       ath.ath_type() == MivBitstream::AthType::SKIP_TILE);
   if (ath.ath_type() == MivBitstream::AthType::SKIP_TILE) {
-    return;
+    return ppl;
   }
 
   const auto &atdu = m_atlasAu[k]->atl.atlas_tile_data_unit();
   const auto &asps = m_atlasAu[k]->asps;
-  auto &ppl = m_au.atlas[k].patchParamsList;
+
   ppl.assign(atdu.atduTotalNumberOfPatches(), {});
 
   const auto patchPackingBlockSize = 1U << asps.asps_log2_patch_packing_block_size();
@@ -385,6 +404,8 @@ void MivDecoder::decodePatchParamsList(size_t k) {
     }
     ppl[p].atlasPatchAttributeOffset(pdu.pdu_miv_extension().pdu_attribute_offset());
   });
+
+  return ppl;
 }
 
 auto MivDecoder::decodeOccVideo(size_t k) -> bool {

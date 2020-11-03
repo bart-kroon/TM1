@@ -89,8 +89,10 @@ private:
   void decodeMvpudq(const MivBitstream::MivViewParamsUpdateDepthQuantization &mvpudq);
 
   void decodeAtlas(size_t k);
-  void decodeBlockToPatchMap(size_t k);
-  void decodePatchParamsList(size_t k);
+  auto decodePatchParamsList(size_t k, MivBitstream::PatchParamsList &ppl) const
+      -> const MivBitstream::PatchParamsList &;
+  auto decodeBlockToPatchMap(size_t k, const MivBitstream::PatchParamsList &ppl) const
+      -> Common::BlockToPatchMap;
 
   auto decodeOccVideo(size_t k) -> bool;
   auto decodeGeoVideo(size_t k) -> bool;

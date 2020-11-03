@@ -396,13 +396,17 @@ auto MivDecoder::decodePatchParamsList(size_t k, MivBitstream::PatchParamsList &
     ppl[p].atlasPatch2dSizeY((pdu.pdu_2d_size_y_minus1() + 1) * patchSizeYQuantizer);
 
     if (asps.asps_miv_extension_present_flag()) {
+      const auto &asme = asps.asps_miv_extension();
+
       ppl[p].atlasPatchEntityId(pdu.pdu_miv_extension().pdu_entity_id());
 
-      if (asps.asps_miv_extension().asme_depth_occ_threshold_flag()) {
+      if (asme.asme_depth_occ_threshold_flag()) {
         ppl[p].atlasPatchDepthOccMapThreshold(pdu.pdu_miv_extension().pdu_depth_occ_threshold());
       }
+      if (asme.asme_patch_attribute_offset_flag()) {
+        ppl[p].atlasPatchAttributeOffset(pdu.pdu_miv_extension().pdu_attribute_offset());
+      }
     }
-    ppl[p].atlasPatchAttributeOffset(pdu.pdu_miv_extension().pdu_attribute_offset());
   });
 
   return ppl;

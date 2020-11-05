@@ -8,6 +8,8 @@ project(
 
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+option(NO_INTERNET "Use pre-downloaded source archives for external libraries, e.g. Catch2, HM, and fmt" OFF)
+
 include(CMake/fmt.cmake)
 
 include(CMake/catch2.cmake)

@@ -4,11 +4,18 @@ option(BUILD_CATCH2 "Build and use Catch2 for unit tests in TMIV" ON)
 
 if(BUILD_CATCH2)
     include(FetchContent)
-    fetchcontent_declare(CATCH2
-        GIT_REPOSITORY https://github.com/catchorg/Catch2.git
-        GIT_TAG "v2.11.1"
-        GIT_PROGRESS TRUE
-    )
+    if(NO_INTERNET)
+        set(LOCAL_CATCH2_DIR ${CMAKE_SOURCE_DIR}/../Catch2-2.11.1 CACHE PATH "Path to the local Catch2 directory" )
+        message(STATUS "Looking for a local copy of the Catch2 test framework in ${LOCAL_CATCH2_DIR}")
+        fetchcontent_declare(CATCH2 URL ${LOCAL_CATCH2_DIR})
+    else()
+        fetchcontent_declare(CATCH2
+                GIT_REPOSITORY https://github.com/catchorg/Catch2.git
+                GIT_TAG "v2.11.1"
+                GIT_PROGRESS TRUE
+                )
+    endif()
+
     fetchcontent_makeavailable(CATCH2)
 
     # Make catch2 cmake scripts available

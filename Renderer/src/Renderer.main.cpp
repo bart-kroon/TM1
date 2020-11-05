@@ -63,10 +63,13 @@ public:
   }
 
   void run() override {
-    std::int32_t foc = 0;
-    auto range = m_inputToOutputFrameIdMap.equal_range(foc);
+    for (std::int32_t foc = 0;; ++foc) {
+      // Check which frames to render if we would
+      const auto range = m_inputToOutputFrameIdMap.equal_range(foc);
+      if (range.first == range.second) {
+        return;
+      }
 
-    while (range.first != range.second) {
       updateParams(foc);
       const auto vpl = m_params.sourceViewParams();
       const auto frame = IO::loadSourceFrame(json(), vpl.viewSizes(), vpl.viewNames(), foc);
@@ -75,13 +78,13 @@ public:
         m_depthLowQualityFlag = isDepthLowQuality(frame, vpl);
       }
 
+      // Make up an access unit
       const auto au = accessUnit(frame, vpl, foc);
 
+      // Render multiple frames
       for (auto i = range.first; i != range.second; ++i) {
         renderFrame(au, i->second);
       }
-
-      range = m_inputToOutputFrameIdMap.equal_range(++foc);
     }
   }
 

@@ -6,11 +6,18 @@ if (BUILD_HM)
     set(HAVE_HM ON)  # required to link TMIV to HM
 
     include(FetchContent)
-    fetchcontent_declare(HM
-        GIT_REPOSITORY https://vcgit.hhi.fraunhofer.de/jct-vc/HM.git
-        GIT_TAG "HM-16.16"
-        GIT_PROGRESS TRUE
-    )
+    if(NO_INTERNET)
+        set(LOCAL_HM_DIR ${CMAKE_SOURCE_DIR}/../HM-16.16 CACHE PATH "Path to the local HM directory" )
+        message(STATUS "Looking for a local copy of HEVC Test Model (HM) in ${LOCAL_HM_DIR}")
+        fetchcontent_declare(HM URL ${LOCAL_HM_DIR})
+    else()
+        fetchcontent_declare(HM
+                GIT_REPOSITORY https://vcgit.hhi.fraunhofer.de/jct-vc/HM.git
+                GIT_TAG "HM-16.16"
+                GIT_PROGRESS TRUE
+                )
+    endif()
+
     fetchcontent_makeavailable(HM)
     set(HM_SOURCE_DIR ${CMAKE_BINARY_DIR}/_deps/hm-src/)
 

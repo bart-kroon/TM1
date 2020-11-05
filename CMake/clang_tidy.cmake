@@ -8,7 +8,7 @@ if (ENABLE_CLANG_TIDY)
     if(CLANG_TIDY_PATH)
         set(CMAKE_CXX_CLANG_TIDY "${CLANG_TIDY_PATH}")
     else()
-        message(WARNING "Couldn't find clang-tidy")
+        message(STATUS "clang-tidy could not be found")
     endif()
 endif()
 

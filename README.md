@@ -157,7 +157,10 @@ Open the CMake GUI and specify:
 
 Build and install the generated project.
 
-For the Visual Studio CMake generators installation is performed by building the INSTALL target.
+For Visual Studio please:
+* Manually select `Release` from the drop-down box.
+* Perform build by building the `ALL_BUILD` target.
+* Perform installation by building the `INSTALL` target.
 
 ## Installation result
 
@@ -235,7 +238,7 @@ After TMIV encoding, run HM on **all** resulting YUV files. If you have configur
   -f 100 -wdt 2320 -hgt 960 -i TG_00_960x2320_yuv420p10le.yuv -b tg_01.bin
 ```
 
-Whereby `\` is used to indicate line breaks in this manual. 
+Whereby `\` is used to indicate line breaks in this manual.
 
 The order of config files for HM is important! Later ones overwrite earlier ones, command line parameters overwrite config files.
 
@@ -256,11 +259,11 @@ You may choose to render to either a source view (e.g. `v0`) for objective evalu
 
 Note that it is not needed to decode video with HM because the HM decoder is integrated into the TMIV decoder. The input of the decoder is a single MIV bitstream including HEVC sub-bitstreams.
 
-It is possible to use YUV video input, for instance to support experiments with alternative video codecs such as VTM, but this is **advanced use** and **not recommended** in general. To enable decoding of MIV bitstreams with out-of-band decoded video sub-bitstreams, add the  `OccupancyVideoDataPathFmt`,`GeometryVideoDataPathFmt` and/or `AttributeVideoDataPathFmt` to the configuration file. The path formats match those of the encoder configuration, see for instance [TMIV_A17_SA.json](/ctc_config/miv_anchor/TMIV_A17_SA.json). When the decoder detects that a video sub-bitstream is not present in the MIV bitstream, it will use such a parameter to calculate the path to a YUV file and load frames from that. The format and resolution of the YUV file is dicated by the MIV bitstream. 
+It is possible to use YUV video input, for instance to support experiments with alternative video codecs such as VTM, but this is **advanced use** and **not recommended** in general. To enable decoding of MIV bitstreams with out-of-band decoded video sub-bitstreams, add the  `OccupancyVideoDataPathFmt`,`GeometryVideoDataPathFmt` and/or `AttributeVideoDataPathFmt` to the configuration file. The path formats match those of the encoder configuration, see for instance [TMIV_A17_SA.json](/ctc_config/miv_anchor/TMIV_A17_SA.json). When the decoder detects that a video sub-bitstream is not present in the MIV bitstream, it will use such a parameter to calculate the path to a YUV file and load frames from that. The format and resolution of the YUV file is dictated by the MIV bitstream.
 
 ## Running the TMIV renderer
 
-The TMIV renderer was added to support the MIV decoder-side depth estimating anchor. The application has similar input to the TMIV encoder (input views and camera parameters) and similar output to the TMIV decoder (rendered viewport). 
+The TMIV renderer was added to support the MIV decoder-side depth estimating anchor. The application has similar input to the TMIV encoder (input views and camera parameters) and similar output to the TMIV decoder (rendered viewport).
 
 As with the TMIV decoder you may choose to render to either a source view (e.g. `v0`) for objective evaluation, or render according to a pose trace (e.g. `p01`). A suitable configuration file to try out the TMIV renderer is the one of the best reference condition:
 

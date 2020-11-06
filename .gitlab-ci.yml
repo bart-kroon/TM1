@@ -1,5 +1,22 @@
-gcc-9-release:
-  stage: build
+workflow:
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      changes:
+        - .clang-format
+        - .clang-tidy
+        - .gitlab-ci.yml
+        - "**/CMakeLists.txt"
+        - "**/*.cmake"
+        - "**/*.cmake.in"
+        - "**/*.cpp"
+        - "**/*.h"
+        - "**/*.hpp"
+
+default:
+  interruptible: true
+
+GCC 9 Release:
   image: rikorose/gcc-cmake:gcc-9
   tags:
     - linux
@@ -9,8 +26,7 @@ gcc-9-release:
     - make -j $(nproc)
     - make -j $(nproc) test
 
-clang-11-debug:
-  stage: build
+Clang 11 Debug:
   image: cbachhuber/clang:11
   tags:
     - linux
@@ -23,15 +39,13 @@ clang-11-debug:
     - git diff
     - if [[ $(git diff) ]]; then echo "Formatting is wrong! See above."; return 1; fi
     
-vc16-release:
-    stage: build
-    image: buildtools2019:latest
-    tags:
-      - windows
-    script:
-      - mkdir -p build
-      - cd build
-      - 'cmake -G "Visual Studio 16 2019" -DCMAKE_CXX_FLAGS="/DWIN32 /D_WINDOWS /W3 /GR /EHsc /WX" -DENABLE_CLANG_TIDY=OFF ..'
-      - 'cmake --build . --parallel --config Release --target ALL_BUILD'
-      - 'cmake --build . --config Release --target RUN_TESTS'
-
+VC 16 Release:
+  image: buildtools2019:latest
+  tags:
+    - windows
+  script:
+    - mkdir -p build
+    - cd build
+    - 'cmake -G "Visual Studio 16 2019" -DCMAKE_CXX_FLAGS="/DWIN32 /D_WINDOWS /W3 /GR /EHsc /WX" -DENABLE_CLANG_TIDY=OFF ..'
+    - 'cmake --build . --parallel --config Release --target ALL_BUILD'
+    - 'cmake --build . --config Release --target RUN_TESTS'

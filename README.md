@@ -168,14 +168,14 @@ After installation, the TMIV executables `Encoder`, `Decoder` and `Renderer` wil
 
 # Instructions to run TMIV
 
-Template configuration files for CTC conditions are available under [ctc_config/](/ctc_config):
+Template configuration files for CTC conditions are available under [config/ctc/](/config/ctc):
 
 * *best_reference* renders from all source views without coding
 * *miv_anchor* is the MIV anchor with patches
 * *miv_view_anchor* is the MIV view anchor which codes a subset of views completely
 * *miv_dsde_anchor* is the MIV decoder-side depth estimating anchor
 
-In addition, there are other configurations available under [test_configs/](/test_configs) to illustrate different aspects of TMIV such as entity-based coding.
+In addition, there are other configurations available under [config/test/](/config/test) to illustrate different aspects of TMIV such as entity-based coding.
 
 The file names of the configuration files, and the file names within them are only examples.
 
@@ -202,7 +202,7 @@ Use the following steps to encode a bistream and render a viewport:
 
 ## Running the TMIV encoder
 
-For this example, we will be using the MIV anchor [TMIV_A17_SA.json](/ctc_config/miv_anchor/TMIV_A17_SA.json) configuration on the `ClassroomVideo` sequence (SA). This file contains a good choice of parameters, you only need to adapt a few variables:
+For this example, we will be using the MIV anchor [TMIV_A17_SA.json](/config/ctc/miv_anchor/TMIV_A17_SA.json) configuration on the `ClassroomVideo` sequence (SA). This file contains a good choice of parameters, you only need to adapt a few variables:
 
 1. Place the color and depth videos [4] in a folder. Make sure to comply to the naming scheme defined in `SourceGeometryPathFmt` and `SourceTexturePathFmt`. Your organization or one of the maintainers of this repository may be able to provide the test sequences to you.
 
@@ -219,7 +219,7 @@ For this example, we will be using the MIV anchor [TMIV_A17_SA.json](/ctc_config
 Finally, assuming that you have built and installed the encoder application, you can start it from the command line:
 
 ```shell
-/Workspace/tmiv_install/bin/Encoder -c /Workspace/tmiv/ctc_config/miv_anchor/TMIV_A17_SA.json
+/Workspace/tmiv_install/bin/Encoder -c /Workspace/tmiv/config/ctc/miv_anchor/TMIV_A17_SA.json
 ```
 
 This will result in the following files in the `OutputDirectory`:
@@ -233,8 +233,8 @@ After TMIV encoding, run HM on **all** resulting YUV files. If you have configur
 
 ```shell
 /Workspace/tmiv_install/bin/TAppEncoder \
-  -c /Workspace/tmiv/ctc_config/miv_anchor/encoder_randomaccess_main10.cfg \
-  -c /Workspace/tmiv/ctc_config/miv_anchor/HM_A17_TT_SA.cfg \
+  -c /Workspace/tmiv/config/ctc/miv_anchor/encoder_randomaccess_main10.cfg \
+  -c /Workspace/tmiv/config/ctc/miv_anchor/HM_A17_TT_SA.cfg \
   -f 100 -wdt 2320 -hgt 960 -i TG_00_960x2320_yuv420p10le.yuv -b tg_01.bin
 ```
 
@@ -244,22 +244,22 @@ The order of config files for HM is important! Later ones overwrite earlier ones
 
 ### Running the TMIV multiplexer
 
-To run the TMIV multiplexer, set everything in the multiplexer configuration file, for an example see [ctc_config/miv_anchor/Mux_A17_SA.json](/ctc_config/miv_anchor/Mux_A17_SA.json). Careful: there is no input folder for this. Make sure that variables `AttributeVideoDataSubBitstreamPathFmt` and `GeometryVideoDataSubBitstreamPathFmt` are either correct relative paths to you call location, or the correct absolute paths. Then, run
+To run the TMIV multiplexer, set everything in the multiplexer configuration file, for an example see [config/ctc/miv_anchor/Mux_A17_SA.json](/config/ctc/miv_anchor/Mux_A17_SA.json). Careful: there is no input folder for this. Make sure that variables `AttributeVideoDataSubBitstreamPathFmt` and `GeometryVideoDataSubBitstreamPathFmt` are either correct relative paths to you call location, or the correct absolute paths. Then, run
 
 ```shell
-/Workspace/tmiv_install/bin/Multiplexer -c /Workspace/ctc_config/miv_anchor/Mux_A17.json
+/Workspace/tmiv_install/bin/Multiplexer -c /Workspace/config/ctc/miv_anchor/Mux_A17.json
 ```
 
 ## Running the TMIV decoder
 
-You may choose to render to either a source view (e.g. `v0`) for objective evaluation, or render according to a pose trace (e.g. `p01`). Pose traces are available under [ctc_config/pose_traces](/ctc_config/pose_traces). For clarity two (almost identical) configuration files are provided for each of the test conditions, for example:
+You may choose to render to either a source view (e.g. `v0`) for objective evaluation, or render according to a pose trace (e.g. `p01`). Pose traces are available under [config/ctc/pose_traces](/config/ctc/pose_traces). For clarity two (almost identical) configuration files are provided for each of the test conditions, for example:
 
-* [ctc_config/miv_anchor/TMIV_A17_SA_v0.json](ctc_config/miv_anchor/TMIV_A17_SA_v0.json)
-* [ctc_config/miv_anchor/TMIV_A17_SA_p01.json](ctc_config/miv_anchor/TMIV_A17_SA_p01.json)
+* [config/ctc/miv_anchor/TMIV_A17_SA_v0.json](config/ctc/miv_anchor/TMIV_A17_SA_v0.json)
+* [config/ctc/miv_anchor/TMIV_A17_SA_p01.json](config/ctc/miv_anchor/TMIV_A17_SA_p01.json)
 
 Note that it is not needed to decode video with HM because the HM decoder is integrated into the TMIV decoder. The input of the decoder is a single MIV bitstream including HEVC sub-bitstreams.
 
-It is possible to use YUV video input, for instance to support experiments with alternative video codecs such as VTM, but this is **advanced use** and **not recommended** in general. To enable decoding of MIV bitstreams with out-of-band decoded video sub-bitstreams, add the  `OccupancyVideoDataPathFmt`,`GeometryVideoDataPathFmt` and/or `AttributeVideoDataPathFmt` to the configuration file. The path formats match those of the encoder configuration, see for instance [TMIV_A17_SA.json](/ctc_config/miv_anchor/TMIV_A17_SA.json). When the decoder detects that a video sub-bitstream is not present in the MIV bitstream, it will use such a parameter to calculate the path to a YUV file and load frames from that. The format and resolution of the YUV file is dictated by the MIV bitstream.
+It is possible to use YUV video input, for instance to support experiments with alternative video codecs such as VTM, but this is **advanced use** and **not recommended** in general. To enable decoding of MIV bitstreams with out-of-band decoded video sub-bitstreams, add the  `OccupancyVideoDataPathFmt`,`GeometryVideoDataPathFmt` and/or `AttributeVideoDataPathFmt` to the configuration file. The path formats match those of the encoder configuration, see for instance [TMIV_A17_SA.json](/config/ctc/miv_anchor/TMIV_A17_SA.json). When the decoder detects that a video sub-bitstream is not present in the MIV bitstream, it will use such a parameter to calculate the path to a YUV file and load frames from that. The format and resolution of the YUV file is dictated by the MIV bitstream.
 
 ## Running the TMIV renderer
 
@@ -267,7 +267,7 @@ The TMIV renderer was added to support the MIV decoder-side depth estimating anc
 
 As with the TMIV decoder you may choose to render to either a source view (e.g. `v0`) for objective evaluation, or render according to a pose trace (e.g. `p01`). A suitable configuration file to try out the TMIV renderer is the one of the best reference condition:
 
-* [ctc_config/best_reference/TMIV_render_R17_SA_p01.json](ctc_config/best_reference/TMIV_render_R17_SA_p01.json)
+* [config/ctc/best_reference/TMIV_render_R17_SA_p01.json](config/ctc/best_reference/TMIV_render_R17_SA_p01.json)
 
 # Overview of TMIV encoder parameters
 
@@ -397,7 +397,7 @@ Each module consists of one or more components. Most components derive from an i
 Core experiments are expected to include the reference software as a subproject
 and introduce new components. Alternatively core experiments may branch the test
 model. Contributions should be in the form of git merge requests to the
-MPEG-internal repository. See [CONTRIBUING.md](CONTRIBUTING.md) for further info.
+MPEG-internal repository. See [doc/CONTRIBUTING.md](doc/CONTRIBUTING.md) for further info.
 
 # References
 

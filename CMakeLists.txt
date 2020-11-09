@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
 
 project(
     TMIV
-    DESCRIPTION "Test Model for Immersive Video"
+    DESCRIPTION "Test Model for MPEG Immersive Video"
     VERSION 7.1.0
     LANGUAGES C CXX)
 
@@ -10,9 +10,9 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 option(NO_INTERNET "Use pre-downloaded source archives for external libraries, e.g. Catch2, HM, and fmt" OFF)
 
-include(CMake/fmt.cmake)
+include(cmake/fmt.cmake)
 
-include(CMake/catch2.cmake)
+include(cmake/catch2.cmake)
 
 if (BUILD_CATCH2)
     include(CTest)
@@ -22,10 +22,10 @@ endif()
 
 include(GNUInstallDirs)
 
-include(CMake/HM.cmake)
+include(cmake/HM.cmake)
 
 # Optionally enable clang-tidy, but only for TMIV modules
-include(CMake/clang_tidy.cmake)
+include(cmake/clang_tidy.cmake)
 
 foreach(subdir
         Common 
@@ -43,7 +43,7 @@ foreach(subdir
         Decoder
         Parser
         DepthQualityAssessor)
-    add_subdirectory(${subdir})
+    add_subdirectory(source/${subdir})
 endforeach()
 
 add_custom_target(clang_format
@@ -51,7 +51,7 @@ add_custom_target(clang_format
         ${CMAKE_COMMAND}
         "-DANALYZE_DIR=${CMAKE_SOURCE_DIR}"
         "-P"
-        "${CMAKE_CURRENT_LIST_DIR}/CMake/clang_format.cmake")
+        "${CMAKE_CURRENT_LIST_DIR}/cmake/clang_format.cmake")
 
 # To use TMIV as a sub project, clone, build and install.
 # Then in the CMake GUI set TMIV_DIR to the lib/cmake/TMIV directory of the TMIV installation.
@@ -68,7 +68,7 @@ export(EXPORT TMIVTargets NAMESPACE TMIV::)
 include(CMakePackageConfigHelpers)
 
 configure_package_config_file(
-    "${CMAKE_CURRENT_LIST_DIR}/CMake/TMIVConfig.cmake.in"
+    "${CMAKE_CURRENT_LIST_DIR}/cmake/TMIVConfig.cmake.in"
     "${CMAKE_CURRENT_BINARY_DIR}/TMIVConfig.cmake"
     INSTALL_DESTINATION ${TMIV_CMAKE_CONFIG_DESTINATION})
 

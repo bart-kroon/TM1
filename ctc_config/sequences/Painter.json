@@ -26,7 +26,7 @@
             "Focal": [2711.28, 2711.28],
             "Principle_point": [960, 540],
             "BitDepthColor": 10,
-            "BitDepthDepth": 10,
+            "BitDepthDepth": 16,
             "HasInvalidDepth": true,
             "ColorSpace": "YUV420",
             "DepthColorSpace": "YUV420"

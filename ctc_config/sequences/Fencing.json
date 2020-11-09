@@ -204,7 +204,7 @@
                 1920, 
                 1080
             ], 
-            "BitDepthDepth": 10, 
+            "BitDepthDepth": 16,
             "Projection": "Perspective",
 			"HasInvalidDepth": true,			
             "ColorSpace": "YUV420", 

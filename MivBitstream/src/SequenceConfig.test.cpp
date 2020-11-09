@@ -182,7 +182,7 @@ TEST_CASE("SequenceConfig") {
     "cameras": [ {
         "Background": 1,
         "BitDepthColor": 10,
-        "BitDepthDepth": 10,
+        "BitDepthDepth": 16,
         "ColorSpace": "YUV420",
         "DepthColorSpace": "YUV420",
         "Depth_range": [0.1, 500],

@@ -12,7 +12,7 @@
         {
             "Background": 1,
             "BitDepthColor": 10,
-            "BitDepthDepth": 10,
+            "BitDepthDepth": 16,
             "HasInvalidDepth": true,
             "ColorSpace": "YUV420",
             "Depth_range": [

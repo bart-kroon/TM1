@@ -20,7 +20,7 @@
             "Principle_point": [1024, 1024],
             "Depth_range": [0.8, 1000],
             "BitDepthColor": 10,
-            "BitDepthDepth": 10,
+            "BitDepthDepth": 16,
             "HasInvalidDepth": true,
             "ColorSpace": "YUV420",
             "DepthColorSpace": "YUV420"

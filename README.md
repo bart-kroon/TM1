@@ -16,21 +16,21 @@ Test Model for MPEG Immersive Video (TMIV)
 
 # Introduction
 
-This software project (TMIV-SW) is the ISO/IEC 23090-12 *MPEG Immersive Video* (MIV) reference software and is part of the *Test model for Immersive Video* [1].
+This software project (TMIV-SW) is the ISO/IEC 23090-12 *MPEG Immersive Video* (MIV) reference software and is part of the *Test model for Immersive Video* [[2]](#references).
 
 The MPEG-I project (ISO/IEC 23090) on *Coded Representation of Immersive Media* includes Part 2 *Omnidirectional MediA Format* (OMAF) version 1 published in 2018 that supports 3 Degrees of Freedom (3DoF), where a user’s position is static but its head can yaw, pitch and roll.
 However, rendering flat 360° video, i.e. supporting head rotations only, may generate visual discomfort especially when objects close to the viewer are rendered. 6DoF enables translation movements in horizontal, vertical, and depth directions in addition to 3DoF orientations. The
-translation support enables interactive motion parallax providing viewers with natural cues to their visual system and resulting in an enhanced perception of volume around them. At the 125th MPEG meeting, a call for proposals [2] was issued to enable head-scale movements within a limited space. This has resulted in new MPEG-I Part 12 Immersive Video (MIV).
+translation support enables interactive motion parallax providing viewers with natural cues to their visual system and resulting in an enhanced perception of volume around them. At the 125th MPEG meeting, a call for proposals [[1]](#references) was issued to enable head-scale movements within a limited space. This has resulted in new MPEG-I Part 12 Immersive Video (MIV).
 
 At the 129th MPEG meeting the fourth working draft of MIV has been realigned to use MPEG-I Part 5 *Video-based Point Cloud Compression* (V-PCC) as a normative reference for terms, defintions, syntax, semantics and decoding processes. At the 130th MPEG meeting this alignment has been completed by restructuring Part 5 in a common specification *Visual Volumetric Video-based Coding* (V3C) and annex H Video-based Point Cloud Compression (V-PCC). V3C provides extension mechanisms for V-PCC and MIV. The terminology in the test model reflects that of V3C and MIV.
 
 # Scope
 
-The normative decoding process for MPEG Immersive Video (MIV) is specified in *Potential improvements of MIV* [3]. The TMIV reference software provides a reference implementation of non-normative encoding and rendering techniques and the normative decoding process for the MIV
+The normative decoding process for MPEG Immersive Video (MIV) is specified in *Potential improvements of MIV* [[3]](#references). The TMIV reference software provides a reference implementation of non-normative encoding and rendering techniques and the normative decoding process for the MIV
 standard.
 
-The test model document [1] provides an algorithmic description for the TMIV encoder and decoder/renderer. The purpose of this document is to promote a common understanding of the coding features, in order to facilitate the assessment of the technical impact of new technologies during
-the standardization process. *Common Test Conditions for MPEG Immersive Video* [4] provides test conditions including TMIV-based anchors. Template configuration files are included with the reference software.
+The test model document [[2]](#references) provides an algorithmic description for the TMIV encoder and decoder/renderer. The purpose of this document is to promote a common understanding of the coding features, in order to facilitate the assessment of the technical impact of new technologies during
+the standardization process. *Common Test Conditions for MPEG Immersive Video* [[4]](#references) provides test conditions including TMIV-based anchors. Template configuration files are included with the reference software.
 
 # Build and installation instructions
 
@@ -181,7 +181,7 @@ The file names of the configuration files, and the file names within them are on
 
 ## Instructions for CTC conditions
 
-It is assumed that the reader has read the CTC document [4] first. This description does not replace that document.
+It is assumed that the reader has read the CTC document [[4]](#references) first. This description does not replace that document.
 
 Use the following steps to encode a bistream and render a viewport:
 
@@ -204,7 +204,7 @@ Use the following steps to encode a bistream and render a viewport:
 
 For this example, we will be using the MIV anchor [TMIV_A17_SA.json](/ctc_config/miv_anchor/TMIV_A17_SA.json) configuration on the `ClassroomVideo` sequence (SA). This file contains a good choice of parameters, you only need to adapt a few variables:
 
-1. Place the color and depth videos [4] in a folder. Make sure to comply to the naming scheme defined in `SourceGeometryPathFmt` and `SourceTexturePathFmt`. Your organization or one of the maintainers of this repository may be able to provide the test sequences to you.
+1. Place the color and depth videos [[4]](#references) in a folder. Make sure to comply to the naming scheme defined in `SourceGeometryPathFmt` and `SourceTexturePathFmt`. Your organization or one of the maintainers of this repository may be able to provide the test sequences to you.
 
 1. The files' naming scheme can for example be `{}_depth_{}x{}_yuv420p16le.yuv`. The curly braces are placeholders for (in sequence)
     1. camera name, as defined in the sequence-specific configuration files, e.g. v13
@@ -271,7 +271,7 @@ As with the TMIV decoder you may choose to render to either a source view (e.g. 
 
 # Overview of TMIV encoder parameters
 
-Some of the algorithmic components of the test model have parameters. This section provides a short description of these parameters in reference to [2] and the template configuration files. The usage of non-algorithmic parameters such as filename patterns should be clear from the template configuration files.
+Some of the algorithmic components of the test model have parameters. This section provides a short description of these parameters in reference to [[2]](#references) and the template configuration files. The usage of non-algorithmic parameters such as filename patterns should be clear from the template configuration files.
 
 ### Common encoder parameters
 
@@ -401,17 +401,7 @@ MPEG-internal repository. See [CONTRIBUING.md](CONTRIBUTING.md) for further info
 
 # References
 
-* [1] *Call for Proposals on 3DoF+ Visual*, ISO/IEC JTC1/SC29/WG11 MPEG/N18145, Jan. 2019, Marrakesh,
-Morocco.
-
-* [2] B. Salahieh, B. Kroon, J. Jung, A. Dziembowski (Eds.), *Test Model 6 for MPEG Immersive Video*,
-[ISO/IEC JTC1/SC29/WG11 MPEG/N19483](https://isotc.iso.org/livelink/livelink?func=ll&objId=21345387&objAction=download&viewType=1),
-July 2020, Online.
-
-* [3] J. Boyce, R. Doré, V. Kumar Malamal Vadakital (Eds.), *Text of ISO/IEC CD 23090-12 MPEG Immersive Video*,
-[ISO/IEC JTC1/SC29/WG11 MPEG/N19482](https://isotc.iso.org/livelink/livelink?func=ll&objId=21346255&objAction=download&viewType=1),
-July 2020, Online.
-
-* [4] J. Jung, B. Kroon, J. Boyce, *Common Test Conditions for MPEG Immersive Video*,
-[ISO/IEC JTC1/SC29/WG11 MPEG/N19484](https://isotc.iso.org/livelink/livelink?func=ll&objId=21346724&objAction=download&viewType=1),
-July 2020, Online.
+* [1] *Call for Proposals on 3DoF+ Visual*, ISO/IEC JTC 1/SC 29/WG 11 N 18145, Jan. 2019, Marrakesh, Morocco.
+* [2] B. Salahieh, B. Kroon, J. Jung, A. Dziembowski (Eds.), *Test Model 7 for MPEG Immersive Video*, [ISO/IEC JTC 1/SC 29/WG 04 N 0005](https://www.mpegstandards.org/wp-content/uploads/mpeg_meetings/132_OnLine/w19678.zip), October 2020, Online.
+* [3] J. Boyce, R. Doré, V. Kumar Malamal Vadakital (Eds.), *Potential Improvements of MPEG Immersive Video*, [ISO/IEC JTC 1/SC 29/WG 04 N 0004](https://www.mpegstandards.org/wp-content/uploads/mpeg_meetings/132_OnLine/w19677.zip), October 2020, Online.
+* [4] J. Jung, B. Kroon, J. Boyce (Eds.), *Common Test Conditions for MPEG Immersive Video*, [ISO/IEC JTC 1/SC 29/WG 04 N 0006](https://www.mpegstandards.org/wp-content/uploads/mpeg_meetings/132_OnLine/w19679.zip), October 2020, Online.

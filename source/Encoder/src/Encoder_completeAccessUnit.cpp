@@ -127,6 +127,7 @@ void Encoder::updateAggregationStatistics(const Common::MaskList &aggregatedMask
   m_maxLumaSamplesPerFrame = std::max(m_maxLumaSamplesPerFrame, lumaSamplesPerFrame);
 }
 
+// TODO(BK): Avoid functions like this one that are too long and/or poorly named
 void Encoder::calculateAttributeOffset(
     std::vector<std::array<std::array<int64_t, 4>, 3>> patchAttrOffsetValuesFullGOP) {
 
@@ -234,7 +235,12 @@ void Encoder::calculateAttributeOffset(
         for (int x = 0; x < atlas.texture.getWidth(); ++x) {
           const auto patchIndex = btpm[k][y / m_blockSize][x / m_blockSize];
 
-          if (patchIndex == Common::unusedPatchId) {
+          // TODO(BK): Avoid comparing depth with 0
+          if (patchIndex == Common::unusedPatchId ||
+              (atlas.depth.getPlane(0)(y, x) == 0 &&
+               !m_params
+                    .viewParamsList[m_params.patchParamsList[patchIndex].atlasPatchProjectionId()]
+                    .isBasicView)) {
             continue;
           }
           const auto &pp = m_params.patchParamsList[patchIndex];

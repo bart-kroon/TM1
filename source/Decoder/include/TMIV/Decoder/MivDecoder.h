@@ -76,13 +76,15 @@ public: // Decoder interface
 
 private:
   [[nodiscard]] auto expectIrap() const -> bool;
-  auto decodeVps() -> bool;
+  auto decodeVps() -> std::optional<MivBitstream::V3cParameterSet>;
+  void resetDecoder();
   void checkCapabilities() const;
   auto startVideoDecoder(const MivBitstream::V3cUnitHeader &vuh, double &totalTime)
       -> std::unique_ptr<VideoDecoder::VideoServer>;
 
   void decodeCommonAtlas();
   void decodeViewParamsList();
+  auto decodeVideoSubBitstreams() -> bool;
   void decodeMvpl(const MivBitstream::MivViewParamsList &mvpl);
   void decodeMvpue(const MivBitstream::MivViewParamsUpdateExtrinsics &mvpue);
   void decodeMvpui(const MivBitstream::MivViewParamsUpdateIntrinsics &mvpui);

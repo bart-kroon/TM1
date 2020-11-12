@@ -68,8 +68,13 @@ void MivDecoder::setAttrFrameServer(AttrFrameServer value) { m_attrFrameServer =
 auto MivDecoder::operator()() -> std::optional<AccessUnit> {
   m_au.irap = expectIrap();
 
-  if (m_au.irap && !decodeVps()) {
-    return {};
+  if (m_au.irap) {
+    if (auto vps = decodeVps()) {
+      m_au.vps = *vps;
+      resetDecoder();
+    } else {
+      return std::nullopt;
+    }
   }
 
   ++m_au.foc;
@@ -90,31 +95,7 @@ auto MivDecoder::operator()() -> std::optional<AccessUnit> {
     }
   }
 
-  auto result = std::array{false, false};
-
-  for (size_t k = 0; k <= m_au.vps.vps_atlas_count_minus1(); ++k) {
-    const auto j = m_au.vps.vps_atlas_id(k);
-    if (m_au.vps.vps_occupancy_video_present_flag(j)) {
-      result[static_cast<std::size_t>(decodeOccVideo(k))] = true;
-    }
-  }
-  for (size_t k = 0; k <= m_au.vps.vps_atlas_count_minus1(); ++k) {
-    const auto j = m_au.vps.vps_atlas_id(k);
-    if (m_au.vps.vps_geometry_video_present_flag(j)) {
-      result[static_cast<std::size_t>(decodeGeoVideo(k))] = true;
-    }
-  }
-  for (size_t k = 0; k <= m_au.vps.vps_atlas_count_minus1(); ++k) {
-    const auto j = m_au.vps.vps_atlas_id(k);
-    if (m_au.vps.vps_attribute_video_present_flag(j)) {
-      result[static_cast<std::size_t>(decodeAttrVideo(k))] = true;
-    }
-  }
-
-  if (result[0U] && result[1U]) {
-    throw std::runtime_error("One of the video streams is truncated");
-  }
-  if (result[1U]) {
+  if (decodeVideoSubBitstreams()) {
     // TODO(BK): This copies the video frames.
     return m_au;
   }
@@ -123,13 +104,15 @@ auto MivDecoder::operator()() -> std::optional<AccessUnit> {
 
 auto MivDecoder::expectIrap() const -> bool { return !m_commonAtlasDecoder; }
 
-auto MivDecoder::decodeVps() -> bool {
-  auto vu = m_inputBuffer(MivBitstream::V3cUnitHeader{MivBitstream::VuhUnitType::V3C_VPS});
-  if (!vu) {
-    return false;
+auto MivDecoder::decodeVps() -> std::optional<MivBitstream::V3cParameterSet> {
+  if (const auto &vu =
+          m_inputBuffer(MivBitstream::V3cUnitHeader{MivBitstream::VuhUnitType::V3C_VPS})) {
+    return vu->v3c_unit_payload().v3c_parameter_set();
   }
-  m_au.vps = vu->v3c_unit_payload().v3c_parameter_set();
+  return std::nullopt;
+}
 
+void MivDecoder::resetDecoder() {
   summarizeVps();
   checkCapabilities();
 
@@ -176,8 +159,29 @@ auto MivDecoder::decodeVps() -> bool {
       m_attrVideoDecoder.push_back(nullptr);
     }
   }
+}
 
-  return true;
+auto MivDecoder::decodeVideoSubBitstreams() -> bool {
+  auto result = std::array{false, false};
+
+  for (size_t k = 0; k <= m_au.vps.vps_atlas_count_minus1(); ++k) {
+    const auto j = m_au.vps.vps_atlas_id(k);
+
+    if (m_au.vps.vps_occupancy_video_present_flag(j)) {
+      result[static_cast<std::size_t>(decodeOccVideo(k))] = true;
+    }
+    if (m_au.vps.vps_geometry_video_present_flag(j)) {
+      result[static_cast<std::size_t>(decodeGeoVideo(k))] = true;
+    }
+    if (m_au.vps.vps_attribute_video_present_flag(j)) {
+      result[static_cast<std::size_t>(decodeAttrVideo(k))] = true;
+    }
+  }
+
+  if (result[0U] && result[1U]) {
+    throw std::runtime_error("One of the video streams is truncated");
+  }
+  return result[1U];
 }
 
 void MivDecoder::checkCapabilities() const {

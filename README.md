@@ -388,7 +388,7 @@ After that the targets `TMIV::DecoderLib`, `TMIV::EncoderLib`, etc. are availabl
 
 This software consists of multiple executables and static libraries. Below figure is the CMake module dependency graph of TMIV 5.0. The most important executables are Encoder and Decoder. When enabled, the project also includes the HM executables TAppEncoder and TAppDecoder.
 
-![CMake module graph](doc/module_graph.png)
+![CMake module graph](doc/module_graph.svg)
 
 Each module consists of one or more components. Most components derive from an interface and some interfaces have multiple alternative components. For instance, the ViewOptimizerLib includes an IViewOptimizer interface with NoViewOptimizer and ViewReducer components that implement that interface.
 

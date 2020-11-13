@@ -53,6 +53,13 @@ add_custom_target(clang_format
         "-P"
         "${CMAKE_CURRENT_LIST_DIR}/cmake/clang_format.cmake")
 
+add_custom_target(module_graph
+    COMMAND
+        ${CMAKE_COMMAND}
+        "-DOUTPUT_FILE=${CMAKE_SOURCE_DIR}/doc/module_graph.svg"
+        "-P"
+        "${CMAKE_CURRENT_LIST_DIR}/cmake/module_graph.cmake")
+
 # To use TMIV as a sub project, clone, build and install.
 # Then in the CMake GUI set TMIV_DIR to the lib/cmake/TMIV directory of the TMIV installation.
 # In the super project CMakeLists.txt use find_package(TMIV 7.1.0 REQUIRED)

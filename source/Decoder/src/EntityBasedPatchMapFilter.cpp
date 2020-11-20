@@ -46,7 +46,8 @@ EntityBasedPatchMapFilter::EntityBasedPatchMapFilter(const Common::Json & /*root
   }
 }
 
-void EntityBasedPatchMapFilter::inplaceFilterBlockToPatchMaps(AccessUnit &frame) const {
+void EntityBasedPatchMapFilter::inplaceFilterBlockToPatchMaps(
+    MivBitstream::AccessUnit &frame) const {
   if (m_entityFiltering && 0 < frame.vps.vps_miv_extension().vme_max_entities_minus1()) {
     for (auto &atlas : frame.atlas) {
       Common::Vec2i sz = atlas.blockToPatchMap.getSize();

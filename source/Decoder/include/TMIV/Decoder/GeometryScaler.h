@@ -36,7 +36,7 @@
 
 #include <TMIV/Common/Frame.h>
 #include <TMIV/Common/Json.h>
-#include <TMIV/Decoder/AccessUnit.h>
+#include <TMIV/MivBitstream/AccessUnit.h>
 
 #include <algorithm>
 #include <cassert>
@@ -49,10 +49,10 @@ class GeometryScaler {
 public:
   GeometryScaler(const Common::Json & /*rootNode*/, const Common::Json &componentNode);
 
-  [[nodiscard]] static auto scale(const AtlasAccessUnit &atlas,
+  [[nodiscard]] static auto scale(const MivBitstream::AtlasAccessUnit &atlas,
                                   const MivBitstream::GeometryUpscalingParameters &gup)
       -> Common::Depth10Frame;
-  void inplaceScale(AccessUnit &frame) const;
+  void inplaceScale(MivBitstream::AccessUnit &frame) const;
 
 private:
   MivBitstream::GeometryUpscalingParameters m_defaultGup;

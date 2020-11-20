@@ -42,8 +42,8 @@ public:
   NoCuller(const Common::Json & /* unused */, const Common::Json & /* unused */) {}
 
   [[nodiscard]] auto
-  filterBlockToPatchMap(const Decoder::AccessUnit & /* frame */,
-                        const Decoder::AtlasAccessUnit &atlas,
+  filterBlockToPatchMap(const MivBitstream::AccessUnit & /* frame */,
+                        const MivBitstream::AtlasAccessUnit &atlas,
                         const MivBitstream::ViewParams & /* viewportParams */) const
       -> Common::BlockToPatchMap override {
     return atlas.blockToPatchMap;

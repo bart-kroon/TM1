@@ -351,7 +351,7 @@ public:
       : m_alignerColor(geometryEdgeMagnitudeTh, minForegroundConfidence)
       , m_alignerCurvature(geometryEdgeMagnitudeTh, maxCurvature) {}
 
-  auto operator()(const AtlasAccessUnit &atlas) -> Common::Depth10Frame {
+  auto operator()(const MivBitstream::AtlasAccessUnit &atlas) -> Common::Depth10Frame {
     auto geoFrame = Common::Depth10Frame{atlas.frameSize().x(), atlas.frameSize().y()};
 
     // Upscale with nearest neighbor interpolation to nominal atlas resolution
@@ -384,7 +384,7 @@ GeometryScaler::GeometryScaler(const Common::Json & /*rootNode*/,
       .gup_max_curvature(static_cast<uint8_t>(componentNode.require("maxCurvature").as<int>()));
 }
 
-auto GeometryScaler::scale(const AtlasAccessUnit &atlas,
+auto GeometryScaler::scale(const MivBitstream::AtlasAccessUnit &atlas,
                            const MivBitstream::GeometryUpscalingParameters &gup)
     -> Common::Depth10Frame {
   auto upscaler = DepthUpscaler{static_cast<int>(gup.gup_delta_threshold()),
@@ -393,7 +393,7 @@ auto GeometryScaler::scale(const AtlasAccessUnit &atlas,
   return upscaler(atlas);
 }
 
-void GeometryScaler::inplaceScale(AccessUnit &frame) const {
+void GeometryScaler::inplaceScale(MivBitstream::AccessUnit &frame) const {
   for (size_t k = 0; k <= frame.vps.vps_atlas_count_minus1(); ++k) {
     const auto j = frame.vps.vps_atlas_id(k);
     auto &atlas = frame.atlas[k];

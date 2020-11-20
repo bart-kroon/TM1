@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
 
 add_library(IOLib
-    "src/IO.cpp"
+    "src/load.cpp"
+    "src/save.cpp"
     "include/TMIV/IO/IO.h"
-    "include/TMIV/IO/IO.hpp"
     )
 
 add_library(TMIV::IOLib
@@ -27,7 +27,7 @@ endif()
 
 target_link_libraries(IOLib
     PUBLIC
-        TMIV::DecoderLib ${CppFilesystemLib})
+        TMIV::MivBitstreamLib ${CppFilesystemLib})
 
 target_include_directories(IOLib
     PUBLIC

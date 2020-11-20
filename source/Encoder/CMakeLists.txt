@@ -36,8 +36,6 @@ target_include_directories(EncoderLib
 add_executable(Encoder
     "src/Encoder.main.cpp"
     "src/registerComponents.cpp"
-    "src/IvMetadataWriter.cpp"
-    "src/IvMetadataWriter.h"
     )
 
 target_link_libraries(Encoder

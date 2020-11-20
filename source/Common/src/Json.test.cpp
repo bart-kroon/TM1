@@ -174,6 +174,11 @@ TEST_CASE("Converting assignment operator with numeric promotion") {
   REQUIRE(json.as<Json::Array>().empty());
 }
 
+TEST_CASE("Json::as<std::filesytem::path> converts a string to a path") {
+  REQUIRE(Json{"/some/path.txt"}.as<std::filesystem::path>() ==
+          std::filesystem::path{"/some/path.txt"});
+}
+
 TEST_CASE("Parse a JSON") {
   SECTION("null") { REQUIRE(!Json::parse("null"sv)); }
 

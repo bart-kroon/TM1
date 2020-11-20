@@ -38,32 +38,45 @@
 
 #include <cassert>
 #include <filesystem>
+#include <fstream>
 #include <iostream>
 #include <numeric>
 #include <stdexcept>
 
+using namespace std::string_view_literals;
+
 namespace TMIV::Encoder {
 class Multiplexer : public Common::Application {
+private:
+  const std::string &m_contentId;
+  std::int32_t m_numberOfInputFrames;
+  const std::string &m_testId;
+
+  MivBitstream::V3cParameterSet m_vps;
+  std::vector<std::string> m_units;
+
+  [[nodiscard]] auto placeholders() const {
+    auto x = IO::Placeholders{};
+    x.contentId = m_contentId;
+    x.numberOfInputFrames = m_numberOfInputFrames;
+    x.testId = m_testId;
+    return x;
+  }
+
 public:
   explicit Multiplexer(std::vector<const char *> argv)
-      : Common::Application{"Multiplexer", std::move(argv)}
-      , m_intermediateBitstreamPath{json().require("IntermediateBitstreamPath").as<std::string>()}
-      , m_outputBitstreamPath{json().require("OutputBitstreamPath").as<std::string>()} {
-    if (const auto &node = json().optional("GeometryVideoDataSubBitstreamPathFmt")) {
-      m_gvdSubBitstreamPathFmt = node.as<std::string>();
-    }
-    if (const auto &node = json().optional("AttributeVideoDataSubBitstreamPathFmt")) {
-      m_avdSubBitstreamPathFmt = node.as<std::string>();
-    }
-    if (const auto &node = json().optional("OccupancyVideoDataSubBitstreamPathFmt")) {
-      m_ovdSubBitstreamPathFmt = node.as<std::string>();
-    }
-    checkParameters();
-  }
+      : Common::Application{"Multiplexer", std::move(argv),
+                            Common::Application::Options{
+                                {"-s", "Content ID (e.g. B for Museum)", false},
+                                {"-n", "Number of input frames (e.g. 97)", false},
+                                {"-r", "Test point (e.g. QP3 or R0)", false}}}
+      , m_contentId{optionValues("-s").front()}
+      , m_numberOfInputFrames{std::stoi(optionValues("-n"sv).front())}
+      , m_testId{optionValues("-r").front()} {}
 
   void run() override {
     // Decode V3C units and VPS
-    readIntermediateBitstream();
+    readInputBitstream();
 
     // Append all video sub bitstreams
     for (size_t k = 0; k <= m_vps.vps_atlas_count_minus1(); ++k) {
@@ -89,27 +102,11 @@ public:
   }
 
 private:
-  void checkParameters() {
-    if (!exists(m_intermediateBitstreamPath)) {
-      throw std::runtime_error(fmt::format("The intermediate bitstream file does not exist.",
-                                           m_intermediateBitstreamPath));
-    }
-    // We are daring enough to overwrite an existing bitstream, but we refuse to overwrite the
-    // input bitstream. (Because we know we are stupid enough to do that at least once.)
-    if (exists(m_outputBitstreamPath) &&
-        equivalent(m_intermediateBitstreamPath, m_outputBitstreamPath)) {
-      throw std::runtime_error(
-          fmt::format("The intermediate bitstream file ({}) and the output bitstream "
-                      "file ({}) cannot be the same file.",
-                      m_intermediateBitstreamPath, m_outputBitstreamPath));
-    }
-  }
-
-  void readIntermediateBitstream() {
-    std::ifstream stream{m_intermediateBitstreamPath, std::ios::binary};
+  void readInputBitstream() {
+    const auto path = IO::inputBitstreamPath(json(), placeholders());
+    std::ifstream stream{path, std::ios::binary};
     if (!stream.good()) {
-      throw std::runtime_error(fmt::format(
-          "Failed to open intermediate bitstream ({}) for reading.", m_intermediateBitstreamPath));
+      throw std::runtime_error(fmt::format("Failed to open input bitstream {} for reading.", path));
     }
 
     // Decode SSVH
@@ -137,7 +134,7 @@ private:
       stream.peek();
     }
 
-    std::cout << "Appended " << m_intermediateBitstreamPath << " with a total of " << m_units.size()
+    std::cout << "Appended " << path << " with a total of " << m_units.size()
               << " V3C units including the VPS\n";
   }
 
@@ -154,14 +151,14 @@ private:
     auto vuh = MivBitstream::V3cUnitHeader{MivBitstream::VuhUnitType::V3C_GVD};
     vuh.vuh_v3c_parameter_set_id(m_vps.vps_v3c_parameter_set_id());
     vuh.vuh_atlas_id(atlasId);
-    appendSubBitstream(vuh, fmt::format(m_gvdSubBitstreamPathFmt, atlasId));
+    appendSubBitstream(vuh, IO::inputGeometryVsbPathFmt, atlasId);
   }
 
   void appendOvd(MivBitstream::AtlasId atlasId) {
     auto vuh = MivBitstream::V3cUnitHeader{MivBitstream::VuhUnitType::V3C_OVD};
     vuh.vuh_v3c_parameter_set_id(m_vps.vps_v3c_parameter_set_id());
     vuh.vuh_atlas_id(atlasId);
-    appendSubBitstream(vuh, fmt::format(*m_ovdSubBitstreamPathFmt, atlasId));
+    appendSubBitstream(vuh, IO::inputOccupancyVsbPathFmt, atlasId);
   }
 
   void appendAvd(MivBitstream::AtlasId atlasId, uint8_t attributeIdx,
@@ -170,22 +167,35 @@ private:
     vuh.vuh_v3c_parameter_set_id(m_vps.vps_v3c_parameter_set_id());
     vuh.vuh_atlas_id(atlasId);
     vuh.vuh_attribute_index(attributeIdx);
-    appendSubBitstream(
-        vuh, fmt::format(*m_avdSubBitstreamPathFmt, MivBitstream::codeOf(typeId), atlasId));
+
+    switch (typeId) {
+    case MivBitstream::AiAttributeTypeId::ATTR_TEXTURE:
+      return appendSubBitstream(vuh, IO::inputTextureVsbPathFmt, atlasId, attributeIdx);
+    case MivBitstream::AiAttributeTypeId::ATTR_MATERIAL_ID:
+      return appendSubBitstream(vuh, IO::inputMaterialIdVsbPathFmt, atlasId, attributeIdx);
+    case MivBitstream::AiAttributeTypeId::ATTR_TRANSPARENCY:
+      return appendSubBitstream(vuh, IO::inputTransparencyVsbPathFmt, atlasId, attributeIdx);
+    case MivBitstream::AiAttributeTypeId::ATTR_REFLECTANCE:
+      return appendSubBitstream(vuh, IO::inputReflectanceVsbPathFmt, atlasId, attributeIdx);
+    case MivBitstream::AiAttributeTypeId::ATTR_NORMAL:
+      return appendSubBitstream(vuh, IO::inputNormalVsbPathFmt, atlasId, attributeIdx);
+    default:
+      throw std::runtime_error(fmt::format("No support for {}", typeId));
+    }
   }
 
-  void appendSubBitstream(const MivBitstream::V3cUnitHeader &vuh,
-                          const std::filesystem::path &subBitstreamPath) {
-    std::ifstream inStream{subBitstreamPath, std::ios::binary};
+  void appendSubBitstream(const MivBitstream::V3cUnitHeader &vuh, const std::string &key,
+                          MivBitstream::AtlasId atlasId, int attributeIdx = 0) {
+    const auto path = IO::inputSubBitstreamPath(key, json(), placeholders(), atlasId, attributeIdx);
+    std::ifstream inStream{path, std::ios::binary};
     if (!inStream.good()) {
-      throw std::runtime_error(
-          fmt::format("Failed to open sub bitstream ({}) for reading", subBitstreamPath));
+      throw std::runtime_error(fmt::format("Failed to open sub bitstream {} for reading", path));
     }
     std::ostringstream substream;
     vuh.encodeTo(substream);
     substream << inStream.rdbuf();
 
-    std::cout << "Appended " << subBitstreamPath << '\n';
+    std::cout << "Appended " << path << '\n';
     m_units.push_back(substream.str());
   }
 
@@ -202,8 +212,13 @@ private:
       ++precisionBytesMinus1;
     }
 
+    const auto path = IO::outputBitstreamPath(json(), placeholders());
+    std::ofstream stream{path, std::ios::binary};
+    if (!stream.good()) {
+      throw std::runtime_error(fmt::format("Failed to open {} for writing", path));
+    }
+
     // Write the sample stream header
-    std::ofstream stream{m_outputBitstreamPath, std::ios::binary};
     const auto ssvh = MivBitstream::SampleStreamV3cHeader{precisionBytesMinus1};
     ssvh.encodeTo(stream);
     std::cout << '\n' << ssvh;
@@ -220,15 +235,6 @@ private:
       std::cout << vuh;
     }
   }
-
-  std::filesystem::path m_intermediateBitstreamPath;
-  std::filesystem::path m_outputBitstreamPath;
-  std::string m_gvdSubBitstreamPathFmt;
-  std::optional<std::string> m_avdSubBitstreamPathFmt;
-  std::optional<std::string> m_ovdSubBitstreamPathFmt;
-
-  MivBitstream::V3cParameterSet m_vps;
-  std::vector<std::string> m_units;
 };
 } // namespace TMIV::Encoder
 

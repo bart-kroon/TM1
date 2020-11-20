@@ -34,7 +34,7 @@
 #include <TMIV/Decoder/OccupancyReconstructor.h>
 
 namespace TMIV::Decoder {
-void OccupancyReconstructor::reconstruct(AccessUnit &frame) {
+void OccupancyReconstructor::reconstruct(MivBitstream::AccessUnit &frame) {
   for (size_t k = 0; k <= frame.vps.vps_atlas_count_minus1(); ++k) {
     auto &atlas = frame.atlas[k];
     atlas.occFrame = Common::Occupancy10Frame{atlas.frameSize().x(), atlas.frameSize().y()};

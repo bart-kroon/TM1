@@ -1,7 +1,0 @@
-{
-  "IntermediateBitstreamPath": "ATL_SB.bit",
-  "OutputBitstreamPath": "ATL_SB_QP1.bit",
-  "AttributeVideoDataSubBitstreamPathFmt": "ATL_SB_QP1_T{}_c{:02}.bit",
-  "GeometryVideoDataSubBitstreamPathFmt": "ATL_SB_QP1_TG_c{:02}.bit",
-  "OccupancyVideoDataSubBitstreamPathFmt": "ATL_SB_QP1_TO_c{:02}.bit"
-}

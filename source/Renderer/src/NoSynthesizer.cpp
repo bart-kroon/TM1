@@ -40,7 +40,7 @@ namespace TMIV::Renderer {
 NoSynthesizer::NoSynthesizer(const Common::Json & /*unused*/,
                              const Common::Json & /*componentNode*/) {}
 
-auto NoSynthesizer::renderFrame(const Decoder::AccessUnit &frame,
+auto NoSynthesizer::renderFrame(const MivBitstream::AccessUnit &frame,
                                 const MivBitstream::ViewParams &viewportParams) const
     -> Common::Texture444Depth16Frame {
   auto viewport = Common::Texture444Depth16Frame{

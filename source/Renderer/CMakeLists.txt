@@ -13,7 +13,6 @@ add_library(RendererLib
     "src/ViewWeightingSynthesizer.cpp"
     "src/NoSynthesizer.cpp"
     "src/RecoverPrunedViews.cpp"
-    "src/mapInputToOutputFrames.cpp"
     "include/TMIV/Renderer/IRenderer.h"
     "include/TMIV/Renderer/IInpainter.h"
     "include/TMIV/Renderer/ISynthesizer.h"
@@ -38,7 +37,6 @@ add_library(RendererLib
     "include/TMIV/Renderer/ViewWeightingSynthesizer.h"
     "include/TMIV/Renderer/NoSynthesizer.h"
     "include/TMIV/Renderer/RecoverPrunedViews.h"
-    "include/TMIV/Renderer/mapInputToOutputFrames.h"
     )
 
 add_library(TMIV::RendererLib
@@ -46,13 +44,32 @@ add_library(TMIV::RendererLib
 
 target_link_libraries(RendererLib
     PUBLIC
-        TMIV::DecoderLib
         TMIV::ViewingSpaceLib
     PRIVATE
         Threads::Threads
 )
 
 target_include_directories(RendererLib
+    PUBLIC
+        "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>")
+    
+add_library(RendererFrontLib
+    "src/Front/mapInputToOutputFrames.cpp"
+    "src/Front/MultipleFrameRenderer.cpp"
+    "include/TMIV/Renderer/Front/mapInputToOutputFrames.h"
+    "include/TMIV/Renderer/Front/MultipleFrameRenderer.h"
+    )
+
+add_library(TMIV::RendererFrontLib
+    ALIAS RendererFrontLib)
+
+target_link_libraries(RendererFrontLib
+    PUBLIC
+        TMIV::RendererLib
+        TMIV::IOLib
+)
+
+target_include_directories(RendererFrontLib
     PUBLIC
         "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>")
     
@@ -63,14 +80,14 @@ add_executable(Renderer
 
 target_link_libraries(Renderer
     PRIVATE
-        TMIV::RendererLib
-        TMIV::DepthQualityAssessorLib
-        TMIV::IOLib)
+        TMIV::RendererFrontLib
+        TMIV::DepthQualityAssessorLib)
 
 install(
     TARGETS
         Renderer
         RendererLib
+        RendererFrontLib
     EXPORT TMIVTargets
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
@@ -88,4 +105,17 @@ if (CMAKE_TESTING_ENABLED)
             TMIV::RendererLib)
 
     catch_discover_tests(RendererTest)
+
+    add_executable(RendererFrontTest
+        "src/Front/RendererFront.test.cpp"
+        "src/Front/mapInputToOutputFrames.test.cpp"
+        "src/Front/MultipleFrameRenderer.test.cpp"
+        )
+
+    target_link_libraries(RendererFrontTest
+        PRIVATE
+            Catch2::Catch2
+            TMIV::RendererFrontLib)
+
+    catch_discover_tests(RendererFrontTest)
 endif()

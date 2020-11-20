@@ -42,7 +42,7 @@ class NoSynthesizer : public ISynthesizer {
 public:
   NoSynthesizer(const Common::Json & /*unused*/, const Common::Json & /*componentNode*/);
 
-  [[nodiscard]] auto renderFrame(const Decoder::AccessUnit &frame,
+  [[nodiscard]] auto renderFrame(const MivBitstream::AccessUnit &frame,
                                  const MivBitstream::ViewParams &viewportParams) const
       -> Common::Texture444Depth16Frame override;
 };

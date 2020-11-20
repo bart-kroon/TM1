@@ -36,37 +36,101 @@
 
 #include <TMIV/Common/Frame.h>
 #include <TMIV/Common/Json.h>
-#include <TMIV/Decoder/AccessUnit.h>
-#include <TMIV/MivBitstream/EncoderParams.h>
+#include <TMIV/MivBitstream/AccessUnit.h>
 
-// Functions for file I/O
-//
-// Frame indices are zero-based and relative to the StartFrame parameter.
-// These functions will print something short to screen.
+using namespace std::string_literals;
+
 namespace TMIV::IO {
-// Load sequence metadata from the configuration files. It is up to the Encoder to comply (or
-// ignore) fields such as num_groups. The in-memory metadata representation has to be complete
-// only after IEncoder.
-auto loadSourceParams(const Common::Json &config) -> MivBitstream::EncoderParams;
+extern const std::string configDirectory;
+extern const std::string inputBitstreamPathFmt;
+extern const std::string inputCameraNames;
+extern const std::string inputDirectory;
+extern const std::string inputEntityPathFmt;
+extern const std::string inputGeometryPathFmt;
+extern const std::string inputGeometryVideoFramePathFmt;
+extern const std::string inputGeometryVsbPathFmt;
+extern const std::string inputMaterialIdVsbPathFmt;
+extern const std::string inputNormalVsbPathFmt;
+extern const std::string inputOccupancyVideoFramePathFmt;
+extern const std::string inputOccupancyVsbPathFmt;
+extern const std::string inputPoseTracePathFmt;
+extern const std::string inputReflectanceVsbPathFmt;
+extern const std::string inputSequenceConfigPathFmt;
+extern const std::string inputTexturePathFmt;
+extern const std::string inputTextureVideoFramePathFmt;
+extern const std::string inputTextureVsbPathFmt;
+extern const std::string inputTransparencyVsbPathFmt;
+extern const std::string inputViewportParamsPathFmt;
 
-// Loads a source frame including entity maps when applicable
-auto loadSourceFrame(const Common::Json &config, const Common::SizeVector &sizes,
-                     const std::vector<std::string> &viewNames, int frameIndex)
+extern const std::string outputBitstreamPathFmt;
+extern const std::string outputBlockToPatchMapPathFmt;
+extern const std::string outputDirectory;
+extern const std::string outputGeometryVideoDataPathFmt;
+extern const std::string outputMultiviewGeometryPathFmt;
+extern const std::string outputMultiviewOccupancyPathFmt;
+extern const std::string outputMultiviewTexturePathFmt;
+extern const std::string outputOccupancyVideoDataPathFmt;
+extern const std::string outputSequenceConfigPathFmt;
+extern const std::string outputTextureVideoDataPathFmt;
+extern const std::string outputViewportGeometryPathFmt;
+extern const std::string outputViewportTexturePathFmt;
+
+struct Placeholders {
+  std::string contentId{};    // e.g. A
+  std::string testId{"R0"};   // e.g. QP3 or R0
+  int numberOfInputFrames{};  // e.g. 97
+  int numberOfOutputFrames{}; // e.g. 300
+};
+
+template <typename FORMAT>
+auto loadFrame(const std::filesystem::path &path, std::int32_t frameIndex, Common::Vec2i frameSize)
+    -> Common::Frame<FORMAT>;
+auto loadMultiviewFrame(const Common::Json &config, const Placeholders &placeholders,
+                        const MivBitstream::SequenceConfig &sc, std::int32_t frameIndex)
     -> Common::MVD16Frame;
+auto loadViewportMetadata(const Common::Json &config, const Placeholders &placeholders,
+                          std::int32_t frameIndex, const std::string &cameraName, bool isPoseTrace)
+    -> MivBitstream::ViewParams;
+auto loadOccupancyVideoFrame(const Common::Json &config, const Placeholders &placeholders,
+                             MivBitstream::AtlasId atlasId, uint32_t frameId,
+                             Common::Vec2i frameSize) -> Common::Occupancy10Frame;
+auto loadGeometryVideoFrame(const Common::Json &config, const Placeholders &placeholders,
+                            MivBitstream::AtlasId atlasId, uint32_t frameId,
+                            Common::Vec2i frameSize) -> Common::Depth10Frame;
+auto loadTextureVideoFrame(const Common::Json &config, const Placeholders &placeholders,
+                           MivBitstream::AtlasId atlasId, uint32_t frameId, Common::Vec2i frameSize)
+    -> Common::Texture444Frame;
+auto loadSequenceConfig(const Common::Json &config, const Placeholders &placeholders,
+                        std::int32_t frameIndex) -> MivBitstream::SequenceConfig;
+auto tryLoadSequenceConfig(const Common::Json &config, const Placeholders &placeholders,
+                           std::int32_t frameIndex) -> std::optional<MivBitstream::SequenceConfig>;
 
-void saveAtlas(const Common::Json &config, int frameIndex, const Common::MVD10Frame &frame);
+auto inputBitstreamPath(const Common::Json &config, const Placeholders &placeholders)
+    -> std::filesystem::path;
+auto inputSubBitstreamPath(const std::string &key, const Common::Json &config,
+                           const Placeholders &placeholders, MivBitstream::AtlasId atlasId,
+                           int attributeIdx) -> std::filesystem::path;
 
-void saveBlockToPatchMaps(const Common::Json &config, int frameIndex,
-                          const Decoder::AccessUnit &frame);
-void savePrunedFrame(const Common::Json &config, int frameIndex,
+template <typename FORMAT>
+void saveFrame(const std::filesystem::path &path, const Common::Frame<FORMAT> &frame,
+               std::int32_t frameIndex);
+void saveAtlasFrame(const Common::Json &config, const Placeholders &placeholders,
+                    std::int32_t frameIndex, const Common::MVD10Frame &frame);
+void saveViewport(const Common::Json &config, const Placeholders &placeholders,
+                  std::int32_t frameIndex, const std::string &name,
+                  const Common::TextureDepth16Frame &frame);
+void saveBlockToPatchMaps(const Common::Json &config, const Placeholders &placeholders,
+                          std::int32_t frameIndex, const MivBitstream::AccessUnit &frame);
+void savePrunedFrame(const Common::Json &config, const Placeholders &placeholders,
+                     std::int32_t frameIndex,
                      const std::pair<std::vector<Common::Texture444Depth10Frame>, Common::MaskList>
                          &prunedViewsAndMasks);
+void saveSequenceConfig(const Common::Json &config, const Placeholders &placeholders,
+                        std::int32_t foc, const MivBitstream::SequenceConfig &seqConfig);
 
-auto loadViewportMetadata(const Common::Json &config, int frameIndex) -> MivBitstream::ViewParams;
-void saveViewport(const Common::Json &config, int frameIndex,
-                  const Common::TextureDepth16Frame &frame);
+// Construct the output bitstream path and create the parent directories
+auto outputBitstreamPath(const Common::Json &config, const Placeholders &placeholders)
+    -> std::filesystem::path;
 } // namespace TMIV::IO
-
-#include "IO.hpp"
 
 #endif

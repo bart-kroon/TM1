@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
 
 add_library(DecoderLib
-    "src/AccessUnit.cpp"
     "src/AtlasDecoder.cpp"
     "src/CommonAtlasDecoder.cpp"
     "src/Decoder.cpp"
@@ -13,7 +12,6 @@ add_library(DecoderLib
     "src/V3cSampleStreamDecoder.cpp"
     "src/V3cUnitBuffer.cpp"
     "include/TMIV/Decoder/IDecoder.h"
-    "include/TMIV/Decoder/AccessUnit.h"
     "include/TMIV/Decoder/AtlasDecoder.h"
     "include/TMIV/Decoder/CommonAtlasDecoder.h"
     "include/TMIV/Decoder/Decoder.h"
@@ -30,7 +28,6 @@ add_library(TMIV::DecoderLib
 
 target_link_libraries(DecoderLib
     PUBLIC
-        TMIV::RendererLib
         TMIV::VideoDecoderLib)
 
 target_include_directories(DecoderLib
@@ -40,14 +37,12 @@ target_include_directories(DecoderLib
 add_executable(Decoder
     "src/Decoder.main.cpp"
     "src/registerComponents.cpp"
-    "src/IvMetadataReader.cpp"
-    "src/IvMetadataReader.h"
     )
 
 target_link_libraries(Decoder
     PRIVATE
         TMIV::DecoderLib
-        TMIV::IOLib)
+        TMIV::RendererFrontLib)
 
 install(
     TARGETS
@@ -60,17 +55,3 @@ install(
 install(
     DIRECTORY "include/"
     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
-   
-if (CMAKE_TESTING_ENABLED)
-    add_executable(DecoderTest
-        "src/AccessUnit.test.cpp"
-        "src/Decoder.test.cpp"
-        )
-
-    target_link_libraries(DecoderTest
-        PRIVATE
-            Catch2::Catch2
-            TMIV::DecoderLib)
-
-    catch_discover_tests(DecoderTest)
-endif()

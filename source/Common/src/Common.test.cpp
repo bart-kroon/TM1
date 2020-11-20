@@ -130,10 +130,13 @@ TEST_CASE("Array, Vector, Matrix, LinAlg") {
 }
 
 namespace {
-class FakeApplication : public Application {
+class Fake : public Application {
 public:
-  using Application::Application;
+  explicit Fake(char const *tool, std::vector<const char *> argv, Options options)
+      : Application{tool, std::move(argv), std::move(options)} {}
+
   using Application::json;
+  using Application::optionValues;
 
   void run() override {}
 };
@@ -142,7 +145,7 @@ public:
 TEST_CASE("Parsing the command-line", "[Application]") {
   SECTION("Empty command-line returns usage instructions") {
     try {
-      FakeApplication app{"Fake", {"command"}};
+      Fake app{"Fake", {"command"}, {}};
       REQUIRE(false);
     } catch (std::runtime_error &e) {
       REQUIRE_THAT(e.what(), Contains("Usage"));
@@ -151,21 +154,42 @@ TEST_CASE("Parsing the command-line", "[Application]") {
   }
 
   SECTION("Specifying parameters with -p KEY VALUE") {
-    FakeApplication app{"Fake", {"command", "-p", "Color", "green", "-p", "Shape", "circular"}};
+    Fake app{"Fake", {"command", "-p", "Color", "green", "-p", "Shape", "circular"}, {}};
     REQUIRE(app.json().require("Color").as<std::string>() == "green"s);
     REQUIRE(app.json().require("Shape").as<std::string>() == "circular"s);
   }
 
   SECTION("Right has preference over left") {
-    FakeApplication app{"Fake", {"command", "-p", "Color", "5", "-p", "Color", "7"}};
+    Fake app{"Fake", {"command", "-p", "Color", "5", "-p", "Color", "7"}, {}};
     REQUIRE(app.json().require("Color").as<int>() == 7);
   }
 
   SECTION("Structured values") {
-    FakeApplication app{"Fake",
-                        {"command", "-p", "Size", "[20, 30]", "-p", "Params", "{ \"a\": 3 }"}};
+    Fake app{"Fake", {"command", "-p", "Size", "[20, 30]", "-p", "Params", "{ \"a\": 3 }"}, {}};
     CHECK(app.json().require("Size").asVec<int, 2>() == Vec2i{20, 30});
     CHECK(app.json().require("Params").require("a").as<int>() == 3);
+  }
+
+  SECTION("A single-occurance application-specific option needs to be specified exactly once") {
+    const auto opts = Fake::Options{{"-s", "single", false}};
+    REQUIRE_THROWS(Fake{"Fake", {"fake", "-p", "a", "b"}, opts});
+    REQUIRE_NOTHROW(Fake{"Fake", {"fake", "-p", "a", "b", "-s", "1"}, opts});
+    REQUIRE_THROWS(Fake{"Fake", {"fake", "-p", "a", "b", "-s", "1", "-s", "2"}, opts});
+  }
+
+  SECTION("A multiple-occurrence application-specific option may be specified zero or more times") {
+    const auto opts = Fake::Options{{"-m", "multiple", true}};
+    REQUIRE_NOTHROW(Fake{"Fake", {"fake", "-p", "a", "b"}, opts});
+    REQUIRE_NOTHROW(Fake{"Fake", {"fake", "-p", "a", "b", "-m", "1"}, opts});
+    REQUIRE_NOTHROW(Fake{"Fake", {"fake", "-p", "a", "b", "-m", "1", "-m", "2"}, opts});
+  }
+
+  SECTION("Application-specific option sets are available to the application") {
+    const auto app = Fake{"Fake",
+                          {"fake", "-p", "a", "b", "-s", "single", "-m", "first", "-m", "second"},
+                          {{"-s", "single", false}, {"-m", "multiple", true}}};
+    REQUIRE(app.optionValues("-s") == std::vector{"single"s});
+    REQUIRE(app.optionValues("-m") == std::vector{"first"s, "second"s});
   }
 }
 

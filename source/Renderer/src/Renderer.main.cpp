@@ -36,27 +36,42 @@
 #include <TMIV/DepthQualityAssessor/IDepthQualityAssessor.h>
 #include <TMIV/IO/IO.h>
 #include <TMIV/MivBitstream/SequenceConfig.h>
-#include <TMIV/Renderer/IRenderer.h>
-#include <TMIV/Renderer/mapInputToOutputFrames.h>
+#include <TMIV/Renderer/Front/MultipleFrameRenderer.h>
+#include <TMIV/Renderer/Front/mapInputToOutputFrames.h>
 
 #include <filesystem>
+#include <fstream>
 #include <iostream>
+
+using namespace std::string_view_literals;
 
 namespace TMIV::Renderer {
 void registerComponents();
 
 class RenderApplication : public Common::Application {
 private:
-  std::unique_ptr<IRenderer> m_renderer;
+  IO::Placeholders m_placeholders;
+  Renderer::Front::MultipleFrameRenderer m_renderer;
   std::multimap<int, int> m_inputToOutputFrameIdMap;
-  MivBitstream::SequenceConfig m_params;
   std::optional<bool> m_depthLowQualityFlag;
+  MivBitstream::SequenceConfig m_inputSequenceConfig;
 
 public:
   explicit RenderApplication(std::vector<const char *> argv)
-      : Common::Application{"Renderer", std::move(argv)}
-      , m_renderer{create<IRenderer>("Renderer")}
-      , m_inputToOutputFrameIdMap{mapInputToOutputFrames(json())} {
+      : Common::Application{"Renderer", std::move(argv),
+                            Common::Application::Options{
+                                {"-s", "Content ID (e.g. B for Museum)", false},
+                                {"-n", "Number of input frames (e.g. 97)", false},
+                                {"-N", "Number of output frames (e.g. 300)", false},
+                                {"-r", "Test point (e.g. QP3 or R0)", false},
+                                {"-v", "Source view to render (e.g. v11)", true},
+                                {"-P", "Pose trace to render (e.g. p02)", true}}}
+      , m_placeholders{optionValues("-s").front(), optionValues("-r").front(),
+                       std::stoi(optionValues("-n"sv).front()),
+                       std::stoi(optionValues("-N"sv).front())}
+      , m_renderer{json(), optionValues("-v"), optionValues("-P"), m_placeholders}
+      , m_inputToOutputFrameIdMap{Renderer::Front::mapInputToOutputFrames(
+            m_placeholders.numberOfInputFrames, m_placeholders.numberOfOutputFrames)} {
     if (const auto &node = json().optional("depthLowQualityFlag")) {
       m_depthLowQualityFlag = node.as<bool>();
     }
@@ -71,50 +86,35 @@ public:
       }
 
       updateParams(foc);
-      const auto vpl = m_params.sourceViewParams();
-      const auto frame = IO::loadSourceFrame(json(), vpl.viewSizes(), vpl.viewNames(), foc);
+      const auto frame = IO::loadMultiviewFrame(json(), m_placeholders, m_inputSequenceConfig, foc);
+      const auto inputViewParamsList = m_inputSequenceConfig.sourceViewParams();
 
       if (!m_depthLowQualityFlag) {
-        m_depthLowQualityFlag = isDepthLowQuality(frame, vpl);
+        m_depthLowQualityFlag = isDepthLowQuality(frame, inputViewParamsList);
       }
 
       // Make up an access unit
-      const auto au = accessUnit(frame, vpl, foc);
+      const auto au = accessUnit(frame, inputViewParamsList, foc);
 
-      // Render multiple frames
-      for (auto i = range.first; i != range.second; ++i) {
-        renderFrame(au, i->second);
-      }
+      m_renderer.renderMultipleFrames(au, range.first, range.second);
     }
   }
 
 private:
   void updateParams(std::int32_t foc) {
-    const auto path =
-        IO::getFullPath(json(), "SourceDirectory", "SourceSequenceConfigPathFmt", foc);
-    if (std::filesystem::exists(path)) {
+    if (foc == 0) {
+      m_inputSequenceConfig = IO::loadSequenceConfig(json(), m_placeholders, 0);
+    } else if (auto sc = IO::tryLoadSequenceConfig(json(), m_placeholders, foc)) {
       std::cout << "Updating parameters at frame " << foc << '\n';
-      std::ifstream stream{path};
-      const auto json = Common::Json::loadFrom(stream);
-      m_params = MivBitstream::SequenceConfig{json};
+      m_inputSequenceConfig = *sc;
     }
-  }
-
-  void renderFrame(const Decoder::AccessUnit &frame, int outputFrameId) {
-    std::cout << "Rendering input frame " << frame.foc << " to output frame " << outputFrameId
-              << ", with target viewport:\n";
-    const auto viewportParams = IO::loadViewportMetadata(json(), outputFrameId);
-    viewportParams.printTo(std::cout, 0);
-
-    const auto viewport = m_renderer->renderFrame(frame, viewportParams);
-    IO::saveViewport(json(), outputFrameId, {yuv420p(viewport.first), viewport.second});
   }
 
   // TODO(BK): Add a IRenderer::renderFrame overload that takes a MVD16Frame
   [[nodiscard]] auto accessUnit(const Common::MVD16Frame &frame,
                                 const MivBitstream::ViewParamsList &vpl, std::int32_t foc) const
-      -> Decoder::AccessUnit {
-    auto au = Decoder::AccessUnit{};
+      -> MivBitstream::AccessUnit {
+    auto au = MivBitstream::AccessUnit{};
     au.viewParamsList = vpl;
     au.foc = foc;
 
@@ -132,8 +132,9 @@ private:
   }
 
   [[nodiscard]] static auto atlasAccessUnit(const Common::TextureDepth16Frame &frame,
-                                            std::uint16_t viewIndex) -> Decoder::AtlasAccessUnit {
-    auto aau = Decoder::AtlasAccessUnit();
+                                            std::uint16_t viewIndex)
+      -> MivBitstream::AtlasAccessUnit {
+    auto aau = MivBitstream::AtlasAccessUnit();
 
     const auto w = frame.texture.getWidth();
     const auto h = frame.texture.getHeight();

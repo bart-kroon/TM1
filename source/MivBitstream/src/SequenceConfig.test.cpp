@@ -42,11 +42,14 @@ using namespace std::string_literals;
 
 TEST_CASE("CameraConfig") {
   SECTION("Default construction with default values") {
-    auto x = TMIV::MivBitstream::CameraConfig{};
-    CHECK(x.viewParams == TMIV::MivBitstream::ViewParams{});
-    CHECK(x.bitDepthColor == 0);
-    CHECK(x.bitDepthDepth == 0);
-    CHECK(x.colorspace == TMIV::MivBitstream::CameraConfig::Colorspace::yuv420);
+    auto unit = TMIV::MivBitstream::CameraConfig{};
+    CHECK(unit.viewParams == TMIV::MivBitstream::ViewParams{});
+    CHECK(unit.bitDepthColor == 0);
+    CHECK(unit.bitDepthDepth == 0);
+    CHECK(unit.bitDepthEntities == 0);
+    CHECK(unit.colorspace == TMIV::MivBitstream::CameraConfig::Colorspace::yuv420);
+    CHECK(unit.depthColorspace == TMIV::MivBitstream::CameraConfig::Colorspace::yuv420);
+    CHECK(unit.entitiesColorspace == TMIV::MivBitstream::CameraConfig::Colorspace::yuv420);
   }
 
   SECTION("Load from JSON, Equirectangular") {
@@ -66,49 +69,54 @@ TEST_CASE("CameraConfig") {
     "Ver_range": [ -90.0, 90.0 ]
 })");
 
-    auto x = TMIV::MivBitstream::CameraConfig(json);
+    auto unit = TMIV::MivBitstream::CameraConfig(json);
 
-    CHECK(x.bitDepthColor == 10);
-    CHECK(x.bitDepthDepth == 16);
-    CHECK(x.colorspace == TMIV::MivBitstream::CameraConfig::Colorspace::yuv420);
+    CHECK(unit.bitDepthColor == 10);
+    CHECK(unit.bitDepthDepth == 16);
+    CHECK(unit.bitDepthEntities == 0);
+    CHECK(unit.colorspace == TMIV::MivBitstream::CameraConfig::Colorspace::yuv420);
+    CHECK(unit.depthColorspace == TMIV::MivBitstream::CameraConfig::Colorspace::yuv420);
+    CHECK(unit.entitiesColorspace == TMIV::MivBitstream::CameraConfig::Colorspace::yuv420);
 
-    CHECK(x.viewParams.ci.ci_cam_type() == TMIV::MivBitstream::CiCamType::equirectangular);
-    CHECK(x.viewParams.ci.ci_erp_phi_min() == Approx(-TMIV::Common::M_PI2));
-    CHECK(x.viewParams.ci.ci_erp_phi_max() == Approx(TMIV::Common::M_PI2));
-    CHECK(x.viewParams.ci.ci_erp_theta_min() == Approx(-TMIV::Common::M_PI2));
-    CHECK(x.viewParams.ci.ci_erp_theta_max() == Approx(TMIV::Common::M_PI2));
-    CHECK(x.viewParams.ci.ci_projection_plane_width_minus1() + 1 == 2048);
-    CHECK(x.viewParams.ci.ci_projection_plane_height_minus1() + 1 == 1048);
+    CHECK(unit.viewParams.ci.ci_cam_type() == TMIV::MivBitstream::CiCamType::equirectangular);
+    CHECK(unit.viewParams.ci.ci_erp_phi_min() == Approx(-TMIV::Common::M_PI2));
+    CHECK(unit.viewParams.ci.ci_erp_phi_max() == Approx(TMIV::Common::M_PI2));
+    CHECK(unit.viewParams.ci.ci_erp_theta_min() == Approx(-TMIV::Common::M_PI2));
+    CHECK(unit.viewParams.ci.ci_erp_theta_max() == Approx(TMIV::Common::M_PI2));
+    CHECK(unit.viewParams.ci.ci_projection_plane_width_minus1() + 1 == 2048);
+    CHECK(unit.viewParams.ci.ci_projection_plane_height_minus1() + 1 == 1048);
 
-    CHECK(x.viewParams.ce.ce_view_pos_x() == Approx(-0.2878679633140564));
-    CHECK(x.viewParams.ce.ce_view_pos_y() == Approx(-0.0878679633140564));
-    CHECK(x.viewParams.ce.ce_view_pos_z() == 1.);
+    CHECK(unit.viewParams.ce.ce_view_pos_x() == Approx(-0.2878679633140564));
+    CHECK(unit.viewParams.ce.ce_view_pos_y() == Approx(-0.0878679633140564));
+    CHECK(unit.viewParams.ce.ce_view_pos_z() == 1.);
 
     const auto q = TMIV::Common::euler2quat(
         TMIV::Common::Vec3d{TMIV::Common::deg2rad(45.00000125223908), TMIV::Common::deg2rad(19.3),
                             TMIV::Common::deg2rad(4.3)});
 
-    CHECK(x.viewParams.ce.ce_view_quat_x() == Approx(q.x()));
-    CHECK(x.viewParams.ce.ce_view_quat_y() == Approx(q.y()));
-    CHECK(x.viewParams.ce.ce_view_quat_z() == Approx(q.z()));
+    CHECK(unit.viewParams.ce.ce_view_quat_x() == Approx(q.x()));
+    CHECK(unit.viewParams.ce.ce_view_quat_y() == Approx(q.y()));
+    CHECK(unit.viewParams.ce.ce_view_quat_z() == Approx(q.z()));
 
-    CHECK(x.viewParams.dq.dq_norm_disp_low() == 2e-3F);
-    CHECK(x.viewParams.dq.dq_norm_disp_high() == 10.F);
+    CHECK(unit.viewParams.dq.dq_norm_disp_low() == 2e-3F);
+    CHECK(unit.viewParams.dq.dq_norm_disp_high() == 10.F);
 
-    CHECK(!x.viewParams.hasOccupancy);
+    CHECK(!unit.viewParams.hasOccupancy);
 
-    CHECK(x.viewParams.name == "v2");
+    CHECK(unit.viewParams.name == "v2");
 
     SECTION("Save and load back") {
-      auto newJson = TMIV::Common::Json{x};
+      auto newJson = TMIV::Common::Json{unit};
       auto y = TMIV::MivBitstream::CameraConfig{newJson};
 
       // NOTE(BK): Cannot use x == y because of floating-point conversions
-      CHECK(x.bitDepthColor == y.bitDepthColor);
-      CHECK(x.bitDepthDepth == y.bitDepthDepth);
-      CHECK(x.colorspace == y.colorspace);
-      CHECK(x.depthColorspace == y.depthColorspace);
-      CHECK(x.viewParams.name == y.viewParams.name);
+      CHECK(unit.bitDepthColor == y.bitDepthColor);
+      CHECK(unit.bitDepthDepth == y.bitDepthDepth);
+      CHECK(unit.bitDepthEntities == y.bitDepthEntities);
+      CHECK(unit.colorspace == y.colorspace);
+      CHECK(unit.depthColorspace == y.depthColorspace);
+      CHECK(unit.entitiesColorspace == y.entitiesColorspace);
+      CHECK(unit.viewParams.name == y.viewParams.name);
     }
   }
 
@@ -130,25 +138,27 @@ TEST_CASE("CameraConfig") {
     "Rotation": [ 0.0644106, -0.0149137, 5.85061e-05 ]
 })");
 
-    const auto x = TMIV::MivBitstream::CameraConfig(json);
-    CHECK(x.viewParams.ci.ci_cam_type() == TMIV::MivBitstream::CiCamType::perspective);
-    CHECK(x.viewParams.ci.ci_perspective_center_hor() == Approx(980.168));
-    CHECK(x.viewParams.ci.ci_perspective_center_ver() == Approx(534.722));
-    CHECK(x.viewParams.ci.ci_perspective_focal_hor() == Approx(1346.74));
-    CHECK(x.viewParams.ci.ci_perspective_focal_ver() == Approx(1547.76));
+    const auto unit = TMIV::MivBitstream::CameraConfig(json);
+    CHECK(unit.viewParams.ci.ci_cam_type() == TMIV::MivBitstream::CiCamType::perspective);
+    CHECK(unit.viewParams.ci.ci_perspective_center_hor() == Approx(980.168));
+    CHECK(unit.viewParams.ci.ci_perspective_center_ver() == Approx(534.722));
+    CHECK(unit.viewParams.ci.ci_perspective_focal_hor() == Approx(1346.74));
+    CHECK(unit.viewParams.ci.ci_perspective_focal_ver() == Approx(1547.76));
 
-    CHECK(x.viewParams.hasOccupancy);
+    CHECK(unit.viewParams.hasOccupancy);
 
     SECTION("Save and load back") {
-      auto newJson = TMIV::Common::Json{x};
-      auto y = TMIV::MivBitstream::CameraConfig{newJson};
+      auto newJson = TMIV::Common::Json{unit};
+      auto loadBack = TMIV::MivBitstream::CameraConfig{newJson};
 
       // NOTE(BK): Cannot use x == y because of floating-point conversions
-      CHECK(x.bitDepthColor == y.bitDepthColor);
-      CHECK(x.bitDepthDepth == y.bitDepthDepth);
-      CHECK(x.colorspace == y.colorspace);
-      CHECK(x.depthColorspace == y.depthColorspace);
-      CHECK(x.viewParams.name == y.viewParams.name);
+      CHECK(unit.bitDepthColor == loadBack.bitDepthColor);
+      CHECK(unit.bitDepthDepth == loadBack.bitDepthDepth);
+      CHECK(unit.bitDepthEntities == loadBack.bitDepthEntities);
+      CHECK(unit.colorspace == loadBack.colorspace);
+      CHECK(unit.depthColorspace == loadBack.depthColorspace);
+      CHECK(unit.entitiesColorspace == loadBack.entitiesColorspace);
+      CHECK(unit.viewParams.name == loadBack.viewParams.name);
     }
   }
 }
@@ -158,13 +168,13 @@ TEST_CASE("SequenceConfig") {
   using TMIV::MivBitstream::SequenceConfig;
 
   SECTION("Default construction with default values") {
-    const auto x = SequenceConfig{};
-    CHECK(x.boundingBoxCenter == Vec3d{});
-    CHECK(x.contentName.empty());
-    CHECK(x.frameRate == 0.);
-    CHECK(x.numberOfFrames == 0);
-    CHECK(x.cameras.empty());
-    CHECK(x.sourceCameraNames.empty());
+    const auto unit = SequenceConfig{};
+    CHECK(unit.boundingBoxCenter == Vec3d{});
+    CHECK(unit.contentName.empty());
+    CHECK(unit.frameRate == 0.);
+    CHECK(unit.numberOfFrames == 0);
+    CHECK(unit.cameras.empty());
+    CHECK(unit.sourceCameraNames.empty());
   }
 
   SECTION("Load from JSON") {
@@ -240,10 +250,36 @@ TEST_CASE("SequenceConfig") {
       for (std::size_t i = 0; i < x.cameras.size(); ++i) {
         CHECK(x.cameras[i].bitDepthColor == y.cameras[i].bitDepthColor);
         CHECK(x.cameras[i].bitDepthDepth == y.cameras[i].bitDepthDepth);
+        CHECK(x.cameras[i].bitDepthEntities == y.cameras[i].bitDepthEntities);
         CHECK(x.cameras[i].colorspace == y.cameras[i].colorspace);
         CHECK(x.cameras[i].depthColorspace == y.cameras[i].depthColorspace);
+        CHECK(x.cameras[i].entitiesColorspace == y.cameras[i].entitiesColorspace);
         CHECK(x.cameras[i].viewParams.name == y.cameras[i].viewParams.name);
       }
+    }
+  }
+
+  SECTION("Load from JSON, minimal") {
+    const auto json = TMIV::Common::Json::parse(R"(
+{
+    "BoundingBox_center": [ -0.5, -0.5, 1.0 ],
+    "Content_name": "Example",
+    "Fps": 25,
+    "Frames_number": 97,
+    "cameras": [ ]
+}
+)");
+    const auto unit = SequenceConfig{json};
+    CHECK(unit.boundingBoxCenter == Vec3d{-0.5, -0.5, 1.0});
+    CHECK(unit.contentName == "Example"s);
+    CHECK(unit.frameRate == 25);
+    CHECK(unit.numberOfFrames == 97);
+    CHECK(unit.cameras.empty());
+    CHECK(unit.frameRanges.empty());
+
+    SECTION("operator ==") {
+      REQUIRE(unit == unit);
+      REQUIRE(unit != SequenceConfig{});
     }
   }
 
@@ -258,25 +294,128 @@ TEST_CASE("SequenceConfig") {
     "cameras": [ ]
 }
 )");
-    const auto x = SequenceConfig{json};
-    CHECK(x.boundingBoxCenter == Vec3d{-0.5, -0.5, 1.0});
-    CHECK(x.contentName == "Example"s);
-    CHECK(x.frameRate == 25);
-    CHECK(x.numberOfFrames == 97);
-    CHECK(x.cameras.empty());
+    const auto unit = SequenceConfig{json};
 
     // It is is better to specify source camera names in sequence configuration, instead of using
     // the v[0-9]+ convention (even when naming cameras that way) because that convention is
     // specific to MPEG while the direct specification of source camera names is more clear.
-    CHECK(x.sourceCameraNames == std::vector{"some"s, "view"s, "names"s});
+    CHECK(unit.sourceCameraNames == std::vector{"some"s, "view"s, "names"s});
 
     SECTION("sourceViewParams() throws a runtime_error unless all cameras are available") {
-      REQUIRE_THROWS(x.sourceViewParams());
+      REQUIRE_THROWS(unit.sourceViewParams());
     }
 
     SECTION("operator ==") {
-      REQUIRE(x == x);
-      REQUIRE(x != SequenceConfig{});
+      REQUIRE(unit == unit);
+      REQUIRE(unit != SequenceConfig{});
+    }
+  }
+
+  SECTION("Load from JSON, set frameRanges") {
+    const auto json = TMIV::Common::Json::parse(R"(
+{
+    "BoundingBox_center": [ -0.5, -0.5, 1.0 ],
+    "Content_name": "Example",
+    "Fps": 25,
+    "Frames_number": 100,
+    "frameRanges": [{
+        "maxNumberOfFrames": 10,
+        "startFrame": 45
+    }, {
+        "maxNumberOfFrames": 81,
+        "startFrame": 16
+    }, {
+        "maxNumberOfFrames": 97,
+        "startFrame": 2
+    }],
+    "cameras": [ ]
+}
+)");
+    const auto unit = SequenceConfig{json};
+    const auto ref = std::vector<SequenceConfig::FrameRange>{{10, 45}, {81, 16}, {97, 2}};
+    CHECK(unit.frameRanges == ref);
+  }
+
+  SECTION("SequenceConfig::startFrameGiven") {
+    SECTION("Behavior without frame ranges") {
+      auto unit = SequenceConfig{};
+      unit.numberOfFrames = 100;
+
+      SECTION("startFrameGiven with argument in full frame range returns zero") {
+        const auto numberOfInputFrames = GENERATE(0, 1, 99, 100);
+        CHECK(unit.startFrameGiven(numberOfInputFrames) == 0);
+      }
+
+      SECTION("startFrameGiven with argument out of range throws") {
+        const auto numberOfInputFrames = GENERATE(-1, 101);
+        REQUIRE_THROWS(unit.startFrameGiven(numberOfInputFrames));
+      }
+    }
+
+    SECTION("Behavior with an example frame range list") {
+      auto unit = SequenceConfig{};
+      unit.numberOfFrames = 100;
+      unit.frameRanges = {{10, 45}, {81, 16}, {97, 2}};
+
+      SECTION("startFrameGiven with argument in first frame range returns that start frame") {
+        const auto numberOfInputFrames = GENERATE(0, 1, 9, 10);
+        CHECK(unit.startFrameGiven(numberOfInputFrames) == 45);
+      }
+
+      SECTION("startFrameGiven with argument in second frame range returns that start frame") {
+        const auto numberOfInputFrames = GENERATE(11, 12, 80, 81);
+        CHECK(unit.startFrameGiven(numberOfInputFrames) == 16);
+      }
+
+      SECTION("startFrameGiven with argument in third frame range returns that start frame") {
+        const auto numberOfInputFrames = GENERATE(82, 83, 96, 97);
+        CHECK(unit.startFrameGiven(numberOfInputFrames) == 2);
+      }
+
+      SECTION("startFrameGiven with argument in full frame range returns zero") {
+        const auto numberOfInputFrames = GENERATE(98, 99, 100);
+        CHECK(unit.startFrameGiven(numberOfInputFrames) == 0);
+      }
+
+      SECTION("startFrameGiven with argument out of range") {
+        const auto numberOfInputFrames = GENERATE(-1, 101);
+        REQUIRE_THROWS(unit.startFrameGiven(numberOfInputFrames));
+      }
+    }
+
+    SECTION("The first matching frame range wins") {
+      auto unit = SequenceConfig{};
+      unit.numberOfFrames = 100;
+      unit.frameRanges = {{81, 16}, {10, 45}, {97, 2}};
+
+      SECTION("startFrameGiven with argument in first frame range returns that start frame") {
+        const auto numberOfInputFrames = GENERATE(0, 1, 9, 10, 11, 12, 80, 81);
+        CHECK(unit.startFrameGiven(numberOfInputFrames) == 16);
+      }
+
+      SECTION("startFrameGiven with argument in third frame range returns that start frame") {
+        const auto numberOfInputFrames = GENERATE(82, 83, 96, 97);
+        CHECK(unit.startFrameGiven(numberOfInputFrames) == 2);
+      }
+
+      SECTION("startFrameGiven with argument in full frame range returns zero") {
+        const auto numberOfInputFrames = GENERATE(98, 99, 100);
+        CHECK(unit.startFrameGiven(numberOfInputFrames) == 0);
+      }
+
+      SECTION("startFrameGiven with argument out of range") {
+        const auto numberOfInputFrames = GENERATE(-1, 101);
+        REQUIRE_THROWS(unit.startFrameGiven(numberOfInputFrames));
+      }
+    }
+
+    SECTION("When a range itself is invalid, a runtime error is thrown even when the range is not "
+            "selected (to promote finding such configuration errors quickly)") {
+      auto unit = SequenceConfig{};
+      unit.numberOfFrames = 96;
+      unit.frameRanges = {{10, 45}, {81, 16}, {97, 2}};
+      const auto numberOfInputFrames = GENERATE(0, 1, 30, 90, 99, 100);
+      REQUIRE_THROWS(unit.startFrameGiven(numberOfInputFrames));
     }
   }
 }

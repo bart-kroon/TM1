@@ -41,8 +41,16 @@
 namespace TMIV::Common {
 class Application {
 public:
+  struct Option {
+    std::string_view option;
+    std::string_view description;
+    bool multiple{};
+    std::vector<std::string> values{};
+  };
+  using Options = std::vector<Option>;
+
   // Parse command-line arguments
-  Application(char const *tool, std::vector<const char *> /*argv*/);
+  Application(char const *tool, std::vector<const char *> argv, Options options);
 
   Application(const Application &other) = delete;
   Application(Application &&other) = default;
@@ -56,6 +64,8 @@ public:
 protected:
   [[nodiscard]] auto json() const -> const Json &;
 
+  auto optionValues(std::string_view option) const -> const std::vector<std::string> &;
+
   // Use the configuration file with a factory to create a component/module
   template <class Interface, typename... Args> [[nodiscard]] auto create(Args &&...next) const {
     auto result = getComponentParentAndName(json(), std::forward<Args>(next)...);
@@ -63,7 +73,7 @@ protected:
   }
 
 private:
-  void add_file(const std::string &path);
+  void add_file(const std::filesystem::path &path);
   void add_parameter(std::string key, std::string_view value);
   void add_stream(std::istream &stream);
   [[nodiscard]] auto getComponentParentAndName(const Json &node, const std::string &name) const
@@ -81,6 +91,7 @@ private:
 
   Json m_json;
   clock_t m_startTime;
+  Options m_options;
 };
 } // namespace TMIV::Common
 

@@ -44,7 +44,7 @@ Renderer::Renderer(const Common::Json &rootNode, const Common::Json &componentNo
     , m_viewingSpaceController{Common::Factory<IViewingSpaceController>::getInstance().create(
           "ViewingSpaceController", rootNode, componentNode)} {}
 
-auto Renderer::renderFrame(const Decoder::AccessUnit &frame,
+auto Renderer::renderFrame(const MivBitstream::AccessUnit &frame,
                            const MivBitstream::ViewParams &viewportParams) const
     -> Common::Texture444Depth16Frame {
   auto viewport = m_synthesizer->renderFrame(frame, viewportParams);

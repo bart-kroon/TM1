@@ -36,19 +36,15 @@
 #include <TMIV/Common/Factory.h>
 #include <TMIV/Decoder/GeometryScaler.h>
 #include <TMIV/Decoder/OccupancyReconstructor.h>
+#include <TMIV/MivBitstream/AccessUnit.h>
 
 namespace TMIV::Decoder {
 Decoder::Decoder(const Common::Json &rootNode, const Common::Json &componentNode)
     : m_geometryScaler{rootNode, componentNode}
-    , m_entityBasedPatchMapFilter{rootNode, componentNode} {
-  m_culler =
-      Common::Factory<Renderer::ICuller>::getInstance().create("Culler", rootNode, componentNode);
-  m_renderer = Common::Factory<Renderer::IRenderer>::getInstance().create("Renderer", rootNode,
-                                                                          componentNode);
-}
+    , m_entityBasedPatchMapFilter{rootNode, componentNode} {}
 
 namespace {
-void checkRestrictions(const AccessUnit &frame) {
+void checkRestrictions(const MivBitstream::AccessUnit &frame) {
   if (frame.vui) {
     if (frame.vui->vui_coordinate_system_parameters_present_flag()) {
       const auto &csp = frame.vui->coordinate_system_parameters();
@@ -62,7 +58,7 @@ void checkRestrictions(const AccessUnit &frame) {
   }
 }
 
-void addAttributeOffset(AccessUnit &frame) {
+void addAttributeOffset(MivBitstream::AccessUnit &frame) {
   for (std::uint8_t k = 0; k <= frame.vps.vps_atlas_count_minus1(); ++k) {
     const auto atlasId = frame.vps.vps_atlas_id(k);
     auto &atlas = frame.atlas[k];
@@ -117,17 +113,11 @@ void addAttributeOffset(AccessUnit &frame) {
 }
 } // namespace
 
-void Decoder::recoverFrame(AccessUnit &frame) {
+void Decoder::recoverFrame(MivBitstream::AccessUnit &frame) {
   checkRestrictions(frame);
   addAttributeOffset(frame);
   m_geometryScaler.inplaceScale(frame);
   OccupancyReconstructor::reconstruct(frame);
   m_entityBasedPatchMapFilter.inplaceFilterBlockToPatchMaps(frame);
-}
-
-auto Decoder::renderFrame(AccessUnit &frame, const MivBitstream::ViewParams &viewportParams) const
-    -> Common::Texture444Depth16Frame {
-  m_culler->inplaceFilterBlockToPatchMaps(frame, viewportParams);
-  return m_renderer->renderFrame(frame, viewportParams);
 }
 } // namespace TMIV::Decoder

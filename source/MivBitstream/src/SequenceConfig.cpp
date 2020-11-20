@@ -42,9 +42,43 @@ using namespace std::string_literals;
 
 namespace TMIV::MivBitstream {
 CameraConfig::CameraConfig(const Common::Json &config) {
-  bitDepthColor = config.require("BitDepthColor").as<int>();
-  bitDepthDepth = config.require("BitDepthDepth").as<int>();
+  if (const auto &node = config.optional("BitDepthColor")) {
+    bitDepthColor = node.as<int>();
+  }
+  if (const auto &node = config.optional("BitDepthDepth")) {
+    bitDepthDepth = node.as<int>();
+  }
+  if (const auto &node = config.optional("BitDepthEntities")) {
+    bitDepthEntities = node.as<int>();
+  }
   viewParams = ViewParams{config};
+}
+
+namespace {
+auto yuv420pFormat(int bitDepth) {
+  if (bitDepth < 8) {
+    return fmt::format("yuv420p{}", bitDepth);
+  }
+  if (bitDepth == 8) {
+    return "yuv420p"s;
+  }
+  return fmt::format("yuv420p{}le", bitDepth);
+}
+} // namespace
+
+auto CameraConfig::textureVideoFormat() const -> std::string {
+  assert(colorspace == Colorspace::yuv420);
+  return yuv420pFormat(bitDepthColor);
+}
+
+auto CameraConfig::geometryVideoFormat() const -> std::string {
+  assert(depthColorspace == Colorspace::yuv420);
+  return yuv420pFormat(bitDepthDepth);
+}
+
+auto CameraConfig::entitiesVideoFormat() const -> std::string {
+  assert(entitiesColorspace == Colorspace::yuv420);
+  return yuv420pFormat(bitDepthEntities);
 }
 
 CameraConfig::operator Common::Json() const {
@@ -62,11 +96,20 @@ CameraConfig::operator Common::Json() const {
 
 auto CameraConfig::operator==(const CameraConfig &other) const noexcept -> bool {
   return viewParams == other.viewParams && bitDepthColor == other.bitDepthColor &&
-         bitDepthDepth == other.bitDepthDepth && colorspace == other.colorspace &&
-         depthColorspace == other.depthColorspace;
+         bitDepthDepth == other.bitDepthDepth && bitDepthEntities == other.bitDepthEntities &&
+         colorspace == other.colorspace && depthColorspace == other.depthColorspace &&
+         entitiesColorspace == other.entitiesColorspace;
 }
 
 auto CameraConfig::operator!=(const CameraConfig &other) const noexcept -> bool {
+  return !operator==(other);
+}
+
+auto SequenceConfig::FrameRange::operator==(const FrameRange &other) const noexcept -> bool {
+  return maxNumberOfFrames == other.maxNumberOfFrames && startFrame == other.startFrame;
+}
+
+auto SequenceConfig::FrameRange::operator!=(const FrameRange &other) const noexcept -> bool {
   return !operator==(other);
 }
 
@@ -93,6 +136,13 @@ SequenceConfig::SequenceConfig(const Common::Json &config) {
       if (std::regex_match(camera.viewParams.name, pattern)) {
         sourceCameraNames.push_back(camera.viewParams.name);
       }
+    }
+  }
+
+  if (const auto &node = config.optional("frameRanges")) {
+    for (const auto &subnode : node.as<Common::Json::Array>()) {
+      frameRanges.push_back({subnode.require("maxNumberOfFrames").as<std::int32_t>(),
+                             subnode.require("startFrame").as<std::int32_t>()});
     }
   }
 }
@@ -129,20 +179,49 @@ SequenceConfig::operator Common::Json() const {
   return Json{root};
 }
 
-auto SequenceConfig::sourceViewParams() const -> ViewParamsList {
-  auto vpl = std::vector<ViewParams>{};
+[[nodiscard]] auto SequenceConfig::cameraByName(const std::string &name) const -> CameraConfig {
+  auto i = std::find_if(cameras.cbegin(), cameras.cend(), [&name](const CameraConfig &camera) {
+    return camera.viewParams.name == name;
+  });
+  if (i == cameras.cend()) {
+    throw std::runtime_error(
+        fmt::format("There is no camera named {} in the sequence configuration", name));
+  }
+  return *i;
+}
 
-  for (const auto &camera : cameras) {
-    if (Common::contains(sourceCameraNames, camera.viewParams.name)) {
-      vpl.push_back(camera.viewParams);
+auto SequenceConfig::sourceViewParams() const -> ViewParamsList {
+  auto vpl = std::vector<ViewParams>(sourceCameraNames.size());
+  std::transform(sourceCameraNames.cbegin(), sourceCameraNames.cend(), vpl.begin(),
+                 [this](const std::string &name) { return cameraByName(name).viewParams; });
+  return ViewParamsList{vpl};
+}
+
+auto SequenceConfig::startFrameGiven(std::int32_t numberOfInputFrames) const -> std::int32_t {
+  // Bounds check the argument
+  if (numberOfInputFrames < 0 || numberOfFrames < numberOfInputFrames) {
+    throw std::runtime_error(fmt::format("The number of input frames {} is out of bounds given the "
+                                         "total number of frames {} in the sequence",
+                                         numberOfInputFrames, numberOfFrames));
+  }
+  // When a range is invalid, a runtime error is thrown even when the range is not selected.
+  // This promotes finding such configuration errors quickly.
+  for (const auto [maxNumberOfFrames, startFrame] : frameRanges) {
+    if (startFrame < 0 || maxNumberOfFrames < 0 ||
+        numberOfFrames < startFrame + maxNumberOfFrames) {
+      throw std::runtime_error(fmt::format("The frame range [{0}, {0} + {1}) is out of bounds "
+                                           "given the total number of frames {2} in the sequence",
+                                           startFrame, maxNumberOfFrames, numberOfFrames));
     }
   }
-
-  if (vpl.size() != sourceCameraNames.size()) {
-    throw std::runtime_error("Sequence config: Could not find all source cameras by name");
+  // The first matching frame range wins
+  for (const auto [maxNumberOfFrames, startFrame] : frameRanges) {
+    if (numberOfInputFrames <= maxNumberOfFrames) {
+      return startFrame;
+    }
   }
-
-  return ViewParamsList{vpl};
+  // The default behaviour is to to return zero (no start frame offset)
+  return 0;
 }
 
 auto SequenceConfig::operator==(const SequenceConfig &other) const noexcept -> bool {

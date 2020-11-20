@@ -36,13 +36,13 @@
 #include <TMIV/Common/Application.h>
 #include <TMIV/Common/Factory.h>
 #include <TMIV/DepthQualityAssessor/IDepthQualityAssessor.h>
+#include <TMIV/Encoder/MivEncoder.h>
 #include <TMIV/IO/IO.h>
 
-#include "IvMetadataWriter.h"
-
+#include <fstream>
 #include <iostream>
 
-using Mat1w = TMIV::Common::heap::Matrix<uint16_t>;
+using namespace std::string_view_literals;
 
 namespace TMIV::Encoder {
 void registerComponents();
@@ -51,63 +51,142 @@ class Application : public Common::Application {
 private:
   std::unique_ptr<IEncoder> m_encoder;
   std::unique_ptr<DepthQualityAssessor::IDepthQualityAssessor> m_depthQualityAssessor;
-  IvMetadataWriter m_metadataWriter;
-  int m_numberOfFrames{};
-  int m_intraPeriod{};
-  Common::SizeVector m_viewSizes;
-  std::vector<std::string> m_viewNames;
+  const std::string &m_contentId;
+  std::int32_t m_numberOfInputFrames;
+  std::int32_t m_intraPeriod;
+
+  MivBitstream::SequenceConfig m_inputSequenceConfig;
+  std::filesystem::path m_outputBitstreamPath;
+  std::ofstream m_outputBitstream;
+  std::unique_ptr<Encoder::MivEncoder> m_mivEncoder;
+
+  [[nodiscard]] auto placeholders() const {
+    auto x = IO::Placeholders{};
+    x.contentId = m_contentId;
+    x.numberOfInputFrames = m_numberOfInputFrames;
+    return x;
+  }
 
 public:
   explicit Application(std::vector<const char *> argv)
-      : Common::Application{"Encoder", std::move(argv)}
+      : Common::Application{"Encoder", std::move(argv),
+                            Common::Application::Options{
+                                {"-s", "Content ID (e.g. B for Museum)", false},
+                                {"-n", "Number of input frames (e.g. 97)", false}}}
       , m_encoder{create<IEncoder>("Encoder")}
       , m_depthQualityAssessor{create<DepthQualityAssessor::IDepthQualityAssessor>(
             "DepthQualityAssessor")}
-      , m_metadataWriter{json()}
-      , m_numberOfFrames{json().require("numberOfFrames").as<int>()}
-      , m_intraPeriod{json().require("intraPeriod").as<int>()} {}
+      , m_contentId{optionValues("-s"sv).front()}
+      , m_numberOfInputFrames{std::stoi(optionValues("-n"sv).front())}
+      , m_intraPeriod{json().require("intraPeriod").as<std::int32_t>()}
+      , m_inputSequenceConfig{IO::loadSequenceConfig(json(), placeholders(), 0)}
+      , m_outputBitstreamPath{IO::outputBitstreamPath(json(), placeholders())}
+      , m_outputBitstream{m_outputBitstreamPath, std::ios::binary} {
+    if (!m_outputBitstream.good()) {
+      throw std::runtime_error(fmt::format("Failed to open {} for writing", m_outputBitstreamPath));
+    }
+
+    // Support experiments that use a subset of the source cameras
+    if (const auto &node = json().optional(IO::inputCameraNames)) {
+      std::cout << "WARNING: Source camera names are derived from the sequence configuration. This "
+                   "functionality to override source camera names is only for internal testing, "
+                   "e.g. to test with a subset of views.\n";
+      m_inputSequenceConfig.sourceCameraNames = node.asVector<std::string>();
+    }
+
+    m_mivEncoder = std::make_unique<MivEncoder>(m_outputBitstream);
+  }
 
   void run() override {
-    auto sourceParams = IO::loadSourceParams(json());
-    m_viewSizes = sourceParams.viewParamsList.viewSizes();
-    m_viewNames = sourceParams.viewParamsList.viewNames();
+    auto sourceParams = loadSourceParams(json(), m_inputSequenceConfig);
 
-    if (!json().optional("depthLowQualityFlag") &&
-        json().optional("haveGeometryVideo").as<bool>()) {
+    // TODO(BK): Somehow move these details into EncoderLib
+    if (json().require("haveGeometryVideo").as<bool>() && !json().optional("depthLowQualityFlag")) {
+      const auto frame = IO::loadMultiviewFrame(json(), placeholders(), m_inputSequenceConfig, 0);
       sourceParams.vme().vme_depth_low_quality_flag(m_depthQualityAssessor->isLowDepthQuality(
-          sourceParams.viewParamsList, IO::loadSourceFrame(json(), m_viewSizes, m_viewNames, 0)));
+          m_inputSequenceConfig.sourceViewParams(), frame));
     }
+
     m_encoder->prepareSequence(sourceParams);
 
-    for (int i = 0; i < m_numberOfFrames; i += m_intraPeriod) {
-      int lastFrame = std::min(m_numberOfFrames, i + m_intraPeriod);
+    for (int i = 0; i < m_numberOfInputFrames; i += m_intraPeriod) {
+      int lastFrame = std::min(m_numberOfInputFrames, i + m_intraPeriod);
       encodeAccessUnit(i, lastFrame);
     }
 
-    const auto maxLumaSamplesPerFrame = m_encoder->maxLumaSamplesPerFrame();
-    std::cout << "Maximum luma samples per frame is " << maxLumaSamplesPerFrame << '\n';
-    m_metadataWriter.reportSummary(std::cout, m_numberOfFrames);
+    reportSummary(m_outputBitstream.tellp());
   }
 
 private:
-  void encodeAccessUnit(int firstFrame, int lastFrame) {
+  // TODO(BK): Move this to EncoderLib
+  static auto loadSourceParams(const Common::Json &config,
+                               const MivBitstream::SequenceConfig &sequenceConfig)
+      -> MivBitstream::EncoderParams {
+    const auto haveTextureVideo = config.require("haveTextureVideo").as<bool>();
+    const auto haveGeometryVideo = config.require("haveGeometryVideo").as<bool>();
+    const auto haveOccupancyVideo = config.require("haveOccupancyVideo").as<bool>();
+    auto x = MivBitstream::EncoderParams{haveTextureVideo, haveGeometryVideo, haveOccupancyVideo};
+
+    x.viewParamsList = sequenceConfig.sourceViewParams();
+    x.frameRate = sequenceConfig.frameRate;
+
+    if (const auto &node = config.optional("depthLowQualityFlag")) {
+      x.vme().vme_depth_low_quality_flag(node.as<bool>());
+    }
+
+    const auto numGroups = static_cast<unsigned>(config.require("numGroups").as<int>());
+    if (numGroups < 1) {
+      throw std::runtime_error("Require numGroups >= 1");
+    }
+    x.vme().vme_num_groups_minus1(numGroups - 1U);
+
+    const auto maxEntities = static_cast<unsigned>(config.require("maxEntities").as<int>());
+    if (maxEntities < 1) {
+      throw std::runtime_error("Require maxEntities >= 1");
+    }
+    x.vme().vme_max_entities_minus1(maxEntities - 1U);
+
+    if (const auto &subnode = config.optional("ViewingSpace")) {
+      x.viewingSpace = MivBitstream::ViewingSpace::loadFromJson(subnode, config);
+    }
+
+    if (config.require("OmafV1CompatibleFlag").as<bool>()) {
+      x.casps.casps_extension_present_flag(true)
+          .casps_miv_extension_present_flag(true)
+          .casps_miv_extension()
+          .casme_omaf_v1_compatible_flag(true);
+    }
+    return x;
+  }
+
+  void encodeAccessUnit(std::int32_t firstFrame, std::int32_t lastFrame) {
     std::cout << "Access unit: [" << firstFrame << ", " << lastFrame << ")\n";
     m_encoder->prepareAccessUnit();
     pushFrames(firstFrame, lastFrame);
-    m_metadataWriter.writeAccessUnit(m_encoder->completeAccessUnit());
+    m_mivEncoder->writeAccessUnit(m_encoder->completeAccessUnit());
     popAtlases(firstFrame, lastFrame);
   }
 
-  void pushFrames(int firstFrame, int lastFrame) {
-    for (int i = firstFrame; i < lastFrame; ++i) {
-      m_encoder->pushFrame(IO::loadSourceFrame(json(), m_viewSizes, m_viewNames, i));
+  void pushFrames(std::int32_t firstFrame, std::int32_t lastFrame) {
+    for (std::int32_t i = firstFrame; i < lastFrame; ++i) {
+      m_encoder->pushFrame(
+          IO::loadMultiviewFrame(json(), placeholders(), m_inputSequenceConfig, i));
     }
   }
 
   void popAtlases(int firstFrame, int lastFrame) {
-    for (int i = firstFrame; i < lastFrame; ++i) {
-      IO::saveAtlas(json(), i, m_encoder->popAtlas());
+    for (std::int32_t i = firstFrame; i < lastFrame; ++i) {
+      IO::saveAtlasFrame(json(), placeholders(), i, m_encoder->popAtlas());
     }
+  }
+
+  void reportSummary(std::streampos bytesWritten) const {
+    fmt::print("Maximum luma samples per frame is {}\n", m_encoder->maxLumaSamplesPerFrame());
+    fmt::print("Total size is {} B ({} kb)\n", bytesWritten, 8e-3 * bytesWritten);
+    fmt::print("Frame count is {}\n", m_numberOfInputFrames);
+    fmt::print("Frame rate is {} Hz\n", m_inputSequenceConfig.frameRate);
+    fmt::print("Total bitrate is {} kbps\n",
+               8e-3 * bytesWritten * m_inputSequenceConfig.frameRate / m_numberOfInputFrames);
   }
 };
 } // namespace TMIV::Encoder

@@ -35,10 +35,10 @@
 #define _TMIV_RENDERER_RECOVERPRUNEDVIEWS_H_
 
 #include <TMIV/Common/Frame.h>
-#include <TMIV/Decoder/AccessUnit.h>
+#include <TMIV/MivBitstream/AccessUnit.h>
 
 namespace TMIV::Renderer {
-auto recoverPrunedViewAndMask(const Decoder::AccessUnit &frame)
+auto recoverPrunedViewAndMask(const MivBitstream::AccessUnit &frame)
     -> std::pair<std::vector<Common::Texture444Depth10Frame>, Common::MaskList>;
 } // namespace TMIV::Renderer
 

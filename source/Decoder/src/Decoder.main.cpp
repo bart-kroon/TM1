@@ -35,36 +35,61 @@
 
 #include <TMIV/Common/Application.h>
 #include <TMIV/Common/Factory.h>
+#include <TMIV/Decoder/MivDecoder.h>
+#include <TMIV/Decoder/V3cSampleStreamDecoder.h>
 #include <TMIV/IO/IO.h>
 #include <TMIV/MivBitstream/SequenceConfig.h>
+#include <TMIV/Renderer/Front/MultipleFrameRenderer.h>
+#include <TMIV/Renderer/Front/mapInputToOutputFrames.h>
 #include <TMIV/Renderer/RecoverPrunedViews.h>
-#include <TMIV/Renderer/mapInputToOutputFrames.h>
 
-#include "IvMetadataReader.h"
-
+#include <fstream>
 #include <iostream>
-#include <map>
 #include <memory>
+
+using namespace std::string_view_literals;
 
 namespace TMIV::Decoder {
 void registerComponents();
 
 class Application : public Common::Application {
 private:
-  IvMetadataReader m_metadataReader;
   std::unique_ptr<IDecoder> m_decoder;
+  IO::Placeholders m_placeholders;
+  Renderer::Front::MultipleFrameRenderer m_renderer;
   std::multimap<int, int> m_inputToOutputFrameIdMap;
-  MivBitstream::SequenceConfig m_sequenceConfig;
+  std::filesystem::path m_inputBitstreamPath;
+  std::ifstream m_inputBitstream;
+  Decoder::V3cSampleStreamDecoder m_vssDecoder;
+  Decoder::MivDecoder m_mivDecoder;
+  MivBitstream::SequenceConfig m_outputSequenceConfig;
 
 public:
   explicit Application(std::vector<const char *> argv)
-      : Common::Application{"Decoder", std::move(argv)}
-      , m_metadataReader{json()}
+      : Common::Application{"Decoder", std::move(argv),
+                            Common::Application::Options{
+                                {"-s", "Content ID (e.g. B for Museum)", false},
+                                {"-n", "Number of input frames (e.g. 97)", false},
+                                {"-N", "Number of output frames (e.g. 300)", false},
+                                {"-r", "Test point (e.g. QP3 or R0)", false},
+                                {"-v", "Source view to render (e.g. v11)", true},
+                                {"-P", "Pose trace to render (e.g. p02)", true}}}
       , m_decoder{create<IDecoder>("Decoder")}
-      , m_inputToOutputFrameIdMap{Renderer::mapInputToOutputFrames(json())} {}
+      , m_placeholders{optionValues("-s").front(), optionValues("-r").front(),
+                       std::stoi(optionValues("-n"sv).front()),
+                       std::stoi(optionValues("-N"sv).front())}
+      , m_renderer{json(), optionValues("-v"), optionValues("-P"), m_placeholders}
+      , m_inputToOutputFrameIdMap{Renderer::Front::mapInputToOutputFrames(
+            m_placeholders.numberOfInputFrames, m_placeholders.numberOfOutputFrames)}
+      , m_inputBitstreamPath{IO::inputBitstreamPath(json(), m_placeholders)}
+      , m_inputBitstream{m_inputBitstreamPath, std::ios::binary}
+      , m_vssDecoder{createVssDecoder()}
+      , m_mivDecoder{[this]() { return m_vssDecoder(); }} {
+    setFrameServers(m_mivDecoder);
+  }
 
   void run() override {
-    while (auto frame = m_metadataReader.decoder()()) {
+    while (auto frame = m_mivDecoder()) {
       // Check which frames to render if we would
       const auto range = m_inputToOutputFrameIdMap.equal_range(frame->foc);
       if (range.first == range.second) {
@@ -74,57 +99,52 @@ public:
       // Recover geometry, occupancy, and filter blockToPatchMap
       m_decoder->recoverFrame(*frame);
 
-      // Output reconstructed content configuration if changed
-      if (json().optional("OutputSequenceConfigPathFmt")) {
+      if (json().optional(IO::outputSequenceConfigPathFmt)) {
         outputSequenceConfig(frame->sequenceConfig(), frame->foc);
       }
 
-      // Output block to patch map
-      if (json().optional("AtlasPatchOccupancyMapFmt")) {
-        std::cout << "Dumping patch ID maps to disk" << std::endl;
-        IO::saveBlockToPatchMaps(json(), frame->foc, *frame);
+      if (json().optional(IO::outputBlockToPatchMapPathFmt)) {
+        IO::saveBlockToPatchMaps(json(), m_placeholders, frame->foc, *frame);
       }
 
-      // Output pruned frames
-      if (json().optional("PrunedViewAttributePathFmt") ||
-          json().optional("PrunedViewGeometryPathFmt") ||
-          json().optional("PrunedViewMaskPathFmt")) {
-        std::cout << "Dumping recovered pruned views to disk" << std::endl;
-        IO::savePrunedFrame(json(), frame->foc, Renderer::recoverPrunedViewAndMask(*frame));
+      if (json().optional(IO::outputMultiviewTexturePathFmt) ||
+          json().optional(IO::outputMultiviewGeometryPathFmt) ||
+          json().optional(IO::outputMultiviewOccupancyPathFmt)) {
+        IO::savePrunedFrame(json(), m_placeholders, frame->foc,
+                            Renderer::recoverPrunedViewAndMask(*frame));
       }
 
-      // Render multiple frames
-      if (json().optional("OutputCameraName")) {
-        for (auto i = range.first; i != range.second; ++i) {
-          renderDecodedFrame(*frame, i->second);
-        }
-      }
+      m_renderer.renderMultipleFrames(*frame, range.first, range.second);
     }
   }
 
 private:
-  void renderDecodedFrame(AccessUnit frame, int outputFrameId) {
-    std::cout << "Rendering input frame " << frame.foc << " to output frame " << outputFrameId
-              << ", with target viewport:\n";
-    const auto viewportParams = IO::loadViewportMetadata(json(), outputFrameId);
-    viewportParams.printTo(std::cout, 0);
+  auto createVssDecoder() -> V3cSampleStreamDecoder {
+    if (!m_inputBitstream.good()) {
+      throw std::runtime_error(fmt::format("Failed to open {} for reading", m_inputBitstreamPath));
+    }
+    return V3cSampleStreamDecoder{m_inputBitstream};
+  }
 
-    const auto viewport = m_decoder->renderFrame(frame, viewportParams);
-    IO::saveViewport(json(), outputFrameId, {yuv420p(viewport.first), viewport.second});
+  void setFrameServers(MivDecoder &mivDecoder) const {
+    mivDecoder.setOccFrameServer(
+        [this](MivBitstream::AtlasId atlasId, uint32_t frameId, Common::Vec2i frameSize) {
+          return IO::loadOccupancyVideoFrame(json(), m_placeholders, atlasId, frameId, frameSize);
+        });
+    mivDecoder.setGeoFrameServer(
+        [this](MivBitstream::AtlasId atlasId, uint32_t frameId, Common::Vec2i frameSize) {
+          return IO::loadGeometryVideoFrame(json(), m_placeholders, atlasId, frameId, frameSize);
+        });
+    mivDecoder.setAttrFrameServer(
+        [this](MivBitstream::AtlasId atlasId, uint32_t frameId, Common::Vec2i frameSize) {
+          return IO::loadTextureVideoFrame(json(), m_placeholders, atlasId, frameId, frameSize);
+        });
   }
 
   void outputSequenceConfig(MivBitstream::SequenceConfig sc, std::int32_t foc) {
-    if (m_sequenceConfig != sc) {
-      m_sequenceConfig = std::move(sc);
-      if (json().optional("OutputSequenceConfigPathFmt")) {
-        const auto path =
-            IO::getFullPath(json(), "OutputDirectory", "OutputSequenceConfigPathFmt", foc);
-        std::cout << "Writing reconstructed sequence configuration for frame " << foc << " to disk"
-                  << std::endl;
-        std::ofstream stream{path};
-        const auto json = Common::Json{m_sequenceConfig};
-        json.saveTo(stream);
-      }
+    if (m_outputSequenceConfig != sc) {
+      m_outputSequenceConfig = std::move(sc);
+      IO::saveSequenceConfig(json(), m_placeholders, foc, m_outputSequenceConfig);
     }
   }
 };

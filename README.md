@@ -7,8 +7,7 @@ Test Model for MPEG Immersive Video (TMIV)
 1. [Scope](#scope)
 1. [Build and installation instructions](#build-and-installation-instructions)
 1. [Instructions to run TMIV](#instructions-to-run-tmiv)
-1. [Overview of TMIV encoder parameters](#overview-of-tmiv-encoder-parameters)
-1. [Overview of TMIV decoder and renderer parameters](#overview-of-tmiv-decoder-and-renderer-parameters)
+1. [Overview of TMIV configuration files](#overview-of-tmiv-configuration-files)
 1. [Instruction to use TMIV as a library](#instruction-to-use-tmiv-as-a-library)
 1. [Structure of the test model](#structure-of-the-test-model)
 1. [Contributing to the test model](#contributing-to-the-test-model)
@@ -30,7 +29,7 @@ The normative decoding process for MPEG Immersive Video (MIV) is specified in *P
 standard.
 
 The test model document [[2]](#references) provides an algorithmic description for the TMIV encoder and decoder/renderer. The purpose of this document is to promote a common understanding of the coding features, in order to facilitate the assessment of the technical impact of new technologies during
-the standardization process. *Common Test Conditions for MPEG Immersive Video* [[4]](#references) provides test conditions including TMIV-based anchors. Template configuration files are included with the reference software.
+the standardization process. *Common Test Conditions for MPEG Immersive Video* [[4]](#references) provides test conditions including TMIV-based anchors. Configuration files are included with the reference software.
 
 # Build and installation instructions
 
@@ -168,7 +167,7 @@ After installation, the TMIV executables `Encoder`, `Decoder` and `Renderer` wil
 
 # Instructions to run TMIV
 
-Template configuration files for CTC conditions are available under [config/ctc/](/config/ctc):
+Configuration files for CTC conditions are available under [config/ctc/](/config/ctc):
 
 * *best_reference* renders from all source views without coding
 * *miv_anchor* is the MIV anchor with patches
@@ -202,82 +201,340 @@ Use the following steps to encode a bistream and render a viewport:
 
 ## Running the TMIV encoder
 
-For this example, we will be using the MIV anchor [TMIV_A17_SA.json](/config/ctc/miv_anchor/TMIV_A17_SA.json) configuration on the `ClassroomVideo` sequence (SA). This file contains a good choice of parameters, you only need to adapt a few variables:
+For this example, we will be using the MIV anchor [A_1_TMIV_encode.json](/config/ctc/miv_anchor/A_1_TMIV_encode.json) configuration and [A.json](/config/ctc/sequences/A.json) sequence configuration.
 
-1. Place the color and depth videos [[4]](#references) in a folder. Make sure to comply to the naming scheme defined in `SourceGeometryPathFmt` and `SourceTexturePathFmt`. Your organization or one of the maintainers of this repository may be able to provide the test sequences to you.
-
-1. The files' naming scheme can for example be `{}_depth_{}x{}_yuv420p16le.yuv`. The curly braces are placeholders for (in sequence)
-    1. camera name, as defined in the sequence-specific configuration files, e.g. v13
-    1. Horizontal resolution of the video
-    1. Vertical resolution of the video
-
-    such that a texture video file from camera `v0` with resolution 4096x2048 pixels should be named `v0_texture_4096x2048_yuv420p10le.yuv`.
-1. Set `SourceGeometryBitDepth` to the bits per color channel in your source geometry file.
-1. Point to the video file directory by providing the path to configuration variable `SourceDirectory`.
-1. You may set `OutputDirectory` to a custom existing directory.
-
-Finally, assuming that you have built and installed the encoder application, you can start it from the command line:
+1. Place the color and depth videos [[4]](#references) in a folder arbitrarily named `/Content` in this description.
+   * Your organization or one of the maintainers of this repository may be able to provide the test sequences to you.
+   * Make sure to comply to the naming scheme defined in `inputTexturePathFmt` and `inputGeometryPathFmt`.
+   * For example, when `inputDirectory` is equal to `/Content`,
+   * and given that `inputGeometryPathFmt` is equal to `S{1}/{3}_depth_{4}x{5}_{6}.yuv`,
+   * then for content ID `A` (ClassroomVideo),
+   * a source view `v3` from the set of source views,
+   * a video format derived from the sequence configuration `yuv420p16le`,
+   * the calculated path for the uncompressed depth map sequene of that view is `/Content/SA/v3_depth_4096x2048_yuv420p16le.yuv`.
+1. Choose an output directory, arbitrarily called `/Experiment` in this description. The directory will be created when it does not yet exist.
+1. Finally, assuming that you have built and installed the encoder application, you can start it from the command line:
 
 ```shell
-/Workspace/tmiv_install/bin/Encoder -c /Workspace/tmiv/config/ctc/miv_anchor/TMIV_A17_SA.json
-```
-
-This will result in the following files in the `OutputDirectory`:
-
-* One `.bit` file e.g. `ATL_SA.bit`, as defined by `BitstreamPath`, containing metadata and patch data.
-* YUV files for each component of each atlas. Components may be any of texture, geometry or occupancy corresponding to the `haveTextureVideo`, `haveGeometryVideo` and `haveOccupancyVideo` TMIV encoder parameters.
-
-## Running the HM encoder
-
-After TMIV encoding, run HM on **all** resulting YUV files. If you have configured the project with `BUILD_HM=ON, BUILD_TAppEncoder=TRUE, and BUILD_TAppDecoder=TRUE`, then the HM executables are available in the TMIV installation directory. To encode one YUV sequence, run e.g.
-
-```shell
-/Workspace/tmiv_install/bin/TAppEncoder \
-  -c /Workspace/tmiv/config/ctc/miv_anchor/encoder_randomaccess_main10.cfg \
-  -c /Workspace/tmiv/config/ctc/miv_anchor/HM_A17_TT_SA.cfg \
-  -f 100 -wdt 2320 -hgt 960 -i TG_00_960x2320_yuv420p10le.yuv -b tg_01.bin
+/Workspace/tmiv_install/bin/Encoder -n 97 -s A \
+    -c /Workspace/tmiv/config/ctc/miv_anchor/A_1_TMIV_encode.json \
+    -p configDirectory /Workspace/tmiv/config \
+    -p inputDirectory /Content \
+    -p outputDirectory /Experiment
 ```
 
 Whereby `\` is used to indicate line breaks in this manual.
 
-The order of config files for HM is important! Later ones overwrite earlier ones, command line parameters overwrite config files.
+This will in general result in the following files under the `outputDirectory`:
+
+* A bitstream with the path based on `outputBitstreamPathFmt`, containing metadata and patch data.
+* YUV files for each component of each atlas with paths based on `outputGeometryVideoDataPathFmt`, `outputOccupancyVideoDataPathFmt` and/or `outputTextureVideoDataPathFmt`. Components may be any of texture, geometry or occupancy corresponding to the `haveTextureVideo`, `haveGeometryVideo` and `haveOccupancyVideo` TMIV encoder parameters.
+
+In this example the following files will be produced:
+
+```
+/Experiment/A97/SA/TMIV_A97_SA.bit
+/Experiment/A97/SA/TMIV_A97_SA_geo_c00_2048x1088_yuv420p10le.yuv
+/Experiment/A97/SA/TMIV_A97_SA_geo_c01_2048x1088_yuv420p10le.yuv
+/Experiment/A97/SA/TMIV_A97_SA_tex_c00_4096x2176_yuv420p10le.yuv
+/Experiment/A97/SA/TMIV_A97_SA_tex_c01_4096x2176_yuv420p10le.yuv
+```
+
+## Running the HM encoder
+
+After TMIV encoding, run HM on **all** resulting YUV files. If you have configured the project with `BUILD_HM=ON, BUILD_TAppEncoder=TRUE, and BUILD_TAppDecoder=TRUE`, then the HM executables are available in the TMIV installation directory. To encode one YUV sequence, use the following settings to run HM:
+
+1. Use the supplied configuration file (there will be a configuration for each component, in this case geometry and texture)
+1. Specifiy the number of input frames (`-f` parameter)
+1. Derive the frame width and height from the paths of the YUV files (or encoder log)
+1. Derive the frame rate (`-fr` parameter) from the sequence configuration (often 30 or 25)
+1. Choose a QP (`-q` parameter) or look up in the CTC document. Note that the QP's in the CTC may vary per video component.
+
+For example:
+
+```shell
+/Workspace/tmiv_install/bin/TAppEncoder \
+  -c /Workspace/tmiv/config/ctc/miv_anchor/A_2_HM_encode_tex.cfg \
+  -i /Experiment/A97/SA/TMIV_A97_SA_tex_c00_4096x2176_yuv420p10le.yuv \
+  -b /Experiment/A97/SA/QP3/TMIV_A97_SA_QP3_tex_c00.bit \
+  -wdt 2320 -hgt 960 -q 30 -f 97 -fr 30
+```
+
+In this example the following files will be produced after four invocations:
+
+```
+/Experiment/A97/SA/QP3/TMIV_A97_SA_QP3_geo_c00.bit
+/Experiment/A97/SA/QP3/TMIV_A97_SA_QP3_geo_c01.bit
+/Experiment/A97/SA/QP3/TMIV_A97_SA_QP3_tex_c00.bit
+/Experiment/A97/SA/QP3/TMIV_A97_SA_QP3_tex_c01.bit
+```
 
 ### Running the TMIV multiplexer
 
-To run the TMIV multiplexer, set everything in the multiplexer configuration file, for an example see [config/ctc/miv_anchor/Mux_A17_SA.json](/config/ctc/miv_anchor/Mux_A17_SA.json). Careful: there is no input folder for this. Make sure that variables `AttributeVideoDataSubBitstreamPathFmt` and `GeometryVideoDataSubBitstreamPathFmt` are either correct relative paths to you call location, or the correct absolute paths. Then, run
+1. Choose as input directory the output directory of the HM step, that is `/Experiment` in this description.
+1. Choose an output directory, in this example `/Experiment` is used to have the multiplexed bitstream next to the HM bitstreams.
+1. The test ID (`-r` argument) is used to tag multiple video encodings at different settings, e.g. QP1, QP2, etc. or R0 for lossless.
+1. Finally, assuming that you have built and installed the multiplexer application, you can start it from the command line:
 
 ```shell
-/Workspace/tmiv_install/bin/Multiplexer -c /Workspace/config/ctc/miv_anchor/Mux_A17.json
+/Workspace/tmiv_install/bin/Multiplexer -n 97 -s A -r QP3 \
+    -c /Workspace/tmiv/config/ctc/miv_anchor/A_3_TMIV_mux.json \
+    -p configDirectory /Workspace/tmiv/config \
+    -p inputDirectory /Experiment \
+    -p outputDirectory /Experiment
+```
+
+This will in general result in the following file under the `outputDirectory`:
+
+* A bitstream with the path based on `outputBitstreamPathFmt`, containing metadata, patch data and video sub bitstreams.
+
+In this example the following file will be produced:
+
+```
+/Experiment/A97/SA/QP3/TMIV_A97_SA_QP3.bit
 ```
 
 ## Running the TMIV decoder
 
-You may choose to render to either a source view (e.g. `v0`) for objective evaluation, or render according to a pose trace (e.g. `p01`). Pose traces are available under [config/ctc/pose_traces](/config/ctc/pose_traces). For clarity two (almost identical) configuration files are provided for each of the test conditions, for example:
+1. Choose as input directory the output directory of the multiplexing step, that is `/Experiment` in this description.
+1. Choose an output directory, in this example again `/Experiment` is used to have the viewport videos next to the HM bitstreams.
+1. Define render targets if any. (The decoder can also produce other outputs such as multiview reconstruction or block to patch maps.)
+   * The view name (`-v` argument) may be used multiple times to reconstruct source views and interpolate intermediate views.
+   * The pose trace name (`-P` argument) may be used multiple times to render pose trace videos.
+   * Rendering tasks are run _sequentially_. It is advised to run multiple processes in parallel to speed up anchor generation.
+1. Specify the number of output frames (`-N` argument) e.g. 300:
+   * For views the actual number of output frames is never more than the number of input frames,
+   * For pose traces the sequence of decoded input frames is looped (by mirroring; repeatedly traversing the sequence forth and back) and the number of output frames can exceed the number of input frames.
+1. Finally, assuming that you have built and installed the decoder application, you can start it from the command line:
 
-* [config/ctc/miv_anchor/TMIV_A17_SA_v0.json](config/ctc/miv_anchor/TMIV_A17_SA_v0.json)
-* [config/ctc/miv_anchor/TMIV_A17_SA_p01.json](config/ctc/miv_anchor/TMIV_A17_SA_p01.json)
+```shell
+/Workspace/tmiv_install/bin/Decoder -n 97 -N 300 -s A -r QP3 -v v11 -P p02 \
+    -c /Workspace/tmiv/config/ctc/miv_anchor/A_4_TMIV_decode.json /
+    -p configDirectory /Workspace/tmiv/config /
+    -p inputDirectory /Experiment /
+    -p outputDirectory /Experiment
+```
 
-Note that it is not needed to decode video with HM because the HM decoder is integrated into the TMIV decoder. The input of the decoder is a single MIV bitstream including HEVC sub-bitstreams.
+This will in general result in the following files under the `outputDirectory`:
 
-It is possible to use YUV video input, for instance to support experiments with alternative video codecs such as VTM, but this is **advanced use** and **not recommended** in general. To enable decoding of MIV bitstreams with out-of-band decoded video sub-bitstreams, add the  `OccupancyVideoDataPathFmt`,`GeometryVideoDataPathFmt` and/or `AttributeVideoDataPathFmt` to the configuration file. The path formats match those of the encoder configuration, see for instance [TMIV_A17_SA.json](/config/ctc/miv_anchor/TMIV_A17_SA.json). When the decoder detects that a video sub-bitstream is not present in the MIV bitstream, it will use such a parameter to calculate the path to a YUV file and load frames from that. The format and resolution of the YUV file is dictated by the MIV bitstream.
+* Block to patch maps with the path based on `outputBlockToPatchMapPathFmt`.
+* Reconstructed multiview video based on `outputMultiviewGeometryPathFmt`, `outputOccupancyVideoDataPathFmt` and/or `outputMultiviewTexturePathFmt`.
+* Rendered viewport videos based on `outputViewportGeometryPathFmt` and/or `outputViewportTexturePathFmt`.
+* Reconstructed sequence configuration for each frame at which it changes based on `outputSequenceConfigPathFmt`.
+
+In this example the following files will be produced:
+
+```
+/Experiment/A97/SA/QP3/A97_SA_QP3_p02_tex_2048x2048_yuv420p10le.yuv
+/Experiment/A97/SA/QP3/A97_SA_QP3_v11_tex_4096x2048_yuv420p10le.yuv
+```
 
 ## Running the TMIV renderer
 
 The TMIV renderer was added to support the MIV decoder-side depth estimating anchor. The application has similar input to the TMIV encoder (input views and camera parameters) and similar output to the TMIV decoder (rendered viewport).
 
-As with the TMIV decoder you may choose to render to either a source view (e.g. `v0`) for objective evaluation, or render according to a pose trace (e.g. `p01`). A suitable configuration file to try out the TMIV renderer is the one of the best reference condition:
+For this example, we will be using the best reference [R_1_TMIV_render.json](/config/ctc/best_reference/R_1_TMIV_render.json) configuration and [A.json](/config/ctc/sequences/A.json) sequence configuration.
 
-* [config/ctc/best_reference/TMIV_render_R17_SA_p01.json](config/ctc/best_reference/TMIV_render_R17_SA_p01.json)
+1. Place the color and depth videos [[4]](#references) in a folder arbitrarily named `/Content` in this description.
+1. Choose an output directory, arbitrarily called `/Experiment` in this description. The directory will be created when it does not yet exist.
+1. Define render targets (having none is allowed but not that useful):
+   * The view name (`-v` argument) may be used multiple times to reconstruct source views and interpolate intermediate views.
+   * The pose trace name (`-P` argument) may be used multiple times to render pose trace videos.
+   * Rendering tasks are run _sequentially_. It is adviced to run multiple processes in parallel to speed up anchor generation.
+1. Specify the number of input frames (`-n` argument), e.g. 97.
+1. Specify the number of output frames (`-N` argument), e.g. 300:
+   * For views the actual number of output frames is never more than the number of input frames,
+   * For pose traces the input frames are mirrored and the number of output frames can exceed the number of input frames.
+1. Finally, assuming that you have built and installed the renderer application, you can start it from the command line:
 
-# Overview of TMIV encoder parameters
+```shell
+/Workspace/tmiv_install/bin/Renderer -n 97 -N 300 -s A -r R0 -v v11 -P p02 \
+    -c /Workspace/tmiv/config/ctc/best_reference/R_1_TMIV_render.json \
+    -p configDirectory /Workspace/tmiv/config \
+    -p inputDirectory /Content \
+    -p outputDirectory /Experiment
+```
 
-Some of the algorithmic components of the test model have parameters. This section provides a short description of these parameters in reference to [[2]](#references) and the template configuration files. The usage of non-algorithmic parameters such as filename patterns should be clear from the template configuration files.
+This will in general result in the following files under the `outputDirectory`:
 
-### Common encoder parameters
+* Rendered viewport videos based on `outputViewportGeometryPathFmt` and/or `outputViewportTexturePathFmt`.
 
-* Input frame selection:
-  * **numberOfFrames:** int; the number of frames to encode.
-  * **startFrame:** int; skip this many source frames.
+In this example the following files will be produced:
+
+```
+/Experiment/R97/SA/R0/R97_SA_R0_p02_tex_2048x2048_yuv420p10le.yuv
+/Experiment/R97/SA/R0/R97_SA_R0_v11_tex_4096x2048_yuv420p10le.yuv
+```
+
+# Overview of TMIV configuration files
+
+## Basic structure of the TMIV configuration files
+
+The TMIV configuration files use the [JSON](http://json.org) file format. The main parameters are key-value pairs of the root object, for example:
+
+```json
+{
+  "intraPeriod": 32,
+  "blockSizeDepthQualityDependent": [ 16, 32 ]
+}
+```
+
+Selectable components follow this pattern:
+
+```json
+{
+  "PrunerMethod": "HierarchicalPruner",
+  "HierarchicalPruner": {
+    "erode": 3,
+    "etcetera": "..."
+  }
+}
+```
+
+In some cases there is a bypass component, e.g. `NoPruner` or `NoCuller`. Even though these have no parameters, the key still needs to be provided:
+
+```json
+{
+  "PrunerMethod": "NoPruner",
+  "NoPruner": { }
+}
+```
+
+## Input/output parameters
+
+TMIV constructs input and output paths using:
+1. base directories `configDirectory`, `inputDirectory` and `outputDirectory`,
+1. path formats with [{fmt}](https://github.com/fmtlib/fmt) syntax.
+
+The [format syntax](https://fmt.dev/latest/syntax.html#syntax) is convenient and flexible. It is not required to use all available placeholders and with positional placeholders it is possible to use the same placeholder multiple times.
+
+### Base directories
+
+* **configDirectory**: the base directory for the configuration files.
+* **inputDirectory**: the base directory for the input files.
+* **outputDirectory**: the base directory for the output files.
+
+An experiment may have multiple steps, e.g. Encoder, Multiplexer, Decoder, in which case the output directory of one step may correspond to the input directory of the next step.
+
+Base directories can be overriden by using absolute paths for the path formats:
+* `/my/output/dir` plus `my_filename.yuv` gives `/my/output/dir/my_filename.yuv`
+* `/my/output/dir` plus `/my/path.yuv` gives `/my/path.yuv`
+
+### Path format placeholders
+
+Depending on the situation, the following placeholders are available to form paths:
+
+* **Atlas ID** (e.g. 12) as read from the bitstream
+* **Atlas index** in `0 .. atlas count - 1`, as determined by the test model
+* **Content ID** (e.g. J for Kitchen), as specified by the `-s` command-line parameter
+* **Frame height** (e.g. 1080) as determined by the test model
+* **Frame index** is 0 for the Encoder and in the range `0 .. number of input frames - 1` for the Renderer
+* **Frame width** (e.g. 1920) as determined by the test model
+* **Number of input frames** (e.g. 97), as specified by the `-n` command-line parameter
+* **Number of output frames** (e.g. 300), as specified by the `-N` command-line parameter
+* **Pose trace name** (e.g. p02) as specified using the `-P` command-line parameter
+* **Test ID** (e.g. R0 or QP3) as specified by the `-r` command-line parameter
+* **Video format** (e.g. yuv420p10le) as determined by the test model
+* **View index** in `0 .. view count - 1`, as determined by the test model
+* **View name** (e.g. v11) as specified using the `-v` command-line parameter or determined by the test model
+
+### Input path formats
+
+Unless specified otherwise, the base directory for these path formats is `inputDirectory`.
+
+* **inputBitstreamPathFmt**: the path format of the input bitstream, consumed by the Multiplexer and Decoder, with placeholders:
+  * 0: number of input frames,
+  * 1: content ID,
+  * 2: test ID.
+* **inputGeometryPathFmt**: the path format of the multiview uncompressed geometry (depth) data, consumed by the Multiplexer and Decoder, with placeholders:
+  * 0: number of input frames,
+  * 1: content ID,
+  * 2: test ID,
+  * 3: view name,
+  * 4, 5, 6: frame width, frame height, and video format.
+* **inputTexturePathFmt**: the path format of the multiview uncompressed texture (color) data, consumed by the Encoder and Renderer, with the same placeholders as `inputGeometryPathFormat`.
+* **inputEntityPathFmt**: the path format of the multiview uncompressed entity maps, consumed by the Encoder, with the same placeholders as `inputGeometryPathFormat`.
+* **inputGeometryVideoFramePathFmt**: the path format of the uncompresed geometry video data (GVD), consumed by the Decoder for out-of-band video decoding, e.g. for testing alternative video codecs, with placeholders:
+  * 0: number of input frames,
+  * 1: content ID,
+  * 2: test ID,
+  * 3: atlas ID,
+  * 4, 5: frame width and height.
+* **inputOccupancyVideoFramePathFmt**: the path format of the uncompresed occupancy video data (OVD), consumed by the Decoder for out-of-band video decoding, e.g. for testing alternative video codecs, with the same placeholders as `inputGeometryVideoFramePathFmt`.
+* **inputTextureVideoFramePathFmt**: the path format of the uncompresed attribute video data (AVD) with attribute ID `ATTR_TEXTURE`, consumed by the Decoder for out-of-band video decoding, e.g. for testing alternative video codecs, with the same placeholders as `inputGeometryVideoFramePathFmt`.
+* **inputGeometryVsbPathFmt**: the path format of the geometry video sub-bitstream, consumed by the Multiplexer, with placeholders:
+  * 0: number of input frames,
+  * 1: content ID,
+  * 2: test ID,
+  * 3: atlas index.
+* **inputOccupancyVsbPathFmt**: the path format of the occupancy video sub-bitstream, consumed by the Multiplexer, with the same placeholders as `inputGeometryVsbPathFmt`.
+* **inputTextureVsbPathFmt**: the path format of the attribute video sub-bitstream with attribute ID `ATTR_TEXTURE`, consumed by the Multiplexer, with placeholders:
+  * 0: number of input frames,
+  * 1: content ID,
+  * 2: test ID,
+  * 3: atlas index,
+  * 4: attribute index.
+* **inputNormalVsbPathFmt**: the path format of the attribute video sub-bitstream with attribute ID `ATTR_NORMAL`, consumed by the Multiplexer, with the same placeholders as `inputTextureVsbPathFmt`.
+* **inputTransparencyVsbPathFmt**: the path format of the attribute video sub-bitstream with attribute ID `ATTR_TRANSPARENCY`, consumed by the Multiplexer, with the same placeholders as `inputTextureVsbPathFmt`.
+* **inputMaterialIdVsbPathFmt**: the path format of the attribute video sub-bitstream with attribute ID `ATTR_MATERIAL_ID`, consumed by the Multiplexer, with the same placeholders as `inputTextureVsbPathFmt`.
+* **inputReflectanceVsbPathFmt**: the path format of the attribute video sub-bitstream with attribute ID `ATTR_REFLECTANCE`, consumed by the Multiplexer, with the same placeholders as `inputTextureVsbPathFmt`.
+* **inputPoseTracePathFmt**: the path format of the pose trace CSV file, with `configDirectory` as base directory and placeholders:
+  * 0: number of input frames,
+  * 1: content ID,
+  * 2: test ID,
+  * 3: pose trace name.
+* **inputSequenceConfigPathFmt**: the path format of the sequence (content) configuration file, consumed by the Encoder and Renderer to load (reconstructed) source parameters, with `inputDirectory` as primary (try first) and `configDirectory` as secondary (try next) base directory, with placeholders:
+  * 0: number of input frames,
+  * 1: content ID,
+  * 2: test ID,
+  * 3: frame index.
+* **inputViewportParamsPathFmt**: the path format of the sequence (content) configuration file, to load viewport parameters, consumed by the Decoder and Renderer, with `configDirectory` as base directory and with placeholders:
+  * 0: number of input frames,
+  * 1: content ID,
+  * 2: test ID.
+
+### Output path formats
+
+Unless specified otherwise, the base directory for these path formats is `outputDirectory`.
+
+* **outputBitstreamPathFmt**: the path format of the output bitstream, produced by the Encoder and Multiplexer, with the same placeholders as `inputBitstreamPathFmt`.
+* **outputBlockToPatchMapPathFmt**: the path format of the block-to-patch map output, produced by the Decoder, with placeholders:
+  * 0: number of input frames,
+  * 1: content ID,
+  * 2: test ID,
+  * 3: atlas index,
+  * 4, 5: frame width and height.
+* **outputGeometryVideoDataPathFmt**: the path format of the uncompressed geometry video data (GVD), produced by the Encoder, with the same placeholders as `outputBlockToPatchMapPathFmt`.
+* **outputOccupancyVideoDataPathFmt**: the path format of the uncompressed occupancy video data (GVD), produced by the Encoder, with the same placeholders as `outputBlockToPatchMapPathFmt`.
+* **outputTextureVideoDataPathFmt**: the path format of the uncompressed attribute video data (GVD) with attribute ID `ATTR_TEXTURE`, produced by the Encoder, with the same placeholders as `outputBlockToPatchMapPathFmt`.
+* **outputMultiviewGeometryPathFmt**: the path format of the reconstructed multiview geometry (depth) data, produced by the Decoder, with placeholders:
+  * 0: number of input frames,
+  * 1: content ID,
+  * 2: test ID,
+  * 3: view index,
+  * 4, 5: frame width and height.
+* **outputMultiviewOccupancyPathFmt**: the path format of the reconstructed (pruned) multiview occupancy data, produced by the Decoder, with the same placeholders as `outputMultiviewGeometryPathFmt`.
+* **outputMultiviewTexturePathFmt**: the path format of the reconstructed (pruned) multiview texture (color) data, produced by the Decoder, with the same placeholders as `outputMultiviewGeometryPathFmt`.
+* **outputSequenceConfigPathFmt**: the path format of the reconstructed sequence (content) configuration file, produced by the Decoder, written for each frame whereby parameters have changed, with the same placeholders as `inputSequenceConfigPathFmt`.
+* **outputViewportGeometryPathFmt**: the path format of the geometry (depth) video data of the rendered viewport, produced by the Decoder or Renderer, with placeholders:
+  * 0: number of input frames,
+  * 1: content ID,
+  * 2: test ID,
+  * 3: number of output frames,
+  * 4: view or pose trace name,
+  * 5, 6, 7: frame width and height, and video format.
+* **outputViewportTexturePathFmt**: the path format of the texture (color) video data of the rendered viewport, produced by the Decoder or Renderer, with the same placeholders as `outputViewportGeometryPathFmt`.
+
+## Algorithmic parameters
+
+Some of the algorithmic components of the test model have parameters. This section provides a short description of these parameters in reference to the _test model_ [[2]](#references).
+
+Some general parameters are defined in the root of the configuration file. All others are defined in the node of a component.
+
+### General parameters
+
+These parameters are in the root of the configuration file and may be accessed by multiple components:
+
 * Output video sub-bitstreams:
   * **haveOccupancyVideo:** bool; output occupancy video data (OVD) instead of  depth/occupancy coding within geometry video data (GVD). Make sure to use ExplicitOccupancy as the geometry quantizer.
   * **haveTextureVideo:** bool; output attribute video data (AVD) to encode the texture attribute. When false texture data is still needed as input of the test model.
@@ -293,7 +550,7 @@ Some of the algorithmic components of the test model have parameters. This secti
 * Metadata:
   * **OmafV1CompatibleFlag:** bool; when enabled the equally-named flag is written in the bitstream.
 
-### Geometry quality assessment
+### Depth quality assessor
 
 * **blendingFactor:** float; for every reprojected pixel it is checked if
 reprojected geometry value is higher than 1.0 - _blendingFactor_ of geometry
@@ -352,9 +609,7 @@ Most of the parameters are defined in the root. The exception is:
 * **minNonCodedViews:** int; the minimum number of source views that will not
  be coded as basic view.
 
-# Overview of TMIV decoder and renderer parameters
-
-## Decoder
+### Decoder
 
 * **geometryEdgeMagnitudeTh:** int; parameter of the geometry upscaling, in
  line with the hypothetical reference renderer.
@@ -363,7 +618,7 @@ Most of the parameters are defined in the root. The exception is:
 * **minForegroundConfidence:** float; parameter of the geometry upscaling, in
  line with the hypothetical reference renderer.
 
-## Renderer
+### Renderer
 
 * **angularScaling:** float; Drives the splat size at the warping stage.
 * **minimalWeight:** float; Allows for splat degeneracy test at the warping stage.

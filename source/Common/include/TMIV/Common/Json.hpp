@@ -40,6 +40,8 @@
 #include <fmt/format.h>
 #include <fmt/printf.h>
 
+#include <filesystem>
+
 namespace TMIV::Common {
 inline Json::operator bool() const { return m_node.has_value(); }
 
@@ -136,6 +138,8 @@ template <typename T> decltype(auto) Json::as() const {
         return static_cast<T>(*value); // cast integer to float
       }
       return static_cast<T>(std::any_cast<Number>(m_node)); // TODO(BK): check bounds (#273)
+    } else if constexpr (std::is_same_v<T, std::filesystem::path>) {
+      return std::filesystem::path{std::any_cast<std::string>(m_node)};
     } else {
       return std::any_cast<const T &>(m_node);
     }

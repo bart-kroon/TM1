@@ -36,7 +36,7 @@
 
 #include <TMIV/Common/Frame.h>
 #include <TMIV/Common/Json.h>
-#include <TMIV/Decoder/AccessUnit.h>
+#include <TMIV/MivBitstream/AccessUnit.h>
 
 namespace TMIV::Decoder {
 class EntityBasedPatchMapFilter {
@@ -44,7 +44,7 @@ public:
   EntityBasedPatchMapFilter(const Common::Json &rootNode, const Common::Json &componentNode);
 
   // Update the PatchIdMap with respect to entities
-  void inplaceFilterBlockToPatchMaps(AccessUnit &frame) const;
+  void inplaceFilterBlockToPatchMaps(MivBitstream::AccessUnit &frame) const;
 
 private:
   Common::Vec2i m_entityDecodeRange;

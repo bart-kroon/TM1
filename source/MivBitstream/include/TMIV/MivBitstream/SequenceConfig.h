@@ -47,8 +47,14 @@ struct CameraConfig {
   ViewParams viewParams;
   int bitDepthColor{};
   int bitDepthDepth{};
+  int bitDepthEntities{};
   Colorspace colorspace{Colorspace::yuv420};
   Colorspace depthColorspace{Colorspace::yuv420};
+  Colorspace entitiesColorspace{Colorspace::yuv420};
+
+  auto textureVideoFormat() const -> std::string;
+  auto geometryVideoFormat() const -> std::string;
+  auto entitiesVideoFormat() const -> std::string;
 
   CameraConfig() = default;
   explicit CameraConfig(const Common::Json &config);
@@ -60,12 +66,21 @@ struct CameraConfig {
 };
 
 struct SequenceConfig {
+  struct FrameRange {
+    std::int32_t maxNumberOfFrames{};
+    std::int32_t startFrame{};
+
+    auto operator==(const FrameRange &other) const noexcept -> bool;
+    auto operator!=(const FrameRange &other) const noexcept -> bool;
+  };
+
   Common::Vec3d boundingBoxCenter;
   std::string contentName;
   double frameRate{};
   int numberOfFrames{};
   std::vector<CameraConfig> cameras;
   std::vector<std::string> sourceCameraNames;
+  std::vector<FrameRange> frameRanges;
 
   SequenceConfig() = default;
   explicit SequenceConfig(const Common::Json &config);
@@ -73,7 +88,9 @@ struct SequenceConfig {
 
   explicit operator Common::Json() const;
 
+  [[nodiscard]] auto cameraByName(const std::string &name) const -> CameraConfig;
   [[nodiscard]] auto sourceViewParams() const -> ViewParamsList;
+  [[nodiscard]] auto startFrameGiven(std::int32_t numberOfInputFrames) const -> std::int32_t;
 
   auto operator==(const SequenceConfig &other) const noexcept -> bool;
   auto operator!=(const SequenceConfig &other) const noexcept -> bool;

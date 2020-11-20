@@ -40,14 +40,11 @@
 #include <sstream>
 #include <stdexcept>
 
-using namespace std::string_literals;
+using namespace std::string_view_literals;
 
 namespace TMIV::Common {
-const auto configFileOption = "-c"s;
-const auto parameterOption = "-p"s;
-const auto helpOption = "--help"s;
-
-Application::Application(const char *tool, std::vector<const char *> argv) : m_startTime{} {
+Application::Application(const char *tool, std::vector<const char *> argv, Options options)
+    : m_startTime{}, m_options{std::move(options)} {
   auto take = [&argv]() {
     if (argv.empty()) {
       throw std::runtime_error("Missing a command-line argument");
@@ -60,26 +57,39 @@ Application::Application(const char *tool, std::vector<const char *> argv) : m_s
   take();
 
   while (!argv.empty()) {
-    const auto *option = take();
-    if (configFileOption == option) {
+    std::string_view option = take();
+    if ("-c"sv == option) {
       add_file(take());
-    } else if (parameterOption == option) {
+    } else if ("-p"sv == option) {
       const auto *arg1 = take();
       const auto *arg2 = take();
       add_parameter(arg1, arg2);
-    } else if (helpOption == option) {
+    } else if ("--help"sv == option) {
       m_json = Json{};
       break;
-    } else {
-      std::ostringstream what;
-      what << "Stray argument \"" << option << "\"";
-      throw std::runtime_error(what.str());
+    } else { // search for application-specific options
+      auto o = std::find_if(m_options.begin(), m_options.end(),
+                            [option](const auto &o) { return o.option == option; });
+      if (o == m_options.end()) {
+        throw std::runtime_error(
+            fmt::format("Stray argument or unknown option \"{}\" (try --help)", option));
+      }
+      if (!o->multiple && !o->values.empty()) {
+        throw std::runtime_error(fmt::format("Option {} may not occur multiple times", o->option));
+      }
+      o->values.emplace_back(take());
     }
   }
 
-  if (!m_json) {
+  if (!m_json || std::any_of(m_options.cbegin(), m_options.cend(),
+                             [](const auto &o) { return !o.multiple && o.values.empty(); })) {
     std::ostringstream what;
-    what << "Usage: " << tool << " [OPTIONS...] (-c CONFIGURATION|-p KEY VALUE)+\n";
+    what << "Usage: " << tool
+         << " [OPTIONS...] (-c CONFIGURATION)+ (-p KEY VALUE)*\n\nOptions are:";
+    for (const auto &o : m_options) {
+      what << fmt::format("\n  {:3} {:47} {}", o.option, o.description,
+                          o.multiple ? "zero or more allowed" : "required exactly once");
+    }
     throw std::runtime_error(what.str());
   }
 }
@@ -89,12 +99,18 @@ auto Application::json() const -> const Json & {
   return m_json;
 }
 
-void Application::add_file(const std::string &path) {
+auto Application::optionValues(std::string_view option) const -> const std::vector<std::string> & {
+  auto o = std::find_if(m_options.cbegin(), m_options.cend(),
+                        [=](const auto &o) { return o.option == option; });
+  assert(o != m_options.cend());
+  return o->values;
+}
+
+void Application::add_file(const std::filesystem::path &path) {
   std::ifstream stream(path);
   if (!stream.good()) {
-    std::ostringstream what;
-    what << "Failed to open configuration file \"" << path << "\" for reading\n";
-    throw std::runtime_error(what.str());
+    throw std::runtime_error(fmt::format("Failed to open {} for reading (with current path {})",
+                                         path, std::filesystem::current_path()));
   }
   add_stream(stream);
 }

@@ -35,10 +35,10 @@
 #define _TMIV_DECODER_MIVDECODER_H_
 
 #include <TMIV/Common/Frame.h>
-#include <TMIV/Decoder/AccessUnit.h>
 #include <TMIV/Decoder/AtlasDecoder.h>
 #include <TMIV/Decoder/CommonAtlasDecoder.h>
 #include <TMIV/Decoder/V3cUnitBuffer.h>
+#include <TMIV/MivBitstream/AccessUnit.h>
 #include <TMIV/VideoDecoder/VideoServer.h>
 
 namespace TMIV::Decoder {
@@ -72,7 +72,7 @@ public: // Decoder interface
       MivBitstream::AtlasId atlasId, std::uint32_t frameId, Common::Vec2i frameSize)>;
   void setAttrFrameServer(AttrFrameServer value);
 
-  auto operator()() -> std::optional<AccessUnit>;
+  auto operator()() -> std::optional<MivBitstream::AccessUnit>;
 
 private:
   [[nodiscard]] auto expectIrap() const -> bool;
@@ -115,7 +115,7 @@ private:
 
   std::optional<CommonAtlasDecoder::AccessUnit> m_commonAtlasAu;
   std::vector<std::optional<AtlasDecoder::AccessUnit>> m_atlasAu;
-  AccessUnit m_au;
+  MivBitstream::AccessUnit m_au;
 
   double m_totalOccVideoDecodingTime{};
   double m_totalGeoVideoDecodingTime{};

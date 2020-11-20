@@ -36,7 +36,7 @@
 
 #include <TMIV/Common/Frame.h>
 #include <TMIV/Common/Json.h>
-#include <TMIV/Decoder/AccessUnit.h>
+#include <TMIV/MivBitstream/AccessUnit.h>
 
 #include <algorithm>
 #include <cassert>
@@ -47,7 +47,7 @@
 namespace TMIV::Decoder {
 class OccupancyReconstructor {
 public:
-  static void reconstruct(AccessUnit &frame);
+  static void reconstruct(MivBitstream::AccessUnit &frame);
 };
 } // namespace TMIV::Decoder
 

@@ -147,8 +147,8 @@ auto divideInBlocks(const MivBitstream::PatchParams &patch) {
   return subblock;
 }
 
-auto SubBlockCuller::filterBlockToPatchMap(const Decoder::AccessUnit &frame,
-                                           const Decoder::AtlasAccessUnit &atlas,
+auto SubBlockCuller::filterBlockToPatchMap(const MivBitstream::AccessUnit &frame,
+                                           const MivBitstream::AtlasAccessUnit &atlas,
                                            const MivBitstream::ViewParams &viewportParams) const
     -> Common::BlockToPatchMap {
   auto result = atlas.blockToPatchMap;

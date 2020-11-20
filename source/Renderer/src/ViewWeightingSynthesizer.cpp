@@ -166,7 +166,8 @@ public:
     m_filteringPass = filteringPass;
   }
 
-  auto renderFrame(const Decoder::AccessUnit &frame, const MivBitstream::ViewParams &viewportParams)
+  auto renderFrame(const MivBitstream::AccessUnit &frame,
+                   const MivBitstream::ViewParams &viewportParams)
       -> Common::Texture444Depth16Frame {
     const auto &viewParamsList = frame.viewParamsList;
     const auto sourceHelperList = ProjectionHelperList{viewParamsList};
@@ -338,7 +339,7 @@ private:
     }
   }
 
-  void recoverPrunedSource(const Decoder::AccessUnit &frame,
+  void recoverPrunedSource(const MivBitstream::AccessUnit &frame,
                            const ProjectionHelperList &sourceHelperList) {
     // Recover pruned views
     const auto [prunedViews, prunedMasks] = recoverPrunedViewAndMask(frame);
@@ -360,7 +361,7 @@ private:
           [&](auto maskValue, float depthValue) { return 0 < maskValue ? depthValue : NAN; });
     }
   }
-  void reprojectPrunedSource(const Decoder::AccessUnit &frame,
+  void reprojectPrunedSource(const MivBitstream::AccessUnit &frame,
                              const ProjectionHelperList &sourceHelperList,
                              const ProjectionHelper &targetHelper) {
     m_sourceUnprojection.resize(m_sourceDepth.size());
@@ -430,7 +431,8 @@ private:
     }
   }
 
-  void warpPrunedSource(const Decoder::AccessUnit &frame, const ProjectionHelper &targetHelper) {
+  void warpPrunedSource(const MivBitstream::AccessUnit &frame,
+                        const ProjectionHelper &targetHelper) {
     struct Splat {
       Common::Vec2f center{};
       Common::Vec2f firstAxis{};
@@ -977,7 +979,7 @@ ViewWeightingSynthesizer::ViewWeightingSynthesizer(float angularScaling, float m
 
 ViewWeightingSynthesizer::~ViewWeightingSynthesizer() = default;
 
-auto ViewWeightingSynthesizer::renderFrame(const Decoder::AccessUnit &frame,
+auto ViewWeightingSynthesizer::renderFrame(const MivBitstream::AccessUnit &frame,
                                            const MivBitstream::ViewParams &viewportParams) const
     -> Common::Texture444Depth16Frame {
   return m_impl->renderFrame(frame, viewportParams);

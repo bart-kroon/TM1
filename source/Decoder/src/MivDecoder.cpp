@@ -65,7 +65,7 @@ void MivDecoder::setGeoFrameServer(GeoFrameServer value) { m_geoFrameServer = st
 
 void MivDecoder::setAttrFrameServer(AttrFrameServer value) { m_attrFrameServer = std::move(value); }
 
-auto MivDecoder::operator()() -> std::optional<AccessUnit> {
+auto MivDecoder::operator()() -> std::optional<MivBitstream::AccessUnit> {
   m_au.irap = expectIrap();
 
   if (m_au.irap) {

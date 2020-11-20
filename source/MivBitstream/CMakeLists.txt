@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
 
 add_library(MivBitstreamLib
+    "src/AccessUnit.cpp"
     "src/AccessUnitDelimiterRBSP.cpp"
     "src/AtlasAdaptationParameterSetRBSP.cpp"
     "src/AtlasFrameParameterSetRBSP.cpp"
@@ -29,6 +30,7 @@ add_library(MivBitstreamLib
     "src/V3cParameterSet.cpp"
     "src/V3cSampleStreamFormat.cpp"
     "src/V3cUnit.cpp"
+    "include/TMIV/MivBitstream/AccessUnit.h"
     "include/TMIV/MivBitstream/AccessUnitDelimiterRBSP.h"
     "include/TMIV/MivBitstream/AccessUnitDelimiterRBSP.hpp"
     "include/TMIV/MivBitstream/AtlasAdaptationParameterSetRBSP.h"
@@ -100,6 +102,7 @@ install(
 
 if (CMAKE_TESTING_ENABLED)
     add_executable(MivBitstreamTest
+        "src/AccessUnit.test.cpp"
         "src/AccessUnitDelimiterRBSP.test.cpp"
         "src/AtlasAdaptationParameterSetRBSP.test.cpp"
         "src/AtlasFrameParameterSetRBSP.test.cpp"
@@ -125,7 +128,7 @@ if (CMAKE_TESTING_ENABLED)
         "src/V3cParameterSet.test.cpp"
         "src/V3cUnit.test.cpp"
         )
-
+          
     target_link_libraries(MivBitstreamTest
         PRIVATE
             Catch2::Catch2

@@ -69,7 +69,8 @@ public:
     return result;
   }
 
-  static auto atlasVertices(const Decoder::AccessUnit &frame, const Decoder::AtlasAccessUnit &atlas,
+  static auto atlasVertices(const MivBitstream::AccessUnit &frame,
+                            const MivBitstream::AtlasAccessUnit &atlas,
                             const MivBitstream::ViewParams &viewportParams) {
     SceneVertexDescriptorList result;
     const auto rows = atlas.frameSize().y();
@@ -126,7 +127,7 @@ public:
     return result;
   }
 
-  static auto atlasTriangles(const Decoder::AtlasAccessUnit &atlas) {
+  static auto atlasTriangles(const MivBitstream::AtlasAccessUnit &atlas) {
     TriangleDescriptorList result;
     const auto rows = atlas.frameSize().y();
     const auto cols = atlas.frameSize().x();
@@ -161,7 +162,7 @@ public:
     return result;
   }
 
-  static auto atlasColors(const Decoder::AtlasAccessUnit &atlas) {
+  static auto atlasColors(const MivBitstream::AtlasAccessUnit &atlas) {
     std::vector<Common::Vec3f> result;
     auto yuv444 = expandTexture(atlas.attrFrame);
     result.reserve(distance(std::begin(result), std::end(result)));
@@ -169,14 +170,14 @@ public:
     return result;
   }
 
-  static auto unprojectAtlas(const Decoder::AccessUnit &frame,
-                             const Decoder::AtlasAccessUnit &atlas,
+  static auto unprojectAtlas(const MivBitstream::AccessUnit &frame,
+                             const MivBitstream::AtlasAccessUnit &atlas,
                              const MivBitstream::ViewParams &viewportParams) {
     return std::tuple{atlasVertices(frame, atlas, viewportParams), atlasTriangles(atlas),
                       std::tuple{atlasColors(atlas)}};
   }
 
-  [[nodiscard]] auto rasterFrame(const Decoder::AccessUnit &frame,
+  [[nodiscard]] auto rasterFrame(const MivBitstream::AccessUnit &frame,
                                  const MivBitstream::ViewParams &viewportParams,
                                  float compensation) const -> Rasterizer<Common::Vec3f> {
     // Incremental view synthesis and blending
@@ -235,7 +236,7 @@ public:
     return Common::sqr(viewParams.ci.projectionPlaneSize().x() / xFoV(viewParams));
   }
 
-  static auto resolutionRatio(const Decoder::AccessUnit &frame,
+  static auto resolutionRatio(const MivBitstream::AccessUnit &frame,
                               const MivBitstream::ViewParams &viewportParams) -> float {
     auto sum = 0.;
     auto count = 0;
@@ -247,7 +248,7 @@ public:
     return static_cast<float>(resolution(viewportParams) * count / sum);
   }
 
-  [[nodiscard]] auto renderFrame(const Decoder::AccessUnit &frame,
+  [[nodiscard]] auto renderFrame(const MivBitstream::AccessUnit &frame,
                                  const MivBitstream::ViewParams &viewportParams) const
       -> Common::Texture444Depth16Frame {
     auto rasterizer = rasterFrame(frame, viewportParams, resolutionRatio(frame, viewportParams));
@@ -281,7 +282,7 @@ AdditiveSynthesizer::AdditiveSynthesizer(float rayAngleParam, float depthParam,
 
 AdditiveSynthesizer::~AdditiveSynthesizer() = default;
 
-auto AdditiveSynthesizer::renderFrame(const Decoder::AccessUnit &frame,
+auto AdditiveSynthesizer::renderFrame(const MivBitstream::AccessUnit &frame,
                                       const MivBitstream::ViewParams &viewportParams) const
     -> Common::Texture444Depth16Frame {
   return m_impl->renderFrame(frame, viewportParams);

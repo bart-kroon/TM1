@@ -34,11 +34,10 @@
 #ifndef _TMIV_DECODER_IDECODER_H_
 #define _TMIV_DECODER_IDECODER_H_
 
-#include <TMIV/Common/Frame.h>
-#include <TMIV/Decoder/AccessUnit.h>
-#include <TMIV/MivBitstream/ViewParamsList.h>
+#include <TMIV/MivBitstream/AccessUnit.h>
 
 namespace TMIV::Decoder {
+// TODO(BK): Rename to IPostDecoder
 class IDecoder {
 public:
   IDecoder() = default;
@@ -49,11 +48,7 @@ public:
   virtual ~IDecoder() = default;
 
   // Retrieve and filter a decoded frame (the AccessUnit is filtered in-place)
-  virtual void recoverFrame(Decoder::AccessUnit &frame) = 0;
-  // Render a decoded frame to a target viewport
-  virtual auto renderFrame(Decoder::AccessUnit &frame,
-                           const MivBitstream::ViewParams &viewportParams) const
-      -> Common::Texture444Depth16Frame = 0;
+  virtual void recoverFrame(MivBitstream::AccessUnit &frame) = 0;
 };
 } // namespace TMIV::Decoder
 

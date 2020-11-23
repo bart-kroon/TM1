@@ -264,7 +264,7 @@ Whereby `\` is used to indicate line breaks in this manual.
 This will in general result in the following files under the `outputDirectory`:
 
 * A bitstream with the path based on `outputBitstreamPathFmt`, containing metadata and patch data.
-* YUV files for each component of each atlas with paths based on `outputGeometryVideoDataPathFmt`, `outputOccupancyVideoDataPathFmt` and/or `outputTextureVideoDataPathFmt`. Components may be any of texture, geometry or occupancy corresponding to the `haveTextureVideo`, `haveGeometryVideo` and `haveOccupancyVideo` TMIV encoder parameters.
+* YUV files for each component of each atlas with paths based on `outputGeometryVideoDataPathFmt`, `outputOccupancyVideoDataPathFmt`, `outputTransparencyVideoDataPathFmt` and/or `outputTextureVideoDataPathFmt`. Components may be any of texture, transparency, geometry or occupancy corresponding to the `haveTextureVideo`, `haveTransparencyVideo` :construction:, `haveGeometryVideo` and `haveOccupancyVideo` TMIV encoder parameters.
 
 In this example the following files will be produced:
 
@@ -354,7 +354,7 @@ In this example the following file will be produced:
 This will in general result in the following files under the `outputDirectory`:
 
 * Block to patch maps with the path based on `outputBlockToPatchMapPathFmt`.
-* Reconstructed multiview video based on `outputMultiviewGeometryPathFmt`, `outputOccupancyVideoDataPathFmt` and/or `outputMultiviewTexturePathFmt`.
+* Reconstructed multiview video based on `outputMultiviewGeometryPathFmt`, `outputOccupancyVideoDataPathFmt`, `outputMultiviewTransparencyPathFmt` and/or `outputMultiviewTexturePathFmt`.
 * Rendered viewport videos based on `outputViewportGeometryPathFmt` and/or `outputViewportTexturePathFmt`.
 * Reconstructed sequence configuration for each frame at which it changes based on `outputSequenceConfigPathFmt`.
 
@@ -489,6 +489,7 @@ Unless specified otherwise, the base directory for these path formats is `inputD
   * 3: view name,
   * 4, 5, 6: frame width, frame height, and video format.
 * **inputTexturePathFmt**: the path format of the multiview uncompressed texture (color) data, consumed by the Encoder and Renderer, with the same placeholders as `inputGeometryPathFormat`.
+* **inputTransparencyPathFmt**: the path format of the multiview uncompressed transparency (alpha) data, with the same placeholders as `inputTransparencyPathFormat`.
 * **inputEntityPathFmt**: the path format of the multiview uncompressed entity maps, consumed by the Encoder, with the same placeholders as `inputGeometryPathFormat`.
 * **inputGeometryVideoFramePathFmt**: the path format of the uncompresed geometry video data (GVD), consumed by the Decoder for out-of-band video decoding, e.g. for testing alternative video codecs, with placeholders:
   * 0: number of input frames,
@@ -498,6 +499,7 @@ Unless specified otherwise, the base directory for these path formats is `inputD
   * 4, 5: frame width and height.
 * **inputOccupancyVideoFramePathFmt**: the path format of the uncompresed occupancy video data (OVD), consumed by the Decoder for out-of-band video decoding, e.g. for testing alternative video codecs, with the same placeholders as `inputGeometryVideoFramePathFmt`.
 * **inputTextureVideoFramePathFmt**: the path format of the uncompresed attribute video data (AVD) with attribute ID `ATTR_TEXTURE`, consumed by the Decoder for out-of-band video decoding, e.g. for testing alternative video codecs, with the same placeholders as `inputGeometryVideoFramePathFmt`.
+* **inputTransparencyVideoFramePathFmt**: the path format of the uncompresed attribute video data (AVD) with attribute ID `ATTR_TRANSPARENCY`, with the same placeholders as `inputGeometryVideoFramePathFmt`.
 * **inputGeometryVsbPathFmt**: the path format of the geometry video sub-bitstream, consumed by the Multiplexer, with placeholders:
   * 0: number of input frames,
   * 1: content ID,
@@ -543,6 +545,7 @@ Unless specified otherwise, the base directory for these path formats is `output
 * **outputGeometryVideoDataPathFmt**: the path format of the uncompressed geometry video data (GVD), produced by the Encoder, with the same placeholders as `outputBlockToPatchMapPathFmt`.
 * **outputOccupancyVideoDataPathFmt**: the path format of the uncompressed occupancy video data (GVD), produced by the Encoder, with the same placeholders as `outputBlockToPatchMapPathFmt`.
 * **outputTextureVideoDataPathFmt**: the path format of the uncompressed attribute video data (GVD) with attribute ID `ATTR_TEXTURE`, produced by the Encoder, with the same placeholders as `outputBlockToPatchMapPathFmt`.
+* **outputTransparencyVideoDataPathFmt**: the path format of the uncompressed attribute video data (GVD) with attribute ID `ATTR_TRANSPARENCY`, with the same placeholders as `outputBlockToPatchMapPathFmt`.
 * **outputMultiviewGeometryPathFmt**: the path format of the reconstructed multiview geometry (depth) data, produced by the Decoder, with placeholders:
   * 0: number of input frames,
   * 1: content ID,
@@ -551,6 +554,7 @@ Unless specified otherwise, the base directory for these path formats is `output
   * 4, 5: frame width and height.
 * **outputMultiviewOccupancyPathFmt**: the path format of the reconstructed (pruned) multiview occupancy data, produced by the Decoder, with the same placeholders as `outputMultiviewGeometryPathFmt`.
 * **outputMultiviewTexturePathFmt**: the path format of the reconstructed (pruned) multiview texture (color) data, produced by the Decoder, with the same placeholders as `outputMultiviewGeometryPathFmt`.
+* **outputMultiviewTransparencyPathFmt**: the path format of the reconstructed (pruned) multiview transparency (alpha) data, produced by the Decoder, with the same placeholders as `outputMultiviewGeometryPathFmt`.
 * **outputSequenceConfigPathFmt**: the path format of the reconstructed sequence (content) configuration file, produced by the Decoder, written for each frame whereby parameters have changed, with the same placeholders as `inputSequenceConfigPathFmt`.
 * **outputViewportGeometryPathFmt**: the path format of the geometry (depth) video data of the rendered viewport, produced by the Decoder or Renderer, with placeholders:
   * 0: number of input frames,
@@ -574,6 +578,7 @@ These parameters are in the root of the configuration file and may be accessed b
 * Output video sub-bitstreams:
   * **haveOccupancyVideo:** bool; output occupancy video data (OVD) instead of  depth/occupancy coding within geometry video data (GVD). Make sure to use ExplicitOccupancy as the geometry quantizer.
   * **haveTextureVideo:** bool; output attribute video data (AVD) to encode the texture attribute. When false texture data is still needed as input of the test model.
+  * **haveTransparencyVideo:** bool; output attribute video data (AVD) to encode the transparency attribute. :construction: 
   * **haveGeometryVideo:** bool; output geometry video data (GVD) to encode depth and optionally also occuapncy information. Without geometry, depth estimation is shifted from a pre-encoding to a post-decoding process.
   * **geometryScaleEnabledFlag:** bool; when true geometry is downscaled by a factor of two in respect to the atlas frame size. Otherwise geometry is at full resolution.
 * Atlas frame size calculation and packing:

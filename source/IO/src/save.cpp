@@ -45,9 +45,11 @@ const std::string outputGeometryVideoDataPathFmt = "outputGeometryVideoDataPathF
 const std::string outputMultiviewGeometryPathFmt = "outputMultiviewGeometryPathFmt";
 const std::string outputMultiviewOccupancyPathFmt = "outputMultiviewOccupancyPathFmt";
 const std::string outputMultiviewTexturePathFmt = "outputMultiviewTexturePathFmt";
+const std::string outputMultiviewTransparencyPathFmt = "outputMultiviewTransparencyPathFmt";
 const std::string outputOccupancyVideoDataPathFmt = "outputOccupancyVideoDataPathFmt";
 const std::string outputSequenceConfigPathFmt = "outputSequenceConfigPathFmt";
 const std::string outputTextureVideoDataPathFmt = "outputTextureVideoDataPathFmt";
+const std::string outputTransparencyVideoDataPathFmt = "outputTransparencyVideoDataPathFmt";
 const std::string outputViewportGeometryPathFmt = "outputViewportGeometryPathFmt";
 const std::string outputViewportTexturePathFmt = "outputViewportTexturePathFmt";
 
@@ -95,6 +97,13 @@ void saveAtlasFrame(const Common::Json &config, const Placeholders &placeholders
                                         placeholders.contentId, placeholders.testId, k,
                                         frame[k].texture.getWidth(), frame[k].texture.getHeight()),
                 frame[k].texture, frameIndex);
+    }
+    if (const auto &node = config.optional(outputTransparencyVideoDataPathFmt)) {
+      saveFrame(outputDir / fmt::format(node.as<std::string>(), placeholders.numberOfInputFrames,
+                                        placeholders.contentId, placeholders.testId, k,
+                                        frame[k].transparency.getWidth(),
+                                        frame[k].transparency.getHeight()),
+                frame[k].transparency, frameIndex);
     }
     if (const auto &node = config.optional(outputGeometryVideoDataPathFmt)) {
       saveFrame(outputDir / fmt::format(node.as<std::string>(), placeholders.numberOfInputFrames,
@@ -172,6 +181,10 @@ void savePrunedFrame(const Common::Json &config, const Placeholders &placeholder
                                         placeholders.contentId, placeholders.testId, v,
                                         texture.getWidth(), texture.getHeight()),
                 yuv420p(texture), frameIndex);
+    }
+    if (config.optional(outputMultiviewTransparencyPathFmt)) {
+      // TODO(BK): The pruned view reconstruction needs to be extended to support transparency
+      throw std::logic_error("Saving multiview (pruned) transparency maps is not yet implemented.");
     }
     if (const auto &node = config.optional(outputMultiviewGeometryPathFmt)) {
       const auto &depth = prunedViewsAndMasks.first[v].second;

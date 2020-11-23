@@ -46,13 +46,16 @@ struct CameraConfig {
 
   ViewParams viewParams;
   int bitDepthColor{};
+  int bitDepthTransparency{};
   int bitDepthDepth{};
   int bitDepthEntities{};
   Colorspace colorspace{Colorspace::yuv420};
+  Colorspace transparencyColorspace{Colorspace::yuv420};
   Colorspace depthColorspace{Colorspace::yuv420};
   Colorspace entitiesColorspace{Colorspace::yuv420};
 
   auto textureVideoFormat() const -> std::string;
+  auto transparencyVideoFormat() const -> std::string;
   auto geometryVideoFormat() const -> std::string;
   auto entitiesVideoFormat() const -> std::string;
 

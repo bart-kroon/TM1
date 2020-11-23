@@ -59,6 +59,8 @@ extern const std::string inputSequenceConfigPathFmt;
 extern const std::string inputTexturePathFmt;
 extern const std::string inputTextureVideoFramePathFmt;
 extern const std::string inputTextureVsbPathFmt;
+extern const std::string inputTransparencyPathFmt;
+extern const std::string inputTransparencyVideoFramePathFmt;
 extern const std::string inputTransparencyVsbPathFmt;
 extern const std::string inputViewportParamsPathFmt;
 
@@ -69,9 +71,11 @@ extern const std::string outputGeometryVideoDataPathFmt;
 extern const std::string outputMultiviewGeometryPathFmt;
 extern const std::string outputMultiviewOccupancyPathFmt;
 extern const std::string outputMultiviewTexturePathFmt;
+extern const std::string outputMultiviewTransparencyPathFmt;
 extern const std::string outputOccupancyVideoDataPathFmt;
 extern const std::string outputSequenceConfigPathFmt;
 extern const std::string outputTextureVideoDataPathFmt;
+extern const std::string outputTransparencyVideoDataPathFmt;
 extern const std::string outputViewportGeometryPathFmt;
 extern const std::string outputViewportTexturePathFmt;
 
@@ -100,6 +104,9 @@ auto loadGeometryVideoFrame(const Common::Json &config, const Placeholders &plac
 auto loadTextureVideoFrame(const Common::Json &config, const Placeholders &placeholders,
                            MivBitstream::AtlasId atlasId, uint32_t frameId, Common::Vec2i frameSize)
     -> Common::Texture444Frame;
+auto loadTransparencyVideoFrame(const Common::Json &config, const Placeholders &placeholders,
+                                MivBitstream::AtlasId atlasId, uint32_t frameId,
+                                Common::Vec2i frameSize) -> Common::Transparency10Frame;
 auto loadSequenceConfig(const Common::Json &config, const Placeholders &placeholders,
                         std::int32_t frameIndex) -> MivBitstream::SequenceConfig;
 auto tryLoadSequenceConfig(const Common::Json &config, const Placeholders &placeholders,

@@ -177,6 +177,7 @@ using Texture444Frame = Frame<YUV444P10>; // The renderer uses 4:4:4 internally
 using Depth10Frame = Frame<YUV400P10>;    // Decoder side
 using Depth16Frame = Frame<YUV400P16>;    // Encoder side
 using Occupancy10Frame = Frame<YUV400P10>;
+using Transparency10Frame = Frame<YUV400P10>;
 using Mask = Frame<YUV400P8>;
 using BlockToPatchMap = Frame<YUV400P16>;
 const auto unusedPatchId = UINT16_MAX;
@@ -190,6 +191,7 @@ template <typename FORMAT> struct TextureDepthFrame {
   Frame<FORMAT> depth;
   EntityMap entities{};
   Occupancy10Frame occupancy{};
+  Transparency10Frame transparency{};
 
   TextureDepthFrame() = default;
   TextureDepthFrame(TextureFrame texture_, Frame<FORMAT> depth_)

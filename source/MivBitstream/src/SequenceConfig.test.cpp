@@ -45,9 +45,11 @@ TEST_CASE("CameraConfig") {
     auto unit = TMIV::MivBitstream::CameraConfig{};
     CHECK(unit.viewParams == TMIV::MivBitstream::ViewParams{});
     CHECK(unit.bitDepthColor == 0);
+    CHECK(unit.bitDepthTransparency == 0);
     CHECK(unit.bitDepthDepth == 0);
     CHECK(unit.bitDepthEntities == 0);
     CHECK(unit.colorspace == TMIV::MivBitstream::CameraConfig::Colorspace::yuv420);
+    CHECK(unit.transparencyColorspace == TMIV::MivBitstream::CameraConfig::Colorspace::yuv420);
     CHECK(unit.depthColorspace == TMIV::MivBitstream::CameraConfig::Colorspace::yuv420);
     CHECK(unit.entitiesColorspace == TMIV::MivBitstream::CameraConfig::Colorspace::yuv420);
   }
@@ -72,9 +74,11 @@ TEST_CASE("CameraConfig") {
     auto unit = TMIV::MivBitstream::CameraConfig(json);
 
     CHECK(unit.bitDepthColor == 10);
+    CHECK(unit.bitDepthTransparency == 0);
     CHECK(unit.bitDepthDepth == 16);
     CHECK(unit.bitDepthEntities == 0);
     CHECK(unit.colorspace == TMIV::MivBitstream::CameraConfig::Colorspace::yuv420);
+    CHECK(unit.transparencyColorspace == TMIV::MivBitstream::CameraConfig::Colorspace::yuv420);
     CHECK(unit.depthColorspace == TMIV::MivBitstream::CameraConfig::Colorspace::yuv420);
     CHECK(unit.entitiesColorspace == TMIV::MivBitstream::CameraConfig::Colorspace::yuv420);
 
@@ -111,6 +115,7 @@ TEST_CASE("CameraConfig") {
 
       // NOTE(BK): Cannot use x == y because of floating-point conversions
       CHECK(unit.bitDepthColor == y.bitDepthColor);
+      CHECK(unit.bitDepthTransparency == y.bitDepthTransparency);
       CHECK(unit.bitDepthDepth == y.bitDepthDepth);
       CHECK(unit.bitDepthEntities == y.bitDepthEntities);
       CHECK(unit.colorspace == y.colorspace);
@@ -153,6 +158,7 @@ TEST_CASE("CameraConfig") {
 
       // NOTE(BK): Cannot use x == y because of floating-point conversions
       CHECK(unit.bitDepthColor == loadBack.bitDepthColor);
+      CHECK(unit.bitDepthTransparency == loadBack.bitDepthTransparency);
       CHECK(unit.bitDepthDepth == loadBack.bitDepthDepth);
       CHECK(unit.bitDepthEntities == loadBack.bitDepthEntities);
       CHECK(unit.colorspace == loadBack.colorspace);

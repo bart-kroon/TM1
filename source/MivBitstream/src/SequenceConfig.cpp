@@ -45,6 +45,9 @@ CameraConfig::CameraConfig(const Common::Json &config) {
   if (const auto &node = config.optional("BitDepthColor")) {
     bitDepthColor = node.as<int>();
   }
+  if (const auto &node = config.optional("BitDepthTransparency")) {
+    bitDepthTransparency = node.as<int>();
+  }
   if (const auto &node = config.optional("BitDepthDepth")) {
     bitDepthDepth = node.as<int>();
   }
@@ -69,6 +72,11 @@ auto yuv420pFormat(int bitDepth) {
 auto CameraConfig::textureVideoFormat() const -> std::string {
   assert(colorspace == Colorspace::yuv420);
   return yuv420pFormat(bitDepthColor);
+}
+
+auto CameraConfig::transparencyVideoFormat() const -> std::string {
+  assert(colorspace == Colorspace::yuv420);
+  return yuv420pFormat(bitDepthTransparency);
 }
 
 auto CameraConfig::geometryVideoFormat() const -> std::string {
@@ -96,6 +104,7 @@ CameraConfig::operator Common::Json() const {
 
 auto CameraConfig::operator==(const CameraConfig &other) const noexcept -> bool {
   return viewParams == other.viewParams && bitDepthColor == other.bitDepthColor &&
+         bitDepthTransparency == other.bitDepthTransparency &&
          bitDepthDepth == other.bitDepthDepth && bitDepthEntities == other.bitDepthEntities &&
          colorspace == other.colorspace && depthColorspace == other.depthColorspace &&
          entitiesColorspace == other.entitiesColorspace;

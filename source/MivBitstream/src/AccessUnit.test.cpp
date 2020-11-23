@@ -67,9 +67,12 @@ TEST_CASE("Convert AccessUnit to SequenceConfig") {
       for (const auto &camera : sc.cameras) {
         // NOTE(BK): Hard-coded in TMIV with TextureDepth10Frame
         CHECK(camera.bitDepthColor == 10);
+        CHECK(camera.bitDepthTransparency == 0);
         CHECK(camera.bitDepthDepth == 10);
         CHECK(camera.bitDepthEntities == 0);
         CHECK(camera.colorspace == TMIV::MivBitstream::CameraConfig::Colorspace::yuv420);
+        CHECK(camera.transparencyColorspace ==
+              TMIV::MivBitstream::CameraConfig::Colorspace::yuv420);
         CHECK(camera.depthColorspace == TMIV::MivBitstream::CameraConfig::Colorspace::yuv420);
         CHECK(camera.entitiesColorspace == TMIV::MivBitstream::CameraConfig::Colorspace::yuv420);
       }

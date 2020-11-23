@@ -57,6 +57,8 @@ const std::string inputSequenceConfigPathFmt = "inputSequenceConfigPathFmt";
 const std::string inputTexturePathFmt = "inputTexturePathFmt";
 const std::string inputTextureVideoFramePathFmt = "inputTextureVideoFramePathFmt";
 const std::string inputTextureVsbPathFmt = "inputTextureVideoSubBitstreamPathFmt";
+const std::string inputTransparencyPathFmt = "inputTransparencyPathFmt";
+const std::string inputTransparencyVideoFramePathFmt = "inputTransparencyVideoFramePathFmt";
 const std::string inputTransparencyVsbPathFmt = "inputTransparencyVideoSubBitstreamPathFmt";
 const std::string inputViewportParamsPathFmt = "inputViewportParamsPathFmt"s;
 
@@ -165,6 +167,15 @@ auto loadMultiviewFrame(const Common::Json &config, const Placeholders &placehol
                                  placeholders.contentId, placeholders.testId, name, frameSize.x(),
                                  frameSize.y(), camera.textureVideoFormat());
       frame[v].texture = loadFrame<Common::YUV420P10>(path, startFrame + frameIndex, frameSize);
+    }
+
+    if (const auto &node = config.optional(inputTransparencyPathFmt)) {
+      const auto path =
+          inputDir / fmt::format(node.as<std::string>(), placeholders.numberOfInputFrames,
+                                 placeholders.contentId, placeholders.testId, name, frameSize.x(),
+                                 frameSize.y(), camera.transparencyVideoFormat());
+      frame[v].transparency =
+          loadFrame<Common::YUV400P10>(path, startFrame + frameIndex, frameSize);
     }
 
     if (const auto &node = config.optional(inputGeometryPathFmt)) {

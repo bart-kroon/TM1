@@ -32,13 +32,28 @@ Clang 11 Debug:
     - linux
   script:
     - mkdir -p build && cd build
-    - cmake -DCMAKE_CXX_FLAGS="-Wall -Wextra -Wpedantic -Werror" -DCMAKE_BUILD_TYPE=Debug ..
+    - >
+      cmake
+      -DCMAKE_CXX_FLAGS="-Wall -Wextra -Wpedantic -Werror -fprofile-arcs -ftest-coverage"
+      -DCMAKE_BUILD_TYPE=Debug
+      ..
     - make -j $(nproc)
     - make -j $(nproc) test
     - cmake --build . --target clang_format
     - git diff
     - if [[ $(git diff) ]]; then echo "Formatting is wrong! See above."; return 1; fi
-    
+    - cd ..
+    - mkdir coverage_html
+    - >
+      gcovr build -r source --gcov-executable 'llvm-cov-11 gcov' -e '.*\.test\.cpp'
+      --xml cobertura.xml --xml-pretty --html-details coverage_html/index.html --print-summary
+  artifacts:
+    reports:
+      cobertura: cobertura.xml
+    paths:
+      - coverage_html/
+    expire_in: 5 days
+
 VC 16 Release:
   image: buildtools2019:latest
   tags:

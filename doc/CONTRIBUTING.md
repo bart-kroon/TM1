@@ -2,6 +2,80 @@
 
 Contributions are expected to be in the form of merge requests to the [MPEG-internal repository](http://mpegx.int-evry.fr/software/MPEG/MIV/RS/TM1.git). The [public repository](https://gitlab.com/mpeg-i-visual/tmiv.git) is a mirror of the internal repository's `master` branch.
 
+## Testing
+
+The following levels of testing have been defined:
+1. Continuous integration (CI)
+1. Integration test
+1. Compare against 3-frame CTC anchors
+1. Compare against 17-frame CTC anchors
+1. Compare against 97-frame CTC anchors
+
+### Continuous integration (CI)
+
+   - Complexity: approx. 6min @ 1 core, no I/O
+   - Runs automatically on on the default branch and on each new commit of a merge request
+   - Includes:
+      - Multiplatform build
+      - Static analysis
+      - Code formatting check
+      - Unit tests (target: `test`)
+      - Code coverage report
+   - Success criteria: fully automated
+
+### Integration test (target: `integration_test`)
+
+   - Complexity: approx. 8min @ 12 cores, writes 1 GB to disk
+   - To be run by either the developer or the code viewer run the test on their system
+   - Success criteria:
+      - When the test stops with an error then the test has failed
+      - Missing output files trigger an error
+      - Differences in output files need to be expected/explainable
+
+### Compare against further reduced frame (3) CTC anchors,
+
+   1. Complexity: much higher
+   1. TMIV encoder parameters include `-n 3 -p intraPeriod 2`
+   1. Anchors that are provenly unchanged (e.g. by the integration test) may be skipped
+   1. The developer uses his own scripts and system to run the test
+   1. The developer fills in and shares the CTC reporting template
+   1. The code reviewer does a small spot check to crosscheck the results
+
+### Compare against reduced-frame (17) CTC anchors
+
+   1. Complexity: much higher
+   1. Anchors that are provenly unchanged (e.g. by the integration test) may be skipped
+   1. The developer uses his own scripts and system to run the test
+   1. The developer fills in and shares the CTC reporting template
+   1. The code reviewer does a small spot check to crosscheck the results
+
+### Compare against full-frame (97) CTC anchors with 300-frame pose traces
+
+   1. Complexity: much higher
+   1. The developer uses his own scripts and system to run the test
+   1. The developer fills in and shares the CTC reporting template
+   1. The code reviewer does a small spot check to crosscheck the results
+
+### Appropriate level of testing
+
+The appropriate level of testing depends on the changes in the merge request, e.g.:
+  * Non-code change like manual: code reviewer reads through the changes
+  * Full code coverage of an isolated unit: CI is sufficient (no need for the code reviewer to clone the branch)
+  * Changes across units (incl. HLS) w/o change to YUV files: integration test
+  * Improved test model performance on a frame basis: 3 frames
+  * Improved test model performance with a temporal aspect: 17 frames
+  * Improved test model performance relating to intra periods or pose traces: 97 frames, incl. 300-frame pose traces
+  * New modes not covered by CTC anchor or integration test: provide a suitable new test
+
+### Dividing work into multiple merge requests
+
+When code has different levels of testability, it is often possible to split work in multiple merge requests. For instance, a new functionality may:
+1. include a new unit: CI is sufficient, 
+1. make some changes to the encoder w/o changing otuputs: integration test is sufficient,
+1. change or add configurations to enable the new functionality: relevant CTC anchor or a new test
+
+By splitting off the easy-to-test parts there is less uncertainty in the final MR. This will speed up the code review and improve the review quality.
+
 ## Semantic versioning of releases
 
 Releases have semantic versioning x.y.z:

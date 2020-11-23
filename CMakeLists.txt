@@ -60,6 +60,8 @@ add_custom_target(module_graph
         "-P"
         "${CMAKE_CURRENT_LIST_DIR}/cmake/module_graph.cmake")
 
+include(cmake/integration_test.cmake)
+
 # To use TMIV as a sub project, clone, build and install.
 # Then in the CMake GUI set TMIV_DIR to the lib/cmake/TMIV directory of the TMIV installation.
 # In the super project CMakeLists.txt use find_package(TMIV 7.1.0 REQUIRED)

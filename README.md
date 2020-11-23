@@ -6,6 +6,7 @@ Test Model for MPEG Immersive Video (TMIV)
 1. [Introduction](#introduction)
 1. [Scope](#scope)
 1. [Build and installation instructions](#build-and-installation-instructions)
+1. [Running the software tests](#running-the-software-tests)
 1. [Instructions to run TMIV](#instructions-to-run-tmiv)
 1. [Overview of TMIV configuration files](#overview-of-tmiv-configuration-files)
 1. [Instruction to use TMIV as a library](#instruction-to-use-tmiv-as-a-library)
@@ -164,6 +165,41 @@ For Visual Studio please:
 ## Installation result
 
 After installation, the TMIV executables `Encoder`, `Decoder` and `Renderer` will be available under the directory `/Workspace/tmiv_install/bin`. By default TMIV only builds the HM modules that are required for TMIV (`TLibCommon` and `TLibDecoder`). When `HM_BUILD_TAPPDECODER` and `HM_BUILD_TAPPENCODER` are selected, then the `TAppDecoder` and `TAppEncoder` tools respectively will also be installed to this directory.
+
+# Running the software tests
+
+In general and espescially when [contributing to TMIV](doc/CONTRIBUTING.md) it is a good idea to run the software tests before starting any (large) experiments. TMIV has two types of software tests that are integrated into the project.
+
+## Unit tests
+
+The unit tests check aspects of the software in isolation and without I/O. Running the 100+ unit tests only takes a couple of seconds in total.
+
+To run all unit tests, execute the following command inside your build directory:
+
+```shell
+cmake --build . --parallel --config Release --target test
+```
+
+For Visual Studio please substitute `test` for `RUN_TESTS`.
+
+## Integration tests
+
+The integration test runs the TMIV executables on real data to make sure that there are no runtime errors in a range of conditons, and it reports if any bitstreams or YUV files have changed compared to the reference (when provided).
+
+To run the integration test the following additional CMake variables are relevant:
+
+* `INTEGRATION_TEST_CONTENT_DIR` needs to be set to `/Content` (see [Running the TMIV encoder](#running-the-tmiv-encoder)).
+* `INTEGRATION_TEST_MAX_WORKERS` may be optionally set to limit the number of parallel processes.
+* `INTEGRATION_TEST_OUTPUT_DIR` defaults to `/tmiv_build/integration_test` but can be changed.
+* `INTEGRATION_TEST_REFERENCE_DIR`:
+   * is left empty to create the reference (typically of the development branch, e.g. `vx.y-dev`)
+   * is set equal to `INTEGRATION_TEST_OUTPUT_DIR` of that reference to compare against it.
+
+To run the test execute the following command inside your build directory:
+
+```shell
+cmake --build . --parallel --config Release --target integration_test
+```
 
 # Instructions to run TMIV
 

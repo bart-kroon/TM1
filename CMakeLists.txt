@@ -49,7 +49,7 @@ endforeach()
 add_custom_target(clang_format
     COMMAND
         ${CMAKE_COMMAND}
-        "-DANALYZE_DIR=${CMAKE_SOURCE_DIR}"
+        "-DANALYZE_DIR=${CMAKE_SOURCE_DIR}/source"
         "-P"
         "${CMAKE_CURRENT_LIST_DIR}/cmake/clang_format.cmake")
 

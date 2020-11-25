@@ -113,14 +113,14 @@ template <typename T> auto quat2euler(const Quaternion<T> &q) {
   constexpr auto two = T{2.F};
   constexpr auto halfPi = static_cast<T>(M_PI2);
 
-  const auto cYaw = one - two * (sqr(q.y()) + sqr(q.z()));
+  const auto cYaw = sqr(q.x()) - sqr(q.y()) - sqr(q.z()) + sqr(q.w());
   const auto sYaw = two * (q.w() * q.z() + q.x() * q.y());
   const auto yaw = std::atan2(sYaw, cYaw);
 
   const auto sPitch = two * (q.w() * q.y() - q.z() * q.x());
   const auto pitch = std::abs(sPitch) < one ? std::asin(sPitch) : std::copysign(halfPi, sPitch);
 
-  const auto cRoll = one - two * (sqr(q.x()) + sqr(q.y()));
+  const auto cRoll = -sqr(q.x()) - sqr(q.y()) + sqr(q.z()) + sqr(q.w());
   const auto sRoll = two * (q.w() * q.x() + q.y() * q.z());
   const auto roll = std::atan2(sRoll, cRoll);
 

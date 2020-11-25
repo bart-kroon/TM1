@@ -119,9 +119,15 @@ TEST_CASE("Quanternion<T>", "[quaternion]") {
     const auto euler = quat2euler(
         QuatD{0.0139933465964437, 0.0143176961628196, -0.2361122181516230, 0.9715195367398130});
 
-    CHECK(euler.x() == Approx(-0.4764713951)); // yaw [raw]
+    CHECK(euler.x() == Approx(-0.4764713951)); // yaw [rad]
     CHECK(euler.y() == Approx(0.0344346480));  // pitch [rad]
     CHECK(euler.z() == Approx(0.0204419943));  // roll [rad]
+
+    const auto euler2 = quat2euler(QuatD{-0.5, 0.5, 0.5, 0.5});
+
+    CHECK(euler2.x() == Approx(0));                    // yaw [rad]
+    CHECK(euler2.y() == Approx(1.570796326794896558)); // pitch [rad]
+    CHECK(euler2.z() == Approx(0));                    // roll [rad]
   }
 
   SECTION("Convert quaternion to rotation matrix") {

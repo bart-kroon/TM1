@@ -482,7 +482,7 @@ Unless specified otherwise, the base directory for these path formats is `inputD
   * 0: number of input frames,
   * 1: content ID,
   * 2: test ID.
-* **inputGeometryPathFmt**: the path format of the multiview uncompressed geometry (depth) data, consumed by the Multiplexer and Decoder, with placeholders:
+* **inputGeometryPathFmt**: the path format of the multiview uncompressed geometry (depth) data, consumed by the Encoder and Renderer, with placeholders:
   * 0: number of input frames,
   * 1: content ID,
   * 2: test ID,

@@ -188,6 +188,7 @@ class IntegrationTest:
 
     def testMivViewAnchor(self, executor):
         os.makedirs(os.path.join(self.testDir, 'V3/SD/QP3'), exist_ok=True)
+        os.makedirs(os.path.join(self.testDir, 'V3/SD/R0'), exist_ok=True)
 
         f1 = self.launchCommand(executor, [], [
             '{0}/bin/Encoder',
@@ -202,6 +203,20 @@ class IntegrationTest:
              'V3/SD/TMIV_V3_SD_geo_c01_1024x2176_yuv420p10le.yuv',
              'V3/SD/TMIV_V3_SD_tex_c00_2048x4352_yuv420p10le.yuv',
              'V3/SD/TMIV_V3_SD_tex_c01_2048x4352_yuv420p10le.yuv'])
+
+        # Test out-of-band video by skipping HM encoding and TMIV multiplexing stages
+        f5 = self.launchCommand(executor, [f1], [
+            '{0}/bin/Decoder',
+            '-c', '{1}/config/ctc/miv_view_anchor/V_4_TMIV_decode.json',
+            '-p', 'configDirectory', '{1}/config',
+            '-p', 'inputDirectory', '{3}',
+            '-p', 'outputDirectory', '{3}',
+            '-p', 'inputBitstreamPathFmt', 'V{{0}}/S{{1}}/TMIV_V{{0}}_S{{1}}.bit',
+            '-p', 'inputGeometryVideoFramePathFmt', 'V{{0}}/S{{1}}/TMIV_V{{0}}_S{{1}}_geo_c{{3:02}}_{{4}}x{{5}}_yuv420p10le.yuv',
+            '-p', 'inputTextureVideoFramePathFmt', 'V{{0}}/S{{1}}/TMIV_V{{0}}_S{{1}}_tex_c{{3:02}}_{{4}}x{{5}}_yuv420p10le.yuv',
+            '-n', '3', '-N', '3', '-s', 'D', '-r', 'R0', '-v', 'v14'],
+            '{3}/V3/SD/R0/V3_SD_R0_v14.log',
+            ['V3/SD/R0/V3_SD_R0_v14_tex_2048x1088_yuv420p10le.yuv'])       
 
         f2_1 = self.launchCommand(executor, [f1], [
             '{0}/bin/TAppEncoder',
@@ -271,7 +286,7 @@ class IntegrationTest:
             '{3}/V3/SD/QP3/V3_SD_QP3_p02.log',
             ['V3/SD/QP3/V3_SD_QP3_p02_tex_1920x1080_yuv420p10le.yuv'])
 
-        return [f4_1, f4_2, f4_3]
+        return [f4_1, f4_2, f4_3, f5]
 
     def testMivDsdeAnchor(self, executor):
         os.makedirs(os.path.join(self.testDir, 'G3/SN/QP3'), exist_ok=True)

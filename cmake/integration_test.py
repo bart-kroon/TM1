@@ -55,6 +55,8 @@ class IntegrationTest:
         self.gitCommand = None
         self.maxWorkers = None
         self.referenceDir = None
+        self.numComparisonMismatches = 0
+        self.numComparisonErrors = 0
 
         for i in range(5, len(argv), 2):
             if argv[i] == '-g':
@@ -82,6 +84,10 @@ class IntegrationTest:
             fG = self.testMivDsdeAnchor(executor)
             fR = self.testBestReference(executor)
             self.sync(fA + fV + fG + fR)
+
+        print('Comparison mismatches :', self.numComparisonMismatches)
+        print('Comparison errors     :', self.numComparisonErrors)
+        return int((0 < self.numComparisonMismatches) or (0 < self.numComparisonErrors))
 
     def inspectEnvironment(self):
         if self.gitCommand:
@@ -470,21 +476,22 @@ class IntegrationTest:
         assert(self.referenceDir)
         [matches, mismatches, errors] = filecmp.cmpfiles(
             self.testDir, self.referenceDir, outputFiles)
+        
         for match in matches:
             print('equal: {}'.format(match), flush=True)
         for mismatch in mismatches:
             print('MISMATCH: {}'.format(mismatch), flush=True)
         for error in errors:
             print('ERROR: {}'.format(error), flush=True)
-        if 0 < len(errors):
-            raise RuntimeError('Comparison error')
+        
+        self.numComparisonMismatches += len(mismatches)
+        self.numComparisonErrors += len(errors)
 
 
 if __name__ == '__main__':
     try:
         app = IntegrationTest(sys.argv)
-        app.run()
-        exit(0)
+        exit(app.run())
     except RuntimeError as e:
         print(e)
         exit(1)

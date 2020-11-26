@@ -51,13 +51,13 @@ public: // Decoder interface
   // Provide a frame server for out-of-band occupancy video data (OVD). OVD video sub bitstreams
   // within the bitstreams take precedence.
   using OccFrameServer = std::function<Common::Occupancy10Frame(
-      MivBitstream::AtlasId atlasId, std::uint32_t frameId, Common::Vec2i frameSize)>;
+      MivBitstream::AtlasId atlasId, std::int32_t frameIndex, Common::Vec2i frameSize)>;
   void setOccFrameServer(OccFrameServer value);
 
   // Provide a frame server for out-of-band geometry video data (GVD). GVD video sub bitstreams
   // within the bitstreams take precedence.
   using GeoFrameServer = std::function<Common::Depth10Frame(
-      MivBitstream::AtlasId atlasId, std::uint32_t frameId, Common::Vec2i frameSize)>;
+      MivBitstream::AtlasId atlasId, std::int32_t frameIndex, Common::Vec2i frameSize)>;
   void setGeoFrameServer(GeoFrameServer value);
 
   // Provide a frame server for out-of-band attribute video data (AVD). AVD video sub bitstreams
@@ -69,7 +69,7 @@ public: // Decoder interface
   // NOTE 2: This version of the test model only supports zero or one attributes, and if there is an
   //         attribute it has to be texture. This is evident from the AttrFrameServer signature.
   using AttrFrameServer = std::function<Common::Texture444Frame(
-      MivBitstream::AtlasId atlasId, std::uint32_t frameId, Common::Vec2i frameSize)>;
+      MivBitstream::AtlasId atlasId, std::int32_t frameIndex, Common::Vec2i frameSize)>;
   void setAttrFrameServer(AttrFrameServer value);
 
   auto operator()() -> std::optional<MivBitstream::AccessUnit>;

@@ -127,18 +127,27 @@ private:
   }
 
   void setFrameServers(MivDecoder &mivDecoder) const {
-    mivDecoder.setOccFrameServer(
-        [this](MivBitstream::AtlasId atlasId, uint32_t frameId, Common::Vec2i frameSize) {
-          return IO::loadOccupancyVideoFrame(json(), m_placeholders, atlasId, frameId, frameSize);
-        });
-    mivDecoder.setGeoFrameServer(
-        [this](MivBitstream::AtlasId atlasId, uint32_t frameId, Common::Vec2i frameSize) {
-          return IO::loadGeometryVideoFrame(json(), m_placeholders, atlasId, frameId, frameSize);
-        });
-    mivDecoder.setAttrFrameServer(
-        [this](MivBitstream::AtlasId atlasId, uint32_t frameId, Common::Vec2i frameSize) {
-          return IO::loadTextureVideoFrame(json(), m_placeholders, atlasId, frameId, frameSize);
-        });
+    mivDecoder.setOccFrameServer([this](MivBitstream::AtlasId atlasId, int32_t frameIndex,
+                                        Common::Vec2i frameSize) -> Common::Occupancy10Frame {
+      if (frameIndex < m_placeholders.numberOfInputFrames) {
+        return IO::loadOccupancyVideoFrame(json(), m_placeholders, atlasId, frameIndex, frameSize);
+      }
+      return Common::Depth10Frame{};
+    });
+    mivDecoder.setGeoFrameServer([this](MivBitstream::AtlasId atlasId, int32_t frameIndex,
+                                        Common::Vec2i frameSize) -> Common::Depth10Frame {
+      if (frameIndex < m_placeholders.numberOfInputFrames) {
+        return IO::loadGeometryVideoFrame(json(), m_placeholders, atlasId, frameIndex, frameSize);
+      }
+      return Common::Depth10Frame{};
+    });
+    mivDecoder.setAttrFrameServer([this](MivBitstream::AtlasId atlasId, int32_t frameIndex,
+                                         Common::Vec2i frameSize) -> Common::Texture444Frame {
+      if (frameIndex < m_placeholders.numberOfInputFrames) {
+        return IO::loadTextureVideoFrame(json(), m_placeholders, atlasId, frameIndex, frameSize);
+      }
+      return Common::Texture444Frame{};
+    });
   }
 
   void outputSequenceConfig(MivBitstream::SequenceConfig sc, std::int32_t foc) {

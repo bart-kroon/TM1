@@ -406,6 +406,7 @@ auto MivDecoder::decodePatchParamsList(size_t k, MivBitstream::PatchParamsList &
       if (asme.asme_patch_attribute_offset_flag()) {
         ppl[p].atlasPatchAttributeOffset(pdu.pdu_miv_extension().pdu_attribute_offset());
       }
+      ppl[p].pduInpaintFlag(pdu.pdu_miv_extension().pdu_inpaint_flag());
     }
   });
 

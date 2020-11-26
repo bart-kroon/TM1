@@ -421,8 +421,12 @@ private:
   // multiple times.
   void synthesizeViews(size_t index, const Common::TextureDepth16Frame &view,
                        const std::vector<size_t> &viewIds) {
+    const auto &vp = m_params.viewParamsList[index];
+    if (vp.isInpainted) {
+      std::cout << "Skipping inpainted view " << vp.name << '\n';
+    }
     auto [ivertices, triangles, attributes] =
-        unprojectPrunedView(view, m_params.viewParamsList[index], m_masks[index].getPlane(0));
+        unprojectPrunedView(view, vp, m_masks[index].getPlane(0));
 
     if (m_params.viewParamsList[index].isBasicView) {
       std::cout << "Basic view ";

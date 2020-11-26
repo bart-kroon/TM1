@@ -71,6 +71,10 @@ inline auto PatchParams::atlasPatchAttributeOffset() const noexcept {
   return *m_atlasPatchAttributeOffset;
 }
 
+constexpr auto PatchParams::pduInpaintFlag() const noexcept {
+  return m_pduInpaintFlag;
+}
+
 constexpr auto PatchParams::atlasPatch2dPosX(std::uint32_t value) noexcept -> PatchParams & {
   m_atlasPatch2dPosX = value;
   return *this;
@@ -138,6 +142,11 @@ inline auto PatchParams::atlasPatchAttributeOffset(Common::Vec3i value) noexcept
   return *this;
 }
 
+constexpr auto& PatchParams::pduInpaintFlag(bool value) noexcept {
+    m_pduInpaintFlag = value;
+    return *this;
+}
+
 inline auto PatchParams::operator==(const PatchParams &other) const -> bool {
   return atlasId == other.atlasId && atlasPatch2dPosX() == other.atlasPatch2dPosX() &&
          atlasPatch2dPosY() == other.atlasPatch2dPosY() &&
@@ -151,7 +160,8 @@ inline auto PatchParams::operator==(const PatchParams &other) const -> bool {
          atlasPatchOrientationIndex() == other.atlasPatchOrientationIndex() &&
          atlasPatchEntityId() == other.atlasPatchEntityId() &&
          atlasPatchDepthOccMapThreshold() == other.atlasPatchDepthOccMapThreshold() &&
-         atlasPatchAttributeOffset() == other.atlasPatchAttributeOffset();
+         atlasPatchAttributeOffset() == other.atlasPatchAttributeOffset() &&
+         pduInpaintFlag() == other.pduInpaintFlag();
 }
 
 constexpr auto PatchParams::isRotated() const noexcept {

@@ -31,36 +31,49 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_RENDERER_SUBBLOCKCULLER_H_
-#define _TMIV_RENDERER_SUBBLOCKCULLER_H_
+#ifndef _TMIV_RENDERER_PUSHPULL_H_
+#define _TMIV_RENDERER_PUSHPULL_H_
 
-#include <TMIV/Common/Json.h>
-#include <TMIV/Renderer/ICuller.h>
+#include <TMIV/Common/Frame.h>
 
 namespace TMIV::Renderer {
-
-auto choosePatch(const TMIV::MivBitstream::PatchParams &patch, const TMIV::MivBitstream::ViewParamsList &cameras, const TMIV::MivBitstream::ViewParams &target)-> bool;
-
-class SubBlockCuller : public ICuller {
+class PushPull {
 public:
-  SubBlockCuller(const Common::Json & /*unused*/, const Common::Json & /*unused*/);
-  SubBlockCuller(const SubBlockCuller &) = delete;
-  SubBlockCuller(SubBlockCuller &&) = default;
-  auto operator=(const SubBlockCuller &) -> SubBlockCuller & = delete;
-  auto operator=(SubBlockCuller &&) -> SubBlockCuller & = default;
-  ~SubBlockCuller() override = default;
+  template <typename PushFilter, typename PullFilter>
+  auto filter(const Common::Texture444Depth16Frame &frame, PushFilter &&pushFilter,
+              PullFilter &&pullFilter) -> const Common::Texture444Depth16Frame &;
 
-  // Do culling and update the block to patch map for a single atlas
-  [[nodiscard]] auto filterBlockToPatchMap(const Decoder::AccessUnit &frame,
-                                           const Decoder::AtlasAccessUnit &atlas,
-                                           const MivBitstream::ViewParams &viewportParams) const
-      -> Common::BlockToPatchMap override;
+  auto numLayers() const noexcept -> int;
+
+  auto layer(int i) const noexcept -> const Common::Texture444Depth16Frame &;
+
+  // View a texture+depth frame as a matrix of tuple values
+  static auto yuvd(const Common::Texture444Depth16Frame &frame);
+
+  // View a texture+depth frame as a matrix of tuple references
+  static auto yuvd(Common::Texture444Depth16Frame &frame);
+
+  template <typename PushFilter>
+  static void inplacePush(const Common::Texture444Depth16Frame &in,
+                          Common::Texture444Depth16Frame &out, PushFilter &&filter);
+
+  template <typename PullFilter>
+  static void inplacePull(const Common::Texture444Depth16Frame &in,
+                          Common::Texture444Depth16Frame &out, PullFilter &&filter) noexcept;
+
+  template <typename InMatrix, typename OutMatrix, typename PushFilter>
+  static void inplacePush(const InMatrix &&in, int wi, int hi, OutMatrix &&out, int wo, int ho,
+                          PushFilter &&filter) noexcept;
+
+  template <typename InMatrix, typename OutMatrix, typename PullFilter>
+  static void inplacePull(const InMatrix &&in, int wi, int hi, OutMatrix &&out, int wo, int ho,
+                          PullFilter &&filter) noexcept;
 
 private:
-  static void inplaceErasePatch(Common::BlockToPatchMap &patchMap,
-                                const MivBitstream::PatchParams &patch, std::uint16_t patchId,
-                                const MivBitstream::AtlasSequenceParameterSetRBSP &asps);
+  std::vector<Common::Texture444Depth16Frame> m_pyramid;
 };
 } // namespace TMIV::Renderer
+
+#include "PushPull.hpp"
 
 #endif

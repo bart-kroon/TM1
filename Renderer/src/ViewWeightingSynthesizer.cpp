@@ -145,6 +145,7 @@ private:
   float m_blendingFactor = 0.03F;
   float m_overloadFactor = 2.F;
   int m_filteringPass = 1;
+  int viewIdInpainted = -1;
 
 public:
   explicit Impl(const Common::Json &componentNode) {
@@ -173,6 +174,7 @@ public:
     const auto targetHelper = ProjectionHelper{viewportParams};
 
     // 0) Initialization
+    findInpaintedView(frame);
     computeCameraWeight(sourceHelperList, targetHelper);
     computeCameraVisibility(sourceHelperList, targetHelper);
     computeAngularDistortionPerSource(sourceHelperList);
@@ -217,10 +219,25 @@ public:
         MivBitstream::DepthTransform<16>{viewportParams.dq}.quantizeNormDisp(m_viewportVisibility,
                                                                              1)};
     viewport.first.filIInvalidWithNeutral(viewport.second);
+
     return viewport;
   }
 
 private:
+  void findInpaintedView(const Decoder::AccessUnit &frame) {
+    viewIdInpainted = -1;
+    for (const auto &atlas : frame.atlas) {
+      for (const auto &patchParams : atlas.patchParamsList) {
+        if (patchParams.pduInpaintFlag()) {
+          int idx = int(patchParams.atlasPatchProjectionId());
+          // support for single inpainted view
+          assert(viewIdInpainted == -1 || viewIdInpainted == idx);
+          viewIdInpainted = idx;
+        }
+      }
+    }
+  }
+
   void computeCameraWeight(const ProjectionHelperList &sourceHelperList,
                            const ProjectionHelper &targetHelper) {
     auto isTridimensional = [&]() -> bool {
@@ -243,7 +260,16 @@ private:
       const Common::Vec3f &viewportPosition = targetHelper.getViewingPosition();
       std::vector<float> cameraDistance;
 
-      for (const auto &helper : sourceHelperList) {
+      for (size_t viewId = 0u; viewId != sourceHelperList.size(); ++viewId) {
+
+        // inpainted view gets large distance to yield low weight
+        if (int(viewId) == viewIdInpainted) {
+          const float largeDistance = 1e3;
+          cameraDistance.push_back(largeDistance);
+          continue;
+        }
+
+        const auto &helper = sourceHelperList[viewId];
         const Common::Vec3f &cameraPosition = helper.getViewingPosition();
         Common::Vec3f cameraDirection = helper.getViewingDirection();
 
@@ -280,6 +306,7 @@ private:
       m_cameraWeight = {1.F};
     }
   }
+
   void computeCameraVisibility(const ProjectionHelperList &sourceHelperList,
                                const ProjectionHelper &targetHelper) {
     const unsigned N = 4;
@@ -321,10 +348,10 @@ private:
           break;
         }
       }
-
       m_cameraVisibility.emplace_back(0 < K);
     }
   }
+
   void computeAngularDistortionPerSource(const ProjectionHelperList &sourceHelperList) {
     m_cameraDistortion.resize(sourceHelperList.size(), 0.F);
 
@@ -360,6 +387,7 @@ private:
           [&](auto maskValue, float depthValue) { return 0 < maskValue ? depthValue : NAN; });
     }
   }
+
   void reprojectPrunedSource(const Decoder::AccessUnit &frame,
                              const ProjectionHelperList &sourceHelperList,
                              const ProjectionHelper &targetHelper) {
@@ -756,6 +784,7 @@ private:
           });
     }
   }
+
   void selectViewportDepth(bool trustDepth, const ProjectionHelper &targetHelper) {
     m_viewportVisibility.resize(targetHelper.getViewParams().ci.projectionPlaneSize().y(),
                                 targetHelper.getViewParams().ci.projectionPlaneSize().x());
@@ -765,7 +794,7 @@ private:
           std::vector<Common::Vec2f> stack;
 
           for (size_t viewId = 0; viewId < m_viewportDepth.size(); viewId++) {
-            if (m_cameraVisibility[viewId]) {
+            if (m_cameraVisibility[viewId] && int(viewId) != viewIdInpainted) {
               float z = m_viewportDepth[viewId](y, x);
 
               if (isValidDepth(z)) {
@@ -792,6 +821,7 @@ private:
               (0.f < bestCandidate.y()) ? (bestCandidate.x() / bestCandidate.y()) : 0.F;
         });
   }
+
   void filterVisibilityMap() {
     static const std::array<Common::Vec2i, 9> offsetList = {
         Common::Vec2i({-1, -1}), Common::Vec2i({0, -1}), Common::Vec2i({1, -1}),
@@ -848,6 +878,7 @@ private:
       swap(firstWrapper, secondWrapper);
     }
   }
+
   void computeShadingMap(const ProjectionHelperList &sourceHelperList,
                          const ProjectionHelper &targetHelper) {
     auto isProneToGhosting = [&](unsigned sourceId, const std::pair<Common::Vec2f, float> &p,
@@ -892,75 +923,100 @@ private:
 
     Common::parallel_for(
         m_viewportVisibility.width(), m_viewportVisibility.height(), [&](size_t y, size_t x) {
-          Common::Vec3f oColor{};
-          float oWeight = 0.F;
+          Common::Vec2f pn1{static_cast<float>(x) + 0.5F, static_cast<float>(y) + 0.5F};
+          bool missingData = !isValidDepth(m_viewportVisibility(y, x));
 
-          std::vector<Common::Vec2f> stack;
+          if (missingData && viewIdInpainted >= 0) {
 
-          for (size_t i = 0U; i < offsetList.size(); i++) {
-            int xo = std::clamp(static_cast<int>(x) + offsetList[i].x(), 0, w_last);
-            int yo = std::clamp(static_cast<int>(y) + offsetList[i].y(), 0, h_last);
+            auto &backgroundDepth = m_viewportDepth[viewIdInpainted];
+            int W = static_cast<int>(backgroundDepth.width());
+            int H = static_cast<int>(backgroundDepth.height());
 
-            float z = m_viewportVisibility(yo, xo);
+            auto z = backgroundDepth(y, x);
 
             if (isValidDepth(z)) {
-              float ksi = 1.F / (1.F + d2[i]);
-              insertWeightedDepthInStack(stack, ksi, z, m_blendingFactor);
+              auto P = targetHelper.doUnprojection(pn1, z);
+
+              auto [uvBg, zBg] = sourceHelperList[viewIdInpainted].doProjection(P);
+
+              // nearest neighbour fetching of low-res inpainted image
+              int j = std::clamp(int(round(uvBg.x())), 0, W - 1);
+              int i = std::clamp(int(round(uvBg.y())), 0, H - 1);
+              auto inpaintedBackgroundColor = m_sourceColor[viewIdInpainted](i, j);
+              m_viewportColor(y, x) = inpaintedBackgroundColor;
             }
-          }
+            m_viewportVisibility(y, x) = z;
 
-          const auto &O = targetHelper.getViewingPosition();
-          bool isOnViewportContour = (1U < stack.size());
+          } else {
 
-          for (const auto &element : stack) {
-            float z = element.x() / element.y();
+            Common::Vec3f oColor{};
+            float oWeight = 0.F;
 
-            Common::Vec2f pn1{static_cast<float>(x) + 0.5F, static_cast<float>(y) + 0.5F};
+            std::vector<Common::Vec2f> stack;
 
-            auto P = targetHelper.doUnprojection(pn1, z);
-            auto OP = unit(P - O);
+            for (size_t i = 0U; i < offsetList.size(); i++) {
+              int xo = std::clamp(static_cast<int>(x) + offsetList[i].x(), 0, w_last);
+              int yo = std::clamp(static_cast<int>(y) + offsetList[i].y(), 0, h_last);
 
-            for (size_t sourceId = 0U; sourceId < sourceHelperList.size(); sourceId++) {
-              if (m_cameraVisibility[sourceId]) {
-                auto pn2 = sourceHelperList[sourceId].doProjection(P);
+              float z = m_viewportVisibility(yo, xo);
 
-                if (isValidDepth(pn2.second) &&
-                    sourceHelperList[sourceId].isInsideViewport(pn2.first)) {
-                  if (isOnViewportContour ||
-                      !isProneToGhosting(static_cast<unsigned>(sourceId), pn2, OP)) {
-                    auto zRef = textureGather(m_sourceDepth[sourceId], pn2.first);
-                    auto cRef = textureGather(m_sourceColor[sourceId], pn2.first);
+              if (isValidDepth(z)) {
+                float ksi = 1.F / (1.F + d2[i]);
+                insertWeightedDepthInStack(stack, ksi, z, m_blendingFactor);
+              }
+            }
 
-                    Common::Vec2f q = {pn2.first.x() - 0.5F, pn2.first.y() - 0.5F};
-                    Common::Vec2f f = {q.x() - std::floor(q.x()), q.y() - std::floor(q.y())};
-                    Common::Vec2f fb = {1.F - f.x(), 1.F - f.y()};
+            const auto &O = targetHelper.getViewingPosition();
+            bool isOnViewportContour = (1U < stack.size());
 
-                    Common::Vec4f wColor{fb.x() * f.y(), f.x() * f.y(), f.x() * fb.y(),
-                                         fb.x() * fb.y()};
+            for (const auto &element : stack) {
+              float z = element.x() / element.y();
 
-                    for (unsigned j = 0; j < 4U; j++) {
-                      if (sourceHelperList[sourceId].isValidDepth(zRef[j])) {
-                        float nu = (zRef[j] - pn2.second) / (pn2.second * m_blendingFactor);
-                        float wDepth = element.y() / (1.F + nu * nu);
+              auto P = targetHelper.doUnprojection(pn1, z);
+              auto OP = unit(P - O);
 
-                        float w = (m_cameraWeight[sourceId] * wColor[j] * wDepth);
+              for (size_t sourceId = 0U; sourceId < sourceHelperList.size(); sourceId++) {
+                if (m_cameraVisibility[sourceId] && int(sourceId) != viewIdInpainted) {
+                  auto pn2 = sourceHelperList[sourceId].doProjection(P);
 
-                        oColor += w * cRef[j];
-                        oWeight += w;
+                  if (isValidDepth(pn2.second) &&
+                      sourceHelperList[sourceId].isInsideViewport(pn2.first)) {
+                    if (isOnViewportContour ||
+                        !isProneToGhosting(static_cast<unsigned>(sourceId), pn2, OP)) {
+                      auto zRef = textureGather(m_sourceDepth[sourceId], pn2.first);
+                      auto cRef = textureGather(m_sourceColor[sourceId], pn2.first);
+
+                      Common::Vec2f q = {pn2.first.x() - 0.5F, pn2.first.y() - 0.5F};
+                      Common::Vec2f f = {q.x() - std::floor(q.x()), q.y() - std::floor(q.y())};
+                      Common::Vec2f fb = {1.F - f.x(), 1.F - f.y()};
+
+                      Common::Vec4f wColor{fb.x() * f.y(), f.x() * f.y(), f.x() * fb.y(),
+                                           fb.x() * fb.y()};
+
+                      for (unsigned j = 0; j < 4U; j++) {
+                        if (sourceHelperList[sourceId].isValidDepth(zRef[j])) {
+                          float nu = (zRef[j] - pn2.second) / (pn2.second * m_blendingFactor);
+                          float wDepth = element.y() / (1.F + nu * nu);
+
+                          float w = (m_cameraWeight[sourceId] * wColor[j] * wDepth);
+
+                          oColor += w * cRef[j];
+                          oWeight += w;
+                        }
                       }
                     }
                   }
                 }
               }
             }
+
+            static const float eps = 1e-3F;
+
+            m_viewportColor(y, x) = (eps < oWeight) ? (oColor / oWeight)
+                                                    : (isValidDepth(m_viewportVisibility(y, x))
+                                                           ? Common::Vec3f{-1.F, -1.F, -1.F}
+                                                           : Common::Vec3f{});
           }
-
-          static const float eps = 1e-3F;
-
-          m_viewportColor(y, x) = (eps < oWeight) ? (oColor / oWeight)
-                                                  : (isValidDepth(m_viewportVisibility(y, x))
-                                                         ? Common::Vec3f{-1.F, -1.F, -1.F}
-                                                         : Common::Vec3f{});
         });
   }
 }; // namespace TMIV::Renderer

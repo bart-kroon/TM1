@@ -60,6 +60,9 @@ struct ViewParams {
   // Is this a basic view or an additional view?
   bool isBasicView{true};
 
+  // Is this view inpainted?
+  bool isInpainted{};
+
   auto printTo(std::ostream &stream, std::uint16_t viewId) const -> std::ostream &;
   auto operator==(const ViewParams &other) const -> bool;
   auto operator!=(const ViewParams &other) const -> bool { return !operator==(other); }

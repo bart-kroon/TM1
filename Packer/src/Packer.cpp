@@ -212,6 +212,8 @@ auto Packer::pack(const Common::SizeVector &atlasSizes, const Common::MaskList &
                       << cluster.getNumActivePixels() << " in atlas " << p.atlasId << std::endl;
           }
 
+          p.pduInpaintFlag(viewParamsList[cluster.getViewId()].isInpainted);
+
           atlasParamsVector.push_back(p);
           patchId++;
 

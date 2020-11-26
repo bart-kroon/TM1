@@ -4,10 +4,12 @@ add_library(ViewOptimizerLib
     "src/AbstractViewSelector.cpp"
     "src/BasicViewAllocator.cpp"
     "src/KMedoidsCost.cpp"
+    "src/ServerSideInpainter.cpp"
     "include/TMIV/ViewOptimizer/IViewOptimizer.h"
     "include/TMIV/ViewOptimizer/AbstractViewSelector.h"
     "include/TMIV/ViewOptimizer/BasicViewAllocator.h"
     "include/TMIV/ViewOptimizer/KMedoidsCost.h"
+    "include/TMIV/ViewOptimizer/ServerSideInpainter.h"
     )
 
 add_library(TMIV::ViewOptimizerLib
@@ -30,3 +32,17 @@ install(
 install(
     DIRECTORY "include/"
     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+
+if (CMAKE_TESTING_ENABLED)
+    add_executable(ViewOptimizerTest
+        "src/ServerSideInpainter.test.cpp"
+        )
+
+    target_link_libraries(ViewOptimizerTest
+        PRIVATE
+            Catch2::Catch2
+            TMIV::ViewOptimizerLib)
+
+    catch_discover_tests(ViewOptimizerTest)
+endif()
+

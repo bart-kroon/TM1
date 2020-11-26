@@ -31,35 +31,21 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_RENDERER_SUBBLOCKCULLER_H_
-#define _TMIV_RENDERER_SUBBLOCKCULLER_H_
+#ifndef _TMIV_RENDERER_PUSHPULLINPAINTER_H_
+#define _TMIV_RENDERER_PUSHPULLINPAINTER_H_
 
-#include <TMIV/Common/Json.h>
-#include <TMIV/Renderer/ICuller.h>
+#include <TMIV/Renderer/Inpainter.h>
 
 namespace TMIV::Renderer {
-
-auto choosePatch(const TMIV::MivBitstream::PatchParams &patch, const TMIV::MivBitstream::ViewParamsList &cameras, const TMIV::MivBitstream::ViewParams &target)-> bool;
-
-class SubBlockCuller : public ICuller {
+class PushPullInpainter : public IInpainter {
 public:
-  SubBlockCuller(const Common::Json & /*unused*/, const Common::Json & /*unused*/);
-  SubBlockCuller(const SubBlockCuller &) = delete;
-  SubBlockCuller(SubBlockCuller &&) = default;
-  auto operator=(const SubBlockCuller &) -> SubBlockCuller & = delete;
-  auto operator=(SubBlockCuller &&) -> SubBlockCuller & = default;
-  ~SubBlockCuller() override = default;
+  PushPullInpainter(const Common::Json & /* rootNode */, const Common::Json & /* componentNode */);
 
-  // Do culling and update the block to patch map for a single atlas
-  [[nodiscard]] auto filterBlockToPatchMap(const Decoder::AccessUnit &frame,
-                                           const Decoder::AtlasAccessUnit &atlas,
-                                           const MivBitstream::ViewParams &viewportParams) const
-      -> Common::BlockToPatchMap override;
+  void inplaceInpaint(Common::Texture444Depth10Frame & /* viewport */,
+                      const MivBitstream::ViewParams & /* metadata */) const override;
 
-private:
-  static void inplaceErasePatch(Common::BlockToPatchMap &patchMap,
-                                const MivBitstream::PatchParams &patch, std::uint16_t patchId,
-                                const MivBitstream::AtlasSequenceParameterSetRBSP &asps);
+  void inplaceInpaint(Common::Texture444Depth16Frame & /* viewport */,
+                      const MivBitstream::ViewParams & /* metadata */) const override;
 };
 } // namespace TMIV::Renderer
 

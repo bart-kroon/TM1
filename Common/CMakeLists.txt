@@ -18,6 +18,7 @@ add_library(CommonLib
     "include/TMIV/Common/Json.hpp"
     "include/TMIV/Common/Factory.h"
     "include/TMIV/Common/Thread.h"
+    "include/TMIV/Common/Filter.h"
     "include/TMIV/Common/Frame.h"
     "include/TMIV/Common/Frame.hpp"
     "include/TMIV/Common/Half.h"
@@ -60,6 +61,7 @@ if (CMAKE_TESTING_ENABLED)
         "src/Bitstream.test.cpp"
         "src/Quaternion.test.cpp"
         "src/Common.test.cpp"
+        "src/Filter.test.cpp"
         "src/Json.test.cpp"
         )
 

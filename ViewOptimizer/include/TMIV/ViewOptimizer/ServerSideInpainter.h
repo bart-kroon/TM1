@@ -31,36 +31,33 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_RENDERER_SUBBLOCKCULLER_H_
-#define _TMIV_RENDERER_SUBBLOCKCULLER_H_
+#ifndef _TMIV_VIEWOPTIMIZER_SERVERSIDEINPAINTER_H_
+#define _TMIV_VIEWOPTIMIZER_SERVERSIDEINPAINTER_H_
 
-#include <TMIV/Common/Json.h>
-#include <TMIV/Renderer/ICuller.h>
+#include <TMIV/ViewOptimizer/IViewOptimizer.h>
 
-namespace TMIV::Renderer {
+#include <memory>
 
-auto choosePatch(const TMIV::MivBitstream::PatchParams &patch, const TMIV::MivBitstream::ViewParamsList &cameras, const TMIV::MivBitstream::ViewParams &target)-> bool;
+using namespace std::string_literals;
 
-class SubBlockCuller : public ICuller {
+namespace TMIV::ViewOptimizer {
+class ServerSideInpainter : public IViewOptimizer {
 public:
-  SubBlockCuller(const Common::Json & /*unused*/, const Common::Json & /*unused*/);
-  SubBlockCuller(const SubBlockCuller &) = delete;
-  SubBlockCuller(SubBlockCuller &&) = default;
-  auto operator=(const SubBlockCuller &) -> SubBlockCuller & = delete;
-  auto operator=(SubBlockCuller &&) -> SubBlockCuller & = default;
-  ~SubBlockCuller() override = default;
+  ServerSideInpainter(const Common::Json &rootNode, const Common::Json &componentNode);
+  ServerSideInpainter(const ServerSideInpainter &) = delete;
+  ServerSideInpainter(ServerSideInpainter &&) = default;
+  ServerSideInpainter &operator=(const ServerSideInpainter &) = delete;
+  ServerSideInpainter &operator=(ServerSideInpainter &&) = default;
+  ~ServerSideInpainter();
 
-  // Do culling and update the block to patch map for a single atlas
-  [[nodiscard]] auto filterBlockToPatchMap(const Decoder::AccessUnit &frame,
-                                           const Decoder::AtlasAccessUnit &atlas,
-                                           const MivBitstream::ViewParams &viewportParams) const
-      -> Common::BlockToPatchMap override;
+  auto optimizeParams(MivBitstream::EncoderParams params)
+      -> const MivBitstream::EncoderParams & override;
+  [[nodiscard]] auto optimizeFrame(Common::MVD16Frame frame) const -> Common::MVD16Frame override;
 
 private:
-  static void inplaceErasePatch(Common::BlockToPatchMap &patchMap,
-                                const MivBitstream::PatchParams &patch, std::uint16_t patchId,
-                                const MivBitstream::AtlasSequenceParameterSetRBSP &asps);
+  class Impl;
+  std::unique_ptr<Impl> m_impl;
 };
-} // namespace TMIV::Renderer
+} // namespace TMIV::ViewOptimizer
 
 #endif

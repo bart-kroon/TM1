@@ -31,36 +31,51 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_RENDERER_SUBBLOCKCULLER_H_
-#define _TMIV_RENDERER_SUBBLOCKCULLER_H_
+#include <catch2/catch.hpp>
 
+#include <TMIV/Common/Factory.h>
 #include <TMIV/Common/Json.h>
-#include <TMIV/Renderer/ICuller.h>
+#include <TMIV/Renderer/PushPullInpainter.h>
 
-namespace TMIV::Renderer {
+TEST_CASE("Push-pull inpainter") {
+  SECTION("Construction") {
+    const auto rootNode = TMIV::Common::Json{};
+    const auto componentNode = TMIV::Common::Json{};
+    const auto inpainter = TMIV::Renderer::PushPullInpainter{rootNode, componentNode};
+  }
 
-auto choosePatch(const TMIV::MivBitstream::PatchParams &patch, const TMIV::MivBitstream::ViewParamsList &cameras, const TMIV::MivBitstream::ViewParams &target)-> bool;
+  auto &factory = TMIV::Common::Factory<TMIV::Renderer::IInpainter>::getInstance();
+  factory.registerAs<TMIV::Renderer::PushPullInpainter>("PushPullInpainter");
 
-class SubBlockCuller : public ICuller {
-public:
-  SubBlockCuller(const Common::Json & /*unused*/, const Common::Json & /*unused*/);
-  SubBlockCuller(const SubBlockCuller &) = delete;
-  SubBlockCuller(SubBlockCuller &&) = default;
-  auto operator=(const SubBlockCuller &) -> SubBlockCuller & = delete;
-  auto operator=(SubBlockCuller &&) -> SubBlockCuller & = default;
-  ~SubBlockCuller() override = default;
+  SECTION("Factory creation") {
+    const auto rootNode = TMIV::Common::Json{};
+    const auto componentNode = TMIV::Common::Json::parse(R"({
+    "InpainterMethod": "PushPullInpainter",
+    "PushPullInpainter": {}
+}
+)");
+    const auto inpainter = factory.create("Inpainter", rootNode, componentNode);
+  }
 
-  // Do culling and update the block to patch map for a single atlas
-  [[nodiscard]] auto filterBlockToPatchMap(const Decoder::AccessUnit &frame,
-                                           const Decoder::AtlasAccessUnit &atlas,
-                                           const MivBitstream::ViewParams &viewportParams) const
-      -> Common::BlockToPatchMap override;
+  SECTION("Inpaint frame") {
+    const auto w = 8;
+    const auto h = 5;
 
-private:
-  static void inplaceErasePatch(Common::BlockToPatchMap &patchMap,
-                                const MivBitstream::PatchParams &patch, std::uint16_t patchId,
-                                const MivBitstream::AtlasSequenceParameterSetRBSP &asps);
-};
-} // namespace TMIV::Renderer
+    auto frame = std::pair{TMIV::Common::Texture444Frame{w, h}, TMIV::Common::Depth16Frame{w, h}};
 
-#endif
+    frame.first.getPlane(0)(h - 1, 0) = 100;
+    frame.first.getPlane(1)(h - 1, 0) = 300;
+    frame.first.getPlane(2)(h - 1, 0) = 900;
+    frame.second.getPlane(0)(h - 1, 0) = 500;
+
+    frame.first.getPlane(0)(0, w - 1) = 200;
+    frame.first.getPlane(1)(0, w - 1) = 600;
+    frame.first.getPlane(2)(0, w - 1) = 0;
+    frame.second.getPlane(0)(0, w - 1) = 400;
+
+    TMIV::Renderer::PushPullInpainter{{}, {}}.inplaceInpaint(frame, {});
+
+    REQUIRE(std::all_of(frame.second.getPlane(0).cbegin(), frame.second.getPlane(0).cend(),
+                        [](auto x) { return 0 < x; }));
+  }
+}

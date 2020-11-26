@@ -193,6 +193,7 @@ public:
   [[nodiscard]] auto getDepthRange() const -> Common::Vec2f;
   [[nodiscard]] auto getRadialRange() const -> Common::Vec2f;
   [[nodiscard]] auto getPointCloud(unsigned N = 8) const -> PointCloud;
+  [[nodiscard]] auto isInpainted() const -> bool;
 };
 
 using ProjectionHelperList = typename ProjectionHelper::List;

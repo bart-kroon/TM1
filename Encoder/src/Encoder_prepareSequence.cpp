@@ -232,10 +232,11 @@ void Encoder::prepareIvau() {
           .asps_geometry_2d_bit_depth_minus1(gi.gi_geometry_2d_bit_depth_minus1());
     }
 
-    // Signalling pdu_entity_id requires ASME to be present
-    if (m_params.vps.vps_miv_extension_present_flag() &&
-        m_params.vme().vme_max_entities_minus1() > 0) {
-      // There is nothing entity-related in ASME so a reference is obtained but discarded
+    // Signalling pdu_entity_id or pdu_inpaint_flag requires ASME to be present
+    if ((m_params.vps.vps_miv_extension_present_flag() && m_params.vme().vme_max_entities_minus1() > 0) ||
+        std::any_of(m_params.viewParamsList.cbegin(), m_params.viewParamsList.cend(),
+                    [](const MivBitstream::ViewParams &vp) { return vp.isInpainted; })) {
+      // There is nothing related in ASME so a reference is obtained but discarded
       static_cast<void>(atlas.asme());
     }
 

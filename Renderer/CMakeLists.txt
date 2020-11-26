@@ -14,6 +14,9 @@ add_library(RendererLib
     "src/NoSynthesizer.cpp"
     "src/RecoverPrunedViews.cpp"
     "src/mapInputToOutputFrames.cpp"
+    "src/PushPull.h"
+    "src/PushPull.hpp"
+    "src/PushPullInpainter.cpp"
     "include/TMIV/Renderer/IRenderer.h"
     "include/TMIV/Renderer/IInpainter.h"
     "include/TMIV/Renderer/ISynthesizer.h"
@@ -39,6 +42,7 @@ add_library(RendererLib
     "include/TMIV/Renderer/NoSynthesizer.h"
     "include/TMIV/Renderer/RecoverPrunedViews.h"
     "include/TMIV/Renderer/mapInputToOutputFrames.h"
+    "include/TMIV/Renderer/PushPullInpainter.h"
     )
 
 add_library(TMIV::RendererLib
@@ -80,7 +84,12 @@ install(
     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 if (CMAKE_TESTING_ENABLED)
-    add_executable(RendererTest "src/Renderer.test.cpp")
+    add_executable(RendererTest
+        "src/Renderer.test.cpp"
+        "src/PushPull.test.cpp"
+        "src/PushPullInpainter.test.cpp"
+        "src/SubBlockCuller.test.cpp"
+        )
 
     target_link_libraries(RendererTest
         PRIVATE

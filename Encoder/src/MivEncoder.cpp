@@ -362,6 +362,9 @@ auto MivEncoder::atlasTileLayer(size_t k) const -> MivBitstream::AtlasTileLayerR
           aau.asps.asps_miv_extension().asme_patch_attribute_offset_flag()) {
         pdu.pdu_miv_extension().pdu_attribute_offset(pp.atlasPatchAttributeOffset());
       }
+      if (pp.pduInpaintFlag()) {
+        pdu.pdu_miv_extension().pdu_inpaint_flag(true);
+      }
       patchData.emplace_back(MivBitstream::AtduPatchMode::I_INTRA, pdu);
     }
   }

@@ -31,36 +31,56 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_RENDERER_SUBBLOCKCULLER_H_
-#define _TMIV_RENDERER_SUBBLOCKCULLER_H_
+#include <TMIV/Renderer/PushPullInpainter.h>
 
-#include <TMIV/Common/Json.h>
-#include <TMIV/Renderer/ICuller.h>
+#include "PushPull.h"
 
 namespace TMIV::Renderer {
+PushPullInpainter::PushPullInpainter(const Common::Json & /* rootNode */,
+                                     const Common::Json & /* componentNode */) {}
 
-auto choosePatch(const TMIV::MivBitstream::PatchParams &patch, const TMIV::MivBitstream::ViewParamsList &cameras, const TMIV::MivBitstream::ViewParams &target)-> bool;
+void PushPullInpainter::inplaceInpaint(Common::Texture444Depth10Frame & /* viewport */,
+                                       const MivBitstream::ViewParams & /* metadata */) const {
+  // TODO(BK): This method can be removed from IInpainter
+  abort();
+}
 
-class SubBlockCuller : public ICuller {
-public:
-  SubBlockCuller(const Common::Json & /*unused*/, const Common::Json & /*unused*/);
-  SubBlockCuller(const SubBlockCuller &) = delete;
-  SubBlockCuller(SubBlockCuller &&) = default;
-  auto operator=(const SubBlockCuller &) -> SubBlockCuller & = delete;
-  auto operator=(SubBlockCuller &&) -> SubBlockCuller & = default;
-  ~SubBlockCuller() override = default;
+namespace {
+using YUVD = std::tuple<uint16_t, uint16_t, uint16_t, uint16_t>;
 
-  // Do culling and update the block to patch map for a single atlas
-  [[nodiscard]] auto filterBlockToPatchMap(const Decoder::AccessUnit &frame,
-                                           const Decoder::AtlasAccessUnit &atlas,
-                                           const MivBitstream::ViewParams &viewportParams) const
-      -> Common::BlockToPatchMap override;
+constexpr auto occupant(const YUVD &x) -> bool { return 0 < std::get<3>(x); }
 
-private:
-  static void inplaceErasePatch(Common::BlockToPatchMap &patchMap,
-                                const MivBitstream::PatchParams &patch, std::uint16_t patchId,
-                                const MivBitstream::AtlasSequenceParameterSetRBSP &asps);
-};
+auto pushFilter(const std::array<YUVD, 4> &v) -> YUVD {
+  auto sum = std::array<int, 4>{};
+  auto count = 0;
+  for (int i = 0; i < 4; ++i) {
+    if (occupant(v[i])) {
+      sum[0] += std::get<0>(v[i]);
+      sum[1] += std::get<1>(v[i]);
+      sum[2] += std::get<2>(v[i]);
+      sum[3] += std::get<3>(v[i]);
+      ++count;
+    }
+  }
+  if (count == 0) {
+    static_assert(!occupant(YUVD{}));
+    return YUVD{};
+  }
+  return YUVD{(sum[0] + count / 2) / count, (sum[1] + count / 2) / count,
+              (sum[2] + count / 2) / count, (sum[3] + count / 2) / count};
+}
+} // namespace
+
+auto pullFilter(const std::array<YUVD, 4> &v, const YUVD &x) -> YUVD {
+  if (occupant(x)) {
+    return x;
+  }
+  return pushFilter(v);
+}
+
+void PushPullInpainter::inplaceInpaint(Common::Texture444Depth16Frame &viewport,
+                                       const MivBitstream::ViewParams & /* metadata */) const {
+  auto pushPull = PushPull{};
+  viewport = pushPull.filter(viewport, pushFilter, pullFilter);
+}
 } // namespace TMIV::Renderer
-
-#endif

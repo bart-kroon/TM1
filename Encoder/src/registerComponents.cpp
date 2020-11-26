@@ -40,9 +40,14 @@
 #include <TMIV/GeometryQuantizer/GeometryQuantizer.h>
 #include <TMIV/Packer/Packer.h>
 #include <TMIV/Pruner/HierarchicalPruner.h>
+#include <TMIV/Renderer/AdditiveSynthesizer.h>
+#include <TMIV/Renderer/Inpainter.h>
+#include <TMIV/Renderer/PushPullInpainter.h>
+#include <TMIV/Renderer/ViewWeightingSynthesizer.h>
 #include <TMIV/Pruner/NoPruner.h>
 #include <TMIV/ViewOptimizer/BasicViewAllocator.h>
 #include <TMIV/ViewOptimizer/NoViewOptimizer.h>
+#include <TMIV/ViewOptimizer/ServerSideInpainter.h>
 
 namespace TMIV::Encoder {
 void registerComponents() {
@@ -67,8 +72,17 @@ void registerComponents() {
   pruners.registerAs<Pruner::HierarchicalPruner>("HierarchicalPruner");
   pruners.registerAs<Pruner::NoPruner>("NoPruner");
 
+  auto &synthesizers = Common::Factory<Renderer::ISynthesizer>::getInstance();
+  synthesizers.registerAs<Renderer::AdditiveSynthesizer>("AdditiveSynthesizer");
+  synthesizers.registerAs<Renderer::ViewWeightingSynthesizer>("ViewWeightingSynthesizer");
+
+  auto &inpainters = Common::Factory<Renderer::IInpainter>::getInstance();
+  inpainters.registerAs<Renderer::Inpainter>("Inpainter");
+  inpainters.registerAs<Renderer::PushPullInpainter>("PushPullInpainter");
+
   auto &viewOptimizers = Common::Factory<ViewOptimizer::IViewOptimizer>::getInstance();
   viewOptimizers.registerAs<ViewOptimizer::BasicViewAllocator>("BasicViewAllocator");
   viewOptimizers.registerAs<ViewOptimizer::NoViewOptimizer>("NoViewOptimizer");
+  viewOptimizers.registerAs<ViewOptimizer::ServerSideInpainter>("ServerSideInpainter");
 }
 } // namespace TMIV::Encoder

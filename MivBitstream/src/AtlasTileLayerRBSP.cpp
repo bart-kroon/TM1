@@ -335,6 +335,8 @@ auto PduMivExtension::printTo(std::ostream &stream, unsigned tileId, size_t patc
     stream << "pdu_depth_occ_threshold[ " << tileId << " ][ " << patchIdx
            << " ]=" << pdu_depth_occ_threshold() << '\n';
   }
+  stream << "pdu_inpaint_flag[ " << tileId << " ][ " << patchIdx << " ]=" << std::boolalpha
+         << pdu_inpaint_flag() << '\n';
   return stream;
 }
 
@@ -361,6 +363,7 @@ auto PduMivExtension::decodeFrom(Common::InputBitstream &bitstream, const V3cPar
                          bitstream.readBits<uint16_t>(bits)}));
     }
   }
+  x.pdu_inpaint_flag(bitstream.getFlag());
   return x;
 }
 
@@ -386,6 +389,7 @@ void PduMivExtension::encodeTo(Common::OutputBitstream &bitstream, const V3cPara
     bitstream.writeBits(uint16_t(pdu_attribute_offset().y()), bits);
     bitstream.writeBits(uint16_t(pdu_attribute_offset().z()), bits);
   }
+  bitstream.putFlag(pdu_inpaint_flag());
 }
 
 auto PatchDataUnit::pdu_3d_range_d() const noexcept -> uint32_t {

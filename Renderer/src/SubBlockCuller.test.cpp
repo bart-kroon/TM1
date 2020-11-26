@@ -31,36 +31,65 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_RENDERER_SUBBLOCKCULLER_H_
-#define _TMIV_RENDERER_SUBBLOCKCULLER_H_
+#include <catch2/catch.hpp>
 
-#include <TMIV/Common/Json.h>
-#include <TMIV/Renderer/ICuller.h>
+#include <TMIV/Common/Common.h>
+#include <TMIV/Common/Vector.h>
+#include <TMIV/MivBitstream/PatchParamsList.h>
+#include <TMIV/MivBitstream/ViewParamsList.h>
+#include <TMIV/Renderer/SubBlockCuller.h>
+#include <TMIV/Renderer/reprojectPoints.h>
 
-namespace TMIV::Renderer {
 
-auto choosePatch(const TMIV::MivBitstream::PatchParams &patch, const TMIV::MivBitstream::ViewParamsList &cameras, const TMIV::MivBitstream::ViewParams &target)-> bool;
+#include <fstream>
+#include <iostream>
+#include <string>
+#include <regex>
+using namespace std;
 
-class SubBlockCuller : public ICuller {
-public:
-  SubBlockCuller(const Common::Json & /*unused*/, const Common::Json & /*unused*/);
-  SubBlockCuller(const SubBlockCuller &) = delete;
-  SubBlockCuller(SubBlockCuller &&) = default;
-  auto operator=(const SubBlockCuller &) -> SubBlockCuller & = delete;
-  auto operator=(SubBlockCuller &&) -> SubBlockCuller & = default;
-  ~SubBlockCuller() override = default;
+using namespace TMIV::Common;
+using namespace TMIV::MivBitstream;
+using namespace TMIV::Renderer;
+//using namespace TMIV::IO;
 
-  // Do culling and update the block to patch map for a single atlas
-  [[nodiscard]] auto filterBlockToPatchMap(const Decoder::AccessUnit &frame,
-                                           const Decoder::AtlasAccessUnit &atlas,
-                                           const MivBitstream::ViewParams &viewportParams) const
-      -> Common::BlockToPatchMap override;
+namespace {
 
-private:
-  static void inplaceErasePatch(Common::BlockToPatchMap &patchMap,
-                                const MivBitstream::PatchParams &patch, std::uint16_t patchId,
-                                const MivBitstream::AtlasSequenceParameterSetRBSP &asps);
-};
-} // namespace TMIV::Renderer
+  struct Pose {
+    Vec3f position;
+    Vec3f rotation;
+  };
 
-#endif
+  auto loadPoseFromCSV(istream &stream, int frameIndex) -> Pose {
+    string line;
+    getline(stream, line);
+
+    regex re_header(R"(\s*X\s*,\s*Y\s*,\s*Z\s*,\s*Yaw\s*,\s*Pitch\s*,\s*Roll\s*)");
+    if (!regex_match(line, re_header)) {
+      throw runtime_error("Format error in the pose trace header");
+    }
+
+    int currentFrameIndex = 0;
+    regex re_row("([^,]+),([^,]+),([^,]+),([^,]+),([^,]+),([^,]+)");
+    regex re_empty("\\s*");
+    bool trailing_empty_lines = false;
+
+    while (getline(stream, line)) {
+      smatch match;
+      if (!trailing_empty_lines && regex_match(line, match, re_row)) {
+        if (currentFrameIndex == frameIndex) {
+          return { Vec3f({stof(match[1].str()), stof(match[2].str()), stof(match[3].str())}),
+                  Vec3f({stof(match[4].str()), stof(match[5].str()), stof(match[6].str())}) };
+        }
+        { currentFrameIndex++; }
+      }
+      else if (regex_match(line, re_empty)) {
+        trailing_empty_lines = true;
+      }
+      else {
+        throw runtime_error("Format error in a pose trace row");
+      }
+    }
+
+    throw runtime_error("Unable to load required frame index " + to_string(frameIndex));
+  }
+} // namespace

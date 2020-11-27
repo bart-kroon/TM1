@@ -53,6 +53,7 @@ public:
     constructed = true;
   }
 
+  // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
   static inline bool constructed = false;
 
   auto optimizeParams(TMIV::MivBitstream::EncoderParams params)
@@ -80,11 +81,12 @@ public:
     constructed = true;
   }
 
+  // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
   static inline bool constructed = false;
 
   static inline std::function<void(const TMIV::Decoder::AccessUnit &frame,
                                    const TMIV::MivBitstream::ViewParams &viewportParams)>
-      inspect_renderFrame_input;
+      inspect_renderFrame_input; // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
 
   [[nodiscard]] auto renderFrame(const TMIV::Decoder::AccessUnit &frame,
                                  const TMIV::MivBitstream::ViewParams &viewportParams) const
@@ -110,7 +112,10 @@ public:
     constructed = true;
   }
 
+  // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
   static inline bool constructed = false;
+
+  // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
   static inline bool called = false;
 
   void inplaceInpaint(TMIV::Common::Texture444Depth10Frame & /* viewport */,

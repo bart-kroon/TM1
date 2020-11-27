@@ -260,7 +260,7 @@ private:
       const Common::Vec3f &viewportPosition = targetHelper.getViewingPosition();
       std::vector<float> cameraDistance;
 
-      for (size_t viewId = 0u; viewId != sourceHelperList.size(); ++viewId) {
+      for (size_t viewId = 0U; viewId != sourceHelperList.size(); ++viewId) {
 
         // inpainted view gets large distance to yield low weight
         if (int(viewId) == viewIdInpainted) {

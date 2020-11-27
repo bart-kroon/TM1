@@ -33,9 +33,11 @@
 
 #include <TMIV/Encoder/MivEncoder.h>
 
+#include <TMIV/MivBitstream/SeiRBSP.h>
 #include <TMIV/MivBitstream/verify.h>
 
 #include <sstream>
+#include <vector>
 
 namespace TMIV::Encoder {
 MivEncoder::MivEncoder(std::ostream &stream) : m_stream{stream} {
@@ -59,7 +61,7 @@ void MivEncoder::writeAccessUnit(const MivBitstream::EncoderParams &params) {
   // NOTE(#253): always write even for non-IRAP intra periods w/o view parameter updates
   //             to avoid frame order count ambiguity
   writeV3cUnit(MivBitstream::VuhUnitType::V3C_CAD, {}, commonAtlasSubBitstream());
-  m_viewParamsList = params.viewParamsList;
+  m_previouslySentMessages.viewParamsList = params.viewParamsList;
 
   for (uint8_t k = 0; k <= m_params.vps.vps_atlas_count_minus1(); ++k) {
     // Clause 7.4.5.3.2 of V-PCC DIS d85 [N19329]: AXPS regardless of atlas ID (and temporal ID)
@@ -124,6 +126,22 @@ auto MivEncoder::ptlMaxDecodesIdc() const -> MivBitstream::PtlMaxDecodesIdc {
 }
 
 namespace {
+template <typename Payload>
+auto encodeSeiMessage(const Payload &payload, MivBitstream::PayloadType payloadType)
+    -> MivBitstream::SeiMessage {
+  std::ostringstream subStream;
+  Common::OutputBitstream subBitstream{subStream};
+  payload.encodeTo(subBitstream);
+  return MivBitstream::SeiMessage{payloadType, subStream.str()};
+}
+
+void encodeSeiRbspToAsb(MivBitstream::AtlasSubBitstream &asb, const MivBitstream::SeiRBSP &seiRbsp,
+                        const MivBitstream::NalUnitHeader &nuh) {
+  std::ostringstream subStream;
+  seiRbsp.encodeTo(subStream);
+  asb.nal_units().emplace_back(nuh, subStream.str());
+}
+
 const auto nuhAsps = MivBitstream::NalUnitHeader{MivBitstream::NalUnitType::NAL_ASPS, 0, 1};
 const auto nuhAfps = MivBitstream::NalUnitHeader{MivBitstream::NalUnitType::NAL_AFPS, 0, 1};
 const auto nuhCasps = MivBitstream::NalUnitHeader{MivBitstream::NalUnitType::NAL_CASPS, 0, 1};
@@ -131,10 +149,14 @@ const auto nuhCaf = MivBitstream::NalUnitHeader{MivBitstream::NalUnitType::NAL_C
 const auto nuhCra = MivBitstream::NalUnitHeader{MivBitstream::NalUnitType::NAL_CRA, 0, 1};
 const auto nuhIdr = MivBitstream::NalUnitHeader{MivBitstream::NalUnitType::NAL_IDR_N_LP, 0, 1};
 const auto nuhIdrCaf = MivBitstream::NalUnitHeader{MivBitstream::NalUnitType::NAL_IDR_CAF, 0, 1};
+const auto nuhPrefixNsei =
+    MivBitstream::NalUnitHeader{MivBitstream::NalUnitType::NAL_PREFIX_NSEI, 0, 1};
 } // namespace
 
 auto MivEncoder::commonAtlasSubBitstream() -> MivBitstream::AtlasSubBitstream {
   auto asb = MivBitstream::AtlasSubBitstream{m_ssnh};
+
+  encodePrefixSeiMessages(asb);
 
   if (m_irap) {
     writeNalUnit(asb, nuhCasps, m_params.casps);
@@ -144,6 +166,7 @@ auto MivEncoder::commonAtlasSubBitstream() -> MivBitstream::AtlasSubBitstream {
     writeNalUnit(asb, nuhCaf, commonAtlasFrame(), m_params.vps, nuhCaf, std::vector{m_params.casps},
                  maxFrmOrderCntLsb());
   }
+
   return asb;
 }
 
@@ -159,18 +182,19 @@ auto MivEncoder::commonAtlasFrame() const -> MivBitstream::CommonAtlasFrameRBSP 
   if (m_irap) {
     came.miv_view_params_list() = mivViewParamsList();
   } else {
-    VERIFY_MIVBITSTREAM(m_viewParamsList.size() == m_params.viewParamsList.size());
+    const auto &viewParamsList = m_previouslySentMessages.viewParamsList;
+    VERIFY_MIVBITSTREAM(viewParamsList.size() == m_params.viewParamsList.size());
     came.came_update_extrinsics_flag(false);
     came.came_update_intrinsics_flag(false);
     came.came_update_depth_quantization_flag(false);
-    for (size_t i = 0; i < m_viewParamsList.size(); ++i) {
-      if (m_viewParamsList[i].ce != m_params.viewParamsList[i].ce) {
+    for (size_t i = 0; i < viewParamsList.size(); ++i) {
+      if (viewParamsList[i].ce != m_params.viewParamsList[i].ce) {
         came.came_update_extrinsics_flag(true);
       }
-      if (m_viewParamsList[i].ci != m_params.viewParamsList[i].ci) {
+      if (viewParamsList[i].ci != m_params.viewParamsList[i].ci) {
         came.came_update_intrinsics_flag(true);
       }
-      if (m_viewParamsList[i].dq != m_params.viewParamsList[i].dq) {
+      if (viewParamsList[i].dq != m_params.viewParamsList[i].dq) {
         came.came_update_depth_quantization_flag(true);
       }
     }
@@ -234,8 +258,8 @@ auto MivEncoder::mivViewParamsUpdateExtrinsics() const
     -> MivBitstream::MivViewParamsUpdateExtrinsics {
   auto mvpue = MivBitstream::MivViewParamsUpdateExtrinsics{};
   auto viewIdx = std::vector<uint16_t>{};
-  for (size_t v = 0; v < m_viewParamsList.size(); ++v) {
-    if (m_viewParamsList[v].ce != m_params.viewParamsList[v].ce) {
+  for (size_t v = 0; v < m_previouslySentMessages.viewParamsList.size(); ++v) {
+    if (m_previouslySentMessages.viewParamsList[v].ce != m_params.viewParamsList[v].ce) {
       viewIdx.push_back(static_cast<uint16_t>(v));
     }
   }
@@ -252,8 +276,8 @@ auto MivEncoder::mivViewParamsUpdateIntrinsics() const
     -> MivBitstream::MivViewParamsUpdateIntrinsics {
   auto mvpui = MivBitstream::MivViewParamsUpdateIntrinsics{};
   auto viewIdx = std::vector<uint16_t>{};
-  for (size_t v = 0; v < m_viewParamsList.size(); ++v) {
-    if (m_viewParamsList[v].ci != m_params.viewParamsList[v].ci) {
+  for (size_t v = 0; v < m_previouslySentMessages.viewParamsList.size(); ++v) {
+    if (m_previouslySentMessages.viewParamsList[v].ci != m_params.viewParamsList[v].ci) {
       viewIdx.push_back(static_cast<uint16_t>(v));
     }
   }
@@ -270,8 +294,8 @@ auto MivEncoder::mivViewParamsUpdateDepthQuantization() const
     -> MivBitstream::MivViewParamsUpdateDepthQuantization {
   auto mvpudq = MivBitstream::MivViewParamsUpdateDepthQuantization{};
   auto viewIdx = std::vector<uint16_t>{};
-  for (size_t v = 0; v < m_viewParamsList.size(); ++v) {
-    if (m_viewParamsList[v].dq != m_params.viewParamsList[v].dq) {
+  for (size_t v = 0; v < m_previouslySentMessages.viewParamsList.size(); ++v) {
+    if (m_previouslySentMessages.viewParamsList[v].dq != m_params.viewParamsList[v].dq) {
       viewIdx.push_back(static_cast<uint16_t>(v));
     }
   }
@@ -394,5 +418,20 @@ void MivEncoder::writeNalUnit(MivBitstream::AtlasSubBitstream &asb, MivBitstream
   std::ostringstream substream1;
   payload.encodeTo(substream1, std::forward<Args>(args)...);
   asb.nal_units().emplace_back(nuh, substream1.str());
+}
+
+void MivEncoder::encodePrefixSeiMessages(MivBitstream::AtlasSubBitstream &asb) {
+  std::vector<MivBitstream::SeiMessage> seiMessages{};
+  if (m_params.viewingSpace.has_value() &&
+      m_previouslySentMessages.viewingSpace != m_params.viewingSpace) {
+    seiMessages.emplace_back(
+        encodeSeiMessage(*m_params.viewingSpace, MivBitstream::PayloadType::viewing_space));
+    m_previouslySentMessages.viewingSpace = m_params.viewingSpace;
+  }
+
+  if (!seiMessages.empty()) {
+    MivBitstream::SeiRBSP seiRbsp{std::move(seiMessages)};
+    encodeSeiRbspToAsb(asb, seiRbsp, nuhPrefixNsei);
+  }
 }
 } // namespace TMIV::Encoder

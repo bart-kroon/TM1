@@ -41,11 +41,13 @@
 #include <TMIV/MivBitstream/GeometryUpscalingParameters.h>
 #include <TMIV/MivBitstream/SeiRBSP.h>
 #include <TMIV/MivBitstream/V3cUnit.h>
+#include <TMIV/MivBitstream/ViewingSpace.h>
 
 #include <TMIV/Common/Frame.h>
 
 #include <functional>
 #include <list>
+#include <optional>
 
 namespace TMIV::Decoder {
 using V3cUnitSource = std::function<std::optional<MivBitstream::V3cUnit>()>;
@@ -61,6 +63,7 @@ public:
     MivBitstream::CommonAtlasSequenceParameterSetRBSP casps;
     MivBitstream::CommonAtlasFrameRBSP caf;
     MivBitstream::GeometryUpscalingParameters gup;
+    std::optional<MivBitstream::ViewingSpace> vs{};
   };
 
   auto operator()() -> std::optional<AccessUnit>;

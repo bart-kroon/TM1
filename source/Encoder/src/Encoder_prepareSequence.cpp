@@ -61,6 +61,18 @@ void Encoder::prepareSequence(MivBitstream::EncoderParams sourceParams) {
                                           lumaSamplesPerAtlasSample * Common::sqr(m_blockSize));
   m_maxBlocksPerAtlas = m_maxLumaPictureSize / Common::sqr(m_blockSize);
 
+  // gcc-9 and gcc-10 give a false alarm here, so suppress that warning on this one line
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+#endif // __GNUC__
+
+  std::optional<MivBitstream::ViewingSpace> viewingSpace = sourceParams.viewingSpace;
+
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic pop
+#endif // __GNUC__
+
   // Transform source to transport view sequence parameters
   m_transportParams = m_viewOptimizer->optimizeParams(std::move(sourceParams));
 
@@ -86,7 +98,7 @@ void Encoder::prepareSequence(MivBitstream::EncoderParams sourceParams) {
       .casme_depth_quantization_params_present_flag(true)
       .casme_vui_params_present_flag(true)
       .vui_parameters(vuiParameters());
-  m_params.viewingSpace = m_transportParams.viewingSpace;
+  m_params.viewingSpace = std::move(viewingSpace);
 
   setGiGeometry3dCoordinatesBitdepthMinus1();
 

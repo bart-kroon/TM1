@@ -129,32 +129,32 @@ void MivDecoder::resetDecoder() {
 
   for (size_t k = 0; k <= m_au.vps.vps_atlas_count_minus1(); ++k) {
     const auto j = m_au.vps.vps_atlas_id(k);
-    auto vuh = MivBitstream::V3cUnitHeader{MivBitstream::VuhUnitType::V3C_AD};
-    vuh.vuh_atlas_id(j);
+    auto vuhCad = MivBitstream::V3cUnitHeader{MivBitstream::VuhUnitType::V3C_AD};
+    vuhCad.vuh_atlas_id(j);
     m_atlasDecoder.push_back(std::make_unique<AtlasDecoder>(
-        [this, vuh]() { return m_inputBuffer(vuh); }, vuh, m_au.vps, m_au.foc));
+        [this, vuhCad]() { return m_inputBuffer(vuhCad); }, vuhCad, m_au.vps, m_au.foc));
     m_au.atlas.emplace_back();
 
     if (m_au.vps.vps_occupancy_video_present_flag(j)) {
-      auto vuh = MivBitstream::V3cUnitHeader{MivBitstream::VuhUnitType::V3C_OVD};
-      vuh.vuh_v3c_parameter_set_id(m_au.vps.vps_v3c_parameter_set_id()).vuh_atlas_id(j);
-      m_occVideoDecoder.push_back(startVideoDecoder(vuh, m_totalOccVideoDecodingTime));
+      auto vuhOvd = MivBitstream::V3cUnitHeader{MivBitstream::VuhUnitType::V3C_OVD};
+      vuhOvd.vuh_v3c_parameter_set_id(m_au.vps.vps_v3c_parameter_set_id()).vuh_atlas_id(j);
+      m_occVideoDecoder.push_back(startVideoDecoder(vuhOvd, m_totalOccVideoDecodingTime));
     } else {
       m_occVideoDecoder.push_back(nullptr);
     }
 
     if (m_au.vps.vps_geometry_video_present_flag(j)) {
-      auto vuh = MivBitstream::V3cUnitHeader{MivBitstream::VuhUnitType::V3C_GVD};
-      vuh.vuh_v3c_parameter_set_id(m_au.vps.vps_v3c_parameter_set_id()).vuh_atlas_id(j);
-      m_geoVideoDecoder.push_back(startVideoDecoder(vuh, m_totalGeoVideoDecodingTime));
+      auto vuhGvd = MivBitstream::V3cUnitHeader{MivBitstream::VuhUnitType::V3C_GVD};
+      vuhGvd.vuh_v3c_parameter_set_id(m_au.vps.vps_v3c_parameter_set_id()).vuh_atlas_id(j);
+      m_geoVideoDecoder.push_back(startVideoDecoder(vuhGvd, m_totalGeoVideoDecodingTime));
     } else {
       m_geoVideoDecoder.push_back(nullptr);
     }
 
     if (m_au.vps.vps_attribute_video_present_flag(j)) {
-      auto vuh = MivBitstream::V3cUnitHeader{MivBitstream::VuhUnitType::V3C_AVD};
-      vuh.vuh_v3c_parameter_set_id(m_au.vps.vps_v3c_parameter_set_id()).vuh_atlas_id(j);
-      m_attrVideoDecoder.push_back(startVideoDecoder(vuh, m_totalAttrVideoDecodingTime));
+      auto vuhAvd = MivBitstream::V3cUnitHeader{MivBitstream::VuhUnitType::V3C_AVD};
+      vuhAvd.vuh_v3c_parameter_set_id(m_au.vps.vps_v3c_parameter_set_id()).vuh_atlas_id(j);
+      m_attrVideoDecoder.push_back(startVideoDecoder(vuhAvd, m_totalAttrVideoDecodingTime));
     } else {
       m_attrVideoDecoder.push_back(nullptr);
     }
@@ -233,6 +233,7 @@ auto MivDecoder::startVideoDecoder(const MivBitstream::V3cUnitHeader &vuh, doubl
 void MivDecoder::decodeCommonAtlas() {
   decodeViewParamsList();
   m_au.gup = m_commonAtlasAu->gup;
+  m_au.vs = m_commonAtlasAu->vs;
 }
 
 void MivDecoder::decodeViewParamsList() {

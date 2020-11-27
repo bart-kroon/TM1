@@ -417,16 +417,16 @@ auto ViewingSpaceEvaluator::computeInclusion(const MivBitstream::ViewingSpace &v
   ViewingSpaceEvaluation global;
   float accumulatedDirectionWeight = 0.F;
   for (const auto &e : viewingSpace.elementaryShapes) {
-    const auto eval = evaluate(e.second, viewingParams);
-    if (e.first == MivBitstream::ElementaryShapeOperation::add) {
+    const auto eval = evaluate(e.elementary_shape, viewingParams);
+    if (e.elementary_shape_operation == MivBitstream::ElementaryShapeOperation::add) {
       global.sdBoundary += eval.sdBoundary;
       global.sdGuardBand += eval.sdGuardBand;
     }
-    if (e.first == MivBitstream::ElementaryShapeOperation::subtract) {
+    if (e.elementary_shape_operation == MivBitstream::ElementaryShapeOperation::subtract) {
       global.sdBoundary -= eval.sdGuardBand;
       global.sdGuardBand -= eval.sdBoundary;
     }
-    if (e.first == MivBitstream::ElementaryShapeOperation::intersect) {
+    if (e.elementary_shape_operation == MivBitstream::ElementaryShapeOperation::intersect) {
       global.sdBoundary &= eval.sdBoundary;
       global.sdGuardBand &= eval.sdGuardBand;
     }

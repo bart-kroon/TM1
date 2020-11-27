@@ -69,19 +69,20 @@ auto ViewingSpace::vs_num_elementary_shapes_minus1() const noexcept -> std::size
 auto ViewingSpace::vs_elementary_shape_operation(std::size_t e) const noexcept
     -> ElementaryShapeOperation {
   VERIFY_MIVBITSTREAM(e <= vs_num_elementary_shapes_minus1());
-  return elementaryShapes[e].first;
+  return elementaryShapes[e].elementary_shape_operation;
 }
 
 auto ViewingSpace::elementary_shape(std::size_t e) const noexcept -> ElementaryShape {
   VERIFY_MIVBITSTREAM(e <= vs_num_elementary_shapes_minus1());
-  return elementaryShapes[e].second;
+  return elementaryShapes[e].elementary_shape;
 }
 
 auto operator<<(std::ostream &stream, const ViewingSpace &viewingSpace) -> std::ostream & {
   stream << "Viewing space:" << std::endl;
   for (const auto &s : viewingSpace.elementaryShapes) {
-    stream << (s.first == ElementaryShapeOperation::add ? "add " : "subtract ");
-    stream << '(' << s.second << ')' << std::endl;
+    stream << (s.elementary_shape_operation == ElementaryShapeOperation::add ? "add "
+                                                                             : "subtract ");
+    stream << '(' << s.elementary_shape << ')' << std::endl;
   }
   return stream;
 }
@@ -105,8 +106,8 @@ auto ViewingSpace::decodeFrom(Common::InputBitstream &stream) -> ViewingSpace {
 void ViewingSpace::encodeTo(Common::OutputBitstream &stream) const {
   stream.putUExpGolomb(vs_num_elementary_shapes_minus1());
   for (const auto &shape : elementaryShapes) {
-    stream.writeBits(shape.first, 2);
-    shape.second.encodeTo(stream);
+    stream.writeBits(shape.elementary_shape_operation, 2);
+    shape.elementary_shape.encodeTo(stream);
   }
 }
 
@@ -505,7 +506,7 @@ auto ViewingSpace::loadFromJson(const Common::Json &node, const Common::Json &co
     bool guardBandPresent{};
     bool rotationPresent{};
     bool directionConstraintPresent{};
-    for (auto &primitive : elementaryShape.second.primitives) {
+    for (auto &primitive : elementaryShape.elementary_shape.primitives) {
       guardBandPresent |= primitive.guardBandSize.has_value();
       rotationPresent |= primitive.rotation.has_value();
       if (primitive.viewingDirectionConstraint.has_value()) {
@@ -514,7 +515,7 @@ auto ViewingSpace::loadFromJson(const Common::Json &node, const Common::Json &co
             primitive.viewingDirectionConstraint.value().guardBandDirectionSize.has_value();
       }
     }
-    for (auto &primitive : elementaryShape.second.primitives) {
+    for (auto &primitive : elementaryShape.elementary_shape.primitives) {
       if (guardBandPresent && !primitive.guardBandSize.has_value()) {
         primitive.guardBandSize = 0.F;
       }

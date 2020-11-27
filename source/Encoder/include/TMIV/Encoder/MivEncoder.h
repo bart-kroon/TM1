@@ -48,17 +48,26 @@ public:
   void writeAccessUnit(const MivBitstream::EncoderParams &);
 
 private:
-  auto ptlMaxDecodesIdc() const -> MivBitstream::PtlMaxDecodesIdc;
+  struct PreviouslySentMessages {
+    MivBitstream::ViewParamsList viewParamsList{};
+    std::optional<MivBitstream::ViewingSpace> viewingSpace{};
+  };
+
+  [[nodiscard]] auto ptlMaxDecodesIdc() const -> MivBitstream::PtlMaxDecodesIdc;
   auto commonAtlasSubBitstream() -> MivBitstream::AtlasSubBitstream;
-  auto commonAtlasFrame() const -> MivBitstream::CommonAtlasFrameRBSP;
-  auto mivViewParamsList() const -> MivBitstream::MivViewParamsList;
-  auto mivViewParamsUpdateExtrinsics() const -> MivBitstream::MivViewParamsUpdateExtrinsics;
-  auto mivViewParamsUpdateIntrinsics() const -> MivBitstream::MivViewParamsUpdateIntrinsics;
-  auto mivViewParamsUpdateDepthQuantization() const
+  [[nodiscard]] auto commonAtlasFrame() const -> MivBitstream::CommonAtlasFrameRBSP;
+  [[nodiscard]] auto mivViewParamsList() const -> MivBitstream::MivViewParamsList;
+  [[nodiscard]] auto mivViewParamsUpdateExtrinsics() const
+      -> MivBitstream::MivViewParamsUpdateExtrinsics;
+  [[nodiscard]] auto mivViewParamsUpdateIntrinsics() const
+      -> MivBitstream::MivViewParamsUpdateIntrinsics;
+  [[nodiscard]] auto mivViewParamsUpdateDepthQuantization() const
       -> MivBitstream::MivViewParamsUpdateDepthQuantization;
   auto atlasSubBitstream(std::size_t k) -> MivBitstream::AtlasSubBitstream;
   [[nodiscard]] auto atlasTileLayer(std::size_t k) const -> MivBitstream::AtlasTileLayerRBSP;
-  constexpr auto maxFrmOrderCntLsb() const { return 1U << (m_log2MaxFrmOrderCntLsbMinus4 + 4U); }
+  [[nodiscard]] constexpr auto maxFrmOrderCntLsb() const {
+    return 1U << (m_log2MaxFrmOrderCntLsbMinus4 + 4U);
+  }
 
   template <typename Payload>
   void writeV3cUnit(MivBitstream::VuhUnitType vut, MivBitstream::AtlasId atlasId,
@@ -66,13 +75,14 @@ private:
   template <typename Payload, typename... Args>
   void writeNalUnit(MivBitstream::AtlasSubBitstream &asb, MivBitstream::NalUnitHeader nuh,
                     Payload &&payload, Args &&...args);
+  void encodePrefixSeiMessages(MivBitstream::AtlasSubBitstream &asb);
 
   std::ostream &m_stream;
   MivBitstream::SampleStreamV3cHeader m_ssvh{2};
   MivBitstream::SampleStreamNalHeader m_ssnh{2};
   MivBitstream::EncoderParams m_params;
+  PreviouslySentMessages m_previouslySentMessages{};
   bool m_irap{true};
-  MivBitstream::ViewParamsList m_viewParamsList;
   uint8_t m_log2MaxFrmOrderCntLsbMinus4{};
   uint16_t m_frmOrderCntLsb{};
 };

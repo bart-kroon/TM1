@@ -50,9 +50,6 @@ namespace TMIV::MivBitstream {
 using Common::InputBitstream;
 using Common::OutputBitstream;
 
-struct PrimitiveShape;
-struct ElementaryShape;
-
 enum class PrimitiveShapeType {
   cuboid = 0,
   spheroid = 1,
@@ -69,69 +66,6 @@ enum class ElementaryShapeOperation {
   subtract = 1,
   intersect = 2
 }; // 23090-12: vs_elementary_shape_operation[ e ]
-
-using ElementaryShapeVector = std::vector<std::pair<ElementaryShapeOperation, ElementaryShape>>;
-
-// 23090-12: viewing_space( )
-struct ViewingSpace {
-  [[nodiscard]] auto vs_num_elementary_shapes_minus1() const noexcept -> std::size_t;
-  [[nodiscard]] auto vs_elementary_shape_operation(std::size_t e) const noexcept
-      -> ElementaryShapeOperation;
-  [[nodiscard]] auto elementary_shape(std::size_t e) const noexcept -> ElementaryShape;
-
-  ElementaryShapeVector elementaryShapes;
-
-  friend auto operator<<(std::ostream &stream, const ViewingSpace &viewingSpace) -> std::ostream &;
-  auto operator==(const ViewingSpace &other) const -> bool;
-  auto operator!=(const ViewingSpace &other) const -> bool { return !operator==(other); }
-
-  static auto decodeFrom(Common::InputBitstream &stream) -> ViewingSpace;
-  void encodeTo(Common::OutputBitstream &stream) const;
-
-  static auto loadFromJson(const Common::Json &node, const Common::Json &config) -> ViewingSpace;
-};
-
-using PrimitiveShapeVector = std::vector<PrimitiveShape>;
-
-// 23090-12: elementary_shape( e )
-struct ElementaryShape {
-  [[nodiscard]] auto es_num_primitive_shapes_minus1() const noexcept -> std::uint8_t;
-  [[nodiscard]] constexpr auto es_primitive_shape_operation() const noexcept
-      -> PrimitiveShapeOperation;
-  [[nodiscard]] auto es_guard_band_present_flag() const noexcept -> bool;
-  [[nodiscard]] auto es_primitive_orientation_present_flag() const noexcept -> bool;
-  [[nodiscard]] auto es_viewing_direction_constraint_present_flag() const noexcept -> bool;
-  [[nodiscard]] auto es_camera_inferred_flag() const noexcept -> bool;
-  [[nodiscard]] auto es_view_idx(int s) const noexcept -> unsigned;
-  [[nodiscard]] auto es_primitive_shape_type(int s) const noexcept -> PrimitiveShapeType;
-  [[nodiscard]] auto es_guard_band_size(int s) const noexcept -> float;
-  [[nodiscard]] auto es_primitive_shape_quat_x(int s) const noexcept -> float;
-  [[nodiscard]] auto es_primitive_shape_quat_y(int s) const noexcept -> float;
-  [[nodiscard]] auto es_primitive_shape_quat_z(int s) const noexcept -> float;
-  [[nodiscard]] auto es_guard_band_direction_size(int s) const noexcept -> float;
-  [[nodiscard]] auto es_primitive_shape_viewing_direction_quat_x_center(int s) const noexcept
-      -> float;
-  [[nodiscard]] auto es_primitive_shape_viewing_direction_quat_y_center(int s) const noexcept
-      -> float;
-  [[nodiscard]] auto es_primitive_shape_viewing_direction_quat_z_center(int s) const noexcept
-      -> float;
-  [[nodiscard]] auto es_primitive_shape_viewing_direction_yaw_range(int s) const noexcept -> float;
-  [[nodiscard]] auto es_primitive_shape_viewing_direction_pitch_range(int s) const noexcept
-      -> float;
-
-  PrimitiveShapeVector primitives{};
-  PrimitiveShapeOperation primitiveOperation{};
-  std::vector<int> inferringViews{};
-
-  friend auto operator<<(std::ostream &stream, const ElementaryShape &shape) -> std::ostream &;
-  auto operator==(const ElementaryShape &other) const -> bool;
-  auto operator!=(const ElementaryShape &other) const -> bool { return !operator==(other); }
-
-  static auto decodeFrom(Common::InputBitstream &stream) -> ElementaryShape;
-  void encodeTo(Common::OutputBitstream &stream) const;
-
-  static auto loadFromJson(const Common::Json &node, const Common::Json &config) -> ElementaryShape;
-};
 
 // 23090-12: cuboid_primitive( e, s )
 struct Cuboid {
@@ -223,7 +157,7 @@ struct Halfspace {
 };
 
 struct PrimitiveShape {
-  std::variant<Cuboid, Spheroid, Halfspace> primitive;
+  std::variant<Cuboid, Spheroid, Halfspace> primitive{};
 
   [[nodiscard]] auto shapeType() const -> PrimitiveShapeType;
 
@@ -242,7 +176,7 @@ struct PrimitiveShape {
       return !operator==(other);
     }
   };
-  std::optional<ViewingDirectionConstraint> viewingDirectionConstraint;
+  std::optional<ViewingDirectionConstraint> viewingDirectionConstraint{};
 
   friend auto operator<<(std::ostream &stream, const PrimitiveShape &shape) -> std::ostream &;
   auto operator==(const PrimitiveShape &other) const -> bool;
@@ -264,6 +198,83 @@ inline auto PrimitiveShape::shapeType() const -> PrimitiveShapeType {
   }
   abort();
 }
+
+using PrimitiveShapeVector = std::vector<PrimitiveShape>;
+
+// 23090-12: elementary_shape( e )
+struct ElementaryShape {
+  [[nodiscard]] auto es_num_primitive_shapes_minus1() const noexcept -> std::uint8_t;
+  [[nodiscard]] constexpr auto es_primitive_shape_operation() const noexcept
+      -> PrimitiveShapeOperation;
+  [[nodiscard]] auto es_guard_band_present_flag() const noexcept -> bool;
+  [[nodiscard]] auto es_primitive_orientation_present_flag() const noexcept -> bool;
+  [[nodiscard]] auto es_viewing_direction_constraint_present_flag() const noexcept -> bool;
+  [[nodiscard]] auto es_camera_inferred_flag() const noexcept -> bool;
+  [[nodiscard]] auto es_view_idx(int s) const noexcept -> unsigned;
+  [[nodiscard]] auto es_primitive_shape_type(int s) const noexcept -> PrimitiveShapeType;
+  [[nodiscard]] auto es_guard_band_size(int s) const noexcept -> float;
+  [[nodiscard]] auto es_primitive_shape_quat_x(int s) const noexcept -> float;
+  [[nodiscard]] auto es_primitive_shape_quat_y(int s) const noexcept -> float;
+  [[nodiscard]] auto es_primitive_shape_quat_z(int s) const noexcept -> float;
+  [[nodiscard]] auto es_guard_band_direction_size(int s) const noexcept -> float;
+  [[nodiscard]] auto es_primitive_shape_viewing_direction_quat_x_center(int s) const noexcept
+      -> float;
+  [[nodiscard]] auto es_primitive_shape_viewing_direction_quat_y_center(int s) const noexcept
+      -> float;
+  [[nodiscard]] auto es_primitive_shape_viewing_direction_quat_z_center(int s) const noexcept
+      -> float;
+  [[nodiscard]] auto es_primitive_shape_viewing_direction_yaw_range(int s) const noexcept -> float;
+  [[nodiscard]] auto es_primitive_shape_viewing_direction_pitch_range(int s) const noexcept
+      -> float;
+
+  PrimitiveShapeVector primitives{};
+  PrimitiveShapeOperation primitiveOperation{};
+  std::vector<int> inferringViews{};
+
+  friend auto operator<<(std::ostream &stream, const ElementaryShape &shape) -> std::ostream &;
+  auto operator==(const ElementaryShape &other) const -> bool;
+  auto operator!=(const ElementaryShape &other) const -> bool { return !operator==(other); }
+
+  static auto decodeFrom(Common::InputBitstream &stream) -> ElementaryShape;
+  void encodeTo(Common::OutputBitstream &stream) const;
+
+  static auto loadFromJson(const Common::Json &node, const Common::Json &config) -> ElementaryShape;
+};
+
+struct ElementaryShapeAndOperation {
+  ElementaryShapeAndOperation() = default;
+  ElementaryShapeAndOperation(ElementaryShapeOperation o, ElementaryShape e)
+      : elementary_shape{std::move(e)}, elementary_shape_operation{o} {}
+
+  auto operator==(const ElementaryShapeAndOperation &other) const -> bool {
+    return (elementary_shape == other.elementary_shape) &&
+           (elementary_shape_operation == other.elementary_shape_operation);
+  }
+
+  ElementaryShape elementary_shape{};
+  ElementaryShapeOperation elementary_shape_operation{};
+};
+
+using ElementaryShapeVector = std::vector<ElementaryShapeAndOperation>;
+
+// 23090-12: viewing_space( )
+struct ViewingSpace {
+  [[nodiscard]] auto vs_num_elementary_shapes_minus1() const noexcept -> std::size_t;
+  [[nodiscard]] auto vs_elementary_shape_operation(std::size_t e) const noexcept
+      -> ElementaryShapeOperation;
+  [[nodiscard]] auto elementary_shape(std::size_t e) const noexcept -> ElementaryShape;
+
+  ElementaryShapeVector elementaryShapes{};
+
+  friend auto operator<<(std::ostream &stream, const ViewingSpace &viewingSpace) -> std::ostream &;
+  auto operator==(const ViewingSpace &other) const -> bool;
+  auto operator!=(const ViewingSpace &other) const -> bool { return !operator==(other); }
+
+  static auto decodeFrom(Common::InputBitstream &stream) -> ViewingSpace;
+  void encodeTo(Common::OutputBitstream &stream) const;
+
+  static auto loadFromJson(const Common::Json &node, const Common::Json &config) -> ViewingSpace;
+};
 
 } // namespace TMIV::MivBitstream
 

@@ -142,6 +142,7 @@ void CommonAtlasFrameRBSP::encodeTo(std::ostream &stream, const V3cParameterSet 
                                     const NalUnitHeader &nuh,
                                     const std::vector<CommonAtlasSequenceParameterSetRBSP> &caspsV,
                                     unsigned maxCommonAtlasFrmOrderCntLsb) const {
+  VERIFY_V3CBITSTREAM(0 < maxCommonAtlasFrmOrderCntLsb);
   Common::OutputBitstream bitstream{stream};
 
   bitstream.writeBits(caf_common_atlas_sequence_parameter_set_id(), 4);

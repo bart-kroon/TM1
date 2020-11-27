@@ -304,10 +304,7 @@ auto ProjectionHelper::getPointCloud(unsigned N) const -> PointCloud {
   return pointCloud;
 }
 
-auto ProjectionHelper::isInpainted() const -> bool
-{
-  return m_viewParams.get().isInpainted;
-}
+auto ProjectionHelper::isInpainted() const -> bool { return m_viewParams.get().isInpainted; }
 
 auto getPointCloudList(const ProjectionHelperList &sourceHelperList, unsigned N) -> PointCloudList {
   PointCloudList pointCloudList;

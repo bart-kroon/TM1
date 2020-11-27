@@ -71,9 +71,7 @@ inline auto PatchParams::atlasPatchAttributeOffset() const noexcept {
   return *m_atlasPatchAttributeOffset;
 }
 
-constexpr auto PatchParams::atlasPatchInpaintFlag() const noexcept {
-  return m_pduInpaintFlag;
-}
+constexpr auto PatchParams::atlasPatchInpaintFlag() const noexcept { return m_pduInpaintFlag; }
 
 constexpr auto PatchParams::atlasPatch2dPosX(std::uint32_t value) noexcept -> PatchParams & {
   m_atlasPatch2dPosX = value;
@@ -142,9 +140,9 @@ inline auto PatchParams::atlasPatchAttributeOffset(Common::Vec3i value) noexcept
   return *this;
 }
 
-constexpr auto& PatchParams::atlasPatchInpaintFlag(bool value) noexcept {
-    m_pduInpaintFlag = value;
-    return *this;
+constexpr auto &PatchParams::atlasPatchInpaintFlag(bool value) noexcept {
+  m_pduInpaintFlag = value;
+  return *this;
 }
 
 inline auto PatchParams::operator==(const PatchParams &other) const -> bool {

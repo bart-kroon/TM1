@@ -40,11 +40,11 @@
 #include <TMIV/GeometryQuantizer/GeometryQuantizer.h>
 #include <TMIV/Packer/Packer.h>
 #include <TMIV/Pruner/HierarchicalPruner.h>
+#include <TMIV/Pruner/NoPruner.h>
 #include <TMIV/Renderer/AdditiveSynthesizer.h>
 #include <TMIV/Renderer/Inpainter.h>
 #include <TMIV/Renderer/PushPullInpainter.h>
 #include <TMIV/Renderer/ViewWeightingSynthesizer.h>
-#include <TMIV/Pruner/NoPruner.h>
 #include <TMIV/ViewOptimizer/BasicViewAllocator.h>
 #include <TMIV/ViewOptimizer/NoViewOptimizer.h>
 #include <TMIV/ViewOptimizer/ServerSideInpainter.h>

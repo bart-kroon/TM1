@@ -148,7 +148,7 @@ TEST_CASE("inplacePull") {
     auto in = std::pair{TMIV::Common::Texture444Frame{(w + 1) / 2, (h + 1) / 2},
                         TMIV::Common::Depth16Frame{(w + 1) / 2, (h + 1) / 2}};
     auto out = std::pair{TMIV::Common::Texture444Frame{w, h}, TMIV::Common::Depth16Frame{w, h}};
-    TMIV::Renderer::PushPull::inplacePull(in, out, [&count](const auto &... /* unused */) {
+    TMIV::Renderer::PushPull::inplacePull(in, out, [&count](const auto &.../* unused */) {
       ++count;
       return YUVD{};
     });

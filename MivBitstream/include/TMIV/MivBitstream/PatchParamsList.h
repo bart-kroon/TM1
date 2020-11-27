@@ -78,7 +78,7 @@ struct PatchParams {
   constexpr auto atlasPatchEntityId(std::uint16_t value) noexcept -> PatchParams &;
   constexpr auto atlasPatchDepthOccMapThreshold(std::uint32_t value) noexcept -> PatchParams &;
   auto atlasPatchAttributeOffset(Common::Vec3i value) noexcept -> PatchParams &;
-  constexpr auto& atlasPatchInpaintFlag(bool value) noexcept;
+  constexpr auto &atlasPatchInpaintFlag(bool value) noexcept;
 
   // Is the patch rotated such that width and height swap?
   [[nodiscard]] constexpr auto isRotated() const noexcept;

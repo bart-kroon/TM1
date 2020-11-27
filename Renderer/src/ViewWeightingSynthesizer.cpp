@@ -228,7 +228,7 @@ private:
     viewIdInpainted = -1;
     for (const auto &atlas : frame.atlas) {
       for (const auto &patchParams : atlas.patchParamsList) {
-        if (patchParams.pduInpaintFlag()) {
+        if (patchParams.atlasPatchInpaintFlag()) {
           int idx = int(patchParams.atlasPatchProjectionId());
           // support for single inpainted view
           assert(viewIdInpainted == -1 || viewIdInpainted == idx);

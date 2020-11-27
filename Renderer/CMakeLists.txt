@@ -88,7 +88,6 @@ if (CMAKE_TESTING_ENABLED)
         "src/Renderer.test.cpp"
         "src/PushPull.test.cpp"
         "src/PushPullInpainter.test.cpp"
-        "src/SubBlockCuller.test.cpp"
         )
 
     target_link_libraries(RendererTest

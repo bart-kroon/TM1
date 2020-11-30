@@ -75,7 +75,13 @@ TEST_CASE("Push-pull inpainter") {
 
     TMIV::Renderer::PushPullInpainter{{}, {}}.inplaceInpaint(frame, {});
 
+    REQUIRE(std::all_of(frame.first.getPlane(0).cbegin(), frame.first.getPlane(0).cend(),
+                        [](auto x) { return 100 <= x && x <= 200; }));
+    REQUIRE(std::all_of(frame.first.getPlane(1).cbegin(), frame.first.getPlane(1).cend(),
+                        [](auto x) { return 300 <= x && x <= 600; }));
+    REQUIRE(std::all_of(frame.first.getPlane(2).cbegin(), frame.first.getPlane(2).cend(),
+                        [](auto x) { return x <= 900; }));
     REQUIRE(std::all_of(frame.second.getPlane(0).cbegin(), frame.second.getPlane(0).cend(),
-                        [](auto x) { return 0 < x; }));
+                        [](auto x) { return 400 <= x && x <= 500; }));
   }
 }

@@ -156,7 +156,7 @@ TEST_CASE("inplacePull") {
     REQUIRE(count == out.first.getWidth() * out.first.getHeight());
   }
 
-  SECTION("inplacePull allows for bilinear interpolation with weights 3/1/1/1 and border repeat") {
+  SECTION("inplacePull allows for bilinear interpolation and border repeat") {
     //  in     0       1       2
     // out   |   |   |   |   |   |
     // pos  0,0 0,1 1,0 1,2 2,1 2,2

@@ -50,16 +50,17 @@ using YUVD = std::tuple<uint16_t, uint16_t, uint16_t, uint16_t>;
 
 constexpr auto occupant(const YUVD &x) -> bool { return 0 < std::get<3>(x); }
 
-auto pushFilter(const std::array<YUVD, 4> &v) -> YUVD {
+auto weighedAverageWithMissingData(const std::array<YUVD, 4> &v, const std::array<int, 4> &weights)
+    -> YUVD {
   auto sum = std::array<int, 4>{};
   auto count = 0;
   for (int i = 0; i < 4; ++i) {
     if (occupant(v[i])) {
-      sum[0] += std::get<0>(v[i]);
-      sum[1] += std::get<1>(v[i]);
-      sum[2] += std::get<2>(v[i]);
-      sum[3] += std::get<3>(v[i]);
-      ++count;
+      sum[0] += weights[i] * std::get<0>(v[i]);
+      sum[1] += weights[i] * std::get<1>(v[i]);
+      sum[2] += weights[i] * std::get<2>(v[i]);
+      sum[3] += weights[i] * std::get<3>(v[i]);
+      count += weights[i];
     }
   }
   if (count == 0) {
@@ -69,14 +70,22 @@ auto pushFilter(const std::array<YUVD, 4> &v) -> YUVD {
   return YUVD{(sum[0] + count / 2) / count, (sum[1] + count / 2) / count,
               (sum[2] + count / 2) / count, (sum[3] + count / 2) / count};
 }
-} // namespace
+
+auto pushFilter(const std::array<YUVD, 4> &v) -> YUVD {
+  // { 1/2, 1/2 } x { 1/2, 1/2 } = { 1/4, 1/4, 1/4, 1/4 }
+  static const auto linInterpPushWeights = std::array{1, 1, 1, 1};
+  return weighedAverageWithMissingData(v, linInterpPushWeights);
+}
 
 auto pullFilter(const std::array<YUVD, 4> &v, const YUVD &x) -> YUVD {
   if (occupant(x)) {
     return x;
   }
-  return pushFilter(v);
+  // { 3/4, 1/4 } x { 3/4, 1/4 } = { 9/16, 3/16, 3/16, 1/16 }
+  static const auto linInterpPullWeights = std::array{9, 3, 3, 1};
+  return weighedAverageWithMissingData(v, linInterpPullWeights);
 }
+} // namespace
 
 void PushPullInpainter::inplaceInpaint(Common::Texture444Depth16Frame &viewport,
                                        const MivBitstream::ViewParams & /* metadata */) const {

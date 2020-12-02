@@ -48,6 +48,8 @@
 #include <numeric>
 
 namespace TMIV::Pruner {
+const auto depthErrorEps = 1E-4F;
+
 class HierarchicalPruner::Impl {
 private:
   struct IncrementalSynthesizer {
@@ -724,7 +726,7 @@ private:
           if (*k != 0) {
             *i = 0;
           }
-        } else if (m_params.vme().vme_depth_low_quality_flag() && (depthError < 0.F)) {
+        } else if (m_params.vme().vme_depth_low_quality_flag() && (depthError < -depthErrorEps)) {
           if (*k != 0) {
             *k = 0;
             *i = 255;

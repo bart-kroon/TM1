@@ -2,7 +2,7 @@
     "Content_name": "Fan", 
     "BoundingBox_center": [1.65,2.50,1.45], 
     "Fps": 30,
-    "Frames_number": 5,
+    "Frames_number": 97,
     "Informative":
     {     
         "Cameras_number": 15,

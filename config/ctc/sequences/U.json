@@ -8,7 +8,7 @@
     "cameras": [
         {
             "Background": 0,
-            "BitDepthColor": 8,
+            "BitDepthColor": 10,
             "BitDepthDepth": 16,
             "ColorSpace": "YUV420",
             "Depth_range": [
@@ -44,7 +44,7 @@
         },
         {
             "Background": 0,
-            "BitDepthColor": 8,
+            "BitDepthColor": 10,
             "BitDepthDepth": 16,
             "ColorSpace": "YUV420",
             "Depth_range": [
@@ -80,7 +80,7 @@
         },
         {
             "Background": 0,
-            "BitDepthColor": 8,
+            "BitDepthColor": 10,
             "BitDepthDepth": 16,
             "ColorSpace": "YUV420",
             "Depth_range": [
@@ -116,7 +116,7 @@
         },
         {
             "Background": 0,
-            "BitDepthColor": 8,
+            "BitDepthColor": 10,
             "BitDepthDepth": 16,
             "ColorSpace": "YUV420",
             "Depth_range": [
@@ -152,7 +152,7 @@
         },
         {
             "Background": 0,
-            "BitDepthColor": 8,
+            "BitDepthColor": 10,
             "BitDepthDepth": 16,
             "ColorSpace": "YUV420",
             "Depth_range": [
@@ -188,7 +188,7 @@
         },
         {
             "Background": 0,
-            "BitDepthColor": 8,
+            "BitDepthColor": 10,
             "BitDepthDepth": 16,
             "ColorSpace": "YUV420",
             "Depth_range": [
@@ -224,7 +224,7 @@
         },
         {
             "Background": 0,
-            "BitDepthColor": 8,
+            "BitDepthColor": 10,
             "BitDepthDepth": 16,
             "ColorSpace": "YUV420",
             "Depth_range": [
@@ -260,7 +260,7 @@
         },
         {
             "Background": 0,
-            "BitDepthColor": 8,
+            "BitDepthColor": 10,
             "BitDepthDepth": 16,
             "ColorSpace": "YUV420",
             "Depth_range": [
@@ -296,7 +296,7 @@
         },
         {
             "Background": 0,
-            "BitDepthColor": 8,
+            "BitDepthColor": 10,
             "BitDepthDepth": 16,
             "ColorSpace": "YUV420",
             "Depth_range": [
@@ -332,7 +332,7 @@
         },
         {
             "Background": 0,
-            "BitDepthColor": 8,
+            "BitDepthColor": 10,
             "BitDepthDepth": 16,
             "ColorSpace": "YUV420",
             "Depth_range": [

@@ -334,8 +334,8 @@ auto tryLoadSequenceConfig(const Common::Json &config, const Placeholders &place
   std::ifstream stream{path};
   if (!stream.good()) {
     throw std::runtime_error(
-        fmt::format("Failed to load source camera parameters from {} (with current path {})", path,
-                    std::filesystem::current_path()));
+        fmt::format("Failed to load source camera parameters from {} or {} (with current path {})",
+                    path1, path2, std::filesystem::current_path()));
   }
   return MivBitstream::SequenceConfig{stream};
 }

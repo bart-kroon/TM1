@@ -38,11 +38,6 @@
 #include <TMIV/Renderer/ICuller.h>
 
 namespace TMIV::Renderer {
-
-auto choosePatch(const TMIV::MivBitstream::PatchParams &patch,
-                 const TMIV::MivBitstream::ViewParamsList &cameras,
-                 const TMIV::MivBitstream::ViewParams &target) -> bool;
-
 class SubBlockCuller : public ICuller {
 public:
   SubBlockCuller(const Common::Json & /*unused*/, const Common::Json & /*unused*/);

@@ -31,42 +31,31 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_PACKER_PACKER_H_
-#define _TMIV_PACKER_PACKER_H_
+#ifndef _TMIV_RENDERER_MPISYNTHESIZER_H_
+#define _TMIV_RENDERER_MPISYNTHESIZER_H_
 
-#include <TMIV/Packer/IPacker.h>
+#include <TMIV/Renderer/ISynthesizer.h>
 
-#include <TMIV/Common/Json.h>
-
-namespace TMIV::Packer {
-class Packer : public IPacker {
-  enum SORTING_METHOD { AREA_DESCENDING = 0, VIEW_ID_ASCENDING = 1 };
+namespace TMIV::Renderer {
+class MpiSynthesizer : public ISynthesizer {
+private:
+  class Impl;
+  mutable std::unique_ptr<Impl> m_impl;
 
 public:
-  Packer(const Common::Json & /*unused*/, const Common::Json & /*componentNode*/);
-  Packer(const Packer &) = delete;
-  Packer(Packer &&) = default;
-  auto operator=(const Packer &) -> Packer & = delete;
-  auto operator=(Packer &&) -> Packer & = default;
-  ~Packer() override = default;
+  MpiSynthesizer(const Common::Json & /*unused*/, const Common::Json & /*componentNode*/);
+  MpiSynthesizer(float minAlpha);
+  MpiSynthesizer(const MpiSynthesizer &) = delete;
+  MpiSynthesizer(MpiSynthesizer &&) = default;
+  auto operator=(const MpiSynthesizer &) -> MpiSynthesizer & = delete;
+  auto operator=(MpiSynthesizer &&) -> MpiSynthesizer & = default;
+  ~MpiSynthesizer() override;
 
-  auto pack(const Common::SizeVector &atlasSize, const Common::MaskList &masks,
-            const MivBitstream::ViewParamsList &viewParamsList, const int blockSize)
-      -> MivBitstream::PatchParamsList override;
-  void updateAggregatedEntityMasks(const std::vector<Common::MaskList> &entityMasks) override;
-
-private:
-  int m_minPatchSize{};
-  int m_overlap{};
-  bool m_pip{};
-  bool m_enableMerging{};
-  SORTING_METHOD m_sortingMethod{};
-  bool m_enableRecursiveSplit{true};
-  int m_maxEntities{1};
-  std::vector<Common::MaskList> m_aggregatedEntityMasks{};
-  Common::Vec2i m_entityEncodeRange;
+  // Render from a texture atlas to a viewport
+  auto renderFrame(const MivBitstream::AccessUnit &frame,
+                   const MivBitstream::ViewParams &viewportParams) const
+      -> Common::Texture444Depth16Frame override;
 };
-
-} // namespace TMIV::Packer
+} // namespace TMIV::Renderer
 
 #endif

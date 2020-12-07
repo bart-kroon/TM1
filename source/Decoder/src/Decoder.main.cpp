@@ -141,13 +141,22 @@ private:
       }
       return Common::Depth10Frame{};
     });
-    mivDecoder.setAttrFrameServer([this](MivBitstream::AtlasId atlasId, int32_t frameIndex,
-                                         Common::Vec2i frameSize) -> Common::Texture444Frame {
+    mivDecoder.setTextureFrameServer([this](MivBitstream::AtlasId atlasId, int32_t frameIndex,
+                                            Common::Vec2i frameSize) -> Common::Texture444Frame {
       if (frameIndex < m_placeholders.numberOfInputFrames) {
         return IO::loadTextureVideoFrame(json(), m_placeholders, atlasId, frameIndex, frameSize);
       }
       return Common::Texture444Frame{};
     });
+    mivDecoder.setTransparencyFrameServer(
+        [this](MivBitstream::AtlasId atlasId, int32_t frameIndex,
+               Common::Vec2i frameSize) -> Common::Transparency10Frame {
+          if (frameIndex < m_placeholders.numberOfInputFrames) {
+            return IO::loadTransparencyVideoFrame(json(), m_placeholders, atlasId, frameIndex,
+                                                  frameSize);
+          }
+          return Common::Transparency10Frame{};
+        });
   }
 
   void outputSequenceConfig(MivBitstream::SequenceConfig sc, std::int32_t foc) {

@@ -93,6 +93,9 @@ auto recoverPrunedViewAndMask(const MivBitstream::AccessUnit &frame)
             (!atlas.asps.asps_miv_extension_present_flag() ||
              !atlas.asps.asps_miv_extension().asme_patch_constant_depth_flag())) {
           prunedView[viewId].second.getPlane(0)(y, x) = atlas.geoFrame.getPlane(0)(i, j);
+        } else if (atlas.asps.asps_miv_extension_present_flag() &&
+                   atlas.asps.asps_miv_extension().asme_patch_constant_depth_flag()) {
+          prunedView[viewId].second.getPlane(0)(y, x) = patchParams.atlasPatch3dOffsetD();
         }
 
         // Copy attributes

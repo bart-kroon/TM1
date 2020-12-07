@@ -79,10 +79,11 @@ public:
 
     const auto transformList = affineTransformList(frame.viewParamsList, viewportParams.ce);
 
-    std::vector<MivBitstream::DepthTransform<10>> depthTransform;
+    std::vector<MivBitstream::DepthTransform> depthTransform;
     depthTransform.reserve(atlas.patchParamsList.size());
     for (const auto &patch : atlas.patchParamsList) {
-      depthTransform.emplace_back(frame.viewParamsList[patch.atlasPatchProjectionId()].dq, patch);
+      depthTransform.emplace_back(frame.viewParamsList[patch.atlasPatchProjectionId()].dq, patch,
+                                  10);
     }
 
     // For each used pixel in the atlas...
@@ -253,7 +254,7 @@ public:
       -> Common::Texture444Depth16Frame {
     auto rasterizer = rasterFrame(frame, viewportParams, resolutionRatio(frame, viewportParams));
 
-    const auto depthTransform = MivBitstream::DepthTransform<16>{viewportParams.dq};
+    const auto depthTransform = MivBitstream::DepthTransform{viewportParams.dq, 16};
     auto viewport =
         Common::Texture444Depth16Frame{Common::quantizeTexture(rasterizer.attribute<0>()),
                                        depthTransform.quantizeNormDisp(rasterizer.normDisp(), 1)};

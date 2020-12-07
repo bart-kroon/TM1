@@ -98,7 +98,14 @@ CameraConfig::operator Common::Json() const {
   root["BitDepthDepth"s] = bitDepthDepth;
   root["ColorSpace"] = "YUV420";
   root["DepthColorSpace"] = "YUV420";
-
+  if (0 < bitDepthTransparency) {
+    root["BitDepthTransparency"s] = bitDepthTransparency;
+    root["TransparencyColorSpace"] = "YUV420";
+  }
+  if (0 < bitDepthEntities) {
+    root["BitDepthEntities"s] = bitDepthEntities;
+    root["EntitiesColorSpace"] = "YUV420";
+  }
   return Json{root};
 }
 

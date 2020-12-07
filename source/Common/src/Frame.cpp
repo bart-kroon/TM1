@@ -113,8 +113,8 @@ auto expandTexture(const Frame<YUV444P10> &inYuv) -> Mat<Vec3f> {
 
   for (unsigned i = 0; i != height; ++i) {
     for (unsigned j = 0; j != width; ++j) {
-      out(i, j) = Vec3f{expandValue<bitDepth>(Y(i, j)), expandValue<bitDepth>(U(i, j)),
-                        expandValue<bitDepth>(V(i, j))};
+      out(i, j) = Vec3f{expandValue(Y(i, j), bitDepth), expandValue(U(i, j), bitDepth),
+                        expandValue(V(i, j), bitDepth)};
     }
   }
   return out;
@@ -124,7 +124,7 @@ auto expandLuma(const Frame<YUV420P10> &inYuv) -> Mat<float> {
   auto out = Mat<float>(inYuv.getPlane(0).sizes());
   std::transform(inYuv.getPlane(0).cbegin(), inYuv.getPlane(0).cend(), out.begin(), [](auto value) {
     constexpr auto bitDepth = 10U;
-    return expandValue<bitDepth>(value);
+    return expandValue(value, bitDepth);
   });
   return out;
 }
@@ -138,7 +138,7 @@ auto quantizeTexture(const Mat<Vec3f> &in) -> Frame<YUV444P10> {
     for (unsigned i = 0; i != height; ++i) {
       for (unsigned j = 0; j != width; ++j) {
         constexpr auto bitDepth = 10U;
-        outYuv.getPlane(k)(i, j) = quantizeValue<bitDepth>(in(i, j)[k]);
+        outYuv.getPlane(k)(i, j) = quantizeValue(in(i, j)[k], bitDepth);
       }
     }
   }

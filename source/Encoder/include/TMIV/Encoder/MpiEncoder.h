@@ -31,42 +31,61 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_PACKER_PACKER_H_
-#define _TMIV_PACKER_PACKER_H_
-
-#include <TMIV/Packer/IPacker.h>
+#ifndef _TMIV_ENCODER_MPIENCODER_H_
+#define _TMIV_ENCODER_MPIENCODER_H_
 
 #include <TMIV/Common/Json.h>
+#include <TMIV/Encoder/IMpiEncoder.h>
+#include <TMIV/Packer/IPacker.h>
 
-namespace TMIV::Packer {
-class Packer : public IPacker {
-  enum SORTING_METHOD { AREA_DESCENDING = 0, VIEW_ID_ASCENDING = 1 };
+#include <deque>
+#include <memory>
 
+namespace TMIV::Encoder {
+class MpiEncoder : public IMpiEncoder {
 public:
-  Packer(const Common::Json & /*unused*/, const Common::Json & /*componentNode*/);
-  Packer(const Packer &) = delete;
-  Packer(Packer &&) = default;
-  auto operator=(const Packer &) -> Packer & = delete;
-  auto operator=(Packer &&) -> Packer & = default;
-  ~Packer() override = default;
-
-  auto pack(const Common::SizeVector &atlasSize, const Common::MaskList &masks,
-            const MivBitstream::ViewParamsList &viewParamsList, const int blockSize)
-      -> MivBitstream::PatchParamsList override;
-  void updateAggregatedEntityMasks(const std::vector<Common::MaskList> &entityMasks) override;
+  static constexpr auto maxIntraPeriod = 32;
 
 private:
-  int m_minPatchSize{};
-  int m_overlap{};
-  bool m_pip{};
-  bool m_enableMerging{};
-  SORTING_METHOD m_sortingMethod{};
-  bool m_enableRecursiveSplit{true};
-  int m_maxEntities{1};
-  std::vector<Common::MaskList> m_aggregatedEntityMasks{};
-  Common::Vec2i m_entityEncodeRange;
+  // Parameters
+  int m_intraPeriod{};
+  Common::Vec2i m_blockSizeDepthQualityDependent;
+  std::vector<Common::Vec2i> m_overrideAtlasFrameSizes{};
+  unsigned m_textureDilation{};
+  unsigned m_transparencyDynamic{};
+
+  // Attributes
+  std::unique_ptr<Packer::IPacker> m_packer;
+  int m_blockSize{};
+  std::size_t m_maxLumaSamplesPerFrame{};
+  MivBitstream::EncoderParams m_params;
+
+public:
+  MpiEncoder(const Common::Json &rootNode, const Common::Json &componentNode);
+  MpiEncoder(const MpiEncoder &) = delete;
+  MpiEncoder(MpiEncoder &&) = default;
+  auto operator=(const MpiEncoder &) -> MpiEncoder & = delete;
+  auto operator=(MpiEncoder &&) -> MpiEncoder & = default;
+  ~MpiEncoder() override = default;
+
+  void prepareSequence(MivBitstream::EncoderParams params) override;
+  auto processAccessUnit(int firstFrameId, int lastFrameId)
+      -> const MivBitstream::EncoderParams & override;
+  auto popAtlas(int frameId) -> Common::MVD10Frame override;
+  [[nodiscard]] auto maxLumaSamplesPerFrame() const -> std::size_t override {
+    return m_maxLumaSamplesPerFrame;
+  }
+
+private:
+  auto vuiParameters() const -> MivBitstream::VuiParameters;
+  void setGiGeometry3dCoordinatesBitdepthMinus1();
+  void prepareIvau();
+  auto log2FocLsbMinus4() const -> std::uint8_t;
+  void incrementFoc();
+  void writePatchInAtlas(const MivBitstream::PatchParams &patchParams,
+                         const Common::TextureDepth10Frame &view, Common::MVD10Frame &atlas) const;
 };
 
-} // namespace TMIV::Packer
+} // namespace TMIV::Encoder
 
 #endif

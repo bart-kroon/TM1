@@ -45,6 +45,18 @@ Packer::Packer(const Common::Json &rootNode, const Common::Json &componentNode) 
   m_overlap = componentNode.require("Overlap").as<int>();
   m_pip = componentNode.require("PiP").as<int>() != 0;
   m_enableMerging = componentNode.require("enableMerging").as<bool>();
+  switch (auto sortingMethod = componentNode.require("sortingMethod").as<int>()) {
+  case 0:
+    m_sortingMethod = AREA_DESCENDING;
+    break;
+  case 1:
+    m_sortingMethod = VIEW_ID_ASCENDING;
+    break;
+  default:
+    throw std::runtime_error(fmt::format("Sorting method {} is not available", sortingMethod));
+    break;
+  }
+  m_enableRecursiveSplit = componentNode.require("enableRecursiveSplit").as<bool>();
   m_maxEntities = rootNode.require("maxEntities").as<int>();
   if (m_maxEntities > 1) {
     m_entityEncodeRange = rootNode.require("EntityEncodeRange").asVec<int, 2>();
@@ -129,8 +141,16 @@ auto Packer::pack(const Common::SizeVector &atlasSizes, const Common::MaskList &
     if (viewParamsList[p1.getViewId()].isBasicView != viewParamsList[p2.getViewId()].isBasicView) {
       return viewParamsList[p2.getViewId()].isBasicView;
     }
-    if (p1.getArea() != p2.getArea()) {
-      return p1.getArea() < p2.getArea();
+    // NOTE(FT): added for packing patches from MPI ==> reading in writePatchInAtlas is done in
+    // increasing mpiLayerId order
+    if (m_sortingMethod == AREA_DESCENDING) {
+      if (p1.getArea() != p2.getArea()) {
+        return p1.getArea() < p2.getArea();
+      }
+    } else if (m_sortingMethod == VIEW_ID_ASCENDING) {
+      if (p1.getViewId() != p2.getViewId()) {
+        return p1.getViewId() > p2.getViewId();
+      }
     }
     // NOTE(BK): Stable ordering
     return p1.getClusterId() > p2.getClusterId();
@@ -143,7 +163,12 @@ auto Packer::pack(const Common::SizeVector &atlasSizes, const Common::MaskList &
     if (m_maxEntities > 1 || cluster.isBasicView()) {
       out.push_back(cluster);
     } else {
-      cluster.recursiveSplit(clusteringMap[cluster.getViewId()], out, m_blockSize, m_minPatchSize);
+      if (m_enableRecursiveSplit) {
+        cluster.recursiveSplit(clusteringMap[cluster.getViewId()], out, m_blockSize,
+                               m_minPatchSize);
+      } else {
+        out.push_back(cluster);
+      }
     }
   }
 

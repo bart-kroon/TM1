@@ -69,7 +69,7 @@ auto unprojectPrunedView(const Common::TextureDepth16Frame &view,
     std::vector<int> key;
     key.reserve(vertices.size());
 
-    const auto depthTransform = MivBitstream::DepthTransform<16>{viewParams.dq};
+    const auto depthTransform = MivBitstream::DepthTransform{viewParams.dq, 16};
 
     for (int y = 0; y < size.y(); ++y) {
       for (int x = 0; x < size.x(); ++x) {
@@ -80,9 +80,9 @@ auto unprojectPrunedView(const Common::TextureDepth16Frame &view,
           const auto uv = Common::Vec2f{static_cast<float>(x) + 0.5F, static_cast<float>(y) + 0.5F};
           const auto d = depthTransform.expandDepth(D_yx);
           vertices.push_back({engine.unprojectVertex(uv, d), NAN});
-          attributes.emplace_back(Common::Vec3f{Common::expandValue<10U>(Y(y, x)),
-                                                Common::expandValue<10U>(U(y / 2, x / 2)),
-                                                Common::expandValue<10U>(V(y / 2, x / 2))});
+          attributes.emplace_back(Common::Vec3f{Common::expandValue(Y(y, x), 10U),
+                                                Common::expandValue(U(y / 2, x / 2), 10U),
+                                                Common::expandValue(V(y / 2, x / 2), 10U)});
         }
       }
     }

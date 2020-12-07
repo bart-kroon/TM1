@@ -55,6 +55,8 @@ auto ViewParams::printTo(std::ostream &stream, uint16_t viewId) const -> std::os
   stream << "hasOccupancy[ " << viewId << "]=" << std::boolalpha << hasOccupancy
          << "  # encoder-internal\n";
 
+  stream << "nbMpiLayers[ " << viewId << " ]=\"" << nbMpiLayers << "\"  # encoder-internal\n";
+
   if (pp) {
     pp->printTo(stream, viewId);
   }
@@ -111,6 +113,10 @@ ViewParams::ViewParams(const Common::Json &node) {
 
   } else {
     throw std::runtime_error("Unknown projection type in metadata JSON file");
+  }
+
+  if (auto subnode = node.optional("nbMpiLayers")) {
+    nbMpiLayers = subnode.as<int>();
   }
 }
 

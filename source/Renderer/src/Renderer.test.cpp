@@ -37,12 +37,16 @@
 #include <TMIV/Renderer/AccumulatingPixel.h>
 #include <TMIV/Renderer/Engine.h>
 #include <TMIV/Renderer/Inpainter.h>
+#include <TMIV/Renderer/MpiRasterizer.h>
 #include <TMIV/Renderer/Rasterizer.h>
 #include <TMIV/Renderer/Renderer.h>
 #include <TMIV/Renderer/reprojectPoints.h>
 
 #include <algorithm>
 #include <cmath>
+
+#include <fstream>
+#include <iostream>
 
 namespace TMIV::Renderer {
 auto makeFullERPCamera() {
@@ -482,6 +486,84 @@ SCENARIO("Rastering meshes with Common::Vec2f as attribute", "[Rasterizer]") {
             REQUIRE(field2(3, 7) == Common::Vec2f{});
           }
         }
+      }
+    }
+  }
+}
+
+SCENARIO("MPI rastering meshes with Common::Vec2f as attribute", "[Rasterizer]") {
+  GIVEN("A new MPI rasterizer") {
+    MpiRasterizer<Common::Vec2f, float, unsigned, unsigned> rasterizer(Common::Vec2i{8, 4});
+    Common::Mat<float> atlasColor({2, 2});
+    std::fill(atlasColor.begin(), atlasColor.end(), 0.F);
+    atlasColor(0, 0) = 10.F;
+    atlasColor(0, 1) = 20.F;
+    atlasColor(1, 1) = 30.F;
+    atlasColor(1, 0) = 40.F;
+    Common::Mat<float> blendedOutput({4, 8}, 0.F);
+    Common::Mat<float> blendedDepth({4, 8}, -1.F);
+
+    WHEN("Rastering a quad for color and depth") {
+      // Rectangle of 2 x 6 pixels within the 4 x 8 pixels frame
+      // Depth values : not used
+      // Ray angles : not used
+      ImageVertexDescriptorList vs{
+          {{1, 1}, 0.F, 0.F}, {{7, 1}, 0.F, 0.F}, {{7, 3}, 0.F, 0.F}, {{1, 3}, 0.F, 0.F}};
+      // Two clockwise triangles
+      TriangleDescriptorList ts{{{0, 1, 2}, 6.F}, {{0, 2, 3}, 6.F}};
+
+      // Attribute #0 -> Atlas position
+      std::vector<Common::Vec2f> as0{{0.0F, 0.0F}, {1.0F, 0.0F}, {1.0F, 1.0F}, {0.0F, 1.0F}};
+      // Attribute #1 -> Viewport depth
+      std::vector<float> as1{10.0F, 20.0F, 30.0F, 40.0F};
+      // Attribute #2 -> Patch ID
+      std::vector<unsigned> as2{0U, 0U, 0U, 0U};
+      // Attribute #3 -> Atlas ID
+      std::vector<unsigned> as3{0U, 0U, 0U, 0U};
+      auto as = std::tuple{as0, as1, as2, as3};
+      using PixelAttribute = PixelAttributes<Common::Vec2f, float, unsigned, unsigned>;
+
+      rasterizer.submit(vs, as, ts);
+      rasterizer.run([&](int xInViewport, int yInViewport, float w0, float w1, float w2,
+                         const PixelAttribute &a0, const PixelAttribute &a1,
+                         const PixelAttribute &a2) {
+        auto texCoord = w0 * std::get<0>(a0) + w1 * std::get<0>(a1) + w2 * std::get<0>(a2);
+        auto z = w0 * std::get<1>(a0) + w1 * std::get<1>(a1) + w2 * std::get<1>(a2);
+        int x0 = std::clamp(static_cast<int>(std::llround(texCoord.x())), 0, 1);
+        int y0 = std::clamp(static_cast<int>(std::llround(texCoord.y())), 0, 1);
+        blendedOutput(yInViewport, xInViewport) = atlasColor(y0, x0);
+        blendedDepth(yInViewport, xInViewport) = z;
+        return 0;
+      });
+      THEN("The blended color has known values") {
+        REQUIRE(blendedOutput(0, 0) == Approx(0.F));
+        REQUIRE(blendedOutput(1, 1) == Approx(10.F));
+        REQUIRE(blendedOutput(1, 2) == Approx(10.F));
+        REQUIRE(blendedOutput(1, 3) == Approx(10.F));
+        REQUIRE(blendedOutput(1, 4) == Approx(20.F));
+        REQUIRE(blendedOutput(1, 5) == Approx(20.F));
+        REQUIRE(blendedOutput(1, 6) == Approx(20.F));
+        REQUIRE(blendedOutput(2, 1) == Approx(40.F));
+        REQUIRE(blendedOutput(2, 2) == Approx(40.F));
+        REQUIRE(blendedOutput(2, 3) == Approx(40.F));
+        REQUIRE(blendedOutput(2, 4) == Approx(30.F));
+        REQUIRE(blendedOutput(2, 5) == Approx(30.F));
+        REQUIRE(blendedOutput(2, 6) == Approx(30.F));
+      }
+      THEN("The blended depth has known values") {
+        REQUIRE(blendedDepth(0, 0) == Approx(-1.F));
+        REQUIRE(blendedDepth(1, 1) == Approx(16.6666F));
+        REQUIRE(blendedDepth(1, 2) == Approx(15.F));
+        REQUIRE(blendedDepth(1, 3) == Approx(16.6666F));
+        REQUIRE(blendedDepth(1, 4) == Approx(18.3333F));
+        REQUIRE(blendedDepth(1, 5) == Approx(20.F));
+        REQUIRE(blendedDepth(1, 6) == Approx(21.6666F));
+        REQUIRE(blendedDepth(2, 1) == Approx(31.6666F));
+        REQUIRE(blendedDepth(2, 2) == Approx(30.F));
+        REQUIRE(blendedDepth(2, 3) == Approx(28.3333F));
+        REQUIRE(blendedDepth(2, 4) == Approx(26.6666F));
+        REQUIRE(blendedDepth(2, 5) == Approx(25.F));
+        REQUIRE(blendedDepth(2, 6) == Approx(26.6666F));
       }
     }
   }

@@ -200,6 +200,64 @@ auto loadMultiviewFrame(const Common::Json &config, const Placeholders &placehol
   return frame;
 }
 
+auto loadMpiTextureMpiLayer(const Common::Json &config, const Placeholders &placeholders,
+                            const MivBitstream::SequenceConfig &sc, std::int32_t frameIndex,
+                            int mpiLayerIndex, int nbMpiLayers) -> Common::TextureFrame {
+  const auto inputDir = config.require(inputDirectory).as<std::filesystem::path>();
+  const auto &node = config.require(inputTexturePathFmt);
+
+  // NOTE(FT): one single source camera as MPI
+  const auto name = sc.sourceCameraNames[0];
+
+  const auto camera = sc.cameraByName(name);
+  const auto &vp = camera.viewParams;
+  const auto frameSize = vp.ci.projectionPlaneSize();
+
+  const auto path =
+      inputDir / fmt::format(node.as<std::string>(), placeholders.numberOfInputFrames,
+                             placeholders.contentId, placeholders.testId, name, frameSize.x(),
+                             frameSize.y(), camera.textureVideoFormat());
+  auto texture =
+      loadFrame<Common::YUV420P10>(path, frameIndex * nbMpiLayers + mpiLayerIndex, frameSize);
+
+  return texture;
+}
+
+auto loadMpiTransparencyMpiLayer(const Common::Json &config, const Placeholders &placeholders,
+                                 const MivBitstream::SequenceConfig &sc, std::int32_t frameIndex,
+                                 int mpiLayerIndex, int nbMpiLayers)
+    -> Common::Transparency10Frame {
+  const auto inputDir = config.require(inputDirectory).as<std::filesystem::path>();
+  const auto &node = config.require(inputTransparencyPathFmt);
+
+  // NOTE(FT): one single source camera as MPI
+  const auto name = sc.sourceCameraNames[0];
+
+  const auto camera = sc.cameraByName(name);
+  const auto &vp = camera.viewParams;
+  const auto frameSize = vp.ci.projectionPlaneSize();
+
+  const auto path =
+      inputDir / fmt::format(node.as<std::string>(), placeholders.numberOfInputFrames,
+                             placeholders.contentId, placeholders.testId, name, frameSize.x(),
+                             frameSize.y(), camera.transparencyVideoFormat());
+
+  auto transparency =
+      loadFrame<Common::YUV400P8>(path, frameIndex * nbMpiLayers + mpiLayerIndex, frameSize);
+
+  auto transparency10 = Common::Transparency10Frame{frameSize.x(), frameSize.y()};
+  std::transform(std::begin(transparency.getPlane(0)), std::end(transparency.getPlane(0)),
+                 std::begin(transparency10.getPlane(0)), [](unsigned x) {
+                   const auto x_max = 255U;
+                   assert(0 <= x && x <= x_max);
+                   const auto y = (0x03FF * x + x_max / 2) / x_max;
+                   assert(0 <= y && y <= 1023U);
+                   return static_cast<uint16_t>(y);
+                 });
+
+  return transparency10;
+}
+
 namespace {
 struct Pose {
   Common::Vec3f position;
@@ -311,6 +369,13 @@ auto loadTextureVideoFrame(const Common::Json &config, const Placeholders &place
     -> Common::Texture444Frame {
   return Common::yuv444p(loadVideoFrame<Common::YUV420P10>(
       IO::inputTextureVideoFramePathFmt, config, placeholders, atlasId, frameId, frameSize));
+}
+
+auto loadTransparencyVideoFrame(const Common::Json &config, const Placeholders &placeholders,
+                                MivBitstream::AtlasId atlasId, uint32_t frameId,
+                                Common::Vec2i frameSize) -> Common::Transparency10Frame {
+  return loadVideoFrame<Common::YUV400P10>(IO::inputTransparencyVideoFramePathFmt, config,
+                                           placeholders, atlasId, frameId, frameSize);
 }
 
 namespace detail {

@@ -198,6 +198,12 @@ template <typename FORMAT> struct TextureDepthFrame {
       : texture{std::move(texture_)}, depth{std::move(depth_)} {}
   TextureDepthFrame(TextureFrame texture_, Frame<FORMAT> depth_, Occupancy10Frame occupancy_)
       : texture{std::move(texture_)}, depth{std::move(depth_)}, occupancy{std::move(occupancy_)} {}
+  TextureDepthFrame(TextureFrame texture_, Frame<FORMAT> depth_, Occupancy10Frame occupancy_,
+                    Transparency10Frame transparency_)
+      : texture{std::move(texture_)}
+      , depth{std::move(depth_)}
+      , occupancy{std::move(occupancy_)}
+      , transparency{std::move(transparency_)} {}
 };
 using TextureDepth10Frame = TextureDepthFrame<YUV400P10>;
 using TextureDepth16Frame = TextureDepthFrame<YUV400P16>;

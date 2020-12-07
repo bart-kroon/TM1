@@ -210,7 +210,7 @@ Configuration files for CTC conditions are available under [config/ctc/](/config
 * *miv_view_anchor* is the MIV view anchor which codes a subset of views completely
 * *miv_dsde_anchor* is the MIV decoder-side depth estimating anchor
 
-In addition, there are other configurations available under [config/test/](/config/test) to illustrate different aspects of TMIV such as entity-based coding.
+In addition, there are other configurations available under [config/test/](/config/test) to illustrate different aspects of TMIV such as entity-based coding or multi-plane image (MPI) coding.
 
 The file names of the configuration files, and the file names within them are only examples.
 
@@ -400,6 +400,58 @@ In this example the following files will be produced:
 ```
 /Experiment/R97/SA/R0/R97_SA_R0_p02_tex_2048x2048_yuv420p10le.yuv
 /Experiment/R97/SA/R0/R97_SA_R0_v11_tex_4096x2048_yuv420p10le.yuv
+```
+
+## Instructions for test conditions
+
+### MPI test
+
+The multi-plane image (MPI) encoder is able to encode a MPI input consisting of texture and transparency components. No geometry is needed for this test.
+The input is given as a succession of very sparse layers both for texture and transparency. In the example given in [M.json](/config/ctc/sequences/M.json), there are 423 such layers.
+
+A specific MPI encoder is to be used to deal with this type of content, because there is no geometry. Please refer to configuration file [M_1_TMIV_encode.json](/config/test/miv_mpi/M_1_TMIV_encode.json) for encoding.
+And a specific MPI synthesizer is needed at rendering stage. Please refer to configuration file [M_4_TMIV_decode.json](/config/test/miv_mpi/M_4_TMIV_decode.json) for decoding.
+
+But actually, even if the internal processing is different, the exact same steps as for MIV anchor can be used to encode a bitsream for MPI content and render a viewport:
+
+* MPI test:
+  1. Run the TMIV encoder with MPI encoder (see [Running the TMIV encoder](#running-the-tmiv-encoder))
+  1. Run the HM encoder on all video sub bitstreams (see [Running the HM encoder](#running-the-hm-encoder))
+  1. Run the TMIV multiplexer to form the output bitstream (see [Running the TMIV multiplexer](#running-the-tmiv-multiplexer))
+  1. Run the TMIV decoder with MPI synthesizer to decode the bitstream and render a viewport (see [Running the TMIV decoder](#running-the-tmiv-decoder))
+
+The only difference is the absence of geometry (there is no use of `inputGeometryPathFmt`) and the presence of transparency (we do use `inputTransparencyPathFmt`).
+And also some specific parameters for [MPI encoder](#mpi-encoder) and [MPI synthesizer](#mpi-synthesizer).
+
+Input texture and transparency files for the example [M.json](/config/ctc/sequences/M.json) are:
+```
+/Content/SM/mpi_texture_4176x2024_yuv420p10le.yuv
+/Content/SM/mpi_transparency_4176x2024_yuv420p.yuv
+```
+
+Please refer to the configuration files in [config/test/miv_mpi](/config/test/miv_mpi) to generate the following files on example [M.json](/config/ctc/sequences/M.json).
+
+Following generated atlas for the example will be produced:
+```
+/Experiment/A17/SM/TMIV_A17_SM.bit
+/Experiment/A17/SM/TMIV_A17_SM_tra_c00_4096x4096_yuv420p10le.yuv
+/Experiment/A17/SM/TMIV_A17_SM_tex_c00_4096x4096_yuv420p10le.yuv
+```
+
+Following HM encoded files at QP3 for the example will be produced:
+```
+/Experiment/A1/SM/QP3/TMIV_A17_SM_QP3_tra_c00.bit
+/Experiment/A1/SM/QP3/TMIV_A17_SM_QP3_tex_c00.bit
+```
+
+Following multiplexed file for the example will be produced:
+```
+/Experiment/A1/SM/QP3/TMIV_A17_SM_QP3.bit
+```
+
+And a synthesized pose trace for the example will look like:
+```
+/Experiment/A1/SM/QP3/A17_SM_QP3_p01_tex_1920x1080_yuv420p10le.yuv
 ```
 
 # Overview of TMIV configuration files
@@ -640,6 +692,9 @@ Most of the parameters are defined in the root. The exception is:
 * **PiP:** int; is a flag enabling the Patch-in-Patch feature when equal to 1.
  It allows the insertion of patches into other patches. Default value is 1.
 * **enableMerging:** bool; enable the patch merging step.
+* **sortingMethod:** int; code for the sorting method of clusters during packing
+ step in [0 (by descending area), 1 (by increasing view index)].
+* **enableRecursiveSplit:** bool; enable the recursive split of clusters.
 
 ### Basic view allocator
 
@@ -667,6 +722,15 @@ Most of the parameters are defined in the root. The exception is:
 * **overloadFactor:** float; Geometry selection parameter at the selection stage.
 * **filteringPass:** int; Number of median filtering pass to apply to the visibility map.
 * **blendingFactor:** float; Used to control the blending at the shading stage.
+
+### MPI encoder
+
+* **TextureDilation:** int; Number of dilations steps for the the texture atlas.
+* **TransparencyDynamic:** int; The number of transparency levels in the transparency atlas is given by pow(2, TransparencyDynamic).
+
+### MPI synthesizer
+
+* **minAlpha:** float; Drives the blending process at shading stage.
 
 # Instruction to use TMIV as a library
 

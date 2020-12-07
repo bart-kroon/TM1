@@ -62,66 +62,14 @@ inline OccupancyTransform::OccupancyTransform(const ViewParams &viewParams,
 
 inline auto OccupancyTransform::occupant(uint16_t x) const -> bool { return x >= m_threshold; }
 
-template <unsigned bits>
-DepthTransform<bits>::DepthTransform(const DepthQuantization &dq)
-    : m_normDispLow{dq.dq_norm_disp_low()}, m_normDispHigh{dq.dq_norm_disp_high()} {}
-
-template <unsigned bits>
-DepthTransform<bits>::DepthTransform(const DepthQuantization &dq, const PatchParams &patchParams)
-    : DepthTransform{dq} {
-  m_depthStart = patchParams.atlasPatch3dOffsetD();
-  m_depthEnd = m_depthStart + patchParams.atlasPatch3dRangeD();
-}
-
-template <unsigned bits> auto DepthTransform<bits>::expandNormDisp(uint16_t x) const -> float {
-  const auto level = Common::expandValue<bits>(std::clamp(x, m_depthStart, m_depthEnd));
-  return std::max(impl::minNormDisp, m_normDispLow + (m_normDispHigh - m_normDispLow) * level);
-}
-
-template <unsigned bits> auto DepthTransform<bits>::expandDepth(uint16_t x) const -> float {
-  return 1.F / expandNormDisp(x);
-}
-
-template <unsigned bits>
-auto DepthTransform<bits>::expandDepth(const Common::Mat<uint16_t> &matrix) const
-    -> Common::Mat<float> {
-  auto depth = Common::Mat<float>(matrix.sizes());
-  std::transform(std::begin(matrix), std::end(matrix), std::begin(depth),
-                 [this](uint16_t x) { return expandDepth(x); });
-  return depth;
-}
-
-template <unsigned bits>
-auto DepthTransform<bits>::expandDepth(const Common::Depth16Frame &frame) const
-    -> Common::Mat<float> {
-  static_assert(bits == 16);
-  return expandDepth(frame.getPlane(0));
-}
-
-template <unsigned bits>
-auto DepthTransform<bits>::expandDepth(const Common::Depth10Frame &frame) const
-    -> Common::Mat<float> {
-  static_assert(bits == 10);
-  return expandDepth(frame.getPlane(0));
-}
-
-template <unsigned bits>
-auto DepthTransform<bits>::quantizeNormDisp(float x, uint16_t minLevel) const -> uint16_t {
-  if (x > 0.F) {
-    const auto level = (x - m_normDispLow) / (m_normDispHigh - m_normDispLow);
-    return std::max(minLevel, Common::quantizeValue<bits>(level));
-  }
-  return 0;
-}
-
-template <unsigned bits>
 template <typename DepthFrame>
-[[nodiscard]] auto DepthTransform<bits>::quantizeNormDisp(const Common::Mat<float> &matrix,
-                                                          uint16_t minLevel) const -> DepthFrame {
-  static_assert(bits == DepthFrame::getBitDepth());
+auto DepthTransform::quantizeNormDisp(const Common::Mat<float> &matrix, uint16_t minLevel) const
+    -> DepthFrame {
+  assert(m_bits == DepthFrame::getBitDepth());
   auto frame = DepthFrame{static_cast<int>(matrix.width()), static_cast<int>(matrix.height())};
   std::transform(std::begin(matrix), std::end(matrix), std::begin(frame.getPlane(0)),
                  [=](float x) { return quantizeNormDisp(x, minLevel); });
   return frame;
 }
+
 } // namespace TMIV::MivBitstream

@@ -66,11 +66,16 @@ public: // Decoder interface
   // NOTE 1: There is no harm in setting an attribute frame server for a bitstream that does not
   //          have any attributes, because the callback will never be invoked.
   //
-  // NOTE 2: This version of the test model only supports zero or one attributes, and if there is an
-  //         attribute it has to be texture. This is evident from the AttrFrameServer signature.
-  using AttrFrameServer = std::function<Common::Texture444Frame(
-      MivBitstream::AtlasId atlasId, std::int32_t frameIndex, Common::Vec2i frameSize)>;
-  void setAttrFrameServer(AttrFrameServer value);
+  // NOTE 2: This version of the test model only supports zero, one or two attributes, among texture
+  // and transparency.
+  using TextureFrameServer = std::function<Common::Texture444Frame(
+      MivBitstream::AtlasId atlasId, std::int32_t frameId, Common::Vec2i frameSize)>;
+  void setTextureFrameServer(TextureFrameServer value);
+
+  // Additional frame server for transparency.
+  using TransparencyFrameServer = std::function<Common::Transparency10Frame(
+      MivBitstream::AtlasId atlasId, std::int32_t frameId, Common::Vec2i frameSize)>;
+  void setTransparencyFrameServer(TransparencyFrameServer value);
 
   auto operator()() -> std::optional<MivBitstream::AccessUnit>;
 
@@ -98,20 +103,23 @@ private:
 
   auto decodeOccVideo(size_t k) -> bool;
   auto decodeGeoVideo(size_t k) -> bool;
-  auto decodeAttrVideo(size_t k) -> bool;
+  auto decodeAttrTextureVideo(size_t k) -> bool;
+  auto decodeAttrTransparencyVideo(size_t k) -> bool;
 
   void summarizeVps() const;
 
   V3cUnitBuffer m_inputBuffer;
   OccFrameServer m_occFrameServer;
   GeoFrameServer m_geoFrameServer;
-  AttrFrameServer m_attrFrameServer;
+  TextureFrameServer m_textureFrameServer;
+  TransparencyFrameServer m_transparencyFrameServer;
 
   std::unique_ptr<CommonAtlasDecoder> m_commonAtlasDecoder;
   std::vector<std::unique_ptr<AtlasDecoder>> m_atlasDecoder;
   std::vector<std::unique_ptr<VideoDecoder::VideoServer>> m_occVideoDecoder;
   std::vector<std::unique_ptr<VideoDecoder::VideoServer>> m_geoVideoDecoder;
-  std::vector<std::unique_ptr<VideoDecoder::VideoServer>> m_attrVideoDecoder;
+  std::vector<std::unique_ptr<VideoDecoder::VideoServer>> m_textureVideoDecoder;
+  std::vector<std::unique_ptr<VideoDecoder::VideoServer>> m_transparencyVideoDecoder;
 
   std::optional<CommonAtlasDecoder::AccessUnit> m_commonAtlasAu;
   std::vector<std::optional<AtlasDecoder::AccessUnit>> m_atlasAu;

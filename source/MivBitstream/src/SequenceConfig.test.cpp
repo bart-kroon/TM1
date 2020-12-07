@@ -167,6 +167,42 @@ TEST_CASE("CameraConfig") {
       CHECK(unit.viewParams.name == loadBack.viewParams.name);
     }
   }
+
+  SECTION("Load from JSON, MPI camera") {
+    const auto json = TMIV::Common::Json::parse(R"(
+{
+    "Background": 1,
+    "BitDepthColor": 10,
+    "BitDepthDepth": 0,
+    "BitDepthTransparency": 8,
+    "ColorSpace": "YUV420",
+    "Depth_range": [ 0.4160835445, 12.86596775 ],
+    "Depthmap": 0,
+    "Focal": [ 1749.296875, 1749.296875 ],
+    "HasInvalidDepth": false,
+    "Name": "mpi",
+    "nbMpiLayers": 423,
+    "Position": [ -2.499999762, 1.649999857, 1.449999332 ],
+    "Principle_point": [ 2088.0, 1012.0 ],
+    "Projection": "Perspective",
+    "Resolution": [ 4176, 2024 ],
+    "Rotation": [ -33.91259003, 7.734590054, 0.0 ],
+    "TransparencyColorSpace": "YUV420"
+})");
+
+    const auto unit = TMIV::MivBitstream::CameraConfig(json);
+    CHECK(unit.viewParams.ci.ci_cam_type() == TMIV::MivBitstream::CiCamType::perspective);
+    CHECK(unit.viewParams.ci.ci_perspective_center_hor() == Approx(2088.0));
+    CHECK(unit.viewParams.ci.ci_perspective_center_ver() == Approx(1012.0));
+    CHECK(unit.viewParams.nbMpiLayers == 423);
+
+    CHECK(unit.bitDepthColor == 10);
+    CHECK(unit.bitDepthTransparency == 8);
+    CHECK(unit.bitDepthDepth == 0);
+    CHECK(unit.colorspace == TMIV::MivBitstream::CameraConfig::Colorspace::yuv420);
+    CHECK(unit.transparencyColorspace == TMIV::MivBitstream::CameraConfig::Colorspace::yuv420);
+    CHECK(unit.depthColorspace == TMIV::MivBitstream::CameraConfig::Colorspace::yuv420);
+  }
 }
 
 TEST_CASE("SequenceConfig") {
@@ -213,8 +249,12 @@ TEST_CASE("SequenceConfig") {
     },  {
         "BitDepthColor": 10,
         "BitDepthDepth": 16,
+        "BitDepthTransparency": 13,
+        "BitDepthEntitities": 15,
         "ColorSpace": "YUV420",
         "DepthColorSpace": "YUV420",
+        "TransparencyColorSpace": "YUV420",
+        "EntitiesColorSpace": "YUV420",
         "Depth_range": [ 0.1, 500.0 ],
         "Hor_range": [ -90.0, 90.0 ],
         "HasInvalidDepth": false,
@@ -256,9 +296,11 @@ TEST_CASE("SequenceConfig") {
       for (std::size_t i = 0; i < x.cameras.size(); ++i) {
         CHECK(x.cameras[i].bitDepthColor == y.cameras[i].bitDepthColor);
         CHECK(x.cameras[i].bitDepthDepth == y.cameras[i].bitDepthDepth);
+        CHECK(x.cameras[i].bitDepthTransparency == y.cameras[i].bitDepthTransparency);
         CHECK(x.cameras[i].bitDepthEntities == y.cameras[i].bitDepthEntities);
         CHECK(x.cameras[i].colorspace == y.cameras[i].colorspace);
         CHECK(x.cameras[i].depthColorspace == y.cameras[i].depthColorspace);
+        CHECK(x.cameras[i].transparencyColorspace == y.cameras[i].transparencyColorspace);
         CHECK(x.cameras[i].entitiesColorspace == y.cameras[i].entitiesColorspace);
         CHECK(x.cameras[i].viewParams.name == y.cameras[i].viewParams.name);
       }

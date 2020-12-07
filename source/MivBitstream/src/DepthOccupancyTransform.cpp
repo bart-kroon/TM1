@@ -31,28 +31,49 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_COMMON_COMMON_H_
-#error "Include the .h instead of the .hpp."
-#endif
+#include <TMIV/MivBitstream/DepthOccupancyTransform.h>
 
-#include <cassert>
-#include <iomanip>
-#include <iostream>
-#include <optional>
-#include <stdexcept>
-#include <vector>
+namespace TMIV::MivBitstream {
+DepthTransform::DepthTransform(const DepthQuantization &dq, unsigned bits)
+    : m_normDispLow{dq.dq_norm_disp_low()}, m_normDispHigh{dq.dq_norm_disp_high()}, m_bits{bits} {}
 
-namespace TMIV::Common {
-inline constexpr auto maxLevel(unsigned bits) -> unsigned { return (1U << bits) - 1U; }
+DepthTransform::DepthTransform(const DepthQuantization &dq, const PatchParams &patchParams,
+                               unsigned bits)
+    : DepthTransform{dq, bits} {
+  m_depthStart = patchParams.atlasPatch3dOffsetD();
+  m_depthEnd = m_depthStart + patchParams.atlasPatch3dRangeD();
+}
 
-constexpr auto quantizeValue(float x, unsigned bits) -> uint16_t {
-  if (x >= 0.F && x <= 1.F) {
-    return static_cast<uint16_t>(std::min(std::lround(x * static_cast<float>(maxLevel(bits))),
-                                          static_cast<long>(maxLevel(bits))));
-  }
-  if (x > 0) {
-    return static_cast<uint16_t>(maxLevel(bits));
+auto DepthTransform::expandNormDisp(uint16_t x) const -> float {
+  const auto level = Common::expandValue(std::clamp(x, m_depthStart, m_depthEnd), m_bits);
+  return std::max(impl::minNormDisp, m_normDispLow + (m_normDispHigh - m_normDispLow) * level);
+}
+
+auto DepthTransform::expandDepth(uint16_t x) const -> float { return 1.F / expandNormDisp(x); }
+
+auto DepthTransform::expandDepth(const Common::Mat<uint16_t> &matrix) const -> Common::Mat<float> {
+  auto depth = Common::Mat<float>(matrix.sizes());
+  std::transform(std::begin(matrix), std::end(matrix), std::begin(depth),
+                 [this](uint16_t x) { return expandDepth(x); });
+  return depth;
+}
+
+auto DepthTransform::expandDepth(const Common::Depth16Frame &frame) const -> Common::Mat<float> {
+  // assert(m_bits == 16U);
+  return expandDepth(frame.getPlane(0));
+}
+
+auto DepthTransform::expandDepth(const Common::Depth10Frame &frame) const -> Common::Mat<float> {
+  // assert(m_bits == 10U);
+  return expandDepth(frame.getPlane(0));
+}
+
+auto DepthTransform::quantizeNormDisp(float x, uint16_t minLevel) const -> uint16_t {
+  if (x > 0.F) {
+    const auto level = (x - m_normDispLow) / (m_normDispHigh - m_normDispLow);
+    return std::max(minLevel, Common::quantizeValue(level, m_bits));
   }
   return 0;
 }
-} // namespace TMIV::Common
+
+} // namespace TMIV::MivBitstream

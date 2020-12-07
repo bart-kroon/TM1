@@ -60,6 +60,9 @@ struct ViewParams {
   // Is this a basic view or an additional view?
   bool isBasicView{true};
 
+  // Number of layers in MPI. Not in the specification, but needed to handle MPI.
+  int nbMpiLayers{1};
+
   auto printTo(std::ostream &stream, std::uint16_t viewId) const -> std::ostream &;
   auto operator==(const ViewParams &other) const -> bool;
   auto operator!=(const ViewParams &other) const -> bool { return !operator==(other); }

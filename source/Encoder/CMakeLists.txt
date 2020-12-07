@@ -10,11 +10,14 @@ add_library(EncoderLib
     "src/GroupBasedEncoder.cpp"
     "src/GeometryDownscaler.cpp"
     "src/MivEncoder.cpp"
+    "src/MpiEncoder.cpp"
     "include/TMIV/Encoder/IEncoder.h"
+    "include/TMIV/Encoder/IMpiEncoder.h"
     "include/TMIV/Encoder/Encoder.h"
     "include/TMIV/Encoder/GroupBasedEncoder.h"
     "include/TMIV/Encoder/GeometryDownscaler.h"
     "include/TMIV/Encoder/MivEncoder.h"
+    "include/TMIV/Encoder/MpiEncoder.h"
     )
 
 add_library(TMIV::EncoderLib
@@ -43,6 +46,16 @@ target_link_libraries(Encoder
         TMIV::EncoderLib
         TMIV::IOLib)
 
+add_executable(MpiEncoder
+    "src/MpiEncoder.main.cpp"
+    "src/registerComponents.cpp"
+    )
+
+target_link_libraries(MpiEncoder
+    PRIVATE
+        TMIV::EncoderLib
+        TMIV::IOLib)
+
 add_executable(Multiplexer
     "src/Multiplexer.main.cpp"
     )
@@ -55,6 +68,7 @@ target_link_libraries(Multiplexer
 install(
     TARGETS
         Encoder
+        MpiEncoder
         EncoderLib
         Multiplexer
     EXPORT TMIVTargets

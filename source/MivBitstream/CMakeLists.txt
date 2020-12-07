@@ -11,6 +11,7 @@ add_library(MivBitstreamLib
     "src/CommonAtlasFrameMivExtension.cpp"
     "src/CommonAtlasFrameRBSP.cpp"
     "src/CommonAtlasSequenceParameterSetRBSP.cpp"
+    "src/DepthOccupancyTransform.cpp"
     "src/EncoderParams.cpp"
     "src/GeometryUpscalingParameters.cpp"
     "src/VuiParameters.cpp"

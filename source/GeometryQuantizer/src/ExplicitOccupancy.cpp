@@ -104,8 +104,8 @@ auto ExplicitOccupancy::transformAtlases(const Common::MVD16Frame &inAtlases)
     const auto &inViewParams = m_inParams.viewParamsList[patch.atlasPatchProjectionId()];
     const auto &outViewParams = m_outParams.viewParamsList[patch.atlasPatchProjectionId()];
     const auto inOccupancyTransform = MivBitstream::OccupancyTransform{inViewParams};
-    const auto inDepthTransform = MivBitstream::DepthTransform<16>{inViewParams.dq};
-    const auto outDepthTransform = MivBitstream::DepthTransform<10>{outViewParams.dq, patch};
+    const auto inDepthTransform = MivBitstream::DepthTransform{inViewParams.dq, 16};
+    const auto outDepthTransform = MivBitstream::DepthTransform{outViewParams.dq, patch, 10};
     const auto kIn = m_inParams.vps.indexOf(patch.atlasId);
     const auto kOut = m_outParams.vps.indexOf(patch.atlasId);
 

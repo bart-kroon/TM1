@@ -36,6 +36,7 @@
 #include <TMIV/DepthQualityAssessor/DepthQualityAssessor.h>
 #include <TMIV/Encoder/Encoder.h>
 #include <TMIV/Encoder/GroupBasedEncoder.h>
+#include <TMIV/Encoder/MpiEncoder.h>
 #include <TMIV/GeometryQuantizer/ExplicitOccupancy.h>
 #include <TMIV/GeometryQuantizer/GeometryQuantizer.h>
 #include <TMIV/Packer/Packer.h>
@@ -55,6 +56,9 @@ void registerComponents() {
   auto &encoders = Common::Factory<IEncoder>::getInstance();
   encoders.registerAs<Encoder>("Encoder");
   encoders.registerAs<GroupBasedEncoder>("GroupBasedEncoder");
+
+  auto &mpiEncoders = Common::Factory<IMpiEncoder>::getInstance();
+  mpiEncoders.registerAs<MpiEncoder>("MpiEncoder");
 
   auto &geometryQuantizers = Common::Factory<GeometryQuantizer::IGeometryQuantizer>::getInstance();
   geometryQuantizers.registerAs<GeometryQuantizer::GeometryQuantizer>("GeometryQuantizer");

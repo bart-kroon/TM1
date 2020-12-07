@@ -83,7 +83,8 @@ class IntegrationTest:
             fV = self.testMivViewAnchor(executor)
             fG = self.testMivDsdeAnchor(executor)
             fR = self.testBestReference(executor)
-            self.sync(fA + fV + fG + fR)
+            fM = self.testMivMpi(executor)
+            self.sync(fA + fV + fG + fR + fM)
 
         print('Comparison mismatches :', self.numComparisonMismatches)
         print('Comparison errors     :', self.numComparisonErrors)
@@ -414,6 +415,73 @@ class IntegrationTest:
              'R3/SO/R0/R3_SO_R0_p02_tex_1920x1080_yuv420p10le.yuv'])
 
         return [f1_1, f1_2]
+
+    def testMivMpi(self, executor):
+        os.makedirs(os.path.join(self.testDir, 'M3/SM/QP3'), exist_ok=True)
+
+        f1 = self.launchCommand(executor, [], [
+            '{0}/bin/MpiEncoder',
+            '-c', '{1}/config/test/miv_mpi/M_1_TMIV_encode.json',
+            '-p', 'configDirectory', '{1}/config',
+            '-p', 'inputDirectory', '{2}',
+            '-p', 'outputDirectory', '{3}',
+            '-n', '3', '-s', 'M', '-p', 'intraPeriod', '2'],
+            '{3}/M3/SM/TMIV_M3_SM.log',
+            ['M3/SM/TMIV_M3_SM.bit',
+             'M3/SM/TMIV_M3_SM_tra_c00_4096x4096_yuv420p10le.yuv',
+             'M3/SM/TMIV_M3_SM_tex_c00_4096x4096_yuv420p10le.yuv'])
+
+        f2_1 = self.launchCommand(executor, [f1], [
+            '{0}/bin/TAppEncoder',
+            '-c', '{1}/config/test/miv_mpi/M_2_HM_encode_tra.cfg',
+            '-i', '{3}/M3/SM/TMIV_M3_SM_tra_c00_4096x4096_yuv420p10le.yuv',
+            '-b', '{3}/M3/SM/QP3/TMIV_M3_SM_QP3_tra_c00.bit',
+            '-wdt', '4096', '-hgt', '4096', '-q', '5', '-f', '3', '-fr', '30'],
+            '{3}/M3/SM/QP3/TMIV_M3_SM_QP3_tra_c00.log',
+            ['M3/SM/QP3/TMIV_M3_SM_QP3_tra_c00.bit'])
+
+        f2_2 = self.launchCommand(executor, [f1], [
+            '{0}/bin/TAppEncoder',
+            '-c', '{1}/config/test/miv_mpi/M_2_HM_encode_tex.cfg',
+            '-i', '{3}/M3/SM/TMIV_M3_SM_tex_c00_4096x4096_yuv420p10le.yuv',
+            '-b', '{3}/M3/SM/QP3/TMIV_M3_SM_QP3_tex_c00.bit',
+            '-wdt', '4096', '-hgt', '4096', '-q', '30', '-f', '3', '-fr', '30'],
+            '{3}/M3/SM/QP3/TMIV_M3_SM_QP3_tex_c00.log',
+            ['M3/SM/QP3/TMIV_M3_SM_QP3_tex_c00.bit'])
+
+        f3 = self.launchCommand(executor, [f2_1, f2_2], [
+            '{0}/bin/Multiplexer',
+            '-c', '{1}/config/test/miv_mpi/M_3_TMIV_mux.json',
+            '-p', 'configDirectory', '{1}/config',
+            '-p', 'inputDirectory', '{3}',
+            '-p', 'outputDirectory', '{3}',
+            '-n', '3', '-s', 'M', '-r', 'QP3'],
+            '{3}/M3/SM/QP3/TMIV_M3_SM_QP3.log',
+            ['M3/SM/QP3/TMIV_M3_SM_QP3.bit'])
+
+        f4_1 = self.launchCommand(executor, [f3], [
+            '{0}/bin/Parser',
+            '-b', '{3}/M3/SM/QP3/TMIV_M3_SM_QP3.bit'],
+            '{3}/M3/SM/QP3/TMIV_M3_SM_QP3.hls',
+            [])
+
+        f4_2 = self.launchCommand(executor, [f3], [
+            '{0}/bin/BitrateReport',
+            '-b', '{3}/M3/SM/QP3/TMIV_M3_SM_QP3.bit'],
+            '{3}/M3/SM/QP3/TMIV_M3_SM_QP3.csv',
+            [])
+
+        f4_3 = self.launchCommand(executor, [f3], [
+            '{0}/bin/Decoder',
+            '-c', '{1}/config/test/miv_mpi/M_4_TMIV_decode.json',
+            '-p', 'configDirectory', '{1}/config',
+                  '-p', 'inputDirectory', '{3}',
+                  '-p', 'outputDirectory', '{3}',
+            '-n', '3', '-N', '3', '-s', 'M', '-r', 'QP3', '-v', 'viewport'],
+            '{3}/M3/SM/QP3/M3_SM_QP3_viewport.log',
+            ['M3/SM/QP3/M3_SM_QP3_viewport_tex_1920x1080_yuv420p10le.yuv'])
+
+        return [f4_1, f4_2, f4_3]
 
     def launchCommand(self, executor, futures, args, logFile, outputFiles):
         return executor.submit(self.syncAndRunCommand, futures, args, logFile, outputFiles)

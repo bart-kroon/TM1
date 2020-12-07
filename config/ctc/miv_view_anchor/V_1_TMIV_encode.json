@@ -26,7 +26,9 @@
             "enableMerging": true,
             "MinPatchSize": 16,
             "Overlap": 1,
-            "PiP": 1
+            "PiP": 1,
+            "sortingMethod": 0,
+            "enableRecursiveSplit": true
         },
         "PackerMethod": "Packer",
         "PrunerMethod": "NoPruner",

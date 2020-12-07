@@ -57,6 +57,7 @@ struct AtlasAccessUnit {
   Common::Texture444Frame attrFrame;
   Common::Occupancy10Frame decOccFrame;
   Common::Occupancy10Frame occFrame;
+  Common::Transparency10Frame transparencyFrame;
 
   Common::BlockToPatchMap blockToPatchMap;
   PatchParamsList patchParamsList;

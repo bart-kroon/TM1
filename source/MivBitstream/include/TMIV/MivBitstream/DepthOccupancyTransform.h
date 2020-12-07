@@ -57,13 +57,13 @@ private:
 };
 
 // Extract the depth transform for the specified view [and patch]
-template <unsigned bits> class DepthTransform {
+class DepthTransform {
 public:
   // Constructor for per-view depth transform signalling (source)
-  explicit DepthTransform(const DepthQuantization &dq);
+  explicit DepthTransform(const DepthQuantization &dq, unsigned bits);
 
   // Constructor for per-view depth transform signalling (codec)
-  DepthTransform(const DepthQuantization &dq, const PatchParams &patch);
+  DepthTransform(const DepthQuantization &dq, const PatchParams &patch, unsigned bits);
 
   // Expand a level to normalized disparity [m^-1]
   //
@@ -96,14 +96,17 @@ public:
   //
   // See also quantizeNormDisp(float, uint16_t)
   template <typename DepthFrame = Common::Depth16Frame>
-  auto quantizeNormDisp(const Common::Mat<float> &matrix, uint16_t minLevel) const -> DepthFrame;
+  [[nodiscard]] auto quantizeNormDisp(const Common::Mat<float> &matrix, uint16_t minLevel) const
+      -> DepthFrame;
 
 private:
   const float m_normDispLow{};
   const float m_normDispHigh{};
+  const unsigned m_bits{};
   uint16_t m_depthStart{};
   uint16_t m_depthEnd{UINT16_MAX};
 };
+
 } // namespace TMIV::MivBitstream
 
 #include "DepthOccupancyTransform.hpp"

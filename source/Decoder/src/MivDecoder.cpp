@@ -63,7 +63,13 @@ void MivDecoder::setOccFrameServer(OccFrameServer value) { m_occFrameServer = st
 
 void MivDecoder::setGeoFrameServer(GeoFrameServer value) { m_geoFrameServer = std::move(value); }
 
-void MivDecoder::setAttrFrameServer(AttrFrameServer value) { m_attrFrameServer = std::move(value); }
+void MivDecoder::setTextureFrameServer(TextureFrameServer value) {
+  m_textureFrameServer = std::move(value);
+}
+
+void MivDecoder::setTransparencyFrameServer(TransparencyFrameServer value) {
+  m_transparencyFrameServer = std::move(value);
+}
 
 auto MivDecoder::operator()() -> std::optional<MivBitstream::AccessUnit> {
   m_au.irap = expectIrap();
@@ -125,7 +131,8 @@ void MivDecoder::resetDecoder() {
   m_au.atlas.clear();
   m_occVideoDecoder.clear();
   m_geoVideoDecoder.clear();
-  m_attrVideoDecoder.clear();
+  m_textureVideoDecoder.clear();
+  m_transparencyVideoDecoder.clear();
 
   for (size_t k = 0; k <= m_au.vps.vps_atlas_count_minus1(); ++k) {
     const auto j = m_au.vps.vps_atlas_id(k);
@@ -151,12 +158,30 @@ void MivDecoder::resetDecoder() {
       m_geoVideoDecoder.push_back(nullptr);
     }
 
+    bool attrTextureAbsent = true;
+    bool attrTransparencyAbsent = true;
     if (m_au.vps.vps_attribute_video_present_flag(j)) {
-      auto vuhAvd = MivBitstream::V3cUnitHeader{MivBitstream::VuhUnitType::V3C_AVD};
-      vuhAvd.vuh_v3c_parameter_set_id(m_au.vps.vps_v3c_parameter_set_id()).vuh_atlas_id(j);
-      m_attrVideoDecoder.push_back(startVideoDecoder(vuhAvd, m_totalAttrVideoDecodingTime));
-    } else {
-      m_attrVideoDecoder.push_back(nullptr);
+      const auto &ai = m_au.vps.attribute_information(j);
+      for (uint8_t i = 0; i < ai.ai_attribute_count(); ++i) {
+        const auto type = ai.ai_attribute_type_id(i);
+        auto vuhAvd = MivBitstream::V3cUnitHeader{MivBitstream::VuhUnitType::V3C_AVD};
+        vuhAvd.vuh_v3c_parameter_set_id(m_au.vps.vps_v3c_parameter_set_id()).vuh_atlas_id(j);
+        vuhAvd.vuh_attribute_index(i);
+        if (type == MivBitstream::AiAttributeTypeId::ATTR_TEXTURE) {
+          attrTextureAbsent = false;
+          m_textureVideoDecoder.push_back(startVideoDecoder(vuhAvd, m_totalAttrVideoDecodingTime));
+        } else if (type == MivBitstream::AiAttributeTypeId::ATTR_TRANSPARENCY) {
+          attrTransparencyAbsent = false;
+          m_transparencyVideoDecoder.push_back(
+              startVideoDecoder(vuhAvd, m_totalAttrVideoDecodingTime));
+        }
+      }
+    }
+    if (attrTextureAbsent) {
+      m_textureVideoDecoder.push_back(nullptr);
+    }
+    if (attrTransparencyAbsent) {
+      m_transparencyVideoDecoder.push_back(nullptr);
     }
   }
 }
@@ -173,8 +198,19 @@ auto MivDecoder::decodeVideoSubBitstreams() -> bool {
     if (m_au.vps.vps_geometry_video_present_flag(j)) {
       result[static_cast<std::size_t>(decodeGeoVideo(k))] = true;
     }
-    if (m_au.vps.vps_attribute_video_present_flag(j)) {
-      result[static_cast<std::size_t>(decodeAttrVideo(k))] = true;
+
+    // Note(FT): test the type of attribute to decode : texture AND/OR transparency
+    for (auto attributeIndex = 0;
+         attributeIndex < m_au.vps.attribute_information(j).ai_attribute_count();
+         attributeIndex++) {
+      if (m_au.vps.attribute_information(j).ai_attribute_type_id(attributeIndex) ==
+          MivBitstream::AiAttributeTypeId::ATTR_TEXTURE) {
+        result[static_cast<std::size_t>(decodeAttrTextureVideo(k))] = true;
+      }
+      if (m_au.vps.attribute_information(j).ai_attribute_type_id(attributeIndex) ==
+          MivBitstream::AiAttributeTypeId::ATTR_TRANSPARENCY) {
+        result[static_cast<std::size_t>(decodeAttrTransparencyVideo(k))] = true;
+      }
     }
   }
 
@@ -465,24 +501,48 @@ auto MivDecoder::decodeGeoVideo(size_t k) -> bool {
   return true;
 }
 
-auto MivDecoder::decodeAttrVideo(size_t k) -> bool {
+auto MivDecoder::decodeAttrTextureVideo(size_t k) -> bool {
   const double t0 = clock();
 
-  if (m_attrVideoDecoder[k]) {
-    auto frame = m_attrVideoDecoder[k]->getFrame();
+  if (m_textureVideoDecoder[k]) {
+    auto frame = m_textureVideoDecoder[k]->getFrame();
     if (!frame) {
       return false;
     }
     m_au.atlas[k].attrFrame = frame->as<Common::YUV444P10>();
-    m_attrVideoDecoder[k]->wait();
-  } else if (m_attrFrameServer) {
+    m_textureVideoDecoder[k]->wait();
+  } else if (m_textureFrameServer) {
     m_au.atlas[k].attrFrame =
-        m_attrFrameServer(m_au.vps.vps_atlas_id(k), m_au.foc, m_au.atlas[k].frameSize());
+        m_textureFrameServer(m_au.vps.vps_atlas_id(k), m_au.foc, m_au.atlas[k].frameSize());
     if (m_au.atlas[k].attrFrame.empty()) {
       return false;
     }
   } else {
-    MIVBITSTREAM_ERROR("Out-of-band attribute video data but no frame server provided");
+    MIVBITSTREAM_ERROR("Out-of-band texture video data but no frame server provided");
+  }
+
+  m_totalAttrVideoDecodingTime += (clock() - t0) / CLOCKS_PER_SEC;
+  return true;
+}
+
+auto MivDecoder::decodeAttrTransparencyVideo(size_t k) -> bool {
+  const double t0 = clock();
+
+  if (m_transparencyVideoDecoder[k]) {
+    auto frame = m_transparencyVideoDecoder[k]->getFrame();
+    if (!frame) {
+      return false;
+    }
+    m_au.atlas[k].transparencyFrame = frame->as<Common::YUV400P10>();
+    m_transparencyVideoDecoder[k]->wait();
+  } else if (m_transparencyFrameServer) {
+    m_au.atlas[k].transparencyFrame =
+        m_transparencyFrameServer(m_au.vps.vps_atlas_id(k), m_au.foc, m_au.atlas[k].frameSize());
+    if (m_au.atlas[k].transparencyFrame.empty()) {
+      return false;
+    }
+  } else {
+    MIVBITSTREAM_ERROR("Out-of-band transparency video data but no frame server provided");
   }
 
   m_totalAttrVideoDecodingTime += (clock() - t0) / CLOCKS_PER_SEC;
@@ -524,7 +584,10 @@ void MivDecoder::summarizeVps() const {
                   << int{ai.ai_attribute_codec_id(i)} << ", dims "
                   << (ai.ai_attribute_dimension_minus1(i) + 1) << ", 2D "
                   << (ai.ai_attribute_2d_bit_depth_minus1(i) + 1) << ", align " << std::boolalpha
-                  << ai.ai_attribute_MSB_align_flag(i) << ']';
+                  << ai.ai_attribute_MSB_align_flag(i);
+        if (i + 1 == ai.ai_attribute_count()) {
+          std::cout << "]";
+        }
       }
     }
     std::cout << '\n';

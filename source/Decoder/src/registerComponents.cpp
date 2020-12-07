@@ -35,6 +35,7 @@
 #include <TMIV/Decoder/Decoder.h>
 #include <TMIV/Renderer/AdditiveSynthesizer.h>
 #include <TMIV/Renderer/Inpainter.h>
+#include <TMIV/Renderer/MpiSynthesizer.h>
 #include <TMIV/Renderer/NoCuller.h>
 #include <TMIV/Renderer/NoInpainter.h>
 #include <TMIV/Renderer/NoSynthesizer.h>
@@ -65,6 +66,7 @@ void registerComponents() {
   synthesizers.registerAs<Renderer::AdditiveSynthesizer>("AdditiveSynthesizer");
   synthesizers.registerAs<Renderer::NoSynthesizer>("NoSynthesizer");
   synthesizers.registerAs<Renderer::ViewWeightingSynthesizer>("ViewWeightingSynthesizer");
+  synthesizers.registerAs<Renderer::MpiSynthesizer>("MpiSynthesizer");
 
   auto &viewingSpaceControllers = Common::Factory<Renderer::IViewingSpaceController>::getInstance();
   viewingSpaceControllers.registerAs<Renderer::ViewingSpaceController>("ViewingSpaceController");

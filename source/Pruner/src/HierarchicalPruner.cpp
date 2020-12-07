@@ -373,7 +373,7 @@ private:
     m_synthesizers.clear();
     for (size_t i = 0; i < m_params.viewParamsList.size(); ++i) {
       if (!m_params.viewParamsList[i].isBasicView) {
-        const auto depthTransform = MivBitstream::DepthTransform<16>{m_params.viewParamsList[i].dq};
+        const auto depthTransform = MivBitstream::DepthTransform{m_params.viewParamsList[i].dq, 16};
         m_synthesizers.emplace_back(std::make_unique<IncrementalSynthesizer>(
             m_config, m_params.viewParamsList[i].ci.projectionPlaneSize(), i,
             depthTransform.expandDepth(views[i].depth), expandLuma(views[i].texture),

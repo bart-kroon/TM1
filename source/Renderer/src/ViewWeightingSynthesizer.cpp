@@ -215,7 +215,7 @@ public:
 
     auto viewport = Common::Texture444Depth16Frame{
         quantizeTexture(m_viewportColor),
-        MivBitstream::DepthTransform<16>{viewportParams.dq}.quantizeNormDisp(m_viewportVisibility,
+        MivBitstream::DepthTransform{viewportParams.dq, 16}.quantizeNormDisp(m_viewportVisibility,
                                                                              1)};
     viewport.first.filIInvalidWithNeutral(viewport.second);
     return viewport;
@@ -352,7 +352,7 @@ private:
       const auto &viewParams = sourceHelperList[sourceId].getViewParams();
 
       m_sourceColor.emplace_back(expandTexture(prunedViews[sourceId].first));
-      m_sourceDepth.emplace_back(MivBitstream::DepthTransform<10>{viewParams.dq}.expandDepth(
+      m_sourceDepth.emplace_back(MivBitstream::DepthTransform{viewParams.dq, 10}.expandDepth(
           prunedViews[sourceId].second));
 
       std::transform(

@@ -264,15 +264,15 @@ TEST_CASE("maxlevel", "[quantize_and_expand]") {
 }
 
 TEST_CASE("expandValue", "[quantize_and_expand]") {
-  REQUIRE(expandValue<10>(0) == 0.F);
-  REQUIRE(expandValue<8>(128) == 128.F / 255.F);
-  REQUIRE(expandValue<10>(1023) == 1.F);
-  REQUIRE(expandValue<16>(40000) == 40000.F / 65535.F);
+  REQUIRE(expandValue(0, 10) == 0.F);
+  REQUIRE(expandValue(128, 8) == 128.F / 255.F);
+  REQUIRE(expandValue(1023, 10) == 1.F);
+  REQUIRE(expandValue(40000, 16) == 40000.F / 65535.F);
 }
 
 TEST_CASE("quantizeValue", "[quantize_and_expand]") {
-  REQUIRE(quantizeValue<10>(NAN) == 0U);
-  REQUIRE(quantizeValue<10>(INFINITY) == 1023U);
-  REQUIRE(quantizeValue<10>(1e20F) == 1023U);
+  REQUIRE(quantizeValue(NAN, 10) == 0U);
+  REQUIRE(quantizeValue(INFINITY, 10) == 1023U);
+  REQUIRE(quantizeValue(1e20F, 10) == 1023U);
 }
 } // namespace TMIV::Common

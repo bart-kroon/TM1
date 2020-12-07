@@ -68,10 +68,12 @@ auto overload(Ts &&...values) -> Overload<std::remove_reference_t<Ts>...> {
 constexpr auto maxLevel(unsigned bits) -> unsigned;
 
 // Expand an integral value to floating-point using a linear transfer function
-template <unsigned bits> auto expandValue(uint16_t x) -> float;
+constexpr auto expandValue(uint16_t x, unsigned bits) -> float {
+  return static_cast<float>(x) / static_cast<float>(maxLevel(bits));
+}
 
 // Quantize a value using a linear transfer function
-template <unsigned bits> auto quantizeValue(float x) -> uint16_t;
+constexpr auto quantizeValue(float x, unsigned bits) -> uint16_t;
 
 // Does a collection contain a specified value?
 template <typename Collection, typename Value>

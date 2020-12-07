@@ -6,11 +6,12 @@ cppcoreguidelines-*,
 -cppcoreguidelines-pro-bounds-array-to-pointer-decay,
 -cppcoreguidelines-pro-bounds-constant-array-index,
 google-readability-braces-around-statements,
+google-build-using-namespace,
 misc-unused-parameters,
 modernize-*,
 performance-*,
 readability-*,
--readability-magic-numbers,
+-readability-magic-numbers
 '
 
 WarningsAsErrors: '*'

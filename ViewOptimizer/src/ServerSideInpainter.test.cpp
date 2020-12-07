@@ -388,6 +388,8 @@ TEST_CASE("ServerSideInpainter") {
                     inParams.viewParamsList[i].ci.ci_projection_plane_height_minus1() + 1);
             REQUIRE(pp.atlasPatch3dOffsetU() == 0);
             REQUIRE(pp.atlasPatch3dOffsetV() == 0);
+            REQUIRE(pp.atlasPatch3dOffsetD() == 0);
+            REQUIRE(pp.atlasPatch3dRangeD() == 1023);
             REQUIRE(pp.atlasPatchDepthOccMapThreshold() == std::nullopt);
           }
         }

@@ -196,6 +196,7 @@ private:
     pp.atlasPatchOrientationIndex(MivBitstream::FlexiblePatchOrientation::FPO_NULL);
     pp.atlasPatch2dSizeX(frame.texture.getWidth());
     pp.atlasPatch2dSizeY(frame.texture.getHeight());
+    pp.atlasPatch3dRangeD(Common::maxLevel(Common::Depth10Frame::getBitDepth()));
 
     const auto ppbs = std::gcd(128, std::gcd(w, h));
     aau.asps.asps_log2_patch_packing_block_size(Common::ceilLog2(ppbs));

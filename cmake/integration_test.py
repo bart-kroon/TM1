@@ -79,12 +79,13 @@ class IntegrationTest:
         app.inspectEnvironment()
 
         with concurrent.futures.ThreadPoolExecutor(max_workers=self.maxWorkers) as executor:
-            fA = self.testMivAnchor(executor)
-            fV = self.testMivViewAnchor(executor)
-            fG = self.testMivDsdeAnchor(executor)
-            fR = self.testBestReference(executor)
-            fM = self.testMivMpi(executor)
-            self.sync(fA + fV + fG + fR + fM)
+           fA = self.testMivAnchor(executor)
+           fV = self.testMivViewAnchor(executor)
+           fG = self.testMivDsdeAnchor(executor)
+           fR = self.testBestReference(executor)
+           fM = self.testMivMpi(executor)
+           fS = self.testAdditiveSynthesizer(executor)
+           self.sync(fA + fV + fG + fR + fM + fS)
 
         print('Comparison mismatches :', self.numComparisonMismatches)
         print('Comparison errors     :', self.numComparisonErrors)
@@ -482,6 +483,22 @@ class IntegrationTest:
             ['M3/M/QP3/M3_M_QP3_viewport_tex_1920x1080_yuv420p10le.yuv'])
 
         return [f4_1, f4_2, f4_3]
+
+    def testAdditiveSynthesizer(self, executor):
+        os.makedirs(os.path.join(self.testDir, 'S1/C/R0'), exist_ok=True)
+
+        f1 = self.launchCommand(executor, [], [
+            '{0}/bin/Renderer',
+            '-c', '{1}/config/test/additive_synthesizer/S_1_TMIV_render.json',
+            '-p', 'configDirectory', '{1}/config',
+            '-p', 'inputDirectory', '{2}',
+            '-p', 'outputDirectory', '{3}',
+            '-n', '1', '-N', '1', '-s', 'C', '-r', 'R0', '-P', 'p03'],
+            '{3}/S1/C/R0/S1_C_R0_p03.log',
+            ['S1/C/R0/S1_C_R0_p03_geo_2048x2048_yuv420p16le.yuv',
+             'S1/C/R0/S1_C_R0_p03_tex_2048x2048_yuv420p10le.yuv'])
+
+        return [f1]
 
     def launchCommand(self, executor, futures, args, logFile, outputFiles):
         return executor.submit(self.syncAndRunCommand, futures, args, logFile, outputFiles)

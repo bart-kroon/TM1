@@ -38,6 +38,8 @@
 #include <TMIV/Renderer/reprojectPoints.h>
 
 namespace TMIV::Renderer {
+const auto depthErrorEps = 1E-4F;
+
 namespace {
 auto getGatherCoordinates(const Common::Vec2f &p, const std::array<size_t, 2> &sz)
     -> std::array<Common::Vec2i, 4> {
@@ -225,7 +227,10 @@ private:
     std::vector<int> patchOrderId(patchAverageDepth.size());
     std::iota(patchOrderId.begin(), patchOrderId.end(), 0);
     std::sort(patchOrderId.begin(), patchOrderId.end(), [&](unsigned id1, unsigned id2) {
-      return (patchAverageDepth[id1] < patchAverageDepth[id2]);
+      if (std::abs(patchAverageDepth[id1] - patchAverageDepth[id2]) < depthErrorEps) {
+        return id2 < id1;
+      }
+      return patchAverageDepth[id1] < patchAverageDepth[id2];
     });
 
     // Construct ordered block buffer

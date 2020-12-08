@@ -34,7 +34,7 @@
 #include <TMIV/MivBitstream/AtlasSequenceParameterSetRBSP.h>
 
 #include <TMIV/Common/Bitstream.h>
-#include <TMIV/MivBitstream/verify.h>
+#include <TMIV/Common/verify.h>
 
 #include <ostream>
 #include <utility>

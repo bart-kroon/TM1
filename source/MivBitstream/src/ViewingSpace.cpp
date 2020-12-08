@@ -36,7 +36,7 @@
 #include <TMIV/Common/Bitstream.h>
 #include <TMIV/Common/Common.h>
 #include <TMIV/Common/Half.h>
-#include <TMIV/MivBitstream/verify.h>
+#include <TMIV/Common/verify.h>
 
 #include <algorithm>
 

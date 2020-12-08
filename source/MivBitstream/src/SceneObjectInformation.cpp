@@ -31,8 +31,8 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <TMIV/Common/verify.h>
 #include <TMIV/MivBitstream/SceneObjectInformation.h>
-#include <TMIV/MivBitstream/verify.h>
 
 namespace TMIV::MivBitstream {
 auto SceneObjectInformation::soi_persistence_flag() const noexcept -> bool {

@@ -8,6 +8,7 @@ add_library(CommonLib
     "src/Half.cpp"
     "src/Frame.cpp"
     "src/Graph.cpp"
+    "src/verify.cpp"
     "include/TMIV/Common/Bitstream.h"
     "include/TMIV/Common/Bitstream.hpp"
     "include/TMIV/Common/Bytestream.h"
@@ -29,6 +30,7 @@ add_library(CommonLib
     "include/TMIV/Common/Array.h"
     "include/TMIV/Common/Graph.h"
     "include/TMIV/Common/Quaternion.h"
+    "include/TMIV/Common/verify.h"
     )
 
 add_library(TMIV::CommonLib

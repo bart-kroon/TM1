@@ -33,7 +33,7 @@
 
 #include <TMIV/MivBitstream/EncoderParams.h>
 
-#include <TMIV/MivBitstream/verify.h>
+#include <TMIV/Common/verify.h>
 
 #include <algorithm>
 

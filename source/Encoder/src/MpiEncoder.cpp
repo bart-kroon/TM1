@@ -33,8 +33,8 @@
 
 #include <TMIV/Common/Factory.h>
 #include <TMIV/Common/Thread.h>
+#include <TMIV/Common/verify.h>
 #include <TMIV/Encoder/MpiEncoder.h>
-#include <TMIV/MivBitstream/verify.h>
 
 #include <cassert>
 #include <iostream>

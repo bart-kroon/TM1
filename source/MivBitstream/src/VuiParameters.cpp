@@ -33,8 +33,8 @@
 
 #include <TMIV/MivBitstream/VuiParameters.h>
 
+#include <TMIV/Common/verify.h>
 #include <TMIV/MivBitstream/AtlasSequenceParameterSetRBSP.h>
-#include <TMIV/MivBitstream/verify.h>
 
 namespace TMIV::MivBitstream {
 auto operator<<(std::ostream &stream, const CoordinateSystemParameters &x) -> std::ostream & {

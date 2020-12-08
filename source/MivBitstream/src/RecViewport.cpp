@@ -33,7 +33,7 @@
 
 #include <TMIV/MivBitstream/RecViewport.h>
 
-#include <TMIV/MivBitstream/verify.h>
+#include <TMIV/Common/verify.h>
 
 namespace TMIV::MivBitstream {
 auto RecViewport::rec_viewport_id() const noexcept -> std::uint16_t { return m_rec_viewport_id; }

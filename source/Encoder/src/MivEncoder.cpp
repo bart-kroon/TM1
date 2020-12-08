@@ -33,8 +33,8 @@
 
 #include <TMIV/Encoder/MivEncoder.h>
 
+#include <TMIV/Common/verify.h>
 #include <TMIV/MivBitstream/SeiRBSP.h>
-#include <TMIV/MivBitstream/verify.h>
 
 #include <sstream>
 #include <vector>

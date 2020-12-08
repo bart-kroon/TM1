@@ -33,7 +33,7 @@
 
 #include <TMIV/MivBitstream/ViewingSpaceHandling.h>
 
-#include <TMIV/MivBitstream/verify.h>
+#include <TMIV/Common/verify.h>
 
 namespace TMIV::MivBitstream {
 auto operator<<(std::ostream &stream, VhDeviceClass x) -> std::ostream & {

@@ -33,7 +33,7 @@
 
 #include <TMIV/MivBitstream/AtlasObjectAssociation.h>
 
-#include <TMIV/MivBitstream/verify.h>
+#include <TMIV/Common/verify.h>
 
 namespace TMIV::MivBitstream {
 auto AtlasObjectAssociation::aoa_persistence_flag() const noexcept -> bool {

@@ -40,13 +40,6 @@
 #include <cmath>
 
 namespace TMIV::Common {
-auto verifyBitstreamFailed(char const *condition, char const *file, int line) -> bool {
-  std::cerr << "Failed to encode/decode bitstream: " << condition << " [" << file << "@" << line
-            << std::endl;
-  abort();
-  return false;
-}
-
 auto InputBitstream::tellg() const -> std::streampos {
   return m_stream.tellg() * charBits - m_size;
 }

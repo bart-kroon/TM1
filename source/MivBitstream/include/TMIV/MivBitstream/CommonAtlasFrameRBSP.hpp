@@ -35,7 +35,7 @@
 #error "Include the .h, not the .hpp"
 #endif
 
-#include <TMIV/MivBitstream/verify.h>
+#include <TMIV/Common/verify.h>
 
 namespace TMIV::MivBitstream {
 constexpr auto CommonAtlasFrameRBSP::caf_common_atlas_sequence_parameter_set_id() const noexcept {

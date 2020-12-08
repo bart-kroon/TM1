@@ -35,7 +35,7 @@
 
 #include <sstream>
 
-#include <TMIV/MivBitstream/verify.h>
+#include <TMIV/Common/verify.h>
 
 namespace TMIV::Decoder {
 V3cSampleStreamDecoder::V3cSampleStreamDecoder(std::istream &stream)

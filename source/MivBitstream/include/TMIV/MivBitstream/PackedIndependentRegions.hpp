@@ -35,7 +35,7 @@
 #error "Include the .h, not the .hpp"
 #endif
 
-#include <TMIV/MivBitstream/verify.h>
+#include <TMIV/Common/verify.h>
 
 namespace TMIV::MivBitstream {
 inline auto PackedIndependentRegions::pir_num_packed_frames_minus1(std::uint8_t value) -> auto & {

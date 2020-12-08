@@ -34,7 +34,7 @@
 #include <TMIV/MivBitstream/SeiRBSP.h>
 
 #include <TMIV/Common/Bytestream.h>
-#include <TMIV/MivBitstream/verify.h>
+#include <TMIV/Common/verify.h>
 
 #include <utility>
 

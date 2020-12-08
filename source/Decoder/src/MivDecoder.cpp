@@ -33,7 +33,7 @@
 
 #include <TMIV/Decoder/MivDecoder.h>
 
-#include <TMIV/MivBitstream/verify.h>
+#include <TMIV/Common/verify.h>
 
 #include <fmt/format.h>
 

@@ -31,9 +31,9 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <TMIV/Common/verify.h>
 #include <TMIV/MivBitstream/CommonAtlasFrameMivExtension.h>
 #include <TMIV/MivBitstream/CommonAtlasSequenceParameterSetRBSP.h>
-#include <TMIV/MivBitstream/verify.h>
 
 #include <cmath>
 

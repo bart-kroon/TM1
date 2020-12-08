@@ -31,8 +31,8 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_MIVBITSTREAM_VERIFY_H_
-#define _TMIV_MIVBITSTREAM_VERIFY_H_
+#ifndef _TMIV_COMMON_VERIFY_H_
+#define _TMIV_COMMON_VERIFY_H_
 
 #include <cstdlib>
 #include <iostream>
@@ -42,36 +42,41 @@
 // These checks do not relate to ISO/IEC 23090-12 extensions or restrictions.
 #define VERIFY_V3CBITSTREAM(condition)                                                             \
   static_cast<void>(                                                                               \
-      (!!(condition) || (::TMIV::MivBitstream::v3cError(#condition, __FILE__, __LINE__), false)))
-#define V3CBITSTREAM_ERROR(what) ::TMIV::MivBitstream::v3cError(what, __FILE__, __LINE__)
+      (!!(condition) || (::TMIV::Common::v3cError(#condition, __FILE__, __LINE__), false)))
+#define V3CBITSTREAM_ERROR(what) ::TMIV::Common::v3cError(what, __FILE__, __LINE__)
 
 // Check against (draft) ISO/IEC 23090-12 MIV specification
 //
 // These checks relate to ISO/IEC 23090-12 extensions of or restrictions on ISO/IEC 23090-5.
 #define VERIFY_MIVBITSTREAM(condition)                                                             \
   static_cast<void>(                                                                               \
-      (!!(condition) || (::TMIV::MivBitstream::mivError(#condition, __FILE__, __LINE__), false)))
-#define MIVBITSTREAM_ERROR(what) ::TMIV::MivBitstream::mivError(what, __FILE__, __LINE__)
+      (!!(condition) || (::TMIV::Common::mivError(#condition, __FILE__, __LINE__), false)))
+#define MIVBITSTREAM_ERROR(what) ::TMIV::Common::mivError(what, __FILE__, __LINE__)
 
 // Known limitation of the current implementation (not in line with ISO/IEC 23090-12)
 #define LIMITATION(condition)                                                                      \
   static_cast<void>(                                                                               \
-      (!!(condition) ||                                                                            \
-       (::TMIV::MivBitstream::notImplemented(#condition, __FILE__, __LINE__), false)))
-#define NOT_IMPLEMENTED(what) ::TMIV::MivBitstream::notImplemented(what, __FILE__, __LINE__)
+      (!!(condition) || (::TMIV::Common::notImplemented(#condition, __FILE__, __LINE__), false)))
+#define NOT_IMPLEMENTED(what) ::TMIV::Common::notImplemented(what, __FILE__, __LINE__)
 
 // Check against profile-tier-level information and warn when outside of TMIV comfort zone, but
 // bravely carry on
 #define CONSTRAIN_PTL(condition)                                                                   \
-  static_cast<void>((!!(condition) ||                                                              \
-                     (::TMIV::MivBitstream::ptlWarning(#condition, __FILE__, __LINE__), false)))
-#define PTL_WARNING(what) ::TMIV::MivBitstream::ptlWarning(what, __FILE__, __LINE__)
+  static_cast<void>(                                                                               \
+      (!!(condition) || (::TMIV::Common::ptlWarning(#condition, __FILE__, __LINE__), false)))
+#define PTL_WARNING(what) ::TMIV::Common::ptlWarning(what, __FILE__, __LINE__)
 
-namespace TMIV::MivBitstream {
+namespace TMIV::Common {
+// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
+#define VERIFY_BITSTREAM(condition)                                                                \
+  static_cast<void>(!!(condition) ||                                                               \
+                    (::TMIV::Common::bitstreamError(#condition, __FILE__, __LINE__), false))
+
+[[noreturn]] void bitstreamError(char const *condition, char const *file, int line);
 [[noreturn]] void v3cError(char const *condition, char const *file, int line);
 [[noreturn]] void mivError(char const *condition, char const *file, int line);
 [[noreturn]] void notImplemented(char const *condition, char const *file, int line);
 void ptlWarning(char const *condition, char const *file, int line);
-} // namespace TMIV::MivBitstream
+} // namespace TMIV::Common
 
 #endif

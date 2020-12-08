@@ -35,7 +35,7 @@
 
 #include <TMIV/Common/Bitstream.h>
 #include <TMIV/Common/Bytestream.h>
-#include <TMIV/MivBitstream/verify.h>
+#include <TMIV/Common/verify.h>
 
 namespace TMIV::MivBitstream {
 SampleStreamNalHeader::SampleStreamNalHeader(int ssnh_unit_size_precision_bytes_minus1)

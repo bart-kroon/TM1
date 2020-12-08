@@ -35,13 +35,9 @@
 #error "Include the .h, not the .hpp"
 #endif
 
+#include <TMIV/Common/verify.h>
+
 namespace TMIV::Common {
-// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
-#define VERIFY_BITSTREAM(condition)                                                                \
-  (void)(!!(condition) || ::TMIV::Common::verifyBitstreamFailed(#condition, __FILE__, __LINE__))
-
-auto verifyBitstreamFailed(char const *condition, char const *file, int line) -> bool;
-
 using uchar = std::make_unsigned_t<std::istream::char_type>;
 constexpr unsigned charBits = std::numeric_limits<uchar>::digits;
 

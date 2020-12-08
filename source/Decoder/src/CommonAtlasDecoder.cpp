@@ -33,7 +33,7 @@
 
 #include <TMIV/Decoder/CommonAtlasDecoder.h>
 
-#include <TMIV/MivBitstream/verify.h>
+#include <TMIV/Common/verify.h>
 
 #include "NalUnitSemantics.h"
 

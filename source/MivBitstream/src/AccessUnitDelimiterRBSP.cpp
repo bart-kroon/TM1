@@ -33,7 +33,7 @@
 
 #include <TMIV/MivBitstream/AccessUnitDelimiterRBSP.h>
 
-#include <TMIV/MivBitstream/verify.h>
+#include <TMIV/Common/verify.h>
 
 namespace TMIV::MivBitstream {
 auto operator<<(std::ostream &stream, AframeType x) -> std::ostream & {

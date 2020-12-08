@@ -53,9 +53,9 @@
     "haveOccupancyVideo": true,
     "haveTextureVideo": true,
     "inputDirectory": ".",
-    "inputGeometryPathFmt": "S{1}/{3}_depth_{4}x{5}_{6}.yuv",
+    "inputGeometryPathFmt": "{1}/{3}_depth_{4}x{5}_{6}.yuv",
     "inputSequenceConfigPathFmt": "ctc/sequences/{1}.json",
-    "inputTexturePathFmt": "S{1}/{3}_texture_{4}x{5}_{6}.yuv",
+    "inputTexturePathFmt": "{1}/{3}_texture_{4}x{5}_{6}.yuv",
     "intraPeriod": 32,
     "maxAtlases": 2,
     "maxEntities": 1,
@@ -64,9 +64,9 @@
     "numGroups": 1,
     "OmafV1CompatibleFlag": false,
     "oneViewPerAtlasFlag": false,
-    "outputBitstreamPathFmt": "O{0}/S{1}/TMIV_O{0}_S{1}.bit",
+    "outputBitstreamPathFmt": "O{0}/{1}/TMIV_O{0}_{1}.bit",
     "outputDirectory": ".",
-    "outputGeometryVideoDataPathFmt": "O{0}/S{1}/TMIV_O{0}_S{1}_geo_c{3:02}_{4}x{5}_yuv420p10le.yuv",
-    "outputOccupancyVideoDataPathFmt": "O{0}/S{1}/TMIV_O{0}_S{1}_occ_c{3:02}_{4}x{5}_yuv420p10le.yuv",
-    "outputTextureVideoDataPathFmt": "O{0}/S{1}/TMIV_O{0}_S{1}_tex_c{3:02}_{4}x{5}_yuv420p10le.yuv"
+    "outputGeometryVideoDataPathFmt": "O{0}/{1}/TMIV_O{0}_{1}_geo_c{3:02}_{4}x{5}_yuv420p10le.yuv",
+    "outputOccupancyVideoDataPathFmt": "O{0}/{1}/TMIV_O{0}_{1}_occ_c{3:02}_{4}x{5}_yuv420p10le.yuv",
+    "outputTextureVideoDataPathFmt": "O{0}/{1}/TMIV_O{0}_{1}_tex_c{3:02}_{4}x{5}_yuv420p10le.yuv"
 }

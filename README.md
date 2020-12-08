@@ -243,11 +243,11 @@ For this example, we will be using the MIV anchor [A_1_TMIV_encode.json](/config
    * Your organization or one of the maintainers of this repository may be able to provide the test sequences to you.
    * Make sure to comply to the naming scheme defined in `inputTexturePathFmt` and `inputGeometryPathFmt`.
    * For example, when `inputDirectory` is equal to `/Content`,
-   * and given that `inputGeometryPathFmt` is equal to `S{1}/{3}_depth_{4}x{5}_{6}.yuv`,
+   * and given that `inputGeometryPathFmt` is equal to `{1}/{3}_depth_{4}x{5}_{6}.yuv`,
    * then for content ID `A` (ClassroomVideo),
    * a source view `v3` from the set of source views,
    * a video format derived from the sequence configuration `yuv420p16le`,
-   * the calculated path for the uncompressed depth map sequene of that view is `/Content/SA/v3_depth_4096x2048_yuv420p16le.yuv`.
+   * the calculated path for the uncompressed depth map sequene of that view is `/Content/A/v3_depth_4096x2048_yuv420p16le.yuv`.
 1. Choose an output directory, arbitrarily called `/Experiment` in this description. The directory will be created when it does not yet exist.
 1. Finally, assuming that you have built and installed the encoder application, you can start it from the command line:
 
@@ -269,11 +269,11 @@ This will in general result in the following files under the `outputDirectory`:
 In this example the following files will be produced:
 
 ```
-/Experiment/A97/SA/TMIV_A97_SA.bit
-/Experiment/A97/SA/TMIV_A97_SA_geo_c00_2048x1088_yuv420p10le.yuv
-/Experiment/A97/SA/TMIV_A97_SA_geo_c01_2048x1088_yuv420p10le.yuv
-/Experiment/A97/SA/TMIV_A97_SA_tex_c00_4096x2176_yuv420p10le.yuv
-/Experiment/A97/SA/TMIV_A97_SA_tex_c01_4096x2176_yuv420p10le.yuv
+/Experiment/A97/A/TMIV_A97_A.bit
+/Experiment/A97/A/TMIV_A97_A_geo_c00_2048x1088_yuv420p10le.yuv
+/Experiment/A97/A/TMIV_A97_A_geo_c01_2048x1088_yuv420p10le.yuv
+/Experiment/A97/A/TMIV_A97_A_tex_c00_4096x2176_yuv420p10le.yuv
+/Experiment/A97/A/TMIV_A97_A_tex_c01_4096x2176_yuv420p10le.yuv
 ```
 
 ## Running the HM encoder
@@ -291,18 +291,18 @@ For example:
 ```shell
 /Workspace/tmiv_install/bin/TAppEncoder \
   -c /Workspace/tmiv/config/ctc/miv_anchor/A_2_HM_encode_tex.cfg \
-  -i /Experiment/A97/SA/TMIV_A97_SA_tex_c00_4096x2176_yuv420p10le.yuv \
-  -b /Experiment/A97/SA/QP3/TMIV_A97_SA_QP3_tex_c00.bit \
+  -i /Experiment/A97/A/TMIV_A97_A_tex_c00_4096x2176_yuv420p10le.yuv \
+  -b /Experiment/A97/A/QP3/TMIV_A97_A_QP3_tex_c00.bit \
   -wdt 2320 -hgt 960 -q 30 -f 97 -fr 30
 ```
 
 In this example the following files will be produced after four invocations:
 
 ```
-/Experiment/A97/SA/QP3/TMIV_A97_SA_QP3_geo_c00.bit
-/Experiment/A97/SA/QP3/TMIV_A97_SA_QP3_geo_c01.bit
-/Experiment/A97/SA/QP3/TMIV_A97_SA_QP3_tex_c00.bit
-/Experiment/A97/SA/QP3/TMIV_A97_SA_QP3_tex_c01.bit
+/Experiment/A97/A/QP3/TMIV_A97_A_QP3_geo_c00.bit
+/Experiment/A97/A/QP3/TMIV_A97_A_QP3_geo_c01.bit
+/Experiment/A97/A/QP3/TMIV_A97_A_QP3_tex_c00.bit
+/Experiment/A97/A/QP3/TMIV_A97_A_QP3_tex_c01.bit
 ```
 
 ### Running the TMIV multiplexer
@@ -327,7 +327,7 @@ This will in general result in the following file under the `outputDirectory`:
 In this example the following file will be produced:
 
 ```
-/Experiment/A97/SA/QP3/TMIV_A97_SA_QP3.bit
+/Experiment/A97/A/QP3/TMIV_A97_A_QP3.bit
 ```
 
 ## Running the TMIV decoder
@@ -361,8 +361,8 @@ This will in general result in the following files under the `outputDirectory`:
 In this example the following files will be produced:
 
 ```
-/Experiment/A97/SA/QP3/A97_SA_QP3_p02_tex_2048x2048_yuv420p10le.yuv
-/Experiment/A97/SA/QP3/A97_SA_QP3_v11_tex_4096x2048_yuv420p10le.yuv
+/Experiment/A97/A/QP3/A97_A_QP3_p02_tex_2048x2048_yuv420p10le.yuv
+/Experiment/A97/A/QP3/A97_A_QP3_v11_tex_4096x2048_yuv420p10le.yuv
 ```
 
 ## Running the TMIV renderer
@@ -398,8 +398,8 @@ This will in general result in the following files under the `outputDirectory`:
 In this example the following files will be produced:
 
 ```
-/Experiment/R97/SA/R0/R97_SA_R0_p02_tex_2048x2048_yuv420p10le.yuv
-/Experiment/R97/SA/R0/R97_SA_R0_v11_tex_4096x2048_yuv420p10le.yuv
+/Experiment/R97/A/R0/R97_A_R0_p02_tex_2048x2048_yuv420p10le.yuv
+/Experiment/R97/A/R0/R97_A_R0_v11_tex_4096x2048_yuv420p10le.yuv
 ```
 
 ## Instructions for test conditions

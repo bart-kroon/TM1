@@ -103,11 +103,11 @@ class IntegrationTest:
         self.checkDirExists('TMIV source', self.tmivSourceDir,
                             os.path.join('README.md'))
         self.checkDirExists('content', self.contentDir, os.path.join(
-            'SE', 'v13_texture_1920x1080_yuv420p10le.yuv'))
+            'E', 'v13_texture_1920x1080_yuv420p10le.yuv'))
         os.makedirs(self.testDir, exist_ok=True)
 
     def testMivAnchor(self, executor):
-        os.makedirs(os.path.join(self.testDir, 'A3/SE/QP3'), exist_ok=True)
+        os.makedirs(os.path.join(self.testDir, 'A3/E/QP3'), exist_ok=True)
 
         f1 = self.launchCommand(executor, [], [
             '{0}/bin/Encoder',
@@ -116,48 +116,48 @@ class IntegrationTest:
             '-p', 'inputDirectory', '{2}',
             '-p', 'outputDirectory', '{3}',
             '-n', '3', '-s', 'E', '-p', 'intraPeriod', '2'],
-            '{3}/A3/SE/TMIV_A3_SE.log',
-            ['A3/SE/TMIV_A3_SE.bit',
-             'A3/SE/TMIV_A3_SE_geo_c00_960x2320_yuv420p10le.yuv',
-             'A3/SE/TMIV_A3_SE_geo_c01_960x2320_yuv420p10le.yuv',
-             'A3/SE/TMIV_A3_SE_tex_c00_1920x4640_yuv420p10le.yuv',
-             'A3/SE/TMIV_A3_SE_tex_c01_1920x4640_yuv420p10le.yuv'])
+            '{3}/A3/E/TMIV_A3_E.log',
+            ['A3/E/TMIV_A3_E.bit',
+             'A3/E/TMIV_A3_E_geo_c00_960x2320_yuv420p10le.yuv',
+             'A3/E/TMIV_A3_E_geo_c01_960x2320_yuv420p10le.yuv',
+             'A3/E/TMIV_A3_E_tex_c00_1920x4640_yuv420p10le.yuv',
+             'A3/E/TMIV_A3_E_tex_c01_1920x4640_yuv420p10le.yuv'])
 
         f2_1 = self.launchCommand(executor, [f1], [
             '{0}/bin/TAppEncoder',
             '-c', '{1}/config/ctc/miv_anchor/A_2_HM_encode_geo.cfg',
-            '-i', '{3}/A3/SE/TMIV_A3_SE_geo_c00_960x2320_yuv420p10le.yuv',
-            '-b', '{3}/A3/SE/QP3/TMIV_A3_SE_QP3_geo_c00.bit',
+            '-i', '{3}/A3/E/TMIV_A3_E_geo_c00_960x2320_yuv420p10le.yuv',
+            '-b', '{3}/A3/E/QP3/TMIV_A3_E_QP3_geo_c00.bit',
             '-wdt', '960', '-hgt', '2320', '-q', '20', '-f', '3', '-fr', '30'],
-            '{3}/A3/SE/QP3/TMIV_A3_SE_QP3_geo_c00.log',
-            ['A3/SE/QP3/TMIV_A3_SE_QP3_geo_c00.bit'])
+            '{3}/A3/E/QP3/TMIV_A3_E_QP3_geo_c00.log',
+            ['A3/E/QP3/TMIV_A3_E_QP3_geo_c00.bit'])
 
         f2_2 = self.launchCommand(executor, [f1], [
             '{0}/bin/TAppEncoder',
             '-c', '{1}/config/ctc/miv_anchor/A_2_HM_encode_geo.cfg',
-            '-i', '{3}/A3/SE/TMIV_A3_SE_geo_c01_960x2320_yuv420p10le.yuv',
-            '-b', '{3}/A3/SE/QP3/TMIV_A3_SE_QP3_geo_c01.bit',
+            '-i', '{3}/A3/E/TMIV_A3_E_geo_c01_960x2320_yuv420p10le.yuv',
+            '-b', '{3}/A3/E/QP3/TMIV_A3_E_QP3_geo_c01.bit',
             '-wdt', '960', '-hgt', '2320', '-q', '20', '-f', '3', '-fr', '30'],
-            '{3}/A3/SE/QP3/TMIV_A3_SE_QP3_geo_c01.log',
-            ['A3/SE/QP3/TMIV_A3_SE_QP3_geo_c01.bit'])
+            '{3}/A3/E/QP3/TMIV_A3_E_QP3_geo_c01.log',
+            ['A3/E/QP3/TMIV_A3_E_QP3_geo_c01.bit'])
 
         f2_3 = self.launchCommand(executor, [f1], [
             '{0}/bin/TAppEncoder',
             '-c', '{1}/config/ctc/miv_anchor/A_2_HM_encode_tex.cfg',
-            '-i', '{3}/A3/SE/TMIV_A3_SE_tex_c00_1920x4640_yuv420p10le.yuv',
-            '-b', '{3}/A3/SE/QP3/TMIV_A3_SE_QP3_tex_c00.bit',
+            '-i', '{3}/A3/E/TMIV_A3_E_tex_c00_1920x4640_yuv420p10le.yuv',
+            '-b', '{3}/A3/E/QP3/TMIV_A3_E_QP3_tex_c00.bit',
             '-wdt', '1920', '-hgt', '4640', '-q', '43', '-f', '3', '-fr', '30'],
-            '{3}/A3/SE/QP3/TMIV_A3_SE_QP3_tex_c00.log',
-            ['A3/SE/QP3/TMIV_A3_SE_QP3_tex_c00.bit'])
+            '{3}/A3/E/QP3/TMIV_A3_E_QP3_tex_c00.log',
+            ['A3/E/QP3/TMIV_A3_E_QP3_tex_c00.bit'])
 
         f2_4 = self.launchCommand(executor, [f1], [
             '{0}/bin/TAppEncoder',
             '-c', '{1}/config/ctc/miv_anchor/A_2_HM_encode_tex.cfg',
-            '-i', '{3}/A3/SE/TMIV_A3_SE_tex_c01_1920x4640_yuv420p10le.yuv',
-            '-b', '{3}/A3/SE/QP3/TMIV_A3_SE_QP3_tex_c01.bit',
+            '-i', '{3}/A3/E/TMIV_A3_E_tex_c01_1920x4640_yuv420p10le.yuv',
+            '-b', '{3}/A3/E/QP3/TMIV_A3_E_QP3_tex_c01.bit',
             '-wdt', '1920', '-hgt', '4640', '-q', '43', '-f', '3', '-fr', '30'],
-            '{3}/A3/SE/QP3/TMIV_A3_SE_QP3_tex_c01.log',
-            ['A3/SE/QP3/TMIV_A3_SE_QP3_tex_c01.bit'])
+            '{3}/A3/E/QP3/TMIV_A3_E_QP3_tex_c01.log',
+            ['A3/E/QP3/TMIV_A3_E_QP3_tex_c01.bit'])
 
         f3 = self.launchCommand(executor, [f2_1, f2_2, f2_3, f2_4], [
             '{0}/bin/Multiplexer',
@@ -166,19 +166,19 @@ class IntegrationTest:
             '-p', 'inputDirectory', '{3}',
             '-p', 'outputDirectory', '{3}',
             '-n', '3', '-s', 'E', '-r', 'QP3'],
-            '{3}/A3/SE/QP3/TMIV_A3_SE_QP3.log',
-            ['A3/SE/QP3/TMIV_A3_SE_QP3.bit'])
+            '{3}/A3/E/QP3/TMIV_A3_E_QP3.log',
+            ['A3/E/QP3/TMIV_A3_E_QP3.bit'])
 
         f4_1 = self.launchCommand(executor, [f3], [
             '{0}/bin/Parser',
-            '-b', '{3}/A3/SE/QP3/TMIV_A3_SE_QP3.bit'],
-            '{3}/A3/SE/QP3/TMIV_A3_SE_QP3.hls',
+            '-b', '{3}/A3/E/QP3/TMIV_A3_E_QP3.bit'],
+            '{3}/A3/E/QP3/TMIV_A3_E_QP3.hls',
             [])
 
         f4_2 = self.launchCommand(executor, [f3], [
             '{0}/bin/BitrateReport',
-            '-b', '{3}/A3/SE/QP3/TMIV_A3_SE_QP3.bit'],
-            '{3}/A3/SE/QP3/TMIV_A3_SE_QP3.csv',
+            '-b', '{3}/A3/E/QP3/TMIV_A3_E_QP3.bit'],
+            '{3}/A3/E/QP3/TMIV_A3_E_QP3.csv',
             [])
 
         f4_3 = self.launchCommand(executor, [f3], [
@@ -188,14 +188,14 @@ class IntegrationTest:
                   '-p', 'inputDirectory', '{3}',
                   '-p', 'outputDirectory', '{3}',
             '-n', '3', '-N', '3', '-s', 'E', '-r', 'QP3', '-v', 'v11'],
-            '{3}/A3/SE/QP3/A3_SE_QP3_v11.log',
-            ['A3/SE/QP3/A3_SE_QP3_v11_tex_1920x1080_yuv420p10le.yuv'])
+            '{3}/A3/E/QP3/A3_E_QP3_v11.log',
+            ['A3/E/QP3/A3_E_QP3_v11_tex_1920x1080_yuv420p10le.yuv'])
 
         return [f4_1, f4_2, f4_3]
 
     def testMivViewAnchor(self, executor):
-        os.makedirs(os.path.join(self.testDir, 'V3/SD/QP3'), exist_ok=True)
-        os.makedirs(os.path.join(self.testDir, 'V3/SD/R0'), exist_ok=True)
+        os.makedirs(os.path.join(self.testDir, 'V3/D/QP3'), exist_ok=True)
+        os.makedirs(os.path.join(self.testDir, 'V3/D/R0'), exist_ok=True)
 
         f1 = self.launchCommand(executor, [], [
             '{0}/bin/Encoder',
@@ -204,12 +204,12 @@ class IntegrationTest:
             '-p', 'inputDirectory', '{2}',
             '-p', 'outputDirectory', '{3}',
             '-n', '3', '-s', 'D', '-p', 'intraPeriod', '2'],
-            '{3}/V3/SD/TMIV_V3_SD.log',
-            ['V3/SD/TMIV_V3_SD.bit',
-             'V3/SD/TMIV_V3_SD_geo_c00_1024x2176_yuv420p10le.yuv',
-             'V3/SD/TMIV_V3_SD_geo_c01_1024x2176_yuv420p10le.yuv',
-             'V3/SD/TMIV_V3_SD_tex_c00_2048x4352_yuv420p10le.yuv',
-             'V3/SD/TMIV_V3_SD_tex_c01_2048x4352_yuv420p10le.yuv'])
+            '{3}/V3/D/TMIV_V3_D.log',
+            ['V3/D/TMIV_V3_D.bit',
+             'V3/D/TMIV_V3_D_geo_c00_1024x2176_yuv420p10le.yuv',
+             'V3/D/TMIV_V3_D_geo_c01_1024x2176_yuv420p10le.yuv',
+             'V3/D/TMIV_V3_D_tex_c00_2048x4352_yuv420p10le.yuv',
+             'V3/D/TMIV_V3_D_tex_c01_2048x4352_yuv420p10le.yuv'])
 
         # Test out-of-band video by skipping HM encoding and TMIV multiplexing stages
         f5 = self.launchCommand(executor, [f1], [
@@ -218,48 +218,48 @@ class IntegrationTest:
             '-p', 'configDirectory', '{1}/config',
             '-p', 'inputDirectory', '{3}',
             '-p', 'outputDirectory', '{3}',
-            '-p', 'inputBitstreamPathFmt', 'V{{0}}/S{{1}}/TMIV_V{{0}}_S{{1}}.bit',
-            '-p', 'inputGeometryVideoFramePathFmt', 'V{{0}}/S{{1}}/TMIV_V{{0}}_S{{1}}_geo_c{{3:02}}_{{4}}x{{5}}_yuv420p10le.yuv',
-            '-p', 'inputTextureVideoFramePathFmt', 'V{{0}}/S{{1}}/TMIV_V{{0}}_S{{1}}_tex_c{{3:02}}_{{4}}x{{5}}_yuv420p10le.yuv',
+            '-p', 'inputBitstreamPathFmt', 'V{{0}}/{{1}}/TMIV_V{{0}}_{{1}}.bit',
+            '-p', 'inputGeometryVideoFramePathFmt', 'V{{0}}/{{1}}/TMIV_V{{0}}_{{1}}_geo_c{{3:02}}_{{4}}x{{5}}_yuv420p10le.yuv',
+            '-p', 'inputTextureVideoFramePathFmt', 'V{{0}}/{{1}}/TMIV_V{{0}}_{{1}}_tex_c{{3:02}}_{{4}}x{{5}}_yuv420p10le.yuv',
             '-n', '3', '-N', '3', '-s', 'D', '-r', 'R0', '-v', 'v14'],
-            '{3}/V3/SD/R0/V3_SD_R0_v14.log',
-            ['V3/SD/R0/V3_SD_R0_v14_tex_2048x1088_yuv420p10le.yuv'])       
+            '{3}/V3/D/R0/V3_D_R0_v14.log',
+            ['V3/D/R0/V3_D_R0_v14_tex_2048x1088_yuv420p10le.yuv'])       
 
         f2_1 = self.launchCommand(executor, [f1], [
             '{0}/bin/TAppEncoder',
             '-c', '{1}/config/ctc/miv_view_anchor/V_2_HM_encode_geo.cfg',
-            '-i', '{3}/V3/SD/TMIV_V3_SD_geo_c00_1024x2176_yuv420p10le.yuv',
-            '-b', '{3}/V3/SD/QP3/TMIV_V3_SD_QP3_geo_c00.bit',
+            '-i', '{3}/V3/D/TMIV_V3_D_geo_c00_1024x2176_yuv420p10le.yuv',
+            '-b', '{3}/V3/D/QP3/TMIV_V3_D_QP3_geo_c00.bit',
             '-wdt', '1024', '-hgt', '2176', '-q', '13', '-f', '3', '-fr', '30'],
-            '{3}/V3/SD/QP3/TMIV_V3_SD_QP3_geo_c00.log',
-            ['V3/SD/QP3/TMIV_V3_SD_QP3_geo_c00.bit'])
+            '{3}/V3/D/QP3/TMIV_V3_D_QP3_geo_c00.log',
+            ['V3/D/QP3/TMIV_V3_D_QP3_geo_c00.bit'])
 
         f2_2 = self.launchCommand(executor, [f1], [
             '{0}/bin/TAppEncoder',
             '-c', '{1}/config/ctc/miv_view_anchor/V_2_HM_encode_geo.cfg',
-            '-i', '{3}/V3/SD/TMIV_V3_SD_geo_c01_1024x2176_yuv420p10le.yuv',
-            '-b', '{3}/V3/SD/QP3/TMIV_V3_SD_QP3_geo_c01.bit',
+            '-i', '{3}/V3/D/TMIV_V3_D_geo_c01_1024x2176_yuv420p10le.yuv',
+            '-b', '{3}/V3/D/QP3/TMIV_V3_D_QP3_geo_c01.bit',
             '-wdt', '1024', '-hgt', '2176', '-q', '13', '-f', '3', '-fr', '30'],
-            '{3}/V3/SD/QP3/TMIV_V3_SD_QP3_geo_c01.log',
-            ['V3/SD/QP3/TMIV_V3_SD_QP3_geo_c01.bit'])
+            '{3}/V3/D/QP3/TMIV_V3_D_QP3_geo_c01.log',
+            ['V3/D/QP3/TMIV_V3_D_QP3_geo_c01.bit'])
 
         f2_3 = self.launchCommand(executor, [f1], [
             '{0}/bin/TAppEncoder',
             '-c', '{1}/config/ctc/miv_view_anchor/V_2_HM_encode_tex.cfg',
-            '-i', '{3}/V3/SD/TMIV_V3_SD_tex_c00_2048x4352_yuv420p10le.yuv',
-            '-b', '{3}/V3/SD/QP3/TMIV_V3_SD_QP3_tex_c00.bit',
+            '-i', '{3}/V3/D/TMIV_V3_D_tex_c00_2048x4352_yuv420p10le.yuv',
+            '-b', '{3}/V3/D/QP3/TMIV_V3_D_QP3_tex_c00.bit',
             '-wdt', '2048', '-hgt', '4352', '-q', '34', '-f', '3', '-fr', '30'],
-            '{3}/V3/SD/QP3/TMIV_V3_SD_QP3_tex_c00.log',
-            ['V3/SD/QP3/TMIV_V3_SD_QP3_tex_c00.bit'])
+            '{3}/V3/D/QP3/TMIV_V3_D_QP3_tex_c00.log',
+            ['V3/D/QP3/TMIV_V3_D_QP3_tex_c00.bit'])
 
         f2_4 = self.launchCommand(executor, [f1], [
             '{0}/bin/TAppEncoder',
             '-c', '{1}/config/ctc/miv_view_anchor/V_2_HM_encode_tex.cfg',
-            '-i', '{3}/V3/SD/TMIV_V3_SD_tex_c01_2048x4352_yuv420p10le.yuv',
-            '-b', '{3}/V3/SD/QP3/TMIV_V3_SD_QP3_tex_c01.bit',
+            '-i', '{3}/V3/D/TMIV_V3_D_tex_c01_2048x4352_yuv420p10le.yuv',
+            '-b', '{3}/V3/D/QP3/TMIV_V3_D_QP3_tex_c01.bit',
             '-wdt', '2048', '-hgt', '4352', '-q', '34', '-f', '3', '-fr', '30'],
-            '{3}/V3/SD/QP3/TMIV_V3_SD_QP3_tex_c01.log',
-            ['V3/SD/QP3/TMIV_V3_SD_QP3_tex_c01.bit'])
+            '{3}/V3/D/QP3/TMIV_V3_D_QP3_tex_c01.log',
+            ['V3/D/QP3/TMIV_V3_D_QP3_tex_c01.bit'])
 
         f3 = self.launchCommand(executor, [f2_1, f2_2, f2_3, f2_4], [
             '{0}/bin/Multiplexer',
@@ -268,19 +268,19 @@ class IntegrationTest:
             '-p', 'inputDirectory', '{3}',
             '-p', 'outputDirectory', '{3}',
             '-n', '3', '-s', 'D', '-r', 'QP3'],
-            '{3}/V3/SD/QP3/TMIV_V3_SD_QP3.log',
-            ['V3/SD/QP3/TMIV_V3_SD_QP3.bit'])
+            '{3}/V3/D/QP3/TMIV_V3_D_QP3.log',
+            ['V3/D/QP3/TMIV_V3_D_QP3.bit'])
 
         f4_1 = self.launchCommand(executor, [f3], [
             '{0}/bin/Parser',
-            '-b', '{3}/V3/SD/QP3/TMIV_V3_SD_QP3.bit'],
-            '{3}/V3/SD/QP3/TMIV_V3_SD_QP3.hls',
+            '-b', '{3}/V3/D/QP3/TMIV_V3_D_QP3.bit'],
+            '{3}/V3/D/QP3/TMIV_V3_D_QP3.hls',
             [])
 
         f4_2 = self.launchCommand(executor, [f3], [
             '{0}/bin/BitrateReport',
-            '-b', '{3}/V3/SD/QP3/TMIV_V3_SD_QP3.bit'],
-            '{3}/V3/SD/QP3/TMIV_V3_SD_QP3.csv',
+            '-b', '{3}/V3/D/QP3/TMIV_V3_D_QP3.bit'],
+            '{3}/V3/D/QP3/TMIV_V3_D_QP3.csv',
             [])
 
         f4_3 = self.launchCommand(executor, [f3], [
@@ -290,13 +290,13 @@ class IntegrationTest:
             '-p', 'inputDirectory', '{3}',
             '-p', 'outputDirectory', '{3}',
             '-n', '3', '-N', '3', '-s', 'D', '-r', 'QP3', '-P', 'p02'],
-            '{3}/V3/SD/QP3/V3_SD_QP3_p02.log',
-            ['V3/SD/QP3/V3_SD_QP3_p02_tex_1920x1080_yuv420p10le.yuv'])
+            '{3}/V3/D/QP3/V3_D_QP3_p02.log',
+            ['V3/D/QP3/V3_D_QP3_p02_tex_1920x1080_yuv420p10le.yuv'])
 
         return [f4_1, f4_2, f4_3, f5]
 
     def testMivDsdeAnchor(self, executor):
-        os.makedirs(os.path.join(self.testDir, 'G3/SN/QP3'), exist_ok=True)
+        os.makedirs(os.path.join(self.testDir, 'G3/N/QP3'), exist_ok=True)
 
         f1 = self.launchCommand(executor, [], [
             '{0}/bin/Encoder',
@@ -305,48 +305,48 @@ class IntegrationTest:
             '-p', 'inputDirectory', '{2}',
             '-p', 'outputDirectory', '{3}',
             '-n', '3', '-s', 'N', '-p', 'intraPeriod', '2'],
-            '{3}/G3/SN/TMIV_G3_SN.log',
-            ['G3/SN/TMIV_G3_SN.bit',
-             'G3/SN/TMIV_G3_SN_tex_c00_2048x4352_yuv420p10le.yuv',
-             'G3/SN/TMIV_G3_SN_tex_c01_2048x4352_yuv420p10le.yuv',
-             'G3/SN/TMIV_G3_SN_tex_c02_2048x4352_yuv420p10le.yuv',
-             'G3/SN/TMIV_G3_SN_tex_c03_2048x4352_yuv420p10le.yuv'])
+            '{3}/G3/N/TMIV_G3_N.log',
+            ['G3/N/TMIV_G3_N.bit',
+             'G3/N/TMIV_G3_N_tex_c00_2048x4352_yuv420p10le.yuv',
+             'G3/N/TMIV_G3_N_tex_c01_2048x4352_yuv420p10le.yuv',
+             'G3/N/TMIV_G3_N_tex_c02_2048x4352_yuv420p10le.yuv',
+             'G3/N/TMIV_G3_N_tex_c03_2048x4352_yuv420p10le.yuv'])
 
         f2_1 = self.launchCommand(executor, [f1], [
             '{0}/bin/TAppEncoder',
             '-c', '{1}/config/ctc/miv_dsde_anchor/G_2_HM_encode_tex.cfg',
-            '-i', '{3}/G3/SN/TMIV_G3_SN_tex_c00_2048x4352_yuv420p10le.yuv',
-            '-b', '{3}/G3/SN/QP3/TMIV_G3_SN_QP3_tex_c00.bit',
+            '-i', '{3}/G3/N/TMIV_G3_N_tex_c00_2048x4352_yuv420p10le.yuv',
+            '-b', '{3}/G3/N/QP3/TMIV_G3_N_QP3_tex_c00.bit',
             '-wdt', '2048', '-hgt', '4352', '-q', '26', '-f', '3', '-fr', '30'],
-            '{3}/G3/SN/QP3/TMIV_G3_SN_QP3_tex_c00.log',
-            ['G3/SN/QP3/TMIV_G3_SN_QP3_tex_c00.bit'])
+            '{3}/G3/N/QP3/TMIV_G3_N_QP3_tex_c00.log',
+            ['G3/N/QP3/TMIV_G3_N_QP3_tex_c00.bit'])
 
         f2_2 = self.launchCommand(executor, [f1], [
             '{0}/bin/TAppEncoder',
             '-c', '{1}/config/ctc/miv_dsde_anchor/G_2_HM_encode_tex.cfg',
-            '-i', '{3}/G3/SN/TMIV_G3_SN_tex_c01_2048x4352_yuv420p10le.yuv',
-            '-b', '{3}/G3/SN/QP3/TMIV_G3_SN_QP3_tex_c01.bit',
+            '-i', '{3}/G3/N/TMIV_G3_N_tex_c01_2048x4352_yuv420p10le.yuv',
+            '-b', '{3}/G3/N/QP3/TMIV_G3_N_QP3_tex_c01.bit',
             '-wdt', '2048', '-hgt', '4352', '-q', '26', '-f', '3', '-fr', '30'],
-            '{3}/G3/SN/QP3/TMIV_G3_SN_QP3_tex_c01.log',
-            ['G3/SN/QP3/TMIV_G3_SN_QP3_tex_c01.bit'])
+            '{3}/G3/N/QP3/TMIV_G3_N_QP3_tex_c01.log',
+            ['G3/N/QP3/TMIV_G3_N_QP3_tex_c01.bit'])
 
         f2_3 = self.launchCommand(executor, [f1], [
             '{0}/bin/TAppEncoder',
             '-c', '{1}/config/ctc/miv_dsde_anchor/G_2_HM_encode_tex.cfg',
-            '-i', '{3}/G3/SN/TMIV_G3_SN_tex_c02_2048x4352_yuv420p10le.yuv',
-            '-b', '{3}/G3/SN/QP3/TMIV_G3_SN_QP3_tex_c02.bit',
+            '-i', '{3}/G3/N/TMIV_G3_N_tex_c02_2048x4352_yuv420p10le.yuv',
+            '-b', '{3}/G3/N/QP3/TMIV_G3_N_QP3_tex_c02.bit',
             '-wdt', '2048', '-hgt', '4352', '-q', '26', '-f', '3', '-fr', '30'],
-            '{3}/G3/SN/QP3/TMIV_G3_SN_QP3_tex_c02.log',
-            ['G3/SN/QP3/TMIV_G3_SN_QP3_tex_c02.bit'])
+            '{3}/G3/N/QP3/TMIV_G3_N_QP3_tex_c02.log',
+            ['G3/N/QP3/TMIV_G3_N_QP3_tex_c02.bit'])
 
         f2_4 = self.launchCommand(executor, [f1], [
             '{0}/bin/TAppEncoder',
             '-c', '{1}/config/ctc/miv_dsde_anchor/G_2_HM_encode_tex.cfg',
-            '-i', '{3}/G3/SN/TMIV_G3_SN_tex_c03_2048x4352_yuv420p10le.yuv',
-            '-b', '{3}/G3/SN/QP3/TMIV_G3_SN_QP3_tex_c03.bit',
+            '-i', '{3}/G3/N/TMIV_G3_N_tex_c03_2048x4352_yuv420p10le.yuv',
+            '-b', '{3}/G3/N/QP3/TMIV_G3_N_QP3_tex_c03.bit',
             '-wdt', '2048', '-hgt', '4352', '-q', '26', '-f', '3', '-fr', '30'],
-            '{3}/G3/SN/QP3/TMIV_G3_SN_QP3_tex_c03.log',
-            ['G3/SN/QP3/TMIV_G3_SN_QP3_tex_c03.bit'])
+            '{3}/G3/N/QP3/TMIV_G3_N_QP3_tex_c03.log',
+            ['G3/N/QP3/TMIV_G3_N_QP3_tex_c03.bit'])
 
         f3 = self.launchCommand(executor, [f2_1, f2_2, f2_3, f2_4], [
             '{0}/bin/Multiplexer',
@@ -355,19 +355,19 @@ class IntegrationTest:
             '-p', 'inputDirectory', '{3}',
             '-p', 'outputDirectory', '{3}',
             '-n', '3', '-s', 'N', '-r', 'QP3'],
-            '{3}/G3/SN/QP3/TMIV_G3_SN_QP3.log',
-            ['G3/SN/QP3/TMIV_G3_SN_QP3.bit'])
+            '{3}/G3/N/QP3/TMIV_G3_N_QP3.log',
+            ['G3/N/QP3/TMIV_G3_N_QP3.bit'])
 
         f4_1 = self.launchCommand(executor, [f3], [
             '{0}/bin/Parser',
-            '-b', '{3}/G3/SN/QP3/TMIV_G3_SN_QP3.bit'],
-            '{3}/G3/SN/QP3/TMIV_G3_SN_QP3.hls',
+            '-b', '{3}/G3/N/QP3/TMIV_G3_N_QP3.bit'],
+            '{3}/G3/N/QP3/TMIV_G3_N_QP3.hls',
             [])
 
         f4_2 = self.launchCommand(executor, [f3], [
             '{0}/bin/BitrateReport',
-            '-b', '{3}/G3/SN/QP3/TMIV_G3_SN_QP3.bit'],
-            '{3}/G3/SN/QP3/TMIV_G3_SN_QP3.csv',
+            '-b', '{3}/G3/N/QP3/TMIV_G3_N_QP3.bit'],
+            '{3}/G3/N/QP3/TMIV_G3_N_QP3.csv',
             [])
 
         f4_3 = self.launchCommand(executor, [f3], [
@@ -377,20 +377,20 @@ class IntegrationTest:
             '-p', 'inputDirectory', '{3}',
             '-p', 'outputDirectory', '{3}',
             '-n', '3', '-N', '3', '-s', 'N', '-r', 'QP3'],
-            '{3}/G3/SN/QP3/G3_SN_QP3_none.log',
-            ['G3/SN/QP3/TMIV_G3_SN_QP3_0000.json',
-             'G3/SN/QP3/TMIV_G3_SN_QP3_tex_pv00_2048x2048_yuv420p10le.yuv',
-             'G3/SN/QP3/TMIV_G3_SN_QP3_tex_pv01_2048x2048_yuv420p10le.yuv',
-             'G3/SN/QP3/TMIV_G3_SN_QP3_tex_pv02_2048x2048_yuv420p10le.yuv',
-             'G3/SN/QP3/TMIV_G3_SN_QP3_tex_pv03_2048x2048_yuv420p10le.yuv',
-             'G3/SN/QP3/TMIV_G3_SN_QP3_tex_pv04_2048x2048_yuv420p10le.yuv',
-             'G3/SN/QP3/TMIV_G3_SN_QP3_tex_pv05_2048x2048_yuv420p10le.yuv',
-             'G3/SN/QP3/TMIV_G3_SN_QP3_tex_pv06_2048x2048_yuv420p10le.yuv'])
+            '{3}/G3/N/QP3/G3_N_QP3_none.log',
+            ['G3/N/QP3/TMIV_G3_N_QP3_0000.json',
+             'G3/N/QP3/TMIV_G3_N_QP3_tex_pv00_2048x2048_yuv420p10le.yuv',
+             'G3/N/QP3/TMIV_G3_N_QP3_tex_pv01_2048x2048_yuv420p10le.yuv',
+             'G3/N/QP3/TMIV_G3_N_QP3_tex_pv02_2048x2048_yuv420p10le.yuv',
+             'G3/N/QP3/TMIV_G3_N_QP3_tex_pv03_2048x2048_yuv420p10le.yuv',
+             'G3/N/QP3/TMIV_G3_N_QP3_tex_pv04_2048x2048_yuv420p10le.yuv',
+             'G3/N/QP3/TMIV_G3_N_QP3_tex_pv05_2048x2048_yuv420p10le.yuv',
+             'G3/N/QP3/TMIV_G3_N_QP3_tex_pv06_2048x2048_yuv420p10le.yuv'])
 
         return [f4_1, f4_2, f4_3]
 
     def testBestReference(self, executor):
-        os.makedirs(os.path.join(self.testDir, 'R3/SO/R0'), exist_ok=True)
+        os.makedirs(os.path.join(self.testDir, 'R3/O/R0'), exist_ok=True)
 
         f1_1 = self.launchCommand(executor, [], [
             '{0}/bin/Renderer',
@@ -399,9 +399,9 @@ class IntegrationTest:
             '-p', 'inputDirectory', '{2}',
             '-p', 'outputDirectory', '{3}',
             '-n', '3', '-N', '3', '-s', 'O', '-r', 'R0', '-v', 'v01'],
-            '{3}/R3/SO/R0/R3_SO_R0_v01.log',
-            ['R3/SO/R0/R3_SO_R0_v01_geo_1920x1080_yuv420p16le.yuv',
-             'R3/SO/R0/R3_SO_R0_v01_tex_1920x1080_yuv420p10le.yuv'])
+            '{3}/R3/O/R0/R3_O_R0_v01.log',
+            ['R3/O/R0/R3_O_R0_v01_geo_1920x1080_yuv420p16le.yuv',
+             'R3/O/R0/R3_O_R0_v01_tex_1920x1080_yuv420p10le.yuv'])
 
         f1_2 = self.launchCommand(executor, [], [
             '{0}/bin/Renderer',
@@ -410,14 +410,14 @@ class IntegrationTest:
             '-p', 'inputDirectory', '{2}',
             '-p', 'outputDirectory', '{3}',
             '-n', '3', '-N', '3', '-s', 'O', '-r', 'R0', '-P', 'p02'],
-            '{3}/R3/SO/R0/R3_SO_R0_p02.log',
-            ['R3/SO/R0/R3_SO_R0_p02_geo_1920x1080_yuv420p16le.yuv',
-             'R3/SO/R0/R3_SO_R0_p02_tex_1920x1080_yuv420p10le.yuv'])
+            '{3}/R3/O/R0/R3_O_R0_p02.log',
+            ['R3/O/R0/R3_O_R0_p02_geo_1920x1080_yuv420p16le.yuv',
+             'R3/O/R0/R3_O_R0_p02_tex_1920x1080_yuv420p10le.yuv'])
 
         return [f1_1, f1_2]
 
     def testMivMpi(self, executor):
-        os.makedirs(os.path.join(self.testDir, 'M3/SM/QP3'), exist_ok=True)
+        os.makedirs(os.path.join(self.testDir, 'M3/M/QP3'), exist_ok=True)
 
         f1 = self.launchCommand(executor, [], [
             '{0}/bin/MpiEncoder',
@@ -426,28 +426,28 @@ class IntegrationTest:
             '-p', 'inputDirectory', '{2}',
             '-p', 'outputDirectory', '{3}',
             '-n', '3', '-s', 'M', '-p', 'intraPeriod', '2'],
-            '{3}/M3/SM/TMIV_M3_SM.log',
-            ['M3/SM/TMIV_M3_SM.bit',
-             'M3/SM/TMIV_M3_SM_tra_c00_4096x4096_yuv420p10le.yuv',
-             'M3/SM/TMIV_M3_SM_tex_c00_4096x4096_yuv420p10le.yuv'])
+            '{3}/M3/M/TMIV_M3_M.log',
+            ['M3/M/TMIV_M3_M.bit',
+             'M3/M/TMIV_M3_M_tra_c00_4096x4096_yuv420p10le.yuv',
+             'M3/M/TMIV_M3_M_tex_c00_4096x4096_yuv420p10le.yuv'])
 
         f2_1 = self.launchCommand(executor, [f1], [
             '{0}/bin/TAppEncoder',
             '-c', '{1}/config/test/miv_mpi/M_2_HM_encode_tra.cfg',
-            '-i', '{3}/M3/SM/TMIV_M3_SM_tra_c00_4096x4096_yuv420p10le.yuv',
-            '-b', '{3}/M3/SM/QP3/TMIV_M3_SM_QP3_tra_c00.bit',
+            '-i', '{3}/M3/M/TMIV_M3_M_tra_c00_4096x4096_yuv420p10le.yuv',
+            '-b', '{3}/M3/M/QP3/TMIV_M3_M_QP3_tra_c00.bit',
             '-wdt', '4096', '-hgt', '4096', '-q', '5', '-f', '3', '-fr', '30'],
-            '{3}/M3/SM/QP3/TMIV_M3_SM_QP3_tra_c00.log',
-            ['M3/SM/QP3/TMIV_M3_SM_QP3_tra_c00.bit'])
+            '{3}/M3/M/QP3/TMIV_M3_M_QP3_tra_c00.log',
+            ['M3/M/QP3/TMIV_M3_M_QP3_tra_c00.bit'])
 
         f2_2 = self.launchCommand(executor, [f1], [
             '{0}/bin/TAppEncoder',
             '-c', '{1}/config/test/miv_mpi/M_2_HM_encode_tex.cfg',
-            '-i', '{3}/M3/SM/TMIV_M3_SM_tex_c00_4096x4096_yuv420p10le.yuv',
-            '-b', '{3}/M3/SM/QP3/TMIV_M3_SM_QP3_tex_c00.bit',
+            '-i', '{3}/M3/M/TMIV_M3_M_tex_c00_4096x4096_yuv420p10le.yuv',
+            '-b', '{3}/M3/M/QP3/TMIV_M3_M_QP3_tex_c00.bit',
             '-wdt', '4096', '-hgt', '4096', '-q', '30', '-f', '3', '-fr', '30'],
-            '{3}/M3/SM/QP3/TMIV_M3_SM_QP3_tex_c00.log',
-            ['M3/SM/QP3/TMIV_M3_SM_QP3_tex_c00.bit'])
+            '{3}/M3/M/QP3/TMIV_M3_M_QP3_tex_c00.log',
+            ['M3/M/QP3/TMIV_M3_M_QP3_tex_c00.bit'])
 
         f3 = self.launchCommand(executor, [f2_1, f2_2], [
             '{0}/bin/Multiplexer',
@@ -456,19 +456,19 @@ class IntegrationTest:
             '-p', 'inputDirectory', '{3}',
             '-p', 'outputDirectory', '{3}',
             '-n', '3', '-s', 'M', '-r', 'QP3'],
-            '{3}/M3/SM/QP3/TMIV_M3_SM_QP3.log',
-            ['M3/SM/QP3/TMIV_M3_SM_QP3.bit'])
+            '{3}/M3/M/QP3/TMIV_M3_M_QP3.log',
+            ['M3/M/QP3/TMIV_M3_M_QP3.bit'])
 
         f4_1 = self.launchCommand(executor, [f3], [
             '{0}/bin/Parser',
-            '-b', '{3}/M3/SM/QP3/TMIV_M3_SM_QP3.bit'],
-            '{3}/M3/SM/QP3/TMIV_M3_SM_QP3.hls',
+            '-b', '{3}/M3/M/QP3/TMIV_M3_M_QP3.bit'],
+            '{3}/M3/M/QP3/TMIV_M3_M_QP3.hls',
             [])
 
         f4_2 = self.launchCommand(executor, [f3], [
             '{0}/bin/BitrateReport',
-            '-b', '{3}/M3/SM/QP3/TMIV_M3_SM_QP3.bit'],
-            '{3}/M3/SM/QP3/TMIV_M3_SM_QP3.csv',
+            '-b', '{3}/M3/M/QP3/TMIV_M3_M_QP3.bit'],
+            '{3}/M3/M/QP3/TMIV_M3_M_QP3.csv',
             [])
 
         f4_3 = self.launchCommand(executor, [f3], [
@@ -478,8 +478,8 @@ class IntegrationTest:
                   '-p', 'inputDirectory', '{3}',
                   '-p', 'outputDirectory', '{3}',
             '-n', '3', '-N', '3', '-s', 'M', '-r', 'QP3', '-v', 'viewport'],
-            '{3}/M3/SM/QP3/M3_SM_QP3_viewport.log',
-            ['M3/SM/QP3/M3_SM_QP3_viewport_tex_1920x1080_yuv420p10le.yuv'])
+            '{3}/M3/M/QP3/M3_M_QP3_viewport.log',
+            ['M3/M/QP3/M3_M_QP3_viewport_tex_1920x1080_yuv420p10le.yuv'])
 
         return [f4_1, f4_2, f4_3]
 

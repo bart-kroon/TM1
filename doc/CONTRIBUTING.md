@@ -71,7 +71,7 @@ The appropriate level of testing depends on the changes in the merge request, e.
 
 When code has different levels of testability, it is often possible to split work in multiple merge requests. For instance, a new functionality may:
 1. include a new unit: CI is sufficient, 
-1. make some changes to the encoder w/o changing otuputs: integration test is sufficient,
+1. make some changes to the encoder w/o changing outputs: integration test is sufficient,
 1. change or add configurations to enable the new functionality: relevant CTC anchor or a new test
 
 By splitting off the easy-to-test parts there is less uncertainty in the final MR. This will speed up the code review and improve the review quality.
@@ -128,8 +128,8 @@ NOTE: This section may be expanded by the software coordinators based on what co
 - Avoid casting integers when possible. This is not always possible, for instance `vps_atlas_count_minus1()` returns a `std::uint8_t` to match with the specification but `std::vector<>::size()` returns a `std::size_t`.
 - Use curly braces (unified constructor syntax) for implicit casts, e.g. `int{vps_atlas_count_minus1()}`
 - Use `static_cast<>` for explicit casts, e.g. `static_cast<int>(vector.size())`
-- Do not use C++ explicit casts `int()` for readablity, use `static_cast<>` instead.
-- Using C-style cast was depricated before most of us are born
+- Do not use C++ explicit casts `int()` for readability, use `static_cast<>` instead.
+- Using C-style cast was deprecated before most of us are born
 
 ### Naming of identifiers
 
@@ -145,7 +145,7 @@ NOTE: This section may be expanded by the software coordinators based on what co
 ### Implementing proposals
 
 - When writing software for a proposal, assume that your proposal will be adopted in the specification. (If not already known.)
-- When you already know your syntax is adopted, preferably work on the specifiation first and implement it *exactly* like edited, thus including any editorial changes by the editors.
+- When you already know your syntax is adopted, preferably work on the specification first and implement it *exactly* like edited, thus including any editorial changes by the editors.
 - This is a test model: write for readability and algorithmic complexity, but do not optimize
 
 ### Syntax structures
@@ -159,8 +159,14 @@ Syntax structures are in this context defined by the MIV and V-PCC/V3C specifica
   - Indicate if the limitation is due to MIV e.g. `asps_long_term_ref_atlas_frames_flag == 0` in `RefListStruct` (in TMIV 6.1)
   - or due to the implementation, e.g. `vui_hrd_parameters_present_flag = 0` in `VuiParameters` (in TMIV 6.1)
 - Although most current modules (=.cpp/.hpp/.h tuple) are at RBSP level, containing all syntax structures carried within, it is allowed to have a new module for a new syntax structure however small or big.
-- The public interface has to match exactly with the syntax structure. TODO(bartkroon) can we offer addtional API?
+- The public interface has to match exactly with the syntax structure. TODO(bartkroon) can we offer additional API?
 - The implementation of the getters and setters shall check all semantics that can be checked in that context. For those checks, use
   - `VERIFY_V3CBITSTREAM()`and  `VERIFY_MIVBITSTREAM()`, which are almost the same but the messages are different. You can find examples where in the same code both are used: the first to check the parsing and the second to check if a MIV restriction was applied.
   - `LIMITATION()` for when TMIV does not implement everything it should do. Again, that is just a different message.
 - The parser/formatter (decodeFrom/encodeTo) shall check all semantics that can be checked in that context.
+
+## Best practices for development
+
+### Break on exceptions
+
+If you want to debug bitstream related errors, e.g. if `VERIFY_*BITSTREAM` is throwing an exception, it is a good idea to set your IDE to break on unhandled exceptions ([Visual Studio instructions](https://docs.microsoft.com/en-us/visualstudio/debugger/managing-exceptions-with-the-debugger), [CLion instructions](https://www.jetbrains.com/help/clion/using-breakpoints.html#exception-breakpoints)and start a debugging session.

@@ -31,40 +31,43 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <catch2/catch.hpp>
+
 #include <TMIV/Common/verify.h>
 
-#include <fmt/format.h>
-#include <iostream>
+using Catch::Matchers::Contains;
+using Catch::Matchers::StartsWith;
 
-namespace TMIV::Common {
-namespace {
-auto message(bool error, char const *introduction, char const *condition, char const *file,
-             int line) -> std::string {
-  return fmt::format("{}: {}:\n\t{}\n\t[{}@{}]\n", (error ? "ERROR" : "WARNING"), introduction,
-                     condition, file, line);
-}
-} // namespace
+TEST_CASE("Verify Macros") {
+  SECTION("Pass on true conditions") {
+    REQUIRE_NOTHROW(VERIFY_V3CBITSTREAM(true));
+    REQUIRE_NOTHROW(VERIFY_MIVBITSTREAM(true));
+    REQUIRE_NOTHROW(VERIFY_BITSTREAM(true));
+    REQUIRE_NOTHROW(LIMITATION(true));
+    REQUIRE_NOTHROW(CONSTRAIN_PTL(true));
+  }
 
-[[noreturn]] void v3cError(char const *condition, char const *file, int line) {
-  throw Exception{message(true, "Failed to encode/decode V3C bitstream", condition, file, line)};
-}
+  SECTION("Raise a TMIV exception on false conditions") {
+    REQUIRE_THROWS_AS(VERIFY_V3CBITSTREAM(false), TMIV::Common::Exception);
+    REQUIRE_THROWS_WITH(VERIFY_V3CBITSTREAM(false),
+                        StartsWith("ERROR: Failed to encode/decode V3C bitstream") &&
+                            Contains(__FILE__));
 
-[[noreturn]] void mivError(char const *condition, char const *file, int line) {
-  throw Exception{message(true, "Failed to encode/decode MIV bitstream", condition, file, line)};
-}
+    REQUIRE_THROWS_AS(VERIFY_MIVBITSTREAM(false), TMIV::Common::Exception);
+    REQUIRE_THROWS_WITH(VERIFY_MIVBITSTREAM(false),
+                        StartsWith("ERROR: Failed to encode/decode MIV bitstream") &&
+                            Contains(__FILE__));
 
-[[noreturn]] void bitstreamError(char const *condition, char const *file, int line) {
-  throw Exception{message(true, "Failed to encode/decode bitstream", condition, file, line)};
-}
+    REQUIRE_THROWS_AS(VERIFY_BITSTREAM(false), TMIV::Common::Exception);
+    REQUIRE_THROWS_WITH(VERIFY_BITSTREAM(false),
+                        StartsWith("ERROR: Failed to encode/decode bitstream") &&
+                            Contains(__FILE__));
 
-[[noreturn]] void notImplemented(char const *condition, char const *file, int line) {
-  throw Exception{
-      message(true, "This aspect of MIV/3VC has not yet been implemented", condition, file, line)};
-}
+    REQUIRE_THROWS_AS(LIMITATION(false), TMIV::Common::Exception);
+    REQUIRE_THROWS_WITH(LIMITATION(false),
+                        StartsWith("ERROR: This aspect of MIV/3VC has not yet been implemented") &&
+                            Contains(__FILE__));
+  }
 
-void ptlWarning(char const *condition, char const *file, int line) {
-  std::cerr << message(
-      false, "This bitstream is outside of the profile-tier-level (PTL) limits of this decoder",
-      condition, file, line);
+  SECTION("Special case: constrain only warns on stderr") { REQUIRE_NOTHROW(CONSTRAIN_PTL(false)); }
 }
-} // namespace TMIV::Common

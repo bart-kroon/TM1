@@ -35,7 +35,9 @@
 #define _TMIV_COMMON_VERIFY_H_
 
 #include <cstdlib>
+#include <exception>
 #include <iostream>
+#include <string>
 
 // Checks against (draft) ISO/IEC 23090-5 V3C and V-PCC specification
 //
@@ -53,24 +55,31 @@
       (!!(condition) || (::TMIV::Common::mivError(#condition, __FILE__, __LINE__), false)))
 #define MIVBITSTREAM_ERROR(what) ::TMIV::Common::mivError(what, __FILE__, __LINE__)
 
+// Check against general bitstream conformance
+#define VERIFY_BITSTREAM(condition)                                                                \
+  static_cast<void>(                                                                               \
+      (!!(condition) || (::TMIV::Common::bitstreamError(#condition, __FILE__, __LINE__), false)))
+
 // Known limitation of the current implementation (not in line with ISO/IEC 23090-12)
 #define LIMITATION(condition)                                                                      \
   static_cast<void>(                                                                               \
       (!!(condition) || (::TMIV::Common::notImplemented(#condition, __FILE__, __LINE__), false)))
-#define NOT_IMPLEMENTED(what) ::TMIV::Common::notImplemented(what, __FILE__, __LINE__)
 
 // Check against profile-tier-level information and warn when outside of TMIV comfort zone, but
 // bravely carry on
 #define CONSTRAIN_PTL(condition)                                                                   \
   static_cast<void>(                                                                               \
       (!!(condition) || (::TMIV::Common::ptlWarning(#condition, __FILE__, __LINE__), false)))
-#define PTL_WARNING(what) ::TMIV::Common::ptlWarning(what, __FILE__, __LINE__)
 
 namespace TMIV::Common {
-// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
-#define VERIFY_BITSTREAM(condition)                                                                \
-  static_cast<void>(!!(condition) ||                                                               \
-                    (::TMIV::Common::bitstreamError(#condition, __FILE__, __LINE__), false))
+class Exception : public std::exception {
+public:
+  Exception(std::string message) : m_message{std::move(message)} {}
+  [[nodiscard]] auto what() const noexcept -> const char * override { return m_message.c_str(); }
+
+private:
+  std::string m_message;
+};
 
 [[noreturn]] void bitstreamError(char const *condition, char const *file, int line);
 [[noreturn]] void v3cError(char const *condition, char const *file, int line);

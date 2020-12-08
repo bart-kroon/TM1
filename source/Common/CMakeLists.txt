@@ -63,6 +63,7 @@ if (CMAKE_TESTING_ENABLED)
         "src/Quaternion.test.cpp"
         "src/Common.test.cpp"
         "src/Json.test.cpp"
+        "src/verify.test.cpp"
         )
 
     target_link_libraries(CommonTest

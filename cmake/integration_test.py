@@ -87,18 +87,23 @@ class IntegrationTest:
            fS = self.testAdditiveSynthesizer(executor)
            self.sync(fA + fV + fG + fR + fM + fS)
 
-        print('Comparison mismatches :', self.numComparisonMismatches)
-        print('Comparison errors     :', self.numComparisonErrors)
+        if self.referenceDir:
+            print('Comparison mismatches :', self.numComparisonMismatches)
+            print('Comparison errors     :', self.numComparisonErrors)
+            
         return int((0 < self.numComparisonMismatches) or (0 < self.numComparisonErrors))
 
     def inspectEnvironment(self):
         if self.gitCommand:
-            subprocess.run([
-                self.gitCommand, 'log', '-n', '10', '--decorate=short', '--oneline'],
-                shell=False, cwd=self.tmivSourceDir, check=True)
-            subprocess.run(
-                [self.gitCommand, 'status', '--short'],
-                shell=False, cwd=self.tmivSourceDir, check=True)
+            with open(os.path.join(self.testDir, 'git.log'), 'w') as stream:
+                for target in [None, stream]:
+                    subprocess.run([
+                        self.gitCommand, 'log', '-n', '10', '--decorate=short', '--oneline'],
+                        shell=False, cwd=self.tmivSourceDir, check=True, stdout=target)
+                    subprocess.run(
+                        [self.gitCommand, 'status', '--short'],
+                        shell=False, cwd=self.tmivSourceDir, check=True, stdout=target)
+                    
         self.checkDirExists(
             'TMIV installation', self.tmivInstallDir, os.path.join('include', 'TMIV', 'Decoder', 'MivDecoder.h'))
         self.checkDirExists('TMIV source', self.tmivSourceDir,

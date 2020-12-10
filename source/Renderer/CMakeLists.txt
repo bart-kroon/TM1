@@ -100,26 +100,20 @@ install(
     DIRECTORY "include/"
     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
-if (CMAKE_TESTING_ENABLED)
-    add_executable(RendererTest "src/Renderer.test.cpp")
+create_catch2_unit_test(
+    TARGET
+        RendererTest
+    SOURCES
+        "src/Renderer.test.cpp"
+    LIBS
+        TMIV::RendererLib)
 
-    target_link_libraries(RendererTest
-        PRIVATE
-            Catch2::Catch2
-            TMIV::RendererLib)
-
-    catch_discover_tests(RendererTest)
-
-    add_executable(RendererFrontTest
+create_catch2_unit_test(
+    TARGET
+        RendererFrontTest
+    SOURCES
         "src/Front/RendererFront.test.cpp"
         "src/Front/mapInputToOutputFrames.test.cpp"
         "src/Front/MultipleFrameRenderer.test.cpp"
-        )
-
-    target_link_libraries(RendererFrontTest
-        PRIVATE
-            Catch2::Catch2
-            TMIV::RendererFrontLib)
-
-    catch_discover_tests(RendererFrontTest)
-endif()
+    LIBS
+        TMIV::RendererFrontLib)

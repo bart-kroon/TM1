@@ -27,14 +27,11 @@ install(
 install(
     DIRECTORY "include/"
     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
-    
-if (CMAKE_TESTING_ENABLED)
-    add_executable(ViewingSpaceTest "src/ViewingSpace.test.cpp")
 
-    target_link_libraries(ViewingSpaceTest
-        PRIVATE
-            Catch2::Catch2
-            TMIV::ViewingSpaceLib)
-
-    catch_discover_tests(ViewingSpaceTest)
-endif()
+create_catch2_unit_test(
+    TARGET
+        ViewingSpaceTest
+    SOURCES
+        "src/ViewingSpace.test.cpp"
+    LIBS
+        TMIV::ViewingSpaceLib)

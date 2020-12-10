@@ -20,6 +20,8 @@ if (BUILD_CATCH2)
     enable_testing()
 endif()
 
+include(cmake/test_creation.cmake)
+
 include(GNUInstallDirs)
 
 include(cmake/HM.cmake)

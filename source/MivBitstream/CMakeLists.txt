@@ -99,8 +99,10 @@ install(
     DIRECTORY "include/"
     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
-if (CMAKE_TESTING_ENABLED)
-    add_executable(MivBitstreamTest
+create_catch2_unit_test(
+    TARGET
+        MivBitstreamTest
+    SOURCES
         "src/AccessUnit.test.cpp"
         "src/AccessUnitDelimiterRBSP.test.cpp"
         "src/AtlasAdaptationParameterSetRBSP.test.cpp"
@@ -126,12 +128,5 @@ if (CMAKE_TESTING_ENABLED)
         "src/ViewingSpaceHandling.test.cpp"
         "src/V3cParameterSet.test.cpp"
         "src/V3cUnit.test.cpp"
-        )
-          
-    target_link_libraries(MivBitstreamTest
-        PRIVATE
-            Catch2::Catch2
-            TMIV::MivBitstreamLib)
-
-    catch_discover_tests(MivBitstreamTest)
-endif()
+    LIBS
+        TMIV::MivBitstreamLib)

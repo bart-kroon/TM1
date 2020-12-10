@@ -29,13 +29,10 @@ install(
     DIRECTORY "include/"
     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
-if (CMAKE_TESTING_ENABLED)
-    add_executable(GeometryQuantizerTest "src/GeometryQuantizer.test.cpp")
-
-    target_link_libraries(GeometryQuantizerTest
-        PRIVATE
-            Catch2::Catch2
-            TMIV::GeometryQuantizerLib)
-
-    catch_discover_tests(GeometryQuantizerTest)
-endif()    
+create_catch2_unit_test(
+    TARGET
+        GeometryQuantizerTest
+    SOURCES
+        "src/GeometryQuantizer.test.cpp"
+    LIBS
+        TMIV::GeometryQuantizerLib)

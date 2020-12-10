@@ -57,19 +57,14 @@ install(
     DIRECTORY "include/"
     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
-if (CMAKE_TESTING_ENABLED)
-    add_executable(CommonTest
+create_catch2_unit_test(
+    TARGET
+        CommonTest
+    SOURCES
         "src/Bitstream.test.cpp"
         "src/Quaternion.test.cpp"
         "src/Common.test.cpp"
         "src/Json.test.cpp"
         "src/verify.test.cpp"
-        )
-
-    target_link_libraries(CommonTest
-        PRIVATE
-            Catch2::Catch2
-            TMIV::CommonLib)
-
-    catch_discover_tests(CommonTest)
-endif()
+    LIBS
+        TMIV::CommonLib)

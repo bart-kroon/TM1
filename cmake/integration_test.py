@@ -94,6 +94,15 @@ class IntegrationTest:
         return int((0 < self.numComparisonMismatches) or (0 < self.numComparisonErrors))
 
     def inspectEnvironment(self):
+        self.checkDirExists(
+            'TMIV installation', self.tmivInstallDir, os.path.join('include', 'TMIV', 'Decoder', 'MivDecoder.h'))
+        self.checkDirExists('TMIV source', self.tmivSourceDir,
+                            os.path.join('README.md'))
+        self.checkDirExists('content', self.contentDir, os.path.join(
+            'E', 'v13_texture_1920x1080_yuv420p10le.yuv'))
+
+        os.makedirs(self.testDir, exist_ok=True)
+
         if self.gitCommand:
             with open(os.path.join(self.testDir, 'git.log'), 'w') as stream:
                 for target in [None, stream]:
@@ -103,14 +112,6 @@ class IntegrationTest:
                     subprocess.run(
                         [self.gitCommand, 'status', '--short'],
                         shell=False, cwd=self.tmivSourceDir, check=True, stdout=target)
-                    
-        self.checkDirExists(
-            'TMIV installation', self.tmivInstallDir, os.path.join('include', 'TMIV', 'Decoder', 'MivDecoder.h'))
-        self.checkDirExists('TMIV source', self.tmivSourceDir,
-                            os.path.join('README.md'))
-        self.checkDirExists('content', self.contentDir, os.path.join(
-            'E', 'v13_texture_1920x1080_yuv420p10le.yuv'))
-        os.makedirs(self.testDir, exist_ok=True)
 
     def testMivAnchor(self, executor):
         os.makedirs(os.path.join(self.testDir, 'A3/E/QP3'), exist_ok=True)

@@ -91,6 +91,7 @@ void Encoder::prepareSequence(MivBitstream::EncoderParams sourceParams) {
   m_params.vme() = m_transportParams.vme();
   m_params.viewParamsList = m_transportParams.viewParamsList;
   m_params.frameRate = m_transportParams.frameRate;
+  m_params.lengthsInMeters = m_transportParams.lengthsInMeters;
   m_params.casps.casps_extension_present_flag(true)
       .casps_miv_extension_present_flag(true)
       .casps_log2_max_common_atlas_frame_order_cnt_lsb_minus4(log2FocLsbMinus4())
@@ -186,7 +187,7 @@ auto Encoder::vuiParameters() const -> MivBitstream::VuiParameters {
       .vui_time_scale(timeScale)
       .vui_poc_proportional_to_timing_flag(false)
       .vui_hrd_parameters_present_flag(false);
-  vui.vui_unit_in_metres_flag(true);
+  vui.vui_unit_in_metres_flag(m_params.lengthsInMeters);
   vui.vui_coordinate_system_parameters_present_flag(true).coordinate_system_parameters() = {};
   return vui;
 }

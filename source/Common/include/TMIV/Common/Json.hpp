@@ -137,6 +137,15 @@ template <typename T> decltype(auto) Json::as() const {
       if (const auto *value = std::any_cast<Integer>(&m_node)) {
         return static_cast<T>(*value); // cast integer to float
       }
+      if (const auto *value = std::any_cast<std::string>(&m_node)) {
+        using namespace std::string_literals;
+        if (*value == "inf"s || *value == "+inf"s) {
+          return std::numeric_limits<T>::infinity();
+        }
+        if (*value == "-inf"s) {
+          return -std::numeric_limits<T>::infinity();
+        }
+      }
       return static_cast<T>(std::any_cast<Number>(m_node)); // TODO(BK): check bounds (#273)
     } else if constexpr (std::is_same_v<T, std::filesystem::path>) {
       return std::filesystem::path{std::any_cast<std::string>(m_node)};

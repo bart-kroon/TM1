@@ -129,6 +129,7 @@ private:
 
     x.viewParamsList = sequenceConfig.sourceViewParams();
     x.frameRate = sequenceConfig.frameRate;
+    x.lengthsInMeters = sequenceConfig.lengthsInMeters;
 
     if (const auto &node = config.optional("depthLowQualityFlag")) {
       x.vme().vme_depth_low_quality_flag(node.as<bool>());

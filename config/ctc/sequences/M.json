@@ -15,6 +15,7 @@
         "BoundingBox_size": 0.4,
         "Document": "MPEG2020/M55089"
     },
+    "lengthsInMeters": true,
     "sourceCameraNames": [ "mpi" ],
     "cameras":
     [

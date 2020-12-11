@@ -35,9 +35,6 @@
 
 #include <TMIV/MivBitstream/SequenceConfig.h>
 
-#include <TMIV/Common/Math.h>
-#include <TMIV/Common/Quaternion.h>
-
 using namespace std::string_literals;
 
 TEST_CASE("CameraConfig") {
@@ -81,32 +78,6 @@ TEST_CASE("CameraConfig") {
     CHECK(unit.transparencyColorspace == TMIV::MivBitstream::CameraConfig::Colorspace::yuv420);
     CHECK(unit.depthColorspace == TMIV::MivBitstream::CameraConfig::Colorspace::yuv420);
     CHECK(unit.entitiesColorspace == TMIV::MivBitstream::CameraConfig::Colorspace::yuv420);
-
-    CHECK(unit.viewParams.ci.ci_cam_type() == TMIV::MivBitstream::CiCamType::equirectangular);
-    CHECK(unit.viewParams.ci.ci_erp_phi_min() == Approx(-TMIV::Common::M_PI2));
-    CHECK(unit.viewParams.ci.ci_erp_phi_max() == Approx(TMIV::Common::M_PI2));
-    CHECK(unit.viewParams.ci.ci_erp_theta_min() == Approx(-TMIV::Common::M_PI2));
-    CHECK(unit.viewParams.ci.ci_erp_theta_max() == Approx(TMIV::Common::M_PI2));
-    CHECK(unit.viewParams.ci.ci_projection_plane_width_minus1() + 1 == 2048);
-    CHECK(unit.viewParams.ci.ci_projection_plane_height_minus1() + 1 == 1048);
-
-    CHECK(unit.viewParams.ce.ce_view_pos_x() == Approx(-0.2878679633140564));
-    CHECK(unit.viewParams.ce.ce_view_pos_y() == Approx(-0.0878679633140564));
-    CHECK(unit.viewParams.ce.ce_view_pos_z() == 1.);
-
-    const auto q = TMIV::Common::euler2quat(
-        TMIV::Common::Vec3d{TMIV::Common::deg2rad(45.00000125223908), TMIV::Common::deg2rad(19.3),
-                            TMIV::Common::deg2rad(4.3)});
-
-    CHECK(unit.viewParams.ce.ce_view_quat_x() == Approx(q.x()));
-    CHECK(unit.viewParams.ce.ce_view_quat_y() == Approx(q.y()));
-    CHECK(unit.viewParams.ce.ce_view_quat_z() == Approx(q.z()));
-
-    CHECK(unit.viewParams.dq.dq_norm_disp_low() == 2e-3F);
-    CHECK(unit.viewParams.dq.dq_norm_disp_high() == 10.F);
-
-    CHECK(!unit.viewParams.hasOccupancy);
-
     CHECK(unit.viewParams.name == "v2");
 
     SECTION("Save and load back") {
@@ -122,49 +93,6 @@ TEST_CASE("CameraConfig") {
       CHECK(unit.depthColorspace == y.depthColorspace);
       CHECK(unit.entitiesColorspace == y.entitiesColorspace);
       CHECK(unit.viewParams.name == y.viewParams.name);
-    }
-  }
-
-  SECTION("Load from JSON, Perspective") {
-    const auto json = TMIV::Common::Json::parse(R"(
-{
-    "BitDepthColor": 10,
-    "BitDepthDepth": 16,
-    "HasInvalidDepth": true,
-    "ColorSpace": "YUV420",
-    "Depth_range": [ 0.3, 1.62 ],
-    "DepthColorSpace": "YUV420",
-    "Focal": [ 1346.74, 1547.76 ],
-    "Name": "v3",
-    "Position": [ 0.000354626, 0.145079, -0.00036823 ],
-    "Principle_point": [ 980.168, 534.722 ],
-    "Projection": "Perspective",
-    "Resolution": [ 1920, 1080 ],
-    "Rotation": [ 0.0644106, -0.0149137, 5.85061e-05 ]
-})");
-
-    const auto unit = TMIV::MivBitstream::CameraConfig(json);
-    CHECK(unit.viewParams.ci.ci_cam_type() == TMIV::MivBitstream::CiCamType::perspective);
-    CHECK(unit.viewParams.ci.ci_perspective_center_hor() == Approx(980.168));
-    CHECK(unit.viewParams.ci.ci_perspective_center_ver() == Approx(534.722));
-    CHECK(unit.viewParams.ci.ci_perspective_focal_hor() == Approx(1346.74));
-    CHECK(unit.viewParams.ci.ci_perspective_focal_ver() == Approx(1547.76));
-
-    CHECK(unit.viewParams.hasOccupancy);
-
-    SECTION("Save and load back") {
-      auto newJson = TMIV::Common::Json{unit};
-      auto loadBack = TMIV::MivBitstream::CameraConfig{newJson};
-
-      // NOTE(BK): Cannot use x == y because of floating-point conversions
-      CHECK(unit.bitDepthColor == loadBack.bitDepthColor);
-      CHECK(unit.bitDepthTransparency == loadBack.bitDepthTransparency);
-      CHECK(unit.bitDepthDepth == loadBack.bitDepthDepth);
-      CHECK(unit.bitDepthEntities == loadBack.bitDepthEntities);
-      CHECK(unit.colorspace == loadBack.colorspace);
-      CHECK(unit.depthColorspace == loadBack.depthColorspace);
-      CHECK(unit.entitiesColorspace == loadBack.entitiesColorspace);
-      CHECK(unit.viewParams.name == loadBack.viewParams.name);
     }
   }
 
@@ -191,9 +119,6 @@ TEST_CASE("CameraConfig") {
 })");
 
     const auto unit = TMIV::MivBitstream::CameraConfig(json);
-    CHECK(unit.viewParams.ci.ci_cam_type() == TMIV::MivBitstream::CiCamType::perspective);
-    CHECK(unit.viewParams.ci.ci_perspective_center_hor() == Approx(2088.0));
-    CHECK(unit.viewParams.ci.ci_perspective_center_ver() == Approx(1012.0));
     CHECK(unit.viewParams.nbMpiLayers == 423);
 
     CHECK(unit.bitDepthColor == 10);
@@ -217,6 +142,7 @@ TEST_CASE("SequenceConfig") {
     CHECK(unit.numberOfFrames == 0);
     CHECK(unit.cameras.empty());
     CHECK(unit.sourceCameraNames.empty());
+    CHECK(unit.lengthsInMeters);
   }
 
   SECTION("Load from JSON") {
@@ -226,6 +152,7 @@ TEST_CASE("SequenceConfig") {
     "Content_name": "Chess",
     "Fps": 30,
     "Frames_number": 300,
+    "lengthsInMeters": false,
     "Informative": {
         "Cameras_number": 10,
         "RigRadius": 0.3,
@@ -291,6 +218,7 @@ TEST_CASE("SequenceConfig") {
 
       REQUIRE(x.cameras.size() == y.cameras.size());
       REQUIRE(x.contentName == y.contentName);
+      REQUIRE(x.lengthsInMeters == y.lengthsInMeters);
 
       // NOTE(BK): Cannot use x == y because of floating-point conversions
       for (std::size_t i = 0; i < x.cameras.size(); ++i) {
@@ -464,6 +392,52 @@ TEST_CASE("SequenceConfig") {
       unit.frameRanges = {{10, 45}, {81, 16}, {97, 2}};
       const auto numberOfInputFrames = GENERATE(0, 1, 30, 90, 99, 100);
       REQUIRE_THROWS(unit.startFrameGiven(numberOfInputFrames));
+    }
+  }
+
+  SECTION("Load from JSON, lengthsInMeters key") {
+    SECTION("The key is otpional for backwards compatibility") {
+      const auto unit = SequenceConfig{TMIV::Common::Json::parse(R"(
+{
+    "BoundingBox_center": [ -0.5, -0.5, 1.0 ],
+    "Content_name": "Example",
+    "Fps": 25,
+    "Frames_number": 97,
+    "cameras": [ ]
+}
+)")};
+
+      REQUIRE(unit.lengthsInMeters);
+    }
+
+    SECTION("Specify lengths are in meters") {
+      const auto unit = SequenceConfig{TMIV::Common::Json::parse(R"(
+{
+    "BoundingBox_center": [ -0.5, -0.5, 1.0 ],
+    "Content_name": "Example",
+    "lengthsInMeters": false,
+    "Fps": 25,
+    "Frames_number": 97,
+    "cameras": [ ]
+}
+)")};
+
+      REQUIRE(!unit.lengthsInMeters);
+    }
+
+    SECTION("Specify arbitrary scene units") {
+      const auto unit = SequenceConfig{TMIV::Common::Json::parse(R"(
+{
+    "BoundingBox_center": [ -0.5, -0.5, 1.0 ],
+    "Content_name": "Example",
+    "Fps": 25,
+    "lengthsInMeters": true,
+    "Frames_number": 97,
+    "cameras": [ ]
+}
+)")};
+
+      REQUIRE(unit.lengthsInMeters);
     }
   }
 }

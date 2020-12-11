@@ -4,6 +4,7 @@
         0,
         0
     ],
+    "lengthsInMeters": false,
     "sourceCameraNames": [ "v0", "v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8" ],
     "cameras": [
         {
@@ -370,11 +371,11 @@
     "Content_name": "Hall",
     "Fps": 25,
     "Frames_number": 500,
-     "frameRanges": [{
-        "maxNumberOfFrames": 17,
-        "startFrame": 80
-    }],
-   "Informative": {
+    "frameRanges": [{
+            "maxNumberOfFrames": 17,
+            "startFrame": 80
+        }],
+    "Informative": {
         "Converted_by": "VSRS_to_JSON.py",
         "New_units": "mm",
         "Original_units": "mm"

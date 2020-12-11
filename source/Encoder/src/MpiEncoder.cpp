@@ -193,6 +193,7 @@ void MpiEncoder::prepareSequence(MivBitstream::EncoderParams sourceParams) {
   m_params.vme() = sourceParams.vme();
   m_params.viewParamsList = sourceParams.viewParamsList;
   m_params.frameRate = sourceParams.frameRate;
+  m_params.lengthsInMeters = sourceParams.lengthsInMeters;
   m_params.casps.casps_extension_present_flag(true)
       .casps_miv_extension_present_flag(true)
       .casps_log2_max_common_atlas_frame_order_cnt_lsb_minus4(log2FocLsbMinus4())

@@ -33,9 +33,23 @@
 
 #include <TMIV/MivBitstream/DepthOccupancyTransform.h>
 
+#include <cassert>
+
 namespace TMIV::MivBitstream {
 DepthTransform::DepthTransform(const DepthQuantization &dq, unsigned bits)
-    : m_normDispLow{dq.dq_norm_disp_low()}, m_normDispHigh{dq.dq_norm_disp_high()}, m_bits{bits} {}
+    : m_normDispLow{dq.dq_norm_disp_low()}, m_normDispHigh{dq.dq_norm_disp_high()}, m_bits{bits} {
+  if (!std::isfinite(m_normDispLow) || !std::isfinite(m_normDispHigh) ||
+      m_normDispLow == m_normDispHigh || std::max(m_normDispLow, m_normDispHigh) <= 0.F) {
+    throw std::runtime_error(
+        fmt::format("Invalid normalized disparity range [{}, {}]", m_normDispLow, m_normDispHigh));
+  }
+
+  const auto [far, near] = std::minmax(m_normDispLow, m_normDispHigh);
+  const auto maxLevel = std::ldexp(1.F, static_cast<int>(bits)) - 1.F;
+  const auto lowestLevel = std::ceil(std::nextafter(-far / (near - far) * maxLevel, INFINITY));
+  m_minNormDisp = far + (near - far) * (lowestLevel / maxLevel);
+  assert(0 < m_minNormDisp);
+}
 
 DepthTransform::DepthTransform(const DepthQuantization &dq, const PatchParams &patchParams,
                                unsigned bits)
@@ -46,7 +60,7 @@ DepthTransform::DepthTransform(const DepthQuantization &dq, const PatchParams &p
 
 auto DepthTransform::expandNormDisp(uint16_t x) const -> float {
   const auto level = Common::expandValue(std::clamp(x, m_depthStart, m_depthEnd), m_bits);
-  return std::max(impl::minNormDisp, m_normDispLow + (m_normDispHigh - m_normDispLow) * level);
+  return std::max(m_minNormDisp, m_normDispLow + (m_normDispHigh - m_normDispLow) * level);
 }
 
 auto DepthTransform::expandDepth(uint16_t x) const -> float { return 1.F / expandNormDisp(x); }
@@ -76,4 +90,5 @@ auto DepthTransform::quantizeNormDisp(float x, uint16_t minLevel) const -> uint1
   return 0;
 }
 
+auto DepthTransform::minNormDisp() const -> float { return m_minNormDisp; }
 } // namespace TMIV::MivBitstream

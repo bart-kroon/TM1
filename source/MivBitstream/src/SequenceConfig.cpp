@@ -161,6 +161,10 @@ SequenceConfig::SequenceConfig(const Common::Json &config) {
                              subnode.require("startFrame").as<std::int32_t>()});
     }
   }
+
+  if (const auto &node = config.optional("lengthsInMeters")) {
+    lengthsInMeters = node.as<bool>();
+  }
 }
 
 SequenceConfig::SequenceConfig(std::istream &stream)
@@ -177,6 +181,7 @@ SequenceConfig::operator Common::Json() const {
   root["Content_name"s] = contentName;
   root["Fps"] = frameRate;
   root["Frames_number"] = numberOfFrames;
+  root["lengthsInMeters"] = lengthsInMeters;
 
   if (!sourceCameraNames.empty()) {
     auto a = Array{};

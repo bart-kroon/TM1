@@ -4,6 +4,7 @@
         "New_units": "mm",
         "Original_units": "mm"
     },
+    "lengthsInMeters": false,
     "sourceCameraNames": [ "v0", "v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8" ],
     "cameras": [
         {
@@ -42,7 +43,7 @@
             ],
             "ColorSpace": "YUV420"
         },
-		{
+        {
             "Focal": [
                 -1732.875727,
                 -1729.908923
@@ -368,14 +369,14 @@
         }
     ],
     "Frames_number": 250,
-     "frameRanges": [{
-        "maxNumberOfFrames": 17,
-        "startFrame": 130
-    }, {
-        "maxNumberOfFrames": 97,
-        "startFrame": 115
-    }],
-   "BoundingBox_center": [
+    "frameRanges": [{
+            "maxNumberOfFrames": 17,
+            "startFrame": 130
+        }, {
+            "maxNumberOfFrames": 97,
+            "startFrame": 115
+        }],
+    "BoundingBox_center": [
         0,
         0,
         0

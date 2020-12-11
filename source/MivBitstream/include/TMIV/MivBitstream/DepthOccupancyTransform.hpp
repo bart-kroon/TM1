@@ -38,11 +38,6 @@
 #include <TMIV/Common/Common.h>
 
 namespace TMIV::MivBitstream {
-namespace impl {
-// An implementation-specific minimum normalized disparity
-constexpr auto minNormDisp = 1e-3F; // 1 kilometer
-} // namespace impl
-
 inline OccupancyTransform::OccupancyTransform(const ViewParams &viewParams) {
   m_threshold = viewParams.dq.dq_depth_occ_map_threshold_default();
   if (m_threshold == 0 && viewParams.hasOccupancy) {

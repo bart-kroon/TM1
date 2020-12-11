@@ -38,6 +38,7 @@
 // separate header file
 
 #include <algorithm>
+#include <cassert>
 #include <cmath>
 #include <limits>
 #include <sstream>
@@ -69,6 +70,7 @@ constexpr auto maxLevel(unsigned bits) -> unsigned;
 
 // Expand an integral value to floating-point using a linear transfer function
 constexpr auto expandValue(uint16_t x, unsigned bits) -> float {
+  assert(0 < bits);
   return static_cast<float>(x) / static_cast<float>(maxLevel(bits));
 }
 

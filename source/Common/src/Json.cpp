@@ -287,6 +287,12 @@ auto saveValue(std::tuple<Json::Integer> /* tag */, std::ostream &stream, Json::
 
 auto saveValue(std::tuple<Json::Number> /* tag */, std::ostream &stream, Json::Number value,
                int /* level */) -> std::ostream & {
+  if (std::isinf(value)) {
+    if (0 < value) {
+      return stream << "\"inf\"";
+    }
+    return stream << "\"-inf\"";
+  }
   return stream << value;
 }
 

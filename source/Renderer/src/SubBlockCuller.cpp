@@ -62,10 +62,10 @@ auto choosePatch(const MivBitstream::PatchParams &patch,
   uv[3] = uv[0] + Common::Vec2f{w, h};
 
   // Using Camera depth
-  const auto patch_dep_near =
-      1.F / std::max(MivBitstream::impl::minNormDisp, camera.dq.dq_norm_disp_low());
-  const auto patch_dep_far =
-      1.F / std::max(MivBitstream::impl::minNormDisp, camera.dq.dq_norm_disp_high());
+  constexpr auto depthBitDepth = Common::Depth10Frame::getBitDepth();
+  const auto depthTransform = MivBitstream::DepthTransform{camera.dq, patch, depthBitDepth};
+  const auto patch_dep_near = depthTransform.expandDepth(Common::maxLevel(depthBitDepth));
+  const auto patch_dep_far = depthTransform.expandDepth(0);
 
   for (int i = 0; i < 4; i++) {
     const auto xyz = R_t(unprojectVertex(uv[i], patch_dep_near, camera.ci));

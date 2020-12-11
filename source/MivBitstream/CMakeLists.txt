@@ -113,6 +113,7 @@ create_catch2_unit_test(
         "src/CommonAtlasFrameMivExtension.test.cpp"
         "src/CommonAtlasFrameRBSP.test.cpp"
         "src/CommonAtlasSequenceParameterSetRBSP.test.cpp"
+        "src/DepthOccupancyTransform.test.cpp"
         "src/GeometryUpscalingParameters.test.cpp"
         "src/VuiParameters.test.cpp"
         "src/NalSampleStreamFormat.test.cpp"
@@ -126,6 +127,7 @@ create_catch2_unit_test(
         "src/test.h"
         "src/ViewingSpace.test.cpp"
         "src/ViewingSpaceHandling.test.cpp"
+        "src/ViewParamsList.test.cpp"
         "src/V3cParameterSet.test.cpp"
         "src/V3cUnit.test.cpp"
     LIBS

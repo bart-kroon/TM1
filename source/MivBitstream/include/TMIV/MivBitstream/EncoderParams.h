@@ -81,6 +81,7 @@ struct EncoderParams {
   double frameRate{};
   ViewParamsList viewParamsList;
   PatchParamsList patchParamsList;
+  bool lengthsInMeters{true};
 
   std::vector<EncoderAtlasParams> atlas;
 

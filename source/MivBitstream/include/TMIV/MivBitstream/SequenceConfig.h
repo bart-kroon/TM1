@@ -84,6 +84,7 @@ struct SequenceConfig {
   std::vector<CameraConfig> cameras;
   std::vector<std::string> sourceCameraNames;
   std::vector<FrameRange> frameRanges;
+  bool lengthsInMeters{true};
 
   SequenceConfig() = default;
   explicit SequenceConfig(const Common::Json &config);

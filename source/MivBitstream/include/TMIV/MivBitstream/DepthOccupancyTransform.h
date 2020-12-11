@@ -62,7 +62,7 @@ public:
   // Constructor for per-view depth transform signalling (source)
   explicit DepthTransform(const DepthQuantization &dq, unsigned bits);
 
-  // Constructor for per-view depth transform signalling (codec)
+  // Constructor for per-patch depth transform signalling (codec)
   DepthTransform(const DepthQuantization &dq, const PatchParams &patch, unsigned bits);
 
   // Expand a level to normalized disparity [m^-1]
@@ -99,9 +99,22 @@ public:
   [[nodiscard]] auto quantizeNormDisp(const Common::Mat<float> &matrix, uint16_t minLevel) const
       -> DepthFrame;
 
+  // Implementation-defined minimum normalized disparity [m^-1]
+  //
+  // This value is a positive value (less than infinite depth) to simplify reprojection
+  //
+  // TODO(BK): Improve reprojection to handle large and infnite depth properly
+  //
+  // For a practical application this can be a fixed value (e.g. (1 km)^-1 but the test model does
+  // not require lengths to be provided as meters and we cannot assume that 0.001 is low enough, nor
+  // do we want the value to be much too low because that will reduce numerical accuracy of point
+  // reprojections.
+  [[nodiscard]] auto minNormDisp() const -> float;
+
 private:
   const float m_normDispLow{};
   const float m_normDispHigh{};
+  float m_minNormDisp{};
   const unsigned m_bits{};
   uint16_t m_depthStart{};
   uint16_t m_depthEnd{UINT16_MAX};

@@ -174,6 +174,28 @@ TEST_CASE("Converting assignment operator with numeric promotion") {
   REQUIRE(json.as<Json::Array>().empty());
 }
 
+TEST_CASE("Represent infinity as \"inf\" in JSON") {
+  SECTION("Json::as<T>() for floating-point type T converts \"inf\" to infinity") {
+    REQUIRE(Json{"inf"}.as<float>() == std::numeric_limits<float>::infinity());
+    REQUIRE(Json{"inf"}.as<double>() == std::numeric_limits<double>::infinity());
+    REQUIRE(Json{"+inf"}.as<float>() == std::numeric_limits<float>::infinity());
+    REQUIRE(Json{"+inf"}.as<double>() == std::numeric_limits<double>::infinity());
+    REQUIRE(Json{"-inf"}.as<float>() == -std::numeric_limits<float>::infinity());
+    REQUIRE(Json{"-inf"}.as<double>() == -std::numeric_limits<double>::infinity());
+  }
+
+  SECTION("Json::as<std::string>() returns \"inf\"") {
+    REQUIRE(Json{"inf"}.as<std::string>() == "inf"s);
+    REQUIRE(Json{"+inf"}.as<std::string>() == "+inf"s);
+    REQUIRE(Json{"-inf"}.as<std::string>() == "-inf"s);
+  }
+
+  SECTION("Json{inf} is transformed to Json{\"inf\"}") {
+    REQUIRE(Json{std::numeric_limits<float>::infinity()}.format() == "\"inf\""s);
+    REQUIRE(Json{std::numeric_limits<double>::infinity()}.format() == "\"inf\""s);
+  }
+}
+
 TEST_CASE("Json::as<std::filesytem::path> converts a string to a path") {
   REQUIRE(Json{"/some/path.txt"}.as<std::filesystem::path>() ==
           std::filesystem::path{"/some/path.txt"});

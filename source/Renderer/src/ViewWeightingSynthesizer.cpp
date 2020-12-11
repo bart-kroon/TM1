@@ -44,6 +44,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <tuple>
 
 namespace TMIV::Renderer {
 namespace {
@@ -121,10 +122,39 @@ auto getEnabledIdList(const std::vector<bool> &inputList) -> std::vector<size_t>
 
   return outputList;
 }
+
+template <int N>
+auto computeMatrixM(const std::array<Common::Vec2i, N> &offsetList,
+                    const std::array<std::pair<Common::Vec2f, float>, N> &Q,
+                    const std::array<float, N> &W, const Common::Vec2f &C) -> Common::Mat2x2f {
+  Common::Mat2x2f M{0.F, 0.F, 0.F, 0.F};
+
+  for (size_t i = 0U; i < offsetList.size(); i++) {
+    if (isValidDepth(Q[i].second)) {
+      Common::Vec2f dp = (Q[i].first - C);
+      M += W[i] * Common::stack::Mat2x2<float>{dp.x() * dp.x(), dp.x() * dp.y(), dp.x() * dp.y(),
+                                               dp.y() * dp.y()};
+    }
+  }
+  return M;
+}
 } // namespace
 
 class ViewWeightingSynthesizer::Impl {
 private:
+  struct Splat {
+    Common::Vec2f center{};
+    Common::Vec2f firstAxis{};
+    Common::Vec2f secondAxis{};
+    float pointSize{};
+  };
+  struct BoundingBox {
+    int x0;
+    int x1;
+    int y0;
+    int y1;
+  };
+
   std::vector<float> m_cameraWeight;
   std::vector<bool> m_cameraVisibility;
   std::vector<float> m_cameraDistortion;
@@ -433,150 +463,14 @@ private:
 
   void warpPrunedSource(const MivBitstream::AccessUnit &frame,
                         const ProjectionHelper &targetHelper) {
-    struct Splat {
-      Common::Vec2f center{};
-      Common::Vec2f firstAxis{};
-      Common::Vec2f secondAxis{};
-      float pointSize{};
-    };
+    // 3.1) Prepare Viewports
+    resizeAndResetViewports(targetHelper);
 
-    auto getSplatParameters = [&](unsigned viewId, int x, int y,
-                                  const std::pair<Common::Vec2f, float> &P) -> Splat {
-      static const std::array<Common::Vec2i, 8> offsetList = {
-          Common::Vec2i({1, 0}),  Common::Vec2i({1, 1}),  Common::Vec2i({0, 1}),
-          Common::Vec2i({-1, 1}), Common::Vec2i({-1, 0}), Common::Vec2i({-1, -1}),
-          Common::Vec2i({0, -1}), Common::Vec2i({1, -1})};
+    // 3.2) Warping
+    warpPrunedSourceOnResetViewports(frame);
+  }
 
-      int w_last = static_cast<int>(m_sourceReprojection[viewId].width()) - 1;
-      int h_last = static_cast<int>(m_sourceReprojection[viewId].height()) - 1;
-
-      std::array<std::pair<Common::Vec2f, float>, 8> Q;
-      std::array<float, 8> W{};
-      float WT{0.F};
-
-      // Center
-      Common::Vec2f C{0.F, 0.F};
-
-      auto OP = m_sourceRayDirection[viewId](y, x);
-
-      for (size_t i = 0U; i < offsetList.size(); i++) {
-        int xo = std::clamp(x + offsetList[i].x(), 0, w_last);
-        int yo = std::clamp(y + offsetList[i].y(), 0, h_last);
-
-        Q[i] = m_sourceReprojection[viewId](yo, xo);
-
-        if (isValidDepth(Q[i].second)) {
-          auto OQ = m_sourceRayDirection[viewId](yo, xo);
-
-          float a = std::acos(dot(OP, OQ)) / m_cameraDistortion[viewId];
-          float wi = std::exp(-a * a);
-
-          W[i] = wi;
-          C += wi * Q[i].first;
-          WT += wi;
-        }
-      }
-
-      if (WT < m_minimalWeight) {
-        return {Common::Vec2f{0.F, 0.F}, Common::Vec2f{0.F, 0.F}, Common::Vec2f{0.F, 0.F}, 0.F};
-      }
-
-      // Axis (requires at least 5 good candidates)
-      if (0.F < WT) {
-        Common::Mat2x2f M{0.F, 0.F, 0.F, 0.F};
-
-        C /= WT;
-
-        for (size_t i = 0U; i < offsetList.size(); i++) {
-          if (isValidDepth(Q[i].second)) {
-            Common::Vec2f dp = (Q[i].first - C);
-            M += W[i] * Common::stack::Mat2x2<float>{dp.x() * dp.x(), dp.x() * dp.y(),
-                                                     dp.x() * dp.y(), dp.y() * dp.y()};
-          }
-        }
-
-        float b = M[0] + M[3];               // trace
-        float c = M[0] * M[3] - M[1] * M[2]; // determinant
-        float delta = (b * b - 4.F * c);
-
-        if ((0.F < c) && (0. < delta)) {
-          float sqrt_delta = std::sqrt(delta);
-          float l1 = 0.5F * (b + sqrt_delta);
-          float l2 = 0.5F * (b - sqrt_delta);
-
-          if (0.F < l2) {
-            Common::Vec2f e1{1.F, 0.F};
-            Common::Vec2f e2{0.F, 1.F};
-
-            if (l1 != l2) {
-              Common::Vec2f u1{M(0, 0) - l2, M(1, 0)};
-              Common::Vec2f u2{M(0, 1), M(1, 1) - l2};
-
-              e1 = (0.F < dot(u1, u1)) ? unit(u1) : unit(u2);
-              e2 = Common::Vec2f{-e1.y(), e1.x()};
-            }
-
-            float r1 = std::sqrt(2.F * l1 / WT);
-            float r2 = std::sqrt(2.F * l2 / WT);
-
-            if (r1 < m_stretchFactor) {
-              return {P.first, r1 * e1, r2 * e2, 2.F * r1};
-            }
-          }
-        }
-      }
-
-      return {P.first, Common::Vec2f{0.F, 0.F}, Common::Vec2f{0.F, 0.F}, 1.F};
-    };
-
-    auto rasterizePoint = [&](unsigned viewId, const Splat &splat, const Common::Vec3f &P,
-                              float depthValue) {
-      // Initialization
-      int w_last = static_cast<int>(m_viewportDepth[viewId].width()) - 1;
-      int h_last = static_cast<int>(m_viewportDepth[viewId].height()) - 1;
-
-      float R1 = dot(splat.firstAxis, splat.firstAxis);
-      float R2 = dot(splat.secondAxis, splat.secondAxis);
-      float radius = 0.5F * splat.pointSize;
-
-      // Bounding box
-      float xLow = std::max(0.F, splat.center.x() - radius);
-      float xHigh = splat.center.x() + radius;
-      float yLow = std::max(0.F, splat.center.y() - radius);
-      float yHigh = splat.center.y() + radius;
-      int x0 = std::max(0, static_cast<int>(std::floor(xLow)));
-      int x1 = std::min(w_last, static_cast<int>(std::ceil(xHigh)));
-      int y0 = std::max(0, static_cast<int>(std::floor(yLow)));
-      int y1 = std::min(h_last, static_cast<int>(std::ceil(yHigh)));
-
-      // Looping on all pixels within the bounding box
-      for (int y = y0; y <= y1; y++) {
-        float dy = ((static_cast<float>(y) + 0.5F) - splat.center.y());
-
-        for (int x = x0; x <= x1; x++) {
-          float dx = ((static_cast<float>(x) + 0.5F) - splat.center.x());
-          float depthRef = m_viewportDepth[viewId](y, x);
-
-          if (!isValidDepth(depthRef) || (depthValue < depthRef)) {
-            if (0.F < R1) {
-              Common::Vec2f dp{dx, dy};
-
-              float f1 = std::abs(dot(splat.firstAxis, dp));
-              float f2 = std::abs(dot(splat.secondAxis, dp));
-
-              if ((f1 <= R1) && (f2 <= R2)) {
-                m_viewportUnprojection[viewId](y, x) = P;
-                m_viewportDepth[viewId](y, x) = depthValue;
-              }
-            } else {
-              m_viewportUnprojection[viewId](y, x) = P;
-              m_viewportDepth[viewId](y, x) = depthValue;
-            }
-          }
-        }
-      }
-    };
-
+  void resizeAndResetViewports(const ProjectionHelper &targetHelper) {
     m_viewportUnprojection.resize(m_sourceDepth.size());
     m_viewportDepth.resize(m_sourceDepth.size());
 
@@ -593,7 +487,9 @@ private:
         std::fill(m_viewportDepth[viewId].begin(), m_viewportDepth[viewId].end(), NAN);
       }
     }
+  }
 
+  void warpPrunedSourceOnResetViewports(const MivBitstream::AccessUnit &frame) {
     auto visibleSourceId = getEnabledIdList(m_cameraVisibility);
 
     Common::parallel_for(visibleSourceId.size(), [&](size_t id) {
@@ -636,6 +532,151 @@ private:
         }
       }
     });
+  }
+
+  auto getSplatParameters(unsigned viewId, int x, int y, const std::pair<Common::Vec2f, float> &P)
+      -> Splat {
+    const auto [WT, M] = computeWeightAndMatrixM(viewId, x, y);
+
+    if (WT < m_minimalWeight) {
+      return {Common::Vec2f{0.F, 0.F}, Common::Vec2f{0.F, 0.F}, Common::Vec2f{0.F, 0.F}, 0.F};
+    }
+
+    // Axis (requires at least 5 good candidates)
+    if (0.F < WT) {
+      float b = M[0] + M[3];               // trace
+      float c = M[0] * M[3] - M[1] * M[2]; // determinant
+      float delta = (b * b - 4.F * c);
+
+      if ((0.F < c) && (0. < delta)) {
+        float sqrt_delta = std::sqrt(delta);
+        float l1 = 0.5F * (b + sqrt_delta);
+        float l2 = 0.5F * (b - sqrt_delta);
+
+        if (0.F < l2) {
+          Common::Vec2f e1{1.F, 0.F};
+          Common::Vec2f e2{0.F, 1.F};
+
+          if (l1 != l2) {
+            Common::Vec2f u1{M(0, 0) - l2, M(1, 0)};
+            Common::Vec2f u2{M(0, 1), M(1, 1) - l2};
+
+            e1 = (0.F < dot(u1, u1)) ? unit(u1) : unit(u2);
+            e2 = Common::Vec2f{-e1.y(), e1.x()};
+          }
+
+          float r1 = std::sqrt(2.F * l1 / WT);
+          float r2 = std::sqrt(2.F * l2 / WT);
+
+          if (r1 < m_stretchFactor) {
+            return {P.first, r1 * e1, r2 * e2, 2.F * r1};
+          }
+        }
+      }
+    }
+
+    return {P.first, Common::Vec2f{0.F, 0.F}, Common::Vec2f{0.F, 0.F}, 1.F};
+  }
+
+  auto computeWeightAndMatrixM(unsigned int viewId, int x, int y)
+      -> std::tuple<float, Common::Mat2x2f> {
+    const std::array<Common::Vec2i, 8> offsetList = {
+        Common::Vec2i({1, 0}),  Common::Vec2i({1, 1}),  Common::Vec2i({0, 1}),
+        Common::Vec2i({-1, 1}), Common::Vec2i({-1, 0}), Common::Vec2i({-1, -1}),
+        Common::Vec2i({0, -1}), Common::Vec2i({1, -1})};
+    std::array<std::pair<Common::Vec2f, float>, 8> Q;
+    std::array<float, 8> W{};
+    float WT{0.F};
+
+    // Center
+    Common::Vec2f C{0.F, 0.F};
+
+    const auto OP = m_sourceRayDirection[viewId](y, x);
+    const int w_last = static_cast<int>(m_sourceReprojection[viewId].width()) - 1;
+    const int h_last = static_cast<int>(m_sourceReprojection[viewId].height()) - 1;
+
+    for (size_t i = 0U; i < offsetList.size(); i++) {
+      int xo = std::clamp(x + offsetList[i].x(), 0, w_last);
+      int yo = std::clamp(y + offsetList[i].y(), 0, h_last);
+
+      Q[i] = m_sourceReprojection[viewId](yo, xo);
+
+      if (isValidDepth(Q[i].second)) {
+        const auto OQ = m_sourceRayDirection[viewId](yo, xo);
+
+        const float a = std::acos(dot(OP, OQ)) / m_cameraDistortion[viewId];
+        const float wi = std::exp(-a * a);
+
+        W[i] = wi;
+        C += wi * Q[i].first;
+        WT += wi;
+      }
+    }
+
+    C /= WT;
+
+    const Common::Mat2x2f M = [&]() {
+      if (0.F < WT && m_minimalWeight <= WT) {
+        return computeMatrixM<8>(offsetList, Q, W, C);
+      }
+      return Common::Mat2x2f{0.F, 0.F, 0.F, 0.F};
+    }();
+
+    return {WT, M};
+  }
+
+  void rasterizePoint(unsigned viewId, const Splat &splat, const Common::Vec3f &P,
+                      float depthValue) {
+    const float R1 = dot(splat.firstAxis, splat.firstAxis);
+    const float R2 = dot(splat.secondAxis, splat.secondAxis);
+    const auto boundingBox = computeBoundingBox(viewId, splat);
+
+    // Looping on all pixels within the bounding box
+    for (int y = boundingBox.y0; y <= boundingBox.y1; y++) {
+      float dy = ((static_cast<float>(y) + 0.5F) - splat.center.y());
+
+      for (int x = boundingBox.x0; x <= boundingBox.x1; x++) {
+        float dx = ((static_cast<float>(x) + 0.5F) - splat.center.x());
+        float depthRef = m_viewportDepth[viewId](y, x);
+
+        if (!isValidDepth(depthRef) || (depthValue < depthRef)) {
+          if (0.F < R1) {
+            Common::Vec2f dp{dx, dy};
+
+            float f1 = std::abs(dot(splat.firstAxis, dp));
+            float f2 = std::abs(dot(splat.secondAxis, dp));
+
+            if ((f1 <= R1) && (f2 <= R2)) {
+              m_viewportUnprojection[viewId](y, x) = P;
+              m_viewportDepth[viewId](y, x) = depthValue;
+            }
+          } else {
+            m_viewportUnprojection[viewId](y, x) = P;
+            m_viewportDepth[viewId](y, x) = depthValue;
+          }
+        }
+      }
+    }
+  }
+
+  auto computeBoundingBox(unsigned int viewId,
+                          const TMIV::Renderer::ViewWeightingSynthesizer::Impl::Splat &splat)
+      -> BoundingBox {
+    // Initialization
+    const auto w_last = static_cast<int>(m_viewportDepth[viewId].width()) - 1;
+    const auto h_last = static_cast<int>(m_viewportDepth[viewId].height()) - 1;
+    const float radius = 0.5F * splat.pointSize;
+
+    // Bounding box
+    const float xLow = std::max(0.F, splat.center.x() - radius);
+    const float xHigh = splat.center.x() + radius;
+    const float yLow = std::max(0.F, splat.center.y() - radius);
+    const float yHigh = splat.center.y() + radius;
+    const int x0 = std::max(0, static_cast<int>(std::floor(xLow)));
+    const int x1 = std::min(w_last, static_cast<int>(std::ceil(xHigh)));
+    const int y0 = std::max(0, static_cast<int>(std::floor(yLow)));
+    const int y1 = std::min(h_last, static_cast<int>(std::ceil(yHigh)));
+    return {x0, x1, y0, y1};
   }
 
   void recoverPrunedWeight(const ProjectionHelperList &sourceHelperList,

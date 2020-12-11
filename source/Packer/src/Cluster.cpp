@@ -525,8 +525,135 @@ auto Cluster::split(const ClusteringMap &clusteringMap, int overlap) const
   return std::pair<Cluster, Cluster>(c1, c2);
 }
 
-auto Cluster::retrieve(int viewId, const Common::Mask &maskMap, int firstClusterId,
-                       bool isBasicView, bool enableMerging)
+namespace {
+template <typename ClusterBufferType>
+auto mergePatches(ClusterList &clusterList, int A, int B, const Cluster &cluster,
+                  std::queue<std::array<int, 2>> &candidates, ClusterBufferType &clusteringBuffer)
+    -> int {
+  int i_top = cluster.imin();
+  int i_bottom = cluster.imax();
+  int j_left = cluster.jmin();
+  int j_right = cluster.jmax();
+
+  auto subRegionGrowing = [&](int ID) {
+    Cluster subCluster(cluster.getViewId(), cluster.isBasicView(), ID, cluster.getEntityId());
+    while (!candidates.empty()) {
+      const std::array<int, 2> &current = candidates.front();
+      int a = current[0];
+      int b = current[1];
+
+      subCluster.push(a, b);
+      clusteringBuffer(a, b) = static_cast<uint16_t>(ID);
+
+      if (0 < a) {
+        if (clusteringBuffer(a - 1, b) == ACTIVE) {
+          candidates.push({a - 1, b});
+          subCluster.push(a - 1, b);
+          clusteringBuffer(a - 1, b) = static_cast<uint16_t>(ID);
+        }
+        if (0 < b) {
+          if (clusteringBuffer(a - 1, b - 1) == ACTIVE) {
+            candidates.push({a - 1, b - 1});
+            subCluster.push(a - 1, b - 1);
+            clusteringBuffer(a - 1, b - 1) = static_cast<uint16_t>(ID);
+          }
+        }
+        if (b < B - 1) {
+          if (clusteringBuffer(a - 1, b + 1) == ACTIVE) {
+            candidates.push({a - 1, b + 1});
+            subCluster.push(a - 1, b + 1);
+            clusteringBuffer(a - 1, b + 1) = static_cast<uint16_t>(ID);
+          }
+        }
+      }
+      if (a < A - 1) {
+        if (clusteringBuffer(a + 1, b) == ACTIVE) {
+          candidates.push({a + 1, b});
+          subCluster.push(a + 1, b);
+          clusteringBuffer(a + 1, b) = static_cast<uint16_t>(ID);
+        }
+        if (0 < b) {
+          if (clusteringBuffer(a + 1, b - 1) == ACTIVE) {
+            candidates.push({a + 1, b - 1});
+            subCluster.push(a + 1, b - 1);
+            clusteringBuffer(a + 1, b - 1) = static_cast<uint16_t>(ID);
+          }
+        }
+        if (b < B - 1) {
+          if (clusteringBuffer(a + 1, b + 1) == ACTIVE) {
+            candidates.push({a + 1, b + 1});
+            subCluster.push(a + 1, b + 1);
+            clusteringBuffer(a + 1, b + 1) = static_cast<uint16_t>(ID);
+          }
+        }
+      }
+      if (0 < b) {
+        if (clusteringBuffer(a, b - 1) == ACTIVE) {
+          candidates.push({a, b - 1});
+          subCluster.push(a, b - 1);
+          clusteringBuffer(a, b - 1) = static_cast<uint16_t>(ID);
+        }
+      }
+      if (b < B - 1) {
+        if (clusteringBuffer(a, b + 1) == ACTIVE) {
+          candidates.push({a, b + 1});
+          subCluster.push(a, b + 1);
+          clusteringBuffer(a, b + 1) = static_cast<uint16_t>(ID);
+        }
+      }
+      candidates.pop();
+    }
+    clusterList.push_back(subCluster);
+  };
+
+  int subClusterId = cluster.getClusterId();
+  // left side
+  if (j_left != 0) {
+    for (int i_unit = i_top; i_unit <= i_bottom; i_unit++) {
+      if (clusteringBuffer(i_unit, j_left - 1) == ACTIVE) {
+        subClusterId = subClusterId + 1;
+        candidates.push({i_unit, j_left - 1});
+        subRegionGrowing(subClusterId);
+      }
+    }
+  }
+  // right side
+  if (j_right != B - 1) {
+    for (int i_unit = i_top; i_unit <= i_bottom; i_unit++) {
+      if (clusteringBuffer(i_unit, j_right + 1) == ACTIVE) {
+        subClusterId = subClusterId + 1;
+        candidates.push({i_unit, j_right + 1});
+        subRegionGrowing(subClusterId);
+      }
+    }
+  }
+  // bottom side
+  if (i_bottom != A - 1) {
+    for (int j_unit = j_left; j_unit <= j_right; j_unit++) {
+      if (clusteringBuffer(i_bottom + 1, j_unit) == ACTIVE) {
+        subClusterId = subClusterId + 1;
+        candidates.push({i_bottom + 1, j_unit});
+        subRegionGrowing(subClusterId);
+      }
+    }
+  }
+  if (!cluster.isBasicView()) {
+    const auto clusterId = static_cast<std::uint16_t>(cluster.getClusterId());
+    for (int i_inter = i_top; i_inter <= i_bottom; i_inter++) {
+      for (int j_inter = j_left; j_inter <= j_right; j_inter++) {
+        if (clusteringBuffer(i_inter, j_inter) == ACTIVE) {
+          clusteringBuffer(i_inter, j_inter) = clusterId;
+        }
+      }
+    }
+  }
+
+  return subClusterId;
+}
+} // namespace
+
+auto Cluster::retrieve(const int viewId, const Common::Mask &maskMap, const int firstClusterId,
+                       const bool isBasicView, const bool enableMerging)
     -> std::pair<ClusterList, ClusteringMap> {
   std::pair<ClusterList, ClusteringMap> out(ClusterList(),
                                             ClusteringMap(maskMap.getWidth(), maskMap.getHeight()));
@@ -554,7 +681,6 @@ auto Cluster::retrieve(int viewId, const Common::Mask &maskMap, int firstCluster
   // Region growing
   int clusterId = firstClusterId;
   auto iter_seed = activeList.begin();
-  int clustered = 0;
 
   while (iter_seed != activeList.end()) {
     div_t dv = div(*iter_seed, B);
@@ -566,7 +692,7 @@ auto Cluster::retrieve(int viewId, const Common::Mask &maskMap, int firstCluster
     clusteringBuffer(dv.quot, dv.rem) = static_cast<uint16_t>(clusterId);
 
     auto tryAddCandidate = [&](int a, int b) {
-      uint16_t &visitedId = clusteringBuffer(a, b);
+      std::uint16_t &visitedId = clusteringBuffer(a, b);
 
       if (visitedId == ACTIVE) {
         cluster.push(a, b);
@@ -612,128 +738,12 @@ auto Cluster::retrieve(int viewId, const Common::Mask &maskMap, int firstCluster
       candidates.pop();
     }
 
-    int subClusterId = clusterId;
-
-    if (enableMerging) {
-      // Patch Merging
-      int i_top = cluster.imin();
-      int i_bottom = cluster.imax();
-      int j_left = cluster.jmin();
-      int j_right = cluster.jmax();
-
-      auto subRegionGrowing = [&](int ID) {
-        Cluster subCluster(viewId, isBasicView, subClusterId, cluster.getEntityId());
-        while (!candidates.empty()) {
-          const std::array<int, 2> &current = candidates.front();
-          int a = current[0];
-          int b = current[1];
-
-          subCluster.push(a, b);
-          clusteringBuffer(a, b) = static_cast<uint16_t>(ID);
-
-          if (0 < a) {
-            if (clusteringBuffer(a - 1, b) == ACTIVE) {
-              candidates.push({a - 1, b});
-              subCluster.push(a - 1, b);
-              clusteringBuffer(a - 1, b) = static_cast<uint16_t>(ID);
-            }
-            if (0 < b) {
-              if (clusteringBuffer(a - 1, b - 1) == ACTIVE) {
-                candidates.push({a - 1, b - 1});
-                subCluster.push(a - 1, b - 1);
-                clusteringBuffer(a - 1, b - 1) = static_cast<uint16_t>(ID);
-              }
-            }
-            if (b < B - 1) {
-              if (clusteringBuffer(a - 1, b + 1) == ACTIVE) {
-                candidates.push({a - 1, b + 1});
-                subCluster.push(a - 1, b + 1);
-                clusteringBuffer(a - 1, b + 1) = static_cast<uint16_t>(ID);
-              }
-            }
-          }
-          if (a < A - 1) {
-            if (clusteringBuffer(a + 1, b) == ACTIVE) {
-              candidates.push({a + 1, b});
-              subCluster.push(a + 1, b);
-              clusteringBuffer(a + 1, b) = static_cast<uint16_t>(ID);
-            }
-            if (0 < b) {
-              if (clusteringBuffer(a + 1, b - 1) == ACTIVE) {
-                candidates.push({a + 1, b - 1});
-                subCluster.push(a + 1, b - 1);
-                clusteringBuffer(a + 1, b - 1) = static_cast<uint16_t>(ID);
-              }
-            }
-            if (b < B - 1) {
-              if (clusteringBuffer(a + 1, b + 1) == ACTIVE) {
-                candidates.push({a + 1, b + 1});
-                subCluster.push(a + 1, b + 1);
-                clusteringBuffer(a + 1, b + 1) = static_cast<uint16_t>(ID);
-              }
-            }
-          }
-          if (0 < b) {
-            if (clusteringBuffer(a, b - 1) == ACTIVE) {
-              candidates.push({a, b - 1});
-              subCluster.push(a, b - 1);
-              clusteringBuffer(a, b - 1) = static_cast<uint16_t>(ID);
-            }
-          }
-          if (b < B - 1) {
-            if (clusteringBuffer(a, b + 1) == ACTIVE) {
-              candidates.push({a, b + 1});
-              subCluster.push(a, b + 1);
-              clusteringBuffer(a, b + 1) = static_cast<uint16_t>(ID);
-            }
-          }
-          candidates.pop();
-        }
-        clusterList.push_back(subCluster);
-        clustered += subCluster.getFilling();
-      };
-
-      // left side
-      if (j_left != 0) {
-        for (int i_unit = i_top; i_unit <= i_bottom; i_unit++) {
-          if (clusteringBuffer(i_unit, j_left - 1) == ACTIVE) {
-            subClusterId = subClusterId + 1;
-            candidates.push({i_unit, j_left - 1});
-            subRegionGrowing(subClusterId);
-          }
-        }
+    const auto subClusterId = [&]() {
+      if (enableMerging) {
+        return mergePatches(clusterList, A, B, cluster, candidates, clusteringBuffer);
       }
-      // right side
-      if (j_right != B - 1) {
-        for (int i_unit = i_top; i_unit <= i_bottom; i_unit++) {
-          if (clusteringBuffer(i_unit, j_right + 1) == ACTIVE) {
-            subClusterId = subClusterId + 1;
-            candidates.push({i_unit, j_right + 1});
-            subRegionGrowing(subClusterId);
-          }
-        }
-      }
-      // bottom side
-      if (i_bottom != A - 1) {
-        for (int j_unit = j_left; j_unit <= j_right; j_unit++) {
-          if (clusteringBuffer(i_bottom + 1, j_unit) == ACTIVE) {
-            subClusterId = subClusterId + 1;
-            candidates.push({i_bottom + 1, j_unit});
-            subRegionGrowing(subClusterId);
-          }
-        }
-      }
-      if (!isBasicView) {
-        for (int i_inter = i_top; i_inter <= i_bottom; i_inter++) {
-          for (int j_inter = j_left; j_inter <= j_right; j_inter++) {
-            if (clusteringBuffer(i_inter, j_inter) == ACTIVE) {
-              clusteringBuffer(i_inter, j_inter) = static_cast<uint16_t>(clusterId);
-            }
-          }
-        }
-      }
-      // Patch Merging END
-    }
+      return clusterId;
+    }();
 
     // Update seed & compute # Active Pixels In Patch
     auto prevIter = iter_seed;
@@ -751,10 +761,7 @@ auto Cluster::retrieve(int viewId, const Common::Mask &maskMap, int firstCluster
         clusterList.push_back(cluster);
       }
 
-      clustered = clusterList[0].getFilling();
     } else {
-      clustered += cluster.getFilling();
-
       clusterList.push_back(cluster);
       clusterId = subClusterId + 1; // Patch Merging
     }

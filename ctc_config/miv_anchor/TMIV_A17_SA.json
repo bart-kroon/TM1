@@ -55,7 +55,8 @@
             "InpainterMethod": "PushPullInpainter",
             "PushPullInpainter": {},
             "blurKernel": 12,
-            "inpaintThreshold": 100
+            "inpaintThreshold": 100,
+            "fieldOfViewMargin": 0.3
         },
         "dilate": 16
     },

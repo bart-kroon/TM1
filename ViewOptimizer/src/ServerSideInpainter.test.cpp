@@ -140,7 +140,8 @@ const auto construct = []() {
     "InpainterMethod": "FakeInpainter",
     "FakeInpainter": {},
     "blurKernel": 12,
-    "inpaintThreshold": 100
+    "inpaintThreshold": 100,
+    "fieldOfViewMargin" : 0.3
 }
 )"s)};
 };
@@ -217,7 +218,8 @@ TEST_CASE("ServerSideInpainter") {
         "InpainterMethod": "FakeInpainter",
         "FakeInpainter": {},
         "blurKernel": 12,
-        "inpaintThreshold": 100
+        "inpaintThreshold": 100,
+        "fieldOfViewMargin" : 0.3
     }
 }
 )"s);

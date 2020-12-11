@@ -37,6 +37,7 @@
 #include <TMIV/Common/Factory.h>
 #include <TMIV/Common/Filter.h>
 #include <TMIV/Common/Json.h>
+#include <TMIV/Common/Quaternion.h>
 #include <TMIV/Decoder/AccessUnit.h>
 #include <TMIV/Renderer/IInpainter.h>
 #include <TMIV/Renderer/ISynthesizer.h>
@@ -57,6 +58,8 @@ using MivBitstream::ViewParams;
 using MivBitstream::ViewParamsList;
 using Renderer::IInpainter;
 using Renderer::ISynthesizer;
+using TMIV::Common::Vec2f;
+using TMIV::MivBitstream::CiCamType;
 
 class ServerSideInpainter::Impl {
 private:
@@ -67,6 +70,7 @@ private:
   std::unique_ptr<IInpainter> m_inpainter;
   int m_blurKernel;
   int m_inpaintThreshold;
+  float m_fieldOfViewMargin;
   EncoderParams m_sourceParams;
   EncoderParams m_transportParams;
 
@@ -84,7 +88,8 @@ public:
       , m_synthesizer{Common::create<ISynthesizer>("Synthesizer"s, rootNode, componentNode)}
       , m_inpainter{Common::create<IInpainter>("Inpainter"s, rootNode, componentNode)}
       , m_blurKernel{componentNode.require("blurKernel").as<int>()}
-      , m_inpaintThreshold{componentNode.require("inpaintThreshold").as<int>()} {}
+      , m_inpaintThreshold{componentNode.require("inpaintThreshold").as<int>()}
+      , m_fieldOfViewMargin{componentNode.require("fieldOfViewMargin").as<float>()} {}
 
   auto optimizeParams(EncoderParams params) -> const EncoderParams & {
     m_sourceParams = std::move(params);
@@ -108,13 +113,20 @@ private:
   [[nodiscard]] auto syntheticViewParams() noexcept -> ViewParams {
     auto vp = ViewParams{};
 
+    const auto [phiMin, phiMax, thetaMin, thetaMax] =
+        fieldOfViewRig(m_sourceParams.viewParamsList, m_fieldOfViewMargin);
+
+    std::cout << "Serverside inpainter. Use ERP range: " << std::endl;
+    std::cout << "phi " << phiMin << " - " << phiMax << std::endl;
+    std::cout << "theta " << thetaMin << " - " << thetaMax << std::endl;
+
     vp.ci.ci_projection_plane_width_minus1(m_projectionPlaneWidth - 1)
         .ci_projection_plane_height_minus1(m_projectionPlaneHeight - 1)
         .ci_cam_type(MivBitstream::CiCamType::equirectangular)
-        .ci_erp_phi_min(-Common::halfCycle)
-        .ci_erp_phi_max(Common::halfCycle)
-        .ci_erp_theta_min(-Common::quarterCycle)
-        .ci_erp_theta_max(Common::quarterCycle);
+        .ci_erp_phi_min(phiMin)
+        .ci_erp_phi_max(phiMax)
+        .ci_erp_theta_min(thetaMin)
+        .ci_erp_theta_max(thetaMax);
 
     auto xyz = centerOfGravity(m_sourceParams.viewParamsList);
     vp.ce.ce_view_pos_x(xyz[0]).ce_view_pos_y(xyz[1]).ce_view_pos_z(xyz[2]);
@@ -150,6 +162,70 @@ private:
 
     return {static_cast<float>(sumX / count), static_cast<float>(sumY / count),
             static_cast<float>(sumZ / count)};
+  }
+
+  static auto fieldOfViewRig(const ViewParamsList &vpl, const float margin) noexcept
+      -> std::array<float, 4> {
+    assert(!vpl.empty());
+
+    auto erp_phi_min = Common::halfCycle;
+    auto erp_phi_max = -Common::halfCycle;
+    auto erp_theta_min = Common::quarterCycle;
+    auto erp_theta_max = -Common::quarterCycle;
+
+    bool useFullRange = false;
+
+    for (const auto &vp : vpl) {
+
+      if (vp.ci.ci_cam_type() != CiCamType::perspective) {
+        useFullRange = true;
+        break;
+      }
+
+      const auto size = vp.ci.projectionPlaneSize();
+      const auto focal = Vec2f{vp.ci.ci_perspective_focal_hor(), vp.ci.ci_perspective_focal_ver()};
+
+      // half the field of view of the perspective projection
+      const float fovX_2 = std::atan(0.5F * size.x() / std::abs(focal.x()));
+      const float fovY_2 = std::atan(0.5F * size.y() / std::abs(focal.y()));
+
+      const auto euler = TMIV::Common::quat2euler(vp.ce.rotation());
+      const auto yaw = euler[0];
+      const auto pitch = euler[1];
+      const auto phi = yaw;
+      const auto theta = -pitch;
+
+      auto phi_min = phi - fovX_2;
+      auto phi_max = phi + fovX_2;
+      auto theta_min = theta - fovY_2;
+      auto theta_max = theta + fovY_2;
+
+      if (phi_min < -Common::halfCycle || phi_max > Common::halfCycle ||
+          theta_min < -Common::quarterCycle || theta_max > Common::quarterCycle) {
+        useFullRange = true;
+        break;
+      }
+
+      // apply margin
+      phi_min = std::max(-Common::halfCycle, phi_min - margin * std::abs(phi_min));
+      phi_max = std::min(Common::halfCycle, phi_max + margin * std::abs(phi_max));
+      theta_min = std::max(-Common::quarterCycle, theta_min - margin * std::abs(theta_min));
+      theta_max = std::min(Common::quarterCycle, theta_max + margin * std::abs(theta_max));
+
+      erp_phi_min = std::min(erp_phi_min, phi_min);
+      erp_phi_max = std::max(erp_phi_max, phi_max);
+      erp_theta_min = std::min(erp_theta_min, theta_min);
+      erp_theta_max = std::max(erp_theta_max, theta_max);
+    }
+
+    if (useFullRange) {
+      erp_phi_min = -Common::halfCycle;
+      erp_phi_max = Common::halfCycle;
+      erp_theta_min = -Common::quarterCycle;
+      erp_theta_max = Common::quarterCycle;
+    }
+
+    return {erp_phi_min, erp_phi_max, erp_theta_min, erp_theta_max};
   }
 
   [[nodiscard]] auto synthesizerInputFrame(const MVD16Frame &frame) const -> AccessUnit {

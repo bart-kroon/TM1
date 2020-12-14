@@ -6,7 +6,7 @@ function(create_catch2_unit_test)
     set(prefix TEST_CREATOR)
     set(flags)
     set(singleValues TARGET)
-    set(multiValues SOURCES LIBS)
+    set(multiValues SOURCES PRIVATE)
 
     include(CMakeParseArguments)
     cmake_parse_arguments(${prefix}
@@ -20,12 +20,14 @@ function(create_catch2_unit_test)
     target_link_libraries(${TEST_CREATOR_TARGET}
         PRIVATE
             Catch2::Catch2
-            ${TEST_CREATOR_LIBS})
+            ${TEST_CREATOR_PRIVATE})
 
     if(CLANG_TIDY_PATH)
         set_target_properties(${TEST_CREATOR_TARGET}
                 PROPERTIES CXX_CLANG_TIDY "${CLANG_TIDY_PATH};-checks=-readability-function-size,-readability-magic-numbers")
     endif()
+
+    set_property(TARGET ${TEST_CREATOR_TARGET} PROPERTY FOLDER "TMIV tests")
 
     catch_discover_tests(${TEST_CREATOR_TARGET})
 endfunction()

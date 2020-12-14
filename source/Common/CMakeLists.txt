@@ -1,61 +1,55 @@
 cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
 
-add_library(CommonLib
-    "src/Application.cpp"
-    "src/Bitstream.cpp"
-    "src/Bytestream.cpp"
-    "src/Json.cpp"
-    "src/Half.cpp"
-    "src/Frame.cpp"
-    "src/Graph.cpp"
-    "src/verify.cpp"
-    "include/TMIV/Common/Bitstream.h"
-    "include/TMIV/Common/Bitstream.hpp"
-    "include/TMIV/Common/Bytestream.h"
-    "include/TMIV/Common/Common.h"
-    "include/TMIV/Common/Common.hpp"
-    "include/TMIV/Common/Application.h"
-    "include/TMIV/Common/Json.h"
-    "include/TMIV/Common/Json.hpp"
-    "include/TMIV/Common/Factory.h"
-    "include/TMIV/Common/Thread.h"
-    "include/TMIV/Common/Frame.h"
-    "include/TMIV/Common/Frame.hpp"
-    "include/TMIV/Common/Half.h"
-    "include/TMIV/Common/Half.hpp"
-    "include/TMIV/Common/LinAlg.h"
-    "include/TMIV/Common/LinAlg.hpp"
-    "include/TMIV/Common/Vector.h"
-    "include/TMIV/Common/Matrix.h"
-    "include/TMIV/Common/Array.h"
-    "include/TMIV/Common/Graph.h"
-    "include/TMIV/Common/Quaternion.h"
-    "include/TMIV/Common/verify.h"
+create_tmiv_library(
+    TARGET
+        CommonLib
+    SOURCES
+        "src/Application.cpp"
+        "src/Bitstream.cpp"
+        "src/Bytestream.cpp"
+        "src/Json.cpp"
+        "src/Half.cpp"
+        "src/Frame.cpp"
+        "src/Graph.cpp"
+        "src/verify.cpp"
+        "include/TMIV/Common/Bitstream.h"
+        "include/TMIV/Common/Bitstream.hpp"
+        "include/TMIV/Common/Bytestream.h"
+        "include/TMIV/Common/Common.h"
+        "include/TMIV/Common/Common.hpp"
+        "include/TMIV/Common/Application.h"
+        "include/TMIV/Common/Json.h"
+        "include/TMIV/Common/Json.hpp"
+        "include/TMIV/Common/Factory.h"
+        "include/TMIV/Common/Thread.h"
+        "include/TMIV/Common/Frame.h"
+        "include/TMIV/Common/Frame.hpp"
+        "include/TMIV/Common/Half.h"
+        "include/TMIV/Common/Half.hpp"
+        "include/TMIV/Common/LinAlg.h"
+        "include/TMIV/Common/LinAlg.hpp"
+        "include/TMIV/Common/Vector.h"
+        "include/TMIV/Common/Matrix.h"
+        "include/TMIV/Common/Array.h"
+        "include/TMIV/Common/Graph.h"
+        "include/TMIV/Common/Quaternion.h"
+        "include/TMIV/Common/verify.h"
+    PUBLIC
+        fmt::fmt
     )
-
-add_library(TMIV::CommonLib
-    ALIAS CommonLib)
 
 target_include_directories(CommonLib
     PUBLIC
-        "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
         "$<INSTALL_INTERFACE:include>")
 
 target_compile_features(CommonLib
     PUBLIC cxx_std_17)
 
-target_link_libraries(CommonLib PUBLIC fmt::fmt)
-
 install(
     TARGETS
-        CommonLib
         fmt
     EXPORT TMIVTargets
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
-
-install(
-    DIRECTORY "include/"
-    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 create_catch2_unit_test(
     TARGET
@@ -66,5 +60,6 @@ create_catch2_unit_test(
         "src/Common.test.cpp"
         "src/Json.test.cpp"
         "src/verify.test.cpp"
-    LIBS
-        TMIV::CommonLib)
+    PRIVATE
+        TMIV::CommonLib
+    )

@@ -20,9 +20,11 @@ if (BUILD_CATCH2)
     enable_testing()
 endif()
 
-include(cmake/test_creation.cmake)
-
 include(GNUInstallDirs)
+
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+include(cmake/tmiv_module_creation.cmake)
+include(cmake/test_creation.cmake)
 
 include(cmake/HM.cmake)
 
@@ -54,6 +56,7 @@ add_custom_target(clang_format
         "-DANALYZE_DIR=${CMAKE_SOURCE_DIR}/source"
         "-P"
         "${CMAKE_CURRENT_LIST_DIR}/cmake/clang_format.cmake")
+set_property(TARGET clang_format PROPERTY FOLDER "Utilities")
 
 add_custom_target(module_graph
     COMMAND
@@ -61,6 +64,7 @@ add_custom_target(module_graph
         "-DOUTPUT_FILE=${CMAKE_SOURCE_DIR}/doc/module_graph.svg"
         "-P"
         "${CMAKE_CURRENT_LIST_DIR}/cmake/module_graph.cmake")
+set_property(TARGET module_graph PROPERTY FOLDER "Utilities")
 
 include(cmake/integration_test.cmake)
 

@@ -1,32 +1,16 @@
 cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
 
-add_library(PrunerLib
-    "src/HierarchicalPruner.cpp"
-    "src/PrunedMesh.cpp"
-    "src/PrunedMesh.h"
-    "src/NoPruner.cpp"
-    "include/TMIV/Pruner/IPruner.h"
-    "include/TMIV/Pruner/HierarchicalPruner.h"
-    "include/TMIV/Pruner/NoPruner.h"
-    )
-
-add_library(TMIV::PrunerLib
-    ALIAS PrunerLib)
-
-target_link_libraries(PrunerLib
-    PUBLIC
-        TMIV::RendererLib)
-
-target_include_directories(PrunerLib
-    PUBLIC
-        "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>")
-
-install(
-    TARGETS
+create_tmiv_library(
+    TARGET
         PrunerLib
-    EXPORT TMIVTargets
-    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
-
-install(
-    DIRECTORY "include/"
-    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+    SOURCES
+        "src/HierarchicalPruner.cpp"
+        "src/PrunedMesh.cpp"
+        "src/PrunedMesh.h"
+        "src/NoPruner.cpp"
+        "include/TMIV/Pruner/IPruner.h"
+        "include/TMIV/Pruner/HierarchicalPruner.h"
+        "include/TMIV/Pruner/NoPruner.h"
+    PUBLIC
+        TMIV::RendererLib
+    )

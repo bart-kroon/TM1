@@ -1,103 +1,87 @@
 cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
 
-add_library(MivBitstreamLib
-    "src/AccessUnit.cpp"
-    "src/AccessUnitDelimiterRBSP.cpp"
-    "src/AtlasAdaptationParameterSetRBSP.cpp"
-    "src/AtlasFrameParameterSetRBSP.cpp"
-    "src/AtlasObjectAssociation.cpp"
-    "src/AtlasSequenceParameterSetRBSP.cpp"
-    "src/AtlasTileLayerRBSP.cpp"
-    "src/CommonAtlasFrameMivExtension.cpp"
-    "src/CommonAtlasFrameRBSP.cpp"
-    "src/CommonAtlasSequenceParameterSetRBSP.cpp"
-    "src/DepthOccupancyTransform.cpp"
-    "src/EncoderParams.cpp"
-    "src/GeometryUpscalingParameters.cpp"
-    "src/VuiParameters.cpp"
-    "src/NalSampleStreamFormat.cpp"
-    "src/NalUnit.cpp"
-    "src/NalSampleStream.cpp"
-    "src/PackedIndependentRegions.cpp"
-    "src/RecViewport.cpp"
-    "src/SeiRBSP.cpp"
-    "src/SceneObjectInformation.cpp"
-    "src/SequenceConfig.cpp"
-    "src/VideoSubBitstream.cpp"
-    "src/ViewingSpace.cpp"
-    "src/ViewingSpaceHandling.cpp"
-    "src/ViewParamsList.cpp"
-    "src/V3cParameterSet.cpp"
-    "src/V3cSampleStreamFormat.cpp"
-    "src/V3cUnit.cpp"
-    "include/TMIV/MivBitstream/AccessUnit.h"
-    "include/TMIV/MivBitstream/AccessUnitDelimiterRBSP.h"
-    "include/TMIV/MivBitstream/AccessUnitDelimiterRBSP.hpp"
-    "include/TMIV/MivBitstream/AtlasAdaptationParameterSetRBSP.h"
-    "include/TMIV/MivBitstream/AtlasAdaptationParameterSetRBSP.hpp"
-    "include/TMIV/MivBitstream/AtlasFrameParameterSetRBSP.h"
-    "include/TMIV/MivBitstream/AtlasFrameParameterSetRBSP.hpp"
-    "include/TMIV/MivBitstream/AtlasObjectAssociation.h"
-    "include/TMIV/MivBitstream/AtlasSequenceParameterSetRBSP.h"
-    "include/TMIV/MivBitstream/AtlasSequenceParameterSetRBSP.hpp"
-    "include/TMIV/MivBitstream/AtlasSubBitstream.h"
-    "include/TMIV/MivBitstream/AtlasTileLayerRBSP.h"
-    "include/TMIV/MivBitstream/AtlasTileLayerRBSP.hpp"
-    "include/TMIV/MivBitstream/CommonAtlasFrameMivExtension.h"
-    "include/TMIV/MivBitstream/CommonAtlasFrameMivExtension.hpp"
-    "include/TMIV/MivBitstream/CommonAtlasFrameRBSP.h"
-    "include/TMIV/MivBitstream/CommonAtlasFrameRBSP.hpp"
-    "include/TMIV/MivBitstream/CommonAtlasSequenceParameterSetRBSP.h"
-    "include/TMIV/MivBitstream/CommonAtlasSequenceParameterSetRBSP.hpp"
-    "include/TMIV/MivBitstream/DepthOccupancyTransform.h"
-    "include/TMIV/MivBitstream/DepthOccupancyTransform.hpp"
-    "include/TMIV/MivBitstream/EncoderParams.h"
-    "include/TMIV/MivBitstream/EncoderParams.hpp"
-    "include/TMIV/MivBitstream/GeometryUpscalingParameters.h"
-    "include/TMIV/MivBitstream/VuiParameters.h"
-    "include/TMIV/MivBitstream/VuiParameters.hpp"
-    "include/TMIV/MivBitstream/NalSampleStreamFormat.h"
-    "include/TMIV/MivBitstream/NalUnit.h"
-    "include/TMIV/MivBitstream/NalSampleStream.h"
-    "include/TMIV/MivBitstream/PackedIndependentRegions.h"
-    "include/TMIV/MivBitstream/PackedIndependentRegions.hpp"
-    "include/TMIV/MivBitstream/PatchParamsList.h"
-    "include/TMIV/MivBitstream/RecViewport.h"
-    "include/TMIV/MivBitstream/RecViewport.hpp"
-    "include/TMIV/MivBitstream/SceneObjectInformation.h"
-    "include/TMIV/MivBitstream/SceneObjectInformation.hpp"
-    "include/TMIV/MivBitstream/SeiRBSP.h"
-    "include/TMIV/MivBitstream/SequenceConfig.h"
-    "include/TMIV/MivBitstream/Types.h"
-    "include/TMIV/MivBitstream/ViewingSpace.h"
-    "include/TMIV/MivBitstream/ViewingSpaceHandling.h"
-    "include/TMIV/MivBitstream/ViewParamsList.h"
-    "include/TMIV/MivBitstream/V3cParameterSet.h"
-    "include/TMIV/MivBitstream/V3cParameterSet.hpp"
-    "include/TMIV/MivBitstream/V3cSampleStreamFormat.h"
-    "include/TMIV/MivBitstream/V3cUnit.h"
-    )
-
-add_library(TMIV::MivBitstreamLib
-    ALIAS MivBitstreamLib)
-
-target_link_libraries(MivBitstreamLib
-    PUBLIC
-        TMIV::CommonLib)
-
-target_include_directories(MivBitstreamLib
-    PUBLIC
-        "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>")
-
-install(
-    TARGETS
+create_tmiv_library(
+    TARGET
         MivBitstreamLib
-    EXPORT TMIVTargets
-    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
-
-install(
-    DIRECTORY "include/"
-    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+    SOURCES
+        "src/AccessUnit.cpp"
+        "src/AccessUnitDelimiterRBSP.cpp"
+        "src/AtlasAdaptationParameterSetRBSP.cpp"
+        "src/AtlasFrameParameterSetRBSP.cpp"
+        "src/AtlasObjectAssociation.cpp"
+        "src/AtlasSequenceParameterSetRBSP.cpp"
+        "src/AtlasTileLayerRBSP.cpp"
+        "src/CommonAtlasFrameMivExtension.cpp"
+        "src/CommonAtlasFrameRBSP.cpp"
+        "src/CommonAtlasSequenceParameterSetRBSP.cpp"
+        "src/DepthOccupancyTransform.cpp"
+        "src/EncoderParams.cpp"
+        "src/GeometryUpscalingParameters.cpp"
+        "src/VuiParameters.cpp"
+        "src/NalSampleStreamFormat.cpp"
+        "src/NalUnit.cpp"
+        "src/NalSampleStream.cpp"
+        "src/PackedIndependentRegions.cpp"
+        "src/RecViewport.cpp"
+        "src/SeiRBSP.cpp"
+        "src/SceneObjectInformation.cpp"
+        "src/SequenceConfig.cpp"
+        "src/VideoSubBitstream.cpp"
+        "src/ViewingSpace.cpp"
+        "src/ViewingSpaceHandling.cpp"
+        "src/ViewParamsList.cpp"
+        "src/V3cParameterSet.cpp"
+        "src/V3cSampleStreamFormat.cpp"
+        "src/V3cUnit.cpp"
+        "include/TMIV/MivBitstream/AccessUnit.h"
+        "include/TMIV/MivBitstream/AccessUnitDelimiterRBSP.h"
+        "include/TMIV/MivBitstream/AccessUnitDelimiterRBSP.hpp"
+        "include/TMIV/MivBitstream/AtlasAdaptationParameterSetRBSP.h"
+        "include/TMIV/MivBitstream/AtlasAdaptationParameterSetRBSP.hpp"
+        "include/TMIV/MivBitstream/AtlasFrameParameterSetRBSP.h"
+        "include/TMIV/MivBitstream/AtlasFrameParameterSetRBSP.hpp"
+        "include/TMIV/MivBitstream/AtlasObjectAssociation.h"
+        "include/TMIV/MivBitstream/AtlasSequenceParameterSetRBSP.h"
+        "include/TMIV/MivBitstream/AtlasSequenceParameterSetRBSP.hpp"
+        "include/TMIV/MivBitstream/AtlasSubBitstream.h"
+        "include/TMIV/MivBitstream/AtlasTileLayerRBSP.h"
+        "include/TMIV/MivBitstream/AtlasTileLayerRBSP.hpp"
+        "include/TMIV/MivBitstream/CommonAtlasFrameMivExtension.h"
+        "include/TMIV/MivBitstream/CommonAtlasFrameMivExtension.hpp"
+        "include/TMIV/MivBitstream/CommonAtlasFrameRBSP.h"
+        "include/TMIV/MivBitstream/CommonAtlasFrameRBSP.hpp"
+        "include/TMIV/MivBitstream/CommonAtlasSequenceParameterSetRBSP.h"
+        "include/TMIV/MivBitstream/CommonAtlasSequenceParameterSetRBSP.hpp"
+        "include/TMIV/MivBitstream/DepthOccupancyTransform.h"
+        "include/TMIV/MivBitstream/DepthOccupancyTransform.hpp"
+        "include/TMIV/MivBitstream/EncoderParams.h"
+        "include/TMIV/MivBitstream/EncoderParams.hpp"
+        "include/TMIV/MivBitstream/GeometryUpscalingParameters.h"
+        "include/TMIV/MivBitstream/VuiParameters.h"
+        "include/TMIV/MivBitstream/VuiParameters.hpp"
+        "include/TMIV/MivBitstream/NalSampleStreamFormat.h"
+        "include/TMIV/MivBitstream/NalUnit.h"
+        "include/TMIV/MivBitstream/NalSampleStream.h"
+        "include/TMIV/MivBitstream/PackedIndependentRegions.h"
+        "include/TMIV/MivBitstream/PackedIndependentRegions.hpp"
+        "include/TMIV/MivBitstream/PatchParamsList.h"
+        "include/TMIV/MivBitstream/RecViewport.h"
+        "include/TMIV/MivBitstream/RecViewport.hpp"
+        "include/TMIV/MivBitstream/SceneObjectInformation.h"
+        "include/TMIV/MivBitstream/SceneObjectInformation.hpp"
+        "include/TMIV/MivBitstream/SeiRBSP.h"
+        "include/TMIV/MivBitstream/SequenceConfig.h"
+        "include/TMIV/MivBitstream/Types.h"
+        "include/TMIV/MivBitstream/ViewingSpace.h"
+        "include/TMIV/MivBitstream/ViewingSpaceHandling.h"
+        "include/TMIV/MivBitstream/ViewParamsList.h"
+        "include/TMIV/MivBitstream/V3cParameterSet.h"
+        "include/TMIV/MivBitstream/V3cParameterSet.hpp"
+        "include/TMIV/MivBitstream/V3cSampleStreamFormat.h"
+        "include/TMIV/MivBitstream/V3cUnit.h"
+    PUBLIC
+        TMIV::CommonLib
+    )
 
 create_catch2_unit_test(
     TARGET
@@ -130,5 +114,6 @@ create_catch2_unit_test(
         "src/ViewParamsList.test.cpp"
         "src/V3cParameterSet.test.cpp"
         "src/V3cUnit.test.cpp"
-    LIBS
-        TMIV::MivBitstreamLib)
+    PRIVATE
+        TMIV::MivBitstreamLib
+    )

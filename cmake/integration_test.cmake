@@ -45,6 +45,7 @@ if(CMAKE_TESTING_ENABLED)
                     ${GIT_ARG} ${GIT_EXECUTABLE}
                     ${PAR_ARG} ${INTEGRATION_TEST_MAX_WORKERS}
                     ${REF_ARG} ${INTEGRATION_TEST_REFERENCE_DIR})
+            set_property(TARGET integration_test PROPERTY FOLDER "TMIV tests")
             message(STATUS "Integration testing is enabled through the integration_test target. This target will first execute the 'all', 'test' and 'install' targets.")
         else()
             message(STATUS "Integration testing is DISABLED because INTEGRATION_TEST_CONTENT_DIR (${INTEGRATION_TEST_CONTENT_DIR}) does not exist")

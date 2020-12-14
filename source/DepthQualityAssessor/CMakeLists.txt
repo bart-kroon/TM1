@@ -1,28 +1,12 @@
 cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
 
-add_library(DepthQualityAssessorLib
-    "src/DepthQualityAssessor.cpp"
-    "include/TMIV/DepthQualityAssessor/IDepthQualityAssessor.h"
-    "include/TMIV/DepthQualityAssessor/DepthQualityAssessor.h"
-    )
-
-add_library(TMIV::DepthQualityAssessorLib
-    ALIAS DepthQualityAssessorLib)
-
-target_link_libraries(DepthQualityAssessorLib
-    PUBLIC
-        TMIV::RendererLib)
-
-target_include_directories(DepthQualityAssessorLib
-    PUBLIC
-        "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>")
-
-install(
-    TARGETS
+create_tmiv_library(
+    TARGET
         DepthQualityAssessorLib
-    EXPORT TMIVTargets
-    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
-
-install(
-    DIRECTORY "include/"
-    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+    SOURCES
+        "src/DepthQualityAssessor.cpp"
+        "include/TMIV/DepthQualityAssessor/IDepthQualityAssessor.h"
+        "include/TMIV/DepthQualityAssessor/DepthQualityAssessor.h"
+    PUBLIC
+        TMIV::RendererLib
+    )

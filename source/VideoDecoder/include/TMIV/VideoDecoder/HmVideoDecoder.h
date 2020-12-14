@@ -40,8 +40,6 @@
 
 #include <TMIV/VideoDecoder/IVideoDecoder.h>
 
-#include <TMIV/Common/Json.h>
-
 namespace TMIV::VideoDecoder {
 class HmVideoDecoder : public IVideoDecoder {
 public:

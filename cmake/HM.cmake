@@ -38,6 +38,7 @@ if (BUILD_HM)
         file(GLOB headerFiles "${appSourceDir}/${module}/*.h")
         add_executable(${module} ${cppSourceFiles} ${cSourceFiles} ${headerFiles})
         set_property(TARGET ${module} PROPERTY CXX_CLANG_TIDY) # no clang-tidy
+        set_property(TARGET ${module} PROPERTY FOLDER "HM executables")
         install(TARGETS ${module} EXPORT TMIVTargets RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
     endfunction()
 
@@ -47,6 +48,7 @@ if (BUILD_HM)
         file(GLOB headerFiles "${libSourceDir}/${module}/*.h")
         add_library(${module} ${cppSourceFiles} ${cSourceFiles} ${headerFiles})
         set_property(TARGET ${module} PROPERTY CXX_CLANG_TIDY) # no clang-tidy
+        set_property(TARGET ${module} PROPERTY FOLDER "HM libraries")
         add_library(TMIV::${module} ALIAS ${module})
         install(TARGETS ${module} EXPORT TMIVTargets ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})    
     endfunction()

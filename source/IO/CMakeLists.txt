@@ -1,14 +1,5 @@
 cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
 
-add_library(IOLib
-    "src/load.cpp"
-    "src/save.cpp"
-    "include/TMIV/IO/IO.h"
-    )
-
-add_library(TMIV::IOLib
-    ALIAS IOLib)
-
 # Address this https://en.cppreference.com/w/cpp/filesystem note:
 #   Using this library may require additional compiler/linker options. GNU implementation prior to
 #   9.1 requires linking with -lstdc++fs and LLVM implementation prior to LLVM 9.0 requires linking
@@ -25,20 +16,14 @@ else()
     endif()
 endif()
 
-target_link_libraries(IOLib
-    PUBLIC
-        TMIV::MivBitstreamLib ${CppFilesystemLib})
-
-target_include_directories(IOLib
-    PUBLIC
-        "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>")
-
-install(
-    TARGETS
+create_tmiv_library(
+    TARGET
         IOLib
-    EXPORT TMIVTargets
-    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
-
-install(
-    DIRECTORY "include/"
-    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+    SOURCES
+        "src/load.cpp"
+        "src/save.cpp"
+        "include/TMIV/IO/IO.h"
+    PUBLIC
+        TMIV::MivBitstreamLib
+        ${CppFilesystemLib}
+    )

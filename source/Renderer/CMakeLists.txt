@@ -80,6 +80,13 @@ create_catch2_unit_test(
     TARGET
         RendererTest
     SOURCES
+        "src/AccumulatingPixel.test.cpp"
+        "src/AffineTransform.test.cpp"
+        "src/Engine_equirectangular.test.cpp"
+        "src/Engine_perspective.test.cpp"
+        "src/Engine_orthographic.test.cpp"
+        "src/MpiRasterizer.test.cpp"
+        "src/Rasterizer.test.cpp"
         "src/Renderer.test.cpp"
     PRIVATE
         TMIV::RendererLib

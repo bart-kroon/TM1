@@ -76,11 +76,10 @@ template <> struct Engine<MivBitstream::CiCamType::equirectangular> {
   // Projection equation
   [[nodiscard]] auto projectVertex(const SceneVertexDescriptor &v) const
       -> ImageVertexDescriptor const {
-    using std::asin;
     using std::atan2;
     const auto radius = norm(v.position);
     const auto phi = atan2(v.position.y(), v.position.x());
-    const auto theta = asin(v.position.z() / radius);
+    const auto theta = atan2(v.position.z(), std::hypot(v.position.x(), v.position.y()));
     const auto position = Common::Vec2f{u0 + du_dphi * phi, v0 + dv_dtheta * theta};
     return {position, radius, v.rayAngle};
   }

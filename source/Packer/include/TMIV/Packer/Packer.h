@@ -37,6 +37,9 @@
 #include <TMIV/Packer/IPacker.h>
 
 #include <TMIV/Common/Json.h>
+#include <TMIV/Packer/Cluster.h>
+
+#include <tuple>
 
 namespace TMIV::Packer {
 class Packer : public IPacker {
@@ -65,6 +68,11 @@ private:
   int m_maxEntities{1};
   std::vector<Common::MaskList> m_aggregatedEntityMasks{};
   Common::Vec2i m_entityEncodeRange;
+  auto computeClusters(const Common::MaskList &masks,
+                       const MivBitstream::ViewParamsList &viewParamsList)
+      -> std::tuple<ClusterList, ClusteringMapList, std::vector<int>>;
+  auto computeClusterToPack(const MivBitstream::ViewParamsList &viewParamsList, int m_blockSize,
+                            ClusterList &clusterList, const ClusteringMapList &clusteringMap) const;
 };
 
 } // namespace TMIV::Packer

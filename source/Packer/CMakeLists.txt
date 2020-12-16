@@ -5,10 +5,10 @@ create_tmiv_library(
         PackerLib
     SOURCES
         "src/Cluster.cpp"
-        "src/Cluster.h"
         "src/MaxRectPiP.cpp"
         "src/MaxRectPiP.h"
         "src/Packer.cpp"
+        "include/TMIV/Packer/Cluster.h"
         "include/TMIV/Packer/IPacker.h"
         "include/TMIV/Packer/Packer.h"
     PUBLIC

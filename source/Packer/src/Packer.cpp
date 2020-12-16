@@ -40,6 +40,36 @@
 #include <stdexcept>
 
 namespace TMIV::Packer {
+namespace {
+void checkAtlasSize(const Common::SizeVector &atlasSizes, const int blockSize) {
+  for (const auto &sz : atlasSizes) {
+    if (((sz.x() % blockSize) != 0) || ((sz.y() % blockSize) != 0)) {
+      throw std::runtime_error("Atlas size should be a multiple of blocksize");
+    }
+  }
+}
+
+void adaptPatchParamsToMask(MivBitstream::PatchParams &p, const uint32_t maskWidth,
+                            const uint32_t maskHeight) {
+  if (p.atlasPatch3dOffsetU() + p.atlasPatch3dSizeU() > maskWidth) {
+    if (p.atlasPatch3dSizeU() <= maskWidth) {
+      p.atlasPatch3dOffsetU(maskWidth - p.atlasPatch3dSizeU());
+    } else {
+      p.atlasPatch3dOffsetU(0);
+      p.atlasPatch3dSizeU(maskWidth);
+    }
+  }
+  if (p.atlasPatch3dOffsetV() + p.atlasPatch3dSizeV() > maskHeight) {
+    if (p.atlasPatch3dSizeV() <= maskHeight) {
+      p.atlasPatch3dOffsetV(maskHeight - p.atlasPatch3dSizeV());
+    } else {
+      p.atlasPatch3dOffsetV(0);
+      p.atlasPatch3dSizeV(maskHeight);
+    }
+  }
+}
+
+} // namespace
 Packer::Packer(const Common::Json &rootNode, const Common::Json &componentNode) {
   m_minPatchSize = componentNode.require("MinPatchSize").as<int>();
   m_overlap = componentNode.require("Overlap").as<int>();
@@ -69,75 +99,10 @@ void Packer::updateAggregatedEntityMasks(const std::vector<Common::MaskList> &en
   }
 }
 
-auto Packer::pack(const Common::SizeVector &atlasSizes, const Common::MaskList &masks,
-                  const MivBitstream::ViewParamsList &viewParamsList, const int m_blockSize)
-    -> MivBitstream::PatchParamsList {
-  // Check atlas size
-  for (const auto &sz : atlasSizes) {
-    if (((sz.x() % m_blockSize) != 0) || ((sz.y() % m_blockSize) != 0)) {
-      throw std::runtime_error("Atlas size should be a multiple of blocksize");
-    }
-  }
-
-  // Common::Mask clustering
-  ClusterList clusterList;
-  ClusteringMapList clusteringMap;
-  std::vector<int> clusteringMapIndex;
-  int index = 0;
-  for (auto viewId = 0; viewId < static_cast<int>(masks.size()); viewId++) {
-    if (m_maxEntities > 1) {
-      for (int entityId = m_entityEncodeRange[0]; entityId < m_entityEncodeRange[1]; entityId++) {
-        // Entity clustering
-        Common::Mask mask = m_aggregatedEntityMasks[entityId - m_entityEncodeRange[0]][viewId];
-
-        auto clusteringOutput =
-            Cluster::retrieve(viewId, mask, static_cast<int>(clusterList.size()),
-                              viewParamsList[viewId].isBasicView, m_enableMerging);
-
-        for (auto &cluster : clusteringOutput.first) {
-          cluster = Cluster::setEntityId(cluster, entityId);
-        }
-
-        std::move(clusteringOutput.first.begin(), clusteringOutput.first.end(),
-                  back_inserter(clusterList));
-        clusteringMap.push_back(std::move(clusteringOutput.second));
-
-        for (size_t i = 0; i < clusteringOutput.first.size(); i++) {
-          clusteringMapIndex.push_back(index);
-        }
-
-        if (!clusteringOutput.first.empty()) {
-          std::cout << "entity " << entityId << " from view " << viewId << " results in "
-                    << clusteringOutput.first.size() << " patches\n";
-        }
-        ++index;
-      }
-    } else {
-      auto clusteringOutput =
-          Cluster::retrieve(viewId, masks[viewId], static_cast<int>(clusterList.size()),
-                            viewParamsList[viewId].isBasicView, m_enableMerging);
-
-      std::move(clusteringOutput.first.begin(), clusteringOutput.first.end(),
-                back_inserter(clusterList));
-      clusteringMap.push_back(std::move(clusteringOutput.second));
-    }
-  }
-  if (m_maxEntities > 1) {
-    std::cout << "clusteringMap size = " << clusteringMap.size()
-              << " with total # clusters = " << clusteringMapIndex.size() << std::endl;
-  }
-
-  // Packing
-  MivBitstream::PatchParamsList atlasParamsVector;
-  std::vector<MaxRectPiP> packerList;
-  MaxRectPiP::Output packerOutput;
-
-  packerList.reserve(atlasSizes.size());
-  for (const auto &sz : atlasSizes) {
-    packerList.emplace_back(sz.x(), sz.y(), m_blockSize, m_pip);
-  }
-
-  auto comp = [&](const Cluster &p1, const Cluster &p2) -> bool {
+auto Packer::computeClusterToPack(const MivBitstream::ViewParamsList &viewParamsList,
+                                  const int m_blockSize, ClusterList &clusterList,
+                                  const ClusteringMapList &clusteringMap) const {
+  auto comp = [this, &viewParamsList](const Cluster &p1, const Cluster &p2) -> bool {
     if (viewParamsList[p1.getViewId()].isBasicView != viewParamsList[p2.getViewId()].isBasicView) {
       return viewParamsList[p2.getViewId()].isBasicView;
     }
@@ -158,7 +123,7 @@ auto Packer::pack(const Common::SizeVector &atlasSizes, const Common::MaskList &
 
   std::priority_queue<Cluster, std::vector<Cluster>, decltype(comp)> clusterToPack(comp);
 
-  std::vector<Cluster> out;
+  std::vector<Cluster> out{};
   for (const auto &cluster : clusterList) {
     if (m_maxEntities > 1 || cluster.isBasicView()) {
       out.push_back(cluster);
@@ -176,6 +141,28 @@ auto Packer::pack(const Common::SizeVector &atlasSizes, const Common::MaskList &
     // modification to align the imin,jmin to even values to help renderer
     Cluster c = Cluster::align(cluster, 2);
     clusterToPack.push(c);
+  }
+  return clusterToPack;
+}
+
+auto Packer::pack(const Common::SizeVector &atlasSizes, const Common::MaskList &masks,
+                  const MivBitstream::ViewParamsList &viewParamsList, const int m_blockSize)
+    -> MivBitstream::PatchParamsList {
+  checkAtlasSize(atlasSizes, m_blockSize);
+
+  auto [clusterList, clusteringMap, clusteringMapIndex] = computeClusters(masks, viewParamsList);
+
+  auto clusterToPack =
+      computeClusterToPack(viewParamsList, m_blockSize, clusterList, clusteringMap);
+
+  // Packing
+  MivBitstream::PatchParamsList atlasParamsVector{};
+  std::vector<MaxRectPiP> packerList{};
+  MaxRectPiP::Output packerOutput{};
+
+  packerList.reserve(atlasSizes.size());
+  for (const auto &sz : atlasSizes) {
+    packerList.emplace_back(sz.x(), sz.y(), m_blockSize, m_pip);
   }
 
   int patchId = 0;
@@ -210,25 +197,8 @@ auto Packer::pack(const Common::SizeVector &atlasSizes, const Common::MaskList &
           p.atlasPatch3dSizeU(Common::align(cluster.width(), m_blockSize));
           p.atlasPatch3dSizeV(Common::align(cluster.height(), m_blockSize));
 
-          const uint32_t maskWidth = masks[cluster.getViewId()].getWidth();
-          const uint32_t maskHeight = masks[cluster.getViewId()].getHeight();
-
-          if (p.atlasPatch3dOffsetU() + p.atlasPatch3dSizeU() > maskWidth) {
-            if (p.atlasPatch3dSizeU() <= maskWidth) {
-              p.atlasPatch3dOffsetU(maskWidth - p.atlasPatch3dSizeU());
-            } else {
-              p.atlasPatch3dOffsetU(0);
-              p.atlasPatch3dSizeU(maskWidth);
-            }
-          }
-          if (p.atlasPatch3dOffsetV() + p.atlasPatch3dSizeV() > maskHeight) {
-            if (p.atlasPatch3dSizeV() <= maskHeight) {
-              p.atlasPatch3dOffsetV(maskHeight - p.atlasPatch3dSizeV());
-            } else {
-              p.atlasPatch3dOffsetV(0);
-              p.atlasPatch3dSizeV(maskHeight);
-            }
-          }
+          adaptPatchParamsToMask(p, masks[cluster.getViewId()].getWidth(),
+                                 masks[cluster.getViewId()].getHeight());
 
           if (m_maxEntities > 1) {
             p.atlasPatchEntityId(cluster.getEntityId());
@@ -274,5 +244,57 @@ auto Packer::pack(const Common::SizeVector &atlasSizes, const Common::MaskList &
   }
 
   return atlasParamsVector;
+}
+
+auto Packer::computeClusters(const Common::MaskList &masks,
+                             const MivBitstream::ViewParamsList &viewParamsList)
+    -> std::tuple<ClusterList, ClusteringMapList, std::vector<int>> {
+  ClusterList clusterList{};
+  ClusteringMapList clusteringMap{};
+  std::vector<int> clusteringMapIndex{};
+  int index = 0;
+  for (auto viewId = 0; viewId < static_cast<int>(masks.size()); viewId++) {
+    if (m_maxEntities > 1) {
+      for (int entityId = m_entityEncodeRange[0]; entityId < m_entityEncodeRange[1]; entityId++) {
+        // Entity clustering
+        Common::Mask mask = m_aggregatedEntityMasks[entityId - m_entityEncodeRange[0]][viewId];
+
+        auto clusteringOutput =
+            Cluster::retrieve(viewId, mask, static_cast<int>(clusterList.size()),
+                              viewParamsList[viewId].isBasicView, m_enableMerging);
+
+        for (auto &cluster : clusteringOutput.first) {
+          cluster = Cluster::setEntityId(cluster, entityId);
+        }
+
+        std::move(clusteringOutput.first.begin(), clusteringOutput.first.end(),
+                  back_inserter(clusterList));
+        clusteringMap.push_back(std::move(clusteringOutput.second));
+
+        for (size_t i = 0; i < clusteringOutput.first.size(); i++) {
+          clusteringMapIndex.push_back(index);
+        }
+
+        if (!clusteringOutput.first.empty()) {
+          std::cout << "entity " << entityId << " from view " << viewId << " results in "
+                    << clusteringOutput.first.size() << " patches\n";
+        }
+        ++index;
+      }
+    } else {
+      auto clusteringOutput =
+          Cluster::retrieve(viewId, masks[viewId], static_cast<int>(clusterList.size()),
+                            viewParamsList[viewId].isBasicView, m_enableMerging);
+
+      std::move(clusteringOutput.first.begin(), clusteringOutput.first.end(),
+                back_inserter(clusterList));
+      clusteringMap.push_back(std::move(clusteringOutput.second));
+    }
+  }
+  if (m_maxEntities > 1) {
+    std::cout << "clusteringMap size = " << clusteringMap.size()
+              << " with total # clusters = " << clusteringMapIndex.size() << std::endl;
+  }
+  return {clusterList, clusteringMap, clusteringMapIndex};
 }
 } // namespace TMIV::Packer

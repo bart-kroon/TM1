@@ -34,7 +34,7 @@
 #ifndef _TMIV_PACKER_MAXRECTPIP_H_
 #define _TMIV_PACKER_MAXRECTPIP_H_
 
-#include "Cluster.h"
+#include <TMIV/Packer/Cluster.h>
 #include <list>
 
 namespace TMIV::Packer {

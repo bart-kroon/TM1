@@ -31,7 +31,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "Cluster.h"
+#include <TMIV/Packer/Cluster.h>
 
 auto roundToAlignment(int val, int alignment) -> int {
   return ((int(val - 1) / alignment + 1) * alignment);

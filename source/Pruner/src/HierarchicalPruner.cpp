@@ -48,6 +48,82 @@
 #include <numeric>
 
 namespace TMIV::Pruner {
+namespace {
+auto convertYuvPixelToRgbPixel(const Common::Vec3f &yuv, const float maxIntensity = 255.F)
+    -> Common::Vec3f {
+  const float invertedMaxIntensity = 1.F / maxIntensity;
+  return {1.164F * (yuv[0] - 16.F * invertedMaxIntensity) +
+              2.018F * (yuv[1] - 128.F * invertedMaxIntensity),
+          1.164F * (yuv[0] - 16.F * invertedMaxIntensity) -
+              0.813F * (yuv[2] - 128.F * invertedMaxIntensity) -
+              0.391F * (yuv[1] - 128.F * invertedMaxIntensity),
+          1.164F * (yuv[0] - 16.F * invertedMaxIntensity) +
+              1.596F * (yuv[2] - 128.F * invertedMaxIntensity)};
+}
+
+auto createRgbImageFromYuvImage(const Common::Mat<Common::Vec3f> &yuvImage) {
+  Common::Mat<Common::Vec3f> rgbImage{yuvImage};
+  std::transform(rgbImage.begin(), rgbImage.end(), rgbImage.begin(),
+                 [](const auto &yuv_pixel) { return convertYuvPixelToRgbPixel(yuv_pixel); });
+  return rgbImage;
+}
+
+auto iterativeReweightedLeastSquaresOnNonPrunedPixels(
+    const std::vector<size_t> &nonPrunedPixIndices, const Common::Mat<Common::Vec3f> &referenceRGB,
+    const Common::Mat<Common::Vec3f> &synthesizedRGB, const std::vector<float> &weights,
+    const std::size_t colorChannel, const double eps) {
+  const std::size_t numPixels = nonPrunedPixIndices.size();
+  Common::Mat<double> A({numPixels, 4});
+  Common::Mat<double> b({numPixels, 1});
+  Common::Mat<double> x({4, 1});
+  Common::Mat<double> A_t;
+  Common::Mat<double> A_pseudo;
+  for (std::size_t i = 0; i < numPixels; ++i) {
+    std::size_t pixelIndex = nonPrunedPixIndices[i];
+    const auto rR = static_cast<double>(referenceRGB[pixelIndex][0]);
+    const auto rG = static_cast<double>(referenceRGB[pixelIndex][1]);
+    const auto rB = static_cast<double>(referenceRGB[pixelIndex][2]);
+    const auto s = static_cast<double>(synthesizedRGB[pixelIndex][colorChannel]);
+
+    const auto w = static_cast<double>(weights[i]);
+
+    A(i, 0) = w * rR;
+    A(i, 1) = w * rG;
+    A(i, 2) = w * rB;
+    A(i, 3) = w * 1.F;
+    b(i, 0) = w * s;
+  }
+
+  transpose(A, A_t);
+  transquare(A, A_pseudo);
+  A_pseudo += eps * Common::Mat<double>::eye(A_pseudo.sizes());
+  mldivide(A_pseudo, A_t * b, x);
+  return x;
+}
+
+auto computeWeightedRgbSum(const Common::Vec3f &referenceRGB, const Common::Mat<double> &x)
+    -> double {
+  auto rR = static_cast<double>(referenceRGB[0]);
+  auto rG = static_cast<double>(referenceRGB[1]);
+  auto rB = static_cast<double>(referenceRGB[2]);
+
+  return x(0, 0) * rR + x(1, 0) * rG + x(2, 0) * rB + x(3, 0);
+}
+
+auto computeNonPrunedPixelIndices(const Common::Mat<Common::Vec3f> &synthesizedYUV,
+                                  const Common::Mat<uint8_t> &prunedMask) -> std::vector<size_t> {
+  std::vector<size_t> nonPrunedPixIndices;
+  for (size_t i = 0; i < prunedMask.size(); ++i) {
+    if (synthesizedYUV[i][0] < 0.1F && synthesizedYUV[i][1] < 0.1F && synthesizedYUV[i][2] < 0.1F) {
+      continue;
+    }
+    if (prunedMask[i] > 0) {
+      nonPrunedPixIndices.push_back(i);
+    }
+  }
+  return nonPrunedPixIndices;
+}
+} // namespace
 const auto depthErrorEps = 1E-4F;
 
 class HierarchicalPruner::Impl {
@@ -505,168 +581,70 @@ private:
                                                const Common::Mat<Common::Vec3f> &synthesizedYUV,
                                                const Common::Mat<uint8_t> &prunedMask) const
       -> Common::Mat<uint8_t> {
+    struct VecRgb {
+      VecRgb(double _r, double _g, double _b) : r{_r}, g{_g}, b{_b} {}
+      double r{}, g{}, b{};
+    };
+
     const int maxIterNum = 10;
     const double eps = 1E-10;
-    Common::Mat<uint8_t> result{prunedMask.sizes()};
-    Common::Mat<Common::Vec3f> referenceRGB{prunedMask.sizes()};
-    Common::Mat<Common::Vec3f> synthesizedRGB{prunedMask.sizes()};
+    Common::Mat<std::uint8_t> result(prunedMask.sizes(), 0);
+    const auto referenceRGB{createRgbImageFromYuvImage(referenceYUV)};
+    const auto synthesizedRGB{createRgbImageFromYuvImage(synthesizedYUV)};
 
-    for (size_t i = 0; i < result.size(); ++i) {
-      const float inv_maxIntensity = 1.F / 255.F;
-      referenceRGB[i][0] = 1.164F * (referenceYUV[i][0] - 16.F * inv_maxIntensity) +
-                           2.018F * (referenceYUV[i][1] - 128.F * inv_maxIntensity);
-      referenceRGB[i][1] = 1.164F * (referenceYUV[i][0] - 16.F * inv_maxIntensity) -
-                           0.813F * (referenceYUV[i][2] - 128.F * inv_maxIntensity) -
-                           0.391F * (referenceYUV[i][1] - 128.F * inv_maxIntensity);
-      referenceRGB[i][2] = 1.164F * (referenceYUV[i][0] - 16.F * inv_maxIntensity) +
-                           1.596F * (referenceYUV[i][2] - 128.F * inv_maxIntensity);
+    const auto nonPrunedPixIndices{computeNonPrunedPixelIndices(synthesizedYUV, prunedMask)};
 
-      synthesizedRGB[i][0] = 1.164F * (synthesizedYUV[i][0] - 16.F * inv_maxIntensity) +
-                             2.018F * (synthesizedYUV[i][1] - 128.F * inv_maxIntensity);
-      synthesizedRGB[i][1] = 1.164F * (synthesizedYUV[i][0] - 16.F * inv_maxIntensity) -
-                             0.813F * (synthesizedYUV[i][2] - 128.F * inv_maxIntensity) -
-                             0.391F * (synthesizedYUV[i][1] - 128.F * inv_maxIntensity);
-      synthesizedRGB[i][2] = 1.164F * (synthesizedYUV[i][0] - 16.F * inv_maxIntensity) +
-                             1.596F * (synthesizedYUV[i][2] - 128.F * inv_maxIntensity);
-
-      result[i] = 0;
-    }
-
-    std::vector<size_t> nonPrunedPixIndice;
-    for (size_t i = 0; i < prunedMask.size(); ++i) {
-      if (synthesizedYUV[i][0] < 0.1F && synthesizedYUV[i][1] < 0.1F &&
-          synthesizedYUV[i][2] < 0.1F) {
-        continue;
-      }
-      if (prunedMask[i] > 0) {
-        nonPrunedPixIndice.push_back(i);
-      }
-    }
-
-    if (nonPrunedPixIndice.empty()) {
+    if (nonPrunedPixIndices.empty()) {
       return result;
     }
 
-    size_t numPixels = nonPrunedPixIndice.size();
+    std::size_t numPixels = nonPrunedPixIndices.size();
     std::vector<float> weightR(numPixels, 1.F);
     std::vector<float> weightG(numPixels, 1.F);
     std::vector<float> weightB(numPixels, 1.F);
 
-    Common::Mat<double> A1({numPixels, 4});
-    Common::Mat<double> b1({numPixels, 1});
-    Common::Mat<double> x1({4, 1});
-
-    Common::Mat<double> A2({numPixels, 4});
-    Common::Mat<double> b2({numPixels, 1});
-    Common::Mat<double> x2({4, 1});
-
-    Common::Mat<double> A3({numPixels, 4});
-    Common::Mat<double> b3({numPixels, 1});
-    Common::Mat<double> x3({4, 1});
-
-    Common::Mat<double> A_t1;
-    Common::Mat<double> A_t2;
-    Common::Mat<double> A_t3;
-    Common::Mat<double> A_pseudo1;
-    Common::Mat<double> A_pseudo2;
-    Common::Mat<double> A_pseudo3;
-
     double prevE = -1.0;
     for (int iter = 0; iter < maxIterNum; ++iter) {
-      for (size_t i = 0; i < numPixels; ++i) {
-        size_t pixIdx = nonPrunedPixIndice[i];
-        auto rR = static_cast<double>(referenceRGB[pixIdx][0]);
-        auto rG = static_cast<double>(referenceRGB[pixIdx][1]);
-        auto rB = static_cast<double>(referenceRGB[pixIdx][2]);
-        auto sR = static_cast<double>(synthesizedRGB[pixIdx][0]);
-        auto sG = static_cast<double>(synthesizedRGB[pixIdx][1]);
-        auto sB = static_cast<double>(synthesizedRGB[pixIdx][2]);
 
-        auto wR = static_cast<double>(weightR[i]);
-        auto wG = static_cast<double>(weightG[i]);
-        auto wB = static_cast<double>(weightB[i]);
-
-        A1(i, 0) = wR * rR;
-        A1(i, 1) = wR * rG;
-        A1(i, 2) = wR * rB;
-        A1(i, 3) = wR * 1.F;
-        b1(i, 0) = wR * sR;
-
-        A2(i, 0) = wG * rR;
-        A2(i, 1) = wG * rG;
-        A2(i, 2) = wG * rB;
-        A2(i, 3) = wG * 1.F;
-        b2(i, 0) = wG * sG;
-
-        A3(i, 0) = wB * rR;
-        A3(i, 1) = wB * rG;
-        A3(i, 2) = wB * rB;
-        A3(i, 3) = wB * 1.F;
-        b3(i, 0) = wB * sB;
-      }
-
-      transpose(A1, A_t1);
-      transquare(A1, A_pseudo1);
-      A_pseudo1 += eps * Common::Mat<double>::eye(A_pseudo1.sizes());
-      mldivide(A_pseudo1, A_t1 * b1, x1);
-
-      transpose(A2, A_t2);
-      transquare(A2, A_pseudo2);
-      A_pseudo2 += eps * Common::Mat<double>::eye(A_pseudo2.sizes());
-      mldivide(A_pseudo2, A_t2 * b2, x2);
-
-      transpose(A3, A_t3);
-      transquare(A3, A_pseudo3);
-      A_pseudo3 += eps * Common::Mat<double>::eye(A_pseudo3.sizes());
-      mldivide(A_pseudo3, A_t3 * b3, x3);
+      const auto x1{iterativeReweightedLeastSquaresOnNonPrunedPixels(
+          nonPrunedPixIndices, referenceRGB, synthesizedRGB, weightR, 0, eps)};
+      const auto x2{iterativeReweightedLeastSquaresOnNonPrunedPixels(
+          nonPrunedPixIndices, referenceRGB, synthesizedRGB, weightG, 1, eps)};
+      const auto x3{iterativeReweightedLeastSquaresOnNonPrunedPixels(
+          nonPrunedPixIndices, referenceRGB, synthesizedRGB, weightB, 2, eps)};
 
       double curE = 0;
       double weightSum = 0;
       for (size_t i = 0; i < numPixels; ++i) {
-        size_t pixIdx = nonPrunedPixIndice[i];
-        auto rR = static_cast<double>(referenceRGB[pixIdx][0]);
-        auto rG = static_cast<double>(referenceRGB[pixIdx][1]);
-        auto rB = static_cast<double>(referenceRGB[pixIdx][2]);
-        auto sR = static_cast<double>(synthesizedRGB[pixIdx][0]);
-        auto sG = static_cast<double>(synthesizedRGB[pixIdx][1]);
-        auto sB = static_cast<double>(synthesizedRGB[pixIdx][2]);
+        size_t pixIdx = nonPrunedPixIndices[i];
+        const VecRgb s{static_cast<double>(synthesizedRGB[pixIdx][0]),
+                       static_cast<double>(synthesizedRGB[pixIdx][1]),
+                       static_cast<double>(synthesizedRGB[pixIdx][2])};
 
-        auto wR = static_cast<double>(weightR[i]);
-        auto wG = static_cast<double>(weightG[i]);
-        auto wB = static_cast<double>(weightB[i]);
+        const VecRgb c{computeWeightedRgbSum(referenceRGB[pixIdx], x1),
+                       computeWeightedRgbSum(referenceRGB[pixIdx], x2),
+                       computeWeightedRgbSum(referenceRGB[pixIdx], x3)};
 
-        double c1 = x1(0, 0) * rR + x1(1, 0) * rG + x1(2, 0) * rB + x1(3, 0);
-        double c2 = x2(0, 0) * rR + x2(1, 0) * rG + x2(2, 0) * rB + x2(3, 0);
-        double c3 = x3(0, 0) * rR + x3(1, 0) * rG + x3(2, 0) * rB + x3(3, 0);
-
-        double dr = std::abs(c1 - sR);
-        double dg = std::abs(c2 - sG);
-        double db = std::abs(c3 - sB);
-
-        curE += (wR * dr + wG * dg + wB * db) / 3.0;
-        weightSum += (wR + wG + wB) / 3.0;
-
-        dr = sqrt(dr * dr + eps);
-        dg = sqrt(dg * dg + eps);
-        db = sqrt(db * db + eps);
-
-        weightR[i] = static_cast<float>(std::min(1.0 / (2.0 * dr), 1.0));
-        weightG[i] = static_cast<float>(std::min(1.0 / (2.0 * dg), 1.0));
-        weightB[i] = static_cast<float>(std::min(1.0 / (2.0 * db), 1.0));
+        VecRgb d{std::abs(c.r - s.r), std::abs(c.g - s.g), std::abs(c.b - s.b)};
 
         result[pixIdx] = 0;
-        if (std::abs(c1 - sR) > m_maxColorError) {
+        if (d.r > m_maxColorError || d.g > m_maxColorError || d.b > m_maxColorError) {
           result[pixIdx] = 255;
-          continue;
         }
-        if (std::abs(c2 - sG) > m_maxColorError) {
-          result[pixIdx] = 255;
-          continue;
-        }
-        if (std::abs(c3 - sB) > m_maxColorError) {
-          result[pixIdx] = 255;
-          continue;
-        }
+
+        const VecRgb w{static_cast<double>(weightR[i]), static_cast<double>(weightG[i]),
+                       static_cast<double>(weightB[i])};
+
+        curE += (w.r * d.r + w.g * d.g + w.b * d.b) / 3.0;
+        weightSum += (w.r + w.g + w.b) / 3.0;
+
+        d.r = sqrt(d.r * d.r + eps);
+        d.g = sqrt(d.g * d.g + eps);
+        d.b = sqrt(d.b * d.b + eps);
+
+        weightR[i] = static_cast<float>(std::min(1.0 / (2.0 * d.r), 1.0));
+        weightG[i] = static_cast<float>(std::min(1.0 / (2.0 * d.g), 1.0));
+        weightB[i] = static_cast<float>(std::min(1.0 / (2.0 * d.b), 1.0));
       }
 
       curE /= weightSum;

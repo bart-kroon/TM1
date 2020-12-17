@@ -36,6 +36,8 @@
 
 #include "Engine.h"
 
+#include <array>
+
 namespace TMIV::Renderer {
 
 template <typename... T> using PixelAttributes = std::tuple<T...>;
@@ -45,8 +47,8 @@ public:
   using Exception = std::logic_error;
   using AttributeMaps = std::tuple<std::vector<T>...>;
   using FragmentShader =
-      std::function<void(int, int, float, float, float, const PixelAttributes<T...> &,
-                         const PixelAttributes<T...> &, const PixelAttributes<T...> &)>;
+      std::function<void(const ViewportPosition2D &, const std::array<float, 3> &,
+                         const std::array<PixelAttributes<T...>, 3> &)>;
 
   // Construct a rasterizer with specified size.
   // The number of strips for concurrent processing is

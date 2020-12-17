@@ -37,6 +37,8 @@
 #include <TMIV/Renderer/MpiRasterizer.h>
 #include <TMIV/Renderer/reprojectPoints.h>
 
+#include <array>
+
 namespace TMIV::Renderer {
 const auto depthErrorEps = 1E-4F;
 
@@ -150,10 +152,10 @@ public:
     std::fill(m_blendingTransparency.begin(), m_blendingTransparency.end(), 0.F);
 
     rasterizer.submit(vertices, attributes, triangles);
-    rasterizer.run([&](int xInViewport, int yInViewport, float w0, float w1, float w2,
-                       const PixelAttribute &a0, const PixelAttribute &a1,
-                       const PixelAttribute &a2) {
-      return fragmentShader(xInViewport, yInViewport, w0, w1, w2, a0, a1, a2, frame, atlasColor,
+    rasterizer.run([this, &frame, &atlasColor, &atlasTransparency](
+                       const ViewportPosition2D &viewport, const std::array<float, 3> &weights,
+                       const std::array<PixelAttribute, 3> pixelAttributes) {
+      return fragmentShader(viewport, weights, pixelAttributes, frame, atlasColor,
                             atlasTransparency);
     });
 
@@ -400,21 +402,25 @@ private:
     return {vertices, attributes, triangles};
   }
 
-  void fragmentShader(int xInViewport, int yInViewport, float w0, float w1, float w2,
-                      const PixelAttribute &a0, const PixelAttribute &a1, const PixelAttribute &a2,
+  void fragmentShader(const ViewportPosition2D &InViewport, const std::array<float, 3> &weights,
+                      const std::array<PixelAttribute, 3> &pixelAttributes,
                       const MivBitstream::AccessUnit &frame,
                       const std::vector<Common::Mat<Common::Vec3f>> &atlasColor,
                       const std::vector<Common::Mat<float>> &atlasTransparency) {
-    auto &pixelAlpha = m_blendingTransparency(yInViewport, xInViewport);
+    auto &pixelAlpha = m_blendingTransparency(InViewport.y, InViewport.x);
 
     if (pixelAlpha < 1.F) {
-      auto patchId = static_cast<uint16_t>(std::get<2>(a0));
-      auto atlasId = std::get<3>(a0);
+      auto patchId = static_cast<uint16_t>(std::get<2>(pixelAttributes[0]));
+      auto atlasId = std::get<3>(pixelAttributes[0]);
 
-      auto texCoord = w0 * std::get<0>(a0) + w1 * std::get<0>(a1) + w2 * std::get<0>(a2);
+      auto texCoord = weights[0] * std::get<0>(pixelAttributes[0]) +
+                      weights[1] * std::get<0>(pixelAttributes[1]) +
+                      weights[2] * std::get<0>(pixelAttributes[2]);
       auto gatherCoord = getGatherCoordinates(texCoord, atlasColor[atlasId].sizes());
 
-      auto depth = w0 * std::get<1>(a0) + w1 * std::get<1>(a1) + w2 * std::get<1>(a2);
+      auto depth = weights[0] * std::get<1>(pixelAttributes[0]) +
+                   weights[1] * std::get<1>(pixelAttributes[1]) +
+                   weights[2] * std::get<1>(pixelAttributes[2]);
       auto patchIdGathered = textureGather<uint16_t>(
           [&](unsigned row, unsigned col) { return frame.atlas[atlasId].patchId(row, col); },
           gatherCoord);
@@ -445,7 +451,7 @@ private:
       oWeight -= std::max(0.F, (pixelAlpha + oWeight - 1.F));
 
       if (0.F < oWeight) {
-        auto &pixelColor = m_blendingColor(yInViewport, xInViewport);
+        auto &pixelColor = m_blendingColor(InViewport.y, InViewport.x);
 
         pixelColor += oWeight * oColor;
         pixelAlpha += oWeight;
@@ -453,7 +459,7 @@ private:
 
       // Min depth blending
       if (0.F < oWeight) {
-        auto &pixelDepth = m_blendingDepth(yInViewport, xInViewport);
+        auto &pixelDepth = m_blendingDepth(InViewport.y, InViewport.x);
         pixelDepth = (pixelDepth < 0.F) ? depth : std::min(pixelDepth, depth);
       }
     }

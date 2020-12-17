@@ -34,6 +34,8 @@
 #ifndef _TMIV_RENDERER_MPISYNTHESIZER_H_
 #define _TMIV_RENDERER_MPISYNTHESIZER_H_
 
+#include "Engine.h"
+
 #include <TMIV/Renderer/ISynthesizer.h>
 
 namespace TMIV::Renderer {

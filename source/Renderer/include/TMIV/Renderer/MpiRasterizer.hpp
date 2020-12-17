@@ -222,7 +222,6 @@ void MpiRasterizer<T...>::rasterTriangle(TriangleDescriptor descriptor, const Ba
   auto area = (uv1.y() - uv2.y()) * (uv0.x() - uv2.x()) + (uv2.x() - uv1.x()) * (uv0.y() - uv2.y());
 
   // Fetch multiple attributes (e.g. color)
-  const auto a0 = detail::MpiFetchAttributes(n0, batch.attributes);
   auto a1 = detail::MpiFetchAttributes(n1, batch.attributes);
   auto a2 = detail::MpiFetchAttributes(n2, batch.attributes);
 
@@ -232,6 +231,9 @@ void MpiRasterizer<T...>::rasterTriangle(TriangleDescriptor descriptor, const Ba
     swap_vec2fp(uv1, uv2);
     a1.swap(a2);
   }
+
+  const std::array<decltype(a1), 3> pixelAttributes{
+      detail::MpiFetchAttributes(n0, batch.attributes), a1, a2};
 
   const auto inv_area = 1.F / static_cast<float>(area);
 
@@ -255,12 +257,13 @@ void MpiRasterizer<T...>::rasterTriangle(TriangleDescriptor descriptor, const Ba
         continue;
       }
 
-      const auto w0 = inv_area * static_cast<float>(X0);
-      const auto w1 = inv_area * static_cast<float>(X1);
-      const auto w2 = inv_area * static_cast<float>(X2);
+      const std::array<float, 3> weights{inv_area * static_cast<float>(X0),
+                                         inv_area * static_cast<float>(X1),
+                                         inv_area * static_cast<float>(X2)};
 
-      // Fragment shader
-      fragmentShader(u, strip.i1 + v, w0, w1, w2, a0, a1, a2);
+      const ViewportPosition2D viewport{u, strip.i1 + v};
+
+      fragmentShader(viewport, weights, pixelAttributes);
     }
   }
 }

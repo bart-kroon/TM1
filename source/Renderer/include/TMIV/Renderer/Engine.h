@@ -62,6 +62,10 @@ using ImageVertexDescriptorList = std::vector<ImageVertexDescriptor>;
 
 // The rendering engine is the part that is specalized per projection type
 template <MivBitstream::CiCamType camType> struct Engine {};
+struct ViewportPosition2D {
+  ViewportPosition2D(int _x, int _y) : x{_x}, y{_y} {}
+  int x{}, y{};
+};
 } // namespace TMIV::Renderer
 
 #include "Engine_ERP.hpp"

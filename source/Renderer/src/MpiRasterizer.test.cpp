@@ -42,6 +42,7 @@ using TMIV::Renderer::ImageVertexDescriptorList;
 using TMIV::Renderer::MpiRasterizer;
 using TMIV::Renderer::PixelAttributes;
 using TMIV::Renderer::TriangleDescriptorList;
+using TMIV::Renderer::ViewportPosition2D;
 
 SCENARIO("MPI rastering meshes with Common::Vec2f as attribute", "[Rasterizer]") {
   GIVEN("A new MPI rasterizer") {
@@ -76,15 +77,18 @@ SCENARIO("MPI rastering meshes with Common::Vec2f as attribute", "[Rasterizer]")
       using PixelAttribute = PixelAttributes<Vec2f, float, unsigned, unsigned>;
 
       rasterizer.submit(vs, as, ts);
-      rasterizer.run([&](int xInViewport, int yInViewport, float w0, float w1, float w2,
-                         const PixelAttribute &a0, const PixelAttribute &a1,
-                         const PixelAttribute &a2) {
-        auto texCoord = w0 * std::get<0>(a0) + w1 * std::get<0>(a1) + w2 * std::get<0>(a2);
-        auto z = w0 * std::get<1>(a0) + w1 * std::get<1>(a1) + w2 * std::get<1>(a2);
+      rasterizer.run([&](const ViewportPosition2D &viewport, const std::array<float, 3> &weights,
+                         const std::array<PixelAttribute, 3> pixelAttributes) {
+        auto texCoord = weights[0] * std::get<0>(pixelAttributes[0]) +
+                        weights[1] * std::get<0>(pixelAttributes[1]) +
+                        weights[2] * std::get<0>(pixelAttributes[2]);
+        auto z = weights[0] * std::get<1>(pixelAttributes[0]) +
+                 weights[1] * std::get<1>(pixelAttributes[1]) +
+                 weights[2] * std::get<1>(pixelAttributes[2]);
         int x0 = std::clamp(static_cast<int>(std::llround(texCoord.x())), 0, 1);
         int y0 = std::clamp(static_cast<int>(std::llround(texCoord.y())), 0, 1);
-        blendedOutput(yInViewport, xInViewport) = atlasColor(y0, x0);
-        blendedDepth(yInViewport, xInViewport) = z;
+        blendedOutput(viewport.y, viewport.x) = atlasColor(y0, x0);
+        blendedDepth(viewport.y, viewport.x) = z;
         return 0;
       });
       THEN("The blended color has known values") {

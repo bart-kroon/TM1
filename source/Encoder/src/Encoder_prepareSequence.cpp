@@ -48,18 +48,21 @@ void runtimeCheck(bool cond, const char *what) {
 } // namespace
 
 void Encoder::prepareSequence(MivBitstream::EncoderParams sourceParams) {
-  m_blockSize = m_blockSizeDepthQualityDependent[static_cast<std::size_t>(
+  m_config.blockSize = m_config.blockSizeDepthQualityDependent[static_cast<std::size_t>(
       sourceParams.vme().vme_depth_low_quality_flag())];
-  runtimeCheck(2 <= m_blockSize, "blockSize should be at least two");
-  runtimeCheck((m_blockSize & (m_blockSize - 1)) == 0, "blockSize should be a power of two");
+  runtimeCheck(2 <= m_config.blockSize, "blockSize should be at least two");
+  runtimeCheck((m_config.blockSize & (m_config.blockSize - 1)) == 0,
+               "blockSize should be a power of two");
 
   // TODO(BK): To account for the occupancy maps, the scaling factor needs to be known before this
   // point.
   const auto lumaSamplesPerAtlasSample =
-      (m_haveTexture ? 1. : 0.) + (m_haveGeometry ? (m_geometryScaleEnabledFlag ? 0.25 : 1.) : 0.);
-  m_maxBlockRate = m_maxLumaSampleRate / ((sourceParams.vme().vme_num_groups_minus1() + 1.) *
-                                          lumaSamplesPerAtlasSample * Common::sqr(m_blockSize));
-  m_maxBlocksPerAtlas = m_maxLumaPictureSize / Common::sqr(m_blockSize);
+      (m_config.haveTexture ? 1. : 0.) +
+      (m_config.haveGeometry ? (m_config.geometryScaleEnabledFlag ? 0.25 : 1.) : 0.);
+  m_config.maxBlockRate =
+      m_config.maxLumaSampleRate / ((sourceParams.vme().vme_num_groups_minus1() + 1.) *
+                                    lumaSamplesPerAtlasSample * Common::sqr(m_config.blockSize));
+  m_config.maxBlocksPerAtlas = m_config.maxLumaPictureSize / Common::sqr(m_config.blockSize);
 
   // gcc-9 and gcc-10 give a false alarm here, so suppress that warning on this one line
 #if defined(__GNUC__) && !defined(__clang__)
@@ -85,8 +88,8 @@ void Encoder::prepareSequence(MivBitstream::EncoderParams sourceParams) {
   std::cout << " }\n";
 
   // Create IVS with VPS with right number of atlases but copy other parts from input IVS
-  m_params =
-      MivBitstream::EncoderParams{atlasFrameSizes, m_haveTexture, m_haveGeometry, m_haveOccupancy};
+  m_params = MivBitstream::EncoderParams{atlasFrameSizes, m_config.haveTexture,
+                                         m_config.haveGeometry, m_config.haveOccupancy};
 
   m_params.vme() = m_transportParams.vme();
   m_params.viewParamsList = m_transportParams.viewParamsList;
@@ -116,7 +119,7 @@ void Encoder::prepareSequence(MivBitstream::EncoderParams sourceParams) {
 // Calculate atlas frame sizes [MPEG/M52994 v2]
 auto Encoder::calculateNominalAtlasFrameSizes(const MivBitstream::EncoderParams &params) const
     -> Common::SizeVector {
-  if (m_oneViewPerAtlasFlag) {
+  if (m_config.oneViewPerAtlasFlag) {
     // No constraints: one atlas per transport view
     auto result = Common::SizeVector(params.viewParamsList.size());
     std::transform(std::cbegin(params.viewParamsList), std::cend(params.viewParamsList),
@@ -125,27 +128,27 @@ auto Encoder::calculateNominalAtlasFrameSizes(const MivBitstream::EncoderParams 
     return result;
   }
 
-  if (!m_overrideAtlasFrameSizes.empty()) {
+  if (!m_config.overrideAtlasFrameSizes.empty()) {
     std::cout
         << "WARNING: When overriding nominal atlas frame sizes, constraints are not checked.\n";
-    return m_overrideAtlasFrameSizes;
+    return m_config.overrideAtlasFrameSizes;
   }
 
   // Translate block rate into a maximum number of blocks
-  const auto maxBlocks = static_cast<int>(m_maxBlockRate / params.frameRate);
+  const auto maxBlocks = static_cast<int>(m_config.maxBlockRate / params.frameRate);
 
   // Calculate the number of atlases
-  auto numAtlases = (maxBlocks + m_maxBlocksPerAtlas - 1) / m_maxBlocksPerAtlas;
-  if (numAtlases > m_maxAtlases) {
+  auto numAtlases = (maxBlocks + m_config.maxBlocksPerAtlas - 1) / m_config.maxBlocksPerAtlas;
+  if (numAtlases > m_config.maxAtlases) {
     std::cout << "The maxAtlases constraint is a limiting factor.\n";
-    numAtlases = m_maxAtlases;
+    numAtlases = m_config.maxAtlases;
   }
 
   // Calculate the number of blocks per atlas
   auto maxBlocksPerAtlas = maxBlocks / numAtlases;
-  if (maxBlocksPerAtlas > m_maxBlocksPerAtlas) {
+  if (maxBlocksPerAtlas > m_config.maxBlocksPerAtlas) {
     std::cout << "The maxLumaPictureSize constraint is a limiting factor.\n";
-    maxBlocksPerAtlas = m_maxBlocksPerAtlas;
+    maxBlocksPerAtlas = m_config.maxBlocksPerAtlas;
   }
 
   // Take the smallest reasonable width
@@ -158,8 +161,8 @@ auto Encoder::calculateNominalAtlasFrameSizes(const MivBitstream::EncoderParams 
     std::cout << "WARNING: Atlas aspect ratio is outside of HEVC general tier and level limits\n";
   }
 
-  return Common::SizeVector(numAtlases,
-                            {atlasGridWidth * m_blockSize, atlasGridHeight * m_blockSize});
+  return Common::SizeVector(
+      numAtlases, {atlasGridWidth * m_config.blockSize, atlasGridHeight * m_config.blockSize});
 }
 
 auto Encoder::calculateViewGridSize(const MivBitstream::EncoderParams &params) const
@@ -168,9 +171,10 @@ auto Encoder::calculateViewGridSize(const MivBitstream::EncoderParams &params) c
   int y{};
 
   for (const auto &viewParams : params.viewParamsList) {
-    x = std::max(x, (viewParams.ci.ci_projection_plane_width_minus1() + m_blockSize) / m_blockSize);
-    y = std::max(y,
-                 (viewParams.ci.ci_projection_plane_height_minus1() + m_blockSize) / m_blockSize);
+    x = std::max(x, (viewParams.ci.ci_projection_plane_width_minus1() + m_config.blockSize) /
+                        m_config.blockSize);
+    y = std::max(y, (viewParams.ci.ci_projection_plane_height_minus1() + m_config.blockSize) /
+                        m_config.blockSize);
   }
 
   return {x, y};
@@ -233,11 +237,11 @@ void Encoder::prepareIvau() {
         .asps_normal_axis_limits_quantization_enabled_flag(true)
         .asps_max_number_projections_minus1(
             static_cast<uint16_t>(m_params.viewParamsList.size() - 1))
-        .asps_log2_patch_packing_block_size(Common::ceilLog2(m_blockSize));
+        .asps_log2_patch_packing_block_size(Common::ceilLog2(m_config.blockSize));
 
     const auto psq = patchSizeQuantizers();
-    atlas.asps.asps_patch_size_quantizer_present_flag(psq.x() != m_blockSize ||
-                                                      psq.y() != m_blockSize);
+    atlas.asps.asps_patch_size_quantizer_present_flag(psq.x() != m_config.blockSize ||
+                                                      psq.y() != m_config.blockSize);
 
     if (m_params.vps.vps_geometry_video_present_flag(j)) {
       const auto &gi = m_params.vps.geometry_information(j);
@@ -265,11 +269,11 @@ void Encoder::prepareIvau() {
 
 auto Encoder::log2FocLsbMinus4() const -> std::uint8_t {
   // Avoid confusion but test MSB/LSB logic in decoder
-  return std::max(4U, Common::ceilLog2(m_intraPeriod) + 1U) - 4U;
+  return std::max(4U, Common::ceilLog2(m_config.intraPeriod) + 1U) - 4U;
 }
 
 auto Encoder::patchSizeQuantizers() const -> Common::Vec2i {
-  auto quantizer = m_blockSize;
+  auto quantizer = m_config.blockSize;
 
   for (const auto &vp : m_params.viewParamsList) {
     quantizer = std::gcd(quantizer, vp.ci.ci_projection_plane_width_minus1() + 1);

@@ -38,6 +38,30 @@
 #include <iostream>
 
 namespace TMIV::Encoder {
+namespace {
+auto computeDominantAxis(std::vector<float> &Tx, std::vector<float> &Ty, std::vector<float> &Tz)
+    -> int {
+  const auto xMax = *max_element(Tx.begin(), Tx.end());
+  const auto xMin = *min_element(Tx.begin(), Tx.end());
+  const auto yMax = *max_element(Ty.begin(), Ty.end());
+  const auto yMin = *min_element(Ty.begin(), Ty.end());
+  const auto zMax = *max_element(Tz.begin(), Tz.end());
+  const auto zMin = *min_element(Tz.begin(), Tz.end());
+
+  const auto xRange = xMax - xMin;
+  const auto yRange = yMax - yMin;
+  const auto zRange = zMax - zMin;
+
+  if (zRange >= xRange && zRange >= yRange) {
+    return 2;
+  }
+  if (yRange >= xRange && yRange >= zRange) {
+    return 1;
+  }
+  return 0;
+}
+} // namespace
+
 GroupBasedEncoder::GroupBasedEncoder(const Common::Json &rootNode,
                                      const Common::Json &componentNode) {
   const auto numGroups_ = static_cast<size_t>(rootNode.require("numGroups").as<int>());
@@ -112,23 +136,7 @@ auto GroupBasedEncoder::sourceSplitter(const MivBitstream::EncoderParams &params
     Tz.push_back(viewParamsList[camIndex].ce.ce_view_pos_z());
   }
 
-  const float xMax = *max_element(Tx.begin(), Tx.end());
-  const float xMin = *min_element(Tx.begin(), Tx.end());
-  const float yMax = *max_element(Ty.begin(), Ty.end());
-  const float yMin = *min_element(Ty.begin(), Ty.end());
-  const float zMax = *max_element(Tz.begin(), Tz.end());
-  const float zMin = *min_element(Tz.begin(), Tz.end());
-
-  const float xRange = xMax - xMin;
-  const float yRange = yMax - yMin;
-  const float zRange = zMax - zMin;
-
-  int dominantAxis = 0;
-  if (zRange >= xRange && zRange >= yRange) {
-    dominantAxis = 2;
-  } else if (yRange >= xRange && yRange >= zRange) {
-    dominantAxis = 1;
-  }
+  const auto dominantAxis = computeDominantAxis(Tx, Ty, Tz);
 
   // Select views per group
   auto viewsPool = std::vector<MivBitstream::ViewParams>{};

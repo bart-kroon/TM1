@@ -44,7 +44,7 @@ constexpr auto textureMedVal = 1 << (textureBitDepth - 1);
 } // namespace
 
 void Encoder::scaleGeometryDynamicRange() {
-  assert(m_dynamicDepthRange);
+  assert(m_config.dynamicDepthRange);
   const auto lowDepthQuality = m_params.vps.vps_miv_extension().vme_depth_low_quality_flag();
   const auto numOfFrames = m_transportViews.size();
   const auto numOfViews = m_transportViews[0].size();
@@ -97,7 +97,7 @@ auto Encoder::completeAccessUnit() -> const MivBitstream::EncoderParams & {
 
   updateAggregationStatistics(aggregatedMask);
 
-  if (m_dynamicDepthRange) {
+  if (m_config.dynamicDepthRange) {
     scaleGeometryDynamicRange();
   }
 
@@ -106,7 +106,7 @@ auto Encoder::completeAccessUnit() -> const MivBitstream::EncoderParams & {
   }
 
   m_params.patchParamsList = m_packer->pack(m_params.atlasSizes(), aggregatedMask,
-                                            m_transportParams.viewParamsList, m_blockSize);
+                                            m_transportParams.viewParamsList, m_config.blockSize);
 
   m_params = m_geometryQuantizer->setOccupancyParams(m_params);
 
@@ -131,16 +131,116 @@ void Encoder::updateAggregationStatistics(const Common::MaskList &aggregatedMask
 void Encoder::calculateAttributeOffset(
     std::vector<std::array<std::array<int64_t, 4>, 3>> patchAttrOffsetValuesFullGOP) {
 
-  const auto bitShift = textureBitDepth - m_attributeOffsetBitCount;
-
   for (std::uint8_t k = 0; k <= m_params.vps.vps_atlas_count_minus1(); ++k) {
     auto &asme = m_params.atlas[k].asme();
-    asme.asme_patch_attribute_offset_flag(m_attributeOffsetFlag);
-    if (!m_attributeOffsetFlag) {
+    asme.asme_patch_attribute_offset_flag(m_config.attributeOffsetFlag);
+    if (!m_config.attributeOffsetFlag) {
       return;
     }
-    asme.asme_patch_attribute_offset_bit_count_minus1(m_attributeOffsetBitCount - 1);
+    asme.asme_patch_attribute_offset_bit_count_minus1(m_config.attributeOffsetBitCount - 1);
   }
+
+  const auto bitShift = calculatePatchAttrOffsetValuesFullGOP(patchAttrOffsetValuesFullGOP);
+
+  std::vector<std::vector<std::vector<int>>> btpm = calculateBtpm();
+
+  adaptBtpmToPatchCount(btpm);
+
+  for (auto &videoFrame : m_videoFrameBuffer) {
+    for (std::uint8_t k = 0; k <= m_params.vps.vps_atlas_count_minus1(); ++k) {
+      auto &atlas = videoFrame[k];
+
+      for (int y = 0; y < atlas.texture.getHeight(); ++y) {
+        for (int x = 0; x < atlas.texture.getWidth(); ++x) {
+          const auto patchIndex = btpm[k][y / m_config.blockSize][x / m_config.blockSize];
+
+          // TODO(BK): Avoid comparing depth with 0
+          if (patchIndex == Common::unusedPatchId ||
+              (atlas.depth.getPlane(0)(y, x) == 0 &&
+               !m_params
+                    .viewParamsList[m_params.patchParamsList[patchIndex].atlasPatchProjectionId()]
+                    .isBasicView)) {
+            continue;
+          }
+          const auto &pp = m_params.patchParamsList[patchIndex];
+          const auto offset = pp.atlasPatchAttributeOffset();
+          atlas.texture.getPlane(0)(y, x) -= ((offset.x() << bitShift) - textureMedVal);
+          if (y % 2 == 0 && x % 2 == 0) {
+            atlas.texture.getPlane(1)(y / 2, x / 2) -= ((offset.y() << bitShift) - textureMedVal);
+            atlas.texture.getPlane(2)(y / 2, x / 2) -= ((offset.z() << bitShift) - textureMedVal);
+          }
+        }
+      }
+    }
+  }
+}
+
+void Encoder::adaptBtpmToPatchCount(std::vector<std::vector<std::vector<int>>> &btpm) const {
+  int patchCnt = 0;
+  for (const auto &patch : m_params.patchParamsList) {
+
+    size_t atlasId = m_params.vps.indexOf(patch.atlasId);
+
+    const auto &currentAtlas = m_videoFrameBuffer[0][atlasId];
+    int AH = currentAtlas.texture.getHeight() / m_config.blockSize;
+    int AW = currentAtlas.texture.getWidth() / m_config.blockSize;
+
+    int w = patch.atlasPatch3dSizeU();
+    int h = patch.atlasPatch3dSizeV();
+    int xM = patch.atlasPatch3dOffsetU();
+    int yM = patch.atlasPatch3dOffsetV();
+
+    for (int dyAligned = 0; dyAligned < h; dyAligned += m_config.blockSize) {
+      for (int dxAligned = 0; dxAligned < w; dxAligned += m_config.blockSize) {
+
+        for (int dy = dyAligned; dy < dyAligned + m_config.blockSize; dy++) {
+          for (int dx = dxAligned; dx < dxAligned + m_config.blockSize; dx++) {
+
+            Common::Vec2i pView = {xM + dx, yM + dy};
+            Common::Vec2i pAtlas = patch.viewToAtlas(pView);
+
+            int ay = pAtlas.y() / m_config.blockSize;
+            int ax = pAtlas.x() / m_config.blockSize;
+
+            if (ay < 0 || ax < 0 || ay >= AH || ax >= AW || pAtlas.y() % m_config.blockSize != 0 ||
+                pAtlas.x() % m_config.blockSize != 0) {
+              continue;
+            }
+
+            // std::cout << ay << "\t" << ax << "\n";
+            btpm[atlasId][ay][ax] = patchCnt;
+          }
+        }
+      }
+    }
+
+    patchCnt++;
+  }
+}
+
+auto Encoder::calculateBtpm() const -> std::vector<std::vector<std::vector<int>>> {
+  std::vector<std::vector<std::vector<int>>> btpm;
+  for (uint8_t k = 0; k <= m_params.vps.vps_atlas_count_minus1(); ++k) {
+    const auto &currentAtlas = m_videoFrameBuffer[0][k];
+    int AH = currentAtlas.texture.getHeight() / m_config.blockSize;
+    int AW = currentAtlas.texture.getWidth() / m_config.blockSize;
+    std::vector<std::vector<int>> tmphw;
+    for (int h = 0; h < AH; h++) {
+      std::vector<int> tmpw;
+      tmpw.reserve(AW);
+      for (int w = 0; w < AW; w++) {
+        tmpw.push_back(65535);
+      }
+      tmphw.push_back(tmpw);
+    }
+    btpm.push_back(tmphw);
+  }
+  return btpm;
+}
+
+auto Encoder::calculatePatchAttrOffsetValuesFullGOP(
+    std::vector<std::array<std::array<int64_t, 4>, 3>> &patchAttrOffsetValuesFullGOP) -> int {
+  const auto bitShift = textureBitDepth - m_config.attributeOffsetBitCount;
 
   for (size_t p = 0; p != m_params.patchParamsList.size(); ++p) {
     for (int c = 0; c < 3; c++) {
@@ -167,93 +267,7 @@ void Encoder::calculateAttributeOffset(
         {int(patchAttrOffsetValuesFullGOP[p][0][2]), int(patchAttrOffsetValuesFullGOP[p][1][2]),
          int(patchAttrOffsetValuesFullGOP[p][2][2])});
   }
-
-  // btpm
-  std::vector<std::vector<std::vector<int>>> btpm;
-  for (std::uint8_t k = 0; k <= m_params.vps.vps_atlas_count_minus1(); ++k) {
-    auto &currentAtlas = m_videoFrameBuffer[0][k];
-    int AH = currentAtlas.texture.getHeight() / m_blockSize;
-    int AW = currentAtlas.texture.getWidth() / m_blockSize;
-    std::vector<std::vector<int>> tmphw;
-    for (int h = 0; h < AH; h++) {
-      std::vector<int> tmpw;
-      tmpw.reserve(AW);
-      for (int w = 0; w < AW; w++) {
-        tmpw.push_back(65535);
-      }
-      tmphw.push_back(tmpw);
-    }
-    btpm.push_back(tmphw);
-  }
-
-  int patchCnt = 0;
-  for (const auto &patch : m_params.patchParamsList) {
-
-    size_t atlasId = m_params.vps.indexOf(patch.atlasId);
-
-    auto &currentAtlas = m_videoFrameBuffer[0][atlasId];
-    int AH = currentAtlas.texture.getHeight() / m_blockSize;
-    int AW = currentAtlas.texture.getWidth() / m_blockSize;
-
-    int w = patch.atlasPatch3dSizeU();
-    int h = patch.atlasPatch3dSizeV();
-    int xM = patch.atlasPatch3dOffsetU();
-    int yM = patch.atlasPatch3dOffsetV();
-
-    for (int dyAligned = 0; dyAligned < h; dyAligned += m_blockSize) {
-      for (int dxAligned = 0; dxAligned < w; dxAligned += m_blockSize) {
-
-        for (int dy = dyAligned; dy < dyAligned + m_blockSize; dy++) {
-          for (int dx = dxAligned; dx < dxAligned + m_blockSize; dx++) {
-
-            Common::Vec2i pView = {xM + dx, yM + dy};
-            Common::Vec2i pAtlas = patch.viewToAtlas(pView);
-
-            int ay = pAtlas.y() / m_blockSize;
-            int ax = pAtlas.x() / m_blockSize;
-
-            if (ay < 0 || ax < 0 || ay >= AH || ax >= AW || pAtlas.y() % m_blockSize != 0 ||
-                pAtlas.x() % m_blockSize != 0) {
-              continue;
-            }
-
-            // std::cout << ay << "\t" << ax << "\n";
-            btpm[atlasId][ay][ax] = patchCnt;
-          }
-        }
-      }
-    }
-
-    patchCnt++;
-  }
-
-  for (auto &videoFrame : m_videoFrameBuffer) {
-    for (std::uint8_t k = 0; k <= m_params.vps.vps_atlas_count_minus1(); ++k) {
-      auto &atlas = videoFrame[k];
-
-      for (int y = 0; y < atlas.texture.getHeight(); ++y) {
-        for (int x = 0; x < atlas.texture.getWidth(); ++x) {
-          const auto patchIndex = btpm[k][y / m_blockSize][x / m_blockSize];
-
-          // TODO(BK): Avoid comparing depth with 0
-          if (patchIndex == Common::unusedPatchId ||
-              (atlas.depth.getPlane(0)(y, x) == 0 &&
-               !m_params
-                    .viewParamsList[m_params.patchParamsList[patchIndex].atlasPatchProjectionId()]
-                    .isBasicView)) {
-            continue;
-          }
-          const auto &pp = m_params.patchParamsList[patchIndex];
-          const auto offset = pp.atlasPatchAttributeOffset();
-          atlas.texture.getPlane(0)(y, x) -= ((offset.x() << bitShift) - textureMedVal);
-          if (y % 2 == 0 && x % 2 == 0) {
-            atlas.texture.getPlane(1)(y / 2, x / 2) -= ((offset.y() << bitShift) - textureMedVal);
-            atlas.texture.getPlane(2)(y / 2, x / 2) -= ((offset.z() << bitShift) - textureMedVal);
-          }
-        }
-      }
-    }
-  }
+  return bitShift;
 }
 
 void Encoder::constructVideoFrames() {
@@ -261,7 +275,7 @@ void Encoder::constructVideoFrames() {
 
   auto patchAttrOffsetValuesFullGOP = std::vector<std::array<std::array<int64_t, 4>, 3>>{};
 
-  if (m_attributeOffsetFlag) {
+  if (m_config.attributeOffsetFlag) {
     for (int p = 0; p < int(m_params.patchParamsList.size()); p++) {
       std::array<std::array<int64_t, 4>, 3> tmp{};
       for (int c = 0; c < 3; c++) {
@@ -286,12 +300,12 @@ void Encoder::constructVideoFrames() {
       const auto frameWidth = vps.vps_frame_width(j);
       const auto frameHeight = vps.vps_frame_height(j);
 
-      if (m_haveTexture) {
+      if (m_config.haveTexture) {
         frame.texture.resize(frameWidth, frameHeight);
         frame.texture.fillNeutral();
       }
 
-      if (m_haveGeometry) {
+      if (m_config.haveGeometry) {
         frame.depth.resize(frameWidth, frameHeight);
         frame.depth.fillZero();
       }
@@ -325,7 +339,7 @@ void Encoder::constructVideoFrames() {
         patchAttrOffsetValues1Frame = writePatchInAtlas(patch, view, atlasList, frameId);
       }
 
-      if (m_attributeOffsetFlag) {
+      if (m_config.attributeOffsetFlag) {
         for (int c = 0; c < 3; c++) {
           if (patchAttrOffsetValuesFullGOP[patchCnt][c][0] > patchAttrOffsetValues1Frame[c][0]) {
             patchAttrOffsetValuesFullGOP[patchCnt][c][0] = patchAttrOffsetValues1Frame[c][0];
@@ -368,11 +382,11 @@ auto Encoder::writePatchInAtlas(const MivBitstream::PatchParams &patchParams,
   assert(0 <= posU && posU + sizeU <= inViewParams.ci.ci_projection_plane_width_minus1() + 1);
   assert(0 <= posV && posV + sizeV <= inViewParams.ci.ci_projection_plane_height_minus1() + 1);
 
-  for (int vBlock = 0; vBlock < sizeV; vBlock += m_blockSize) {
-    for (int uBlock = 0; uBlock < sizeU; uBlock += m_blockSize) {
+  for (int vBlock = 0; vBlock < sizeV; vBlock += m_config.blockSize) {
+    for (int uBlock = 0; uBlock < sizeU; uBlock += m_config.blockSize) {
       bool isAggregatedMaskBlockNonEmpty = false;
-      for (int v = vBlock; v < vBlock + m_blockSize && v < sizeV; v++) {
-        for (int u = uBlock; u < uBlock + m_blockSize && u < sizeU; u++) {
+      for (int v = vBlock; v < vBlock + m_config.blockSize && v < sizeV; v++) {
+        for (int u = uBlock; u < uBlock + m_config.blockSize && u < sizeU; u++) {
           const auto viewId = patchParams.atlasPatchProjectionId();
           if (m_nonAggregatedMask[viewId](v + posV, u + posU)[frameId]) {
             isAggregatedMaskBlockNonEmpty = true;
@@ -385,8 +399,8 @@ auto Encoder::writePatchInAtlas(const MivBitstream::PatchParams &patchParams,
       }
       int yOcc = 0;
       int xOcc = 0;
-      for (int v = vBlock; v < vBlock + m_blockSize && v < sizeV; ++v) {
-        for (int u = uBlock; u < uBlock + m_blockSize && u < sizeU; ++u) {
+      for (int v = vBlock; v < vBlock + m_config.blockSize && v < sizeV; ++v) {
+        for (int u = uBlock; u < uBlock + m_config.blockSize && u < sizeU; ++u) {
           const auto pView = Common::Vec2i{posU + u, posV + v};
           const auto pAtlas = patchParams.viewToAtlas(pView);
 
@@ -399,12 +413,12 @@ auto Encoder::writePatchInAtlas(const MivBitstream::PatchParams &patchParams,
             xOcc = pAtlas.x();
           }
 
-          if (!isAggregatedMaskBlockNonEmpty && m_haveGeometry) {
+          if (!isAggregatedMaskBlockNonEmpty && m_config.haveGeometry) {
             atlas.depth.getPlane(0)(pAtlas.y(), pAtlas.x()) = 0;
             if (m_params.vps.vps_occupancy_video_present_flag(patchParams.atlasId)) {
               atlas.occupancy.getPlane(0)(yOcc, xOcc) = 0;
             }
-            if (m_haveTexture) {
+            if (m_config.haveTexture) {
               atlas.texture.getPlane(0)(pAtlas.y(), pAtlas.x()) = textureMedVal;
               if ((pView.x() % 2) == 0 && (pView.y() % 2) == 0) {
                 atlas.texture.getPlane(1)(pAtlas.y() / 2, pAtlas.x() / 2) = textureMedVal;
@@ -414,7 +428,7 @@ auto Encoder::writePatchInAtlas(const MivBitstream::PatchParams &patchParams,
             continue;
           }
 
-          if (m_haveTexture) {
+          if (m_config.haveTexture) {
             // Y
             atlas.texture.getPlane(0)(pAtlas.y(), pAtlas.x()) =
                 view.texture.getPlane(0)(pView.y(), pView.x());
@@ -449,7 +463,7 @@ auto Encoder::writePatchInAtlas(const MivBitstream::PatchParams &patchParams,
           }
 
           // Depth
-          if (m_haveGeometry) {
+          if (m_config.haveGeometry) {
             auto depth = view.depth.getPlane(0)(pView.y(), pView.x());
             // TODO(BK): We need to stop using depth == 0 as a special value. This is bug-prone.
             if (depth == 0 && !inViewParams.hasOccupancy && outViewParams.hasOccupancy &&

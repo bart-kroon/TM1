@@ -99,12 +99,39 @@ private: // Encoder_completeAccessUnit.cpp
   void constructVideoFrames();
   void calculateAttributeOffset(
       std::vector<std::array<std::array<int64_t, 4>, 3>> patchAttrOffsetValuesFullGOP);
-  std::array<std::array<int64_t, 4>, 3>
-  writePatchInAtlas(const MivBitstream::PatchParams &patchParams,
-                    const Common::TextureDepth16Frame &view, Common::MVD16Frame &frame,
-                    int frameId);
+  auto calculatePatchAttrOffsetValuesFullGOP(
+      std::vector<std::array<std::array<int64_t, 4>, 3>> &patchAttrOffsetValuesFullGOP) -> int;
+  auto calculateBtpm() const -> std::vector<std::vector<std::vector<int>>>;
+  void adaptBtpmToPatchCount(std::vector<std::vector<std::vector<int>>> &btpm) const;
+  auto writePatchInAtlas(const MivBitstream::PatchParams &patchParams,
+                         const Common::TextureDepth16Frame &view, Common::MVD16Frame &frame,
+                         int frameId) -> std::array<std::array<int64_t, 4>, 3>;
 
-private: // Encoder_popFrame.cpp
+private:
+  struct Configuration {
+    Configuration(const Common::Json & /*rootNode*/, const Common::Json & /*componentNode*/);
+    int intraPeriod;
+    int blockSize{};
+    Common::Vec2i blockSizeDepthQualityDependent;
+    double maxLumaSampleRate{};
+    int maxLumaPictureSize{};
+    double maxBlockRate{};
+    int maxBlocksPerAtlas{};
+    int maxAtlases{};
+    bool haveTexture;
+    bool haveGeometry;
+    bool haveOccupancy;
+    bool oneViewPerAtlasFlag;
+    std::vector<Common::Vec2i> overrideAtlasFrameSizes{};
+    bool geometryScaleEnabledFlag;
+    int dilationIter;
+    Common::Vec2i entityEncRange;
+    bool dynamicDepthRange;
+    bool attributeOffsetFlag;
+    int attributeOffsetBitCount;
+  };
+
+  // Encoder_popFrame.cpp
   void incrementFoc();
 
   // Encoder sub-components
@@ -115,26 +142,7 @@ private: // Encoder_popFrame.cpp
   std::unique_ptr<GeometryQuantizer::IGeometryQuantizer> m_geometryQuantizer;
   GeometryDownscaler m_geometryDownscaler;
 
-  // Encoder parameters
-  int m_intraPeriod;
-  int m_blockSize{};
-  Common::Vec2i m_blockSizeDepthQualityDependent;
-  double m_maxLumaSampleRate{};
-  int m_maxLumaPictureSize{};
-  double m_maxBlockRate{};
-  int m_maxBlocksPerAtlas{};
-  int m_maxAtlases{};
-  bool m_haveTexture;
-  bool m_haveGeometry;
-  bool m_haveOccupancy;
-  bool m_oneViewPerAtlasFlag;
-  std::vector<Common::Vec2i> m_overrideAtlasFrameSizes{};
-  bool m_geometryScaleEnabledFlag;
-  int m_dilationIter;
-  Common::Vec2i m_entityEncRange;
-  bool m_dynamicDepthRange;
-  bool m_attributeOffsetFlag;
-  int m_attributeOffsetBitCount;
+  Configuration m_config;
 
   // View-optimized encoder input
   MivBitstream::EncoderParams m_transportParams;

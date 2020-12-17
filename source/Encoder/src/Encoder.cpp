@@ -63,42 +63,45 @@ Encoder::Encoder(const Common::Json &rootNode, const Common::Json &componentNode
     , m_packer{create<IPacker>("Packer", rootNode, componentNode)}
     , m_geometryQuantizer{create<IGeometryQuantizer>("GeometryQuantizer", rootNode, componentNode)}
     , m_geometryDownscaler{rootNode, componentNode}
-    , m_intraPeriod{rootNode.require("intraPeriod").as<int>()}
-    , m_blockSizeDepthQualityDependent{rootNode.require("blockSizeDepthQualityDependent")
-                                           .asVec<int, 2>()}
-    , m_haveTexture{rootNode.require("haveTextureVideo").as<bool>()}
-    , m_haveGeometry{rootNode.require("haveGeometryVideo").as<bool>()}
-    , m_haveOccupancy{rootNode.require("haveOccupancyVideo").as<bool>()}
-    , m_oneViewPerAtlasFlag{rootNode.require("oneViewPerAtlasFlag").as<bool>()}
-    , m_geometryScaleEnabledFlag{m_haveGeometry && m_haveTexture &&
-                                 rootNode.require("geometryScaleEnabledFlag").as<bool>()}
-    , m_dilationIter{componentNode.require("dilate").as<int>()}
-    , m_dynamicDepthRange{rootNode.require("dynamicDepthRange").as<bool>()}
-    , m_attributeOffsetFlag{m_haveTexture &&
-                            rootNode.require("attributeOffsetEnabledFlag").as<bool>()}
-    , m_attributeOffsetBitCount{
-          m_attributeOffsetFlag ? rootNode.require("attributeOffsetBitCount").as<int>() : 0} {
+    , m_config(rootNode, componentNode) {}
+
+Encoder::Configuration::Configuration(const Common::Json &rootNode,
+                                      const Common::Json &componentNode)
+    : intraPeriod{rootNode.require("intraPeriod").as<int>()}
+    , blockSizeDepthQualityDependent{rootNode.require("blockSizeDepthQualityDependent")
+                                         .asVec<int, 2>()}
+    , haveTexture{rootNode.require("haveTextureVideo").as<bool>()}
+    , haveGeometry{rootNode.require("haveGeometryVideo").as<bool>()}
+    , haveOccupancy{rootNode.require("haveOccupancyVideo").as<bool>()}
+    , oneViewPerAtlasFlag{rootNode.require("oneViewPerAtlasFlag").as<bool>()}
+    , geometryScaleEnabledFlag{haveGeometry && haveTexture &&
+                               rootNode.require("geometryScaleEnabledFlag").as<bool>()}
+    , dilationIter{componentNode.require("dilate").as<int>()}
+    , dynamicDepthRange{rootNode.require("dynamicDepthRange").as<bool>()}
+    , attributeOffsetFlag{haveTexture && rootNode.require("attributeOffsetEnabledFlag").as<bool>()}
+    , attributeOffsetBitCount{
+          attributeOffsetFlag ? rootNode.require("attributeOffsetBitCount").as<int>() : 0} {
   if (const auto &node = componentNode.optional("overrideAtlasFrameSizes")) {
     std::cout
         << "WARNING: Overriding atlas frame sizes is meant for internal/preliminary experiments "
            "only.\n";
     for (const auto &subnode : node.as<Common::Json::Array>()) {
-      m_overrideAtlasFrameSizes.push_back(subnode.asVec<int, 2>());
+      overrideAtlasFrameSizes.push_back(subnode.asVec<int, 2>());
     }
-  } else if (!m_oneViewPerAtlasFlag) {
-    m_maxLumaSampleRate = rootNode.require("maxLumaSampleRate").as<double>();
-    m_maxLumaPictureSize = rootNode.require("maxLumaPictureSize").as<int>();
-    const int maxAtlases = rootNode.require("maxAtlases").as<int>();
+  } else if (!oneViewPerAtlasFlag) {
+    maxLumaSampleRate = rootNode.require("maxLumaSampleRate").as<double>();
+    maxLumaPictureSize = rootNode.require("maxLumaPictureSize").as<int>();
+    maxAtlases = rootNode.require("maxAtlases").as<int>();
     const auto numGroups = rootNode.require("numGroups").as<int>();
-    m_maxAtlases = maxAtlases / numGroups;
+    maxAtlases = maxAtlases / numGroups;
   }
 
-  // Read the entity encoding range if exisited
+  // Read the entity encoding range if existed
   if (const auto &subnode = rootNode.optional("EntityEncodeRange")) {
-    m_entityEncRange = subnode.asVec<int, 2>();
+    entityEncRange = subnode.asVec<int, 2>();
   }
 
-  if (m_intraPeriod > maxIntraPeriod) {
+  if (intraPeriod > maxIntraPeriod) {
     throw std::runtime_error("The intraPeriod parameter cannot be greater than maxIntraPeriod.");
   }
 }

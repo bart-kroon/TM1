@@ -37,7 +37,7 @@ namespace TMIV::Encoder {
 auto Encoder::popAtlas() -> Common::MVD10Frame {
   incrementFoc();
 
-  if (m_haveGeometry) {
+  if (m_config.haveGeometry) {
     auto frame = m_geometryDownscaler.transformFrame(
         m_geometryQuantizer->transformAtlases(m_videoFrameBuffer.front()));
     m_videoFrameBuffer.pop_front();

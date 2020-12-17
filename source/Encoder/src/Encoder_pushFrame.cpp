@@ -102,7 +102,7 @@ void Encoder::updateNonAggregatedMask(const Common::MVD16Frame &transportViews,
   // Atlas dilation
   if (m_params.vps.vps_miv_extension().vme_depth_low_quality_flag()) {
     for (size_t viewId = 0; viewId < masks.size(); ++viewId) {
-      for (int n = 0; n < m_dilationIter; ++n) {
+      for (int n = 0; n < m_config.dilationIter; ++n) {
         dilatedMasks[viewId].getPlane(0) = dilate(dilatedMasks[viewId].getPlane(0));
       }
     }
@@ -130,7 +130,8 @@ void Encoder::pushMultiEntityFrame(Common::MVD16Frame sourceViews) {
     mergedMasks.emplace_back(transportView.texture.getWidth(), transportView.texture.getHeight());
   }
 
-  for (auto entityId = m_entityEncRange[0]; entityId < m_entityEncRange[1]; entityId++) {
+  for (auto entityId = m_config.entityEncRange[0]; entityId < m_config.entityEncRange[1];
+       entityId++) {
     std::cout << "Processing entity " << entityId << '\n';
 
     const auto transportEntityViews = entitySeparator(transportViews, entityId);
@@ -194,15 +195,15 @@ void Encoder::updateMasks(const Common::MVD16Frame &views, Common::MaskList &mas
 }
 
 void Encoder::aggregateEntityMasks(Common::MaskList &masks, uint16_t entityId) {
-  if (static_cast<int>(m_aggregatedEntityMask.size()) < m_entityEncRange[1] - m_entityEncRange[0]) {
+  if (static_cast<int>(m_aggregatedEntityMask.size()) <
+      m_config.entityEncRange[1] - m_config.entityEncRange[0]) {
     m_aggregatedEntityMask.push_back(masks);
   } else {
     for (size_t i = 0; i < masks.size(); i++) {
-      std::transform(m_aggregatedEntityMask[entityId - m_entityEncRange[0]][i].getPlane(0).begin(),
-                     m_aggregatedEntityMask[entityId - m_entityEncRange[0]][i].getPlane(0).end(),
-                     masks[i].getPlane(0).begin(),
-                     m_aggregatedEntityMask[entityId - m_entityEncRange[0]][i].getPlane(0).begin(),
-                     [](auto v1, auto v2) { return std::max(v1, v2); });
+      auto &entityMaskPlane =
+          m_aggregatedEntityMask[entityId - m_config.entityEncRange[0]][i].getPlane(0);
+      std::transform(entityMaskPlane.begin(), entityMaskPlane.end(), masks[i].getPlane(0).begin(),
+                     entityMaskPlane.begin(), [](auto v1, auto v2) { return std::max(v1, v2); });
     }
   }
 }

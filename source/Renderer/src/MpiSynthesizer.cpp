@@ -91,7 +91,6 @@ private:
   std::vector<std::tuple<int, int, int, float>>
       m_blockBuffer; //{atlasId, patchId(in atlas), blockId(in patch), depth}
   int m_blockSize{};
-  bool m_allocated{false};
 
 public:
   explicit Impl(const Common::Json &componentNode) {
@@ -125,9 +124,10 @@ public:
     }
 
     // 1 - Update block buffer when atlas is updated
-    if (!m_allocated) {
-      allocateBlockBuffer(frame);
-    }
+    // NOTE(FT): this line should be called only when needed, since it increases artificially the
+    // rendering time  ==> to be changed once the information of new intraPeriod coming from
+    // MivDecoder reaches MpiSynthesizer
+    allocateBlockBuffer(frame);
 
     // 2- Update viewport buffer in case of viewport size change
     if ((m_blendingColor.m() !=
@@ -254,8 +254,6 @@ private:
         std::get<2>(m_blockBuffer[offsetId]) = blockId;
       }
     }
-
-    m_allocated = true;
   }
 
   void allocateViewportBuffer(const MivBitstream::ViewParams &viewportParams) {

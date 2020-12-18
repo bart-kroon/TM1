@@ -41,6 +41,49 @@ namespace {
 constexpr auto textureBitDepth = Common::TextureFrame::getBitDepth();
 constexpr auto textureMaxVal = (1 << textureBitDepth) - 1;
 constexpr auto textureMedVal = 1 << (textureBitDepth - 1);
+
+struct PatchStats {
+  PatchStats() = default;
+  PatchStats(int64_t _minVal) : minVal{_minVal} {}
+  int64_t minVal{0}, maxVal{0}, sumVal{0}, cntVal{0};
+};
+
+void adaptPatchStatsToTexture(std::array<PatchStats, 3> &patchStats,
+                              const Common::TextureDepth16Frame &view,
+                              Common::TextureDepthFrame<Common::YUV400P16> &atlas,
+                              const Common::Vec2i &pView, const Common::Vec2i &pAtlas) {
+  // Y
+  atlas.texture.getPlane(0)(pAtlas.y(), pAtlas.x()) =
+      view.texture.getPlane(0)(pView.y(), pView.x());
+
+  patchStats[0].sumVal += atlas.texture.getPlane(0)(pAtlas.y(), pAtlas.x());
+  patchStats[0].cntVal += 1;
+
+  if (patchStats[0].minVal > atlas.texture.getPlane(0)(pAtlas.y(), pAtlas.x())) {
+    patchStats[0].minVal = atlas.texture.getPlane(0)(pAtlas.y(), pAtlas.x());
+  }
+  if (patchStats[0].maxVal < atlas.texture.getPlane(0)(pAtlas.y(), pAtlas.x())) {
+    patchStats[0].maxVal = atlas.texture.getPlane(0)(pAtlas.y(), pAtlas.x());
+  }
+
+  // UV
+  if ((pView.x() % 2) == 0 && (pView.y() % 2) == 0) {
+    for (int p = 1; p < 3; ++p) {
+      atlas.texture.getPlane(p)(pAtlas.y() / 2, pAtlas.x() / 2) =
+          view.texture.getPlane(p)(pView.y() / 2, pView.x() / 2);
+
+      patchStats[p].sumVal += atlas.texture.getPlane(p)(pAtlas.y() / 2, pAtlas.x() / 2);
+      patchStats[p].cntVal += 1;
+
+      if (patchStats[p].minVal > atlas.texture.getPlane(p)(pAtlas.y() / 2, pAtlas.x() / 2)) {
+        patchStats[p].minVal = atlas.texture.getPlane(p)(pAtlas.y() / 2, pAtlas.x() / 2);
+      }
+      if (patchStats[p].maxVal < atlas.texture.getPlane(p)(pAtlas.y() / 2, pAtlas.x() / 2)) {
+        patchStats[p].maxVal = atlas.texture.getPlane(p)(pAtlas.y() / 2, pAtlas.x() / 2);
+      }
+    }
+  }
+}
 } // namespace
 
 void Encoder::scaleGeometryDynamicRange() {
@@ -362,6 +405,7 @@ void Encoder::constructVideoFrames() {
 auto Encoder::writePatchInAtlas(const MivBitstream::PatchParams &patchParams,
                                 const Common::TextureDepth16Frame &view, Common::MVD16Frame &frame,
                                 int frameId) -> std::array<std::array<int64_t, 4>, 3> {
+
   const auto k = m_params.vps.indexOf(patchParams.atlasId);
   auto &atlas = frame[k];
 
@@ -374,10 +418,8 @@ auto Encoder::writePatchInAtlas(const MivBitstream::PatchParams &patchParams,
   const auto &inViewParams = m_transportParams.viewParamsList[patchParams.atlasPatchProjectionId()];
   const auto &outViewParams = m_params.viewParamsList[patchParams.atlasPatchProjectionId()];
 
-  auto minValInPatch = std::array<int64_t, 3>{textureMaxVal, textureMaxVal, textureMaxVal};
-  auto maxValInPatch = std::array<int64_t, 3>{0, 0, 0};
-  auto sumValInPatch = std::array<int64_t, 3>{0, 0, 0};
-  auto cntValInPatch = std::array<int64_t, 3>{0, 0, 0};
+  std::array<PatchStats, 3> patchStats{};
+  std::fill(patchStats.begin(), patchStats.end(), PatchStats{textureMaxVal});
 
   assert(0 <= posU && posU + sizeU <= inViewParams.ci.ci_projection_plane_width_minus1() + 1);
   assert(0 <= posV && posV + sizeV <= inViewParams.ci.ci_projection_plane_height_minus1() + 1);
@@ -414,52 +456,12 @@ auto Encoder::writePatchInAtlas(const MivBitstream::PatchParams &patchParams,
           }
 
           if (!isAggregatedMaskBlockNonEmpty && m_config.haveGeometry) {
-            atlas.depth.getPlane(0)(pAtlas.y(), pAtlas.x()) = 0;
-            if (m_params.vps.vps_occupancy_video_present_flag(patchParams.atlasId)) {
-              atlas.occupancy.getPlane(0)(yOcc, xOcc) = 0;
-            }
-            if (m_config.haveTexture) {
-              atlas.texture.getPlane(0)(pAtlas.y(), pAtlas.x()) = textureMedVal;
-              if ((pView.x() % 2) == 0 && (pView.y() % 2) == 0) {
-                atlas.texture.getPlane(1)(pAtlas.y() / 2, pAtlas.x() / 2) = textureMedVal;
-                atlas.texture.getPlane(2)(pAtlas.y() / 2, pAtlas.x() / 2) = textureMedVal;
-              }
-            }
+            adaptAtlas(patchParams, atlas, yOcc, xOcc, pView, pAtlas);
             continue;
           }
 
           if (m_config.haveTexture) {
-            // Y
-            atlas.texture.getPlane(0)(pAtlas.y(), pAtlas.x()) =
-                view.texture.getPlane(0)(pView.y(), pView.x());
-
-            sumValInPatch[0] += atlas.texture.getPlane(0)(pAtlas.y(), pAtlas.x());
-            cntValInPatch[0] += 1;
-
-            if (minValInPatch[0] > atlas.texture.getPlane(0)(pAtlas.y(), pAtlas.x())) {
-              minValInPatch[0] = atlas.texture.getPlane(0)(pAtlas.y(), pAtlas.x());
-            }
-            if (maxValInPatch[0] < atlas.texture.getPlane(0)(pAtlas.y(), pAtlas.x())) {
-              maxValInPatch[0] = atlas.texture.getPlane(0)(pAtlas.y(), pAtlas.x());
-            }
-
-            // UV
-            if ((pView.x() % 2) == 0 && (pView.y() % 2) == 0) {
-              for (int p = 1; p < 3; ++p) {
-                atlas.texture.getPlane(p)(pAtlas.y() / 2, pAtlas.x() / 2) =
-                    view.texture.getPlane(p)(pView.y() / 2, pView.x() / 2);
-
-                sumValInPatch[p] += atlas.texture.getPlane(p)(pAtlas.y() / 2, pAtlas.x() / 2);
-                cntValInPatch[p] += 1;
-
-                if (minValInPatch[p] > atlas.texture.getPlane(p)(pAtlas.y() / 2, pAtlas.x() / 2)) {
-                  minValInPatch[p] = atlas.texture.getPlane(p)(pAtlas.y() / 2, pAtlas.x() / 2);
-                }
-                if (maxValInPatch[p] < atlas.texture.getPlane(p)(pAtlas.y() / 2, pAtlas.x() / 2)) {
-                  maxValInPatch[p] = atlas.texture.getPlane(p)(pAtlas.y() / 2, pAtlas.x() / 2);
-                }
-              }
-            }
+            adaptPatchStatsToTexture(patchStats, view, atlas, pView, pAtlas);
           }
 
           // Depth
@@ -473,7 +475,7 @@ auto Encoder::writePatchInAtlas(const MivBitstream::PatchParams &patchParams,
             atlas.depth.getPlane(0)(pAtlas.y(), pAtlas.x()) = depth;
             if (depth > 0 && m_params.vps.vps_occupancy_video_present_flag(patchParams.atlasId)) {
               atlas.occupancy.getPlane(0)(yOcc, xOcc) = 1;
-            };
+            }
           }
         }
       }
@@ -482,11 +484,28 @@ auto Encoder::writePatchInAtlas(const MivBitstream::PatchParams &patchParams,
 
   std::array<std::array<int64_t, 4>, 3> ret{};
   for (int c = 0; c < 3; c++) {
-    ret[c][0] = minValInPatch[c];
-    ret[c][1] = maxValInPatch[c];
-    ret[c][2] = sumValInPatch[c];
-    ret[c][3] = cntValInPatch[c];
+    ret[c][0] = patchStats[c].minVal;
+    ret[c][1] = patchStats[c].maxVal;
+    ret[c][2] = patchStats[c].sumVal;
+    ret[c][3] = patchStats[c].cntVal;
   }
   return ret;
 }
+
+void Encoder::adaptAtlas(const MivBitstream::PatchParams &patchParams,
+                         Common::TextureDepthFrame<Common::YUV400P16> &atlas, int yOcc, int xOcc,
+                         const Common::Vec2i &pView, const Common::Vec2i &pAtlas) const {
+  atlas.depth.getPlane(0)(pAtlas.y(), pAtlas.x()) = 0;
+  if (m_params.vps.vps_occupancy_video_present_flag(patchParams.atlasId)) {
+    atlas.occupancy.getPlane(0)(yOcc, xOcc) = 0;
+  }
+  if (m_config.haveTexture) {
+    atlas.texture.getPlane(0)(pAtlas.y(), pAtlas.x()) = textureMedVal;
+    if ((pView.x() % 2) == 0 && (pView.y() % 2) == 0) {
+      atlas.texture.getPlane(1)(pAtlas.y() / 2, pAtlas.x() / 2) = textureMedVal;
+      atlas.texture.getPlane(2)(pAtlas.y() / 2, pAtlas.x() / 2) = textureMedVal;
+    }
+  }
+}
+
 } // namespace TMIV::Encoder

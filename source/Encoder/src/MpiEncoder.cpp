@@ -90,11 +90,9 @@ auto dilateTextureAtlas(Common::TextureFrame &textureAtlas,
           for (auto neighbour : offsetList) {
             int x = col + neighbour.x();
             int y = row + neighbour.y();
-            if ((0 <= x) && (x < w) && (0 <= y) && (y < h)) {
-              if (0 < transparencyPrev(y, x)) {
-                cnt++;
-                yuv += texturePrev(y, x);
-              }
+            if ((0 <= x) && (x < w) && (0 <= y) && (y < h) && (0 < transparencyPrev(y, x))) {
+              cnt++;
+              yuv += texturePrev(y, x);
             }
           }
         }

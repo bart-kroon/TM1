@@ -106,6 +106,9 @@ private: // Encoder_completeAccessUnit.cpp
   auto writePatchInAtlas(const MivBitstream::PatchParams &patchParams,
                          const Common::TextureDepth16Frame &view, Common::MVD16Frame &frame,
                          int frameId) -> std::array<std::array<int64_t, 4>, 3>;
+  void adaptAtlas(const MivBitstream::PatchParams &patchParams,
+                  Common::TextureDepthFrame<Common::YUV400P16> &atlas, int yOcc, int xOcc,
+                  const Common::Vec2i &pView, const Common::Vec2i &pAtlas) const;
 
 private:
   struct Configuration {

@@ -70,6 +70,44 @@ auto textureNeighbourhood(const MAT &m, const Common::Vec2f &p)
   return fetchedValues;
 }
 
+auto isLowQuality(float blendingFactor, float maxOutlierRatio,
+                  const std::vector<Common::Mat<Common::Vec3f>> &sourceUnprojectionList,
+                  const Renderer::ProjectionHelper &firstHelper,
+                  const Common::Mat<float> &firstDepth, std::size_t secondId) -> bool {
+  const auto &secondUnprojection = sourceUnprojectionList[secondId];
+  std::atomic<size_t> outliers = 0U;
+
+  Common::parallel_for(
+      secondUnprojection.width(), secondUnprojection.height(), [&](size_t y, size_t x) {
+        const auto &P = secondUnprojection(y, x);
+
+        if (!std::isnan(P.x())) {
+          auto p = firstHelper.doProjection(P);
+
+          if (firstHelper.isValidDepth(p.second) && firstHelper.isStrictlyInsideViewport(p.first)) {
+            auto zOnFirst = textureNeighbourhood(firstDepth, p.first);
+
+            if (std::all_of(zOnFirst.begin(), zOnFirst.end(), [&](float z) {
+                  return (!std::isnan(z) && (p.second < z * (1.F - blendingFactor)));
+                })) {
+              outliers++;
+            }
+          }
+        }
+      });
+
+  float outlierRatio = static_cast<float>(outliers) /
+                       static_cast<float>(secondUnprojection.width() * secondUnprojection.height());
+
+  if (maxOutlierRatio < outlierRatio) {
+    std::cout << "DepthQualityAssessor -> Threshold exceeded (" << outlierRatio * 100.F << "%)"
+              << std::endl;
+    return true;
+  }
+
+  return false;
+}
+
 auto isLowDepthQuality(const MivBitstream::ViewParamsList &vpl,
                        const Common::MVD16Frame &sourceViews, float blendingFactor,
                        float maxOutlierRatio) -> bool {
@@ -114,43 +152,15 @@ auto isLowDepthQuality(const MivBitstream::ViewParamsList &vpl,
     sourceUnprojectionList.emplace_back(std::move(sourceUnprojection));
   }
 
-  // Repojection for outlier detection
+  // Reprojection for outlier detection
   for (size_t firstId = 0; firstId < sourceHelperList.size(); firstId++) {
     const auto &firstHelper = sourceHelperList[firstId];
     const auto &firstDepth = sourceDepthExpandedList[firstId];
 
     for (size_t secondId = 0; secondId < sourceHelperList.size(); secondId++) {
       if (firstId != secondId) {
-        const auto &secondUnprojection = sourceUnprojectionList[secondId];
-        std::atomic<size_t> outliers = 0U;
-
-        Common::parallel_for(
-            secondUnprojection.width(), secondUnprojection.height(), [&](size_t y, size_t x) {
-              const auto &P = secondUnprojection(y, x);
-
-              if (!std::isnan(P.x())) {
-                auto p = firstHelper.doProjection(P);
-
-                if (firstHelper.isValidDepth(p.second) &&
-                    firstHelper.isStrictlyInsideViewport(p.first)) {
-                  auto zOnFirst = textureNeighbourhood(firstDepth, p.first);
-
-                  if (std::all_of(zOnFirst.begin(), zOnFirst.end(), [&](float z) {
-                        return (!std::isnan(z) && (p.second < z * (1.F - blendingFactor)));
-                      })) {
-                    outliers++;
-                  }
-                }
-              }
-            });
-
-        float outlierRatio =
-            static_cast<float>(outliers) /
-            static_cast<float>(secondUnprojection.width() * secondUnprojection.height());
-
-        if (maxOutlierRatio < outlierRatio) {
-          std::cout << "DepthQualityAssessor -> Threshold exceeded (" << outlierRatio * 100.F
-                    << "%)" << std::endl;
+        if (isLowQuality(blendingFactor, maxOutlierRatio, sourceUnprojectionList, firstHelper,
+                         firstDepth, secondId)) {
           return true;
         }
       }

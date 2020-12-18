@@ -2,7 +2,7 @@
     "BitstreamPath": "ATL_SA.bit",
     "Decoder": {
         "AtlasDeconstructorMethod": "AtlasDeconstructor",
-        "CullerMethod": "SubBlockCuller",
+        "CullerMethod": "NoCuller",
         "Renderer": {
             "Inpainter": {},
             "InpainterMethod": "Inpainter",
@@ -19,7 +19,7 @@
             "ViewingSpaceControllerMethod": "ViewingSpaceController"
         },
         "RendererMethod": "Renderer",
-        "SubBlockCuller": {},
+        "NoCuller": {},
         "geometryEdgeMagnitudeTh": 10,
         "maxCurvature": 5,
         "minForegroundConfidence": 0.5

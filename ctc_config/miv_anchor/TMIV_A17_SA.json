@@ -47,7 +47,7 @@
             "resolution": [ 1024, 512 ],
             "SynthesizerMethod": "AdditiveSynthesizer",
             "AdditiveSynthesizer": {
-                "depthParameter": -50,
+                "depthParameter": -100,
                 "maxStretching": 5,
                 "rayAngleParameter": 10,
                 "stretchingParameter": 3

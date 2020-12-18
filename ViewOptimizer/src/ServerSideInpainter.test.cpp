@@ -295,7 +295,9 @@ TEST_CASE("ServerSideInpainter") {
         REQUIRE(params.viewParamsList.back().ce.ce_view_pos_z() == 3.F);
       }
 
-      THEN("The added view is a basic view") { REQUIRE(params.viewParamsList.back().isBasicView); }
+      THEN("The added view is an additional view") {
+        REQUIRE(!params.viewParamsList.back().isBasicView);
+      }
 
       THEN("The added view has a depth range that includes the source depth ranges") {
         const auto &vp = params.viewParamsList.back();

@@ -24,11 +24,27 @@
         },
         "PackerMethod": "Packer",
         "PrunerMethod": "NoPruner",
-        "ViewOptimizerMethod": "BasicViewAllocator",
-        "BasicViewAllocator": {
-            "maxBasicViewFraction": 1.0,
-            "outputAdditionalViews": false,
-            "minNonCodedViews": 3
+        "ViewOptimizerMethod": "ServerSideInpainter",
+        "ServerSideInpainter": {
+            "SubMethod": "BasicViewAllocator",
+            "BasicViewAllocator": {
+                "maxBasicViewFraction": 1.0,
+                "outputAdditionalViews": false,
+                "minNonCodedViews": 3
+            },
+            "resolution": [ 1024, 512 ],
+            "SynthesizerMethod": "AdditiveSynthesizer",
+            "AdditiveSynthesizer": {
+                "depthParameter": -100,
+                "maxStretching": 5,
+                "rayAngleParameter": 10,
+                "stretchingParameter": 3
+            },
+            "InpainterMethod": "PushPullInpainter",
+            "PushPullInpainter": {},
+            "blurKernel": 12,
+            "inpaintThreshold": 100,
+            "fieldOfViewMargin": 0.3
         },
         "dilate": 16
     },

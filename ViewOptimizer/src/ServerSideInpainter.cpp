@@ -141,6 +141,7 @@ private:
 
     vp.name = "s0"s;
     vp.isInpainted = true;
+    vp.isBasicView = false;
 
     return vp;
   }

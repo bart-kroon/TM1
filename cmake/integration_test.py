@@ -566,7 +566,7 @@ class IntegrationTest:
     def compareFiles(self, outputFiles):
         assert(self.referenceDir)
         [matches, mismatches, errors] = filecmp.cmpfiles(
-            self.testDir, self.referenceDir, outputFiles)
+            self.testDir, self.referenceDir, outputFiles, shallow=False)
         
         for match in matches:
             print('equal: {}'.format(match), flush=True)

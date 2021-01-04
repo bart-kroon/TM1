@@ -56,9 +56,10 @@ create_catch2_unit_test(
         CommonTest
     SOURCES
         "src/Bitstream.test.cpp"
-        "src/Quaternion.test.cpp"
         "src/Common.test.cpp"
+        "src/Frame.test.cpp"
         "src/Json.test.cpp"
+        "src/Quaternion.test.cpp"
         "src/verify.test.cpp"
     PRIVATE
         TMIV::CommonLib

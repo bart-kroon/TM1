@@ -204,27 +204,17 @@ template <typename FORMAT> void Frame<FORMAT>::fillOne() {
 
 template <typename FORMAT>
 template <typename OTHER_FORMAT, typename>
-void Frame<FORMAT>::filIInvalidWithNeutral(const Frame<OTHER_FORMAT> &depth) {
+void Frame<FORMAT>::fillInvalidWithNeutral(const Frame<OTHER_FORMAT> &depth) {
   assert(depth.getSize() == getSize());
 
-  for (int k = 0; k < getNumberOfPlanes(); ++k) {
-    for (int i = 0; i < getHeight(); ++i) {
-      for (int j = 0; j < getWidth(); ++j) {
-        if (depth.getPlane(0)(i, j) == 0) {
+  for (int i = 0; i < getHeight(); ++i) {
+    for (int j = 0; j < getWidth(); ++j) {
+      if (depth.getPlane(0)(i, j) == 0) {
+        for (int k = 0; k < getNumberOfPlanes(); ++k) {
           getPlane(k)(i, j) = neutralColor();
         }
       }
     }
-  }
-}
-
-template <typename FORMAT> AnyFrame::AnyFrame(const Frame<FORMAT> &frame) {
-  static_assert(frame.getPlanes() <= planes.size());
-  const auto &inputPlanes = frame.getPlanes();
-
-  for (size_t k = 0; k < inputPlanes.size(); ++k) {
-    std::copy(std::cbegin(inputPlanes[k]), std::cend(inputPlanes[k]), std::begin(planes[k]));
-    bitdepth[k] = frame.getBitDepth();
   }
 }
 

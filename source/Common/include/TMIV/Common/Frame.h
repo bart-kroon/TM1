@@ -67,22 +67,17 @@ public:
   using base_type = typename detail::PixelFormatHelper<FORMAT>::base_type;
   using plane_type = heap::Matrix<base_type>;
 
-protected:
+private:
   static constexpr int nb_plane = detail::PixelFormatHelper<FORMAT>::nb_plane;
   static constexpr int bitDepth = detail::PixelFormatHelper<FORMAT>::bitDepth;
-
-protected:
   int m_width = 0, m_height = 0;
   std::array<plane_type, nb_plane> m_planes;
 
 public:
   explicit Frame(int w = 0, int h = 0) { resize(w, h); }
   Frame(const Frame &) = default;
-  Frame(Frame &&that) noexcept {
-    m_width = that.m_width;
-    m_height = that.m_height;
-    m_planes = std::move(that.m_planes);
-
+  Frame(Frame &&that) noexcept
+      : m_width{that.m_width}, m_height{that.m_height}, m_planes{std::move(that.m_planes)} {
     that.m_width = 0;
     that.m_height = 0;
   }
@@ -126,8 +121,7 @@ public:
   void dump(std::ostream &os, bool vFlip = false) const;
 
   // Reset all samples to zero
-  //
-  // Note that samples are already set to zero on construction
+  // NOTE(BK): samples are already set to zero on construction
   void fillZero();
 
   // Set all samples to the neutral color
@@ -138,7 +132,7 @@ public:
 
   // Set invalid samples to the neutral color
   template <typename OTHER_FORMAT, typename = std::enable_if<std::is_same_v<FORMAT, YUV444P10>>>
-  void filIInvalidWithNeutral(const Frame<OTHER_FORMAT> &depth);
+  void fillInvalidWithNeutral(const Frame<OTHER_FORMAT> &depth);
 
   static constexpr auto neutralColor() { return detail::PixelFormatHelper<FORMAT>::neutralColor(); }
 };
@@ -155,11 +149,6 @@ auto yuv444p(const Frame<YUV420P16> &frame) -> Frame<YUV444P16>;
 //
 // TODO(BK): Consider using AnyFrame for IO library
 struct AnyFrame {
-  AnyFrame() = default;
-
-  // Convert from any specific format
-  template <typename FORMAT> explicit AnyFrame(const Frame<FORMAT> &frame);
-
   // Convert to any specific format
   template <typename FORMAT> auto as() const -> Frame<FORMAT>;
 
@@ -184,9 +173,6 @@ const auto unusedPatchId = UINT16_MAX;
 using EntityMap = Frame<YUV400P16>;
 
 template <typename FORMAT> struct TextureDepthFrame {
-  using first_type = TextureFrame;
-  using second_type = Frame<FORMAT>;
-
   TextureFrame texture;
   Frame<FORMAT> depth;
   EntityMap entities{};
@@ -218,14 +204,14 @@ using MaskList = std::vector<Mask>;
 
 // Expand a YUV 4:4:4 10-bit texture to packed 4:4:4 32-bit float texture with
 // linear transfer and nearest interpolation for chroma
-auto expandTexture(const Common::Frame<Common::YUV444P10> &inYuv) -> Common::Mat<Common::Vec3f>;
+auto expandTexture(const Frame<YUV444P10> &inYuv) -> Mat<Vec3f>;
 
 // Expand a YUV 4:2:0 10-bit texture to 32-bit float luma map with linear transfer
-auto expandLuma(const Common::Frame<Common::YUV420P10> &inYuv) -> Common::Mat<float>;
+auto expandLuma(const Frame<YUV420P10> &inYuv) -> Mat<float>;
 
 // Quantize a packed 4:4:4 32-bit float texture as YUV 4:4:4 10-bit texture with
 // linear transfer and area interpolation for chroma
-auto quantizeTexture(const Common::Mat<Common::Vec3f> &in) -> Common::Frame<Common::YUV444P10>;
+auto quantizeTexture(const Mat<Vec3f> &in) -> Frame<YUV444P10>;
 } // namespace TMIV::Common
 
 #endif

@@ -258,7 +258,7 @@ public:
     auto viewport =
         Common::Texture444Depth16Frame{Common::quantizeTexture(rasterizer.attribute<0>()),
                                        depthTransform.quantizeNormDisp(rasterizer.normDisp(), 1)};
-    viewport.first.filIInvalidWithNeutral(viewport.second);
+    viewport.first.fillInvalidWithNeutral(viewport.second);
 
     return viewport;
   }

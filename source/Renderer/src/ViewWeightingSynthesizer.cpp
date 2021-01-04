@@ -245,7 +245,7 @@ public:
         quantizeTexture(m_viewportColor),
         MivBitstream::DepthTransform{viewportParams.dq, 16}.quantizeNormDisp(m_viewportVisibility,
                                                                              1)};
-    viewport.first.filIInvalidWithNeutral(viewport.second);
+    viewport.first.fillInvalidWithNeutral(viewport.second);
     return viewport;
   }
 

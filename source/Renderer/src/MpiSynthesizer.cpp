@@ -182,7 +182,7 @@ public:
     const auto depthTransform = MivBitstream::DepthTransform{viewportParams.dq, 16};
     auto viewport = Common::Texture444Depth16Frame{
         quantizeTexture(m_blendingColor), depthTransform.quantizeNormDisp(m_blendingDepth, 1)};
-    viewport.first.filIInvalidWithNeutral(viewport.second);
+    viewport.first.fillInvalidWithNeutral(viewport.second);
 
     return viewport;
   }

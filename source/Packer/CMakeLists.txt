@@ -14,3 +14,13 @@ create_tmiv_library(
     PUBLIC
         TMIV::MivBitstreamLib
     )
+
+create_catch2_unit_test(
+    TARGET
+        PackerTest
+    SOURCES
+        "src/Cluster.test.cpp"
+        "src/Packer.test.cpp"
+    PRIVATE
+        TMIV::PackerLib
+)

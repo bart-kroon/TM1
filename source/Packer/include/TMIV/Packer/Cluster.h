@@ -37,6 +37,7 @@
 #include <TMIV/Common/Frame.h>
 
 #include <queue>
+#include <tuple>
 
 namespace TMIV::Packer {
 using ClusteringMap = Common::Frame<Common::YUV400P16>;
@@ -46,18 +47,6 @@ class Cluster;
 using ClusterList = std::vector<Cluster>;
 
 class Cluster {
-protected:
-  int viewId_ = 0;
-  bool m_isBasicView{};
-  int clusterId_ = 0;
-  int entityId_ = 0;
-  int numActivePixels_ = 0;
-  int imin_ = std::numeric_limits<int>::max();
-  int jmin_ = std::numeric_limits<int>::max();
-  int imax_ = std::numeric_limits<int>::min();
-  int jmax_ = std::numeric_limits<int>::min();
-  int filling_ = 0;
-
 public:
   Cluster() = default;
   Cluster(int viewId, bool isBasicView, int clusterId, int entityId);
@@ -85,20 +74,8 @@ public:
       -> std::pair<Cluster, Cluster>;
   [[nodiscard]] constexpr auto isBasicView() const noexcept { return m_isBasicView; }
 
-  auto splitLPatchVertically(const ClusteringMap &clusteringMap, std::vector<Cluster> &out,
-                             int alignment, int minPatchSize,
-                             const std::array<std::deque<int>, 2> &min_h_agg,
-                             const std::array<std::deque<int>, 2> &max_h_agg) const -> bool;
-  auto splitLPatchHorizontally(const ClusteringMap &clusteringMap, std::vector<Cluster> &out,
-                               int alignment, int minPatchSize,
-                               const std::array<std::deque<int>, 2> &min_w_agg,
-                               const std::array<std::deque<int>, 2> &max_w_agg) const -> bool;
-  auto splitCPatchVertically(const ClusteringMap &clusteringMap, std::vector<Cluster> &out,
-                             int alignment, int minPatchSize) const -> bool;
-  auto splitCPatchHorizontally(const ClusteringMap &clusteringMap, std::vector<Cluster> &out,
-                               int alignment, int minPatchSize) const -> bool;
-  auto recursiveSplit(const ClusteringMap &clusteringMap, std::vector<Cluster> &out, int alignment,
-                      int minPatchSize) const -> std::vector<Cluster>;
+  void recursiveSplit(const ClusteringMap &clusteringMap, std::vector<Cluster> &out, int alignment,
+                      int minPatchSize) const;
 
   static auto Empty() -> Cluster {
     Cluster out;
@@ -114,6 +91,37 @@ public:
   static auto retrieve(int viewId, const Common::Mask &maskMap, int firstClusterId,
                        bool isBasicView, bool enableMerging)
       -> std::pair<ClusterList, ClusteringMap>;
+
+private:
+  auto splitLPatchVertically(const ClusteringMap &clusteringMap, std::vector<Cluster> &out,
+                             int alignment, int minPatchSize,
+                             const std::array<std::deque<int>, 2> &min_h_agg,
+                             const std::array<std::deque<int>, 2> &max_h_agg) const -> bool;
+  auto splitLPatchHorizontally(const ClusteringMap &clusteringMap, std::vector<Cluster> &out,
+                               int alignment, int minPatchSize,
+                               const std::array<std::deque<int>, 2> &min_w_agg,
+                               const std::array<std::deque<int>, 2> &max_w_agg) const -> bool;
+  auto splitCPatchVertically(const ClusteringMap &clusteringMap, std::vector<Cluster> &out,
+                             int alignment, int minPatchSize) const -> bool;
+  auto splitCPatchHorizontally(const ClusteringMap &clusteringMap, std::vector<Cluster> &out,
+                               int alignment, int minPatchSize) const -> bool;
+  [[nodiscard]] auto createAggregatedQueues(const ClusteringMap &clusteringMap,
+                                            bool aggregateHorizontally) const
+      -> std::tuple<std::array<std::deque<int>, 2>, std::array<std::deque<int>, 2>>;
+  [[nodiscard]] auto computeMinAndMaxVectors(const ClusteringMap &clusteringMap,
+                                             bool aggregateHorizontally) const
+      -> std::tuple<std::vector<int>, std::vector<int>>;
+
+  int viewId_ = 0;
+  bool m_isBasicView{};
+  int clusterId_ = 0;
+  int entityId_ = 0;
+  int numActivePixels_ = 0;
+  int imin_ = std::numeric_limits<int>::max();
+  int jmin_ = std::numeric_limits<int>::max();
+  int imax_ = std::numeric_limits<int>::min();
+  int jmax_ = std::numeric_limits<int>::min();
+  int filling_ = 0;
 };
 } // namespace TMIV::Packer
 

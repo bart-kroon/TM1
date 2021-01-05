@@ -350,104 +350,14 @@ auto Cluster::splitLPatchVertically(const ClusteringMap &clusteringMap, std::vec
   return false;
 }
 
-auto Cluster::recursiveSplit(const ClusteringMap &clusteringMap, std::vector<Cluster> &out,
-                             int alignment, int minPatchSize) const -> std::vector<Cluster> {
+void Cluster::recursiveSplit(const ClusteringMap &clusteringMap, std::vector<Cluster> &out,
+                             int alignment, int minPatchSize) const {
   bool splitted = false;
+  const int maxNonSplitTableSize = 64;
 
-  int maxNonsplittableSize = 64;
-
-  const Cluster &c = (*this);
-  const auto &clusteringBuffer = clusteringMap.getPlane(0);
-
-  int H = c.height();
-  int W = c.width();
-
-  std::vector<int> min_w;
-  std::vector<int> max_w;
-  for (int h = 0; h < H; h++) {
-    min_w.push_back(W - 1);
-    max_w.push_back(0);
-  }
-  std::vector<int> min_h;
-  std::vector<int> max_h;
-  for (int w = 0; w < W; w++) {
-    min_h.push_back(H - 1);
-    max_h.push_back(0);
-  }
-
-  for (int h = 0; h < H; h++) {
-    int i = h + c.imin();
-
-    for (int w = 0; w < W; w++) {
-      int j = w + c.jmin();
-      if (clusteringBuffer(i, j) == c.getClusterId()) {
-        min_w[h] = w;
-        break;
-      }
-    }
-
-    for (int w = W - 1; w >= 0; w--) {
-      int j = w + c.jmin();
-      if (clusteringBuffer(i, j) == c.getClusterId()) {
-        max_w[h] = w;
-        break;
-      }
-    }
-  }
-
-  for (int w = 0; w < W; w++) {
-    int j = w + c.jmin();
-
-    for (int h = 0; h < H; h++) {
-      int i = h + c.imin();
-      if (clusteringBuffer(i, j) == c.getClusterId()) {
-        min_h[w] = h;
-        break;
-      }
-    }
-
-    for (int h = H - 1; h >= 0; h--) {
-      int i = h + c.imin();
-      if (clusteringBuffer(i, j) == c.getClusterId()) {
-        max_h[w] = h;
-        break;
-      }
-    }
-  }
-
-  auto min_w_agg = std::array<std::deque<int>, 2>{};
-  auto max_w_agg = std::array<std::deque<int>, 2>{};
-  auto min_h_agg = std::array<std::deque<int>, 2>{};
-  auto max_h_agg = std::array<std::deque<int>, 2>{};
-
-  min_w_agg[0].push_back(min_w[0]);
-  max_w_agg[0].push_back(max_w[0]);
-  for (int h = 1; h < H; h++) {
-    min_w_agg[0].push_back(std::min(min_w_agg[0][h - 1], min_w[h]));
-    max_w_agg[0].push_back(std::max(max_w_agg[0][h - 1], max_w[h]));
-  }
-  min_w_agg[1].push_front(min_w[H - 1]);
-  max_w_agg[1].push_front(max_w[H - 1]);
-  for (int h = H - 2; h >= 0; h--) {
-    min_w_agg[1].push_front(std::min(min_w_agg[1][0], min_w[h]));
-    max_w_agg[1].push_front(std::max(max_w_agg[1][0], max_w[h]));
-  }
-
-  min_h_agg[0].push_back(min_h[0]);
-  max_h_agg[0].push_back(max_h[0]);
-  for (int w = 1; w < W; w++) {
-    min_h_agg[0].push_back(std::min(min_h_agg[0][w - 1], min_h[w]));
-    max_h_agg[0].push_back(std::max(max_h_agg[0][w - 1], max_h[w]));
-  }
-  min_h_agg[1].push_front(min_h[W - 1]);
-  max_h_agg[1].push_front(max_h[W - 1]);
-  for (int w = W - 2; w >= 0; w--) {
-    min_h_agg[1].push_front(std::min(min_h_agg[1][0], min_h[w]));
-    max_h_agg[1].push_front(std::max(max_h_agg[1][0], max_h[w]));
-  }
-
-  if (W > H) { // split vertically
-    if (W > maxNonsplittableSize) {
+  if (width() > height()) { // split vertically
+    if (width() > maxNonSplitTableSize) {
+      const auto [min_h_agg, max_h_agg] = createAggregatedQueues(clusteringMap, false);
       splitted =
           splitLPatchVertically(clusteringMap, out, alignment, minPatchSize, min_h_agg, max_h_agg);
       if (!splitted) {
@@ -455,7 +365,8 @@ auto Cluster::recursiveSplit(const ClusteringMap &clusteringMap, std::vector<Clu
       }
     }
   } else { // split horizontally
-    if (H > maxNonsplittableSize) {
+    if (height() > maxNonSplitTableSize) {
+      const auto [min_w_agg, max_w_agg] = createAggregatedQueues(clusteringMap, true);
       splitted = splitLPatchHorizontally(clusteringMap, out, alignment, minPatchSize, min_w_agg,
                                          max_w_agg);
       if (!splitted) {
@@ -465,10 +376,72 @@ auto Cluster::recursiveSplit(const ClusteringMap &clusteringMap, std::vector<Clu
   }
 
   if (!splitted) {
-    out.push_back(c);
+    out.push_back(*this);
+  }
+}
+
+auto Cluster::createAggregatedQueues(const ClusteringMap &clusteringMap,
+                                     const bool aggregateHorizontally) const
+    -> std::tuple<std::array<std::deque<int>, 2>, std::array<std::deque<int>, 2>> {
+
+  const auto aggregationDimensionSize = aggregateHorizontally ? height() : width();
+
+  std::array<std::deque<int>, 2> min_agg{};
+  std::array<std::deque<int>, 2> max_agg{};
+  const auto [minima, maxima] = computeMinAndMaxVectors(clusteringMap, aggregateHorizontally);
+
+  min_agg[0].push_back(minima[0]);
+  max_agg[0].push_back(maxima[0]);
+  for (int i = 1; i < aggregationDimensionSize; i++) {
+    min_agg[0].push_back(std::min(min_agg[0][i - 1], minima[i]));
+    max_agg[0].push_back(std::max(max_agg[0][i - 1], maxima[i]));
+  }
+  min_agg[1].push_front(minima[aggregationDimensionSize - 1]);
+  max_agg[1].push_front(maxima[aggregationDimensionSize - 1]);
+  for (int i = aggregationDimensionSize - 2; i >= 0; i--) {
+    min_agg[1].push_front(std::min(min_agg[1][0], minima[i]));
+    max_agg[1].push_front(std::max(max_agg[1][0], maxima[i]));
+  }
+  return {min_agg, max_agg};
+}
+
+auto Cluster::computeMinAndMaxVectors(const ClusteringMap &clusteringMap,
+                                      bool aggregateHorizontally) const
+    -> std::tuple<std::vector<int>, std::vector<int>> {
+  const auto dim1 = aggregateHorizontally ? height() : width();
+  const auto dim2 = aggregateHorizontally ? width() : height();
+  const auto minDim1 = aggregateHorizontally ? imin() : jmin();
+  const auto minDim2 = aggregateHorizontally ? jmin() : imin();
+
+  const auto &clusteringBuffer = clusteringMap.getPlane(0);
+  std::vector<int> minima(dim1, dim2 - 1);
+  std::vector<int> maxima(dim1, 0);
+
+  for (int k = 0; k < dim1; k++) {
+    int i = k + minDim1;
+
+    for (int l = 0; l < dim2; l++) {
+      int j = l + minDim2;
+      const auto bufferValue =
+          aggregateHorizontally ? clusteringBuffer(i, j) : clusteringBuffer(j, i);
+      if (bufferValue == getClusterId()) {
+        minima[k] = l;
+        break;
+      }
+    }
+
+    for (int l = dim2 - 1; l >= 0; l--) {
+      int j = l + minDim2;
+      const auto bufferValue =
+          aggregateHorizontally ? clusteringBuffer(i, j) : clusteringBuffer(j, i);
+      if (bufferValue == getClusterId()) {
+        maxima[k] = l;
+        break;
+      }
+    }
   }
 
-  return out;
+  return {minima, maxima};
 }
 
 auto Cluster::split(const ClusteringMap &clusteringMap, int overlap) const

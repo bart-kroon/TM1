@@ -135,6 +135,10 @@ private:
       x.vme().vme_depth_low_quality_flag(node.as<bool>());
     }
 
+    if (const auto &node = config.optional("dqParamsPresentFlag")) {
+      x.dqParamsPresentFlag = node.as<bool>();
+    }
+
     const auto numGroups = static_cast<unsigned>(config.require("numGroups").as<int>());
     if (numGroups < 1) {
       throw std::runtime_error("Require numGroups >= 1");

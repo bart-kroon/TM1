@@ -90,7 +90,7 @@ private:
   void decodeCommonAtlas();
   void decodeViewParamsList();
   auto decodeVideoSubBitstreams() -> bool;
-  void decodeMvpl(const MivBitstream::MivViewParamsList &mvpl);
+  void decodeMvpl(const MivBitstream::MivViewParamsList &mvpl, bool dqParamsPresentFlag);
   void decodeMvpue(const MivBitstream::MivViewParamsUpdateExtrinsics &mvpue);
   void decodeMvpui(const MivBitstream::MivViewParamsUpdateIntrinsics &mvpui);
   void decodeMvpudq(const MivBitstream::MivViewParamsUpdateDepthQuantization &mvpudq);

@@ -276,8 +276,14 @@ void MivDecoder::decodeViewParamsList() {
   const auto &caf = m_commonAtlasAu->caf;
   if (caf.caf_extension_present_flag() && caf.caf_miv_extension_present_flag()) {
     const auto &came = caf.caf_miv_extension();
+    bool dqParamsPresentFlag = true;
+    if (m_commonAtlasAu->casps.casps_extension_present_flag() &&
+        m_commonAtlasAu->casps.casps_miv_extension_present_flag()) {
+      dqParamsPresentFlag = m_commonAtlasAu->casps.casps_miv_extension()
+                                .casme_depth_quantization_params_present_flag();
+    }
     if (m_commonAtlasAu->irap) {
-      decodeMvpl(came.miv_view_params_list());
+      decodeMvpl(came.miv_view_params_list(), dqParamsPresentFlag);
     } else {
       if (came.came_update_extrinsics_flag()) {
         decodeMvpue(came.miv_view_params_update_extrinsics());
@@ -285,7 +291,7 @@ void MivDecoder::decodeViewParamsList() {
       if (came.came_update_intrinsics_flag()) {
         decodeMvpui(came.miv_view_params_update_intrinsics());
       }
-      if (came.came_update_depth_quantization_flag()) {
+      if (came.came_update_depth_quantization_flag() && dqParamsPresentFlag) {
         decodeMvpudq(came.miv_view_params_update_depth_quantization());
       }
     }
@@ -302,14 +308,15 @@ void MivDecoder::decodeViewParamsList() {
   }
 }
 
-void MivDecoder::decodeMvpl(const MivBitstream::MivViewParamsList &mvpl) {
+void MivDecoder::decodeMvpl(const MivBitstream::MivViewParamsList &mvpl, bool dqParamsPresentFlag) {
   m_au.viewParamsList.assign(mvpl.mvp_num_views_minus1() + size_t{1}, {});
 
   for (uint16_t viewId = 0; viewId <= mvpl.mvp_num_views_minus1(); ++viewId) {
     m_au.viewParamsList[viewId].ce = mvpl.camera_extrinsics(viewId);
     m_au.viewParamsList[viewId].ci = mvpl.camera_intrinsics(viewId);
-    m_au.viewParamsList[viewId].dq = mvpl.depth_quantization(viewId);
-
+    if (dqParamsPresentFlag) {
+      m_au.viewParamsList[viewId].dq = mvpl.depth_quantization(viewId);
+    }
     if (mvpl.mvp_pruning_graph_params_present_flag()) {
       m_au.viewParamsList[viewId].pp = mvpl.pruning_parent(viewId);
     }

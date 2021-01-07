@@ -99,7 +99,7 @@ void Encoder::prepareSequence(MivBitstream::EncoderParams sourceParams) {
       .casps_miv_extension_present_flag(true)
       .casps_log2_max_common_atlas_frame_order_cnt_lsb_minus4(log2FocLsbMinus4())
       .casps_miv_extension()
-      .casme_depth_quantization_params_present_flag(true)
+      .casme_depth_quantization_params_present_flag(m_transportParams.dqParamsPresentFlag)
       .casme_vui_params_present_flag(true)
       .vui_parameters(vuiParameters());
   m_params.viewingSpace = std::move(viewingSpace);

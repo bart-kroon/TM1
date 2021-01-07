@@ -83,6 +83,8 @@ struct EncoderParams {
   PatchParamsList patchParamsList;
   bool lengthsInMeters{true};
 
+  bool dqParamsPresentFlag{true};
+
   std::vector<EncoderAtlasParams> atlas;
 
   // Convenience function to access the VPS MIV extension

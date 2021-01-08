@@ -261,6 +261,8 @@ For this example, we will be using the MIV anchor [A_1_TMIV_encode.json](/config
 
 Whereby `\` is used to indicate line breaks in this manual.
 
+When the same parameter is provided multiple times on the command-line, through `-c` or `-p`, then the right-most argument has precedence.
+
 This will in general result in the following files under the `outputDirectory`:
 
 * A bitstream with the path based on `outputBitstreamPathFmt`, containing metadata and patch data.
@@ -320,6 +322,8 @@ In this example the following files will be produced after four invocations:
     -p outputDirectory /Experiment
 ```
 
+When the same parameter is provided multiple times on the command-line, through `-c` or `-p`, then the right-most argument has precedence.
+
 This will in general result in the following file under the `outputDirectory`:
 
 * A bitstream with the path based on `outputBitstreamPathFmt`, containing metadata, patch data and video sub bitstreams.
@@ -350,6 +354,8 @@ In this example the following file will be produced:
     -p inputDirectory /Experiment /
     -p outputDirectory /Experiment
 ```
+
+When the same parameter is provided multiple times on the command-line, through `-c` or `-p`, then the right-most argument has precedence.
 
 This will in general result in the following files under the `outputDirectory`:
 
@@ -390,6 +396,8 @@ For this example, we will be using the best reference [R_1_TMIV_render.json](/co
     -p inputDirectory /Content \
     -p outputDirectory /Experiment
 ```
+
+When the same parameter is provided multiple times on the command-line, through `-c` or `-p`, then the right-most argument has precedence.
 
 This will in general result in the following files under the `outputDirectory`:
 

@@ -90,6 +90,8 @@ Application::Application(const char *tool, std::vector<const char *> argv, Optio
       what << fmt::format("\n  {:3} {:47} {}", o.option, o.description,
                           o.multiple ? "zero or more allowed" : "required exactly once");
     }
+    what << "\n\nNote: when the same parameter is provided multiple times on the "
+            "command-line,\nthrough -c or -p, then the right-most argument has precedence.";
     throw std::runtime_error(what.str());
   }
 }

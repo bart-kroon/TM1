@@ -371,17 +371,15 @@ public:
     printClusters(viewParamsList);
 
     // Pruning graph
-    Common::Graph::BuiltIn::Sparse<float> pruningGraph(viewParamsList.size());
+    Common::Graph::SparseDirectedAcyclicGraph<float> pruningGraph(viewParamsList.size());
 
     for (auto &cluster : m_clusters) {
       if (!cluster.pruningOrder.empty()) {
         for (auto i : cluster.basicViewId) {
-          pruningGraph.connect(cluster.pruningOrder.front(), i, 1.F,
-                               Common::Graph::LinkType::Directed);
+          pruningGraph.connect(cluster.pruningOrder.front(), i, 1.F);
         }
         for (size_t i = 1; i < cluster.pruningOrder.size(); ++i) {
-          pruningGraph.connect(cluster.pruningOrder[i], cluster.pruningOrder[i - 1], 1.F,
-                               Common::Graph::LinkType::Directed);
+          pruningGraph.connect(cluster.pruningOrder[i], cluster.pruningOrder[i - 1], 1.F);
         }
       }
     }
@@ -398,7 +396,7 @@ public:
         parentIdList.reserve(neighbourhood.size());
 
         for (const auto &link : neighbourhood) {
-          parentIdList.emplace_back(static_cast<uint16_t>(link.node()));
+          parentIdList.emplace_back(static_cast<uint16_t>(link.id()));
         }
 
         viewParamsList[camId].pp = MivBitstream::PruningParents{std::move(parentIdList)};

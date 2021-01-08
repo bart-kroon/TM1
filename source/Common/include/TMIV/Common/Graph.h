@@ -1,129 +1,95 @@
+/* The copyright in this software is being made available under the BSD
+ * License, included below. This software may be subject to other third party
+ * and contributor rights, including patent rights, and no such rights are
+ * granted under this license.
+ *
+ * Copyright (c) 2010-2020, ISO/IEC
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ *  * Redistributions of source code must retain the above copyright notice,
+ *    this list of conditions and the following disclaimer.
+ *  * Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+ *  * Neither the name of the ISO/IEC nor the names of its contributors may
+ *    be used to endorse or promote products derived from this software without
+ *    specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS
+ * BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+ * THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
 #ifndef _TMIV_COMMON_GRAPH_H_
 #define _TMIV_COMMON_GRAPH_H_
 
-#include "Matrix.h"
-#include <functional>
-#include <queue>
+#include <type_traits>
+#include <vector>
 
-namespace TMIV::Common {
-namespace Graph {
+namespace TMIV::Common::Graph {
 using NodeId = std::size_t;
-enum class LinkType { Undirected, Directed };
-has_type_helper(weight_type);
 
 template <typename T> class Link {
-private:
-  NodeId m_node;
-  T m_weight;
-
 public:
-  Link(NodeId n, T w) : m_node(n), m_weight(w) {}
-  [[nodiscard]] auto node() const -> NodeId { return m_node; }
+  Link(NodeId n, T w) : m_id(n), m_weight(w) {}
+  [[nodiscard]] auto id() const -> NodeId { return m_id; }
   [[nodiscard]] auto weight() const -> T { return m_weight; }
-};
-
-template <typename T> class Edge {
-private:
-  std::pair<NodeId, NodeId> m_nodes;
-  T m_weight;
-
-public:
-  Edge(NodeId i, NodeId j, T w) : m_nodes({i, j}), m_weight(w) {}
-  [[nodiscard]] auto nodes() const -> const std::pair<NodeId, NodeId> & { return m_nodes; }
-  auto weight() const -> T { return m_weight; }
-};
-
-template <typename T> class Base {
-public:
-  using weight_type = T;
-
-public:
-  //! \brief  Return the number of nodes of the graph.
-  [[nodiscard]] virtual auto getNumberOfNodes() const -> std::size_t = 0;
-  //! \brief  Return the number of neighbours of node.
-  [[nodiscard]] virtual auto getNeighbourhoodSize(NodeId node) const -> std::size_t = 0;
-  //! \brief  Return the #id neighbour of node.
-  [[nodiscard]] virtual auto getNeighbour(NodeId node, std::size_t id) const -> Link<T> = 0;
-};
-
-namespace BuiltIn {
-//! \brief Regular built-in graph
-template <typename T> class Sparse : public Base<T> {
-public:
-  using weight_type = T;
 
 private:
-  std::vector<std::vector<Link<T>>> m_link;
+  NodeId m_id{};
+  T m_weight{};
+};
 
+template <typename T> class SparseDirectedAcyclicGraph {
 public:
-  explicit Sparse(std::size_t nb_nodes = 0) : m_link{nb_nodes} {}
-  void addNode() { m_link.emplace_back({}); }
-  [[nodiscard]] auto getNumberOfNodes() const -> std::size_t override { return m_link.size(); }
-  [[nodiscard]] auto getNeighbourhoodSize(NodeId node) const -> std::size_t override {
-    return m_link[node].size();
+  explicit SparseDirectedAcyclicGraph(std::size_t nb_nodes = 0) : m_adjacencyList{nb_nodes} {}
+
+  void addNode() { m_adjacencyList.emplace_back(std::vector<Link<T>>{}); }
+  void connect(NodeId start, NodeId destination, T weight);
+
+  [[nodiscard]] auto getNumberOfNodes() const -> std::size_t { return m_adjacencyList.size(); }
+  [[nodiscard]] auto getNeighbourhoodSize(NodeId node) const -> std::size_t {
+    return m_adjacencyList[node].size();
   }
-  [[nodiscard]] auto getNeighbour(NodeId node, std::size_t id) const -> Link<T> override {
-    return m_link[node][id];
+  [[nodiscard]] auto getNeighbour(NodeId node, std::size_t id) const -> Link<T> {
+    return m_adjacencyList[node][id];
   }
   [[nodiscard]] auto getNeighbourhood(NodeId id) const -> const std::vector<Link<T>> & {
-    return m_link[id];
+    return m_adjacencyList[id];
   }
-  //! \brief Connect vertices node and other and specify the connection weight.
-  void connect(NodeId node, NodeId other, T weight, LinkType type) {
-    m_link[node].push_back(Link<T>(other, weight));
-    if (type == LinkType::Undirected) {
-      m_link[other].push_back(Link<T>(node, weight));
-    }
-  }
-  //! \brief Add the specified edge.
-  void addEdge(const Edge<T> &e, LinkType type) {
-    connect(e.nodes().first, e.nodes().second, e.weight(), type);
-  }
-};
-
-//! \brief Dense built-in graph
-template <typename T> class Dense : public Base<T> {
-public:
-  using weight_type = T;
+  [[nodiscard]] auto getDescendingOrderId() const -> std::vector<NodeId>;
 
 private:
-  Mat<T> m_weight;
+  [[nodiscard]] auto getIdOfFirstRootNode() const -> NodeId;
+  [[nodiscard]] auto isCyclic() const -> bool;
+  [[nodiscard]] auto isCyclic(NodeId nodeId, std::vector<bool> &visited,
+                              std::vector<bool> &nodesInCurrentPath) const -> bool;
 
-public:
-  Dense(Mat<T> weight) : m_weight(std::move(weight)) {}
-  auto getWeightMatrix() const -> const Mat<T> & { return m_weight; }
-  [[nodiscard]] auto getNumberOfNodes() const -> std::size_t override { return m_weight.m(); }
-  [[nodiscard]] auto getNeighbourhoodSize(NodeId /*unused*/) const -> std::size_t override {
-    return m_weight.m();
-  }
-  auto getNeighbour(NodeId node, NodeId id) const -> Link<T> override {
-    return Link<T>(id, m_weight(node, id));
-  }
-  //! \brief Connect vertices node and other and specify the connection weight.
-  void connect(NodeId node, NodeId other, T weight, LinkType type) {
-    m_weight(node, other) = weight;
-    if (type == LinkType::Undirected) {
-      m_weight(other, node) = weight;
-    }
-  }
+  std::vector<std::vector<Link<T>>> m_adjacencyList;
 };
-
-} // namespace BuiltIn
-auto getDescendingOrderId(const BuiltIn::Sparse<float> &g) -> std::vector<NodeId>;
-auto getReversedGraph(const BuiltIn::Sparse<float> &g) -> BuiltIn::Sparse<float>;
-
-} // namespace Graph
-
-} // namespace TMIV::Common
+} // namespace TMIV::Common::Graph
 
 //! \brief Send the graph g to the stream os.
-template <typename G, std::enable_if_t<TMIV::Common::Graph::has_weight_type<G>::value, int> = 0>
-auto operator<<(std::ostream &os, const G &g) -> std::ostream & {
+template <typename WeightType, std::enable_if_t<std::is_arithmetic_v<WeightType>, bool> = true>
+auto operator<<(std::ostream &os,
+                const TMIV::Common::Graph::SparseDirectedAcyclicGraph<WeightType> &g)
+    -> std::ostream & {
   for (std::size_t i = 0; i < g.getNumberOfNodes(); i++) {
-    os << "n" << i << " -> ";
+    os << "n" << i << " ->";
     for (std::size_t j = 0; j < g.getNeighbourhoodSize(i); j++) {
       auto l = g.getNeighbour(i, j);
-      os << "n" << l.node() << "[" << l.weight() << "] ";
+      os << " n" << l.id() << "[" << l.weight() << "]";
     }
     if (i != (g.getNumberOfNodes() - 1)) {
       os << '\n';
@@ -132,5 +98,7 @@ auto operator<<(std::ostream &os, const G &g) -> std::ostream & {
 
   return os;
 }
+
+#include "Graph.hpp"
 
 #endif

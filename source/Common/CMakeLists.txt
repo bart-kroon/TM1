@@ -10,7 +10,6 @@ create_tmiv_library(
         "src/Json.cpp"
         "src/Half.cpp"
         "src/Frame.cpp"
-        "src/Graph.cpp"
         "src/verify.cpp"
         "include/TMIV/Common/Bitstream.h"
         "include/TMIV/Common/Bitstream.hpp"
@@ -32,6 +31,7 @@ create_tmiv_library(
         "include/TMIV/Common/Matrix.h"
         "include/TMIV/Common/Array.h"
         "include/TMIV/Common/Graph.h"
+        "include/TMIV/Common/Graph.hpp"
         "include/TMIV/Common/Quaternion.h"
         "include/TMIV/Common/verify.h"
     PUBLIC
@@ -58,6 +58,7 @@ create_catch2_unit_test(
         "src/Bitstream.test.cpp"
         "src/Common.test.cpp"
         "src/Frame.test.cpp"
+        "src/Graph.test.cpp"
         "src/Json.test.cpp"
         "src/Quaternion.test.cpp"
         "src/verify.test.cpp"

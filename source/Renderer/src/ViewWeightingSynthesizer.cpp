@@ -42,6 +42,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <queue>
 #include <tuple>
 
 namespace TMIV::Renderer {
@@ -698,21 +699,19 @@ private:
 
     if (hasPruningRelation) {
       // Pruning graph (from children to parent)
-      Common::Graph::BuiltIn::Sparse<float> pruningGraph(sourceHelperList.size());
+      Common::Graph::SparseDirectedAcyclicGraph<float> pruningGraph(sourceHelperList.size());
 
       for (size_t nodeId = 0; nodeId < sourceHelperList.size(); nodeId++) {
         const auto &viewParams = sourceHelperList[nodeId].getViewParams();
 
         if (viewParams.pp) {
           for (auto parentId : *viewParams.pp) {
-            pruningGraph.connect(nodeId, static_cast<size_t>(parentId), 1.F,
-                                 Common::Graph::LinkType::Directed);
+            pruningGraph.connect(nodeId, static_cast<size_t>(parentId), 1.F);
           }
         }
       }
 
-      // Pruning order
-      auto pruningOrderId = getDescendingOrderId(pruningGraph);
+      const auto pruningOrderId = pruningGraph.getDescendingOrderId();
 
       // Recovery
       Common::parallel_for(
@@ -735,13 +734,13 @@ private:
     }
   }
 
-  auto retrieveCandidateList(const Common::Graph::BuiltIn::Sparse<float> &pruningGraph,
+  auto retrieveCandidateList(const Common::Graph::SparseDirectedAcyclicGraph<float> &pruningGraph,
                              std::size_t y, std::size_t x, std::size_t prunedNodeId, float zPruned)
       -> std::vector<std::pair<Common::Graph::NodeId, float>> {
     std::queue<Common::Graph::NodeId> nodeQueue;
     std::vector<std::pair<Common::Graph::NodeId, float>> candidateList;
     for (const auto &linkToParent : pruningGraph.getNeighbourhood(prunedNodeId)) {
-      nodeQueue.push(linkToParent.node());
+      nodeQueue.push(linkToParent.id());
     }
     while (!nodeQueue.empty()) {
       auto unprunedNodeId = nodeQueue.front();
@@ -756,7 +755,7 @@ private:
       }
 
       for (const auto &linkToParent : pruningGraph.getNeighbourhood(unprunedNodeId)) {
-        nodeQueue.push(linkToParent.node());
+        nodeQueue.push(linkToParent.id());
       }
 
       nodeQueue.pop();

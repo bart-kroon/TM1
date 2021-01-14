@@ -1,7 +1,8 @@
-[![pipeline status](http://mpegx.int-evry.fr/software/MPEG/MIV/RS/TM1/badges/v7.2-dev/pipeline.svg)](http://mpegx.int-evry.fr/software/MPEG/MIV/RS/TM1/commits/v7.2-dev)
-
 Test Model for MPEG Immersive Video (TMIV)
 ==========================================
+
+[![pipeline status](http://mpegx.int-evry.fr/software/MPEG/MIV/RS/TM1/badges/v8.0-dev/pipeline.svg)](http://mpegx.int-evry.fr/software/MPEG/MIV/RS/TM1/-/commits/v8.0-dev)
+[![coverage report](http://mpegx.int-evry.fr/software/MPEG/MIV/RS/TM1/badges/v8.0-dev/coverage.svg)](http://mpegx.int-evry.fr/software/MPEG/MIV/RS/TM1/-/graphs/v8.0-dev/charts)
 
 1. [Introduction](#introduction)
 1. [Scope](#scope)

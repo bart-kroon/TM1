@@ -64,3 +64,22 @@ VC 16 Release:
     - 'cmake -G "Visual Studio 16 2019" -DCMAKE_CXX_FLAGS="/DWIN32 /D_WINDOWS /W3 /GR /EHsc /WX" -DENABLE_CLANG_TIDY=OFF ..'
     - 'cmake --build . --parallel --config Release --target ALL_BUILD'
     - 'cmake --build . --config Release --target RUN_TESTS'
+
+AsciiDoc:
+  image: asciidoctor/docker-asciidoctor:1.2
+  tags: [ linux ]
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      changes:
+        - doc/test_model/
+  script:
+    - cd doc/test_model
+    - asciidoctor -a terms=inline --backend html5 -a data-uri index.adoc
+    - mv index.html ../../test_model.html
+    - asciidoctor-pdf -r asciidoctor-mathematical index.adoc
+    - mv index.pdf ../../test_model.pdf
+  artifacts:
+    paths:
+      - test_model.html
+      - test_model.pdf

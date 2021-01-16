@@ -193,20 +193,20 @@ void matprod(shallow::Matrix<T> A, char mA, shallow::Matrix<T> B, char mB, shall
     if (mB == 'N') {
       for (size_type i = 0; i < C.m(); i++) {
         for (size_type j = 0; j < C.n(); j++) {
-          C(i, j) = std::inner_product(A.row_begin(i), A.row_end(i), B.col_begin(j), T{});
+          C(i, j) = std::inner_product(A.crow_begin(i), A.crow_end(i), B.ccol_begin(j), T{});
         }
       }
     } else if (mB == 'T') {
       for (size_type i = 0; i < C.m(); i++) {
         for (size_type j = 0; j < C.n(); j++) {
-          C(i, j) = std::inner_product(A.row_begin(i), A.row_end(i), B.row_begin(j), T{});
+          C(i, j) = std::inner_product(A.crow_begin(i), A.crow_end(i), B.crow_begin(j), T{});
         }
       }
     } else {
       for (size_type i = 0; i < C.m(); i++) {
         for (size_type j = 0; j < C.n(); j++) {
           C(i, j) = std::inner_product(
-              A.row_begin(i), A.row_end(i), B.row_begin(j), T{},
+              A.crow_begin(i), A.crow_end(i), B.crow_begin(j), T{},
               [](const T &v1, const T &v2) { return (v1 + v2); },
               [](const T &v1, const T &v2) { return (v1 * conjugate(v2)); });
         }
@@ -216,20 +216,20 @@ void matprod(shallow::Matrix<T> A, char mA, shallow::Matrix<T> B, char mB, shall
     if (mB == 'N') {
       for (size_type i = 0; i < C.m(); i++) {
         for (size_type j = 0; j < C.n(); j++) {
-          C(i, j) = std::inner_product(A.col_begin(i), A.col_end(i), B.col_begin(j), T{});
+          C(i, j) = std::inner_product(A.ccol_begin(i), A.ccol_end(i), B.ccol_begin(j), T{});
         }
       }
     } else if (mB == 'T') {
       for (size_type i = 0; i < C.m(); i++) {
         for (size_type j = 0; j < C.n(); j++) {
-          C(i, j) = std::inner_product(A.col_begin(i), A.col_end(i), B.row_begin(j), T{});
+          C(i, j) = std::inner_product(A.ccol_begin(i), A.ccol_end(i), B.crow_begin(j), T{});
         }
       }
     } else {
       for (size_type i = 0; i < C.m(); i++) {
         for (size_type j = 0; j < C.n(); j++) {
           C(i, j) = std::inner_product(
-              A.col_begin(i), A.col_end(i), B.row_begin(j), T{},
+              A.ccol_begin(i), A.ccol_end(i), B.crow_begin(j), T{},
               [](const T &v1, const T &v2) { return (v1 + v2); },
               [](const T &v1, const T &v2) { return (v1 * conjugate(v2)); });
         }
@@ -240,7 +240,7 @@ void matprod(shallow::Matrix<T> A, char mA, shallow::Matrix<T> B, char mB, shall
       for (size_type i = 0; i < C.m(); i++) {
         for (size_type j = 0; j < C.n(); j++) {
           C(i, j) = std::inner_product(
-              A.col_begin(i), A.col_end(i), B.col_begin(j), T{},
+              A.ccol_begin(i), A.ccol_end(i), B.ccol_begin(j), T{},
               [](const T &v1, const T &v2) { return (v1 + v2); },
               [](const T &v1, const T &v2) { return (conjugate(v1) * v2); });
         }
@@ -249,7 +249,7 @@ void matprod(shallow::Matrix<T> A, char mA, shallow::Matrix<T> B, char mB, shall
       for (size_type i = 0; i < C.m(); i++) {
         for (size_type j = 0; j < C.n(); j++) {
           C(i, j) = std::inner_product(
-              A.col_begin(i), A.col_end(i), B.row_begin(j), T{},
+              A.ccol_begin(i), A.ccol_end(i), B.crow_begin(j), T{},
               [](const T &v1, const T &v2) { return (v1 + v2); },
               [](const T &v1, const T &v2) { return (conjugate(v1) * v2); });
         }
@@ -258,7 +258,7 @@ void matprod(shallow::Matrix<T> A, char mA, shallow::Matrix<T> B, char mB, shall
       for (size_type i = 0; i < C.m(); i++) {
         for (size_type j = 0; j < C.n(); j++) {
           C(i, j) = std::inner_product(
-              A.col_begin(i), A.col_end(i), B.row_begin(j), T{},
+              A.ccol_begin(i), A.ccol_end(i), B.crow_begin(j), T{},
               [](const T &v1, const T &v2) { return (v1 + v2); },
               [](const T &v1, const T &v2) { return (conjugate(v1) * conjugate(v2)); });
         }
@@ -406,7 +406,7 @@ auto PLU(shallow::Matrix<T> A, shallow::Matrix<T> LU, std::vector<int> &P) -> in
 
       for (size_type i = k + 1; i < n; i++) {
         T factor = (LU(i, k) /= pivot);
-        std::transform(LU.row_begin(i) + (k + 1), LU.row_end(i), LU.row_begin(k) + (k + 1),
+        std::transform(LU.crow_begin(i) + (k + 1), LU.crow_end(i), LU.crow_begin(k) + (k + 1),
                        LU.row_begin(i) + (k + 1),
                        [factor](T v1, T v2) { return v1 - factor * v2; });
       }
@@ -484,11 +484,11 @@ template <typename T> auto chol(shallow::Matrix<T> A, shallow::Matrix<T> out) ->
     }
 
     out(j, j) = x =
-        sqrt(A(j, j) - dot_product(out.row_begin(j), out.row_begin(j) + j, out.row_begin(j)));
+        sqrt(A(j, j) - dot_product(out.crow_begin(j), out.crow_begin(j) + j, out.crow_begin(j)));
 
     for (size_type i = (j + 1); i < n; i++) {
       out(i, j) =
-          (A(i, j) - dot_product(out.row_begin(i), out.row_begin(i) + j, out.row_begin(j))) / x;
+          (A(i, j) - dot_product(out.crow_begin(i), out.crow_begin(i) + j, out.crow_begin(j))) / x;
     }
   }
 
@@ -577,7 +577,7 @@ auto mldivide(shallow::Matrix<T> A, shallow::Matrix<T> B, shallow::Matrix<T> out
       Y(i, j) = B(P[i], j);
 
       if (0 < i) {
-        Y(i, j) -= std::inner_product(LU.row_begin(i), LU.row_begin(i) + i, Y.col_begin(j), T{});
+        Y(i, j) -= std::inner_product(LU.crow_begin(i), LU.crow_begin(i) + i, Y.ccol_begin(j), T{});
       }
     }
   }
@@ -592,8 +592,8 @@ auto mldivide(shallow::Matrix<T> A, shallow::Matrix<T> B, shallow::Matrix<T> out
       out(k, j) = Y(k, j) / LU(k, k);
 
       if (0 < i) {
-        out(k, j) -= std::inner_product(LU.row_begin(k) + m - i, LU.row_end(k),
-                                        out.col_begin(j) + m - i, T{}) /
+        out(k, j) -= std::inner_product(LU.crow_begin(k) + m - i, LU.crow_end(k),
+                                        out.ccol_begin(j) + m - i, T{}) /
                      LU(k, k);
       }
     }
@@ -642,8 +642,8 @@ auto mrdivide(shallow::Matrix<T> A, shallow::Matrix<T> B, shallow::Matrix<T> out
       Y(i, j) = A(i, j) / LU(j, j);
 
       if (0 < j) {
-        Y(i, j) -=
-            std::inner_product(Y.row_begin(i), Y.row_begin(i) + j, LU.col_begin(j), T{}) / LU(j, j);
+        Y(i, j) -= std::inner_product(Y.crow_begin(i), Y.crow_begin(i) + j, LU.ccol_begin(j), T{}) /
+                   LU(j, j);
       }
     }
   }
@@ -656,8 +656,8 @@ auto mrdivide(shallow::Matrix<T> A, shallow::Matrix<T> B, shallow::Matrix<T> out
       size_type k = n - j - 1;
 
       if (0 < j) {
-        Y(i, k) -=
-            std::inner_product(Y.row_begin(i) + n - j, Y.row_end(i), LU.col_begin(k) + n - j, T{});
+        Y(i, k) -= std::inner_product(Y.crow_begin(i) + n - j, Y.crow_end(i),
+                                      LU.ccol_begin(k) + n - j, T{});
       }
 
       out(i, P[k]) = Y(i, k);

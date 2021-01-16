@@ -39,7 +39,7 @@
 
 namespace TMIV::Common {
 struct Matrix {
-  enum Property { None, Symmetric, Hermitian, Positive, Lower, Upper };
+  enum Property { None, Symmetric, Hermitian, Positive, Upper };
 };
 
 template <typename A> class MatrixInterface : public A {
@@ -49,10 +49,7 @@ public:
   using row_iterator = typename A::dim_iterator;
   using const_column_iterator = typename A::const_dim_iterator;
   using column_iterator = typename A::dim_iterator;
-  template <typename U>
-  using promoted_type = MatrixInterface<typename A::template promoted_type<U>>;
 
-public:
   using A::A;
   MatrixInterface() : A() {}
   explicit MatrixInterface(const A &a) : A(a) {}
@@ -74,8 +71,6 @@ public:
   [[nodiscard]] auto height() const -> size_type { return A::size(0); }
   //! \brief Returns the number of columns of the matrix.
   [[nodiscard]] auto width() const -> size_type { return A::size(1); }
-  //! \brief Returns the leading dimension of the matrix.
-  [[nodiscard]] auto lda() const -> size_type { return A::size(1); }
   //! \brief Overloaded resize operator.
   using A::resize;
   void resize(size_type a, size_type b) { A::resize({a, b}); }
@@ -136,27 +131,9 @@ public:
   [[nodiscard]] auto isPositive() const -> bool {
     return (A::getProperty() == Matrix::Property::Positive);
   }
-  //! \brief Returns true if the matrix is lower.
-  [[nodiscard]] auto isLower() const -> bool {
-    return (A::getProperty() == Matrix::Property::Lower);
-  }
   //! \brief Returns true if the matrix is upper.
   [[nodiscard]] auto isUpper() const -> bool {
     return (A::getProperty() == Matrix::Property::Upper);
-  }
-  //! \brief Returns true if the matrix is triangular.
-  [[nodiscard]] auto isTriangular() const -> bool {
-    return (A::getProperty() == Matrix::Property::Lower) ||
-           (A::getProperty() == Matrix::Property::Upper);
-  }
-  static auto diag(const std::vector<typename A::value_type> &v) -> MatrixInterface {
-    MatrixInterface out;
-
-    out.resize(v.size(), v.size());
-    std::fill(out.begin(), out.end(), 0);
-    std::copy(v.begin(), v.end(), out.diag_begin());
-
-    return out;
   }
 };
 
@@ -165,8 +142,6 @@ template <typename T, size_type M, size_type N> using Matrix = MatrixInterface<A
 
 template <typename T> using Mat2x2 = Matrix<T, 2, 2>;
 template <typename T> using Mat3x3 = Matrix<T, 3, 3>;
-template <typename T> using Mat4x4 = Matrix<T, 4, 4>;
-
 } // namespace stack
 
 namespace heap {
@@ -179,11 +154,7 @@ template <typename T> using Matrix = MatrixInterface<Array<2, T>>;
 
 // Additional definitions
 using Mat2x2f = stack::Mat2x2<float>;
-using Mat3x3i = stack::Mat3x3<int>;
 using Mat3x3f = stack::Mat3x3<float>;
-using Mat4x4f = stack::Mat4x4<float>;
-using Mat3x3d = stack::Mat3x3<double>;
-using Mat4x4d = stack::Mat4x4<double>;
 template <typename T> using Mat = heap::Matrix<T>;
 
 //! \brief Returns the type of the transpose of the matrix given as input.
@@ -206,7 +177,7 @@ template <typename Mat1, typename Mat2> auto transpose(const Mat1 &in, Mat2 &out
   return out;
 }
 
-template <typename Mat> decltype(transpose_type(Mat())) transpose(const Mat &m) {
+template <typename Mat> auto transpose(const Mat &m) -> decltype(transpose_type(Mat())) {
   decltype(transpose_type(Mat())) out;
   return transpose(m, out);
 }
@@ -230,51 +201,9 @@ template <typename Mat1, typename Mat2> auto adjoint(const Mat1 &in, Mat2 &out) 
   return out;
 }
 
-template <typename Mat> decltype(transpose_type(Mat())) adjoint(const Mat &m) {
+template <typename Mat> auto adjoint(const Mat &m) -> decltype(transpose_type(Mat())) {
   decltype(transpose_type(Mat())) out;
   return adjoint(m, out);
-}
-
-//! \brief Symmetrizes the matrix A by filling its lower (mode == 'L') or upper
-//! (mode == 'U') part.
-template <typename Mat> void symmetrize(Mat &A, char mode = 'L') {
-  if (mode == 'L') {
-    for (Array::size_type i = 1; i < A.m(); i++) {
-      auto ptr1 = A.row_begin(i);
-      auto ptr2 = A.col_begin(i);
-
-      std::copy(ptr2, ptr2 + i, ptr1);
-    }
-  } else {
-    for (Array::size_type i = 1; i < A.m(); i++) {
-      auto ptr1 = A.row_begin(i);
-      auto ptr2 = A.col_begin(i);
-
-      std::copy(ptr1, ptr1 + i, ptr2);
-    }
-  }
-}
-
-//! \brief Hermitianizes the lower (mode == 'L') or upper (mode == 'U') part of
-//! the matrix A.
-template <typename Mat> void hermitianize(Mat &A, char mode = 'L') {
-  if (mode == 'L') {
-    for (Array::size_type i = 1; i < A.m(); i++) {
-      auto ptr1 = A.row_begin(i);
-      auto ptr2 = A.col_begin(i);
-
-      std::transform(ptr2, ptr2 + i, ptr1,
-                     [](const typename Mat::value_type &v) { return std::conj(v); });
-    }
-  } else {
-    for (Array::size_type i = 1; i < A.m(); i++) {
-      auto ptr1 = A.row_begin(i);
-      auto ptr2 = A.col_begin(i);
-
-      std::transform(ptr1, ptr1 + i, ptr2,
-                     [](const typename Mat::value_type &v) { return std::conj(v); });
-    }
-  }
 }
 
 //! \brief Computes and returns the trace of the matrix a.
@@ -324,22 +253,6 @@ auto block(std::initializer_list<std::initializer_list<Mat>> L)
     -> heap::Matrix<typename Mat::value_type> {
   heap::Matrix<typename Mat::value_type> out;
   block(L, out);
-  return out;
-}
-
-//! \brief Replicates and tiles matrix a according to the dimension vector dim.
-template <typename Mat1, typename Mat2>
-auto repmat(const std::array<Array::size_type, 2> &dim, const Mat1 &a, Mat2 &out) -> Mat2 & {
-  out.resize({dim[0] * a.m(), dim[1] * a.n()});
-
-  for (Array::size_type i = 0, i0 = 0; i < dim[0]; i++, i0 += a.m()) {
-    for (Array::size_type j = 0, j0 = 0; j < dim[1]; j++, j0 += a.n()) {
-      for (Array::size_type k = 0; k < a.m(); k++) {
-        std::copy(a.row_begin(k), a.row_end(k), out.row_begin(i0 + k) + j0);
-      }
-    }
-  }
-
   return out;
 }
 

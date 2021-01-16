@@ -651,7 +651,7 @@ These parameters are in the root of the configuration file and may be accessed b
   * **numGroups:** int; the number of groups of views (at least 1). The groups are formed only when the group-based encoder is selected, but other components use this value for instance to calculate suitable atlas frame sizes per group.
 * Metadata:
   * **OmafV1CompatibleFlag:** bool; when enabled the equally-named flag is written in the bitstream.
-  * **dqParamsPrsentFlag:** bool; optional parameter, when false the depth quantization parameters are not written to the bitstream.
+  * **dqParamsPresentFlag:** bool; optional parameter, when false the depth quantization parameters are not written to the bitstream.
 
 ### Depth quality assessor
 

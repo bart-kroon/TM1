@@ -38,6 +38,7 @@
     "haveGeometryVideo": false,
     "haveOccupancyVideo": false,
     "haveTextureVideo": true,
+    "dqParamsPresentFlag": false,
     "inputDirectory": ".",
     "inputSequenceConfigPathFmt": "ctc/sequences/{1}.json",
     "inputTexturePathFmt": "{1}/{3}_texture_{4}x{5}_{6}.yuv",

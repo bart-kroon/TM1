@@ -1,5 +1,5 @@
 {
-    "CullerMethod": "SubBlockCuller",
+    "CullerMethod": "NoCuller",
     "Decoder": {
         "EntityDecodeRange": [ 9, 11 ],
         "geometryEdgeMagnitudeTh": 10,
@@ -29,5 +29,5 @@
         }
     },
     "RendererMethod": "Renderer",
-    "SubBlockCuller": {}
+    "NoCuller": {}
 }

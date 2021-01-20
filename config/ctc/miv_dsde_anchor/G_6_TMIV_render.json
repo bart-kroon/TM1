@@ -1,6 +1,6 @@
 {
     "configDirectory": "config",
-    "CullerMethod": "SubBlockCuller",
+    "CullerMethod": "NoCuller",
     "DepthQualityAssessor": {
         "blendingFactor": 0.03,
         "maxOutlierRatio": 0.001
@@ -31,5 +31,5 @@
         }
     },
     "RendererMethod": "Renderer",
-    "SubBlockCuller": {}
+    "NoCuller": {}
 }

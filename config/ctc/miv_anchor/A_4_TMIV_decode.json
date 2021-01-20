@@ -1,5 +1,5 @@
 {
-    "CullerMethod": "SubBlockCuller",
+    "CullerMethod": "NoCuller",
     "Decoder": {
         "geometryEdgeMagnitudeTh": 10,
         "maxCurvature": 5,
@@ -28,5 +28,5 @@
         }
     },
     "RendererMethod": "Renderer",
-    "SubBlockCuller": {}
+    "NoCuller": {}
 }

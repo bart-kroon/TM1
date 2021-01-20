@@ -176,7 +176,7 @@ void Encoder::calculateAttributeOffset(
 
   for (std::uint8_t k = 0; k <= m_params.vps.vps_atlas_count_minus1(); ++k) {
     auto &asme = m_params.atlas[k].asme();
-    asme.asme_patch_attribute_offset_flag(m_config.attributeOffsetFlag);
+    asme.asme_patch_attribute_offset_enabled_flag(m_config.attributeOffsetFlag);
     if (!m_config.attributeOffsetFlag) {
       return;
     }

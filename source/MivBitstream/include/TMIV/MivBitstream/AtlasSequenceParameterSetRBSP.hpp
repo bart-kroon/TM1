@@ -57,20 +57,37 @@ constexpr auto AspsVpccExtension::operator!=(const AspsVpccExtension &other) con
 
 constexpr auto AspsMivExtension::asme_group_id() const noexcept { return m_asme_group_id; }
 
-constexpr auto AspsMivExtension::asme_auxiliary_atlas_flag() const noexcept {
-  return m_asme_auxiliary_atlas_flag;
+constexpr auto AspsMivExtension::asme_ancillary_atlas_flag() const noexcept {
+  return m_asme_ancillary_atlas_flag;
+}
+
+constexpr auto AspsMivExtension::asme_embedded_occupancy_enabled_flag() const noexcept {
+  return m_asme_embedded_occupancy_enabled_flag;
 }
 
 constexpr auto AspsMivExtension::asme_depth_occ_threshold_flag() const noexcept {
   return m_asme_depth_occ_map_threshold_flag;
 }
 
+constexpr auto AspsMivExtension::asme_geometry_scale_enabled_flag() const noexcept {
+  return m_asme_geometry_scale_enabled_flag;
+}
+
+constexpr auto AspsMivExtension::asme_occupancy_scale_enabled_flag() const noexcept {
+  VERIFY_MIVBITSTREAM(!asme_embedded_occupancy_enabled_flag());
+  return m_asme_occupancy_scale_enabled_flag;
+}
+
 constexpr auto AspsMivExtension::asme_patch_constant_depth_flag() const noexcept {
   return m_asme_patch_constant_depth_flag;
 }
 
-constexpr auto AspsMivExtension::asme_patch_attribute_offset_flag() const noexcept {
+constexpr auto AspsMivExtension::asme_patch_attribute_offset_enabled_flag() const noexcept {
   return m_asme_patch_attribute_offset_flag;
+}
+
+constexpr auto AspsMivExtension::asme_max_entity_id() const noexcept -> std::uint16_t {
+  return m_asme_max_entity_id;
 }
 
 constexpr auto AspsMivExtension::asme_group_id(unsigned value) noexcept -> auto & {
@@ -78,48 +95,78 @@ constexpr auto AspsMivExtension::asme_group_id(unsigned value) noexcept -> auto 
   return *this;
 }
 
-constexpr auto AspsMivExtension::asme_auxiliary_atlas_flag(bool value) noexcept -> auto & {
-  m_asme_auxiliary_atlas_flag = value;
+constexpr auto AspsMivExtension::asme_ancillary_atlas_flag(bool value) noexcept -> auto & {
+  m_asme_ancillary_atlas_flag = value;
+  return *this;
+}
+
+constexpr auto AspsMivExtension::asme_embedded_occupancy_enabled_flag(bool value) noexcept
+    -> auto & {
+  m_asme_embedded_occupancy_enabled_flag = value;
   return *this;
 }
 
 constexpr auto AspsMivExtension::asme_depth_occ_threshold_flag(bool value) noexcept -> auto & {
+  VERIFY_MIVBITSTREAM(asme_embedded_occupancy_enabled_flag());
   m_asme_depth_occ_map_threshold_flag = value;
+  return *this;
+}
+
+constexpr auto AspsMivExtension::asme_geometry_scale_enabled_flag(bool value) noexcept -> auto & {
+  m_asme_geometry_scale_enabled_flag = value;
   return *this;
 }
 
 constexpr auto AspsMivExtension::asme_geometry_scale_factor_x_minus1(uint16_t value) noexcept
     -> auto & {
+  VERIFY_MIVBITSTREAM(asme_geometry_scale_enabled_flag());
   m_asme_geometry_scale_factor_x_minus1 = value;
   return *this;
 }
 
 constexpr auto AspsMivExtension::asme_geometry_scale_factor_y_minus1(uint16_t value) noexcept
     -> auto & {
+  VERIFY_MIVBITSTREAM(asme_geometry_scale_enabled_flag());
   m_asme_geometry_scale_factor_y_minus1 = value;
+  return *this;
+}
+
+constexpr auto AspsMivExtension::asme_occupancy_scale_enabled_flag(bool value) noexcept -> auto & {
+  m_asme_occupancy_scale_enabled_flag = value;
   return *this;
 }
 
 constexpr auto AspsMivExtension::asme_occupancy_scale_factor_x_minus1(uint16_t value) noexcept
     -> auto & {
+  VERIFY_MIVBITSTREAM(!asme_embedded_occupancy_enabled_flag());
+  VERIFY_MIVBITSTREAM(asme_occupancy_scale_enabled_flag());
   m_asme_occupancy_scale_factor_x_minus1 = value;
   return *this;
 }
 
 constexpr auto AspsMivExtension::asme_occupancy_scale_factor_y_minus1(uint16_t value) noexcept
     -> auto & {
+  VERIFY_MIVBITSTREAM(!asme_embedded_occupancy_enabled_flag());
+  VERIFY_MIVBITSTREAM(asme_occupancy_scale_enabled_flag());
   m_asme_occupancy_scale_factor_y_minus1 = value;
   return *this;
 }
 
 constexpr auto
 AspsMivExtension::asme_patch_attribute_offset_bit_count_minus1(uint16_t value) noexcept -> auto & {
+  VERIFY_MIVBITSTREAM(asme_patch_attribute_offset_enabled_flag());
   m_asme_patch_attribute_offset_bit_count_minus1 = value;
   return *this;
 }
 
-constexpr auto AspsMivExtension::asme_patch_attribute_offset_flag(bool value) noexcept -> auto & {
+constexpr auto AspsMivExtension::asme_patch_attribute_offset_enabled_flag(bool value) noexcept
+    -> auto & {
   m_asme_patch_attribute_offset_flag = value;
+  return *this;
+}
+
+constexpr auto AspsMivExtension::asme_max_entity_id(std::uint16_t value) noexcept -> auto & {
+  m_asme_max_entity_id = value;
   return *this;
 }
 
@@ -129,17 +176,45 @@ constexpr auto AspsMivExtension::asme_patch_constant_depth_flag(bool value) noex
 }
 
 constexpr auto AspsMivExtension::operator==(const AspsMivExtension &other) const noexcept {
+  if (asme_embedded_occupancy_enabled_flag() && other.asme_embedded_occupancy_enabled_flag()) {
+    if (asme_depth_occ_threshold_flag() != other.asme_depth_occ_threshold_flag()) {
+      return false;
+    }
+  }
+  if (asme_geometry_scale_enabled_flag() && other.asme_geometry_scale_enabled_flag()) {
+    if (m_asme_geometry_scale_factor_x_minus1 != other.m_asme_geometry_scale_factor_x_minus1 ||
+        m_asme_geometry_scale_factor_y_minus1 != other.m_asme_geometry_scale_factor_y_minus1) {
+      return false;
+    }
+  }
+  if (!asme_embedded_occupancy_enabled_flag() && !other.asme_embedded_occupancy_enabled_flag()) {
+    if (asme_occupancy_scale_enabled_flag() != other.asme_occupancy_scale_enabled_flag()) {
+      return false;
+    }
+  }
+  if (!asme_embedded_occupancy_enabled_flag() && !other.asme_embedded_occupancy_enabled_flag() &&
+      asme_occupancy_scale_enabled_flag() && other.asme_occupancy_scale_enabled_flag()) {
+    if (m_asme_occupancy_scale_factor_x_minus1 != other.m_asme_occupancy_scale_factor_x_minus1 ||
+        m_asme_occupancy_scale_factor_y_minus1 != other.m_asme_occupancy_scale_factor_y_minus1) {
+      return false;
+    }
+  }
+  if (asme_patch_attribute_offset_enabled_flag() &&
+      other.asme_patch_attribute_offset_enabled_flag()) {
+    if (m_asme_patch_attribute_offset_bit_count_minus1 !=
+        other.m_asme_patch_attribute_offset_bit_count_minus1) {
+      return false;
+    }
+  }
+
   return asme_group_id() == other.asme_group_id() &&
-         asme_auxiliary_atlas_flag() == other.asme_auxiliary_atlas_flag() &&
-         asme_depth_occ_threshold_flag() == other.asme_depth_occ_threshold_flag() &&
-         m_asme_geometry_scale_factor_x_minus1 == other.m_asme_geometry_scale_factor_x_minus1 &&
-         m_asme_geometry_scale_factor_y_minus1 == other.m_asme_geometry_scale_factor_y_minus1 &&
-         m_asme_occupancy_scale_factor_x_minus1 == other.m_asme_occupancy_scale_factor_x_minus1 &&
-         m_asme_occupancy_scale_factor_y_minus1 == other.m_asme_occupancy_scale_factor_y_minus1 &&
+         asme_ancillary_atlas_flag() == other.asme_ancillary_atlas_flag() &&
+         asme_embedded_occupancy_enabled_flag() == other.asme_embedded_occupancy_enabled_flag() &&
+         asme_geometry_scale_enabled_flag() == other.asme_geometry_scale_enabled_flag() &&
          asme_patch_constant_depth_flag() == other.asme_patch_constant_depth_flag() &&
-         asme_patch_attribute_offset_flag() == other.asme_patch_attribute_offset_flag() &&
-         m_asme_patch_attribute_offset_bit_count_minus1 ==
-             other.m_asme_patch_attribute_offset_bit_count_minus1;
+         asme_patch_attribute_offset_enabled_flag() ==
+             other.asme_patch_attribute_offset_enabled_flag() &&
+         asme_max_entity_id() == other.asme_max_entity_id();
 }
 
 constexpr auto AspsMivExtension::operator!=(const AspsMivExtension &other) const noexcept {

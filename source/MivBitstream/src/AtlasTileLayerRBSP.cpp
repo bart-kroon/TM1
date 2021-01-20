@@ -354,7 +354,7 @@ auto PduMivExtension::decodeFrom(Common::InputBitstream &bitstream, const V3cPar
       x.pdu_depth_occ_threshold(
           bitstream.readBits<uint32_t>(asps.asps_geometry_2d_bit_depth_minus1() + 1));
     }
-    if (asme.asme_patch_attribute_offset_flag()) {
+    if (asme.asme_patch_attribute_offset_enabled_flag()) {
       int bits = asps.asps_miv_extension().asme_patch_attribute_offset_bit_count_minus1() + 1;
       x.pdu_attribute_offset(
           Common::Vec3i({bitstream.readBits<uint16_t>(bits), bitstream.readBits<uint16_t>(bits),
@@ -380,7 +380,7 @@ void PduMivExtension::encodeTo(Common::OutputBitstream &bitstream, const V3cPara
     VERIFY_MIVBITSTREAM(!m_pdu_depth_occ_threshold.has_value());
   }
   if (asps.asps_miv_extension_present_flag() &&
-      asps.asps_miv_extension().asme_patch_attribute_offset_flag()) {
+      asps.asps_miv_extension().asme_patch_attribute_offset_enabled_flag()) {
     int bits = asps.asps_miv_extension().asme_patch_attribute_offset_bit_count_minus1() + 1;
     bitstream.writeBits(uint16_t(pdu_attribute_offset().x()), bits);
     bitstream.writeBits(uint16_t(pdu_attribute_offset().y()), bits);

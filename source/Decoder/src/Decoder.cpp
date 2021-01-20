@@ -63,7 +63,7 @@ void addAttributeOffset(MivBitstream::AccessUnit &frame) {
     const auto atlasId = frame.vps.vps_atlas_id(k);
     auto &atlas = frame.atlas[k];
 
-    if (!atlas.asps.asps_miv_extension().asme_patch_attribute_offset_flag()) {
+    if (!atlas.asps.asps_miv_extension().asme_patch_attribute_offset_enabled_flag()) {
       return;
     }
 

@@ -453,7 +453,7 @@ auto MivDecoder::decodePatchParamsList(size_t k, MivBitstream::PatchParamsList &
       if (asme.asme_depth_occ_threshold_flag()) {
         ppl[p].atlasPatchDepthOccMapThreshold(pdu.pdu_miv_extension().pdu_depth_occ_threshold());
       }
-      if (asme.asme_patch_attribute_offset_flag()) {
+      if (asme.asme_patch_attribute_offset_enabled_flag()) {
         ppl[p].atlasPatchAttributeOffset(pdu.pdu_miv_extension().pdu_attribute_offset());
       }
     }

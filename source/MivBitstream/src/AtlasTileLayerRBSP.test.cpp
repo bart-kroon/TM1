@@ -145,6 +145,7 @@ pdu_orientation_index[ 0 ][ 101 ]=FPO_NULL
         .asps_extension_present_flag(true)
         .asps_miv_extension_present_flag(true)
         .asps_miv_extension()
+        .asme_embedded_occupancy_enabled_flag(true)
         .asme_depth_occ_threshold_flag(true);
 
     x.pdu_2d_pos_x(34)

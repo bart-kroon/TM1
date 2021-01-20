@@ -383,7 +383,7 @@ auto MivEncoder::atlasTileLayer(size_t k) const -> MivBitstream::AtlasTileLayerR
         pdu.pdu_miv_extension().pdu_depth_occ_threshold(*pp.atlasPatchDepthOccMapThreshold());
       }
       if (aau.asps.asps_miv_extension_present_flag() &&
-          aau.asps.asps_miv_extension().asme_patch_attribute_offset_flag()) {
+          aau.asps.asps_miv_extension().asme_patch_attribute_offset_enabled_flag()) {
         pdu.pdu_miv_extension().pdu_attribute_offset(pp.atlasPatchAttributeOffset());
       }
       patchData.emplace_back(MivBitstream::AtduPatchMode::I_INTRA, pdu);

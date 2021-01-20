@@ -291,7 +291,9 @@ void MivDecoder::decodeViewParamsList() {
       if (came.came_update_intrinsics_flag()) {
         decodeMvpui(came.miv_view_params_update_intrinsics());
       }
-      if (came.came_update_depth_quantization_flag() && dqParamsPresentFlag) {
+      if (m_commonAtlasAu->casps.casps_miv_extension()
+              .casme_depth_quantization_params_present_flag() &&
+          came.came_update_depth_quantization_flag() && dqParamsPresentFlag) {
         decodeMvpudq(came.miv_view_params_update_depth_quantization());
       }
     }

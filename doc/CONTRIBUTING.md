@@ -170,36 +170,3 @@ Syntax structures are in this context defined by the MIV and V-PCC/V3C specifica
 ### Break on exceptions
 
 If you want to debug bitstream related errors, e.g. if `VERIFY_*BITSTREAM` is throwing an exception, it is a good idea to set your IDE to break on unhandled exceptions ([Visual Studio instructions](https://docs.microsoft.com/en-us/visualstudio/debugger/managing-exceptions-with-the-debugger), [CLion instructions](https://www.jetbrains.com/help/clion/using-breakpoints.html#exception-breakpoints)and start a debugging session.
-
-## Test model document
-
-The test model document is written in [AsciiDoc](https://asciidoctor.org/).
-For efficient editing of the corresponding `.adoc` files, we recommend taking advice from [the AsciiDoc Tooling](https://docs.asciidoctor.org/asciidoctor/latest/tooling/) documentation.
-
-### Example work setup
-
-For us, the following setup worked particularly well:
-
-- Set up [Visual Studio Code with the asciidoc extension](https://docs.asciidoctor.org/asciidoctor/latest/tooling/#visual-studio-code)
-- Open Visual studio code settings (ctrl+shift+p, enter settings), search for 'preview' and open extensions -> asciidoc.
-  - Disable `Scroll Editor with Preview`, as that leads to the editor jumping around
-  - Adapt the `Refresh interval` to a lower value, if you like.
-  1000 ms is a good tradeoff between responsiveness and stable preview
-  - Allow AsciiDoc preview to render unsafe content to get a display of `stem` (latex math) formulas.
-  To do so, open a preview (ctrl+shift+v) from an `.adoc` document, then hit ctrl+shift+p to open search and enter `security settings`.
-  Hit enter and select `Disable`.
-- Add [all autocomplete](https://marketplace.visualstudio.com/items?itemName=Atishay-Jain.All-Autocomplete) to Visual Studio Code.
-This allows you to complete e.g. references with ctrl+space after starting to type them.
-
-### Images
-
-To be able to render to HTML and PDF without additional tooling, we restrict images to `.png`, `.jpg`, and `.svg`.
-To offer easy PowerPoint editing of images, copies of all non-pixelmap images are stored as `.pptx` next to `.svg` images.
-If you change an image, please edit the `.pptx` file and export to the corresponding `.svg` file.
-
-### Additional hints
-
-- AsciiDoc's math equations are based on LaTeX. If you would like to edit your equations with what you see is what you get (WYSIWYG), we recommend using tools such as [LyX](https://lyx.org) or [EqualX](https://equalx.sourceforge.io/) to create your equation, and then copy it into your AsciiDoc document.
-- Please use one line per sentence.
-That makes viewing differences between document versions much simpler.
-Sentences without an empty line in between them belong to the same paragraph, a space between them is automatically inserted.

@@ -110,6 +110,7 @@ class AtlasId {
 public:
   constexpr AtlasId() noexcept = default;
   constexpr explicit AtlasId(std::uint8_t j) noexcept : m_atlasId{j} {}
+  [[nodiscard]] constexpr auto value() const noexcept { return m_atlasId; }
 
   friend auto operator<<(std::ostream &stream, AtlasId atlasId) -> std::ostream &;
 
@@ -411,6 +412,29 @@ private:
   std::vector<PinRegion> m_pinRegions{std::vector<PinRegion>(1U)};
 };
 
+// 23090-12: group_mapping()
+class GroupMapping {
+public:
+  [[nodiscard]] constexpr auto gm_group_count() const noexcept;
+  [[nodiscard]] auto gm_group_id(AtlasId i) const noexcept -> unsigned;
+
+  constexpr auto gm_group_count(std::uint8_t value) noexcept -> auto &;
+  auto gm_group_id(AtlasId i, unsigned value) noexcept -> GroupMapping &;
+
+  friend auto operator<<(std::ostream &stream, const GroupMapping &x) -> std::ostream &;
+
+  auto operator==(const GroupMapping &other) const noexcept -> bool;
+  auto operator!=(const GroupMapping &other) const noexcept -> bool;
+
+  static auto decodeFrom(Common::InputBitstream &bitstream, const V3cParameterSet &vps)
+      -> GroupMapping;
+  void encodeTo(Common::OutputBitstream &bitstream, const V3cParameterSet &vps) const;
+
+private:
+  std::uint8_t m_gm_group_count{};
+  std::vector<unsigned> m_gm_group_id{};
+};
+
 // 23090-12: vps_miv_extension()
 class VpsMivExtension {
 public:
@@ -420,6 +444,7 @@ public:
   [[nodiscard]] constexpr auto vme_max_entities_minus1() const noexcept;
   [[nodiscard]] constexpr auto vme_embedded_occupancy_flag() const noexcept;
   [[nodiscard]] constexpr auto vme_occupancy_scale_enabled_flag() const noexcept;
+  [[nodiscard]] auto group_mapping() const -> GroupMapping;
 
   constexpr auto vme_depth_low_quality_flag(bool value) noexcept -> auto &;
   constexpr auto vme_geometry_scale_enabled_flag(bool value) noexcept -> auto &;
@@ -427,6 +452,7 @@ public:
   constexpr auto vme_max_entities_minus1(unsigned value) noexcept -> auto &;
   constexpr auto vme_embedded_occupancy_flag(bool value) noexcept -> auto &;
   auto vme_occupancy_scale_enabled_flag(bool value) noexcept -> VpsMivExtension &;
+  auto group_mapping(GroupMapping &&value) -> VpsMivExtension &;
 
   friend auto operator<<(std::ostream &stream, const VpsMivExtension &x) -> std::ostream &;
 
@@ -444,6 +470,7 @@ private:
   unsigned m_vme_max_entities_minus1{};
   bool m_vme_embedded_occupancy_flag{true};
   bool m_vme_occupancy_scale_enabled_flag{};
+  GroupMapping m_group_mapping{};
 };
 
 // 23090-5: v3c_parameter_set()
@@ -496,7 +523,7 @@ public:
   auto vps_extension_6bits(std::uint8_t value) noexcept -> V3cParameterSet &;
   auto vps_packed_video_present_flag(const AtlasId &j, bool value) -> V3cParameterSet &;
   auto packing_information(const AtlasId &j, PackingInformation value) -> V3cParameterSet &;
-  auto vps_miv_extension(VpsMivExtension value) noexcept -> V3cParameterSet &;
+  auto vps_miv_extension(const VpsMivExtension &value) noexcept -> V3cParameterSet &;
   auto vpsExtensionData(std::vector<std::uint8_t> value) noexcept -> V3cParameterSet &;
 
   constexpr auto profile_tier_level() noexcept -> auto &;

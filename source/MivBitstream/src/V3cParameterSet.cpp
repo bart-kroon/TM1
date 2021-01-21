@@ -779,9 +779,73 @@ void PackingInformation::encodeTo(Common::OutputBitstream &bitstream) const {
   }
 }
 
+auto GroupMapping::gm_group_id(AtlasId i) const noexcept -> unsigned {
+  VERIFY_MIVBITSTREAM(0 < gm_group_count());
+  VERIFY_MIVBITSTREAM(i.value() < m_gm_group_id.size());
+  return m_gm_group_id[i.value()];
+}
+
+auto GroupMapping::gm_group_id(AtlasId i, unsigned value) noexcept -> GroupMapping & {
+  VERIFY_MIVBITSTREAM(value < gm_group_count());
+  if (i.value() <= m_gm_group_id.size()) {
+    m_gm_group_id.resize(i.value() + 1);
+  }
+  m_gm_group_id[i.value()] = value;
+  return *this;
+}
+
+auto operator<<(std::ostream &stream, const GroupMapping &x) -> std::ostream & {
+  stream << "gm_group_count=" << static_cast<unsigned>(x.gm_group_count()) << '\n';
+  if (x.gm_group_count() > 0) {
+    for (std::uint8_t i = 0; i < x.gm_group_count(); ++i) {
+      stream << "gm_group_id (" << static_cast<unsigned>(i) << ")=" << x.gm_group_id(AtlasId{i})
+             << '\n';
+    }
+  }
+  return stream;
+}
+
+auto GroupMapping::operator==(const GroupMapping &other) const noexcept -> bool {
+  return m_gm_group_count == other.m_gm_group_count && m_gm_group_id == other.m_gm_group_id;
+}
+
+auto GroupMapping::operator!=(const GroupMapping &other) const noexcept -> bool {
+  return !operator==(other);
+}
+
+auto GroupMapping::decodeFrom(Common::InputBitstream &bitstream, const V3cParameterSet &vps)
+    -> GroupMapping {
+  auto result = GroupMapping{};
+  result.gm_group_count(bitstream.readBits<unsigned>(4));
+  if (result.gm_group_count() > 0) {
+    const auto numberOfBitsForGroupId = Common::ceilLog2(result.gm_group_count());
+    for (std::uint8_t i = 0; i <= vps.vps_atlas_count_minus1(); ++i) {
+      result.gm_group_id(AtlasId{i}, bitstream.readBits<unsigned>(numberOfBitsForGroupId));
+    }
+  }
+  return result;
+}
+
+void GroupMapping::encodeTo(Common::OutputBitstream &bitstream, const V3cParameterSet &vps) const {
+  bitstream.writeBits(gm_group_count(), 4);
+  if (gm_group_count() > 0) {
+    const auto numberOfBitsForGroupId = Common::ceilLog2(gm_group_count());
+    for (std::uint8_t i = 0; i <= vps.vps_atlas_count_minus1(); ++i) {
+      bitstream.writeBits(gm_group_id(AtlasId{i}), numberOfBitsForGroupId);
+    }
+  }
+}
+
 auto VpsMivExtension::vme_occupancy_scale_enabled_flag(bool value) noexcept -> VpsMivExtension & {
   VERIFY_MIVBITSTREAM(!vme_embedded_occupancy_flag());
   m_vme_occupancy_scale_enabled_flag = value;
+  return *this;
+}
+
+auto VpsMivExtension::group_mapping() const -> GroupMapping { return m_group_mapping; }
+
+auto VpsMivExtension::group_mapping(GroupMapping &&value) -> VpsMivExtension & {
+  m_group_mapping = std::move(value);
   return *this;
 }
 
@@ -798,6 +862,7 @@ auto operator<<(std::ostream &stream, const VpsMivExtension &x) -> std::ostream 
     stream << "vme_occupancy_scale_enabled_flag=" << std::boolalpha
            << x.vme_occupancy_scale_enabled_flag() << '\n';
   }
+  stream << x.group_mapping();
   return stream;
 }
 
@@ -815,6 +880,7 @@ auto VpsMivExtension::decodeFrom(Common::InputBitstream &bitstream, const V3cPar
   for (uint8_t atlasIdx = 0; atlasIdx <= vps.vps_atlas_count_minus1(); ++atlasIdx) {
     bitstream.getFlag();
   }
+  x.group_mapping(GroupMapping::decodeFrom(bitstream, vps));
   return x;
 }
 
@@ -831,6 +897,7 @@ void VpsMivExtension::encodeTo(Common::OutputBitstream &bitstream,
   for (unsigned atlasIdx = 0; atlasIdx <= vps.vps_atlas_count_minus1(); ++atlasIdx) {
     bitstream.putFlag(false);
   }
+  group_mapping().encodeTo(bitstream, vps);
 }
 
 auto V3cParameterSet::profile_tier_level() const noexcept -> const ProfileTierLevel & {
@@ -1027,7 +1094,8 @@ auto V3cParameterSet::packing_information(const AtlasId &j, PackingInformation v
   return *this;
 }
 
-auto V3cParameterSet::vps_miv_extension(VpsMivExtension value) noexcept -> V3cParameterSet & {
+auto V3cParameterSet::vps_miv_extension(const VpsMivExtension &value) noexcept
+    -> V3cParameterSet & {
   VERIFY_V3CBITSTREAM(vps_miv_extension_present_flag());
   m_vps_miv_extension = value;
   return *this;

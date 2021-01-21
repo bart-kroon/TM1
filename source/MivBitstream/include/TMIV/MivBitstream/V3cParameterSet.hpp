@@ -296,6 +296,13 @@ inline auto PackingInformation::pin_region_attr_partitions_minus1(std::size_t i,
   return *this;
 }
 
+constexpr auto GroupMapping::gm_group_count() const noexcept { return m_gm_group_count; }
+
+constexpr auto GroupMapping::gm_group_count(std::uint8_t value) noexcept -> auto & {
+  m_gm_group_count = value;
+  return *this;
+}
+
 constexpr auto VpsMivExtension::vme_depth_low_quality_flag() const noexcept {
   return m_vme_depth_low_quality_flag;
 }
@@ -351,7 +358,8 @@ constexpr auto VpsMivExtension::operator==(const VpsMivExtension &other) const n
          vme_num_groups_minus1() == other.vme_num_groups_minus1() &&
          vme_max_entities_minus1() == other.vme_max_entities_minus1() &&
          vme_embedded_occupancy_flag() == other.vme_embedded_occupancy_flag() &&
-         vme_occupancy_scale_enabled_flag() == other.vme_occupancy_scale_enabled_flag();
+         vme_occupancy_scale_enabled_flag() == other.vme_occupancy_scale_enabled_flag() &&
+         group_mapping() == other.group_mapping();
 }
 
 constexpr auto VpsMivExtension::operator!=(const VpsMivExtension &other) const noexcept {

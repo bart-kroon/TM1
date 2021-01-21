@@ -409,14 +409,19 @@ ath_ref_atlas_frame_list_asps_flag=true
         .asps_frame_height(2000)
         .asps_num_ref_atlas_frame_lists_in_asps(1);
 
-    const auto afpsV = std::vector<AtlasFrameParameterSetRBSP>(1);
+    auto afpsV = std::vector<AtlasFrameParameterSetRBSP>(1);
+    afpsV.front().afps_lod_mode_enabled_flag(true);
 
     auto pdu1 = PatchDataUnit{};
-    pdu1.pdu_2d_size_x_minus1(10).pdu_2d_size_y_minus1(20);
+    pdu1.pdu_2d_size_x_minus1(10).pdu_2d_size_y_minus1(20).pdu_lod_enabled_flag(false);
     auto pdu2 = PatchDataUnit{};
-    pdu2.pdu_2d_size_x_minus1(30).pdu_2d_size_y_minus1(40);
+    pdu2.pdu_2d_size_x_minus1(30).pdu_2d_size_y_minus1(40).pdu_lod_enabled_flag(false);
     auto pdu3 = PatchDataUnit{};
-    pdu3.pdu_2d_size_x_minus1(50).pdu_2d_size_y_minus1(60);
+    pdu3.pdu_2d_size_x_minus1(50)
+        .pdu_2d_size_y_minus1(60)
+        .pdu_lod_enabled_flag(true)
+        .pdu_lod_scale_x_minus1(1)
+        .pdu_lod_scale_y_idc(3);
 
     const auto nuh = NalUnitHeader{NalUnitType::NAL_RSV_ACL_35, 0, 2};
 
@@ -443,6 +448,7 @@ pdu_3d_offset_v[ 0 ][ 0 ]=0
 pdu_3d_offset_d[ 0 ][ 0 ]=0
 pdu_projection_id[ 0 ][ 0 ]=0
 pdu_orientation_index[ 0 ][ 0 ]=FPO_NULL
+pdu_lod_enabled_flag[ 0 ][ 0 ]=false
 atdu_patch_mode[ 1 ]=I_INTRA
 pdu_2d_pos_x[ 0 ][ 1 ]=0
 pdu_2d_pos_y[ 0 ][ 1 ]=0
@@ -453,6 +459,7 @@ pdu_3d_offset_v[ 0 ][ 1 ]=0
 pdu_3d_offset_d[ 0 ][ 1 ]=0
 pdu_projection_id[ 0 ][ 1 ]=0
 pdu_orientation_index[ 0 ][ 1 ]=FPO_NULL
+pdu_lod_enabled_flag[ 0 ][ 1 ]=false
 atdu_patch_mode[ 2 ]=I_INTRA
 pdu_2d_pos_x[ 0 ][ 2 ]=0
 pdu_2d_pos_y[ 0 ][ 2 ]=0
@@ -463,8 +470,11 @@ pdu_3d_offset_v[ 0 ][ 2 ]=0
 pdu_3d_offset_d[ 0 ][ 2 ]=0
 pdu_projection_id[ 0 ][ 2 ]=0
 pdu_orientation_index[ 0 ][ 2 ]=FPO_NULL
+pdu_lod_enabled_flag[ 0 ][ 2 ]=true
+pdu_lod_scale_x_minus1[ 0 ][ 2 ]=1
+pdu_lod_scale_y_idc[ 0 ][ 2 ]=3
 )");
-    REQUIRE(byteCodingTest(x, 14, vps, nuh, aspsV, afpsV));
+    REQUIRE(byteCodingTest(x, 16, vps, nuh, aspsV, afpsV));
   }
 
   SECTION("I_TILE with quantizers") {

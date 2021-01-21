@@ -33,9 +33,10 @@
 
 #include <TMIV/MivBitstream/AtlasTileLayerRBSP.h>
 
+#include <TMIV/Common/Common.h>
 #include <TMIV/Common/verify.h>
 
-#include <TMIV/Common/Common.h>
+#include <fmt/ostream.h>
 
 namespace TMIV::MivBitstream {
 auto operator<<(std::ostream &stream, AthType x) -> std::ostream & {
@@ -400,26 +401,35 @@ auto PatchDataUnit::pdu_miv_extension(const PduMivExtension &value) noexcept -> 
 
 auto PatchDataUnit::printTo(std::ostream &stream, unsigned tileId, size_t patchIdx) const
     -> std::ostream & {
-  stream << "pdu_2d_pos_x[ " << tileId << " ][ " << patchIdx << " ]=" << pdu_2d_pos_x() << '\n';
-  stream << "pdu_2d_pos_y[ " << tileId << " ][ " << patchIdx << " ]=" << pdu_2d_pos_y() << '\n';
-  stream << "pdu_2d_size_x_minus1[ " << tileId << " ][ " << patchIdx
-         << " ]=" << pdu_2d_size_x_minus1() << '\n';
-  stream << "pdu_2d_size_y_minus1[ " << tileId << " ][ " << patchIdx
-         << " ]=" << pdu_2d_size_y_minus1() << '\n';
-  stream << "pdu_3d_offset_u[ " << tileId << " ][ " << patchIdx << " ]=" << pdu_3d_offset_u()
-         << '\n';
-  stream << "pdu_3d_offset_v[ " << tileId << " ][ " << patchIdx << " ]=" << pdu_3d_offset_v()
-         << '\n';
-  stream << "pdu_3d_offset_d[ " << tileId << " ][ " << patchIdx << " ]=" << pdu_3d_offset_d()
-         << '\n';
+  fmt::print(stream, "pdu_2d_pos_x[ {} ][ {} ]={}\n", tileId, patchIdx, pdu_2d_pos_x());
+  fmt::print(stream, "pdu_2d_pos_y[ {} ][ {} ]={}\n", tileId, patchIdx, pdu_2d_pos_y());
+  fmt::print(stream, "pdu_2d_size_x_minus1[ {} ][ {} ]={}\n", tileId, patchIdx,
+             pdu_2d_size_x_minus1());
+  fmt::print(stream, "pdu_2d_size_y_minus1[ {} ][ {} ]={}\n", tileId, patchIdx,
+             pdu_2d_size_y_minus1());
+  fmt::print(stream, "pdu_3d_offset_u[ {} ][ {} ]={}\n", tileId, patchIdx, pdu_3d_offset_u());
+  fmt::print(stream, "pdu_3d_offset_v[ {} ][ {} ]={}\n", tileId, patchIdx, pdu_3d_offset_v());
+  fmt::print(stream, "pdu_3d_offset_d[ {} ][ {} ]={}\n", tileId, patchIdx, pdu_3d_offset_d());
+
   if (m_pdu_3d_range_d) {
-    stream << "pdu_3d_range_d[ " << tileId << " ][ " << patchIdx << " ]=" << pdu_3d_range_d()
-           << '\n';
+    fmt::print(stream, "pdu_3d_range_d[ {} ][ {} ]={}\n", tileId, patchIdx, pdu_3d_range_d());
   }
-  stream << "pdu_projection_id[ " << tileId << " ][ " << patchIdx << " ]=" << pdu_projection_id()
-         << '\n';
-  stream << "pdu_orientation_index[ " << tileId << " ][ " << patchIdx
-         << " ]=" << pdu_orientation_index() << '\n';
+
+  fmt::print(stream, "pdu_projection_id[ {} ][ {} ]={}\n", tileId, patchIdx, pdu_projection_id());
+  fmt::print(stream, "pdu_orientation_index[ {} ][ {} ]={}\n", tileId, patchIdx,
+             pdu_orientation_index());
+
+  if (m_pdu_lod_enabled_flag) {
+    fmt::print(stream, "pdu_lod_enabled_flag[ {} ][ {} ]={}\n", tileId, patchIdx,
+               pdu_lod_enabled_flag());
+
+    if (pdu_lod_enabled_flag()) {
+      fmt::print(stream, "pdu_lod_scale_x_minus1[ {} ][ {} ]={}\n", tileId, patchIdx,
+                 pdu_lod_scale_x_minus1());
+      fmt::print(stream, "pdu_lod_scale_y_idc[ {} ][ {} ]={}\n", tileId, patchIdx,
+                 pdu_lod_scale_y_idc());
+    }
+  }
   if (m_pdu_miv_extension) {
     m_pdu_miv_extension->printTo(stream, tileId, patchIdx);
   }
@@ -463,7 +473,14 @@ auto PatchDataUnit::decodeFrom(Common::InputBitstream &bitstream, const V3cParam
   x.pdu_projection_id(bitstream.readBits<uint16_t>(pduProjectionIdNumBits));
   x.pdu_orientation_index(bitstream.readBits<FlexiblePatchOrientation>(pduOrientationIndexNumBits));
 
-  VERIFY_MIVBITSTREAM(!afps.afps_lod_mode_enabled_flag());
+  if (afps.afps_lod_mode_enabled_flag()) {
+    x.pdu_lod_enabled_flag(bitstream.getFlag());
+    if (x.pdu_lod_enabled_flag()) {
+      x.pdu_lod_scale_x_minus1(bitstream.getUExpGolomb<unsigned>());
+      x.pdu_lod_scale_y_idc(bitstream.getUExpGolomb<unsigned>());
+    }
+  }
+
   VERIFY_MIVBITSTREAM(!asps.asps_plr_enabled_flag());
 
   if (asps.asps_miv_extension_present_flag()) {
@@ -507,7 +524,14 @@ void PatchDataUnit::encodeTo(Common::OutputBitstream &bitstream, const V3cParame
   bitstream.writeBits(pdu_projection_id(), pduProjectionIdNumBits);
   bitstream.writeBits(pdu_orientation_index(), pduOrientationIndexNumBits);
 
-  VERIFY_MIVBITSTREAM(!afps.afps_lod_mode_enabled_flag());
+  if (afps.afps_lod_mode_enabled_flag()) {
+    bitstream.putFlag(pdu_lod_enabled_flag());
+    if (pdu_lod_enabled_flag()) {
+      bitstream.putUExpGolomb(pdu_lod_scale_x_minus1());
+      bitstream.putUExpGolomb(pdu_lod_scale_y_idc());
+    }
+  }
+
   VERIFY_MIVBITSTREAM(!asps.asps_plr_enabled_flag());
 
   if (asps.asps_miv_extension_present_flag()) {

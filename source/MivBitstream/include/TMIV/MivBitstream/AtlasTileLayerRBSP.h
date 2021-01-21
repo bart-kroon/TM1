@@ -191,7 +191,6 @@ private:
 // 23090-12: patch_data_unit( patchIdx )
 //
 // 23090-12 limitations:
-//   * afps_lod_mode_enabled_flag == 0
 //   * asps_plr_enabled_flag == 0
 class PatchDataUnit {
 public:
@@ -205,6 +204,9 @@ public:
   [[nodiscard]] auto pdu_3d_range_d() const noexcept -> std::uint32_t;
   [[nodiscard]] constexpr auto pdu_projection_id() const noexcept;
   [[nodiscard]] constexpr auto pdu_orientation_index() const noexcept;
+  [[nodiscard]] constexpr auto pdu_lod_enabled_flag() const noexcept;
+  [[nodiscard]] constexpr auto pdu_lod_scale_x_minus1() const noexcept;
+  [[nodiscard]] constexpr auto pdu_lod_scale_y_idc() const noexcept;
   [[nodiscard]] auto pdu_miv_extension() const noexcept -> PduMivExtension;
 
   constexpr auto pdu_2d_pos_x(std::uint32_t value) noexcept -> auto &;
@@ -217,6 +219,9 @@ public:
   constexpr auto pdu_3d_range_d(std::uint32_t value) noexcept -> auto &;
   constexpr auto pdu_projection_id(std::uint16_t value) noexcept -> auto &;
   constexpr auto pdu_orientation_index(FlexiblePatchOrientation value) noexcept -> auto &;
+  constexpr auto pdu_lod_enabled_flag(bool value) noexcept -> auto &;
+  constexpr auto pdu_lod_scale_x_minus1(unsigned value) noexcept -> auto &;
+  constexpr auto pdu_lod_scale_y_idc(unsigned value) noexcept -> auto &;
   auto pdu_miv_extension(const PduMivExtension &value) noexcept -> PatchDataUnit &;
 
   [[nodiscard]] constexpr auto pdu_miv_extension() noexcept -> auto &;
@@ -247,6 +252,9 @@ private:
   std::optional<std::uint32_t> m_pdu_3d_range_d{};
   std::uint16_t m_pdu_view_id{};
   FlexiblePatchOrientation m_pdu_orientation_index{};
+  std::optional<bool> m_pdu_lod_enabled_flag{};
+  std::optional<unsigned> m_pdu_lod_scale_x_minus1{};
+  std::optional<unsigned> m_pdu_lod_scale_y_idc{};
   std::optional<PduMivExtension> m_pdu_miv_extension;
 };
 

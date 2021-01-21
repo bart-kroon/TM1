@@ -217,6 +217,18 @@ constexpr auto PatchDataUnit::pdu_orientation_index() const noexcept {
   return m_pdu_orientation_index;
 }
 
+constexpr auto PatchDataUnit::pdu_lod_enabled_flag() const noexcept {
+  return m_pdu_lod_enabled_flag.value_or(false);
+}
+
+constexpr auto PatchDataUnit::pdu_lod_scale_x_minus1() const noexcept {
+  return m_pdu_lod_scale_x_minus1.value_or(0U);
+}
+
+constexpr auto PatchDataUnit::pdu_lod_scale_y_idc() const noexcept {
+  return m_pdu_lod_scale_y_idc.value_or(0U);
+}
+
 inline auto PatchDataUnit::pdu_miv_extension() const noexcept -> PduMivExtension {
   return m_pdu_miv_extension.value_or(PduMivExtension{});
 }
@@ -272,6 +284,21 @@ constexpr auto PatchDataUnit::pdu_orientation_index(const FlexiblePatchOrientati
   return *this;
 }
 
+constexpr auto PatchDataUnit::pdu_lod_enabled_flag(bool value) noexcept -> auto & {
+  m_pdu_lod_enabled_flag = value;
+  return *this;
+}
+
+constexpr auto PatchDataUnit::pdu_lod_scale_x_minus1(unsigned value) noexcept -> auto & {
+  m_pdu_lod_scale_x_minus1 = value;
+  return *this;
+}
+
+constexpr auto PatchDataUnit::pdu_lod_scale_y_idc(unsigned value) noexcept -> auto & {
+  m_pdu_lod_scale_y_idc = value;
+  return *this;
+}
+
 constexpr auto PatchDataUnit::pdu_miv_extension() noexcept -> auto & {
   if (!m_pdu_miv_extension) {
     m_pdu_miv_extension = PduMivExtension{};
@@ -280,16 +307,25 @@ constexpr auto PatchDataUnit::pdu_miv_extension() noexcept -> auto & {
 }
 
 constexpr auto PatchDataUnit::operator==(const PatchDataUnit &other) const noexcept {
-  return pdu_2d_pos_x() == other.pdu_2d_pos_x() && pdu_2d_pos_y() == other.pdu_2d_pos_y() &&
-         pdu_2d_size_x_minus1() == other.pdu_2d_size_x_minus1() &&
-         pdu_2d_size_y_minus1() == other.pdu_2d_size_y_minus1() &&
-         pdu_3d_offset_u() == other.pdu_3d_offset_u() &&
-         pdu_3d_offset_v() == other.pdu_3d_offset_v() &&
-         pdu_3d_offset_d() == other.pdu_3d_offset_d() &&
-         m_pdu_3d_range_d == other.m_pdu_3d_range_d &&
-         pdu_projection_id() == other.pdu_projection_id() &&
-         pdu_orientation_index() == other.pdu_orientation_index() &&
-         m_pdu_miv_extension == other.m_pdu_miv_extension;
+  if (pdu_2d_pos_x() != other.pdu_2d_pos_x() || pdu_2d_pos_y() != other.pdu_2d_pos_y() ||
+      pdu_2d_size_x_minus1() != other.pdu_2d_size_x_minus1() ||
+      pdu_2d_size_y_minus1() != other.pdu_2d_size_y_minus1() ||
+      pdu_3d_offset_u() != other.pdu_3d_offset_u() ||
+      pdu_3d_offset_v() != other.pdu_3d_offset_v() ||
+      pdu_3d_offset_d() != other.pdu_3d_offset_d() || m_pdu_3d_range_d != other.m_pdu_3d_range_d ||
+      pdu_projection_id() != other.pdu_projection_id() ||
+      pdu_orientation_index() != other.pdu_orientation_index() ||
+      pdu_lod_enabled_flag() != other.pdu_lod_enabled_flag() ||
+      m_pdu_miv_extension != other.m_pdu_miv_extension) {
+    return false;
+  }
+  if (pdu_lod_enabled_flag()) {
+    if ((pdu_lod_scale_x_minus1() != other.pdu_lod_scale_x_minus1() ||
+         pdu_lod_scale_y_idc() != other.pdu_lod_scale_y_idc())) {
+      return false;
+    }
+  }
+  return true;
 }
 
 constexpr auto PatchDataUnit::operator!=(const PatchDataUnit &other) const noexcept {

@@ -29,6 +29,7 @@ create_tmiv_library(
         "include/TMIV/Common/LinAlg.hpp"
         "include/TMIV/Common/Vector.h"
         "include/TMIV/Common/Matrix.h"
+        "include/TMIV/Common/Matrix.hpp"
         "include/TMIV/Common/Array.h"
         "include/TMIV/Common/Graph.h"
         "include/TMIV/Common/Graph.hpp"
@@ -60,6 +61,7 @@ create_catch2_unit_test(
         "src/Frame.test.cpp"
         "src/Graph.test.cpp"
         "src/Json.test.cpp"
+        "src/Matrix.test.cpp"
         "src/Quaternion.test.cpp"
         "src/verify.test.cpp"
     PRIVATE

@@ -35,16 +35,12 @@
 #define _TMIV_COMMON_MATRIX_H_
 
 #include "Array.h"
-#include "Math.h"
 
 namespace TMIV::Common {
-struct Matrix {
-  enum Property { None, Symmetric, Hermitian, Positive, Upper };
-};
-
 template <typename A> class MatrixInterface : public A {
 public:
   using size_type = typename A::size_type;
+  using value_type = typename A::value_type;
   using const_row_iterator = typename A::const_dim_iterator;
   using row_iterator = typename A::dim_iterator;
   using const_column_iterator = typename A::const_dim_iterator;
@@ -118,28 +114,12 @@ public:
   [[nodiscard]] auto isRow() const -> bool { return (m() == 1); }
   //! \brief Returns true if the matrix is a column.
   [[nodiscard]] auto isColumn() const -> bool { return (n() == 1); }
-  //! \brief Returns true if the matrix is symmetric.
-  [[nodiscard]] auto isSymmetric() const -> bool {
-    return (A::getProperty() == Matrix::Property::Symmetric) ||
-           (A::getProperty() == Matrix::Property::Positive);
-  }
-  //! \brief Returns true if the matrix is hermitian.
-  [[nodiscard]] auto isHermitian() const -> bool {
-    return (A::getProperty() == Matrix::Property::Hermitian);
-  }
   //! \brief Returns true if the matrix is positive.
-  [[nodiscard]] auto isPositive() const -> bool {
-    return (A::getProperty() == Matrix::Property::Positive);
-  }
-  //! \brief Returns true if the matrix is upper.
-  [[nodiscard]] auto isUpper() const -> bool {
-    return (A::getProperty() == Matrix::Property::Upper);
-  }
+  [[nodiscard]] auto isPositive() const -> bool;
 };
 
 namespace stack {
 template <typename T, size_type M, size_type N> using Matrix = MatrixInterface<Array<T, M, N>>;
-
 template <typename T> using Mat2x2 = Matrix<T, 2, 2>;
 template <typename T> using Mat3x3 = Matrix<T, 3, 3>;
 } // namespace stack
@@ -163,107 +143,11 @@ auto transpose_type(stack::Matrix<T, M, N>) -> stack::Matrix<T, N, M>;
 template <typename T> auto transpose_type(heap::Matrix<T>) -> heap::Matrix<T>;
 
 //! \brief Returns the transpose of the matrix given as input.
-template <typename Mat1, typename Mat2> auto transpose(const Mat1 &in, Mat2 &out) -> Mat2 & {
-  out.resize({in.n(), in.m()});
-
-  if (in.isRow() || in.isColumn() || in.isSymmetric()) {
-    std::copy(in.begin(), in.end(), out.begin());
-  } else {
-    for (Array::size_type i = 0; i < out.m(); i++) {
-      std::copy(in.col_begin(i), in.col_end(i), out.row_begin(i));
-    }
-  }
-
-  return out;
-}
-
-template <typename Mat> auto transpose(const Mat &m) -> decltype(transpose_type(Mat())) {
-  decltype(transpose_type(Mat())) out;
-  return transpose(m, out);
-}
-
-//! \brief Computes and returns the adjoint of the matrix a.
-template <typename Mat1, typename Mat2> auto adjoint(const Mat1 &in, Mat2 &out) -> Mat2 & {
-  out.resize({in.n(), in.m()});
-
-  if (in.isRow() || in.isColumn()) {
-    std::transform(in.begin(), in.end(), out.begin(),
-                   [](const typename Mat1::value_type &v) { return conjugate(v); });
-  } else if (in.isHermitian()) {
-    std::copy(in.begin(), in.end(), out.begin());
-  } else {
-    for (Array::size_type i = 0; i < out.m(); i++) {
-      std::transform(in.col_begin(i), in.col_end(i), out.row_begin(i),
-                     [](const typename Mat1::value_type &v) { return conjugate(v); });
-    }
-  }
-
-  return out;
-}
-
-template <typename Mat> auto adjoint(const Mat &m) -> decltype(transpose_type(Mat())) {
-  decltype(transpose_type(Mat())) out;
-  return adjoint(m, out);
-}
-
-//! \brief Computes and returns the trace of the matrix a.
-template <typename Mat> auto trace(const Mat &a) -> typename Mat::value_type {
-  return std::accumulate(a.diag_begin(), a.diag_end(), typename Mat::value_type(0));
-}
-
-//! \brief Constructs a block matrix from the matrices given as input.
-template <typename Mat1, typename Mat2>
-auto block(std::initializer_list<std::initializer_list<Mat1>> L, Mat2 &out) -> Mat2 & {
-  // Number of rows
-  Array::size_type m0 = 0;
-  for (auto iter = L.begin(); iter != L.end(); iter++) {
-    m0 += iter->begin()->m();
-  }
-
-  // Number of columns
-  Array::size_type n0 = 0;
-  for (auto iter = L.begin()->begin(); iter != L.begin()->end(); iter++) {
-    n0 += iter->n();
-  }
-
-  out.resize({m0, n0});
-
-  // Building
-  Array::size_type i0 = 0, j0 = 0;
-
-  for (auto iter1 = L.begin(); iter1 != L.end(); iter1++) {
-    j0 = 0;
-
-    for (auto iter2 = iter1->begin(); iter2 != iter1->end(); iter2++) {
-      for (Array::size_type i = 0; i < iter2->m(); i++) {
-        std::copy(iter2->row_begin(i), iter2->row_end(i), out.row_begin(i0 + i) + j0);
-      }
-
-      j0 += iter2->n();
-    }
-
-    i0 += iter1->begin()->m();
-  }
-
-  return out;
-}
-
-template <typename Mat>
-auto block(std::initializer_list<std::initializer_list<Mat>> L)
-    -> heap::Matrix<typename Mat::value_type> {
-  heap::Matrix<typename Mat::value_type> out;
-  block(L, out);
-  return out;
-}
-
-template <typename Mat>
-auto repmat(const std::array<Array::size_type, 2> &dim, const Mat &a)
-    -> heap::Matrix<typename Mat::value_type> {
-  heap::Matrix<typename Mat::value_type> out;
-  repmat(dim, a, out);
-  return out;
-}
+template <typename Mat1, typename Mat2> auto transpose(const Mat1 &in, Mat2 &out) -> Mat2 &;
+template <typename Mat> auto transpose(const Mat &m) -> decltype(transpose_type(Mat()));
 
 } // namespace TMIV::Common
+
+#include "Matrix.hpp"
 
 #endif

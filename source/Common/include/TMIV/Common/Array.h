@@ -493,6 +493,7 @@ public:
     // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     return data()[k];
   }
+  // TODO(CB) remove everything related to property, not used anywhere
   //! \brief Return the property of the array
   [[nodiscard]] auto getProperty() const -> int { return -1; }
   //! \brief Returns an iterator to the first element of the array.
@@ -838,7 +839,7 @@ public:
   auto operator[](size_type k) -> T & { return m_v[k]; }
   //! \brief Return the property of the array
   [[nodiscard]] auto getProperty() const -> int { return m_property; }
-  // \brief Set the property of the array
+  // Set the property of the array
   void setProperty(int v) { m_property = v; }
   //! \brief Returns an iterator to the first element of the array.
   auto begin() -> iterator { return iterator(data()); }

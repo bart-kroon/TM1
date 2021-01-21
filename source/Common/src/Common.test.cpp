@@ -82,6 +82,16 @@ TEST_CASE("Array, Vector, Matrix, LinAlg") {
   REQUIRE(max(v1, 2.F) == Vec3f({2.F, 2.F, 3.F}));
   REQUIRE(max(v1, 2.F) == max(2.F, v1));
 
+  SECTION("Matrix determinant")
+  REQUIRE(std::fabs(det(m1) - 54.F) < EPS);
+
+  SECTION("Matrix / Matrix product")
+  REQUIRE(norm_inf((m2 * m1) - Mat<float>({4, 3}, {30.F, 36.F, -12.F, 66.F, 81.F, -12.F, 102.F,
+                                                   126.F, -12.F, 138.F, 171.F, -12.F})) < EPS);
+
+  SECTION("Matrix inverse")
+  REQUIRE(norm_inf((m1 * inv(m1)) - Mat3x3f::eye()) < EPS);
+
   SECTION("Vector-vector min/max")
   REQUIRE(min(v1, v2) == Vec3f({1.F, -1.F, 3.F}));
   REQUIRE(max(v1, v2) == Vec3f({3.F, 2.F, 6.F}));
@@ -91,28 +101,8 @@ TEST_CASE("Array, Vector, Matrix, LinAlg") {
   SECTION("Vector abs")
   REQUIRE(abs(v2) == Vec3f({3.F, 1.F, 6.F}));
 
-  SECTION("matrix-scalar product")
-  REQUIRE(m1 * 1.F == m1);
-  REQUIRE(m2 * 1.F == m2);
-  REQUIRE(1.F * m1 == m1);
-  REQUIRE(1.F * m2 == m2);
-
-  SECTION("Matrix trace")
-  REQUIRE(std::fabs(trace(m1) - (-3.F)) < EPS);
-
-  SECTION("Matrix transpose")
-  REQUIRE(norm_inf(transpose(m2) - Mat<float>({3, 4}, {1.F, 4.F, 7.F, 10.F, 2.F, 5.F, 8.F, 11.F,
-                                                       3.F, 6.F, 9.F, 12.F})) < EPS);
-
   SECTION("Matrix / Vector product")
   REQUIRE(norm_inf((m1 * v1) - Vec3f({14.F, 32.F, -4.F})) < EPS);
-
-  SECTION("Matrix / Matrix product")
-  REQUIRE(norm_inf((m2 * m1) - Mat<float>({4, 3}, {30.F, 36.F, -12.F, 66.F, 81.F, -12.F, 102.F,
-                                                   126.F, -12.F, 138.F, 171.F, -12.F})) < EPS);
-
-  SECTION("Matrix inverse")
-  REQUIRE(norm_inf((m1 * inv(m1)) - Mat3x3f::eye()) < EPS);
 
   SECTION("Linear system (right)")
   REQUIRE(norm_inf(mrdivide(m2, m1) - Mat<float>({4, 3}, {1.F, 0.F, 0.F, 0.F, 1.F, 0.F, -1.F, 2.F,
@@ -120,13 +110,6 @@ TEST_CASE("Array, Vector, Matrix, LinAlg") {
 
   SECTION("Linear system (left)")
   REQUIRE(norm_inf(mldivide(m1, v1) - Vec3f({-1.F, 2.F, 0.F}) / 3.F) < EPS);
-
-  SECTION("Matrix determinant")
-  REQUIRE(std::fabs(det(m1) - 54.F) < EPS);
-
-  std::fill(m1.diag_begin(), m1.diag_end(), 0.F);
-  SECTION("Matrix iterator")
-  REQUIRE(fabs(trace(m1)) < EPS);
 }
 
 namespace {

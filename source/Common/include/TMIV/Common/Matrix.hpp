@@ -31,48 +31,33 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_COMMON_MATH_H_
-#define _TMIV_COMMON_MATH_H_
+#ifndef _TMIV_COMMON_MATRIX_H_
+#error "Include the .h, not the .hpp"
+#endif
 
-#include <cmath>
-#include <complex>
-#include <limits>
+#include <algorithm>
 
 namespace TMIV::Common {
-#ifndef M_PI
-constexpr double M_PI = 3.141592653589793238462643383279;
-#endif
-constexpr double M_PI2 = M_PI / 2.0;
-
-template <typename T> auto deg2rad(T x) -> T { return x * static_cast<T>(M_PI / 180.); }
-template <typename T> auto rad2deg(T x) -> T { return x * static_cast<T>(180. / M_PI); }
-
-template <typename T> auto sqr(T val) -> T { return val * val; }
-template <typename T> auto cube(T val) -> T { return val * val * val; }
-template <typename T> auto sgn(T val) -> int { return int{T{} < val} - int{val < T{}}; }
-template <typename T> auto inRange(T val, T min, T max) -> bool {
-  return ((min <= val) && (val <= max));
-}
-template <typename T> auto is_zero(T val) -> T {
-  using std::abs;
-  return (abs(val) < std::numeric_limits<T>::epsilon());
-}
-template <typename T> auto pps2ppd(T pps) -> T {
-  return std::sqrt(pps) * static_cast<T>(M_PI / 180.);
+template <typename A> auto MatrixInterface<A>::isPositive() const -> bool {
+  return std::all_of(this->cbegin(), this->cend(),
+                     [](const auto element) { return static_cast<value_type>(0.F) < element; });
 }
 
-template <typename T> auto conjugate(T v) -> T {
-  if constexpr (std::is_arithmetic_v<T>) {
-    return v;
+template <typename Mat1, typename Mat2> auto transpose(const Mat1 &in, Mat2 &out) -> Mat2 & {
+  out.resize({in.n(), in.m()});
+
+  if (in.isRow() || in.isColumn()) {
+    std::copy(in.begin(), in.end(), out.begin());
   } else {
-    return std::conj(v);
+    for (Array::size_type i = 0; i < out.m(); i++) {
+      std::copy(in.col_begin(i), in.col_end(i), out.row_begin(i));
+    }
   }
-}
-template <typename T> auto align(T value, T alignment) -> T {
-  T misalignment = value % alignment;
-  return (misalignment != 0) ? (value + (alignment - misalignment)) : value;
+  return out;
 }
 
+template <typename Mat> auto transpose(const Mat &m) -> decltype(transpose_type(Mat())) {
+  decltype(transpose_type(Mat())) out;
+  return transpose(m, out);
+}
 } // namespace TMIV::Common
-
-#endif

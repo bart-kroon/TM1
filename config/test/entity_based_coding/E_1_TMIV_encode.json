@@ -52,7 +52,7 @@
         8,
         16
     ],
-    "geometryScaleEnabledFlag": false,
+    "geometryScaleEnabledFlag": true,
     "haveGeometryVideo": true,
     "haveOccupancyVideo": false,
     "haveTextureVideo": true,

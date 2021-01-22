@@ -220,7 +220,8 @@ public:
     recoverPrunedWeight(sourceHelperList, targetHelper);
 
     // 5) Selection
-    selectViewportDepth(!frame.vps.vps_miv_extension().vme_depth_low_quality_flag(), targetHelper);
+    selectViewportDepth(!frame.casps.casps_miv_extension().casme_depth_low_quality_flag(),
+                        targetHelper);
 
     // 6) Filtering
     filterVisibilityMap();

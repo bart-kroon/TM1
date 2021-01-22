@@ -88,7 +88,7 @@ void adaptPatchStatsToTexture(std::array<PatchStats, 3> &patchStats,
 
 void Encoder::scaleGeometryDynamicRange() {
   assert(m_config.dynamicDepthRange);
-  const auto lowDepthQuality = m_params.vps.vps_miv_extension().vme_depth_low_quality_flag();
+  const auto lowDepthQuality = m_params.casps.casps_miv_extension().casme_depth_low_quality_flag();
   const auto numOfFrames = m_transportViews.size();
   const auto numOfViews = m_transportViews[0].size();
 

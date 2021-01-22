@@ -368,7 +368,6 @@ TEST_CASE("v3c_parameter_set", "[V3C Parameter Set]") {
     vps.vps_packing_information_present_flag(false);
     vps.vps_miv_extension_present_flag(true);
     vps.vps_miv_extension()
-        .vme_depth_low_quality_flag(true)
         .vme_geometry_scale_enabled_flag(true)
         .vme_num_groups_minus1(3)
         .vme_max_entities_minus1(20)
@@ -397,7 +396,6 @@ vps_extension_present_flag=true
 vps_packing_information_present_flag=false
 vps_miv_extension_present_flag=true
 vps_extension_6bits=0
-vme_depth_low_quality_flag=true
 vme_geometry_scale_enabled_flag=true
 vme_num_groups_minus1=3
 vme_max_entities_minus1=20
@@ -516,7 +514,6 @@ pin_region_unpack_top_left_y(32,0)=0
 pin_region_height_minus1(32,0)=0
 pin_region_map_index(32,0)=0
 pin_region_rotation_flag(32,0)=false
-vme_depth_low_quality_flag=false
 vme_geometry_scale_enabled_flag=false
 vme_num_groups_minus1=0
 vme_max_entities_minus1=0
@@ -527,7 +524,7 @@ vps_extension_data_byte=2
 vps_extension_data_byte=250
 vps_extension_data_byte=15
 )");
-    const std::size_t expected_number_of_bytes = 42 + (2 * 15); // two times packing_information
+    const std::size_t expected_number_of_bytes = 41 + (2 * 15); // two times packing_information
     REQUIRE(byteCodingTest(vps, expected_number_of_bytes));
   }
 }

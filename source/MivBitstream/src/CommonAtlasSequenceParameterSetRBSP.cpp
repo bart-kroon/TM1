@@ -64,6 +64,7 @@ auto CaspsMivExtension::vui_parameters(const VuiParameters &value) noexcept -> C
 
 auto operator<<(std::ostream &stream, const CaspsMivExtension &x) -> std::ostream & {
   putField(stream, "casme_omaf_v1_compatible_flag", x.casme_omaf_v1_compatible_flag());
+  putField(stream, "casme_depth_low_quality_flag", x.casme_depth_low_quality_flag());
   putField(stream, "casme_depth_quantization_params_present_flag",
            x.casme_depth_quantization_params_present_flag());
   putField(stream, "casme_vui_params_present_flag", x.casme_vui_params_present_flag());
@@ -75,6 +76,7 @@ auto operator<<(std::ostream &stream, const CaspsMivExtension &x) -> std::ostrea
 
 auto CaspsMivExtension::operator==(const CaspsMivExtension &other) const noexcept -> bool {
   return casme_omaf_v1_compatible_flag() == other.casme_omaf_v1_compatible_flag() &&
+         casme_depth_low_quality_flag() == other.casme_depth_low_quality_flag() &&
          casme_depth_quantization_params_present_flag() ==
              other.casme_depth_quantization_params_present_flag() &&
          casme_vui_params_present_flag() == other.casme_vui_params_present_flag();
@@ -87,6 +89,7 @@ auto CaspsMivExtension::operator!=(const CaspsMivExtension &other) const noexcep
 auto CaspsMivExtension::decodeFrom(Common::InputBitstream &bitstream) -> CaspsMivExtension {
   auto x = CaspsMivExtension{};
   x.casme_omaf_v1_compatible_flag(bitstream.getFlag());
+  x.casme_depth_low_quality_flag(bitstream.getFlag());
   x.casme_depth_quantization_params_present_flag(bitstream.getFlag());
   x.casme_vui_params_present_flag(bitstream.getFlag());
   if (x.casme_vui_params_present_flag()) {
@@ -97,6 +100,7 @@ auto CaspsMivExtension::decodeFrom(Common::InputBitstream &bitstream) -> CaspsMi
 
 void CaspsMivExtension::encodeTo(Common::OutputBitstream &bitstream) const {
   bitstream.putFlag(casme_omaf_v1_compatible_flag());
+  bitstream.putFlag(casme_depth_low_quality_flag());
   bitstream.putFlag(casme_depth_quantization_params_present_flag());
   bitstream.putFlag(casme_vui_params_present_flag());
   if (casme_vui_params_present_flag()) {

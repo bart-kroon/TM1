@@ -52,7 +52,10 @@ auto GeometryDownscaler::transformParams(MivBitstream::EncoderParams params)
     m_params.vme().vme_geometry_scale_enabled_flag(true);
 
     for (auto &atlas : m_params.atlas) {
-      atlas.asme().asme_geometry_scale_factor_x_minus1(1).asme_geometry_scale_factor_y_minus1(1);
+      atlas.asme()
+          .asme_geometry_scale_enabled_flag(true)
+          .asme_geometry_scale_factor_x_minus1(1)
+          .asme_geometry_scale_factor_y_minus1(1);
     }
   }
 

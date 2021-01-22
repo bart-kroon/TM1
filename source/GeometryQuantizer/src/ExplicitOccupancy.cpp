@@ -60,7 +60,7 @@ auto ExplicitOccupancy::setOccupancyParams(MivBitstream::EncoderParams params)
     const auto j = m_outParams.vps.vps_atlas_id(k);
     m_outParams.vps.vps_occupancy_video_present_flag(j, true);
   }
-  m_depthLowQualityFlag = m_outParams.casps.casps_miv_extension().casme_depth_low_quality_flag();
+  m_depthLowQualityFlag = m_outParams.vme().vme_depth_low_quality_flag();
 
   m_embeddedOccupancyFlag = m_outParams.vme().vme_embedded_occupancy_flag();
   m_occupancyScaleEnabledFlag = m_outParams.vme().vme_occupancy_scale_enabled_flag();

@@ -163,7 +163,7 @@ private:
     x.frameRate = sequenceConfig.frameRate;
 
     if (const auto &node = config.optional("depthLowQualityFlag")) {
-      x.casps.casps_miv_extension().casme_depth_low_quality_flag(node.as<bool>());
+      x.vme().vme_depth_low_quality_flag(node.as<bool>());
     }
 
     const auto numGroups = config.require("numGroups").as<unsigned>();

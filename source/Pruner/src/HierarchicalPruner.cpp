@@ -702,8 +702,7 @@ private:
           if (*k != 0) {
             *i = 0;
           }
-        } else if (m_params.casps.casps_miv_extension().casme_depth_low_quality_flag() &&
-                   (depthError < -depthErrorEps)) {
+        } else if (m_params.vme().vme_depth_low_quality_flag() && (depthError < -depthErrorEps)) {
           if (*k != 0) {
             *k = 0;
             *i = 255;

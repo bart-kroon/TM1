@@ -850,6 +850,8 @@ auto VpsMivExtension::group_mapping(GroupMapping &&value) -> VpsMivExtension & {
 }
 
 auto operator<<(std::ostream &stream, const VpsMivExtension &x) -> std::ostream & {
+  stream << "vme_depth_low_quality_flag=" << std::boolalpha << x.vme_depth_low_quality_flag()
+         << '\n';
   stream << "vme_geometry_scale_enabled_flag=" << std::boolalpha
          << x.vme_geometry_scale_enabled_flag() << '\n';
   stream << "vme_num_groups_minus1=" << x.vme_num_groups_minus1() << '\n';
@@ -867,6 +869,7 @@ auto operator<<(std::ostream &stream, const VpsMivExtension &x) -> std::ostream 
 auto VpsMivExtension::decodeFrom(Common::InputBitstream &bitstream, const V3cParameterSet &vps)
     -> VpsMivExtension {
   auto x = VpsMivExtension{};
+  x.vme_depth_low_quality_flag(bitstream.getFlag());
   x.vme_geometry_scale_enabled_flag(bitstream.getFlag());
   x.vme_num_groups_minus1(bitstream.getUExpGolomb<unsigned>());
   x.vme_max_entities_minus1(bitstream.getUExpGolomb<unsigned>());
@@ -883,6 +886,7 @@ auto VpsMivExtension::decodeFrom(Common::InputBitstream &bitstream, const V3cPar
 
 void VpsMivExtension::encodeTo(Common::OutputBitstream &bitstream,
                                const V3cParameterSet &vps) const {
+  bitstream.putFlag(vme_depth_low_quality_flag());
   bitstream.putFlag(vme_geometry_scale_enabled_flag());
   bitstream.putUExpGolomb(vme_num_groups_minus1());
   bitstream.putUExpGolomb(vme_max_entities_minus1());

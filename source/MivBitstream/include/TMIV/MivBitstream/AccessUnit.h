@@ -79,14 +79,13 @@ struct AccessUnit {
   bool irap{};
   std::int32_t foc{-1};
   V3cParameterSet vps;
-  CommonAtlasSequenceParameterSetRBSP casps;
   ViewParamsList viewParamsList;
   std::vector<AtlasAccessUnit> atlas;
   std::optional<ViewingSpace> vs;
   std::optional<VuiParameters> vui;
   std::optional<GeometryUpscalingParameters> gup;
 
-  [[nodiscard]] auto sequenceConfig() const -> SequenceConfig;
+  auto sequenceConfig() const -> SequenceConfig;
 };
 
 void requireAllPatchesWithinProjectionPlaneBounds(const ViewParamsList &vpl,

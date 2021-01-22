@@ -49,7 +49,7 @@ void runtimeCheck(bool cond, const char *what) {
 
 void Encoder::prepareSequence(MivBitstream::EncoderParams sourceParams) {
   m_config.blockSize = m_config.blockSizeDepthQualityDependent[static_cast<std::size_t>(
-      sourceParams.casps.casps_miv_extension().casme_depth_low_quality_flag())];
+      sourceParams.vme().vme_depth_low_quality_flag())];
   runtimeCheck(2 <= m_config.blockSize, "blockSize should be at least two");
   runtimeCheck((m_config.blockSize & (m_config.blockSize - 1)) == 0,
                "blockSize should be a power of two");

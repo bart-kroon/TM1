@@ -76,6 +76,17 @@ When code has different levels of testability, it is often possible to split wor
 
 By splitting off the easy-to-test parts there is less uncertainty in the final MR. This will speed up the code review and improve the review quality.
 
+### Limit on the number of open merge requests
+
+To avoid duplicate work, merge conflicts and/or confusion, we impose a limit on the number of open merge requests:
+
+- Open merge requests are counted regardless of their "WIP", "Draft" or "ready" status.
+- Open merge requests that are labeled ~"Test Model" are not counted
+- A developer that does not yet have an open merge request, is allowed to open one when there are less than six (6).
+- A developer that already has at least one open merge request, is allowed to open one more when there are less than four (4).
+- A maintainer that cannot progress on any open merge request, is allowed to have at most three (3).
+- Merge requests are intended to have a short lifetime. Maintainers may close merge requests that are open for more than a week.
+
 ## Semantic versioning of releases
 
 Releases have semantic versioning x.y.z:

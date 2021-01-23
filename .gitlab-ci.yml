@@ -1,4 +1,4 @@
-workflow:
+.build_rules_template: &build_rules_definition
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
@@ -17,6 +17,7 @@ default:
   interruptible: true
 
 GCC 9 Release:
+  <<: *build_rules_definition
   image: rikorose/gcc-cmake:gcc-9
   tags:
     - linux
@@ -27,6 +28,7 @@ GCC 9 Release:
     - make -j $(nproc) test
 
 Clang 11 Debug:
+  <<: *build_rules_definition
   image: cbachhuber/clang:11
   tags:
     - linux
@@ -55,6 +57,7 @@ Clang 11 Debug:
     expire_in: 5 days
 
 VC 16 Release:
+  <<: *build_rules_definition
   image: buildtools2019:latest
   tags:
     - windows

@@ -26,7 +26,11 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 include(cmake/tmiv_module_creation.cmake)
 include(cmake/test_creation.cmake)
 
+set(THREADS_PREFER_PTHREAD_FLAG ON)
+find_package(Threads REQUIRED)
+
 include(cmake/HM.cmake)
+include(cmake/VVenC.cmake)
 
 # Optionally enable clang-tidy, but only for TMIV modules
 include(cmake/clang_tidy.cmake)

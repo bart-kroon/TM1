@@ -1,8 +1,5 @@
 cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
 
-set(THREADS_PREFER_PTHREAD_FLAG ON)
-find_package(Threads REQUIRED)
-
 if (HAVE_HM)
     set(hmSources
         "src/HmVideoDecoder.cpp"

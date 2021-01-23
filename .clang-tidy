@@ -1,6 +1,7 @@
 Checks: '
 -*,
 bugprone-*,
+-bugprone-exception-escape,
 cppcoreguidelines-*,
 -cppcoreguidelines-avoid-magic-numbers,
 -cppcoreguidelines-pro-bounds-array-to-pointer-decay,

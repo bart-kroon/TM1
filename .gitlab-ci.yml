@@ -66,7 +66,7 @@ VC 16 Release:
     - 'cmake --build . --config Release --target RUN_TESTS'
 
 AsciiDoc:
-  image: asciidoctor/docker-asciidoctor:1.2
+  image: asciidoctor/docker-asciidoctor:latest
   tags: [ linux ]
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH

@@ -21,7 +21,7 @@ More details on the coordinate systems, projections, and camera extrinsics can b
 [#imgRenderer]
 image::5_renderer/renderer.svg[align=center]
 
-In addition to the regular TMIV rendering, support for MPI rendering is added to the softwarefootnote:tmiv71[] and described further in <<secMpiRenderer>>.
+In addition to the regular TMIV rendering, support for MPI rendering is added to the software and described further in <<secMpiRenderer>>.
 
 == Block to patch map filtering
 

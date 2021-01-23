@@ -24,7 +24,7 @@ include::chapters/2_scope.adoc[]
 
 include::chapters/3_terms_and_definitions.adoc[]
 
-// include::chapters/4_encoder.adoc[]
+include::chapters/4_encoder.adoc[]
 
 include::chapters/5_renderer.adoc[]
 

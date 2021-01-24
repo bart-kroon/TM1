@@ -338,55 +338,10 @@ auto MivEncoder::atlasTileLayer(size_t k) const -> MivBitstream::AtlasTileLayerR
 
   const auto &aau = m_params.atlas[k];
   const auto atlasId = m_params.vps.vps_atlas_id(k);
-  const auto patchPackingBlockSize = 1U << aau.asps.asps_log2_patch_packing_block_size();
-  const auto offsetDQuantizer = 1U << aau.ath.ath_pos_min_d_quantizer();
-  const auto rangeDQuantizer = 1U << aau.ath.ath_pos_delta_max_d_quantizer();
-  const auto patchSizeXQuantizer = aau.asps.asps_patch_size_quantizer_present_flag()
-                                       ? 1U << aau.ath.ath_patch_size_x_info_quantizer()
-                                       : patchPackingBlockSize;
-  const auto patchSizeYQuantizer = aau.asps.asps_patch_size_quantizer_present_flag()
-                                       ? 1U << aau.ath.ath_patch_size_y_info_quantizer()
-                                       : patchPackingBlockSize;
 
   for (const auto &pp : m_params.patchParamsList) {
     if (pp.atlasId == atlasId) {
-      auto pdu = MivBitstream::PatchDataUnit{};
-
-      VERIFY_MIVBITSTREAM(pp.atlasPatch2dPosX() % patchPackingBlockSize == 0);
-      VERIFY_MIVBITSTREAM(pp.atlasPatch2dPosY() % patchPackingBlockSize == 0);
-      pdu.pdu_2d_pos_x(pp.atlasPatch2dPosX() / patchPackingBlockSize);
-      pdu.pdu_2d_pos_y(pp.atlasPatch2dPosY() / patchPackingBlockSize);
-
-      pdu.pdu_3d_offset_u(pp.atlasPatch3dOffsetU());
-      pdu.pdu_3d_offset_v(pp.atlasPatch3dOffsetV());
-
-      VERIFY_MIVBITSTREAM(pp.atlasPatch3dOffsetD() % offsetDQuantizer == 0);
-      pdu.pdu_3d_offset_d(pp.atlasPatch3dOffsetD() / offsetDQuantizer);
-
-      if (aau.asps.asps_normal_axis_max_delta_value_enabled_flag()) {
-        VERIFY_MIVBITSTREAM((pp.atlasPatch3dRangeD() + 1) % rangeDQuantizer == 0);
-        pdu.pdu_3d_range_d(pp.atlasPatch3dRangeD() / rangeDQuantizer + 1);
-      }
-
-      pdu.pdu_projection_id(pp.atlasPatchProjectionId());
-      pdu.pdu_orientation_index(pp.atlasPatchOrientationIndex());
-
-      VERIFY_MIVBITSTREAM(pp.atlasPatch2dSizeX() % patchSizeXQuantizer == 0);
-      VERIFY_MIVBITSTREAM(pp.atlasPatch2dSizeY() % patchSizeYQuantizer == 0);
-      pdu.pdu_2d_size_x_minus1(pp.atlasPatch2dSizeX() / patchSizeXQuantizer - 1);
-      pdu.pdu_2d_size_y_minus1(pp.atlasPatch2dSizeY() / patchSizeYQuantizer - 1);
-
-      if (pp.atlasPatchEntityId()) {
-        pdu.pdu_miv_extension().pdu_entity_id(*pp.atlasPatchEntityId());
-      }
-      if (pp.atlasPatchDepthOccMapThreshold()) {
-        pdu.pdu_miv_extension().pdu_depth_occ_threshold(*pp.atlasPatchDepthOccMapThreshold());
-      }
-      if (aau.asps.asps_miv_extension_present_flag() &&
-          aau.asps.asps_miv_extension().asme_patch_attribute_offset_enabled_flag()) {
-        pdu.pdu_miv_extension().pdu_attribute_offset(pp.atlasPatchAttributeOffset());
-      }
-      patchData.emplace_back(MivBitstream::AtduPatchMode::I_INTRA, pdu);
+      patchData.emplace_back(MivBitstream::AtduPatchMode::I_INTRA, pp.encodePdu(aau.asps, aau.ath));
     }
   }
 

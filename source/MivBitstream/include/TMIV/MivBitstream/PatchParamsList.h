@@ -61,7 +61,7 @@ struct PatchParams {
   [[nodiscard]] constexpr auto atlasPatchOrientationIndex() const noexcept;
   [[nodiscard]] constexpr auto atlasPatchEntityId() const noexcept;
   [[nodiscard]] constexpr auto atlasPatchDepthOccMapThreshold() const noexcept;
-  [[nodiscard]] auto atlasPatchAttributeOffset() const noexcept;
+  [[nodiscard]] auto atlasPatchAttributeOffset() const;
 
   constexpr auto atlasPatch2dPosX(std::uint32_t value) noexcept -> PatchParams &;
   constexpr auto atlasPatch2dPosY(std::uint32_t value) noexcept -> PatchParams &;
@@ -88,6 +88,11 @@ struct PatchParams {
   // Pixel position conversion from atlas to/from view
   [[nodiscard]] auto viewToAtlas(Common::Vec2i viewPosition) const -> Common::Vec2i;
   [[nodiscard]] auto atlasToView(Common::Vec2i atlasPosition) const -> Common::Vec2i;
+
+  static auto decodePdu(const PatchDataUnit &pdu, const AtlasSequenceParameterSetRBSP &asps,
+                        const AtlasTileHeader &ath) -> PatchParams;
+  auto encodePdu(const AtlasSequenceParameterSetRBSP &asps, const AtlasTileHeader &ath) const
+      -> PatchDataUnit;
 
   auto operator==(const PatchParams &other) const -> bool;
   auto operator!=(const PatchParams &other) const -> bool { return !operator==(other); };

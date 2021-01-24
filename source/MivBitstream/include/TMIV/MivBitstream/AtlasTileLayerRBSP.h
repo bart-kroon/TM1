@@ -164,8 +164,8 @@ public:
 class PduMivExtension {
 public:
   [[nodiscard]] constexpr auto pdu_entity_id() const noexcept;
-  [[nodiscard]] auto pdu_depth_occ_threshold() const noexcept -> std::uint32_t;
-  [[nodiscard]] auto pdu_attribute_offset() const noexcept -> Common::Vec3i;
+  [[nodiscard]] auto pdu_depth_occ_threshold() const -> std::uint32_t;
+  [[nodiscard]] auto pdu_attribute_offset() const -> Common::Vec3i;
 
   constexpr auto pdu_entity_id(std::uint32_t value) noexcept -> auto &;
   constexpr auto pdu_depth_occ_threshold(std::uint32_t value) noexcept -> auto &;
@@ -201,7 +201,7 @@ public:
   [[nodiscard]] constexpr auto pdu_3d_offset_u() const noexcept;
   [[nodiscard]] constexpr auto pdu_3d_offset_v() const noexcept;
   [[nodiscard]] constexpr auto pdu_3d_offset_d() const noexcept;
-  [[nodiscard]] auto pdu_3d_range_d() const noexcept -> std::uint32_t;
+  [[nodiscard]] auto pdu_3d_range_d() const -> std::uint32_t;
   [[nodiscard]] constexpr auto pdu_projection_id() const noexcept;
   [[nodiscard]] constexpr auto pdu_orientation_index() const noexcept;
   [[nodiscard]] constexpr auto pdu_lod_enabled_flag() const noexcept;

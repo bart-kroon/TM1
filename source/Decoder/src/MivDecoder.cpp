@@ -409,54 +409,9 @@ auto MivDecoder::decodePatchParamsList(size_t k, MivBitstream::PatchParamsList &
   const auto &asps = m_atlasAu[k]->asps;
 
   ppl.assign(atdu.atduTotalNumberOfPatches(), {});
-
-  const auto patchPackingBlockSize = 1U << asps.asps_log2_patch_packing_block_size();
-  const auto offsetDQuantizer = 1U << ath.ath_pos_min_d_quantizer();
-  const auto rangeDQuantizer = 1U << ath.ath_pos_delta_max_d_quantizer();
-  const auto rangeDBitDepth = std::min(asps.asps_geometry_2d_bit_depth_minus1() + 1U,
-                                       asps.asps_geometry_3d_bit_depth_minus1() + 1U);
-  const auto rangeD = 1U << rangeDBitDepth;
-  const auto patchSizeXQuantizer = asps.asps_patch_size_quantizer_present_flag()
-                                       ? 1U << ath.ath_patch_size_x_info_quantizer()
-                                       : patchPackingBlockSize;
-  const auto patchSizeYQuantizer = asps.asps_patch_size_quantizer_present_flag()
-                                       ? 1U << ath.ath_patch_size_y_info_quantizer()
-                                       : patchPackingBlockSize;
-
   atdu.visit([&](size_t p, MivBitstream::AtduPatchMode /* unused */,
                  const MivBitstream::PatchInformationData &pid) {
-    const auto &pdu = pid.patch_data_unit();
-
-    ppl[p].atlasPatch2dPosX(pdu.pdu_2d_pos_x() * patchPackingBlockSize);
-    ppl[p].atlasPatch2dPosY(pdu.pdu_2d_pos_y() * patchPackingBlockSize);
-    ppl[p].atlasPatch3dOffsetU(pdu.pdu_3d_offset_u());
-    ppl[p].atlasPatch3dOffsetV(pdu.pdu_3d_offset_v());
-    ppl[p].atlasPatch3dOffsetD(pdu.pdu_3d_offset_d() * offsetDQuantizer);
-
-    if (asps.asps_normal_axis_max_delta_value_enabled_flag()) {
-      ppl[p].atlasPatch3dRangeD(
-          pdu.pdu_3d_range_d() == 0 ? 0 : (pdu.pdu_3d_range_d() * rangeDQuantizer) - 1);
-    } else {
-      ppl[p].atlasPatch3dRangeD(rangeD - 1);
-    }
-
-    ppl[p].atlasPatchProjectionId(pdu.pdu_projection_id());
-    ppl[p].atlasPatchOrientationIndex(pdu.pdu_orientation_index());
-    ppl[p].atlasPatch2dSizeX((pdu.pdu_2d_size_x_minus1() + 1) * patchSizeXQuantizer);
-    ppl[p].atlasPatch2dSizeY((pdu.pdu_2d_size_y_minus1() + 1) * patchSizeYQuantizer);
-
-    if (asps.asps_miv_extension_present_flag()) {
-      const auto &asme = asps.asps_miv_extension();
-
-      ppl[p].atlasPatchEntityId(pdu.pdu_miv_extension().pdu_entity_id());
-
-      if (asme.asme_depth_occ_threshold_flag()) {
-        ppl[p].atlasPatchDepthOccMapThreshold(pdu.pdu_miv_extension().pdu_depth_occ_threshold());
-      }
-      if (asme.asme_patch_attribute_offset_enabled_flag()) {
-        ppl[p].atlasPatchAttributeOffset(pdu.pdu_miv_extension().pdu_attribute_offset());
-      }
-    }
+    ppl[p] = MivBitstream::PatchParams::decodePdu(pid.patch_data_unit(), asps, ath);
   });
 
   return ppl;

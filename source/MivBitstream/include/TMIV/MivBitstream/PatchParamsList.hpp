@@ -66,7 +66,7 @@ constexpr auto PatchParams::atlasPatchDepthOccMapThreshold() const noexcept {
   return m_atlasPatchDepthOccMapThreshold;
 }
 
-inline auto PatchParams::atlasPatchAttributeOffset() const noexcept {
+inline auto PatchParams::atlasPatchAttributeOffset() const {
   VERIFY_MIVBITSTREAM(m_atlasPatchAttributeOffset.has_value());
   return *m_atlasPatchAttributeOffset;
 }

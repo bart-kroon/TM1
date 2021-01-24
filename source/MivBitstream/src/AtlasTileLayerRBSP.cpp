@@ -317,12 +317,12 @@ auto operator<<(std::ostream &stream, const SkipPatchDataUnit & /* x */) -> std:
   return stream;
 }
 
-auto PduMivExtension::pdu_depth_occ_threshold() const noexcept -> uint32_t {
+auto PduMivExtension::pdu_depth_occ_threshold() const -> uint32_t {
   VERIFY_MIVBITSTREAM(m_pdu_depth_occ_threshold.has_value());
   return *m_pdu_depth_occ_threshold;
 }
 
-auto PduMivExtension::pdu_attribute_offset() const noexcept -> Common::Vec3i {
+auto PduMivExtension::pdu_attribute_offset() const -> Common::Vec3i {
   VERIFY_MIVBITSTREAM(m_pdu_attribute_offset.has_value());
   return *m_pdu_attribute_offset;
 }
@@ -389,7 +389,7 @@ void PduMivExtension::encodeTo(Common::OutputBitstream &bitstream, const V3cPara
   }
 }
 
-auto PatchDataUnit::pdu_3d_range_d() const noexcept -> uint32_t {
+auto PatchDataUnit::pdu_3d_range_d() const -> uint32_t {
   VERIFY_V3CBITSTREAM(m_pdu_3d_range_d.has_value());
   return *m_pdu_3d_range_d;
 }

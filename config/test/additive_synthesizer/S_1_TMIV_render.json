@@ -1,6 +1,6 @@
 {
     "configDirectory": "config",
-    "CullerMethod": "NoCuller",
+    "CullerMethod": "SubBlockCuller",
     "DepthQualityAssessor": {
         "blendingFactor": 0.03,
         "maxOutlierRatio": 0.001
@@ -30,5 +30,5 @@
         "ViewingSpaceControllerMethod": "ViewingSpaceController"
     },
     "RendererMethod": "Renderer",
-    "NoCuller": {}
+    "SubBlockCuller": {}
 }

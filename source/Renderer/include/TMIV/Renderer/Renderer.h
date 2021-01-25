@@ -58,6 +58,10 @@ public:
   [[nodiscard]] auto renderFrame(const MivBitstream::AccessUnit &frame,
                                  const MivBitstream::ViewParams &viewportParams) const
       -> Common::Texture444Depth16Frame override;
+
+  [[nodiscard]] auto isOptimizedForRestrictedGeometry() const -> bool override {
+    return m_synthesizer->isOptimizedForRestrictedGeometry();
+  }
 };
 } // namespace TMIV::Renderer
 

@@ -96,6 +96,15 @@ public:
         return;
       }
 
+      auto &ptl = frame->vps.profile_tier_level();
+      if (m_renderer.isOptimizedForRestrictedGeometry()) {
+        if (ptl.ptl_profile_toolset_idc() != MivBitstream::PtlProfilePccToolsetIdc::MIV_Extended ||
+            !ptl.ptl_toolset_constraints_present_flag() ||
+            !ptl.ptl_profile_toolset_constraints_information().ptc_restricted_geometry_flag()) {
+          throw std::runtime_error("Restricted geometry only renderer.");
+        }
+      }
+
       // Recover geometry, occupancy, and filter blockToPatchMap
       m_decoder->recoverFrame(*frame);
 

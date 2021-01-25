@@ -62,8 +62,8 @@ constexpr auto ProfileTierLevel::ptl_extended_sub_profile_flag() const noexcept 
   return m_ptl_extended_sub_profile_flag;
 }
 
-constexpr auto ProfileTierLevel::ptl_tool_constraints_present_flag() const noexcept {
-  return m_ptl_tool_constraints_present_flag;
+constexpr auto ProfileTierLevel::ptl_toolset_constraints_present_flag() const noexcept {
+  return m_ptl_toolset_constraints_present_flag;
 }
 
 constexpr auto ProfileTierLevel::ptl_tier_flag(bool value) noexcept -> auto & {
@@ -100,8 +100,9 @@ constexpr auto ProfileTierLevel::ptl_level_idc(PtlLevelIdc value) noexcept -> au
   return *this;
 }
 
-constexpr auto ProfileTierLevel::ptl_tool_constraints_present_flag(bool value) noexcept -> auto & {
-  m_ptl_tool_constraints_present_flag = value;
+constexpr auto ProfileTierLevel::ptl_toolset_constraints_present_flag(bool value) noexcept
+    -> auto & {
+  m_ptl_toolset_constraints_present_flag = value;
   return *this;
 }
 
@@ -180,6 +181,139 @@ constexpr auto
 GeometryInformation::gi_geometry_3d_coordinates_bit_depth_minus1(std::uint8_t value) noexcept
     -> auto & {
   m_gi_geometry_3d_coordinates_bit_depth_minus1 = value;
+  return *this;
+}
+
+constexpr auto ProfileToolsetConstraintsInformation::ptc_one_v3c_frame_only_flag() const noexcept {
+  return m_ptc_one_v3c_frame_only_flag;
+}
+
+constexpr auto ProfileToolsetConstraintsInformation::ptc_eom_constraint_flag() const noexcept {
+  return m_ptc_eom_constraint_flag;
+}
+
+constexpr auto ProfileToolsetConstraintsInformation::ptc_max_map_count_minus1() const noexcept {
+  return m_ptc_max_map_count_minus1;
+}
+
+constexpr auto ProfileToolsetConstraintsInformation::ptc_max_atlas_count_minus1() const noexcept {
+  return m_ptc_max_atlas_count_minus1;
+}
+
+constexpr auto
+ProfileToolsetConstraintsInformation::ptc_multiple_map_streams_constraint_flag() const noexcept {
+  return m_ptc_multiple_map_streams_constraint_flag;
+}
+
+constexpr auto ProfileToolsetConstraintsInformation::ptc_plr_constraint_flag() const noexcept {
+  return m_ptc_plr_constraint_flag;
+}
+
+constexpr auto
+ProfileToolsetConstraintsInformation::ptc_attribute_max_dimension_minus1() const noexcept {
+  return m_ptc_attribute_max_dimension_minus1;
+}
+
+constexpr auto ProfileToolsetConstraintsInformation::ptc_attribute_max_dimension_partitions_minus1()
+    const noexcept {
+  return m_ptc_attribute_max_dimension_partitions_minus1;
+}
+
+constexpr auto
+ProfileToolsetConstraintsInformation::ptc_no_eight_orientations_constraint_flag() const noexcept {
+  return m_ptc_no_eight_orientations_constraint_flag;
+}
+
+constexpr auto
+ProfileToolsetConstraintsInformation::ptc_no_45degree_projection_patch_constraint_flag()
+    const noexcept {
+  return m_ptc_no_45degree_projection_patch_constraint_flag;
+}
+
+constexpr auto ProfileToolsetConstraintsInformation::ptc_restricted_geometry_flag() const noexcept {
+  return m_ptc_restricted_geometry_flag;
+}
+
+constexpr auto
+ProfileToolsetConstraintsInformation::ptc_num_reserved_constraint_bytes() const noexcept {
+  return m_ptc_num_reserved_constraint_bytes;
+}
+
+constexpr auto
+ProfileToolsetConstraintsInformation::ptc_one_v3c_frame_only_flag(bool value) noexcept -> auto & {
+  m_ptc_one_v3c_frame_only_flag = value;
+  return *this;
+}
+
+constexpr auto ProfileToolsetConstraintsInformation::ptc_eom_constraint_flag(bool value) noexcept
+    -> auto & {
+  m_ptc_eom_constraint_flag = value;
+  return *this;
+}
+
+constexpr auto
+ProfileToolsetConstraintsInformation::ptc_max_map_count_minus1(std::uint8_t value) noexcept
+    -> auto & {
+  m_ptc_max_map_count_minus1 = value;
+  return *this;
+}
+
+constexpr auto
+ProfileToolsetConstraintsInformation::ptc_max_atlas_count_minus1(std::uint8_t value) noexcept
+    -> auto & {
+  m_ptc_max_atlas_count_minus1 = value;
+  return *this;
+}
+
+constexpr auto
+ProfileToolsetConstraintsInformation::ptc_multiple_map_streams_constraint_flag(bool value) noexcept
+    -> auto & {
+  m_ptc_multiple_map_streams_constraint_flag = value;
+  return *this;
+}
+
+constexpr auto ProfileToolsetConstraintsInformation::ptc_plr_constraint_flag(bool value) noexcept
+    -> auto & {
+  m_ptc_plr_constraint_flag = value;
+  return *this;
+}
+
+constexpr auto ProfileToolsetConstraintsInformation::ptc_attribute_max_dimension_minus1(
+    std::uint8_t value) noexcept -> auto & {
+  m_ptc_attribute_max_dimension_minus1 = value;
+  return *this;
+}
+
+constexpr auto ProfileToolsetConstraintsInformation::ptc_attribute_max_dimension_partitions_minus1(
+    std::uint8_t value) noexcept -> auto & {
+  m_ptc_attribute_max_dimension_partitions_minus1 = value;
+  return *this;
+}
+
+constexpr auto
+ProfileToolsetConstraintsInformation::ptc_no_eight_orientations_constraint_flag(bool value) noexcept
+    -> auto & {
+  m_ptc_no_eight_orientations_constraint_flag = value;
+  return *this;
+}
+
+constexpr auto
+ProfileToolsetConstraintsInformation::ptc_no_45degree_projection_patch_constraint_flag(
+    bool value) noexcept -> auto & {
+  m_ptc_no_45degree_projection_patch_constraint_flag = value;
+  return *this;
+}
+
+constexpr auto
+ProfileToolsetConstraintsInformation::ptc_restricted_geometry_flag(bool value) noexcept -> auto & {
+  m_ptc_restricted_geometry_flag = value;
+  return *this;
+}
+
+constexpr auto
+ProfileToolsetConstraintsInformation::ptc_num_reserved_constraint_bytes(std::uint8_t value) noexcept
+    -> auto & {
+  m_ptc_num_reserved_constraint_bytes = value;
   return *this;
 }
 

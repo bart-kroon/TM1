@@ -150,10 +150,66 @@ auto operator<<(std::ostream &stream, const AiAttributeTypeId &x) -> std::ostrea
 // TMIV-internal filename convention
 auto codeOf(AiAttributeTypeId typeId) -> char;
 
+// 23090-5: profile_toolset_constraints_information
+//
+// 23090-12 restrictions:
+//   * ptc_num_reserved_constraint_bytes[ ] == 0
+class ProfileToolsetConstraintsInformation {
+public:
+  [[nodiscard]] constexpr auto ptc_one_v3c_frame_only_flag() const noexcept;
+  [[nodiscard]] constexpr auto ptc_eom_constraint_flag() const noexcept;
+  [[nodiscard]] constexpr auto ptc_max_map_count_minus1() const noexcept;
+  [[nodiscard]] constexpr auto ptc_max_atlas_count_minus1() const noexcept;
+  [[nodiscard]] constexpr auto ptc_multiple_map_streams_constraint_flag() const noexcept;
+  [[nodiscard]] constexpr auto ptc_plr_constraint_flag() const noexcept;
+  [[nodiscard]] constexpr auto ptc_attribute_max_dimension_minus1() const noexcept;
+  [[nodiscard]] constexpr auto ptc_attribute_max_dimension_partitions_minus1() const noexcept;
+  [[nodiscard]] constexpr auto ptc_no_eight_orientations_constraint_flag() const noexcept;
+  [[nodiscard]] constexpr auto ptc_no_45degree_projection_patch_constraint_flag() const noexcept;
+  [[nodiscard]] constexpr auto ptc_restricted_geometry_flag() const noexcept;
+  [[nodiscard]] constexpr auto ptc_num_reserved_constraint_bytes() const noexcept;
+
+  constexpr auto ptc_one_v3c_frame_only_flag(bool value) noexcept -> auto &;
+  constexpr auto ptc_eom_constraint_flag(bool value) noexcept -> auto &;
+  constexpr auto ptc_max_map_count_minus1(std::uint8_t value) noexcept -> auto &;
+  constexpr auto ptc_max_atlas_count_minus1(std::uint8_t value) noexcept -> auto &;
+  constexpr auto ptc_multiple_map_streams_constraint_flag(bool value) noexcept -> auto &;
+  constexpr auto ptc_plr_constraint_flag(bool value) noexcept -> auto &;
+  constexpr auto ptc_attribute_max_dimension_minus1(std::uint8_t value) noexcept -> auto &;
+  constexpr auto ptc_attribute_max_dimension_partitions_minus1(std::uint8_t value) noexcept
+      -> auto &;
+  constexpr auto ptc_no_eight_orientations_constraint_flag(bool value) noexcept -> auto &;
+  constexpr auto ptc_no_45degree_projection_patch_constraint_flag(bool value) noexcept -> auto &;
+  constexpr auto ptc_restricted_geometry_flag(bool value) noexcept -> auto &;
+  constexpr auto ptc_num_reserved_constraint_bytes(std::uint8_t value) noexcept -> auto &;
+
+  friend auto operator<<(std::ostream &stream, const ProfileToolsetConstraintsInformation &x)
+      -> std::ostream &;
+
+  auto operator==(const ProfileToolsetConstraintsInformation &other) const noexcept -> bool;
+  auto operator!=(const ProfileToolsetConstraintsInformation &other) const noexcept -> bool;
+
+  static auto decodeFrom(Common::InputBitstream &bitstream) -> ProfileToolsetConstraintsInformation;
+
+  void encodeTo(Common::OutputBitstream &bitstream) const;
+
+private:
+  bool m_ptc_one_v3c_frame_only_flag{};
+  bool m_ptc_eom_constraint_flag{};
+  std::uint8_t m_ptc_max_map_count_minus1{};
+  std::uint8_t m_ptc_max_atlas_count_minus1{};
+  bool m_ptc_multiple_map_streams_constraint_flag{};
+  bool m_ptc_plr_constraint_flag{};
+  std::uint8_t m_ptc_attribute_max_dimension_minus1{};
+  std::uint8_t m_ptc_attribute_max_dimension_partitions_minus1{};
+  bool m_ptc_no_eight_orientations_constraint_flag{};
+  bool m_ptc_no_45degree_projection_patch_constraint_flag{};
+  bool m_ptc_restricted_geometry_flag{};
+  std::uint8_t m_ptc_num_reserved_constraint_bytes{};
+};
+
 // 23090-5: profile_tier_level()
 //
-// Limitations of this implementation:
-//   * ptl_tool_constraints_present_flag == 0
 class ProfileTierLevel {
 public:
   [[nodiscard]] constexpr auto ptl_tier_flag() const noexcept;
@@ -165,7 +221,9 @@ public:
   [[nodiscard]] auto ptl_num_sub_profiles() const noexcept -> std::uint8_t;
   [[nodiscard]] constexpr auto ptl_extended_sub_profile_flag() const noexcept;
   [[nodiscard]] auto ptl_sub_profile_idc(std::uint8_t i) const noexcept -> std::uint64_t;
-  [[nodiscard]] constexpr auto ptl_tool_constraints_present_flag() const noexcept;
+  [[nodiscard]] constexpr auto ptl_toolset_constraints_present_flag() const noexcept;
+  [[nodiscard]] auto ptl_profile_toolset_constraints_information() const
+      -> const ProfileToolsetConstraintsInformation &;
 
   constexpr auto ptl_tier_flag(bool value) noexcept -> auto &;
   constexpr auto ptl_profile_codec_group_idc(PtlProfileCodecGroupIdc value) noexcept -> auto &;
@@ -177,7 +235,9 @@ public:
   auto ptl_num_sub_profiles(std::uint8_t value) noexcept -> ProfileTierLevel &;
   auto ptl_extended_sub_profile_flag(bool value) noexcept -> ProfileTierLevel &;
   auto ptl_sub_profile_idc(std::uint8_t i, std::uint64_t value) noexcept -> ProfileTierLevel &;
-  constexpr auto ptl_tool_constraints_present_flag(bool value) noexcept -> auto &;
+  constexpr auto ptl_toolset_constraints_present_flag(bool value) noexcept -> auto &;
+  auto ptl_profile_toolset_constraints_information(ProfileToolsetConstraintsInformation value)
+      -> ProfileTierLevel &;
 
   friend auto operator<<(std::ostream &stream, const ProfileTierLevel &x) -> std::ostream &;
 
@@ -197,7 +257,9 @@ private:
   PtlLevelIdc m_ptl_level_idc{};
   std::vector<std::uint64_t> m_subProfileIdcs;
   bool m_ptl_extended_sub_profile_flag{};
-  bool m_ptl_tool_constraints_present_flag{};
+  bool m_ptl_toolset_constraints_present_flag{};
+  std::optional<ProfileToolsetConstraintsInformation>
+      m_ptl_profile_toolset_constraints_information{};
 };
 
 // 23090-5: occupancy_information( atlasID )

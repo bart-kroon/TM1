@@ -38,6 +38,22 @@
 #include <algorithm>
 
 namespace TMIV::MivBitstream {
+namespace {
+auto getPtlProfilePccToolsetIdc(bool haveGeometryVideo, bool haveOccupancyVideo,
+                                bool haveTransparencyVideo) -> PtlProfilePccToolsetIdc {
+  if (haveTransparencyVideo) {
+    return PtlProfilePccToolsetIdc::MIV_Extended;
+  }
+  if (!haveGeometryVideo) {
+    return PtlProfilePccToolsetIdc::MIV_Geometry_Absent;
+  }
+  if (!haveOccupancyVideo) {
+    return PtlProfilePccToolsetIdc::MIV_Main;
+  }
+  return PtlProfilePccToolsetIdc::MIV_Extended;
+}
+} // namespace
+
 auto EncoderAtlasParams::asme() const noexcept -> const AspsMivExtension & {
   return asps.asps_miv_extension();
 }
@@ -69,9 +85,7 @@ EncoderParams::EncoderParams(const Common::SizeVector &atlasSizes, bool haveText
       .ptl_profile_reconstruction_idc(PtlProfileReconstructionIdc::MIV_Main);
 
   vps.profile_tier_level().ptl_profile_toolset_idc(
-      haveGeometryVideo ? (haveOccupancyVideo ? PtlProfilePccToolsetIdc::MIV_Extended
-                                              : PtlProfilePccToolsetIdc::MIV_Main)
-                        : PtlProfilePccToolsetIdc::MIV_Geometry_Absent);
+      getPtlProfilePccToolsetIdc(haveGeometryVideo, haveOccupancyVideo, false));
 
   VERIFY_MIVBITSTREAM(!atlasSizes.empty());
   vps.vps_atlas_count_minus1(static_cast<uint8_t>(atlasSizes.size() - 1));
@@ -111,16 +125,23 @@ EncoderParams::EncoderParams(const Common::SizeVector &atlasSizes, bool haveText
 EncoderParams::EncoderParams(const Common::SizeVector &atlasSizes, std::uint8_t textureBitDepth,
                              std::uint8_t occupancyBitDepth, std::uint8_t geometryBitDepth,
                              std::uint8_t transparencyBitDepth) {
-  const bool haveTexture = textureBitDepth != 0;
-  const bool haveOccupancy = occupancyBitDepth != 0;
-  const bool haveGeometry = geometryBitDepth != 0;
-  const bool haveTransparency = transparencyBitDepth != 0;
+  const bool haveTextureVideo = textureBitDepth != 0;
+  const bool haveOccupancyVideo = occupancyBitDepth != 0;
+  const bool haveGeometryVideo = geometryBitDepth != 0;
+  const bool haveTransparencyVideo = transparencyBitDepth != 0;
 
   vps.profile_tier_level()
       .ptl_level_idc(PtlLevelIdc::Level_3_5)
       .ptl_profile_codec_group_idc(PtlProfileCodecGroupIdc::HEVC_Main10)
-      .ptl_profile_toolset_idc(PtlProfilePccToolsetIdc::MIV_Main)
       .ptl_profile_reconstruction_idc(PtlProfileReconstructionIdc::MIV_Main);
+
+  vps.profile_tier_level().ptl_profile_toolset_idc(
+      getPtlProfilePccToolsetIdc(haveGeometryVideo, haveOccupancyVideo, haveTransparencyVideo));
+
+  ProfileToolsetConstraintsInformation ptci{};
+  ptci.ptc_restricted_geometry_flag(haveTransparencyVideo);
+  vps.profile_tier_level().ptl_toolset_constraints_present_flag(true);
+  vps.profile_tier_level().ptl_profile_toolset_constraints_information(ptci);
 
   VERIFY_MIVBITSTREAM(!atlasSizes.empty());
   vps.vps_atlas_count_minus1(uint8_t(atlasSizes.size() - 1));
@@ -130,15 +151,15 @@ EncoderParams::EncoderParams(const Common::SizeVector &atlasSizes, std::uint8_t 
     vps.vps_atlas_id(k, j)
         .vps_frame_width(j, atlasSizes[k].x())
         .vps_frame_height(j, atlasSizes[k].y())
-        .vps_geometry_video_present_flag(j, haveGeometry)
-        .vps_occupancy_video_present_flag(j, haveOccupancy)
-        .vps_attribute_video_present_flag(j, haveTexture || haveTransparency);
+        .vps_geometry_video_present_flag(j, haveGeometryVideo)
+        .vps_occupancy_video_present_flag(j, haveOccupancyVideo)
+        .vps_attribute_video_present_flag(j, haveTextureVideo || haveTransparencyVideo);
 
-    if (haveGeometry) {
+    if (haveGeometryVideo) {
       vps.geometry_information(j).gi_geometry_2d_bit_depth_minus1(geometryBitDepth - 1);
     }
 
-    if (haveOccupancy) {
+    if (haveOccupancyVideo) {
       vps.occupancy_information(j)
           .oi_occupancy_codec_id(0)
           .oi_lossy_occupancy_compression_threshold(0) // set similar to V-PCC
@@ -149,11 +170,11 @@ EncoderParams::EncoderParams(const Common::SizeVector &atlasSizes, std::uint8_t 
     }
 
     uint8_t attributeCount =
-        static_cast<uint8_t>(haveTexture) + static_cast<uint8_t>(haveTransparency);
+        static_cast<uint8_t>(haveTextureVideo) + static_cast<uint8_t>(haveTransparencyVideo);
     vps.attribute_information(j).ai_attribute_count(attributeCount);
     uint8_t attributeIndex{};
 
-    if (haveTexture) {
+    if (haveTextureVideo) {
       vps.attribute_information(j)
           .ai_attribute_type_id(attributeIndex, AiAttributeTypeId::ATTR_TEXTURE)
           .ai_attribute_dimension_minus1(attributeIndex, 2)
@@ -162,7 +183,7 @@ EncoderParams::EncoderParams(const Common::SizeVector &atlasSizes, std::uint8_t 
       ++attributeIndex;
     }
 
-    if (haveTransparency) {
+    if (haveTransparencyVideo) {
       vps.attribute_information(j)
           .ai_attribute_type_id(attributeIndex, AiAttributeTypeId::ATTR_TRANSPARENCY)
           .ai_attribute_dimension_minus1(attributeIndex, 0)

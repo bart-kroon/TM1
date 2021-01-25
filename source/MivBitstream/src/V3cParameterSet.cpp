@@ -200,6 +200,13 @@ auto ProfileTierLevel::ptl_sub_profile_idc(std::uint8_t i) const noexcept -> uin
   return m_subProfileIdcs[i];
 }
 
+auto ProfileTierLevel::ptl_profile_toolset_constraints_information() const
+    -> const ProfileToolsetConstraintsInformation & {
+  VERIFY_V3CBITSTREAM(ptl_toolset_constraints_present_flag());
+  VERIFY_V3CBITSTREAM(m_ptl_profile_toolset_constraints_information.has_value());
+  return *m_ptl_profile_toolset_constraints_information;
+}
+
 auto ProfileTierLevel::ptl_num_sub_profiles(std::uint8_t value) noexcept -> ProfileTierLevel & {
   m_subProfileIdcs = std::vector<uint64_t>(value, 0);
   return *this;
@@ -221,6 +228,13 @@ auto ProfileTierLevel::ptl_sub_profile_idc(std::uint8_t i, std::uint64_t value) 
   return *this;
 }
 
+auto ProfileTierLevel::ptl_profile_toolset_constraints_information(
+    ProfileToolsetConstraintsInformation value) -> ProfileTierLevel & {
+  VERIFY_V3CBITSTREAM(ptl_toolset_constraints_present_flag());
+  m_ptl_profile_toolset_constraints_information.emplace(value);
+  return *this;
+}
+
 auto operator<<(std::ostream &stream, const ProfileTierLevel &x) -> std::ostream & {
   stream << "ptl_tier_flag=" << std::boolalpha << x.ptl_tier_flag() << '\n';
   stream << "ptl_profile_codec_group_idc=" << x.ptl_profile_codec_group_idc() << '\n';
@@ -234,8 +248,11 @@ auto operator<<(std::ostream &stream, const ProfileTierLevel &x) -> std::ostream
   for (uint8_t i = 0; i < x.ptl_num_sub_profiles(); ++i) {
     stream << "ptl_sub_profile_idc[ " << int{i} << " ]=" << x.ptl_sub_profile_idc(i) << '\n';
   }
-  stream << "ptl_tool_constraints_present_flag=" << std::boolalpha
-         << x.ptl_tool_constraints_present_flag() << '\n';
+  stream << "ptl_toolset_constraints_present_flag=" << std::boolalpha
+         << x.ptl_toolset_constraints_present_flag() << '\n';
+  if (x.ptl_toolset_constraints_present_flag()) {
+    stream << x.ptl_profile_toolset_constraints_information();
+  }
   return stream;
 }
 
@@ -248,7 +265,11 @@ auto ProfileTierLevel::operator==(const ProfileTierLevel &other) const noexcept 
          ptl_level_idc() == other.ptl_level_idc() &&
          ptl_extended_sub_profile_flag() == other.ptl_extended_sub_profile_flag() &&
          m_subProfileIdcs == other.m_subProfileIdcs &&
-         ptl_tool_constraints_present_flag() == other.ptl_tool_constraints_present_flag();
+         ptl_toolset_constraints_present_flag() == other.ptl_toolset_constraints_present_flag() &&
+         (ptl_toolset_constraints_present_flag()
+              ? (ptl_profile_toolset_constraints_information() ==
+                 other.ptl_profile_toolset_constraints_information())
+              : true);
 }
 
 auto ProfileTierLevel::operator!=(const ProfileTierLevel &other) const noexcept -> bool {
@@ -274,8 +295,11 @@ auto ProfileTierLevel::decodeFrom(Common::InputBitstream &bitstream) -> ProfileT
       x.ptl_sub_profile_idc(i, bitstream.getUint32());
     }
   }
-  x.ptl_tool_constraints_present_flag(bitstream.getFlag());
-  LIMITATION(!x.ptl_tool_constraints_present_flag());
+  x.ptl_toolset_constraints_present_flag(bitstream.getFlag());
+  if (x.ptl_toolset_constraints_present_flag()) {
+    x.ptl_profile_toolset_constraints_information(
+        ProfileToolsetConstraintsInformation::decodeFrom(bitstream));
+  }
   return x;
 }
 
@@ -300,8 +324,10 @@ void ProfileTierLevel::encodeTo(Common::OutputBitstream &bitstream) const {
       bitstream.putUint32(static_cast<uint32_t>(ptl_sub_profile_idc(i)));
     }
   }
-  bitstream.putFlag(ptl_tool_constraints_present_flag());
-  LIMITATION(!ptl_tool_constraints_present_flag());
+  bitstream.putFlag(ptl_toolset_constraints_present_flag());
+  if (ptl_toolset_constraints_present_flag()) {
+    ptl_profile_toolset_constraints_information().encodeTo(bitstream);
+  }
 }
 
 auto OccupancyInformation::printTo(std::ostream &stream, AtlasId atlasId) const -> std::ostream & {
@@ -561,6 +587,98 @@ void AttributeInformation::encodeTo(Common::OutputBitstream &bitstream, const V3
     bitstream.writeBits(ai_attribute_2d_bit_depth_minus1(i), 5);
     bitstream.putFlag(ai_attribute_MSB_align_flag(i));
   }
+}
+auto operator<<(std::ostream &stream, const ProfileToolsetConstraintsInformation &x)
+    -> std::ostream & {
+  stream << "ptc_one_v3c_frame_only_flag=" << std::boolalpha << x.ptc_one_v3c_frame_only_flag()
+         << '\n';
+  stream << "ptc_eom_constraint_flag=" << std::boolalpha << x.ptc_eom_constraint_flag() << '\n';
+  stream << "ptc_max_map_count_minus1=" << static_cast<int>(x.ptc_max_map_count_minus1()) << '\n';
+  stream << "ptc_max_atlas_count_minus1=" << static_cast<int>(x.ptc_max_atlas_count_minus1())
+         << '\n';
+  stream << "ptc_multiple_map_streams_constraint_flag=" << std::boolalpha
+         << x.ptc_multiple_map_streams_constraint_flag() << '\n';
+  stream << "ptc_plr_constraint_flag=" << std::boolalpha << x.ptc_plr_constraint_flag() << '\n';
+  stream << "ptc_attribute_max_dimension_minus1="
+         << static_cast<int>(x.ptc_attribute_max_dimension_minus1()) << '\n';
+  stream << "ptc_attribute_max_dimension_partitions_minus1="
+         << static_cast<int>(x.ptc_attribute_max_dimension_partitions_minus1()) << '\n';
+  stream << "ptc_no_eight_orientations_constraint_flag=" << std::boolalpha
+         << x.ptc_no_eight_orientations_constraint_flag() << '\n';
+  stream << "ptc_no_45degree_projection_patch_constraint_flag=" << std::boolalpha
+         << x.ptc_no_45degree_projection_patch_constraint_flag() << '\n';
+  stream << "ptc_restricted_geometry_flag=" << std::boolalpha << x.ptc_restricted_geometry_flag()
+         << '\n';
+  stream << "ptc_num_reserved_constraint_bytes="
+         << static_cast<int>(x.ptc_num_reserved_constraint_bytes()) << '\n';
+  return stream;
+}
+
+auto ProfileToolsetConstraintsInformation::operator==(
+    const ProfileToolsetConstraintsInformation &other) const noexcept -> bool {
+  return ptc_one_v3c_frame_only_flag() == other.ptc_one_v3c_frame_only_flag() &&
+         ptc_eom_constraint_flag() == other.ptc_eom_constraint_flag() &&
+         ptc_max_map_count_minus1() == other.ptc_max_map_count_minus1() &&
+         ptc_max_atlas_count_minus1() == other.ptc_max_atlas_count_minus1() &&
+         ptc_multiple_map_streams_constraint_flag() ==
+             other.ptc_multiple_map_streams_constraint_flag() &&
+         ptc_plr_constraint_flag() == other.ptc_plr_constraint_flag() &&
+         ptc_attribute_max_dimension_minus1() == other.ptc_attribute_max_dimension_minus1() &&
+         ptc_attribute_max_dimension_partitions_minus1() ==
+             other.ptc_attribute_max_dimension_partitions_minus1() &&
+         ptc_no_eight_orientations_constraint_flag() ==
+             other.ptc_no_eight_orientations_constraint_flag() &&
+         ptc_no_45degree_projection_patch_constraint_flag() ==
+             other.ptc_no_45degree_projection_patch_constraint_flag() &&
+         ptc_restricted_geometry_flag() == other.ptc_restricted_geometry_flag() &&
+         ptc_num_reserved_constraint_bytes() == other.ptc_num_reserved_constraint_bytes();
+}
+
+auto ProfileToolsetConstraintsInformation::operator!=(
+    const ProfileToolsetConstraintsInformation &other) const noexcept -> bool {
+  return !operator==(other);
+}
+
+auto ProfileToolsetConstraintsInformation::decodeFrom(Common::InputBitstream &bitstream)
+    -> ProfileToolsetConstraintsInformation {
+  auto x = ProfileToolsetConstraintsInformation{};
+
+  x.ptc_one_v3c_frame_only_flag(bitstream.getFlag());
+  x.ptc_eom_constraint_flag(bitstream.getFlag());
+  x.ptc_max_map_count_minus1(bitstream.readBits<uint8_t>(4));
+  x.ptc_max_atlas_count_minus1(bitstream.readBits<uint8_t>(4));
+  x.ptc_multiple_map_streams_constraint_flag(bitstream.getFlag());
+  x.ptc_plr_constraint_flag(bitstream.getFlag());
+  x.ptc_attribute_max_dimension_minus1(bitstream.readBits<uint8_t>(6));
+  x.ptc_attribute_max_dimension_partitions_minus1(bitstream.readBits<uint8_t>(6));
+  x.ptc_no_eight_orientations_constraint_flag(bitstream.getFlag());
+  x.ptc_no_45degree_projection_patch_constraint_flag(bitstream.getFlag());
+  x.ptc_restricted_geometry_flag(bitstream.getFlag());
+  bitstream.readBits<uint8_t>(5);
+  x.ptc_num_reserved_constraint_bytes(bitstream.getUint8());
+  // 23090-12 restrictions:
+  //   * ptc_num_reserved_constraint_bytes[ ] == 0
+  LIMITATION(x.ptc_num_reserved_constraint_bytes() == 0);
+  return x;
+}
+
+void ProfileToolsetConstraintsInformation::encodeTo(Common::OutputBitstream &bitstream) const {
+  bitstream.putFlag(ptc_one_v3c_frame_only_flag());
+  bitstream.putFlag(ptc_eom_constraint_flag());
+  bitstream.writeBits(ptc_max_map_count_minus1(), 4);
+  bitstream.writeBits(ptc_max_atlas_count_minus1(), 4);
+  bitstream.putFlag(ptc_multiple_map_streams_constraint_flag());
+  bitstream.putFlag(ptc_plr_constraint_flag());
+  bitstream.writeBits(ptc_attribute_max_dimension_minus1(), 6);
+  bitstream.writeBits(ptc_attribute_max_dimension_partitions_minus1(), 6);
+  bitstream.putFlag(ptc_no_eight_orientations_constraint_flag());
+  bitstream.putFlag(ptc_no_45degree_projection_patch_constraint_flag());
+  bitstream.putFlag(ptc_restricted_geometry_flag());
+  constexpr auto ptl_reserved_zero_5bits = 0;
+  bitstream.writeBits(ptl_reserved_zero_5bits, 5);
+  // 23090-12 restrictions:
+  //   * ptc_num_reserved_constraint_bytes[ ] == 0
+  bitstream.putUint8(ptc_num_reserved_constraint_bytes());
 }
 
 constexpr auto PackingInformation::pin_codec_id() const noexcept -> std::uint8_t {

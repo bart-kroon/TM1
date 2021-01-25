@@ -72,12 +72,12 @@ ptl_max_decodes_idc=unconstrained
 ptl_level_idc=[unknown:0]
 ptl_num_sub_profiles=0
 ptl_extended_sub_profile_flag=false
-ptl_tool_constraints_present_flag=false
+ptl_toolset_constraints_present_flag=false
 )");
 
   REQUIRE(bitCodingTest(x, 72));
 
-  SECTION("Example") {
+  SECTION("Example 1") {
     x.ptl_tier_flag(true)
         .ptl_profile_codec_group_idc(PtlProfileCodecGroupIdc::HEVC_Main10)
         .ptl_profile_toolset_idc(PtlProfilePccToolsetIdc::VPCC_Extended)
@@ -88,7 +88,7 @@ ptl_tool_constraints_present_flag=false
         .ptl_extended_sub_profile_flag(true)
         .ptl_sub_profile_idc(0, 3)
         .ptl_sub_profile_idc(1, UINT64_MAX)
-        .ptl_tool_constraints_present_flag(false);
+        .ptl_toolset_constraints_present_flag(false);
 
     REQUIRE(toString(x) == R"(ptl_tier_flag=true
 ptl_profile_codec_group_idc=HEVC Main10
@@ -100,10 +100,103 @@ ptl_num_sub_profiles=2
 ptl_extended_sub_profile_flag=true
 ptl_sub_profile_idc[ 0 ]=3
 ptl_sub_profile_idc[ 1 ]=18446744073709551615
-ptl_tool_constraints_present_flag=false
+ptl_toolset_constraints_present_flag=false
 )");
 
     REQUIRE(bitCodingTest(x, 200));
+  }
+
+  SECTION("Example 2") {
+    auto ptci = ProfileToolsetConstraintsInformation{};
+
+    x.ptl_tier_flag(true)
+        .ptl_profile_codec_group_idc(PtlProfileCodecGroupIdc::HEVC_Main10)
+        .ptl_profile_toolset_idc(PtlProfilePccToolsetIdc::VPCC_Extended)
+        .ptl_profile_reconstruction_idc(PtlProfileReconstructionIdc::Rec_Unconstrained)
+        .ptl_max_decodes_idc(PtlMaxDecodesIdc::max_4)
+        .ptl_level_idc(PtlLevelIdc::Level_2_0)
+        .ptl_num_sub_profiles(2)
+        .ptl_extended_sub_profile_flag(true)
+        .ptl_sub_profile_idc(0, 3)
+        .ptl_sub_profile_idc(1, UINT64_MAX)
+        .ptl_toolset_constraints_present_flag(true)
+        .ptl_profile_toolset_constraints_information(ptci);
+
+    REQUIRE(toString(x) == R"(ptl_tier_flag=true
+ptl_profile_codec_group_idc=HEVC Main10
+ptl_profile_toolset_idc=V-PCC Extended
+ptl_profile_reconstruction_idc=Rec Unconstrained
+ptl_max_decodes_idc=max_4
+ptl_level_idc=Level 2.0
+ptl_num_sub_profiles=2
+ptl_extended_sub_profile_flag=true
+ptl_sub_profile_idc[ 0 ]=3
+ptl_sub_profile_idc[ 1 ]=18446744073709551615
+ptl_toolset_constraints_present_flag=true
+ptc_one_v3c_frame_only_flag=false
+ptc_eom_constraint_flag=false
+ptc_max_map_count_minus1=0
+ptc_max_atlas_count_minus1=0
+ptc_multiple_map_streams_constraint_flag=false
+ptc_plr_constraint_flag=false
+ptc_attribute_max_dimension_minus1=0
+ptc_attribute_max_dimension_partitions_minus1=0
+ptc_no_eight_orientations_constraint_flag=false
+ptc_no_45degree_projection_patch_constraint_flag=false
+ptc_restricted_geometry_flag=false
+ptc_num_reserved_constraint_bytes=0
+)");
+
+    REQUIRE(bitCodingTest(x, 240));
+  }
+}
+
+TEST_CASE("profile_toolset_constraints_information", "[V3C Parameter Set]") {
+  auto x = ProfileToolsetConstraintsInformation{};
+
+  REQUIRE(toString(x) == R"(ptc_one_v3c_frame_only_flag=false
+ptc_eom_constraint_flag=false
+ptc_max_map_count_minus1=0
+ptc_max_atlas_count_minus1=0
+ptc_multiple_map_streams_constraint_flag=false
+ptc_plr_constraint_flag=false
+ptc_attribute_max_dimension_minus1=0
+ptc_attribute_max_dimension_partitions_minus1=0
+ptc_no_eight_orientations_constraint_flag=false
+ptc_no_45degree_projection_patch_constraint_flag=false
+ptc_restricted_geometry_flag=false
+ptc_num_reserved_constraint_bytes=0
+)");
+
+  REQUIRE(bitCodingTest(x, 40));
+
+  SECTION("Example 1") {
+    x.ptc_one_v3c_frame_only_flag(true)
+        .ptc_eom_constraint_flag(true)
+        .ptc_max_map_count_minus1(5)
+        .ptc_max_atlas_count_minus1(2)
+        .ptc_multiple_map_streams_constraint_flag(false)
+        .ptc_plr_constraint_flag(true)
+        .ptc_attribute_max_dimension_minus1(3)
+        .ptc_attribute_max_dimension_partitions_minus1(14)
+        .ptc_no_eight_orientations_constraint_flag(true)
+        .ptc_no_45degree_projection_patch_constraint_flag(false);
+
+    REQUIRE(toString(x) == R"(ptc_one_v3c_frame_only_flag=true
+ptc_eom_constraint_flag=true
+ptc_max_map_count_minus1=5
+ptc_max_atlas_count_minus1=2
+ptc_multiple_map_streams_constraint_flag=false
+ptc_plr_constraint_flag=true
+ptc_attribute_max_dimension_minus1=3
+ptc_attribute_max_dimension_partitions_minus1=14
+ptc_no_eight_orientations_constraint_flag=true
+ptc_no_45degree_projection_patch_constraint_flag=false
+ptc_restricted_geometry_flag=false
+ptc_num_reserved_constraint_bytes=0
+)");
+
+    REQUIRE(bitCodingTest(x, 40));
   }
 }
 
@@ -381,7 +474,7 @@ ptl_max_decodes_idc=unconstrained
 ptl_level_idc=[unknown:0]
 ptl_num_sub_profiles=0
 ptl_extended_sub_profile_flag=false
-ptl_tool_constraints_present_flag=false
+ptl_toolset_constraints_present_flag=false
 vps_v3c_parameter_set_id=0
 vps_atlas_count_minus1=0
 vps_atlas_id( 0 )=0
@@ -447,7 +540,7 @@ ptl_max_decodes_idc=unconstrained
 ptl_level_idc=[unknown:0]
 ptl_num_sub_profiles=0
 ptl_extended_sub_profile_flag=false
-ptl_tool_constraints_present_flag=false
+ptl_toolset_constraints_present_flag=false
 vps_v3c_parameter_set_id=15
 vps_atlas_count_minus1=2
 vps_atlas_id( 0 )=30
@@ -525,6 +618,102 @@ vps_extension_data_byte=250
 vps_extension_data_byte=15
 )");
     const std::size_t expected_number_of_bytes = 41 + (2 * 15); // two times packing_information
+    REQUIRE(byteCodingTest(vps, expected_number_of_bytes));
+  }
+
+  SECTION("Example 3 for mpi") {
+
+    auto ptci = ProfileToolsetConstraintsInformation{};
+    ptci.ptc_restricted_geometry_flag(true);
+
+    auto x = ProfileTierLevel{};
+    x.ptl_toolset_constraints_present_flag(true).ptl_profile_toolset_constraints_information(ptci);
+
+    auto y = AttributeInformation{};
+    y.ai_attribute_count(2)
+        .ai_attribute_MSB_align_flag(0, false)
+        .ai_attribute_MSB_align_flag(1, false)
+        .ai_attribute_type_id(0, AiAttributeTypeId::ATTR_TEXTURE)
+        .ai_attribute_type_id(1, AiAttributeTypeId::ATTR_TRANSPARENCY)
+        .ai_attribute_codec_id(0, 1)
+        .ai_attribute_codec_id(1, 1)
+        .ai_attribute_dimension_minus1(0, 2)
+        .ai_attribute_dimension_minus1(1, 0)
+        .ai_attribute_2d_bit_depth_minus1(0, 9)
+        .ai_attribute_2d_bit_depth_minus1(1, 9);
+
+    const auto j0 = AtlasId{20};
+
+    vps.profile_tier_level(x)
+        .vps_v3c_parameter_set_id(15)
+        .vps_atlas_count_minus1(0)
+        .vps_atlas_id(0, j0)
+        .vps_frame_width(j0, 4096)
+        .vps_frame_height(j0, 2048)
+        .vps_map_count_minus1(j0, 0)
+        .vps_auxiliary_video_present_flag(j0, false)
+        .vps_occupancy_video_present_flag(j0, false)
+        .vps_attribute_video_present_flag(j0, true)
+        .attribute_information(j0, y)
+        .vps_extension_present_flag(true)
+        .vps_miv_extension_present_flag(true)
+        .vps_packing_information_present_flag(false)
+        .vps_miv_extension(VpsMivExtension{})
+        .vps_extension_6bits(0);
+
+    REQUIRE(toString(vps) == R"(ptl_tier_flag=false
+ptl_profile_codec_group_idc=AVC Progressive High
+ptl_profile_toolset_idc=V-PCC Basic
+ptl_profile_reconstruction_idc=Rec0 (V-PCC)
+ptl_max_decodes_idc=unconstrained
+ptl_level_idc=[unknown:0]
+ptl_num_sub_profiles=0
+ptl_extended_sub_profile_flag=false
+ptl_toolset_constraints_present_flag=true
+ptc_one_v3c_frame_only_flag=false
+ptc_eom_constraint_flag=false
+ptc_max_map_count_minus1=0
+ptc_max_atlas_count_minus1=0
+ptc_multiple_map_streams_constraint_flag=false
+ptc_plr_constraint_flag=false
+ptc_attribute_max_dimension_minus1=0
+ptc_attribute_max_dimension_partitions_minus1=0
+ptc_no_eight_orientations_constraint_flag=false
+ptc_no_45degree_projection_patch_constraint_flag=false
+ptc_restricted_geometry_flag=true
+ptc_num_reserved_constraint_bytes=0
+vps_v3c_parameter_set_id=15
+vps_atlas_count_minus1=0
+vps_atlas_id( 0 )=20
+vps_frame_width( 20 )=4096
+vps_frame_height( 20 )=2048
+vps_map_count_minus1( 20 )=0
+vps_auxiliary_video_present_flag( 20 )=false
+vps_occupancy_video_present_flag( 20 )=false
+vps_geometry_video_present_flag( 20 )=false
+vps_attribute_video_present_flag( 20 )=true
+ai_attribute_count( 20 )=2
+ai_attribute_type_id( 20, 0 )=ATTR_TEXTURE
+ai_attribute_codec_id( 20, 0 )=1
+ai_attribute_dimension_minus1( 20, 0 )=2
+ai_attribute_2d_bit_depth_minus1( 20, 0 )=9
+ai_attribute_MSB_align_flag( 20, 0 )=false
+ai_attribute_type_id( 20, 1 )=ATTR_TRANSPARENCY
+ai_attribute_codec_id( 20, 1 )=1
+ai_attribute_dimension_minus1( 20, 1 )=0
+ai_attribute_2d_bit_depth_minus1( 20, 1 )=9
+ai_attribute_MSB_align_flag( 20, 1 )=false
+vps_extension_present_flag=true
+vps_packing_information_present_flag=false
+vps_miv_extension_present_flag=true
+vps_extension_6bits=0
+vme_depth_low_quality_flag=false
+vme_geometry_scale_enabled_flag=false
+vme_max_entities_minus1=0
+vme_embedded_occupancy_flag=true
+gm_group_count=0
+)");
+    const std::size_t expected_number_of_bytes = 33;
     REQUIRE(byteCodingTest(vps, expected_number_of_bytes));
   }
 }

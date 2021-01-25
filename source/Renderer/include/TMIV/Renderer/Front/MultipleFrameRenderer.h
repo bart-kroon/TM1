@@ -52,6 +52,14 @@ public:
                             FrameMapping::const_iterator first,
                             FrameMapping::const_iterator last) const;
 
+  [[nodiscard]] auto isOptimizedForRestrictedGeometry() const -> bool {
+    // NOTe(FT): added to handle the absence of renderer in the G3 anchor type
+    if (m_renderer) {
+      return m_renderer->isOptimizedForRestrictedGeometry();
+    }
+    return false;
+  }
+
 private:
   void renderFrame(MivBitstream::AccessUnit frame, std::int32_t outputFrameIndex,
                    const std::string &cameraName, bool isPoseTrace) const;

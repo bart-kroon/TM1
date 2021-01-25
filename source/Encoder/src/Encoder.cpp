@@ -93,7 +93,7 @@ Encoder::Configuration::Configuration(const Common::Json &rootNode,
     maxLumaPictureSize = rootNode.require("maxLumaPictureSize").as<int>();
     maxAtlases = rootNode.require("maxAtlases").as<int>();
     const auto numGroups = rootNode.require("numGroups").as<int>();
-    maxAtlases = maxAtlases / numGroups;
+    maxAtlases = maxAtlases / std::max(1, numGroups);
   }
 
   // Read the entity encoding range if existed

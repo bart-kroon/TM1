@@ -62,7 +62,7 @@ BasicViewAllocator::BasicViewAllocator(const Common::Json &rootNode,
     , m_maxAtlases{rootNode.require("maxAtlases").as<int>()}
     , m_minNonCodedViews{componentNode.require("minNonCodedViews").as<int>()}
     , m_maxBasicViewFraction{componentNode.require("maxBasicViewFraction").as<double>()} {
-  VERIFY(0 < m_numGroups && m_numGroups <= m_maxAtlases);
+  VERIFY(m_numGroups <= m_maxAtlases);
   VERIFY(0 < m_maxLumaPictureSize);
   VERIFY(0 <= m_minNonCodedViews);
   VERIFY(0. < m_maxBasicViewFraction && m_maxBasicViewFraction <= 1.);
@@ -101,7 +101,7 @@ auto BasicViewAllocator::isBasicView() const -> std::vector<bool> {
 }
 
 auto BasicViewAllocator::basicViewCount() const -> size_t {
-  const auto numAtlases = m_maxAtlases / m_numGroups;
+  const auto numAtlases = m_maxAtlases / std::max(1, m_numGroups);
   const auto maxSamples =
       static_cast<size_t>(m_maxBasicViewFraction * numAtlases * m_maxLumaPictureSize);
 

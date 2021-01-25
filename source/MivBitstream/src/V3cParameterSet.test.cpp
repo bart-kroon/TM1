@@ -346,12 +346,12 @@ TEST_CASE("group_mapping", "[V3C Parameter Set]") {
   SECTION("Two groups") {
     auto unit = GroupMapping{};
     unit.gm_group_count(2);
-    unit.gm_group_id(AtlasId{0}, 1);
-    unit.gm_group_id(AtlasId{1}, 0);
+    unit.gm_group_id(0, 1);
+    unit.gm_group_id(1, 0);
 
     REQUIRE(toString(unit) == R"(gm_group_count=2
-gm_group_id (0)=1
-gm_group_id (1)=0
+gm_group_id[ 0 ]=1
+gm_group_id[ 1 ]=0
 )");
     REQUIRE(bitCodingTest(unit, 6, vps));
   }
@@ -370,7 +370,6 @@ TEST_CASE("v3c_parameter_set", "[V3C Parameter Set]") {
     vps.vps_miv_extension()
         .vme_depth_low_quality_flag(true)
         .vme_geometry_scale_enabled_flag(true)
-        .vme_num_groups_minus1(3)
         .vme_max_entities_minus1(20)
         .vme_embedded_occupancy_flag(true);
 
@@ -399,7 +398,6 @@ vps_miv_extension_present_flag=true
 vps_extension_6bits=0
 vme_depth_low_quality_flag=true
 vme_geometry_scale_enabled_flag=true
-vme_num_groups_minus1=3
 vme_max_entities_minus1=20
 vme_embedded_occupancy_flag=true
 gm_group_count=0
@@ -518,7 +516,6 @@ pin_region_map_index(32,0)=0
 pin_region_rotation_flag(32,0)=false
 vme_depth_low_quality_flag=false
 vme_geometry_scale_enabled_flag=false
-vme_num_groups_minus1=0
 vme_max_entities_minus1=0
 vme_embedded_occupancy_flag=true
 gm_group_count=0
@@ -527,7 +524,7 @@ vps_extension_data_byte=2
 vps_extension_data_byte=250
 vps_extension_data_byte=15
 )");
-    const std::size_t expected_number_of_bytes = 42 + (2 * 15); // two times packing_information
+    const std::size_t expected_number_of_bytes = 41 + (2 * 15); // two times packing_information
     REQUIRE(byteCodingTest(vps, expected_number_of_bytes));
   }
 }

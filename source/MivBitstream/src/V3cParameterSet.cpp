@@ -38,6 +38,8 @@
 #include <type_traits>
 #include <utility>
 
+#include <fmt/ostream.h>
+
 namespace TMIV::MivBitstream {
 auto operator<<(std::ostream &stream, const PtlProfileCodecGroupIdc &x) -> std::ostream & {
   switch (x) {
@@ -779,27 +781,26 @@ void PackingInformation::encodeTo(Common::OutputBitstream &bitstream) const {
   }
 }
 
-auto GroupMapping::gm_group_id(AtlasId i) const noexcept -> unsigned {
+auto GroupMapping::gm_group_id(std::size_t i) const noexcept -> std::uint8_t {
   VERIFY_MIVBITSTREAM(0 < gm_group_count());
-  VERIFY_MIVBITSTREAM(i.value() < m_gm_group_id.size());
-  return m_gm_group_id[i.value()];
+  VERIFY_MIVBITSTREAM(i < m_gm_group_id.size());
+  return m_gm_group_id[i];
 }
 
-auto GroupMapping::gm_group_id(AtlasId i, unsigned value) noexcept -> GroupMapping & {
+auto GroupMapping::gm_group_id(std::size_t i, std::uint8_t value) noexcept -> GroupMapping & {
   VERIFY_MIVBITSTREAM(value < gm_group_count());
-  if (i.value() <= m_gm_group_id.size()) {
-    m_gm_group_id.resize(i.value() + 1);
+  if (m_gm_group_id.size() <= i) {
+    m_gm_group_id.resize(i + 1, UINT8_MAX);
   }
-  m_gm_group_id[i.value()] = value;
+  m_gm_group_id[i] = value;
   return *this;
 }
 
 auto operator<<(std::ostream &stream, const GroupMapping &x) -> std::ostream & {
-  stream << "gm_group_count=" << static_cast<unsigned>(x.gm_group_count()) << '\n';
+  fmt::print(stream, "gm_group_count={}\n", x.gm_group_count());
   if (x.gm_group_count() > 0) {
-    for (std::uint8_t i = 0; i < x.gm_group_count(); ++i) {
-      stream << "gm_group_id (" << static_cast<unsigned>(i) << ")=" << x.gm_group_id(AtlasId{i})
-             << '\n';
+    for (std::size_t i = 0; i < x.m_gm_group_id.size(); ++i) {
+      fmt::print(stream, "gm_group_id[ {} ]={}\n", i, x.gm_group_id(i));
     }
   }
   return stream;
@@ -818,9 +819,8 @@ auto GroupMapping::decodeFrom(Common::InputBitstream &bitstream, const V3cParame
   auto result = GroupMapping{};
   result.gm_group_count(bitstream.readBits<unsigned>(4));
   if (result.gm_group_count() > 0) {
-    const auto numberOfBitsForGroupId = Common::ceilLog2(result.gm_group_count());
     for (std::uint8_t i = 0; i <= vps.vps_atlas_count_minus1(); ++i) {
-      result.gm_group_id(AtlasId{i}, bitstream.readBits<unsigned>(numberOfBitsForGroupId));
+      result.gm_group_id(i, bitstream.getUVar<uint8_t>(result.gm_group_count()));
     }
   }
   return result;
@@ -829,9 +829,8 @@ auto GroupMapping::decodeFrom(Common::InputBitstream &bitstream, const V3cParame
 void GroupMapping::encodeTo(Common::OutputBitstream &bitstream, const V3cParameterSet &vps) const {
   bitstream.writeBits(gm_group_count(), 4);
   if (gm_group_count() > 0) {
-    const auto numberOfBitsForGroupId = Common::ceilLog2(gm_group_count());
     for (std::uint8_t i = 0; i <= vps.vps_atlas_count_minus1(); ++i) {
-      bitstream.writeBits(gm_group_id(AtlasId{i}), numberOfBitsForGroupId);
+      bitstream.putUVar(gm_group_id(i), gm_group_count());
     }
   }
 }
@@ -842,19 +841,11 @@ auto VpsMivExtension::vme_occupancy_scale_enabled_flag(bool value) noexcept -> V
   return *this;
 }
 
-auto VpsMivExtension::group_mapping() const -> GroupMapping { return m_group_mapping; }
-
-auto VpsMivExtension::group_mapping(GroupMapping &&value) -> VpsMivExtension & {
-  m_group_mapping = std::move(value);
-  return *this;
-}
-
 auto operator<<(std::ostream &stream, const VpsMivExtension &x) -> std::ostream & {
   stream << "vme_depth_low_quality_flag=" << std::boolalpha << x.vme_depth_low_quality_flag()
          << '\n';
   stream << "vme_geometry_scale_enabled_flag=" << std::boolalpha
          << x.vme_geometry_scale_enabled_flag() << '\n';
-  stream << "vme_num_groups_minus1=" << x.vme_num_groups_minus1() << '\n';
   stream << "vme_max_entities_minus1=" << x.vme_max_entities_minus1() << '\n';
   stream << "vme_embedded_occupancy_flag=" << std::boolalpha << x.vme_embedded_occupancy_flag()
          << '\n';
@@ -871,7 +862,6 @@ auto VpsMivExtension::decodeFrom(Common::InputBitstream &bitstream, const V3cPar
   auto x = VpsMivExtension{};
   x.vme_depth_low_quality_flag(bitstream.getFlag());
   x.vme_geometry_scale_enabled_flag(bitstream.getFlag());
-  x.vme_num_groups_minus1(bitstream.getUExpGolomb<unsigned>());
   x.vme_max_entities_minus1(bitstream.getUExpGolomb<unsigned>());
   x.vme_embedded_occupancy_flag(bitstream.getFlag());
   if (!x.vme_embedded_occupancy_flag()) {
@@ -880,7 +870,7 @@ auto VpsMivExtension::decodeFrom(Common::InputBitstream &bitstream, const V3cPar
   for (uint8_t atlasIdx = 0; atlasIdx <= vps.vps_atlas_count_minus1(); ++atlasIdx) {
     bitstream.getFlag();
   }
-  x.group_mapping(GroupMapping::decodeFrom(bitstream, vps));
+  x.group_mapping() = GroupMapping::decodeFrom(bitstream, vps);
   return x;
 }
 
@@ -888,7 +878,6 @@ void VpsMivExtension::encodeTo(Common::OutputBitstream &bitstream,
                                const V3cParameterSet &vps) const {
   bitstream.putFlag(vme_depth_low_quality_flag());
   bitstream.putFlag(vme_geometry_scale_enabled_flag());
-  bitstream.putUExpGolomb(vme_num_groups_minus1());
   bitstream.putUExpGolomb(vme_max_entities_minus1());
   bitstream.putFlag(vme_embedded_occupancy_flag());
   if (!vme_embedded_occupancy_flag()) {

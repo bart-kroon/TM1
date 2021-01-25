@@ -1,5 +1,6 @@
 {
-    "attributeOffsetEnabledFlag": false,
+    "attributeOffsetBitCount": 10,
+    "attributeOffsetEnabledFlag": true,
     "blockSizeDepthQualityDependent": [ 16, 32 ],
     "configDirectory": "config",
     "DepthQualityAssessor": {
@@ -8,20 +9,32 @@
     },
     "DepthQualityAssessorMethod": "DepthQualityAssessor",
     "dynamicDepthRange": true,
-    "Encoder": {
+    "GroupBasedEncoder": {
         "Aggregator": {},
         "AggregatorMethod": "Aggregator",
         "BasicViewAllocator": {
-            "maxBasicViewFraction": 1.0,
+            "maxBasicViewFraction": 0.5,
             "minNonCodedViews": 3,
-            "outputAdditionalViews": false
+            "outputAdditionalViews": true
         },
         "dilate": 16,
         "GeometryQuantizer": {
             "depthOccThresholdIfSet": 64
         },
         "GeometryQuantizerMethod": "GeometryQuantizer",
-        "NoPruner": {},
+        "HierarchicalPruner": {
+            "depthParameter": 50,
+            "dilate": 5,
+            "enable2ndPassPruner": true,
+            "erode": 2,
+            "maxBasicViewsPerGraph": 3,
+            "maxColorError": 0.1,
+            "maxDepthError": 0.1,
+            "maxLumaError": 0.04,
+            "maxStretching": 5,
+            "rayAngleParameter": 10,
+            "stretchingParameter": 3
+        },
         "Packer": {
             "enableMerging": true,
             "MinPatchSize": 16,
@@ -31,10 +44,10 @@
             "enableRecursiveSplit": true
         },
         "PackerMethod": "Packer",
-        "PrunerMethod": "NoPruner",
+        "PrunerMethod": "HierarchicalPruner",
         "ViewOptimizerMethod": "BasicViewAllocator"
     },
-    "EncoderMethod": "Encoder",
+    "EncoderMethod": "GroupBasedEncoder",
     "geometryScaleEnabledFlag": true,
     "haveGeometryVideo": true,
     "haveOccupancyVideo": false,
@@ -44,15 +57,15 @@
     "inputSequenceConfigPathFmt": "ctc/sequences/{1}.json",
     "inputTexturePathFmt": "{1}/{3}_texture_{4}x{5}_{6}.yuv",
     "intraPeriod": 32,
-    "maxAtlases": 2,
+    "maxAtlases": 6,
     "maxEntities": 1,
-    "maxLumaPictureSize": 8912896,
-    "maxLumaSampleRate": 1069547520.0,
-    "numGroups": 0,
+    "maxLumaPictureSize": 4456448,
+    "maxLumaSampleRate": 2139095040.0,
+    "numGroups": 3,
     "OmafV1CompatibleFlag": false,
     "oneViewPerAtlasFlag": false,
-    "outputBitstreamPathFmt": "V{0}/{1}/TMIV_V{0}_{1}.bit",
-    "outputGeometryVideoDataPathFmt": "V{0}/{1}/TMIV_V{0}_{1}_geo_c{3:02}_{4}x{5}_yuv420p10le.yuv",
-    "outputTextureVideoDataPathFmt": "V{0}/{1}/TMIV_V{0}_{1}_tex_c{3:02}_{4}x{5}_yuv420p10le.yuv",
-    "outputDirectory": "."
+    "outputBitstreamPathFmt": "U{0}/{1}/TMIV_U{0}_{1}.bit",
+    "outputDirectory": ".",
+    "outputGeometryVideoDataPathFmt": "U{0}/{1}/TMIV_U{0}_{1}_geo_c{3:02}_{4}x{5}_yuv420p10le.yuv",
+    "outputTextureVideoDataPathFmt": "U{0}/{1}/TMIV_U{0}_{1}_tex_c{3:02}_{4}x{5}_yuv420p10le.yuv"
 }

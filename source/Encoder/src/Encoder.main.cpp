@@ -139,11 +139,7 @@ private:
       x.dqParamsPresentFlag = node.as<bool>();
     }
 
-    const auto numGroups = static_cast<unsigned>(config.require("numGroups").as<int>());
-    if (numGroups < 1) {
-      throw std::runtime_error("Require numGroups >= 1");
-    }
-    x.vme().vme_num_groups_minus1(numGroups - 1U);
+    x.vme().group_mapping().gm_group_count(config.require("numGroups").as<std::uint8_t>());
 
     const auto maxEntities = static_cast<unsigned>(config.require("maxEntities").as<int>());
     if (maxEntities < 1) {

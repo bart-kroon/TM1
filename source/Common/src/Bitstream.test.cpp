@@ -36,6 +36,7 @@
 #include <TMIV/Common/Bitstream.h>
 
 #include <array>
+#include <utility>
 
 TEST_CASE("Bitstream primitives") {
   std::stringstream stream;
@@ -159,4 +160,16 @@ TEST_CASE("Bitstream primitives") {
       ibitstream.rbspTrailingBits();
     }
   }
+}
+
+TEST_CASE("ceilLog2") {
+  using ValuePair = std::pair<std::uint64_t, int>;
+  auto values = GENERATE(table<std::uint64_t, int>(
+      {ValuePair{0, 0}, ValuePair{1, 0}, ValuePair{2, 1}, ValuePair{10, 4}, ValuePair{21, 5},
+       ValuePair{64, 6}, ValuePair{100, 7}}));
+
+  const auto input = std::get<0>(values);
+  const auto expected_result = std::get<1>(values);
+
+  REQUIRE(TMIV::Common::ceilLog2(input) == expected_result);
 }

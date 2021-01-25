@@ -143,7 +143,6 @@ auto AspsMivExtension::asme_patch_attribute_offset_bit_count_minus1() const noex
 }
 
 auto operator<<(std::ostream &stream, const AspsMivExtension &x) -> std::ostream & {
-  stream << "asme_group_id=" << x.asme_group_id() << '\n';
   stream << "asme_ancillary_atlas_flag=" << std::boolalpha << x.asme_ancillary_atlas_flag() << '\n';
   stream << "asme_embedded_occupancy_enabled_flag=" << std::boolalpha
          << x.asme_embedded_occupancy_enabled_flag() << '\n';
@@ -181,11 +180,8 @@ auto operator<<(std::ostream &stream, const AspsMivExtension &x) -> std::ostream
   return stream;
 }
 
-auto AspsMivExtension::decodeFrom(Common::InputBitstream &bitstream, const V3cParameterSet &vps)
-    -> AspsMivExtension {
+auto AspsMivExtension::decodeFrom(Common::InputBitstream &bitstream) -> AspsMivExtension {
   auto x = AspsMivExtension{};
-  x.asme_group_id(
-      bitstream.getUVar<unsigned>(vps.vps_miv_extension().vme_num_groups_minus1() + uint64_t{1}));
   x.asme_ancillary_atlas_flag(bitstream.getFlag());
   x.asme_embedded_occupancy_enabled_flag(bitstream.getFlag());
   if (x.asme_embedded_occupancy_enabled_flag()) {
@@ -212,9 +208,7 @@ auto AspsMivExtension::decodeFrom(Common::InputBitstream &bitstream, const V3cPa
   return x;
 }
 
-void AspsMivExtension::encodeTo(Common::OutputBitstream &bitstream,
-                                const V3cParameterSet &vps) const {
-  bitstream.putUVar(asme_group_id(), vps.vps_miv_extension().vme_num_groups_minus1() + uint64_t{1});
+void AspsMivExtension::encodeTo(Common::OutputBitstream &bitstream) const {
   bitstream.putFlag(asme_ancillary_atlas_flag());
   bitstream.putFlag(asme_embedded_occupancy_enabled_flag());
   if (asme_embedded_occupancy_enabled_flag()) {
@@ -558,7 +552,7 @@ auto AtlasSequenceParameterSetRBSP::decodeFrom(std::istream &stream, const V3cUn
     x.asps_vpcc_extension() = AspsVpccExtension::decodeFrom(bitstream, x);
   }
   if (x.asps_miv_extension_present_flag()) {
-    x.asps_miv_extension() = AspsMivExtension::decodeFrom(bitstream, vps);
+    x.asps_miv_extension() = AspsMivExtension::decodeFrom(bitstream);
   }
   if (x.asps_extension_6bits() != 0) {
     auto aspsExtensionData = std::vector<bool>{};
@@ -646,7 +640,7 @@ void AtlasSequenceParameterSetRBSP::encodeTo(std::ostream &stream, const V3cUnit
     asps_vpcc_extension().encodeTo(bitstream, *this);
   }
   if (asps_miv_extension_present_flag()) {
-    asps_miv_extension().encodeTo(bitstream, vps);
+    asps_miv_extension().encodeTo(bitstream);
   }
   if (asps_extension_6bits() != 0) {
     for (auto bit : aspsExtensionData()) {

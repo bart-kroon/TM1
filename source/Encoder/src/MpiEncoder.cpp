@@ -168,11 +168,6 @@ MpiEncoder::MpiEncoder(const Common::Json &rootNode, const Common::Json &compone
     throw std::runtime_error(
         "Entities are not managed in current version of MPI encoder. Please use maxEntities=1 !!!");
   }
-  const auto numGroups = rootNode.require("numGroups").as<int>();
-  if (1 < numGroups) {
-    throw std::runtime_error(
-        "Groups are not managed in current version of MPI encoder. Please use numGroups=1 !!!");
-  }
 
   // MPI-specific parameters
   m_textureDilation = componentNode.require("TextureDilation").as<int>();
@@ -189,6 +184,14 @@ void MpiEncoder::prepareSequence(MivBitstream::EncoderParams sourceParams) {
   m_params = MivBitstream::EncoderParams{m_overrideAtlasFrameSizes, 10, 0, 0, 10};
 
   m_params.vme() = sourceParams.vme();
+
+  // Group atlases together to restrict atlas-level sub-bitstream access
+  auto &gm = m_params.vme().group_mapping();
+  gm.gm_group_count(1);
+  for (size_t i = 0; i < m_overrideAtlasFrameSizes.size(); ++i) {
+    gm.gm_group_id(i, 0);
+  }
+
   m_params.viewParamsList = sourceParams.viewParamsList;
   m_params.frameRate = sourceParams.frameRate;
   m_params.lengthsInMeters = sourceParams.lengthsInMeters;

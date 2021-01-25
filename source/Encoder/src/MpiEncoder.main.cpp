@@ -166,14 +166,6 @@ private:
       x.vme().vme_depth_low_quality_flag(node.as<bool>());
     }
 
-    const auto numGroups = config.require("numGroups").as<unsigned>();
-    if (numGroups != 1) {
-      throw std::runtime_error(
-          "Groups are not managed in current version of MPI encoder. Please use numGroups=1 !!!");
-    }
-
-    x.vme().vme_num_groups_minus1(numGroups - 1U);
-
     const auto maxEntities = config.require("maxEntities").as<unsigned>();
     if (1 < maxEntities) {
       throw std::runtime_error("Entities are not managed in current version of MPI encoder. Please "

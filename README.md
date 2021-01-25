@@ -648,7 +648,10 @@ These parameters are in the root of the configuration file and may be accessed b
   * **maxEntities:** int; the maximum number of entities whereby "1" disables entity-based coding.
   * **maxLumaSamplerate:** float; the maximum number of luma samples per second counted over all atlases, groups and components. This parameter communicates the equally-named CTC constraint.
   * **maxLumaPictureSize:** int; the maximum number of samples per atlas frame, which corresponds to the maximum number of samples per texture attribute video frame. This parameter communicates the equally-named CTC constraint.
-  * **numGroups:** int; the number of groups of views (at least 1). The groups are formed only when the group-based encoder is selected, but other components use this value for instance to calculate suitable atlas frame sizes per group.
+  * **numGroups:** int; the number of groups of atlases:
+     * 0: No grouping, each atlas is independently useful for rendering (as with the MIV view anchor)
+     * 1: Single group, all atlases are needed for rendering (as with the MIV anchor)
+     * 2: _N_ groups, with the group-based encoder, partitions views to independently encode multiple groups of atlases.
 * Metadata:
   * **OmafV1CompatibleFlag:** bool; when enabled the equally-named flag is written in the bitstream.
   * **dqParamsPresentFlag:** bool; optional parameter, when false the depth quantization parameters are not written to the bitstream.

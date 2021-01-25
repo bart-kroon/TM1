@@ -103,7 +103,6 @@ private:
 // 23090-12: asps_miv_extension( )
 class AspsMivExtension {
 public:
-  [[nodiscard]] constexpr auto asme_group_id() const noexcept;
   [[nodiscard]] constexpr auto asme_ancillary_atlas_flag() const noexcept;
   [[nodiscard]] constexpr auto asme_embedded_occupancy_enabled_flag() const noexcept;
   [[nodiscard]] constexpr auto asme_depth_occ_threshold_flag() const noexcept;
@@ -118,7 +117,6 @@ public:
   [[nodiscard]] auto asme_patch_attribute_offset_bit_count_minus1() const noexcept -> std::uint16_t;
   [[nodiscard]] constexpr auto asme_max_entity_id() const noexcept -> std::uint16_t;
 
-  constexpr auto asme_group_id(unsigned value) noexcept -> auto &;
   constexpr auto asme_ancillary_atlas_flag(bool value) noexcept -> auto &;
   constexpr auto asme_embedded_occupancy_enabled_flag(bool value) noexcept -> auto &;
   constexpr auto asme_depth_occ_threshold_flag(bool value) noexcept -> auto &;
@@ -139,13 +137,11 @@ public:
   constexpr auto operator==(const AspsMivExtension &other) const noexcept;
   constexpr auto operator!=(const AspsMivExtension &other) const noexcept;
 
-  static auto decodeFrom(Common::InputBitstream &bitstream, const V3cParameterSet &vps)
-      -> AspsMivExtension;
+  static auto decodeFrom(Common::InputBitstream &bitstream) -> AspsMivExtension;
 
-  void encodeTo(Common::OutputBitstream &bitstream, const V3cParameterSet &vps) const;
+  void encodeTo(Common::OutputBitstream &bitstream) const;
 
 private:
-  unsigned m_asme_group_id{};
   bool m_asme_ancillary_atlas_flag{};
   bool m_asme_embedded_occupancy_enabled_flag{};
   bool m_asme_depth_occ_map_threshold_flag{};

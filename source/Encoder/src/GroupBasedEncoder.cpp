@@ -64,7 +64,7 @@ auto computeDominantAxis(std::vector<float> &Tx, std::vector<float> &Ty, std::ve
 
 GroupBasedEncoder::GroupBasedEncoder(const Common::Json &rootNode,
                                      const Common::Json &componentNode) {
-  const auto numGroups_ = static_cast<size_t>(rootNode.require("numGroups").as<int>());
+  const auto numGroups_ = rootNode.require("numGroups").as<size_t>();
 
   while (m_encoders.size() < numGroups_) {
     m_encoders.emplace_back(rootNode, componentNode);
@@ -124,7 +124,7 @@ auto GroupBasedEncoder::sourceSplitter(const MivBitstream::EncoderParams &params
   auto grouping = Grouping{};
 
   const auto &viewParamsList = params.viewParamsList;
-  const auto numGroups = params.vme().vme_num_groups_minus1() + 1;
+  const auto numGroups = params.vme().group_mapping().gm_group_count();
 
   // Compute axial ranges and find the dominant one
   auto Tx = std::vector<float>{};
@@ -153,7 +153,7 @@ auto GroupBasedEncoder::sourceSplitter(const MivBitstream::EncoderParams &params
     viewsInGroup.clear();
     auto camerasInGroup = MivBitstream::ViewParamsList{};
     auto camerasOutGroup = MivBitstream::ViewParamsList{};
-    if (gIndex < numGroups - 1) {
+    if (gIndex + 1U < numGroups) {
       numViewsPerGroup.push_back(static_cast<int>(std::floor(viewParamsList.size() / numGroups)));
       int64_t maxElementIndex = 0;
 
@@ -278,7 +278,11 @@ auto GroupBasedEncoder::mergeVps(const std::vector<const MivBitstream::V3cParame
       .vps_miv_extension_present_flag(true)
       .vps_miv_extension(vps.front()->vps_miv_extension());
 
+  auto &gm = x.vps_miv_extension().group_mapping();
+  gm.gm_group_count(static_cast<uint8_t>(vps.size()));
+
   uint8_t kOut = 0;
+  uint8_t groupIndex = 0;
 
   for (const auto &v : vps) {
     assert(v->profile_tier_level() == x.profile_tier_level());
@@ -291,6 +295,7 @@ auto GroupBasedEncoder::mergeVps(const std::vector<const MivBitstream::V3cParame
       const auto jIn = v->vps_atlas_id(kIn);
       const auto jOut = MivBitstream::AtlasId{kOut};
       x.vps_atlas_id(kOut, jOut);
+      gm.gm_group_id(kOut, groupIndex);
 
       x.vps_frame_width(jOut, v->vps_frame_width(jIn));
       x.vps_frame_height(jOut, v->vps_frame_height(jIn));
@@ -312,6 +317,8 @@ auto GroupBasedEncoder::mergeVps(const std::vector<const MivBitstream::V3cParame
         x.attribute_information(jOut) = v->attribute_information(jIn);
       }
     }
+
+    ++groupIndex;
   }
 
   assert(kOut == atlasCount);
@@ -323,7 +330,7 @@ auto GroupBasedEncoder::mergeParams(
     -> const MivBitstream::EncoderParams & {
   // Start with first group
   m_params = *perGroupParams.front();
-  assert(m_params.vme().vme_num_groups_minus1() + size_t{1} == perGroupParams.size());
+  m_params.patchParamsList.clear();
 
   // Merge V3C parameter sets
   std::vector<const MivBitstream::V3cParameterSet *> vps(perGroupParams.size());
@@ -352,12 +359,9 @@ auto GroupBasedEncoder::mergeParams(
   }
 
   // Concatenate atlas access unit parameters
-  for (size_t groupId = 0; groupId < perGroupParams.size(); ++groupId) {
-    for (const auto &atlas : perGroupParams[groupId]->atlas) {
+  for (const auto &params : perGroupParams) {
+    for (const auto &atlas : params->atlas) {
       m_params.atlas.push_back(atlas);
-
-      // Set group ID
-      m_params.atlas.back().asme().asme_group_id(static_cast<unsigned>(groupId));
     }
   }
 

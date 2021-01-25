@@ -85,14 +85,9 @@ TEST_CASE("asps_vpcc_extension", "[Atlas Sequence Parameter Set RBSP]") {
 }
 
 TEST_CASE("atlas_sequence_parameter_set_miv_extension", "[Atlas Sequence Parameter Set RBSP]") {
-  auto vps = V3cParameterSet{};
-  vps.vps_extension_present_flag(true).vps_miv_extension_present_flag(true).vps_miv_extension(
-      VpsMivExtension{});
-
   SECTION("Default constructor") {
     const auto unit = AspsMivExtension{};
-    REQUIRE(toString(unit) == R"(asme_group_id=0
-asme_ancillary_atlas_flag=false
+    REQUIRE(toString(unit) == R"(asme_ancillary_atlas_flag=false
 asme_embedded_occupancy_enabled_flag=false
 asme_geometry_scale_enabled_flag=false
 asme_occupancy_scale_enabled_flag=false
@@ -100,7 +95,7 @@ asme_patch_constant_depth_flag=false
 asme_patch_attribute_offset_enabled_flag=false
 asme_max_entity_id=0
 )");
-    REQUIRE(bitCodingTest(unit, 7, vps));
+    REQUIRE(bitCodingTest(unit, 7));
   }
   SECTION("Embedded Occupancy enabled") {
     auto unit = AspsMivExtension{};
@@ -112,8 +107,7 @@ asme_max_entity_id=0
         .asme_patch_attribute_offset_enabled_flag(true)
         .asme_patch_attribute_offset_bit_count_minus1(3)
         .asme_max_entity_id(15);
-    REQUIRE(toString(unit) == R"(asme_group_id=0
-asme_ancillary_atlas_flag=false
+    REQUIRE(toString(unit) == R"(asme_ancillary_atlas_flag=false
 asme_embedded_occupancy_enabled_flag=true
 asme_depth_occ_map_threshold_flag=true
 asme_geometry_scale_enabled_flag=true
@@ -124,7 +118,7 @@ asme_patch_attribute_offset_enabled_flag=true
 asme_patch_attribute_offset_bit_count_minus1=3
 asme_max_entity_id=15
 )");
-    REQUIRE(bitCodingTest(unit, 26, vps));
+    REQUIRE(bitCodingTest(unit, 26));
   }
   SECTION("Embedded occupancy disabled, occupancy scale enabled") {
     auto unit = AspsMivExtension{};
@@ -132,8 +126,7 @@ asme_max_entity_id=15
         .asme_occupancy_scale_enabled_flag(true)
         .asme_occupancy_scale_factor_x_minus1(2)
         .asme_occupancy_scale_factor_y_minus1(3);
-    REQUIRE(toString(unit) == R"(asme_group_id=0
-asme_ancillary_atlas_flag=false
+    REQUIRE(toString(unit) == R"(asme_ancillary_atlas_flag=false
 asme_embedded_occupancy_enabled_flag=false
 asme_geometry_scale_enabled_flag=false
 asme_occupancy_scale_enabled_flag=true
@@ -143,7 +136,7 @@ asme_patch_constant_depth_flag=false
 asme_patch_attribute_offset_enabled_flag=false
 asme_max_entity_id=0
 )");
-    REQUIRE(bitCodingTest(unit, 15, vps));
+    REQUIRE(bitCodingTest(unit, 15));
   }
 }
 
@@ -229,8 +222,7 @@ asps_extension_6bits=0
         .vps_miv_extension_present_flag(true)
         .vps_miv_extension()
         .vme_geometry_scale_enabled_flag(true)
-        .vme_embedded_occupancy_flag(true)
-        .vme_num_groups_minus1(10);
+        .vme_embedded_occupancy_flag(true);
 
     x.asps_atlas_sequence_parameter_set_id(63)
         .asps_frame_width(0xFFFF)
@@ -261,7 +253,6 @@ asps_extension_6bits=0
         .asme_geometry_scale_enabled_flag(true)
         .asme_geometry_scale_factor_x_minus1(1)
         .asme_geometry_scale_factor_y_minus1(2)
-        .asme_group_id(3)
         .asme_patch_constant_depth_flag(true);
     x.aspsExtensionData({false, true, true});
 
@@ -293,7 +284,6 @@ asps_vpcc_extension_present_flag=true
 asps_miv_extension_present_flag=true
 asps_extension_6bits=63
 asps_vpcc_remove_duplicate_point_enabled_flag=true
-asme_group_id=3
 asme_ancillary_atlas_flag=true
 asme_embedded_occupancy_enabled_flag=true
 asme_depth_occ_map_threshold_flag=true

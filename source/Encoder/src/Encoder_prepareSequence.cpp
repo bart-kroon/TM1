@@ -59,9 +59,10 @@ void Encoder::prepareSequence(MivBitstream::EncoderParams sourceParams) {
   const auto lumaSamplesPerAtlasSample =
       (m_config.haveTexture ? 1. : 0.) +
       (m_config.haveGeometry ? (m_config.geometryScaleEnabledFlag ? 0.25 : 1.) : 0.);
-  m_config.maxBlockRate =
-      m_config.maxLumaSampleRate / ((sourceParams.vme().vme_num_groups_minus1() + 1.) *
-                                    lumaSamplesPerAtlasSample * Common::sqr(m_config.blockSize));
+  const auto numGroups =
+      std::max(1.0F, static_cast<float>(sourceParams.vme().group_mapping().gm_group_count()));
+  m_config.maxBlockRate = m_config.maxLumaSampleRate /
+                          (numGroups * lumaSamplesPerAtlasSample * Common::sqr(m_config.blockSize));
   m_config.maxBlocksPerAtlas = m_config.maxLumaPictureSize / Common::sqr(m_config.blockSize);
 
   // gcc-9 and gcc-10 give a false alarm here, so suppress that warning on this one line
@@ -92,6 +93,14 @@ void Encoder::prepareSequence(MivBitstream::EncoderParams sourceParams) {
                                          m_config.haveGeometry, m_config.haveOccupancy};
 
   m_params.vme() = m_transportParams.vme();
+
+  if (0 < m_params.vme().group_mapping().gm_group_count()) {
+    // Group atlases together to restrict atlas-level sub-bitstream access
+    for (std::size_t i = 0; i < atlasFrameSizes.size(); ++i) {
+      m_params.vme().group_mapping().gm_group_id(i, 0);
+    }
+  }
+
   m_params.viewParamsList = m_transportParams.viewParamsList;
   m_params.frameRate = m_transportParams.frameRate;
   m_params.lengthsInMeters = m_transportParams.lengthsInMeters;

@@ -374,6 +374,7 @@ If the smallest difference is 0, the luma difference between the reprojected pix
 
 The standard deviation which modifies the value of pruning luma threshold, is calculated as a standard deviation of a set **A**, containing luma differences calculated for a subset of pixels. 
 
+[[secPruningMaskAggregation]]
 == Pruning mask aggregation
 
 The pruning masks (per entity) are aggregated frame-by-frame by activating the active samples of the pruning mask in the aggregated pruning mask.
@@ -385,6 +386,7 @@ The process is completed at the end of the intra period by outputting the last a
 [#imgAggregatedMaskEvolution]
 image::4_encoder/aggregated_mask_evolution.svg[align=center]
 
+[[secClusteringActivePixels]]
 == Clustering active pixels
 
 This block is in charge of identifying what is called "clusters".
@@ -405,6 +407,7 @@ The cluster are then sorted by a decreasing size order. The parameters associate
 [#imgClustersPrunedView]
 image::4_encoder/clusters_pruned_view.png[align=center]
 
+[[secClusterMerging]]
 == Cluster merging
 
 Smaller clusters may be completely embedded inside the bounding box of another (larger) cluster within a pruned input view (clusters _a_ and _b_ in <<imgClusterMerging>>).
@@ -446,6 +449,9 @@ The input parameters are the following:
 * "_MinPatchSize_" is the number of pixels of the smallest border of the patch, below which the patch is discarded. Default value is 8.
 * "_Overlap_" is the number of pixels which will be added to a frontier of a newly split patch; it prevents seam artefacts. Default value is 1.
 * "_PiP_" is a flag enabling the Patch-in-Patch feature when equal to 1. It allows the insertion of patches into other patches. Default value is 1.
+* "_sortingMethod_" is an integer indicating the method to be used to sort the clusters (0: by decreasing area, 1: by ascending view index). Default value is 0.
+* "_enableRecursiveSplit_" is a flag enabling the use of the recursive split. Default value is true.
+
 
 The packing process is based on a version of the MaxRect algorithm <<packing>>.
 It considers the available "Used Space" first, by examining the space which is effectively occupied.
@@ -628,24 +634,112 @@ image::4_encoder/classroom_packed.jpg[align=center]
 
 == Multi-plane image encoder
 
-A multi-plane image (MPI) representation is a set of plane or spherical RGB texture and transparency layers located along the depth direction according to the normalized disparity rule.
-It requires the activation of the transparency and the use of depth constant patches.
-Samples of texture MPI slices for two different content of different projections types are shown in <<imgMpiSlices>>.
+=== Multi-plane image
+A multi-plane image (MPI) is a layered representation of a 3D scene.
+The scenefootnote:[To transform an input MVD scene representation into an MPI representation, the 3D scene is first created by unprojecting each view from the MVD to the 3D scene (note that this is out of scope of the test model and TMIV implementation).] is decomposed into a set of planar or spherical layers (see <<imgMpiSlices>>) sampled at different depths from a given reference point of view.
+Each layer is a color + transparency frame obtained by projecting the part of the 3D scene contained around the layer location on the same reference camera.
+This reference camera is positioned at the given reference point of view.
+The reference camera is a perspective camera when using planar layers.
+The reference camera is a spherical (typically equirectangular) camera when using spherical layers.
 
-.Texture MPI slices of different projections; Perspective Kitchen (left) and equirectangular Museum (right)
+In the case of MPI, there is no view synthesized inside TMIV encoder.
+There is only one MPI camera at the input of TMIV encoder.
+The TMIV encoder processes it.
+Generated metadata carries the parameters for that camera.
+
+Transmitting MPI over MIV requires the activation of the transparency and the use of depth constant patches.
+The layer index, that a patch is issued from, is written in atlasPatch3dOffsetD of this patch, and is used at decoder side for synthesis.
+
+The input source view for the TMIV MPI encoder has the reference camera parameters (projection, resolution, ...) and also the number of layers.
+
+.Texture MPI layers of different projections; perspective Kitchen (left) and equirectangular Museum (right)
 [#imgMpiSlices]
 image::4_encoder/mpi_slices.jpg[align=center]
 
-The MPI generation is a long computation process when done on CPU, that cannot be integrated in the reference software.
-As a result, a content in the MPI format is directly inputted to the TMIV. 
+=== Input MPI format
+An MPI content in raw storage cannot be directly input to the TMIV encoder.
 
-One specificity is that there is no more need for a pruning process since the inter-view redundancy is removed during the generation of the MPI layers.
-<<imgMpiEncoder>> shows is the equivalent of <<imgSingleGroupEncoder>> for the MPI encoder, with the following observations:
+An MPI content in packed compressed storage (PCS) can be input to the TMIV encoder.
 
-* The geometry component related blocks are removed.
-* The input transparency is coded on 16 levels only, but spread on the range corresponding to a bit depth of 8 in the HEVC coding stage. The resulting separation between adjacent levels enables a high QP coding. 
-* The mask creation process is done within each slice by setting each pixel value of the mask to 1 where input transparency is greater than a threshold. In the current implementation, this threshold is 0. The mask aggregation operates as in the regular MIV encoder.
-* The “atlas” related processes are kept unchanged.
+[[secMpiRawStorage]]
+==== Raw storage
+Raw storage of an MPI (cf. <<secMpiRawStorage>>) is not effective in terms of memory usage because a lot of samples are empty.
+Moreover it induces many small disks accesses which may reduce the I/O efficiency.
+An example of MPI content is shown in <<imgMpiFan40to45>>.
+
+.Example of MPI layers from Mpi_Fan, from layer 40 (a) to layer 45 (f). Texture is on the first row and transparency is on the second row.
+[#imgMpiFan40to45]
+image::4_encoder/mpi_fan_40-45.jpg[align=center]
+
+Raw storage is defined as below:
+
+* texture layers must be provided as a single file (YC~B~C~R~ 4:2:0 10 bits from TMIV8.0-rc1),
+* transparency layers must be provided as a single file (YC~B~C~R~ 4:2:0 8 bits from TMIV8.0-rc1).
+
+Each file (texture or transparency) is a temporal concatenation of the stacked layers sorted from the furthest to the closest one with respect to the reference camera.
+Raw storage is illustrated in <<imgMpiStorage>>.
+
+From TMIV8.0-rc1 implementation, transparency is coded on 16 levels only, hence 4 bits would be enough.
+But a YC~B~C~R~ 4:2:0 8 bits format is used to ease file manipulation.
+
+.MPI raw storage diagram. In this simplified example, the MPI content is made of 4 layers (sorted from far to close) and 3 concatenated temporal frames.
+[#imgMpiStorage]
+image::4_encoder/mpi_storage.jpg[align=center]
+
+[[secMpiPackedCompressedStorage]]
+==== Packed compressed storage (PCS)
+To mitigate raw storage issues, a compressed version of the MPI is defined.
+This compressed version is the one needed at input of TMIV encoder.
+
+Let's consider the reference camera with resolution W x H and S layers.
+For a given temporal frame, the number of active layers of a given pixel (i,j) is given by N~i,j~ (N~i,j~ in [0, S]). 
+We can then define for each temporal frame of the MPI :
+
+* N~i,j~   : the number of active layers associated to pixel (i,j), as a YUV400P16LE sample (2 bytes)
+* C~i,j,k~ : the color of pixel (i,j) for the k-th active layer, as a YUV444P10LE sample (6 bytes)
+* D~i,j,k~ : the layer index of pixel (i,j) for the k-th active layer, as a YUV400P16LE sample (2 bytes)
+* T~i,j,k~ : the transparency of pixel (i,j) for the k-th active layer, as a YUV400P8 sample (1 byte)
+
+where k is an integer in the range [1, N~i,j~].
+
+The W x H number of active layers per pixel are first provided as a regular YUV400P16LE frame in the bitstream, and the concatenated list of all samples is immediately stacked after as presented in <<imgMpiPcsLayout>>.
+
+.MPI packed compressed storage (PCS) layout.
+[#imgMpiPcsLayout]
+image::4_encoder/mpi_pcs_layout.jpg[align=center]
+
+When reading an MPI temporal frame, one first read the W x H YUV400P16LE frame containing the number of active layers per pixel.
+The total number of active layers is easily derived (sum over all pixels).
+It then makes possible to read the whole sample list at once for current temporal frame.
+This results in only 2 disk “accesses” to read a temporal frame.
+
+Once in memory, this packed structure can be kept as it and accessed by the means of a dedicated table / index derived from the number of active layers per pixel.
+
+==== Raw storage to PCS
+TMIV encoder can only handle MPI content in PCS compressed version.
+An MPI content in raw storage should be first converted into the compressed version to be processed by the TMIV encoder.
+A specific executable is available from TMIV8.0-rc1 for this conversion.
+Please refer to <<secMpiRawStorage>> for the expected format of an MPI content in raw storage.
+
+=== MPI encoding process
+An MPI is a non-redundant representation of the 3D scene.
+Therefore, there is no need for a pruning process inside the TMIV Encoder.
+The processing steps for encoding an MPI content with the TMIV MPI encoder (cf. <<imgMpiEncoder>>) are presented below.
+
+First step of the TMIV MPI encoder is the mask creation.
+
+For each layer, the transparency is read and a transparency map is created.
+Then a thresholding operation is performed to detect occupied pixels (threshold is set to 0 in the current implementation) which leads to a binary mask per layer.
+This operation is repeated for each frame of an intra-period, and an aggregated binary mask per layer is generated at the end of the intra-period.
+Hence this aggregation process is done as in <<secPruningMaskAggregation>> per layer instead of per view. In the end, there is one binary mask per layer for the intra-period.
+
+These aggregated masks are then sent to the clustering process, which delivers clusters to the packing process for each layer.
+This clustering step is the same as the one described in <<imgSingleGroupEncoder>>, cf. <<secClusteringActivePixels>>, <<secClusterMerging>> and <<secClusterSplitting>>.
+
+The obtained clusters are then packed using the process described in <<imgSingleGroupEncoder>>, cf. <<secPatchPacking>>, but the sorting operation is changed to get clusters from distant layers packed first rather than the biggest clusters (sortingMethod is set to 1 in <<secPatchPacking>>).
+This sorting allows an efficient rendering process at decoder side, known as reverse painter's algorithm.
+
+Finally, two attribute atlases are generated, one for the texture and one for the transparency similarly to what is done for texture and geometry in a regular process.
 
 .Top-level diagram of the TMIV MPI encoder
 [#imgMpiEncoder]

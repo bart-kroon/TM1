@@ -655,6 +655,7 @@ These parameters are in the root of the configuration file and may be accessed b
 * Metadata:
   * **OmafV1CompatibleFlag:** bool; when enabled the equally-named flag is written in the bitstream.
   * **dqParamsPresentFlag:** bool; optional parameter, when false the depth quantization parameters are not written to the bitstream.
+  * **randomAccess:** bool; when true complete MIV metadata (inclding VPS, CAD, AD V3C units) are written per IRAP to the bitstream such that there is no dependency when parsing metadata between different IRAPs.
 
 ### Depth quality assessor
 

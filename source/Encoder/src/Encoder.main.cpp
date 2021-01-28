@@ -139,6 +139,8 @@ private:
       x.dqParamsPresentFlag = node.as<bool>();
     }
 
+    x.randomAccess = config.require("randomAccess").as<bool>();
+
     x.vme().group_mapping().gm_group_count(config.require("numGroups").as<std::uint8_t>());
 
     if (const auto node = config.optional("maxEntityId")) {

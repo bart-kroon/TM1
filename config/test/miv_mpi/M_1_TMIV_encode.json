@@ -24,6 +24,7 @@
     "haveGeometryVideo": false,
     "haveOccupancyVideo": false,
     "haveTextureVideo": true,
+    "randomAccess": false,
     "inputDirectory": ".",
     "inputTransparencyPathFmt": "{1}/{3}_transparency_{4}x{5}_{6}.yuv",
     "inputSequenceConfigPathFmt": "ctc/sequences/{1}.json",

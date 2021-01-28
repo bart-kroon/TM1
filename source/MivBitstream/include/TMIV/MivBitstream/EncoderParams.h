@@ -86,6 +86,8 @@ struct EncoderParams {
   bool dqParamsPresentFlag{true};
   std::uint16_t maxEntityId{0};
 
+  bool randomAccess{};
+
   std::vector<EncoderAtlasParams> atlas;
 
   // Convenience function to access the CASPS MIV extension

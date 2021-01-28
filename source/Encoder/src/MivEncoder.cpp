@@ -75,8 +75,9 @@ void MivEncoder::writeAccessUnit(const MivBitstream::EncoderParams &params) {
     writeV3cUnit(MivBitstream::VuhUnitType::V3C_AD, m_params.vps.vps_atlas_id(k),
                  atlasSubBitstream(k));
   }
-
-  m_irap = false;
+  if (!m_params.randomAccess) {
+    m_irap = false;
+  }
 }
 
 auto MivEncoder::ptlMaxDecodesIdc() const -> MivBitstream::PtlMaxDecodesIdc {

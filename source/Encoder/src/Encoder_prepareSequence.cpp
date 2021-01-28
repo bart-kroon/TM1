@@ -115,6 +115,8 @@ void Encoder::prepareSequence(MivBitstream::EncoderParams sourceParams) {
       .vui_parameters(vuiParameters());
   m_params.viewingSpace = std::move(viewingSpace);
 
+  m_params.randomAccess = m_transportParams.randomAccess;
+
   setGiGeometry3dCoordinatesBitdepthMinus1();
 
   // Register pruning relation

@@ -163,7 +163,7 @@ private:
     x.frameRate = sequenceConfig.frameRate;
 
     if (const auto &node = config.optional("depthLowQualityFlag")) {
-      x.vme().vme_depth_low_quality_flag(node.as<bool>());
+      x.casme().casme_depth_low_quality_flag(node.as<bool>());
     }
 
     if (const auto &subnode = config.optional("ViewingSpace")) {

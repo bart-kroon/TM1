@@ -100,7 +100,7 @@ void Encoder::updateNonAggregatedMask(const Common::MVD16Frame &transportViews,
   Common::MaskList dilatedMasks = masks; // Atlas dilation
 
   // Atlas dilation
-  if (m_params.vps.vps_miv_extension().vme_depth_low_quality_flag()) {
+  if (m_params.casme().casme_depth_low_quality_flag()) {
     for (size_t viewId = 0; viewId < masks.size(); ++viewId) {
       for (int n = 0; n < m_config.dilationIter; ++n) {
         dilatedMasks[viewId].getPlane(0) = dilate(dilatedMasks[viewId].getPlane(0));

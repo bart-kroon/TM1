@@ -194,6 +194,16 @@ EncoderParams::EncoderParams(const Common::SizeVector &atlasSizes, std::uint8_t 
   }
 }
 
+auto EncoderParams::casme() const noexcept -> const CaspsMivExtension & {
+  return casps.casps_miv_extension();
+}
+
+auto EncoderParams::casme() noexcept -> CaspsMivExtension & {
+  return casps.casps_extension_present_flag(true)
+      .casps_miv_extension_present_flag(true)
+      .casps_miv_extension();
+}
+
 auto EncoderParams::vme() const noexcept -> const VpsMivExtension & {
   return vps.vps_miv_extension();
 }

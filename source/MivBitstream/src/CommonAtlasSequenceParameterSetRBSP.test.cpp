@@ -39,20 +39,23 @@ TEST_CASE("casps_miv_extension", "[Common Atlas Sequence Parameter Set RBSP]") {
   SECTION("Default constructor") {
     const CaspsMivExtension unit{};
     REQUIRE(toString(unit) == R"(casme_omaf_v1_compatible_flag=false
+casme_depth_low_quality_flag=false
 casme_depth_quantization_params_present_flag=false
 casme_vui_params_present_flag=false
 )");
 
-    REQUIRE(bitCodingTest(unit, 3));
+    REQUIRE(bitCodingTest(unit, 4));
   }
 
   SECTION("Include default VUI Parameters") {
     CaspsMivExtension unit{};
     unit.casme_omaf_v1_compatible_flag(true)
+        .casme_depth_low_quality_flag(true)
         .casme_depth_quantization_params_present_flag(false)
         .casme_vui_params_present_flag(true)
         .vui_parameters({});
     REQUIRE(toString(unit) == R"(casme_omaf_v1_compatible_flag=true
+casme_depth_low_quality_flag=true
 casme_depth_quantization_params_present_flag=false
 casme_vui_params_present_flag=true
 vui_timing_info_present_flag=false
@@ -63,7 +66,7 @@ vui_display_box_info_present_flag=false
 vui_anchor_point_present_flag=false
 )");
 
-    REQUIRE(bitCodingTest(unit, 9));
+    REQUIRE(bitCodingTest(unit, 10));
   }
 }
 
@@ -104,6 +107,7 @@ casps_extension_present_flag=true
 casps_miv_extension_present_flag=true
 casps_extension_7bits=0
 casme_omaf_v1_compatible_flag=false
+casme_depth_low_quality_flag=false
 casme_depth_quantization_params_present_flag=false
 casme_vui_params_present_flag=false
 )");

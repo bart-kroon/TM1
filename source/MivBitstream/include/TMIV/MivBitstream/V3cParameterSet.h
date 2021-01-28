@@ -499,13 +499,11 @@ private:
 // 23090-12: vps_miv_extension()
 class VpsMivExtension {
 public:
-  [[nodiscard]] constexpr auto vme_depth_low_quality_flag() const noexcept;
   [[nodiscard]] constexpr auto vme_geometry_scale_enabled_flag() const noexcept;
   [[nodiscard]] constexpr auto vme_embedded_occupancy_flag() const noexcept;
   [[nodiscard]] constexpr auto vme_occupancy_scale_enabled_flag() const noexcept;
   [[nodiscard]] constexpr auto group_mapping() const noexcept -> const GroupMapping &;
 
-  constexpr auto vme_depth_low_quality_flag(bool value) noexcept -> auto &;
   constexpr auto vme_geometry_scale_enabled_flag(bool value) noexcept -> auto &;
   constexpr auto vme_embedded_occupancy_flag(bool value) noexcept -> auto &;
   auto vme_occupancy_scale_enabled_flag(bool value) noexcept -> VpsMivExtension &;
@@ -522,7 +520,6 @@ public:
   void encodeTo(Common::OutputBitstream &bitstream, const V3cParameterSet &vps) const;
 
 private:
-  bool m_vme_depth_low_quality_flag{};
   bool m_vme_geometry_scale_enabled_flag{};
   bool m_vme_embedded_occupancy_flag{true};
   bool m_vme_occupancy_scale_enabled_flag{};

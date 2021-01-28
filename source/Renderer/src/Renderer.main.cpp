@@ -119,10 +119,11 @@ private:
     au.foc = foc;
 
     assert(m_depthLowQualityFlag.has_value());
-    au.vps.vps_extension_present_flag(true)
-        .vps_miv_extension_present_flag(true)
-        .vps_miv_extension()
-        .vme_depth_low_quality_flag(*m_depthLowQualityFlag);
+    au.casps.emplace(MivBitstream::CommonAtlasSequenceParameterSetRBSP{});
+    au.casps->casps_extension_present_flag(true)
+        .casps_miv_extension_present_flag(true)
+        .casps_miv_extension()
+        .casme_depth_low_quality_flag(*m_depthLowQualityFlag);
 
     std::transform(frame.cbegin(), frame.cend(), std::back_inserter(au.atlas),
                    [viewIndex = uint16_t{}](const Common::TextureDepth16Frame &frame) mutable {

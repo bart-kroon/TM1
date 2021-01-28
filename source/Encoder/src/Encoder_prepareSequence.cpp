@@ -49,7 +49,7 @@ void runtimeCheck(bool cond, const char *what) {
 
 void Encoder::prepareSequence(MivBitstream::EncoderParams sourceParams) {
   m_config.blockSize = m_config.blockSizeDepthQualityDependent[static_cast<std::size_t>(
-      sourceParams.vme().vme_depth_low_quality_flag())];
+      sourceParams.casme().casme_depth_low_quality_flag())];
   runtimeCheck(2 <= m_config.blockSize, "blockSize should be at least two");
   runtimeCheck((m_config.blockSize & (m_config.blockSize - 1)) == 0,
                "blockSize should be a power of two");
@@ -93,6 +93,7 @@ void Encoder::prepareSequence(MivBitstream::EncoderParams sourceParams) {
                                          m_config.haveGeometry, m_config.haveOccupancy};
 
   m_params.vme() = m_transportParams.vme();
+  m_params.casme() = m_transportParams.casme();
 
   if (0 < m_params.vme().group_mapping().gm_group_count()) {
     // Group atlases together to restrict atlas-level sub-bitstream access

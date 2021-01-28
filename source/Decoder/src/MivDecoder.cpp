@@ -270,6 +270,7 @@ void MivDecoder::decodeCommonAtlas() {
   decodeViewParamsList();
   m_au.gup = m_commonAtlasAu->gup;
   m_au.vs = m_commonAtlasAu->vs;
+  m_au.casps = m_commonAtlasAu->casps;
 }
 
 void MivDecoder::decodeViewParamsList() {
@@ -557,8 +558,7 @@ void MivDecoder::summarizeVps() const {
     std::cout << '\n';
   }
   const auto &vme = vps.vps_miv_extension();
-  std::cout << "  MIV: depth low quality " << std::boolalpha << vme.vme_depth_low_quality_flag()
-            << ", geometry scaling " << std::boolalpha << vme.vme_geometry_scale_enabled_flag()
+  std::cout << ", geometry scaling " << std::boolalpha << vme.vme_geometry_scale_enabled_flag()
             << ", groups " << vme.group_mapping().gm_group_count() << ", embedded occupancy "
             << std::boolalpha << vme.vme_embedded_occupancy_flag() << ", occupancy scaling "
             << vme.vme_occupancy_scale_enabled_flag() << '\n';

@@ -437,10 +437,6 @@ constexpr auto GroupMapping::gm_group_count(std::uint8_t value) noexcept -> auto
   return *this;
 }
 
-constexpr auto VpsMivExtension::vme_depth_low_quality_flag() const noexcept {
-  return m_vme_depth_low_quality_flag;
-}
-
 constexpr auto VpsMivExtension::vme_geometry_scale_enabled_flag() const noexcept {
   return m_vme_geometry_scale_enabled_flag;
 }
@@ -455,11 +451,6 @@ constexpr auto VpsMivExtension::vme_occupancy_scale_enabled_flag() const noexcep
 
 constexpr auto VpsMivExtension::group_mapping() const noexcept -> const GroupMapping & {
   return m_group_mapping;
-}
-
-constexpr auto VpsMivExtension::vme_depth_low_quality_flag(const bool value) noexcept -> auto & {
-  m_vme_depth_low_quality_flag = value;
-  return *this;
 }
 
 constexpr auto VpsMivExtension::vme_geometry_scale_enabled_flag(const bool value) noexcept
@@ -478,8 +469,7 @@ constexpr auto VpsMivExtension::group_mapping() noexcept -> GroupMapping & {
 }
 
 constexpr auto VpsMivExtension::operator==(const VpsMivExtension &other) const noexcept {
-  return vme_depth_low_quality_flag() == other.vme_depth_low_quality_flag() &&
-         vme_geometry_scale_enabled_flag() == other.vme_geometry_scale_enabled_flag() &&
+  return vme_geometry_scale_enabled_flag() == other.vme_geometry_scale_enabled_flag() &&
          vme_embedded_occupancy_flag() == other.vme_embedded_occupancy_flag() &&
          vme_occupancy_scale_enabled_flag() == other.vme_occupancy_scale_enabled_flag() &&
          group_mapping() == other.group_mapping();

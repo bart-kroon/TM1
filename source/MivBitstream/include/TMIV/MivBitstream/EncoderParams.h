@@ -88,6 +88,12 @@ struct EncoderParams {
 
   std::vector<EncoderAtlasParams> atlas;
 
+  // Convenience function to access the CASPS MIV extension
+  [[nodiscard]] auto casme() const noexcept -> const CaspsMivExtension &;
+
+  // Convenience function to create and access the CASPS MIV extension
+  [[nodiscard]] auto casme() noexcept -> CaspsMivExtension &;
+
   // Convenience function to access the VPS MIV extension
   [[nodiscard]] auto vme() const noexcept -> const VpsMivExtension &;
 

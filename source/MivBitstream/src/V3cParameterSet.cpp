@@ -960,8 +960,6 @@ auto VpsMivExtension::vme_occupancy_scale_enabled_flag(bool value) noexcept -> V
 }
 
 auto operator<<(std::ostream &stream, const VpsMivExtension &x) -> std::ostream & {
-  stream << "vme_depth_low_quality_flag=" << std::boolalpha << x.vme_depth_low_quality_flag()
-         << '\n';
   stream << "vme_geometry_scale_enabled_flag=" << std::boolalpha
          << x.vme_geometry_scale_enabled_flag() << '\n';
   stream << "vme_embedded_occupancy_flag=" << std::boolalpha << x.vme_embedded_occupancy_flag()
@@ -977,7 +975,6 @@ auto operator<<(std::ostream &stream, const VpsMivExtension &x) -> std::ostream 
 auto VpsMivExtension::decodeFrom(Common::InputBitstream &bitstream, const V3cParameterSet &vps)
     -> VpsMivExtension {
   auto x = VpsMivExtension{};
-  x.vme_depth_low_quality_flag(bitstream.getFlag());
   x.vme_geometry_scale_enabled_flag(bitstream.getFlag());
   x.vme_embedded_occupancy_flag(bitstream.getFlag());
   if (!x.vme_embedded_occupancy_flag()) {
@@ -992,7 +989,6 @@ auto VpsMivExtension::decodeFrom(Common::InputBitstream &bitstream, const V3cPar
 
 void VpsMivExtension::encodeTo(Common::OutputBitstream &bitstream,
                                const V3cParameterSet &vps) const {
-  bitstream.putFlag(vme_depth_low_quality_flag());
   bitstream.putFlag(vme_geometry_scale_enabled_flag());
   bitstream.putFlag(vme_embedded_occupancy_flag());
   if (!vme_embedded_occupancy_flag()) {

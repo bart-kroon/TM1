@@ -103,7 +103,7 @@ public:
     // TODO(BK): Somehow move these details into EncoderLib
     if (json().require("haveGeometryVideo").as<bool>() && !json().optional("depthLowQualityFlag")) {
       const auto frame = IO::loadMultiviewFrame(json(), placeholders(), m_inputSequenceConfig, 0);
-      sourceParams.vme().vme_depth_low_quality_flag(m_depthQualityAssessor->isLowDepthQuality(
+      sourceParams.casme().casme_depth_low_quality_flag(m_depthQualityAssessor->isLowDepthQuality(
           m_inputSequenceConfig.sourceViewParams(), frame));
     }
 
@@ -132,7 +132,7 @@ private:
     x.lengthsInMeters = sequenceConfig.lengthsInMeters;
 
     if (const auto &node = config.optional("depthLowQualityFlag")) {
-      x.vme().vme_depth_low_quality_flag(node.as<bool>());
+      x.casme().casme_depth_low_quality_flag(node.as<bool>());
     }
 
     if (const auto &node = config.optional("dqParamsPresentFlag")) {

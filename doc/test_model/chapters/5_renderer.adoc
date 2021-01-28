@@ -118,6 +118,8 @@ It is thus possible to render any triangle from any patch in any order.
 
 The RVS-based synthesizer may synthesize directly from atlases, thus for this synthesizer there is no necessity of pruned view reconstruction (<<secPrunedViewReconstruction>>).
 
+The RVS-based synthesizer has currently no support for handling encoder-side inpainted data. 
+
 ==== Rendering from atlases
 
 As part of the decoder (primary purpose) the renderer takes as input:
@@ -230,6 +232,14 @@ Then this weight is updated as follows:
 .Graph-based pruning: weight recovery procedure
 [#imgWeightRecovery]
 image::5_renderer/weight_recovery.svg[align=center]
+
+==== Handling of inpainted data
+Some patches within the atlases belong to the inpainted background view presynthesized at the encoder side (see <<secEncoderInpainting>>). 
+They are of lower quality than the original source views. 
+That pre-inpainted data is projected to the target viewport but otherwise exluded from the steps of making a visiblity map and viewport shading. 
+Only in the shading stage where the viewport visibility is invalid, i.e missing data, the reprojected inpainted data is inserted. 
+For pixel-locations where the resulting blending weight is below a threshold and for the locations where pre-inpainted data is unavailable, the target depth is set to invalid, making them available for inpainting as a post-processing step. 
+
 
 ==== Parameters
 

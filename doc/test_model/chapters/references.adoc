@@ -12,3 +12,4 @@
 - [[[pbg,9]]]	_Point-based graphics_, 2007, Elsevier, edited by Markus Gross and Hanspeter Pfister.
 - [[[viewSynthesis,10]]]	_Soft 3D Reconstruction for View Synthesis_, Eric Penner and Li Zhang, 2017, ACM Transactions on Graphics (Proc. SIGGRAPH Asia) (vol. 6).
 - [[[painter,11]]]	Wikipedia: Painter’s algorithm. Variants: Reverse painter’s algorithm.
+- [[[vpccCodec,12]]] V-PCC Codec Description, ISO/IEC JTC1/SC29/WG7 N00012, October 2020

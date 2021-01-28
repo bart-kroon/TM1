@@ -10,6 +10,7 @@ The group-based encoder has the following stages:
 . Preparation of source material by:
 ** Assessing the geometry (depth map) quality, if present, for each source view.
 ** Splitting source views in groups.
+** Synthesizing an inpainted background view covering the whole field of view of the source views within each group.
 ** Labeling source views as basic view or additional view.
 . Encoding of each group separately (using the associated subset of split source views).
 . Formatting of the bitstream (includes a merging substage to combine sub bitstreams of same type produced by each single-group encoder together) which is V3C sample stream with MIV extensions and related SEI messages.
@@ -100,6 +101,56 @@ Distances of views to these key positions are computed.
 Based on the number of views for the group, the closest views to the first key position are selected and removed from the views pool.
 Then a second key position is identified and the process is repeated covering the distribution of all source views across the chosen number of groups.
 
+[[secEncoderInpainting]]
+== Synthesizing an inpainted background view
+
+This inpainting module is intended to create synthetic texture and geometry data that is hidden from the source views.
+Thereby reducing the missing data problem at the decoder-side.
+For this purpose it creates an ERP view with inpainted background data.
+This view has the following properties: 
+It's position is the center, i.e. the mean of the source camera positions;
+It's field-of-view is the union of source view field-of-views (with some additional margin);
+Since the quality of the inpainted regions is lower than the original content, it's resolution is typically chosen to be lower than that of the source views.
+Hereby saving on bit- and pixelrate.
+This resolution is configurable.
+
+The following steps are taken:
+		
+. A background view is synthesized from all available source views. 
+The 'RVS-based synthesizer', see <<secRvsSynthesizer>> is used with a negated depthParameter, i.e. rendering background (when available) over foreground. 
+<<imgSynthesizeInpaintedBackground>> illustrates this: The left image shows synthesis with a normal (positive) depthParameter where foreground is rendered over background.
+The middle image shows synthesis with a negated depthParameter where background is rendered over foreground.
+It de-occludes background region 'A' that is visible from the source views.
+. Some pixels of the synthesized background view have no correspondence in the source views, hence their depth values are set to 0. Those pixels are inpainted in a later process.
+As an intermediate step, remaining foreground pixels are identified and removed as follows:
+.. The synthesized depth frame -represented by normalized disparities- is filtered using a box blur with a configurable kernel size. 
+This blurred depth frame is used for comparing with the actual synthesized depth frame. 
+Actual depth values that are closer indicate relative foreground and actual depth values that are farther, indicate relative background.
+.. The relative foreground pixels are identified by comparison using some configurable threshold. 
+They identify remaining foreground pixels that occlude background.
+Their depth values are set to zero which yields a mask of missing background pixels.
+These are indicated by region 'B' in the right image of <<imgSynthesizeInpaintedBackground>>
+. The masked texture and depth data are inpainted from neighboring areas.
+The ‘PushPullInpainter’ (<<secPushPullInpainter>>) is used for this purpose.
+
+The inpainted background view is identified by a Boolean flag so it is used for filling missing pixels at the decoder side.
+This flag is either located at the patch (pdu) level or at the view (mvp) level depending on the configuration.  
+
+.Steps in finding an inpaint mask for synthesizing an inpainted background view.
+[#imgSynthesizeInpaintedBackground]
+image::4_encoder/synthesizing_inpainted_background_view.svg[width=80%,align=center]
+
+[[secPushPullInpainter]]	
+=== PushPullInpainter
+The push-pull inpainter is similar to the method that is used to pad texture patches in V-PCC <<vpccCodec>>.
+The input resolution for the push-pull inpainter is the resolution of the above described background view that can be lower than the source views.
+
+. Push: Starting from the input resolution, the resolution is repeatedly halved (rounding up) with linear interpolation of texture and depth (with border repeat), until the top of the pyramid is an image of 1 × 1 pixel.
+. Pull: Starting with the second-smallest image, when depth is larger than zero, the texture and depth is preserved.
+Otherwise, texture and depth are averaged over the neighboring samples of the higher layer (with border repeat) that have non-zero depth.
+When none such samples exist, the zero depth is maintained.
+. The output of the algorithm is the filtered frame at input resolution.
+
 
 == View labeling
 
@@ -135,6 +186,7 @@ The labeling of basic views consists of the following steps:
 . Select initial basic views,
 . Update the view labels.
 
+The inpainted view is labeled 'additional'.
 
 [[secNumberOfBasicViews]]
 ==== Determine the number of basic views
@@ -483,6 +535,9 @@ The output is a patch list for each atlas with all information necessary to reco
 
 The packing operation from view representation to atlas is done with rotation (first) then vertical flipping (second).
 Only two rotations are tested by the TMIV (among eight configurations supported by the standard, considering combinations of rotations and flipping). 
+
+When per-patch signalling of inpainting data is enabled, patches that originate from the inpainted background view are marked with the 'pdu_inpaint_flag'. 
+The decoder only uses these patches to fill in the missing data. 
 
 Special care is taken to handle basic views.
 They are never split, rotated or flipped because an appropriate number of basic views (<<secNumberOfBasicViews>>) and suitable atlas frame size (<<secFrameSizeCalculation>>) are calculated.

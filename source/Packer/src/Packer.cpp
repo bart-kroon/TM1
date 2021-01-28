@@ -49,8 +49,7 @@ void checkAtlasSize(const Common::SizeVector &atlasSizes, const int blockSize) {
   }
 }
 
-void adaptPatchParamsToMask(MivBitstream::PatchParams &p, const uint32_t maskWidth,
-                            const uint32_t maskHeight) {
+void adaptPatchParamsToMask(MivBitstream::PatchParams &p, int32_t maskWidth, int32_t maskHeight) {
   if (p.atlasPatch3dOffsetU() + p.atlasPatch3dSizeU() > maskWidth) {
     if (p.atlasPatch3dSizeU() <= maskWidth) {
       p.atlasPatch3dOffsetU(maskWidth - p.atlasPatch3dSizeU());

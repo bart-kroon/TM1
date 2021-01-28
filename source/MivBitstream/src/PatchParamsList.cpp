@@ -64,6 +64,12 @@ auto PatchParams::decodePdu(const PatchDataUnit &pdu, const AtlasSequenceParamet
   pp.atlasPatchProjectionId(pdu.pdu_projection_id());
   pp.atlasPatchOrientationIndex(pdu.pdu_orientation_index());
 
+  if (pdu.pdu_lod_enabled_flag()) {
+    pp.atlasPatchLoDScaleX(pdu.pdu_lod_scale_x_minus1() + 1U);
+    pp.atlasPatchLoDScaleY((pdu.pdu_lod_scale_x_minus1() == 0 ? 2U : 1U) +
+                           pdu.pdu_lod_scale_y_idc());
+  }
+
   const auto patchSizeXQuantizer = asps.asps_patch_size_quantizer_present_flag()
                                        ? 1U << ath.ath_patch_size_x_info_quantizer()
                                        : patchPackingBlockSize;
@@ -116,6 +122,12 @@ auto PatchParams::encodePdu(const AtlasSequenceParameterSetRBSP &asps,
   pdu.pdu_projection_id(atlasPatchProjectionId());
   pdu.pdu_orientation_index(atlasPatchOrientationIndex());
 
+  if (atlasPatchLoDScaleX() != 1 || atlasPatchLoDScaleY() != 1) {
+    pdu.pdu_lod_enabled_flag(true);
+    pdu.pdu_lod_scale_x_minus1(atlasPatchLoDScaleX() - 1U);
+    pdu.pdu_lod_scale_y_idc(atlasPatchLoDScaleY() - (pdu.pdu_lod_scale_x_minus1() == 0 ? 2U : 1U));
+  }
+
   const auto patchSizeXQuantizer = asps.asps_patch_size_quantizer_present_flag()
                                        ? 1U << ath.ath_patch_size_x_info_quantizer()
                                        : patchPackingBlockSize;
@@ -140,5 +152,70 @@ auto PatchParams::encodePdu(const AtlasSequenceParameterSetRBSP &asps,
   }
 
   return pdu;
+}
+
+auto PatchParams::atlasToViewTransform() const noexcept -> Common::Mat3x3i {
+  const auto xS = atlasPatch2dSizeX();
+  const auto yS = atlasPatch2dSizeY();
+  const auto x0 = atlasPatch2dPosX();
+  const auto y0 = atlasPatch2dPosY();
+  const auto lodX = atlasPatchLoDScaleX();
+  const auto lodY = atlasPatchLoDScaleY();
+  const auto u0 = atlasPatch3dOffsetU();
+  const auto v0 = atlasPatch3dOffsetV();
+
+  // (u, v) == M.(x, y, 1)
+
+  switch (atlasPatchOrientationIndex()) {
+  case FlexiblePatchOrientation::FPO_NULL:            // (x, y)
+    return {lodX, 0,    u0 - lodX * x0,               //
+            0,    lodY, v0 - lodY * y0,               //
+            0,    0,    1};                           //
+  case FlexiblePatchOrientation::FPO_SWAP:            // (y, x)
+    return {0,    lodY, u0 - lodY * y0,               //
+            lodX, 0,    v0 - lodX * x0,               //
+            0,    0,    1};                           //
+  case FlexiblePatchOrientation::FPO_ROT90:           // (y, -x)
+    return {0,     lodY, u0 - lodY * y0,              //
+            -lodX, 0,    v0 + lodX * (x0 + xS - 1),   //
+            0,     0,    1};                          //
+  case FlexiblePatchOrientation::FPO_ROT180:          // (-x, -y)
+    return {-lodX, 0,     u0 + lodX * (-1 + x0 + xS), //
+            0,     -lodY, v0 + lodY * (-1 + y0 + yS), //
+            0,     0,     1};                         //
+  case FlexiblePatchOrientation::FPO_ROT270:          // (-y, x)
+    return {0,    -lodY, u0 + lodY * (y0 + yS - 1),   //
+            lodX, 0,     v0 - lodX * x0,              //
+            0,    0,     1};                          //
+  case FlexiblePatchOrientation::FPO_MIRROR:          // (-x, y)
+    return {-lodX, 0,    u0 + lodX * (x0 + xS - 1),   //
+            0,     lodY, v0 - lodY * y0,              //
+            0,     0,    1};                          //
+  case FlexiblePatchOrientation::FPO_MROT90:          // (-y, -x)
+    return {0,     -lodY, u0 + lodY * (y0 + yS - 1),  //
+            -lodX, 0,     v0 + lodX * (x0 + xS - 1),  //
+            0,     0,     1};                         //
+  case FlexiblePatchOrientation::FPO_MROT180:         // (x, -y)
+    return {lodX, 0,     u0 - lodX * x0,              //
+            0,    -lodY, v0 + lodY * (y0 + yS - 1),   //
+            0,    0,     1};                          //
+  default:
+    abort();
+  }
+}
+
+auto PatchParams::viewToAtlasTransform() const noexcept -> Common::Mat3x3i {
+  const auto m = atlasToViewTransform();
+  const auto d = std::lcm(atlasPatchLoDScaleX(), atlasPatchLoDScaleY());
+
+  // (u, v, 1) == M.(x, y, 1) ==> (x, y, 1) == invM.(u, v, 1), where '.' denots the dot product
+  if (isRotated()) {
+    return {0,           d / m(1, 0), -d * m(1, 2) / m(1, 0), //
+            d / m(0, 1), 0,           -d * m(0, 2) / m(0, 1), //
+            0,           0,           d};                     //
+  }
+  return {d / m(0, 0), 0,           -d * m(0, 2) / m(0, 0), //
+          0,           d / m(1, 1), -d * m(1, 2) / m(1, 1), //
+          0,           0,           d};                     //
 }
 } // namespace TMIV::MivBitstream

@@ -33,8 +33,14 @@
 
 #include <catch2/catch.hpp>
 
+#include <TMIV/Common/LinAlg.h>
+#include <TMIV/Common/Matrix.h>
+
 #include <TMIV/MivBitstream/PatchParamsList.h>
 
+using Mat2x2d = TMIV::Common::stack::Matrix<double, 2, 2>;
+using TMIV::Common::Mat2x2i;
+using TMIV::Common::Vec2d;
 using TMIV::Common::Vec2i;
 using TMIV::Common::Vec3i;
 using TMIV::MivBitstream::AtlasSequenceParameterSetRBSP;
@@ -42,6 +48,70 @@ using TMIV::MivBitstream::AtlasTileHeader;
 using TMIV::MivBitstream::FlexiblePatchOrientation;
 using TMIV::MivBitstream::PatchDataUnit;
 using TMIV::MivBitstream::PatchParams;
+// To compare against the efficient implementation, we directly implement V3C 2E
+// [ISO/IEC JTC 1/SC 29/WG 07 N 0003 clause 9.5.2.1]
+namespace direct {
+// [ISO/IEC JTC 1/SC 29/WG 07 N 0003 Table 11]
+auto matrixRo(FlexiblePatchOrientation fpo) noexcept -> Mat2x2i {
+  switch (fpo) {
+  case FlexiblePatchOrientation::FPO_NULL:
+    return {1, 0, 0, 1};
+  case FlexiblePatchOrientation::FPO_SWAP:
+    return {0, 1, 1, 0};
+  case FlexiblePatchOrientation::FPO_ROT90:
+    // NOTE(#436): Fix to be included in V3C 2E DIS
+    return {0, 1, -1, 0};
+  case FlexiblePatchOrientation::FPO_ROT180:
+    return {-1, 0, 0, -1};
+  case FlexiblePatchOrientation::FPO_ROT270:
+    // NOTE(#436): Fix to be included in V3C 2E DIS
+    return {0, -1, 1, 0};
+  case FlexiblePatchOrientation::FPO_MIRROR:
+    return {-1, 0, 0, 1};
+  case FlexiblePatchOrientation::FPO_MROT90:
+    return {0, -1, -1, 0};
+  case FlexiblePatchOrientation::FPO_MROT180:
+    return {1, 0, 0, -1};
+  default:
+    abort();
+  }
+}
+
+// [ISO/IEC JTC 1/SC 29/WG 07 N 0003 Table 11]
+auto matrixRs(FlexiblePatchOrientation fpo) noexcept -> Mat2x2i {
+  switch (fpo) {
+  case FlexiblePatchOrientation::FPO_NULL:
+  case FlexiblePatchOrientation::FPO_SWAP:
+    return {0, 0, 0, 0};
+  case FlexiblePatchOrientation::FPO_ROT90:
+    return {0, 0, 1, 0};
+  case FlexiblePatchOrientation::FPO_ROT180:
+    return {1, 0, 0, 1};
+  case FlexiblePatchOrientation::FPO_ROT270:
+    return {0, 1, 0, 0};
+  case FlexiblePatchOrientation::FPO_MIRROR:
+    return {1, 0, 0, 0};
+  case FlexiblePatchOrientation::FPO_MROT90:
+    return {0, 1, 1, 0};
+  case FlexiblePatchOrientation::FPO_MROT180:
+    return {0, 0, 0, 1};
+  default:
+    abort();
+  }
+}
+
+// Forward function [WG 07 N 0003 Eq. (49)]
+auto atlasToView(const PatchParams &pp, Vec2i xy) -> Vec2i {
+  const auto pos = Vec2i{pp.atlasPatch2dPosX(), pp.atlasPatch2dPosY()};
+  const auto size = Vec2i{pp.atlasPatch2dSizeX(), pp.atlasPatch2dSizeY()};
+  const auto lod = Mat2x2i{pp.atlasPatchLoDScaleX(), 0, 0, pp.atlasPatchLoDScaleY()};
+  const auto Ro = matrixRo(pp.atlasPatchOrientationIndex());
+  const auto Rs = matrixRs(pp.atlasPatchOrientationIndex());
+  const auto offset = Vec2i{pp.atlasPatch3dOffsetU(), pp.atlasPatch3dOffsetV()};
+
+  return offset + Ro * lod * (xy - pos) + Rs * lod * (size - Vec2i{1, 1});
+}
+} // namespace direct
 
 TEST_CASE("TMIV::MivBitstream::PatchParams") {
   SECTION("Decode patch data unit") {
@@ -58,6 +128,8 @@ TEST_CASE("TMIV::MivBitstream::PatchParams") {
       REQUIRE(unit.atlasPatch3dRangeD() == 1);
       REQUIRE(unit.atlasPatchProjectionId() == 0);
       REQUIRE(unit.atlasPatchOrientationIndex() == FlexiblePatchOrientation::FPO_NULL);
+      REQUIRE(unit.atlasPatchLoDScaleX() == 1);
+      REQUIRE(unit.atlasPatchLoDScaleY() == 1);
       REQUIRE(unit.atlasPatchEntityId() == std::nullopt);
       REQUIRE(unit.atlasPatchDepthOccMapThreshold() == std::nullopt);
       REQUIRE_THROWS(unit.atlasPatchAttributeOffset());
@@ -72,7 +144,10 @@ TEST_CASE("TMIV::MivBitstream::PatchParams") {
           .pdu_3d_offset_u(5)
           .pdu_3d_offset_v(6)
           .pdu_projection_id(7)
-          .pdu_orientation_index(FlexiblePatchOrientation::FPO_ROT270);
+          .pdu_orientation_index(FlexiblePatchOrientation::FPO_ROT270)
+          .pdu_lod_enabled_flag(true)
+          .pdu_lod_scale_x_minus1(0)
+          .pdu_lod_scale_y_idc(1);
 
       auto asps = AtlasSequenceParameterSetRBSP{};
       asps.asps_log2_patch_packing_block_size(3)
@@ -91,6 +166,8 @@ TEST_CASE("TMIV::MivBitstream::PatchParams") {
       REQUIRE(unit.atlasPatch3dRangeD() == 31);
       REQUIRE(unit.atlasPatchProjectionId() == 7);
       REQUIRE(unit.atlasPatchOrientationIndex() == FlexiblePatchOrientation::FPO_ROT270);
+      REQUIRE(unit.atlasPatchLoDScaleX() == 1);
+      REQUIRE(unit.atlasPatchLoDScaleY() == 3);
       REQUIRE(unit.atlasPatchEntityId() == std::nullopt);
       REQUIRE(unit.atlasPatchDepthOccMapThreshold() == std::nullopt);
       REQUIRE_THROWS(unit.atlasPatchAttributeOffset());
@@ -107,6 +184,9 @@ TEST_CASE("TMIV::MivBitstream::PatchParams") {
           .pdu_3d_range_d(7)
           .pdu_projection_id(8)
           .pdu_orientation_index(FlexiblePatchOrientation::FPO_ROT270)
+          .pdu_lod_enabled_flag(true)
+          .pdu_lod_scale_x_minus1(2)
+          .pdu_lod_scale_y_idc(0)
           .pdu_miv_extension()
           .pdu_depth_occ_threshold(9)
           .pdu_attribute_offset(Vec3i{10, 11, 12})
@@ -143,6 +223,8 @@ TEST_CASE("TMIV::MivBitstream::PatchParams") {
       REQUIRE(unit.atlasPatch3dRangeD() == 895);
       REQUIRE(unit.atlasPatchProjectionId() == 8);
       REQUIRE(unit.atlasPatchOrientationIndex() == FlexiblePatchOrientation::FPO_ROT270);
+      REQUIRE(unit.atlasPatchLoDScaleX() == 3);
+      REQUIRE(unit.atlasPatchLoDScaleY() == 1);
       REQUIRE(unit.atlasPatchEntityId() == 13);
       REQUIRE(unit.atlasPatchDepthOccMapThreshold() == 9);
       REQUIRE(unit.atlasPatchAttributeOffset() == Vec3i{10, 11, 12});
@@ -190,6 +272,8 @@ TEST_CASE("TMIV::MivBitstream::PatchParams") {
           .atlasPatch3dOffsetV(6)
           .atlasPatch3dRangeD(31)
           .atlasPatchProjectionId(7)
+          .atlasPatchLoDScaleX(1)
+          .atlasPatchLoDScaleY(3)
           .atlasPatchOrientationIndex(FlexiblePatchOrientation::FPO_ROT270);
 
       const auto pdu = unit.encodePdu(asps, {});
@@ -202,6 +286,9 @@ TEST_CASE("TMIV::MivBitstream::PatchParams") {
       REQUIRE(pdu.pdu_3d_offset_v() == 6);
       REQUIRE(pdu.pdu_projection_id() == 7);
       REQUIRE(pdu.pdu_orientation_index() == FlexiblePatchOrientation::FPO_ROT270);
+      REQUIRE(pdu.pdu_lod_enabled_flag());
+      REQUIRE(pdu.pdu_lod_scale_x_minus1() == 0);
+      REQUIRE(pdu.pdu_lod_scale_y_idc() == 1);
     }
 
     SECTION("Elaborate example") {
@@ -216,6 +303,8 @@ TEST_CASE("TMIV::MivBitstream::PatchParams") {
           .atlasPatch3dRangeD(895)
           .atlasPatchProjectionId(8)
           .atlasPatchOrientationIndex(FlexiblePatchOrientation::FPO_ROT270)
+          .atlasPatchLoDScaleX(3)
+          .atlasPatchLoDScaleY(1)
           .atlasPatchEntityId(13)
           .atlasPatchDepthOccMapThreshold(9)
           .atlasPatchAttributeOffset(Vec3i{10, 11, 12});
@@ -250,6 +339,9 @@ TEST_CASE("TMIV::MivBitstream::PatchParams") {
       REQUIRE(pdu.pdu_3d_range_d() == 7);
       REQUIRE(pdu.pdu_projection_id() == 8);
       REQUIRE(pdu.pdu_orientation_index() == FlexiblePatchOrientation::FPO_ROT270);
+      REQUIRE(pdu.pdu_lod_enabled_flag());
+      REQUIRE(pdu.pdu_lod_scale_x_minus1() == 2);
+      REQUIRE(pdu.pdu_lod_scale_y_idc() == 0);
       REQUIRE(pdu.pdu_miv_extension().pdu_depth_occ_threshold() == 9);
       REQUIRE(pdu.pdu_miv_extension().pdu_attribute_offset() == Vec3i{10, 11, 12});
       REQUIRE(pdu.pdu_miv_extension().pdu_entity_id() == 13);
@@ -257,127 +349,64 @@ TEST_CASE("TMIV::MivBitstream::PatchParams") {
   }
 
   SECTION("View-atlas coordinate transformations") {
+    const int32_t posX = GENERATE(8, 19);
+    const int32_t posY = GENERATE(3, 16);
+    const int32_t sizeX = GENERATE(16, 25);
+    const int32_t sizeY = GENERATE(10, 23);
+    const int32_t offsetU = 5;
+    const int32_t offsetV = 45;
+    const auto orientation =
+        GENERATE(FlexiblePatchOrientation::FPO_NULL, FlexiblePatchOrientation::FPO_SWAP,
+                 FlexiblePatchOrientation::FPO_ROT90, FlexiblePatchOrientation::FPO_ROT180,
+                 FlexiblePatchOrientation::FPO_ROT270, FlexiblePatchOrientation::FPO_MIRROR,
+                 FlexiblePatchOrientation::FPO_MROT90, FlexiblePatchOrientation::FPO_MROT180);
+
+    CAPTURE(posX, posY, sizeX, sizeY, offsetU, offsetV, orientation);
+
     auto unit = PatchParams{};
-    unit.atlasPatch2dPosX(8)
-        .atlasPatch2dPosY(16)
-        .atlasPatch2dSizeX(16)
-        .atlasPatch2dSizeY(10)
-        .atlasPatch3dOffsetU(5)
-        .atlasPatch3dOffsetV(6);
+    unit.atlasPatch2dPosX(posX)
+        .atlasPatch2dPosY(posY)
+        .atlasPatch2dSizeX(sizeX)
+        .atlasPatch2dSizeY(sizeY)
+        .atlasPatch3dOffsetU(offsetU)
+        .atlasPatch3dOffsetV(offsetV)
+        .atlasPatchOrientationIndex(orientation);
+
+    SECTION("Transformation matrices") {
+      const auto lodX = GENERATE(1, 2, 3);
+      const auto lodY = GENERATE(1, 2, 5);
+
+      unit.atlasPatchLoDScaleX(lodX).atlasPatchLoDScaleY(lodY);
+
+      const auto M = unit.atlasToViewTransform();
+      const auto invM = unit.viewToAtlasTransform();
+      const auto d = std::lcm(lodX, lodY);
+
+      REQUIRE(invM(2, 2) == d);
+      REQUIRE(M * invM == d * TMIV::Common::Mat3x3i::eye());
+    }
 
     SECTION("View to atlas transformation") {
-      SECTION("FPO_NULL") {
-        unit.atlasPatchOrientationIndex(FlexiblePatchOrientation::FPO_NULL);
-        REQUIRE(unit.viewToAtlas(Vec2i{0, 0}) == Vec2i{3, 10});
-        REQUIRE(unit.viewToAtlas(Vec2i{0, 1}) == Vec2i{3, 11});
-        REQUIRE(unit.viewToAtlas(Vec2i{1, 0}) == Vec2i{4, 10});
-      }
-
-      SECTION("FPO_SWAP") {
-        unit.atlasPatchOrientationIndex(FlexiblePatchOrientation::FPO_SWAP);
-        REQUIRE(unit.viewToAtlas(Vec2i{0, 0}) == Vec2i{2, 11});
-        REQUIRE(unit.viewToAtlas(Vec2i{0, 1}) == Vec2i{3, 11});
-        REQUIRE(unit.viewToAtlas(Vec2i{1, 0}) == Vec2i{2, 12});
-      }
-
-      SECTION("FPO_ROT90") {
-        unit.atlasPatchOrientationIndex(FlexiblePatchOrientation::FPO_ROT90);
-        REQUIRE(unit.viewToAtlas(Vec2i{0, 0}) == Vec2i{29, 11});
-        REQUIRE(unit.viewToAtlas(Vec2i{0, 1}) == Vec2i{28, 11});
-        REQUIRE(unit.viewToAtlas(Vec2i{1, 0}) == Vec2i{29, 12});
-      }
-
-      SECTION("FPO_ROT180") {
-        unit.atlasPatchOrientationIndex(FlexiblePatchOrientation::FPO_ROT180);
-        REQUIRE(unit.viewToAtlas(Vec2i{0, 0}) == Vec2i{28, 31});
-        REQUIRE(unit.viewToAtlas(Vec2i{0, 1}) == Vec2i{28, 30});
-        REQUIRE(unit.viewToAtlas(Vec2i{1, 0}) == Vec2i{27, 31});
-      }
-
-      SECTION("FPO_ROT270") {
-        unit.atlasPatchOrientationIndex(FlexiblePatchOrientation::FPO_ROT270);
-        REQUIRE(unit.viewToAtlas(Vec2i{0, 0}) == Vec2i{2, 30});
-        REQUIRE(unit.viewToAtlas(Vec2i{0, 1}) == Vec2i{3, 30});
-        REQUIRE(unit.viewToAtlas(Vec2i{1, 0}) == Vec2i{2, 29});
-      }
-
-      SECTION("FPO_MIRROR") {
-        unit.atlasPatchOrientationIndex(FlexiblePatchOrientation::FPO_MIRROR);
-        REQUIRE(unit.viewToAtlas(Vec2i{0, 0}) == Vec2i{28, 10});
-        REQUIRE(unit.viewToAtlas(Vec2i{0, 1}) == Vec2i{28, 11});
-        REQUIRE(unit.viewToAtlas(Vec2i{1, 0}) == Vec2i{27, 10});
-      }
-
-      SECTION("FPO_MROT90") {
-        unit.atlasPatchOrientationIndex(FlexiblePatchOrientation::FPO_MROT90);
-        REQUIRE(unit.viewToAtlas(Vec2i{0, 0}) == Vec2i{29, 30});
-        REQUIRE(unit.viewToAtlas(Vec2i{0, 1}) == Vec2i{28, 30});
-        REQUIRE(unit.viewToAtlas(Vec2i{1, 0}) == Vec2i{29, 29});
-      }
-
-      SECTION("FPO_MROT180") {
-        unit.atlasPatchOrientationIndex(FlexiblePatchOrientation::FPO_MROT180);
-        REQUIRE(unit.viewToAtlas(Vec2i{0, 0}) == Vec2i{3, 31});
-        REQUIRE(unit.viewToAtlas(Vec2i{0, 1}) == Vec2i{3, 30});
-        REQUIRE(unit.viewToAtlas(Vec2i{1, 0}) == Vec2i{4, 31});
-      }
+      const auto u = GENERATE(13, 78);
+      const auto v = GENERATE(16, 17);
+      CAPTURE(u, v);
+      const auto xy = unit.viewToAtlas({u, v});
+      REQUIRE(direct::atlasToView(unit, xy) == Vec2i{u, v});
     }
 
     SECTION("Atlas to view transformation") {
-      SECTION("FPO_NULL") {
-        unit.atlasPatchOrientationIndex(FlexiblePatchOrientation::FPO_NULL);
-        REQUIRE(unit.atlasToView(Vec2i{3, 10}) == Vec2i{0, 0});
-        REQUIRE(unit.atlasToView(Vec2i{3, 11}) == Vec2i{0, 1});
-        REQUIRE(unit.atlasToView(Vec2i{4, 10}) == Vec2i{1, 0});
-      }
+      const auto x = GENERATE(13, 78);
+      const auto y = GENERATE(16, 17);
+      CAPTURE(x, y);
+      const auto actual = unit.atlasToView({x, y});
+      const auto reference = direct::atlasToView(unit, {x, y});
+      REQUIRE(actual == reference);
 
-      SECTION("FPO_SWAP") {
-        unit.atlasPatchOrientationIndex(FlexiblePatchOrientation::FPO_SWAP);
-        REQUIRE(unit.atlasToView(Vec2i{2, 11}) == Vec2i{0, 0});
-        REQUIRE(unit.atlasToView(Vec2i{3, 11}) == Vec2i{0, 1});
-        REQUIRE(unit.atlasToView(Vec2i{2, 12}) == Vec2i{1, 0});
-      }
-
-      SECTION("FPO_ROT90") {
-        unit.atlasPatchOrientationIndex(FlexiblePatchOrientation::FPO_ROT90);
-        REQUIRE(unit.atlasToView(Vec2i{29, 11}) == Vec2i{0, 0});
-        REQUIRE(unit.atlasToView(Vec2i{28, 11}) == Vec2i{0, 1});
-        REQUIRE(unit.atlasToView(Vec2i{29, 12}) == Vec2i{1, 0});
-      }
-
-      SECTION("FPO_ROT180") {
-        unit.atlasPatchOrientationIndex(FlexiblePatchOrientation::FPO_ROT180);
-        REQUIRE(unit.atlasToView(Vec2i{28, 31}) == Vec2i{0, 0});
-        REQUIRE(unit.atlasToView(Vec2i{28, 30}) == Vec2i{0, 1});
-        REQUIRE(unit.atlasToView(Vec2i{27, 31}) == Vec2i{1, 0});
-      }
-
-      SECTION("FPO_ROT270") {
-        unit.atlasPatchOrientationIndex(FlexiblePatchOrientation::FPO_ROT270);
-        REQUIRE(unit.atlasToView(Vec2i{2, 30}) == Vec2i{0, 0});
-        REQUIRE(unit.atlasToView(Vec2i{3, 30}) == Vec2i{0, 1});
-        REQUIRE(unit.atlasToView(Vec2i{2, 29}) == Vec2i{1, 0});
-      }
-
-      SECTION("FPO_MIRROR") {
-        unit.atlasPatchOrientationIndex(FlexiblePatchOrientation::FPO_MIRROR);
-        REQUIRE(unit.atlasToView(Vec2i{28, 10}) == Vec2i{0, 0});
-        REQUIRE(unit.atlasToView(Vec2i{28, 11}) == Vec2i{0, 1});
-        REQUIRE(unit.atlasToView(Vec2i{27, 10}) == Vec2i{1, 0});
-      }
-
-      SECTION("FPO_MROT90") {
-        unit.atlasPatchOrientationIndex(FlexiblePatchOrientation::FPO_MROT90);
-        REQUIRE(unit.atlasToView(Vec2i{29, 30}) == Vec2i{0, 0});
-        REQUIRE(unit.atlasToView(Vec2i{28, 30}) == Vec2i{0, 1});
-        REQUIRE(unit.atlasToView(Vec2i{29, 29}) == Vec2i{1, 0});
-      }
-
-      SECTION("FPO_MROT180") {
-        unit.atlasPatchOrientationIndex(FlexiblePatchOrientation::FPO_MROT180);
-        REQUIRE(unit.atlasToView(Vec2i{3, 31}) == Vec2i{0, 0});
-        REQUIRE(unit.atlasToView(Vec2i{3, 30}) == Vec2i{0, 1});
-        REQUIRE(unit.atlasToView(Vec2i{4, 31}) == Vec2i{1, 0});
+      SECTION("Level of Detail") {
+        unit.atlasPatchLoDScaleX(2).atlasPatchLoDScaleY(3);
+        const auto actual = unit.atlasToView({x, y});
+        const auto reference = direct::atlasToView(unit, {x, y});
+        REQUIRE(actual == reference);
       }
     }
   }

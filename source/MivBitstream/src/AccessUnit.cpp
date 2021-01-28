@@ -128,17 +128,15 @@ void requireAllPatchesWithinProjectionPlaneBounds(const ViewParamsList &vpl,
     }
     const auto &vp = vpl[viewId];
 
-    const auto size_u = vp.ci.ci_projection_plane_width_minus1() + 1U;
-    const auto size_v = vp.ci.ci_projection_plane_height_minus1() + 1U;
+    const auto size_u = vp.ci.ci_projection_plane_width_minus1() + 1;
+    const auto size_v = vp.ci.ci_projection_plane_height_minus1() + 1;
 
     const auto u_1 = pp.atlasPatch3dOffsetU();
     const auto v_1 = pp.atlasPatch3dOffsetV();
     const auto u_2 = u_1 + pp.atlasPatch3dSizeU();
     const auto v_2 = v_1 + pp.atlasPatch3dSizeV();
 
-    static_assert(std::is_unsigned_v<decltype(u_2)> && std::is_unsigned_v<decltype(v_2)>);
-
-    if (u_1 > u_2 || u_2 > size_u || v_1 > v_2 || v_2 > size_v) {
+    if (u_1 < 0 || u_1 > u_2 || u_2 > size_u || v_1 < 0 || v_1 > v_2 || v_2 > size_v) {
       throw std::runtime_error(fmt::format(
           "Patch with index {} and projection ID {} is out of bounds", patchIndex, viewId));
     }

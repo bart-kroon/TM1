@@ -118,14 +118,14 @@ auto choosePatch(const MivBitstream::PatchParams &patch,
 
 auto divideInBlocks(const MivBitstream::PatchParams &patch) {
   // The size of the sub-block is fixed for now
-  constexpr auto blockSize = 128U;
+  constexpr std::int32_t blockSize = 128;
 
   const auto gridWidth = (patch.atlasPatch2dSizeX() + blockSize - 1) / blockSize;
   const auto gridHeight = (patch.atlasPatch2dSizeY() + blockSize - 1) / blockSize;
   MivBitstream::PatchParamsList subblock(gridWidth * static_cast<size_t>(gridHeight), patch);
 
-  for (uint32_t blockY = 0; blockY < gridHeight; ++blockY) {
-    for (uint32_t blockX = 0; blockX < gridWidth; ++blockX) {
+  for (int32_t blockY = 0; blockY < gridHeight; ++blockY) {
+    for (int32_t blockX = 0; blockX < gridWidth; ++blockX) {
       auto &b = subblock[blockY * static_cast<size_t>(gridWidth) + blockX];
 
       const auto x1 = blockX * blockSize;
@@ -157,8 +157,8 @@ auto SubBlockCuller::filterBlockToPatchMap(const MivBitstream::AccessUnit &frame
     const auto &patch = atlas.patchParamsList[patchIdx];
     const auto &view = frame.viewParamsList[patch.atlasPatchProjectionId()];
 
-    if (patch.atlasPatch3dSizeU() == view.ci.ci_projection_plane_width_minus1() + 1U &&
-        patch.atlasPatch3dSizeV() == view.ci.ci_projection_plane_height_minus1() + 1U &&
+    if (patch.atlasPatch3dSizeU() == view.ci.ci_projection_plane_width_minus1() + 1 &&
+        patch.atlasPatch3dSizeV() == view.ci.ci_projection_plane_height_minus1() + 1 &&
         patch.atlasPatchOrientationIndex() == MivBitstream::FlexiblePatchOrientation::FPO_NULL) {
       for (const auto &block : divideInBlocks(patch)) {
         if (!choosePatch(block, frame.viewParamsList, viewportParams)) {

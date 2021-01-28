@@ -36,6 +36,8 @@
 
 #include <TMIV/MivBitstream/AtlasTileLayerRBSP.h>
 
+#include <TMIV/Common/LinAlg.h>
+#include <TMIV/Common/Matrix.h>
 #include <TMIV/Common/Vector.h>
 
 #include <cstdint>
@@ -59,21 +61,25 @@ struct PatchParams {
   [[nodiscard]] constexpr auto atlasPatch3dRangeD() const noexcept;
   [[nodiscard]] constexpr auto atlasPatchProjectionId() const noexcept;
   [[nodiscard]] constexpr auto atlasPatchOrientationIndex() const noexcept;
+  [[nodiscard]] constexpr auto atlasPatchLoDScaleX() const noexcept;
+  [[nodiscard]] constexpr auto atlasPatchLoDScaleY() const noexcept;
   [[nodiscard]] constexpr auto atlasPatchEntityId() const noexcept;
   [[nodiscard]] constexpr auto atlasPatchDepthOccMapThreshold() const noexcept;
   [[nodiscard]] auto atlasPatchAttributeOffset() const;
 
-  constexpr auto atlasPatch2dPosX(std::uint32_t value) noexcept -> PatchParams &;
-  constexpr auto atlasPatch2dPosY(std::uint32_t value) noexcept -> PatchParams &;
-  constexpr auto atlasPatch2dSizeX(std::uint32_t value) noexcept -> PatchParams &;
-  constexpr auto atlasPatch2dSizeY(std::uint32_t value) noexcept -> PatchParams &;
-  constexpr auto atlasPatch3dOffsetU(std::uint32_t value) noexcept -> PatchParams &;
-  constexpr auto atlasPatch3dOffsetV(std::uint32_t value) noexcept -> PatchParams &;
-  constexpr auto atlasPatch3dOffsetD(std::uint32_t value) noexcept -> PatchParams &;
-  constexpr auto atlasPatch3dRangeD(std::uint32_t value) noexcept -> PatchParams &;
+  constexpr auto atlasPatch2dPosX(std::int32_t value) noexcept -> PatchParams &;
+  constexpr auto atlasPatch2dPosY(std::int32_t value) noexcept -> PatchParams &;
+  constexpr auto atlasPatch2dSizeX(std::int32_t value) noexcept -> PatchParams &;
+  constexpr auto atlasPatch2dSizeY(std::int32_t value) noexcept -> PatchParams &;
+  constexpr auto atlasPatch3dOffsetU(std::int32_t value) noexcept -> PatchParams &;
+  constexpr auto atlasPatch3dOffsetV(std::int32_t value) noexcept -> PatchParams &;
+  constexpr auto atlasPatch3dOffsetD(std::int32_t value) noexcept -> PatchParams &;
+  constexpr auto atlasPatch3dRangeD(std::int32_t value) noexcept -> PatchParams &;
   constexpr auto atlasPatchProjectionId(std::uint16_t value) noexcept -> PatchParams &;
   constexpr auto atlasPatchOrientationIndex(FlexiblePatchOrientation value) noexcept
       -> PatchParams &;
+  constexpr auto atlasPatchLoDScaleX(std::int32_t value) noexcept -> PatchParams &;
+  constexpr auto atlasPatchLoDScaleY(std::int32_t value) noexcept -> PatchParams &;
   constexpr auto atlasPatchEntityId(std::uint16_t value) noexcept -> PatchParams &;
   constexpr auto atlasPatchDepthOccMapThreshold(std::uint32_t value) noexcept -> PatchParams &;
   auto atlasPatchAttributeOffset(Common::Vec3i value) noexcept -> PatchParams &;
@@ -82,12 +88,27 @@ struct PatchParams {
   [[nodiscard]] constexpr auto isRotated() const noexcept;
   [[nodiscard]] constexpr decltype(auto) atlasPatch3dSizeU() const noexcept;
   [[nodiscard]] constexpr decltype(auto) atlasPatch3dSizeV() const noexcept;
-  constexpr decltype(auto) atlasPatch3dSizeU(std::uint32_t value) noexcept;
-  constexpr decltype(auto) atlasPatch3dSizeV(std::uint32_t value) noexcept;
+  constexpr decltype(auto) atlasPatch3dSizeU(std::int32_t value) noexcept;
+  constexpr decltype(auto) atlasPatch3dSizeV(std::int32_t value) noexcept;
 
-  // Pixel position conversion from atlas to/from view
-  [[nodiscard]] auto viewToAtlas(Common::Vec2i viewPosition) const -> Common::Vec2i;
-  [[nodiscard]] auto atlasToView(Common::Vec2i atlasPosition) const -> Common::Vec2i;
+  // Pixel position conversion from atlas (x, y) to view (u, v)
+  //
+  // * Implements ISO/IEC 23090-5:2021(2E) V3E [WG 07 N 0003], Eq. (49)
+  // * Although compilers may be smart enough, computing the transform first may be faster
+  [[nodiscard]] auto atlasToView(Common::Vec2i xy) const noexcept -> Common::Vec2i;
+  [[nodiscard]] auto atlasToViewTransform() const noexcept -> Common::Mat3x3i;
+  [[nodiscard]] static auto atlasToView(Common::Vec2i xy, const Common::Mat3x3i &m) noexcept
+      -> Common::Vec2i;
+
+  // Pixel position conversion from view (u, v) to atlas (x, y)
+  //
+  //  * Forms mapping with atlasToView when lodX == 1 and lodY == 1
+  //  * For lodX > 1 or lodY > 1 only the transform is available
+  //  * Although compilers may be smart enough, computing the transform first may be faster
+  [[nodiscard]] auto viewToAtlas(Common::Vec2i uv) const noexcept -> Common::Vec2i;
+  [[nodiscard]] auto viewToAtlasTransform() const noexcept -> Common::Mat3x3i;
+  [[nodiscard]] static auto viewToAtlas(Common::Vec2i uv, const Common::Mat3x3i &m) noexcept
+      -> Common::Vec2i;
 
   static auto decodePdu(const PatchDataUnit &pdu, const AtlasSequenceParameterSetRBSP &asps,
                         const AtlasTileHeader &ath) -> PatchParams;
@@ -98,15 +119,17 @@ struct PatchParams {
   auto operator!=(const PatchParams &other) const -> bool { return !operator==(other); };
 
 private:
-  std::uint32_t m_atlasPatch2dPosX{};
-  std::uint32_t m_atlasPatch2dPosY{};
-  std::uint32_t m_atlasPatch2dSizeX{};
-  std::uint32_t m_atlasPatch2dSizeY{};
-  std::uint32_t m_atlasPatch3dOffsetU{};
-  std::uint32_t m_atlasPatch3dOffsetV{};
-  std::uint32_t m_atlasPatch3dOffsetD{};
-  std::uint32_t m_atlasPatch3dRangeD{};
+  std::int32_t m_atlasPatch2dPosX{};
+  std::int32_t m_atlasPatch2dPosY{};
+  std::int32_t m_atlasPatch2dSizeX{};
+  std::int32_t m_atlasPatch2dSizeY{};
+  std::int32_t m_atlasPatch3dOffsetU{};
+  std::int32_t m_atlasPatch3dOffsetV{};
+  std::int32_t m_atlasPatch3dOffsetD{};
+  std::int32_t m_atlasPatch3dRangeD{};
   std::uint16_t m_atlasPatchProjectionId{};
+  std::int32_t m_atlasPatchLoDScaleX{1};
+  std::int32_t m_atlasPatchLoDScaleY{1};
   FlexiblePatchOrientation m_atlasPatchOrientationIndex{FlexiblePatchOrientation::FPO_INVALID};
   std::optional<std::uint16_t> m_atlasPatchEntityId;
   std::optional<std::uint32_t> m_atlasPatchDepthOccMapThreshold;

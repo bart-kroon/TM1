@@ -54,6 +54,7 @@ enum class AthType : std::uint8_t { P_TILE, I_TILE, SKIP_TILE };
 enum class FlexiblePatchOrientation : std::uint8_t {
   FPO_NULL,
   FPO_SWAP,
+  FPO_MROT270 = FPO_SWAP,
   FPO_ROT90,
   FPO_ROT180,
   FPO_ROT270,

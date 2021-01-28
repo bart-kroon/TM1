@@ -109,8 +109,8 @@ auto GeometryQuantizer::transformAtlases(const Common::MVD16Frame &inAtlases)
     const auto kIn = m_inParams.vps.indexOf(patch.atlasId);
     const auto kOut = m_outParams.vps.indexOf(patch.atlasId);
 
-    for (auto i = 0U; i < patch.atlasPatch2dSizeY(); ++i) {
-      for (auto j = 0U; j < patch.atlasPatch2dSizeX(); ++j) {
+    for (size_t i = 0; i < static_cast<size_t>(patch.atlasPatch2dSizeY()); ++i) {
+      for (size_t j = 0; j < static_cast<size_t>(patch.atlasPatch2dSizeX()); ++j) {
         const auto n = i + patch.atlasPatch2dPosY();
         const auto m = j + patch.atlasPatch2dPosX();
 

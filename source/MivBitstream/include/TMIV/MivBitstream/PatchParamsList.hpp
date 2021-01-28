@@ -60,6 +60,10 @@ constexpr auto PatchParams::atlasPatchOrientationIndex() const noexcept {
   return m_atlasPatchOrientationIndex;
 }
 
+constexpr auto PatchParams::atlasPatchLoDScaleX() const noexcept { return m_atlasPatchLoDScaleX; }
+
+constexpr auto PatchParams::atlasPatchLoDScaleY() const noexcept { return m_atlasPatchLoDScaleY; }
+
 constexpr auto PatchParams::atlasPatchEntityId() const noexcept { return m_atlasPatchEntityId; }
 
 constexpr auto PatchParams::atlasPatchDepthOccMapThreshold() const noexcept {
@@ -71,42 +75,42 @@ inline auto PatchParams::atlasPatchAttributeOffset() const {
   return *m_atlasPatchAttributeOffset;
 }
 
-constexpr auto PatchParams::atlasPatch2dPosX(std::uint32_t value) noexcept -> PatchParams & {
+constexpr auto PatchParams::atlasPatch2dPosX(std::int32_t value) noexcept -> PatchParams & {
   m_atlasPatch2dPosX = value;
   return *this;
 }
 
-constexpr auto PatchParams::atlasPatch2dPosY(std::uint32_t value) noexcept -> PatchParams & {
+constexpr auto PatchParams::atlasPatch2dPosY(std::int32_t value) noexcept -> PatchParams & {
   m_atlasPatch2dPosY = value;
   return *this;
 }
 
-constexpr auto PatchParams::atlasPatch2dSizeX(std::uint32_t value) noexcept -> PatchParams & {
+constexpr auto PatchParams::atlasPatch2dSizeX(std::int32_t value) noexcept -> PatchParams & {
   m_atlasPatch2dSizeX = value;
   return *this;
 }
 
-constexpr auto PatchParams::atlasPatch2dSizeY(std::uint32_t value) noexcept -> PatchParams & {
+constexpr auto PatchParams::atlasPatch2dSizeY(std::int32_t value) noexcept -> PatchParams & {
   m_atlasPatch2dSizeY = value;
   return *this;
 }
 
-constexpr auto PatchParams::atlasPatch3dOffsetU(std::uint32_t value) noexcept -> PatchParams & {
+constexpr auto PatchParams::atlasPatch3dOffsetU(std::int32_t value) noexcept -> PatchParams & {
   m_atlasPatch3dOffsetU = value;
   return *this;
 }
 
-constexpr auto PatchParams::atlasPatch3dOffsetV(std::uint32_t value) noexcept -> PatchParams & {
+constexpr auto PatchParams::atlasPatch3dOffsetV(std::int32_t value) noexcept -> PatchParams & {
   m_atlasPatch3dOffsetV = value;
   return *this;
 }
 
-constexpr auto PatchParams::atlasPatch3dOffsetD(std::uint32_t value) noexcept -> PatchParams & {
+constexpr auto PatchParams::atlasPatch3dOffsetD(std::int32_t value) noexcept -> PatchParams & {
   m_atlasPatch3dOffsetD = value;
   return *this;
 }
 
-constexpr auto PatchParams::atlasPatch3dRangeD(std::uint32_t value) noexcept -> PatchParams & {
+constexpr auto PatchParams::atlasPatch3dRangeD(std::int32_t value) noexcept -> PatchParams & {
   m_atlasPatch3dRangeD = value;
   return *this;
 }
@@ -119,6 +123,16 @@ constexpr auto PatchParams::atlasPatchProjectionId(std::uint16_t value) noexcept
 constexpr auto PatchParams::atlasPatchOrientationIndex(FlexiblePatchOrientation value) noexcept
     -> PatchParams & {
   m_atlasPatchOrientationIndex = value;
+  return *this;
+}
+
+constexpr auto PatchParams::atlasPatchLoDScaleX(std::int32_t value) noexcept -> PatchParams & {
+  m_atlasPatchLoDScaleX = value;
+  return *this;
+}
+
+constexpr auto PatchParams::atlasPatchLoDScaleY(std::int32_t value) noexcept -> PatchParams & {
+  m_atlasPatchLoDScaleY = value;
   return *this;
 }
 
@@ -149,6 +163,8 @@ inline auto PatchParams::operator==(const PatchParams &other) const -> bool {
          atlasPatch3dRangeD() == other.atlasPatch3dRangeD() &&
          atlasPatchProjectionId() == other.atlasPatchProjectionId() &&
          atlasPatchOrientationIndex() == other.atlasPatchOrientationIndex() &&
+         atlasPatchLoDScaleX() == other.atlasPatchLoDScaleX() &&
+         atlasPatchLoDScaleY() == other.atlasPatchLoDScaleY() &&
          atlasPatchEntityId() == other.atlasPatchEntityId() &&
          atlasPatchDepthOccMapThreshold() == other.atlasPatchDepthOccMapThreshold() &&
          atlasPatchAttributeOffset() == other.atlasPatchAttributeOffset();
@@ -171,75 +187,32 @@ constexpr decltype(auto) PatchParams::atlasPatch3dSizeV() const noexcept {
   return isRotated() ? atlasPatch2dSizeX() : atlasPatch2dSizeY();
 }
 
-constexpr decltype(auto) PatchParams::atlasPatch3dSizeU(std::uint32_t value) noexcept {
+constexpr decltype(auto) PatchParams::atlasPatch3dSizeU(std::int32_t value) noexcept {
   return isRotated() ? atlasPatch2dSizeY(value) : atlasPatch2dSizeX(value);
 }
 
-constexpr decltype(auto) PatchParams::atlasPatch3dSizeV(std::uint32_t value) noexcept {
+constexpr decltype(auto) PatchParams::atlasPatch3dSizeV(std::int32_t value) noexcept {
   return isRotated() ? atlasPatch2dSizeX(value) : atlasPatch2dSizeY(value);
 }
 
-inline auto PatchParams::viewToAtlas(Common::Vec2i viewPosition) const -> Common::Vec2i {
-  const auto w = static_cast<int>(atlasPatch3dSizeU());
-  const auto h = static_cast<int>(atlasPatch3dSizeV());
-  const auto xM = static_cast<int>(atlasPatch3dOffsetU());
-  const auto yM = static_cast<int>(atlasPatch3dOffsetV());
-  const auto xP = static_cast<int>(atlasPatch2dPosX());
-  const auto yP = static_cast<int>(atlasPatch2dPosY());
-  const auto x = viewPosition.x();
-  const auto y = viewPosition.y();
-
-  switch (atlasPatchOrientationIndex()) {
-  case FlexiblePatchOrientation::FPO_NULL: // (x, y)
-    return {x - xM + xP, y - yM + yP};
-  case FlexiblePatchOrientation::FPO_SWAP: // (y, x)
-    return {y - yM + xP, x - xM + yP};
-  case FlexiblePatchOrientation::FPO_ROT90: // (-y, x)
-    return {-y + yM + xP + h - 1, x - xM + yP};
-  case FlexiblePatchOrientation::FPO_ROT180: // (-x, -y)
-    return {-x + xM + xP + w - 1, -y + yM + yP + h - 1};
-  case FlexiblePatchOrientation::FPO_ROT270: // (y, -x)
-    return {y - yM + xP, -x + xM + yP + w - 1};
-  case FlexiblePatchOrientation::FPO_MIRROR: // (-x, y)
-    return {-x + xM + xP + w - 1, y - yM + yP};
-  case FlexiblePatchOrientation::FPO_MROT90: // (-y, -x)
-    return {-y + yM + xP + h - 1, -x + xM + yP + w - 1};
-  case FlexiblePatchOrientation::FPO_MROT180: // (x, -y)
-    return {x - xM + xP, -y + yM + yP + h - 1};
-  default:
-    abort();
-  }
+inline auto PatchParams::atlasToView(Common::Vec2i xy) const noexcept -> Common::Vec2i {
+  return atlasToView(xy, atlasToViewTransform());
 }
 
-inline auto PatchParams::atlasToView(Common::Vec2i atlasPosition) const -> Common::Vec2i {
-  const auto w = static_cast<int>(atlasPatch3dSizeU());
-  const auto h = static_cast<int>(atlasPatch3dSizeV());
-  const auto xM = static_cast<int>(atlasPatch3dOffsetU());
-  const auto yM = static_cast<int>(atlasPatch3dOffsetV());
-  const auto xP = static_cast<int>(atlasPatch2dPosX());
-  const auto yP = static_cast<int>(atlasPatch2dPosY());
-  const auto x = atlasPosition.x();
-  const auto y = atlasPosition.y();
+inline auto PatchParams::viewToAtlas(Common::Vec2i uv) const noexcept -> Common::Vec2i {
+  return viewToAtlas(uv, viewToAtlasTransform());
+}
 
-  switch (atlasPatchOrientationIndex()) {
-  case FlexiblePatchOrientation::FPO_NULL: // (x, y)
-    return {x - xP + xM, y - yP + yM};
-  case FlexiblePatchOrientation::FPO_SWAP: // (y, x)
-    return {y - yP + xM, x - xP + yM};
-  case FlexiblePatchOrientation::FPO_ROT90: // (y, -x)
-    return {y - yP + xM, -x + xP + yM + h - 1};
-  case FlexiblePatchOrientation::FPO_ROT180: // (-x, -y)
-    return {-x + xP + xM + w - 1, -y + yP + yM + h - 1};
-  case FlexiblePatchOrientation::FPO_ROT270: // (-y, x)
-    return {-y + yP + xM + w - 1, x - xP + yM};
-  case FlexiblePatchOrientation::FPO_MIRROR: // (-x, y)
-    return {-x + xP + xM + w - 1, y - yP + yM};
-  case FlexiblePatchOrientation::FPO_MROT90: // (-y, -x)
-    return {-y + yP + xM + w - 1, -x + xP + yM + h - 1};
-  case FlexiblePatchOrientation::FPO_MROT180: // (x, -y)
-    return {x - xP + xM, -y + yP + yM + h - 1};
-  default:
-    abort();
-  }
+inline auto PatchParams::atlasToView(Common::Vec2i xy, const Common::Mat3x3i &m) noexcept
+    -> Common::Vec2i {
+  return {m(0, 0) * xy[0] + m(0, 1) * xy[1] + m(0, 2),  //
+          m(1, 0) * xy[0] + m(1, 1) * xy[1] + m(1, 2)}; //
+}
+
+inline auto PatchParams::viewToAtlas(Common::Vec2i uv, const Common::Mat3x3i &m) noexcept
+    -> Common::Vec2i {
+  // NOTE(BK): limit to lodX == lodY == 1
+  LIMITATION(m(2, 2) == 1);
+  return atlasToView(uv, m);
 }
 } // namespace TMIV::MivBitstream

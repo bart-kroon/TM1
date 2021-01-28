@@ -121,6 +121,7 @@ public:
 namespace stack {
 template <typename T, size_type M, size_type N> using Matrix = MatrixInterface<Array<T, M, N>>;
 template <typename T> using Mat2x2 = Matrix<T, 2, 2>;
+template <typename T> using Mat2x3 = Matrix<T, 2, 3>;
 template <typename T> using Mat3x3 = Matrix<T, 3, 3>;
 } // namespace stack
 
@@ -133,6 +134,8 @@ template <typename T> using Matrix = MatrixInterface<Array<2, T>>;
 }
 
 // Additional definitions
+using Mat2x2i = stack::Mat2x2<int32_t>;
+using Mat3x3i = stack::Mat3x3<int32_t>;
 using Mat2x2f = stack::Mat2x2<float>;
 using Mat3x3f = stack::Mat3x3<float>;
 template <typename T> using Mat = heap::Matrix<T>;

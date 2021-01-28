@@ -61,9 +61,12 @@ auto GeometryQuantizer::setOccupancyParams(MivBitstream::EncoderParams params)
     -> const MivBitstream::EncoderParams & {
   m_inParams = std::move(params);
   m_outParams = m_inParams;
-  m_outParams.vme().vme_embedded_occupancy_flag(
-      m_outParams.vps.profile_tier_level().ptl_profile_toolset_idc() !=
-      MivBitstream::PtlProfilePccToolsetIdc::MIV_Geometry_Absent);
+  const auto isOccupancyEmbedded = m_outParams.vps.profile_tier_level().ptl_profile_toolset_idc() !=
+                                   MivBitstream::PtlProfilePccToolsetIdc::MIV_Geometry_Absent;
+  m_outParams.vme().vme_embedded_occupancy_flag(isOccupancyEmbedded);
+  for (auto &atlas : m_outParams.atlas) {
+    atlas.asme().asme_embedded_occupancy_enabled_flag(isOccupancyEmbedded);
+  }
   return m_outParams;
 }
 

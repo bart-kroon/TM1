@@ -104,6 +104,7 @@ void Encoder::prepareSequence(MivBitstream::EncoderParams sourceParams) {
   m_params.viewParamsList = m_transportParams.viewParamsList;
   m_params.frameRate = m_transportParams.frameRate;
   m_params.lengthsInMeters = m_transportParams.lengthsInMeters;
+  m_params.maxEntityId = m_transportParams.maxEntityId;
   m_params.casps.casps_extension_present_flag(true)
       .casps_miv_extension_present_flag(true)
       .casps_log2_max_common_atlas_frame_order_cnt_lsb_minus4(log2FocLsbMinus4())
@@ -223,8 +224,7 @@ void Encoder::setGiGeometry3dCoordinatesBitdepthMinus1() {
 
 void Encoder::enableOccupancyPerView() {
   for (size_t viewId = 0; viewId < m_params.viewParamsList.size(); ++viewId) {
-    if (!m_params.viewParamsList[viewId].isBasicView ||
-        m_params.vme().vme_max_entities_minus1() > 0) {
+    if (!m_params.viewParamsList[viewId].isBasicView || 0 < m_params.maxEntityId) {
       m_params.viewParamsList[viewId].hasOccupancy = true;
     }
   }
@@ -248,6 +248,8 @@ void Encoder::prepareIvau() {
             static_cast<uint16_t>(m_params.viewParamsList.size() - 1))
         .asps_log2_patch_packing_block_size(Common::ceilLog2(m_config.blockSize));
 
+    atlas.asme().asme_max_entity_id(m_params.maxEntityId);
+
     const auto psq = patchSizeQuantizers();
     atlas.asps.asps_patch_size_quantizer_present_flag(psq.x() != m_config.blockSize ||
                                                       psq.y() != m_config.blockSize);
@@ -259,8 +261,7 @@ void Encoder::prepareIvau() {
     }
 
     // Signalling pdu_entity_id requires ASME to be present
-    if (m_params.vps.vps_miv_extension_present_flag() &&
-        m_params.vme().vme_max_entities_minus1() > 0) {
+    if (m_params.vps.vps_miv_extension_present_flag() && 0 < m_params.maxEntityId) {
       // There is nothing entity-related in ASME so a reference is obtained but discarded
       static_cast<void>(atlas.asme());
     }

@@ -136,7 +136,7 @@ public:
 
   void parseAtl(std::istream &stream, const TMIV::MivBitstream::NalUnitHeader &nuh) {
     const auto atl =
-        TMIV::MivBitstream::AtlasTileLayerRBSP::decodeFrom(stream, m_vps, nuh, m_aspsV, m_afpsV);
+        TMIV::MivBitstream::AtlasTileLayerRBSP::decodeFrom(stream, nuh, m_aspsV, m_afpsV);
     m_log << atl;
   }
 

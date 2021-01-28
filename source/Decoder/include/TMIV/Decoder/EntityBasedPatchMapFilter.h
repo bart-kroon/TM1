@@ -47,6 +47,8 @@ public:
   void inplaceFilterBlockToPatchMaps(MivBitstream::AccessUnit &frame) const;
 
 private:
+  void filterBlockToPatchMaps(MivBitstream::AtlasAccessUnit &atlas) const;
+
   Common::Vec2i m_entityDecodeRange;
   bool m_entityFiltering{false};
 };

@@ -166,13 +166,6 @@ private:
       x.vme().vme_depth_low_quality_flag(node.as<bool>());
     }
 
-    const auto maxEntities = config.require("maxEntities").as<unsigned>();
-    if (1 < maxEntities) {
-      throw std::runtime_error("Entities are not managed in current version of MPI encoder. Please "
-                               "use maxEntities=1 !!!");
-    }
-    x.vme().vme_max_entities_minus1(maxEntities - 1U);
-
     if (const auto &subnode = config.optional("ViewingSpace")) {
       x.viewingSpace = MivBitstream::ViewingSpace::loadFromJson(subnode, config);
     }

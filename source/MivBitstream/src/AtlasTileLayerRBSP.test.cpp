@@ -109,7 +109,6 @@ TEST_CASE("skip_patch_data_unit", "[Atlas Tile Layer RBSP]") {
 }
 
 TEST_CASE("patch_data_unit", "[Atlas Tile Layer RBSP]") {
-  auto vps = V3cParameterSet{};
   auto aspsV = std::vector<AtlasSequenceParameterSetRBSP>(1);
   const auto afpsV = std::vector<AtlasFrameParameterSetRBSP>(1);
   const auto ath = AtlasTileHeader{};
@@ -127,14 +126,9 @@ pdu_projection_id[ 0 ][ 101 ]=0
 pdu_orientation_index[ 0 ][ 101 ]=FPO_NULL
 )");
 
-  REQUIRE(bitCodingTest(x, 11, vps, aspsV, afpsV, ath));
+  REQUIRE(bitCodingTest(x, 11, aspsV, afpsV, ath));
 
   SECTION("Example 1") {
-    vps.vps_extension_present_flag(true)
-        .vps_miv_extension_present_flag(true)
-        .vps_miv_extension()
-        .vme_max_entities_minus1(100);
-
     aspsV.front()
         .asps_geometry_3d_bit_depth_minus1(14)
         .asps_geometry_2d_bit_depth_minus1(9)
@@ -146,7 +140,8 @@ pdu_orientation_index[ 0 ][ 101 ]=FPO_NULL
         .asps_miv_extension_present_flag(true)
         .asps_miv_extension()
         .asme_embedded_occupancy_enabled_flag(true)
-        .asme_depth_occ_threshold_flag(true);
+        .asme_depth_occ_threshold_flag(true)
+        .asme_max_entity_id(100);
 
     x.pdu_2d_pos_x(34)
         .pdu_2d_pos_y(57)
@@ -176,15 +171,10 @@ pdu_entity_id[ 12 ][ 102 ]=35
 pdu_depth_occ_threshold[ 12 ][ 102 ]=600
 )");
 
-    REQUIRE(bitCodingTest(x, 146, vps, aspsV, afpsV, ath));
+    REQUIRE(bitCodingTest(x, 146, aspsV, afpsV, ath));
   }
 
   SECTION("Extend with only pdu_entity_id") {
-    vps.vps_extension_present_flag(true)
-        .vps_miv_extension_present_flag(true)
-        .vps_miv_extension()
-        .vme_max_entities_minus1(100);
-
     aspsV.front()
         .asps_geometry_2d_bit_depth_minus1(9)
         .asps_geometry_3d_bit_depth_minus1(14)
@@ -193,7 +183,9 @@ pdu_depth_occ_threshold[ 12 ][ 102 ]=600
         .asps_extended_projection_enabled_flag(true)
         .asps_max_number_projections_minus1(511)
         .asps_extension_present_flag(true)
-        .asps_miv_extension_present_flag(true);
+        .asps_miv_extension_present_flag(true)
+        .asps_miv_extension()
+        .asme_max_entity_id(100);
 
     // Create ASME with default values
     static_cast<void>(aspsV.front().asps_miv_extension());
@@ -224,14 +216,11 @@ pdu_orientation_index[ 12 ][ 102 ]=FPO_MROT180
 pdu_entity_id[ 12 ][ 102 ]=35
 )");
 
-    REQUIRE(bitCodingTest(x, 136, vps, aspsV, afpsV, ath));
+    REQUIRE(bitCodingTest(x, 136, aspsV, afpsV, ath));
   }
 }
 
 TEST_CASE("patch_information_data", "[Atlas Tile Layer RBSP]") {
-  auto vps = V3cParameterSet{};
-  vps.vps_geometry_video_present_flag({}, true).geometry_information({}, {});
-
   auto aspsV = std::vector<AtlasSequenceParameterSetRBSP>(1);
   aspsV.front().asps_frame_width(4000).asps_frame_height(2000);
 
@@ -251,7 +240,7 @@ TEST_CASE("patch_information_data", "[Atlas Tile Layer RBSP]") {
     x = PatchInformationData{SkipPatchDataUnit{}};
 
     REQUIRE(toString(x, 77, 88).empty());
-    REQUIRE(bitCodingTest(x, 0, vps, aspsV, afpsV, ath, patchMode));
+    REQUIRE(bitCodingTest(x, 0, aspsV, afpsV, ath, patchMode));
   }
 
   SECTION("Example patch_data_unit") {
@@ -270,7 +259,7 @@ pdu_3d_offset_d[ 13 ][ 99 ]=0
 pdu_projection_id[ 13 ][ 99 ]=0
 pdu_orientation_index[ 13 ][ 99 ]=FPO_NULL
 )");
-    REQUIRE(bitCodingTest(x, 11, vps, aspsV, afpsV, ath, patchMode));
+    REQUIRE(bitCodingTest(x, 11, aspsV, afpsV, ath, patchMode));
   }
 }
 
@@ -282,12 +271,10 @@ TEST_CASE("atlas_tile_data_unit", "[Atlas Tile Layer RBSP]") {
     const auto x = AtlasTileDataUnit{};
     REQUIRE(toString(x, ath).empty());
 
-    const auto vps = V3cParameterSet{};
-
     const auto aspsV = std::vector<AtlasSequenceParameterSetRBSP>(1);
     const auto afpsV = std::vector<AtlasFrameParameterSetRBSP>(1);
 
-    REQUIRE(bitCodingTest(x, 7, vps, aspsV, afpsV, ath));
+    REQUIRE(bitCodingTest(x, 7, aspsV, afpsV, ath));
   }
 
   SECTION("P_TILE") {
@@ -351,31 +338,17 @@ pdu_projection_id[ 7 ][ 1 ]=0
 pdu_orientation_index[ 7 ][ 1 ]=FPO_NULL
 )");
 
-    const auto j0 = AtlasId{0};
-    const auto j1 = AtlasId{1};
-
-    auto vps = V3cParameterSet{};
-    vps.vps_atlas_count_minus1(1)
-        .vps_atlas_id(0, j0)
-        .vps_atlas_id(1, j1)
-        .vps_geometry_video_present_flag(j0, true)
-        .vps_geometry_video_present_flag(j1, true)
-        .geometry_information(j0, {})
-        .geometry_information(j1, {});
-
     auto aspsV = std::vector<AtlasSequenceParameterSetRBSP>(1);
     aspsV.front().asps_frame_width(4000).asps_frame_height(2000);
 
     const auto afpsV = std::vector<AtlasFrameParameterSetRBSP>(1);
 
-    REQUIRE(bitCodingTest(x, 31, vps, aspsV, afpsV, ath));
+    REQUIRE(bitCodingTest(x, 31, aspsV, afpsV, ath));
   }
 }
 
 TEST_CASE("atlas_tile_layer_rbsp", "[Atlas Tile Layer RBSP]") {
   SECTION("SKIP_TILE") {
-    const auto vps = V3cParameterSet{};
-
     auto aspsV = std::vector<AtlasSequenceParameterSetRBSP>(1);
     aspsV.front()
         .asps_frame_width(4000)
@@ -396,13 +369,10 @@ ath_type=SKIP_TILE
 ath_atlas_frm_order_cnt_lsb=0
 ath_ref_atlas_frame_list_asps_flag=true
 )");
-    REQUIRE(byteCodingTest(x, 3, vps, nuh, aspsV, afpsV));
+    REQUIRE(byteCodingTest(x, 3, nuh, aspsV, afpsV));
   }
 
   SECTION("I_TILE") {
-    auto vps = V3cParameterSet{};
-    vps.vps_geometry_video_present_flag({}, true).geometry_information({}, {});
-
     auto aspsV = std::vector<AtlasSequenceParameterSetRBSP>(1);
     aspsV.front()
         .asps_frame_width(4000)
@@ -474,12 +444,10 @@ pdu_lod_enabled_flag[ 0 ][ 2 ]=true
 pdu_lod_scale_x_minus1[ 0 ][ 2 ]=1
 pdu_lod_scale_y_idc[ 0 ][ 2 ]=3
 )");
-    REQUIRE(byteCodingTest(x, 16, vps, nuh, aspsV, afpsV));
+    REQUIRE(byteCodingTest(x, 16, nuh, aspsV, afpsV));
   }
 
   SECTION("I_TILE with quantizers") {
-    const auto vps = V3cParameterSet{};
-
     auto aspsV = std::vector<AtlasSequenceParameterSetRBSP>(1);
     aspsV.front()
         .asps_geometry_2d_bit_depth_minus1(11)
@@ -526,7 +494,7 @@ pdu_3d_range_d[ 0 ][ 0 ]=127
 pdu_projection_id[ 0 ][ 0 ]=0
 pdu_orientation_index[ 0 ][ 0 ]=FPO_NULL
 )");
-    REQUIRE(byteCodingTest(x, 12, vps, nuh, aspsV, afpsV));
+    REQUIRE(byteCodingTest(x, 12, nuh, aspsV, afpsV));
   }
 }
 } // namespace TMIV::MivBitstream

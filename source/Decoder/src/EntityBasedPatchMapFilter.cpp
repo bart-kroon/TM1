@@ -48,18 +48,26 @@ EntityBasedPatchMapFilter::EntityBasedPatchMapFilter(const Common::Json & /*root
 
 void EntityBasedPatchMapFilter::inplaceFilterBlockToPatchMaps(
     MivBitstream::AccessUnit &frame) const {
-  if (m_entityFiltering && 0 < frame.vps.vps_miv_extension().vme_max_entities_minus1()) {
+  if (m_entityFiltering) {
     for (auto &atlas : frame.atlas) {
-      Common::Vec2i sz = atlas.blockToPatchMap.getSize();
-      for (int y = 0; y < sz[1]; y++) {
-        for (int x = 0; x < sz[0]; x++) {
-          uint16_t patchId = atlas.blockToPatchMap.getPlane(0)(y, x);
-          if (patchId != Common::unusedPatchId) {
-            auto entityId = static_cast<int>(*atlas.patchParamsList[patchId].atlasPatchEntityId());
-            if (entityId < m_entityDecodeRange[0] || m_entityDecodeRange[1] <= entityId) {
-              atlas.blockToPatchMap.getPlane(0)(y, x) = Common::unusedPatchId;
-            }
-          }
+      if (atlas.asps.asps_extension_present_flag() &&
+          atlas.asps.asps_miv_extension_present_flag() &&
+          0 < atlas.asps.asps_miv_extension().asme_max_entity_id()) {
+        filterBlockToPatchMaps(atlas);
+      }
+    }
+  }
+}
+
+void EntityBasedPatchMapFilter::filterBlockToPatchMaps(MivBitstream::AtlasAccessUnit &atlas) const {
+  Common::Vec2i sz = atlas.blockToPatchMap.getSize();
+  for (int y = 0; y < sz[1]; y++) {
+    for (int x = 0; x < sz[0]; x++) {
+      uint16_t patchId = atlas.blockToPatchMap.getPlane(0)(y, x);
+      if (patchId != Common::unusedPatchId) {
+        auto entityId = static_cast<int>(*atlas.patchParamsList[patchId].atlasPatchEntityId());
+        if (entityId < m_entityDecodeRange[0] || m_entityDecodeRange[1] <= entityId) {
+          atlas.blockToPatchMap.getPlane(0)(y, x) = Common::unusedPatchId;
         }
       }
     }

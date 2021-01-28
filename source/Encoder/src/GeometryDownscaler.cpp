@@ -94,10 +94,14 @@ auto GeometryDownscaler::transformFrame(Common::MVD10Frame frame) -> Common::MVD
   if (m_params.vme().vme_geometry_scale_enabled_flag()) {
     for (size_t atlasId = 0; atlasId < frame.size(); ++atlasId) {
       const auto &asps = m_params.atlas[atlasId].asps;
+
+      auto frameSize = Common::Vec2i{asps.asps_frame_width(), asps.asps_frame_height()};
       const auto &asme = asps.asps_miv_extension();
-      const auto frameSize = Common::Vec2i{
-          asps.asps_frame_width() / (asme.asme_geometry_scale_factor_x_minus1() + 1),
-          asps.asps_frame_height() / (asme.asme_geometry_scale_factor_y_minus1() + 1)};
+      if (asme.asme_geometry_scale_enabled_flag()) {
+        frameSize.x() /= (asme.asme_geometry_scale_factor_x_minus1() + 1);
+        frameSize.y() /= (asme.asme_geometry_scale_factor_y_minus1() + 1);
+      }
+
       frame[atlasId].depth = maxPool(frame[atlasId].depth, frameSize);
     }
   }

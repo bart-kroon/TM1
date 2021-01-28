@@ -84,6 +84,7 @@ struct EncoderParams {
   bool lengthsInMeters{true};
 
   bool dqParamsPresentFlag{true};
+  std::uint16_t maxEntityId{0};
 
   std::vector<EncoderAtlasParams> atlas;
 

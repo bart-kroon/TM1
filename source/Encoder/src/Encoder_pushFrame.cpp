@@ -40,7 +40,7 @@ namespace TMIV::Encoder {
 constexpr auto neutralChroma = Common::TextureFrame::neutralColor();
 
 void Encoder::pushFrame(Common::MVD16Frame sourceViews) {
-  if (m_params.vme().vme_max_entities_minus1() == 0) {
+  if (m_params.maxEntityId == 0) {
     pushSingleEntityFrame(std::move(sourceViews));
   } else {
     pushMultiEntityFrame(std::move(sourceViews));

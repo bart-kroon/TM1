@@ -67,6 +67,8 @@ auto ExplicitOccupancy::setOccupancyParams(MivBitstream::EncoderParams params)
 
   if (!m_embeddedOccupancyFlag && m_occupancyScaleEnabledFlag) {
     for (auto &atlas : m_outParams.atlas) {
+      atlas.asme().asme_embedded_occupancy_enabled_flag(false).asme_occupancy_scale_enabled_flag(
+          true);
       if (m_occupancyScaleConfig) {
         atlas.asme().asme_occupancy_scale_factor_x_minus1(m_occupancyScale[0] - 1);
         atlas.asme().asme_occupancy_scale_factor_y_minus1(m_occupancyScale[1] - 1);

@@ -645,7 +645,7 @@ These parameters are in the root of the configuration file and may be accessed b
 * Atlas frame size calculation and packing:
   * **intraPeriod:** int; the intra patch frame period. This is the step in frame order count between consecutive frames that have an atlas tile layer of type I_TILE. The test model is not aware of the intra period of the video codec. This other intra period is configured independently.
   * **maxAtlases:** int; the maximum number of transmitted atlases in total.
-  * **maxEntities:** int; the maximum number of entities whereby "1" disables entity-based coding.
+  * **maxEntityId:** int; the maximum ID of entities, whereby the default "0" disables entity-based coding.
   * **maxLumaSamplerate:** float; the maximum number of luma samples per second counted over all atlases, groups and components. This parameter communicates the equally-named CTC constraint.
   * **maxLumaPictureSize:** int; the maximum number of samples per atlas frame, which corresponds to the maximum number of samples per texture attribute video frame. This parameter communicates the equally-named CTC constraint.
   * **numGroups:** int; the number of groups of atlases:

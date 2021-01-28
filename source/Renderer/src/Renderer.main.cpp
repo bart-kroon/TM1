@@ -141,6 +141,10 @@ private:
 
     aau.asps.asps_frame_width(static_cast<uint16_t>(w));
     aau.asps.asps_frame_height(static_cast<uint16_t>(h));
+    aau.asps.asps_extension_present_flag(true)
+        .asps_miv_extension_present_flag(true)
+        .asps_miv_extension()
+        .asme_max_entity_id(0);
 
     aau.attrFrame = Common::yuv444p(frame.texture);
 

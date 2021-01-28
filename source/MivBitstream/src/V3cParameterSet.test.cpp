@@ -463,7 +463,6 @@ TEST_CASE("v3c_parameter_set", "[V3C Parameter Set]") {
     vps.vps_miv_extension()
         .vme_depth_low_quality_flag(true)
         .vme_geometry_scale_enabled_flag(true)
-        .vme_max_entities_minus1(20)
         .vme_embedded_occupancy_flag(true);
 
     REQUIRE(toString(vps) == R"(ptl_tier_flag=false
@@ -491,12 +490,11 @@ vps_miv_extension_present_flag=true
 vps_extension_6bits=0
 vme_depth_low_quality_flag=true
 vme_geometry_scale_enabled_flag=true
-vme_max_entities_minus1=20
 vme_embedded_occupancy_flag=true
 gm_group_count=0
 )");
 
-    REQUIRE(byteCodingTest(vps, 21));
+    REQUIRE(byteCodingTest(vps, 20));
   }
 
   SECTION("Example 2") {
@@ -609,7 +607,6 @@ pin_region_map_index(32,0)=0
 pin_region_rotation_flag(32,0)=false
 vme_depth_low_quality_flag=false
 vme_geometry_scale_enabled_flag=false
-vme_max_entities_minus1=0
 vme_embedded_occupancy_flag=true
 gm_group_count=0
 vps_extension_length_minus1=2
@@ -709,7 +706,6 @@ vps_miv_extension_present_flag=true
 vps_extension_6bits=0
 vme_depth_low_quality_flag=false
 vme_geometry_scale_enabled_flag=false
-vme_max_entities_minus1=0
 vme_embedded_occupancy_flag=true
 gm_group_count=0
 )");

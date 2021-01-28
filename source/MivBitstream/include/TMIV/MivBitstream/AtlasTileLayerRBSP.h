@@ -177,10 +177,10 @@ public:
   constexpr auto operator==(const PduMivExtension &other) const noexcept;
   constexpr auto operator!=(const PduMivExtension &other) const noexcept;
 
-  static auto decodeFrom(Common::InputBitstream &bitstream, const V3cParameterSet &vps,
+  static auto decodeFrom(Common::InputBitstream &bitstream,
                          const AtlasSequenceParameterSetRBSP &asps) -> PduMivExtension;
 
-  void encodeTo(Common::OutputBitstream &bitstream, const V3cParameterSet &vps,
+  void encodeTo(Common::OutputBitstream &bitstream,
                 const AtlasSequenceParameterSetRBSP &asps) const;
 
 private:
@@ -232,12 +232,12 @@ public:
   constexpr auto operator==(const PatchDataUnit &other) const noexcept;
   constexpr auto operator!=(const PatchDataUnit &other) const noexcept;
 
-  static auto decodeFrom(Common::InputBitstream &bitstream, const V3cParameterSet &vps,
+  static auto decodeFrom(Common::InputBitstream &bitstream,
                          const std::vector<AtlasSequenceParameterSetRBSP> &aspsVector,
                          const std::vector<AtlasFrameParameterSetRBSP> &afpsVector,
                          const AtlasTileHeader &ath) -> PatchDataUnit;
 
-  void encodeTo(Common::OutputBitstream &bitstream, const V3cParameterSet &vps,
+  void encodeTo(Common::OutputBitstream &bitstream,
                 const std::vector<AtlasSequenceParameterSetRBSP> &aspsVector,
                 const std::vector<AtlasFrameParameterSetRBSP> &afpsVector,
                 const AtlasTileHeader &ath) const;
@@ -283,13 +283,13 @@ public:
   auto operator==(const PatchInformationData &other) const noexcept -> bool;
   auto operator!=(const PatchInformationData &other) const noexcept -> bool;
 
-  static auto decodeFrom(Common::InputBitstream &bitstream, const V3cParameterSet &vps,
+  static auto decodeFrom(Common::InputBitstream &bitstream,
                          const std::vector<AtlasSequenceParameterSetRBSP> &aspsV,
                          const std::vector<AtlasFrameParameterSetRBSP> &afpsV,
                          const AtlasTileHeader &ath, AtduPatchMode patchMode)
       -> PatchInformationData;
 
-  void encodeTo(Common::OutputBitstream &bitstream, const V3cParameterSet &vps,
+  void encodeTo(Common::OutputBitstream &bitstream,
                 const std::vector<AtlasSequenceParameterSetRBSP> &aspsV,
                 const std::vector<AtlasFrameParameterSetRBSP> &afpsV, const AtlasTileHeader &ath,
                 AtduPatchMode patchMode) const;
@@ -321,12 +321,12 @@ public:
   auto operator==(const AtlasTileDataUnit &other) const -> bool;
   auto operator!=(const AtlasTileDataUnit &other) const -> bool;
 
-  static auto decodeFrom(Common::InputBitstream &bitstream, const V3cParameterSet &vps,
+  static auto decodeFrom(Common::InputBitstream &bitstream,
                          const std::vector<AtlasSequenceParameterSetRBSP> &aspsV,
                          const std::vector<AtlasFrameParameterSetRBSP> &afpsV,
                          const AtlasTileHeader &ath) -> AtlasTileDataUnit;
 
-  void encodeTo(Common::OutputBitstream &bitstream, const V3cParameterSet &vps,
+  void encodeTo(Common::OutputBitstream &bitstream,
                 const std::vector<AtlasSequenceParameterSetRBSP> &aspsV,
                 const std::vector<AtlasFrameParameterSetRBSP> &afpsV,
                 const AtlasTileHeader &ath) const;
@@ -349,12 +349,12 @@ public:
   auto operator==(const AtlasTileLayerRBSP &other) const noexcept -> bool;
   auto operator!=(const AtlasTileLayerRBSP &other) const noexcept -> bool;
 
-  static auto decodeFrom(std::istream &stream, const V3cParameterSet &vps, const NalUnitHeader &nuh,
+  static auto decodeFrom(std::istream &stream, const NalUnitHeader &nuh,
                          const std::vector<AtlasSequenceParameterSetRBSP> &aspsV,
                          const std::vector<AtlasFrameParameterSetRBSP> &afpsV)
       -> AtlasTileLayerRBSP;
 
-  void encodeTo(std::ostream &stream, const V3cParameterSet &vps, const NalUnitHeader &nuh,
+  void encodeTo(std::ostream &stream, const NalUnitHeader &nuh,
                 const std::vector<AtlasSequenceParameterSetRBSP> &aspsV,
                 const std::vector<AtlasFrameParameterSetRBSP> &afpsV) const;
 

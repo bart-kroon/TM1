@@ -163,12 +163,6 @@ MpiEncoder::MpiEncoder(const Common::Json &rootNode, const Common::Json &compone
                              "encoder. Please use haveGeometryVideo = false !!!");
   }
 
-  const auto maxEntities = rootNode.require("maxEntities").as<unsigned>();
-  if (1 < maxEntities) {
-    throw std::runtime_error(
-        "Entities are not managed in current version of MPI encoder. Please use maxEntities=1 !!!");
-  }
-
   // MPI-specific parameters
   m_textureDilation = componentNode.require("TextureDilation").as<int>();
   m_transparencyDynamic = componentNode.require("TransparencyDynamic").as<int>();
@@ -195,6 +189,7 @@ void MpiEncoder::prepareSequence(MivBitstream::EncoderParams sourceParams) {
   m_params.viewParamsList = sourceParams.viewParamsList;
   m_params.frameRate = sourceParams.frameRate;
   m_params.lengthsInMeters = sourceParams.lengthsInMeters;
+  m_params.maxEntityId = sourceParams.maxEntityId;
   m_params.casps.casps_extension_present_flag(true)
       .casps_miv_extension_present_flag(true)
       .casps_log2_max_common_atlas_frame_order_cnt_lsb_minus4(log2FocLsbMinus4())
@@ -371,6 +366,8 @@ void MpiEncoder::prepareIvau() {
         .asps_max_number_projections_minus1(
             static_cast<uint16_t>(m_params.viewParamsList.size() - 1))
         .asps_log2_patch_packing_block_size(Common::ceilLog2(m_blockSize));
+
+    atlas.asme().asme_max_entity_id(m_params.maxEntityId);
 
     // Signalling patch_constant_flag requires ASME to be present
     if (m_params.vps.vps_miv_extension_present_flag()) {

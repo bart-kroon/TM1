@@ -141,11 +141,9 @@ private:
 
     x.vme().group_mapping().gm_group_count(config.require("numGroups").as<std::uint8_t>());
 
-    const auto maxEntities = static_cast<unsigned>(config.require("maxEntities").as<int>());
-    if (maxEntities < 1) {
-      throw std::runtime_error("Require maxEntities >= 1");
+    if (const auto node = config.optional("maxEntityId")) {
+      x.maxEntityId = node.as<std::uint16_t>();
     }
-    x.vme().vme_max_entities_minus1(maxEntities - 1U);
 
     if (const auto &subnode = config.optional("ViewingSpace")) {
       x.viewingSpace = MivBitstream::ViewingSpace::loadFromJson(subnode, config);

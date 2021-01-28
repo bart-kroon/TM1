@@ -86,8 +86,11 @@ Packer::Packer(const Common::Json &rootNode, const Common::Json &componentNode) 
     break;
   }
   m_enableRecursiveSplit = componentNode.require("enableRecursiveSplit").as<bool>();
-  m_maxEntities = rootNode.require("maxEntities").as<int>();
-  if (m_maxEntities > 1) {
+
+  if (const auto node = rootNode.optional("maxEntityId")) {
+    m_maxEntityId = node.as<int>();
+  }
+  if (m_maxEntityId > 0) {
     m_entityEncodeRange = rootNode.require("EntityEncodeRange").asVec<int, 2>();
   }
 }
@@ -124,7 +127,7 @@ auto Packer::computeClusterToPack(const MivBitstream::ViewParamsList &viewParams
 
   std::vector<Cluster> out{};
   for (const auto &cluster : clusterList) {
-    if (m_maxEntities > 1 || cluster.isBasicView()) {
+    if (m_maxEntityId > 0 || cluster.isBasicView()) {
       out.push_back(cluster);
     } else {
       if (m_enableRecursiveSplit) {
@@ -169,7 +172,7 @@ auto Packer::pack(const Common::SizeVector &atlasSizes, const Common::MaskList &
   while (!clusterToPack.empty()) {
     const Cluster &cluster = clusterToPack.top();
 
-    if (m_maxEntities > 1) {
+    if (m_maxEntityId > 0) {
       clusteringMap_viewId = clusteringMapIndex[cluster.getClusterId()];
     } else {
       clusteringMap_viewId = cluster.getViewId();
@@ -199,7 +202,7 @@ auto Packer::pack(const Common::SizeVector &atlasSizes, const Common::MaskList &
           adaptPatchParamsToMask(p, masks[cluster.getViewId()].getWidth(),
                                  masks[cluster.getViewId()].getHeight());
 
-          if (m_maxEntities > 1) {
+          if (m_maxEntityId > 0) {
             p.atlasPatchEntityId(cluster.getEntityId());
             std::cout << "Packing patch " << patchId << " of entity " << *p.atlasPatchEntityId()
                       << " from view " << p.atlasPatchProjectionId() << " with #active pixels "
@@ -215,7 +218,7 @@ auto Packer::pack(const Common::SizeVector &atlasSizes, const Common::MaskList &
       }
 
       if (!packed) {
-        if (m_maxEntities > 1) {
+        if (m_maxEntityId > 0) {
           std::cout << "Spliting cluster " << cluster.getClusterId() << std::endl;
         }
         if (cluster.isBasicView()) {
@@ -253,7 +256,7 @@ auto Packer::computeClusters(const Common::MaskList &masks,
   std::vector<int> clusteringMapIndex{};
   int index = 0;
   for (auto viewId = 0; viewId < static_cast<int>(masks.size()); viewId++) {
-    if (m_maxEntities > 1) {
+    if (m_maxEntityId > 0) {
       for (int entityId = m_entityEncodeRange[0]; entityId < m_entityEncodeRange[1]; entityId++) {
         // Entity clustering
         Common::Mask mask = m_aggregatedEntityMasks[entityId - m_entityEncodeRange[0]][viewId];
@@ -290,7 +293,7 @@ auto Packer::computeClusters(const Common::MaskList &masks,
       clusteringMap.push_back(std::move(clusteringOutput.second));
     }
   }
-  if (m_maxEntities > 1) {
+  if (m_maxEntityId > 0) {
     std::cout << "clusteringMap size = " << clusteringMap.size()
               << " with total # clusters = " << clusteringMapIndex.size() << std::endl;
   }

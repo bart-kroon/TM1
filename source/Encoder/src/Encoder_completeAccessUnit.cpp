@@ -144,7 +144,7 @@ auto Encoder::completeAccessUnit() -> const MivBitstream::EncoderParams & {
     scaleGeometryDynamicRange();
   }
 
-  if (m_params.vme().vme_max_entities_minus1() > 0) {
+  if (0 < m_params.maxEntityId) {
     m_packer->updateAggregatedEntityMasks(m_aggregatedEntityMask);
   }
 
@@ -332,7 +332,6 @@ void Encoder::constructVideoFrames() {
   }
 
   const auto &vps = m_params.vps;
-  const auto &vme = vps.vps_miv_extension();
 
   for (const auto &views : m_transportViews) {
     Common::MVD16Frame atlasList;
@@ -357,8 +356,9 @@ void Encoder::constructVideoFrames() {
         int occFrameWidth = frameWidth;
         int occFrameHeight = frameHeight;
 
-        if (vme.vme_occupancy_scale_enabled_flag()) {
-          const auto &asme = m_params.atlas[k].asme();
+        const auto &asme = m_params.atlas[k].asme();
+        if (!asme.asme_embedded_occupancy_enabled_flag() &&
+            asme.asme_occupancy_scale_enabled_flag()) {
           occFrameWidth /= asme.asme_occupancy_scale_factor_x_minus1() + 1;
           occFrameHeight /= asme.asme_occupancy_scale_factor_y_minus1() + 1;
         }
@@ -373,7 +373,8 @@ void Encoder::constructVideoFrames() {
     for (const auto &patch : m_params.patchParamsList) {
       const auto &view = views[patch.atlasPatchProjectionId()];
 
-      if (0 < vme.vme_max_entities_minus1()) {
+      const auto k = m_params.vps.indexOf(patch.atlasId);
+      if (0 < m_params.atlas[k].asme().asme_max_entity_id()) {
         Common::MVD16Frame tempViews;
         tempViews.push_back(view);
         const auto &entityViews = entitySeparator(tempViews, *patch.atlasPatchEntityId());
@@ -446,8 +447,9 @@ auto Encoder::writePatchInAtlas(const MivBitstream::PatchParams &patchParams,
           const auto pView = Common::Vec2i{posU + u, posV + v};
           const auto pAtlas = patchParams.viewToAtlas(pView);
 
-          if (m_params.vme().vme_occupancy_scale_enabled_flag()) {
-            const auto &asme = m_params.atlas[k].asme();
+          const auto &asme = m_params.atlas[k].asme();
+          if (!asme.asme_embedded_occupancy_enabled_flag() &&
+              asme.asme_occupancy_scale_enabled_flag()) {
             yOcc = pAtlas.y() / (asme.asme_occupancy_scale_factor_y_minus1() + 1);
             xOcc = pAtlas.x() / (asme.asme_occupancy_scale_factor_x_minus1() + 1);
           } else {
@@ -469,7 +471,7 @@ auto Encoder::writePatchInAtlas(const MivBitstream::PatchParams &patchParams,
             auto depth = view.depth.getPlane(0)(pView.y(), pView.x());
             // TODO(BK): We need to stop using depth == 0 as a special value. This is bug-prone.
             if (depth == 0 && !inViewParams.hasOccupancy && outViewParams.hasOccupancy &&
-                m_params.vme().vme_max_entities_minus1() == 0) {
+                asme.asme_max_entity_id() == 0) {
               depth = 1; // Avoid marking valid depth as invalid
             }
             atlas.depth.getPlane(0)(pAtlas.y(), pAtlas.x()) = depth;

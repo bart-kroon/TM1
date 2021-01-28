@@ -65,7 +65,7 @@ private:
   bool m_enableMerging{};
   SORTING_METHOD m_sortingMethod{};
   bool m_enableRecursiveSplit{true};
-  int m_maxEntities{1};
+  int m_maxEntityId{0};
   std::vector<Common::MaskList> m_aggregatedEntityMasks{};
   Common::Vec2i m_entityEncodeRange;
   auto computeClusters(const Common::MaskList &masks,

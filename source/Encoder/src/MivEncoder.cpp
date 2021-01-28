@@ -327,7 +327,7 @@ auto MivEncoder::atlasSubBitstream(size_t k) -> MivBitstream::AtlasSubBitstream 
   const auto aspsV = std::vector<MivBitstream::AtlasSequenceParameterSetRBSP>{aau.asps};
   const auto afpsV = std::vector<MivBitstream::AtlasFrameParameterSetRBSP>{aau.afps};
   const auto nuh = m_irap ? nuhIdr : nuhCra;
-  writeNalUnit(asb, nuh, atlasTileLayer(k), m_params.vps, nuh, aspsV, afpsV);
+  writeNalUnit(asb, nuh, atlasTileLayer(k), nuh, aspsV, afpsV);
 
   return asb;
 }

@@ -69,10 +69,15 @@ void OccupancyReconstructor::reconstruct(MivBitstream::AccessUnit &frame) {
           }
         } else {
           // occupancy is signaled explicitly
-          int asmeOccupancyFrameScaleFactorX =
-              atlas.asps.asps_miv_extension().asme_occupancy_scale_factor_x_minus1() + 1;
-          int asmeOccupancyFrameScaleFactorY =
-              atlas.asps.asps_miv_extension().asme_occupancy_scale_factor_y_minus1() + 1;
+          int asmeOccupancyFrameScaleFactorX = 1;
+          int asmeOccupancyFrameScaleFactorY = 1;
+
+          const auto &asme = atlas.asps.asps_miv_extension();
+          if (!asme.asme_embedded_occupancy_enabled_flag() &&
+              asme.asme_occupancy_scale_enabled_flag()) {
+            asmeOccupancyFrameScaleFactorX = asme.asme_occupancy_scale_factor_x_minus1() + 1;
+            asmeOccupancyFrameScaleFactorY = asme.asme_occupancy_scale_factor_y_minus1() + 1;
+          }
           atlas.occFrame.getPlane(0)(y, x) = atlas.decOccFrame.getPlane(0)(
               y / asmeOccupancyFrameScaleFactorY, x / asmeOccupancyFrameScaleFactorX);
         }

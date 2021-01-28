@@ -58,7 +58,6 @@
     "inputTexturePathFmt": "{1}/{3}_texture_{4}x{5}_{6}.yuv",
     "intraPeriod": 32,
     "maxAtlases": 6,
-    "maxEntities": 1,
     "maxLumaPictureSize": 4456448,
     "maxLumaSampleRate": 2139095040.0,
     "numGroups": 3,

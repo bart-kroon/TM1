@@ -346,7 +346,7 @@ In order to determine interview redundancy, the pruner performs data projection 
 To achieve the first two goals, the pruner creates a pruning graph, which defines hierarchy of view pruning (<<imgPruningGraph>>).
 The pruning graph is created in a greedy fashion, which allows to achieve the third goal.
 
-.Pruning graph for one basic and three additional views. Basic view is assigned to a root node (node id: stem:[N_0]), each additional view is assigned to a node stem:[N_i], which is a child node of all nodes stem:[N_j] where j < i
+.Pruning graph for one basic and three additional views. Basic view is assigned to a root node (node id: _N~0~_), each additional view is assigned to a node _N~i~_, which is a child node of all nodes _N~j~_ where _j < i_
 [#imgPruningGraph]
 image::4_encoder/pruning_graph.png[width=25%,align=center]
 

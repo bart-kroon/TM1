@@ -175,15 +175,15 @@ All three inputs (ray angle, depth and stretching) are computed in the reproject
 |===
 |Input |Description |Purpose
 
-|RayAngle stem:[\gamma]
+a|RayAngle stem:[\gamma]
 |The angle [rad] between the ray from the input camera and the ray from the target camera.
 |Prefer nearby views over views further away (soft view selection).
 
-|Reciprocal geometry stem:[d]
+a|Reciprocal geometry stem:[d]
 |The reciprocal of the geometry value in the target view [diopter].
 |Prefer foreground over background (geometry ordering).
 
-|Stretching stem:[s]
+a|Stretching stem:[s]
 |The unclipped area of the triangle in the target view relative to the source view.
 |Penalize triangles that stretch between foreground and background objects.
 |===

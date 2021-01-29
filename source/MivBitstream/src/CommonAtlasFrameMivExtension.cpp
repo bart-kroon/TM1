@@ -37,6 +37,8 @@
 
 #include <cmath>
 
+#include <fmt/ostream.h>
+
 namespace TMIV::MivBitstream {
 auto operator<<(std::ostream &stream, const CiCamType x) -> std::ostream & {
   switch (x) {
@@ -405,6 +407,11 @@ auto MivViewParamsList::mvp_view_id(uint16_t viewIdx) const noexcept -> uint16_t
   return m_mvp_view_id[viewIdx];
 }
 
+auto MivViewParamsList::mvp_inpaint_flag(std::uint16_t viewId) const noexcept -> bool {
+  const auto viewIndex = viewIdToIndex(viewId);
+  return m_mvpInpaintFlag[viewIndex];
+}
+
 auto MivViewParamsList::camera_extrinsics(uint16_t viewId) const noexcept
     -> const CameraExtrinsics & {
   VERIFY_MIVBITSTREAM(viewId < m_camera_extrinsics.size());
@@ -440,6 +447,7 @@ auto MivViewParamsList::mvp_num_views_minus1(uint16_t value) noexcept -> MivView
     x.resize(value + size_t{1});
   }
   m_camera_extrinsics.resize(value + size_t{1});
+  m_mvpInpaintFlag.resize(value + size_t{1}, false);
   return *this;
 }
 
@@ -480,6 +488,13 @@ auto MivViewParamsList::mvp_view_id(uint16_t viewIdx, uint16_t viewId) noexcept
   }
   VERIFY_MIVBITSTREAM(viewIdx <= mvp_num_views_minus1());
   m_mvp_view_id[viewIdx] = viewId;
+  return *this;
+}
+
+auto MivViewParamsList::mvp_inpaint_flag(uint16_t viewId, bool value) noexcept
+    -> MivViewParamsList & {
+  const auto viewIndex = viewIdToIndex(viewId);
+  m_mvpInpaintFlag[viewIndex] = value;
   return *this;
 }
 
@@ -524,6 +539,23 @@ auto MivViewParamsList::pruning_parent(uint16_t viewId) noexcept -> PruningParen
   return m_pruning_parent[viewId];
 }
 
+auto MivViewParamsList::viewIndexToId(std::uint16_t index) const -> std::uint16_t {
+  VERIFY_MIVBITSTREAM(index <= mvp_num_views_minus1());
+  if (mvp_explicit_view_id_flag()) {
+    return mvp_view_id(index);
+  }
+  return index;
+}
+
+auto MivViewParamsList::viewIdToIndex(std::uint16_t id) const -> std::uint16_t {
+  if (mvp_explicit_view_id_flag()) {
+    const auto iter = std::find(m_mvp_view_id.cbegin(), m_mvp_view_id.cend(), id);
+    VERIFY_MIVBITSTREAM(iter != m_mvp_view_id.cend());
+    return static_cast<uint16_t>(std::distance(m_mvp_view_id.cbegin(), iter));
+  }
+  return id;
+}
+
 auto operator<<(std::ostream &stream, const MivViewParamsList &x) -> std::ostream & {
   stream << "mvp_num_views_minus1=" << x.mvp_num_views_minus1() << '\n';
   stream << "mvp_view_enabled_present_flag=" << std::boolalpha << x.mvp_view_enabled_present_flag()
@@ -551,7 +583,9 @@ auto operator<<(std::ostream &stream, const MivViewParamsList &x) -> std::ostrea
   }
 
   for (uint16_t v = 0; v <= x.mvp_num_views_minus1(); ++v) {
+    const auto viewId = x.viewIndexToId(v);
     x.camera_extrinsics(v).printTo(stream, v);
+    fmt::print(stream, "mvp_inpaint_flag[ {} ]={}\n", viewId, x.mvp_inpaint_flag(viewId));
   }
 
   stream << "mvp_intrinsic_params_equal_flag=" << std::boolalpha
@@ -590,6 +624,7 @@ auto MivViewParamsList::operator==(const MivViewParamsList &other) const noexcep
   return m_viewInAtlas == other.m_viewInAtlas &&
          m_mvp_explicit_view_id_flag == other.m_mvp_explicit_view_id_flag &&
          m_mvp_view_id == other.m_mvp_view_id && m_camera_extrinsics == other.m_camera_extrinsics &&
+         m_mvpInpaintFlag == other.m_mvpInpaintFlag &&
          m_mvp_intrinsic_params_equal_flag == other.m_mvp_intrinsic_params_equal_flag &&
          m_camera_intrinsics == other.m_camera_intrinsics &&
          m_mvp_depth_quantization_params_equal_flag ==
@@ -630,7 +665,9 @@ auto MivViewParamsList::decodeFrom(Common::InputBitstream &bitstream, const V3cP
   }
 
   for (uint16_t v = 0; v <= x.mvp_num_views_minus1(); ++v) {
+    const auto viewId = x.viewIndexToId(v);
     x.camera_extrinsics(v) = CameraExtrinsics::decodeFrom(bitstream);
+    x.mvp_inpaint_flag(viewId, bitstream.getFlag());
   }
 
   x.mvp_intrinsic_params_equal_flag(bitstream.getFlag());
@@ -689,7 +726,9 @@ void MivViewParamsList::encodeTo(Common::OutputBitstream &bitstream, const V3cPa
   }
 
   for (uint16_t v = 0; v <= mvp_num_views_minus1(); ++v) {
+    const auto viewId = viewIndexToId(v);
     camera_extrinsics(v).encodeTo(bitstream);
+    bitstream.putFlag(mvp_inpaint_flag(viewId));
   }
 
   bitstream.putFlag(mvp_intrinsic_params_equal_flag());

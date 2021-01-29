@@ -66,6 +66,7 @@ struct PatchParams {
   [[nodiscard]] constexpr auto atlasPatchEntityId() const noexcept;
   [[nodiscard]] constexpr auto atlasPatchDepthOccMapThreshold() const noexcept;
   [[nodiscard]] auto atlasPatchAttributeOffset() const;
+  [[nodiscard]] constexpr auto atlasPatchInpaintFlag() const noexcept;
 
   constexpr auto atlasPatch2dPosX(std::int32_t value) noexcept -> PatchParams &;
   constexpr auto atlasPatch2dPosY(std::int32_t value) noexcept -> PatchParams &;
@@ -82,7 +83,8 @@ struct PatchParams {
   constexpr auto atlasPatchLoDScaleY(std::int32_t value) noexcept -> PatchParams &;
   constexpr auto atlasPatchEntityId(std::uint16_t value) noexcept -> PatchParams &;
   constexpr auto atlasPatchDepthOccMapThreshold(std::uint32_t value) noexcept -> PatchParams &;
-  auto atlasPatchAttributeOffset(Common::Vec3i value) noexcept -> PatchParams &;
+  auto atlasPatchAttributeOffset(Common::Vec3w value) noexcept -> PatchParams &;
+  constexpr auto atlasPatchInpaintFlag(bool value) noexcept -> PatchParams &;
 
   // Is the patch rotated such that width and height swap?
   [[nodiscard]] constexpr auto isRotated() const noexcept;
@@ -111,9 +113,10 @@ struct PatchParams {
       -> Common::Vec2i;
 
   static auto decodePdu(const PatchDataUnit &pdu, const AtlasSequenceParameterSetRBSP &asps,
-                        const AtlasTileHeader &ath) -> PatchParams;
-  auto encodePdu(const AtlasSequenceParameterSetRBSP &asps, const AtlasTileHeader &ath) const
-      -> PatchDataUnit;
+                        const AtlasFrameParameterSetRBSP &afps, const AtlasTileHeader &ath)
+      -> PatchParams;
+  auto encodePdu(const AtlasSequenceParameterSetRBSP &asps, const AtlasFrameParameterSetRBSP &afps,
+                 const AtlasTileHeader &ath) const -> PatchDataUnit;
 
   auto operator==(const PatchParams &other) const -> bool;
   auto operator!=(const PatchParams &other) const -> bool { return !operator==(other); };
@@ -133,7 +136,8 @@ private:
   FlexiblePatchOrientation m_atlasPatchOrientationIndex{FlexiblePatchOrientation::FPO_INVALID};
   std::optional<std::uint16_t> m_atlasPatchEntityId;
   std::optional<std::uint32_t> m_atlasPatchDepthOccMapThreshold;
-  std::optional<Common::Vec3i> m_atlasPatchAttributeOffset{};
+  std::optional<Common::Vec3w> m_atlasPatchAttributeOffset{};
+  bool m_atlasPatchInpaintFlag{};
 };
 
 using PatchParamsList = std::vector<PatchParams>;

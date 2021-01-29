@@ -169,6 +169,10 @@ constexpr auto PduMivExtension::pdu_entity_id() const noexcept {
   return m_pdu_entity_id.value_or(0);
 }
 
+constexpr auto PduMivExtension::pdu_inpaint_flag() const noexcept {
+  return m_pdu_inpaint_flag.value_or(false);
+}
+
 constexpr auto PduMivExtension::pdu_entity_id(std::uint32_t value) noexcept -> auto & {
   m_pdu_entity_id = value;
   return *this;
@@ -179,18 +183,14 @@ constexpr auto PduMivExtension::pdu_depth_occ_threshold(std::uint32_t value) noe
   return *this;
 }
 
-inline auto PduMivExtension::pdu_attribute_offset(Common::Vec3i value) noexcept -> auto & {
+inline auto PduMivExtension::pdu_attribute_offset(Common::Vec3w value) noexcept -> auto & {
   m_pdu_attribute_offset = value;
   return *this;
 }
 
-constexpr auto PduMivExtension::operator==(const PduMivExtension &other) const noexcept {
-  return pdu_entity_id() == other.pdu_entity_id() &&
-         m_pdu_depth_occ_threshold == other.m_pdu_depth_occ_threshold;
-}
-
-constexpr auto PduMivExtension::operator!=(const PduMivExtension &other) const noexcept {
-  return !operator==(other);
+constexpr auto PduMivExtension::pdu_inpaint_flag(bool value) noexcept -> auto & {
+  m_pdu_inpaint_flag = value;
+  return *this;
 }
 
 constexpr auto PatchDataUnit::pdu_2d_pos_x() const noexcept { return m_pdu_2d_pos_x; }

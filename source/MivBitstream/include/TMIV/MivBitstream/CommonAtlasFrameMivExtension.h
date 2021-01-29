@@ -230,6 +230,7 @@ public:
                                                      std::uint16_t viewIdx) const noexcept -> bool;
   [[nodiscard]] constexpr auto mvp_explicit_view_id_flag() const noexcept;
   [[nodiscard]] auto mvp_view_id(std::uint16_t viewIdx) const noexcept -> std::uint16_t;
+  [[nodiscard]] auto mvp_inpaint_flag(std::uint16_t viewId) const noexcept -> bool;
   [[nodiscard]] constexpr auto mvp_intrinsic_params_equal_flag() const noexcept;
   [[nodiscard]] auto mvp_depth_quantization_params_equal_flag() const noexcept -> bool;
   [[nodiscard]] constexpr auto mvp_pruning_graph_params_present_flag() const noexcept;
@@ -263,6 +264,7 @@ public:
                                        bool value) noexcept -> MivViewParamsList &;
   auto mvp_explicit_view_id_flag(bool value) noexcept -> MivViewParamsList &;
   auto mvp_view_id(std::uint16_t viewIdx, std::uint16_t viewId) noexcept -> MivViewParamsList &;
+  auto mvp_inpaint_flag(std::uint16_t viewId, bool value) noexcept -> MivViewParamsList &;
 
   // Calling this function will allocate the camera intrinsics list
   auto mvp_intrinsic_params_equal_flag(bool value) noexcept -> MivViewParamsList &;
@@ -277,6 +279,9 @@ public:
   [[nodiscard]] auto camera_intrinsics(std::uint16_t viewId = 0) noexcept -> CameraIntrinsics &;
   [[nodiscard]] auto depth_quantization(std::uint16_t viewId = 0) noexcept -> DepthQuantization &;
   [[nodiscard]] auto pruning_parent(std::uint16_t viewId) noexcept -> PruningParents &;
+
+  auto viewIndexToId(std::uint16_t index) const -> std::uint16_t;
+  auto viewIdToIndex(std::uint16_t id) const -> std::uint16_t;
 
   friend auto operator<<(std::ostream &stream, const MivViewParamsList &x) -> std::ostream &;
 
@@ -301,11 +306,12 @@ private:
   std::vector<std::vector<ViewInAtlas>> m_viewInAtlas;
   bool m_mvp_explicit_view_id_flag{};
   std::vector<std::uint16_t> m_mvp_view_id;
-  std::vector<CameraExtrinsics> m_camera_extrinsics{std::vector<CameraExtrinsics>(1U)};
+  std::vector<bool> m_mvpInpaintFlag{false};
+  std::vector<CameraExtrinsics> m_camera_extrinsics{{}};
   bool m_mvp_intrinsic_params_equal_flag{};
-  std::vector<CameraIntrinsics> m_camera_intrinsics{std::vector<CameraIntrinsics>(1U)};
+  std::vector<CameraIntrinsics> m_camera_intrinsics{{}};
   std::optional<bool> m_mvp_depth_quantization_params_equal_flag{};
-  std::vector<DepthQuantization> m_depth_quantization{std::vector<DepthQuantization>(1U)};
+  std::vector<DepthQuantization> m_depth_quantization{{}};
   bool m_mvp_pruning_graph_params_present_flag{};
   std::vector<PruningParents> m_pruning_parent{};
 };

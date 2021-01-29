@@ -94,9 +94,11 @@ asme_occupancy_scale_enabled_flag=false
 asme_patch_constant_depth_flag=false
 asme_patch_attribute_offset_enabled_flag=false
 asme_max_entity_id=0
+asme_inpaint_enabled_flag=false
 )");
-    REQUIRE(bitCodingTest(unit, 7));
+    REQUIRE(bitCodingTest(unit, 8));
   }
+
   SECTION("Embedded Occupancy enabled") {
     auto unit = AspsMivExtension{};
     unit.asme_embedded_occupancy_enabled_flag(true)
@@ -106,7 +108,9 @@ asme_max_entity_id=0
         .asme_geometry_scale_factor_y_minus1(2)
         .asme_patch_attribute_offset_enabled_flag(true)
         .asme_patch_attribute_offset_bit_count_minus1(3)
-        .asme_max_entity_id(15);
+        .asme_max_entity_id(15)
+        .asme_inpaint_enabled_flag(true);
+
     REQUIRE(toString(unit) == R"(asme_ancillary_atlas_flag=false
 asme_embedded_occupancy_enabled_flag=true
 asme_depth_occ_map_threshold_flag=true
@@ -117,15 +121,18 @@ asme_patch_constant_depth_flag=false
 asme_patch_attribute_offset_enabled_flag=true
 asme_patch_attribute_offset_bit_count_minus1=3
 asme_max_entity_id=15
+asme_inpaint_enabled_flag=true
 )");
-    REQUIRE(bitCodingTest(unit, 26));
+    REQUIRE(bitCodingTest(unit, 27));
   }
+
   SECTION("Embedded occupancy disabled, occupancy scale enabled") {
     auto unit = AspsMivExtension{};
     unit.asme_embedded_occupancy_enabled_flag(false)
         .asme_occupancy_scale_enabled_flag(true)
         .asme_occupancy_scale_factor_x_minus1(2)
         .asme_occupancy_scale_factor_y_minus1(3);
+
     REQUIRE(toString(unit) == R"(asme_ancillary_atlas_flag=false
 asme_embedded_occupancy_enabled_flag=false
 asme_geometry_scale_enabled_flag=false
@@ -135,8 +142,9 @@ asme_occupancy_scale_factor_y_minus1=3
 asme_patch_constant_depth_flag=false
 asme_patch_attribute_offset_enabled_flag=false
 asme_max_entity_id=0
+asme_inpaint_enabled_flag=false
 )");
-    REQUIRE(bitCodingTest(unit, 15));
+    REQUIRE(bitCodingTest(unit, 16));
   }
 }
 
@@ -293,6 +301,7 @@ asme_geometry_scale_factor_y_minus1=2
 asme_patch_constant_depth_flag=true
 asme_patch_attribute_offset_enabled_flag=false
 asme_max_entity_id=0
+asme_inpaint_enabled_flag=false
 asps_extension_data_flag=false
 asps_extension_data_flag=true
 asps_extension_data_flag=true

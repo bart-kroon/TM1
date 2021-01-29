@@ -219,6 +219,7 @@ ce_view_pos_z[ 0 ]=0
 ce_view_quat_x[ 0 ]=0
 ce_view_quat_y[ 0 ]=0
 ce_view_quat_z[ 0 ]=0
+mvp_inpaint_flag[ 0 ]=false
 mvp_intrinsic_params_equal_flag=false
 ci_cam_type[ 0 ]=equirectangular
 ci_projection_plane_width_minus1[ 0 ]=0
@@ -230,7 +231,7 @@ ci_erp_theta_max[ 0 ]=0
 mvp_pruning_graph_params_present_flag=false
 )");
 
-    REQUIRE(bitCodingTest(x, 380, vps, casps));
+    REQUIRE(bitCodingTest(x, 381, vps, casps));
   }
 
   SECTION("Example 1") {
@@ -258,6 +259,7 @@ ce_view_pos_z[ 0 ]=0
 ce_view_quat_x[ 0 ]=0
 ce_view_quat_y[ 0 ]=0
 ce_view_quat_z[ 0 ]=0
+mvp_inpaint_flag[ 0 ]=false
 mvp_intrinsic_params_equal_flag=false
 ci_cam_type[ 0 ]=orthographic
 ci_projection_plane_width_minus1[ 0 ]=0
@@ -272,7 +274,7 @@ dq_depth_occ_map_threshold_default[ 0 ]=0
 mvp_pruning_graph_params_present_flag=false
 )");
 
-    REQUIRE(bitCodingTest(x, 392, vps, casps));
+    REQUIRE(bitCodingTest(x, 393, vps, casps));
   }
 
   SECTION("Example 2") {
@@ -293,6 +295,7 @@ mvp_pruning_graph_params_present_flag=false
         .mvp_view_id(0, 0)
         .mvp_view_id(1, 2)
         .mvp_view_id(2, 1)
+        .mvp_inpaint_flag(1, true)
         .mvp_intrinsic_params_equal_flag(true)
         .mvp_depth_quantization_params_equal_flag(true)
         .mvp_pruning_graph_params_present_flag(true);
@@ -322,18 +325,21 @@ ce_view_pos_z[ 0 ]=0
 ce_view_quat_x[ 0 ]=0
 ce_view_quat_y[ 0 ]=0
 ce_view_quat_z[ 0 ]=0
+mvp_inpaint_flag[ 0 ]=false
 ce_view_pos_x[ 1 ]=0
 ce_view_pos_y[ 1 ]=0
 ce_view_pos_z[ 1 ]=0
 ce_view_quat_x[ 1 ]=0
 ce_view_quat_y[ 1 ]=0
 ce_view_quat_z[ 1 ]=0
+mvp_inpaint_flag[ 2 ]=false
 ce_view_pos_x[ 2 ]=0
 ce_view_pos_y[ 2 ]=0
 ce_view_pos_z[ 2 ]=0
 ce_view_quat_x[ 2 ]=0
 ce_view_quat_y[ 2 ]=0
 ce_view_quat_z[ 2 ]=0
+mvp_inpaint_flag[ 1 ]=true
 mvp_intrinsic_params_equal_flag=true
 ci_cam_type[ 0 ]=orthographic
 ci_projection_plane_width_minus1[ 0 ]=0
@@ -351,7 +357,7 @@ pp_is_root_flag[ 1 ]=true
 pp_is_root_flag[ 2 ]=true
 )");
 
-    REQUIRE(bitCodingTest(x, 834, vps, casps));
+    REQUIRE(bitCodingTest(x, 837, vps, casps));
   }
 
   SECTION("mvp_view_enabled_present_flag=0") {
@@ -374,6 +380,7 @@ ce_view_pos_z[ 0 ]=0
 ce_view_quat_x[ 0 ]=0
 ce_view_quat_y[ 0 ]=0
 ce_view_quat_z[ 0 ]=0
+mvp_inpaint_flag[ 0 ]=false
 mvp_intrinsic_params_equal_flag=false
 ci_cam_type[ 0 ]=orthographic
 ci_projection_plane_width_minus1[ 0 ]=0
@@ -388,7 +395,7 @@ dq_depth_occ_map_threshold_default[ 0 ]=0
 mvp_pruning_graph_params_present_flag=false
 )");
 
-    REQUIRE(bitCodingTest(x, 390, vps, casps));
+    REQUIRE(bitCodingTest(x, 391, vps, casps));
   }
 
   SECTION("mvp when casme_depth_quantization_params_present_flag=0") {
@@ -403,6 +410,7 @@ ce_view_pos_z[ 0 ]=0
 ce_view_quat_x[ 0 ]=0
 ce_view_quat_y[ 0 ]=0
 ce_view_quat_z[ 0 ]=0
+mvp_inpaint_flag[ 0 ]=false
 mvp_intrinsic_params_equal_flag=false
 ci_cam_type[ 0 ]=equirectangular
 ci_projection_plane_width_minus1[ 0 ]=0
@@ -414,7 +422,7 @@ ci_erp_theta_max[ 0 ]=0
 mvp_pruning_graph_params_present_flag=false
 )");
 
-    REQUIRE(bitCodingTest(x, 380, vps, casps));
+    REQUIRE(bitCodingTest(x, 381, vps, casps));
   }
 }
 
@@ -459,18 +467,21 @@ ce_view_pos_z[ 0 ]=0
 ce_view_quat_x[ 0 ]=0
 ce_view_quat_y[ 0 ]=0
 ce_view_quat_z[ 0 ]=0
+mvp_inpaint_flag[ 0 ]=false
 ce_view_pos_x[ 1 ]=0
 ce_view_pos_y[ 1 ]=0
 ce_view_pos_z[ 1 ]=0
 ce_view_quat_x[ 1 ]=0
 ce_view_quat_y[ 1 ]=0
 ce_view_quat_z[ 1 ]=0
+mvp_inpaint_flag[ 1 ]=false
 ce_view_pos_x[ 2 ]=0
 ce_view_pos_y[ 2 ]=0
 ce_view_pos_z[ 2 ]=0
 ce_view_quat_x[ 2 ]=0
 ce_view_quat_y[ 2 ]=0
 ce_view_quat_z[ 2 ]=0
+mvp_inpaint_flag[ 2 ]=false
 mvp_intrinsic_params_equal_flag=true
 ci_cam_type[ 0 ]=orthographic
 ci_projection_plane_width_minus1[ 0 ]=0
@@ -488,7 +499,7 @@ pp_is_root_flag[ 1 ]=true
 pp_is_root_flag[ 2 ]=true
 )");
 
-    REQUIRE(bitCodingTest(x, 780, vps, nalIdrCaf, casps));
+    REQUIRE(bitCodingTest(x, 783, vps, nalIdrCaf, casps));
   }
 
   SECTION("Update extrinsics") {

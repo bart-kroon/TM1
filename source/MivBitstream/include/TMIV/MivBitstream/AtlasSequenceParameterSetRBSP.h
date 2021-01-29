@@ -115,7 +115,8 @@ public:
   [[nodiscard]] constexpr auto asme_patch_constant_depth_flag() const noexcept;
   [[nodiscard]] constexpr auto asme_patch_attribute_offset_enabled_flag() const noexcept;
   [[nodiscard]] auto asme_patch_attribute_offset_bit_count_minus1() const noexcept -> std::uint16_t;
-  [[nodiscard]] constexpr auto asme_max_entity_id() const noexcept -> std::uint16_t;
+  [[nodiscard]] constexpr auto asme_max_entity_id() const noexcept;
+  [[nodiscard]] constexpr auto asme_inpaint_enabled_flag() const noexcept;
 
   constexpr auto asme_ancillary_atlas_flag(bool value) noexcept -> auto &;
   constexpr auto asme_embedded_occupancy_enabled_flag(bool value) noexcept -> auto &;
@@ -131,6 +132,7 @@ public:
   constexpr auto asme_patch_attribute_offset_bit_count_minus1(std::uint16_t value) noexcept
       -> auto &;
   constexpr auto asme_max_entity_id(std::uint16_t value) noexcept -> auto &;
+  constexpr auto asme_inpaint_enabled_flag(bool value) noexcept -> auto &;
 
   friend auto operator<<(std::ostream &stream, const AspsMivExtension &) -> std::ostream &;
 
@@ -155,6 +157,7 @@ private:
   bool m_asme_patch_attribute_offset_flag{};
   std::optional<std::uint16_t> m_asme_patch_attribute_offset_bit_count_minus1;
   std::uint16_t m_asme_max_entity_id{};
+  bool m_asme_inpaint_enabled_flag{};
 };
 
 // 23090-5: atlas_sequence_parameter_set_rbsp( )

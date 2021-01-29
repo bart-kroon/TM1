@@ -63,17 +63,33 @@ public:
   static void encodeTo(Common::OutputBitstream &stream);
 };
 
+class AtlasFrameParameterSetRBSP;
+
 // 23090-12: afps_miv_extension( )
 class AfpsMivExtension {
 public:
+  constexpr auto afme_inpaint_lod_enabled_flag() const noexcept;
+  constexpr auto afme_inpaint_lod_scale_x_minus1() const noexcept;
+  constexpr auto afme_inpaint_lod_scale_y_idc() const noexcept;
+
+  constexpr auto afme_inpaint_lod_enabled_flag(bool value) noexcept -> auto &;
+  auto afme_inpaint_lod_scale_x_minus1(unsigned value) noexcept -> AfpsMivExtension &;
+  auto afme_inpaint_lod_scale_y_idc(unsigned value) noexcept -> AfpsMivExtension &;
+
   friend auto operator<<(std::ostream &stream, const AfpsMivExtension &x) -> std::ostream &;
 
   constexpr auto operator==(const AfpsMivExtension &other) const noexcept;
   constexpr auto operator!=(const AfpsMivExtension &other) const noexcept;
 
-  static auto decodeFrom(Common::InputBitstream &bitstream) -> AfpsMivExtension;
+  static auto decodeFrom(Common::InputBitstream &bitstream, const AtlasFrameParameterSetRBSP &afps)
+      -> AfpsMivExtension;
 
-  void encodeTo(Common::OutputBitstream &stream) const;
+  void encodeTo(Common::OutputBitstream &stream, const AtlasFrameParameterSetRBSP &afps) const;
+
+private:
+  std::optional<bool> m_afme_inpaint_lod_enabled_flag;
+  std::optional<unsigned> m_afme_inpaint_lod_scale_x_minus1;
+  std::optional<unsigned> m_afme_inpaint_lod_scale_y_idc;
 };
 
 // 23090-5: atlas_frame_parameter_set_rbsp( )
@@ -107,7 +123,7 @@ public:
   constexpr auto afps_extension_present_flag(const bool value) noexcept -> auto &;
   auto afps_miv_extension_present_flag(bool value) noexcept -> AtlasFrameParameterSetRBSP &;
   auto afps_extension_7bits(std::uint8_t value) noexcept -> AtlasFrameParameterSetRBSP &;
-  auto afps_miv_extension(const AfpsMivExtension &value) noexcept -> AtlasFrameParameterSetRBSP &;
+  [[nodiscard]] auto afps_miv_extension() noexcept -> AfpsMivExtension &;
   auto afpsExtensionData(std::vector<bool> value) noexcept -> AtlasFrameParameterSetRBSP &;
 
   friend auto operator<<(std::ostream &stream, const AtlasFrameParameterSetRBSP &x)

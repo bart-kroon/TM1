@@ -141,7 +141,10 @@ pdu_orientation_index[ 0 ][ 101 ]=FPO_NULL
         .asps_miv_extension()
         .asme_embedded_occupancy_enabled_flag(true)
         .asme_depth_occ_threshold_flag(true)
-        .asme_max_entity_id(100);
+        .asme_max_entity_id(100)
+        .asme_patch_attribute_offset_enabled_flag(true)
+        .asme_patch_attribute_offset_bit_count_minus1(5)
+        .asme_inpaint_enabled_flag(true);
 
     x.pdu_2d_pos_x(34)
         .pdu_2d_pos_y(57)
@@ -155,7 +158,9 @@ pdu_orientation_index[ 0 ][ 101 ]=FPO_NULL
         .pdu_orientation_index(FlexiblePatchOrientation::FPO_MROT180)
         .pdu_miv_extension()
         .pdu_entity_id(35)
-        .pdu_depth_occ_threshold(600);
+        .pdu_depth_occ_threshold(600)
+        .pdu_attribute_offset(Common::Vec3w{4, 5, 6})
+        .pdu_inpaint_flag(false);
 
     REQUIRE(toString(x, 12, 102) == R"(pdu_2d_pos_x[ 12 ][ 102 ]=34
 pdu_2d_pos_y[ 12 ][ 102 ]=57
@@ -169,9 +174,13 @@ pdu_projection_id[ 12 ][ 102 ]=300
 pdu_orientation_index[ 12 ][ 102 ]=FPO_MROT180
 pdu_entity_id[ 12 ][ 102 ]=35
 pdu_depth_occ_threshold[ 12 ][ 102 ]=600
+pdu_attribute_offset[ 12 ][ 102 ][ 0 ]=4
+pdu_attribute_offset[ 12 ][ 102 ][ 1 ]=5
+pdu_attribute_offset[ 12 ][ 102 ][ 2 ]=6
+pdu_inpaint_flag[ 12 ][ 102 ]=false
 )");
 
-    REQUIRE(bitCodingTest(x, 146, aspsV, afpsV, ath));
+    REQUIRE(bitCodingTest(x, 165, aspsV, afpsV, ath));
   }
 
   SECTION("Extend with only pdu_entity_id") {

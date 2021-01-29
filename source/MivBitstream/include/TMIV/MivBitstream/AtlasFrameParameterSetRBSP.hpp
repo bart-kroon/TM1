@@ -54,6 +54,23 @@ constexpr auto AtlasFrameTileInformation::operator!=(
   return false;
 }
 
+constexpr auto AfpsMivExtension::afme_inpaint_lod_enabled_flag() const noexcept {
+  return m_afme_inpaint_lod_enabled_flag.value_or(false);
+}
+
+constexpr auto AfpsMivExtension::afme_inpaint_lod_scale_x_minus1() const noexcept {
+  return m_afme_inpaint_lod_scale_x_minus1.value_or(0);
+}
+
+constexpr auto AfpsMivExtension::afme_inpaint_lod_scale_y_idc() const noexcept {
+  return m_afme_inpaint_lod_scale_y_idc.value_or(0);
+}
+
+constexpr auto AfpsMivExtension::afme_inpaint_lod_enabled_flag(bool value) noexcept -> auto & {
+  m_afme_inpaint_lod_enabled_flag = value;
+  return *this;
+}
+
 constexpr auto AfpsMivExtension::operator==(const AfpsMivExtension & /* other */) const noexcept {
   return true;
 }

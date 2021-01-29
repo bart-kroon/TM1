@@ -166,16 +166,18 @@ class PduMivExtension {
 public:
   [[nodiscard]] constexpr auto pdu_entity_id() const noexcept;
   [[nodiscard]] auto pdu_depth_occ_threshold() const -> std::uint32_t;
-  [[nodiscard]] auto pdu_attribute_offset() const -> Common::Vec3i;
+  [[nodiscard]] auto pdu_attribute_offset() const -> Common::Vec3w;
+  [[nodiscard]] constexpr auto pdu_inpaint_flag() const noexcept;
 
   constexpr auto pdu_entity_id(std::uint32_t value) noexcept -> auto &;
   constexpr auto pdu_depth_occ_threshold(std::uint32_t value) noexcept -> auto &;
-  auto pdu_attribute_offset(Common::Vec3i value) noexcept -> auto &;
+  auto pdu_attribute_offset(Common::Vec3w value) noexcept -> auto &;
+  constexpr auto pdu_inpaint_flag(bool value) noexcept -> auto &;
 
   auto printTo(std::ostream &stream, unsigned tileId, std::size_t patchIdx) const -> std::ostream &;
 
-  constexpr auto operator==(const PduMivExtension &other) const noexcept;
-  constexpr auto operator!=(const PduMivExtension &other) const noexcept;
+  auto operator==(const PduMivExtension &other) const noexcept -> bool;
+  auto operator!=(const PduMivExtension &other) const noexcept -> bool;
 
   static auto decodeFrom(Common::InputBitstream &bitstream,
                          const AtlasSequenceParameterSetRBSP &asps) -> PduMivExtension;
@@ -186,7 +188,8 @@ public:
 private:
   std::optional<std::uint32_t> m_pdu_entity_id;
   std::optional<std::uint32_t> m_pdu_depth_occ_threshold;
-  std::optional<Common::Vec3i> m_pdu_attribute_offset;
+  std::optional<Common::Vec3w> m_pdu_attribute_offset;
+  std::optional<bool> m_pdu_inpaint_flag;
 };
 
 // 23090-12: patch_data_unit( patchIdx )

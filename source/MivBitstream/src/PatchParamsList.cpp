@@ -37,7 +37,8 @@
 
 namespace TMIV::MivBitstream {
 auto PatchParams::decodePdu(const PatchDataUnit &pdu, const AtlasSequenceParameterSetRBSP &asps,
-                            const AtlasTileHeader &ath) -> PatchParams {
+                            const AtlasFrameParameterSetRBSP &afps, const AtlasTileHeader &ath)
+    -> PatchParams {
   auto pp = PatchParams{};
 
   const auto patchPackingBlockSize = 1U << asps.asps_log2_patch_packing_block_size();
@@ -68,6 +69,13 @@ auto PatchParams::decodePdu(const PatchDataUnit &pdu, const AtlasSequenceParamet
     pp.atlasPatchLoDScaleX(pdu.pdu_lod_scale_x_minus1() + 1U);
     pp.atlasPatchLoDScaleY((pdu.pdu_lod_scale_x_minus1() == 0 ? 2U : 1U) +
                            pdu.pdu_lod_scale_y_idc());
+  } else if (afps.afps_miv_extension_present_flag()) {
+    const auto &afme = afps.afps_miv_extension();
+    if (afme.afme_inpaint_lod_enabled_flag()) {
+      pp.atlasPatchLoDScaleX(afme.afme_inpaint_lod_scale_x_minus1() + 1U);
+      pp.atlasPatchLoDScaleY((afme.afme_inpaint_lod_scale_x_minus1() == 0 ? 2U : 1U) +
+                             afme.afme_inpaint_lod_scale_y_idc());
+    }
   }
 
   const auto patchSizeXQuantizer = asps.asps_patch_size_quantizer_present_flag()
@@ -91,12 +99,16 @@ auto PatchParams::decodePdu(const PatchDataUnit &pdu, const AtlasSequenceParamet
     if (asme.asme_patch_attribute_offset_enabled_flag()) {
       pp.atlasPatchAttributeOffset(pdu.pdu_miv_extension().pdu_attribute_offset());
     }
+    if (asme.asme_inpaint_enabled_flag()) {
+      pp.atlasPatchInpaintFlag(pdu.pdu_miv_extension().pdu_inpaint_flag());
+    }
   }
 
   return pp;
 }
 
 auto PatchParams::encodePdu(const AtlasSequenceParameterSetRBSP &asps,
+                            const AtlasFrameParameterSetRBSP &afps,
                             const AtlasTileHeader &ath) const -> MivBitstream::PatchDataUnit {
   auto pdu = MivBitstream::PatchDataUnit{};
 
@@ -123,9 +135,21 @@ auto PatchParams::encodePdu(const AtlasSequenceParameterSetRBSP &asps,
   pdu.pdu_orientation_index(atlasPatchOrientationIndex());
 
   if (atlasPatchLoDScaleX() != 1 || atlasPatchLoDScaleY() != 1) {
-    pdu.pdu_lod_enabled_flag(true);
-    pdu.pdu_lod_scale_x_minus1(atlasPatchLoDScaleX() - 1U);
-    pdu.pdu_lod_scale_y_idc(atlasPatchLoDScaleY() - (pdu.pdu_lod_scale_x_minus1() == 0 ? 2U : 1U));
+    if (afps.afps_lod_mode_enabled_flag()) {
+      pdu.pdu_lod_enabled_flag(true);
+      pdu.pdu_lod_scale_x_minus1(atlasPatchLoDScaleX() - 1U);
+      pdu.pdu_lod_scale_y_idc(atlasPatchLoDScaleY() -
+                              (pdu.pdu_lod_scale_x_minus1() == 0 ? 2U : 1U));
+    } else {
+      const auto &afme = afps.afps_miv_extension();
+      VERIFY_MIVBITSTREAM(afme.afme_inpaint_lod_enabled_flag());
+      VERIFY_MIVBITSTREAM(atlasPatchLoDScaleX() ==
+                          static_cast<int32_t>(afme.afme_inpaint_lod_scale_x_minus1()) + 1);
+      VERIFY_MIVBITSTREAM(
+          atlasPatchLoDScaleY() ==
+          static_cast<int32_t>((afme.afme_inpaint_lod_scale_x_minus1() == 0 ? 2U : 1U) +
+                               afme.afme_inpaint_lod_scale_y_idc()));
+    }
   }
 
   const auto patchSizeXQuantizer = asps.asps_patch_size_quantizer_present_flag()
@@ -149,6 +173,10 @@ auto PatchParams::encodePdu(const AtlasSequenceParameterSetRBSP &asps,
   if (asps.asps_miv_extension_present_flag() &&
       asps.asps_miv_extension().asme_patch_attribute_offset_enabled_flag()) {
     pdu.pdu_miv_extension().pdu_attribute_offset(atlasPatchAttributeOffset());
+  }
+  if (asps.asps_miv_extension_present_flag() &&
+      asps.asps_miv_extension().asme_inpaint_enabled_flag()) {
+    pdu.pdu_miv_extension().pdu_inpaint_flag(atlasPatchInpaintFlag());
   }
 
   return pdu;

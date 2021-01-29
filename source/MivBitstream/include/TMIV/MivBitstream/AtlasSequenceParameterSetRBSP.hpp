@@ -84,8 +84,12 @@ constexpr auto AspsMivExtension::asme_patch_attribute_offset_enabled_flag() cons
   return m_asme_patch_attribute_offset_flag;
 }
 
-constexpr auto AspsMivExtension::asme_max_entity_id() const noexcept -> std::uint16_t {
+constexpr auto AspsMivExtension::asme_max_entity_id() const noexcept {
   return m_asme_max_entity_id;
+}
+
+constexpr auto AspsMivExtension::asme_inpaint_enabled_flag() const noexcept {
+  return m_asme_inpaint_enabled_flag;
 }
 
 constexpr auto AspsMivExtension::asme_ancillary_atlas_flag(bool value) noexcept -> auto & {
@@ -168,6 +172,11 @@ constexpr auto AspsMivExtension::asme_patch_constant_depth_flag(bool value) noex
   return *this;
 }
 
+constexpr auto AspsMivExtension::asme_inpaint_enabled_flag(bool value) noexcept -> auto & {
+  m_asme_inpaint_enabled_flag = value;
+  return *this;
+}
+
 constexpr auto AspsMivExtension::operator==(const AspsMivExtension &other) const noexcept {
   if (asme_embedded_occupancy_enabled_flag() && other.asme_embedded_occupancy_enabled_flag()) {
     if (asme_depth_occ_threshold_flag() != other.asme_depth_occ_threshold_flag()) {
@@ -206,7 +215,8 @@ constexpr auto AspsMivExtension::operator==(const AspsMivExtension &other) const
          asme_patch_constant_depth_flag() == other.asme_patch_constant_depth_flag() &&
          asme_patch_attribute_offset_enabled_flag() ==
              other.asme_patch_attribute_offset_enabled_flag() &&
-         asme_max_entity_id() == other.asme_max_entity_id();
+         asme_max_entity_id() == other.asme_max_entity_id() &&
+         asme_inpaint_enabled_flag() == other.asme_inpaint_enabled_flag();
 }
 
 constexpr auto AspsMivExtension::operator!=(const AspsMivExtension &other) const noexcept {

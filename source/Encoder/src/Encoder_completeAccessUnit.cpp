@@ -307,8 +307,9 @@ auto Encoder::calculatePatchAttrOffsetValuesFullGOP(
     }
 
     m_params.patchParamsList[p].atlasPatchAttributeOffset(
-        {int(patchAttrOffsetValuesFullGOP[p][0][2]), int(patchAttrOffsetValuesFullGOP[p][1][2]),
-         int(patchAttrOffsetValuesFullGOP[p][2][2])});
+        {static_cast<uint16_t>(patchAttrOffsetValuesFullGOP[p][0][2]),
+         static_cast<uint16_t>(patchAttrOffsetValuesFullGOP[p][1][2]),
+         static_cast<uint16_t>(patchAttrOffsetValuesFullGOP[p][2][2])});
   }
   return bitShift;
 }

@@ -39,6 +39,8 @@
 #include <ostream>
 #include <utility>
 
+#include <fmt/ostream.h>
+
 namespace TMIV::MivBitstream {
 RefListStruct::RefListStruct(std::vector<int16_t> deltaAfocSt)
     : m_deltaAfocSt{std::move(deltaAfocSt)} {}
@@ -143,40 +145,41 @@ auto AspsMivExtension::asme_patch_attribute_offset_bit_count_minus1() const noex
 }
 
 auto operator<<(std::ostream &stream, const AspsMivExtension &x) -> std::ostream & {
-  stream << "asme_ancillary_atlas_flag=" << std::boolalpha << x.asme_ancillary_atlas_flag() << '\n';
-  stream << "asme_embedded_occupancy_enabled_flag=" << std::boolalpha
-         << x.asme_embedded_occupancy_enabled_flag() << '\n';
+  fmt::print(stream, "asme_ancillary_atlas_flag={}\n", x.asme_ancillary_atlas_flag());
+  fmt::print(stream, "asme_embedded_occupancy_enabled_flag={}\n",
+             x.asme_embedded_occupancy_enabled_flag());
+
   if (x.asme_embedded_occupancy_enabled_flag()) {
-    stream << "asme_depth_occ_map_threshold_flag=" << std::boolalpha
-           << x.asme_depth_occ_threshold_flag() << '\n';
+    fmt::print(stream, "asme_depth_occ_map_threshold_flag={}\n", x.asme_depth_occ_threshold_flag());
   }
-  stream << "asme_geometry_scale_enabled_flag=" << std::boolalpha
-         << x.asme_geometry_scale_enabled_flag() << '\n';
+  fmt::print(stream, "asme_geometry_scale_enabled_flag={}\n", x.asme_geometry_scale_enabled_flag());
+
   if (x.asme_geometry_scale_enabled_flag()) {
-    stream << "asme_geometry_scale_factor_x_minus1=" << x.asme_geometry_scale_factor_x_minus1()
-           << '\n';
-    stream << "asme_geometry_scale_factor_y_minus1=" << x.asme_geometry_scale_factor_y_minus1()
-           << '\n';
+    fmt::print(stream, "asme_geometry_scale_factor_x_minus1={}\n",
+               x.asme_geometry_scale_factor_x_minus1());
+    fmt::print(stream, "asme_geometry_scale_factor_y_minus1={}\n",
+               x.asme_geometry_scale_factor_y_minus1());
   }
   if (!x.asme_embedded_occupancy_enabled_flag()) {
-    stream << "asme_occupancy_scale_enabled_flag=" << std::boolalpha
-           << x.asme_occupancy_scale_enabled_flag() << '\n';
+    fmt::print(stream, "asme_occupancy_scale_enabled_flag={}\n",
+               x.asme_occupancy_scale_enabled_flag());
   }
   if (!x.asme_embedded_occupancy_enabled_flag() && x.asme_occupancy_scale_enabled_flag()) {
-    stream << "asme_occupancy_scale_factor_x_minus1=" << x.asme_occupancy_scale_factor_x_minus1()
-           << '\n';
-    stream << "asme_occupancy_scale_factor_y_minus1=" << x.asme_occupancy_scale_factor_y_minus1()
-           << '\n';
+    fmt::print(stream, "asme_occupancy_scale_factor_x_minus1={}\n",
+               x.asme_occupancy_scale_factor_x_minus1());
+    fmt::print(stream, "asme_occupancy_scale_factor_y_minus1={}\n",
+               x.asme_occupancy_scale_factor_y_minus1());
   }
-  stream << "asme_patch_constant_depth_flag=" << std::boolalpha
-         << x.asme_patch_constant_depth_flag() << '\n';
-  stream << "asme_patch_attribute_offset_enabled_flag=" << std::boolalpha
-         << x.asme_patch_attribute_offset_enabled_flag() << '\n';
+  fmt::print(stream, "asme_patch_constant_depth_flag={}\n", x.asme_patch_constant_depth_flag());
+  fmt::print(stream, "asme_patch_attribute_offset_enabled_flag={}\n",
+             x.asme_patch_attribute_offset_enabled_flag());
+
   if (x.asme_patch_attribute_offset_enabled_flag()) {
-    stream << "asme_patch_attribute_offset_bit_count_minus1="
-           << x.asme_patch_attribute_offset_bit_count_minus1() << '\n';
+    fmt::print(stream, "asme_patch_attribute_offset_bit_count_minus1={}\n",
+               x.asme_patch_attribute_offset_bit_count_minus1());
   }
-  stream << "asme_max_entity_id=" << x.asme_max_entity_id() << '\n';
+  fmt::print(stream, "asme_max_entity_id={}\n", x.asme_max_entity_id());
+  fmt::print(stream, "asme_inpaint_enabled_flag={}\n", x.asme_inpaint_enabled_flag());
   return stream;
 }
 
@@ -205,6 +208,7 @@ auto AspsMivExtension::decodeFrom(Common::InputBitstream &bitstream) -> AspsMivE
     x.asme_patch_attribute_offset_bit_count_minus1(bitstream.getUExpGolomb<uint16_t>());
   }
   x.asme_max_entity_id(bitstream.getUExpGolomb<std::uint16_t>());
+  x.asme_inpaint_enabled_flag(bitstream.getFlag());
   return x;
 }
 
@@ -232,6 +236,7 @@ void AspsMivExtension::encodeTo(Common::OutputBitstream &bitstream) const {
     bitstream.putUExpGolomb(asme_patch_attribute_offset_bit_count_minus1());
   }
   bitstream.putUExpGolomb(asme_max_entity_id());
+  bitstream.putFlag(asme_inpaint_enabled_flag());
 }
 
 auto AtlasSequenceParameterSetRBSP::asps_num_ref_atlas_frame_lists_in_asps() const noexcept

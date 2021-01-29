@@ -36,7 +36,7 @@
 #include <TMIV/Common/Bitstream.h>
 #include <TMIV/Common/verify.h>
 
-#include <ostream>
+#include <fmt/ostream.h>
 
 namespace TMIV::MivBitstream {
 auto operator<<(std::ostream &stream, const AtlasFrameTileInformation &x) -> std::ostream & {
@@ -86,15 +86,56 @@ void AtlasFrameTileInformation::encodeTo(Common::OutputBitstream &bitstream) {
   bitstream.putFlag(afti_signalled_tile_id_flag);
 }
 
-auto operator<<(std::ostream &stream, const AfpsMivExtension & /* x */) -> std::ostream & {
+auto AfpsMivExtension::afme_inpaint_lod_scale_x_minus1(unsigned value) noexcept
+    -> AfpsMivExtension & {
+  VERIFY_MIVBITSTREAM(afme_inpaint_lod_enabled_flag());
+  m_afme_inpaint_lod_scale_x_minus1 = value;
+  return *this;
+}
+
+auto AfpsMivExtension::afme_inpaint_lod_scale_y_idc(unsigned value) noexcept -> AfpsMivExtension & {
+  VERIFY_MIVBITSTREAM(afme_inpaint_lod_enabled_flag());
+  m_afme_inpaint_lod_scale_y_idc = value;
+  return *this;
+}
+
+auto operator<<(std::ostream &stream, const AfpsMivExtension &x) -> std::ostream & {
+  if (x.m_afme_inpaint_lod_enabled_flag) {
+    fmt::print(stream, "afme_inpaint_lod_enabled_flag={}\n", x.afme_inpaint_lod_enabled_flag());
+    if (x.afme_inpaint_lod_enabled_flag()) {
+      fmt::print(stream, "afme_inpaint_lod_scale_x_minus1={}\n",
+                 x.afme_inpaint_lod_scale_x_minus1());
+      fmt::print(stream, "afme_inpaint_lod_scale_y_idc={}\n", x.afme_inpaint_lod_scale_y_idc());
+    }
+  }
   return stream;
 }
 
-auto AfpsMivExtension::decodeFrom(Common::InputBitstream & /* bitstream */) -> AfpsMivExtension {
-  return {};
+auto AfpsMivExtension::decodeFrom(Common::InputBitstream &bitstream,
+                                  const AtlasFrameParameterSetRBSP &afps) -> AfpsMivExtension {
+  auto x = AfpsMivExtension{};
+  if (!afps.afps_lod_mode_enabled_flag()) {
+    x.afme_inpaint_lod_enabled_flag(bitstream.getFlag());
+    if (x.afme_inpaint_lod_enabled_flag()) {
+      x.afme_inpaint_lod_scale_x_minus1(bitstream.getUExpGolomb<int32_t>());
+      x.afme_inpaint_lod_scale_y_idc(bitstream.getUExpGolomb<int32_t>());
+    }
+  }
+  return x;
 }
 
-void AfpsMivExtension::encodeTo(Common::OutputBitstream & /* stream */) const {}
+void AfpsMivExtension::encodeTo(Common::OutputBitstream &bitstream,
+                                const AtlasFrameParameterSetRBSP &afps) const {
+  if (!afps.afps_lod_mode_enabled_flag()) {
+    VERIFY_MIVBITSTREAM(m_afme_inpaint_lod_enabled_flag);
+    bitstream.putFlag(afme_inpaint_lod_enabled_flag());
+    if (afme_inpaint_lod_enabled_flag()) {
+      VERIFY_MIVBITSTREAM(m_afme_inpaint_lod_scale_x_minus1 && m_afme_inpaint_lod_scale_y_idc);
+      bitstream.putUExpGolomb(afme_inpaint_lod_scale_x_minus1());
+      bitstream.putUExpGolomb(afme_inpaint_lod_scale_y_idc());
+    }
+  }
+}
 
 auto AtlasFrameParameterSetRBSP::afps_miv_extension() const noexcept -> AfpsMivExtension {
   VERIFY_V3CBITSTREAM(afps_miv_extension_present_flag());
@@ -122,11 +163,12 @@ auto AtlasFrameParameterSetRBSP::afps_extension_7bits(uint8_t value) noexcept
   return *this;
 }
 
-auto AtlasFrameParameterSetRBSP::afps_miv_extension(const AfpsMivExtension &value) noexcept
-    -> AtlasFrameParameterSetRBSP & {
+auto AtlasFrameParameterSetRBSP::afps_miv_extension() noexcept -> AfpsMivExtension & {
   VERIFY_V3CBITSTREAM(afps_miv_extension_present_flag());
-  m_afme = value;
-  return *this;
+  if (!m_afme) {
+    m_afme = AfpsMivExtension{};
+  }
+  return *m_afme;
 }
 
 auto AtlasFrameParameterSetRBSP::afpsExtensionData(std::vector<bool> value) noexcept
@@ -233,7 +275,7 @@ auto AtlasFrameParameterSetRBSP::decodeFrom(std::istream &stream,
     x.afps_extension_7bits(bitstream.readBits<uint8_t>(7));
   }
   if (x.afps_miv_extension_present_flag()) {
-    x.afps_miv_extension(AfpsMivExtension::decodeFrom(bitstream));
+    x.afps_miv_extension() = AfpsMivExtension::decodeFrom(bitstream, x);
   }
   if (x.afps_extension_7bits() != 0) {
     auto afpsExtensionData = std::vector<bool>{};
@@ -279,7 +321,7 @@ void AtlasFrameParameterSetRBSP::encodeTo(
     bitstream.writeBits(afps_extension_7bits(), 7);
   }
   if (afps_miv_extension_present_flag()) {
-    afps_miv_extension().encodeTo(bitstream);
+    afps_miv_extension().encodeTo(bitstream, *this);
   }
   if (afps_extension_7bits() != 0) {
     for (auto bit : afpsExtensionData()) {

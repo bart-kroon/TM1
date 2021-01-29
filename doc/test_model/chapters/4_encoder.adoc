@@ -803,10 +803,10 @@ image::4_encoder/mpi_encoder.svg[align=center]
 == Bitstream formation and multiplexing
 
 The output of the TMIV encoder is a V3C sample stream with MIV extensions (<<imgV3cMivSampleStream>>).
-The V3C sample stream consists of a V3C parameter set, common atlas data, atlas data, geometry video data, and optionally attribute video data.
+The V3C sample stream consists of a V3C parameter set, common atlas data, atlas data, optional geometry video data, optional attribute video data, optional occupancy video data, and optional packed video data.
 The atlas data is a NAL sample stream which includes also the SEI messages.
-The common atlas data sub bitstream contains the view parameters list and the regular atlas data sub bitstreams which contain patch data.
-This patch data is sent only for intra frames and a frame order count NAL unit is used to skip all inter frames at once.
+The common atlas data sub bitstream contains the view parameters list while the regular atlas data sub bitstreams contain the patch data.
+The patch data is sent only for intra frames and a frame order count NAL unit is used to skip all inter frames at once.
 
 A restriction of MIV on V3C is that V3C units have to be grouped in chunks of frames, with all V3C units in a chunk corresponding to the same frame range.
 This restriction has the purpose of improving buffering.
@@ -816,10 +816,10 @@ The formatting and multiplexing is thus performed as follows:
 
 . Atlases of multiple groups are concatenated with renumbering of atlas ID’s. Also, parameter set and atlas data of all groups are merged together into one parameter set and one atlas data units, respectively.
 . An intermediate bitstream is formatted that includes no video sub bitstreams.
-. All geometry (if present), attribute (if present), and occupancy (if present) video data are output as raw video files.
-. The raw video is encoded using the HEVC test model (HM) or (https://github.com/fraunhoferhhi/vvenc[VVenC]) resulting in separate video sub bitstreams.
+. All geometry (if present), attribute (if present), occupancy (if present), and packed (if present) video data are output as raw video files.
+. The raw video is encoded using the HEVC test model (HM) or the verstaile videl codec (https://github.com/fraunhoferhhi/vvenc[VVenC]) resulting in separate video sub bitstreams.
 . The intermediate bitstream plus all sub bitstreams are concatenated with insertion of suitable headers, to form the output bitstream.
  
 .V3C sample stream with MIV extensions
 [#imgV3cMivSampleStream]
-image::4_encoder/v3c_miv_sample_stream.svg[align=center]
+image::4_encoder/v3c_miv_sample_stream.png[align=center]

@@ -169,7 +169,7 @@ TEST_CASE("DepthTransform") {
     pp.atlasPatch3dOffsetD(offsetD);
     pp.atlasPatch3dRangeD(rangeD);
 
-    const auto bits = 16;
+    const auto bits = 16U;
     const auto maxLevel = 0xFFFF;
 
     const auto unit = DepthTransform{dq, pp, bits};
@@ -242,7 +242,7 @@ TEST_CASE("DepthTransform") {
     dq.dq_norm_disp_low(normDispLow);
     dq.dq_norm_disp_high(normDispHigh);
 
-    constexpr auto bits = 14;
+    constexpr auto bits = 14U;
     constexpr auto maxLevel = TMIV::Common::maxLevel(bits);
 
     const auto unit = DepthTransform{dq, bits};

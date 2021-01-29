@@ -55,70 +55,47 @@ class YUV444P10 {};
 class YUV444P16 {};
 
 namespace detail {
-template <class FORMAT> struct PixelFormatHelper {};
+template <typename FORMAT> struct PixelFormatHelper {};
 } // namespace detail
 
-template <class FORMAT> constexpr auto neutralColor() {
+template <typename FORMAT> constexpr auto neutralColor() {
   return detail::PixelFormatHelper<FORMAT>::neutralColor();
 }
 
-template <class FORMAT> class Frame {
+template <typename FORMAT> class Frame {
 public:
   using base_type = typename detail::PixelFormatHelper<FORMAT>::base_type;
   using plane_type = heap::Matrix<base_type>;
 
 private:
-  static constexpr int nb_plane = detail::PixelFormatHelper<FORMAT>::nb_plane;
-  static constexpr int bitDepth = detail::PixelFormatHelper<FORMAT>::bitDepth;
-  int m_width = 0, m_height = 0;
-  std::array<plane_type, nb_plane> m_planes;
+  static constexpr auto numberOfPlanes = detail::PixelFormatHelper<FORMAT>::numberOfPlanes;
+  static constexpr auto bitDepth = detail::PixelFormatHelper<FORMAT>::bitDepth;
+  int32_t m_width{};
+  int32_t m_height{};
+  std::array<plane_type, numberOfPlanes> m_planes{};
 
 public:
-  explicit Frame(int w = 0, int h = 0) { resize(w, h); }
-  Frame(const Frame &) = default;
-  Frame(Frame &&that) noexcept
-      : m_width{that.m_width}, m_height{that.m_height}, m_planes{std::move(that.m_planes)} {
-    that.m_width = 0;
-    that.m_height = 0;
-  }
-  auto operator=(const Frame &) -> Frame & = default;
-  auto operator=(Frame &&that) noexcept -> Frame & {
-    m_width = that.m_width;
-    m_height = that.m_height;
-    m_planes = std::move(that.m_planes);
+  Frame() = default;
+  explicit Frame(int32_t w, int32_t h);
 
-    that.m_width = 0;
-    that.m_height = 0;
+  [[nodiscard]] auto empty() const noexcept;
 
-    return *this;
-  }
-  ~Frame() = default;
+  void resize(int32_t w, int32_t h);
 
-  [[nodiscard]] auto empty() const noexcept -> bool { return getWidth() == 0 && getHeight() == 0; }
+  [[nodiscard]] auto getPlanes() -> auto &;
+  [[nodiscard]] auto getPlanes() const -> const auto &;
+  [[nodiscard]] auto getPlane(int index) const -> const auto &;
+  [[nodiscard]] auto getPlane(int index) -> auto &;
+  [[nodiscard]] auto getWidth() const;
+  [[nodiscard]] auto getHeight() const;
+  [[nodiscard]] auto getSize() const;
+  [[nodiscard]] auto getMemorySize() const;
+  [[nodiscard]] auto getDiskSize() const;
+  [[nodiscard]] static constexpr auto getNumberOfPlanes();
+  [[nodiscard]] static constexpr auto getBitDepth();
 
-  void resize(int w, int h);
-
-  auto getPlanes() -> std::array<plane_type, nb_plane> & { return m_planes; }
-  [[nodiscard]] auto getPlanes() const -> const std::array<plane_type, nb_plane> & {
-    return m_planes;
-  }
-
-  [[nodiscard]] auto getPlane(int id) const -> const plane_type & { return m_planes[id]; }
-  auto getPlane(int id) -> plane_type & { return m_planes[id]; }
-  [[nodiscard]] auto getWidth() const -> int { return m_width; }
-  [[nodiscard]] auto getHeight() const -> int { return m_height; }
-  [[nodiscard]] auto getSize() const -> Vec2i { return Vec2i{m_width, m_height}; }
-  [[nodiscard]] auto getMemorySize() const -> int {
-    return detail::PixelFormatHelper<FORMAT>::getMemorySize(m_width, m_height);
-  }
-  [[nodiscard]] auto getDiskSize() const -> int {
-    return detail::PixelFormatHelper<FORMAT>::getDiskSize(m_width, m_height);
-  }
-  static constexpr auto getNumberOfPlanes() -> int { return nb_plane; }
-  static constexpr auto getBitDepth() -> int { return bitDepth; }
-
-  void read(std::istream &is, bool vFlip = false);
-  void dump(std::ostream &os, bool vFlip = false) const;
+  void read(std::istream &stream);
+  void dump(std::ostream &stream) const;
 
   // Reset all samples to zero
   // NOTE(BK): samples are already set to zero on construction
@@ -134,7 +111,7 @@ public:
   template <typename OTHER_FORMAT, typename = std::enable_if<std::is_same_v<FORMAT, YUV444P10>>>
   void fillInvalidWithNeutral(const Frame<OTHER_FORMAT> &depth);
 
-  static constexpr auto neutralColor() { return detail::PixelFormatHelper<FORMAT>::neutralColor(); }
+  [[nodiscard]] static constexpr auto neutralColor();
 };
 
 auto yuv420p(const Frame<YUV444P8> &frame) -> Frame<YUV420P8>;
@@ -152,7 +129,7 @@ struct AnyFrame {
   // Convert to any specific format
   template <typename FORMAT> auto as() const -> Frame<FORMAT>;
 
-  static constexpr int maxPlanes = 4;
+  static constexpr auto maxPlanes = 4;
   std::array<Mat<uint32_t>, maxPlanes> planes{};
   std::array<uint8_t, maxPlanes> bitdepth{};
 };

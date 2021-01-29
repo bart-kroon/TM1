@@ -35,12 +35,13 @@
 #error "Include the .h instead of the .hpp."
 #endif
 
+#include <cstring>
 #include <stdexcept>
 
 namespace TMIV::Common {
 namespace detail {
 template <> struct PixelFormatHelper<YUV400P8> {
-  static constexpr int nb_plane = 1;
+  static constexpr auto numberOfPlanes = 1;
   static constexpr auto bitDepth = 8U;
   using base_type = std::uint8_t;
   static constexpr auto getMemorySize(int W, int H) -> int { return (W * H); }
@@ -51,7 +52,7 @@ template <> struct PixelFormatHelper<YUV400P8> {
 };
 
 template <> struct PixelFormatHelper<YUV400P10> {
-  static constexpr int nb_plane = 1;
+  static constexpr auto numberOfPlanes = 1;
   static constexpr auto bitDepth = 10U;
   using base_type = std::uint16_t;
   static constexpr auto getMemorySize(int W, int H) -> int { return 2 * (W * H); }
@@ -62,7 +63,7 @@ template <> struct PixelFormatHelper<YUV400P10> {
 };
 
 template <> struct PixelFormatHelper<YUV400P16> {
-  static constexpr int nb_plane = 1;
+  static constexpr auto numberOfPlanes = 1;
   static constexpr auto bitDepth = 16U;
   using base_type = std::uint16_t;
   static constexpr auto getMemorySize(int W, int H) -> int { return 2 * (W * H); }
@@ -73,7 +74,7 @@ template <> struct PixelFormatHelper<YUV400P16> {
 };
 
 template <> struct PixelFormatHelper<YUV420P8> {
-  static constexpr int nb_plane = 3;
+  static constexpr auto numberOfPlanes = 3;
   static constexpr auto bitDepth = 8U;
   using base_type = std::uint8_t;
   static constexpr auto getMemorySize(int W, int H) -> int { return 3 * (W * H) / 2; }
@@ -84,7 +85,7 @@ template <> struct PixelFormatHelper<YUV420P8> {
 };
 
 template <> struct PixelFormatHelper<YUV420P10> {
-  static constexpr int nb_plane = 3;
+  static constexpr auto numberOfPlanes = 3;
   static constexpr auto bitDepth = 10U;
   using base_type = std::uint16_t;
   static constexpr auto getMemorySize(int W, int H) -> int { return 3 * (W * H); }
@@ -95,7 +96,7 @@ template <> struct PixelFormatHelper<YUV420P10> {
 };
 
 template <> struct PixelFormatHelper<YUV420P16> {
-  static constexpr int nb_plane = 3;
+  static constexpr auto numberOfPlanes = 3;
   static constexpr auto bitDepth = 16U;
   using base_type = std::uint16_t;
   static constexpr auto getMemorySize(int W, int H) -> int { return 3 * (W * H); }
@@ -106,7 +107,7 @@ template <> struct PixelFormatHelper<YUV420P16> {
 };
 
 template <> struct PixelFormatHelper<YUV444P8> {
-  static constexpr int nb_plane = 3;
+  static constexpr auto numberOfPlanes = 3;
   static constexpr auto bitDepth = 8U;
   using base_type = std::uint8_t;
   static constexpr auto getMemorySize(int W, int H) -> int { return 3 * (W * H); }
@@ -117,7 +118,7 @@ template <> struct PixelFormatHelper<YUV444P8> {
 };
 
 template <> struct PixelFormatHelper<YUV444P10> {
-  static constexpr int nb_plane = 3;
+  static constexpr auto numberOfPlanes = 3;
   static constexpr auto bitDepth = 10U;
   using base_type = std::uint16_t;
   static constexpr auto getMemorySize(int W, int H) -> int { return 6 * (W * H); }
@@ -128,7 +129,7 @@ template <> struct PixelFormatHelper<YUV444P10> {
 };
 
 template <> struct PixelFormatHelper<YUV444P16> {
-  static constexpr int nb_plane = 3;
+  static constexpr auto numberOfPlanes = 3;
   static constexpr auto bitDepth = 16U;
   using base_type = std::uint16_t;
   static constexpr auto getMemorySize(int W, int H) -> int { return 6 * (W * H); }
@@ -139,47 +140,69 @@ template <> struct PixelFormatHelper<YUV444P16> {
 };
 } // namespace detail
 
-template <class FORMAT> void Frame<FORMAT>::resize(int w, int h) {
+template <typename FORMAT> Frame<FORMAT>::Frame(int32_t w, int32_t h) { resize(w, h); }
+
+template <typename FORMAT> auto Frame<FORMAT>::empty() const noexcept {
+  return getWidth() == 0 && getHeight() == 0;
+}
+
+template <typename FORMAT> void Frame<FORMAT>::resize(int32_t w, int32_t h) {
   m_width = w;
   m_height = h;
 
-  for (int planeId = 0; planeId < nb_plane; planeId++) {
+  for (int planeId = 0; planeId < numberOfPlanes; planeId++) {
     m_planes[planeId].resize(detail::PixelFormatHelper<FORMAT>::getPlaneHeight(planeId, h),
                              detail::PixelFormatHelper<FORMAT>::getPlaneWidth(planeId, w));
   }
 }
 
-template <class FORMAT> void Frame<FORMAT>::read(std::istream &is, bool vFlip) {
-  for (auto &plane : m_planes) {
-    int w = static_cast<int>(plane.width()), h = static_cast<int>(plane.height());
-    base_type *ptr =
-        // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-        vFlip ? (plane.data() + plane.size() - plane.width()) : plane.data();
-    int lineSize = w * sizeof(base_type);
+template <typename FORMAT> auto Frame<FORMAT>::getPlanes() -> auto & { return m_planes; }
 
-    for (int j = 0; j < h; j++) {
-      // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-      is.read(reinterpret_cast<char *>(ptr), lineSize);
-      // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-      ptr = ptr + (vFlip ? -w : w);
-    }
+template <typename FORMAT> auto Frame<FORMAT>::getPlanes() const -> const auto & {
+  return m_planes;
+}
+
+template <typename FORMAT> auto Frame<FORMAT>::getPlane(int index) const -> const auto & {
+  return m_planes[index];
+}
+
+template <typename FORMAT> auto Frame<FORMAT>::getPlane(int index) -> auto & {
+  return m_planes[index];
+}
+
+template <typename FORMAT> auto Frame<FORMAT>::getWidth() const { return m_width; }
+
+template <typename FORMAT> auto Frame<FORMAT>::getHeight() const { return m_height; }
+
+template <typename FORMAT> auto Frame<FORMAT>::getSize() const { return Vec2i{m_width, m_height}; }
+
+template <typename FORMAT> auto Frame<FORMAT>::getMemorySize() const {
+  return detail::PixelFormatHelper<FORMAT>::getMemorySize(m_width, m_height);
+}
+
+template <typename FORMAT> auto Frame<FORMAT>::getDiskSize() const {
+  return detail::PixelFormatHelper<FORMAT>::getDiskSize(m_width, m_height);
+}
+
+template <typename FORMAT> constexpr auto Frame<FORMAT>::getNumberOfPlanes() {
+  return numberOfPlanes;
+}
+
+template <typename FORMAT> constexpr auto Frame<FORMAT>::getBitDepth() { return bitDepth; }
+
+template <typename FORMAT> void Frame<FORMAT>::read(std::istream &stream) {
+  for (auto &plane : m_planes) {
+    auto buffer = std::vector<char>(plane.size() * sizeof(plane[0]));
+    stream.read(buffer.data(), buffer.size());
+    std::memcpy(plane.data(), buffer.data(), buffer.size());
   }
 }
 
-template <class FORMAT> void Frame<FORMAT>::dump(std::ostream &os, bool vFlip) const {
+template <typename FORMAT> void Frame<FORMAT>::dump(std::ostream &stream) const {
   for (const auto &plane : m_planes) {
-    int w = static_cast<int>(plane.width()), h = static_cast<int>(plane.height());
-    const base_type *ptr =
-        // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-        vFlip ? (plane.data() + plane.size() - plane.width()) : plane.data();
-    int lineSize = w * sizeof(base_type);
-
-    for (int j = 0; j < h; j++) {
-      // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-      os.write(reinterpret_cast<const char *>(ptr), lineSize);
-      // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-      ptr = ptr + (vFlip ? -w : w);
-    }
+    auto buffer = std::vector<char>(plane.size() * sizeof(plane[0]));
+    std::memcpy(buffer.data(), plane.data(), buffer.size());
+    stream.write(buffer.data(), buffer.size());
   }
 }
 
@@ -216,6 +239,10 @@ void Frame<FORMAT>::fillInvalidWithNeutral(const Frame<OTHER_FORMAT> &depth) {
       }
     }
   }
+}
+
+template <typename FORMAT> constexpr auto Frame<FORMAT>::neutralColor() {
+  return detail::PixelFormatHelper<FORMAT>::neutralColor();
 }
 
 template <typename FORMAT> auto AnyFrame::as() const -> Frame<FORMAT> {

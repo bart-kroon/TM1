@@ -20,15 +20,15 @@ if(BUILD_VVenC)
         )
     endif()
 
-    set(vvenc_ADD_SUBDIRECTORIES "source/App/vvencapp")
+    set(vvenc_ADD_SUBDIRECTORIES "source/App/vvencFFapp")
     fetchcontent_makeavailable(VVENC)
     
     if (NOT MSVC)
         target_compile_options(vvenc PUBLIC "-w")        
     endif()
     
-    set_property(TARGET vvenc vvencapp PROPERTY FOLDER "VVenC")
-    install(TARGETS vvencapp EXPORT TMIVTargets RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+    set_property(TARGET vvenc vvencFFapp PROPERTY FOLDER "VVenC")
+    install(TARGETS vvencFFapp EXPORT TMIVTargets RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 endif()
 
 if(BUILD_VVdeC)

@@ -53,11 +53,11 @@ Clang 11 Debug:
     - cd ..
     - mkdir coverage_html
     - >
-      gcovr build -r source --gcov-executable 'llvm-cov-11 gcov' -e '.*\.test\.cpp'
-      --xml cobertura.xml --xml-pretty --html-details coverage_html/index.html --print-summary
+      gcovr build --gcov-executable 'llvm-cov-11 gcov' -f 'source/' -e '.*\.test\.cpp'
+      --xml coverage.xml --xml-pretty --html-details coverage_html/index.html --print-summary
   artifacts:
     reports:
-      cobertura: cobertura.xml
+      cobertura: coverage.xml
     paths:
       - coverage_html/
     expire_in: 5 days

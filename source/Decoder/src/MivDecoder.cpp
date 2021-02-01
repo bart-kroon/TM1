@@ -315,16 +315,18 @@ void MivDecoder::decodeMvpl(const MivBitstream::MivViewParamsList &mvpl, bool dq
   m_au.viewParamsList.assign(mvpl.mvp_num_views_minus1() + size_t{1}, {});
 
   for (uint16_t viewId = 0; viewId <= mvpl.mvp_num_views_minus1(); ++viewId) {
-    m_au.viewParamsList[viewId].ce = mvpl.camera_extrinsics(viewId);
-    m_au.viewParamsList[viewId].ci = mvpl.camera_intrinsics(viewId);
+    auto &vp = m_au.viewParamsList[viewId];
+    vp.ce = mvpl.camera_extrinsics(viewId);
+    vp.isInpainted = mvpl.mvp_inpaint_flag(viewId);
+    vp.ci = mvpl.camera_intrinsics(viewId);
     if (dqParamsPresentFlag) {
-      m_au.viewParamsList[viewId].dq = mvpl.depth_quantization(viewId);
+      vp.dq = mvpl.depth_quantization(viewId);
     }
     if (mvpl.mvp_pruning_graph_params_present_flag()) {
-      m_au.viewParamsList[viewId].pp = mvpl.pruning_parent(viewId);
+      vp.pp = mvpl.pruning_parent(viewId);
     }
 
-    m_au.viewParamsList[viewId].name = fmt::format("pv{:02}", viewId);
+    vp.name = fmt::format("pv{:02}", viewId);
   }
 }
 

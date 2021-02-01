@@ -41,12 +41,6 @@
 
 namespace TMIV::Encoder {
 namespace {
-template <typename Interface>
-auto create(const char *name, const Common::Json &rootNode, const Common::Json &componentNode) {
-  const auto &instance = Common::Factory<Interface>::getInstance();
-  return instance.create(name, rootNode, componentNode);
-}
-
 void runtimeCheck(bool cond, const char *what) {
   if (!cond) {
     throw std::runtime_error(what);
@@ -135,7 +129,7 @@ void reshapeTransparencyAtlas(Common::Transparency10Frame &transparencyAtlas,
 } // namespace
 
 MpiEncoder::MpiEncoder(const Common::Json &rootNode, const Common::Json &componentNode)
-    : m_packer{create<Packer::IPacker>("Packer", rootNode, componentNode)} {
+    : m_packer{Common::create<Packer::IPacker>("Packer", rootNode, componentNode)} {
   // Parameters
   m_intraPeriod = rootNode.require("intraPeriod").as<int>();
   m_blockSizeDepthQualityDependent =

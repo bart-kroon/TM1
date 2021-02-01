@@ -69,7 +69,7 @@ protected:
   // Use the configuration file with a factory to create a component/module
   template <class Interface, typename... Args> [[nodiscard]] auto create(Args &&...next) const {
     auto result = getComponentParentAndName(json(), std::forward<Args>(next)...);
-    return Factory<Interface>::getInstance().create(std::move(result.second), json(), result.first);
+    return Common::create<Interface>(std::move(result.second), json(), result.first);
   }
 
 private:

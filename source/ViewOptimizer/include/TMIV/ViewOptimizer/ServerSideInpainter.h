@@ -31,38 +31,33 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/Common/Factory.h>
-#include <TMIV/Renderer/Renderer.h>
+#ifndef _TMIV_VIEWOPTIMIZER_SERVERSIDEINPAINTER_H_
+#define _TMIV_VIEWOPTIMIZER_SERVERSIDEINPAINTER_H_
 
-#include <algorithm>
+#include <TMIV/ViewOptimizer/IViewOptimizer.h>
 
-namespace TMIV::Renderer {
-Renderer::Renderer(const Common::Json &rootNode, const Common::Json &componentNode)
-    : m_synthesizer{Common::create<ISynthesizer>("Synthesizer", rootNode, componentNode)}
-    , m_inpainter{Common::create<IInpainter>("Inpainter", rootNode, componentNode)}
-    , m_viewingSpaceController{Common::create<IViewingSpaceController>("ViewingSpaceController",
-                                                                       rootNode, componentNode)} {}
+#include <memory>
 
-auto Renderer::renderFrame(const MivBitstream::AccessUnit &frame,
-                           const MivBitstream::ViewParams &viewportParams) const
-    -> Common::Texture444Depth16Frame {
-  auto viewport = m_synthesizer->renderFrame(frame, viewportParams);
+using namespace std::string_literals;
 
-  const auto hasNoAtlasEntities =
-      std::all_of(std::cbegin(frame.atlas), std::cend(frame.atlas), [](const auto &atlas) {
-        VERIFY_MIVBITSTREAM(atlas.asps.asps_extension_present_flag());
-        VERIFY_MIVBITSTREAM(atlas.asps.asps_miv_extension_present_flag());
-        return atlas.asps.asps_miv_extension().asme_max_entity_id() == 0;
-      });
+namespace TMIV::ViewOptimizer {
+class ServerSideInpainter : public IViewOptimizer {
+public:
+  ServerSideInpainter(const Common::Json &rootNode, const Common::Json &componentNode);
+  ServerSideInpainter(const ServerSideInpainter &) = delete;
+  ServerSideInpainter(ServerSideInpainter &&) = default;
+  ServerSideInpainter &operator=(const ServerSideInpainter &) = delete;
+  ServerSideInpainter &operator=(ServerSideInpainter &&) = default;
+  ~ServerSideInpainter();
 
-  if (hasNoAtlasEntities) {
-    m_inpainter->inplaceInpaint(viewport, viewportParams);
-  }
+  auto optimizeParams(MivBitstream::EncoderParams params)
+      -> const MivBitstream::EncoderParams & override;
+  [[nodiscard]] auto optimizeFrame(Common::MVD16Frame frame) const -> Common::MVD16Frame override;
 
-  if (frame.vs) {
-    m_viewingSpaceController->inplaceFading(viewport, viewportParams, *frame.vs);
-  }
+private:
+  class Impl;
+  std::unique_ptr<Impl> m_impl;
+};
+} // namespace TMIV::ViewOptimizer
 
-  return viewport;
-}
-} // namespace TMIV::Renderer
+#endif

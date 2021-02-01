@@ -60,6 +60,9 @@ struct ViewParams {
   // Is this a basic view or an additional view?
   bool isBasicView{true};
 
+  // Is this view a regular view (e.g. captured by a camera) or the result of an inpainting process?
+  bool isInpainted{};
+
   // Number of layers in MPI. Not in the specification, but needed to handle MPI.
   int nbMpiLayers{1};
 

@@ -48,20 +48,13 @@ using TMIV::Pruner::IPruner;
 using TMIV::ViewOptimizer::IViewOptimizer;
 
 namespace TMIV::Encoder {
-namespace {
-template <typename Interface>
-auto create(const char *name, const Common::Json &rootNode, const Common::Json &componentNode) {
-  const auto &instance = Common::Factory<Interface>::getInstance();
-  return instance.create(name, rootNode, componentNode);
-}
-} // namespace
-
 Encoder::Encoder(const Common::Json &rootNode, const Common::Json &componentNode)
-    : m_viewOptimizer{create<IViewOptimizer>("ViewOptimizer", rootNode, componentNode)}
-    , m_pruner{create<Pruner::IPruner>("Pruner", rootNode, componentNode)}
-    , m_aggregator{create<IAggregator>("Aggregator", rootNode, componentNode)}
-    , m_packer{create<IPacker>("Packer", rootNode, componentNode)}
-    , m_geometryQuantizer{create<IGeometryQuantizer>("GeometryQuantizer", rootNode, componentNode)}
+    : m_viewOptimizer{Common::create<IViewOptimizer>("ViewOptimizer", rootNode, componentNode)}
+    , m_pruner{Common::create<Pruner::IPruner>("Pruner", rootNode, componentNode)}
+    , m_aggregator{Common::create<IAggregator>("Aggregator", rootNode, componentNode)}
+    , m_packer{Common::create<IPacker>("Packer", rootNode, componentNode)}
+    , m_geometryQuantizer{Common::create<IGeometryQuantizer>("GeometryQuantizer", rootNode,
+                                                             componentNode)}
     , m_geometryDownscaler{rootNode, componentNode}
     , m_config(rootNode, componentNode) {}
 

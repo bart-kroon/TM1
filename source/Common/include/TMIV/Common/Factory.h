@@ -86,6 +86,13 @@ public:
     };
   }
 };
+
+template <class Interface>
+[[nodiscard]] auto create(const std::string &name, const Json &rootNode,
+                          const Json &componentNode) {
+  const auto &factory = Factory<Interface>::getInstance();
+  return factory.create(name, rootNode, componentNode);
+}
 } // namespace TMIV::Common
 
 #endif

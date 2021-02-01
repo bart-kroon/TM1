@@ -45,8 +45,8 @@ MultipleFrameRenderer::MultipleFrameRenderer(const Common::Json &rootNode,
     , m_outputPoseTraceNames{outputPoseTraceNames}
     , m_placeholders{std::move(placeholders)} {
   if (!m_outputCameraNames.empty() || !m_outputPoseTraceNames.empty()) {
-    m_culler = Common::Factory<ICuller>::getInstance().create("Culler"s, rootNode, rootNode);
-    m_renderer = Common::Factory<IRenderer>::getInstance().create("Renderer"s, rootNode, rootNode);
+    m_culler = Common::create<ICuller>("Culler"s, rootNode, rootNode);
+    m_renderer = Common::create<IRenderer>("Renderer"s, rootNode, rootNode);
   }
 }
 

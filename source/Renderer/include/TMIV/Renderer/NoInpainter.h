@@ -47,8 +47,6 @@ public:
   auto operator=(NoInpainter &&) -> NoInpainter & = default;
   ~NoInpainter() override = default;
 
-  void inplaceInpaint(Common::Texture444Depth10Frame & /* viewport */,
-                      const MivBitstream::ViewParams & /* metadata */) const override {}
   void inplaceInpaint(Common::Texture444Depth16Frame & /* viewport */,
                       const MivBitstream::ViewParams & /* metadata */) const override {}
 };

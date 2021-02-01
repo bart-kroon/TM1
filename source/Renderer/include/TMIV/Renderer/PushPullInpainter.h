@@ -31,25 +31,18 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_RENDERER_IINPAINTER_H_
-#define _TMIV_RENDERER_IINPAINTER_H_
+#ifndef _TMIV_RENDERER_PUSHPULLINPAINTER_H_
+#define _TMIV_RENDERER_PUSHPULLINPAINTER_H_
 
-#include <TMIV/Common/Frame.h>
-#include <TMIV/MivBitstream/EncoderParams.h>
+#include <TMIV/Renderer/Inpainter.h>
 
 namespace TMIV::Renderer {
-class IInpainter {
+class PushPullInpainter : public IInpainter {
 public:
-  IInpainter() = default;
-  IInpainter(const IInpainter &) = delete;
-  IInpainter(IInpainter &&) = default;
-  auto operator=(const IInpainter &) -> IInpainter & = delete;
-  auto operator=(IInpainter &&) -> IInpainter & = default;
-  virtual ~IInpainter() = default;
+  PushPullInpainter(const Common::Json & /* rootNode */, const Common::Json & /* componentNode */);
 
-  // Inpainting after encoder-side synthesis
-  virtual void inplaceInpaint(Common::Texture444Depth16Frame &viewport,
-                              const MivBitstream::ViewParams &metadata) const = 0;
+  void inplaceInpaint(Common::Texture444Depth16Frame & /* viewport */,
+                      const MivBitstream::ViewParams & /* metadata */) const override;
 };
 } // namespace TMIV::Renderer
 

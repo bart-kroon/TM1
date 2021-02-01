@@ -31,46 +31,59 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/Common/Factory.h>
-#include <TMIV/DepthQualityAssessor/DepthQualityAssessor.h>
-#include <TMIV/Renderer/AdditiveSynthesizer.h>
-#include <TMIV/Renderer/Inpainter.h>
-#include <TMIV/Renderer/NoCuller.h>
-#include <TMIV/Renderer/NoInpainter.h>
-#include <TMIV/Renderer/NoSynthesizer.h>
 #include <TMIV/Renderer/PushPullInpainter.h>
-#include <TMIV/Renderer/Renderer.h>
-#include <TMIV/Renderer/SubBlockCuller.h>
-#include <TMIV/Renderer/ViewWeightingSynthesizer.h>
-#include <TMIV/Renderer/ViewingSpaceController.h>
+
+#include "PushPull.h"
 
 namespace TMIV::Renderer {
-void registerComponents() {
-  using Common::Factory;
+PushPullInpainter::PushPullInpainter(const Common::Json & /* rootNode */,
+                                     const Common::Json & /* componentNode */) {}
 
-  auto &cullers = Common::Factory<ICuller>::getInstance();
-  cullers.registerAs<NoCuller>("NoCuller");
-  cullers.registerAs<SubBlockCuller>("SubBlockCuller");
+namespace {
+using YUVD = std::tuple<uint16_t, uint16_t, uint16_t, uint16_t>;
 
-  auto &inpainters = Common::Factory<IInpainter>::getInstance();
-  inpainters.registerAs<Inpainter>("Inpainter");
-  inpainters.registerAs<NoInpainter>("NoInpainter");
-  inpainters.registerAs<PushPullInpainter>("PushPullInpainter");
+constexpr auto occupant(const YUVD &x) -> bool { return 0 < std::get<3>(x); }
 
-  auto &renderers = Common::Factory<Renderer::IRenderer>::getInstance();
-  renderers.registerAs<Renderer>("Renderer");
+auto weighedAverageWithMissingData(const std::array<YUVD, 4> &v, const std::array<int, 4> &weights)
+    -> YUVD {
+  auto sum = std::array<int, 4>{};
+  auto count = 0;
+  for (int i = 0; i < 4; ++i) {
+    if (occupant(v[i])) {
+      sum[0] += weights[i] * std::get<0>(v[i]);
+      sum[1] += weights[i] * std::get<1>(v[i]);
+      sum[2] += weights[i] * std::get<2>(v[i]);
+      sum[3] += weights[i] * std::get<3>(v[i]);
+      count += weights[i];
+    }
+  }
+  if (count == 0) {
+    static_assert(!occupant(YUVD{}));
+    return YUVD{};
+  }
+  return YUVD{(sum[0] + count / 2) / count, (sum[1] + count / 2) / count,
+              (sum[2] + count / 2) / count, (sum[3] + count / 2) / count};
+}
 
-  auto &synthesizers = Common::Factory<ISynthesizer>::getInstance();
-  synthesizers.registerAs<AdditiveSynthesizer>("AdditiveSynthesizer");
-  synthesizers.registerAs<NoSynthesizer>("NoSynthesizer");
-  synthesizers.registerAs<ViewWeightingSynthesizer>("ViewWeightingSynthesizer");
+auto pushFilter(const std::array<YUVD, 4> &v) -> YUVD {
+  // { 1/2, 1/2 } x { 1/2, 1/2 } = { 1/4, 1/4, 1/4, 1/4 }
+  static const auto linInterpPushWeights = std::array{1, 1, 1, 1};
+  return weighedAverageWithMissingData(v, linInterpPushWeights);
+}
 
-  auto &viewingSpaceControllers = Common::Factory<IViewingSpaceController>::getInstance();
-  viewingSpaceControllers.registerAs<ViewingSpaceController>("ViewingSpaceController");
+auto pullFilter(const std::array<YUVD, 4> &v, const YUVD &x) -> YUVD {
+  if (occupant(x)) {
+    return x;
+  }
+  // { 3/4, 1/4 } x { 3/4, 1/4 } = { 9/16, 3/16, 3/16, 1/16 }
+  static const auto linInterpPullWeights = std::array{9, 3, 3, 1};
+  return weighedAverageWithMissingData(v, linInterpPullWeights);
+}
+} // namespace
 
-  auto &depthQualityAssessors =
-      Common::Factory<DepthQualityAssessor::IDepthQualityAssessor>::getInstance();
-  depthQualityAssessors.registerAs<DepthQualityAssessor::DepthQualityAssessor>(
-      "DepthQualityAssessor");
+void PushPullInpainter::inplaceInpaint(Common::Texture444Depth16Frame &viewport,
+                                       const MivBitstream::ViewParams & /* metadata */) const {
+  auto pushPull = PushPull{};
+  viewport = pushPull.filter(viewport, pushFilter, pullFilter);
 }
 } // namespace TMIV::Renderer

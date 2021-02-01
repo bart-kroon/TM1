@@ -31,26 +31,57 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_RENDERER_IINPAINTER_H_
-#define _TMIV_RENDERER_IINPAINTER_H_
+#ifndef _TMIV_RENDERER_PUSHPULL_H_
+#define _TMIV_RENDERER_PUSHPULL_H_
 
 #include <TMIV/Common/Frame.h>
-#include <TMIV/MivBitstream/EncoderParams.h>
 
 namespace TMIV::Renderer {
-class IInpainter {
-public:
-  IInpainter() = default;
-  IInpainter(const IInpainter &) = delete;
-  IInpainter(IInpainter &&) = default;
-  auto operator=(const IInpainter &) -> IInpainter & = delete;
-  auto operator=(IInpainter &&) -> IInpainter & = default;
-  virtual ~IInpainter() = default;
+template <typename Matrix> struct MatrixProxy {
+  Matrix matrix;
+  int width;
+  int height;
+};
 
-  // Inpainting after encoder-side synthesis
-  virtual void inplaceInpaint(Common::Texture444Depth16Frame &viewport,
-                              const MivBitstream::ViewParams &metadata) const = 0;
+template <typename Matrix> MatrixProxy(Matrix &&, int, int) -> MatrixProxy<Matrix>;
+
+class PushPull {
+public:
+  template <typename PushFilter, typename PullFilter>
+  auto filter(const Common::Texture444Depth16Frame &frame, PushFilter &&pushFilter,
+              PullFilter &&pullFilter) -> const Common::Texture444Depth16Frame &;
+
+  auto numLayers() const noexcept;
+
+  auto layer(size_t i) const noexcept -> const Common::Texture444Depth16Frame &;
+
+  // View a texture+depth frame as a matrix of tuple values
+  static auto yuvd(const Common::Texture444Depth16Frame &frame);
+
+  // View a texture+depth frame as a matrix of tuple references
+  static auto yuvd(Common::Texture444Depth16Frame &frame);
+
+  template <typename PushFilter>
+  static void inplacePushFrame(const Common::Texture444Depth16Frame &in,
+                               Common::Texture444Depth16Frame &out, PushFilter &&filter);
+
+  template <typename PullFilter>
+  static void inplacePullFrame(const Common::Texture444Depth16Frame &in,
+                               Common::Texture444Depth16Frame &out, PullFilter &&filter) noexcept;
+
+  template <typename InMatrixProxy, typename OutMatrixProxy, typename PushFilter>
+  static void inplacePush(const InMatrixProxy &&in, OutMatrixProxy &&out,
+                          PushFilter &&filter) noexcept;
+
+  template <typename InMatrixProxy, typename OutMatrixProxy, typename PullFilter>
+  static void inplacePull(const InMatrixProxy &&in, OutMatrixProxy &&out,
+                          PullFilter &&filter) noexcept;
+
+private:
+  std::vector<Common::Texture444Depth16Frame> m_pyramid;
 };
 } // namespace TMIV::Renderer
+
+#include "PushPull.hpp"
 
 #endif

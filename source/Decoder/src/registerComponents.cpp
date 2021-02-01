@@ -39,6 +39,7 @@
 #include <TMIV/Renderer/NoCuller.h>
 #include <TMIV/Renderer/NoInpainter.h>
 #include <TMIV/Renderer/NoSynthesizer.h>
+#include <TMIV/Renderer/PushPullInpainter.h>
 #include <TMIV/Renderer/Renderer.h>
 #include <TMIV/Renderer/SubBlockCuller.h>
 #include <TMIV/Renderer/ViewWeightingSynthesizer.h>
@@ -58,6 +59,7 @@ void registerComponents() {
   auto &inpainters = Common::Factory<Renderer::IInpainter>::getInstance();
   inpainters.registerAs<Renderer::Inpainter>("Inpainter");
   inpainters.registerAs<Renderer::NoInpainter>("NoInpainter");
+  inpainters.registerAs<Renderer::PushPullInpainter>("PushPullInpainter");
 
   auto &renderers = Common::Factory<Renderer::IRenderer>::getInstance();
   renderers.registerAs<Renderer::Renderer>("Renderer");

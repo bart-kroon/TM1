@@ -13,6 +13,9 @@ create_tmiv_library(
         "src/ViewWeightingSynthesizer.cpp"
         "src/MpiSynthesizer.cpp"
         "src/NoSynthesizer.cpp"
+        "src/PushPull.h"
+        "src/PushPull.hpp"
+        "src/PushPullInpainter.cpp"
         "src/RecoverPrunedViews.cpp"
         "include/TMIV/Renderer/IRenderer.h"
         "include/TMIV/Renderer/IInpainter.h"
@@ -41,6 +44,7 @@ create_tmiv_library(
         "include/TMIV/Renderer/MpiSynthesizer.h"
         "include/TMIV/Renderer/NoSynthesizer.h"
         "include/TMIV/Renderer/RecoverPrunedViews.h"
+        "include/TMIV/Renderer/PushPullInpainter.h"
     PUBLIC
         TMIV::ViewingSpaceLib
     PRIVATE
@@ -85,6 +89,8 @@ create_catch2_unit_test(
         "src/MpiRasterizer.test.cpp"
         "src/Rasterizer.test.cpp"
         "src/Renderer.test.cpp"
+        "src/PushPull.test.cpp"
+        "src/PushPullInpainter.test.cpp"
     PRIVATE
         TMIV::RendererLib
     )

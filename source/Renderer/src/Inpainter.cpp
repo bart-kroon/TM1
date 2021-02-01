@@ -39,13 +39,11 @@
 
 namespace TMIV::Renderer {
 namespace {
-const auto depthBlendingThreshold8 = 2.56;    // 1% of bit depth
-const auto depthBlendingThreshold10 = 10.24;  // 1% of bit depth
-const auto depthBlendingThreshold16 = 655.36; // 1% of bit depth
+constexpr auto depthBlendingThreshold = 655.36; // 1% of bit depth
 
-template <typename YUVD>
-void perform2WayInpainting(YUVD &yuvd, const double &DepthBlendingThreshold,
-                           int inpaintingType /*0 for horizontal, 1 for vertical, 2 for omni*/,
+enum class InpaintingType { horizontal, vertical, omnidirectional };
+
+void perform2WayInpainting(Common::Texture444Depth16Frame &yuvd, InpaintingType inpaintingType,
                            const Common::Mat<int> &nonEmptyNeighbor1,
                            const Common::Mat<int> &nonEmptyNeighbor2,
                            const Common::Mat<int> &mapERP2Cassini = Common::Mat<int>()) {
@@ -73,7 +71,7 @@ void perform2WayInpainting(YUVD &yuvd, const double &DepthBlendingThreshold,
       int w2 = 0;
       int h2 = 0;
 
-      if (inpaintingType == 2) { // omnidirectional
+      if (inpaintingType == InpaintingType::omnidirectional) {
         bool pointExistsInCassini = mapERP2Cassini(h, w) != -1;
         if (!pointExistsInCassini) {
           continue;
@@ -92,20 +90,24 @@ void perform2WayInpainting(YUVD &yuvd, const double &DepthBlendingThreshold,
         h0 = h; // current pixel
         w0 = w;
 
-        h1 = inpaintingType ? h0 : nonEmptyNeighbor1(h0, w0); // left or top neighbor
-        w1 = inpaintingType ? nonEmptyNeighbor1(h0, w0) : w0;
+        h1 = inpaintingType == InpaintingType::vertical
+                 ? h0
+                 : nonEmptyNeighbor1(h0, w0); // left or top neighbor
+        w1 = inpaintingType == InpaintingType::vertical ? nonEmptyNeighbor1(h0, w0) : w0;
 
-        h2 = inpaintingType ? h0 : nonEmptyNeighbor2(h0, w0); // right or bottom neighbor
-        w2 = inpaintingType ? nonEmptyNeighbor2(h0, w0) : w0;
+        h2 = inpaintingType == InpaintingType::vertical
+                 ? h0
+                 : nonEmptyNeighbor2(h0, w0); // right or bottom neighbor
+        w2 = inpaintingType == InpaintingType::vertical ? nonEmptyNeighbor2(h0, w0) : w0;
       }
 
       if (nonEmptyNeighbor1(h0, w0) != -1) {
         if (nonEmptyNeighbor2(h0, w0) != -1) {
-          float farthestDepth = D(h1, w1) < D(h2, w2) ? D(h1, w1) : D(h2, w2);
-          if (D(h1, w1) - farthestDepth <= DepthBlendingThreshold) {
+          const auto farthestDepth = D(h1, w1) < D(h2, w2) ? D(h1, w1) : D(h2, w2);
+          if (D(h1, w1) - farthestDepth <= depthBlendingThreshold) {
             use1 = true;
           }
-          if (D(h2, w2) - farthestDepth <= DepthBlendingThreshold) {
+          if (D(h2, w2) - farthestDepth <= depthBlendingThreshold) {
             use2 = true;
           }
         } else {
@@ -123,22 +125,23 @@ void perform2WayInpainting(YUVD &yuvd, const double &DepthBlendingThreshold,
         if (use2) {
           auto dist1 = std::sqrt(static_cast<float>((h - h1) * (h - h1) + (w - w1) * (w - w1)));
           auto dist2 = std::sqrt(static_cast<float>((h - h2) * (h - h2) + (w - w2) * (w - w2)));
-          float sumdist = dist1 + dist2;
-          float weight1 = dist2 / sumdist;
-          float weight2 = dist1 / sumdist;
+          const auto sumdist = dist1 + dist2;
+          const auto weight1 = dist2 / sumdist;
+          const auto weight2 = dist1 / sumdist;
 
-          Y(h, w) = static_cast<int>(Y(h1, w1) * weight1);
-          U(h, w) = static_cast<int>(U(h1, w1) * weight1);
-          V(h, w) = static_cast<int>(V(h1, w1) * weight1);
-          D(h, w) = static_cast<int>(D(h1, w1) * weight1);
+          Y(h, w) = static_cast<int>(static_cast<float>(Y(h1, w1)) * weight1);
+          U(h, w) = static_cast<int>(static_cast<float>(U(h1, w1)) * weight1);
+          V(h, w) = static_cast<int>(static_cast<float>(V(h1, w1)) * weight1);
+          D(h, w) = static_cast<int>(static_cast<float>(D(h1, w1)) * weight1);
 
-          Y(h, w) += static_cast<int>(Y(h2, w2) * weight2);
-          U(h, w) += static_cast<int>(U(h2, w2) * weight2);
-          V(h, w) += static_cast<int>(V(h2, w2) * weight2);
-          D(h, w) += static_cast<int>(D(h2, w2) * weight2);
+          Y(h, w) += static_cast<int>(static_cast<float>(Y(h2, w2)) * weight2);
+          U(h, w) += static_cast<int>(static_cast<float>(U(h2, w2)) * weight2);
+          V(h, w) += static_cast<int>(static_cast<float>(V(h2, w2)) * weight2);
+          D(h, w) += static_cast<int>(static_cast<float>(D(h2, w2)) * weight2);
 
           if (D(h, w) == 0) {
-            D(h, w) = static_cast<int>(D(h1, w1) * weight1 + D(h2, w2) * weight2);
+            D(h, w) = static_cast<int>(static_cast<float>(D(h1, w1)) * weight1 +
+                                       static_cast<float>(D(h2, w2)) * weight2);
           }
         } else {
           Y(h, w) = Y(h1, w1);
@@ -161,7 +164,7 @@ void perform2WayInpainting(YUVD &yuvd, const double &DepthBlendingThreshold,
   }   // h
 }
 
-template <typename YUVD> void fillVerticalCracks(YUVD &yuvd) {
+void fillVerticalCracks(Common::Texture444Depth16Frame &yuvd) {
   auto &Y = yuvd.first.getPlane(0);
   auto &U = yuvd.first.getPlane(1);
   auto &V = yuvd.first.getPlane(2);
@@ -183,16 +186,15 @@ template <typename YUVD> void fillVerticalCracks(YUVD &yuvd) {
   }
 }
 
-template <typename YUVD>
-void inpaintOmnidirectionalView(YUVD &yuvd, const double &DepthBlendingThreshold,
-                                const double &fullOmniRangePercentage) {
+void inpaintOmnidirectionalView(Common::Texture444Depth16Frame &yuvd,
+                                double fullOmniRangePercentage) {
   auto &Y = yuvd.first.getPlane(0);
   auto &D = yuvd.second.getPlane(0);
 
   const int width = static_cast<int>(Y.width());
   const int height = static_cast<int>(Y.height());
 
-  Common::Mat<int> isHole;
+  Common::Mat<uint8_t> isHole;
   isHole.resize(height, width);
 
   Common::Mat<int> nonEmptyNeighborL;
@@ -260,7 +262,7 @@ void inpaintOmnidirectionalView(YUVD &yuvd, const double &DepthBlendingThreshold
   for (int h = 0; h < height; h++) {
     for (int w = 0; w < width; w++) {
       nonEmptyNeighborL(h, w) = mapCassini2ERP(h, w);
-      if (isHole(h, w)) {
+      if (isHole(h, w) != 0) {
         if (w > 0) {
           nonEmptyNeighborL(h, w) = nonEmptyNeighborL(h, w - 1);
         } else {
@@ -276,7 +278,7 @@ void inpaintOmnidirectionalView(YUVD &yuvd, const double &DepthBlendingThreshold
   for (int h = height - 1; h >= 0; h--) {
     for (int w = width - 1; w >= 0; w--) {
       nonEmptyNeighborR(h, w) = mapCassini2ERP(h, w);
-      if (isHole(h, w)) {
+      if (isHole(h, w) != 0) {
         if (w < width - 1) {
           nonEmptyNeighborR(h, w) = nonEmptyNeighborR(h, w + 1);
         } else {
@@ -289,12 +291,11 @@ void inpaintOmnidirectionalView(YUVD &yuvd, const double &DepthBlendingThreshold
 
   // inpainting
 
-  perform2WayInpainting(yuvd, DepthBlendingThreshold, 2, nonEmptyNeighborL, nonEmptyNeighborR,
+  perform2WayInpainting(yuvd, InpaintingType::omnidirectional, nonEmptyNeighborL, nonEmptyNeighborR,
                         mapERP2Cassini);
 }
 
-template <typename YUVD>
-void inpaintPerspectiveView(YUVD &yuvd, const double &DepthBlendingThreshold) {
+void inpaintPerspectiveView(Common::Texture444Depth16Frame &yuvd) {
   auto &D = yuvd.second.getPlane(0);
 
   const int width = static_cast<int>(D.width());
@@ -325,9 +326,8 @@ void inpaintPerspectiveView(YUVD &yuvd, const double &DepthBlendingThreshold) {
           nonEmptyNeighborL(h, w) = -1;
         }
       }
-
-    } // w
-  }   // h
+    }
+  }
 
   // analysis from bottom-right
 
@@ -342,13 +342,12 @@ void inpaintPerspectiveView(YUVD &yuvd, const double &DepthBlendingThreshold) {
           nonEmptyNeighborR(h, w) = -1;
         }
       }
-
-    } // w
-  }   // h
+    }
+  }
 
   // horizontal inpainting
 
-  perform2WayInpainting(yuvd, DepthBlendingThreshold, 1, nonEmptyNeighborL, nonEmptyNeighborR);
+  perform2WayInpainting(yuvd, InpaintingType::vertical, nonEmptyNeighborL, nonEmptyNeighborR);
 
   // analysis from top-left
 
@@ -363,9 +362,8 @@ void inpaintPerspectiveView(YUVD &yuvd, const double &DepthBlendingThreshold) {
           nonEmptyNeighborT(h, w) = -1;
         }
       }
-
-    } // w
-  }   // h
+    }
+  }
 
   // analysis from bottom-right
 
@@ -380,46 +378,29 @@ void inpaintPerspectiveView(YUVD &yuvd, const double &DepthBlendingThreshold) {
           nonEmptyNeighborB(h, w) = -1;
         }
       }
-
-    } // w
-  }   // h
+    }
+  }
 
   // vertical inpainting
 
-  perform2WayInpainting(yuvd, DepthBlendingThreshold, 0, nonEmptyNeighborT, nonEmptyNeighborB);
+  perform2WayInpainting(yuvd, InpaintingType::horizontal, nonEmptyNeighborT, nonEmptyNeighborB);
 }
 
-template <typename YUVD>
-void inplaceInpaint_impl(YUVD &yuvd, const MivBitstream::ViewParams &meta) {
-  static_assert(std::is_same_v<YUVD, Common::Texture444Depth10Frame> ||
-                std::is_same_v<YUVD, Common::Texture444Depth16Frame>);
-
-  double DepthBlendingThreshold = depthBlendingThreshold8;
-  if (std::is_same_v<YUVD, Common::Texture444Depth10Frame>) {
-    DepthBlendingThreshold = depthBlendingThreshold10;
-  }
-  if (std::is_same_v<YUVD, Common::Texture444Depth16Frame>) {
-    DepthBlendingThreshold = depthBlendingThreshold16;
-  }
-
+void inplaceInpaint_impl(Common::Texture444Depth16Frame &yuvd,
+                         const MivBitstream::ViewParams &meta) {
   fillVerticalCracks(yuvd);
 
   if (meta.ci.ci_cam_type() == MivBitstream::CiCamType::equirectangular) {
     const auto fullOmniRangePercentage =
         (meta.ci.ci_erp_phi_max() - meta.ci.ci_erp_phi_min()) / Common::fullCycle;
-    inpaintOmnidirectionalView(yuvd, DepthBlendingThreshold, fullOmniRangePercentage);
+    inpaintOmnidirectionalView(yuvd, fullOmniRangePercentage);
   }
 
-  inpaintPerspectiveView(yuvd, DepthBlendingThreshold);
+  inpaintPerspectiveView(yuvd);
 }
 } // namespace
 
 Inpainter::Inpainter(const Common::Json & /*rootNode*/, const Common::Json & /*componentNode*/) {}
-
-void Inpainter::inplaceInpaint(Common::Texture444Depth10Frame &viewport,
-                               const MivBitstream::ViewParams &metadata) const {
-  inplaceInpaint_impl(viewport, metadata);
-}
 
 void Inpainter::inplaceInpaint(Common::Texture444Depth16Frame &viewport,
                                const MivBitstream::ViewParams &metadata) const {

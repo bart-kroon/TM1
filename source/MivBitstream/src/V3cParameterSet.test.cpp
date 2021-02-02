@@ -490,7 +490,7 @@ vme_embedded_occupancy_flag=true
 gm_group_count=0
 )");
 
-    REQUIRE(byteCodingTest(vps, 20));
+    REQUIRE(byteCodingTest(vps, 21));
   }
 
   SECTION("Example 2") {
@@ -609,7 +609,7 @@ vps_extension_data_byte=2
 vps_extension_data_byte=250
 vps_extension_data_byte=15
 )");
-    const std::size_t expected_number_of_bytes = 41 + (2 * 15); // two times packing_information
+    const size_t expected_number_of_bytes = 40 + (2 * 15); // two times packing_information
     REQUIRE(byteCodingTest(vps, expected_number_of_bytes));
   }
 
@@ -703,7 +703,7 @@ vme_geometry_scale_enabled_flag=false
 vme_embedded_occupancy_flag=true
 gm_group_count=0
 )");
-    const std::size_t expected_number_of_bytes = 33;
+    const size_t expected_number_of_bytes = 35;
     REQUIRE(byteCodingTest(vps, expected_number_of_bytes));
   }
 }

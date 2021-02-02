@@ -1384,8 +1384,8 @@ auto V3cParameterSet::decodeFrom(std::istream &stream) -> V3cParameterSet {
   for (size_t k = 0; k <= x.vps_atlas_count_minus1(); ++k) {
     x.vps_atlas_id(k, AtlasId::decodeFrom(bitstream));
     const auto j = x.vps_atlas_id(k);
-    x.vps_frame_width(j, bitstream.getUint16());
-    x.vps_frame_height(j, bitstream.getUint16());
+    x.vps_frame_width(j, bitstream.getUExpGolomb<uint16_t>());
+    x.vps_frame_height(j, bitstream.getUExpGolomb<uint16_t>());
     x.vps_map_count_minus1(j, bitstream.readBits<uint8_t>(4));
 
     if (x.vps_map_count_minus1(j) > 0) {
@@ -1451,8 +1451,8 @@ void V3cParameterSet::encodeTo(std::ostream &stream) const {
   for (size_t k = 0; k <= vps_atlas_count_minus1(); ++k) {
     const auto j = vps_atlas_id(k);
     j.encodeTo(bitstream);
-    bitstream.putUint16(vps_frame_width(j));
-    bitstream.putUint16(vps_frame_height(j));
+    bitstream.putUExpGolomb(vps_frame_width(j));
+    bitstream.putUExpGolomb(vps_frame_height(j));
     bitstream.writeBits(vps_map_count_minus1(j), 4);
 
     if (vps_map_count_minus1(j) > 0) {

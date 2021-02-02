@@ -490,10 +490,10 @@ auto AtlasSequenceParameterSetRBSP::decodeFrom(std::istream &stream, const V3cUn
 
   x.asps_atlas_sequence_parameter_set_id(bitstream.getUExpGolomb<uint8_t>());
 
-  x.asps_frame_width(bitstream.getUint16());
+  x.asps_frame_width(bitstream.getUExpGolomb<uint16_t>());
   VERIFY_V3CBITSTREAM(vps.vps_frame_width(vuh.vuh_atlas_id()) == x.asps_frame_width());
 
-  x.asps_frame_height(bitstream.getUint16());
+  x.asps_frame_height(bitstream.getUExpGolomb<uint16_t>());
   VERIFY_V3CBITSTREAM(vps.vps_frame_height(vuh.vuh_atlas_id()) == x.asps_frame_height());
 
   x.asps_geometry_3d_bit_depth_minus1(bitstream.readBits<uint8_t>(5));
@@ -579,10 +579,10 @@ void AtlasSequenceParameterSetRBSP::encodeTo(std::ostream &stream, const V3cUnit
   bitstream.putUExpGolomb(asps_atlas_sequence_parameter_set_id());
 
   VERIFY_V3CBITSTREAM(asps_frame_width() == vps.vps_frame_width(vuh.vuh_atlas_id()));
-  bitstream.putUint16(asps_frame_width());
+  bitstream.putUExpGolomb(asps_frame_width());
 
   VERIFY_V3CBITSTREAM(asps_frame_height() == vps.vps_frame_height(vuh.vuh_atlas_id()));
-  bitstream.putUint16(asps_frame_height());
+  bitstream.putUExpGolomb(asps_frame_height());
 
   bitstream.writeBits(asps_geometry_3d_bit_depth_minus1(), 5);
   bitstream.writeBits(asps_geometry_2d_bit_depth_minus1(), 5);

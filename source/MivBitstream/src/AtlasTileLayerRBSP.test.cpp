@@ -143,7 +143,7 @@ pdu_orientation_index[ 0 ][ 101 ]=FPO_NULL
         .asme_depth_occ_threshold_flag(true)
         .asme_max_entity_id(100)
         .asme_patch_attribute_offset_enabled_flag(true)
-        .asme_patch_attribute_offset_bit_count_minus1(5)
+        .asme_patch_attribute_offset_bit_depth_minus1(5)
         .asme_inpaint_enabled_flag(true);
 
     x.pdu_2d_pos_x(34)

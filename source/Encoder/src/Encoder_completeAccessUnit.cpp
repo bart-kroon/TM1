@@ -180,7 +180,7 @@ void Encoder::calculateAttributeOffset(
     if (!m_config.attributeOffsetFlag) {
       return;
     }
-    asme.asme_patch_attribute_offset_bit_count_minus1(m_config.attributeOffsetBitCount - 1);
+    asme.asme_patch_attribute_offset_bit_depth_minus1(m_config.attributeOffsetBitCount - 1);
   }
 
   const auto bitShift = calculatePatchAttrOffsetValuesFullGOP(patchAttrOffsetValuesFullGOP);

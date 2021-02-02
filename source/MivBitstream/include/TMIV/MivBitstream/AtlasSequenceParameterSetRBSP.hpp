@@ -150,9 +150,9 @@ constexpr auto AspsMivExtension::asme_occupancy_scale_factor_y_minus1(uint16_t v
 }
 
 constexpr auto
-AspsMivExtension::asme_patch_attribute_offset_bit_count_minus1(uint16_t value) noexcept -> auto & {
+AspsMivExtension::asme_patch_attribute_offset_bit_depth_minus1(uint16_t value) noexcept -> auto & {
   VERIFY_MIVBITSTREAM(asme_patch_attribute_offset_enabled_flag());
-  m_asme_patch_attribute_offset_bit_count_minus1 = value;
+  m_asme_patch_attribute_offset_bit_depth_minus1 = value;
   return *this;
 }
 
@@ -203,8 +203,8 @@ constexpr auto AspsMivExtension::operator==(const AspsMivExtension &other) const
   }
   if (asme_patch_attribute_offset_enabled_flag() &&
       other.asme_patch_attribute_offset_enabled_flag()) {
-    if (m_asme_patch_attribute_offset_bit_count_minus1 !=
-        other.m_asme_patch_attribute_offset_bit_count_minus1) {
+    if (m_asme_patch_attribute_offset_bit_depth_minus1 !=
+        other.m_asme_patch_attribute_offset_bit_depth_minus1) {
       return false;
     }
   }

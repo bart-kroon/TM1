@@ -372,7 +372,7 @@ auto PduMivExtension::decodeFrom(Common::InputBitstream &bitstream,
           bitstream.readBits<uint32_t>(asps.asps_geometry_2d_bit_depth_minus1() + 1));
     }
     if (asme.asme_patch_attribute_offset_enabled_flag()) {
-      int bits = asps.asps_miv_extension().asme_patch_attribute_offset_bit_count_minus1() + 1;
+      int bits = asps.asps_miv_extension().asme_patch_attribute_offset_bit_depth_minus1() + 1;
       x.pdu_attribute_offset({bitstream.readBits<uint16_t>(bits),
                               bitstream.readBits<uint16_t>(bits),
                               bitstream.readBits<uint16_t>(bits)});
@@ -400,7 +400,7 @@ void PduMivExtension::encodeTo(Common::OutputBitstream &bitstream,
     }
     if (asme.asme_patch_attribute_offset_enabled_flag()) {
       const auto bits =
-          asps.asps_miv_extension().asme_patch_attribute_offset_bit_count_minus1() + 1;
+          asps.asps_miv_extension().asme_patch_attribute_offset_bit_depth_minus1() + 1;
       VERIFY_MIVBITSTREAM(m_pdu_attribute_offset.has_value());
       bitstream.writeBits(uint16_t(pdu_attribute_offset().x()), bits);
       bitstream.writeBits(uint16_t(pdu_attribute_offset().y()), bits);

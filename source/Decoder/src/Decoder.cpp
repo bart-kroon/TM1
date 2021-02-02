@@ -79,7 +79,7 @@ void addAttributeOffset(MivBitstream::AccessUnit &frame) {
     const auto inputMedVal = 1 << (inputBitCount - 1);
 
     const int scaledBitCount =
-        atlas.asps.asps_miv_extension().asme_patch_attribute_offset_bit_count_minus1() + 1;
+        atlas.asps.asps_miv_extension().asme_patch_attribute_offset_bit_depth_minus1() + 1;
     const int bitShift = inputBitCount - scaledBitCount;
 
     const int btpmScale = int(YUV[0].width() / btpm.width());

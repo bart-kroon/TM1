@@ -107,7 +107,7 @@ asme_inpaint_enabled_flag=false
         .asme_geometry_scale_factor_x_minus1(1)
         .asme_geometry_scale_factor_y_minus1(2)
         .asme_patch_attribute_offset_enabled_flag(true)
-        .asme_patch_attribute_offset_bit_count_minus1(3)
+        .asme_patch_attribute_offset_bit_depth_minus1(3)
         .asme_max_entity_id(15)
         .asme_inpaint_enabled_flag(true);
 
@@ -119,7 +119,7 @@ asme_geometry_scale_factor_x_minus1=1
 asme_geometry_scale_factor_y_minus1=2
 asme_patch_constant_depth_flag=false
 asme_patch_attribute_offset_enabled_flag=true
-asme_patch_attribute_offset_bit_count_minus1=3
+asme_patch_attribute_offset_bit_depth_minus1=3
 asme_max_entity_id=15
 asme_inpaint_enabled_flag=true
 )");

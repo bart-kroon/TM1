@@ -719,6 +719,16 @@ Most of the parameters are defined in the root. The exception is:
 * **minNonCodedViews:** int; the minimum number of source views that will not
  be coded as basic view.
 
+### Server-side Inpainter
+
+* **SubMethod:** string; underlying ViewOptimizerMethod.
+* **resolution:** int[2]; resolution [hor,vert] of the inpainted view.
+* **SynthesizerMethod:** string; the sythesizer used for creating an inpainted background view.
+* **InpainterMethod:** string; the actual inpainting method used to inpaint the hidden regions. 
+* **blurRadius:** int; radius of the blur kernel used to locate regions of missing data.
+* **inpaintThreshold:** int; a comparison threshold used to locate regions of missing data.
+* **fieldOfViewMargin:** float; the field-of-view of the inpainted view is the accumulative field-of-view of the source-views but expanded with this factor.
+
 ### Decoder
 
 * **geometryEdgeMagnitudeTh:** int; parameter of the geometry upscaling, in
@@ -728,7 +738,14 @@ Most of the parameters are defined in the root. The exception is:
 * **minForegroundConfidence:** float; parameter of the geometry upscaling, in
  line with the hypothetical reference renderer.
 
-### Renderer
+### AdditiveSynthesizer
+
+* **maxStretching:** float; used to discard too large triangles that yield large gaps in the target view.
+* **depthParameter:** float; blending parameter that prioritizes foreground over background. A negative value blends background over foreground.
+* **rayAngleParameter:** float; blending parameter that prioritizes on ray-angle.
+* **stretchingParameter:** float; blending parameter that prioritizes on triangle-stretching (de-occlusion).
+
+### ViewWeightingSynthesizer
 
 * **angularScaling:** float; Drives the splat size at the warping stage.
 * **minimalWeight:** float; Allows for splat degeneracy test at the warping stage.

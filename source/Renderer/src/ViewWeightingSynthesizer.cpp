@@ -289,8 +289,7 @@ private:
       for (size_t viewId = 0U; viewId != sourceHelperList.size(); ++viewId) {
         // inpainted view gets large distance to yield low weight
         if (isViewInpainted(viewId)) {
-          const auto largeDistanceInMeters = std::numeric_limits<float>::infinity();
-          cameraDistance.push_back(largeDistanceInMeters);
+          cameraDistance.push_back(std::numeric_limits<float>::infinity());
           continue;
         }
 

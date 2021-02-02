@@ -11,10 +11,26 @@
     "Encoder": {
         "Aggregator": {},
         "AggregatorMethod": "Aggregator",
-        "BasicViewAllocator": {
-            "maxBasicViewFraction": 1.0,
-            "minNonCodedViews": 3,
-            "outputAdditionalViews": false
+        "ServerSideInpainter": {
+            "SubMethod": "BasicViewAllocator",
+            "BasicViewAllocator": {
+                "maxBasicViewFraction": 1.0,
+                "outputAdditionalViews": false,
+                "minNonCodedViews": 3
+            },
+            "resolution": [ 1024, 512 ],
+            "SynthesizerMethod": "AdditiveSynthesizer",
+            "AdditiveSynthesizer": {
+                "depthParameter": -100,
+                "maxStretching": 5,
+                "rayAngleParameter": 10,
+                "stretchingParameter": 3
+            },
+            "InpainterMethod": "PushPullInpainter",
+            "PushPullInpainter": {},
+            "blurRadius": 12,
+            "inpaintThreshold": 100,
+            "fieldOfViewMargin": 0.3
         },
         "dilate": 16,
         "GeometryQuantizer": {
@@ -32,7 +48,7 @@
         },
         "PackerMethod": "Packer",
         "PrunerMethod": "NoPruner",
-        "ViewOptimizerMethod": "BasicViewAllocator"
+        "ViewOptimizerMethod": "ServerSideInpainter"
     },
     "EncoderMethod": "Encoder",
     "geometryScaleEnabledFlag": true,

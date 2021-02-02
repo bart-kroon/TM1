@@ -45,9 +45,11 @@
 #include <TMIV/Renderer/AdditiveSynthesizer.h>
 #include <TMIV/Renderer/Inpainter.h>
 #include <TMIV/Renderer/NoInpainter.h>
+#include <TMIV/Renderer/PushPullInpainter.h>
 #include <TMIV/Renderer/ViewWeightingSynthesizer.h>
 #include <TMIV/ViewOptimizer/BasicViewAllocator.h>
 #include <TMIV/ViewOptimizer/NoViewOptimizer.h>
+#include <TMIV/ViewOptimizer/ServerSideInpainter.h>
 
 namespace TMIV::Encoder {
 void registerComponents() {
@@ -82,10 +84,11 @@ void registerComponents() {
   auto &inpainters = Common::Factory<Renderer::IInpainter>::getInstance();
   inpainters.registerAs<Renderer::Inpainter>("Inpainter");
   inpainters.registerAs<Renderer::NoInpainter>("NoInpainter");
-  // TODO(#404): register PushPullInpainter (!450)
+  inpainters.registerAs<Renderer::PushPullInpainter>("PushPullInpainter");
 
   auto &viewOptimizers = Common::Factory<ViewOptimizer::IViewOptimizer>::getInstance();
   viewOptimizers.registerAs<ViewOptimizer::BasicViewAllocator>("BasicViewAllocator");
   viewOptimizers.registerAs<ViewOptimizer::NoViewOptimizer>("NoViewOptimizer");
+  viewOptimizers.registerAs<ViewOptimizer::ServerSideInpainter>("ServerSideInpainter");
 }
 } // namespace TMIV::Encoder

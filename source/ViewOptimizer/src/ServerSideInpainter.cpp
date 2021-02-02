@@ -144,7 +144,7 @@ public:
       , m_optimizer{Common::create<IViewOptimizer>("Sub"s, rootNode, componentNode)}
       , m_synthesizer{Common::create<ISynthesizer>("Synthesizer"s, rootNode, componentNode)}
       , m_inpainter{Common::create<IInpainter>("Inpainter"s, rootNode, componentNode)}
-      , m_blurKernel{componentNode.require("blurKernel").as<int>()}
+      , m_blurKernel{componentNode.require("blurRadius").as<int>()}
       , m_inpaintThreshold{componentNode.require("inpaintThreshold").as<int>()}
       , m_fieldOfViewMargin{componentNode.require("fieldOfViewMargin").as<float>()} {}
 

@@ -134,7 +134,7 @@ const auto construct = []() {
     "FakeSynthesizer": {},
     "InpainterMethod": "FakeInpainter",
     "FakeInpainter": {},
-    "blurKernel": 12,
+    "blurRadius": 12,
     "inpaintThreshold": 100,
     "fieldOfViewMargin" : 0.3
 }
@@ -212,7 +212,7 @@ TEST_CASE("ServerSideInpainter") {
         "FakeSynthesizer": {},
         "InpainterMethod": "FakeInpainter",
         "FakeInpainter": {},
-        "blurKernel": 12,
+        "blurRadius": 12,
         "inpaintThreshold": 100,
         "fieldOfViewMargin" : 0.3
     }

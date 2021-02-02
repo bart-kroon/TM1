@@ -1,10 +1,4 @@
-stages:
-  - build
-  - upload
-  - release
-
 .build_rules_template: &build_rules_definition
-  stage: build
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
@@ -74,21 +68,10 @@ VC 16 Release:
     - 'cmake --build . --parallel --config Release --target ALL_BUILD'
     - 'cmake --build . --config Release --target RUN_TESTS'
 
-variables:
-  # Package version can only contain numbers (0-9), and dots (.).
-  # Must be in the format of X.Y.Z, i.e. should match /\A\d+\.\d+\.\d+\z/ regular expresion.
-  # See https://docs.gitlab.com/ee/user/packages/generic_packages/#publish-a-package-file
-  TMIV_VERSION: "8.0.0"
-  TEST_MODEL_HTML: "test_model_${TMIV_VERSION}.html"
-  TEST_MODEL_PDF: "test_model_${TMIV_VERSION}.pdf"
-  PACKAGE_REGISTRY_URL: "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/releases/${PACKAGE_VERSION}"
-
 AsciiDoc:
-  stage: build
   image: asciidoctor/docker-asciidoctor:1.2
   tags: [ linux ]
   rules:
-    - if: $CI_COMMIT_TAG
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
       changes:
@@ -96,34 +79,10 @@ AsciiDoc:
   script:
     - cd doc/test_model
     - asciidoctor --backend html5 -a data-uri index.adoc
-    - mv index.html ../../${TEST_MODEL_HTML}
+    - mv index.html ../../test_model.html
     - asciidoctor-pdf -r asciidoctor-mathematical -a pdf-style=pdf_theme.yml index.adoc
-    - mv index.pdf ../../${TEST_MODEL_PDF}
+    - mv index.pdf ../../test_model.pdf
   artifacts:
     paths:
-      - ${TEST_MODEL_HTML}
-      - ${TEST_MODEL_PDF}
-
-upload:
-  stage: upload
-  image: curlimages/curl:latest
-  tags: [ linux ]
-  rules:
-    - if: $CI_COMMIT_TAG
-  script:
-    - |
-      curl --header "JOB-TOKEN: ${CI_JOB_TOKEN}" --upload-file ${TEST_MODEL_HTML} ${PACKAGE_REGISTRY_URL}/${TEST_MODEL_HTML}
-    - |
-      curl --header "JOB-TOKEN: ${CI_JOB_TOKEN}" --upload-file ${TEST_MODEL_PDF} ${PACKAGE_REGISTRY_URL}/${TEST_MODEL_PDF}
-
-release:
-  stage: release
-  image: registry.gitlab.com/gitlab-org/release-cli:latest
-  tags: [ linux ]
-  rules:
-    - if: $CI_COMMIT_TAG
-  script:
-    - |
-      release-cli create --name "Release $CI_COMMIT_TAG" --tag-name $CI_COMMIT_TAG \
-        --assets-link "{\"name\":\"${TEST_MODEL_HTML}\",\"url\":\"${PACKAGE_REGISTRY_URL}/${TEST_MODEL_HTML}\"}" \
-        --assets-link "{\"name\":\"${TEST_MODEL_PDF}\",\"url\":\"${PACKAGE_REGISTRY_URL}/${TEST_MODEL_PDF}\"}"
+      - test_model.html
+      - test_model.pdf

@@ -47,7 +47,7 @@ public:
   auto operator=(IPruner &&) -> IPruner & = default;
   virtual ~IPruner() = default;
 
-  virtual void registerPruningRelation(MivBitstream::EncoderParams &params) = 0;
+  virtual void prepareSequence(MivBitstream::EncoderParams &params) = 0;
   virtual auto prune(const MivBitstream::EncoderParams &params, const Common::MVD16Frame &views)
       -> Common::MaskList = 0;
 };

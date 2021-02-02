@@ -31,26 +31,24 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_PRUNER_NOPRUNER_H_
-#define _TMIV_PRUNER_NOPRUNER_H_
+#ifndef _TMIV_PRUNER_LUMA_STD_DEV_H_
+#define _TMIV_PRUNER_LUMA_STD_DEV_H_
 
-#include <TMIV/Pruner/IPruner.h>
+#include "IncrementalSynthesizer.h"
+
+#include <TMIV/Common/Frame.h>
+#include <TMIV/MivBitstream/ViewParamsList.h>
+#include <TMIV/Renderer/AccumulatingPixel.h>
+
+#include <memory>
+#include <optional>
+#include <vector>
 
 namespace TMIV::Pruner {
-class NoPruner : public IPruner {
-public:
-  NoPruner(const Common::Json & /* rootConfig */, const Common::Json & /* nodeConfig */);
-  NoPruner(const NoPruner &) = delete;
-  NoPruner(NoPruner &&) = default;
-  auto operator=(const NoPruner &) -> NoPruner & = delete;
-  auto operator=(NoPruner &&) -> NoPruner & = default;
-  ~NoPruner() override = default;
-
-  void prepareSequence(MivBitstream::EncoderParams & /* params */) override;
-
-  auto prune(const MivBitstream::EncoderParams &params, const Common::MVD16Frame & /* views */)
-      -> Common::MaskList override;
-};
+auto calculateLumaStdDev(const Common::MVD16Frame &views,
+                         const MivBitstream::ViewParamsList &viewParamsList,
+                         const Renderer::AccumulatingPixel<Common::Vec3f> &config,
+                         float maxDepthError) -> std::optional<float>;
 } // namespace TMIV::Pruner
 
-#endif
+#endif // _TMIV_PRUNER_LUMA_STD_DEV_H_

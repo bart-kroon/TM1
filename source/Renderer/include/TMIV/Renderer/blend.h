@@ -34,6 +34,8 @@
 #ifndef _TMIV_RENDERER_BLEND_H_
 #define _TMIV_RENDERER_BLEND_H_
 
+#include <tuple>
+
 namespace TMIV::Renderer {
 // Blend two arithmetic tensors of fixed size
 template <typename T> static auto blendValues(float w_a, T a, float w_b, T b) -> T;

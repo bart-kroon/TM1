@@ -36,7 +36,7 @@
 namespace TMIV::Pruner {
 NoPruner::NoPruner(const Common::Json & /* rootConfig */, const Common::Json & /* nodeConfig */) {}
 
-void NoPruner::registerPruningRelation(MivBitstream::EncoderParams & /*params */) {}
+void NoPruner::prepareSequence(MivBitstream::EncoderParams & /*params */) {}
 
 auto NoPruner::prune(const MivBitstream::EncoderParams &params, const Common::MVD16Frame &
                      /* views */) -> Common::MaskList {

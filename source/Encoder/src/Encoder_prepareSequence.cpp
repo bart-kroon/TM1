@@ -120,7 +120,7 @@ void Encoder::prepareSequence(MivBitstream::EncoderParams sourceParams) {
   setGiGeometry3dCoordinatesBitdepthMinus1();
 
   // Register pruning relation
-  m_pruner->registerPruningRelation(m_params);
+  m_pruner->prepareSequence(m_params);
 
   // Turn on occupancy coding per view
   enableOccupancyPerView();

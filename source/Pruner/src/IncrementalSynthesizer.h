@@ -31,26 +31,29 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_PRUNER_NOPRUNER_H_
-#define _TMIV_PRUNER_NOPRUNER_H_
+#ifndef _TMIV_PRUNER_INCREMENTAL_SYNTHESIZER_H_
+#define _TMIV_PRUNER_INCREMENTAL_SYNTHESIZER_H_
 
-#include <TMIV/Pruner/IPruner.h>
+#include <TMIV/Renderer/AccumulatingPixel.h>
+#include <TMIV/Renderer/Rasterizer.h>
 
 namespace TMIV::Pruner {
-class NoPruner : public IPruner {
-public:
-  NoPruner(const Common::Json & /* rootConfig */, const Common::Json & /* nodeConfig */);
-  NoPruner(const NoPruner &) = delete;
-  NoPruner(NoPruner &&) = default;
-  auto operator=(const NoPruner &) -> NoPruner & = delete;
-  auto operator=(NoPruner &&) -> NoPruner & = default;
-  ~NoPruner() override = default;
+struct IncrementalSynthesizer {
+  IncrementalSynthesizer(const Renderer::AccumulatingPixel<Common::Vec3f> &config,
+                         Common::Vec2i size, size_t index_, Common::Mat<float> reference_,
+                         Common::Mat<float> referenceY_, Common::Mat<Common::Vec3f> referenceYUV_)
+      : rasterizer{config, size}
+      , index{index_}
+      , reference{std::move(reference_)}
+      , referenceY{std::move(referenceY_)}
+      , referenceYUV{std::move(referenceYUV_)} {}
 
-  void prepareSequence(MivBitstream::EncoderParams & /* params */) override;
-
-  auto prune(const MivBitstream::EncoderParams &params, const Common::MVD16Frame & /* views */)
-      -> Common::MaskList override;
+  Renderer::Rasterizer<Common::Vec3f> rasterizer;
+  const size_t index;
+  float maskAverage{0.F};
+  const Common::Mat<float> reference;
+  const Common::Mat<float> referenceY;
+  const Common::Mat<Common::Vec3f> referenceYUV;
 };
 } // namespace TMIV::Pruner
-
-#endif
+#endif // _TMIV_PRUNER_INCREMENTAL_SYNTHESIZER_H_

@@ -38,6 +38,7 @@
 #include <TMIV/Common/LinAlg.h>
 #include <cassert>
 #include <cmath>
+#include <tuple>
 
 namespace TMIV::Renderer {
 // The attributes that are blended

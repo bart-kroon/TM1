@@ -108,6 +108,18 @@ The first step is to obtain source archives for TMIV and all external libraries 
 1. Unzip, resulting in a directory `/Workspace/HM-HM-16.16` such that the file `/Workspace/HM-HM-16.16/README` exists.
 1. Rename that directory to `/Workspace/HM-16.16`.
 
+### Fraunhofer Versatile Video Encoder (VVenC)
+
+1. Visit this URL: https://github.com/fraunhoferhhi/vvenc/tree/v0.2.0.0
+1. Click on the green "Code" button and select "Download ZIP"
+1. Unzip, resulting in a directory `/Workspace/vvenc-0.2.0.0` such that the file `/Workspace/vvenc-0.2.0.0/README.md` exists.
+
+### Fraunhofer Versatile Video Decoder (VVdeC)
+
+1. Visit this URL: https://github.com/fraunhoferhhi/vvdec/tree/v0.2.0.0
+1. Click on the green "Code" button and select "Download ZIP"
+1. Unzip, resulting in a directory `/Workspace/vvdec-0.2.0.0` such that the file `/Workspace/vvdec-0.2.0.0/README.md` exists.
+
 ### This project
 
 1. For the latest public release, visit this URL: https://gitlab.com/mpeg-i-visual/tmiv
@@ -165,11 +177,14 @@ For Visual Studio please:
 
 ## Installation result
 
-After installation, the TMIV executables `Encoder`, `Decoder` and `Renderer` will be available under the directory `/Workspace/tmiv_install/bin`. By default TMIV only builds the HM modules that are required for TMIV (`TLibCommon` and `TLibDecoder`). When `HM_BUILD_TAPPDECODER` and `HM_BUILD_TAPPENCODER` are selected, then the `TAppDecoder` and `TAppEncoder` tools respectively will also be installed to this directory.
+After installation, the TMIV executables `Encoder`, `Decoder` and `Renderer` will be available under the directory `/Workspace/tmiv_install/bin`.
+By default TMIV only builds the HM modules that are required for TMIV (`TLibCommon` and `TLibDecoder`).
+When `HM_BUILD_TAPPDECODER` and `HM_BUILD_TAPPENCODER` are selected, then the `TAppDecoder` and `TAppEncoder` tools respectively will also be installed to this directory.
+TMIV per default builds `vvencFFapp` and `vvdecapp` from the Fraunhofer VVC implementations.
 
 # Running the software tests
 
-In general and espescially when [contributing to TMIV](doc/CONTRIBUTING.md) it is a good idea to run the software tests before starting any (large) experiments. TMIV has two types of software tests that are integrated into the project.
+In general and especially when [contributing to TMIV](doc/CONTRIBUTING.md) it is a good idea to run the software tests before starting any (large) experiments. TMIV has two types of software tests that are integrated into the project.
 
 ## Unit tests
 
@@ -185,7 +200,7 @@ For Visual Studio please substitute `test` for `RUN_TESTS`.
 
 ## Integration tests
 
-The integration test runs the TMIV executables on real data to make sure that there are no runtime errors in a range of conditons, and it reports if any bitstreams or YUV files have changed compared to the reference (when provided).
+The integration test runs the TMIV executables on real data to make sure that there are no runtime errors in a range of conditions, and it reports if any bitstreams or YUV files have changed compared to the reference (when provided).
 
 To run the integration test the following additional CMake variables are relevant:
 
@@ -219,17 +234,18 @@ The file names of the configuration files, and the file names within them are on
 
 It is assumed that the reader has read the CTC document [[4]](#references) first. This description does not replace that document.
 
-Use the following steps to encode a bistream and render a viewport:
+Use the following steps to encode a bitstream and render a viewport:
 
 * MIV anchor and MIV view anchor:
   1. Run the TMIV encoder
-  1. Run the HM encoder on all video sub bitstreams
-  1. Run the TMIV multiplexer to form the output bitstream
-  1. Run the TMIV decoder to decode the bitstream and render a viewport
+  1. Run the VVenC encoder on all video sub bitstreams
+  1. Run the VVdeC decoder on all video sub bitstreams
+  1. Run the TMIV decoder to decode the MIV bitstream to render a viewport
 * MIV decoder-side depth estimating anchor:
   1. Run the TMIV encoder
   1. Run the HM encoder on all video sub bitstreams
-  1. Run the TMIV multiplexer to form the output bitstream
+  1. Run the VVenC encoder on all video sub bitstreams
+  1. Run the VVdeC decoder on all video sub bitstreams
   1. Run the TMIV decoder only to decode the bitstream
   1. Run the Immersive Video Depth Estimator (IVDE)
   1. Run the TMIV renderer to render a viewport
@@ -279,24 +295,30 @@ In this example the following files will be produced:
 /Experiment/A97/A/TMIV_A97_A_tex_c01_4096x2176_yuv420p10le.yuv
 ```
 
-## Running the HM encoder
+## Running the VVenC encoder
 
-After TMIV encoding, run HM on **all** resulting YUV files. If you have configured the project with `BUILD_HM=ON, BUILD_TAppEncoder=TRUE, and BUILD_TAppDecoder=TRUE`, then the HM executables are available in the TMIV installation directory. To encode one YUV sequence, use the following settings to run HM:
+As TMIV is agnostic to the 2D video codec, you can use a codec of your choice in out-of-band video coding.
+The CTC provide configurations VVenC and VVdeC, so we describe their usage here.
+You can alternatively use HEVC (HM) for encoding and decoding.
 
-1. Use the supplied configuration file (there will be a configuration for each component, in this case geometry and texture)
-1. Specifiy the number of input frames (`-f` parameter)
-1. Derive the frame width and height from the paths of the YUV files (or encoder log)
+After TMIV encoding, run VVenC on **all** resulting YUV files.
+Per default, executable `vvencFFapp` is available in the TMIV installation directory.
+To encode one YUV sequence, use the following settings to run VVenC:
+
+1. Use the supplied configuration file with flag `-c` (there will be a configuration for each component, in this case geometry and texture)
+1. Specify the number of input frames (`-f` parameter)
+1. Derive the frame width and height from the paths of the YUV files (or encoder log), pass them as `-s WIDTHxHEIGHT`
 1. Derive the frame rate (`-fr` parameter) from the sequence configuration (often 30 or 25)
-1. Choose a QP (`-q` parameter) or look up in the CTC document. Note that the QP's in the CTC may vary per video component.
+1. Choose a QP (`-q` parameter) or look up in the CTC document. Note that the QPs in the CTC may vary per video component.
 
 For example:
 
 ```shell
-/Workspace/tmiv_install/bin/TAppEncoder \
-  -c /Workspace/tmiv/config/ctc/miv_anchor/A_2_HM_encode_tex.cfg \
+/Workspace/tmiv_install/bin/vvencFFapp \
+  -c /Workspace/tmiv/config/ctc/miv_anchor/A_2_VVenC_encode_tex.cfg \
   -i /Experiment/A97/A/TMIV_A97_A_tex_c00_4096x2176_yuv420p10le.yuv \
   -b /Experiment/A97/A/QP3/TMIV_A97_A_QP3_tex_c00.bit \
-  -wdt 2320 -hgt 960 -q 30 -f 97 -fr 30
+  -s 2320x960 -q 30 -f 97 -fr 30
 ```
 
 In this example the following files will be produced after four invocations:
@@ -308,52 +330,61 @@ In this example the following files will be produced after four invocations:
 /Experiment/A97/A/QP3/TMIV_A97_A_QP3_tex_c01.bit
 ```
 
-### Running the TMIV multiplexer
+## Running the VVdeC decoder
 
-1. Choose as input directory the output directory of the HM step, that is `/Experiment` in this description.
-1. Choose an output directory, in this example `/Experiment` is used to have the multiplexed bitstream next to the HM bitstreams.
-1. The test ID (`-r` argument) is used to tag multiple video encodings at different settings, e.g. QP1, QP2, etc. or R0 for lossless.
-1. Finally, assuming that you have built and installed the multiplexer application, you can start it from the command line:
+After VVenC encoding, run VVdeC on **all** resulting YUV files.
+Per default, executable `vvdecapp` is available in the TMIV installation directory.
+To decode one YUV sequence, use the following settings to run VVdeC:
+
+1. Specify the input VVC bitstream with parameter `-b`
+1. Specify the output yuv file with parameter `-o`
+
+For example:
 
 ```shell
-/Workspace/tmiv_install/bin/Multiplexer -n 97 -s A -r QP3 \
-    -c /Workspace/tmiv/config/ctc/miv_anchor/A_3_TMIV_mux.json \
-    -p configDirectory /Workspace/tmiv/config \
-    -p inputDirectory /Experiment \
-    -p outputDirectory /Experiment
+/Workspace/tmiv_install/bin/vvdecapp \
+  -b /Experiment/A97/A/QP3/TMIV_A97_A_QP3_tex_c00.bit \
+  -o /Experiment/A97/A/QP3/TMIV_A97_A_QP3_tex_c00_4096x2176_yuv420p10le.yuv
 ```
 
-When the same parameter is provided multiple times on the command-line, through `-c` or `-p`, then the right-most argument has precedence.
-
-This will in general result in the following file under the `outputDirectory`:
-
-* A bitstream with the path based on `outputBitstreamPathFmt`, containing metadata, patch data and video sub bitstreams.
-
-In this example the following file will be produced:
+In this example the following files will be produced after four invocations:
 
 ```
-/Experiment/A97/A/QP3/TMIV_A97_A_QP3.bit
+/Experiment/A97/A/QP3/TMIV_A97_A_QP3_geo_c00_4096x2176_yuv420p10le.yuv
+/Experiment/A97/A/QP3/TMIV_A97_A_QP3_geo_c01_4096x2176_yuv420p10le.yuv
+/Experiment/A97/A/QP3/TMIV_A97_A_QP3_tex_c00_4096x2176_yuv420p10le.yuv
+/Experiment/A97/A/QP3/TMIV_A97_A_QP3_tex_c01_4096x2176_yuv420p10le.yuv
 ```
 
-## Running the TMIV decoder
+## Out-of-band TMIV decoding
 
-1. Choose as input directory the output directory of the multiplexing step, that is `/Experiment` in this description.
-1. Choose an output directory, in this example again `/Experiment` is used to have the viewport videos next to the HM bitstreams.
-1. Define render targets if any. (The decoder can also produce other outputs such as multiview reconstruction or block to patch maps.)
-   * The view name (`-v` argument) may be used multiple times to reconstruct source views and interpolate intermediate views.
-   * The pose trace name (`-P` argument) may be used multiple times to render pose trace videos.
-   * Rendering tasks are run _sequentially_. It is advised to run multiple processes in parallel to speed up anchor generation.
+For out-of-band decoding, the TMIV decoder requires the TMIV encoded bitstream and the decoded YUV files.
+Invoke the decoder with the following arguments:
+
+1. Choose as input directory the output directory of the TMIV encoding step, that is `/Experiment` in this description.
+1. Choose as `inputBitstreamPathFmt` a path representing your TMIV bitstream
+1. Choose as `inputGeometryVideoFramePathFmt` a path representing the geometry bitstreams
+1. Choose as `inputTextureVideoFramePathFmt` a path representing the texture bitstreams
+1. Choose an output directory, in this example again `/Experiment` is used to have the viewport videos next to the VVC bitstreams.
+1. Define render targets, if any. (The decoder can also produce other outputs such as multiview reconstruction or block to patch maps.)
+    * The view name (`-v` argument) may be used multiple times to reconstruct source views and interpolate intermediate views.
+    * The pose trace name (`-P` argument) may be used multiple times to render pose trace videos.
+    * Rendering tasks are run _sequentially_.
+      It is advised to run multiple processes in parallel to speed up anchor generation.
 1. Specify the number of output frames (`-N` argument) e.g. 300:
-   * For views the actual number of output frames is never more than the number of input frames,
-   * For pose traces the sequence of decoded input frames is looped (by mirroring; repeatedly traversing the sequence forth and back) and the number of output frames can exceed the number of input frames.
+    * For views the actual number of output frames is never more than the number of input frames,
+    * For pose traces the sequence of decoded input frames is looped (by mirroring; repeatedly traversing the sequence forth and back) and the number of output frames can exceed the number of input frames.
 1. Finally, assuming that you have built and installed the decoder application, you can start it from the command line:
 
 ```shell
 /Workspace/tmiv_install/bin/Decoder -n 97 -N 300 -s A -r QP3 -v v11 -P p02 \
-    -c /Workspace/tmiv/config/ctc/miv_anchor/A_4_TMIV_decode.json /
-    -p configDirectory /Workspace/tmiv/config /
-    -p inputDirectory /Experiment /
-    -p outputDirectory /Experiment
+    -c /Workspace/tmiv/config/ctc/miv_anchor/A_3_TMIV_decode.json \
+    -p configDirectory /Workspace/tmiv/config \
+    -p inputDirectory /Experiment \
+    -p outputDirectory /Experiment \
+    -p inputBitstreamPathFmt A{0}/{1}/TMIV_A{0}_{1}.bit \
+    -p inputGeometryVideoFramePathFmt A{0}/{1}/QP3/TMIV_A{0}_{1}_QP3_geo_c{3:02}_{4}}x{5}_yuv420p10le.yuv \
+    -p inputTextureVideoFramePathFmt A{0}/{1}/QP3/TMIV_A{0}_{1}_QP3_tex_c{3:02}_{4}}x{5}_yuv420p10le.yuv
 ```
 
 When the same parameter is provided multiple times on the command-line, through `-c` or `-p`, then the right-most argument has precedence.
@@ -370,6 +401,105 @@ In this example the following files will be produced:
 ```
 /Experiment/A97/A/QP3/A97_A_QP3_p02_tex_2048x2048_yuv420p10le.yuv
 /Experiment/A97/A/QP3/A97_A_QP3_v11_tex_4096x2048_yuv420p10le.yuv
+```
+
+## In-band HEVC video coding with HM
+
+This is not part of the CTC, but of TMIV's `test` configurations.
+
+### Running the HM encoder
+
+After TMIV encoding (analogous as TMIV encoding for VVC in the CTC), only with the config in `tmiv/config/test/miv_multiplex/V_1_TMIV_encode.json`, run HM on **all** resulting YUV files.
+If you have configured the project with `BUILD_HM=ON, BUILD_TAppEncoder=TRUE, and BUILD_TAppDecoder=TRUE`, then the HM executables are available in the TMIV installation directory.
+To encode one YUV sequence, use the following settings to run HM:
+
+1. Use the supplied configuration file (there will be a configuration for each component, in this case geometry and texture)
+1. Specify the number of input frames (`-f` parameter)
+1. Derive the frame width and height from the paths of the YUV files (or encoder log)
+1. Derive the frame rate (`-fr` parameter) from the sequence configuration (often 30 or 25)
+1. Choose a QP (`-q` parameter) or look up in the CTC document. Note that the QPs in the CTC may vary per video component.
+
+For example:
+
+```shell
+/Workspace/tmiv_install/bin/TAppEncoder \
+  -c /Workspace/tmiv/config/test/miv_multiplex/V_2_HM_encode_tex.cfg \
+  -i /Experiment/V97/A/TMIV_V97_A_tex_c00_4096x2176_yuv420p10le.yuv \
+  -b /Experiment/V97/A/QP3/TMIV_V97_A_QP3_tex_c00.bit \
+  -wdt 2320 -hgt 960 -q 30 -f 97 -fr 30
+```
+
+In this example the following files will be produced after four invocations:
+
+```
+/Experiment/V97/A/QP3/TMIV_V97_A_QP3_geo_c00.bit
+/Experiment/V97/A/QP3/TMIV_V97_A_QP3_geo_c01.bit
+/Experiment/V97/A/QP3/TMIV_V97_A_QP3_tex_c00.bit
+/Experiment/V97/A/QP3/TMIV_V97_A_QP3_tex_c01.bit
+```
+
+### Running the TMIV multiplexer
+
+1. Choose as input directory the output directory of the HM step, that is `/Experiment` in this description.
+1. Choose an output directory, in this example `/Experiment` is used to have the multiplexed bitstream next to the HM bitstreams.
+1. The test ID (`-r` argument) is used to tag multiple video encodings at different settings, e.g. QP1, QP2, etc. or R0 for lossless.
+1. Finally, assuming that you have built and installed the multiplexer application, you can start it from the command line:
+
+```shell
+/Workspace/tmiv_install/bin/Multiplexer -n 97 -s A -r QP3 \
+    -c /Workspace/tmiv/config/test/miv_multiplex/V_3_TMIV_mux.json \
+    -p configDirectory /Workspace/tmiv/config \
+    -p inputDirectory /Experiment \
+    -p outputDirectory /Experiment
+```
+
+When the same parameter is provided multiple times on the command-line, through `-c` or `-p`, then the right-most argument has precedence.
+
+This will in general result in the following file under the `outputDirectory`:
+
+* A bitstream with the path based on `outputBitstreamPathFmt`, containing metadata, patch data and video sub bitstreams.
+
+In this example the following file will be produced:
+
+```
+/Experiment/V97/A/QP3/TMIV_V97_A_QP3.bit
+```
+
+### Running the TMIV decoder
+
+1. Choose as input directory the output directory of the multiplexing step, that is `/Experiment` in this description.
+1. Choose an output directory, in this example again `/Experiment` is used to have the viewport videos next to the HM bitstreams.
+1. Define render targets if any. (The decoder can also produce other outputs such as multiview reconstruction or block to patch maps.)
+   * The view name (`-v` argument) may be used multiple times to reconstruct source views and interpolate intermediate views.
+   * The pose trace name (`-P` argument) may be used multiple times to render pose trace videos.
+   * Rendering tasks are run _sequentially_. It is advised to run multiple processes in parallel to speed up anchor generation.
+1. Specify the number of output frames (`-N` argument) e.g. 300:
+   * For views the actual number of output frames is never more than the number of input frames,
+   * For pose traces the sequence of decoded input frames is looped (by mirroring; repeatedly traversing the sequence forth and back) and the number of output frames can exceed the number of input frames.
+1. Finally, assuming that you have built and installed the decoder application, you can start it from the command line:
+
+```shell
+/Workspace/tmiv_install/bin/Decoder -n 97 -N 300 -s A -r QP3 -v v11 -P p02 \
+    -c /Workspace/tmiv/config/test/miv_multiplex/V_4_TMIV_decode.json \
+    -p configDirectory /Workspace/tmiv/config \
+    -p inputDirectory /Experiment \
+    -p outputDirectory /Experiment
+```
+
+When the same parameter is provided multiple times on the command-line, through `-c` or `-p`, then the right-most argument has precedence.
+
+This will in general result in the following files under the `outputDirectory`:
+
+* Block to patch maps with the path based on `outputBlockToPatchMapPathFmt`.
+* Reconstructed multiview video based on `outputMultiviewGeometryPathFmt`, `outputOccupancyVideoDataPathFmt`, `outputMultiviewTransparencyPathFmt` and/or `outputMultiviewTexturePathFmt`.
+* Rendered viewport videos based on `outputViewportGeometryPathFmt` and/or `outputViewportTexturePathFmt`.
+* Reconstructed sequence configuration for each frame at which it changes based on `outputSequenceConfigPathFmt`.
+
+In this example the following files will be produced:
+
+```
+/Experiment/V97/A/QP3/V97_A_QP3_p02_tex_2048x2048_yuv420p10le.yuv
+/Experiment/V97/A/QP3/V97_A_QP3_v11_tex_4096x2048_yuv420p10le.yuv
 ```
 
 ## Running the TMIV renderer

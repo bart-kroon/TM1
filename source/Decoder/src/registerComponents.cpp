@@ -38,7 +38,6 @@
 #include <TMIV/Renderer/MpiSynthesizer.h>
 #include <TMIV/Renderer/NoCuller.h>
 #include <TMIV/Renderer/NoInpainter.h>
-#include <TMIV/Renderer/NoSynthesizer.h>
 #include <TMIV/Renderer/PushPullInpainter.h>
 #include <TMIV/Renderer/Renderer.h>
 #include <TMIV/Renderer/SubBlockCuller.h>
@@ -66,7 +65,6 @@ void registerComponents() {
 
   auto &synthesizers = Common::Factory<Renderer::ISynthesizer>::getInstance();
   synthesizers.registerAs<Renderer::AdditiveSynthesizer>("AdditiveSynthesizer");
-  synthesizers.registerAs<Renderer::NoSynthesizer>("NoSynthesizer");
   synthesizers.registerAs<Renderer::ViewWeightingSynthesizer>("ViewWeightingSynthesizer");
   synthesizers.registerAs<Renderer::MpiSynthesizer>("MpiSynthesizer");
 

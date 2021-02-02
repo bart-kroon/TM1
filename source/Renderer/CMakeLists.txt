@@ -12,7 +12,6 @@ create_tmiv_library(
         "src/reprojectPoints.cpp"
         "src/ViewWeightingSynthesizer.cpp"
         "src/MpiSynthesizer.cpp"
-        "src/NoSynthesizer.cpp"
         "src/PushPull.h"
         "src/PushPull.hpp"
         "src/PushPullInpainter.cpp"
@@ -42,7 +41,6 @@ create_tmiv_library(
         "include/TMIV/Renderer/MpiRasterizer.hpp"
         "include/TMIV/Renderer/ViewWeightingSynthesizer.h"
         "include/TMIV/Renderer/MpiSynthesizer.h"
-        "include/TMIV/Renderer/NoSynthesizer.h"
         "include/TMIV/Renderer/RecoverPrunedViews.h"
         "include/TMIV/Renderer/PushPullInpainter.h"
     PUBLIC

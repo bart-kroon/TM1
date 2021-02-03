@@ -208,7 +208,7 @@ class IntegrationTest:
 
         f4 = self.launchCommand(executor, [f3_1, f3_2, f3_3, f3_4], [
             '{0}/bin/Decoder',
-            '-c', '{1}/config/ctc/miv_anchor/A_3_TMIV_decode.json',
+            '-c', '{1}/config/ctc/miv_anchor/A_4_TMIV_decode.json',
             '-p', 'configDirectory', '{1}/config',
             '-p', 'inputDirectory', '{3}',
             '-p', 'outputDirectory', '{3}',

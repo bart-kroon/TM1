@@ -222,7 +222,6 @@ class IntegrationTest:
         return [f4, f2_5, f2_6]
 
     def testMivViewAnchor(self, executor):
-        os.makedirs(os.path.join(self.testDir, 'V3/D/QP3'), exist_ok=True)
         os.makedirs(os.path.join(self.testDir, 'V3/D/R0'), exist_ok=True)
 
         f1 = self.launchCommand(executor, [], [
@@ -239,8 +238,7 @@ class IntegrationTest:
              'V3/D/TMIV_V3_D_tex_c00_2048x4352_yuv420p10le.yuv',
              'V3/D/TMIV_V3_D_tex_c01_2048x4352_yuv420p10le.yuv'])
 
-        # Test out-of-band video by skipping HM encoding and TMIV multiplexing stages
-        f5 = self.launchCommand(executor, [f1], [
+        f2_1 = self.launchCommand(executor, [f1], [
             '{0}/bin/Decoder',
             '-c', '{1}/config/ctc/miv_view_anchor/V_4_TMIV_decode.json',
             '-p', 'configDirectory', '{1}/config',
@@ -253,99 +251,36 @@ class IntegrationTest:
             '{3}/V3/D/R0/V3_D_R0_v14.log',
             ['V3/D/R0/V3_D_R0_v14_tex_2048x1088_yuv420p10le.yuv'])
 
-        f2_1 = self.launchCommand(executor, [f1], [
-            '{0}/bin/vvencFFapp',
-            '-c', '{1}/config/ctc/miv_view_anchor/V_2_VVenC_encode_geo.cfg',
-            '-i', '{3}/V3/D/TMIV_V3_D_geo_c00_1024x2176_yuv420p10le.yuv',
-            '-b', '{3}/V3/D/QP3/TMIV_V3_D_QP3_geo_c00.bit',
-            '-s', '1024x2176', '-q', '13', '-f', '3', '-fr', '30'],
-                                  '{3}/V3/D/QP3/TMIV_V3_D_QP3_geo_c00_vvenc.log',
-                                  ['V3/D/QP3/TMIV_V3_D_QP3_geo_c00.bit'])
-
         f2_2 = self.launchCommand(executor, [f1], [
-            '{0}/bin/vvencFFapp',
-            '-c', '{1}/config/ctc/miv_view_anchor/V_2_VVenC_encode_geo.cfg',
-            '-i', '{3}/V3/D/TMIV_V3_D_geo_c01_1024x2176_yuv420p10le.yuv',
-            '-b', '{3}/V3/D/QP3/TMIV_V3_D_QP3_geo_c01.bit',
-            '-s', '1024x2176', '-q', '13', '-f', '3', '-fr', '30'],
-                                  '{3}/V3/D/QP3/TMIV_V3_D_QP3_geo_c01_vvenc.log',
-                                  ['V3/D/QP3/TMIV_V3_D_QP3_geo_c01.bit'])
-
-        f2_3 = self.launchCommand(executor, [f1], [
-            '{0}/bin/vvencFFapp',
-            '-c', '{1}/config/ctc/miv_view_anchor/V_2_VVenC_encode_tex.cfg',
-            '-i', '{3}/V3/D/TMIV_V3_D_tex_c00_2048x4352_yuv420p10le.yuv',
-            '-b', '{3}/V3/D/QP3/TMIV_V3_D_QP3_tex_c00.bit',
-            '-s', '2048x4352', '-q', '34', '-f', '3', '-fr', '30'],
-                                  '{3}/V3/D/QP3/TMIV_V3_D_QP3_tex_c00_vvenc.log',
-                                  ['V3/D/QP3/TMIV_V3_D_QP3_tex_c00.bit'])
-
-        f2_4 = self.launchCommand(executor, [f1], [
-            '{0}/bin/vvencFFapp',
-            '-c', '{1}/config/ctc/miv_view_anchor/V_2_VVenC_encode_tex.cfg',
-            '-i', '{3}/V3/D/TMIV_V3_D_tex_c01_2048x4352_yuv420p10le.yuv',
-            '-b', '{3}/V3/D/QP3/TMIV_V3_D_QP3_tex_c01.bit',
-            '-s', '2048x4352', '-q', '34', '-f', '3', '-fr', '30'],
-                                  '{3}/V3/D/QP3/TMIV_V3_D_QP3_tex_c01_vvenc.log',
-                                  ['V3/D/QP3/TMIV_V3_D_QP3_tex_c01.bit'])
-
-        f2_5 = self.launchCommand(executor, [f1], [
             '{0}/bin/Parser',
             '-b', '{3}/V3/D/TMIV_V3_D.bit'],
             '{3}/V3/D/TMIV_V3_D.hls',
             [])
 
-        f2_6 = self.launchCommand(executor, [f1], [
+        f2_3 = self.launchCommand(executor, [f1], [
             '{0}/bin/BitrateReport',
             '-b', '{3}/V3/D/TMIV_V3_D.bit'],
             '{3}/V3/D/TMIV_V3_D.csv',
             [])
 
-        f3_1 = self.launchCommand(executor, [f2_1], [
-            '{0}/bin/vvdecapp',
-            '-b', '{3}/V3/D/QP3/TMIV_V3_D_QP3_geo_c00.bit',
-            '-o', '{3}/V3/D/QP3/TMIV_V3_D_QP3_geo_c00_1024x2176_yuv420p10le.yuv'],
-                                  '{3}/V3/D/QP3/TMIV_V3_D_QP3_geo_c00_vvdec.log',
-                                  ['V3/D/QP3/TMIV_V3_D_QP3_geo_c00_1024x2176_yuv420p10le.yuv'])
 
-        f3_2 = self.launchCommand(executor, [f2_2], [
-            '{0}/bin/vvdecapp',
-            '-b', '{3}/V3/D/QP3/TMIV_V3_D_QP3_geo_c01.bit',
-            '-o', '{3}/V3/D/QP3/TMIV_V3_D_QP3_geo_c01_1024x2176_yuv420p10le.yuv'],
-                                  '{3}/V3/D/QP3/TMIV_V3_D_QP3_geo_c01_vvdec.log',
-                                  ['V3/D/QP3/TMIV_V3_D_QP3_geo_c01_1024x2176_yuv420p10le.yuv'])
-
-        f3_3 = self.launchCommand(executor, [f2_3], [
-            '{0}/bin/vvdecapp',
-            '-b', '{3}/V3/D/QP3/TMIV_V3_D_QP3_tex_c00.bit',
-            '-o', '{3}/V3/D/QP3/TMIV_V3_D_QP3_tex_c00_2048x4352_yuv420p10le.yuv'],
-                                  '{3}/V3/D/QP3/TMIV_V3_D_QP3_tex_c00_vvdec.log',
-                                  ['V3/D/QP3/TMIV_V3_D_QP3_tex_c00_2048x4352_yuv420p10le.yuv'])
-
-        f3_4 = self.launchCommand(executor, [f2_4], [
-            '{0}/bin/vvdecapp',
-            '-b', '{3}/V3/D/QP3/TMIV_V3_D_QP3_tex_c01.bit',
-            '-o', '{3}/V3/D/QP3/TMIV_V3_D_QP3_tex_c01_2048x4352_yuv420p10le.yuv'],
-                                  '{3}/V3/D/QP3/TMIV_V3_D_QP3_tex_c01_vvdec.log',
-                                  ['V3/D/QP3/TMIV_V3_D_QP3_tex_c01_2048x4352_yuv420p10le.yuv'])
-
-        f4 = self.launchCommand(executor, [f3_1, f3_2, f3_3, f3_4], [
+        f2_4 = self.launchCommand(executor, [f1], [
             '{0}/bin/Decoder',
-            '-c', '{1}/config/ctc/miv_view_anchor/V_3_TMIV_decode.json',
+            '-c', '{1}/config/ctc/miv_view_anchor/V_4_TMIV_decode.json',
             '-p', 'configDirectory', '{1}/config',
             '-p', 'inputDirectory', '{3}',
             '-p', 'outputDirectory', '{3}',
             '-p', 'inputBitstreamPathFmt', 'V{{0}}/{{1}}/TMIV_V{{0}}_{{1}}.bit',
-            '-p', 'inputGeometryVideoFramePathFmt', 'V{{0}}/{{1}}/QP3/TMIV_V{{0}}_{{1}}_QP3_geo_c{{3:02}}_{{4}}x{{5}}_yuv420p10le.yuv',
-            '-p', 'inputTextureVideoFramePathFmt', 'V{{0}}/{{1}}/QP3/TMIV_V{{0}}_{{1}}_QP3_tex_c{{3:02}}_{{4}}x{{5}}_yuv420p10le.yuv',
-            '-n', '3', '-N', '3', '-s', 'D', '-r', 'QP3', '-P', 'p02'],
-            '{3}/V3/D/QP3/V3_D_QP3_p02.log',
-            ['V3/D/QP3/V3_D_QP3_p02_tex_1920x1080_yuv420p10le.yuv'])
+            '-p', 'inputGeometryVideoFramePathFmt', 'V{{0}}/{{1}}/TMIV_V{{0}}_{{1}}_geo_c{{3:02}}_{{4}}x{{5}}_yuv420p10le.yuv',
+            '-p', 'inputTextureVideoFramePathFmt', 'V{{0}}/{{1}}/TMIV_V{{0}}_{{1}}_tex_c{{3:02}}_{{4}}x{{5}}_yuv420p10le.yuv',
+            '-n', '3', '-N', '3', '-s', 'D', '-r', 'R0', '-P', 'p02'],
+            '{3}/V3/D/R0/V3_D_R0_p02.log',
+            ['V3/D/R0/V3_D_R0_p02_tex_1920x1080_yuv420p10le.yuv'])
 
-        return [f4, f2_5, f2_6]
+        return [f2_1, f2_2, f2_3, f2_4]
 
     def testMivDsdeAnchor(self, executor):
-        os.makedirs(os.path.join(self.testDir, 'G3/N/QP3'), exist_ok=True)
+        os.makedirs(os.path.join(self.testDir, 'G3/N/R0'), exist_ok=True)
 
         f1 = self.launchCommand(executor, [], [
             '{0}/bin/Encoder',
@@ -362,102 +297,38 @@ class IntegrationTest:
              'G3/N/TMIV_G3_N_tex_c03_2048x4352_yuv420p10le.yuv'])
 
         f2_1 = self.launchCommand(executor, [f1], [
-            '{0}/bin/vvencFFapp',
-            '-c', '{1}/config/ctc/miv_dsde_anchor/G_2_VVenC_encode_tex.cfg',
-            '-i', '{3}/G3/N/TMIV_G3_N_tex_c00_2048x4352_yuv420p10le.yuv',
-            '-b', '{3}/G3/N/QP3/TMIV_G3_N_QP3_tex_c00.bit',
-            '-s', '2048x4352', '-q', '26', '-f', '3', '-fr', '30'],
-                                  '{3}/G3/N/QP3/TMIV_G3_N_QP3_tex_c00.log',
-                                  ['G3/N/QP3/TMIV_G3_N_QP3_tex_c00.bit'])
-
-        f2_2 = self.launchCommand(executor, [f1], [
-            '{0}/bin/vvencFFapp',
-            '-c', '{1}/config/ctc/miv_dsde_anchor/G_2_VVenC_encode_tex.cfg',
-            '-i', '{3}/G3/N/TMIV_G3_N_tex_c01_2048x4352_yuv420p10le.yuv',
-            '-b', '{3}/G3/N/QP3/TMIV_G3_N_QP3_tex_c01.bit',
-            '-s', '2048x4352', '-q', '26', '-f', '3', '-fr', '30'],
-                                  '{3}/G3/N/QP3/TMIV_G3_N_QP3_tex_c01.log',
-                                  ['G3/N/QP3/TMIV_G3_N_QP3_tex_c01.bit'])
-
-        f2_3 = self.launchCommand(executor, [f1], [
-            '{0}/bin/vvencFFapp',
-            '-c', '{1}/config/ctc/miv_dsde_anchor/G_2_VVenC_encode_tex.cfg',
-            '-i', '{3}/G3/N/TMIV_G3_N_tex_c02_2048x4352_yuv420p10le.yuv',
-            '-b', '{3}/G3/N/QP3/TMIV_G3_N_QP3_tex_c02.bit',
-            '-s', '2048x4352', '-q', '26', '-f', '3', '-fr', '30'],
-                                  '{3}/G3/N/QP3/TMIV_G3_N_QP3_tex_c02.log',
-                                  ['G3/N/QP3/TMIV_G3_N_QP3_tex_c02.bit'])
-
-        f2_4 = self.launchCommand(executor, [f1], [
-            '{0}/bin/vvencFFapp',
-            '-c', '{1}/config/ctc/miv_dsde_anchor/G_2_VVenC_encode_tex.cfg',
-            '-i', '{3}/G3/N/TMIV_G3_N_tex_c03_2048x4352_yuv420p10le.yuv',
-            '-b', '{3}/G3/N/QP3/TMIV_G3_N_QP3_tex_c03.bit',
-            '-s', '2048x4352', '-q', '26', '-f', '3', '-fr', '30'],
-                                  '{3}/G3/N/QP3/TMIV_G3_N_QP3_tex_c03.log',
-                                  ['G3/N/QP3/TMIV_G3_N_QP3_tex_c03.bit'])
-
-        f2_5 = self.launchCommand(executor, [f1], [
             '{0}/bin/Parser',
             '-b', '{3}/G3/N/TMIV_G3_N.bit'],
             '{3}/G3/N/TMIV_G3_N.hls',
             [])
 
-        f2_6 = self.launchCommand(executor, [f1], [
+        f2_2 = self.launchCommand(executor, [f1], [
             '{0}/bin/BitrateReport',
             '-b', '{3}/G3/N/TMIV_G3_N.bit'],
             '{3}/G3/N/TMIV_G3_N.csv',
             [])
 
-        f3_1 = self.launchCommand(executor, [f2_1], [
-            '{0}/bin/vvdecapp',
-            '-b', '{3}/G3/N/QP3/TMIV_G3_N_QP3_tex_c00.bit',
-            '-o', '{3}/G3/N/QP3/TMIV_G3_N_QP3_tex_c00_2048x4352_yuv420p10le.yuv'],
-                                  '{3}/G3/N/QP3/TMIV_G3_N_QP3_tex_c00_vvdec.log',
-                                  ['G3/N/QP3/TMIV_G3_N_QP3_tex_c00_2048x4352_yuv420p10le.yuv'])
-
-        f3_2 = self.launchCommand(executor, [f2_2], [
-            '{0}/bin/vvdecapp',
-            '-b', '{3}/G3/N/QP3/TMIV_G3_N_QP3_tex_c01.bit',
-            '-o', '{3}/G3/N/QP3/TMIV_G3_N_QP3_tex_c01_2048x4352_yuv420p10le.yuv'],
-                                  '{3}/G3/N/QP3/TMIV_G3_N_QP3_tex_c01_vvdec.log',
-                                  ['G3/N/QP3/TMIV_G3_N_QP3_tex_c01_2048x4352_yuv420p10le.yuv'])
-
-        f3_3 = self.launchCommand(executor, [f2_3], [
-            '{0}/bin/vvdecapp',
-            '-b', '{3}/G3/N/QP3/TMIV_G3_N_QP3_tex_c02.bit',
-            '-o', '{3}/G3/N/QP3/TMIV_G3_N_QP3_tex_c02_2048x4352_yuv420p10le.yuv'],
-                                  '{3}/G3/N/QP3/TMIV_G3_N_QP3_tex_c02_vvdec.log',
-                                  ['G3/N/QP3/TMIV_G3_N_QP3_tex_c02_2048x4352_yuv420p10le.yuv'])
-
-        f3_4 = self.launchCommand(executor, [f2_4], [
-            '{0}/bin/vvdecapp',
-            '-b', '{3}/G3/N/QP3/TMIV_G3_N_QP3_tex_c03.bit',
-            '-o', '{3}/G3/N/QP3/TMIV_G3_N_QP3_tex_c03_2048x4352_yuv420p10le.yuv'],
-                                  '{3}/G3/N/QP3/TMIV_G3_N_QP3_tex_c03_vvdec.log',
-                                  ['G3/N/QP3/TMIV_G3_N_QP3_tex_c03_2048x4352_yuv420p10le.yuv'])
-
-        f4 = self.launchCommand(executor, [f3_1, f3_2, f3_3, f3_4], [
+        f2_3 = self.launchCommand(executor, [f1], [
             '{0}/bin/Decoder',
             '-c', '{1}/config/ctc/miv_dsde_anchor/G_3_TMIV_decode.json',
             '-p', 'configDirectory', '{1}/config',
             '-p', 'inputDirectory', '{3}',
             '-p', 'outputDirectory', '{3}',
             '-p', 'inputBitstreamPathFmt', 'G{{0}}/{{1}}/TMIV_G{{0}}_{{1}}.bit',
-            '-p', 'inputGeometryVideoFramePathFmt', 'G{{0}}/{{1}}/QP3/TMIV_G{{0}}_{{1}}_QP3_geo_c{{3:02}}_{{4}}x{{5}}_yuv420p10le.yuv',
-            '-p', 'inputTextureVideoFramePathFmt', 'G{{0}}/{{1}}/QP3/TMIV_G{{0}}_{{1}}_QP3_tex_c{{3:02}}_{{4}}x{{5}}_yuv420p10le.yuv',
-            '-n', '3', '-N', '3', '-s', 'N', '-r', 'QP3'],
-            '{3}/G3/N/QP3/G3_N_QP3_none.log',
-            ['G3/N/QP3/TMIV_G3_N_QP3_0000.json',
-             'G3/N/QP3/TMIV_G3_N_QP3_tex_pv00_2048x2048_yuv420p10le.yuv',
-             'G3/N/QP3/TMIV_G3_N_QP3_tex_pv01_2048x2048_yuv420p10le.yuv',
-             'G3/N/QP3/TMIV_G3_N_QP3_tex_pv02_2048x2048_yuv420p10le.yuv',
-             'G3/N/QP3/TMIV_G3_N_QP3_tex_pv03_2048x2048_yuv420p10le.yuv',
-             'G3/N/QP3/TMIV_G3_N_QP3_tex_pv04_2048x2048_yuv420p10le.yuv',
-             'G3/N/QP3/TMIV_G3_N_QP3_tex_pv05_2048x2048_yuv420p10le.yuv',
-             'G3/N/QP3/TMIV_G3_N_QP3_tex_pv06_2048x2048_yuv420p10le.yuv'])
+            '-p', 'inputGeometryVideoFramePathFmt', 'G{{0}}/{{1}}/TMIV_G{{0}}_{{1}}_geo_c{{3:02}}_{{4}}x{{5}}_yuv420p10le.yuv',
+            '-p', 'inputTextureVideoFramePathFmt', 'G{{0}}/{{1}}/TMIV_G{{0}}_{{1}}_tex_c{{3:02}}_{{4}}x{{5}}_yuv420p10le.yuv',
+            '-n', '3', '-N', '3', '-s', 'N', '-r', 'R0'],
+            '{3}/G3/N/R0/G3_N_R0_none.log',
+            ['G3/N/R0/TMIV_G3_N_R0_0000.json',
+             'G3/N/R0/TMIV_G3_N_R0_tex_pv00_2048x2048_yuv420p10le.yuv',
+             'G3/N/R0/TMIV_G3_N_R0_tex_pv01_2048x2048_yuv420p10le.yuv',
+             'G3/N/R0/TMIV_G3_N_R0_tex_pv02_2048x2048_yuv420p10le.yuv',
+             'G3/N/R0/TMIV_G3_N_R0_tex_pv03_2048x2048_yuv420p10le.yuv',
+             'G3/N/R0/TMIV_G3_N_R0_tex_pv04_2048x2048_yuv420p10le.yuv',
+             'G3/N/R0/TMIV_G3_N_R0_tex_pv05_2048x2048_yuv420p10le.yuv',
+             'G3/N/R0/TMIV_G3_N_R0_tex_pv06_2048x2048_yuv420p10le.yuv'])
 
-        return [f2_5, f2_6, f4]
+        return [f2_1, f2_2, f2_3]
 
     def testBestReference(self, executor):
         os.makedirs(os.path.join(self.testDir, 'R3/O/R0'), exist_ok=True)

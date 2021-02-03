@@ -378,7 +378,7 @@ Invoke the decoder with the following arguments:
 
 ```shell
 /Workspace/tmiv_install/bin/Decoder -n 97 -N 300 -s A -r QP3 -v v11 -P p02 \
-    -c /Workspace/tmiv/config/ctc/miv_anchor/A_3_TMIV_decode.json \
+    -c /Workspace/tmiv/config/ctc/miv_anchor/A_4_TMIV_decode.json \
     -p configDirectory /Workspace/tmiv/config \
     -p inputDirectory /Experiment \
     -p outputDirectory /Experiment \
@@ -447,7 +447,7 @@ In this example the following files will be produced after four invocations:
 
 ```shell
 /Workspace/tmiv_install/bin/Multiplexer -n 97 -s A -r QP3 \
-    -c /Workspace/tmiv/config/test/miv_multiplex/V_3_TMIV_mux.json \
+    -c /Workspace/tmiv/config/test/miv_in-band_hm/H_3_TMIV_mux.json \
     -p configDirectory /Workspace/tmiv/config \
     -p inputDirectory /Experiment \
     -p outputDirectory /Experiment
@@ -480,7 +480,7 @@ In this example the following file will be produced:
 
 ```shell
 /Workspace/tmiv_install/bin/Decoder -n 97 -N 300 -s A -r QP3 -v v11 -P p02 \
-    -c /Workspace/tmiv/config/test/miv_multiplex/V_4_TMIV_decode.json \
+    -c /Workspace/tmiv/config/test/miv_in-band_hm/H_4_TMIV_decode.json \
     -p configDirectory /Workspace/tmiv/config \
     -p inputDirectory /Experiment \
     -p outputDirectory /Experiment

@@ -500,12 +500,12 @@ private:
 class VpsMivExtension {
 public:
   [[nodiscard]] constexpr auto vme_geometry_scale_enabled_flag() const noexcept;
-  [[nodiscard]] constexpr auto vme_embedded_occupancy_flag() const noexcept;
+  [[nodiscard]] constexpr auto vme_embedded_occupancy_enabled_flag() const noexcept;
   [[nodiscard]] constexpr auto vme_occupancy_scale_enabled_flag() const noexcept;
   [[nodiscard]] constexpr auto group_mapping() const noexcept -> const GroupMapping &;
 
   constexpr auto vme_geometry_scale_enabled_flag(bool value) noexcept -> auto &;
-  constexpr auto vme_embedded_occupancy_flag(bool value) noexcept -> auto &;
+  constexpr auto vme_embedded_occupancy_enabled_flag(bool value) noexcept -> auto &;
   auto vme_occupancy_scale_enabled_flag(bool value) noexcept -> VpsMivExtension &;
 
   [[nodiscard]] constexpr auto group_mapping() noexcept -> GroupMapping &;
@@ -521,7 +521,7 @@ public:
 
 private:
   bool m_vme_geometry_scale_enabled_flag{};
-  bool m_vme_embedded_occupancy_flag{true};
+  bool m_vme_embedded_occupancy_enabled_flag{true};
   bool m_vme_occupancy_scale_enabled_flag{};
   GroupMapping m_group_mapping;
 };

@@ -44,7 +44,7 @@ void OccupancyReconstructor::reconstruct(MivBitstream::AccessUnit &frame) {
         if (patchId == Common::unusedPatchId) {
           atlas.occFrame.getPlane(0)(y, x) = 0;
         } else if (!frame.vps.vps_occupancy_video_present_flag(frame.vps.vps_atlas_id(k))) {
-          if (frame.vps.vps_miv_extension().vme_embedded_occupancy_flag()) {
+          if (frame.vps.vps_miv_extension().vme_embedded_occupancy_enabled_flag()) {
             // occupancy is embedded in geometry
             uint32_t depthOccupancyThreshold = 0;
             if (!atlas.asps.asps_miv_extension_present_flag() ||

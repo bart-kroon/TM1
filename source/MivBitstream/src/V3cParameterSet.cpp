@@ -954,7 +954,7 @@ void GroupMapping::encodeTo(Common::OutputBitstream &bitstream, const V3cParamet
 }
 
 auto VpsMivExtension::vme_occupancy_scale_enabled_flag(bool value) noexcept -> VpsMivExtension & {
-  VERIFY_MIVBITSTREAM(!vme_embedded_occupancy_flag());
+  VERIFY_MIVBITSTREAM(!vme_embedded_occupancy_enabled_flag());
   m_vme_occupancy_scale_enabled_flag = value;
   return *this;
 }
@@ -962,9 +962,9 @@ auto VpsMivExtension::vme_occupancy_scale_enabled_flag(bool value) noexcept -> V
 auto operator<<(std::ostream &stream, const VpsMivExtension &x) -> std::ostream & {
   stream << "vme_geometry_scale_enabled_flag=" << std::boolalpha
          << x.vme_geometry_scale_enabled_flag() << '\n';
-  stream << "vme_embedded_occupancy_flag=" << std::boolalpha << x.vme_embedded_occupancy_flag()
-         << '\n';
-  if (!x.vme_embedded_occupancy_flag()) {
+  stream << "vme_embedded_occupancy_enabled_flag=" << std::boolalpha
+         << x.vme_embedded_occupancy_enabled_flag() << '\n';
+  if (!x.vme_embedded_occupancy_enabled_flag()) {
     stream << "vme_occupancy_scale_enabled_flag=" << std::boolalpha
            << x.vme_occupancy_scale_enabled_flag() << '\n';
   }
@@ -976,8 +976,8 @@ auto VpsMivExtension::decodeFrom(Common::InputBitstream &bitstream, const V3cPar
     -> VpsMivExtension {
   auto x = VpsMivExtension{};
   x.vme_geometry_scale_enabled_flag(bitstream.getFlag());
-  x.vme_embedded_occupancy_flag(bitstream.getFlag());
-  if (!x.vme_embedded_occupancy_flag()) {
+  x.vme_embedded_occupancy_enabled_flag(bitstream.getFlag());
+  if (!x.vme_embedded_occupancy_enabled_flag()) {
     x.vme_occupancy_scale_enabled_flag(bitstream.getFlag());
   }
   for (uint8_t atlasIdx = 0; atlasIdx <= vps.vps_atlas_count_minus1(); ++atlasIdx) {
@@ -990,8 +990,8 @@ auto VpsMivExtension::decodeFrom(Common::InputBitstream &bitstream, const V3cPar
 void VpsMivExtension::encodeTo(Common::OutputBitstream &bitstream,
                                const V3cParameterSet &vps) const {
   bitstream.putFlag(vme_geometry_scale_enabled_flag());
-  bitstream.putFlag(vme_embedded_occupancy_flag());
-  if (!vme_embedded_occupancy_flag()) {
+  bitstream.putFlag(vme_embedded_occupancy_enabled_flag());
+  if (!vme_embedded_occupancy_enabled_flag()) {
     bitstream.putFlag(vme_occupancy_scale_enabled_flag());
   }
   for (unsigned atlasIdx = 0; atlasIdx <= vps.vps_atlas_count_minus1(); ++atlasIdx) {

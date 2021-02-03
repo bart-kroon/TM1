@@ -56,7 +56,7 @@ SCENARIO("Geometry quantization") {
     auto sourceParams = MivBitstream::EncoderParams{};
     sourceParams.vps.vps_extension_present_flag(true);
     sourceParams.vps.vps_miv_extension_present_flag(true);
-    sourceParams.vps.vps_miv_extension().vme_embedded_occupancy_flag(true);
+    sourceParams.vps.vps_miv_extension().vme_embedded_occupancy_enabled_flag(true);
     sourceParams.viewParamsList = MivBitstream::ViewParamsList{{sourceViewParams}};
 
     WHEN("Modifying the depth range") {

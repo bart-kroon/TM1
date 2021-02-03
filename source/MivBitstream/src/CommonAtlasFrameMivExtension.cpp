@@ -292,7 +292,7 @@ auto DepthQuantization::decodeFrom(Common::InputBitstream &bitstream, const V3cP
 
   x.dq_norm_disp_low(bitstream.getFloat32());
   x.dq_norm_disp_high(bitstream.getFloat32());
-  if (vps.vps_miv_extension().vme_embedded_occupancy_flag()) {
+  if (vps.vps_miv_extension().vme_embedded_occupancy_enabled_flag()) {
     x.dq_depth_occ_map_threshold_default(bitstream.getUExpGolomb<uint32_t>());
   }
 
@@ -304,7 +304,7 @@ void DepthQuantization::encodeTo(Common::OutputBitstream &bitstream,
   bitstream.putUint8(dq_quantization_law());
   bitstream.putFloat32(dq_norm_disp_low());
   bitstream.putFloat32(dq_norm_disp_high());
-  if (vps.vps_miv_extension().vme_embedded_occupancy_flag()) {
+  if (vps.vps_miv_extension().vme_embedded_occupancy_enabled_flag()) {
     bitstream.putUExpGolomb(dq_depth_occ_map_threshold_default());
   }
 }

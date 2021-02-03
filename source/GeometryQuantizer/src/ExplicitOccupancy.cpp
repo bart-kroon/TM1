@@ -54,7 +54,7 @@ auto ExplicitOccupancy::setOccupancyParams(MivBitstream::EncoderParams params)
   m_inParams = std::move(params);
   m_outParams = m_inParams;
 
-  m_outParams.vme().vme_embedded_occupancy_flag(false);
+  m_outParams.vme().vme_embedded_occupancy_enabled_flag(false);
   m_outParams.vme().vme_occupancy_scale_enabled_flag(true);
   for (size_t k = 0; k <= m_outParams.vps.vps_atlas_count_minus1(); ++k) {
     const auto j = m_outParams.vps.vps_atlas_id(k);
@@ -62,7 +62,7 @@ auto ExplicitOccupancy::setOccupancyParams(MivBitstream::EncoderParams params)
   }
   m_depthLowQualityFlag = m_outParams.casme().casme_depth_low_quality_flag();
 
-  m_embeddedOccupancyFlag = m_outParams.vme().vme_embedded_occupancy_flag();
+  m_embeddedOccupancyFlag = m_outParams.vme().vme_embedded_occupancy_enabled_flag();
   m_occupancyScaleEnabledFlag = m_outParams.vme().vme_occupancy_scale_enabled_flag();
 
   if (!m_embeddedOccupancyFlag && m_occupancyScaleEnabledFlag) {

@@ -563,7 +563,7 @@ void MivDecoder::summarizeVps() const {
   const auto &vme = vps.vps_miv_extension();
   std::cout << ", geometry scaling " << std::boolalpha << vme.vme_geometry_scale_enabled_flag()
             << ", groups " << vme.group_mapping().gm_group_count() << ", embedded occupancy "
-            << std::boolalpha << vme.vme_embedded_occupancy_flag() << ", occupancy scaling "
+            << std::boolalpha << vme.vme_embedded_occupancy_enabled_flag() << ", occupancy scaling "
             << vme.vme_occupancy_scale_enabled_flag() << '\n';
 }
 } // namespace TMIV::Decoder

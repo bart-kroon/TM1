@@ -441,12 +441,12 @@ constexpr auto VpsMivExtension::vme_geometry_scale_enabled_flag() const noexcept
   return m_vme_geometry_scale_enabled_flag;
 }
 
-constexpr auto VpsMivExtension::vme_embedded_occupancy_flag() const noexcept {
-  return m_vme_embedded_occupancy_flag;
+constexpr auto VpsMivExtension::vme_embedded_occupancy_enabled_flag() const noexcept {
+  return m_vme_embedded_occupancy_enabled_flag;
 }
 
 constexpr auto VpsMivExtension::vme_occupancy_scale_enabled_flag() const noexcept {
-  return !vme_embedded_occupancy_flag() && m_vme_occupancy_scale_enabled_flag;
+  return !vme_embedded_occupancy_enabled_flag() && m_vme_occupancy_scale_enabled_flag;
 }
 
 constexpr auto VpsMivExtension::group_mapping() const noexcept -> const GroupMapping & {
@@ -459,8 +459,9 @@ constexpr auto VpsMivExtension::vme_geometry_scale_enabled_flag(const bool value
   return *this;
 }
 
-constexpr auto VpsMivExtension::vme_embedded_occupancy_flag(const bool value) noexcept -> auto & {
-  m_vme_embedded_occupancy_flag = value;
+constexpr auto VpsMivExtension::vme_embedded_occupancy_enabled_flag(const bool value) noexcept
+    -> auto & {
+  m_vme_embedded_occupancy_enabled_flag = value;
   return *this;
 }
 
@@ -470,7 +471,7 @@ constexpr auto VpsMivExtension::group_mapping() noexcept -> GroupMapping & {
 
 constexpr auto VpsMivExtension::operator==(const VpsMivExtension &other) const noexcept {
   return vme_geometry_scale_enabled_flag() == other.vme_geometry_scale_enabled_flag() &&
-         vme_embedded_occupancy_flag() == other.vme_embedded_occupancy_flag() &&
+         vme_embedded_occupancy_enabled_flag() == other.vme_embedded_occupancy_enabled_flag() &&
          vme_occupancy_scale_enabled_flag() == other.vme_occupancy_scale_enabled_flag() &&
          group_mapping() == other.group_mapping();
 }

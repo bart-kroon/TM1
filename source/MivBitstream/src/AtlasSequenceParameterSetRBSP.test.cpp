@@ -230,7 +230,7 @@ asps_extension_6bits=0
         .vps_miv_extension_present_flag(true)
         .vps_miv_extension()
         .vme_geometry_scale_enabled_flag(true)
-        .vme_embedded_occupancy_flag(true);
+        .vme_embedded_occupancy_enabled_flag(true);
 
     x.asps_atlas_sequence_parameter_set_id(63)
         .asps_frame_width(0xFFFF)

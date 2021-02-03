@@ -54,7 +54,7 @@ auto AtlasAccessUnit::decGeoFrameSize(const V3cParameterSet &vps) const noexcept
 auto AtlasAccessUnit::decOccFrameSize(const V3cParameterSet &vps) const noexcept -> Common::Vec2i {
   if (vps.vps_miv_extension_present_flag()) {
     const auto &vme = vps.vps_miv_extension();
-    if (!vme.vme_embedded_occupancy_flag() && vme.vme_occupancy_scale_enabled_flag()) {
+    if (!vme.vme_embedded_occupancy_enabled_flag() && vme.vme_occupancy_scale_enabled_flag()) {
       const auto &asme = asps.asps_miv_extension();
       const int codedUnpaddedOccupancyWidth =
           asps.asps_frame_width() / (asme.asme_occupancy_scale_factor_x_minus1() + 1);

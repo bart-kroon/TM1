@@ -17,7 +17,7 @@ Test Model for MPEG Immersive Video (TMIV)
 
 # Introduction
 
-This software project (TMIV-SW) is the ISO/IEC 23090-12 *MPEG Immersive Video* (MIV) reference software and is part of the *Test model for Immersive Video* [[2]](#references).
+This software project (TMIV-SW) is the ISO/IEC 23090-12 *MPEG Immersive Video* (MIV) reference software and is part of the *Test model for Immersive Video* [[4]](#references).
 
 The MPEG-I project (ISO/IEC 23090) on *Coded Representation of Immersive Media* includes Part 2 *Omnidirectional MediA Format* (OMAF) version 1 published in 2018 that supports 3 Degrees of Freedom (3DoF), where a user’s position is static but its head can yaw, pitch and roll.
 However, rendering flat 360° video, i.e. supporting head rotations only, may generate visual discomfort especially when objects close to the viewer are rendered. 6DoF enables translation movements in horizontal, vertical, and depth directions in addition to 3DoF orientations. The
@@ -27,11 +27,11 @@ At the 129th MPEG meeting the fourth working draft of MIV has been realigned to 
 
 # Scope
 
-The normative decoding process for MPEG Immersive Video (MIV) is specified in *Potential improvements of MIV* [[3]](#references). The TMIV reference software provides a reference implementation of non-normative encoding and rendering techniques and the normative decoding process for the MIV
+The normative decoding process for MPEG Immersive Video (MIV) is specified in *Text of ISO/IEC DIS 23090-12 MPEG Immersive Video* [[3]](#references). The latest public draft of the specification is *Potential improvements of MIV* [[2]](#references). The TMIV reference software provides a reference implementation of non-normative encoding and rendering techniques and the normative decoding process for the MIV
 standard.
 
-The test model document [[2]](#references) provides an algorithmic description for the TMIV encoder and decoder/renderer. The purpose of this document is to promote a common understanding of the coding features, in order to facilitate the assessment of the technical impact of new technologies during
-the standardization process. *Common Test Conditions for MPEG Immersive Video* [[4]](#references) provides test conditions including TMIV-based anchors. Configuration files are included with the reference software.
+The test model document [[4]](#references) provides an algorithmic description for the TMIV encoder and decoder/renderer. The purpose of this document is to promote a common understanding of the coding features, in order to facilitate the assessment of the technical impact of new technologies during
+the standardization process. *Common Test Conditions for MPEG Immersive Video* [[5]](#references) provides test conditions including TMIV-based anchors. Configuration files are included with the reference software.
 
 # Build and installation instructions
 
@@ -232,7 +232,7 @@ The file names of the configuration files, and the file names within them are on
 
 ## Instructions for CTC conditions
 
-It is assumed that the reader has read the CTC document [[4]](#references) first. This description does not replace that document.
+It is assumed that the reader has read the CTC document [[5]](#references) first. This description does not replace that document.
 
 Use the following steps to encode a bitstream and render a viewport:
 
@@ -256,7 +256,7 @@ Use the following steps to encode a bitstream and render a viewport:
 
 For this example, we will be using the MIV anchor [A_1_TMIV_encode.json](/config/ctc/miv_anchor/A_1_TMIV_encode.json) configuration and [A.json](/config/ctc/sequences/A.json) sequence configuration.
 
-1. Place the color and depth videos [[4]](#references) in a folder arbitrarily named `/Content` in this description.
+1. Place the color and depth videos [[5]](#references) in a folder arbitrarily named `/Content` in this description.
    * Your organization or one of the maintainers of this repository may be able to provide the test sequences to you.
    * Make sure to comply to the naming scheme defined in `inputTexturePathFmt` and `inputGeometryPathFmt`.
    * For example, when `inputDirectory` is equal to `/Content`,
@@ -508,7 +508,7 @@ The TMIV renderer was added to support the MIV decoder-side depth estimating anc
 
 For this example, we will be using the best reference [R_1_TMIV_render.json](/config/ctc/best_reference/R_1_TMIV_render.json) configuration and [A.json](/config/ctc/sequences/A.json) sequence configuration.
 
-1. Place the color and depth videos [[4]](#references) in a folder arbitrarily named `/Content` in this description.
+1. Place the color and depth videos [[5]](#references) in a folder arbitrarily named `/Content` in this description.
 1. Choose an output directory, arbitrarily called `/Experiment` in this description. The directory will be created when it does not yet exist.
 1. Define render targets (having none is allowed but not that useful):
    * The view name (`-v` argument) may be used multiple times to reconstruct source views and interpolate intermediate views.
@@ -758,7 +758,7 @@ Unless specified otherwise, the base directory for these path formats is `output
 
 ## Algorithmic parameters
 
-Some of the algorithmic components of the test model have parameters. This section provides a short description of these parameters in reference to the _test model_ [[2]](#references).
+Some of the algorithmic components of the test model have parameters. This section provides a short description of these parameters in reference to the _test model_ [[4]](#references).
 
 Some general parameters are defined in the root of the configuration file. All others are defined in the node of a component.
 
@@ -923,6 +923,7 @@ MPEG-internal repository. See [doc/CONTRIBUTING.md](doc/CONTRIBUTING.md) for fur
 # References
 
 * [1] *Call for Proposals on 3DoF+ Visual*, ISO/IEC JTC 1/SC 29/WG 11 N 18145, Jan. 2019, Marrakesh, Morocco.
-* [2] B. Salahieh, B. Kroon, J. Jung, A. Dziembowski (Eds.), *Test Model 7 for MPEG Immersive Video*, [ISO/IEC JTC 1/SC 29/WG 04 N 0005](https://www.mpegstandards.org/wp-content/uploads/mpeg_meetings/132_OnLine/w19678.zip), October 2020, Online.
-* [3] J. Boyce, R. Doré, V. Kumar Malamal Vadakital (Eds.), *Potential Improvements of MPEG Immersive Video*, [ISO/IEC JTC 1/SC 29/WG 04 N 0004](https://www.mpegstandards.org/wp-content/uploads/mpeg_meetings/132_OnLine/w19677.zip), October 2020, Online.
-* [4] J. Jung, B. Kroon, J. Boyce (Eds.), *Common Test Conditions for MPEG Immersive Video*, [ISO/IEC JTC 1/SC 29/WG 04 N 0006](https://www.mpegstandards.org/wp-content/uploads/mpeg_meetings/132_OnLine/w19679.zip), October 2020, Online.
+* [2] J. Boyce, R. Doré, V. Kumar Malamal Vadakital (Eds.), *Potential Improvements of MPEG Immersive Video*, [ISO/IEC JTC 1/SC 29/WG 04 N 0004](https://www.mpegstandards.org/wp-content/uploads/mpeg_meetings/132_OnLine/w19677.zip), October 2020, Online.
+* [3] J. Boyce, B. Chupeau, L. Kondrad (Eds.), *Text of ISO/IEC DIS 23090-12 MPEG Immersive Video*, ISO/IEC JTC 1/SC 29/WG 04 N 0049, January 2021, Online.
+* [4] B. Salahieh, C. Bachhuber, J. Jung, A. Dziembowski (Eds.), *Test Model 8 for MPEG Immersive Video*, [ISO/IEC JTC 1/SC 29/WG 04 N 0050](https://www.mpegstandards.org/wp-content/uploads/mpeg_meetings/133_OnLine/w20002.zip), January 2021, Online.
+* [5] J. Jung, B. Kroon (Eds.), *Common Test Conditions for MPEG Immersive Video*, [ISO/IEC JTC 1/SC 29/WG 04 N 0051](https://www.mpegstandards.org/wp-content/uploads/mpeg_meetings/133_OnLine/w20003.zip), January 2021, Online.

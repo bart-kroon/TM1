@@ -243,7 +243,6 @@ Use the following steps to encode a bitstream and render a viewport:
   1. Run the TMIV decoder to decode the MIV bitstream to render a viewport
 * MIV decoder-side depth estimating anchor:
   1. Run the TMIV encoder
-  1. Run the HM encoder on all video sub bitstreams
   1. Run the VVenC encoder on all video sub bitstreams
   1. Run the VVdeC decoder on all video sub bitstreams
   1. Run the TMIV decoder only to decode the bitstream

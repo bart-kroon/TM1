@@ -191,9 +191,6 @@ auto calculateLumaStdDev(const Common::MVD16Frame &views,
   auto [ivertices, triangles, attributes] =
       unprojectPrunedView(refView, viewParamsList[refViewId], masks[refViewId].getPlane(0));
 
-  const int W = refView.texture.getWidth();
-  const int H = refView.texture.getHeight();
-
   // compare reprojected points
   for (const auto &s : synthesizers) {
 
@@ -205,6 +202,9 @@ auto calculateLumaStdDev(const Common::MVD16Frame &views,
     weightedSphere(viewParamsList[s->index].ci, overtices, triangles);
     s->rasterizer.submit(overtices, attributes, triangles);
     s->rasterizer.run();
+
+    const auto W = static_cast<int>(s->reference.width());
+    const auto H = static_cast<int>(s->reference.height());
 
     auto j = std::begin(s->reference);
     auto jY = std::begin(s->referenceY);

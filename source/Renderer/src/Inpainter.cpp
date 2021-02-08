@@ -191,36 +191,17 @@ void inpaintOmnidirectionalView(Common::Texture444Depth16Frame &yuvd,
   auto &Y = yuvd.first.getPlane(0);
   auto &D = yuvd.second.getPlane(0);
 
-  const int width = static_cast<int>(Y.width());
-  const int height = static_cast<int>(Y.height());
+  auto isHole = Common::Mat<uint8_t>{Y.sizes(), 1};
+  auto nonEmptyNeighborL = Common::Mat<int>{Y.sizes(), -1};
+  auto nonEmptyNeighborR = Common::Mat<int>{Y.sizes(), -1};
+  auto mapERP2Cassini = Common::Mat<int>{Y.sizes(), -1};
+  auto mapCassini2ERP = Common::Mat<int>{Y.sizes(), -1};
 
-  Common::Mat<uint8_t> isHole;
-  isHole.resize(height, width);
+  const auto width = static_cast<int>(Y.width());
+  const auto height = static_cast<int>(Y.height());
 
-  Common::Mat<int> nonEmptyNeighborL;
-  nonEmptyNeighborL.resize(height, width);
-
-  Common::Mat<int> nonEmptyNeighborR;
-  nonEmptyNeighborR.resize(height, width);
-
-  Common::Mat<int> mapERP2Cassini;
-  mapERP2Cassini.resize(height, width);
-
-  Common::Mat<int> mapCassini2ERP;
-  mapCassini2ERP.resize(height, width);
-
-  for (int h = 0; h < height; h++) {
-    for (int w = 0; w < width; w++) {
-      nonEmptyNeighborL(h, w) = -1;
-      nonEmptyNeighborR(h, w) = -1;
-      mapERP2Cassini(h, w) = -1;
-      mapCassini2ERP(h, w) = -1;
-      isHole(h, w) = 1;
-    }
-  }
-
-  int width2 = width / 2;
-  int height2 = height / 2;
+  const auto width2 = width / 2;
+  const auto height2 = height / 2;
   for (int h = 0; h < height; h++) {
     auto oldH = h - height2;
     for (int w = 0; w < width; w++) {

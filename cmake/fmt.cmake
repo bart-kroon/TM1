@@ -14,3 +14,7 @@ else()
 endif()
 
 fetchcontent_makeavailable(FMT)
+
+install(
+    DIRECTORY "${FMT_SOURCE_DIR}/include/fmt/"
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/fmt)

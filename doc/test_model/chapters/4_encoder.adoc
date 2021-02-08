@@ -697,6 +697,8 @@ This reference camera is positioned at the given reference point of view.
 The reference camera is a perspective camera when using planar layers.
 The reference camera is a spherical (typically equirectangular) camera when using spherical layers.
 
+In the following, we consider the reference camera with resolution W x H and S layers.
+
 In the case of MPI, there is no view synthesized inside TMIV encoder.
 There is only one MPI camera at the input of TMIV encoder.
 The TMIV encoder processes it.
@@ -732,6 +734,7 @@ Raw storage is defined as below:
 * transparency layers must be provided as a single file (YC~B~C~R~ 4:2:0 8 bits from TMIV8.0-rc1).
 
 Each file (texture or transparency) is a temporal concatenation of the stacked layers sorted from the furthest to the closest one with respect to the reference camera.
+The layer index is the quantized normalized disparity coded on stem:[ceil(log2(S))] bits.
 Raw storage is illustrated in <<imgMpiStorage>>.
 
 From TMIV8.0-rc1 implementation, transparency is coded on 16 levels only, hence 4 bits would be enough.
@@ -746,7 +749,6 @@ image::4_encoder/mpi_storage.jpg[align=center]
 To mitigate raw storage issues, a compressed version of the MPI is defined.
 This compressed version is the one needed at input of TMIV encoder.
 
-Let's consider the reference camera with resolution W x H and S layers.
 For a given temporal frame, the number of active layers of a given pixel (i,j) is given by N~i,j~ (N~i,j~ in [0, S]). 
 We can then define for each temporal frame of the MPI :
 
@@ -756,6 +758,7 @@ We can then define for each temporal frame of the MPI :
 * T~i,j,k~ : the transparency of pixel (i,j) for the k-th active layer, as a YUV400P8 sample (1 byte)
 
 where k is an integer in the range [1, N~i,j~].
+The layer index D~i,j,k~ is the quantized normalized disparity coded on stem:[ceil(log2(S))] bits.
 
 The W x H number of active layers per pixel are first provided as a regular YUV400P16LE frame in the bitstream, and the concatenated list of all samples is immediately stacked after as presented in <<imgMpiPcsLayout>>.
 

@@ -493,9 +493,6 @@ public:
     // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     return data()[k];
   }
-  // TODO(CB) remove everything related to property, not used anywhere
-  //! \brief Return the property of the array
-  [[nodiscard]] auto getProperty() const -> int { return -1; }
   //! \brief Returns an iterator to the first element of the array.
   auto begin() -> iterator { return iterator(data()); }
   [[nodiscard]] auto begin() const -> const_iterator { return const_iterator(data()); }
@@ -682,7 +679,6 @@ protected:
   std::array<size_type, D> m_size;
   std::array<size_type, D + 1> m_step;
   std::vector<T> m_v;
-  int m_property = -1;
 
 public:
   //! \brief Default constructors.
@@ -712,19 +708,15 @@ public:
 
     this->resize(sz);
     std::transform(that.begin(), that.end(), begin(), [](auto v) { return static_cast<T>(v); });
-
-    m_property = that.getProperty();
   }
   //! \brief Move constructor.
   Array(Array &&that) noexcept {
     m_size = that.m_size;
     m_step = that.m_step;
     m_v = std::move(that.m_v);
-    m_property = that.m_property;
 
     that.m_size.fill(0);
     that.m_step.fill(0);
-    that.m_property = -1;
   }
   //! \brief Copy assignment.
   auto operator=(const Array &that) -> Array & = default;
@@ -738,8 +730,6 @@ public:
     this->resize(sz);
     std::transform(that.begin(), that.end(), begin(), [](auto v) { return static_cast<T>(v); });
 
-    m_property = that.getProperty();
-
     return *this;
   }
   auto operator=(T v) -> Array & {
@@ -751,11 +741,9 @@ public:
     m_size = that.m_size;
     m_step = that.m_step;
     m_v = std::move(that.m_v);
-    m_property = that.m_property;
 
     that.m_size.fill(0);
     that.m_step.fill(0);
-    that.m_property = -1;
 
     return *this;
   }
@@ -774,7 +762,6 @@ public:
     std::swap(m_size, that.m_size);
     std::swap(m_step, that.m_step);
     m_v.swap(that.m_v);
-    std::swap(m_property, that.m_property);
   }
   //! \brief Resize operator.
   void resize(const tuple_type &sz) {
@@ -837,10 +824,6 @@ public:
   //! dimensional array.
   auto operator[](size_type k) const -> T { return m_v[k]; }
   auto operator[](size_type k) -> T & { return m_v[k]; }
-  //! \brief Return the property of the array
-  [[nodiscard]] auto getProperty() const -> int { return m_property; }
-  // Set the property of the array
-  void setProperty(int v) { m_property = v; }
   //! \brief Returns an iterator to the first element of the array.
   auto begin() -> iterator { return iterator(data()); }
   [[nodiscard]] auto begin() const -> const_iterator { return const_iterator(data()); }
@@ -1026,7 +1009,6 @@ protected:
   std::array<size_type, D> m_size;
   std::array<size_type, D + 1> m_step;
   T *m_data = nullptr;
-  int m_property = -1;
 
 public:
   //! \brief Default constructors.
@@ -1056,20 +1038,16 @@ public:
     const auto *data = reinterpret_cast<const T *>(that.data());
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
     m_data = const_cast<T *>(data);
-
-    m_property = that.getProperty();
   }
   //! \brief Move constructor.
   Array(Array &&that) noexcept {
     m_size = that.m_size;
     m_step = that.m_step;
     m_data = that.m_data;
-    m_property = that.m_property;
 
     that.m_size.fill(0);
     that.m_step.fill(0);
     that.m_data = nullptr;
-    that.m_property = -1;
   }
   //! \brief Copy assignment.
   auto operator=(const Array &that) -> Array & = default;
@@ -1083,8 +1061,6 @@ public:
 
       this->reshape(sz);
       std::transform(that.begin(), that.end(), begin(), [](auto v) { return static_cast<T>(v); });
-
-      m_property = that.getProperty();
     }
 
     return *this;
@@ -1098,12 +1074,10 @@ public:
     m_size = that.m_size;
     m_step = that.m_step;
     m_data = that.m_data;
-    m_property = that.m_property;
 
     that.m_size.fill(0);
     that.m_step.fill(0);
     that.m_data = nullptr;
-    that.m_property = -1;
 
     return *this;
   }
@@ -1122,7 +1096,6 @@ public:
     std::swap(m_size, that.m_size);
     std::swap(m_step, that.m_step);
     std::swap(m_data, that.m_data);
-    std::swap(m_property, that.m_property);
   }
   //! \brief Resize operator.
   void resize(const tuple_type & /*unused*/) {}
@@ -1170,10 +1143,6 @@ public:
     // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     return m_data[k];
   }
-  //! \brief Return the property of the array
-  [[nodiscard]] auto getProperty() const -> int { return m_property; }
-  // \brief Set the property of the array
-  void setProperty(int v) { m_property = v; }
   //! \brief Returns an iterator to the first element of the array.
   auto begin() -> iterator { return iterator(m_data); }
   [[nodiscard]] auto begin() const -> const_iterator { return const_iterator(m_data); }

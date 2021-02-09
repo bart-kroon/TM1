@@ -169,8 +169,8 @@ inline auto Json::optional(const std::string &key) const -> const Json & {
 }
 
 inline auto Json::require(const std::string &key) const -> const Json & {
-  if (const auto &m_node = optional(key)) {
-    return m_node;
+  if (const auto &node = optional(key)) {
+    return node;
   }
   using namespace std::string_view_literals;
   throw std::runtime_error(fmt::format("JSON: Parameter '{}' is required but missing"sv, key));
@@ -179,8 +179,7 @@ inline auto Json::require(const std::string &key) const -> const Json & {
 template <typename T> auto Json::asVector() const -> std::vector<T> {
   const auto &a = as<Array>();
   auto v = std::vector<T>(a.size());
-  std::transform(a.cbegin(), a.cend(), v.begin(),
-                 [](const Json &m_node) { return m_node.as<T>(); });
+  std::transform(a.cbegin(), a.cend(), v.begin(), [](const Json &node) { return node.as<T>(); });
   return v;
 }
 

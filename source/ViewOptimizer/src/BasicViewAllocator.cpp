@@ -43,17 +43,6 @@
 #include <numeric>
 
 namespace TMIV::ViewOptimizer {
-namespace {
-[[noreturn]] void reportError(const char *what, int line) noexcept {
-  std::cerr << "Error in BasicViewAllocator at line " << line << ": " << what << '\n';
-  abort();
-
-// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
-#define VERIFY(condition)                                                                          \
-  static_cast<void>((!!(condition) || (reportError(#condition, __LINE__), false)))
-}
-} // namespace
-
 BasicViewAllocator::BasicViewAllocator(const Common::Json &rootNode,
                                        const Common::Json &componentNode)
     : AbstractViewSelector{rootNode, componentNode}

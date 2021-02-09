@@ -106,18 +106,17 @@ auto ViewingSpaceHandling::vs_handling_options_count() const noexcept -> size_t 
   return m_handlingOptionList.size();
 }
 
-auto ViewingSpaceHandling::vs_handling_device_class(size_t h) const noexcept -> VhDeviceClass {
+auto ViewingSpaceHandling::vs_handling_device_class(size_t h) const -> VhDeviceClass {
   VERIFY_MIVBITSTREAM(h < vs_handling_options_count());
   return m_handlingOptionList[h].vs_handling_device_class;
 }
 
-auto ViewingSpaceHandling::vs_handling_application_class(size_t h) const noexcept
-    -> VhApplicationClass {
+auto ViewingSpaceHandling::vs_handling_application_class(size_t h) const -> VhApplicationClass {
   VERIFY_MIVBITSTREAM(h < vs_handling_options_count());
   return m_handlingOptionList[h].vs_handling_application_class;
 }
 
-auto ViewingSpaceHandling::vs_handling_method(size_t h) const noexcept -> VhMethod {
+auto ViewingSpaceHandling::vs_handling_method(size_t h) const -> VhMethod {
   VERIFY_MIVBITSTREAM(h < vs_handling_options_count());
   return m_handlingOptionList[h].vs_handling_method;
 }

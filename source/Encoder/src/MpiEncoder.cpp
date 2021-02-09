@@ -41,12 +41,6 @@
 
 namespace TMIV::Encoder {
 namespace {
-void runtimeCheck(bool cond, const char *what) {
-  if (!cond) {
-    throw std::runtime_error(what);
-  }
-}
-
 auto dilateTextureAtlas(Common::TextureFrame &textureAtlas,
                         const Common::Transparency10Frame &transparencyAtlas,
                         unsigned textureDilation) -> Common::TextureFrame {
@@ -165,8 +159,8 @@ MpiEncoder::MpiEncoder(const Common::Json &rootNode, const Common::Json &compone
 void MpiEncoder::prepareSequence(MivBitstream::EncoderParams sourceParams) {
   m_blockSize = m_blockSizeDepthQualityDependent[static_cast<std::size_t>(
       sourceParams.casme().casme_depth_low_quality_flag())];
-  runtimeCheck(2 <= m_blockSize, "blockSize should be at least two");
-  runtimeCheck((m_blockSize & (m_blockSize - 1)) == 0, "blockSize should be a power of two");
+  VERIFY(2 <= m_blockSize);
+  VERIFY((m_blockSize & (m_blockSize - 1)) == 0);
 
   // Create IVS with VPS with right number of atlases but copy other parts from input IVS
   m_params = MivBitstream::EncoderParams{m_overrideAtlasFrameSizes, 10, 0, 0, 10};

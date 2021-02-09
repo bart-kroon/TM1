@@ -106,8 +106,8 @@ void PushPull::inplacePullFrame(const Common::Texture444Depth16Frame &in,
 template <typename InMatrixProxy, typename OutMatrixProxy, typename PushFilter>
 void PushPull::inplacePush(const InMatrixProxy &&in, OutMatrixProxy &&out,
                            PushFilter &&filter) noexcept {
-  assert(out.width == (in.width + 1) / 2);
-  assert(out.height == (in.height + 1) / 2);
+  PRECONDITION(out.width == (in.width + 1) / 2);
+  PRECONDITION(out.height == (in.height + 1) / 2);
 
   for (int y = 0; y < out.height; ++y) {
     const auto y_1 = 2 * y;
@@ -126,8 +126,8 @@ void PushPull::inplacePush(const InMatrixProxy &&in, OutMatrixProxy &&out,
 template <typename InMatrixProxy, typename OutMatrixProxy, typename PullFilter>
 void PushPull::inplacePull(const InMatrixProxy &&in, OutMatrixProxy &&out,
                            PullFilter &&filter) noexcept {
-  assert(in.width == (out.width + 1) / 2);
-  assert(in.height == (out.height + 1) / 2);
+  PRECONDITION(in.width == (out.width + 1) / 2);
+  PRECONDITION(in.height == (out.height + 1) / 2);
 
   for (int y = 0; y < out.height; ++y) {
     auto y_1 = std::max(0, (y - 1) / 2);

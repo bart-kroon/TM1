@@ -77,9 +77,9 @@ public:
   explicit ViewingSpaceHandling(HandlingOptionList);
 
   [[nodiscard]] auto vs_handling_options_count() const noexcept -> std::size_t;
-  [[nodiscard]] auto vs_handling_device_class(size_t h) const noexcept -> VhDeviceClass;
-  [[nodiscard]] auto vs_handling_application_class(size_t h) const noexcept -> VhApplicationClass;
-  [[nodiscard]] auto vs_handling_method(size_t h) const noexcept -> VhMethod;
+  [[nodiscard]] auto vs_handling_device_class(size_t h) const -> VhDeviceClass;
+  [[nodiscard]] auto vs_handling_application_class(size_t h) const -> VhApplicationClass;
+  [[nodiscard]] auto vs_handling_method(size_t h) const -> VhMethod;
 
   friend auto operator<<(std::ostream &stream, const ViewingSpaceHandling &x) -> std::ostream &;
 

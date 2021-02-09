@@ -218,9 +218,9 @@ public:
   [[nodiscard]] constexpr auto ptl_profile_reconstruction_idc() const noexcept;
   [[nodiscard]] constexpr auto ptl_max_decodes_idc() const noexcept;
   [[nodiscard]] constexpr auto ptl_level_idc() const noexcept;
-  [[nodiscard]] auto ptl_num_sub_profiles() const noexcept -> std::uint8_t;
+  [[nodiscard]] auto ptl_num_sub_profiles() const -> std::uint8_t;
   [[nodiscard]] constexpr auto ptl_extended_sub_profile_flag() const noexcept;
-  [[nodiscard]] auto ptl_sub_profile_idc(std::uint8_t i) const noexcept -> std::uint64_t;
+  [[nodiscard]] auto ptl_sub_profile_idc(std::uint8_t i) const -> std::uint64_t;
   [[nodiscard]] constexpr auto ptl_toolset_constraints_present_flag() const noexcept;
   [[nodiscard]] auto ptl_profile_toolset_constraints_information() const
       -> const ProfileToolsetConstraintsInformation &;
@@ -233,8 +233,8 @@ public:
   constexpr auto ptl_max_decodes_idc(PtlMaxDecodesIdc value) noexcept -> auto &;
   constexpr auto ptl_level_idc(PtlLevelIdc value) noexcept -> auto &;
   auto ptl_num_sub_profiles(std::uint8_t value) noexcept -> ProfileTierLevel &;
-  auto ptl_extended_sub_profile_flag(bool value) noexcept -> ProfileTierLevel &;
-  auto ptl_sub_profile_idc(std::uint8_t i, std::uint64_t value) noexcept -> ProfileTierLevel &;
+  auto ptl_extended_sub_profile_flag(bool value) -> ProfileTierLevel &;
+  auto ptl_sub_profile_idc(std::uint8_t i, std::uint64_t value) -> ProfileTierLevel &;
   constexpr auto ptl_toolset_constraints_present_flag(bool value) noexcept -> auto &;
   auto ptl_profile_toolset_constraints_information(ProfileToolsetConstraintsInformation value)
       -> ProfileTierLevel &;
@@ -359,8 +359,8 @@ public:
 
   auto printTo(std::ostream &stream, AtlasId atlasId) const -> std::ostream &;
 
-  auto operator==(const AttributeInformation &other) const noexcept -> bool;
-  auto operator!=(const AttributeInformation &other) const noexcept -> bool;
+  auto operator==(const AttributeInformation &other) const -> bool;
+  auto operator!=(const AttributeInformation &other) const -> bool;
 
   static auto decodeFrom(Common::InputBitstream &bitstream, const V3cParameterSet &vps,
                          AtlasId atlasId) -> AttributeInformation;
@@ -425,16 +425,16 @@ class PackingInformation {
 public:
   [[nodiscard]] constexpr auto pin_codec_id() const noexcept -> std::uint8_t;
   [[nodiscard]] auto pin_regions_count_minus1() const -> std::size_t;
-  [[nodiscard]] auto pin_region_tile_id(std::size_t i) const noexcept -> std::uint8_t;
-  [[nodiscard]] auto pin_region_type_id_minus2(std::size_t i) const noexcept -> VuhUnitType;
-  [[nodiscard]] auto pin_region_top_left_x(std::size_t i) const noexcept -> std::uint16_t;
-  [[nodiscard]] auto pin_region_top_left_y(std::size_t i) const noexcept -> std::uint16_t;
-  [[nodiscard]] auto pin_region_width_minus1(std::size_t i) const noexcept -> std::uint16_t;
-  [[nodiscard]] auto pin_region_height_minus1(std::size_t i) const noexcept -> std::uint16_t;
-  [[nodiscard]] auto pin_region_unpack_top_left_x(std::size_t i) const noexcept -> std::uint16_t;
-  [[nodiscard]] auto pin_region_unpack_top_left_y(std::size_t i) const noexcept -> std::uint16_t;
-  [[nodiscard]] auto pin_region_map_index(std::size_t i) const noexcept -> std::uint8_t;
-  [[nodiscard]] auto pin_region_rotation_flag(std::size_t i) const noexcept -> bool;
+  [[nodiscard]] auto pin_region_tile_id(std::size_t i) const -> std::uint8_t;
+  [[nodiscard]] auto pin_region_type_id_minus2(std::size_t i) const -> VuhUnitType;
+  [[nodiscard]] auto pin_region_top_left_x(std::size_t i) const -> std::uint16_t;
+  [[nodiscard]] auto pin_region_top_left_y(std::size_t i) const -> std::uint16_t;
+  [[nodiscard]] auto pin_region_width_minus1(std::size_t i) const -> std::uint16_t;
+  [[nodiscard]] auto pin_region_height_minus1(std::size_t i) const -> std::uint16_t;
+  [[nodiscard]] auto pin_region_unpack_top_left_x(std::size_t i) const -> std::uint16_t;
+  [[nodiscard]] auto pin_region_unpack_top_left_y(std::size_t i) const -> std::uint16_t;
+  [[nodiscard]] auto pin_region_map_index(std::size_t i) const -> std::uint8_t;
+  [[nodiscard]] auto pin_region_rotation_flag(std::size_t i) const -> bool;
   [[nodiscard]] auto pin_region_auxiliary_data_flag(std::size_t i) const -> bool;
   [[nodiscard]] auto pin_region_attr_type_id(std::size_t i) const -> std::uint8_t;
   [[nodiscard]] auto pin_region_attr_partitions_flag(std::size_t i) const -> bool;
@@ -477,10 +477,10 @@ private:
 class GroupMapping {
 public:
   [[nodiscard]] constexpr auto gm_group_count() const noexcept;
-  [[nodiscard]] auto gm_group_id(std::size_t i) const noexcept -> std::uint8_t;
+  [[nodiscard]] auto gm_group_id(std::size_t i) const -> std::uint8_t;
 
   constexpr auto gm_group_count(std::uint8_t value) noexcept -> auto &;
-  auto gm_group_id(std::size_t i, std::uint8_t value) noexcept -> GroupMapping &;
+  auto gm_group_id(std::size_t i, std::uint8_t value) -> GroupMapping &;
 
   friend auto operator<<(std::ostream &stream, const GroupMapping &x) -> std::ostream &;
 
@@ -552,9 +552,9 @@ public:
   [[nodiscard]] constexpr auto vps_extension_6bits() const noexcept;
   [[nodiscard]] auto vps_packed_video_present_flag(const AtlasId &j) const;
   [[nodiscard]] auto packing_information(const AtlasId &j) const;
-  [[nodiscard]] auto vps_miv_extension() const noexcept -> const VpsMivExtension &;
-  [[nodiscard]] auto vps_extension_length_minus1() const noexcept -> std::size_t;
-  [[nodiscard]] auto vpsExtensionData() const noexcept -> const std::vector<std::uint8_t> &;
+  [[nodiscard]] auto vps_miv_extension() const -> const VpsMivExtension &;
+  [[nodiscard]] auto vps_extension_length_minus1() const -> std::size_t;
+  [[nodiscard]] auto vpsExtensionData() const -> const std::vector<std::uint8_t> &;
 
   auto profile_tier_level(ProfileTierLevel value) noexcept -> V3cParameterSet &;
   constexpr auto vps_v3c_parameter_set_id(std::uint8_t value) noexcept -> auto &;
@@ -576,7 +576,7 @@ public:
   auto vps_extension_6bits(std::uint8_t value) noexcept -> V3cParameterSet &;
   auto vps_packed_video_present_flag(const AtlasId &j, bool value) -> V3cParameterSet &;
   auto packing_information(const AtlasId &j, PackingInformation value) -> V3cParameterSet &;
-  auto vps_miv_extension(const VpsMivExtension &value) noexcept -> V3cParameterSet &;
+  auto vps_miv_extension(const VpsMivExtension &value) -> V3cParameterSet &;
   auto vpsExtensionData(std::vector<std::uint8_t> value) noexcept -> V3cParameterSet &;
 
   constexpr auto profile_tier_level() noexcept -> auto &;
@@ -586,12 +586,12 @@ public:
   [[nodiscard]] auto vps_miv_extension() noexcept -> VpsMivExtension &;
 
   // Convenience function
-  [[nodiscard]] auto indexOf(AtlasId atlasId) const noexcept -> std::size_t;
+  [[nodiscard]] auto indexOf(AtlasId atlasId) const -> std::size_t;
 
   friend auto operator<<(std::ostream &stream, const V3cParameterSet &x) -> std::ostream &;
 
-  auto operator==(const V3cParameterSet &other) const noexcept -> bool;
-  auto operator!=(const V3cParameterSet &other) const noexcept -> bool;
+  auto operator==(const V3cParameterSet &other) const -> bool;
+  auto operator!=(const V3cParameterSet &other) const -> bool;
 
   static auto decodeFrom(std::istream &stream) -> V3cParameterSet;
 
@@ -614,8 +614,8 @@ private:
     std::optional<PackingInformation> packing_information{};
   };
 
-  [[nodiscard]] auto atlas(AtlasId atlasId) const noexcept -> const VpsAtlas &;
-  [[nodiscard]] auto atlas(AtlasId atlasId) noexcept -> VpsAtlas &;
+  [[nodiscard]] auto atlas(AtlasId atlasId) const -> const VpsAtlas &;
+  [[nodiscard]] auto atlas(AtlasId atlasId) -> VpsAtlas &;
 
   ProfileTierLevel m_profile_tier_level;
   std::uint8_t m_vps_v3c_parameter_set_id{};

@@ -119,9 +119,7 @@ auto GeometryQuantizer::transformAtlases(const Common::MVD16Frame &inAtlases)
 
         const auto &plane = inAtlases[kIn].depth.getPlane(0);
 
-        if (n >= plane.height() || m >= plane.width()) {
-          abort();
-        }
+        PRECONDITION(n < plane.height() && m < plane.width());
 
         const auto inLevel = plane(n, m);
 

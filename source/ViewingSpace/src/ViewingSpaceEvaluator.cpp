@@ -230,9 +230,9 @@ static auto computeBisectPlanes(const MivBitstream::PrimitiveShapeVector &primit
 auto interpolateShape(const MivBitstream::PrimitiveShape a, const MivBitstream::PrimitiveShape b,
                       Common::Vec3f center, float w) -> MivBitstream::PrimitiveShape {
   MivBitstream::PrimitiveShape output(a);
-  assert(a.shapeType() == b.shapeType());
-  assert(a.shapeType() == MivBitstream::PrimitiveShapeType::spheroid ||
-         (a.shapeType() == MivBitstream::PrimitiveShapeType::cuboid));
+  PRECONDITION(a.shapeType() == b.shapeType());
+  PRECONDITION(a.shapeType() == MivBitstream::PrimitiveShapeType::spheroid ||
+               (a.shapeType() == MivBitstream::PrimitiveShapeType::cuboid));
 
   // dimension and position
   if (a.shapeType() == MivBitstream::PrimitiveShapeType::spheroid) {
@@ -378,7 +378,7 @@ static auto evaluate(const MivBitstream::ElementaryShape &shape, const ViewingPa
   if (shape.primitiveOperation == MivBitstream::PrimitiveShapeOperation::interpolate) {
     return evaluateInterpolation(shape.primitives, viewingParams);
   }
-  abort();
+  UNREACHABLE;
 }
 
 static auto distanceInclusion(const SignedDistance sdBoundary, const SignedDistance sdGuard)
@@ -391,7 +391,7 @@ static auto distanceInclusion(const SignedDistance sdBoundary, const SignedDista
   }
   const float guardBandDepth = sdGuard.value - sdBoundary.value; // note sdGuard > sdBoundary
   const float inclusion = -sdBoundary.value / guardBandDepth;
-  assert(Common::inRange(inclusion, 0.F, 1.F));
+  POSTCONDITION(Common::inRange(inclusion, 0.F, 1.F));
   return inclusion;
 }
 
@@ -408,7 +408,7 @@ static auto angleInclusion(const float deltaAngle, const float range, const floa
   }
   const float inclusion = (maxDelta - absDelta) / guardBand;
 
-  assert(Common::inRange(inclusion, 0.F, 1.F));
+  POSTCONDITION(Common::inRange(inclusion, 0.F, 1.F));
   return inclusion;
 }
 

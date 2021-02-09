@@ -10,7 +10,6 @@ create_tmiv_library(
         "src/Json.cpp"
         "src/Half.cpp"
         "src/Frame.cpp"
-        "src/verify.cpp"
         "include/TMIV/Common/Bitstream.h"
         "include/TMIV/Common/Bitstream.hpp"
         "include/TMIV/Common/Bytestream.h"

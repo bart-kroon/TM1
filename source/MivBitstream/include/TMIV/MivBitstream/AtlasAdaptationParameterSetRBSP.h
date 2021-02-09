@@ -63,7 +63,7 @@ class AapsMivExtension {
 public:
   [[nodiscard]] constexpr auto aame_omaf_v1_compatible_flag() const noexcept;
   [[nodiscard]] constexpr auto aame_vui_params_present_flag() const noexcept;
-  [[nodiscard]] auto vui_parameters() const noexcept -> const VuiParameters &;
+  [[nodiscard]] auto vui_parameters() const -> const VuiParameters &;
 
   constexpr auto aame_omaf_v1_compatible_flag(bool value) noexcept -> auto &;
   constexpr auto aame_vui_params_present_flag(bool value) noexcept -> auto &;
@@ -89,13 +89,12 @@ class AtlasAdaptationParameterSetRBSP {
 public:
   [[nodiscard]] constexpr auto aaps_atlas_adaptation_parameter_set_id() const noexcept;
   [[nodiscard]] constexpr auto aaps_log2_max_afoc_present_flag() const noexcept;
-  [[nodiscard]] auto aaps_log2_max_atlas_frame_order_cnt_lsb_minus4() const noexcept
-      -> std::uint8_t;
+  [[nodiscard]] auto aaps_log2_max_atlas_frame_order_cnt_lsb_minus4() const -> std::uint8_t;
   [[nodiscard]] constexpr auto aaps_extension_present_flag() const noexcept;
   [[nodiscard]] constexpr auto aaps_vpcc_extension_present_flag() const noexcept;
   [[nodiscard]] constexpr auto aaps_extension_7bits() const noexcept;
-  [[nodiscard]] auto aaps_vpcc_extension() const noexcept -> const AapsVpccExtension &;
-  [[nodiscard]] auto aapsExtensionData() const noexcept -> const std::vector<bool> &;
+  [[nodiscard]] auto aaps_vpcc_extension() const -> const AapsVpccExtension &;
+  [[nodiscard]] auto aapsExtensionData() const -> const std::vector<bool> &;
 
   constexpr auto aaps_atlas_adaptation_parameter_set_id(std::uint8_t value) noexcept -> auto &;
   constexpr auto aaps_log2_max_afoc_present_flag(bool value) noexcept -> auto &;
@@ -111,8 +110,8 @@ public:
   friend auto operator<<(std::ostream &stream, const AtlasAdaptationParameterSetRBSP &x)
       -> std::ostream &;
 
-  auto operator==(const AtlasAdaptationParameterSetRBSP &) const noexcept -> bool;
-  auto operator!=(const AtlasAdaptationParameterSetRBSP &) const noexcept -> bool;
+  auto operator==(const AtlasAdaptationParameterSetRBSP &) const -> bool;
+  auto operator!=(const AtlasAdaptationParameterSetRBSP &) const -> bool;
 
   static auto decodeFrom(std::istream &stream) -> AtlasAdaptationParameterSetRBSP;
 

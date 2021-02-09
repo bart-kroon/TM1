@@ -88,13 +88,13 @@ void AtlasFrameTileInformation::encodeTo(Common::OutputBitstream &bitstream) {
 
 auto AfpsMivExtension::afme_inpaint_lod_scale_x_minus1(unsigned value) noexcept
     -> AfpsMivExtension & {
-  VERIFY_MIVBITSTREAM(afme_inpaint_lod_enabled_flag());
+  PRECONDITION(afme_inpaint_lod_enabled_flag());
   m_afme_inpaint_lod_scale_x_minus1 = value;
   return *this;
 }
 
 auto AfpsMivExtension::afme_inpaint_lod_scale_y_idc(unsigned value) noexcept -> AfpsMivExtension & {
-  VERIFY_MIVBITSTREAM(afme_inpaint_lod_enabled_flag());
+  PRECONDITION(afme_inpaint_lod_enabled_flag());
   m_afme_inpaint_lod_scale_y_idc = value;
   return *this;
 }
@@ -127,23 +127,23 @@ auto AfpsMivExtension::decodeFrom(Common::InputBitstream &bitstream,
 void AfpsMivExtension::encodeTo(Common::OutputBitstream &bitstream,
                                 const AtlasFrameParameterSetRBSP &afps) const {
   if (!afps.afps_lod_mode_enabled_flag()) {
-    VERIFY_MIVBITSTREAM(m_afme_inpaint_lod_enabled_flag);
+    PRECONDITION(m_afme_inpaint_lod_enabled_flag);
     bitstream.putFlag(afme_inpaint_lod_enabled_flag());
     if (afme_inpaint_lod_enabled_flag()) {
-      VERIFY_MIVBITSTREAM(m_afme_inpaint_lod_scale_x_minus1 && m_afme_inpaint_lod_scale_y_idc);
+      PRECONDITION(m_afme_inpaint_lod_scale_x_minus1 && m_afme_inpaint_lod_scale_y_idc);
       bitstream.putUExpGolomb(afme_inpaint_lod_scale_x_minus1());
       bitstream.putUExpGolomb(afme_inpaint_lod_scale_y_idc());
     }
   }
 }
 
-auto AtlasFrameParameterSetRBSP::afps_miv_extension() const noexcept -> AfpsMivExtension {
+auto AtlasFrameParameterSetRBSP::afps_miv_extension() const -> AfpsMivExtension {
   VERIFY_V3CBITSTREAM(afps_miv_extension_present_flag());
   VERIFY_V3CBITSTREAM(m_afme.has_value());
   return *m_afme;
 }
 
-auto AtlasFrameParameterSetRBSP::afpsExtensionData() const noexcept -> const std::vector<bool> & {
+auto AtlasFrameParameterSetRBSP::afpsExtensionData() const -> const std::vector<bool> & {
   VERIFY_V3CBITSTREAM(afps_extension_7bits() != 0);
   VERIFY_V3CBITSTREAM(m_afpsExtensionData.has_value());
   return *m_afpsExtensionData;
@@ -151,20 +151,20 @@ auto AtlasFrameParameterSetRBSP::afpsExtensionData() const noexcept -> const std
 
 auto AtlasFrameParameterSetRBSP::afps_miv_extension_present_flag(bool value) noexcept
     -> AtlasFrameParameterSetRBSP & {
-  VERIFY_V3CBITSTREAM(afps_extension_present_flag());
+  PRECONDITION(afps_extension_present_flag());
   m_afps_miv_extension_present_flag = value;
   return *this;
 }
 
 auto AtlasFrameParameterSetRBSP::afps_extension_7bits(uint8_t value) noexcept
     -> AtlasFrameParameterSetRBSP & {
-  VERIFY_V3CBITSTREAM(afps_extension_present_flag());
+  PRECONDITION(afps_extension_present_flag());
   m_afps_extension_7bits = value;
   return *this;
 }
 
 auto AtlasFrameParameterSetRBSP::afps_miv_extension() noexcept -> AfpsMivExtension & {
-  VERIFY_V3CBITSTREAM(afps_miv_extension_present_flag());
+  PRECONDITION(afps_miv_extension_present_flag());
   if (!m_afme) {
     m_afme = AfpsMivExtension{};
   }
@@ -173,7 +173,7 @@ auto AtlasFrameParameterSetRBSP::afps_miv_extension() noexcept -> AfpsMivExtensi
 
 auto AtlasFrameParameterSetRBSP::afpsExtensionData(std::vector<bool> value) noexcept
     -> AtlasFrameParameterSetRBSP & {
-  VERIFY_V3CBITSTREAM(afps_extension_7bits() != 0);
+  PRECONDITION(afps_extension_7bits() != 0);
   m_afpsExtensionData = std::move(value);
   return *this;
 }
@@ -211,8 +211,7 @@ auto operator<<(std::ostream &stream, const AtlasFrameParameterSetRBSP &x) -> st
   return stream;
 }
 
-auto AtlasFrameParameterSetRBSP::operator==(const AtlasFrameParameterSetRBSP &other) const noexcept
-    -> bool {
+auto AtlasFrameParameterSetRBSP::operator==(const AtlasFrameParameterSetRBSP &other) const -> bool {
   if (afps_atlas_frame_parameter_set_id() != other.afps_atlas_frame_parameter_set_id() ||
       afps_atlas_sequence_parameter_set_id() != other.afps_atlas_sequence_parameter_set_id() ||
       atlas_frame_tile_information() != other.atlas_frame_tile_information() ||
@@ -236,8 +235,7 @@ auto AtlasFrameParameterSetRBSP::operator==(const AtlasFrameParameterSetRBSP &ot
   return true;
 }
 
-auto AtlasFrameParameterSetRBSP::operator!=(const AtlasFrameParameterSetRBSP &other) const noexcept
-    -> bool {
+auto AtlasFrameParameterSetRBSP::operator!=(const AtlasFrameParameterSetRBSP &other) const -> bool {
   return !operator==(other);
 }
 
@@ -293,7 +291,7 @@ void AtlasFrameParameterSetRBSP::encodeTo(
     std::ostream &stream, const std::vector<AtlasSequenceParameterSetRBSP> &aspsV) const {
   Common::OutputBitstream bitstream{stream};
 
-  VERIFY_V3CBITSTREAM(afps_atlas_frame_parameter_set_id() <= 63);
+  PRECONDITION(afps_atlas_frame_parameter_set_id() <= 63);
   bitstream.putUExpGolomb(afps_atlas_frame_parameter_set_id());
 
   bitstream.putUExpGolomb(afps_atlas_sequence_parameter_set_id());
@@ -303,13 +301,13 @@ void AtlasFrameParameterSetRBSP::encodeTo(
 
   bitstream.putFlag(afps_output_flag_present_flag());
 
-  VERIFY_V3CBITSTREAM(afps_num_ref_idx_default_active_minus1() <= 14);
+  PRECONDITION(afps_num_ref_idx_default_active_minus1() <= 14);
   bitstream.putUExpGolomb(afps_num_ref_idx_default_active_minus1());
 
-  VERIFY_V3CBITSTREAM(afps_additional_lt_afoc_lsb_len() <=
-                      32 - (asps.asps_log2_max_atlas_frame_order_cnt_lsb_minus4() + 4));
-  VERIFY_V3CBITSTREAM(asps.asps_long_term_ref_atlas_frames_flag() ||
-                      afps_additional_lt_afoc_lsb_len() == 0);
+  PRECONDITION(afps_additional_lt_afoc_lsb_len() <=
+               32 - (asps.asps_log2_max_atlas_frame_order_cnt_lsb_minus4() + 4));
+  PRECONDITION(asps.asps_long_term_ref_atlas_frames_flag() ||
+               afps_additional_lt_afoc_lsb_len() == 0);
   bitstream.putUExpGolomb(afps_additional_lt_afoc_lsb_len());
 
   bitstream.putFlag(afps_lod_mode_enabled_flag());
@@ -331,7 +329,7 @@ void AtlasFrameParameterSetRBSP::encodeTo(
   bitstream.rbspTrailingBits();
 }
 
-auto afpsById(const std::vector<AtlasFrameParameterSetRBSP> &afpsV, int id) noexcept
+auto afpsById(const std::vector<AtlasFrameParameterSetRBSP> &afpsV, int id)
     -> const AtlasFrameParameterSetRBSP & {
   for (const auto &x : afpsV) {
     if (id == x.afps_atlas_frame_parameter_set_id()) {

@@ -80,7 +80,6 @@ auto averagePixels(const TMIV::Common::Mat<uint16_t> &in, int i, int j, int k) {
 
   const auto sum = sumPixelsInRectangle(in, p_1, p_2);
   const auto count = countPixelsInRectangle(p_1, p_2);
-  assert(0 <= sum);
   return (sum + count / 2) / count;
 }
 } // namespace

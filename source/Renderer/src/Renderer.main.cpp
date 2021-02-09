@@ -118,7 +118,7 @@ private:
     au.viewParamsList = vpl;
     au.foc = foc;
 
-    assert(m_depthLowQualityFlag.has_value());
+    PRECONDITION(m_depthLowQualityFlag.has_value());
     au.casps.emplace(MivBitstream::CommonAtlasSequenceParameterSetRBSP{});
     au.casps->casps_extension_present_flag(true)
         .casps_miv_extension_present_flag(true)

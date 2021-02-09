@@ -122,7 +122,7 @@ template <typename F> decltype(auto) CameraIntrinsics::dispatch(F f) const {
   case CiCamType::orthographic:
     return f(Orthographic{});
   default:
-    abort();
+    UNREACHABLE;
   }
 }
 

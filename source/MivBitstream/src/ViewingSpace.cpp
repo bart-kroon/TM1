@@ -61,18 +61,17 @@ static auto equalRotation(const Common::QuatF &a, const Common::QuatF &b) -> boo
   return d > 0.9999F;
 }
 
-auto ViewingSpace::vs_num_elementary_shapes_minus1() const noexcept -> std::size_t {
+auto ViewingSpace::vs_num_elementary_shapes_minus1() const -> std::size_t {
   VERIFY_MIVBITSTREAM(!elementaryShapes.empty());
   return elementaryShapes.size() - 1U;
 }
 
-auto ViewingSpace::vs_elementary_shape_operation(std::size_t e) const noexcept
-    -> ElementaryShapeOperation {
+auto ViewingSpace::vs_elementary_shape_operation(std::size_t e) const -> ElementaryShapeOperation {
   VERIFY_MIVBITSTREAM(e <= vs_num_elementary_shapes_minus1());
   return elementaryShapes[e].elementary_shape_operation;
 }
 
-auto ViewingSpace::elementary_shape(std::size_t e) const noexcept -> ElementaryShape {
+auto ViewingSpace::elementary_shape(std::size_t e) const -> ElementaryShape {
   VERIFY_MIVBITSTREAM(e <= vs_num_elementary_shapes_minus1());
   return elementaryShapes[e].elementary_shape;
 }
@@ -162,64 +161,59 @@ auto ElementaryShape::es_primitive_shape_type(int s) const noexcept -> Primitive
   return primitives[s].shapeType();
 }
 
-auto ElementaryShape::es_guard_band_size(int s) const noexcept -> float {
+auto ElementaryShape::es_guard_band_size(int s) const -> float {
   VERIFY_MIVBITSTREAM(es_guard_band_present_flag());
   return primitives[s].guardBandSize.value_or(0.F);
 }
 
-auto ElementaryShape::es_primitive_shape_quat_x(int s) const noexcept -> float {
+auto ElementaryShape::es_primitive_shape_quat_x(int s) const -> float {
   VERIFY_MIVBITSTREAM(es_primitive_orientation_present_flag());
   return primitives[s].rotation->x();
 }
 
-auto ElementaryShape::es_primitive_shape_quat_y(int s) const noexcept -> float {
+auto ElementaryShape::es_primitive_shape_quat_y(int s) const -> float {
   VERIFY_MIVBITSTREAM(es_primitive_orientation_present_flag());
   return primitives[s].rotation->y();
 }
 
-auto ElementaryShape::es_primitive_shape_quat_z(int s) const noexcept -> float {
+auto ElementaryShape::es_primitive_shape_quat_z(int s) const -> float {
   VERIFY_MIVBITSTREAM(es_primitive_orientation_present_flag());
   return primitives[s].rotation->z();
 }
 
-auto ElementaryShape::es_guard_band_direction_size(int s) const noexcept -> float {
+auto ElementaryShape::es_guard_band_direction_size(int s) const -> float {
   VERIFY_MIVBITSTREAM(es_guard_band_present_flag());
   const auto viewing_direction_constraint = primitives[s].viewingDirectionConstraint.value_or(
       PrimitiveShape::ViewingDirectionConstraint());
   return viewing_direction_constraint.guardBandDirectionSize.value_or(0.F);
 }
-auto ElementaryShape::es_primitive_shape_viewing_direction_quat_x_center(int s) const noexcept
-    -> float {
+auto ElementaryShape::es_primitive_shape_viewing_direction_quat_x_center(int s) const -> float {
   VERIFY_MIVBITSTREAM(es_viewing_direction_constraint_present_flag());
   const auto viewing_direction_constraint = primitives[s].viewingDirectionConstraint.value_or(
       PrimitiveShape::ViewingDirectionConstraint());
   return viewing_direction_constraint.directionRotation.x();
 }
-auto ElementaryShape::es_primitive_shape_viewing_direction_quat_y_center(int s) const noexcept
-    -> float {
+auto ElementaryShape::es_primitive_shape_viewing_direction_quat_y_center(int s) const -> float {
   VERIFY_MIVBITSTREAM(es_viewing_direction_constraint_present_flag());
   const auto viewing_direction_constraint = primitives[s].viewingDirectionConstraint.value_or(
       PrimitiveShape::ViewingDirectionConstraint());
   return viewing_direction_constraint.directionRotation.y();
 }
-auto ElementaryShape::es_primitive_shape_viewing_direction_quat_z_center(int s) const noexcept
-    -> float {
+auto ElementaryShape::es_primitive_shape_viewing_direction_quat_z_center(int s) const -> float {
   VERIFY_MIVBITSTREAM(es_viewing_direction_constraint_present_flag());
   const auto viewing_direction_constraint = primitives[s].viewingDirectionConstraint.value_or(
       PrimitiveShape::ViewingDirectionConstraint());
   return viewing_direction_constraint.directionRotation.z();
 }
 
-auto ElementaryShape::es_primitive_shape_viewing_direction_yaw_range(int s) const noexcept
-    -> float {
+auto ElementaryShape::es_primitive_shape_viewing_direction_yaw_range(int s) const -> float {
   VERIFY_MIVBITSTREAM(es_viewing_direction_constraint_present_flag());
   const auto viewing_direction_constraint = primitives[s].viewingDirectionConstraint.value_or(
       PrimitiveShape::ViewingDirectionConstraint());
   return viewing_direction_constraint.yawRange;
 }
 
-auto ElementaryShape::es_primitive_shape_viewing_direction_pitch_range(int s) const noexcept
-    -> float {
+auto ElementaryShape::es_primitive_shape_viewing_direction_pitch_range(int s) const -> float {
   VERIFY_MIVBITSTREAM(es_viewing_direction_constraint_present_flag());
   const auto viewing_direction_constraint = primitives[s].viewingDirectionConstraint.value_or(
       PrimitiveShape::ViewingDirectionConstraint());
@@ -257,7 +251,7 @@ auto ElementaryShape::decodeFrom(Common::InputBitstream &stream) -> ElementarySh
       primitiveShape.primitive = Halfspace::decodeFrom(stream);
       break;
     default:
-      abort();
+      UNREACHABLE;
     }
     if (guardBandPresent) {
       primitiveShape.guardBandSize = stream.getFloat16();

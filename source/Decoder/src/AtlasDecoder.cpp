@@ -38,6 +38,7 @@
 #include "NalUnitSemantics.h"
 
 #include <cassert>
+#include <iostream>
 #include <sstream>
 #include <utility>
 
@@ -55,7 +56,7 @@ auto AtlasDecoder::operator()() -> std::optional<AccessUnit> {
 
 auto AtlasDecoder::decodeAsb() -> bool {
   if (auto asb = m_source()) {
-    assert(m_vuh == asb->v3c_unit_header());
+    PRECONDITION(m_vuh == asb->v3c_unit_header());
     for (const auto &nu : asb->v3c_unit_payload().atlas_sub_bitstream().nal_units()) {
       if (nu.nal_unit_header().nal_layer_id() == 0) {
         m_buffer.push_back(nu);

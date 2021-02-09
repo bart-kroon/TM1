@@ -228,7 +228,7 @@ auto PatchParams::atlasToViewTransform() const noexcept -> Common::Mat3x3i {
             0,    -lodY, v0 + lodY * (y0 + yS - 1),   //
             0,    0,     1};                          //
   default:
-    abort();
+    UNREACHABLE;
   }
 }
 

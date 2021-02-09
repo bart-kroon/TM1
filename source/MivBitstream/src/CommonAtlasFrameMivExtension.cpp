@@ -57,61 +57,61 @@ auto CameraIntrinsics::projectionPlaneSize() const -> Common::Vec2i {
   return {ci_projection_plane_width_minus1() + 1, ci_projection_plane_height_minus1() + 1};
 }
 
-auto CameraIntrinsics::ci_erp_phi_min() const noexcept -> float {
+auto CameraIntrinsics::ci_erp_phi_min() const -> float {
   VERIFY_MIVBITSTREAM(ci_cam_type() == CiCamType::equirectangular);
   VERIFY_MIVBITSTREAM(m_ci_erp_phi_min.has_value());
   return *m_ci_erp_phi_min;
 }
 
-auto CameraIntrinsics::ci_erp_phi_max() const noexcept -> float {
+auto CameraIntrinsics::ci_erp_phi_max() const -> float {
   VERIFY_MIVBITSTREAM(ci_cam_type() == CiCamType::equirectangular);
   VERIFY_MIVBITSTREAM(m_ci_erp_phi_max.has_value());
   return *m_ci_erp_phi_max;
 }
 
-auto CameraIntrinsics::ci_erp_theta_min() const noexcept -> float {
+auto CameraIntrinsics::ci_erp_theta_min() const -> float {
   VERIFY_MIVBITSTREAM(ci_cam_type() == CiCamType::equirectangular);
   VERIFY_MIVBITSTREAM(m_ci_erp_theta_min.has_value());
   return *m_ci_erp_theta_min;
 }
 
-auto CameraIntrinsics::ci_erp_theta_max() const noexcept -> float {
+auto CameraIntrinsics::ci_erp_theta_max() const -> float {
   VERIFY_MIVBITSTREAM(ci_cam_type() == CiCamType::equirectangular);
   VERIFY_MIVBITSTREAM(m_ci_erp_theta_max.has_value());
   return *m_ci_erp_theta_max;
 }
 
-auto CameraIntrinsics::ci_perspective_focal_hor() const noexcept -> float {
+auto CameraIntrinsics::ci_perspective_focal_hor() const -> float {
   VERIFY_MIVBITSTREAM(ci_cam_type() == CiCamType::perspective);
   VERIFY_MIVBITSTREAM(m_ci_perspective_focal_hor.has_value());
   return *m_ci_perspective_focal_hor;
 }
 
-auto CameraIntrinsics::ci_perspective_focal_ver() const noexcept -> float {
+auto CameraIntrinsics::ci_perspective_focal_ver() const -> float {
   VERIFY_MIVBITSTREAM(ci_cam_type() == CiCamType::perspective);
   VERIFY_MIVBITSTREAM(m_ci_perspective_focal_ver.has_value());
   return *m_ci_perspective_focal_ver;
 }
 
-auto CameraIntrinsics::ci_perspective_center_hor() const noexcept -> float {
+auto CameraIntrinsics::ci_perspective_center_hor() const -> float {
   VERIFY_MIVBITSTREAM(ci_cam_type() == CiCamType::perspective);
   VERIFY_MIVBITSTREAM(m_ci_perspective_center_hor.has_value());
   return *m_ci_perspective_center_hor;
 }
 
-auto CameraIntrinsics::ci_perspective_center_ver() const noexcept -> float {
+auto CameraIntrinsics::ci_perspective_center_ver() const -> float {
   VERIFY_MIVBITSTREAM(ci_cam_type() == CiCamType::perspective);
   VERIFY_MIVBITSTREAM(m_ci_perspective_center_ver.has_value());
   return *m_ci_perspective_center_ver;
 }
 
-auto CameraIntrinsics::ci_ortho_width() const noexcept -> float {
+auto CameraIntrinsics::ci_ortho_width() const -> float {
   VERIFY_MIVBITSTREAM(ci_cam_type() == CiCamType::orthographic);
   VERIFY_MIVBITSTREAM(m_ci_ortho_width.has_value());
   return *m_ci_ortho_width;
 }
 
-auto CameraIntrinsics::ci_ortho_height() const noexcept -> float {
+auto CameraIntrinsics::ci_ortho_height() const -> float {
   VERIFY_MIVBITSTREAM(ci_cam_type() == CiCamType::orthographic);
   VERIFY_MIVBITSTREAM(m_ci_ortho_height.has_value());
   return *m_ci_ortho_height;
@@ -209,7 +209,7 @@ void CameraIntrinsics::encodeTo(Common::OutputBitstream &bitstream) const {
     return;
 
   default:
-    MIVBITSTREAM_ERROR("Unknown cam type");
+    UNREACHABLE;
   }
 }
 
@@ -234,7 +234,7 @@ auto CameraExtrinsics::position(Common::Vec3f r) noexcept -> CameraExtrinsics & 
 }
 
 auto CameraExtrinsics::rotation(Common::QuatF q) noexcept -> CameraExtrinsics & {
-  VERIFY_MIVBITSTREAM(normalized(q));
+  PRECONDITION(normalized(q));
   ce_view_quat_x(q.x());
   ce_view_quat_y(q.y());
   ce_view_quat_z(q.z());
@@ -314,19 +314,19 @@ PruningParents::PruningParents(std::vector<uint16_t> pp_parent_id)
 
 auto PruningParents::pp_is_root_flag() const noexcept -> bool { return m_pp_parent_id.empty(); }
 
-auto PruningParents::pp_num_parent_minus1() const noexcept -> uint16_t {
+auto PruningParents::pp_num_parent_minus1() const -> uint16_t {
   VERIFY_MIVBITSTREAM(!pp_is_root_flag());
   return static_cast<uint16_t>(m_pp_parent_id.size() - 1);
 }
 
-auto PruningParents::pp_parent_id(uint16_t i) const noexcept -> uint16_t {
+auto PruningParents::pp_parent_id(uint16_t i) const -> uint16_t {
   VERIFY_MIVBITSTREAM(i < m_pp_parent_id.size());
   return m_pp_parent_id[i];
 }
 
 auto PruningParents::pp_parent_id(std::uint16_t i, std::uint16_t value) noexcept
     -> PruningParents & {
-  VERIFY_MIVBITSTREAM(i < m_pp_parent_id.size());
+  PRECONDITION(i < m_pp_parent_id.size());
   m_pp_parent_id[i] = value;
   return *this;
 }
@@ -378,7 +378,7 @@ void PruningParents::encodeTo(Common::OutputBitstream &bitstream,
   }
 }
 
-auto MivViewParamsList::mvp_num_views_minus1() const noexcept -> uint16_t {
+auto MivViewParamsList::mvp_num_views_minus1() const -> uint16_t {
   VERIFY_MIVBITSTREAM(!m_camera_extrinsics.empty());
   return static_cast<uint16_t>(m_camera_extrinsics.size() - 1);
 }
@@ -387,39 +387,37 @@ auto MivViewParamsList::mvp_view_enabled_present_flag() const noexcept -> bool {
   return m_mvp_view_enabled_present_flag;
 }
 
-auto MivViewParamsList::mvp_view_enabled_in_atlas_flag(uint8_t atlasIdx,
-                                                       uint16_t viewIdx) const noexcept -> bool {
+auto MivViewParamsList::mvp_view_enabled_in_atlas_flag(uint8_t atlasIdx, uint16_t viewIdx) const
+    -> bool {
   VERIFY_MIVBITSTREAM(mvp_view_enabled_present_flag());
   VERIFY_MIVBITSTREAM(atlasIdx < m_viewInAtlas.size());
   VERIFY_MIVBITSTREAM(viewIdx <= mvp_num_views_minus1());
   return m_viewInAtlas[atlasIdx][viewIdx].enabled;
 }
 
-auto MivViewParamsList::mvp_view_complete_in_atlas_flag(uint8_t atlasIdx,
-                                                        uint16_t viewIdx) const noexcept -> bool {
+auto MivViewParamsList::mvp_view_complete_in_atlas_flag(uint8_t atlasIdx, uint16_t viewIdx) const
+    -> bool {
   VERIFY_MIVBITSTREAM(mvp_view_enabled_in_atlas_flag(atlasIdx, viewIdx));
   VERIFY_MIVBITSTREAM(m_viewInAtlas[atlasIdx][viewIdx].complete.has_value());
   return *m_viewInAtlas[atlasIdx][viewIdx].complete;
 }
 
-auto MivViewParamsList::mvp_view_id(uint16_t viewIdx) const noexcept -> uint16_t {
+auto MivViewParamsList::mvp_view_id(uint16_t viewIdx) const -> uint16_t {
   VERIFY_MIVBITSTREAM(viewIdx <= mvp_num_views_minus1());
   return m_mvp_view_id[viewIdx];
 }
 
-auto MivViewParamsList::mvp_inpaint_flag(std::uint16_t viewId) const noexcept -> bool {
+auto MivViewParamsList::mvp_inpaint_flag(std::uint16_t viewId) const -> bool {
   const auto viewIndex = viewIdToIndex(viewId);
   return m_mvpInpaintFlag[viewIndex];
 }
 
-auto MivViewParamsList::camera_extrinsics(uint16_t viewId) const noexcept
-    -> const CameraExtrinsics & {
+auto MivViewParamsList::camera_extrinsics(uint16_t viewId) const -> const CameraExtrinsics & {
   VERIFY_MIVBITSTREAM(viewId < m_camera_extrinsics.size());
   return m_camera_extrinsics[viewId];
 }
 
-auto MivViewParamsList::camera_intrinsics(uint16_t viewId) const noexcept
-    -> const CameraIntrinsics & {
+auto MivViewParamsList::camera_intrinsics(uint16_t viewId) const -> const CameraIntrinsics & {
   if (mvp_intrinsic_params_equal_flag()) {
     viewId = 0; // Convenience
   }
@@ -427,8 +425,7 @@ auto MivViewParamsList::camera_intrinsics(uint16_t viewId) const noexcept
   return m_camera_intrinsics[viewId];
 }
 
-auto MivViewParamsList::depth_quantization(uint16_t viewId) const noexcept
-    -> const DepthQuantization & {
+auto MivViewParamsList::depth_quantization(uint16_t viewId) const -> const DepthQuantization & {
   if (mvp_depth_quantization_params_equal_flag()) {
     viewId = 0; // Convenience
   }
@@ -436,13 +433,13 @@ auto MivViewParamsList::depth_quantization(uint16_t viewId) const noexcept
   return m_depth_quantization[viewId];
 }
 
-auto MivViewParamsList::pruning_parent(uint16_t viewId) const noexcept -> const PruningParents & {
+auto MivViewParamsList::pruning_parent(uint16_t viewId) const -> const PruningParents & {
   VERIFY_MIVBITSTREAM(mvp_pruning_graph_params_present_flag());
   VERIFY_MIVBITSTREAM(viewId < m_pruning_parent.size());
   return m_pruning_parent[viewId];
 }
 
-auto MivViewParamsList::mvp_num_views_minus1(uint16_t value) noexcept -> MivViewParamsList & {
+auto MivViewParamsList::mvp_num_views_minus1(uint16_t value) -> MivViewParamsList & {
   for (auto &x : m_viewInAtlas) {
     x.resize(value + size_t{1});
   }
@@ -457,9 +454,9 @@ auto MivViewParamsList::mvp_view_enabled_present_flag(bool value) noexcept -> Mi
 }
 
 auto MivViewParamsList::mvp_view_enabled_in_atlas_flag(uint8_t atlasIdx, uint16_t viewIdx,
-                                                       bool value) noexcept -> MivViewParamsList & {
+                                                       bool value) -> MivViewParamsList & {
   mvp_view_enabled_present_flag(true);
-  VERIFY_MIVBITSTREAM(viewIdx <= mvp_num_views_minus1());
+  PRECONDITION(viewIdx <= mvp_num_views_minus1());
   while (atlasIdx >= m_viewInAtlas.size()) {
     m_viewInAtlas.emplace_back(mvp_num_views_minus1() + 1);
   }
@@ -468,9 +465,8 @@ auto MivViewParamsList::mvp_view_enabled_in_atlas_flag(uint8_t atlasIdx, uint16_
 }
 
 auto MivViewParamsList::mvp_view_complete_in_atlas_flag(uint8_t atlasIdx, uint16_t viewIdx,
-                                                        bool value) noexcept
-    -> MivViewParamsList & {
-  VERIFY_MIVBITSTREAM(mvp_view_enabled_in_atlas_flag(atlasIdx, viewIdx));
+                                                        bool value) -> MivViewParamsList & {
+  PRECONDITION(mvp_view_enabled_in_atlas_flag(atlasIdx, viewIdx));
   m_viewInAtlas[atlasIdx][viewIdx].complete = value;
   return *this;
 }
@@ -480,62 +476,58 @@ auto MivViewParamsList::mvp_explicit_view_id_flag(bool value) noexcept -> MivVie
   return *this;
 }
 
-auto MivViewParamsList::mvp_view_id(uint16_t viewIdx, uint16_t viewId) noexcept
-    -> MivViewParamsList & {
-  VERIFY_MIVBITSTREAM(mvp_explicit_view_id_flag());
+auto MivViewParamsList::mvp_view_id(uint16_t viewIdx, uint16_t viewId) -> MivViewParamsList & {
+  PRECONDITION(mvp_explicit_view_id_flag());
   if (m_mvp_view_id.size() < mvp_num_views_minus1() + size_t{1}) {
     m_mvp_view_id.resize(mvp_num_views_minus1() + size_t{1});
   }
-  VERIFY_MIVBITSTREAM(viewIdx <= mvp_num_views_minus1());
+  PRECONDITION(viewIdx <= mvp_num_views_minus1());
   m_mvp_view_id[viewIdx] = viewId;
   return *this;
 }
 
-auto MivViewParamsList::mvp_inpaint_flag(uint16_t viewId, bool value) noexcept
-    -> MivViewParamsList & {
+auto MivViewParamsList::mvp_inpaint_flag(uint16_t viewId, bool value) -> MivViewParamsList & {
   const auto viewIndex = viewIdToIndex(viewId);
   m_mvpInpaintFlag[viewIndex] = value;
   return *this;
 }
 
-auto MivViewParamsList::mvp_intrinsic_params_equal_flag(bool value) noexcept
-    -> MivViewParamsList & {
+auto MivViewParamsList::mvp_intrinsic_params_equal_flag(bool value) -> MivViewParamsList & {
   m_mvp_intrinsic_params_equal_flag = value;
   m_camera_intrinsics.resize(value ? 1U : m_camera_extrinsics.size());
   return *this;
 }
 
-auto MivViewParamsList::mvp_depth_quantization_params_equal_flag(bool value) noexcept
+auto MivViewParamsList::mvp_depth_quantization_params_equal_flag(bool value)
     -> MivViewParamsList & {
   m_mvp_depth_quantization_params_equal_flag = value;
   m_depth_quantization.resize(value ? 1U : m_camera_extrinsics.size());
   return *this;
 }
 
-auto MivViewParamsList::mvp_pruning_graph_params_present_flag(bool value) noexcept
-    -> MivViewParamsList & {
+auto MivViewParamsList::mvp_pruning_graph_params_present_flag(bool value) -> MivViewParamsList & {
   m_mvp_pruning_graph_params_present_flag = value;
   m_pruning_parent.resize(value ? m_camera_extrinsics.size() : 0U);
   return *this;
 }
 
 auto MivViewParamsList::camera_extrinsics(uint16_t viewId) noexcept -> CameraExtrinsics & {
-  VERIFY_MIVBITSTREAM(viewId < m_camera_extrinsics.size());
+  PRECONDITION(viewId < m_camera_extrinsics.size());
   return m_camera_extrinsics[viewId];
 }
 
 auto MivViewParamsList::camera_intrinsics(uint16_t viewId) noexcept -> CameraIntrinsics & {
-  VERIFY_MIVBITSTREAM(viewId < m_camera_intrinsics.size());
+  PRECONDITION(viewId < m_camera_intrinsics.size());
   return m_camera_intrinsics[viewId];
 }
 
 auto MivViewParamsList::depth_quantization(uint16_t viewId) noexcept -> DepthQuantization & {
-  VERIFY_MIVBITSTREAM(viewId < m_depth_quantization.size());
+  PRECONDITION(viewId < m_depth_quantization.size());
   return m_depth_quantization[viewId];
 }
 
 auto MivViewParamsList::pruning_parent(uint16_t viewId) noexcept -> PruningParents & {
-  VERIFY_MIVBITSTREAM(viewId < m_pruning_parent.size());
+  PRECONDITION(viewId < m_pruning_parent.size());
   return m_pruning_parent[viewId];
 }
 
@@ -761,42 +753,41 @@ void MivViewParamsList::encodeTo(Common::OutputBitstream &bitstream, const V3cPa
   }
 }
 
-auto CommonAtlasFrameMivExtension::came_update_extrinsics_flag() const noexcept -> bool {
+auto CommonAtlasFrameMivExtension::came_update_extrinsics_flag() const -> bool {
   VERIFY_MIVBITSTREAM(m_came_update_extrinsics_flag.has_value());
   return *m_came_update_extrinsics_flag;
 }
 
-auto CommonAtlasFrameMivExtension::came_update_intrinsics_flag() const noexcept -> bool {
+auto CommonAtlasFrameMivExtension::came_update_intrinsics_flag() const -> bool {
   VERIFY_MIVBITSTREAM(m_came_update_intrinsics_flag.has_value());
   return *m_came_update_intrinsics_flag;
 }
 
-auto CommonAtlasFrameMivExtension::came_update_depth_quantization_flag() const noexcept -> bool {
+auto CommonAtlasFrameMivExtension::came_update_depth_quantization_flag() const -> bool {
   VERIFY_MIVBITSTREAM(m_came_update_depth_quantization_flag.has_value());
   return *m_came_update_depth_quantization_flag;
 }
 
-auto CommonAtlasFrameMivExtension::miv_view_params_list() const noexcept
-    -> const MivViewParamsList & {
+auto CommonAtlasFrameMivExtension::miv_view_params_list() const -> const MivViewParamsList & {
   VERIFY_MIVBITSTREAM(m_miv_view_params_list.has_value());
   return *m_miv_view_params_list;
 }
 
-auto CommonAtlasFrameMivExtension::miv_view_params_update_extrinsics() const noexcept
+auto CommonAtlasFrameMivExtension::miv_view_params_update_extrinsics() const
     -> const MivViewParamsUpdateExtrinsics & {
   VERIFY_MIVBITSTREAM(came_update_extrinsics_flag());
   VERIFY_MIVBITSTREAM(m_miv_view_params_update_extrinsics.has_value());
   return *m_miv_view_params_update_extrinsics;
 }
 
-auto CommonAtlasFrameMivExtension::miv_view_params_update_intrinsics() const noexcept
+auto CommonAtlasFrameMivExtension::miv_view_params_update_intrinsics() const
     -> const MivViewParamsUpdateIntrinsics & {
   VERIFY_MIVBITSTREAM(came_update_intrinsics_flag());
   VERIFY_MIVBITSTREAM(m_miv_view_params_update_intrinsics.has_value());
   return *m_miv_view_params_update_intrinsics;
 }
 
-auto CommonAtlasFrameMivExtension::miv_view_params_update_depth_quantization() const noexcept
+auto CommonAtlasFrameMivExtension::miv_view_params_update_depth_quantization() const
     -> const MivViewParamsUpdateDepthQuantization & {
   VERIFY_MIVBITSTREAM(came_update_depth_quantization_flag());
   VERIFY_MIVBITSTREAM(m_miv_view_params_update_depth_quantization.has_value());
@@ -810,27 +801,27 @@ auto CommonAtlasFrameMivExtension::miv_view_params_list() noexcept -> MivViewPar
   return *m_miv_view_params_list;
 }
 
-auto CommonAtlasFrameMivExtension::miv_view_params_update_extrinsics() noexcept
+auto CommonAtlasFrameMivExtension::miv_view_params_update_extrinsics()
     -> MivViewParamsUpdateExtrinsics & {
-  VERIFY_MIVBITSTREAM(came_update_extrinsics_flag());
+  PRECONDITION(came_update_extrinsics_flag());
   if (!m_miv_view_params_update_extrinsics) {
     m_miv_view_params_update_extrinsics = MivViewParamsUpdateExtrinsics{};
   }
   return *m_miv_view_params_update_extrinsics;
 }
 
-auto CommonAtlasFrameMivExtension::miv_view_params_update_intrinsics() noexcept
+auto CommonAtlasFrameMivExtension::miv_view_params_update_intrinsics()
     -> MivViewParamsUpdateIntrinsics & {
-  VERIFY_MIVBITSTREAM(came_update_intrinsics_flag());
+  PRECONDITION(came_update_intrinsics_flag());
   if (!m_miv_view_params_update_intrinsics) {
     m_miv_view_params_update_intrinsics = MivViewParamsUpdateIntrinsics{};
   }
   return *m_miv_view_params_update_intrinsics;
 }
 
-auto CommonAtlasFrameMivExtension::miv_view_params_update_depth_quantization() noexcept
+auto CommonAtlasFrameMivExtension::miv_view_params_update_depth_quantization()
     -> MivViewParamsUpdateDepthQuantization & {
-  VERIFY_MIVBITSTREAM(came_update_depth_quantization_flag());
+  PRECONDITION(came_update_depth_quantization_flag());
   if (!m_miv_view_params_update_depth_quantization) {
     m_miv_view_params_update_depth_quantization = MivViewParamsUpdateDepthQuantization{};
   }
@@ -880,8 +871,8 @@ auto operator<<(std::ostream &stream, const CommonAtlasFrameMivExtension &x) -> 
   return stream;
 }
 
-auto CommonAtlasFrameMivExtension::operator==(
-    const CommonAtlasFrameMivExtension &other) const noexcept -> bool {
+auto CommonAtlasFrameMivExtension::operator==(const CommonAtlasFrameMivExtension &other) const
+    -> bool {
   if (m_miv_view_params_list != other.m_miv_view_params_list) {
     return false;
   }
@@ -910,8 +901,8 @@ auto CommonAtlasFrameMivExtension::operator==(
   return true;
 }
 
-auto CommonAtlasFrameMivExtension::operator!=(
-    const CommonAtlasFrameMivExtension &other) const noexcept -> bool {
+auto CommonAtlasFrameMivExtension::operator!=(const CommonAtlasFrameMivExtension &other) const
+    -> bool {
   return !operator==(other);
 }
 
@@ -974,7 +965,7 @@ void CommonAtlasFrameMivExtension::encodeTo(
   }
 }
 
-auto MivViewParamsList::mvp_depth_quantization_params_equal_flag() const noexcept -> bool {
+auto MivViewParamsList::mvp_depth_quantization_params_equal_flag() const -> bool {
   VERIFY_MIVBITSTREAM(m_mvp_depth_quantization_params_equal_flag.has_value());
   return *m_mvp_depth_quantization_params_equal_flag;
 }
@@ -983,23 +974,23 @@ auto MivViewParamsUpdateExtrinsics::mvpue_num_view_updates_minus1() const noexce
   return m_mvpue_num_view_updates_minus1;
 }
 
-auto MivViewParamsUpdateExtrinsics::mvpue_view_idx(const uint16_t i) const noexcept -> uint16_t {
+auto MivViewParamsUpdateExtrinsics::mvpue_view_idx(const uint16_t i) const -> uint16_t {
   VERIFY_MIVBITSTREAM(i < m_mvpue_view_idx.size());
   return m_mvpue_view_idx[i];
 }
 
-auto MivViewParamsUpdateExtrinsics::camera_extrinsics(const uint16_t i) const noexcept
+auto MivViewParamsUpdateExtrinsics::camera_extrinsics(const uint16_t i) const
     -> const CameraExtrinsics & {
   VERIFY_MIVBITSTREAM(i < m_camera_extrinsics.size());
   return m_camera_extrinsics[i];
 }
 auto MivViewParamsUpdateExtrinsics::camera_extrinsics(const uint16_t i) noexcept
     -> CameraExtrinsics & {
-  VERIFY_MIVBITSTREAM(i < m_camera_extrinsics.size());
+  PRECONDITION(i < m_camera_extrinsics.size());
   return m_camera_extrinsics[i];
 }
 
-auto MivViewParamsUpdateExtrinsics::mvpue_num_view_updates_minus1(const uint16_t value) noexcept
+auto MivViewParamsUpdateExtrinsics::mvpue_num_view_updates_minus1(const uint16_t value)
     -> MivViewParamsUpdateExtrinsics & {
   m_mvpue_num_view_updates_minus1 = value;
   m_mvpue_view_idx.resize(value + size_t{1});
@@ -1008,7 +999,7 @@ auto MivViewParamsUpdateExtrinsics::mvpue_num_view_updates_minus1(const uint16_t
 }
 auto MivViewParamsUpdateExtrinsics::mvpue_view_idx(const uint16_t i, const uint16_t value) noexcept
     -> MivViewParamsUpdateExtrinsics & {
-  VERIFY_MIVBITSTREAM(i < m_camera_extrinsics.size());
+  PRECONDITION(i < m_camera_extrinsics.size());
   m_mvpue_view_idx[i] = value;
   return *this;
 }
@@ -1057,12 +1048,12 @@ auto MivViewParamsUpdateIntrinsics::mvpui_num_view_updates_minus1() const noexce
   return m_mvpui_num_view_updates_minus1;
 }
 
-auto MivViewParamsUpdateIntrinsics::mvpui_view_idx(const uint16_t i) const noexcept -> uint16_t {
+auto MivViewParamsUpdateIntrinsics::mvpui_view_idx(const uint16_t i) const -> uint16_t {
   VERIFY_MIVBITSTREAM(i < m_mvpui_view_idx.size());
   return m_mvpui_view_idx[i];
 }
 
-auto MivViewParamsUpdateIntrinsics::camera_intrinsics(const uint16_t i) const noexcept
+auto MivViewParamsUpdateIntrinsics::camera_intrinsics(const uint16_t i) const
     -> const CameraIntrinsics & {
   VERIFY_MIVBITSTREAM(i < m_camera_intrinsics.size());
   return m_camera_intrinsics[i];
@@ -1070,11 +1061,11 @@ auto MivViewParamsUpdateIntrinsics::camera_intrinsics(const uint16_t i) const no
 
 auto MivViewParamsUpdateIntrinsics::camera_intrinsics(const uint16_t i) noexcept
     -> CameraIntrinsics & {
-  VERIFY_MIVBITSTREAM(i < m_camera_intrinsics.size());
+  PRECONDITION(i < m_camera_intrinsics.size());
   return m_camera_intrinsics[i];
 }
 
-auto MivViewParamsUpdateIntrinsics::mvpui_num_view_updates_minus1(const uint16_t value) noexcept
+auto MivViewParamsUpdateIntrinsics::mvpui_num_view_updates_minus1(const uint16_t value)
     -> MivViewParamsUpdateIntrinsics & {
   m_mvpui_num_view_updates_minus1 = value;
   m_mvpui_view_idx.resize(m_mvpui_num_view_updates_minus1 + size_t{1});
@@ -1084,7 +1075,7 @@ auto MivViewParamsUpdateIntrinsics::mvpui_num_view_updates_minus1(const uint16_t
 
 auto MivViewParamsUpdateIntrinsics::mvpui_view_idx(const uint16_t i, const uint16_t value) noexcept
     -> MivViewParamsUpdateIntrinsics & {
-  VERIFY_MIVBITSTREAM(i < m_mvpui_view_idx.size());
+  PRECONDITION(i < m_mvpui_view_idx.size());
   m_mvpui_view_idx[i] = value;
   return *this;
 }
@@ -1134,13 +1125,12 @@ auto MivViewParamsUpdateDepthQuantization::mvpudq_num_view_updates_minus1() cons
   return m_mvpudq_num_view_updates_minus1;
 }
 
-auto MivViewParamsUpdateDepthQuantization::mvpudq_view_idx(const uint16_t i) const noexcept
-    -> uint16_t {
+auto MivViewParamsUpdateDepthQuantization::mvpudq_view_idx(const uint16_t i) const -> uint16_t {
   VERIFY_MIVBITSTREAM(i < m_mvpudq_view_idx.size());
   return m_mvpudq_view_idx[i];
 }
 
-auto MivViewParamsUpdateDepthQuantization::depth_quantization(const uint16_t i) const noexcept
+auto MivViewParamsUpdateDepthQuantization::depth_quantization(const uint16_t i) const
     -> const DepthQuantization & {
   VERIFY_MIVBITSTREAM(i < m_depth_quantization.size());
   return m_depth_quantization[i];
@@ -1148,12 +1138,12 @@ auto MivViewParamsUpdateDepthQuantization::depth_quantization(const uint16_t i) 
 
 auto MivViewParamsUpdateDepthQuantization::depth_quantization(const uint16_t i) noexcept
     -> DepthQuantization & {
-  VERIFY_MIVBITSTREAM(i < m_depth_quantization.size());
+  PRECONDITION(i < m_depth_quantization.size());
   return m_depth_quantization[i];
 }
 
-auto MivViewParamsUpdateDepthQuantization::mvpudq_num_view_updates_minus1(
-    const uint16_t value) noexcept -> MivViewParamsUpdateDepthQuantization & {
+auto MivViewParamsUpdateDepthQuantization::mvpudq_num_view_updates_minus1(const uint16_t value)
+    -> MivViewParamsUpdateDepthQuantization & {
   m_mvpudq_num_view_updates_minus1 = value;
   m_mvpudq_view_idx.resize(m_mvpudq_num_view_updates_minus1 + size_t{1});
   m_depth_quantization.resize(m_mvpudq_num_view_updates_minus1 + size_t{1});
@@ -1162,7 +1152,7 @@ auto MivViewParamsUpdateDepthQuantization::mvpudq_num_view_updates_minus1(
 auto MivViewParamsUpdateDepthQuantization::mvpudq_view_idx(const uint16_t i,
                                                            const uint16_t value) noexcept
     -> MivViewParamsUpdateDepthQuantization & {
-  VERIFY_MIVBITSTREAM(i < m_mvpudq_view_idx.size());
+  PRECONDITION(i < m_mvpudq_view_idx.size());
   m_mvpudq_view_idx[i] = value;
   return *this;
 }

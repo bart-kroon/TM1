@@ -189,14 +189,11 @@ public:
 
 private:
   void prepare(const MivBitstream::AccessUnit &frame) {
-    m_blockSize = static_cast<int>(
-        1U << static_cast<unsigned>(frame.atlas.front().asps.asps_log2_patch_packing_block_size()));
-
-    assert(find_if(frame.atlas.begin(), frame.atlas.end(), [this](const auto &atlas) {
-             auto blockSize = static_cast<int>(
-                 1U << static_cast<unsigned>(atlas.asps.asps_log2_patch_packing_block_size()));
-             return (blockSize != m_blockSize);
-           }) != frame.atlas.end());
+    LIMITATION(all_of(frame.atlas.begin(), frame.atlas.end(), [&frame](const auto &atlas) {
+      return frame.atlas.front().asps.asps_log2_patch_packing_block_size() ==
+             atlas.asps.asps_log2_patch_packing_block_size();
+    }));
+    m_blockSize = uint16_t{1} << frame.atlas.front().asps.asps_log2_patch_packing_block_size();
   }
 
   void allocateBlockBuffer(const MivBitstream::AccessUnit &frame) {
@@ -285,7 +282,7 @@ private:
       }
     }
 
-    assert(0.F < maxValue);
+    POSTCONDITION(0.F < maxValue);
 
     Common::Mat<float> transparencyMap({static_cast<std::size_t>(atlas.frameSize().y()),
                                         static_cast<std::size_t>(atlas.frameSize().x())});

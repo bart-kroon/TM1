@@ -39,21 +39,20 @@
 
 namespace TMIV::MivBitstream {
 
-auto CommonAtlasFrameRBSP::caf_miv_extension() const noexcept
-    -> const CommonAtlasFrameMivExtension & {
+auto CommonAtlasFrameRBSP::caf_miv_extension() const -> const CommonAtlasFrameMivExtension & {
   VERIFY_V3CBITSTREAM(caf_miv_extension_present_flag());
   VERIFY_V3CBITSTREAM(m_caf_miv_extension.has_value());
   return *m_caf_miv_extension;
 }
 
-auto CommonAtlasFrameRBSP::cafExtensionData() const noexcept -> const std::vector<bool> & {
+auto CommonAtlasFrameRBSP::cafExtensionData() const -> const std::vector<bool> & {
   VERIFY_V3CBITSTREAM(caf_extension_7bits() != 0);
   VERIFY_V3CBITSTREAM(m_cafExtensionData.has_value());
   return *m_cafExtensionData;
 }
 
 auto CommonAtlasFrameRBSP::caf_miv_extension() noexcept -> CommonAtlasFrameMivExtension & {
-  VERIFY_V3CBITSTREAM(caf_miv_extension_present_flag());
+  PRECONDITION(caf_miv_extension_present_flag());
   if (!m_caf_miv_extension.has_value()) {
     m_caf_miv_extension = CommonAtlasFrameMivExtension{};
   }
@@ -62,7 +61,7 @@ auto CommonAtlasFrameRBSP::caf_miv_extension() noexcept -> CommonAtlasFrameMivEx
 
 auto CommonAtlasFrameRBSP::cafExtensionData(std::vector<bool> value) noexcept
     -> CommonAtlasFrameRBSP & {
-  VERIFY_V3CBITSTREAM(caf_extension_7bits() != 0);
+  PRECONDITION(caf_extension_7bits() != 0);
   m_cafExtensionData = std::move(value);
   return *this;
 }
@@ -89,7 +88,7 @@ auto operator<<(std::ostream &stream, const CommonAtlasFrameRBSP &x) -> std::ost
   return stream;
 }
 
-auto CommonAtlasFrameRBSP::operator==(const CommonAtlasFrameRBSP &other) const noexcept -> bool {
+auto CommonAtlasFrameRBSP::operator==(const CommonAtlasFrameRBSP &other) const -> bool {
   if (caf_common_atlas_sequence_parameter_set_id() !=
           other.caf_common_atlas_sequence_parameter_set_id() ||
       caf_common_atlas_frm_order_cnt_lsb() != other.caf_common_atlas_frm_order_cnt_lsb() ||
@@ -100,7 +99,7 @@ auto CommonAtlasFrameRBSP::operator==(const CommonAtlasFrameRBSP &other) const n
   return caf_extension_7bits() == 0 || cafExtensionData() == other.cafExtensionData();
 }
 
-auto CommonAtlasFrameRBSP::operator!=(const CommonAtlasFrameRBSP &other) const noexcept -> bool {
+auto CommonAtlasFrameRBSP::operator!=(const CommonAtlasFrameRBSP &other) const -> bool {
   return !operator==(other);
 }
 
@@ -142,7 +141,7 @@ void CommonAtlasFrameRBSP::encodeTo(std::ostream &stream, const V3cParameterSet 
                                     const NalUnitHeader &nuh,
                                     const std::vector<CommonAtlasSequenceParameterSetRBSP> &caspsV,
                                     unsigned maxCommonAtlasFrmOrderCntLsb) const {
-  VERIFY_V3CBITSTREAM(0 < maxCommonAtlasFrmOrderCntLsb);
+  PRECONDITION(0 < maxCommonAtlasFrmOrderCntLsb);
   Common::OutputBitstream bitstream{stream};
 
   bitstream.writeBits(caf_common_atlas_sequence_parameter_set_id(), 4);

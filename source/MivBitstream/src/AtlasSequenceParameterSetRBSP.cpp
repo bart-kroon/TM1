@@ -47,7 +47,7 @@ RefListStruct::RefListStruct(std::vector<int16_t> deltaAfocSt)
 
 auto RefListStruct::num_ref_entries() const noexcept -> size_t { return m_deltaAfocSt.size(); }
 
-auto RefListStruct::deltaAfocSt(size_t i) const noexcept -> int16_t {
+auto RefListStruct::deltaAfocSt(size_t i) const -> int16_t {
   VERIFY_V3CBITSTREAM(i < num_ref_entries());
   return m_deltaAfocSt[i];
 }
@@ -88,7 +88,7 @@ auto RefListStruct::decodeFrom(Common::InputBitstream &bitstream,
 
 void RefListStruct::encodeTo(Common::OutputBitstream &bitstream,
                              const AtlasSequenceParameterSetRBSP &asps) const {
-  VERIFY_MIVBITSTREAM(!asps.asps_long_term_ref_atlas_frames_flag());
+  PRECONDITION(!asps.asps_long_term_ref_atlas_frames_flag());
   bitstream.putUExpGolomb(num_ref_entries());
 
   for (auto x : m_deltaAfocSt) {
@@ -116,30 +116,30 @@ auto AspsVpccExtension::decodeFrom(Common::InputBitstream &bitstream,
 void AspsVpccExtension::encodeTo(Common::OutputBitstream &bitstream,
                                  const AtlasSequenceParameterSetRBSP &asps) const {
   bitstream.putFlag(asps_vpcc_remove_duplicate_point_enabled_flag());
-  VERIFY_BITSTREAM(!asps.asps_plr_enabled_flag());
+  PRECONDITION(!asps.asps_plr_enabled_flag());
 }
 
-auto AspsMivExtension::asme_geometry_scale_factor_x_minus1() const noexcept -> uint16_t {
+auto AspsMivExtension::asme_geometry_scale_factor_x_minus1() const -> uint16_t {
   VERIFY_MIVBITSTREAM(m_asme_geometry_scale_factor_x_minus1.has_value());
   return *m_asme_geometry_scale_factor_x_minus1;
 }
 
-auto AspsMivExtension::asme_geometry_scale_factor_y_minus1() const noexcept -> uint16_t {
+auto AspsMivExtension::asme_geometry_scale_factor_y_minus1() const -> uint16_t {
   VERIFY_MIVBITSTREAM(m_asme_geometry_scale_factor_y_minus1.has_value());
   return *m_asme_geometry_scale_factor_y_minus1;
 }
 
-auto AspsMivExtension::asme_occupancy_scale_factor_x_minus1() const noexcept -> uint16_t {
+auto AspsMivExtension::asme_occupancy_scale_factor_x_minus1() const -> uint16_t {
   VERIFY_MIVBITSTREAM(m_asme_occupancy_scale_factor_x_minus1.has_value());
   return *m_asme_occupancy_scale_factor_x_minus1;
 }
 
-auto AspsMivExtension::asme_occupancy_scale_factor_y_minus1() const noexcept -> uint16_t {
+auto AspsMivExtension::asme_occupancy_scale_factor_y_minus1() const -> uint16_t {
   VERIFY_MIVBITSTREAM(m_asme_occupancy_scale_factor_y_minus1.has_value());
   return *m_asme_occupancy_scale_factor_y_minus1;
 }
 
-auto AspsMivExtension::asme_patch_attribute_offset_bit_depth_minus1() const noexcept -> uint16_t {
+auto AspsMivExtension::asme_patch_attribute_offset_bit_depth_minus1() const -> uint16_t {
   VERIFY_MIVBITSTREAM(m_asme_patch_attribute_offset_bit_depth_minus1.has_value());
   return *m_asme_patch_attribute_offset_bit_depth_minus1;
 }
@@ -249,22 +249,19 @@ auto AtlasSequenceParameterSetRBSP::ref_list_struct(uint8_t rlsIdx) const -> con
   return m_ref_list_structs[rlsIdx];
 }
 
-auto AtlasSequenceParameterSetRBSP::asps_vpcc_extension() const noexcept
-    -> const AspsVpccExtension & {
+auto AtlasSequenceParameterSetRBSP::asps_vpcc_extension() const -> const AspsVpccExtension & {
   VERIFY_V3CBITSTREAM(asps_vpcc_extension_present_flag());
   VERIFY_V3CBITSTREAM(m_asve.has_value());
   return *m_asve;
 }
 
-auto AtlasSequenceParameterSetRBSP::asps_miv_extension() const noexcept
-    -> const AspsMivExtension & {
+auto AtlasSequenceParameterSetRBSP::asps_miv_extension() const -> const AspsMivExtension & {
   VERIFY_V3CBITSTREAM(asps_miv_extension_present_flag());
   VERIFY_V3CBITSTREAM(m_asme.has_value());
   return *m_asme;
 }
 
-auto AtlasSequenceParameterSetRBSP::aspsExtensionData() const noexcept
-    -> const std::vector<bool> & {
+auto AtlasSequenceParameterSetRBSP::aspsExtensionData() const -> const std::vector<bool> & {
   VERIFY_V3CBITSTREAM(asps_extension_6bits());
   VERIFY_V3CBITSTREAM(m_aspsExtensionData.has_value());
   return *m_aspsExtensionData;
@@ -272,7 +269,7 @@ auto AtlasSequenceParameterSetRBSP::aspsExtensionData() const noexcept
 
 auto AtlasSequenceParameterSetRBSP::asps_log2_max_atlas_frame_order_cnt_lsb_minus4(
     const uint8_t value) noexcept -> AtlasSequenceParameterSetRBSP & {
-  VERIFY_V3CBITSTREAM(value <= 12);
+  PRECONDITION(value <= 12);
   m_asps_log2_max_atlas_frame_order_cnt_lsb_minus4 = value;
   return *this;
 }
@@ -285,54 +282,54 @@ auto AtlasSequenceParameterSetRBSP::asps_num_ref_atlas_frame_lists_in_asps(const
 
 auto AtlasSequenceParameterSetRBSP::asps_vpcc_extension_present_flag(const bool value) noexcept
     -> AtlasSequenceParameterSetRBSP & {
-  VERIFY_V3CBITSTREAM(asps_extension_present_flag());
+  PRECONDITION(asps_extension_present_flag());
   m_asps_vpcc_extension_present_flag = value;
   return *this;
 }
 
 auto AtlasSequenceParameterSetRBSP::asps_miv_extension_present_flag(const bool value) noexcept
     -> AtlasSequenceParameterSetRBSP & {
-  VERIFY_V3CBITSTREAM(asps_extension_present_flag());
+  PRECONDITION(asps_extension_present_flag());
   m_asps_miv_extension_present_flag = value;
   return *this;
 }
 
 auto AtlasSequenceParameterSetRBSP::asps_extension_6bits(const uint8_t value) noexcept
     -> AtlasSequenceParameterSetRBSP & {
-  VERIFY_V3CBITSTREAM(asps_extension_present_flag());
-  VERIFY_V3CBITSTREAM(value < 0x40);
+  PRECONDITION(asps_extension_present_flag());
+  PRECONDITION(value < 0x40);
   m_asps_extension_6bits = value;
   return *this;
 }
 
 auto AtlasSequenceParameterSetRBSP::aspsExtensionData(std::vector<bool> data) noexcept
     -> AtlasSequenceParameterSetRBSP & {
-  VERIFY_V3CBITSTREAM(asps_extension_6bits());
+  PRECONDITION(asps_extension_6bits());
   m_aspsExtensionData = std::move(data);
   return *this;
 }
 
 auto AtlasSequenceParameterSetRBSP::ref_list_struct(uint8_t rlsIdx, RefListStruct value)
     -> AtlasSequenceParameterSetRBSP & {
-  VERIFY_V3CBITSTREAM(rlsIdx < asps_num_ref_atlas_frame_lists_in_asps());
+  PRECONDITION(rlsIdx < asps_num_ref_atlas_frame_lists_in_asps());
   m_ref_list_structs[rlsIdx] = std::move(value);
   return *this;
 }
 
 auto AtlasSequenceParameterSetRBSP::ref_list_struct(uint8_t rlsIdx) -> RefListStruct & {
-  VERIFY_V3CBITSTREAM(rlsIdx < asps_num_ref_atlas_frame_lists_in_asps());
+  PRECONDITION(rlsIdx < asps_num_ref_atlas_frame_lists_in_asps());
   return m_ref_list_structs[rlsIdx];
 }
 
 auto AtlasSequenceParameterSetRBSP::asps_max_number_projections_minus1(
     const unsigned value) noexcept -> AtlasSequenceParameterSetRBSP & {
-  VERIFY_V3CBITSTREAM(asps_extended_projection_enabled_flag());
+  PRECONDITION(asps_extended_projection_enabled_flag());
   m_asps_max_number_projections_minus1 = value;
   return *this;
 }
 
 auto AtlasSequenceParameterSetRBSP::asps_vpcc_extension() noexcept -> AspsVpccExtension & {
-  VERIFY_MIVBITSTREAM(asps_vpcc_extension_present_flag());
+  PRECONDITION(asps_vpcc_extension_present_flag());
   if (!m_asve) {
     m_asve = AspsVpccExtension{};
   }
@@ -340,7 +337,7 @@ auto AtlasSequenceParameterSetRBSP::asps_vpcc_extension() noexcept -> AspsVpccEx
 }
 
 auto AtlasSequenceParameterSetRBSP::asps_miv_extension() noexcept -> AspsMivExtension & {
-  VERIFY_MIVBITSTREAM(asps_miv_extension_present_flag());
+  PRECONDITION(asps_miv_extension_present_flag());
   if (!m_asme) {
     m_asme = AspsMivExtension{};
   }
@@ -418,8 +415,8 @@ auto operator<<(std::ostream &stream, const AtlasSequenceParameterSetRBSP &x) ->
   return stream;
 }
 
-auto AtlasSequenceParameterSetRBSP::operator==(
-    const AtlasSequenceParameterSetRBSP &other) const noexcept -> bool {
+auto AtlasSequenceParameterSetRBSP::operator==(const AtlasSequenceParameterSetRBSP &other) const
+    -> bool {
   if (asps_atlas_sequence_parameter_set_id() != other.asps_atlas_sequence_parameter_set_id() ||
       asps_frame_width() != other.asps_frame_width() ||
       asps_frame_height() != other.asps_frame_height() ||
@@ -477,8 +474,8 @@ auto AtlasSequenceParameterSetRBSP::operator==(
   return true;
 }
 
-auto AtlasSequenceParameterSetRBSP::operator!=(
-    const AtlasSequenceParameterSetRBSP &other) const noexcept -> bool {
+auto AtlasSequenceParameterSetRBSP::operator!=(const AtlasSequenceParameterSetRBSP &other) const
+    -> bool {
   return !operator==(other);
 }
 
@@ -578,22 +575,22 @@ void AtlasSequenceParameterSetRBSP::encodeTo(std::ostream &stream, const V3cUnit
 
   bitstream.putUExpGolomb(asps_atlas_sequence_parameter_set_id());
 
-  VERIFY_V3CBITSTREAM(asps_frame_width() == vps.vps_frame_width(vuh.vuh_atlas_id()));
+  PRECONDITION(asps_frame_width() == vps.vps_frame_width(vuh.vuh_atlas_id()));
   bitstream.putUExpGolomb(asps_frame_width());
 
-  VERIFY_V3CBITSTREAM(asps_frame_height() == vps.vps_frame_height(vuh.vuh_atlas_id()));
+  PRECONDITION(asps_frame_height() == vps.vps_frame_height(vuh.vuh_atlas_id()));
   bitstream.putUExpGolomb(asps_frame_height());
 
   bitstream.writeBits(asps_geometry_3d_bit_depth_minus1(), 5);
   bitstream.writeBits(asps_geometry_2d_bit_depth_minus1(), 5);
 
-  VERIFY_V3CBITSTREAM(asps_log2_max_atlas_frame_order_cnt_lsb_minus4() <= 12);
+  PRECONDITION(asps_log2_max_atlas_frame_order_cnt_lsb_minus4() <= 12);
   bitstream.putUExpGolomb(asps_log2_max_atlas_frame_order_cnt_lsb_minus4());
 
   bitstream.putUExpGolomb(asps_max_dec_atlas_frame_buffering_minus1());
   bitstream.putFlag(asps_long_term_ref_atlas_frames_flag());
 
-  VERIFY_V3CBITSTREAM(asps_num_ref_atlas_frame_lists_in_asps() <= 64);
+  PRECONDITION(asps_num_ref_atlas_frame_lists_in_asps() <= 64);
   bitstream.putUExpGolomb(asps_num_ref_atlas_frame_lists_in_asps());
 
   for (int i = 0; i < asps_num_ref_atlas_frame_lists_in_asps(); ++i) {
@@ -611,27 +608,27 @@ void AtlasSequenceParameterSetRBSP::encodeTo(std::ostream &stream, const V3cUnit
   bitstream.putFlag(asps_normal_axis_max_delta_value_enabled_flag());
   bitstream.putFlag(asps_patch_precedence_order_flag());
 
-  VERIFY_V3CBITSTREAM(asps_log2_patch_packing_block_size() <= 7);
+  PRECONDITION(asps_log2_patch_packing_block_size() <= 7);
   bitstream.writeBits(asps_log2_patch_packing_block_size(), 3);
 
   bitstream.putFlag(asps_patch_size_quantizer_present_flag());
 
-  VERIFY_V3CBITSTREAM(asps_map_count_minus1() == vps.vps_map_count_minus1(vuh.vuh_atlas_id()));
+  PRECONDITION(asps_map_count_minus1() == vps.vps_map_count_minus1(vuh.vuh_atlas_id()));
   bitstream.writeBits(asps_map_count_minus1(), 4);
 
-  VERIFY_MIVBITSTREAM(!asps_pixel_deinterleaving_enabled_flag());
+  PRECONDITION(!asps_pixel_deinterleaving_enabled_flag());
   bitstream.putFlag(asps_pixel_deinterleaving_enabled_flag());
 
-  VERIFY_MIVBITSTREAM(!asps_raw_patch_enabled_flag());
+  PRECONDITION(!asps_raw_patch_enabled_flag());
   bitstream.putFlag(asps_raw_patch_enabled_flag());
 
-  VERIFY_MIVBITSTREAM(!asps_eom_patch_enabled_flag());
+  PRECONDITION(!asps_eom_patch_enabled_flag());
   bitstream.putFlag(asps_eom_patch_enabled_flag());
 
-  VERIFY_MIVBITSTREAM(!asps_plr_enabled_flag());
+  PRECONDITION(!asps_plr_enabled_flag());
   bitstream.putFlag(asps_plr_enabled_flag());
 
-  LIMITATION(!asps_vui_parameters_present_flag());
+  PRECONDITION(!asps_vui_parameters_present_flag());
   bitstream.putFlag(asps_vui_parameters_present_flag());
 
   bitstream.putFlag(asps_extension_present_flag());
@@ -655,7 +652,7 @@ void AtlasSequenceParameterSetRBSP::encodeTo(std::ostream &stream, const V3cUnit
   bitstream.rbspTrailingBits();
 }
 
-auto aspsById(const std::vector<AtlasSequenceParameterSetRBSP> &aspsV, int id) noexcept
+auto aspsById(const std::vector<AtlasSequenceParameterSetRBSP> &aspsV, int id)
     -> const AtlasSequenceParameterSetRBSP & {
   for (const auto &x : aspsV) {
     if (id == x.asps_atlas_sequence_parameter_set_id()) {

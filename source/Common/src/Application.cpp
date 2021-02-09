@@ -33,6 +33,8 @@
 
 #include <TMIV/Common/Application.h>
 
+#include <TMIV/Common/verify.h>
+
 #include <cassert>
 #include <fstream>
 #include <iomanip>
@@ -97,14 +99,14 @@ Application::Application(const char *tool, std::vector<const char *> argv, Optio
 }
 
 auto Application::json() const -> const Json & {
-  assert(m_json);
+  POSTCONDITION(m_json);
   return m_json;
 }
 
 auto Application::optionValues(std::string_view option) const -> const std::vector<std::string> & {
   auto o = std::find_if(m_options.cbegin(), m_options.cend(),
                         [=](const auto &o) { return o.option == option; });
-  assert(o != m_options.cend());
+  PRECONDITION(o != m_options.cend());
   return o->values;
 }
 

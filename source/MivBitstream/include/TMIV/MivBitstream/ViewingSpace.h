@@ -196,7 +196,7 @@ inline auto PrimitiveShape::shapeType() const -> PrimitiveShapeType {
   if (std::holds_alternative<Halfspace>(primitive)) {
     return PrimitiveShapeType::halfspace;
   }
-  abort();
+  UNREACHABLE;
 }
 
 using PrimitiveShapeVector = std::vector<PrimitiveShape>;
@@ -212,20 +212,16 @@ struct ElementaryShape {
   [[nodiscard]] auto es_camera_inferred_flag() const noexcept -> bool;
   [[nodiscard]] auto es_view_idx(int s) const noexcept -> unsigned;
   [[nodiscard]] auto es_primitive_shape_type(int s) const noexcept -> PrimitiveShapeType;
-  [[nodiscard]] auto es_guard_band_size(int s) const noexcept -> float;
-  [[nodiscard]] auto es_primitive_shape_quat_x(int s) const noexcept -> float;
-  [[nodiscard]] auto es_primitive_shape_quat_y(int s) const noexcept -> float;
-  [[nodiscard]] auto es_primitive_shape_quat_z(int s) const noexcept -> float;
-  [[nodiscard]] auto es_guard_band_direction_size(int s) const noexcept -> float;
-  [[nodiscard]] auto es_primitive_shape_viewing_direction_quat_x_center(int s) const noexcept
-      -> float;
-  [[nodiscard]] auto es_primitive_shape_viewing_direction_quat_y_center(int s) const noexcept
-      -> float;
-  [[nodiscard]] auto es_primitive_shape_viewing_direction_quat_z_center(int s) const noexcept
-      -> float;
-  [[nodiscard]] auto es_primitive_shape_viewing_direction_yaw_range(int s) const noexcept -> float;
-  [[nodiscard]] auto es_primitive_shape_viewing_direction_pitch_range(int s) const noexcept
-      -> float;
+  [[nodiscard]] auto es_guard_band_size(int s) const -> float;
+  [[nodiscard]] auto es_primitive_shape_quat_x(int s) const -> float;
+  [[nodiscard]] auto es_primitive_shape_quat_y(int s) const -> float;
+  [[nodiscard]] auto es_primitive_shape_quat_z(int s) const -> float;
+  [[nodiscard]] auto es_guard_band_direction_size(int s) const -> float;
+  [[nodiscard]] auto es_primitive_shape_viewing_direction_quat_x_center(int s) const -> float;
+  [[nodiscard]] auto es_primitive_shape_viewing_direction_quat_y_center(int s) const -> float;
+  [[nodiscard]] auto es_primitive_shape_viewing_direction_quat_z_center(int s) const -> float;
+  [[nodiscard]] auto es_primitive_shape_viewing_direction_yaw_range(int s) const -> float;
+  [[nodiscard]] auto es_primitive_shape_viewing_direction_pitch_range(int s) const -> float;
 
   PrimitiveShapeVector primitives{};
   PrimitiveShapeOperation primitiveOperation{};
@@ -259,10 +255,9 @@ using ElementaryShapeVector = std::vector<ElementaryShapeAndOperation>;
 
 // 23090-12: viewing_space( )
 struct ViewingSpace {
-  [[nodiscard]] auto vs_num_elementary_shapes_minus1() const noexcept -> std::size_t;
-  [[nodiscard]] auto vs_elementary_shape_operation(std::size_t e) const noexcept
-      -> ElementaryShapeOperation;
-  [[nodiscard]] auto elementary_shape(std::size_t e) const noexcept -> ElementaryShape;
+  [[nodiscard]] auto vs_num_elementary_shapes_minus1() const -> std::size_t;
+  [[nodiscard]] auto vs_elementary_shape_operation(std::size_t e) const -> ElementaryShapeOperation;
+  [[nodiscard]] auto elementary_shape(std::size_t e) const -> ElementaryShape;
 
   ElementaryShapeVector elementaryShapes{};
 

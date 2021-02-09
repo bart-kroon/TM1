@@ -126,7 +126,7 @@ public:
                << int{vuh.vuh_attribute_index()};
         break;
       default:
-        abort();
+        UNREACHABLE;
       }
       stream << ',' << stats << '\n';
     }

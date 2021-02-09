@@ -84,35 +84,35 @@ class AtlasSequenceParameterSetRBSP;
 class VuiParameters {
 public:
   constexpr auto vui_timing_info_present_flag() const noexcept;
-  auto vui_num_units_in_tick() const noexcept -> std::uint32_t;
-  auto vui_time_scale() const noexcept -> std::uint32_t;
-  auto vui_poc_proportional_to_timing_flag() const noexcept -> bool;
-  auto vui_num_ticks_poc_diff_one_minus1() const noexcept -> std::uint32_t;
-  auto vui_hrd_parameters_present_flag() const noexcept -> bool;
+  auto vui_num_units_in_tick() const -> std::uint32_t;
+  auto vui_time_scale() const -> std::uint32_t;
+  auto vui_poc_proportional_to_timing_flag() const -> bool;
+  auto vui_num_ticks_poc_diff_one_minus1() const -> std::uint32_t;
+  auto vui_hrd_parameters_present_flag() const -> bool;
 
   constexpr auto vui_bitstream_restriction_present_flag() const noexcept;
-  auto vui_tiles_fixed_structure_for_atlas_flag() const noexcept -> bool;
-  auto vui_tiles_fixed_structure_for_video_substreams_flag() const noexcept -> bool;
-  auto vui_constrained_tiles_across_v3c_components_idc() const noexcept -> std::uint8_t;
-  auto vui_max_num_tiles_per_atlas_minus1() const noexcept -> unsigned;
+  auto vui_tiles_fixed_structure_for_atlas_flag() const -> bool;
+  auto vui_tiles_fixed_structure_for_video_substreams_flag() const -> bool;
+  auto vui_constrained_tiles_across_v3c_components_idc() const -> std::uint8_t;
+  auto vui_max_num_tiles_per_atlas_minus1() const -> unsigned;
 
   constexpr auto vui_coordinate_system_parameters_present_flag() const noexcept;
-  auto coordinate_system_parameters() const noexcept -> const CoordinateSystemParameters &;
+  auto coordinate_system_parameters() const -> const CoordinateSystemParameters &;
 
   constexpr auto vui_unit_in_metres_flag() const noexcept;
 
   constexpr auto vui_display_box_info_present_flag() const noexcept;
-  auto vui_display_box_origin(int d) const noexcept -> std::uint32_t;
-  auto vui_display_box_size(int d) const noexcept -> std::uint32_t;
+  auto vui_display_box_origin(int d) const -> std::uint32_t;
+  auto vui_display_box_size(int d) const -> std::uint32_t;
 
   constexpr auto vui_anchor_point_present_flag() const noexcept;
-  auto vui_anchor_point(int d) const noexcept -> std::uint32_t;
+  auto vui_anchor_point(int d) const -> std::uint32_t;
 
   constexpr auto vui_timing_info_present_flag(bool value) noexcept -> auto &;
   auto vui_num_units_in_tick(std::uint32_t value) noexcept -> VuiParameters &;
   auto vui_time_scale(std::uint32_t value) noexcept -> VuiParameters &;
   auto vui_poc_proportional_to_timing_flag(bool value) noexcept -> VuiParameters &;
-  auto vui_num_ticks_poc_diff_one_minus1(std::uint32_t value) noexcept -> VuiParameters &;
+  auto vui_num_ticks_poc_diff_one_minus1(std::uint32_t value) -> VuiParameters &;
   auto vui_hrd_parameters_present_flag(bool value) noexcept -> VuiParameters &;
 
   constexpr auto vui_bitstream_restriction_present_flag(bool value) noexcept -> auto &;
@@ -136,8 +136,8 @@ public:
 
   friend auto operator<<(std::ostream &stream, const VuiParameters &x) -> std::ostream &;
 
-  auto operator==(const VuiParameters &other) const noexcept -> bool;
-  auto operator!=(const VuiParameters &other) const noexcept -> bool;
+  auto operator==(const VuiParameters &other) const -> bool;
+  auto operator!=(const VuiParameters &other) const -> bool;
 
   static auto decodeFrom(Common::InputBitstream &bitstream,
                          const AtlasSequenceParameterSetRBSP *asps) -> VuiParameters;

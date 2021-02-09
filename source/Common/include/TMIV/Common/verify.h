@@ -35,57 +35,180 @@
 #define _TMIV_COMMON_VERIFY_H_
 
 #include <cstdlib>
-#include <exception>
 #include <iostream>
-#include <string>
+#include <stdexcept>
 
-// Checks against (draft) ISO/IEC 23090-5 V3C and V-PCC specification
+#include <fmt/format.h>
+
+// Check that externally provided information (e.g. files, parameters, etc.) is correct
 //
-// These checks do not relate to ISO/IEC 23090-12 extensions or restrictions.
+//  * This is an external error source and thus an exception of type std::runtime_error will be
+//    thrown.
+//  * When it is not clear from the context of a function if the cause is external or internal, then
+//    it is better to assume that the cause is external. (When in doubt use VERIFY over
+//    PRECONDITION.)
+#define VERIFY(condition)                                                                          \
+  static_cast<void>(!!(condition) ||                                                               \
+                    (::TMIV::Common::runtimeError(#condition, __FILE__, __LINE__), false))
+#define RUNTIME_ERROR(what) ::TMIV::Common::runtimeError(what, __FILE__, __LINE__)
+
+// Check bitstream against (draft) ISO/IEC 23090-5 V3C and V-PCC specification
+//
+//  * The bitstream is an external error source and thus an exception of type
+//    TMIV::Common::V3cBitstreamError will be thrown.
+//  * When it is not clear from the context of a function if the cause is external or internal, then
+//    it is better to assume that the cause is external. (When in doubt use VERIFY_V3CBITSTREAM over
+//    PRECONDITION.)
 #define VERIFY_V3CBITSTREAM(condition)                                                             \
-  static_cast<void>(                                                                               \
-      (!!(condition) || (::TMIV::Common::v3cError(#condition, __FILE__, __LINE__), false)))
-#define V3CBITSTREAM_ERROR(what) ::TMIV::Common::v3cError(what, __FILE__, __LINE__)
+  static_cast<void>(!!(condition) ||                                                               \
+                    (::TMIV::Common::v3cBitstreamError(#condition, __FILE__, __LINE__), false))
+#define V3CBITSTREAM_ERROR(what) ::TMIV::Common::v3cBitstreamError(what, __FILE__, __LINE__)
 
-// Check against (draft) ISO/IEC 23090-12 MIV specification
+// Check bitstream against (draft) ISO/IEC 23090-12 MIV specification
 //
-// These checks relate to ISO/IEC 23090-12 extensions of or restrictions on ISO/IEC 23090-5.
+//  * The bitstream is an external error source and thus an exception of type
+//    TMIV::Common::MivBitstreamError will be thrown.
+//  * When it is not clear from the context of a function if the cause is external or internal, then
+//    it is better to assume that the cause is external. (When in doubt use VERIFY_MIVBITSTREAM over
+//    PRECONDITION.)
 #define VERIFY_MIVBITSTREAM(condition)                                                             \
-  static_cast<void>(                                                                               \
-      (!!(condition) || (::TMIV::Common::mivError(#condition, __FILE__, __LINE__), false)))
-#define MIVBITSTREAM_ERROR(what) ::TMIV::Common::mivError(what, __FILE__, __LINE__)
+  static_cast<void>(!!(condition) ||                                                               \
+                    (::TMIV::Common::mivBitstreamError(#condition, __FILE__, __LINE__), false))
+#define MIVBITSTREAM_ERROR(what) ::TMIV::Common::mivBitstreamError(what, __FILE__, __LINE__)
 
 // Check against general bitstream conformance
+//
+//  * The bitstream is an external error source and thus an exception of type
+//    TMIV::Common::BitstreamError will be thrown.
+//  * When it is not clear from the context of a function if the cause is external or internal, then
+//    it is better to assume that the cause is external. (When in doubt use VERIFY_BITSTREAM over
+//    PRECONDITION.)
 #define VERIFY_BITSTREAM(condition)                                                                \
-  static_cast<void>(                                                                               \
-      (!!(condition) || (::TMIV::Common::bitstreamError(#condition, __FILE__, __LINE__), false)))
+  static_cast<void>(!!(condition) ||                                                               \
+                    (::TMIV::Common::bitstreamError(#condition, __FILE__, __LINE__), false))
+#define BITSTREAM_ERROR(what) ::TMIV::Common::bitstreamError(what, __FILE__, __LINE__)
 
-// Known limitation of the current implementation (not in line with ISO/IEC 23090-12)
-#define LIMITATION(condition)                                                                      \
-  static_cast<void>(                                                                               \
-      (!!(condition) || (::TMIV::Common::notImplemented(#condition, __FILE__, __LINE__), false)))
-
-// Check against profile-tier-level information and warn when outside of TMIV comfort zone, but
-// bravely carry on
+// Use profile-tier-level (PTL) information to check if the test model supports the bitstream
+//
+//  * The bitstream is an external error source and thus an exception of type TMIV::Common::PtlError
+//    will be thrown.
+//  * Use VERIFY_...BITSTREAM to check if the bitstream is within the reported PTL constraints.
 #define CONSTRAIN_PTL(condition)                                                                   \
   static_cast<void>(                                                                               \
-      (!!(condition) || (::TMIV::Common::ptlWarning(#condition, __FILE__, __LINE__), false)))
+      (!!(condition) || (::TMIV::Common::ptlError(#condition, __FILE__, __LINE__), false)))
+
+// Known limitation of the current implementation (not in line with ISO/IEC 23090-12)
+//
+// * When this triggers, this is always a bug in the test model.
+// * This is an internal error source and thus an abnormal program termination will be triggered.
+#define LIMITATION(condition)                                                                      \
+  static_cast<void>(                                                                               \
+      (!!(condition) || (::TMIV::Common::assertionFailed(#condition, __FILE__, __LINE__), false)))
+
+// Check for a precondition on an operation that will start (assumptions on the input)
+//
+//  * For hot inner loops use `assert` from the <cassert> header instead.
+//  * When this triggers, this is always a bug in the test model.
+//  * This is an internal error source and thus an abnormal program termination will be triggered.
+#define PRECONDITION(condition)                                                                    \
+  static_cast<void>(                                                                               \
+      (!!(condition) || (::TMIV::Common::assertionFailed(#condition, __FILE__, __LINE__), false)))
+
+// Check for a postcondition on an operation that just took place (assumptions on the output)
+//
+//  * For hot inner loops use `assert` from the <cassert> header instead.
+//  * When this triggers, this is always a bug in the test model.
+//  * This is an internal error source and thus an abnormal program termination will be triggered.
+#define POSTCONDITION(condition)                                                                   \
+  static_cast<void>(                                                                               \
+      (!!(condition) || (::TMIV::Common::assertionFailed(#condition, __FILE__, __LINE__), false)))
+
+// Mark unreachable code
+//
+//  * When this triggers, this is always a bug in the test model.
+//  * This is an internal error source and thus an abnormal program termination will be triggered.
+#define UNREACHABLE                                                                                \
+  ::TMIV::Common::assertionFailed("This code was assumed to be unreachable", __FILE__, __LINE__)
+
+// Mark stubbed code
+//
+//  * When this triggers, this is always a bug in the test model.
+//  * This is an internal error source and thus an abnormal program termination will be triggered.
+#define NOT_IMPLEMENTED ::TMIV::Common::assertionFailed("Not implemented", __FILE__, __LINE__)
 
 namespace TMIV::Common {
-class Exception : public std::exception {
-public:
-  Exception(std::string message) : m_message{std::move(message)} {}
-  [[nodiscard]] auto what() const noexcept -> const char * override { return m_message.c_str(); }
-
-private:
-  std::string m_message;
+// Report that a bitstream does not conform to the relevant (draft) specification
+//
+//  * When it is not clear from the context of a function if the cause is external or internal, then
+//    it is better to assume that the cause is external, and throw an exception.
+class BitstreamError : public std::runtime_error {
+  using std::runtime_error::runtime_error;
 };
 
-[[noreturn]] void bitstreamError(char const *condition, char const *file, int line);
-[[noreturn]] void v3cError(char const *condition, char const *file, int line);
-[[noreturn]] void mivError(char const *condition, char const *file, int line);
-[[noreturn]] void notImplemented(char const *condition, char const *file, int line);
-void ptlWarning(char const *condition, char const *file, int line);
+// Report that a bitstream does not conform to the (draft) ISO/IEC 23090-5 V3C specification
+//
+//  * When it is not clear from the context of a function if the cause is external or internal, then
+//    it is better to assume that the cause is external, and throw an exception.
+class V3cBitstreamError : public BitstreamError {
+  using BitstreamError::BitstreamError;
+};
+
+// Report that a bitstream does not conform to the (draft) ISO/IEC 23090-12 MIV specification
+//
+//  * When it is not clear from the context of a function if the cause is external or internal, then
+//    it is better to assume that the cause is external, and throw an exception.
+class MivBitstreamError : public BitstreamError {
+  using BitstreamError::BitstreamError;
+};
+
+// Report that the test model does not support the bitstream based on provided profile-tier-level
+// (PTL) information
+//
+//  * When it is not clear from the context of a function if the cause is external or internal, then
+//    it is better to assume that the cause is external, and throw an exception.
+class PtlError : public std::runtime_error {
+  using std::runtime_error::runtime_error;
+};
+
+// NOTE(BK): All inline to let the clang-tidy bugprone-exception-escape observe the throws
+
+inline auto message(char const *introduction, char const *condition, char const *file, int line)
+    -> std::string {
+  return fmt::format("{}:\n\t{}\n\t[{}@{}]\n", introduction, condition, file, line);
+}
+
+[[noreturn]] inline void runtimeError(char const *condition, char const *file, int line) {
+  throw std::runtime_error{message("Runtime error", condition, file, line)};
+}
+
+[[noreturn]] inline void v3cBitstreamError(char const *condition, char const *file, int line) {
+  throw V3cBitstreamError{
+      message("Failed to parse/decode ISO/IEC 23090-5 V3C bitstream", condition, file, line)};
+}
+
+[[noreturn]] inline void mivBitstreamError(char const *condition, char const *file, int line) {
+  throw MivBitstreamError{
+      message("Failed to parse/decode ISO/IEC 23090-12 MIV bitstream", condition, file, line)};
+}
+
+[[noreturn]] inline void bitstreamError(char const *condition, char const *file, int line) {
+  throw BitstreamError{message("Failed to parse/decode bitstream", condition, file, line)};
+}
+
+[[noreturn]] inline void ptlError(char const *condition, char const *file, int line) {
+  throw PtlError(
+      message("The bitstream is outside of the profile-tier-level (PTL) limits of this decoder",
+              condition, file, line));
+}
+
+[[noreturn]] inline void assertionFailed(char const *condition, char const *file,
+                                         int line) noexcept {
+  try {
+    std::cerr << message("Assertion failed", condition, file, line);
+  } catch (...) {
+  }
+  std::abort();
+}
 } // namespace TMIV::Common
 
 #endif

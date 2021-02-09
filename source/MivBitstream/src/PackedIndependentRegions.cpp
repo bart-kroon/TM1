@@ -34,16 +34,15 @@
 #include <TMIV/MivBitstream/PackedIndependentRegions.h>
 
 namespace TMIV::MivBitstream {
-auto PackedIndependentRegions::pir_num_packed_frames_minus1() const noexcept -> std::uint8_t {
+auto PackedIndependentRegions::pir_num_packed_frames_minus1() const -> std::uint8_t {
   VERIFY_V3CBITSTREAM(!m_pirPackedFrames.empty());
   return static_cast<std::uint8_t>(m_pirPackedFrames.size() - 1U);
 }
-auto PackedIndependentRegions::pir_packed_frame_id(std::uint8_t j) const noexcept -> std::uint8_t {
+auto PackedIndependentRegions::pir_packed_frame_id(std::uint8_t j) const -> std::uint8_t {
   VERIFY_V3CBITSTREAM(j <= pir_num_packed_frames_minus1());
   return m_pirPackedFrames[j].pir_packed_frame_id;
 }
-auto PackedIndependentRegions::pir_description_type_idc(std::uint8_t k) const noexcept
-    -> std::uint8_t {
+auto PackedIndependentRegions::pir_description_type_idc(std::uint8_t k) const -> std::uint8_t {
   VERIFY_V3CBITSTREAM(k <= pir_num_packed_frames_minus1());
   if (std::holds_alternative<TileRegions>(m_pirPackedFrames[k].regions)) {
     return 0U;

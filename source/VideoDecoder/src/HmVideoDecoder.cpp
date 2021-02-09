@@ -202,7 +202,7 @@ private:
   auto anyFrame(TComPicYuv &comPicYuv) const -> Common::AnyFrame {
     auto x = Common::AnyFrame{};
 
-    assert(comPicYuv.getNumberValidComponents() <= x.planes.size());
+    PRECONDITION(comPicYuv.getNumberValidComponents() <= x.planes.size());
 
     for (const auto componentId : {COMPONENT_Y, COMPONENT_Cb, COMPONENT_Cr}) {
       if (componentId < comPicYuv.getNumberValidComponents()) {
@@ -231,7 +231,7 @@ private:
     if (!m_frameListeners.empty()) {
       // Copy into Common::AnyFrame
       auto *comPicYuv = comPic.getPicYuvRec();
-      assert(comPicYuv);
+      PRECONDITION(comPicYuv);
       const auto picture = anyFrame(*comPicYuv);
 
       // Invoke all listeners

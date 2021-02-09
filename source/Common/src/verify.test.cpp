@@ -35,39 +35,69 @@
 
 #include <TMIV/Common/verify.h>
 
-using Catch::Matchers::Contains;
-using Catch::Matchers::StartsWith;
+using std::is_base_of_v;
+using std::runtime_error;
+using TMIV::Common::BitstreamError;
+using TMIV::Common::bitstreamError;
+using TMIV::Common::MivBitstreamError;
+using TMIV::Common::mivBitstreamError;
+using TMIV::Common::PtlError;
+using TMIV::Common::ptlError;
+using TMIV::Common::runtimeError;
+using TMIV::Common::V3cBitstreamError;
+using TMIV::Common::v3cBitstreamError;
 
 TEST_CASE("Verify Macros") {
   SECTION("Pass on true conditions") {
+    REQUIRE_NOTHROW(VERIFY(true));
     REQUIRE_NOTHROW(VERIFY_V3CBITSTREAM(true));
     REQUIRE_NOTHROW(VERIFY_MIVBITSTREAM(true));
     REQUIRE_NOTHROW(VERIFY_BITSTREAM(true));
-    REQUIRE_NOTHROW(LIMITATION(true));
     REQUIRE_NOTHROW(CONSTRAIN_PTL(true));
+
+    REQUIRE_NOTHROW(LIMITATION(true));
+    REQUIRE_NOTHROW(PRECONDITION(true));
+    REQUIRE_NOTHROW(POSTCONDITION(true));
   }
 
-  SECTION("Raise a TMIV exception on false conditions") {
-    REQUIRE_THROWS_AS(VERIFY_V3CBITSTREAM(false), TMIV::Common::Exception);
-    REQUIRE_THROWS_WITH(VERIFY_V3CBITSTREAM(false),
-                        StartsWith("ERROR: Failed to encode/decode V3C bitstream") &&
-                            Contains(__FILE__));
+  SECTION("Raise an exception on false conditions") {
+    SECTION("Exception hierarchy") {
+      static_assert(is_base_of_v<BitstreamError, V3cBitstreamError>);
+      static_assert(is_base_of_v<BitstreamError, MivBitstreamError>);
+      static_assert(is_base_of_v<runtime_error, BitstreamError>);
+      static_assert(is_base_of_v<runtime_error, PtlError>);
+    }
 
-    REQUIRE_THROWS_AS(VERIFY_MIVBITSTREAM(false), TMIV::Common::Exception);
-    REQUIRE_THROWS_WITH(VERIFY_MIVBITSTREAM(false),
-                        StartsWith("ERROR: Failed to encode/decode MIV bitstream") &&
-                            Contains(__FILE__));
+    SECTION("Runtime error") {
+      REQUIRE_THROWS_AS(runtimeError("", "", 0), runtime_error);
+      REQUIRE_THROWS_AS(VERIFY(false), runtime_error);
+      REQUIRE_THROWS_AS(RUNTIME_ERROR(""), runtime_error);
+    }
 
-    REQUIRE_THROWS_AS(VERIFY_BITSTREAM(false), TMIV::Common::Exception);
-    REQUIRE_THROWS_WITH(VERIFY_BITSTREAM(false),
-                        StartsWith("ERROR: Failed to encode/decode bitstream") &&
-                            Contains(__FILE__));
+    SECTION("V3C bitstream error") {
+      REQUIRE_THROWS_AS(v3cBitstreamError("", "", 0), V3cBitstreamError);
+      REQUIRE_THROWS_AS(VERIFY_V3CBITSTREAM(false), V3cBitstreamError);
+      REQUIRE_THROWS_AS(V3CBITSTREAM_ERROR(""), V3cBitstreamError);
+    }
 
-    REQUIRE_THROWS_AS(LIMITATION(false), TMIV::Common::Exception);
-    REQUIRE_THROWS_WITH(LIMITATION(false),
-                        StartsWith("ERROR: This aspect of MIV/3VC has not yet been implemented") &&
-                            Contains(__FILE__));
+    SECTION("MIV bitstream error") {
+      REQUIRE_THROWS_AS(mivBitstreamError("", "", 0), MivBitstreamError);
+      REQUIRE_THROWS_AS(VERIFY_MIVBITSTREAM(false), MivBitstreamError);
+      REQUIRE_THROWS_AS(MIVBITSTREAM_ERROR(""), MivBitstreamError);
+    }
+
+    SECTION("Bitstream error") {
+      REQUIRE_THROWS_AS(bitstreamError("", "", 0), BitstreamError);
+      REQUIRE_THROWS_AS(VERIFY_BITSTREAM(false), BitstreamError);
+      REQUIRE_THROWS_AS(BITSTREAM_ERROR(""), BitstreamError);
+    }
+
+    SECTION("Profile-tier-level (PTL) constraint error") {
+      REQUIRE_THROWS_AS(ptlError("", "", 0), PtlError);
+      REQUIRE_THROWS_AS(CONSTRAIN_PTL(false), PtlError);
+    }
+
+    // NOTE(BK): Because Catch2 does not support dead testing, LIMITATION, PRECONDITION and
+    // POSTCONDITION cannot be fully tested.
   }
-
-  SECTION("Special case: constrain only warns on stderr") { REQUIRE_NOTHROW(CONSTRAIN_PTL(false)); }
 }

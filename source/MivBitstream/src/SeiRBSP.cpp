@@ -189,7 +189,7 @@ auto SeiRBSP::decodeFrom(std::istream &stream) -> SeiRBSP {
 }
 
 void SeiRBSP::encodeTo(std::ostream &stream) const {
-  VERIFY_MIVBITSTREAM(!messages().empty());
+  PRECONDITION(!messages().empty());
 
   for (const auto &x : messages()) {
     x.encodeTo(stream);

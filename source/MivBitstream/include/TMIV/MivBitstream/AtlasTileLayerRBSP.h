@@ -99,13 +99,13 @@ public:
   [[nodiscard]] constexpr auto ath_atlas_adaptation_parameter_set_id() const noexcept;
   [[nodiscard]] constexpr auto ath_id() const noexcept;
   [[nodiscard]] constexpr auto ath_type() const noexcept;
-  [[nodiscard]] auto ath_atlas_output_flag() const noexcept -> bool;
+  [[nodiscard]] auto ath_atlas_output_flag() const -> bool;
   [[nodiscard]] constexpr auto ath_atlas_frm_order_cnt_lsb() const noexcept;
   [[nodiscard]] constexpr auto ath_ref_atlas_frame_list_asps_flag() const noexcept;
   [[nodiscard]] constexpr auto ath_pos_min_d_quantizer() const noexcept;
   [[nodiscard]] constexpr auto ath_pos_delta_max_d_quantizer() const noexcept;
-  [[nodiscard]] auto ath_patch_size_x_info_quantizer() const noexcept -> std::uint8_t;
-  [[nodiscard]] auto ath_patch_size_y_info_quantizer() const noexcept -> std::uint8_t;
+  [[nodiscard]] auto ath_patch_size_x_info_quantizer() const -> std::uint8_t;
+  [[nodiscard]] auto ath_patch_size_y_info_quantizer() const -> std::uint8_t;
 
   constexpr auto ath_no_output_of_prior_atlas_frames_flag(bool value) noexcept -> auto &;
   constexpr auto ath_atlas_frame_parameter_set_id(const std::uint8_t value) noexcept -> auto &;
@@ -176,8 +176,8 @@ public:
 
   auto printTo(std::ostream &stream, unsigned tileId, std::size_t patchIdx) const -> std::ostream &;
 
-  auto operator==(const PduMivExtension &other) const noexcept -> bool;
-  auto operator!=(const PduMivExtension &other) const noexcept -> bool;
+  auto operator==(const PduMivExtension &other) const -> bool;
+  auto operator!=(const PduMivExtension &other) const -> bool;
 
   static auto decodeFrom(Common::InputBitstream &bitstream,
                          const AtlasSequenceParameterSetRBSP &asps) -> PduMivExtension;

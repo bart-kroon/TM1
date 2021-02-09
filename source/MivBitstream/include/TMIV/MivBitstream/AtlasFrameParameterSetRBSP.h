@@ -106,8 +106,8 @@ public:
   [[nodiscard]] constexpr auto afps_extension_present_flag() const noexcept;
   [[nodiscard]] constexpr auto afps_miv_extension_present_flag() const noexcept;
   [[nodiscard]] constexpr auto afps_extension_7bits() const noexcept;
-  [[nodiscard]] auto afps_miv_extension() const noexcept -> AfpsMivExtension;
-  [[nodiscard]] auto afpsExtensionData() const noexcept -> const std::vector<bool> &;
+  [[nodiscard]] auto afps_miv_extension() const -> AfpsMivExtension;
+  [[nodiscard]] auto afpsExtensionData() const -> const std::vector<bool> &;
 
   constexpr auto afps_atlas_frame_parameter_set_id(const std::uint8_t value) noexcept -> auto &;
   constexpr auto afps_atlas_sequence_parameter_set_id(const std::uint8_t value) noexcept -> auto &;
@@ -129,8 +129,8 @@ public:
   friend auto operator<<(std::ostream &stream, const AtlasFrameParameterSetRBSP &x)
       -> std::ostream &;
 
-  auto operator==(const AtlasFrameParameterSetRBSP &other) const noexcept -> bool;
-  auto operator!=(const AtlasFrameParameterSetRBSP &other) const noexcept -> bool;
+  auto operator==(const AtlasFrameParameterSetRBSP &other) const -> bool;
+  auto operator!=(const AtlasFrameParameterSetRBSP &other) const -> bool;
 
   static auto decodeFrom(std::istream &stream,
                          const std::vector<AtlasSequenceParameterSetRBSP> &aspsV)
@@ -155,7 +155,7 @@ private:
   std::optional<std::vector<bool>> m_afpsExtensionData;
 };
 
-auto afpsById(const std::vector<AtlasFrameParameterSetRBSP> &afpsV, int id) noexcept
+auto afpsById(const std::vector<AtlasFrameParameterSetRBSP> &afpsV, int id)
     -> const AtlasFrameParameterSetRBSP &;
 } // namespace TMIV::MivBitstream
 

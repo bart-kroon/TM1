@@ -285,11 +285,11 @@ auto GroupBasedEncoder::mergeVps(const std::vector<const MivBitstream::V3cParame
   uint8_t groupIndex = 0;
 
   for (const auto &v : vps) {
-    assert(v->profile_tier_level() == x.profile_tier_level());
-    assert(v->vps_v3c_parameter_set_id() == x.vps_v3c_parameter_set_id());
-    assert(v->vps_miv_extension_present_flag());
-    assert(v->vps_extension_6bits() == 0);
-    assert(v->vps_miv_extension() == x.vps_miv_extension());
+    PRECONDITION(v->profile_tier_level() == x.profile_tier_level());
+    PRECONDITION(v->vps_v3c_parameter_set_id() == x.vps_v3c_parameter_set_id());
+    PRECONDITION(v->vps_miv_extension_present_flag());
+    PRECONDITION(v->vps_extension_6bits() == 0);
+    PRECONDITION(v->vps_miv_extension() == x.vps_miv_extension());
 
     for (uint8_t kIn = 0; kIn <= v->vps_atlas_count_minus1(); ++kIn, ++kOut) {
       const auto jIn = v->vps_atlas_id(kIn);
@@ -300,7 +300,7 @@ auto GroupBasedEncoder::mergeVps(const std::vector<const MivBitstream::V3cParame
       x.vps_frame_width(jOut, v->vps_frame_width(jIn));
       x.vps_frame_height(jOut, v->vps_frame_height(jIn));
       x.vps_map_count_minus1(jOut, v->vps_map_count_minus1(jIn));
-      assert(x.vps_map_count_minus1(jOut) == 0);
+      POSTCONDITION(x.vps_map_count_minus1(jOut) == 0);
 
       x.vps_auxiliary_video_present_flag(jOut, v->vps_auxiliary_video_present_flag(jIn));
       x.vps_occupancy_video_present_flag(jOut, v->vps_occupancy_video_present_flag(jIn));
@@ -321,7 +321,7 @@ auto GroupBasedEncoder::mergeVps(const std::vector<const MivBitstream::V3cParame
     ++groupIndex;
   }
 
-  assert(kOut == atlasCount);
+  POSTCONDITION(kOut == atlasCount);
   return x;
 }
 
@@ -355,7 +355,7 @@ auto GroupBasedEncoder::mergeParams(
                    });
 
     // Merge viewing space
-    assert(m_params.viewingSpace == (*ivs)->viewingSpace);
+    PRECONDITION(m_params.viewingSpace == (*ivs)->viewingSpace);
   }
 
   // Concatenate atlas access unit parameters

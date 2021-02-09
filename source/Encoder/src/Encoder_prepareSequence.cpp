@@ -39,20 +39,11 @@
 #include <iostream>
 
 namespace TMIV::Encoder {
-namespace {
-void runtimeCheck(bool cond, const char *what) {
-  if (!cond) {
-    throw std::runtime_error(what);
-  }
-}
-} // namespace
-
 void Encoder::prepareSequence(MivBitstream::EncoderParams sourceParams) {
   m_config.blockSize = m_config.blockSizeDepthQualityDependent[static_cast<std::size_t>(
       sourceParams.casme().casme_depth_low_quality_flag())];
-  runtimeCheck(2 <= m_config.blockSize, "blockSize should be at least two");
-  runtimeCheck((m_config.blockSize & (m_config.blockSize - 1)) == 0,
-               "blockSize should be a power of two");
+  VERIFY(2 <= m_config.blockSize);
+  VERIFY((m_config.blockSize & (m_config.blockSize - 1)) == 0);
 
   // TODO(BK): To account for the occupancy maps, the scaling factor needs to be known before this
   // point.

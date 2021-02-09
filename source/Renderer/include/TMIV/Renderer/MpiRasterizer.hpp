@@ -87,8 +87,8 @@ MpiRasterizer<T...>::MpiRasterizer(Common::Vec2i size)
 template <typename... T>
 MpiRasterizer<T...>::MpiRasterizer(Common::Vec2i size, int numStrips)
     : m_size{unsigned(size.y()), unsigned(size.x())} {
-  assert(size.x() >= 0 && size.y() >= 0);
-  assert(numStrips > 0);
+  PRECONDITION(size.x() >= 0 && size.y() >= 0);
+  PRECONDITION(numStrips > 0);
   m_strips.reserve(numStrips);
   for (int n = 0; n < numStrips; ++n) {
     const int i1 = size.y() * n / numStrips;

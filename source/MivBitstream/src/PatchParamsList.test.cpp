@@ -75,7 +75,7 @@ auto matrixRo(FlexiblePatchOrientation fpo) noexcept -> Mat2x2i {
   case FlexiblePatchOrientation::FPO_MROT180:
     return {1, 0, 0, -1};
   default:
-    abort();
+    UNREACHABLE;
   }
 }
 
@@ -98,7 +98,7 @@ auto matrixRs(FlexiblePatchOrientation fpo) noexcept -> Mat2x2i {
   case FlexiblePatchOrientation::FPO_MROT180:
     return {0, 0, 0, 1};
   default:
-    abort();
+    UNREACHABLE;
   }
 }
 

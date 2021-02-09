@@ -48,7 +48,7 @@ public:
   [[nodiscard]] constexpr auto casme_depth_low_quality_flag() const noexcept;
   [[nodiscard]] constexpr auto casme_depth_quantization_params_present_flag() const noexcept;
   [[nodiscard]] constexpr auto casme_vui_params_present_flag() const noexcept;
-  [[nodiscard]] auto vui_parameters() const noexcept -> const VuiParameters &;
+  [[nodiscard]] auto vui_parameters() const -> const VuiParameters &;
 
   constexpr auto casme_omaf_v1_compatible_flag(bool value) noexcept -> auto &;
   constexpr auto casme_depth_low_quality_flag(bool value) noexcept -> auto &;
@@ -80,11 +80,10 @@ public:
   [[nodiscard]] constexpr auto
   casps_log2_max_common_atlas_frame_order_cnt_lsb_minus4() const noexcept;
   [[nodiscard]] constexpr auto casps_extension_present_flag() const noexcept;
-  [[nodiscard]] auto casps_miv_extension_present_flag() const noexcept -> bool;
-  [[nodiscard]] auto casps_extension_7bits() const noexcept;
-  [[nodiscard]] auto casps_miv_extension() const noexcept -> const CaspsMivExtension &;
-  [[nodiscard]] auto caspsExtensionData() const noexcept
-      -> const std::vector<bool> &; // to access multiple casps_extension_data_flags
+  [[nodiscard]] auto casps_miv_extension_present_flag() const -> bool;
+  [[nodiscard]] auto casps_extension_7bits() const;
+  [[nodiscard]] auto casps_miv_extension() const -> const CaspsMivExtension &;
+  [[nodiscard]] auto caspsExtensionData() const -> const std::vector<bool> &;
 
   constexpr auto casps_common_atlas_sequence_parameter_set_id(std::uint8_t value) noexcept
       -> auto &;
@@ -94,9 +93,8 @@ public:
   auto casps_miv_extension_present_flag(bool flag) noexcept
       -> CommonAtlasSequenceParameterSetRBSP &;
   auto casps_extension_7bits(std::uint8_t value) noexcept -> CommonAtlasSequenceParameterSetRBSP &;
-  auto casps_miv_extension() noexcept -> CaspsMivExtension &;
-  auto caspsExtensionData(std::vector<bool> value) noexcept
-      -> CommonAtlasSequenceParameterSetRBSP &;
+  auto casps_miv_extension() -> CaspsMivExtension &;
+  auto caspsExtensionData(std::vector<bool> value) -> CommonAtlasSequenceParameterSetRBSP &;
 
   friend auto operator<<(std::ostream &stream, const CommonAtlasSequenceParameterSetRBSP &x)
       -> std::ostream &;
@@ -118,7 +116,7 @@ private:
   std::optional<std::vector<bool>> m_caspsExtensionData{};
 };
 
-auto caspsById(const std::vector<CommonAtlasSequenceParameterSetRBSP> &caspsV, int id) noexcept
+auto caspsById(const std::vector<CommonAtlasSequenceParameterSetRBSP> &caspsV, int id)
     -> const CommonAtlasSequenceParameterSetRBSP &;
 } // namespace TMIV::MivBitstream
 

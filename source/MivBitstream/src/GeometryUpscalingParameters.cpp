@@ -50,7 +50,7 @@ auto operator<<(std::ostream &stream, GupType x) -> std::ostream & {
 auto GeometryUpscalingParameters::gup_type() const noexcept -> GupType { return m_gup_type; }
 
 auto GeometryUpscalingParameters::gup_erode_threshold() const noexcept -> Common::Half {
-  return gup_type() == GupType::HVR ? m_gup_erode_threshold : Common::Half(inferredErodeThreshold);
+  return gup_type() == GupType::HVR ? m_gup_erode_threshold : Common::Half{inferredErodeThreshold};
 }
 
 auto GeometryUpscalingParameters::gup_delta_threshold() const noexcept -> unsigned {
@@ -69,21 +69,21 @@ auto GeometryUpscalingParameters::gup_type(GupType value) noexcept
 
 auto GeometryUpscalingParameters::gup_erode_threshold(Common::Half value) noexcept
     -> GeometryUpscalingParameters & {
-  VERIFY_BITSTREAM(gup_type() == GupType::HVR);
+  PRECONDITION(gup_type() == GupType::HVR);
   m_gup_erode_threshold = value;
   return *this;
 }
 
 auto GeometryUpscalingParameters::gup_delta_threshold(unsigned value) noexcept
     -> GeometryUpscalingParameters & {
-  VERIFY_BITSTREAM(gup_type() == GupType::HVR);
+  PRECONDITION(gup_type() == GupType::HVR);
   m_gup_delta_threshold = value;
   return *this;
 }
 
 auto GeometryUpscalingParameters::gup_max_curvature(std::uint8_t value) noexcept
     -> GeometryUpscalingParameters & {
-  VERIFY_BITSTREAM(gup_type() == GupType::HVR);
+  PRECONDITION(gup_type() == GupType::HVR);
   m_gup_max_curvature = value;
   return *this;
 }

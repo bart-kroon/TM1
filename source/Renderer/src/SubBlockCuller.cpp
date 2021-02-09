@@ -138,8 +138,8 @@ auto divideInBlocks(const MivBitstream::PatchParams &patch) {
       b.atlasPatch2dSizeX(x2 - x1);
       b.atlasPatch2dSizeY(y2 - y1);
 
-      assert(patch.atlasPatchOrientationIndex() ==
-             MivBitstream::FlexiblePatchOrientation::FPO_NULL);
+      PRECONDITION(patch.atlasPatchOrientationIndex() ==
+                   MivBitstream::FlexiblePatchOrientation::FPO_NULL);
       b.atlasPatch3dOffsetU(b.atlasPatch3dOffsetU() + x1);
       b.atlasPatch3dOffsetV(b.atlasPatch3dOffsetV() + y1);
     }

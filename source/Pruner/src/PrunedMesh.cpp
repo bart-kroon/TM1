@@ -61,9 +61,9 @@ auto unprojectPrunedView(const Common::TextureDepth16Frame &view,
     const auto &V = view.texture.getPlane(2);
     const auto &D = view.depth.getPlane(0);
 
-    assert(vertices.empty());
+    PRECONDITION(vertices.empty());
     vertices.reserve(numPixels);
-    assert(attributes.empty());
+    PRECONDITION(attributes.empty());
     attributes.reserve(numPixels);
 
     std::vector<int> key;
@@ -92,7 +92,7 @@ auto unprojectPrunedView(const Common::TextureDepth16Frame &view,
       attributes.shrink_to_fit();
     }
 
-    assert(triangles.empty());
+    PRECONDITION(triangles.empty());
     const auto maxTriangles = 2 * vertices.size();
     triangles.reserve(maxTriangles);
 

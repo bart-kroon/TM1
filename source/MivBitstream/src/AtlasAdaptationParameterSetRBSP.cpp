@@ -54,14 +54,14 @@ void AapsVpccExtension::encodeTo(Common::OutputBitstream &bitstream) {
   bitstream.putFlag(aaps_vpcc_camera_parameters_present_flag);
 }
 
-auto AapsMivExtension::vui_parameters() const noexcept -> const VuiParameters & {
+auto AapsMivExtension::vui_parameters() const -> const VuiParameters & {
   VERIFY_MIVBITSTREAM(aame_vui_params_present_flag());
   VERIFY_MIVBITSTREAM(m_vui_parameters.has_value());
   return *m_vui_parameters;
 }
 
 auto AapsMivExtension::vui_parameters(const VuiParameters &value) noexcept -> AapsMivExtension & {
-  VERIFY_MIVBITSTREAM(aame_vui_params_present_flag());
+  PRECONDITION(aame_vui_params_present_flag());
   m_vui_parameters = value;
   return *this;
 }
@@ -103,22 +103,20 @@ void AapsMivExtension::encodeTo(Common::OutputBitstream &bitstream) const {
   }
 }
 
-auto AtlasAdaptationParameterSetRBSP::aaps_log2_max_atlas_frame_order_cnt_lsb_minus4()
-    const noexcept -> uint8_t {
+auto AtlasAdaptationParameterSetRBSP::aaps_log2_max_atlas_frame_order_cnt_lsb_minus4() const
+    -> uint8_t {
   VERIFY_V3CBITSTREAM(aaps_log2_max_afoc_present_flag());
   VERIFY_V3CBITSTREAM(m_aaps_log2_max_atlas_frame_order_cnt_lsb_minus4.has_value());
   return *m_aaps_log2_max_atlas_frame_order_cnt_lsb_minus4;
 }
 
-auto AtlasAdaptationParameterSetRBSP::aaps_vpcc_extension() const noexcept
-    -> const AapsVpccExtension & {
+auto AtlasAdaptationParameterSetRBSP::aaps_vpcc_extension() const -> const AapsVpccExtension & {
   VERIFY_V3CBITSTREAM(aaps_vpcc_extension_present_flag());
   VERIFY_V3CBITSTREAM(m_aaps_vpcc_extension.has_value());
   return *m_aaps_vpcc_extension;
 }
 
-auto AtlasAdaptationParameterSetRBSP::aapsExtensionData() const noexcept
-    -> const std::vector<bool> & {
+auto AtlasAdaptationParameterSetRBSP::aapsExtensionData() const -> const std::vector<bool> & {
   VERIFY_V3CBITSTREAM(aaps_extension_7bits() != 0);
   VERIFY_V3CBITSTREAM(m_aapsExtensionData.has_value());
   return *m_aapsExtensionData;
@@ -126,35 +124,35 @@ auto AtlasAdaptationParameterSetRBSP::aapsExtensionData() const noexcept
 
 auto AtlasAdaptationParameterSetRBSP::aaps_log2_max_atlas_frame_order_cnt_lsb_minus4(
     std::uint8_t value) noexcept -> AtlasAdaptationParameterSetRBSP & {
-  VERIFY_V3CBITSTREAM(aaps_log2_max_afoc_present_flag());
+  PRECONDITION(aaps_log2_max_afoc_present_flag());
   m_aaps_log2_max_atlas_frame_order_cnt_lsb_minus4 = value;
   return *this;
 }
 
 auto AtlasAdaptationParameterSetRBSP::aaps_vpcc_extension_present_flag(bool value) noexcept
     -> AtlasAdaptationParameterSetRBSP & {
-  VERIFY_V3CBITSTREAM(aaps_extension_present_flag());
+  PRECONDITION(aaps_extension_present_flag());
   m_aaps_vpcc_extension_present_flag = value;
   return *this;
 }
 
 auto AtlasAdaptationParameterSetRBSP::aaps_extension_7bits(std::uint8_t value) noexcept
     -> AtlasAdaptationParameterSetRBSP & {
-  VERIFY_V3CBITSTREAM(aaps_extension_present_flag());
+  PRECONDITION(aaps_extension_present_flag());
   m_aaps_extension_7bits = value;
   return *this;
 }
 
 auto AtlasAdaptationParameterSetRBSP::aaps_vpcc_extension(const AapsVpccExtension &value) noexcept
     -> AtlasAdaptationParameterSetRBSP & {
-  VERIFY_V3CBITSTREAM(aaps_vpcc_extension_present_flag());
+  PRECONDITION(aaps_vpcc_extension_present_flag());
   m_aaps_vpcc_extension = value;
   return *this;
 }
 
 auto AtlasAdaptationParameterSetRBSP::aapsExtensionData(std::vector<bool> value) noexcept
     -> AtlasAdaptationParameterSetRBSP & {
-  VERIFY_V3CBITSTREAM(aaps_extension_7bits() != 0);
+  PRECONDITION(aaps_extension_7bits() != 0);
   m_aapsExtensionData = std::move(value);
   return *this;
 }
@@ -186,8 +184,8 @@ auto operator<<(std::ostream &stream, const AtlasAdaptationParameterSetRBSP &x) 
   return stream;
 }
 
-auto AtlasAdaptationParameterSetRBSP::operator==(
-    const AtlasAdaptationParameterSetRBSP &other) const noexcept -> bool {
+auto AtlasAdaptationParameterSetRBSP::operator==(const AtlasAdaptationParameterSetRBSP &other) const
+    -> bool {
   if (aaps_atlas_adaptation_parameter_set_id() != other.aaps_atlas_adaptation_parameter_set_id() ||
       aaps_log2_max_afoc_present_flag() != other.aaps_log2_max_afoc_present_flag() ||
       aaps_extension_present_flag() != other.aaps_extension_present_flag() ||
@@ -209,8 +207,8 @@ auto AtlasAdaptationParameterSetRBSP::operator==(
   return true;
 }
 
-auto AtlasAdaptationParameterSetRBSP::operator!=(
-    const AtlasAdaptationParameterSetRBSP &other) const noexcept -> bool {
+auto AtlasAdaptationParameterSetRBSP::operator!=(const AtlasAdaptationParameterSetRBSP &other) const
+    -> bool {
   return !operator==(other);
 }
 

@@ -44,7 +44,7 @@ template <class TO, class FROM> auto yuv420p_impl(const Frame<FROM> &frame) -> F
   std::copy(std::begin(frame.getPlane(0)), std::end(frame.getPlane(0)),
             std::begin(result.getPlane(0)));
 
-  assert(frame.getWidth() % 2 == 0 && frame.getHeight() % 2 == 0);
+  PRECONDITION(frame.getWidth() % 2 == 0 && frame.getHeight() % 2 == 0);
   const int rows = result.getHeight() / 2;
   const int cols = result.getWidth() / 2;
 
@@ -62,7 +62,7 @@ template <class TO, class FROM> auto yuv420p_impl(const Frame<FROM> &frame) -> F
 }
 
 template <class TO, class FROM> auto yuv444p_impl(const Frame<FROM> &frame) -> Frame<TO> {
-  assert(frame.getWidth() % 2 == 0 && frame.getHeight() % 2 == 0);
+  PRECONDITION(frame.getWidth() % 2 == 0 && frame.getHeight() % 2 == 0);
 
   auto result = Frame<TO>{frame.getWidth(), frame.getHeight()};
 

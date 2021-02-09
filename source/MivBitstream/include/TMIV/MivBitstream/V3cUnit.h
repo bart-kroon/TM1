@@ -53,12 +53,12 @@ public:
 
   [[nodiscard]] constexpr auto vuh_unit_type() const noexcept { return m_vuh_unit_type; }
 
-  [[nodiscard]] auto vuh_v3c_parameter_set_id() const noexcept -> std::uint8_t;
-  [[nodiscard]] auto vuh_atlas_id() const noexcept -> AtlasId;
-  [[nodiscard]] auto vuh_attribute_index() const noexcept -> std::uint8_t;
-  [[nodiscard]] auto vuh_attribute_partition_index() const noexcept -> std::uint8_t;
-  [[nodiscard]] auto vuh_map_index() const noexcept -> std::uint8_t;
-  [[nodiscard]] auto vuh_auxiliary_video_flag() const noexcept -> bool;
+  [[nodiscard]] auto vuh_v3c_parameter_set_id() const -> std::uint8_t;
+  [[nodiscard]] auto vuh_atlas_id() const -> AtlasId;
+  [[nodiscard]] auto vuh_attribute_index() const -> std::uint8_t;
+  [[nodiscard]] auto vuh_attribute_partition_index() const -> std::uint8_t;
+  [[nodiscard]] auto vuh_map_index() const -> std::uint8_t;
+  [[nodiscard]] auto vuh_auxiliary_video_flag() const -> bool;
 
   auto vuh_v3c_parameter_set_id(std::uint8_t value) noexcept -> V3cUnitHeader &;
   auto vuh_atlas_id(AtlasId value) noexcept -> V3cUnitHeader &;
@@ -69,8 +69,8 @@ public:
 
   friend auto operator<<(std::ostream &stream, const V3cUnitHeader &x) -> std::ostream &;
 
-  auto operator==(const V3cUnitHeader &other) const noexcept -> bool;
-  auto operator!=(const V3cUnitHeader &other) const noexcept -> bool;
+  auto operator==(const V3cUnitHeader &other) const -> bool;
+  auto operator!=(const V3cUnitHeader &other) const -> bool;
 
   static auto decodeFrom(std::istream &stream) -> V3cUnitHeader;
 
@@ -130,8 +130,8 @@ public:
 
   friend auto operator<<(std::ostream &stream, const V3cUnit &x) -> std::ostream &;
 
-  auto operator==(const V3cUnit &other) const noexcept -> bool;
-  auto operator!=(const V3cUnit &other) const noexcept -> bool;
+  auto operator==(const V3cUnit &other) const -> bool;
+  auto operator!=(const V3cUnit &other) const -> bool;
 
   static auto decodeFrom(std::istream &stream, std::size_t numBytesInV3CUnit) -> V3cUnit;
 

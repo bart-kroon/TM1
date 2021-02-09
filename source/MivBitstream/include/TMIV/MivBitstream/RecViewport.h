@@ -47,17 +47,17 @@ public:
 
   [[nodiscard]] auto rec_viewport_id() const noexcept -> std::uint16_t;
   [[nodiscard]] auto rec_viewport_cancel_flag() const noexcept -> bool;
-  [[nodiscard]] auto rec_viewport_persistence_flag() const noexcept -> bool;
-  [[nodiscard]] auto rec_viewport_center_view_flag() const noexcept -> bool;
-  [[nodiscard]] auto rec_viewport_left_view_flag() const noexcept -> bool;
-  [[nodiscard]] auto rec_viewport_pos_x() const noexcept -> float;
-  [[nodiscard]] auto rec_viewport_pos_y() const noexcept -> float;
-  [[nodiscard]] auto rec_viewport_pos_z() const noexcept -> float;
-  [[nodiscard]] auto rec_viewport_quat_x() const noexcept -> float;
-  [[nodiscard]] auto rec_viewport_quat_y() const noexcept -> float;
-  [[nodiscard]] auto rec_viewport_quat_z() const noexcept -> float;
-  [[nodiscard]] auto rec_viewport_hor_range() const noexcept -> float;
-  [[nodiscard]] auto rec_viewport_ver_range() const noexcept -> float;
+  [[nodiscard]] auto rec_viewport_persistence_flag() const -> bool;
+  [[nodiscard]] auto rec_viewport_center_view_flag() const -> bool;
+  [[nodiscard]] auto rec_viewport_left_view_flag() const -> bool;
+  [[nodiscard]] auto rec_viewport_pos_x() const -> float;
+  [[nodiscard]] auto rec_viewport_pos_y() const -> float;
+  [[nodiscard]] auto rec_viewport_pos_z() const -> float;
+  [[nodiscard]] auto rec_viewport_quat_x() const -> float;
+  [[nodiscard]] auto rec_viewport_quat_y() const -> float;
+  [[nodiscard]] auto rec_viewport_quat_z() const -> float;
+  [[nodiscard]] auto rec_viewport_hor_range() const -> float;
+  [[nodiscard]] auto rec_viewport_ver_range() const -> float;
 
   constexpr auto rec_viewport_id(const std::uint16_t value) noexcept -> auto &;
   constexpr auto rec_viewport_cancel_flag(const bool value) noexcept -> auto &;
@@ -75,8 +75,8 @@ public:
 
   friend auto operator<<(std::ostream &stream, const RecViewport &x) -> std::ostream &;
 
-  auto operator==(const RecViewport &other) const noexcept -> bool;
-  auto operator!=(const RecViewport &other) const noexcept -> bool;
+  auto operator==(const RecViewport &other) const -> bool;
+  auto operator!=(const RecViewport &other) const -> bool;
 
   static auto decodeFrom(Common::InputBitstream &bitstream) -> RecViewport;
 

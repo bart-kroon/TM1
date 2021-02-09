@@ -42,62 +42,62 @@ auto RecViewport::rec_viewport_cancel_flag() const noexcept -> bool {
   return m_rec_viewport_cancel_flag;
 }
 
-auto RecViewport::rec_viewport_persistence_flag() const noexcept -> bool {
+auto RecViewport::rec_viewport_persistence_flag() const -> bool {
   VERIFY_MIVBITSTREAM(m_rec_viewport_persistence_flag.has_value());
   return *m_rec_viewport_persistence_flag;
 }
 
-auto RecViewport::rec_viewport_center_view_flag() const noexcept -> bool {
+auto RecViewport::rec_viewport_center_view_flag() const -> bool {
   VERIFY_MIVBITSTREAM(m_rec_viewport_center_view_flag.has_value());
   return *m_rec_viewport_center_view_flag;
 }
 
-auto RecViewport::rec_viewport_left_view_flag() const noexcept -> bool {
+auto RecViewport::rec_viewport_left_view_flag() const -> bool {
   VERIFY_MIVBITSTREAM(m_rec_viewport_left_view_flag.has_value());
   return *m_rec_viewport_left_view_flag;
 }
 
-auto RecViewport::rec_viewport_pos_x() const noexcept -> float {
+auto RecViewport::rec_viewport_pos_x() const -> float {
   VERIFY_MIVBITSTREAM(m_rec_viewport_pos_x.has_value());
   return *m_rec_viewport_pos_x;
 }
 
-auto RecViewport::rec_viewport_pos_y() const noexcept -> float {
+auto RecViewport::rec_viewport_pos_y() const -> float {
   VERIFY_MIVBITSTREAM(m_rec_viewport_pos_y.has_value());
   return *m_rec_viewport_pos_y;
 }
 
-auto RecViewport::rec_viewport_pos_z() const noexcept -> float {
+auto RecViewport::rec_viewport_pos_z() const -> float {
   VERIFY_MIVBITSTREAM(m_rec_viewport_pos_z.has_value());
   return *m_rec_viewport_pos_z;
 }
 
-auto RecViewport::rec_viewport_quat_x() const noexcept -> float {
+auto RecViewport::rec_viewport_quat_x() const -> float {
   VERIFY_MIVBITSTREAM(m_rec_viewport_quat_x.has_value());
   return *m_rec_viewport_quat_x;
 }
 
-auto RecViewport::rec_viewport_quat_y() const noexcept -> float {
+auto RecViewport::rec_viewport_quat_y() const -> float {
   VERIFY_MIVBITSTREAM(m_rec_viewport_quat_y.has_value());
   return *m_rec_viewport_quat_y;
 }
 
-auto RecViewport::rec_viewport_quat_z() const noexcept -> float {
+auto RecViewport::rec_viewport_quat_z() const -> float {
   VERIFY_MIVBITSTREAM(m_rec_viewport_quat_z.has_value());
   return *m_rec_viewport_quat_z;
 }
 
-auto RecViewport::rec_viewport_hor_range() const noexcept -> float {
+auto RecViewport::rec_viewport_hor_range() const -> float {
   VERIFY_MIVBITSTREAM(m_rec_viewport_hor_range.has_value());
   return *m_rec_viewport_hor_range;
 }
 
-auto RecViewport::rec_viewport_ver_range() const noexcept -> float {
+auto RecViewport::rec_viewport_ver_range() const -> float {
   VERIFY_MIVBITSTREAM(m_rec_viewport_ver_range.has_value());
   return *m_rec_viewport_ver_range;
 }
 
-auto RecViewport::operator==(const RecViewport &other) const noexcept -> bool {
+auto RecViewport::operator==(const RecViewport &other) const -> bool {
   if (rec_viewport_id() != other.rec_viewport_id() ||
       rec_viewport_cancel_flag() != other.rec_viewport_cancel_flag()) {
     return false;
@@ -121,9 +121,7 @@ auto RecViewport::operator==(const RecViewport &other) const noexcept -> bool {
          rec_viewport_left_view_flag() == other.rec_viewport_left_view_flag();
 }
 
-auto RecViewport::operator!=(const RecViewport &other) const noexcept -> bool {
-  return !operator==(other);
-}
+auto RecViewport::operator!=(const RecViewport &other) const -> bool { return !operator==(other); }
 
 RecViewport::RecViewport(uint16_t value1, bool value2) {
   rec_viewport_id(value1);

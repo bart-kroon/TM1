@@ -70,17 +70,17 @@ public:
   [[nodiscard]] auto aoa_reset_flag() const noexcept -> bool;
   [[nodiscard]] auto aoa_num_atlases_minus1() const noexcept -> std::uint8_t;
   [[nodiscard]] auto aoa_num_updates() const noexcept -> std::size_t;
-  [[nodiscard]] auto aoa_log2_max_object_idx_tracked_minus1() const noexcept -> std::uint8_t;
-  [[nodiscard]] auto aoa_atlas_id(std::size_t j) const noexcept -> std::uint8_t;
-  [[nodiscard]] auto aoa_object_idx(std::size_t i) const noexcept -> std::uint8_t;
-  [[nodiscard]] auto aoa_object_in_atlas(std::size_t i, std::size_t j) const noexcept -> bool;
+  [[nodiscard]] auto aoa_log2_max_object_idx_tracked_minus1() const -> std::uint8_t;
+  [[nodiscard]] auto aoa_atlas_id(std::size_t j) const -> std::uint8_t;
+  [[nodiscard]] auto aoa_object_idx(std::size_t i) const -> std::uint8_t;
+  [[nodiscard]] auto aoa_object_in_atlas(std::size_t i, std::size_t j) const -> bool;
 
   constexpr auto aoa_persistence_flag(bool value) noexcept -> auto &;
   constexpr auto aoa_reset_flag(bool value) noexcept -> auto &;
   constexpr auto aoa_num_atlases_minus1(std::uint8_t value) noexcept -> auto &;
-  auto aoa_num_updates(std::size_t value) noexcept -> auto &;
+  auto aoa_num_updates(std::size_t value) -> auto &;
   auto aoa_log2_max_object_idx_tracked_minus1(std::uint8_t value) noexcept -> auto &;
-  auto push_back_aoa_atlas_id(std::uint8_t value) noexcept -> auto &;
+  auto push_back_aoa_atlas_id(std::uint8_t value) -> auto &;
   auto aoa_object_idx(std::size_t i, std::uint8_t value) noexcept -> auto &;
   auto aoa_object_in_atlas(std::size_t i, std::size_t j, bool value) noexcept -> auto &;
 
@@ -93,7 +93,7 @@ public:
   void encodeTo(Common::OutputBitstream &bitstream) const;
 
 private:
-  void prepareAoaParameters(std::size_t aoa_num_updates) noexcept;
+  void prepareAoaParameters(std::size_t aoa_num_updates);
 
   bool m_aoa_persistence_flag{};
   bool m_aoa_reset_flag{};

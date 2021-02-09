@@ -70,22 +70,22 @@ auto yuv420pFormat(int bitDepth) {
 } // namespace
 
 auto CameraConfig::textureVideoFormat() const -> std::string {
-  assert(colorspace == Colorspace::yuv420);
+  PRECONDITION(colorspace == Colorspace::yuv420);
   return yuv420pFormat(bitDepthColor);
 }
 
 auto CameraConfig::transparencyVideoFormat() const -> std::string {
-  assert(colorspace == Colorspace::yuv420);
+  PRECONDITION(colorspace == Colorspace::yuv420);
   return yuv420pFormat(bitDepthTransparency);
 }
 
 auto CameraConfig::geometryVideoFormat() const -> std::string {
-  assert(depthColorspace == Colorspace::yuv420);
+  PRECONDITION(depthColorspace == Colorspace::yuv420);
   return yuv420pFormat(bitDepthDepth);
 }
 
 auto CameraConfig::entitiesVideoFormat() const -> std::string {
-  assert(entitiesColorspace == Colorspace::yuv420);
+  PRECONDITION(entitiesColorspace == Colorspace::yuv420);
   return yuv420pFormat(bitDepthEntities);
 }
 

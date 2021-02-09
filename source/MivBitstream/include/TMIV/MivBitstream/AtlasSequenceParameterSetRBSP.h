@@ -58,7 +58,7 @@ public:
   explicit RefListStruct(std::vector<std::int16_t> deltaAfocSt);
 
   [[nodiscard]] auto num_ref_entries() const noexcept -> std::size_t;
-  [[nodiscard]] auto deltaAfocSt(std::size_t i) const noexcept -> std::int16_t;
+  [[nodiscard]] auto deltaAfocSt(std::size_t i) const -> std::int16_t;
 
   auto printTo(std::ostream &stream, std::uint8_t rlsIdx) const -> std::ostream &;
 
@@ -107,14 +107,14 @@ public:
   [[nodiscard]] constexpr auto asme_embedded_occupancy_enabled_flag() const noexcept;
   [[nodiscard]] constexpr auto asme_depth_occ_threshold_flag() const noexcept;
   [[nodiscard]] constexpr auto asme_geometry_scale_enabled_flag() const noexcept;
-  [[nodiscard]] auto asme_geometry_scale_factor_x_minus1() const noexcept -> std::uint16_t;
-  [[nodiscard]] auto asme_geometry_scale_factor_y_minus1() const noexcept -> std::uint16_t;
+  [[nodiscard]] auto asme_geometry_scale_factor_x_minus1() const -> std::uint16_t;
+  [[nodiscard]] auto asme_geometry_scale_factor_y_minus1() const -> std::uint16_t;
   [[nodiscard]] constexpr auto asme_occupancy_scale_enabled_flag() const noexcept;
-  [[nodiscard]] auto asme_occupancy_scale_factor_x_minus1() const noexcept -> std::uint16_t;
-  [[nodiscard]] auto asme_occupancy_scale_factor_y_minus1() const noexcept -> std::uint16_t;
+  [[nodiscard]] auto asme_occupancy_scale_factor_x_minus1() const -> std::uint16_t;
+  [[nodiscard]] auto asme_occupancy_scale_factor_y_minus1() const -> std::uint16_t;
   [[nodiscard]] constexpr auto asme_patch_constant_depth_flag() const noexcept;
   [[nodiscard]] constexpr auto asme_patch_attribute_offset_enabled_flag() const noexcept;
-  [[nodiscard]] auto asme_patch_attribute_offset_bit_depth_minus1() const noexcept -> std::uint16_t;
+  [[nodiscard]] auto asme_patch_attribute_offset_bit_depth_minus1() const -> std::uint16_t;
   [[nodiscard]] constexpr auto asme_max_entity_id() const noexcept;
   [[nodiscard]] constexpr auto asme_inpaint_enabled_flag() const noexcept;
 
@@ -200,9 +200,9 @@ public:
   [[nodiscard]] constexpr auto asps_vpcc_extension_present_flag() const noexcept;
   [[nodiscard]] constexpr auto asps_miv_extension_present_flag() const noexcept;
   [[nodiscard]] constexpr auto asps_extension_6bits() const noexcept;
-  [[nodiscard]] auto asps_vpcc_extension() const noexcept -> const AspsVpccExtension &;
-  [[nodiscard]] auto asps_miv_extension() const noexcept -> const AspsMivExtension &;
-  [[nodiscard]] auto aspsExtensionData() const noexcept -> const std::vector<bool> &;
+  [[nodiscard]] auto asps_vpcc_extension() const -> const AspsVpccExtension &;
+  [[nodiscard]] auto asps_miv_extension() const -> const AspsMivExtension &;
+  [[nodiscard]] auto aspsExtensionData() const -> const std::vector<bool> &;
 
   constexpr auto asps_atlas_sequence_parameter_set_id(std::uint8_t value) noexcept -> auto &;
   constexpr auto asps_frame_width(std::uint16_t value) noexcept -> auto &;
@@ -243,8 +243,8 @@ public:
   friend auto operator<<(std::ostream &stream, const AtlasSequenceParameterSetRBSP &x)
       -> std::ostream &;
 
-  auto operator==(const AtlasSequenceParameterSetRBSP &other) const noexcept -> bool;
-  auto operator!=(const AtlasSequenceParameterSetRBSP &other) const noexcept -> bool;
+  auto operator==(const AtlasSequenceParameterSetRBSP &other) const -> bool;
+  auto operator!=(const AtlasSequenceParameterSetRBSP &other) const -> bool;
 
   static auto decodeFrom(std::istream &stream, const V3cUnitHeader &vuh, const V3cParameterSet &vps)
       -> AtlasSequenceParameterSetRBSP;
@@ -284,7 +284,7 @@ private:
   std::optional<std::vector<bool>> m_aspsExtensionData;
 };
 
-auto aspsById(const std::vector<AtlasSequenceParameterSetRBSP> &aspsV, int id) noexcept
+auto aspsById(const std::vector<AtlasSequenceParameterSetRBSP> &aspsV, int id)
     -> const AtlasSequenceParameterSetRBSP &;
 } // namespace TMIV::MivBitstream
 

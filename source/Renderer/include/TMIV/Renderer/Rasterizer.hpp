@@ -87,8 +87,8 @@ Rasterizer<T...>::Rasterizer(Pixel pixel, Common::Vec2i size)
 template <typename... T>
 Rasterizer<T...>::Rasterizer(Pixel pixel, Common::Vec2i size, int numStrips)
     : m_pixel{pixel}, m_size{static_cast<size_t>(size.y()), static_cast<size_t>(size.x())} {
-  assert(size.x() >= 0 && size.y() >= 0);
-  assert(numStrips > 0);
+  PRECONDITION(size.x() >= 0 && size.y() >= 0);
+  PRECONDITION(numStrips > 0);
   m_strips.reserve(numStrips);
   for (int n = 0; n < numStrips; ++n) {
     const auto i1 = size.y() * n / numStrips;
@@ -144,7 +144,7 @@ template <typename... T> auto Rasterizer<T...>::depth() const -> Common::Mat<flo
     *i_matrix++ = x.depth();
     return true;
   });
-  assert(i_matrix == std::end(matrix));
+  POSTCONDITION(i_matrix == std::end(matrix));
   return matrix;
 }
 
@@ -155,7 +155,7 @@ template <typename... T> auto Rasterizer<T...>::normDisp() const -> Common::Mat<
     *i_matrix++ = x.normDisp;
     return true;
   });
-  assert(i_matrix == std::end(matrix));
+  POSTCONDITION(i_matrix == std::end(matrix));
   return matrix;
 }
 
@@ -166,7 +166,7 @@ template <typename... T> auto Rasterizer<T...>::normWeight() const -> Common::Ma
     *i_matrix++ = x.normWeight;
     return true;
   });
-  assert(i_matrix == std::end(matrix));
+  POSTCONDITION(i_matrix == std::end(matrix));
   return matrix;
 }
 
@@ -180,7 +180,7 @@ template <size_t I>
     *i_matrix++ = std::get<I>(x.attributes());
     return true;
   });
-  assert(i_matrix == std::end(matrix));
+  POSTCONDITION(i_matrix == std::end(matrix));
   return matrix;
 }
 

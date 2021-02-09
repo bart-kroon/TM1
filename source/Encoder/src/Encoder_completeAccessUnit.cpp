@@ -87,7 +87,7 @@ void adaptPatchStatsToTexture(std::array<PatchStats, 3> &patchStats,
 } // namespace
 
 void Encoder::scaleGeometryDynamicRange() {
-  assert(m_config.dynamicDepthRange);
+  PRECONDITION(m_config.dynamicDepthRange);
   const auto lowDepthQuality = m_params.casme().casme_depth_low_quality_flag();
   const auto numOfFrames = m_transportViews.size();
   const auto numOfViews = m_transportViews[0].size();
@@ -423,8 +423,9 @@ auto Encoder::writePatchInAtlas(const MivBitstream::PatchParams &patchParams,
   std::array<PatchStats, 3> patchStats{};
   std::fill(patchStats.begin(), patchStats.end(), PatchStats{textureMaxVal});
 
-  assert(0 <= posU && posU + sizeU <= inViewParams.ci.ci_projection_plane_width_minus1() + 1);
-  assert(0 <= posV && posV + sizeV <= inViewParams.ci.ci_projection_plane_height_minus1() + 1);
+  PRECONDITION(0 <= posU && posU + sizeU <= inViewParams.ci.ci_projection_plane_width_minus1() + 1);
+  PRECONDITION(0 <= posV &&
+               posV + sizeV <= inViewParams.ci.ci_projection_plane_height_minus1() + 1);
 
   for (int vBlock = 0; vBlock < sizeV; vBlock += m_config.blockSize) {
     for (int uBlock = 0; uBlock < sizeU; uBlock += m_config.blockSize) {

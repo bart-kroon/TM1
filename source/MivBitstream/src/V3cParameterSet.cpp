@@ -190,12 +190,12 @@ void AtlasId::encodeTo(Common::OutputBitstream &bitstream) const {
   bitstream.writeBits(m_atlasId, 6);
 }
 
-auto ProfileTierLevel::ptl_num_sub_profiles() const noexcept -> uint8_t {
+auto ProfileTierLevel::ptl_num_sub_profiles() const -> uint8_t {
   VERIFY_V3CBITSTREAM(m_subProfileIdcs.size() <= UINT8_MAX);
   return static_cast<uint8_t>(m_subProfileIdcs.size());
 }
 
-auto ProfileTierLevel::ptl_sub_profile_idc(std::uint8_t i) const noexcept -> uint64_t {
+auto ProfileTierLevel::ptl_sub_profile_idc(std::uint8_t i) const -> uint64_t {
   VERIFY_V3CBITSTREAM(i < m_subProfileIdcs.size());
   return m_subProfileIdcs[i];
 }
@@ -212,25 +212,25 @@ auto ProfileTierLevel::ptl_num_sub_profiles(std::uint8_t value) noexcept -> Prof
   return *this;
 }
 
-auto ProfileTierLevel::ptl_extended_sub_profile_flag(bool value) noexcept -> ProfileTierLevel & {
+auto ProfileTierLevel::ptl_extended_sub_profile_flag(bool value) -> ProfileTierLevel & {
   m_ptl_extended_sub_profile_flag = value;
   for (auto x : m_subProfileIdcs) {
-    VERIFY_V3CBITSTREAM(ptl_extended_sub_profile_flag() || x <= UINT32_MAX);
+    PRECONDITION(ptl_extended_sub_profile_flag() || x <= UINT32_MAX);
   }
   return *this;
 }
 
-auto ProfileTierLevel::ptl_sub_profile_idc(std::uint8_t i, std::uint64_t value) noexcept
+auto ProfileTierLevel::ptl_sub_profile_idc(std::uint8_t i, std::uint64_t value)
     -> ProfileTierLevel & {
-  VERIFY_V3CBITSTREAM(i < ptl_num_sub_profiles());
-  VERIFY_V3CBITSTREAM(ptl_extended_sub_profile_flag() || value <= UINT32_MAX);
+  PRECONDITION(i < ptl_num_sub_profiles());
+  PRECONDITION(ptl_extended_sub_profile_flag() || value <= UINT32_MAX);
   m_subProfileIdcs[i] = value;
   return *this;
 }
 
 auto ProfileTierLevel::ptl_profile_toolset_constraints_information(
     ProfileToolsetConstraintsInformation value) -> ProfileTierLevel & {
-  VERIFY_V3CBITSTREAM(ptl_toolset_constraints_present_flag());
+  PRECONDITION(ptl_toolset_constraints_present_flag());
   m_ptl_profile_toolset_constraints_information.emplace(value);
   return *this;
 }
@@ -320,7 +320,7 @@ void ProfileTierLevel::encodeTo(Common::OutputBitstream &bitstream) const {
     if (ptl_extended_sub_profile_flag()) {
       bitstream.putUint64(ptl_sub_profile_idc(i));
     } else {
-      VERIFY_V3CBITSTREAM(ptl_sub_profile_idc(i) <= UINT32_MAX);
+      PRECONDITION(ptl_sub_profile_idc(i) <= UINT32_MAX);
       bitstream.putUint32(static_cast<uint32_t>(ptl_sub_profile_idc(i)));
     }
   }
@@ -409,7 +409,7 @@ void GeometryInformation::encodeTo(Common::OutputBitstream &bitstream, const V3c
   bitstream.writeBits(gi_geometry_2d_bit_depth_minus1(), 5);
   bitstream.putFlag(gi_geometry_MSB_align_flag());
   bitstream.writeBits(gi_geometry_3d_coordinates_bit_depth_minus1(), 5);
-  VERIFY_MIVBITSTREAM(!vps.vps_auxiliary_video_present_flag(atlasId));
+  PRECONDITION(!vps.vps_auxiliary_video_present_flag(atlasId));
 }
 
 auto AttributeInformation::ai_attribute_count() const noexcept -> uint8_t {
@@ -519,7 +519,7 @@ auto AttributeInformation::printTo(std::ostream &stream, AtlasId atlasId) const 
   return stream;
 }
 
-auto AttributeInformation::operator==(const AttributeInformation &other) const noexcept -> bool {
+auto AttributeInformation::operator==(const AttributeInformation &other) const -> bool {
   if (ai_attribute_count() != other.ai_attribute_count()) {
     return false;
   }
@@ -537,7 +537,7 @@ auto AttributeInformation::operator==(const AttributeInformation &other) const n
   return true;
 }
 
-auto AttributeInformation::operator!=(const AttributeInformation &other) const noexcept -> bool {
+auto AttributeInformation::operator!=(const AttributeInformation &other) const -> bool {
   return !operator==(other);
 }
 
@@ -690,54 +690,52 @@ auto PackingInformation::pin_regions_count_minus1() const -> std::size_t {
   return m_pinRegions.size() - 1U;
 }
 
-auto PackingInformation::pin_region_tile_id(std::size_t i) const noexcept -> std::uint8_t {
+auto PackingInformation::pin_region_tile_id(std::size_t i) const -> std::uint8_t {
   VERIFY_V3CBITSTREAM(i <= pin_regions_count_minus1());
   return m_pinRegions[i].pin_region_tile_id;
 }
 
-auto PackingInformation::pin_region_type_id_minus2(std::size_t i) const noexcept -> VuhUnitType {
+auto PackingInformation::pin_region_type_id_minus2(std::size_t i) const -> VuhUnitType {
   VERIFY_V3CBITSTREAM(i <= pin_regions_count_minus1());
   return m_pinRegions[i].pin_region_type_id_minus2;
 }
 
-auto PackingInformation::pin_region_top_left_x(std::size_t i) const noexcept -> std::uint16_t {
+auto PackingInformation::pin_region_top_left_x(std::size_t i) const -> std::uint16_t {
   VERIFY_V3CBITSTREAM(i <= pin_regions_count_minus1());
   return m_pinRegions[i].pin_region_top_left_x;
 }
 
-auto PackingInformation::pin_region_top_left_y(std::size_t i) const noexcept -> std::uint16_t {
+auto PackingInformation::pin_region_top_left_y(std::size_t i) const -> std::uint16_t {
   VERIFY_V3CBITSTREAM(i <= pin_regions_count_minus1());
   return m_pinRegions[i].pin_region_top_left_y;
 }
 
-auto PackingInformation::pin_region_width_minus1(std::size_t i) const noexcept -> std::uint16_t {
+auto PackingInformation::pin_region_width_minus1(std::size_t i) const -> std::uint16_t {
   VERIFY_V3CBITSTREAM(i <= pin_regions_count_minus1());
   return m_pinRegions[i].pin_region_width_minus1;
 }
 
-auto PackingInformation::pin_region_height_minus1(std::size_t i) const noexcept -> std::uint16_t {
+auto PackingInformation::pin_region_height_minus1(std::size_t i) const -> std::uint16_t {
   VERIFY_V3CBITSTREAM(i <= pin_regions_count_minus1());
   return m_pinRegions[i].pin_region_height_minus1;
 }
 
-auto PackingInformation::pin_region_unpack_top_left_x(std::size_t i) const noexcept
-    -> std::uint16_t {
+auto PackingInformation::pin_region_unpack_top_left_x(std::size_t i) const -> std::uint16_t {
   VERIFY_V3CBITSTREAM(i <= pin_regions_count_minus1());
   return m_pinRegions[i].pin_region_unpack_top_left_x;
 }
 
-auto PackingInformation::pin_region_unpack_top_left_y(std::size_t i) const noexcept
-    -> std::uint16_t {
+auto PackingInformation::pin_region_unpack_top_left_y(std::size_t i) const -> std::uint16_t {
   VERIFY_V3CBITSTREAM(i <= pin_regions_count_minus1());
   return m_pinRegions[i].pin_region_unpack_top_left_y;
 }
 
-auto PackingInformation::pin_region_map_index(std::size_t i) const noexcept -> std::uint8_t {
+auto PackingInformation::pin_region_map_index(std::size_t i) const -> std::uint8_t {
   VERIFY_V3CBITSTREAM(i <= pin_regions_count_minus1());
   return m_pinRegions[i].pin_region_map_index;
 }
 
-auto PackingInformation::pin_region_rotation_flag(std::size_t i) const noexcept -> bool {
+auto PackingInformation::pin_region_rotation_flag(std::size_t i) const -> bool {
   VERIFY_V3CBITSTREAM(i <= pin_regions_count_minus1());
   return m_pinRegions[i].pin_region_rotation_flag;
 }
@@ -899,13 +897,13 @@ void PackingInformation::encodeTo(Common::OutputBitstream &bitstream) const {
   }
 }
 
-auto GroupMapping::gm_group_id(std::size_t i) const noexcept -> std::uint8_t {
+auto GroupMapping::gm_group_id(std::size_t i) const -> std::uint8_t {
   VERIFY_MIVBITSTREAM(0 < gm_group_count());
   VERIFY_MIVBITSTREAM(i < m_gm_group_id.size());
   return m_gm_group_id[i];
 }
 
-auto GroupMapping::gm_group_id(std::size_t i, std::uint8_t value) noexcept -> GroupMapping & {
+auto GroupMapping::gm_group_id(std::size_t i, std::uint8_t value) -> GroupMapping & {
   VERIFY_MIVBITSTREAM(value < gm_group_count());
   if (m_gm_group_id.size() <= i) {
     m_gm_group_id.resize(i + 1, UINT8_MAX);
@@ -954,7 +952,7 @@ void GroupMapping::encodeTo(Common::OutputBitstream &bitstream, const V3cParamet
 }
 
 auto VpsMivExtension::vme_occupancy_scale_enabled_flag(bool value) noexcept -> VpsMivExtension & {
-  VERIFY_MIVBITSTREAM(!vme_embedded_occupancy_enabled_flag());
+  PRECONDITION(!vme_embedded_occupancy_enabled_flag());
   m_vme_occupancy_scale_enabled_flag = value;
   return *this;
 }
@@ -1005,7 +1003,7 @@ auto V3cParameterSet::profile_tier_level() const noexcept -> const ProfileTierLe
 }
 
 auto V3cParameterSet::vps_atlas_count_minus1() const noexcept -> uint8_t {
-  VERIFY_V3CBITSTREAM(!m_vpsAtlases.empty());
+  PRECONDITION(!m_vpsAtlases.empty());
   return static_cast<uint8_t>(m_vpsAtlases.size() - 1U);
 }
 
@@ -1071,19 +1069,19 @@ auto V3cParameterSet::packing_information(const AtlasId &j) const {
   return *atlas(j).packing_information;
 }
 
-auto V3cParameterSet::vps_miv_extension() const noexcept -> const VpsMivExtension & {
+auto V3cParameterSet::vps_miv_extension() const -> const VpsMivExtension & {
   VERIFY_V3CBITSTREAM(vps_miv_extension_present_flag());
   VERIFY_V3CBITSTREAM(m_vps_miv_extension.has_value());
   return *m_vps_miv_extension;
 }
 
-auto V3cParameterSet::vps_extension_length_minus1() const noexcept -> size_t {
+auto V3cParameterSet::vps_extension_length_minus1() const -> size_t {
   VERIFY_V3CBITSTREAM(vps_extension_6bits());
   VERIFY_V3CBITSTREAM(m_vpsExtensionData.has_value());
   return m_vpsExtensionData->size() - 1;
 }
 
-auto V3cParameterSet::vpsExtensionData() const noexcept -> const std::vector<uint8_t> & {
+auto V3cParameterSet::vpsExtensionData() const -> const std::vector<uint8_t> & {
   VERIFY_V3CBITSTREAM(vps_extension_6bits());
   return *m_vpsExtensionData;
 }
@@ -1162,20 +1160,20 @@ auto V3cParameterSet::attribute_information(AtlasId j, AttributeInformation valu
 
 auto V3cParameterSet::vps_packing_information_present_flag(bool value) noexcept
     -> V3cParameterSet & {
-  VERIFY_V3CBITSTREAM(vps_extension_present_flag());
+  PRECONDITION(vps_extension_present_flag());
   m_vps_packing_information_present_flag = value;
   return *this;
 }
 
 auto V3cParameterSet::vps_miv_extension_present_flag(bool value) noexcept -> V3cParameterSet & {
-  VERIFY_V3CBITSTREAM(vps_extension_present_flag());
+  PRECONDITION(vps_extension_present_flag());
   m_vps_miv_extension_present_flag = value;
   return *this;
 }
 
 auto V3cParameterSet::vps_extension_6bits(uint8_t value) noexcept -> V3cParameterSet & {
-  VERIFY_V3CBITSTREAM(vps_extension_present_flag());
-  VERIFY_V3CBITSTREAM(value < 0x80);
+  PRECONDITION(vps_extension_present_flag());
+  PRECONDITION(value < 0x80);
   m_vps_extension_7bits = value;
   return *this;
 }
@@ -1194,8 +1192,7 @@ auto V3cParameterSet::packing_information(const AtlasId &j, PackingInformation v
   return *this;
 }
 
-auto V3cParameterSet::vps_miv_extension(const VpsMivExtension &value) noexcept
-    -> V3cParameterSet & {
+auto V3cParameterSet::vps_miv_extension(const VpsMivExtension &value) -> V3cParameterSet & {
   VERIFY_V3CBITSTREAM(vps_miv_extension_present_flag());
   m_vps_miv_extension = value;
   return *this;
@@ -1203,8 +1200,8 @@ auto V3cParameterSet::vps_miv_extension(const VpsMivExtension &value) noexcept
 
 auto V3cParameterSet::vpsExtensionData(std::vector<std::uint8_t> value) noexcept
     -> V3cParameterSet & {
-  VERIFY_V3CBITSTREAM(vps_extension_6bits() != 0);
-  VERIFY_V3CBITSTREAM(!value.empty());
+  PRECONDITION(vps_extension_6bits() != 0);
+  PRECONDITION(!value.empty());
   m_vpsExtensionData = std::move(value);
   return *this;
 }
@@ -1235,14 +1232,14 @@ auto V3cParameterSet::attribute_information(AtlasId j) -> AttributeInformation &
 }
 
 auto V3cParameterSet::vps_miv_extension() noexcept -> VpsMivExtension & {
-  VERIFY_V3CBITSTREAM(vps_miv_extension_present_flag());
+  PRECONDITION(vps_miv_extension_present_flag());
   if (!m_vps_miv_extension) {
     m_vps_miv_extension = VpsMivExtension{};
   }
   return *m_vps_miv_extension;
 }
 
-auto V3cParameterSet::indexOf(AtlasId atlasId) const noexcept -> size_t {
+auto V3cParameterSet::indexOf(AtlasId atlasId) const -> size_t {
   for (size_t k = 0; k <= vps_atlas_count_minus1(); ++k) {
     if (vps_atlas_id(k) == atlasId) {
       return k;
@@ -1310,7 +1307,7 @@ auto operator<<(std::ostream &stream, const V3cParameterSet &x) -> std::ostream 
   return stream;
 }
 
-auto V3cParameterSet::operator==(const V3cParameterSet &other) const noexcept -> bool {
+auto V3cParameterSet::operator==(const V3cParameterSet &other) const -> bool {
   if (profile_tier_level() != other.profile_tier_level() ||
       vps_v3c_parameter_set_id() != other.vps_v3c_parameter_set_id() ||
       vps_atlas_count_minus1() != other.vps_atlas_count_minus1() ||
@@ -1368,7 +1365,7 @@ auto V3cParameterSet::operator==(const V3cParameterSet &other) const noexcept ->
   return true;
 }
 
-auto V3cParameterSet::operator!=(const V3cParameterSet &other) const noexcept -> bool {
+auto V3cParameterSet::operator!=(const V3cParameterSet &other) const -> bool {
   return !operator==(other);
 }
 
@@ -1504,11 +1501,11 @@ void V3cParameterSet::encodeTo(std::ostream &stream) const {
   bitstream.byteAlignment();
 }
 
-auto V3cParameterSet::atlas(AtlasId atlasId) const noexcept -> const VpsAtlas & {
+auto V3cParameterSet::atlas(AtlasId atlasId) const -> const VpsAtlas & {
   return m_vpsAtlases[indexOf(atlasId)];
 }
 
-auto V3cParameterSet::atlas(AtlasId atlasId) noexcept -> VpsAtlas & {
+auto V3cParameterSet::atlas(AtlasId atlasId) -> VpsAtlas & {
   return m_vpsAtlases[indexOf(atlasId)];
 }
 

@@ -244,7 +244,7 @@ public:
 
     const size_t maxBasicViews = m_maxBasicViewsPerGraph;
     const auto numClusters = (basicViewIds.size() + maxBasicViews - 1) / maxBasicViews;
-    assert(numClusters >= 1);
+    POSTCONDITION(numClusters >= 1);
 
     size_t numPermutations = 1;
     for (size_t i = 0; i < basicViewIds.size(); ++i) {
@@ -282,7 +282,7 @@ public:
       }
     }
 
-    assert(!bestClusterIds.empty());
+    POSTCONDITION(!bestClusterIds.empty());
     return bestClusterIds;
   }
 
@@ -429,7 +429,7 @@ private:
                                 int percentageRatio) {
     std::cout << "Pruning luma threshold:   " << (m_lumaStdDev.value() * m_maxLumaError) << "\n";
 
-    assert(m_sampleBudget.has_value());
+    PRECONDITION(m_sampleBudget.has_value());
     while (nonPrunedArea > (m_sampleBudget.value() * percentageRatio / 100) &&
            m_lumaStdDev.value() < 1.0F) {
       std::cout << "Non-pruned exceeds " << percentageRatio << "% of total sample budget ("

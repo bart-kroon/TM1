@@ -54,9 +54,9 @@ public:
   [[nodiscard]] constexpr auto caf_common_atlas_frm_order_cnt_lsb() const noexcept;
   [[nodiscard]] constexpr auto caf_extension_present_flag() const noexcept;
   [[nodiscard]] constexpr auto caf_miv_extension_present_flag() const noexcept;
-  [[nodiscard]] auto caf_miv_extension() const noexcept -> const CommonAtlasFrameMivExtension &;
+  [[nodiscard]] auto caf_miv_extension() const -> const CommonAtlasFrameMivExtension &;
   [[nodiscard]] constexpr auto caf_extension_7bits() const noexcept;
-  [[nodiscard]] auto cafExtensionData() const noexcept -> const std::vector<bool> &;
+  [[nodiscard]] auto cafExtensionData() const -> const std::vector<bool> &;
 
   constexpr auto caf_common_atlas_sequence_parameter_set_id(std::uint8_t value) noexcept -> auto &;
   constexpr auto caf_common_atlas_frm_order_cnt_lsb(std::uint16_t value) noexcept -> auto &;
@@ -68,8 +68,8 @@ public:
 
   friend auto operator<<(std::ostream &stream, const CommonAtlasFrameRBSP &x) -> std::ostream &;
 
-  auto operator==(const CommonAtlasFrameRBSP &) const noexcept -> bool;
-  auto operator!=(const CommonAtlasFrameRBSP &) const noexcept -> bool;
+  auto operator==(const CommonAtlasFrameRBSP &) const -> bool;
+  auto operator!=(const CommonAtlasFrameRBSP &) const -> bool;
 
   static auto decodeFrom(std::istream &stream, const V3cParameterSet &vps, const NalUnitHeader &nuh,
                          const std::vector<CommonAtlasSequenceParameterSetRBSP> &caspsV,

@@ -35,8 +35,9 @@
 #error "Include the .h instead of the .hpp."
 #endif
 
+#include <TMIV/Common/verify.h>
+
 #include <cstring>
-#include <stdexcept>
 
 namespace TMIV::Common {
 namespace detail {
@@ -228,7 +229,7 @@ template <typename FORMAT> void Frame<FORMAT>::fillOne() {
 template <typename FORMAT>
 template <typename OTHER_FORMAT, typename>
 void Frame<FORMAT>::fillInvalidWithNeutral(const Frame<OTHER_FORMAT> &depth) {
-  assert(depth.getSize() == getSize());
+  PRECONDITION(depth.getSize() == getSize());
 
   for (int i = 0; i < getHeight(); ++i) {
     for (int j = 0; j < getWidth(); ++j) {

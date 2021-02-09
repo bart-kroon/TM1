@@ -216,7 +216,7 @@ auto MivEncoder::mivViewParamsList() const -> MivBitstream::MivViewParamsList {
   auto mvpl = MivBitstream::MivViewParamsList{};
   const auto &vpl = m_params.viewParamsList;
 
-  assert(!vpl.empty());
+  PRECONDITION(!vpl.empty());
   mvpl.mvp_num_views_minus1(static_cast<uint16_t>(vpl.size() - 1));
   mvpl.mvp_intrinsic_params_equal_flag(
       std::all_of(vpl.begin(), vpl.end(), [&](const auto &x) { return x.ci == vpl.front().ci; }));
@@ -235,7 +235,7 @@ auto MivEncoder::mivViewParamsList() const -> MivBitstream::MivViewParamsList {
     if (i == 0 || !mvpl.mvp_depth_quantization_params_equal_flag()) {
       mvpl.depth_quantization(i) = vp.dq;
     }
-    assert(vp.pp.has_value() == mvpl.mvp_pruning_graph_params_present_flag());
+    PRECONDITION(vp.pp.has_value() == mvpl.mvp_pruning_graph_params_present_flag());
     if (vp.pp.has_value()) {
       mvpl.pruning_parent(i) = *vp.pp;
     }

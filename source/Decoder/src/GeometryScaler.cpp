@@ -96,7 +96,7 @@ auto sampleKernel(const Common::Texture444Frame &attrFrame, const Common::Vec2i 
 
 auto minMasked(const std::vector<uint16_t> &values, const std::vector<uint8_t> &mask) {
   auto minValue = values[0]; // original foreground value
-  assert(mask[0] != 0);
+  PRECONDITION(mask[0] != 0);
 
   auto m = mask.begin();
   for (const auto &v : values) {
@@ -115,7 +115,7 @@ inline auto colorDistance(const Common::Vec3w &a, const Common::Vec3w &b) {
 template <typename Range>
 auto meanColorDistance(const Common::Vec3w &color, const Range &rangeOfColors) {
   const auto N = static_cast<unsigned>(rangeOfColors.size());
-  assert(N > 0U);
+  PRECONDITION(N > 0U);
 
   float meanDistance = 0.0F;
   for (auto &colorInRange : rangeOfColors) {
@@ -191,8 +191,8 @@ public:
                                      const std::vector<Common::Vec3w> &colorValues,
                                      const std::vector<uint8_t> &edgeMagnitudes) const -> float {
     const auto N = depthValues.size();
-    assert(N == colorValues.size());
-    assert(N == edgeMagnitudes.size());
+    PRECONDITION(N == colorValues.size());
+    PRECONDITION(N == edgeMagnitudes.size());
 
     const int depthCentral = depthValues[0];
     const int depthLow = depthCentral - m_geometryEdgeMagnitudeTh;

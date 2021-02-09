@@ -156,7 +156,7 @@ public:
   }
 
   [[nodiscard]] auto optimizeFrame(MVD16Frame frame) const -> MVD16Frame {
-    assert(!m_transportParams.viewParamsList.empty());
+    PRECONDITION(!m_transportParams.viewParamsList.empty());
     const auto &viewportParams = m_transportParams.viewParamsList.back();
     auto synthFrame = m_synthesizer->renderFrame(synthesizerInputFrame(frame), viewportParams);
     filterDepthFrame(synthFrame.second);
@@ -199,7 +199,7 @@ private:
   }
 
   static auto centerOfGravity(const ViewParamsList &vpl) noexcept -> std::array<float, 3> {
-    assert(!vpl.empty());
+    PRECONDITION(!vpl.empty());
 
     auto sumX = 0.;
     auto sumY = 0.;
@@ -218,7 +218,7 @@ private:
   }
 
   static auto fieldOfViewRig(const ViewParamsList &vpl, float margin) noexcept -> FieldOfView {
-    assert(!vpl.empty());
+    PRECONDITION(!vpl.empty());
 
     auto erpFov = FieldOfView::zero();
 

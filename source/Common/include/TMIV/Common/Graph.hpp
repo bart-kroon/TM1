@@ -35,9 +35,12 @@
 #error "Include the .h instead of the .hpp."
 #endif
 
+#include <TMIV/Common/verify.h>
+
 #include <algorithm>
-#include <fmt/format.h>
 #include <utility>
+
+#include <fmt/format.h>
 
 namespace TMIV::Common::Graph {
 
@@ -92,8 +95,8 @@ auto SparseDirectedAcyclicGraph<T>::getDescendingOrderId() const -> std::vector<
 template <typename T> auto SparseDirectedAcyclicGraph<T>::getIdOfFirstRootNode() const -> NodeId {
   const auto rootNode = std::find_if(m_adjacencyList.cbegin(), m_adjacencyList.cend(),
                                      [](const auto &links) { return links.empty(); });
-  assert(rootNode != m_adjacencyList.cend() &&
-         "Could not find a root node! This may not happen for an acyclic graph.");
+  PRECONDITION(rootNode != m_adjacencyList.cend() &&
+               "Could not find a root node! This may not happen for an acyclic graph.");
   return static_cast<NodeId>(std::distance(m_adjacencyList.cbegin(), rootNode));
 }
 

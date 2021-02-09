@@ -121,18 +121,18 @@ auto printTo(std::ostream &stream, AtduPatchMode x, AthType ath_type) -> std::os
   }
 }
 
-auto AtlasTileHeader::ath_atlas_output_flag() const noexcept -> bool {
+auto AtlasTileHeader::ath_atlas_output_flag() const -> bool {
   VERIFY_V3CBITSTREAM(m_ath_atlas_output_flag.has_value());
   return *m_ath_atlas_output_flag;
 }
 
-auto AtlasTileHeader::ath_patch_size_x_info_quantizer() const noexcept -> uint8_t {
+auto AtlasTileHeader::ath_patch_size_x_info_quantizer() const -> uint8_t {
   VERIFY_V3CBITSTREAM(ath_type() != AthType::SKIP_TILE);
   VERIFY_V3CBITSTREAM(m_ath_patch_size_x_info_quantizer.has_value());
   return *m_ath_patch_size_x_info_quantizer;
 }
 
-auto AtlasTileHeader::ath_patch_size_y_info_quantizer() const noexcept -> uint8_t {
+auto AtlasTileHeader::ath_patch_size_y_info_quantizer() const -> uint8_t {
   VERIFY_V3CBITSTREAM(ath_type() != AthType::SKIP_TILE);
   VERIFY_V3CBITSTREAM(m_ath_patch_size_x_info_quantizer.has_value());
   return *m_ath_patch_size_y_info_quantizer;
@@ -140,14 +140,14 @@ auto AtlasTileHeader::ath_patch_size_y_info_quantizer() const noexcept -> uint8_
 
 auto AtlasTileHeader::ath_patch_size_x_info_quantizer(const uint8_t value) noexcept
     -> AtlasTileHeader & {
-  VERIFY_V3CBITSTREAM(ath_type() != AthType::SKIP_TILE);
+  PRECONDITION(ath_type() != AthType::SKIP_TILE);
   m_ath_patch_size_x_info_quantizer = value;
   return *this;
 }
 
 auto AtlasTileHeader::ath_patch_size_y_info_quantizer(const uint8_t value) noexcept
     -> AtlasTileHeader & {
-  VERIFY_V3CBITSTREAM(ath_type() != AthType::SKIP_TILE);
+  PRECONDITION(ath_type() != AthType::SKIP_TILE);
   m_ath_patch_size_y_info_quantizer = value;
   return *this;
 }
@@ -260,7 +260,7 @@ void AtlasTileHeader::encodeTo(Common::OutputBitstream &bitstream, const NalUnit
     bitstream.putFlag(ath_no_output_of_prior_atlas_frames_flag());
   }
 
-  VERIFY_V3CBITSTREAM(ath_atlas_frame_parameter_set_id() <= 63);
+  PRECONDITION(ath_atlas_frame_parameter_set_id() <= 63);
   bitstream.putUExpGolomb(ath_atlas_frame_parameter_set_id());
 
   const auto &afps = afpsById(afpsV, ath_atlas_frame_parameter_set_id());
@@ -268,10 +268,10 @@ void AtlasTileHeader::encodeTo(Common::OutputBitstream &bitstream, const NalUnit
 
   bitstream.putUExpGolomb(ath_atlas_adaptation_parameter_set_id());
 
-  VERIFY_MIVBITSTREAM(afps.atlas_frame_tile_information().afti_single_tile_in_atlas_frame_flag());
-  VERIFY_V3CBITSTREAM(ath_id() == 0);
+  PRECONDITION(afps.atlas_frame_tile_information().afti_single_tile_in_atlas_frame_flag());
+  PRECONDITION(ath_id() == 0);
 
-  VERIFY_MIVBITSTREAM(ath_type() == AthType::I_TILE || ath_type() == AthType::SKIP_TILE);
+  PRECONDITION(ath_type() == AthType::I_TILE || ath_type() == AthType::SKIP_TILE);
   bitstream.putUExpGolomb(ath_type());
 
   if (afps.afps_output_flag_present_flag()) {
@@ -284,8 +284,8 @@ void AtlasTileHeader::encodeTo(Common::OutputBitstream &bitstream, const NalUnit
   LIMITATION(ath_ref_atlas_frame_list_asps_flag());
   LIMITATION(asps.ref_list_struct(0).num_ref_entries() <= 1);
 
-  VERIFY_V3CBITSTREAM(asps.asps_num_ref_atlas_frame_lists_in_asps() > 0 ||
-                      !ath_ref_atlas_frame_list_asps_flag());
+  PRECONDITION(asps.asps_num_ref_atlas_frame_lists_in_asps() > 0 ||
+               !ath_ref_atlas_frame_list_asps_flag());
   if (asps.asps_num_ref_atlas_frame_lists_in_asps() > 0) {
     bitstream.putFlag(ath_ref_atlas_frame_list_asps_flag());
   }
@@ -298,16 +298,14 @@ void AtlasTileHeader::encodeTo(Common::OutputBitstream &bitstream, const NalUnit
       }
     }
     if (asps.asps_patch_size_quantizer_present_flag()) {
-      VERIFY_V3CBITSTREAM(ath_patch_size_x_info_quantizer() <=
-                          asps.asps_log2_patch_packing_block_size());
+      PRECONDITION(ath_patch_size_x_info_quantizer() <= asps.asps_log2_patch_packing_block_size());
       bitstream.writeBits(ath_patch_size_x_info_quantizer(), 3);
 
-      VERIFY_V3CBITSTREAM(ath_patch_size_y_info_quantizer() <=
-                          asps.asps_log2_patch_packing_block_size());
+      PRECONDITION(ath_patch_size_y_info_quantizer() <= asps.asps_log2_patch_packing_block_size());
       bitstream.writeBits(ath_patch_size_y_info_quantizer(), 3);
     }
 
-    VERIFY_MIVBITSTREAM(!afps.afps_raw_3d_offset_bit_count_explicit_mode_flag());
+    PRECONDITION(!afps.afps_raw_3d_offset_bit_count_explicit_mode_flag());
   }
 
   bitstream.byteAlignment();
@@ -347,14 +345,14 @@ auto PduMivExtension::printTo(std::ostream &stream, unsigned tileId, size_t patc
   return stream;
 }
 
-auto PduMivExtension::operator==(const PduMivExtension &other) const noexcept -> bool {
+auto PduMivExtension::operator==(const PduMivExtension &other) const -> bool {
   return pdu_entity_id() == other.pdu_entity_id() &&
          m_pdu_depth_occ_threshold == other.m_pdu_depth_occ_threshold &&
          pdu_attribute_offset() == other.pdu_attribute_offset() &&
          pdu_inpaint_flag() == other.pdu_inpaint_flag();
 }
 
-auto PduMivExtension::operator!=(const PduMivExtension &other) const noexcept -> bool {
+auto PduMivExtension::operator!=(const PduMivExtension &other) const -> bool {
   return !operator==(other);
 }
 
@@ -391,23 +389,23 @@ void PduMivExtension::encodeTo(Common::OutputBitstream &bitstream,
     if (0 < asme.asme_max_entity_id()) {
       bitstream.putUVar(pdu_entity_id(), asme.asme_max_entity_id());
     } else {
-      VERIFY_MIVBITSTREAM(!m_pdu_entity_id.has_value());
+      PRECONDITION(!m_pdu_entity_id.has_value());
     }
     if (asme.asme_depth_occ_threshold_flag()) {
       bitstream.writeBits(pdu_depth_occ_threshold(), asps.asps_geometry_2d_bit_depth_minus1() + 1);
     } else {
-      VERIFY_MIVBITSTREAM(!m_pdu_depth_occ_threshold.has_value());
+      PRECONDITION(!m_pdu_depth_occ_threshold.has_value());
     }
     if (asme.asme_patch_attribute_offset_enabled_flag()) {
       const auto bits =
           asps.asps_miv_extension().asme_patch_attribute_offset_bit_depth_minus1() + 1;
-      VERIFY_MIVBITSTREAM(m_pdu_attribute_offset.has_value());
+      PRECONDITION(m_pdu_attribute_offset.has_value());
       bitstream.writeBits(uint16_t(pdu_attribute_offset().x()), bits);
       bitstream.writeBits(uint16_t(pdu_attribute_offset().y()), bits);
       bitstream.writeBits(uint16_t(pdu_attribute_offset().z()), bits);
     }
     if (asme.asme_inpaint_enabled_flag()) {
-      VERIFY_MIVBITSTREAM(m_pdu_inpaint_flag.has_value());
+      PRECONDITION(m_pdu_inpaint_flag.has_value());
       bitstream.putFlag(pdu_inpaint_flag());
     }
   }
@@ -537,11 +535,11 @@ void PatchDataUnit::encodeTo(Common::OutputBitstream &bitstream,
   bitstream.writeBits(pdu_3d_offset_u(), pdu3dOffsetUVNumBits);
   bitstream.writeBits(pdu_3d_offset_v(), pdu3dOffsetUVNumBits);
 
-  VERIFY_V3CBITSTREAM(pdu3dOffsetDNumBits >= 0);
+  PRECONDITION(pdu3dOffsetDNumBits >= 0);
   bitstream.writeBits(pdu_3d_offset_d(), pdu3dOffsetDNumBits);
 
   if (asps.asps_normal_axis_max_delta_value_enabled_flag()) {
-    VERIFY_V3CBITSTREAM(pdu3dRangeDNumBits >= 0);
+    PRECONDITION(pdu3dRangeDNumBits >= 0);
     bitstream.writeBits(pdu_3d_range_d(), pdu3dRangeDNumBits);
   }
 
@@ -556,22 +554,22 @@ void PatchDataUnit::encodeTo(Common::OutputBitstream &bitstream,
     }
   }
 
-  VERIFY_MIVBITSTREAM(!asps.asps_plr_enabled_flag());
+  PRECONDITION(!asps.asps_plr_enabled_flag());
 
   if (asps.asps_miv_extension_present_flag()) {
     pdu_miv_extension().encodeTo(bitstream, asps);
   } else {
-    VERIFY_V3CBITSTREAM(!m_pdu_miv_extension);
+    PRECONDITION(!m_pdu_miv_extension);
   }
 }
 
 auto PatchInformationData::skip_patch_data_unit() const noexcept -> const SkipPatchDataUnit & {
-  VERIFY_V3CBITSTREAM(std::holds_alternative<SkipPatchDataUnit>(m_data));
+  PRECONDITION(std::holds_alternative<SkipPatchDataUnit>(m_data));
   return *std::get_if<SkipPatchDataUnit>(&m_data);
 }
 
 auto PatchInformationData::patch_data_unit() const noexcept -> const PatchDataUnit & {
-  VERIFY_V3CBITSTREAM(std::holds_alternative<PatchDataUnit>(m_data));
+  PRECONDITION(std::holds_alternative<PatchDataUnit>(m_data));
   return *std::get_if<PatchDataUnit>(&m_data);
 }
 
@@ -613,11 +611,11 @@ void PatchInformationData::encodeTo(Common::OutputBitstream &bitstream,
                                     const std::vector<AtlasFrameParameterSetRBSP> &afps,
                                     const AtlasTileHeader &ath, AtduPatchMode patchMode) const {
   if (ath.ath_type() == AthType::I_TILE) {
-    VERIFY_V3CBITSTREAM(patchMode == AtduPatchMode::I_INTRA);
+    PRECONDITION(patchMode == AtduPatchMode::I_INTRA);
     return patch_data_unit().encodeTo(bitstream, asps, afps, ath);
   }
   if (ath.ath_type() == AthType::SKIP_TILE) {
-    VERIFY_V3CBITSTREAM(patchMode == AtduPatchMode::P_SKIP);
+    PRECONDITION(patchMode == AtduPatchMode::P_SKIP);
     return skip_patch_data_unit().encodeTo(bitstream);
   }
   V3CBITSTREAM_ERROR("Unknown or unsupported tile/patch mode combination");
@@ -683,7 +681,7 @@ void AtlasTileDataUnit::encodeTo(Common::OutputBitstream &bitstream,
                                  const std::vector<AtlasSequenceParameterSetRBSP> &asps,
                                  const std::vector<AtlasFrameParameterSetRBSP> &afps,
                                  const AtlasTileHeader &ath) const {
-  VERIFY_MIVBITSTREAM(ath.ath_type() == AthType::I_TILE || ath.ath_type() == AthType::SKIP_TILE);
+  PRECONDITION(ath.ath_type() == AthType::I_TILE || ath.ath_type() == AthType::SKIP_TILE);
 
   if (ath.ath_type() == AthType::I_TILE) {
     visit([&](const auto /* p */, const AtduPatchMode patch_mode,

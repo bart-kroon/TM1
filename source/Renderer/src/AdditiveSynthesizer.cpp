@@ -159,7 +159,7 @@ public:
       }
     }
 
-    assert(static_cast<int>(result.size()) <= size);
+    POSTCONDITION(static_cast<int>(result.size()) <= size);
     return result;
   }
 

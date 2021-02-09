@@ -73,12 +73,10 @@ auto DepthTransform::expandDepth(const Common::Mat<uint16_t> &matrix) const -> C
 }
 
 auto DepthTransform::expandDepth(const Common::Depth16Frame &frame) const -> Common::Mat<float> {
-  // assert(m_bits == 16U);
   return expandDepth(frame.getPlane(0));
 }
 
 auto DepthTransform::expandDepth(const Common::Depth10Frame &frame) const -> Common::Mat<float> {
-  // assert(m_bits == 10U);
   return expandDepth(frame.getPlane(0));
 }
 

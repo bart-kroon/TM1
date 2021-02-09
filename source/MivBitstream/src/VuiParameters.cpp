@@ -67,146 +67,143 @@ void CoordinateSystemParameters::encodeTo(Common::OutputBitstream &bitstream) co
   bitstream.putFlag(cas_up_sign());
 }
 
-auto VuiParameters::vui_num_units_in_tick() const noexcept -> std::uint32_t {
+auto VuiParameters::vui_num_units_in_tick() const -> std::uint32_t {
   VERIFY_V3CBITSTREAM(vui_timing_info_present_flag());
   VERIFY_V3CBITSTREAM(m_vui_num_units_in_tick.has_value());
   return *m_vui_num_units_in_tick;
 }
 
-auto VuiParameters::vui_time_scale() const noexcept -> std::uint32_t {
+auto VuiParameters::vui_time_scale() const -> std::uint32_t {
   VERIFY_V3CBITSTREAM(vui_timing_info_present_flag());
   VERIFY_V3CBITSTREAM(m_vui_time_scale.has_value());
   return *m_vui_time_scale;
 }
 
-auto VuiParameters::vui_poc_proportional_to_timing_flag() const noexcept -> bool {
+auto VuiParameters::vui_poc_proportional_to_timing_flag() const -> bool {
   VERIFY_V3CBITSTREAM(vui_timing_info_present_flag());
   VERIFY_V3CBITSTREAM(m_vui_poc_proportional_to_timing_flag.has_value());
   return *m_vui_poc_proportional_to_timing_flag;
 }
 
-auto VuiParameters::vui_num_ticks_poc_diff_one_minus1() const noexcept -> std::uint32_t {
+auto VuiParameters::vui_num_ticks_poc_diff_one_minus1() const -> std::uint32_t {
   VERIFY_V3CBITSTREAM(vui_poc_proportional_to_timing_flag());
   VERIFY_V3CBITSTREAM(m_vui_num_ticks_poc_diff_one_minus1.has_value());
   return *m_vui_num_ticks_poc_diff_one_minus1;
 }
 
-auto VuiParameters::vui_hrd_parameters_present_flag() const noexcept -> bool {
+auto VuiParameters::vui_hrd_parameters_present_flag() const -> bool {
   VERIFY_V3CBITSTREAM(vui_timing_info_present_flag());
   VERIFY_V3CBITSTREAM(m_vui_hrd_parameters_present_flag.has_value());
   return *m_vui_hrd_parameters_present_flag;
 }
 
-auto VuiParameters::vui_tiles_fixed_structure_for_atlas_flag() const noexcept -> bool {
+auto VuiParameters::vui_tiles_fixed_structure_for_atlas_flag() const -> bool {
   VERIFY_V3CBITSTREAM(vui_bitstream_restriction_present_flag());
   VERIFY_V3CBITSTREAM(m_vui_tiles_fixed_structure_for_atlas_flag.has_value());
   return *m_vui_tiles_fixed_structure_for_atlas_flag;
 }
 
-auto VuiParameters::vui_tiles_fixed_structure_for_video_substreams_flag() const noexcept -> bool {
+auto VuiParameters::vui_tiles_fixed_structure_for_video_substreams_flag() const -> bool {
   VERIFY_V3CBITSTREAM(vui_bitstream_restriction_present_flag());
   VERIFY_V3CBITSTREAM(m_vui_tiles_fixed_structure_for_video_substreams_flag.has_value());
   return *m_vui_tiles_fixed_structure_for_video_substreams_flag;
 }
 
-auto VuiParameters::vui_constrained_tiles_across_v3c_components_idc() const noexcept
-    -> std::uint8_t {
+auto VuiParameters::vui_constrained_tiles_across_v3c_components_idc() const -> std::uint8_t {
   VERIFY_V3CBITSTREAM(vui_bitstream_restriction_present_flag());
   VERIFY_V3CBITSTREAM(m_vui_constrained_tiles_across_v3c_components_idc.has_value());
   return *m_vui_constrained_tiles_across_v3c_components_idc;
 }
 
-auto VuiParameters::vui_max_num_tiles_per_atlas_minus1() const noexcept -> unsigned {
+auto VuiParameters::vui_max_num_tiles_per_atlas_minus1() const -> unsigned {
   VERIFY_V3CBITSTREAM(vui_bitstream_restriction_present_flag());
   VERIFY_V3CBITSTREAM(m_vui_max_num_tiles_per_atlas_minus1.has_value());
   return *m_vui_max_num_tiles_per_atlas_minus1;
 }
 
-auto VuiParameters::coordinate_system_parameters() const noexcept
-    -> const CoordinateSystemParameters & {
+auto VuiParameters::coordinate_system_parameters() const -> const CoordinateSystemParameters & {
   VERIFY_V3CBITSTREAM(vui_coordinate_system_parameters_present_flag());
   VERIFY_V3CBITSTREAM(m_coordinate_system_parameters.has_value());
   return *m_coordinate_system_parameters;
 }
 
-auto VuiParameters::vui_display_box_origin(int d) const noexcept -> std::uint32_t {
+auto VuiParameters::vui_display_box_origin(int d) const -> std::uint32_t {
   VERIFY_V3CBITSTREAM(vui_display_box_info_present_flag());
   VERIFY_V3CBITSTREAM(m_vui_display_box_origin.has_value());
   return (*m_vui_display_box_origin)[d];
 }
 
-auto VuiParameters::vui_display_box_size(int d) const noexcept -> std::uint32_t {
+auto VuiParameters::vui_display_box_size(int d) const -> std::uint32_t {
   VERIFY_V3CBITSTREAM(vui_display_box_info_present_flag());
   VERIFY_V3CBITSTREAM(m_vui_display_box_size.has_value());
   return (*m_vui_display_box_size)[d];
 }
 
-auto VuiParameters::vui_anchor_point(int d) const noexcept -> std::uint32_t {
+auto VuiParameters::vui_anchor_point(int d) const -> std::uint32_t {
   VERIFY_V3CBITSTREAM(vui_anchor_point_present_flag());
   VERIFY_V3CBITSTREAM(m_vui_anchor_point.has_value());
   return (*m_vui_anchor_point)[d];
 }
 
 auto VuiParameters::vui_num_units_in_tick(std::uint32_t value) noexcept -> VuiParameters & {
-  VERIFY_V3CBITSTREAM(vui_timing_info_present_flag());
+  PRECONDITION(vui_timing_info_present_flag());
   m_vui_num_units_in_tick = value;
   return *this;
 }
 
 auto VuiParameters::vui_time_scale(std::uint32_t value) noexcept -> VuiParameters & {
-  VERIFY_V3CBITSTREAM(vui_timing_info_present_flag());
+  PRECONDITION(vui_timing_info_present_flag());
   m_vui_time_scale = value;
   return *this;
 }
 
 auto VuiParameters::vui_poc_proportional_to_timing_flag(bool value) noexcept -> VuiParameters & {
-  VERIFY_V3CBITSTREAM(vui_timing_info_present_flag());
+  PRECONDITION(vui_timing_info_present_flag());
   m_vui_poc_proportional_to_timing_flag = value;
   return *this;
 }
 
-auto VuiParameters::vui_num_ticks_poc_diff_one_minus1(std::uint32_t value) noexcept
-    -> VuiParameters & {
-  VERIFY_V3CBITSTREAM(vui_poc_proportional_to_timing_flag());
+auto VuiParameters::vui_num_ticks_poc_diff_one_minus1(std::uint32_t value) -> VuiParameters & {
+  PRECONDITION(vui_poc_proportional_to_timing_flag());
   m_vui_num_ticks_poc_diff_one_minus1 = value;
   return *this;
 }
 
 auto VuiParameters::vui_hrd_parameters_present_flag(bool value) noexcept -> VuiParameters & {
-  VERIFY_V3CBITSTREAM(vui_timing_info_present_flag());
+  PRECONDITION(vui_timing_info_present_flag());
   m_vui_hrd_parameters_present_flag = value;
   return *this;
 }
 
 auto VuiParameters::vui_tiles_fixed_structure_for_atlas_flag(bool value) noexcept
     -> VuiParameters & {
-  VERIFY_V3CBITSTREAM(vui_bitstream_restriction_present_flag());
+  PRECONDITION(vui_bitstream_restriction_present_flag());
   m_vui_tiles_fixed_structure_for_atlas_flag = value;
   return *this;
 }
 
 auto VuiParameters::vui_tiles_fixed_structure_for_video_substreams_flag(bool value) noexcept
     -> VuiParameters & {
-  VERIFY_V3CBITSTREAM(vui_bitstream_restriction_present_flag());
+  PRECONDITION(vui_bitstream_restriction_present_flag());
   m_vui_tiles_fixed_structure_for_video_substreams_flag = value;
   return *this;
 }
 
 auto VuiParameters::vui_constrained_tiles_across_v3c_components_idc(std::uint8_t value) noexcept
     -> VuiParameters & {
-  VERIFY_V3CBITSTREAM(vui_bitstream_restriction_present_flag());
+  PRECONDITION(vui_bitstream_restriction_present_flag());
   m_vui_constrained_tiles_across_v3c_components_idc = value;
   return *this;
 }
 
 auto VuiParameters::vui_max_num_tiles_per_atlas_minus1(unsigned value) noexcept -> VuiParameters & {
-  VERIFY_V3CBITSTREAM(vui_bitstream_restriction_present_flag());
+  PRECONDITION(vui_bitstream_restriction_present_flag());
   m_vui_max_num_tiles_per_atlas_minus1 = value;
   return *this;
 }
 
 auto VuiParameters::coordinate_system_parameters() noexcept -> CoordinateSystemParameters & {
-  VERIFY_V3CBITSTREAM(vui_coordinate_system_parameters_present_flag());
+  PRECONDITION(vui_coordinate_system_parameters_present_flag());
   if (!m_coordinate_system_parameters) {
     m_coordinate_system_parameters = CoordinateSystemParameters{};
   }
@@ -214,7 +211,7 @@ auto VuiParameters::coordinate_system_parameters() noexcept -> CoordinateSystemP
 }
 
 auto VuiParameters::vui_display_box_origin(int d, std::uint32_t value) noexcept -> VuiParameters & {
-  VERIFY_V3CBITSTREAM(vui_display_box_info_present_flag());
+  PRECONDITION(vui_display_box_info_present_flag());
   if (!m_vui_display_box_origin) {
     m_vui_display_box_origin = std::array<uint32_t, 3>{};
   }
@@ -223,7 +220,7 @@ auto VuiParameters::vui_display_box_origin(int d, std::uint32_t value) noexcept 
 }
 
 auto VuiParameters::vui_display_box_size(int d, std::uint32_t value) noexcept -> VuiParameters & {
-  VERIFY_V3CBITSTREAM(vui_display_box_info_present_flag());
+  PRECONDITION(vui_display_box_info_present_flag());
   if (!m_vui_display_box_size) {
     m_vui_display_box_size = std::array<uint32_t, 3>{};
   }
@@ -232,7 +229,7 @@ auto VuiParameters::vui_display_box_size(int d, std::uint32_t value) noexcept ->
 }
 
 auto VuiParameters::vui_anchor_point(int d, std::uint32_t value) noexcept -> VuiParameters & {
-  VERIFY_V3CBITSTREAM(vui_anchor_point_present_flag());
+  PRECONDITION(vui_anchor_point_present_flag());
   if (!m_vui_anchor_point) {
     m_vui_anchor_point = std::array<uint32_t, 3>{};
   }
@@ -297,7 +294,7 @@ auto operator<<(std::ostream &stream, const VuiParameters &x) -> std::ostream & 
   return stream;
 }
 
-auto VuiParameters::operator==(const VuiParameters &other) const noexcept -> bool {
+auto VuiParameters::operator==(const VuiParameters &other) const -> bool {
   if (vui_timing_info_present_flag() != other.vui_timing_info_present_flag() ||
       vui_bitstream_restriction_present_flag() != other.vui_bitstream_restriction_present_flag() ||
       vui_coordinate_system_parameters_present_flag() !=
@@ -358,7 +355,7 @@ auto VuiParameters::operator==(const VuiParameters &other) const noexcept -> boo
   return true;
 }
 
-auto VuiParameters::operator!=(const VuiParameters &other) const noexcept -> bool {
+auto VuiParameters::operator!=(const VuiParameters &other) const -> bool {
   return !operator==(other);
 }
 

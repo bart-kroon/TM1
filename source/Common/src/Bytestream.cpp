@@ -34,32 +34,20 @@
 #include <TMIV/Common/Bytestream.h>
 
 #include <TMIV/Common/Bitstream.h>
+#include <TMIV/Common/verify.h>
 
 #include <iostream>
 
-namespace {
-// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
-#define VERIFY_BYTESTREAM(condition)                                                               \
-  (void)(!!(condition) || verifyBytestreamFailed(#condition, __FILE__, __LINE__))
-
-auto verifyBytestreamFailed(char const *condition, char const *file, int line) -> bool {
-  std::cerr << "Failed to encode/decode byte stream: " << condition << " [" << file << "@" << line
-            << std::endl;
-  abort();
-  return false;
-}
-} // namespace
-
 namespace TMIV::Common {
 auto readBytes(std::istream &stream, size_t bytes) -> uint64_t {
-  VERIFY_BYTESTREAM(bytes <= 8);
+  VERIFY_BITSTREAM(bytes <= 8);
   auto result = uint64_t{0};
   while (bytes-- > 0) {
     char buffer = 0;
     stream.get(buffer);
     result = (result << 8) | static_cast<uint8_t>(buffer);
   }
-  VERIFY_BYTESTREAM(stream.good());
+  VERIFY_BITSTREAM(stream.good());
   return result;
 }
 
@@ -80,7 +68,7 @@ auto getUint64(std::istream &stream) -> uint64_t { return readBytes(stream, 8); 
 auto readString(std::istream &stream, size_t bytes) -> std::string {
   auto result = std::string(bytes, '\0');
   stream.read(result.data(), bytes);
-  VERIFY_BYTESTREAM(stream.good());
+  VERIFY_BITSTREAM(stream.good());
   return result;
 }
 
@@ -95,14 +83,14 @@ void rbspTrailingBits(std::istream &stream) {
 }
 
 void writeBytes(std::ostream &stream, uint64_t value, size_t bytes) {
-  VERIFY_BYTESTREAM(bytes <= 8);
+  VERIFY_BITSTREAM(bytes <= 8);
   if (bytes > 1) {
     writeBytes(stream, value >> 8, bytes - 1);
   }
   if (bytes > 0) {
     stream.put(static_cast<char>(value));
   }
-  VERIFY_BYTESTREAM(stream.good());
+  VERIFY_BITSTREAM(stream.good());
 }
 
 void putUint8(std::ostream &stream, uint8_t value) { writeBytes(stream, value, 1); }
@@ -112,7 +100,7 @@ void putUint64(std::ostream &stream, uint8_t value) { writeBytes(stream, value, 
 
 void writeString(std::ostream &stream, const std::string &buffer) {
   stream.write(buffer.data(), buffer.size());
-  VERIFY_BYTESTREAM(stream.good());
+  VERIFY_BITSTREAM(stream.good());
 }
 
 void rbspTrailingBits(std::ostream &stream) {

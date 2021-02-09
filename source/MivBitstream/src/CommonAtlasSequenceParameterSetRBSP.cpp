@@ -50,14 +50,14 @@ auto putField(std::ostream &stream, const std::string &fieldName, T &&fieldValue
 }
 
 namespace TMIV::MivBitstream {
-auto CaspsMivExtension::vui_parameters() const noexcept -> const VuiParameters & {
+auto CaspsMivExtension::vui_parameters() const -> const VuiParameters & {
   VERIFY_MIVBITSTREAM(casme_vui_params_present_flag());
   VERIFY_MIVBITSTREAM(m_vui_parameters.has_value());
   return *m_vui_parameters;
 }
 
 auto CaspsMivExtension::vui_parameters(const VuiParameters &value) noexcept -> CaspsMivExtension & {
-  VERIFY_MIVBITSTREAM(casme_vui_params_present_flag());
+  PRECONDITION(casme_vui_params_present_flag());
   m_vui_parameters = value;
   return *this;
 }
@@ -108,8 +108,7 @@ void CaspsMivExtension::encodeTo(Common::OutputBitstream &bitstream) const {
   }
 }
 
-auto CommonAtlasSequenceParameterSetRBSP::casps_miv_extension_present_flag() const noexcept
-    -> bool {
+auto CommonAtlasSequenceParameterSetRBSP::casps_miv_extension_present_flag() const -> bool {
   if (!m_casps_miv_extension_present_flag.has_value()) {
     return false;
   }
@@ -117,7 +116,7 @@ auto CommonAtlasSequenceParameterSetRBSP::casps_miv_extension_present_flag() con
   return *m_casps_miv_extension_present_flag;
 }
 
-auto CommonAtlasSequenceParameterSetRBSP::casps_extension_7bits() const noexcept {
+auto CommonAtlasSequenceParameterSetRBSP::casps_extension_7bits() const {
   if (!m_casps_extension_7bits.has_value()) {
     return static_cast<decltype(*m_casps_extension_7bits)>(0U);
   }
@@ -125,15 +124,13 @@ auto CommonAtlasSequenceParameterSetRBSP::casps_extension_7bits() const noexcept
   return *m_casps_extension_7bits;
 }
 
-auto CommonAtlasSequenceParameterSetRBSP::casps_miv_extension() const noexcept
-    -> const CaspsMivExtension & {
+auto CommonAtlasSequenceParameterSetRBSP::casps_miv_extension() const -> const CaspsMivExtension & {
   VERIFY_V3CBITSTREAM(casps_miv_extension_present_flag());
   VERIFY_V3CBITSTREAM(m_casps_miv_extension.has_value());
   return *m_casps_miv_extension;
 }
 
-auto CommonAtlasSequenceParameterSetRBSP::caspsExtensionData() const noexcept
-    -> const std::vector<bool> & {
+auto CommonAtlasSequenceParameterSetRBSP::caspsExtensionData() const -> const std::vector<bool> & {
   VERIFY_V3CBITSTREAM(casps_extension_7bits() != 0);
   VERIFY_V3CBITSTREAM(m_caspsExtensionData.has_value());
   return *m_caspsExtensionData;
@@ -141,30 +138,30 @@ auto CommonAtlasSequenceParameterSetRBSP::caspsExtensionData() const noexcept
 
 auto CommonAtlasSequenceParameterSetRBSP::casps_miv_extension_present_flag(bool flag) noexcept
     -> CommonAtlasSequenceParameterSetRBSP & {
-  VERIFY_V3CBITSTREAM(casps_extension_present_flag());
+  PRECONDITION(casps_extension_present_flag());
   m_casps_miv_extension_present_flag = flag;
   return *this;
 }
 
 auto CommonAtlasSequenceParameterSetRBSP::casps_extension_7bits(std::uint8_t value) noexcept
     -> CommonAtlasSequenceParameterSetRBSP & {
-  VERIFY_V3CBITSTREAM(casps_extension_present_flag());
-  VERIFY_V3CBITSTREAM(value < (1 << 7));
+  PRECONDITION(casps_extension_present_flag());
+  PRECONDITION(value < (1 << 7));
   m_casps_extension_7bits = value;
   return *this;
 }
 
-auto CommonAtlasSequenceParameterSetRBSP::casps_miv_extension() noexcept -> CaspsMivExtension & {
-  VERIFY_V3CBITSTREAM(casps_miv_extension_present_flag());
+auto CommonAtlasSequenceParameterSetRBSP::casps_miv_extension() -> CaspsMivExtension & {
+  PRECONDITION(casps_miv_extension_present_flag());
   if (!m_casps_miv_extension.has_value()) {
     m_casps_miv_extension = CaspsMivExtension{};
   }
   return *m_casps_miv_extension;
 }
 
-auto CommonAtlasSequenceParameterSetRBSP::caspsExtensionData(std::vector<bool> value) noexcept
+auto CommonAtlasSequenceParameterSetRBSP::caspsExtensionData(std::vector<bool> value)
     -> CommonAtlasSequenceParameterSetRBSP & {
-  VERIFY_V3CBITSTREAM(casps_extension_7bits() != 0);
+  PRECONDITION(casps_extension_7bits() != 0);
   m_caspsExtensionData = std::move(value);
   return *this;
 }
@@ -257,7 +254,7 @@ void CommonAtlasSequenceParameterSetRBSP::encodeTo(std::ostream &stream) const {
   bitstream.rbspTrailingBits();
 }
 
-auto caspsById(const std::vector<CommonAtlasSequenceParameterSetRBSP> &caspsV, int id) noexcept
+auto caspsById(const std::vector<CommonAtlasSequenceParameterSetRBSP> &caspsV, int id)
     -> const CommonAtlasSequenceParameterSetRBSP & {
 
   const auto result = std::find_if(std::cbegin(caspsV), std::cend(caspsV), [id](const auto &casps) {

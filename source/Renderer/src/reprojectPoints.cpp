@@ -88,7 +88,7 @@ ProjectionHelper::ProjectionHelper(const MivBitstream::ViewParams &viewParams)
     m_engine = std::make_unique<MetaEngine::Orthographic>(viewParams.ci);
     break;
   default:
-    abort();
+    UNREACHABLE;
   }
 }
 
@@ -158,7 +158,7 @@ auto ProjectionHelper::getAngularResolution() const -> float {
     return nbPixel / Common::hemiSphere;
   }
   default:
-    abort();
+    UNREACHABLE;
   }
 }
 
@@ -190,7 +190,7 @@ auto ProjectionHelper::getRadialRange() const -> Common::Vec2f {
             1.F / m_viewParams.get().dq.dq_norm_disp_low()};
   }
   default:
-    abort();
+    UNREACHABLE;
   }
 }
 

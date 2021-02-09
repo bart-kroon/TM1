@@ -380,10 +380,7 @@ Invoke the decoder with the following arguments:
     -c /Workspace/tmiv/config/ctc/miv_anchor/A_4_TMIV_decode.json \
     -p configDirectory /Workspace/tmiv/config \
     -p inputDirectory /Experiment \
-    -p outputDirectory /Experiment \
-    -p inputBitstreamPathFmt A{0}/{1}/TMIV_A{0}_{1}.bit \
-    -p inputGeometryVideoFramePathFmt A{0}/{1}/QP3/TMIV_A{0}_{1}_QP3_geo_c{3:02}_{4}}x{5}_yuv420p10le.yuv \
-    -p inputTextureVideoFramePathFmt A{0}/{1}/QP3/TMIV_A{0}_{1}_QP3_tex_c{3:02}_{4}}x{5}_yuv420p10le.yuv
+    -p outputDirectory /Experiment
 ```
 
 When the same parameter is provided multiple times on the command-line, through `-c` or `-p`, then the right-most argument has precedence.

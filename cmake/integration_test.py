@@ -79,18 +79,18 @@ class IntegrationTest:
         app.inspectEnvironment()
 
         with concurrent.futures.ThreadPoolExecutor(max_workers=self.maxWorkers) as executor:
-           fA = self.testMivAnchor(executor)
-           fV = self.testMivViewAnchor(executor)
-           fG = self.testMivDsdeAnchor(executor)
-           fR = self.testBestReference(executor)
-           fM = self.testMivMpi(executor)
-           fS = self.testAdditiveSynthesizer(executor)
-           self.sync(fA + fV + fG + fR + fM + fS)
+            fA = self.testMivAnchor(executor)
+            fV = self.testMivViewAnchor(executor)
+            fG = self.testMivDsdeAnchor(executor)
+            fR = self.testBestReference(executor)
+            fM = self.testMivMpi(executor)
+            fS = self.testAdditiveSynthesizer(executor)
+            self.sync(fA + fV + fG + fR + fM + fS)
 
         if self.referenceDir:
             print('Comparison mismatches :', self.numComparisonMismatches)
             print('Comparison errors     :', self.numComparisonErrors)
-            
+
         return int((0 < self.numComparisonMismatches) or (0 < self.numComparisonErrors))
 
     def inspectEnvironment(self):
@@ -169,42 +169,42 @@ class IntegrationTest:
         f2_5 = self.launchCommand(executor, [f1], [
             '{0}/bin/Parser',
             '-b', '{3}/A3/E/TMIV_A3_E.bit'],
-                                  '{3}/A3/E/TMIV_A3_E.hls',
-                                  [])
+            '{3}/A3/E/TMIV_A3_E.hls',
+            [])
 
         f2_6 = self.launchCommand(executor, [f1], [
             '{0}/bin/BitrateReport',
             '-b', '{3}/A3/E/TMIV_A3_E.bit'],
-                                  '{3}/A3/E/TMIV_A3_E.csv',
-                                  [])
+            '{3}/A3/E/TMIV_A3_E.csv',
+            [])
 
         f3_1 = self.launchCommand(executor, [f2_1], [
             '{0}/bin/vvdecapp',
             '-b', '{3}/A3/E/QP3/TMIV_A3_E_QP3_geo_c00.bit',
             '-o', '{3}/A3/E/QP3/TMIV_A3_E_QP3_geo_c00_960x2320_yuv420p10le.yuv'],
-                                  '{3}/A3/E/QP3/TMIV_A3_E_QP3_geo_c00_vvdec.log',
-                                  ['A3/E/QP3/TMIV_A3_E_QP3_geo_c00_960x2320_yuv420p10le.yuv'])
+            '{3}/A3/E/QP3/TMIV_A3_E_QP3_geo_c00_vvdec.log',
+            ['A3/E/QP3/TMIV_A3_E_QP3_geo_c00_960x2320_yuv420p10le.yuv'])
 
         f3_2 = self.launchCommand(executor, [f2_2], [
             '{0}/bin/vvdecapp',
             '-b', '{3}/A3/E/QP3/TMIV_A3_E_QP3_geo_c01.bit',
             '-o', '{3}/A3/E/QP3/TMIV_A3_E_QP3_geo_c01_960x2320_yuv420p10le.yuv'],
-                                  '{3}/A3/E/QP3/TMIV_A3_E_QP3_geo_c01_vvdec.log',
-                                  ['A3/E/QP3/TMIV_A3_E_QP3_geo_c01_960x2320_yuv420p10le.yuv'])
+            '{3}/A3/E/QP3/TMIV_A3_E_QP3_geo_c01_vvdec.log',
+            ['A3/E/QP3/TMIV_A3_E_QP3_geo_c01_960x2320_yuv420p10le.yuv'])
 
         f3_3 = self.launchCommand(executor, [f2_3], [
             '{0}/bin/vvdecapp',
             '-b', '{3}/A3/E/QP3/TMIV_A3_E_QP3_tex_c00.bit',
             '-o', '{3}/A3/E/QP3/TMIV_A3_E_QP3_tex_c00_1920x4640_yuv420p10le.yuv'],
-                                  '{3}/A3/E/QP3/TMIV_A3_E_QP3_tex_c00_vvdec.log',
-                                  ['A3/E/QP3/TMIV_A3_E_QP3_tex_c00_1920x4640_yuv420p10le.yuv'])
+            '{3}/A3/E/QP3/TMIV_A3_E_QP3_tex_c00_vvdec.log',
+            ['A3/E/QP3/TMIV_A3_E_QP3_tex_c00_1920x4640_yuv420p10le.yuv'])
 
         f3_4 = self.launchCommand(executor, [f2_4], [
             '{0}/bin/vvdecapp',
             '-b', '{3}/A3/E/QP3/TMIV_A3_E_QP3_tex_c01.bit',
             '-o', '{3}/A3/E/QP3/TMIV_A3_E_QP3_tex_c01_1920x4640_yuv420p10le.yuv'],
-                                  '{3}/A3/E/QP3/TMIV_A3_E_QP3_tex_c01_vvdec.log',
-                                  ['A3/E/QP3/TMIV_A3_E_QP3_tex_c01_1920x4640_yuv420p10le.yuv'])
+            '{3}/A3/E/QP3/TMIV_A3_E_QP3_tex_c01_vvdec.log',
+            ['A3/E/QP3/TMIV_A3_E_QP3_tex_c01_1920x4640_yuv420p10le.yuv'])
 
         f4 = self.launchCommand(executor, [f3_1, f3_2, f3_3, f3_4], [
             '{0}/bin/Decoder',
@@ -212,9 +212,6 @@ class IntegrationTest:
             '-p', 'configDirectory', '{1}/config',
             '-p', 'inputDirectory', '{3}',
             '-p', 'outputDirectory', '{3}',
-            '-p', 'inputBitstreamPathFmt', 'A{{0}}/{{1}}/TMIV_A{{0}}_{{1}}.bit',
-            '-p', 'inputGeometryVideoFramePathFmt', 'A{{0}}/{{1}}/QP3/TMIV_A{{0}}_{{1}}_QP3_geo_c{{3:02}}_{{4}}x{{5}}_yuv420p10le.yuv',
-            '-p', 'inputTextureVideoFramePathFmt', 'A{{0}}/{{1}}/QP3/TMIV_A{{0}}_{{1}}_QP3_tex_c{{3:02}}_{{4}}x{{5}}_yuv420p10le.yuv',
             '-n', '3', '-N', '3', '-s', 'E', '-r', 'QP3', '-v', 'v11'],
             '{3}/A3/E/QP3/A3_E_QP3_v11.log',
             ['A3/E/QP3/A3_E_QP3_v11_tex_1920x1080_yuv420p10le.yuv'])
@@ -244,9 +241,6 @@ class IntegrationTest:
             '-p', 'configDirectory', '{1}/config',
             '-p', 'inputDirectory', '{3}',
             '-p', 'outputDirectory', '{3}',
-            '-p', 'inputBitstreamPathFmt', 'V{{0}}/{{1}}/TMIV_V{{0}}_{{1}}.bit',
-            '-p', 'inputGeometryVideoFramePathFmt', 'V{{0}}/{{1}}/TMIV_V{{0}}_{{1}}_geo_c{{3:02}}_{{4}}x{{5}}_yuv420p10le.yuv',
-            '-p', 'inputTextureVideoFramePathFmt', 'V{{0}}/{{1}}/TMIV_V{{0}}_{{1}}_tex_c{{3:02}}_{{4}}x{{5}}_yuv420p10le.yuv',
             '-n', '3', '-N', '3', '-s', 'D', '-r', 'R0', '-v', 'v14'],
             '{3}/V3/D/R0/V3_D_R0_v14.log',
             ['V3/D/R0/V3_D_R0_v14_tex_2048x1088_yuv420p10le.yuv'])
@@ -263,16 +257,12 @@ class IntegrationTest:
             '{3}/V3/D/TMIV_V3_D.csv',
             [])
 
-
         f2_4 = self.launchCommand(executor, [f1], [
             '{0}/bin/Decoder',
             '-c', '{1}/config/ctc/miv_view_anchor/V_4_TMIV_decode.json',
             '-p', 'configDirectory', '{1}/config',
             '-p', 'inputDirectory', '{3}',
             '-p', 'outputDirectory', '{3}',
-            '-p', 'inputBitstreamPathFmt', 'V{{0}}/{{1}}/TMIV_V{{0}}_{{1}}.bit',
-            '-p', 'inputGeometryVideoFramePathFmt', 'V{{0}}/{{1}}/TMIV_V{{0}}_{{1}}_geo_c{{3:02}}_{{4}}x{{5}}_yuv420p10le.yuv',
-            '-p', 'inputTextureVideoFramePathFmt', 'V{{0}}/{{1}}/TMIV_V{{0}}_{{1}}_tex_c{{3:02}}_{{4}}x{{5}}_yuv420p10le.yuv',
             '-n', '3', '-N', '3', '-s', 'D', '-r', 'R0', '-P', 'p02'],
             '{3}/V3/D/R0/V3_D_R0_p02.log',
             ['V3/D/R0/V3_D_R0_p02_tex_1920x1080_yuv420p10le.yuv'])
@@ -310,13 +300,10 @@ class IntegrationTest:
 
         f2_3 = self.launchCommand(executor, [f1], [
             '{0}/bin/Decoder',
-            '-c', '{1}/config/ctc/miv_dsde_anchor/G_3_TMIV_decode.json',
+            '-c', '{1}/config/ctc/miv_dsde_anchor/G_4_TMIV_decode.json',
             '-p', 'configDirectory', '{1}/config',
             '-p', 'inputDirectory', '{3}',
             '-p', 'outputDirectory', '{3}',
-            '-p', 'inputBitstreamPathFmt', 'G{{0}}/{{1}}/TMIV_G{{0}}_{{1}}.bit',
-            '-p', 'inputGeometryVideoFramePathFmt', 'G{{0}}/{{1}}/TMIV_G{{0}}_{{1}}_geo_c{{3:02}}_{{4}}x{{5}}_yuv420p10le.yuv',
-            '-p', 'inputTextureVideoFramePathFmt', 'G{{0}}/{{1}}/TMIV_G{{0}}_{{1}}_tex_c{{3:02}}_{{4}}x{{5}}_yuv420p10le.yuv',
             '-n', '3', '-N', '3', '-s', 'N', '-r', 'R0'],
             '{3}/G3/N/R0/G3_N_R0_none.log',
             ['G3/N/R0/TMIV_G3_N_R0_0000.json',
@@ -501,14 +488,14 @@ class IntegrationTest:
         assert(self.referenceDir)
         [matches, mismatches, errors] = filecmp.cmpfiles(
             self.testDir, self.referenceDir, outputFiles, shallow=False)
-        
+
         for match in matches:
             print('equal: {}'.format(match), flush=True)
         for mismatch in mismatches:
             print('MISMATCH: {}'.format(mismatch), flush=True)
         for error in errors:
             print('ERROR: {}'.format(error), flush=True)
-        
+
         self.numComparisonMismatches += len(mismatches)
         self.numComparisonErrors += len(errors)
 

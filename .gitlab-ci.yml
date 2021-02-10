@@ -64,7 +64,7 @@ VC 16 Release:
   script:
     - mkdir -p build
     - cd build
-    - 'cmake -G "Visual Studio 16 2019" -DCMAKE_CXX_FLAGS="/DWIN32 /D_WINDOWS /W3 /GR /EHsc /WX" -DENABLE_CLANG_TIDY=OFF ..'
+    - 'cmake -G "Visual Studio 16 2019" -DCMAKE_CXX_FLAGS="/DWIN32 /D_WINDOWS /permissive- /w14640 /W4 /GR /EHsc /WX" -DENABLE_CLANG_TIDY=OFF ..'
     - 'cmake --build . --parallel --config Release --target ALL_BUILD'
     - 'cmake --build . --config Release --target RUN_TESTS'
 

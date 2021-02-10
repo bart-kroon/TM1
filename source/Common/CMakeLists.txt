@@ -46,6 +46,9 @@ target_include_directories(CommonLib
 target_compile_features(CommonLib
     PUBLIC cxx_std_17)
 
+target_compile_options(CommonLib
+    PUBLIC "$<$<CXX_COMPILER_ID:MSVC>:/wd4244;/wd4389;/wd4456;/wd4457;/wd4458;/wd4459;/wd4702>")
+
 install(
     TARGETS
         fmt

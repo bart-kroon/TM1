@@ -64,6 +64,7 @@ if (BUILD_HM)
     target_compile_definitions(TLibCommon PUBLIC "$<$<CXX_COMPILER_ID:MSVC>:_CRT_SECURE_NO_WARNINGS>")
     target_compile_options(TLibCommon PUBLIC "$<$<CXX_COMPILER_ID:Clang>:-w>")
     target_compile_options(TLibCommon PUBLIC "$<$<CXX_COMPILER_ID:GNU>:-w>")
+    target_compile_options(TLibCommon PUBLIC "$<$<CXX_COMPILER_ID:MSVC>:/wd4100;/wd4189;/wd4127;/wd4244;/wd4389;/wd4459;/wd4701;/wd4702>")
 
     add_hm_library(TLibDecoder)
     target_link_libraries(TLibDecoder PUBLIC TLibCommon)

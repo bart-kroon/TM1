@@ -241,6 +241,8 @@ class IntegrationTest:
             '-p', 'configDirectory', '{1}/config',
             '-p', 'inputDirectory', '{3}',
             '-p', 'outputDirectory', '{3}',
+            '-p', 'inputGeometryVideoFramePathFmt', 'V{{0}}/{{1}}/TMIV_V{{0}}_{{1}}_geo_c{{3:02}}_{{4}}x{{5}}_yuv420p10le.yuv',
+            '-p', 'inputTextureVideoFramePathFmt', 'V{{0}}/{{1}}/TMIV_V{{0}}_{{1}}_tex_c{{3:02}}_{{4}}x{{5}}_yuv420p10le.yuv',
             '-n', '3', '-N', '3', '-s', 'D', '-r', 'R0', '-v', 'v14'],
             '{3}/V3/D/R0/V3_D_R0_v14.log',
             ['V3/D/R0/V3_D_R0_v14_tex_2048x1088_yuv420p10le.yuv'])
@@ -263,6 +265,8 @@ class IntegrationTest:
             '-p', 'configDirectory', '{1}/config',
             '-p', 'inputDirectory', '{3}',
             '-p', 'outputDirectory', '{3}',
+            '-p', 'inputGeometryVideoFramePathFmt', 'V{{0}}/{{1}}/TMIV_V{{0}}_{{1}}_geo_c{{3:02}}_{{4}}x{{5}}_yuv420p10le.yuv',
+            '-p', 'inputTextureVideoFramePathFmt', 'V{{0}}/{{1}}/TMIV_V{{0}}_{{1}}_tex_c{{3:02}}_{{4}}x{{5}}_yuv420p10le.yuv',
             '-n', '3', '-N', '3', '-s', 'D', '-r', 'R0', '-P', 'p02'],
             '{3}/V3/D/R0/V3_D_R0_p02.log',
             ['V3/D/R0/V3_D_R0_p02_tex_1920x1080_yuv420p10le.yuv'])
@@ -304,6 +308,8 @@ class IntegrationTest:
             '-p', 'configDirectory', '{1}/config',
             '-p', 'inputDirectory', '{3}',
             '-p', 'outputDirectory', '{3}',
+            '-p', 'inputGeometryVideoFramePathFmt', 'G{{0}}/{{1}}/TMIV_G{{0}}_{{1}}_geo_c{{3:02}}_{{4}}x{{5}}_yuv420p10le.yuv',
+            '-p', 'inputTextureVideoFramePathFmt', 'G{{0}}/{{1}}/TMIV_G{{0}}_{{1}}_tex_c{{3:02}}_{{4}}x{{5}}_yuv420p10le.yuv',
             '-n', '3', '-N', '3', '-s', 'N', '-r', 'R0'],
             '{3}/G3/N/R0/G3_N_R0_none.log',
             ['G3/N/R0/TMIV_G3_N_R0_0000.json',

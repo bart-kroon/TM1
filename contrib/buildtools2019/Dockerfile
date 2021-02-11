@@ -12,8 +12,8 @@ SHELL ["cmd", "/S", "/C"]
 COPY Install.cmd C:\TEMP\
 
 # Copy Git installer
-COPY Git-2.29.1-64-bit.exe C:\TEMP\
-RUN C:\TEMP\Git-2.29.1-64-bit.exe /VERYSILENT /NORESTART /NOCANCEL /SP- /CLOSEAPPLICATIONS /RESTARTAPPLICATIONS /COMPONENTS="icons,ext\reg\shellhere,assoc,assoc_sh"
+COPY Git-2.30.1-64-bit.exe C:\TEMP\
+RUN C:\TEMP\Git-2.30.1-64-bit.exe /VERYSILENT /NORESTART /NOCANCEL /SP- /CLOSEAPPLICATIONS /RESTARTAPPLICATIONS /COMPONENTS="icons,ext\reg\shellhere,assoc,assoc_sh"
 
 # Download collect.exe in case of an install failure.
 ADD https://aka.ms/vscollect.exe C:\TEMP\collect.exe

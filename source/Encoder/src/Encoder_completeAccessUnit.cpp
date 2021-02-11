@@ -33,7 +33,6 @@
 
 #include <TMIV/Encoder/Encoder.h>
 
-#include <cassert>
 #include <iostream>
 
 namespace TMIV::Encoder {

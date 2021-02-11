@@ -37,7 +37,6 @@
 #include <TMIV/Common/Matrix.h>
 #include <TMIV/Common/Vector.h>
 
-#include <cassert>
 #include <cstdint>
 #include <istream>
 #include <ostream>

@@ -37,7 +37,6 @@
 
 #include <TMIV/Common/Common.h>
 
-#include <cassert>
 #include <cmath>
 
 namespace TMIV::Renderer {

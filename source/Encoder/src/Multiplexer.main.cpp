@@ -36,7 +36,6 @@
 #include <TMIV/MivBitstream/V3cSampleStreamFormat.h>
 #include <TMIV/MivBitstream/V3cUnit.h>
 
-#include <cassert>
 #include <filesystem>
 #include <fstream>
 #include <iostream>

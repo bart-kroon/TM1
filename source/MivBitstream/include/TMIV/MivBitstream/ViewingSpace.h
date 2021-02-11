@@ -41,6 +41,7 @@
 
 #include <TMIV/MivBitstream/ViewParamsList.h>
 
+#include <cassert>
 #include <iosfwd>
 #include <optional>
 #include <variant>

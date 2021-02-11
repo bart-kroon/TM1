@@ -35,7 +35,6 @@
 
 #include <TMIV/Common/verify.h>
 
-#include <cassert>
 #include <iostream>
 
 namespace TMIV::Encoder {

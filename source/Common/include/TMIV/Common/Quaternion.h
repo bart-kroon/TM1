@@ -37,6 +37,8 @@
 #include "Matrix.h"
 #include "Vector.h"
 
+#include <cassert>
+
 namespace TMIV::Common {
 // Quaternion: q = w + ix + jy + kz with i^2 = j^2 + k^2 = -1
 template <typename T> using Quaternion = stack::Vec4<T>;

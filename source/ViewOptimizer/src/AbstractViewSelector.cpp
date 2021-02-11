@@ -35,7 +35,6 @@
 
 #include <TMIV/Common/Common.h>
 
-#include <cassert>
 #include <iostream>
 
 namespace TMIV::ViewOptimizer {

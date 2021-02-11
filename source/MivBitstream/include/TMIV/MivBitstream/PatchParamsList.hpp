@@ -35,6 +35,8 @@
 #error "Include the .h, not the .hpp"
 #endif
 
+#include <cassert>
+
 namespace TMIV::MivBitstream {
 constexpr auto PatchParams::atlasPatch2dPosX() const noexcept { return m_atlasPatch2dPosX; }
 

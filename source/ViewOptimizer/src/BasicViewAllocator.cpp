@@ -37,7 +37,6 @@
 #include <TMIV/Common/LinAlg.h>
 
 #include <algorithm>
-#include <cassert>
 #include <iostream>
 #include <limits>
 #include <numeric>

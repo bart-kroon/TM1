@@ -37,6 +37,8 @@
 #include <TMIV/ViewingSpace/SignedDistance.h>
 
 #define VERBOSE
+
+#include <cassert>
 #include <fstream>
 #include <iostream>
 
@@ -83,8 +85,8 @@ static auto blend(const std::optional<DirectionConstraint> &ao,
   }
   const auto &a = ao.value_or(DirectionConstraint());
   const auto &b = bo.value_or(DirectionConstraint());
-  assert(s >= 0.F && s <= 1.F);
 
+  assert(s >= 0.F && s <= 1.F);
   const float sa = 1.F - s;
   const float sb = s;
 

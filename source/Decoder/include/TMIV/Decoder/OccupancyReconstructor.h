@@ -34,15 +34,7 @@
 #ifndef _TMIV_DECODER_OCCUPANCYRECONSTRUCTOR_H_
 #define _TMIV_DECODER_OCCUPANCYRECONSTRUCTOR_H_
 
-#include <TMIV/Common/Frame.h>
-#include <TMIV/Common/Json.h>
 #include <TMIV/MivBitstream/AccessUnit.h>
-
-#include <algorithm>
-#include <cassert>
-#include <iostream>
-#include <numeric>
-#include <vector>
 
 namespace TMIV::Decoder {
 class OccupancyReconstructor {

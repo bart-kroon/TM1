@@ -35,8 +35,6 @@
 
 #include <TMIV/Common/Common.h>
 
-#include <cassert>
-
 namespace TMIV::Common {
 namespace {
 template <class TO, class FROM> auto yuv420p_impl(const Frame<FROM> &frame) -> Frame<TO> {

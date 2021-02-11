@@ -35,7 +35,6 @@
 #error "Include the .h instead of the .hpp."
 #endif
 
-#include <cassert>
 #include <iomanip>
 #include <iostream>
 #include <optional>

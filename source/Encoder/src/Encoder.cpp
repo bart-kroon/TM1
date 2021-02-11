@@ -37,7 +37,6 @@
 
 #include <TMIV/GeometryQuantizer/ExplicitOccupancy.h>
 
-#include <cassert>
 #include <iostream>
 
 // Encoder sub-component interfaces

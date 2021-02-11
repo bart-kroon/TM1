@@ -38,12 +38,6 @@
 #include <TMIV/Common/Json.h>
 #include <TMIV/MivBitstream/AccessUnit.h>
 
-#include <algorithm>
-#include <cassert>
-#include <iostream>
-#include <numeric>
-#include <vector>
-
 namespace TMIV::Decoder {
 class GeometryScaler {
 public:

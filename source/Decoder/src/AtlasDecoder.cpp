@@ -37,7 +37,6 @@
 
 #include "NalUnitSemantics.h"
 
-#include <cassert>
 #include <iostream>
 #include <sstream>
 #include <utility>

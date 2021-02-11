@@ -35,6 +35,8 @@
 
 #include <TMIV/Common/LinAlg.h>
 
+#include <cassert>
+
 namespace TMIV::ViewingSpace {
 // Based on https://www.iquilezles.org/www/articles/distfunctions/distfunctions.htm
 auto signedDistance(const MivBitstream::Cuboid &cuboid, const Common::QuatF &rotation,

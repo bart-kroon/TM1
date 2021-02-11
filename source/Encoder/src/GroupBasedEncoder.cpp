@@ -34,7 +34,6 @@
 #include <TMIV/Encoder/GroupBasedEncoder.h>
 
 #include <algorithm>
-#include <cassert>
 #include <iostream>
 
 namespace TMIV::Encoder {

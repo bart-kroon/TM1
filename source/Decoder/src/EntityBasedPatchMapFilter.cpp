@@ -33,7 +33,6 @@
 
 #include <TMIV/Decoder/EntityBasedPatchMapFilter.h>
 
-#include <cassert>
 #include <iostream>
 
 namespace TMIV::Decoder {

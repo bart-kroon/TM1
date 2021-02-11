@@ -36,6 +36,7 @@
 
 #include "blend.h"
 #include <TMIV/Common/LinAlg.h>
+
 #include <cassert>
 #include <cmath>
 #include <tuple>

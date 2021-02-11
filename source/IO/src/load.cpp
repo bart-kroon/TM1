@@ -100,9 +100,7 @@ auto loadSourceDepth_(int bits, const std::filesystem::path &path, std::int32_t 
   std::transform(std::begin(depth.getPlane(0)), std::end(depth.getPlane(0)),
                  std::begin(depth16.getPlane(0)), [bits](unsigned x) {
                    const auto x_max = Common::maxLevel(bits);
-                   assert(0 <= x && x <= x_max);
                    const auto y = (0xFFFF * x + x_max / 2) / x_max;
-                   assert(0 <= y && y <= UINT16_MAX);
                    return static_cast<uint16_t>(y);
                  });
 
@@ -249,9 +247,7 @@ auto loadMpiTransparencyMpiLayer(const Common::Json &config, const Placeholders 
   std::transform(std::begin(transparency.getPlane(0)), std::end(transparency.getPlane(0)),
                  std::begin(transparency10.getPlane(0)), [](unsigned x) {
                    const auto x_max = 255U;
-                   assert(0 <= x && x <= x_max);
                    const auto y = (0x03FF * x + x_max / 2) / x_max;
-                   assert(0 <= y && y <= 1023U);
                    return static_cast<uint16_t>(y);
                  });
 

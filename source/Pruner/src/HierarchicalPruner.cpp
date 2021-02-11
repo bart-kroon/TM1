@@ -41,7 +41,6 @@
 #include <TMIV/Renderer/reprojectPoints.h>
 
 #include <algorithm>
-#include <cassert>
 #include <cmath>
 #include <future>
 #include <iomanip>

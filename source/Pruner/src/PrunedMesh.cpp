@@ -36,8 +36,6 @@
 #include <TMIV/MivBitstream/DepthOccupancyTransform.h>
 #include <TMIV/Renderer/reprojectPoints.h>
 
-#include <cassert>
-
 namespace TMIV::Pruner {
 auto unprojectPrunedView(const Common::TextureDepth16Frame &view,
                          const MivBitstream::ViewParams &viewParams,

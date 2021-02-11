@@ -38,6 +38,7 @@
 #include "blend.h"
 #include <TMIV/Common/Common.h>
 
+#include <cassert>
 #include <cmath>
 #include <future>
 #include <thread>

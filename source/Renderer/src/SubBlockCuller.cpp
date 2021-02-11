@@ -35,7 +35,6 @@
 
 #include <TMIV/Common/Factory.h>
 #include <TMIV/MivBitstream/DepthOccupancyTransform.h>
-#include <cassert>
 #include <iostream>
 
 #include "TMIV/Renderer/Engine.h"

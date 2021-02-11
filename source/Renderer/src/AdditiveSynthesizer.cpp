@@ -39,7 +39,6 @@
 #include <TMIV/Renderer/Rasterizer.h>
 #include <TMIV/Renderer/reprojectPoints.h>
 
-#include <cassert>
 #include <cmath>
 #include <future>
 #include <numeric>
@@ -98,14 +97,11 @@ public:
         }
 
         // Look up metadata
-        assert(patchId < atlas.patchParamsList.size());
         const auto &patch = atlas.patchParamsList[patchId];
-        assert(patch.atlasPatchProjectionId() < frame.viewParamsList.size());
         const auto &viewParams = frame.viewParamsList[patch.atlasPatchProjectionId()];
 
         // Look up depth value and affine parameters
         const auto uv = Common::Vec2f(patch.atlasToView({j_atlas, i_atlas}));
-        assert(atlas.geoFrame.getSize() == atlas.frameSize());
         auto level = atlas.geoFrame.getPlane(0)(i_atlas, j_atlas);
 
         const auto occupancyTransform = MivBitstream::OccupancyTransform{viewParams, patch};
@@ -115,7 +111,6 @@ public:
         }
 
         const auto d = depthTransform[patchId].expandDepth(level);
-        assert(d > 0.F && std::isfinite(d));
 
         // Reproject and calculate ray angle
         const auto &R_t = transformList[patch.atlasPatchProjectionId()];

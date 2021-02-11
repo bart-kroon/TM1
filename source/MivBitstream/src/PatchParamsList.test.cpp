@@ -457,11 +457,14 @@ TEST_CASE("TMIV::MivBitstream::PatchParams") {
       const auto x = GENERATE(13, 78);
       const auto y = GENERATE(16, 17);
       CAPTURE(x, y);
-      const auto actual = unit.atlasToView({x, y});
-      const auto reference = direct::atlasToView(unit, {x, y});
-      REQUIRE(actual == reference);
 
-      SECTION("Level of Detail") {
+      SECTION("Full level of detail") {
+        const auto actual = unit.atlasToView({x, y});
+        const auto reference = direct::atlasToView(unit, {x, y});
+        REQUIRE(actual == reference);
+      }
+
+      SECTION("Reduced level of detail") {
         unit.atlasPatchLoDScaleX(2).atlasPatchLoDScaleY(3);
         const auto actual = unit.atlasToView({x, y});
         const auto reference = direct::atlasToView(unit, {x, y});

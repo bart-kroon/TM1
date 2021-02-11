@@ -317,13 +317,13 @@ auto loadViewportMetadata(const Common::Json &config, const Placeholders &placeh
                                fmt::format(config.require(inputPoseTracePathFmt).as<std::string>(),
                                            placeholders.numberOfInputFrames, placeholders.contentId,
                                            placeholders.testId, cameraName);
-    std::ifstream stream{poseTracePath};
-    if (!stream.good()) {
+    std::ifstream stream2{poseTracePath};
+    if (!stream2.good()) {
       throw std::runtime_error(
           fmt::format("Failed to load pose trace file from {}", poseTracePath));
     }
 
-    const auto pose = loadPoseFromCSV(stream, frameIndex);
+    const auto pose = loadPoseFromCSV(stream2, frameIndex);
 
     result.ce.position(result.ce.position() + pose.position);
     result.ce.rotation(euler2quat(Common::radperdeg * pose.rotation));

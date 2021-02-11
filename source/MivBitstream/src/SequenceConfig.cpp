@@ -139,11 +139,13 @@ SequenceConfig::SequenceConfig(const Common::Json &config) {
     sourceCameraNames = node.asVector<std::string>();
   }
 
-  const auto &node = config.require("cameras").as<Common::Json::Array>();
+  {
+    const auto &node = config.require("cameras").as<Common::Json::Array>();
 
-  cameras.resize(node.size());
-  std::transform(node.cbegin(), node.cend(), cameras.begin(),
-                 [](const Common::Json &node) { return CameraConfig{node}; });
+    cameras.resize(node.size());
+    std::transform(node.cbegin(), node.cend(), cameras.begin(),
+                   [](const Common::Json &node) { return CameraConfig{node}; });
+  }
 
   if (sourceCameraNames.empty()) {
     const auto pattern = std::regex{"v[0-9]+"};

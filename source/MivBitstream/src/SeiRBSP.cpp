@@ -165,8 +165,8 @@ void SeiMessage::encodeTo(std::ostream &stream) const {
 SeiRBSP::SeiRBSP(std::vector<SeiMessage> messages) : m_messages{std::move(messages)} {}
 
 auto operator<<(std::ostream &stream, const SeiRBSP &x) -> std::ostream & {
-  for (const auto &x : x.messages()) {
-    stream << x;
+  for (const auto &y : x.messages()) {
+    stream << y;
   }
   return stream;
 }

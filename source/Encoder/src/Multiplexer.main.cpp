@@ -229,8 +229,8 @@ private:
       std::cout << '\n' << ssvu;
 
       // Print the V3C unit header (for fun, why not)
-      std::istringstream stream{unit};
-      const auto vuh = MivBitstream::V3cUnitHeader::decodeFrom(stream);
+      std::istringstream stream2{unit};
+      const auto vuh = MivBitstream::V3cUnitHeader::decodeFrom(stream2);
       std::cout << vuh;
     }
   }

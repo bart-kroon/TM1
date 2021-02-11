@@ -47,6 +47,13 @@ using TMIV::Common::runtimeError;
 using TMIV::Common::V3cBitstreamError;
 using TMIV::Common::v3cBitstreamError;
 
+// NOTE(BK): We know that there are non-returning function calls in below test case, but we want to
+// test if exceptions of the right type are thrown using REQUIRE_THROWS_AS. Disabling C4702 for the
+// remainder of this translation unit.
+#if _MSC_VER
+#pragma warning(disable : 4702)
+#endif
+
 TEST_CASE("Verify Macros") {
   SECTION("Pass on true conditions") {
     REQUIRE_NOTHROW(VERIFY(true));

@@ -83,7 +83,6 @@ Packer::Packer(const Common::Json &rootNode, const Common::Json &componentNode) 
     break;
   default:
     throw std::runtime_error(fmt::format("Sorting method {} is not available", sortingMethod));
-    break;
   }
   m_enableRecursiveSplit = componentNode.require("enableRecursiveSplit").as<bool>();
 

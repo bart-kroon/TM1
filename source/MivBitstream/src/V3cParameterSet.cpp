@@ -1311,6 +1311,7 @@ auto V3cParameterSet::operator==(const V3cParameterSet &other) const -> bool {
   if (profile_tier_level() != other.profile_tier_level() ||
       vps_v3c_parameter_set_id() != other.vps_v3c_parameter_set_id() ||
       vps_atlas_count_minus1() != other.vps_atlas_count_minus1() ||
+      vps_packing_information_present_flag() != other.vps_packing_information_present_flag() ||
       vps_extension_present_flag() != other.vps_extension_present_flag() ||
       vps_miv_extension_present_flag() != other.vps_miv_extension_present_flag() ||
       vps_extension_6bits() != other.vps_extension_6bits()) {
@@ -1343,8 +1344,7 @@ auto V3cParameterSet::operator==(const V3cParameterSet &other) const -> bool {
       return false;
     }
   }
-  if (vps_packing_information_present_flag() != other.vps_packing_information_present_flag()) {
-    return false;
+  if (vps_packing_information_present_flag()) {
     for (size_t k = 0; k <= vps_atlas_count_minus1(); ++k) {
       const auto j = vps_atlas_id(k);
       if (vps_packed_video_present_flag(j) != other.vps_packed_video_present_flag(j)) {

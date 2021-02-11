@@ -956,11 +956,7 @@ private:
                                             const ProjectionHelper &targetHelper) {
     // TODO(BS): use all to enable multiple inpainted views
     const auto viewIdInpainted = *m_inpaintedViews.begin();
-
     const auto &backgroundDepth = m_viewportDepth[viewIdInpainted];
-    const auto W = static_cast<int>(backgroundDepth.width());
-    const auto H = static_cast<int>(backgroundDepth.height());
-
     const auto z = backgroundDepth(y, x);
 
     if (isValidDepth(z)) {
@@ -971,10 +967,13 @@ private:
       const auto [uvBg, zBg] = sourceHelperList[viewIdInpainted].doProjection(P);
 
       // nearest neighbour fetching of low-res inpainted image
+      assert(viewIdInpainted < m_sourceColor.size());
+      auto &sourceColor = m_sourceColor[viewIdInpainted];
+      const auto W = static_cast<int>(sourceColor.width());
+      const auto H = static_cast<int>(sourceColor.height());
       const auto j = std::clamp(int(round(uvBg.x())), 0, W - 1);
       const auto i = std::clamp(int(round(uvBg.y())), 0, H - 1);
-      const auto inpaintedBackgroundColor = m_sourceColor[viewIdInpainted](i, j);
-      m_viewportColor(y, x) = inpaintedBackgroundColor;
+      m_viewportColor(y, x) = sourceColor(i, j);
     }
     m_viewportVisibility(y, x) = z;
   }

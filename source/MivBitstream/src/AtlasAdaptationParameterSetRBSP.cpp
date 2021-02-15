@@ -54,55 +54,6 @@ void AapsVpccExtension::encodeTo(Common::OutputBitstream &bitstream) {
   bitstream.putFlag(aaps_vpcc_camera_parameters_present_flag);
 }
 
-auto AapsMivExtension::vui_parameters() const -> const VuiParameters & {
-  VERIFY_MIVBITSTREAM(aame_vui_params_present_flag());
-  VERIFY_MIVBITSTREAM(m_vui_parameters.has_value());
-  return *m_vui_parameters;
-}
-
-auto AapsMivExtension::vui_parameters(const VuiParameters &value) noexcept -> AapsMivExtension & {
-  PRECONDITION(aame_vui_params_present_flag());
-  m_vui_parameters = value;
-  return *this;
-}
-
-auto operator<<(std::ostream &stream, const AapsMivExtension &x) -> std::ostream & {
-  stream << "aame_omaf_v1_compatible_flag=" << std::boolalpha << x.aame_omaf_v1_compatible_flag()
-         << '\n';
-  stream << "aame_vui_params_present_flag=" << std::boolalpha << x.aame_vui_params_present_flag()
-         << '\n';
-  if (x.aame_vui_params_present_flag()) {
-    stream << x.vui_parameters();
-  }
-  return stream;
-}
-
-auto AapsMivExtension::operator==(const AapsMivExtension &other) const noexcept -> bool {
-  return aame_omaf_v1_compatible_flag() == other.aame_omaf_v1_compatible_flag();
-}
-
-auto AapsMivExtension::operator!=(const AapsMivExtension &other) const noexcept -> bool {
-  return !operator==(other);
-}
-
-auto AapsMivExtension::decodeFrom(Common::InputBitstream &bitstream) -> AapsMivExtension {
-  auto x = AapsMivExtension{};
-  x.aame_omaf_v1_compatible_flag(bitstream.getFlag());
-  x.aame_vui_params_present_flag(bitstream.getFlag());
-  if (x.aame_vui_params_present_flag()) {
-    x.vui_parameters(VuiParameters::decodeFrom(bitstream, nullptr));
-  }
-  return x;
-}
-
-void AapsMivExtension::encodeTo(Common::OutputBitstream &bitstream) const {
-  bitstream.putFlag(aame_omaf_v1_compatible_flag());
-  bitstream.putFlag(aame_vui_params_present_flag());
-  if (aame_vui_params_present_flag()) {
-    vui_parameters().encodeTo(bitstream, nullptr);
-  }
-}
-
 auto AtlasAdaptationParameterSetRBSP::aaps_log2_max_atlas_frame_order_cnt_lsb_minus4() const
     -> uint8_t {
   VERIFY_V3CBITSTREAM(aaps_log2_max_afoc_present_flag());

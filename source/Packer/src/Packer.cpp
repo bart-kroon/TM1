@@ -32,6 +32,7 @@
  */
 
 #include <TMIV/Packer/Packer.h>
+#include <TMIV/Packer/Retriever.h>
 
 #include "MaxRectPiP.h"
 
@@ -261,8 +262,8 @@ auto Packer::computeClusters(const Common::MaskList &masks,
         Common::Mask mask = m_aggregatedEntityMasks[entityId - m_entityEncodeRange[0]][viewId];
 
         auto clusteringOutput =
-            Cluster::retrieve(viewId, mask, static_cast<int>(clusterList.size()),
-                              viewParamsList[viewId].isBasicView, m_enableMerging);
+            retrieveClusters(viewId, mask, static_cast<int>(clusterList.size()),
+                             viewParamsList[viewId].isBasicView, m_enableMerging);
 
         for (auto &cluster : clusteringOutput.first) {
           cluster = Cluster::setEntityId(cluster, entityId);
@@ -284,8 +285,8 @@ auto Packer::computeClusters(const Common::MaskList &masks,
       }
     } else {
       auto clusteringOutput =
-          Cluster::retrieve(viewId, masks[viewId], static_cast<int>(clusterList.size()),
-                            viewParamsList[viewId].isBasicView, m_enableMerging);
+          retrieveClusters(viewId, masks[viewId], static_cast<int>(clusterList.size()),
+                           viewParamsList[viewId].isBasicView, m_enableMerging);
 
       std::move(clusteringOutput.first.begin(), clusteringOutput.first.end(),
                 back_inserter(clusterList));

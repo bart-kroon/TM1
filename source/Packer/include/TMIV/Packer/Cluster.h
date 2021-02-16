@@ -73,6 +73,7 @@ public:
   [[nodiscard]] auto split(const ClusteringMap &clusteringMap, int overlap) const
       -> std::pair<Cluster, Cluster>;
   [[nodiscard]] constexpr auto isBasicView() const noexcept { return m_isBasicView; }
+  auto numActivePixels() -> int & { return numActivePixels_; }
 
   void recursiveSplit(const ClusteringMap &clusteringMap, std::vector<Cluster> &out, int alignment,
                       int minPatchSize) const;
@@ -88,9 +89,6 @@ public:
   static auto setEntityId(Cluster &c, int entityId) -> Cluster;
   static auto align(const Cluster &c, int alignment) -> Cluster;
   static auto merge(const Cluster &c1, const Cluster &c2) -> Cluster;
-  static auto retrieve(int viewId, const Common::Mask &maskMap, int firstClusterId,
-                       bool isBasicView, bool enableMerging)
-      -> std::pair<ClusterList, ClusteringMap>;
 
 private:
   auto splitLPatchVertically(const ClusteringMap &clusteringMap, std::vector<Cluster> &out,

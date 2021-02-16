@@ -46,16 +46,16 @@ MivDecoder::MivDecoder(V3cUnitSource source) : m_inputBuffer{std::move(source)} 
 
 MivDecoder::~MivDecoder() {
   if (m_totalOccVideoDecodingTime > 0.) {
-    std::cout << "Total ocupancy video sub bitstream decoding time: " << m_totalOccVideoDecodingTime
-              << " s\n";
+    fmt::print("Total ocupancy video sub bitstream decoding time: {} s\n",
+               m_totalOccVideoDecodingTime);
   }
   if (m_totalGeoVideoDecodingTime > 0.) {
-    std::cout << "Total geometry video sub bitstream decoding time: " << m_totalGeoVideoDecodingTime
-              << " s\n";
+    fmt::print("Total geometry video sub bitstream decoding time: {} s\n",
+               m_totalGeoVideoDecodingTime);
   }
   if (m_totalAttrVideoDecodingTime > 0.) {
-    std::cout << "Total attribute video sub bitstream decoding time: "
-              << m_totalAttrVideoDecodingTime << " s\n";
+    fmt::print("Total attribute video sub bitstream decoding time: {} s\n",
+               m_totalAttrVideoDecodingTime);
   }
 }
 
@@ -521,49 +521,43 @@ void MivDecoder::summarizeVps() const {
   const auto &vps = m_au.vps;
   const auto &ptl = vps.profile_tier_level();
 
-  std::cout << "V3C parameter set " << int{vps.vps_v3c_parameter_set_id()} << ":\n";
-  std::cout << "  Tier " << static_cast<int>(ptl.ptl_tier_flag()) << ", " << ptl.ptl_level_idc()
-            << ", codec group " << ptl.ptl_profile_codec_group_idc() << ", toolset "
-            << ptl.ptl_profile_toolset_idc() << ", recon " << ptl.ptl_profile_reconstruction_idc()
-            << ", decodes " << ptl.ptl_max_decodes_idc() << '\n';
+  fmt::print("V3C parameter set {}:\n", vps.vps_v3c_parameter_set_id());
+  fmt::print("  Tier {}, {}, codec group {}, toolset {}, recon {}, decodes {}\n",
+             ptl.ptl_tier_flag(), ptl.ptl_level_idc(), ptl.ptl_profile_codec_group_idc(),
+             ptl.ptl_profile_toolset_idc(), ptl.ptl_profile_reconstruction_idc(),
+             ptl.ptl_max_decodes_idc());
   for (size_t k = 0; k <= vps.vps_atlas_count_minus1(); ++k) {
     const auto j = vps.vps_atlas_id(k);
-    std::cout << "  Atlas " << j << ": " << vps.vps_frame_width(j) << " x "
-              << vps.vps_frame_height(j);
+    fmt::print("  Atlas {}: {} x {}", j, vps.vps_frame_width(j), vps.vps_frame_height(j));
     if (vps.vps_occupancy_video_present_flag(j)) {
       const auto &oi = vps.occupancy_information(j);
-      std::cout << "; [OI: codec " << int{oi.oi_occupancy_codec_id()} << ", "
-                << int{oi.oi_lossy_occupancy_compression_threshold()} << ", 2D "
-                << (oi.oi_occupancy_2d_bit_depth_minus1() + 1) << ", align " << std::boolalpha
-                << oi.oi_occupancy_MSB_align_flag() << ']';
+      fmt::print("; [OI: codec {}, {}, 2D {}, align {}]", oi.oi_occupancy_codec_id(),
+                 oi.oi_lossy_occupancy_compression_threshold(),
+                 oi.oi_occupancy_2d_bit_depth_minus1() + 1, oi.oi_occupancy_MSB_align_flag());
     }
     if (vps.vps_geometry_video_present_flag(j)) {
       const auto &gi = vps.geometry_information(j);
-      std::cout << "; [GI: codec " << int{gi.gi_geometry_codec_id()} << ", 2D "
-                << (gi.gi_geometry_2d_bit_depth_minus1() + 1) << ", align " << std::boolalpha
-                << gi.gi_geometry_MSB_align_flag() << ", 3D "
-                << (gi.gi_geometry_3d_coordinates_bit_depth_minus1() + 1) << ']';
+      fmt::print("; [GI: codec {}, 2D {}, algin {}, 3D {}]", gi.gi_geometry_codec_id(),
+                 gi.gi_geometry_2d_bit_depth_minus1() + 1, gi.gi_geometry_MSB_align_flag(),
+                 gi.gi_geometry_3d_coordinates_bit_depth_minus1() + 1);
     }
     if (vps.vps_attribute_video_present_flag(j)) {
       const auto &ai = vps.attribute_information(j);
-      std::cout << "; [AI: " << int{ai.ai_attribute_count()};
+      fmt::print("; [AI: {}", ai.ai_attribute_count());
       for (uint8_t i = 0; i < ai.ai_attribute_count(); ++i) {
-        std::cout << ", " << ai.ai_attribute_type_id(i) << ", codec "
-                  << int{ai.ai_attribute_codec_id(i)} << ", dims "
-                  << (ai.ai_attribute_dimension_minus1(i) + 1) << ", 2D "
-                  << (ai.ai_attribute_2d_bit_depth_minus1(i) + 1) << ", align " << std::boolalpha
-                  << ai.ai_attribute_MSB_align_flag(i);
+        fmt::print(", {}, codec {}, dims {}, 2D {}, align {}", ai.ai_attribute_type_id(i),
+                   ai.ai_attribute_codec_id(i), ai.ai_attribute_dimension_minus1(i) + 1,
+                   ai.ai_attribute_2d_bit_depth_minus1(i) + 1, ai.ai_attribute_MSB_align_flag(i));
         if (i + 1 == ai.ai_attribute_count()) {
-          std::cout << "]";
+          fmt::print("]");
         }
       }
     }
-    std::cout << '\n';
+    fmt::print("\n");
   }
   const auto &vme = vps.vps_miv_extension();
-  std::cout << ", geometry scaling " << std::boolalpha << vme.vme_geometry_scale_enabled_flag()
-            << ", groups " << vme.group_mapping().gm_group_count() << ", embedded occupancy "
-            << std::boolalpha << vme.vme_embedded_occupancy_enabled_flag() << ", occupancy scaling "
-            << vme.vme_occupancy_scale_enabled_flag() << '\n';
+  fmt::print(", geometry scaling {}, groups {}, embedded occupancy {}, occupancy scaling {}\n",
+             vme.vme_geometry_scale_enabled_flag(), vme.group_mapping().gm_group_count(),
+             vme.vme_embedded_occupancy_enabled_flag(), vme.vme_occupancy_scale_enabled_flag());
 }
 } // namespace TMIV::Decoder

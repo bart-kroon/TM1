@@ -45,6 +45,9 @@ MultipleFrameRenderer::MultipleFrameRenderer(const Common::Json &rootNode,
     , m_outputPoseTraceNames{outputPoseTraceNames}
     , m_placeholders{std::move(placeholders)} {
   if (!m_outputCameraNames.empty() || !m_outputPoseTraceNames.empty()) {
+    if (!rootNode.optional("RendererMethod")) {
+      throw std::runtime_error("The configuration does not support rendering viewports");
+    }
     m_culler = Common::create<ICuller>("Culler"s, rootNode, rootNode);
     m_renderer = Common::create<IRenderer>("Renderer"s, rootNode, rootNode);
   }

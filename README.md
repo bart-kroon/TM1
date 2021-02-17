@@ -7,9 +7,22 @@ Test Model for MPEG Immersive Video (TMIV)
 1. [Introduction](#introduction)
 1. [Scope](#scope)
 1. [Build and installation instructions](#build-and-installation-instructions)
+   1. [Prerequisites to follow this instruction](#prerequisites-to-follow-this-instruction)
+   1. [Obtain a version of TMIV](#obtain-a-version-of-tmiv)
+   1. [Preparing for TMIV build on a machine without internet connection](#preparing-for-tmiv-build-on-a-machine-without-internet-connection)
+   1. [Building and installing TMIV](#building-and-installing-tmiv)
+   1. [Installation result](#installation-result)
 1. [Running the software tests](#running-the-software-tests)
+   1. [Unit tests](#unit-tests)
+   1. [Integration tests](#integration-tests)
 1. [Instructions to run TMIV](#instructions-to-run-tmiv)
+   1. [Instructions for CTC conditions](#instructions-for-ctc-conditions)
+   1. [Instructions for in-band HEVC video coding with HM](#instructions-for-in-band-hevc-video-coding-with-hm)
+   1. [Instructions for multiplane image coding](#instructions-for-multiplane-image-coding)
 1. [Overview of TMIV configuration files](#overview-of-tmiv-configuration-files)
+   1. [Basic structure of the TMIV configuration files](#basic-structure-of-the-tmiv-configuration-files)
+   1. [Input/output parameters](#inputoutput-parameters)
+   1. [Algorithmic parameters](#algorithmic-parameters)
 1. [Instruction to use TMIV as a library](#instruction-to-use-tmiv-as-a-library)
 1. [Structure of the test model](#structure-of-the-test-model)
 1. [Contributing to the test model](#contributing-to-the-test-model)
@@ -251,7 +264,7 @@ Use the following steps to encode a bitstream and render a viewport:
 * Best reference:
   1. Run the TMIV renderer to render a viewport
 
-## Running the TMIV encoder
+### Running the TMIV encoder
 
 For this example, we will be using the MIV anchor [A_1_TMIV_encode.json](/config/ctc/miv_anchor/A_1_TMIV_encode.json) configuration and [A.json](/config/ctc/sequences/A.json) sequence configuration.
 
@@ -294,7 +307,7 @@ In this example the following files will be produced:
 /Experiment/A97/A/TMIV_A97_A_tex_c01_4096x2176_yuv420p10le.yuv
 ```
 
-## Running the VVenC encoder
+### Running the VVenC encoder
 
 As TMIV is agnostic to the 2D video codec, you can use a codec of your choice in out-of-band video coding.
 The CTC provide configurations VVenC and VVdeC, so we describe their usage here.
@@ -329,7 +342,7 @@ In this example the following files will be produced after four invocations:
 /Experiment/A97/A/QP3/TMIV_A97_A_QP3_tex_c01.bit
 ```
 
-## Running the VVdeC decoder
+### Running the VVdeC decoder
 
 After VVenC encoding, run VVdeC on **all** resulting YUV files.
 Per default, executable `vvdecapp` is available in the TMIV installation directory.
@@ -355,7 +368,7 @@ In this example the following files will be produced after four invocations:
 /Experiment/A97/A/QP3/TMIV_A97_A_QP3_tex_c01_4096x2176_yuv420p10le.yuv
 ```
 
-## Out-of-band TMIV decoding
+### TMIV decoding (with out-of-band video)
 
 For out-of-band decoding, the TMIV decoder requires the TMIV encoded bitstream and the decoded YUV files.
 Invoke the decoder with the following arguments:
@@ -366,6 +379,7 @@ Invoke the decoder with the following arguments:
 1. Choose as `inputTextureVideoFramePathFmt` a path representing the texture bitstreams
 1. Choose an output directory, in this example again `/Experiment` is used to have the viewport videos next to the VVC bitstreams.
 1. Define render targets, if any. (The decoder can also produce other outputs such as multiview reconstruction or block to patch maps.)
+    * Do not define any render targets for the MIV DSDE anchor.
     * The view name (`-v` argument) may be used multiple times to reconstruct source views and interpolate intermediate views.
     * The pose trace name (`-P` argument) may be used multiple times to render pose trace videos.
     * Rendering tasks are run _sequentially_.
@@ -399,9 +413,64 @@ In this example the following files will be produced:
 /Experiment/A97/A/QP3/A97_A_QP3_v11_tex_4096x2048_yuv420p10le.yuv
 ```
 
-## In-band HEVC video coding with HM
+### Running the TMIV renderer
 
-This is not part of the CTC, but of TMIV's `test` configurations.
+The TMIV renderer was added to support the MIV decoder-side depth estimating anchor. The application has similar input to the TMIV encoder (input views and camera parameters) and similar output to the TMIV decoder (rendered viewport).
+
+For this example, we will be using the best reference [R_1_TMIV_render.json](/config/ctc/best_reference/R_1_TMIV_render.json) configuration and [A.json](/config/ctc/sequences/A.json) sequence configuration.
+
+1. Place the color and depth videos [[5]](#references) in a folder arbitrarily named `/Content` in this description.
+1. Choose an output directory, arbitrarily called `/Experiment` in this description. The directory will be created when it does not yet exist.
+1. Define render targets (having none is allowed but not that useful):
+   * The view name (`-v` argument) may be used multiple times to reconstruct source views and interpolate intermediate views.
+   * The pose trace name (`-P` argument) may be used multiple times to render pose trace videos.
+   * Rendering tasks are run _sequentially_. It is adviced to run multiple processes in parallel to speed up anchor generation.
+1. Specify the number of input frames (`-n` argument), e.g. 97.
+1. Specify the number of output frames (`-N` argument), e.g. 300:
+   * For views the actual number of output frames is never more than the number of input frames,
+   * For pose traces the input frames are mirrored and the number of output frames can exceed the number of input frames.
+1. Finally, assuming that you have built and installed the renderer application, you can start it from the command line:
+
+```shell
+/Workspace/tmiv_install/bin/Renderer -n 97 -N 300 -s A -r R0 -v v11 -P p02 \
+    -c /Workspace/tmiv/config/ctc/best_reference/R_1_TMIV_render.json \
+    -p configDirectory /Workspace/tmiv/config \
+    -p inputDirectory /Content \
+    -p outputDirectory /Experiment
+```
+
+When the same parameter is provided multiple times on the command-line, through `-c` or `-p`, then the right-most argument has precedence.
+
+This will in general result in the following files under the `outputDirectory`:
+
+* Rendered viewport videos based on `outputViewportGeometryPathFmt` and/or `outputViewportTexturePathFmt`.
+
+In this example the following files will be produced:
+
+```
+/Experiment/R97/A/R0/R97_A_R0_p02_tex_2048x2048_yuv420p10le.yuv
+/Experiment/R97/A/R0/R97_A_R0_v11_tex_4096x2048_yuv420p10le.yuv
+```
+
+Note that when running the TMIV renderer to generate the MIV decoder-side depth estimating anchor, the command line to use for reconstructing a source view should be:
+
+```shell
+/Workspace/tmiv_install/bin/Renderer -n 17 -N 17 -s A -r QP1 -v v11 \
+    -c /Workspace/tmiv/config/ctc/miv_dsde_anchor/G_6_TMIV_render.json \
+    -p configDirectory /Workspace/tmiv/config \
+    -p inputDirectory /Experiment \
+    -p outputDirectory /Experiment
+```
+
+This will in general result in the following files under the `outputDirectory`:
+
+```
+/Experiment/G17/A/QP1/G17_A_QP1_v11_tex_4096x2048_yuv420p10le.yuv
+```
+
+## Instructions for in-band HEVC video coding with HM
+
+The test model has the capability of muxing, demuxing and in-memory decoding of HEVC video using the HEVC Test Model (HM).
 
 ### Running the HM encoder
 
@@ -498,48 +567,7 @@ In this example the following files will be produced:
 /Experiment/V97/A/QP3/V97_A_QP3_v11_tex_4096x2048_yuv420p10le.yuv
 ```
 
-## Running the TMIV renderer
-
-The TMIV renderer was added to support the MIV decoder-side depth estimating anchor. The application has similar input to the TMIV encoder (input views and camera parameters) and similar output to the TMIV decoder (rendered viewport).
-
-For this example, we will be using the best reference [R_1_TMIV_render.json](/config/ctc/best_reference/R_1_TMIV_render.json) configuration and [A.json](/config/ctc/sequences/A.json) sequence configuration.
-
-1. Place the color and depth videos [[5]](#references) in a folder arbitrarily named `/Content` in this description.
-1. Choose an output directory, arbitrarily called `/Experiment` in this description. The directory will be created when it does not yet exist.
-1. Define render targets (having none is allowed but not that useful):
-   * The view name (`-v` argument) may be used multiple times to reconstruct source views and interpolate intermediate views.
-   * The pose trace name (`-P` argument) may be used multiple times to render pose trace videos.
-   * Rendering tasks are run _sequentially_. It is adviced to run multiple processes in parallel to speed up anchor generation.
-1. Specify the number of input frames (`-n` argument), e.g. 97.
-1. Specify the number of output frames (`-N` argument), e.g. 300:
-   * For views the actual number of output frames is never more than the number of input frames,
-   * For pose traces the input frames are mirrored and the number of output frames can exceed the number of input frames.
-1. Finally, assuming that you have built and installed the renderer application, you can start it from the command line:
-
-```shell
-/Workspace/tmiv_install/bin/Renderer -n 97 -N 300 -s A -r R0 -v v11 -P p02 \
-    -c /Workspace/tmiv/config/ctc/best_reference/R_1_TMIV_render.json \
-    -p configDirectory /Workspace/tmiv/config \
-    -p inputDirectory /Content \
-    -p outputDirectory /Experiment
-```
-
-When the same parameter is provided multiple times on the command-line, through `-c` or `-p`, then the right-most argument has precedence.
-
-This will in general result in the following files under the `outputDirectory`:
-
-* Rendered viewport videos based on `outputViewportGeometryPathFmt` and/or `outputViewportTexturePathFmt`.
-
-In this example the following files will be produced:
-
-```
-/Experiment/R97/A/R0/R97_A_R0_p02_tex_2048x2048_yuv420p10le.yuv
-/Experiment/R97/A/R0/R97_A_R0_v11_tex_4096x2048_yuv420p10le.yuv
-```
-
-## Instructions for test conditions
-
-### MPI test
+## Instructions for multiplane image coding
 
 The multi-plane image (MPI) encoder is able to encode a MPI input consisting of texture and transparency components. No geometry is needed for this test.
 The input is given as a succession of very sparse layers both for texture and transparency. In the example given in [M.json](/config/ctc/sequences/M.json), there are 423 such layers.

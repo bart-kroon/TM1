@@ -42,12 +42,10 @@ namespace TMIV::Encoder {
 // duplication in Encoder.main.cpp and MpiEncoder.main.cpp
 class IMpiEncoder {
 public:
-  using TextureMpiLayerReader = std::function<Common::TextureFrame(int, int)>;
-  using TransparencyMpiLayerReader = std::function<Common::Transparency10Frame(int, int)>;
+  using MpiPcsFrameReader = std::function<Common::MpiPcs::Frame(int)>;
 
 private:
-  TextureMpiLayerReader m_textureMpiLayerReader;
-  TransparencyMpiLayerReader m_transparencyMpiLayerReader;
+  MpiPcsFrameReader m_mpiPcsFrameReader;
 
 public:
   IMpiEncoder() = default;
@@ -56,24 +54,18 @@ public:
   auto operator=(const IMpiEncoder &) -> IMpiEncoder & = delete;
   auto operator=(IMpiEncoder &&) -> IMpiEncoder & = default;
   virtual ~IMpiEncoder() = default;
-  void setTextureMpiLayerReader(const TextureMpiLayerReader &textureMpiLayerReader) {
-    m_textureMpiLayerReader = textureMpiLayerReader;
-  }
-  void setTransparencyMpiLayerReader(const TransparencyMpiLayerReader &transparencyMpiLayerReader) {
-    m_transparencyMpiLayerReader = transparencyMpiLayerReader;
+  void setMpiPcsFrameReader(const MpiPcsFrameReader &mpiPcsFrameReader) {
+    m_mpiPcsFrameReader = mpiPcsFrameReader;
   }
   virtual void prepareSequence(MivBitstream::EncoderParams params) = 0;
   virtual auto processAccessUnit(int firstFrameId, int lastFrameId)
       -> const MivBitstream::EncoderParams & = 0;
-  virtual auto popAtlas(int frameId) -> Common::MVD10Frame = 0;
+  virtual auto popAtlas() -> Common::MVD10Frame = 0;
   [[nodiscard]] virtual auto maxLumaSamplesPerFrame() const -> std::size_t = 0;
 
 protected:
-  auto readTextureMpiLayer(int frameIndex, int mpiLayerIndex) -> Common::TextureFrame {
-    return m_textureMpiLayerReader(frameIndex, mpiLayerIndex);
-  }
-  auto readTransparencyMpiLayer(int frameIndex, int mpiLayerIndex) -> Common::Transparency10Frame {
-    return m_transparencyMpiLayerReader(frameIndex, mpiLayerIndex);
+  auto readFrame(int frameIndex) -> Common::MpiPcs::Frame {
+    return m_mpiPcsFrameReader(frameIndex);
   }
 };
 } // namespace TMIV::Encoder

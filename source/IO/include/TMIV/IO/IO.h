@@ -118,7 +118,7 @@ auto loadMpiTextureMpiLayer(const Common::Json &config, const Placeholders &plac
 
 auto loadMpiTransparencyMpiLayer(const Common::Json &config, const Placeholders &placeholders,
                                  const MivBitstream::SequenceConfig &sc, std::int32_t frameIndex,
-                                 int mpiLayerIndex, int nbMpiLayers) -> Common::Transparency10Frame;
+                                 int mpiLayerIndex, int nbMpiLayers) -> Common::Transparency8Frame;
 
 auto inputBitstreamPath(const Common::Json &config, const Placeholders &placeholders)
     -> std::filesystem::path;

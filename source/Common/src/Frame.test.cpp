@@ -272,4 +272,80 @@ TEST_CASE("Quantize texture") {
   REQUIRE(result.getPlane(1)(1, 3) == 839);
   REQUIRE(result.getPlane(2)(1, 3) == 859);
 }
+
+TEST_CASE("MpiPcs : Frame") {
+  MpiPcs::Frame unit({6, 6});
+  auto mpiLayer1 = TextureTransparency8Frame{TextureFrame{6, 6}, Transparency8Frame{6, 6}};
+  auto mpiLayer2 = TextureTransparency8Frame{TextureFrame{6, 6}, Transparency8Frame{6, 6}};
+
+  mpiLayer1.transparency.getPlane(0)(0, 2) = 255;
+  mpiLayer2.transparency.getPlane(0)(0, 2) = 255;
+  mpiLayer2.transparency.getPlane(0)(3, 4) = 255;
+  unit.appendLayer(1, mpiLayer1);
+  unit.appendLayer(2, mpiLayer2);
+
+  SECTION("construction") {
+    REQUIRE(unit(0, 2).size() == 2);
+    REQUIRE(unit(3, 4).size() == 1);
+    REQUIRE(unit.getPixelList()[1].empty());
+  }
+
+  MpiPcs::Frame unit_copy{unit};
+  SECTION("constructor from MpiPcs frame") {
+    REQUIRE(unit_copy(0, 2).size() == 2);
+    REQUIRE(unit_copy(3, 4).size() == 1);
+    REQUIRE(unit_copy.getPixelList()[1].empty());
+  }
+
+  SECTION("layer equal operator") {
+    auto mpiLayer2Reconstructed = unit.getLayer(2);
+    REQUIRE(mpiLayer2.transparency.getPlane(0) == mpiLayer2Reconstructed.transparency.getPlane(0));
+  }
+
+  SECTION("layer (not) equal operator") {
+    REQUIRE_FALSE(mpiLayer1.transparency.getPlane(0) == mpiLayer2.transparency.getPlane(0));
+  }
+
+  SECTION("Frame equal operator") {
+    MpiPcs::Frame unit_1{};
+    MpiPcs::Frame unit_2{};
+    REQUIRE(unit_1 == unit_2);
+  }
+
+  SECTION("Frame (not) equal operator") {
+    MpiPcs::Frame unit_1{};
+    REQUIRE_FALSE(unit == unit_1);
+  }
+}
+
+TEST_CASE("MpiPcs : Attribute") {
+  MpiPcs::Attribute unit{};
+  REQUIRE(unit.getGeometryAttribute() == 0);
+
+  SECTION("copy constructor") {
+    MpiPcs::Attribute attr{unit};
+    REQUIRE(unit == attr);
+  }
+
+  SECTION("equal operator") {
+    MpiPcs::Attribute attr{};
+    REQUIRE(unit == attr);
+  }
+
+  SECTION("construction from attribute") {
+    MpiPcs::Attribute::Texture t{};
+    MpiPcs::Attribute::Geometry g{};
+    MpiPcs::Attribute::Transparency a{};
+    MpiPcs::Attribute unit_1{t, g, a};
+    REQUIRE(unit_1.getTextureAttribute() == t);
+    REQUIRE(unit_1.getGeometryAttribute() == g);
+    REQUIRE(unit_1.getTransparencyAttribute() == a);
+  }
+
+  SECTION("geometry comparison") {
+    MpiPcs::Attribute unit_2{{}, MpiPcs::Attribute::Geometry{1}, {}};
+    REQUIRE(unit.getGeometryAttribute() < unit_2.getGeometryAttribute());
+  }
+}
+
 } // namespace TMIV::Common

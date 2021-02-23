@@ -50,7 +50,7 @@ create_tmiv_executable(
         "src/registerComponents.cpp"
     PRIVATE
         TMIV::EncoderLib
-        TMIV::IOLib
+        TMIV::MpiPcsLib
     )
 
 create_tmiv_executable(

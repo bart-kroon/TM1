@@ -211,10 +211,10 @@ auto loadMpiTextureMpiLayer(const Common::Json &config, const Placeholders &plac
   const auto &vp = camera.viewParams;
   const auto frameSize = vp.ci.projectionPlaneSize();
 
-  const auto path =
-      inputDir / fmt::format(node.as<std::string>(), placeholders.numberOfInputFrames,
-                             placeholders.contentId, placeholders.testId, name, frameSize.x(),
-                             frameSize.y(), camera.textureVideoFormat());
+  const auto path = inputDir / fmt::format(node.as<std::string>(), placeholders.numberOfInputFrames,
+                                           placeholders.contentId, placeholders.testId, name,
+                                           frameSize.x(), frameSize.y(), "yuv420p10le");
+
   auto texture =
       loadFrame<Common::YUV420P10>(path, frameIndex * nbMpiLayers + mpiLayerIndex, frameSize);
 
@@ -223,8 +223,7 @@ auto loadMpiTextureMpiLayer(const Common::Json &config, const Placeholders &plac
 
 auto loadMpiTransparencyMpiLayer(const Common::Json &config, const Placeholders &placeholders,
                                  const MivBitstream::SequenceConfig &sc, std::int32_t frameIndex,
-                                 int mpiLayerIndex, int nbMpiLayers)
-    -> Common::Transparency10Frame {
+                                 int mpiLayerIndex, int nbMpiLayers) -> Common::Transparency8Frame {
   const auto inputDir = config.require(inputDirectory).as<std::filesystem::path>();
   const auto &node = config.require(inputTransparencyPathFmt);
 
@@ -235,23 +234,11 @@ auto loadMpiTransparencyMpiLayer(const Common::Json &config, const Placeholders 
   const auto &vp = camera.viewParams;
   const auto frameSize = vp.ci.projectionPlaneSize();
 
-  const auto path =
-      inputDir / fmt::format(node.as<std::string>(), placeholders.numberOfInputFrames,
-                             placeholders.contentId, placeholders.testId, name, frameSize.x(),
-                             frameSize.y(), camera.transparencyVideoFormat());
+  const auto path = inputDir / fmt::format(node.as<std::string>(), placeholders.numberOfInputFrames,
+                                           placeholders.contentId, placeholders.testId, name,
+                                           frameSize.x(), frameSize.y(), "yuv420p");
 
-  auto transparency =
-      loadFrame<Common::YUV400P8>(path, frameIndex * nbMpiLayers + mpiLayerIndex, frameSize);
-
-  auto transparency10 = Common::Transparency10Frame{frameSize.x(), frameSize.y()};
-  std::transform(std::begin(transparency.getPlane(0)), std::end(transparency.getPlane(0)),
-                 std::begin(transparency10.getPlane(0)), [](unsigned x) {
-                   const auto x_max = 255U;
-                   const auto y = (0x03FF * x + x_max / 2) / x_max;
-                   return static_cast<uint16_t>(y);
-                 });
-
-  return transparency10;
+  return loadFrame<Common::YUV400P8>(path, frameIndex * nbMpiLayers + mpiLayerIndex, frameSize);
 }
 
 namespace {

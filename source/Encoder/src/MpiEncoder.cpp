@@ -40,19 +40,53 @@
 
 namespace TMIV::Encoder {
 namespace {
-auto dilateTextureAtlas(Common::TextureFrame &textureAtlas,
-                        const Common::Transparency10Frame &transparencyAtlas,
+auto createBlockToPatchMap(std::size_t k, TMIV::MivBitstream::EncoderParams &params)
+    -> Common::BlockToPatchMap {
+  const auto &asps = params.atlas[k].asps;
+  const auto &ppl = params.patchParamsList;
+
+  const auto atlasId = params.vps.vps_atlas_id(k);
+  const auto atlasBlockToPatchMapWidth = asps.asps_frame_width();
+  const auto atlasBlockToPatchMapHeight = asps.asps_frame_height();
+
+  auto btpm = Common::BlockToPatchMap{atlasBlockToPatchMapWidth, atlasBlockToPatchMapHeight};
+
+  std::fill(btpm.getPlane(0).begin(), btpm.getPlane(0).end(), Common::unusedPatchId);
+
+  for (std::size_t p = 0; p < ppl.size(); ++p) {
+    const auto &pp = ppl[p];
+
+    if (pp.atlasId == atlasId) {
+      const auto xOrg = static_cast<std::size_t>(pp.atlasPatch2dPosX());
+      const auto yOrg = static_cast<std::size_t>(pp.atlasPatch2dPosY());
+      const auto atlasPatchWidthBlk = static_cast<std::size_t>(pp.atlasPatch2dSizeX());
+      const auto atlasPatchHeightBlk = static_cast<std::size_t>(pp.atlasPatch2dSizeY());
+
+      for (std::size_t y = 0; y < atlasPatchHeightBlk; ++y) {
+        for (std::size_t x = 0; x < atlasPatchWidthBlk; ++x) {
+          if (!asps.asps_patch_precedence_order_flag() ||
+              btpm.getPlane(0)(yOrg + y, xOrg + x) == Common::unusedPatchId) {
+            btpm.getPlane(0)(yOrg + y, xOrg + x) = static_cast<std::uint16_t>(p);
+          }
+        }
+      }
+    }
+  }
+
+  return btpm;
+}
+
+auto dilateTextureAtlas(Common::Texture444Frame &textureAtlas,
+                        const Common::Transparency8Frame &transparencyAtlas,
                         unsigned textureDilation) -> Common::TextureFrame {
   const auto w = textureAtlas.getWidth();
   const auto h = textureAtlas.getHeight();
 
-  auto texturePrev = expandTexture(yuv444p(textureAtlas));
-  auto textureNext = expandTexture(yuv444p(textureAtlas));
+  auto texturePrev = expandTexture(textureAtlas);
+  auto textureNext = expandTexture(textureAtlas);
 
-  Common::Mat<float> transparencyPrev(transparencyAtlas.getPlane(0).sizes());
-  std::transform(std::begin(transparencyAtlas.getPlane(0)), std::end(transparencyAtlas.getPlane(0)),
-                 std::begin(transparencyPrev), [=](uint16_t x) { return float(x); });
-  Common::Mat<float> transparencyNext(transparencyPrev);
+  auto transparencyPrev = transparencyAtlas.getPlane(0);
+  auto transparencyNext = transparencyPrev;
 
   static const std::array<Common::Vec2i, 8> offsetList = {
       Common::Vec2i({-1, -1}), Common::Vec2i({0, -1}), Common::Vec2i({1, -1}),
@@ -63,61 +97,56 @@ auto dilateTextureAtlas(Common::TextureFrame &textureAtlas,
     std::swap(transparencyPrev, transparencyNext);
     std::swap(texturePrev, textureNext);
 
-    // TODO(FT) : use the parallel_for loop to avoid long processing due to double for loops
-    for (int row = 0; row < h; row++) {
-      for (int col = 0; col < w; col++) {
-
-        // accumulators
-        int cnt = 0;
-        Common::Vec3f yuv{};
-
-        // is candidate to promotion ?
-        if (transparencyPrev(row, col) == 0.F) {
-          // accumulation on neighbours
-          for (auto neighbour : offsetList) {
-            int x = col + neighbour.x();
-            int y = row + neighbour.y();
-            if ((0 <= x) && (x < w) && (0 <= y) && (y < h) && (0 < transparencyPrev(y, x))) {
+    Common::parallel_for(w, h, [&](std::size_t row, std::size_t col) {
+      int cnt = 0;
+      Common::Vec3f yuv{};
+      if (transparencyPrev(row, col) == 0) {
+        for (auto neighbour : offsetList) {
+          auto x = static_cast<int>(col) + neighbour.x();
+          auto y = static_cast<int>(row) + neighbour.y();
+          if ((0 <= x) && (x < w) && (0 <= y) && (y < h)) {
+            if (0 < transparencyPrev(y, x)) {
               cnt++;
               yuv += texturePrev(y, x);
             }
           }
         }
-
-        // update
-        if (0 < cnt) {
-          textureNext(row, col) = yuv / cnt;
-          transparencyNext(row, col) = 1.F;
-        } else {
-          textureNext(row, col) = texturePrev(row, col);
-          transparencyNext(row, col) = transparencyPrev(row, col);
-        }
       }
-    }
+      if (0 < cnt) {
+        textureNext(row, col) = yuv / cnt;
+        transparencyNext(row, col) = 255;
+      } else {
+        textureNext(row, col) = texturePrev(row, col);
+        transparencyNext(row, col) = transparencyPrev(row, col);
+      }
+    });
   }
 
-  // update output texture
   return yuv420p(quantizeTexture(textureNext));
 }
 
-void reshapeTransparencyAtlas(Common::Transparency10Frame &transparencyAtlas,
-                              unsigned transparencyDynamic) {
-  const auto w = transparencyAtlas.getWidth();
-  const auto h = transparencyAtlas.getHeight();
-  auto maxInputValue = (uint64_t{1} << Common::Transparency10Frame::getBitDepth()) - 1;
-  const auto maxOutputValue = (uint64_t{1} << transparencyDynamic) - 1;
+auto reshapeTransparencyAtlas(Common::Transparency8Frame &transparencyAtlas,
+                              unsigned transparencyDynamic) -> Common::Transparency10Frame {
+  const auto maxInputValue =
+      static_cast<float>((uint64_t{1} << Common::Transparency8Frame::getBitDepth()) - 1);
+  const auto maxOutputValue = static_cast<float>((uint64_t{1} << transparencyDynamic) - 1);
+  const auto maxStorageValue =
+      static_cast<float>((uint64_t{1} << Common::Transparency10Frame::getBitDepth()) - 1);
 
-  for (int row = 0U; row < h; row++) {
-    for (int col = 0; col < w; col++) {
-      auto val_in = static_cast<float>(transparencyAtlas.getPlane(0)(row, col));
-      float val_out = static_cast<float>(maxInputValue) *
-                      std::floor(val_in / static_cast<float>(maxInputValue) *
-                                     static_cast<float>(maxOutputValue) +
-                                 0.5F) /
-                      static_cast<float>(maxOutputValue);
-      transparencyAtlas.getPlane(0)(row, col) = static_cast<uint16_t>(val_out);
-    }
-  }
+  auto transparencyAtlasReshaped =
+      Common::Transparency10Frame{transparencyAtlas.getWidth(), transparencyAtlas.getHeight()};
+
+  std::transform(transparencyAtlas.getPlane(0).begin(), transparencyAtlas.getPlane(0).end(),
+                 transparencyAtlasReshaped.getPlane(0).begin(), [&](auto v) {
+                   const auto val_in = static_cast<float>(v);
+                   const float val_out =
+                       maxStorageValue *
+                       std::floor(val_in / maxInputValue * maxOutputValue + 0.5F) / maxOutputValue;
+
+                   return static_cast<uint16_t>(val_out);
+                 });
+
+  return transparencyAtlasReshaped;
 }
 } // namespace
 
@@ -212,15 +241,20 @@ auto MpiEncoder::processAccessUnit(int firstFrameId, int lastFrameId)
     aggregatedMask.fillZero();
   }
 
+  m_mpiFrameBuffer.clear();
+
   for (int frameIndex = firstFrameId; frameIndex < lastFrameId; frameIndex++) {
-    for (int mpiLayerId = 0U; mpiLayerId < mpiViewParams.nbMpiLayers; mpiLayerId++) {
-      auto transparencyMpiLayer = readTransparencyMpiLayer(frameIndex, mpiLayerId);
-      std::transform(transparencyMpiLayer.getPlane(0).begin(),
-                     transparencyMpiLayer.getPlane(0).end(),
-                     aggregatedMaskList[mpiLayerId].getPlane(0).begin(),
-                     aggregatedMaskList[mpiLayerId].getPlane(0).begin(),
-                     [](uint16_t v1, uint16_t v2) { return ((0 < v1) || (0 < v2)) ? 255 : 0; });
-    }
+    auto frame = readFrame(frameIndex);
+
+    Common::parallel_for(frame.getPixelList().size(), [&](std::size_t pixelId) {
+      const auto &pixel = frame.getPixelList()[pixelId];
+
+      for (const auto &attribute : pixel) {
+        aggregatedMaskList[attribute.getGeometryAttribute()].getPlane(0)[pixelId] = 255;
+      }
+    });
+
+    m_mpiFrameBuffer.emplace_back(std::move(frame));
   }
 
   std::cout << "Mask aggregation done" << std::endl;
@@ -250,51 +284,65 @@ auto MpiEncoder::processAccessUnit(int firstFrameId, int lastFrameId)
 
   m_params.patchParamsList = std::move(patchParamsList);
 
-  std::cout << "#####################################################" << std::endl;
-  std::cout << "Packing done" << std::endl;
-  std::cout << "    with nb of patches = " << (int)(m_params.patchParamsList.size()) << std::endl;
+  std::cout << "Packing done with nb of patches = "
+            << static_cast<int>(m_params.patchParamsList.size()) << std::endl;
+
+  m_blockToPatchMapPerAtlas.clear();
+
+  for (size_t k = 0; k <= m_params.vps.vps_atlas_count_minus1(); ++k) {
+    m_blockToPatchMapPerAtlas.emplace_back(createBlockToPatchMap(k, m_params));
+  }
+
+  std::cout << "Block to patch map created" << std::endl;
 
   return m_params;
 }
 
-auto MpiEncoder::popAtlas(int frameId) -> Common::MVD10Frame {
-  const auto &mpiViewParams = m_params.viewParamsList.front();
-  Common::Vec2i mpiSize{static_cast<int>(mpiViewParams.ci.ci_projection_plane_width_minus1()) + 1,
-                        static_cast<int>(mpiViewParams.ci.ci_projection_plane_height_minus1()) + 1};
-
+auto MpiEncoder::popAtlas() -> Common::MVD10Frame {
+  const auto &ppl = m_params.patchParamsList;
+  const auto &mpiFrame = m_mpiFrameBuffer.front();
   Common::MVD10Frame atlasList;
 
   for (size_t k = 0; k <= m_params.vps.vps_atlas_count_minus1(); ++k) {
     const auto j = m_params.vps.vps_atlas_id(k);
     const auto frameWidth = m_params.vps.vps_frame_width(j);
     const auto frameHeight = m_params.vps.vps_frame_height(j);
-    Common::TextureDepth10Frame frame = {Common::TextureFrame(frameWidth, frameHeight),
-                                         Common::Depth10Frame{}, Common::Occupancy10Frame{},
-                                         Common::Transparency10Frame{frameWidth, frameHeight}};
 
-    frame.texture.fillNeutral();
-    frame.transparency.fillZero();
+    auto textureFrame = Common::Texture444Frame{frameWidth, frameHeight};
+    auto transparencyFrame = Common::Transparency8Frame{frameWidth, frameHeight};
 
-    atlasList.push_back(std::move(frame));
-  }
+    textureFrame.fillNeutral();
+    transparencyFrame.fillZero();
 
-  for (int mpiLayerId = 0U; mpiLayerId < mpiViewParams.nbMpiLayers; mpiLayerId++) {
-    Common::TextureDepth10Frame view{readTextureMpiLayer(frameId, mpiLayerId),
-                                     Common::Occupancy10Frame{}, Common::Depth10Frame{},
-                                     readTransparencyMpiLayer(frameId, mpiLayerId)};
+    const auto &blockToPatchMap = m_blockToPatchMapPerAtlas[k];
 
-    for (const auto &patch : m_params.patchParamsList) {
-      if (static_cast<int>(patch.atlasPatch3dOffsetD()) == mpiLayerId) {
-        writePatchInAtlas(patch, view, atlasList);
+    Common::parallel_for(frameWidth, frameHeight, [&](std::size_t i, std::size_t j) {
+      if (auto patchId = blockToPatchMap.getPlane(0)(i, j); patchId != Common::unusedPatchId) {
+        const auto &patch = ppl[patchId];
+        auto posInView = patch.atlasToView({static_cast<int>(j), static_cast<int>(i)});
+
+        const auto &pixel = mpiFrame(posInView.y(), posInView.x());
+        auto layerId = static_cast<std::uint16_t>(patch.atlasPatch3dOffsetD());
+
+        auto iter = std::lower_bound(pixel.begin(), pixel.end(), layerId);
+
+        if (iter != pixel.end() && iter->getGeometryAttribute() == layerId) {
+          textureFrame.getPlane(0)(i, j) = iter->getTextureAttribute()[0];
+          textureFrame.getPlane(1)(i, j) = iter->getTextureAttribute()[1];
+          textureFrame.getPlane(2)(i, j) = iter->getTextureAttribute()[2];
+          transparencyFrame.getPlane(0)(i, j) = iter->getTransparencyAttribute();
+        }
       }
-    }
+    });
+
+    auto textureAtlas = dilateTextureAtlas(textureFrame, transparencyFrame, m_textureDilation);
+    auto transparencyAtlas = reshapeTransparencyAtlas(transparencyFrame, m_transparencyDynamic);
+
+    atlasList.emplace_back(std::move(textureAtlas), Common::Depth10Frame{},
+                           Common::Occupancy10Frame{}, std::move(transparencyAtlas));
   }
 
-  // dilation of texture + quantization of transparency
-  for (auto &atlas : atlasList) {
-    atlas.texture = dilateTextureAtlas(atlas.texture, atlas.transparency, m_textureDilation);
-    reshapeTransparencyAtlas(atlas.transparency, m_transparencyDynamic);
-  }
+  m_mpiFrameBuffer.pop_front();
 
   incrementFoc();
 
@@ -381,57 +429,6 @@ void MpiEncoder::incrementFoc() {
   }
   for (auto &atlas : m_params.atlas) {
     atlas.ath.ath_atlas_frm_order_cnt_lsb(focLsb);
-  }
-}
-
-void MpiEncoder::writePatchInAtlas(const MivBitstream::PatchParams &patchParams,
-                                   const Common::TextureDepth10Frame &view,
-                                   Common::MVD10Frame &atlas) const {
-  const auto k = m_params.vps.indexOf(patchParams.atlasId);
-  auto &currentAtlas = atlas[k];
-
-  auto &textureAtlasMap = currentAtlas.texture;
-  auto &transparencyAtlasMap = currentAtlas.transparency;
-
-  const auto &textureViewMap = view.texture;
-  const auto &transparencyViewMap = view.transparency;
-
-  const auto w = static_cast<int>(patchParams.atlasPatch3dSizeU());
-  const auto h = static_cast<int>(patchParams.atlasPatch3dSizeV());
-  const auto xM = static_cast<int>(patchParams.atlasPatch3dOffsetU());
-  const auto yM = static_cast<int>(patchParams.atlasPatch3dOffsetV());
-
-  for (int dyAligned = 0; dyAligned < h; dyAligned += m_blockSize) {
-    for (int dxAligned = 0; dxAligned < w; dxAligned += m_blockSize) {
-      for (int dy = dyAligned; dy < dyAligned + m_blockSize; dy++) {
-        for (int dx = dxAligned; dx < dxAligned + m_blockSize; dx++) {
-          Common::Vec2i pView = {xM + dx, yM + dy};
-          Common::Vec2i pAtlas = patchParams.viewToAtlas(pView);
-
-          if (pView.y() >= textureViewMap.getHeight() || pView.x() >= textureViewMap.getWidth() ||
-              pAtlas.y() >= textureAtlasMap.getHeight() ||
-              pAtlas.x() >= textureAtlasMap.getWidth() || pView.y() < 0 || pView.x() < 0 ||
-              pAtlas.y() < 0 || pAtlas.x() < 0) {
-            continue;
-          }
-
-          // Y
-          textureAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x()) =
-              textureViewMap.getPlane(0)(pView.y(), pView.x());
-          // UV
-          if ((pView.x() % 2) == 0 && (pView.y() % 2) == 0) {
-            for (int p = 1; p < 3; ++p) {
-              textureAtlasMap.getPlane(p)(pAtlas.y() / 2, pAtlas.x() / 2) =
-                  textureViewMap.getPlane(p)(pView.y() / 2, pView.x() / 2);
-            }
-          }
-
-          // Transparency
-          auto transparency = transparencyViewMap.getPlane(0)(pView.y(), pView.x());
-          transparencyAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x()) = transparency;
-        }
-      }
-    }
   }
 }
 

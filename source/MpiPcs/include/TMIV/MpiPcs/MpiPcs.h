@@ -31,61 +31,53 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_ENCODER_MPIENCODER_H_
-#define _TMIV_ENCODER_MPIENCODER_H_
+#ifndef _TMIV_IO_MPIPCS_H_
+#define _TMIV_IO_MPIPCS_H_
 
-#include <TMIV/Common/Json.h>
-#include <TMIV/Encoder/IMpiEncoder.h>
-#include <TMIV/Packer/IPacker.h>
+#include <TMIV/IO/IO.h>
 
-#include <deque>
-#include <memory>
-
-namespace TMIV::Encoder {
-class MpiEncoder : public IMpiEncoder {
+namespace TMIV::MpiPcs {
+class FileHeader {
 public:
-  static constexpr auto maxIntraPeriod = 32;
+  static void read(std::istream &stream);
+  static void write(std::ostream &stream);
 
 private:
-  // Parameters
-  int m_intraPeriod{};
-  Common::Vec2i m_blockSizeDepthQualityDependent;
-  std::vector<Common::Vec2i> m_overrideAtlasFrameSizes{};
-  unsigned m_textureDilation{};
-  unsigned m_transparencyDynamic{};
-
-  // Attributes
-  std::deque<Common::MpiPcs::Frame> m_mpiFrameBuffer;
-  std::vector<Common::BlockToPatchMap> m_blockToPatchMapPerAtlas;
-  std::unique_ptr<Packer::IPacker> m_packer;
-  int m_blockSize{};
-  std::size_t m_maxLumaSamplesPerFrame{};
-  MivBitstream::EncoderParams m_params;
-
-public:
-  MpiEncoder(const Common::Json &rootNode, const Common::Json &componentNode);
-  MpiEncoder(const MpiEncoder &) = delete;
-  MpiEncoder(MpiEncoder &&) = default;
-  auto operator=(const MpiEncoder &) -> MpiEncoder & = delete;
-  auto operator=(MpiEncoder &&) -> MpiEncoder & = default;
-  ~MpiEncoder() override = default;
-
-  void prepareSequence(MivBitstream::EncoderParams params) override;
-  auto processAccessUnit(int firstFrameId, int lastFrameId)
-      -> const MivBitstream::EncoderParams & override;
-  auto popAtlas() -> Common::MVD10Frame override;
-  [[nodiscard]] auto maxLumaSamplesPerFrame() const -> std::size_t override {
-    return m_maxLumaSamplesPerFrame;
-  }
-
-private:
-  auto vuiParameters() const -> MivBitstream::VuiParameters;
-  void setGiGeometry3dCoordinatesBitdepthMinus1();
-  void prepareIvau();
-  auto log2FocLsbMinus4() const -> std::uint8_t;
-  void incrementFoc();
+  static constexpr std::array<char, 10> content{'M', 'P', 'I', '_', 'P', 'C', 'S', '_', '1', '\0'};
 };
 
-} // namespace TMIV::Encoder
+class Reader {
+public:
+  Reader() = default;
+  Reader(const Common::Json &config, const IO::Placeholders &placeholders,
+         const MivBitstream::SequenceConfig &sc, bool buildIndexOn = true);
+  [[nodiscard]] auto getPath() const -> const std::filesystem::path & { return m_path; }
+  auto read(std::istream &stream, std::int32_t posId, Common::Vec2i size) -> Common::MpiPcs::Frame;
+  auto read(std::int32_t frameId) -> Common::MpiPcs::Frame;
+
+private:
+  std::filesystem::path m_path{};
+  Common::Vec2i m_size{};
+  std::vector<std::size_t> m_index{};
+  int32_t m_startFrame{};
+  void buildIndex();
+};
+
+class Writer {
+public:
+  Writer() = default;
+  Writer(const Common::Json &config, const IO::Placeholders &placeholders,
+         const MivBitstream::SequenceConfig &sc);
+  [[nodiscard]] auto getPath() const -> const std::filesystem::path & { return m_path; }
+  void append(std::ostream &stream, const Common::MpiPcs::Frame &mpiPcsFrame);
+  void append(const Common::MpiPcs::Frame &mpiPcsFrame);
+
+private:
+  template <typename T> void writeToStream(std::ostream &stream, std::vector<T> &items) const;
+
+  std::filesystem::path m_path{};
+};
+
+} // namespace TMIV::MpiPcs
 
 #endif

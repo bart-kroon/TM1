@@ -34,6 +34,7 @@
 #include <TMIV/Common/Frame.h>
 
 #include <TMIV/Common/Common.h>
+#include <TMIV/Common/Thread.h>
 
 namespace TMIV::Common {
 namespace {
@@ -143,4 +144,89 @@ auto quantizeTexture(const Mat<Vec3f> &in) -> Frame<YUV444P10> {
 
   return outYuv;
 }
+
+namespace MpiPcs {
+auto Attribute::operator==(const Attribute &other) const noexcept -> bool {
+  return m_texture == other.getTextureAttribute() && m_geometry == other.getGeometryAttribute() &&
+         m_transparency == other.getTransparencyAttribute();
+}
+
+auto Attribute::fromBuffer(const Buffer &buffer) -> Attribute {
+  static constexpr auto textureOffset = 0ULL;
+  static constexpr auto geometryOffset = sizeof(Texture);
+  static constexpr auto transparencyOffset = sizeof(Texture) + sizeof(Geometry);
+
+  Texture texture{};
+  std::memcpy(&texture, buffer.data() + textureOffset, sizeof(texture));
+
+  Geometry geometry{};
+  std::memcpy(&geometry, buffer.data() + geometryOffset, sizeof(geometry));
+
+  Transparency transparency{};
+  std::memcpy(&transparency, buffer.data() + transparencyOffset, sizeof(transparency));
+
+  return {texture, geometry, transparency};
+}
+
+auto Attribute::toBuffer() const -> Buffer {
+  static constexpr auto textureOffset = 0ULL;
+  static constexpr auto geometryOffset = sizeof(Texture);
+  static constexpr auto transparencyOffset = sizeof(Texture) + sizeof(Geometry);
+
+  Buffer buffer;
+
+  std::memcpy(buffer.data() + textureOffset, &m_texture, sizeof(m_texture));
+  std::memcpy(buffer.data() + geometryOffset, &m_geometry, sizeof(m_geometry));
+  std::memcpy(buffer.data() + transparencyOffset, &m_transparency, sizeof(m_transparency));
+
+  return buffer;
+}
+
+auto Frame::operator==(const Frame &other) const noexcept -> bool {
+  return getPixelList().size() == other.getPixelList().size() &&
+         getPixelList() == other.getPixelList();
+}
+
+void Frame::appendLayer(Attribute::Geometry layerId, const TextureTransparency8Frame &layer) {
+  auto textureLayer = yuv444p(layer.texture);
+  const auto &transparencyLayer = layer.transparency;
+
+  const auto &y_plane = textureLayer.getPlane(0);
+  const auto &u_plane = textureLayer.getPlane(1);
+  const auto &v_plane = textureLayer.getPlane(2);
+
+  const auto &a_plane = transparencyLayer.getPlane(0);
+
+  parallel_for(y_plane.size(), [&](std::size_t k) {
+    if (0 < a_plane[k]) {
+      m_pixelList[k].emplace_back(
+          Attribute{Attribute::Texture{y_plane[k], u_plane[k], v_plane[k]}, layerId, a_plane[k]});
+    }
+  });
+}
+
+auto Frame::getLayer(Attribute::Geometry layerId) const -> TextureTransparency8Frame {
+  Texture444Frame textureFrame{m_size.x(), m_size.y()};
+  Transparency8Frame transparencyFrame{m_size.x(), m_size.y()};
+
+  textureFrame.fillNeutral();
+
+  parallel_for(m_pixelList.size(), [&](std::size_t k) {
+    const auto &pixel = m_pixelList[k];
+    auto iter = std::lower_bound(pixel.begin(), pixel.end(), layerId);
+
+    if ((iter != pixel.end()) && (iter->getGeometryAttribute() == layerId)) {
+      textureFrame.getPlane(0)[k] = iter->getTextureAttribute()[0];
+      textureFrame.getPlane(1)[k] = iter->getTextureAttribute()[1];
+      textureFrame.getPlane(2)[k] = iter->getTextureAttribute()[2];
+
+      transparencyFrame.getPlane(0)[k] = iter->getTransparencyAttribute();
+    }
+  });
+
+  return {yuv420p(textureFrame), std::move(transparencyFrame)};
+}
+
+} // namespace MpiPcs
+
 } // namespace TMIV::Common

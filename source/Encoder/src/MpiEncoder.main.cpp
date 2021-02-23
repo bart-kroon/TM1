@@ -36,7 +36,7 @@
 #include <TMIV/Common/Application.h>
 #include <TMIV/Common/Factory.h>
 #include <TMIV/Encoder/MivEncoder.h>
-#include <TMIV/IO/IO.h>
+#include <TMIV/MpiPcs/MpiPcs.h>
 
 #include <fstream>
 #include <iostream>
@@ -57,6 +57,7 @@ private:
   std::int32_t m_intraPeriod;
 
   MivBitstream::SequenceConfig m_inputSequenceConfig;
+  MpiPcs::Reader m_mpiPcsReader;
   std::filesystem::path m_outputBitstreamPath;
   std::ofstream m_outputBitstream;
   std::unique_ptr<Encoder::MivEncoder> m_mivEncoder;
@@ -79,6 +80,7 @@ public:
       , m_numberOfInputFrames{std::stoi(optionValues("-n"sv).front())}
       , m_intraPeriod{json().require("intraPeriod").as<std::int32_t>()}
       , m_inputSequenceConfig{IO::loadSequenceConfig(json(), placeholders(), 0)}
+      , m_mpiPcsReader{json(), placeholders(), m_inputSequenceConfig}
       , m_outputBitstreamPath{IO::outputBitstreamPath(json(), placeholders())}
       , m_outputBitstream{m_outputBitstreamPath, std::ios::binary} {
     if (!m_outputBitstream.good()) {
@@ -109,17 +111,8 @@ public:
                           static_cast<int>(mpiViewParams.ci.ci_projection_plane_height_minus1()) +
                               1};
 
-    m_encoder->setTextureMpiLayerReader(
-        [&](int frameIndex, int mpiLayerIndex) -> Common::TextureFrame {
-          return IO::loadMpiTextureMpiLayer(json(), placeholders(), m_inputSequenceConfig,
-                                            frameIndex, mpiLayerIndex, mpiViewParams.nbMpiLayers);
-        });
-
-    m_encoder->setTransparencyMpiLayerReader([&](int frameIndex,
-                                                 int mpiLayerIndex) -> Common::Transparency10Frame {
-      return IO::loadMpiTransparencyMpiLayer(json(), placeholders(), m_inputSequenceConfig,
-                                             frameIndex, mpiLayerIndex, mpiViewParams.nbMpiLayers);
-    });
+    m_encoder->setMpiPcsFrameReader(
+        [&](int frameIndex) -> Common::MpiPcs::Frame { return m_mpiPcsReader.read(frameIndex); });
 
     m_encoder->prepareSequence(sourceParams);
 
@@ -181,7 +174,7 @@ private:
 
   void popAtlases(int firstFrame, int lastFrame) {
     for (int i = firstFrame; i < lastFrame; ++i) {
-      IO::saveAtlasFrame(json(), placeholders(), i, m_encoder->popAtlas(i));
+      IO::saveAtlasFrame(json(), placeholders(), i, m_encoder->popAtlas());
     }
   }
 

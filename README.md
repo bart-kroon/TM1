@@ -541,53 +541,137 @@ In this example the following files will be produced:
 
 ### MPI test
 
-The multi-plane image (MPI) encoder is able to encode a MPI input consisting of texture and transparency components. No geometry is needed for this test.
-The input is given as a succession of very sparse layers both for texture and transparency. In the example given in [M.json](/config/ctc/sequences/M.json), there are 423 such layers.
+The multi-plane image (MPI) encoder is able to encode an MPI sequence consisting of texture and transparency components.
+The input is a succession of very sparse layers of texture and transparency.
+In the example given in [M.json](/config/ctc/sequences/M.json), there are 423 such layers.
 
-A specific MPI encoder is to be used to deal with this type of content, because there is no geometry. Please refer to configuration file [M_1_TMIV_encode.json](/config/test/miv_mpi/M_1_TMIV_encode.json) for encoding.
-And a specific MPI synthesizer is needed at rendering stage. Please refer to configuration file [M_4_TMIV_decode.json](/config/test/miv_mpi/M_4_TMIV_decode.json) for decoding.
+To limit memory consumption and processing time, the Packed Compressed Storage (PCS) format is the only MPI input format for TMIV encoder (from TMIV 8.0).
+In PCS format, texture and transparency are stored together in the same `.pcs` file, frame by frame.
+This format is explained in detail the Test Model document.
 
+Conversion from PCS format to raw storage format is possible inside TMIV (see [Running the MPI converter](#running-the-mpi-converter))
+
+A specific MPI encoder is to be used to deal with this type of content, and a specific MPI synthesizer is needed at rendering stage.
 But actually, even if the internal processing is different, the exact same steps as for MIV anchor can be used to encode a bitsream for MPI content and render a viewport:
+In the example MPI configuration, HM is used in combination with the TMIV multiplexer, to create a single bitstream.
 
 * MPI test:
-  1. Run the TMIV encoder with MPI encoder (see [Running the TMIV encoder](#running-the-tmiv-encoder))
-  1. Run the HM encoder on all video sub bitstreams (see [Running the HM encoder](#running-the-hm-encoder))
-  1. Run the TMIV multiplexer to form the output bitstream (see [Running the TMIV multiplexer](#running-the-tmiv-multiplexer))
-  1. Run the TMIV decoder with MPI synthesizer to decode the bitstream and render a viewport (see [Running the TMIV decoder](#running-the-tmiv-decoder))
+  1. Run the TMIV encoder with MPI encoder (see [Running the TMIV encoder with MPI](#running-the-tmiv-encoder-with-mpi))
+  1. Run the HM encoder on all video sub bitstreams (see [Running the HM encoder with MPI](#running-the-hm-encoder-with-mpi))
+  1. Run the TMIV multiplexer to form the output bitstream (see [Running the TMIV multiplexer with MPI](#running-the-tmiv-multiplexer-with-mpi))
+  1. Run the TMIV decoder with MPI synthesizer to decode the bitstream and render a viewport (see [Running the TMIV decoder with MPI](#running-the-tmiv-decoder-with-mpi))
 
-The only difference is the absence of geometry (there is no use of `inputGeometryPathFmt`) and the presence of transparency (we do use `inputTransparencyPathFmt`).
+The only difference is in the input, we do only use `inputMpiPcsPathFmt`.
 And also some specific parameters for [MPI encoder](#mpi-encoder) and [MPI synthesizer](#mpi-synthesizer).
 
-Input texture and transparency files for the example [M.json](/config/ctc/sequences/M.json) are:
-```
-/Content/SM/mpi_texture_4176x2024_yuv420p10le.yuv
-/Content/SM/mpi_transparency_4176x2024_yuv420p.yuv
-```
 
-Please refer to the configuration files in [config/test/miv_mpi](/config/test/miv_mpi) to generate the following files on example [M.json](/config/ctc/sequences/M.json).
+#### Running the TMIV encoder with MPI
+For this example, we will be using the MIV anchor [M_1_TMIV_encode.json](/config/test/miv_mpi/M_1_TMIV_encode.json) configuration and [M.json](/config/ctc/sequences/M.json) sequence configuration.
+
+1. Place the `.pcs` file in a folder arbitrarily named `/Content` in this description.
+   * Your organization or one of the maintainers of this repository may be able to provide the test sequences to you.
+   * Make sure to comply to the naming scheme defined in `inputMpiPcsPathFmt`.
+   * For example, when `inputDirectory` is equal to `/Content`,
+   * and given that `inputMpiPcsPathFmt` is equal to `{1}/{3}.pcs`,
+   * then for content ID `M` (Mpi_Fan),
+   * and source view `mpi`,
+   * the calculated path for the `.pcs` file of that view is `/Content/M/mpi.pcs`.
+1. Choose an output directory, arbitrarily called `/Experiment` in this description. The directory will be created when it does not yet exist.
+1. Finally, assuming that you have built and installed the TMIV MPI encoder application, you can start it from the command line:
+
+```shell
+/Workspace/tmiv_install/bin/MpiEncoder -n 17 -s M \
+    -c /Workspace/tmiv/config/test/miv_mpi/M_1_TMIV_encode.json \
+    -p configDirectory /Workspace/tmiv/config \
+    -p inputDirectory /Content \
+    -p outputDirectory /Experiment
+```
 
 Following generated atlas for the example will be produced:
 ```
-/Experiment/A17/SM/TMIV_A17_SM.bit
-/Experiment/A17/SM/TMIV_A17_SM_tra_c00_4096x4096_yuv420p10le.yuv
-/Experiment/A17/SM/TMIV_A17_SM_tex_c00_4096x4096_yuv420p10le.yuv
+/Experiment/M17/M/TMIV_M17_M.bit
+/Experiment/M17/M/TMIV_M17_M_tra_c00_4096x4096_yuv420p10le.yuv
+/Experiment/M17/M/TMIV_M17_M_tex_c00_4096x4096_yuv420p10le.yuv
 ```
-
+#### Running the HM encoder with MPI
+This section is similar to [Running the HM encoder](#running-the-hm-encoder).
+Use `test/miv_mpi/M_2_HM_encode_tra.cfg` to encode transparency atlas, and `test/miv_mpi/M_2_HM_encode_tex.cfg` to encode texture atlas.
 Following HM encoded files at QP3 for the example will be produced:
 ```
-/Experiment/A1/SM/QP3/TMIV_A17_SM_QP3_tra_c00.bit
-/Experiment/A1/SM/QP3/TMIV_A17_SM_QP3_tex_c00.bit
+/Experiment/M17/M/QP3/TMIV_M17_M_QP3_tra_c00.bit
+/Experiment/M17/M/QP3/TMIV_M17_M_QP3_tex_c00.bit
 ```
 
+#### Running the TMIV multiplexer with MPI
+This section is similar to [Running the TMIV multiplexer](#running-the-tmiv-multiplexer).
+Use `test/miv_mpi/M_3_TMIV_mux.json` to generate the multiplexed stream.
 Following multiplexed file for the example will be produced:
 ```
-/Experiment/A1/SM/QP3/TMIV_A17_SM_QP3.bit
+/Experiment/M17/M/QP3/TMIV_M17_M_QP3.bit
 ```
 
-And a synthesized pose trace for the example will look like:
+#### Running the TMIV decoder with MPI
+This section is similar to [Running the TMIV decoder](#running-the-tmiv-decoder).
+Use `test/miv_mpi/M_4_TMIV_decode.json` to run the TMIV decoder with MPI synthesizer.
+The following command:
+```shell
+/Workspace/tmiv_install/bin/Decoder -n 17 -N 300 -s M -r QP3 -P p01 \
+    -c /Workspace/tmiv/config/test/miv_mpi/M_4_TMIV_decode.json /
+    -p configDirectory /Workspace/tmiv/config /
+    -p inputDirectory /Experiment /
+    -p outputDirectory /Experiment
 ```
-/Experiment/A1/SM/QP3/A17_SM_QP3_p01_tex_1920x1080_yuv420p10le.yuv
+will generate the following synthesized pose trace:
 ```
+/Experiment/M17/M/QP3/M17_M_QP3_p01_tex_1920x1080_yuv420p10le.yuv
+```
+
+#### Running the MPI converter
+##### PCS to raw conversion
+An MPI sequence in PCS format can be converted to raw storage to allow visualization.
+
+Input path format `inputMpiPcsPathFmt` and output path formats `outputTexturePathFmt` and `outputTransparencyPathFmt` are used for this conversion.
+
+Assuming that the .pcs file of the MPI content is available in the `/Content` directory:
+```
+/Content/M/mpi.pcs
+```
+running the following command:
+```shell
+/Workspace/tmiv_install/bin/MpiPcs -n 17 -s M -x pcs2raw \
+    -c /Workspace/tmiv/config/test/miv_mpi/M_5_MPI_transcode.json /
+    -p configDirectory /Workspace/tmiv/config /
+    -p inputDirectory /Content /
+    -p outputDirectory /Experiment
+```
+will generate the following texture and transparency files:
+```
+/Experiment/M/mpi_texture_4176x2024_yuv420p10le.yuv
+/Experiment/M/mpi_transparency_4176x2024_yuv420p.yuv
+```
+##### Raw to PCS conversion
+Conversely, an MPI sequence in raw storage format can be converted to PCS format to be input by the TMIV encoder.
+
+Input path formats `inputTexturePathFmt` and `inputTransparencyPathFmt` and output path format `outputMpiPcsPathFmt` are used for this conversion.
+
+Assuming that the texture and transparency files of the MPI content are available in the `/Experiment` directory:
+```
+/Experiment/M/mpi_texture_4176x2024_yuv420p10le.yuv
+/Experiment/M/mpi_transparency_4176x2024_yuv420p.yuv
+```
+running the following command:
+```shell
+/Workspace/tmiv_install/bin/MpiPcs -n 17 -s M -x raw2pcs \
+    -c /Workspace/tmiv/config/test/miv_mpi/M_5_MPI_transcode.json /
+    -p configDirectory /Workspace/tmiv/config /
+    -p inputDirectory /Experiment /
+    -p outputDirectory /Experiment
+```
+will generate the `.pcs` file:
+```
+/Experiment/M/mpi.pcs
+```
+
 
 # Overview of TMIV configuration files
 
@@ -676,7 +760,7 @@ Unless specified otherwise, the base directory for these path formats is `inputD
   * 3: view name,
   * 4, 5, 6: frame width, frame height, and video format.
 * **inputTexturePathFmt**: the path format of the multiview uncompressed texture (color) data, consumed by the Encoder and Renderer, with the same placeholders as `inputGeometryPathFormat`.
-* **inputTransparencyPathFmt**: the path format of the multiview uncompressed transparency (alpha) data, with the same placeholders as `inputTransparencyPathFormat`.
+* **inputTransparencyPathFmt**: the path format of the multiview uncompressed transparency (alpha) data, with the same placeholders as `inputGeometryPathFormat`.
 * **inputEntityPathFmt**: the path format of the multiview uncompressed entity maps, consumed by the Encoder, with the same placeholders as `inputGeometryPathFormat`.
 * **inputGeometryVideoFramePathFmt**: the path format of the uncompresed geometry video data (GVD), consumed by the Decoder for out-of-band video decoding, e.g. for testing alternative video codecs, with placeholders:
   * 0: number of input frames,
@@ -717,6 +801,7 @@ Unless specified otherwise, the base directory for these path formats is `inputD
   * 0: number of input frames,
   * 1: content ID,
   * 2: test ID.
+* **inputMpiPcsPathFmt**: the path format of an MPI sequence in Packed Compressed Storage (PCS), i.e. texture + transparency (alpha) data, with the same placeholders as `inputGeometryPathFormat`.
 
 ### Output path formats
 
@@ -751,6 +836,9 @@ Unless specified otherwise, the base directory for these path formats is `output
   * 4: view or pose trace name,
   * 5, 6, 7: frame width and height, and video format.
 * **outputViewportTexturePathFmt**: the path format of the texture (color) video data of the rendered viewport, produced by the Decoder or Renderer, with the same placeholders as `outputViewportGeometryPathFmt`.
+* **outputTexturePathFmt**: the path format of the uncompressed texture (color) video data of an MPI sequence, produced by the MPI converter, with the same placeholders as `inputGeometryPathFmt`.
+* **outputTransparencyPathFmt**: the path format of the uncompressed transparency (alpha) video data of an MPI sequence, produced by the MPI converter, with the same placeholders as `inputGeometryPathFmt`.
+* **outputMpiPcsPathFmt**: the path format of a compressed MPI content in PCS format, produced by the MPI converter, with the same placeholders as `inputGeometryPathFmt`.
 
 ## Algorithmic parameters
 

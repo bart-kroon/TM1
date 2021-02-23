@@ -37,6 +37,8 @@ create_tmiv_library(
         "include/TMIV/Common/verify.h"
     PUBLIC
         fmt::fmt
+    PRIVATE
+        Threads::Threads
     )
 
 target_include_directories(CommonLib

@@ -370,7 +370,7 @@ class IntegrationTest:
             '-c', '{1}/config/test/miv_mpi/M_2_HM_encode_tra.cfg',
             '-i', '{3}/M3/M/TMIV_M3_M_tra_c00_4096x4096_yuv420p10le.yuv',
             '-b', '{3}/M3/M/QP3/TMIV_M3_M_QP3_tra_c00.bit',
-            '-wdt', '4096', '-hgt', '4096', '-q', '5', '-f', '3', '-fr', '30'],
+            '-wdt', '4096', '-hgt', '4096', '-q', '35', '-f', '3', '-fr', '30'],
             '{3}/M3/M/QP3/TMIV_M3_M_QP3_tra_c00.log',
             ['M3/M/QP3/TMIV_M3_M_QP3_tra_c00.bit'])
 

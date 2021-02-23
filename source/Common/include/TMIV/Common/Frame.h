@@ -37,6 +37,7 @@
 #include <TMIV/Common/Matrix.h>
 #include <TMIV/Common/Vector.h>
 
+#include <cassert>
 #include <cstdint>
 #include <istream>
 #include <ostream>
@@ -142,6 +143,7 @@ using Texture444Frame = Frame<YUV444P10>; // The renderer uses 4:4:4 internally
 using Depth10Frame = Frame<YUV400P10>;    // Decoder side
 using Depth16Frame = Frame<YUV400P16>;    // Encoder side
 using Occupancy10Frame = Frame<YUV400P10>;
+using Transparency8Frame = Frame<YUV400P8>;
 using Transparency10Frame = Frame<YUV400P10>;
 using Mask = Frame<YUV400P8>;
 using BlockToPatchMap = Frame<YUV400P16>;
@@ -178,6 +180,13 @@ using MVD10Frame = MVDFrame<YUV400P10>;
 using MVD16Frame = MVDFrame<YUV400P16>;
 using MaskList = std::vector<Mask>;
 
+struct TextureTransparency8Frame {
+  TextureTransparency8Frame(TextureFrame texture_, Transparency8Frame transparency_)
+      : texture{std::move(texture_)}, transparency{std::move(transparency_)} {}
+  TextureFrame texture{};
+  Transparency8Frame transparency{};
+};
+
 // Expand a YUV 4:4:4 10-bit texture to packed 4:4:4 32-bit float texture with
 // linear transfer and nearest interpolation for chroma
 auto expandTexture(const Frame<YUV444P10> &inYuv) -> Mat<Vec3f>;
@@ -188,6 +197,59 @@ auto expandLuma(const Frame<YUV420P10> &inYuv) -> Mat<float>;
 // Quantize a packed 4:4:4 32-bit float texture as YUV 4:4:4 10-bit texture with
 // linear transfer and area interpolation for chroma
 auto quantizeTexture(const Mat<Vec3f> &in) -> Frame<YUV444P10>;
+
+namespace MpiPcs {
+struct Attribute {
+  using Count = std::uint16_t;
+
+  using Texture = std::array<std::uint16_t, 3>;
+  using Geometry = std::uint16_t;
+  using Transparency = std::uint8_t;
+
+  static constexpr auto attributeSize = sizeof(Texture) + sizeof(Geometry) + sizeof(Transparency);
+
+  using Buffer = std::array<std::uint8_t, attributeSize>;
+  using List = std::vector<Attribute>;
+
+  Texture m_texture{};
+  Geometry m_geometry{};
+  Transparency m_transparency{};
+
+  auto operator==(const Attribute &other) const noexcept -> bool;
+  auto operator<(const Attribute &other) const -> bool { return m_geometry < other.m_geometry; }
+  auto operator<(Attribute::Geometry geometry) const -> bool { return m_geometry < geometry; }
+  [[nodiscard]] auto getTextureAttribute() const -> const Texture & { return m_texture; }
+  [[nodiscard]] auto getGeometryAttribute() const -> Geometry { return m_geometry; }
+  [[nodiscard]] auto getTransparencyAttribute() const -> Transparency { return m_transparency; }
+  static auto fromBuffer(const Buffer &buffer) -> Attribute;
+  [[nodiscard]] auto toBuffer() const -> Buffer;
+};
+
+class Frame {
+public:
+  using Pixel = Attribute::List;
+
+  Frame() = default;
+  Frame(const Vec2i &size)
+      : m_size{size}, m_pixelList{static_cast<std::size_t>(m_size.x() * m_size.y())} {}
+  Frame(const Vec2i &size, std::vector<Pixel> pixelList)
+      : m_size{size}, m_pixelList{std::move(pixelList)} {}
+  auto operator==(const Frame &other) const noexcept -> bool;
+  [[nodiscard]] auto getPixelList() const -> const std::vector<Pixel> & { return m_pixelList; }
+  auto operator()(int i, int j) const -> const Pixel & {
+    assert(i * m_size.x() + j < static_cast<int>(m_pixelList.size()));
+    return m_pixelList[i * m_size.x() + j];
+  }
+  void appendLayer(Attribute::Geometry layerId, const TextureTransparency8Frame &layer);
+  [[nodiscard]] auto getLayer(Attribute::Geometry layerId) const -> TextureTransparency8Frame;
+
+private:
+  Vec2i m_size{};
+  std::vector<Pixel> m_pixelList{};
+};
+
+} // namespace MpiPcs
+
 } // namespace TMIV::Common
 
 #endif

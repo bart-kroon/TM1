@@ -78,7 +78,7 @@ SCENARIO("MPI rastering meshes with Common::Vec2f as attribute", "[Rasterizer]")
 
       rasterizer.submit(vs, as, ts);
       rasterizer.run([&](const ViewportPosition2D &viewport, const std::array<float, 3> &weights,
-                         const std::array<PixelAttribute, 3> pixelAttributes) {
+                         const std::array<PixelAttribute, 3> &pixelAttributes) {
         auto texCoord = weights[0] * std::get<0>(pixelAttributes[0]) +
                         weights[1] * std::get<0>(pixelAttributes[1]) +
                         weights[2] * std::get<0>(pixelAttributes[2]);

@@ -154,7 +154,7 @@ public:
     rasterizer.submit(vertices, attributes, triangles);
     rasterizer.run([this, &frame, &atlasColor, &atlasTransparency](
                        const ViewportPosition2D &viewport, const std::array<float, 3> &weights,
-                       const std::array<PixelAttribute, 3> pixelAttributes) {
+                       const std::array<PixelAttribute, 3> &pixelAttributes) {
       return fragmentShader(viewport, weights, pixelAttributes, frame, atlasColor,
                             atlasTransparency);
     });
@@ -323,7 +323,7 @@ private:
 
     for (const auto &block : m_blockBuffer) {
       // Initialization
-      auto [atlas_id, patch_id, block_id, d] = block;
+      const auto &[atlas_id, patch_id, block_id, d] = block;
 
       const MivBitstream::AtlasAccessUnit &atlas = frame.atlas[atlas_id];
       const MivBitstream::PatchParams &patch = atlas.patchParamsList[patch_id];

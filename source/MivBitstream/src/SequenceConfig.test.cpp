@@ -219,6 +219,7 @@ TEST_CASE("SequenceConfig") {
       REQUIRE(x.cameras.size() == y.cameras.size());
       REQUIRE(x.contentName == y.contentName);
       REQUIRE(x.lengthsInMeters == y.lengthsInMeters);
+      REQUIRE(x.numberOfFrames == y.numberOfFrames);
 
       // NOTE(BK): Cannot use x == y because of floating-point conversions
       for (std::size_t i = 0; i < x.cameras.size(); ++i) {

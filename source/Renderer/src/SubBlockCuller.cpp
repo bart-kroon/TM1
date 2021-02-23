@@ -91,10 +91,15 @@ auto choosePatch(const MivBitstream::PatchParams &patch,
     // wangbin modify
     xy_v[i + 4] = pix.position;
   }
+
+  // TODO(BK): Magic constant assumes meters
   float xy_v_xmax = -1000;
   float xy_v_xmin = 65536;
+
+  // TODO(BK): Magic constant assumes meters
   float xy_v_ymax = -1000;
   float xy_v_ymin = 65536;
+
   for (auto &i : xy_v) {
     if (i[0] > xy_v_xmax) {
       xy_v_xmax = i[0];

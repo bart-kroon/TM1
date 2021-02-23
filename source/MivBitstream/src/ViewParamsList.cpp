@@ -41,8 +41,6 @@
 using namespace std::string_literals;
 
 namespace TMIV::MivBitstream {
-constexpr auto kilometer = 1000.F;
-
 auto ViewParams::printTo(std::ostream &stream, uint16_t viewId) const -> std::ostream & {
   if (!name.empty()) {
     stream << "name[ " << viewId << " ]=\"" << name << "\"  # informative\n";
@@ -78,8 +76,8 @@ ViewParams::ViewParams(const Common::Json &node) {
   ce.rotation(euler2quat(Common::radperdeg * node.require("Rotation").asVec<float, 3>()));
 
   const auto depthRange = node.require("Depth_range").asVec<float, 2>();
-  dq.dq_norm_disp_low(depthRange.y() < kilometer ? 1.F / depthRange.y() : 0.F);
-  dq.dq_norm_disp_high(depthRange.x() < kilometer ? 1.F / depthRange.x() : 0.F);
+  dq.dq_norm_disp_low(1.F / depthRange.y());
+  dq.dq_norm_disp_high(1.F / depthRange.x());
 
   if (const auto &subnode = node.optional("HasInvalidDepth")) {
     hasOccupancy = subnode.as<bool>();
@@ -136,9 +134,7 @@ ViewParams::operator Common::Json() const {
   root["Rotation"s] = Array{Json{Common::rad2deg(euler.x())}, Json{Common::rad2deg(euler.y())},
                             Json{Common::rad2deg(euler.z())}};
 
-  root["Depth_range"s] =
-      Array{Json{dq.dq_norm_disp_high() == 0.F ? kilometer : 1. / dq.dq_norm_disp_high()},
-            Json{dq.dq_norm_disp_low() == 0.F ? kilometer : 1. / dq.dq_norm_disp_low()}};
+  root["Depth_range"s] = Array{Json{1. / dq.dq_norm_disp_high()}, Json{1. / dq.dq_norm_disp_low()}};
 
   root["HasInvalidDepth"] = hasOccupancy;
 

@@ -50,11 +50,15 @@ void rbspTrailingBits(std::istream &stream);
 
 void writeBytes(std::ostream &stream, uint64_t value, size_t bytes);
 void putUint8(std::ostream &stream, uint8_t value);
-void putUint16(std::ostream &stream, uint8_t value);
-void putUint32(std::ostream &stream, uint8_t value);
-void putUint64(std::ostream &stream, uint8_t value);
+void putUint16(std::ostream &stream, uint16_t value);
+void putUint32(std::ostream &stream, uint32_t value);
+void putUint64(std::ostream &stream, uint64_t value);
 void writeString(std::ostream &stream, const std::string &buffer);
 void rbspTrailingBits(std::ostream &stream);
+
+constexpr auto swapEndianness(uint16_t x) noexcept {
+  return static_cast<uint16_t>((unsigned{x} >> 8) | (x & 0xFFU) << 8);
+}
 } // namespace TMIV::Common
 
 #endif

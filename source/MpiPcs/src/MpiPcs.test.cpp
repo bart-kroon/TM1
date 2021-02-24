@@ -74,11 +74,11 @@ TEST_CASE("MpiPcs writer and reader") {
 
     // writing a frame
     writer.append(ss, mpiPcsFrame);
-    std::size_t expected_number_of_bytes = 8           // n1, n2, n3, n4 : one value for each pixel
-                                           + 1 * (     // number of active pixels
-                                                     6 // rgb
-                                                     + 2   // layer id
-                                                     + 1); // transparency
+    std::streamoff expected_number_of_bytes = 8       // n1, n2, n3, n4 : one value for each pixel
+                                              + 1 * ( // number of active pixels
+                                                        6     // rgb
+                                                        + 2   // layer id
+                                                        + 1); // transparency
 
     ss.seekg(0, std::ios::end);
     REQUIRE(ss.tellg() == expected_number_of_bytes);
@@ -93,9 +93,9 @@ TEST_CASE("MpiPcs writer and reader") {
     expected_string += "FF";              // transparency
 
     std::ostringstream ss2;
-    for (std::size_t idx = 0; idx < expected_number_of_bytes; idx++) {
+    for (std::streamoff idx = 0; idx < expected_number_of_bytes; idx++) {
       std::array<char, 1> n{};
-      ss.read(n.data(), sizeof(n));
+      ss.read(n.data(), n.size());
       ss2 << fmt::format("{:02X}", std::uint8_t(n[0]));
     }
     REQUIRE(ss2.str() == expected_string);
@@ -109,9 +109,9 @@ TEST_CASE("MpiPcs writer and reader") {
     ss.seekg(0, std::ios::beg);
 
     std::ostringstream ss3;
-    for (std::size_t idx = 0; idx < expected_number_of_bytes; idx++) {
+    for (std::streamoff idx = 0; idx < expected_number_of_bytes; idx++) {
       std::array<char, 1> n{};
-      ss.read(n.data(), sizeof(n));
+      ss.read(n.data(), n.size());
       ss3 << fmt::format("{:02X}", std::uint8_t(n[0]));
     }
     REQUIRE(ss3.str() == expected_string);
@@ -144,11 +144,11 @@ TEST_CASE("MpiPcs writer and reader") {
 
     writer.append(ss, mpiPcsFrame);
 
-    std::size_t expected_number_of_bytes = 16          // n1, n2, ..., n8 : one value for each pixel
-                                           + 5 * (     // number of active pixels
-                                                     6 // rgb
-                                                     + 2   // layer id
-                                                     + 1); // transparency
+    std::streamoff expected_number_of_bytes = 16      // n1, n2, ..., n8 : one value for each pixel
+                                              + 5 * ( // number of active pixels
+                                                        6     // rgb
+                                                        + 2   // layer id
+                                                        + 1); // transparency
 
     ss.seekg(0, std::ios::end);
     REQUIRE(ss.tellg() == expected_number_of_bytes);
@@ -162,9 +162,9 @@ TEST_CASE("MpiPcs writer and reader") {
     expected_string += "000000000000390025";                          // active pixel #5
 
     std::ostringstream ss2;
-    for (std::size_t idx = 0; idx < expected_number_of_bytes; idx++) {
+    for (std::streamoff idx = 0; idx < expected_number_of_bytes; idx++) {
       std::array<char, 1> n{};
-      ss.read(n.data(), sizeof(n));
+      ss.read(n.data(), n.size());
       ss2 << fmt::format("{:02X}", int(n[0]));
     }
     REQUIRE(ss2.str() == expected_string);

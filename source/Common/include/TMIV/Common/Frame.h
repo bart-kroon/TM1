@@ -37,6 +37,7 @@
 #include <TMIV/Common/Matrix.h>
 #include <TMIV/Common/Vector.h>
 
+#include <array>
 #include <cassert>
 #include <cstdint>
 #include <istream>
@@ -206,21 +207,18 @@ struct Attribute {
   using Geometry = std::uint16_t;
   using Transparency = std::uint8_t;
 
-  static constexpr auto attributeSize = sizeof(Texture) + sizeof(Geometry) + sizeof(Transparency);
+  static constexpr auto attributeSize = 9;
+  static_assert(attributeSize == sizeof(Texture) + sizeof(Geometry) + sizeof(Transparency));
 
-  using Buffer = std::array<std::uint8_t, attributeSize>;
+  using Buffer = std::array<char, attributeSize>;
   using List = std::vector<Attribute>;
 
-  Texture m_texture{};
-  Geometry m_geometry{};
-  Transparency m_transparency{};
+  Texture texture{};
+  Geometry geometry{};
+  Transparency transparency{};
 
   auto operator==(const Attribute &other) const noexcept -> bool;
-  auto operator<(const Attribute &other) const -> bool { return m_geometry < other.m_geometry; }
-  auto operator<(Attribute::Geometry geometry) const -> bool { return m_geometry < geometry; }
-  [[nodiscard]] auto getTextureAttribute() const -> const Texture & { return m_texture; }
-  [[nodiscard]] auto getGeometryAttribute() const -> Geometry { return m_geometry; }
-  [[nodiscard]] auto getTransparencyAttribute() const -> Transparency { return m_transparency; }
+
   static auto fromBuffer(const Buffer &buffer) -> Attribute;
   [[nodiscard]] auto toBuffer() const -> Buffer;
 };

@@ -33,8 +33,11 @@
 
 #include <TMIV/Common/Frame.h>
 
+#include <TMIV/Common/Bytestream.h>
 #include <TMIV/Common/Common.h>
 #include <TMIV/Common/Thread.h>
+
+#include <sstream>
 
 namespace TMIV::Common {
 namespace {
@@ -147,38 +150,39 @@ auto quantizeTexture(const Mat<Vec3f> &in) -> Frame<YUV444P10> {
 
 namespace MpiPcs {
 auto Attribute::operator==(const Attribute &other) const noexcept -> bool {
-  return m_texture == other.getTextureAttribute() && m_geometry == other.getGeometryAttribute() &&
-         m_transparency == other.getTransparencyAttribute();
+  return texture == other.texture && geometry == other.geometry &&
+         transparency == other.transparency;
 }
 
 auto Attribute::fromBuffer(const Buffer &buffer) -> Attribute {
-  static constexpr auto textureOffset = 0ULL;
-  static constexpr auto geometryOffset = sizeof(Texture);
-  static constexpr auto transparencyOffset = sizeof(Texture) + sizeof(Geometry);
+  const auto blob = std::string{buffer.cbegin(), buffer.cend()}; // likely SSO
+  std::istringstream stream{blob};
 
-  Texture texture{};
-  std::memcpy(&texture, buffer.data() + textureOffset, sizeof(texture));
+  Attribute a;
+  a.texture[0] = swapEndianness(getUint16(stream));
+  a.texture[1] = swapEndianness(getUint16(stream));
+  a.texture[2] = swapEndianness(getUint16(stream));
+  a.geometry = swapEndianness(getUint16(stream));
+  a.transparency = getUint8(stream);
 
-  Geometry geometry{};
-  std::memcpy(&geometry, buffer.data() + geometryOffset, sizeof(geometry));
-
-  Transparency transparency{};
-  std::memcpy(&transparency, buffer.data() + transparencyOffset, sizeof(transparency));
-
-  return {texture, geometry, transparency};
+  return a;
 }
 
 auto Attribute::toBuffer() const -> Buffer {
-  static constexpr auto textureOffset = 0ULL;
-  static constexpr auto geometryOffset = sizeof(Texture);
-  static constexpr auto transparencyOffset = sizeof(Texture) + sizeof(Geometry);
+  auto buffer = Buffer{};
 
-  Buffer buffer;
+  std::ostringstream stream;
+  putUint16(stream, swapEndianness(texture[0]));
+  putUint16(stream, swapEndianness(texture[1]));
+  putUint16(stream, swapEndianness(texture[2]));
+  putUint16(stream, swapEndianness(geometry));
+  putUint8(stream, transparency);
 
-  std::memcpy(buffer.data() + textureOffset, &m_texture, sizeof(m_texture));
-  std::memcpy(buffer.data() + geometryOffset, &m_geometry, sizeof(m_geometry));
-  std::memcpy(buffer.data() + transparencyOffset, &m_transparency, sizeof(m_transparency));
+  const auto blob = stream.str(); // likely SSO
+  static_assert(buffer.size() == attributeSize);
+  assert(blob.size() == buffer.size());
 
+  std::copy(blob.cbegin(), blob.cend(), buffer.begin());
   return buffer;
 }
 
@@ -213,14 +217,16 @@ auto Frame::getLayer(Attribute::Geometry layerId) const -> TextureTransparency8F
 
   parallel_for(m_pixelList.size(), [&](std::size_t k) {
     const auto &pixel = m_pixelList[k];
-    auto iter = std::lower_bound(pixel.begin(), pixel.end(), layerId);
+    const auto iter =
+        std::lower_bound(pixel.begin(), pixel.end(), layerId,
+                         [](auto pixel_, auto layerId_) { return pixel_.geometry < layerId_; });
 
-    if ((iter != pixel.end()) && (iter->getGeometryAttribute() == layerId)) {
-      textureFrame.getPlane(0)[k] = iter->getTextureAttribute()[0];
-      textureFrame.getPlane(1)[k] = iter->getTextureAttribute()[1];
-      textureFrame.getPlane(2)[k] = iter->getTextureAttribute()[2];
+    if (iter != pixel.end() && iter->geometry == layerId) {
+      textureFrame.getPlane(0)[k] = iter->texture[0];
+      textureFrame.getPlane(1)[k] = iter->texture[1];
+      textureFrame.getPlane(2)[k] = iter->texture[2];
 
-      transparencyFrame.getPlane(0)[k] = iter->getTransparencyAttribute();
+      transparencyFrame.getPlane(0)[k] = iter->transparency;
     }
   });
 

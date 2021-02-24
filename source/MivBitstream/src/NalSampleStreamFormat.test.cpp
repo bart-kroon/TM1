@@ -98,7 +98,7 @@ TEST_CASE("NAL sample stream format", "[NAL sample stream format]") {
       const auto actualUnit = SampleStreamNalUnit::decodeFrom(stream, actualHeader);
       REQUIRE(actualUnit == unit);
     }
-    REQUIRE(stream.tellg() == bytes.size());
+    REQUIRE(stream.tellg() == static_cast<std::streamoff>(bytes.size()));
   }
 }
 } // namespace TMIV::MivBitstream

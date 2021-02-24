@@ -40,9 +40,9 @@ namespace {
 void checkLuminancePlaneContents(const Frame<YUV420P8> &unit, const int expectedPixelValue = 0) {
   const auto &yPlane = unit.getPlane(0);
   REQUIRE(!yPlane.empty());
-  REQUIRE(yPlane.width() == unit.getWidth());
-  REQUIRE(yPlane.height() == unit.getHeight());
-  REQUIRE(yPlane.size() == unit.getWidth() * unit.getHeight());
+  REQUIRE(yPlane.width() == static_cast<size_t>(unit.getWidth()));
+  REQUIRE(yPlane.height() == static_cast<size_t>(unit.getHeight()));
+  REQUIRE(yPlane.size() == static_cast<size_t>(unit.getWidth() * unit.getHeight()));
   for (const auto pixel : yPlane) {
     REQUIRE(pixel == expectedPixelValue);
   }
@@ -52,9 +52,9 @@ void checkChrominancePlaneContents(const Frame<YUV420P8> &unit, int planeId,
                                    const int expectedPixelValue = 0) {
   const auto &uPlane = unit.getPlane(planeId);
   REQUIRE(!uPlane.empty());
-  REQUIRE(uPlane.width() == unit.getWidth() / 2);
-  REQUIRE(uPlane.height() == unit.getHeight() / 2);
-  REQUIRE(uPlane.size() == unit.getWidth() * unit.getHeight() / 4);
+  REQUIRE(uPlane.width() == static_cast<size_t>(unit.getWidth() / 2));
+  REQUIRE(uPlane.height() == static_cast<size_t>(unit.getHeight() / 2));
+  REQUIRE(uPlane.size() == static_cast<size_t>(unit.getWidth() * unit.getHeight() / 4));
   for (const auto pixel : uPlane) {
     REQUIRE(pixel == expectedPixelValue);
   }
@@ -320,7 +320,11 @@ TEST_CASE("MpiPcs : Frame") {
 
 TEST_CASE("MpiPcs : Attribute") {
   MpiPcs::Attribute unit{};
-  REQUIRE(unit.getGeometryAttribute() == 0);
+  unit.geometry = 3;
+  unit.texture[0] = 1;
+  unit.texture[1] = 10;
+  unit.texture[2] = 100;
+  unit.transparency = 77;
 
   SECTION("copy constructor") {
     MpiPcs::Attribute attr{unit};
@@ -329,22 +333,19 @@ TEST_CASE("MpiPcs : Attribute") {
 
   SECTION("equal operator") {
     MpiPcs::Attribute attr{};
-    REQUIRE(unit == attr);
+    REQUIRE_FALSE(unit == attr);
+    REQUIRE(attr == attr);
+    REQUIRE(unit == unit);
   }
 
   SECTION("construction from attribute") {
-    MpiPcs::Attribute::Texture t{};
-    MpiPcs::Attribute::Geometry g{};
-    MpiPcs::Attribute::Transparency a{};
+    const auto t = MpiPcs::Attribute::Texture{1, 10, 100};
+    const auto g = MpiPcs::Attribute::Geometry{3};
+    const auto a = MpiPcs::Attribute::Transparency{77};
     MpiPcs::Attribute unit_1{t, g, a};
-    REQUIRE(unit_1.getTextureAttribute() == t);
-    REQUIRE(unit_1.getGeometryAttribute() == g);
-    REQUIRE(unit_1.getTransparencyAttribute() == a);
-  }
-
-  SECTION("geometry comparison") {
-    MpiPcs::Attribute unit_2{{}, MpiPcs::Attribute::Geometry{1}, {}};
-    REQUIRE(unit.getGeometryAttribute() < unit_2.getGeometryAttribute());
+    REQUIRE(unit_1.texture == t);
+    REQUIRE(unit_1.geometry == g);
+    REQUIRE(unit_1.transparency == a);
   }
 }
 

@@ -94,9 +94,9 @@ void writeBytes(std::ostream &stream, uint64_t value, size_t bytes) {
 }
 
 void putUint8(std::ostream &stream, uint8_t value) { writeBytes(stream, value, 1); }
-void putUint16(std::ostream &stream, uint8_t value) { writeBytes(stream, value, 2); }
-void putUint32(std::ostream &stream, uint8_t value) { writeBytes(stream, value, 4); }
-void putUint64(std::ostream &stream, uint8_t value) { writeBytes(stream, value, 8); }
+void putUint16(std::ostream &stream, uint16_t value) { writeBytes(stream, value, 2); }
+void putUint32(std::ostream &stream, uint32_t value) { writeBytes(stream, value, 4); }
+void putUint64(std::ostream &stream, uint64_t value) { writeBytes(stream, value, 8); }
 
 void writeString(std::ostream &stream, const std::string &buffer) {
   stream.write(buffer.data(), buffer.size());

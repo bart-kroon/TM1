@@ -87,7 +87,7 @@ TEST_CASE("Map input to output frames") {
 
       THEN("The frame mapping is the identity mapping") {
         const auto x = mapInputToOutputFrames(numberOfInputFrames, numberOfOutputFrames);
-        CHECK(x.size() == numberOfOutputFrames);
+        CHECK(x.size() == static_cast<size_t>(numberOfOutputFrames));
 
         auto i = 0;
         for (auto [first, second] : x) {
@@ -103,7 +103,7 @@ TEST_CASE("Map input to output frames") {
 
       THEN("The frame mapping is the identify mapping") {
         const auto x = mapInputToOutputFrames(numberOfInputFrames, numberOfOutputFrames);
-        CHECK(x.size() == numberOfOutputFrames);
+        CHECK(x.size() == static_cast<size_t>(numberOfOutputFrames));
 
         auto i = 0;
         for (auto [first, second] : x) {
@@ -119,7 +119,7 @@ TEST_CASE("Map input to output frames") {
 
       THEN("The frame mapping zigzags") {
         const auto actual = mapInputToOutputFrames(numberOfInputFrames, numberOfOutputFrames);
-        CHECK(actual.size() == numberOfOutputFrames);
+        CHECK(actual.size() == static_cast<size_t>(numberOfOutputFrames));
 
         auto reference = FrameMapping{};
 

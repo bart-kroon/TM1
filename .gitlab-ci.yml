@@ -19,8 +19,7 @@ default:
 GCC 9 Release:
   <<: *build_rules_definition
   image: rikorose/gcc-cmake:gcc-9
-  tags:
-    - linux
+  tags: [ linux ]
   script:
     - mkdir -p build && cd build
     - cmake -DCMAKE_CXX_FLAGS="-Wall -Wextra -Wpedantic -Werror" -DENABLE_CLANG_TIDY=OFF -DCMAKE_BUILD_TYPE=Release ..
@@ -30,13 +29,14 @@ GCC 9 Release:
 Clang 11 Debug:
   <<: *build_rules_definition
   image: cbachhuber/clang:11
-  tags:
-    - linux
+  tags: [ linux, long-job ]
   script:
     - mkdir -p build && cd build
     - >
       cmake
-      -DCMAKE_CXX_FLAGS="-Wall -Wextra -Wpedantic -Werror -Wunreachable-code-aggressive -fprofile-arcs -ftest-coverage"
+      -DCMAKE_CXX_FLAGS="-stdlib=libc++
+      -Wall -Wextra -Wpedantic -Werror -Wunreachable-code-aggressive
+      -fprofile-arcs -ftest-coverage"
       -DCMAKE_BUILD_TYPE=Debug
       ..
     - make -j $(nproc)
@@ -59,8 +59,7 @@ Clang 11 Debug:
 VC 16 Release:
   <<: *build_rules_definition
   image: buildtools2019:latest
-  tags:
-    - windows
+  tags: [ windows ]
   script:
     - mkdir -p build
     - cd build

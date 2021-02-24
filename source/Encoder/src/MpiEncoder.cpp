@@ -250,7 +250,7 @@ auto MpiEncoder::processAccessUnit(int firstFrameId, int lastFrameId)
       const auto &pixel = frame.getPixelList()[pixelId];
 
       for (const auto &attribute : pixel) {
-        aggregatedMaskList[attribute.getGeometryAttribute()].getPlane(0)[pixelId] = 255;
+        aggregatedMaskList[attribute.geometry].getPlane(0)[pixelId] = 255;
       }
     });
 
@@ -324,13 +324,15 @@ auto MpiEncoder::popAtlas() -> Common::MVD10Frame {
         const auto &pixel = mpiFrame(posInView.y(), posInView.x());
         auto layerId = static_cast<std::uint16_t>(patch.atlasPatch3dOffsetD());
 
-        auto iter = std::lower_bound(pixel.begin(), pixel.end(), layerId);
+        const auto iter =
+            std::lower_bound(pixel.begin(), pixel.end(), layerId,
+                             [](auto pixel_, auto layerId_) { return pixel_.geometry < layerId_; });
 
-        if (iter != pixel.end() && iter->getGeometryAttribute() == layerId) {
-          textureFrame.getPlane(0)(i, j) = iter->getTextureAttribute()[0];
-          textureFrame.getPlane(1)(i, j) = iter->getTextureAttribute()[1];
-          textureFrame.getPlane(2)(i, j) = iter->getTextureAttribute()[2];
-          transparencyFrame.getPlane(0)(i, j) = iter->getTransparencyAttribute();
+        if (iter != pixel.end() && iter->geometry == layerId) {
+          textureFrame.getPlane(0)(i, j) = iter->texture[0];
+          textureFrame.getPlane(1)(i, j) = iter->texture[1];
+          textureFrame.getPlane(2)(i, j) = iter->texture[2];
+          transparencyFrame.getPlane(0)(i, j) = iter->transparency;
         }
       }
     });

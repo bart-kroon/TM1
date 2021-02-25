@@ -32,49 +32,61 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 # THE POSSIBILITY OF SUCH DAMAGE.
 
+import argparse
 import concurrent.futures
 import filecmp
-import os
+from pathlib import Path
 import subprocess
 import sys
 import time
 
 
+def dirPath(path_string: str) -> Path:
+    if Path(path_string).is_dir():
+        return Path(path_string)
+    else:
+        raise NotADirectoryError(path_string)
+
+
+def parseArguments():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("tmiv_install_dir", type=dirPath, help="Directory with the TM1 binaries, includes, etc")
+    parser.add_argument("tmiv_source_dir", type=dirPath, help="Root of the TM1 repository")
+    parser.add_argument("content_dir", type=dirPath)
+    parser.add_argument("output_dir", type=str, help="Output files will be stored here")
+    parser.add_argument("-g", "--git-command", type=str)
+    parser.add_argument("-j", "--max-workers", type=int)
+    parser.add_argument("-r", "--reference-dir", type=dirPath)
+    parser.add_argument("--dry-run", action="store_true", help="Only print TMIV commands without executing them")
+    return parser.parse_args()
+
+
 class IntegrationTest:
-    def __init__(self, argv):
-        if (len(argv) < 5) or (len(argv) % 2 == 0):
-            raise RuntimeError(
-                'Usage: integration_test.py TMIV_INSTALL_DIR TMIV_SOURCE_DIR CONTENT_DIR TEST_DIR [-g GIT_COMMAND] [-j MAX_WORKERS] [-r REFERENCE_DIR]')
+    def __init__(self):
+        args = parseArguments()
 
-        print('+ {}'.format(' '.join(argv)), flush=True)
+        self.tmivInstallDir = args.tmiv_install_dir
+        self.tmivSourceDir = args.tmiv_source_dir
+        self.contentDir = args.content_dir
+        self.testDir = Path(args.output_dir)
+        self.gitCommand = args.git_command
+        self.maxWorkers = args.max_workers
+        self.referenceDir = args.reference_dir
+        self.dryRun = args.dry_run
 
-        self.tmivInstallDir = os.path.abspath(argv[1])
-        self.tmivSourceDir = os.path.abspath(argv[2])
-        self.contentDir = os.path.abspath(argv[3])
-        self.testDir = os.path.abspath(argv[4])
-        self.gitCommand = None
-        self.maxWorkers = None
-        self.referenceDir = None
         self.numComparisonMismatches = 0
         self.numComparisonErrors = 0
-
-        for i in range(5, len(argv), 2):
-            if argv[i] == '-g':
-                self.gitCommand = argv[i + 1]
-            elif argv[i] == '-j':
-                self.maxWorkers = int(argv[i + 1])
-            elif argv[i] == '-r':
-                self.referenceDir = argv[i + 1]
-            else:
-                raise RuntimeError('Unknown argument {}'.format(argv[i]))
-
         self.stop = False
 
+        if not self.dryRun:
+            print('+ {}'.format(' '.join(sys.argv)), flush=True)
+
     def run(self):
-        print('{{0}} = {}'.format(self.tmivInstallDir))
-        print('{{1}} = {}'.format(self.tmivSourceDir))
-        print('{{2}} = {}'.format(self.contentDir))
-        print('{{3}} = {}'.format(self.testDir), flush=True)
+        if not self.dryRun:
+            print('{{0}} = {}'.format(self.tmivInstallDir))
+            print('{{1}} = {}'.format(self.tmivSourceDir))
+            print('{{2}} = {}'.format(self.contentDir))
+            print('{{3}} = {}'.format(self.testDir), flush=True)
 
         app.inspectEnvironment()
 
@@ -94,17 +106,17 @@ class IntegrationTest:
         return int((0 < self.numComparisonMismatches) or (0 < self.numComparisonErrors))
 
     def inspectEnvironment(self):
-        self.checkDirExists(
-            'TMIV installation', self.tmivInstallDir, os.path.join('include', 'TMIV', 'Decoder', 'MivDecoder.h'))
-        self.checkDirExists('TMIV source', self.tmivSourceDir,
-                            os.path.join('README.md'))
-        self.checkDirExists('content', self.contentDir, os.path.join(
-            'E', 'v13_texture_1920x1080_yuv420p10le.yuv'))
+        self.checkIfProbeExistsInDir(
+            'TMIV installation', self.tmivInstallDir, Path('include') / 'TMIV' / 'Decoder' / 'MivDecoder.h')
+        self.checkIfProbeExistsInDir('TMIV source', self.tmivSourceDir,
+                                     Path('README.md'))
+        self.checkIfProbeExistsInDir('content', self.contentDir,
+                                     Path('E') / 'v13_texture_1920x1080_yuv420p10le.yuv')
 
-        os.makedirs(self.testDir, exist_ok=True)
+        self.testDir.mkdir(exist_ok=True)
 
-        if self.gitCommand:
-            with open(os.path.join(self.testDir, 'git.log'), 'w') as stream:
+        if self.gitCommand and not self.dryRun:
+            with open(self.testDir / 'git.log', 'w') as stream:
                 for target in [None, stream]:
                     subprocess.run([
                         self.gitCommand, 'log', '-n', '10', '--decorate=short', '--oneline'],
@@ -114,7 +126,7 @@ class IntegrationTest:
                         shell=False, cwd=self.tmivSourceDir, check=True, stdout=target)
 
     def testMivAnchor(self, executor):
-        os.makedirs(os.path.join(self.testDir, 'A3/E/QP3'), exist_ok=True)
+        (self.testDir / 'A3' / 'E' / 'QP3').mkdir(parents=True, exist_ok=True)
 
         f1 = self.launchCommand(executor, [], [
             '{0}/bin/Encoder',
@@ -219,7 +231,7 @@ class IntegrationTest:
         return [f4, f2_5, f2_6]
 
     def testMivViewAnchor(self, executor):
-        os.makedirs(os.path.join(self.testDir, 'V3/D/R0'), exist_ok=True)
+        (self.testDir / 'V3' / 'D' / 'R0').mkdir(parents=True, exist_ok=True)
 
         f1 = self.launchCommand(executor, [], [
             '{0}/bin/Encoder',
@@ -274,7 +286,7 @@ class IntegrationTest:
         return [f2_1, f2_2, f2_3, f2_4]
 
     def testMivDsdeAnchor(self, executor):
-        os.makedirs(os.path.join(self.testDir, 'G3/N/R0'), exist_ok=True)
+        (self.testDir / 'G3' / 'N' / 'R0').mkdir(parents=True, exist_ok=True)
 
         f1 = self.launchCommand(executor, [], [
             '{0}/bin/Encoder',
@@ -324,7 +336,7 @@ class IntegrationTest:
         return [f2_1, f2_2, f2_3]
 
     def testBestReference(self, executor):
-        os.makedirs(os.path.join(self.testDir, 'R3/O/R0'), exist_ok=True)
+        (self.testDir / 'R3' / 'O' / 'R0').mkdir(parents=True, exist_ok=True)
 
         f1_1 = self.launchCommand(executor, [], [
             '{0}/bin/Renderer',
@@ -351,7 +363,7 @@ class IntegrationTest:
         return [f1_1, f1_2]
 
     def testMivMpi(self, executor):
-        os.makedirs(os.path.join(self.testDir, 'M3/M/QP3'), exist_ok=True)
+        (self.testDir / 'M3' / 'M' / 'QP3').mkdir(parents=True, exist_ok=True)
 
         f1 = self.launchCommand(executor, [], [
             '{0}/bin/MpiEncoder',
@@ -418,7 +430,7 @@ class IntegrationTest:
         return [f4_1, f4_2, f4_3]
 
     def testAdditiveSynthesizer(self, executor):
-        os.makedirs(os.path.join(self.testDir, 'S1/C/R0'), exist_ok=True)
+        (self.testDir / 'S1' / 'C' / 'R0').mkdir(parents=True, exist_ok=True)
 
         f1 = self.launchCommand(executor, [], [
             '{0}/bin/Renderer',
@@ -442,7 +454,7 @@ class IntegrationTest:
 
         self.runCommand(args, logFile)
 
-        if self.referenceDir:
+        if self.referenceDir and not self.dryRun:
             self.compareFiles(outputFiles)
 
     def sync(self, futures):
@@ -454,8 +466,8 @@ class IntegrationTest:
                 raise exception
 
     def runCommand(self, args, logFile):
-        # Print the command itself
-        print('+ {}'.format(' '.join(args)), flush=True)
+        if not self.dryRun:
+            print('+ {}'.format(' '.join(args)), flush=True)
 
         # Replace placeholders within arguments
         def f(arg): return arg.format(self.tmivInstallDir,
@@ -463,32 +475,32 @@ class IntegrationTest:
         args = list(map(f, args))
         logFile = f(logFile)
 
-        # Execute the command in an interuptable way
-        popen = subprocess.Popen(args, shell=False, cwd=self.testDir, stdout=open(
-            logFile, 'w'), stderr=subprocess.STDOUT)
+        if self.dryRun:
+            print(' '.join(args))
+        else:
+            # Execute the command in an interruptable way
+            popen = subprocess.Popen(args, shell=False, cwd=self.testDir, stdout=open(
+                logFile, 'w'), stderr=subprocess.STDOUT)
 
-        while True:
-            time.sleep(1)
-            returncode = popen.poll()
-            if self.stop:
-                print('Killing process {}'.format(args[0]))
-                popen.kill()
-                sys.exit(1)
-            elif returncode is None:
-                continue
-            elif returncode == 0:
-                return
-            else:
-                raise RuntimeError(
-                    'EXECUTION FAILED!\n  * Log-file    : {}\n  * Command     : {}'.format(logFile, ' '.join(args)))
+            while True:
+                time.sleep(1)
+                returncode = popen.poll()
+                if self.stop:
+                    print('Killing process {}'.format(args[0]))
+                    popen.kill()
+                    sys.exit(1)
+                elif returncode is None:
+                    continue
+                elif returncode == 0:
+                    return
+                else:
+                    raise RuntimeError(
+                        'EXECUTION FAILED!\n  * Log-file    : {}\n  * Command     : {}'.format(logFile, ' '.join(args)))
 
-    def checkDirExists(self, what, dir, probe):
-        if not os.path.isdir(dir):
-            raise RuntimeError('Directory {} does not exist.'.format(dir))
-
-        if not os.path.exists(os.path.join(dir, probe)):
+    def checkIfProbeExistsInDir(self, what: str, folder: Path, probeFile: Path) -> None:
+        if not (folder / probeFile).exists():
             raise RuntimeError(
-                '{} does not appear to be a {} directory because {} was not found.'.format(dir, what, probe))
+                f'{folder} does not appear to be a {what} directory because {probeFile} was not found.')
 
     def compareFiles(self, outputFiles):
         assert(self.referenceDir)
@@ -508,7 +520,7 @@ class IntegrationTest:
 
 if __name__ == '__main__':
     try:
-        app = IntegrationTest(sys.argv)
+        app = IntegrationTest()
         exit(app.run())
     except RuntimeError as e:
         print(e)

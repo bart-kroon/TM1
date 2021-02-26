@@ -160,6 +160,9 @@ template <typename T> decltype(auto) Json::as() const {
 }
 
 inline auto Json::optional(const std::string &key) const -> const Json & {
+  if (!m_node.has_value()) {
+    return null;
+  }
   const auto &object = as<Object>();
   const auto kvp = object.find(key);
   if (kvp == object.cend()) {

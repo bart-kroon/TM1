@@ -403,6 +403,11 @@ TEST_CASE("Json::optional()") {
 
   SECTION("Returns null when a key does not exist") { REQUIRE(!json.optional("w"s)); }
 
+  SECTION("Returns null when null") {
+    json = Json::null;
+    REQUIRE_FALSE(json.optional("meaning"s));
+  }
+
   SECTION("Throws when not an JSON object") {
     json = 42;
     REQUIRE_THROWS(json.optional("meaning"s));

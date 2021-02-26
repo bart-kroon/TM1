@@ -78,7 +78,7 @@ void FileHeader::write(std::ostream &stream) {
 
 Reader::Reader(const Common::Json &config, const IO::Placeholders &placeholders,
                const MivBitstream::SequenceConfig &sc, const bool buildIndexOn)
-    : m_startFrame{sc.startFrameGiven(placeholders.numberOfInputFrames)} {
+    : m_startFrame{sc.startFrameGiven(placeholders.numberOfInputFrames, config)} {
   const auto inputDir = config.require(IO::inputDirectory).as<std::filesystem::path>();
   const auto &node = config.require(inputMpiPcsPathFmt);
 

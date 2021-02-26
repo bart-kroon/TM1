@@ -94,7 +94,8 @@ struct SequenceConfig {
 
   [[nodiscard]] auto cameraByName(const std::string &name) const -> CameraConfig;
   [[nodiscard]] auto sourceViewParams() const -> ViewParamsList;
-  [[nodiscard]] auto startFrameGiven(std::int32_t numberOfInputFrames) const -> std::int32_t;
+  [[nodiscard]] auto startFrameGiven(std::int32_t numberOfInputFrames,
+                                     const Common::Json &mainConfig) const -> std::int32_t;
 
   auto operator==(const SequenceConfig &other) const noexcept -> bool;
   auto operator!=(const SequenceConfig &other) const noexcept -> bool;

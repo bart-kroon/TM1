@@ -149,7 +149,7 @@ auto loadMultiviewFrame(const Common::Json &config, const Placeholders &placehol
   auto frame = Common::MVD16Frame(sc.sourceCameraNames.size());
 
   const auto inputDir = config.require(inputDirectory).as<std::filesystem::path>();
-  const auto startFrame = sc.startFrameGiven(placeholders.numberOfInputFrames);
+  const auto startFrame = sc.startFrameGiven(placeholders.numberOfInputFrames, config);
   fmt::print("Loading multiview frame {0} with start frame offset {1} (= {2}).\n", frameIndex,
              startFrame, frameIndex + startFrame);
 

@@ -220,7 +220,8 @@ auto SequenceConfig::sourceViewParams() const -> ViewParamsList {
   return ViewParamsList{vpl};
 }
 
-auto SequenceConfig::startFrameGiven(std::int32_t numberOfInputFrames) const -> std::int32_t {
+auto SequenceConfig::startFrameGiven(std::int32_t numberOfInputFrames,
+                                     const Common::Json &config) const -> std::int32_t {
   // Bounds check the argument
   if (numberOfInputFrames < 0 || numberOfFrames < numberOfInputFrames) {
     throw std::runtime_error(fmt::format("The number of input frames {} is out of bounds given the "
@@ -236,6 +237,12 @@ auto SequenceConfig::startFrameGiven(std::int32_t numberOfInputFrames) const -> 
                                            "given the total number of frames {2} in the sequence",
                                            startFrame, maxNumberOfFrames, numberOfFrames));
     }
+  }
+  // Allow for direct configuration of the start frame
+  if (const auto &node = config.optional("startFrame")) {
+    const auto startFrame = node.as<int32_t>();
+    VERIFY(0 <= startFrame && startFrame + numberOfInputFrames <= numberOfFrames);
+    return startFrame;
   }
   // The first matching frame range wins
   for (const auto [maxNumberOfFrames, startFrame] : frameRanges) {

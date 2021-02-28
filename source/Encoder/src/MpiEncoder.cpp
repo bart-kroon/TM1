@@ -419,7 +419,7 @@ void MpiEncoder::prepareIvau() {
 
 auto MpiEncoder::log2FocLsbMinus4() const -> std::uint8_t {
   // Avoid confusion but test MSB/LSB logic in decoder
-  return std::max(4U, Common::ceilLog2(m_intraPeriod) + 1U) - 4U;
+  return Common::downCast<uint8_t>(std::max(4U, Common::ceilLog2(m_intraPeriod) + 1U) - 4U);
 }
 
 void MpiEncoder::incrementFoc() {

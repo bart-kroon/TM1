@@ -90,7 +90,7 @@ Encoder::Configuration::Configuration(const Common::Json &rootNode,
 
   // Read the entity encoding range if existed
   if (const auto &subnode = rootNode.optional("EntityEncodeRange")) {
-    entityEncRange = subnode.asVec<int, 2>();
+    entityEncRange = subnode.asVec<Common::SampleValue, 2>();
   }
 
   if (intraPeriod > maxIntraPeriod) {

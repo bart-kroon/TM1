@@ -200,7 +200,7 @@ auto MivDecoder::decodeVideoSubBitstreams() -> bool {
     }
 
     // Note(FT): test the type of attribute to decode : texture AND/OR transparency
-    for (auto attributeIndex = 0;
+    for (uint8_t attributeIndex = 0;
          attributeIndex < m_au.vps.attribute_information(j).ai_attribute_count();
          attributeIndex++) {
       if (m_au.vps.attribute_information(j).ai_attribute_type_id(attributeIndex) ==

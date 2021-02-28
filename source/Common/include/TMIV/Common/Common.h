@@ -40,10 +40,8 @@
 #include <algorithm>
 #include <cassert>
 #include <cmath>
+#include <cstdint>
 #include <limits>
-#include <sstream>
-#include <string>
-#include <string_view>
 
 namespace TMIV::Common {
 constexpr auto radperdeg{0.01745329251994329576923690768489F};
@@ -65,17 +63,38 @@ auto overload(Ts &&...values) -> Overload<std::remove_reference_t<Ts>...> {
   return {std::forward<Ts>(values)...};
 }
 
+// ISO/IEC 23090-5 supports upto 32-bit video data (depending on video codec support)
+using SampleValue = uint_fast32_t;
+
 // The maximum level for an unsigned integer of the specified number of bits
-constexpr auto maxLevel(unsigned bits) -> unsigned;
+//
+// The default return type is SampleValue. Override to avoid static_cast's at the call site.
+template <typename UnsignedResult = SampleValue>
+constexpr auto maxLevel(unsigned bits) noexcept -> UnsignedResult {
+  static_assert(std::is_unsigned_v<UnsignedResult>);
+  assert(bits <= std::numeric_limits<UnsignedResult>::digits);
+  return static_cast<UnsignedResult>((UnsignedResult{1} << bits) - 1U);
+}
 
 // Expand an integral value to floating-point using a linear transfer function
-constexpr auto expandValue(uint16_t x, unsigned bits) -> float {
+constexpr auto expandValue(SampleValue x, unsigned bits) -> float {
+  assert(x <= maxLevel(bits));
   assert(0 < bits);
   return static_cast<float>(x) / static_cast<float>(maxLevel(bits));
 }
 
 // Quantize a value using a linear transfer function
-constexpr auto quantizeValue(float x, unsigned bits) -> uint16_t;
+template <typename UnsignedResult = SampleValue>
+constexpr auto quantizeValue(float x, unsigned bits) -> UnsignedResult {
+  const auto maxLevel_ = maxLevel<UnsignedResult>(bits);
+  if (x >= 0.F && x < 1.F) {
+    return static_cast<UnsignedResult>(x * static_cast<float>(maxLevel_) + 0.5F);
+  }
+  if (1.F <= x) {
+    return maxLevel_;
+  }
+  return {};
+}
 
 // Does a collection contain a specified value?
 template <typename Collection, typename Value>
@@ -86,7 +105,5 @@ auto contains(const Collection &collection, Value &&value) -> bool {
                      [&value](const auto &x) { return x == value; });
 }
 } // namespace TMIV::Common
-
-#include "Common.hpp"
 
 #endif

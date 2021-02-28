@@ -193,9 +193,8 @@ void Encoder::updateMasks(const Common::MVD16Frame &views, Common::MaskList &mas
   }
 }
 
-void Encoder::aggregateEntityMasks(Common::MaskList &masks, uint16_t entityId) {
-  if (static_cast<int>(m_aggregatedEntityMask.size()) <
-      m_config.entityEncRange[1] - m_config.entityEncRange[0]) {
+void Encoder::aggregateEntityMasks(Common::MaskList &masks, Common::SampleValue entityId) {
+  if (m_aggregatedEntityMask.size() < m_config.entityEncRange[1] - m_config.entityEncRange[0]) {
     m_aggregatedEntityMask.push_back(masks);
   } else {
     for (size_t i = 0; i < masks.size(); i++) {
@@ -207,8 +206,8 @@ void Encoder::aggregateEntityMasks(Common::MaskList &masks, uint16_t entityId) {
   }
 }
 
-auto Encoder::entitySeparator(const Common::MVD16Frame &transportViews, uint16_t entityId)
-    -> Common::MVD16Frame {
+auto Encoder::entitySeparator(const Common::MVD16Frame &transportViews,
+                              Common::SampleValue entityId) -> Common::MVD16Frame {
   // Initalize entityViews
   Common::MVD16Frame entityViews;
   for (const auto &transportView : transportViews) {

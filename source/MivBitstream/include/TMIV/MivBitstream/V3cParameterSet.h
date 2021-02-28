@@ -536,8 +536,8 @@ public:
   [[nodiscard]] constexpr auto vps_v3c_parameter_set_id() const noexcept;
   [[nodiscard]] auto vps_atlas_count_minus1() const noexcept -> std::uint8_t;
   [[nodiscard]] auto vps_atlas_id(size_t k) const -> AtlasId;
-  [[nodiscard]] auto vps_frame_width(AtlasId j) const -> std::uint16_t;
-  [[nodiscard]] auto vps_frame_height(AtlasId j) const -> std::uint16_t;
+  [[nodiscard]] auto vps_frame_width(AtlasId j) const -> int32_t;
+  [[nodiscard]] auto vps_frame_height(AtlasId j) const -> int32_t;
   [[nodiscard]] auto vps_map_count_minus1(AtlasId j) const -> std::uint8_t;
   [[nodiscard]] auto vps_auxiliary_video_present_flag(AtlasId j) const -> bool;
   [[nodiscard]] auto vps_occupancy_video_present_flag(AtlasId j) const -> bool;
@@ -560,8 +560,8 @@ public:
   constexpr auto vps_v3c_parameter_set_id(std::uint8_t value) noexcept -> auto &;
   auto vps_atlas_count_minus1(std::uint8_t value) -> V3cParameterSet &;
   auto vps_atlas_id(size_t k, AtlasId value) -> V3cParameterSet &;
-  auto vps_frame_width(AtlasId j, std::uint16_t value) -> V3cParameterSet &;
-  auto vps_frame_height(AtlasId j, std::uint16_t value) -> V3cParameterSet &;
+  auto vps_frame_width(AtlasId j, int32_t value) -> V3cParameterSet &;
+  auto vps_frame_height(AtlasId j, int32_t value) -> V3cParameterSet &;
   auto vps_map_count_minus1(AtlasId j, std::uint8_t value) -> V3cParameterSet &;
   auto vps_auxiliary_video_present_flag(AtlasId j, bool value) -> V3cParameterSet &;
   auto vps_occupancy_video_present_flag(AtlasId j, bool value) -> V3cParameterSet &;
@@ -600,8 +600,8 @@ public:
 private:
   struct VpsAtlas {
     AtlasId vps_atlas_id{};
-    std::uint16_t vps_frame_width{};
-    std::uint16_t vps_frame_height{};
+    int32_t vps_frame_width{};
+    int32_t vps_frame_height{};
     std::uint8_t vps_map_count_minus1{};
     bool vps_auxiliary_video_present_flag{};
     bool vps_occupancy_video_present_flag{};

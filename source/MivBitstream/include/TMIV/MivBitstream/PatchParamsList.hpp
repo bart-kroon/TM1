@@ -142,7 +142,8 @@ constexpr auto PatchParams::atlasPatchLoDScaleY(std::int32_t value) noexcept -> 
   return *this;
 }
 
-constexpr auto PatchParams::atlasPatchEntityId(std::uint16_t value) noexcept -> PatchParams & {
+constexpr auto PatchParams::atlasPatchEntityId(Common::SampleValue value) noexcept
+    -> PatchParams & {
   m_atlasPatchEntityId = value;
   return *this;
 }

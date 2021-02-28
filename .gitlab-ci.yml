@@ -35,7 +35,7 @@ Clang 11 Debug:
     - >
       cmake
       -DCMAKE_CXX_FLAGS="-stdlib=libc++
-      -Wall -Wextra -Wpedantic -Werror -Wunreachable-code-aggressive
+      -Wall -Wextra -Wpedantic -Werror -Wunreachable-code-aggressive -Wimplicit-int-conversion
       -fprofile-arcs -ftest-coverage"
       -DCMAKE_BUILD_TYPE=Debug
       ..

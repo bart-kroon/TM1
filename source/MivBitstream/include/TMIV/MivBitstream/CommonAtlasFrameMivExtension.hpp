@@ -51,14 +51,14 @@ constexpr auto CameraIntrinsics::ci_cam_type(const CiCamType value) noexcept -> 
   return *this;
 }
 
-constexpr auto
-CameraIntrinsics::ci_projection_plane_width_minus1(const std::uint16_t value) noexcept -> auto & {
+constexpr auto CameraIntrinsics::ci_projection_plane_width_minus1(int32_t value) noexcept
+    -> auto & {
   m_ci_projection_plane_width_minus1 = value;
   return *this;
 }
 
-constexpr auto
-CameraIntrinsics::ci_projection_plane_height_minus1(const std::uint16_t value) noexcept -> auto & {
+constexpr auto CameraIntrinsics::ci_projection_plane_height_minus1(int32_t value) noexcept
+    -> auto & {
   m_ci_projection_plane_height_minus1 = value;
   return *this;
 }
@@ -217,7 +217,7 @@ constexpr auto DepthQuantization::dq_norm_disp_high(const float value) noexcept 
 }
 
 constexpr auto
-DepthQuantization::dq_depth_occ_map_threshold_default(const std::uint32_t value) noexcept
+DepthQuantization::dq_depth_occ_map_threshold_default(Common::SampleValue value) noexcept
     -> auto & {
   m_dq_depth_occ_map_threshold_default = value;
   return *this;

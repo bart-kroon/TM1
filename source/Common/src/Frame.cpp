@@ -55,7 +55,8 @@ template <class TO, class FROM> auto yuv420p_impl(const Frame<FROM> &frame) -> F
       for (int j = 0; j < cols; ++j) {
         auto sum = frame.getPlane(k)(2 * i, 2 * j) + frame.getPlane(k)(2 * i + 1, 2 * j) +
                    frame.getPlane(k)(2 * i, 2 * j + 1) + frame.getPlane(k)(2 * i + 1, 2 * j + 1);
-        result.getPlane(k)(i, j) = (sum + 2) / 4;
+        using base_type = typename detail::PixelFormatHelper<TO>::base_type;
+        result.getPlane(k)(i, j) = static_cast<base_type>((sum + 2) / 4);
       }
     }
   }
@@ -140,7 +141,7 @@ auto quantizeTexture(const Mat<Vec3f> &in) -> Frame<YUV444P10> {
     for (unsigned i = 0; i != height; ++i) {
       for (unsigned j = 0; j != width; ++j) {
         constexpr auto bitDepth = 10U;
-        outYuv.getPlane(k)(i, j) = quantizeValue(in(i, j)[k], bitDepth);
+        outYuv.getPlane(k)(i, j) = quantizeValue<uint16_t>(in(i, j)[k], bitDepth);
       }
     }
   }

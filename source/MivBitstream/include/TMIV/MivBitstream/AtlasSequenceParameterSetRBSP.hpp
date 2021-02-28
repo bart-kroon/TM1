@@ -340,13 +340,13 @@ AtlasSequenceParameterSetRBSP::asps_atlas_sequence_parameter_set_id(const uint8_
   return *this;
 }
 
-constexpr auto AtlasSequenceParameterSetRBSP::asps_frame_width(const uint16_t value) noexcept
+constexpr auto AtlasSequenceParameterSetRBSP::asps_frame_width(const int32_t value) noexcept
     -> auto & {
   m_asps_frame_width = value;
   return *this;
 }
 
-constexpr auto AtlasSequenceParameterSetRBSP::asps_frame_height(const uint16_t value) noexcept
+constexpr auto AtlasSequenceParameterSetRBSP::asps_frame_height(const int32_t value) noexcept
     -> auto & {
   m_asps_frame_height = value;
   return *this;

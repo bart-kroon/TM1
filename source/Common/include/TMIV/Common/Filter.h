@@ -96,9 +96,9 @@ template <typename S, typename T> auto boxBlur(const Mat<T> &in, int k) -> Mat<T
       const auto count = countRect(ii, p_1, p_2);
       if (0 < count) {
         if (0 <= sum) {
-          out(i, j) = (sum + count / 2) / count;
+          out(i, j) = static_cast<T>((sum + count / 2) / count);
         } else {
-          out(i, j) = (sum - count / 2) / count;
+          out(i, j) = static_cast<T>((sum - count / 2) / count);
         }
       }
     }

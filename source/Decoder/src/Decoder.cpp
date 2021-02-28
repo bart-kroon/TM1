@@ -95,12 +95,12 @@ void addAttributeOffset(MivBitstream::AccessUnit &frame) {
         const auto &pp = atlas.patchParamsList[patchIndex];
 
         for (int c = 0; c < 3; c++) {
-          const auto pduAttributeOffset =
-              static_cast<int16_t>((pp.atlasPatchAttributeOffset()[c] << bitShift) - inputMedVal);
+          const auto pduAttributeOffset = Common::assertDownCast<int16_t>(
+              (pp.atlasPatchAttributeOffset()[c] << bitShift) - inputMedVal);
           auto &value = YUV[c](y, x);
 
           if (value + pduAttributeOffset > inputMaxVal) {
-            value = inputMaxVal;
+            value = Common::assertDownCast<uint16_t>(inputMaxVal);
           } else if (value + pduAttributeOffset < 0) {
             value = 0;
           } else {

@@ -34,6 +34,7 @@
 #ifndef _TMIV_COMMON_VERIFY_H_
 #define _TMIV_COMMON_VERIFY_H_
 
+#include <cassert>
 #include <cstdlib>
 #include <iostream>
 #include <stdexcept>
@@ -208,6 +209,78 @@ inline auto message(char const *introduction, char const *condition, char const 
   } catch (...) {
   }
   std::abort();
+}
+
+// Down cast with bounds preconditions (internal error cause)
+//
+// The name suggests typical use but the function can also be used as the identity function or for
+// upcasting. (When types are not known in a generic context.) Any non-applicable tests are removed
+// at compile time.
+template <typename Out, typename In> constexpr auto downCast(In input) noexcept -> Out {
+  // NOTE(BK): There is near code duplication between downCast, verifyDownCast and assertDownCast,
+  //           but the only C++17 alternative is to use a macro. Whenever changing this
+  //           implementation, make the same change to the other two.
+
+  static_assert(std::is_arithmetic_v<In> && std::is_integral_v<Out>);
+
+  if constexpr (std::is_signed_v<In> && std::is_unsigned_v<Out>) {
+    PRECONDITION(0 <= input);
+  }
+  if constexpr (std::numeric_limits<In>::digits > std::numeric_limits<Out>::digits) {
+    if constexpr (std::is_signed_v<In> && std::is_signed_v<Out>) {
+      PRECONDITION(std::numeric_limits<Out>::min() <= input);
+    }
+    PRECONDITION(input <= static_cast<In>(std::numeric_limits<Out>::max()));
+  }
+  return static_cast<Out>(input);
+}
+
+// Down cast with bounds verification (potentially external error cause, may throw)
+//
+// The name suggests typical use but the function can also be used as the identity function or for
+// upcasting. (When types are not known in a generic context.) Any non-applicable tests are removed
+// at compile time.
+template <typename Out, typename In> constexpr auto verifyDownCast(In input) -> Out {
+  // NOTE(BK): There is near code duplication between downCast, verifyDownCast and assertDownCast,
+  //           but the only C++17 alternative is to use a macro. Whenever changing this
+  //           implementation, make the same change to the other two.
+
+  static_assert(std::is_arithmetic_v<In> && std::is_integral_v<Out>);
+
+  if constexpr (std::is_signed_v<In> && std::is_unsigned_v<Out>) {
+    VERIFY(0 <= input);
+  }
+  if constexpr (std::numeric_limits<In>::digits > std::numeric_limits<Out>::digits) {
+    if constexpr (std::is_signed_v<In> && std::is_signed_v<Out>) {
+      VERIFY(std::numeric_limits<Out>::min() <= input);
+    }
+    VERIFY(input <= static_cast<In>(std::numeric_limits<Out>::max()));
+  }
+  return static_cast<Out>(input);
+}
+
+// Down cast with bounds assertion (internal error cause, hot-loop)
+//
+// The name suggests typical use but the function can also be used as the identity function or for
+// upcasting. (When types are not known in a generic context.) Any non-applicable tests are removed
+// at compile time.
+template <typename Out, typename In> constexpr auto assertDownCast(In input) noexcept -> Out {
+  // NOTE(BK): There is near code duplication between downCast, verifyDownCast and assertDownCast,
+  //           but the only C++17 alternative is to use a macro. Whenever changing this
+  //           implementation, make the same change to the other two.
+
+  static_assert(std::is_arithmetic_v<In> && std::is_integral_v<Out>);
+
+  if constexpr (std::is_signed_v<In> && std::is_unsigned_v<Out>) {
+    assert(0 <= input);
+  }
+  if constexpr (std::numeric_limits<In>::digits > std::numeric_limits<Out>::digits) {
+    if constexpr (std::is_signed_v<In> && std::is_signed_v<Out>) {
+      assert(std::numeric_limits<Out>::min() <= input);
+    }
+    assert(input <= static_cast<In>(std::numeric_limits<Out>::max()));
+  }
+  return static_cast<Out>(input);
 }
 } // namespace TMIV::Common
 

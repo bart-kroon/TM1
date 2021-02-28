@@ -58,12 +58,14 @@ DepthTransform::DepthTransform(const DepthQuantization &dq, const PatchParams &p
   m_depthEnd = m_depthStart + patchParams.atlasPatch3dRangeD();
 }
 
-auto DepthTransform::expandNormDisp(uint16_t x) const -> float {
+auto DepthTransform::expandNormDisp(Common::SampleValue x) const -> float {
   const auto level = Common::expandValue(std::clamp(x, m_depthStart, m_depthEnd), m_bits);
   return std::max(m_minNormDisp, m_normDispLow + (m_normDispHigh - m_normDispLow) * level);
 }
 
-auto DepthTransform::expandDepth(uint16_t x) const -> float { return 1.F / expandNormDisp(x); }
+auto DepthTransform::expandDepth(Common::SampleValue x) const -> float {
+  return 1.F / expandNormDisp(x);
+}
 
 auto DepthTransform::expandDepth(const Common::Mat<uint16_t> &matrix) const -> Common::Mat<float> {
   auto depth = Common::Mat<float>(matrix.sizes());
@@ -80,7 +82,8 @@ auto DepthTransform::expandDepth(const Common::Depth10Frame &frame) const -> Com
   return expandDepth(frame.getPlane(0));
 }
 
-auto DepthTransform::quantizeNormDisp(float x, uint16_t minLevel) const -> uint16_t {
+auto DepthTransform::quantizeNormDisp(float x, Common::SampleValue minLevel) const
+    -> Common::SampleValue {
   if (x > 0.F) {
     const auto level = (x - m_normDispLow) / (m_normDispHigh - m_normDispLow);
     return std::max(minLevel, Common::quantizeValue(level, m_bits));

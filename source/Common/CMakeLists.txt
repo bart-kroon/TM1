@@ -14,7 +14,6 @@ create_tmiv_library(
         "include/TMIV/Common/Bitstream.hpp"
         "include/TMIV/Common/Bytestream.h"
         "include/TMIV/Common/Common.h"
-        "include/TMIV/Common/Common.hpp"
         "include/TMIV/Common/Application.h"
         "include/TMIV/Common/Json.h"
         "include/TMIV/Common/Json.hpp"
@@ -47,9 +46,6 @@ target_include_directories(CommonLib
 
 target_compile_features(CommonLib
     PUBLIC cxx_std_17)
-
-target_compile_options(CommonLib
-    PUBLIC "$<$<CXX_COMPILER_ID:MSVC>:/wd4244>")
 
 install(
     TARGETS

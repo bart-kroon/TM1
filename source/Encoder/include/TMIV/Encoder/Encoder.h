@@ -85,13 +85,13 @@ private: // Encoder_pushFrame.cpp
   void updateNonAggregatedMask(const Common::MVD16Frame &transportViews,
                                const Common::MaskList &masks);
   void pushMultiEntityFrame(Common::MVD16Frame sourceViews);
-  static auto entitySeparator(const Common::MVD16Frame &transportViews, uint16_t entityId)
-      -> Common::MVD16Frame;
+  static auto entitySeparator(const Common::MVD16Frame &transportViews,
+                              Common::SampleValue entityId) -> Common::MVD16Frame;
   static auto yuvSampler(const Common::EntityMapList &in)
       -> std::vector<Common::Frame<Common::YUV420P16>>;
   static void mergeMasks(Common::MaskList &mergedMasks, Common::MaskList masks);
   static void updateMasks(const Common::MVD16Frame &views, Common::MaskList &masks);
-  void aggregateEntityMasks(Common::MaskList &masks, std::uint16_t entityId);
+  void aggregateEntityMasks(Common::MaskList &masks, Common::SampleValue entityId);
 
 private: // Encoder_completeAccessUnit.cpp
   void scaleGeometryDynamicRange();
@@ -128,7 +128,7 @@ private:
     std::vector<Common::Vec2i> overrideAtlasFrameSizes{};
     bool geometryScaleEnabledFlag;
     int dilationIter;
-    Common::Vec2i entityEncRange;
+    Common::stack::Vec2<Common::SampleValue> entityEncRange;
     bool dynamicDepthRange;
     bool attributeOffsetFlag;
     int attributeOffsetBitCount;

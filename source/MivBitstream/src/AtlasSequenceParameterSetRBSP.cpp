@@ -74,7 +74,7 @@ auto RefListStruct::decodeFrom(Common::InputBitstream &bitstream,
   auto deltaAfocSt = std::vector<int16_t>(bitstream.getUExpGolomb<size_t>(), 0);
 
   for (auto &x : deltaAfocSt) {
-    const auto abs_delta_afoc_st = bitstream.getUExpGolomb<int>();
+    const auto abs_delta_afoc_st = bitstream.getUExpGolomb<int16_t>();
     VERIFY_V3CBITSTREAM(0 <= abs_delta_afoc_st && abs_delta_afoc_st <= INT16_MAX);
 
     if (abs_delta_afoc_st != 0) {
@@ -361,7 +361,7 @@ auto operator<<(std::ostream &stream, const AtlasSequenceParameterSetRBSP &x) ->
          << x.asps_long_term_ref_atlas_frames_flag() << '\n';
   stream << "asps_num_ref_atlas_frame_lists_in_asps="
          << int{x.asps_num_ref_atlas_frame_lists_in_asps()} << '\n';
-  for (int i = 0; i < x.asps_num_ref_atlas_frame_lists_in_asps(); ++i) {
+  for (uint8_t i = 0; i < x.asps_num_ref_atlas_frame_lists_in_asps(); ++i) {
     x.ref_list_struct(i).printTo(stream, i);
   }
   stream << "asps_use_eight_orientations_flag=" << std::boolalpha
@@ -505,7 +505,7 @@ auto AtlasSequenceParameterSetRBSP::decodeFrom(std::istream &stream, const V3cUn
   x.asps_num_ref_atlas_frame_lists_in_asps(bitstream.getUExpGolomb<size_t>());
   VERIFY_V3CBITSTREAM(x.asps_num_ref_atlas_frame_lists_in_asps() <= 64);
 
-  for (int i = 0; i < x.asps_num_ref_atlas_frame_lists_in_asps(); ++i) {
+  for (uint8_t i = 0; i < x.asps_num_ref_atlas_frame_lists_in_asps(); ++i) {
     x.ref_list_struct(i, RefListStruct::decodeFrom(bitstream, x));
   }
 
@@ -593,7 +593,7 @@ void AtlasSequenceParameterSetRBSP::encodeTo(std::ostream &stream, const V3cUnit
   PRECONDITION(asps_num_ref_atlas_frame_lists_in_asps() <= 64);
   bitstream.putUExpGolomb(asps_num_ref_atlas_frame_lists_in_asps());
 
-  for (int i = 0; i < asps_num_ref_atlas_frame_lists_in_asps(); ++i) {
+  for (uint8_t i = 0; i < asps_num_ref_atlas_frame_lists_in_asps(); ++i) {
     ref_list_struct(i).encodeTo(bitstream, *this);
   }
 

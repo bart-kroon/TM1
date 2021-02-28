@@ -39,6 +39,7 @@
 #include <TMIV/MivBitstream/V3cParameterSet.h>
 
 #include <TMIV/Common/Bitstream.h>
+#include <TMIV/Common/Common.h>
 #include <TMIV/Common/Matrix.h>
 #include <TMIV/Common/Quaternion.h>
 #include <TMIV/Common/Vector.h>
@@ -116,8 +117,8 @@ public:
   [[nodiscard]] auto ci_ortho_height() const -> float;
 
   constexpr auto ci_cam_type(CiCamType value) noexcept -> auto &;
-  constexpr auto ci_projection_plane_width_minus1(std::uint16_t value) noexcept -> auto &;
-  constexpr auto ci_projection_plane_height_minus1(std::uint16_t value) noexcept -> auto &;
+  constexpr auto ci_projection_plane_width_minus1(int32_t value) noexcept -> auto &;
+  constexpr auto ci_projection_plane_height_minus1(int32_t value) noexcept -> auto &;
 
   constexpr auto ci_erp_phi_min(float value) noexcept -> auto &;
   constexpr auto ci_erp_phi_max(float value) noexcept -> auto &;
@@ -147,8 +148,8 @@ public:
 
 private:
   CiCamType m_ci_cam_type{};
-  std::uint16_t m_ci_projection_plane_width_minus1{};
-  std::uint16_t m_ci_projection_plane_height_minus1{};
+  int32_t m_ci_projection_plane_width_minus1{};
+  int32_t m_ci_projection_plane_height_minus1{};
   std::optional<float> m_ci_erp_phi_min{{}};
   std::optional<float> m_ci_erp_phi_max{{}};
   std::optional<float> m_ci_erp_theta_min{{}};
@@ -171,7 +172,7 @@ public:
 
   constexpr auto dq_norm_disp_low(float value) noexcept -> auto &;
   constexpr auto dq_norm_disp_high(float value) noexcept -> auto &;
-  constexpr auto dq_depth_occ_map_threshold_default(std::uint32_t value) noexcept -> auto &;
+  constexpr auto dq_depth_occ_map_threshold_default(Common::SampleValue value) noexcept -> auto &;
 
   auto printTo(std::ostream &stream, std::uint16_t viewId) const -> std::ostream &;
 
@@ -186,7 +187,7 @@ public:
 private:
   float m_dq_norm_disp_low{};
   float m_dq_norm_disp_high{};
-  std::uint32_t m_dq_depth_occ_map_threshold_default{};
+  Common::SampleValue m_dq_depth_occ_map_threshold_default{};
 };
 
 // 23090-12: pruning_parents()

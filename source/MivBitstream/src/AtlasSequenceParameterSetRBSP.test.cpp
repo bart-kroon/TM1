@@ -43,7 +43,7 @@ TEST_CASE("ref_list_struct", "[Atlas Sequence Parameter Set RBSP]") {
 
     const auto x = RefListStruct{};
     REQUIRE(x.num_ref_entries() == 0);
-    REQUIRE(toString(x, 7) == R"(num_ref_entries( 7 )=0
+    REQUIRE(toString(x, uint8_t{7}) == R"(num_ref_entries( 7 )=0
 )");
     REQUIRE(bitCodingTest(x, 1, asps));
   }
@@ -54,7 +54,7 @@ TEST_CASE("ref_list_struct", "[Atlas Sequence Parameter Set RBSP]") {
 
     const auto x = RefListStruct{{-INT16_MAX, -4, -1, 0, 1, 13, INT16_MAX}};
     REQUIRE(x.num_ref_entries() == 7);
-    REQUIRE(toString(x, 3) == R"(num_ref_entries( 3 )=7
+    REQUIRE(toString(x, uint8_t{3}) == R"(num_ref_entries( 3 )=7
 DeltaAfocSt( 3, 0 )=-32767
 DeltaAfocSt( 3, 1 )=-4
 DeltaAfocSt( 3, 2 )=-1

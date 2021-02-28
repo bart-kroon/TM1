@@ -33,6 +33,7 @@
 
 #include <TMIV/GeometryQuantizer/ExplicitOccupancy.h>
 
+#include <TMIV/Common/verify.h>
 #include <TMIV/MivBitstream/DepthOccupancyTransform.h>
 
 #include <iostream>
@@ -70,13 +71,15 @@ auto ExplicitOccupancy::setOccupancyParams(MivBitstream::EncoderParams params)
       atlas.asme().asme_embedded_occupancy_enabled_flag(false).asme_occupancy_scale_enabled_flag(
           true);
       if (m_occupancyScaleConfig) {
-        atlas.asme().asme_occupancy_scale_factor_x_minus1(m_occupancyScale[0] - 1);
-        atlas.asme().asme_occupancy_scale_factor_y_minus1(m_occupancyScale[1] - 1);
+        atlas.asme().asme_occupancy_scale_factor_x_minus1(
+            Common::downCast<uint16_t>(m_occupancyScale[0] - 1));
+        atlas.asme().asme_occupancy_scale_factor_y_minus1(
+            Common::downCast<uint16_t>(m_occupancyScale[1] - 1));
       } else {
         atlas.asme().asme_occupancy_scale_factor_x_minus1(
-            (1 << atlas.asps.asps_log2_patch_packing_block_size()) - 1);
+            Common::downCast<uint16_t>((1 << atlas.asps.asps_log2_patch_packing_block_size()) - 1));
         atlas.asme().asme_occupancy_scale_factor_y_minus1(
-            (1 << atlas.asps.asps_log2_patch_packing_block_size()) - 1);
+            Common::downCast<uint16_t>((1 << atlas.asps.asps_log2_patch_packing_block_size()) - 1));
       }
     }
   }
@@ -125,7 +128,7 @@ auto ExplicitOccupancy::transformAtlases(const Common::MVD16Frame &inAtlases)
         if (inOccupancyTransform.occupant(inLevel)) {
           const auto normDisp = inDepthTransform.expandNormDisp(inLevel);
           const auto outLevel = outDepthTransform.quantizeNormDisp(normDisp, 0);
-          outAtlases[kOut].depth.getPlane(0)(n, m) = outLevel;
+          outAtlases[kOut].depth.getPlane(0)(n, m) = Common::downCast<uint16_t>(outLevel);
         }
       }
     }

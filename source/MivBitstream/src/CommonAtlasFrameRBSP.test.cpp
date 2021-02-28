@@ -49,7 +49,7 @@ TEST_CASE("common_atlas_frame_rbsp", "[Common Atlas Frame RBSP]") {
 
   const auto caspsV = [] {
     auto v = std::vector<CommonAtlasSequenceParameterSetRBSP>{};
-    for (const std::uint8_t id : {0, 14, 15}) {
+    for (const auto id : {uint8_t{}, uint8_t{14}, uint8_t{15}}) {
       v.emplace_back()
           .casps_common_atlas_sequence_parameter_set_id(id)
           .casps_extension_present_flag(true)

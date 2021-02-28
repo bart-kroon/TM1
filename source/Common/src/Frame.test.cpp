@@ -160,7 +160,7 @@ TEST_CASE("Resizing 0x0 frame to 4x2") {
 TEST_CASE("Convert Yuv444P10 to YUV420P10") {
   Frame<YUV444P10> sourceFrame{2, 2};
   sourceFrame.fillNeutral();
-  int offset = 0;
+  auto offset = uint16_t{};
   for (auto &plane : sourceFrame.getPlanes()) {
     for (auto &pixel : plane) {
       pixel += offset++;
@@ -183,7 +183,7 @@ TEST_CASE("Convert Yuv444P10 to YUV420P10") {
 TEST_CASE("Convert YUV420P10 to Yuv444P10 ") {
   Frame<YUV420P10> sourceFrame{2, 2};
   sourceFrame.fillNeutral();
-  int offset = 0;
+  auto offset = uint16_t{};
   for (auto &plane : sourceFrame.getPlanes()) {
     for (auto &pixel : plane) {
       pixel += offset++;

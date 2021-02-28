@@ -35,6 +35,7 @@
 #define _TMIV_MIVBITSTREAM_ATLASTILELAYERRBSP_H_
 
 #include <TMIV/Common/Bitstream.h>
+#include <TMIV/Common/Common.h>
 #include <TMIV/MivBitstream/AtlasFrameParameterSetRBSP.h>
 #include <TMIV/MivBitstream/AtlasSequenceParameterSetRBSP.h>
 #include <TMIV/MivBitstream/V3cParameterSet.h>
@@ -165,12 +166,12 @@ public:
 class PduMivExtension {
 public:
   [[nodiscard]] constexpr auto pdu_entity_id() const noexcept;
-  [[nodiscard]] auto pdu_depth_occ_threshold() const -> std::uint32_t;
+  [[nodiscard]] auto pdu_depth_occ_threshold() const -> Common::SampleValue;
   [[nodiscard]] auto pdu_attribute_offset() const -> Common::Vec3w;
   [[nodiscard]] constexpr auto pdu_inpaint_flag() const noexcept;
 
-  constexpr auto pdu_entity_id(std::uint32_t value) noexcept -> auto &;
-  constexpr auto pdu_depth_occ_threshold(std::uint32_t value) noexcept -> auto &;
+  constexpr auto pdu_entity_id(Common::SampleValue value) noexcept -> auto &;
+  constexpr auto pdu_depth_occ_threshold(Common::SampleValue value) noexcept -> auto &;
   auto pdu_attribute_offset(Common::Vec3w value) noexcept -> auto &;
   constexpr auto pdu_inpaint_flag(bool value) noexcept -> auto &;
 
@@ -186,8 +187,8 @@ public:
                 const AtlasSequenceParameterSetRBSP &asps) const;
 
 private:
-  std::optional<std::uint32_t> m_pdu_entity_id;
-  std::optional<std::uint32_t> m_pdu_depth_occ_threshold;
+  std::optional<Common::SampleValue> m_pdu_entity_id;
+  std::optional<Common::SampleValue> m_pdu_depth_occ_threshold;
   std::optional<Common::Vec3w> m_pdu_attribute_offset;
   std::optional<bool> m_pdu_inpaint_flag;
 };
@@ -205,7 +206,7 @@ public:
   [[nodiscard]] constexpr auto pdu_3d_offset_u() const noexcept;
   [[nodiscard]] constexpr auto pdu_3d_offset_v() const noexcept;
   [[nodiscard]] constexpr auto pdu_3d_offset_d() const noexcept;
-  [[nodiscard]] auto pdu_3d_range_d() const -> std::uint32_t;
+  [[nodiscard]] auto pdu_3d_range_d() const -> Common::SampleValue;
   [[nodiscard]] constexpr auto pdu_projection_id() const noexcept;
   [[nodiscard]] constexpr auto pdu_orientation_index() const noexcept;
   [[nodiscard]] constexpr auto pdu_lod_enabled_flag() const noexcept;
@@ -219,8 +220,8 @@ public:
   constexpr auto pdu_2d_size_y_minus1(std::uint32_t value) noexcept -> auto &;
   constexpr auto pdu_3d_offset_u(std::uint32_t value) noexcept -> auto &;
   constexpr auto pdu_3d_offset_v(std::uint32_t value) noexcept -> auto &;
-  constexpr auto pdu_3d_offset_d(std::uint32_t value) noexcept -> auto &;
-  constexpr auto pdu_3d_range_d(std::uint32_t value) noexcept -> auto &;
+  constexpr auto pdu_3d_offset_d(Common::SampleValue value) noexcept -> auto &;
+  constexpr auto pdu_3d_range_d(Common::SampleValue value) noexcept -> auto &;
   constexpr auto pdu_projection_id(std::uint16_t value) noexcept -> auto &;
   constexpr auto pdu_orientation_index(FlexiblePatchOrientation value) noexcept -> auto &;
   constexpr auto pdu_lod_enabled_flag(bool value) noexcept -> auto &;
@@ -252,8 +253,8 @@ private:
   std::uint32_t m_pdu_2d_size_y_minus1{};
   std::uint32_t m_pdu_3d_offset_u{};
   std::uint32_t m_pdu_3d_offset_v{};
-  std::uint32_t m_pdu_3d_offset_d{};
-  std::optional<std::uint32_t> m_pdu_3d_range_d{};
+  Common::SampleValue m_pdu_3d_offset_d{};
+  std::optional<Common::SampleValue> m_pdu_3d_range_d{};
   std::uint16_t m_pdu_view_id{};
   FlexiblePatchOrientation m_pdu_orientation_index{};
   std::optional<bool> m_pdu_lod_enabled_flag{};

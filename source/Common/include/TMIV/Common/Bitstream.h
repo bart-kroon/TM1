@@ -42,7 +42,7 @@
 #include <type_traits>
 
 namespace TMIV::Common {
-auto ceilLog2(std::uint64_t range) -> unsigned;
+auto ceilLog2(std::uint64_t range) -> uint8_t;
 
 class InputBitstream {
 public:

@@ -41,7 +41,7 @@ auto exampleInput(int rows, int cols) {
 
   for (int i = 0; i < rows; ++i) {
     for (int j = 0; j < cols; ++j) {
-      in(i, j) = (i * j) ^ 13;
+      in(i, j) = static_cast<uint16_t>((i * j) ^ 13);
     }
   }
 

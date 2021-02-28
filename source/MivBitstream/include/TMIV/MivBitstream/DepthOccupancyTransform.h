@@ -50,10 +50,10 @@ public:
   OccupancyTransform(const ViewParams &viewParams, const PatchParams &patch);
 
   // Does x indicate "occupied/valid"?
-  [[nodiscard]] auto occupant(uint16_t x) const -> bool;
+  [[nodiscard]] auto occupant(Common::SampleValue x) const -> bool;
 
 private:
-  uint16_t m_threshold{};
+  Common::SampleValue m_threshold{};
 };
 
 // Extract the depth transform for the specified view [and patch]
@@ -68,12 +68,12 @@ public:
   // Expand a level to normalized disparity [m^-1]
   //
   // The level is assumed to be a depth level (instead of "non-occupied/invalid")
-  [[nodiscard]] auto expandNormDisp(uint16_t x) const -> float;
+  [[nodiscard]] auto expandNormDisp(Common::SampleValue x) const -> float;
 
   // Expand a level to depth [m]
   //
   // The level is assumed to be a depth level (instead of "non-occupied/invalid")
-  [[nodiscard]] auto expandDepth(uint16_t x) const -> float;
+  [[nodiscard]] auto expandDepth(Common::SampleValue x) const -> float;
 
   // Expand a matrix of levels to depth [m]
   //
@@ -90,14 +90,15 @@ public:
   //
   // Invalid depth values are set to zero
   // Valid depth values are clamped to minLevel
-  [[nodiscard]] auto quantizeNormDisp(float x, uint16_t minLevel) const -> uint16_t;
+  [[nodiscard]] auto quantizeNormDisp(float x, Common::SampleValue minLevel) const
+      -> Common::SampleValue;
 
   // Quantize a matrix of normalized disparities [m^-1] to a Depth16Frame
   //
   // See also quantizeNormDisp(float, uint16_t)
   template <typename DepthFrame = Common::Depth16Frame>
-  [[nodiscard]] auto quantizeNormDisp(const Common::Mat<float> &matrix, uint16_t minLevel) const
-      -> DepthFrame;
+  [[nodiscard]] auto quantizeNormDisp(const Common::Mat<float> &matrix,
+                                      Common::SampleValue minLevel) const -> DepthFrame;
 
   // Implementation-defined minimum normalized disparity [m^-1]
   //
@@ -116,8 +117,8 @@ private:
   const float m_normDispHigh{};
   float m_minNormDisp{};
   const unsigned m_bits{};
-  uint16_t m_depthStart{};
-  uint16_t m_depthEnd{UINT16_MAX};
+  Common::SampleValue m_depthStart{};
+  Common::SampleValue m_depthEnd{std::numeric_limits<Common::SampleValue>::max()};
 };
 
 } // namespace TMIV::MivBitstream

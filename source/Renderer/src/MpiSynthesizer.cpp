@@ -130,10 +130,8 @@ public:
     allocateBlockBuffer(frame);
 
     // 2- Update viewport buffer in case of viewport size change
-    if ((m_blendingColor.m() !=
-         static_cast<std::size_t>(viewportParams.ci.ci_projection_plane_height_minus1() + 1)) ||
-        (m_blendingColor.n() !=
-         static_cast<std::size_t>(viewportParams.ci.ci_projection_plane_width_minus1() + 1))) {
+    if (m_blendingColor.m() != viewportParams.ci.ci_projection_plane_height_minus1() + size_t{1} ||
+        m_blendingColor.n() != viewportParams.ci.ci_projection_plane_width_minus1() + size_t{1}) {
       allocateViewportBuffer(viewportParams);
     }
 

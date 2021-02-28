@@ -33,6 +33,7 @@
 
 #include "test.h"
 
+#include <TMIV/Common/Common.h>
 #include <TMIV/MivBitstream/SceneObjectInformation.h>
 
 #include <utility>
@@ -349,31 +350,31 @@ auto makeUpdates(std::size_t soi_num_object_updates, bool soi_simple_objects_fla
   if (fillAllFields) {
     std::generate(
         updates.begin(), updates.end(),
-        [soi_object_idx = 0, soi_simple_objects_flag, soiObjectDataPresentFlags]() mutable {
+        [soi_object_idx = 0U, soi_simple_objects_flag, soiObjectDataPresentFlags]() mutable {
           SceneObjectUpdate update{};
-          update.soi_object_idx = static_cast<std::size_t>(soi_object_idx);
+          update.soi_object_idx = soi_object_idx;
           update.soi_object_cancel_flag = false;
           if (!soi_simple_objects_flag && soiObjectDataPresentFlags) {
             update.soi_object_label_update_flag = true;
             update.soi_object_label_idx = soi_object_idx;
             update.soi_priority_update_flag = true;
-            update.soi_priority_value = soi_object_idx / 2;
+            update.soi_priority_value = static_cast<uint8_t>(soi_object_idx / 2);
             update.soi_object_hidden_flag = true;
             update.soi_object_dependency_update_flag = true;
             update.soi_object_dependency_idx = std::vector<std::size_t>(2);
             update.soi_visibility_cones_update_flag = true;
             update.soi_visibility_cones =
-                makeSoiVisibilityCones(static_cast<std::uint16_t>(soi_object_idx));
+                makeSoiVisibilityCones(static_cast<uint16_t>(soi_object_idx));
             update.soi_3d_bounding_box_update_flag = true;
             update.soi_3d_bounding_box =
-                makeSoi3dBoundingBox(static_cast<std::uint16_t>(soi_object_idx));
+                makeSoi3dBoundingBox(static_cast<uint16_t>(soi_object_idx));
             update.soi_collision_shape_update_flag = true;
-            update.soi_collision_shape_id = 2 * soi_object_idx;
+            update.soi_collision_shape_id = static_cast<uint8_t>(2 * soi_object_idx);
             update.soi_point_style_update_flag = true;
-            update.soi_point_shape_id = 4 * soi_object_idx;
-            update.soi_point_size = 8 * soi_object_idx;
+            update.soi_point_shape_id = static_cast<uint8_t>(4 * soi_object_idx);
+            update.soi_point_size = static_cast<uint8_t>(8 * soi_object_idx);
             update.soi_material_id_update_flag = true;
-            update.soi_material_id = 3 * (soi_object_idx + 1);
+            update.soi_material_id = static_cast<uint8_t>(3 * (soi_object_idx + 1));
           }
           ++soi_object_idx;
           return update;

@@ -85,7 +85,7 @@ SCENARIO("Luma standard deviation in pruning") {
     }
     for (int h = 0; h < H; h++) {
       for (int w = 0; w < W; w++) {
-        views[0].texture.getPlane(0)(h, w) += (w * 10);
+        views[0].texture.getPlane(0)(h, w) += static_cast<uint16_t>(w * 10);
       }
     }
     WHEN("Calculating luma stdev") {

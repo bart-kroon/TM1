@@ -124,7 +124,7 @@ auto GeometryQuantizer::transformAtlases(const Common::MVD16Frame &inAtlases)
           const auto normDisp = inDepthTransform.expandNormDisp(inLevel);
           const auto outLevel = outDepthTransform.quantizeNormDisp(normDisp, 0);
 
-          outAtlases[kOut].depth.getPlane(0)(n, m) = outLevel;
+          outAtlases[kOut].depth.getPlane(0)(n, m) = Common::downCast<uint16_t>(outLevel);
         }
       }
     }

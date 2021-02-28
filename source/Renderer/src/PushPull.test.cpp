@@ -38,11 +38,11 @@
 #include <TMIV/Common/Bitstream.h>
 
 namespace {
-const auto encodeCoordinates = [](int w, int h) {
+const auto encodeCoordinates = [](uint16_t w, uint16_t h) {
   auto frame = std::pair{TMIV::Common::Texture444Frame{w, h}, TMIV::Common::Depth16Frame{w, h}};
 
-  for (int y = 0; y < h; ++y) {
-    for (int x = 0; x < w; ++x) {
+  for (uint16_t y = 0; y < h; ++y) {
+    for (uint16_t x = 0; x < w; ++x) {
       frame.first.getPlane(0)(y, x) = x;
       frame.first.getPlane(1)(y, x) = y;
     }
@@ -202,8 +202,8 @@ TEST_CASE("PushPull") {
   GIVEN("A push-pull object and frame") {
     auto pushPull = TMIV::Renderer::PushPull{};
 
-    const auto w = GENERATE(0, 1, 13, 12);
-    const auto h = GENERATE(0, 1, 7, 8);
+    const auto w = GENERATE(uint16_t{}, uint16_t{1}, uint16_t{13}, uint16_t{12});
+    const auto h = GENERATE(uint16_t{}, uint16_t{1}, uint16_t{7}, uint16_t{8});
     const auto in = encodeCoordinates(w, h);
 
     WHEN("Filtering the frame") {
@@ -219,7 +219,7 @@ TEST_CASE("PushPull") {
       }
 
       THEN("The number of layers in the pyramid is accessible") {
-        REQUIRE(pushPull.numLayers() == 1 + TMIV::Common::ceilLog2(std::max(w, h)));
+        REQUIRE(pushPull.numLayers() == 1U + TMIV::Common::ceilLog2(std::max(w, h)));
       }
 
       THEN("Each filtered layer is accessible") {

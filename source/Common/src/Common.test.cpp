@@ -205,8 +205,9 @@ TEST_CASE("Half") {
   }
 
   SECTION("Encode") {
-    for (uint16_t code :
-         {0x0400u, 0x7BFFu, 0x3BFFu, 0x3C00u, 0x3C01u, 0x3555u, 0xC000u, 0x0000u, 0x8000u}) {
+    for (const auto code :
+         {uint16_t{0x0400}, uint16_t{0x7BFF}, uint16_t{0x3BFF}, uint16_t{0x3C00}, uint16_t{0x3C01},
+          uint16_t{0x3555}, uint16_t{0xC000}, uint16_t{0x0000}, uint16_t{0x8000}}) {
       REQUIRE(Half::decode(code).encode() == code);
     }
   }

@@ -129,19 +129,19 @@ void perform2WayInpainting(Common::Texture444Depth16Frame &yuvd, InpaintingType 
           const auto weight1 = dist2 / sumdist;
           const auto weight2 = dist1 / sumdist;
 
-          Y(h, w) = static_cast<int>(static_cast<float>(Y(h1, w1)) * weight1);
-          U(h, w) = static_cast<int>(static_cast<float>(U(h1, w1)) * weight1);
-          V(h, w) = static_cast<int>(static_cast<float>(V(h1, w1)) * weight1);
-          D(h, w) = static_cast<int>(static_cast<float>(D(h1, w1)) * weight1);
+          Y(h, w) = Common::assertDownCast<uint16_t>(static_cast<float>(Y(h1, w1)) * weight1);
+          U(h, w) = Common::assertDownCast<uint16_t>(static_cast<float>(U(h1, w1)) * weight1);
+          V(h, w) = Common::assertDownCast<uint16_t>(static_cast<float>(V(h1, w1)) * weight1);
+          D(h, w) = Common::assertDownCast<uint16_t>(static_cast<float>(D(h1, w1)) * weight1);
 
-          Y(h, w) += static_cast<int>(static_cast<float>(Y(h2, w2)) * weight2);
-          U(h, w) += static_cast<int>(static_cast<float>(U(h2, w2)) * weight2);
-          V(h, w) += static_cast<int>(static_cast<float>(V(h2, w2)) * weight2);
-          D(h, w) += static_cast<int>(static_cast<float>(D(h2, w2)) * weight2);
+          Y(h, w) += Common::assertDownCast<uint16_t>(static_cast<float>(Y(h2, w2)) * weight2);
+          U(h, w) += Common::assertDownCast<uint16_t>(static_cast<float>(U(h2, w2)) * weight2);
+          V(h, w) += Common::assertDownCast<uint16_t>(static_cast<float>(V(h2, w2)) * weight2);
+          D(h, w) += Common::assertDownCast<uint16_t>(static_cast<float>(D(h2, w2)) * weight2);
 
           if (D(h, w) == 0) {
-            D(h, w) = static_cast<int>(static_cast<float>(D(h1, w1)) * weight1 +
-                                       static_cast<float>(D(h2, w2)) * weight2);
+            D(h, w) = Common::assertDownCast<uint16_t>(static_cast<float>(D(h1, w1)) * weight1 +
+                                                       static_cast<float>(D(h2, w2)) * weight2);
           }
         } else {
           Y(h, w) = Y(h1, w1);

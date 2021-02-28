@@ -100,11 +100,11 @@ void inplaceFading_impl(YUVD &yuvd, const MivBitstream::ViewParams & /* unused *
                    1023.F) *
           weight;
 
-      Y(h, w) = static_cast<int>(
+      Y(h, w) = Common::assertDownCast<uint16_t>(
           std::min(std::max(R * RGBtoY[0] + G * RGBtoY[1] + B * RGBtoY[2] + Cte[0], 64.F), 940.F));
-      U(h, w) = static_cast<int>(
+      U(h, w) = Common::assertDownCast<uint16_t>(
           std::min(std::max(R * RGBtoU[0] + G * RGBtoU[1] + B * RGBtoU[2] + Cte[1], 64.F), 960.F));
-      V(h, w) = static_cast<int>(
+      V(h, w) = Common::assertDownCast<uint16_t>(
           std::min(std::max(R * RGBtoV[0] + G * RGBtoV[1] + B * RGBtoV[2] + Cte[2], 64.F), 960.F));
     }
   }

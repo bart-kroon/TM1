@@ -33,6 +33,8 @@
 
 #include <TMIV/MivBitstream/PackedIndependentRegions.h>
 
+#include <fmt/ostream.h>
+
 namespace TMIV::MivBitstream {
 auto PackedIndependentRegions::pir_num_packed_frames_minus1() const -> std::uint8_t {
   VERIFY_V3CBITSTREAM(!m_pirPackedFrames.empty());
@@ -77,25 +79,20 @@ auto PackedIndependentRegions::pir_subpic_id(std::uint8_t k, std::uint8_t i) con
 }
 
 auto operator<<(std::ostream &stream, const PackedIndependentRegions &x) -> std::ostream & {
-  stream << "pir_num_packed_frames_minus1="
-         << static_cast<unsigned>(x.pir_num_packed_frames_minus1()) << "\n";
-  for (int j = 0; j <= x.pir_num_packed_frames_minus1(); ++j) {
-    stream << "pir_packed_frame_id(" << j << ")=" << static_cast<unsigned>(x.pir_packed_frame_id(j))
-           << "\n";
-    const auto k = static_cast<unsigned>(x.pir_packed_frame_id(j));
-    stream << "pir_description_type_idc(" << k
-           << ")=" << static_cast<unsigned>(x.pir_description_type_idc(k)) << "\n";
-    stream << "pir_num_regions_minus1(" << k
-           << ")=" << static_cast<unsigned>(x.pir_num_regions_minus1(k)) << "\n";
+  fmt::print(stream, "pir_num_packed_frames_minus1={}\n", x.pir_num_packed_frames_minus1());
+  for (uint8_t j = 0; j <= x.pir_num_packed_frames_minus1(); ++j) {
+    fmt::print(stream, "pir_packed_frame_id[ {} ]={}\n", j, x.pir_packed_frame_id(j));
+    const auto k = x.pir_packed_frame_id(j);
+    fmt::print(stream, "pir_description_type_idc[ {} ]={}\n", k, x.pir_description_type_idc(k));
+    fmt::print(stream, "pir_num_regions_minus1[ {} ]={}\n", k, x.pir_num_regions_minus1(k));
     for (std::uint8_t i = 0; i <= x.pir_num_regions_minus1(k); ++i) {
       if (x.pir_description_type_idc(k) == 0) {
-        stream << "pir_top_left_tile_idx(" << k << "," << int{i}
-               << ")=" << static_cast<unsigned>(x.pir_top_left_tile_idx(k, i)) << "\n";
-        stream << "pir_bottom_right_tile_idx(" << k << "," << int{i}
-               << ")=" << static_cast<unsigned>(x.pir_bottom_right_tile_idx(k, i)) << "\n";
+        fmt::print(stream, "pir_top_left_tile_idx[ {} ][ {} ]={}\n", k, i,
+                   x.pir_top_left_tile_idx(k, i));
+        fmt::print(stream, "pir_bottom_right_tile_idx[ {} ][ {} ]={}\n", k, i,
+                   x.pir_bottom_right_tile_idx(k, i));
       } else {
-        stream << "pir_subpic_id(" << k << "," << int{i}
-               << ")=" << static_cast<unsigned>(x.pir_subpic_id(k, i)) << "\n";
+        fmt::print(stream, "pir_subpic_id[ {} ][ {} ]={}\n", k, i, x.pir_subpic_id(k, i));
       }
     }
   }
@@ -111,7 +108,7 @@ auto PackedIndependentRegions::decodeFrom(Common::InputBitstream &bitstream)
     -> PackedIndependentRegions {
   PackedIndependentRegions result{};
   result.pir_num_packed_frames_minus1(bitstream.readBits<std::uint8_t>(5));
-  for (int j = 0; j <= result.pir_num_packed_frames_minus1(); ++j) {
+  for (uint8_t j = 0; j <= result.pir_num_packed_frames_minus1(); ++j) {
     result.pir_packed_frame_id(j, bitstream.readBits<std::uint8_t>(5));
     const auto k = result.pir_packed_frame_id(j);
     result.pir_description_type_idc(k, bitstream.readBits<std::uint8_t>(2));

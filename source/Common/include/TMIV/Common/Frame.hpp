@@ -222,7 +222,8 @@ template <typename FORMAT> void Frame<FORMAT>::fillNeutral() {
 
 template <typename FORMAT> void Frame<FORMAT>::fillOne() {
   for (int k = 0; k < getNumberOfPlanes(); ++k) {
-    std::fill(std::begin(getPlane(k)), std::end(getPlane(k)), 1);
+    using base_type = typename detail::PixelFormatHelper<FORMAT>::base_type;
+    std::fill(std::begin(getPlane(k)), std::end(getPlane(k)), base_type{1});
   }
 }
 
@@ -261,7 +262,9 @@ template <typename FORMAT> auto AnyFrame::as() const -> Frame<FORMAT> {
 
       if (planes[k].size() == outputPlanes[k].size() && maxInputValue == maxOutputValue) {
         // Plane with same format: direct copy (optimization)
-        std::copy(std::cbegin(planes[k]), std::cend(planes[k]), std::begin(outputPlanes[k]));
+        using base_type = typename detail::PixelFormatHelper<FORMAT>::base_type;
+        std::transform(std::cbegin(planes[k]), std::cend(planes[k]), std::begin(outputPlanes[k]),
+                       [](const auto x) { return static_cast<base_type>(x); });
       } else {
         // Plane with different format: spatial and range scaling
         for (size_t i = 0; i < outputPlanes[k].height(); ++i) {

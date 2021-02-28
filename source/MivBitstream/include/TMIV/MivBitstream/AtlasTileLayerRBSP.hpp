@@ -173,12 +173,13 @@ constexpr auto PduMivExtension::pdu_inpaint_flag() const noexcept {
   return m_pdu_inpaint_flag.value_or(false);
 }
 
-constexpr auto PduMivExtension::pdu_entity_id(std::uint32_t value) noexcept -> auto & {
+constexpr auto PduMivExtension::pdu_entity_id(Common::SampleValue value) noexcept -> auto & {
   m_pdu_entity_id = value;
   return *this;
 }
 
-constexpr auto PduMivExtension::pdu_depth_occ_threshold(std::uint32_t value) noexcept -> auto & {
+constexpr auto PduMivExtension::pdu_depth_occ_threshold(Common::SampleValue value) noexcept
+    -> auto & {
   m_pdu_depth_occ_threshold = value;
   return *this;
 }
@@ -263,12 +264,12 @@ constexpr auto PatchDataUnit::pdu_3d_offset_v(std::uint32_t value) noexcept -> a
   return *this;
 }
 
-constexpr auto PatchDataUnit::pdu_3d_offset_d(std::uint32_t value) noexcept -> auto & {
+constexpr auto PatchDataUnit::pdu_3d_offset_d(Common::SampleValue value) noexcept -> auto & {
   m_pdu_3d_offset_d = value;
   return *this;
 }
 
-constexpr auto PatchDataUnit::pdu_3d_range_d(std::uint32_t value) noexcept -> auto & {
+constexpr auto PatchDataUnit::pdu_3d_range_d(Common::SampleValue value) noexcept -> auto & {
   m_pdu_3d_range_d = value;
   return *this;
 }

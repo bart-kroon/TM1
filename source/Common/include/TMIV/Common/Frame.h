@@ -34,6 +34,7 @@
 #ifndef _TMIV_COMMON_FRAME_H_
 #define _TMIV_COMMON_FRAME_H_
 
+#include <TMIV/Common/Common.h>
 #include <TMIV/Common/Matrix.h>
 #include <TMIV/Common/Vector.h>
 
@@ -131,7 +132,7 @@ struct AnyFrame {
   template <typename FORMAT> auto as() const -> Frame<FORMAT>;
 
   static constexpr auto maxPlanes = 4;
-  std::array<Mat<uint32_t>, maxPlanes> planes{};
+  std::array<Mat<SampleValue>, maxPlanes> planes{};
   std::array<uint8_t, maxPlanes> bitdepth{};
 };
 } // namespace TMIV::Common

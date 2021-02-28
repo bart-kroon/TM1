@@ -31,7 +31,6 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/Common/verify.h>
 #include <TMIV/MivBitstream/CommonAtlasFrameMivExtension.h>
 #include <TMIV/MivBitstream/CommonAtlasSequenceParameterSetRBSP.h>
 
@@ -185,8 +184,10 @@ auto CameraIntrinsics::decodeFrom(Common::InputBitstream &bitstream) -> CameraIn
 
 void CameraIntrinsics::encodeTo(Common::OutputBitstream &bitstream) const {
   bitstream.putUint8(static_cast<uint8_t>(ci_cam_type()));
-  bitstream.putUint16(ci_projection_plane_width_minus1());
-  bitstream.putUint16(ci_projection_plane_height_minus1());
+
+  // TODO(MPEG/MIV/Specs/23090-12#242): Use ue(v) for projection plane size?
+  bitstream.putUint16(Common::downCast<uint16_t>(ci_projection_plane_width_minus1()));
+  bitstream.putUint16(Common::downCast<uint16_t>(ci_projection_plane_height_minus1()));
 
   switch (ci_cam_type()) {
   case CiCamType::equirectangular:
@@ -335,7 +336,7 @@ auto PruningParents::printTo(std::ostream &stream, uint16_t viewId) const -> std
   stream << "pp_is_root_flag[ " << viewId << " ]=" << std::boolalpha << pp_is_root_flag() << '\n';
   if (!pp_is_root_flag()) {
     stream << "pp_num_parent_minus1[ " << viewId << " ]=" << pp_num_parent_minus1() << '\n';
-    for (auto i = 0; i <= pp_num_parent_minus1(); ++i) {
+    for (uint16_t i = 0; i <= pp_num_parent_minus1(); ++i) {
       stream << "pp_parent_id[ " << viewId << " ][ " << i << " ]=" << pp_parent_id(i) << '\n';
     }
   }

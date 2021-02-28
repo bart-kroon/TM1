@@ -315,7 +315,7 @@ auto operator<<(std::ostream &stream, const SkipPatchDataUnit & /* x */) -> std:
   return stream;
 }
 
-auto PduMivExtension::pdu_depth_occ_threshold() const -> uint32_t {
+auto PduMivExtension::pdu_depth_occ_threshold() const -> Common::SampleValue {
   VERIFY_MIVBITSTREAM(m_pdu_depth_occ_threshold.has_value());
   return *m_pdu_depth_occ_threshold;
 }
@@ -363,11 +363,11 @@ auto PduMivExtension::decodeFrom(Common::InputBitstream &bitstream,
   if (asps.asps_miv_extension_present_flag()) {
     const auto &asme = asps.asps_miv_extension();
     if (0 < asme.asme_max_entity_id()) {
-      x.pdu_entity_id(bitstream.getUVar<uint32_t>(asme.asme_max_entity_id()));
+      x.pdu_entity_id(bitstream.getUVar<Common::SampleValue>(asme.asme_max_entity_id()));
     }
     if (asme.asme_depth_occ_threshold_flag()) {
       x.pdu_depth_occ_threshold(
-          bitstream.readBits<uint32_t>(asps.asps_geometry_2d_bit_depth_minus1() + 1));
+          bitstream.readBits<Common::SampleValue>(asps.asps_geometry_2d_bit_depth_minus1() + 1));
     }
     if (asme.asme_patch_attribute_offset_enabled_flag()) {
       int bits = asps.asps_miv_extension().asme_patch_attribute_offset_bit_depth_minus1() + 1;
@@ -411,7 +411,7 @@ void PduMivExtension::encodeTo(Common::OutputBitstream &bitstream,
   }
 }
 
-auto PatchDataUnit::pdu_3d_range_d() const -> uint32_t {
+auto PatchDataUnit::pdu_3d_range_d() const -> Common::SampleValue {
   VERIFY_V3CBITSTREAM(m_pdu_3d_range_d.has_value());
   return *m_pdu_3d_range_d;
 }

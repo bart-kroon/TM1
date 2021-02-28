@@ -203,10 +203,10 @@ ptc_num_reserved_constraint_bytes=0
 TEST_CASE("occupancy_information", "[V3C Parameter Set]") {
   auto x = OccupancyInformation{};
 
-  REQUIRE(toString(x, AtlasId{3}) == R"(oi_occupancy_codec_id( 3 )=0
-oi_lossy_occupancy_compression_threshold( 3 )=0
-oi_occupancy_2d_bit_depth_minus1( 3 )=0
-oi_occupancy_MSB_align_flag( 3 )=false
+  REQUIRE(toString(x, AtlasId{3}) == R"(oi_occupancy_codec_id[ 3 ]=0
+oi_lossy_occupancy_compression_threshold[ 3 ]=0
+oi_occupancy_2d_bit_depth_minus1[ 3 ]=0
+oi_occupancy_MSB_align_flag[ 3 ]=false
 )");
 
   REQUIRE(bitCodingTest(x, 22));
@@ -217,10 +217,10 @@ oi_occupancy_MSB_align_flag( 3 )=false
         .oi_occupancy_2d_bit_depth_minus1(31)
         .oi_occupancy_MSB_align_flag(true);
 
-    REQUIRE(toString(x, AtlasId{4}) == R"(oi_occupancy_codec_id( 4 )=255
-oi_lossy_occupancy_compression_threshold( 4 )=255
-oi_occupancy_2d_bit_depth_minus1( 4 )=31
-oi_occupancy_MSB_align_flag( 4 )=true
+    REQUIRE(toString(x, AtlasId{4}) == R"(oi_occupancy_codec_id[ 4 ]=255
+oi_lossy_occupancy_compression_threshold[ 4 ]=255
+oi_occupancy_2d_bit_depth_minus1[ 4 ]=31
+oi_occupancy_MSB_align_flag[ 4 ]=true
 )");
 
     REQUIRE(bitCodingTest(x, 22));
@@ -234,10 +234,10 @@ TEST_CASE("geometry_information", "[V3C Parameter Set]") {
 
   auto x = GeometryInformation{};
 
-  REQUIRE(toString(x, AtlasId{0}) == R"(gi_geometry_codec_id( 0 )=0
-gi_geometry_2d_bit_depth_minus1( 0 )=0
-gi_geometry_MSB_align_flag( 0 )=false
-gi_geometry_3d_coordinates_bit_depth_minus1( 0 )=0
+  REQUIRE(toString(x, AtlasId{0}) == R"(gi_geometry_codec_id[ 0 ]=0
+gi_geometry_2d_bit_depth_minus1[ 0 ]=0
+gi_geometry_MSB_align_flag[ 0 ]=false
+gi_geometry_3d_coordinates_bit_depth_minus1[ 0 ]=0
 )");
 
   REQUIRE(bitCodingTest(x, 19, vps, atlasId));
@@ -248,10 +248,10 @@ gi_geometry_3d_coordinates_bit_depth_minus1( 0 )=0
         .gi_geometry_MSB_align_flag(true)
         .gi_geometry_3d_coordinates_bit_depth_minus1(31);
 
-    REQUIRE(toString(x, AtlasId{0}) == R"(gi_geometry_codec_id( 0 )=255
-gi_geometry_2d_bit_depth_minus1( 0 )=31
-gi_geometry_MSB_align_flag( 0 )=true
-gi_geometry_3d_coordinates_bit_depth_minus1( 0 )=31
+    REQUIRE(toString(x, AtlasId{0}) == R"(gi_geometry_codec_id[ 0 ]=255
+gi_geometry_2d_bit_depth_minus1[ 0 ]=31
+gi_geometry_MSB_align_flag[ 0 ]=true
+gi_geometry_3d_coordinates_bit_depth_minus1[ 0 ]=31
 )");
 
     REQUIRE(bitCodingTest(x, 19, vps, atlasId));
@@ -266,7 +266,7 @@ TEST_CASE("attribute_information", "[V3C Parameter Set]") {
   SECTION("No attributes") {
     const auto x = AttributeInformation{};
 
-    REQUIRE(toString(x, AtlasId{5}) == R"(ai_attribute_count( 5 )=0
+    REQUIRE(toString(x, AtlasId{5}) == R"(ai_attribute_count[ 5 ]=0
 )");
 
     REQUIRE(bitCodingTest(x, 7, vps, atlasId));
@@ -284,17 +284,17 @@ TEST_CASE("attribute_information", "[V3C Parameter Set]") {
         .ai_attribute_2d_bit_depth_minus1(1, 12);
 
     REQUIRE(toString(x, AtlasId{7}) ==
-            R"(ai_attribute_count( 7 )=2
-ai_attribute_type_id( 7, 0 )=ATTR_REFLECTANCE
-ai_attribute_codec_id( 7, 0 )=0
-ai_attribute_dimension_minus1( 7, 0 )=6
-ai_attribute_2d_bit_depth_minus1( 7, 0 )=31
-ai_attribute_MSB_align_flag( 7, 0 )=false
-ai_attribute_type_id( 7, 1 )=ATTR_TEXTURE
-ai_attribute_codec_id( 7, 1 )=255
-ai_attribute_dimension_minus1( 7, 1 )=1
-ai_attribute_2d_bit_depth_minus1( 7, 1 )=12
-ai_attribute_MSB_align_flag( 7, 1 )=true
+            R"(ai_attribute_count[ 7 ]=2
+ai_attribute_type_id[ 7 ][ 0 ]=ATTR_REFLECTANCE
+ai_attribute_codec_id[ 7 ][ 0 ]=0
+ai_attribute_dimension_minus1[ 7 ][ 0 ]=6
+ai_attribute_2d_bit_depth_minus1[ 7 ][ 0 ]=31
+ai_attribute_MSB_align_flag[ 7 ][ 0 ]=false
+ai_attribute_type_id[ 7 ][ 1 ]=ATTR_TEXTURE
+ai_attribute_codec_id[ 7 ][ 1 ]=255
+ai_attribute_dimension_minus1[ 7 ][ 1 ]=1
+ai_attribute_2d_bit_depth_minus1[ 7 ][ 1 ]=12
+ai_attribute_MSB_align_flag[ 7 ][ 1 ]=true
 )");
 
     REQUIRE(bitCodingTest(x, 67, vps, atlasId));
@@ -305,18 +305,18 @@ TEST_CASE("packing_information", "[V3C Parameter Set]") {
   SECTION("Default Constructor") {
     const PackingInformation unit{};
 
-    REQUIRE(toString(unit, AtlasId{4}) == R"(pin_codec_id(4)=0
-pin_regions_count_minus1(4)=0
-pin_region_tile_id(4,0)=0
-pin_region_type_id_minus2(4,0)=V3C_VPS
-pin_region_top_left_x(4,0)=0
-pin_region_top_left_y(4,0)=0
-pin_region_width_minus1(4,0)=0
-pin_region_unpack_top_left_x(4,0)=0
-pin_region_unpack_top_left_y(4,0)=0
-pin_region_height_minus1(4,0)=0
-pin_region_map_index(4,0)=0
-pin_region_rotation_flag(4,0)=false
+    REQUIRE(toString(unit, AtlasId{4}) == R"(pin_codec_id[ 4 ]=0
+pin_regions_count_minus1[ 4 ]=0
+pin_region_tile_id[ 4 ][ 0 ]=0
+pin_region_type_id_minus2[ 4 ][ 0 ]=V3C_VPS
+pin_region_top_left_x[ 4 ][ 0 ]=0
+pin_region_top_left_y[ 4 ][ 0 ]=0
+pin_region_width_minus1[ 4 ][ 0 ]=0
+pin_region_unpack_top_left_x[ 4 ][ 0 ]=0
+pin_region_unpack_top_left_y[ 4 ][ 0 ]=0
+pin_region_height_minus1[ 4 ][ 0 ]=0
+pin_region_map_index[ 4 ][ 0 ]=0
+pin_region_rotation_flag[ 4 ][ 0 ]=false
 )");
 
     const std::size_t expectedNumberOfBits = 8             // pin_codec_id
@@ -358,34 +358,34 @@ pin_region_rotation_flag(4,0)=false
       }
     }
 
-    REQUIRE(toString(unit, AtlasId{3}) == R"(pin_codec_id(3)=2
-pin_regions_count_minus1(3)=1
-pin_region_tile_id(3,0)=5
-pin_region_type_id_minus2(3,0)=V3C_OVD
-pin_region_top_left_x(3,0)=0
-pin_region_top_left_y(3,0)=6
-pin_region_width_minus1(3,0)=6
-pin_region_unpack_top_left_x(3,0)=0
-pin_region_unpack_top_left_y(3,0)=0
-pin_region_height_minus1(3,0)=0
-pin_region_map_index(3,0)=0
-pin_region_rotation_flag(3,0)=false
-pin_region_auxiliary_data_flag(3,0)=false
-pin_region_attr_type_id(3,0)=1
-pin_region_attr_partitions_flag(3,0)=true
-pin_region_attr_partition_index(3,0)=0
-pin_region_attr_partitions_minus1(3,0)=3
-pin_region_tile_id(3,1)=6
-pin_region_type_id_minus2(3,1)=V3C_AD
-pin_region_top_left_x(3,1)=0
-pin_region_top_left_y(3,1)=7
-pin_region_width_minus1(3,1)=8
-pin_region_unpack_top_left_x(3,1)=0
-pin_region_unpack_top_left_y(3,1)=0
-pin_region_height_minus1(3,1)=0
-pin_region_map_index(3,1)=0
-pin_region_rotation_flag(3,1)=false
-pin_region_auxiliary_data_flag(3,1)=true
+    REQUIRE(toString(unit, AtlasId{3}) == R"(pin_codec_id[ 3 ]=2
+pin_regions_count_minus1[ 3 ]=1
+pin_region_tile_id[ 3 ][ 0 ]=5
+pin_region_type_id_minus2[ 3 ][ 0 ]=V3C_OVD
+pin_region_top_left_x[ 3 ][ 0 ]=0
+pin_region_top_left_y[ 3 ][ 0 ]=6
+pin_region_width_minus1[ 3 ][ 0 ]=6
+pin_region_unpack_top_left_x[ 3 ][ 0 ]=0
+pin_region_unpack_top_left_y[ 3 ][ 0 ]=0
+pin_region_height_minus1[ 3 ][ 0 ]=0
+pin_region_map_index[ 3 ][ 0 ]=0
+pin_region_rotation_flag[ 3 ][ 0 ]=false
+pin_region_auxiliary_data_flag[ 3 ][ 0 ]=false
+pin_region_attr_type_id[ 3 ][ 0 ]=1
+pin_region_attr_partitions_flag[ 3 ][ 0 ]=true
+pin_region_attr_partition_index[ 3 ][ 0 ]=0
+pin_region_attr_partitions_minus1[ 3 ][ 0 ]=3
+pin_region_tile_id[ 3 ][ 1 ]=6
+pin_region_type_id_minus2[ 3 ][ 1 ]=V3C_AD
+pin_region_top_left_x[ 3 ][ 1 ]=0
+pin_region_top_left_y[ 3 ][ 1 ]=7
+pin_region_width_minus1[ 3 ][ 1 ]=8
+pin_region_unpack_top_left_x[ 3 ][ 1 ]=0
+pin_region_unpack_top_left_y[ 3 ][ 1 ]=0
+pin_region_height_minus1[ 3 ][ 1 ]=0
+pin_region_map_index[ 3 ][ 1 ]=0
+pin_region_rotation_flag[ 3 ][ 1 ]=false
+pin_region_auxiliary_data_flag[ 3 ][ 1 ]=true
 )");
 
     const std::size_t expectedNumberOfBits = 8               // pin_codec_id
@@ -475,14 +475,14 @@ ptl_extended_sub_profile_flag=false
 ptl_toolset_constraints_present_flag=false
 vps_v3c_parameter_set_id=0
 vps_atlas_count_minus1=0
-vps_atlas_id( 0 )=0
-vps_frame_width( 0 )=1920
-vps_frame_height( 0 )=1080
-vps_map_count_minus1( 0 )=0
-vps_auxiliary_video_present_flag( 0 )=false
-vps_occupancy_video_present_flag( 0 )=false
-vps_geometry_video_present_flag( 0 )=false
-vps_attribute_video_present_flag( 0 )=false
+vps_atlas_id[ 0 ]=0
+vps_frame_width[ 0 ]=1920
+vps_frame_height[ 0 ]=1080
+vps_map_count_minus1[ 0 ]=0
+vps_auxiliary_video_present_flag[ 0 ]=false
+vps_occupancy_video_present_flag[ 0 ]=false
+vps_geometry_video_present_flag[ 0 ]=false
+vps_attribute_video_present_flag[ 0 ]=false
 vps_extension_present_flag=true
 vps_packing_information_present_flag=false
 vps_miv_extension_present_flag=true
@@ -539,70 +539,70 @@ ptl_extended_sub_profile_flag=false
 ptl_toolset_constraints_present_flag=false
 vps_v3c_parameter_set_id=15
 vps_atlas_count_minus1=2
-vps_atlas_id( 0 )=30
-vps_frame_width( 30 )=1920
-vps_frame_height( 30 )=1080
-vps_map_count_minus1( 30 )=0
-vps_auxiliary_video_present_flag( 30 )=false
-vps_occupancy_video_present_flag( 30 )=true
-vps_geometry_video_present_flag( 30 )=false
-vps_attribute_video_present_flag( 30 )=false
-oi_occupancy_codec_id( 30 )=0
-oi_lossy_occupancy_compression_threshold( 30 )=0
-oi_occupancy_2d_bit_depth_minus1( 30 )=0
-oi_occupancy_MSB_align_flag( 30 )=false
-vps_atlas_id( 1 )=31
-vps_frame_width( 31 )=2048
-vps_frame_height( 31 )=2080
-vps_map_count_minus1( 31 )=0
-vps_auxiliary_video_present_flag( 31 )=false
-vps_occupancy_video_present_flag( 31 )=false
-vps_geometry_video_present_flag( 31 )=true
-vps_attribute_video_present_flag( 31 )=false
-gi_geometry_codec_id( 31 )=0
-gi_geometry_2d_bit_depth_minus1( 31 )=0
-gi_geometry_MSB_align_flag( 31 )=false
-gi_geometry_3d_coordinates_bit_depth_minus1( 31 )=0
-vps_atlas_id( 2 )=32
-vps_frame_width( 32 )=0
-vps_frame_height( 32 )=0
-vps_map_count_minus1( 32 )=15
-vps_auxiliary_video_present_flag( 32 )=false
-vps_occupancy_video_present_flag( 32 )=false
-vps_geometry_video_present_flag( 32 )=false
-vps_attribute_video_present_flag( 32 )=true
-ai_attribute_count( 32 )=0
+vps_atlas_id[ 0 ]=30
+vps_frame_width[ 30 ]=1920
+vps_frame_height[ 30 ]=1080
+vps_map_count_minus1[ 30 ]=0
+vps_auxiliary_video_present_flag[ 30 ]=false
+vps_occupancy_video_present_flag[ 30 ]=true
+vps_geometry_video_present_flag[ 30 ]=false
+vps_attribute_video_present_flag[ 30 ]=false
+oi_occupancy_codec_id[ 30 ]=0
+oi_lossy_occupancy_compression_threshold[ 30 ]=0
+oi_occupancy_2d_bit_depth_minus1[ 30 ]=0
+oi_occupancy_MSB_align_flag[ 30 ]=false
+vps_atlas_id[ 1 ]=31
+vps_frame_width[ 31 ]=2048
+vps_frame_height[ 31 ]=2080
+vps_map_count_minus1[ 31 ]=0
+vps_auxiliary_video_present_flag[ 31 ]=false
+vps_occupancy_video_present_flag[ 31 ]=false
+vps_geometry_video_present_flag[ 31 ]=true
+vps_attribute_video_present_flag[ 31 ]=false
+gi_geometry_codec_id[ 31 ]=0
+gi_geometry_2d_bit_depth_minus1[ 31 ]=0
+gi_geometry_MSB_align_flag[ 31 ]=false
+gi_geometry_3d_coordinates_bit_depth_minus1[ 31 ]=0
+vps_atlas_id[ 2 ]=32
+vps_frame_width[ 32 ]=0
+vps_frame_height[ 32 ]=0
+vps_map_count_minus1[ 32 ]=15
+vps_auxiliary_video_present_flag[ 32 ]=false
+vps_occupancy_video_present_flag[ 32 ]=false
+vps_geometry_video_present_flag[ 32 ]=false
+vps_attribute_video_present_flag[ 32 ]=true
+ai_attribute_count[ 32 ]=0
 vps_extension_present_flag=true
 vps_packing_information_present_flag=true
 vps_miv_extension_present_flag=true
 vps_extension_6bits=63
-vps_packed_video_present_flag( 30 )=true
-pin_codec_id(30)=0
-pin_regions_count_minus1(30)=0
-pin_region_tile_id(30,0)=0
-pin_region_type_id_minus2(30,0)=V3C_VPS
-pin_region_top_left_x(30,0)=0
-pin_region_top_left_y(30,0)=0
-pin_region_width_minus1(30,0)=0
-pin_region_unpack_top_left_x(30,0)=0
-pin_region_unpack_top_left_y(30,0)=0
-pin_region_height_minus1(30,0)=0
-pin_region_map_index(30,0)=0
-pin_region_rotation_flag(30,0)=false
-vps_packed_video_present_flag( 31 )=false
-vps_packed_video_present_flag( 32 )=true
-pin_codec_id(32)=0
-pin_regions_count_minus1(32)=0
-pin_region_tile_id(32,0)=0
-pin_region_type_id_minus2(32,0)=V3C_VPS
-pin_region_top_left_x(32,0)=0
-pin_region_top_left_y(32,0)=0
-pin_region_width_minus1(32,0)=0
-pin_region_unpack_top_left_x(32,0)=0
-pin_region_unpack_top_left_y(32,0)=0
-pin_region_height_minus1(32,0)=0
-pin_region_map_index(32,0)=0
-pin_region_rotation_flag(32,0)=false
+vps_packed_video_present_flag[ 30 ]=true
+pin_codec_id[ 30 ]=0
+pin_regions_count_minus1[ 30 ]=0
+pin_region_tile_id[ 30 ][ 0 ]=0
+pin_region_type_id_minus2[ 30 ][ 0 ]=V3C_VPS
+pin_region_top_left_x[ 30 ][ 0 ]=0
+pin_region_top_left_y[ 30 ][ 0 ]=0
+pin_region_width_minus1[ 30 ][ 0 ]=0
+pin_region_unpack_top_left_x[ 30 ][ 0 ]=0
+pin_region_unpack_top_left_y[ 30 ][ 0 ]=0
+pin_region_height_minus1[ 30 ][ 0 ]=0
+pin_region_map_index[ 30 ][ 0 ]=0
+pin_region_rotation_flag[ 30 ][ 0 ]=false
+vps_packed_video_present_flag[ 31 ]=false
+vps_packed_video_present_flag[ 32 ]=true
+pin_codec_id[ 32 ]=0
+pin_regions_count_minus1[ 32 ]=0
+pin_region_tile_id[ 32 ][ 0 ]=0
+pin_region_type_id_minus2[ 32 ][ 0 ]=V3C_VPS
+pin_region_top_left_x[ 32 ][ 0 ]=0
+pin_region_top_left_y[ 32 ][ 0 ]=0
+pin_region_width_minus1[ 32 ][ 0 ]=0
+pin_region_unpack_top_left_x[ 32 ][ 0 ]=0
+pin_region_unpack_top_left_y[ 32 ][ 0 ]=0
+pin_region_height_minus1[ 32 ][ 0 ]=0
+pin_region_map_index[ 32 ][ 0 ]=0
+pin_region_rotation_flag[ 32 ][ 0 ]=false
 vme_geometry_scale_enabled_flag=false
 vme_embedded_occupancy_enabled_flag=true
 gm_group_count=0
@@ -678,25 +678,25 @@ ptc_restricted_geometry_flag=true
 ptc_num_reserved_constraint_bytes=0
 vps_v3c_parameter_set_id=15
 vps_atlas_count_minus1=0
-vps_atlas_id( 0 )=20
-vps_frame_width( 20 )=4096
-vps_frame_height( 20 )=2048
-vps_map_count_minus1( 20 )=0
-vps_auxiliary_video_present_flag( 20 )=false
-vps_occupancy_video_present_flag( 20 )=false
-vps_geometry_video_present_flag( 20 )=false
-vps_attribute_video_present_flag( 20 )=true
-ai_attribute_count( 20 )=2
-ai_attribute_type_id( 20, 0 )=ATTR_TEXTURE
-ai_attribute_codec_id( 20, 0 )=1
-ai_attribute_dimension_minus1( 20, 0 )=2
-ai_attribute_2d_bit_depth_minus1( 20, 0 )=9
-ai_attribute_MSB_align_flag( 20, 0 )=false
-ai_attribute_type_id( 20, 1 )=ATTR_TRANSPARENCY
-ai_attribute_codec_id( 20, 1 )=1
-ai_attribute_dimension_minus1( 20, 1 )=0
-ai_attribute_2d_bit_depth_minus1( 20, 1 )=9
-ai_attribute_MSB_align_flag( 20, 1 )=false
+vps_atlas_id[ 0 ]=20
+vps_frame_width[ 20 ]=4096
+vps_frame_height[ 20 ]=2048
+vps_map_count_minus1[ 20 ]=0
+vps_auxiliary_video_present_flag[ 20 ]=false
+vps_occupancy_video_present_flag[ 20 ]=false
+vps_geometry_video_present_flag[ 20 ]=false
+vps_attribute_video_present_flag[ 20 ]=true
+ai_attribute_count[ 20 ]=2
+ai_attribute_type_id[ 20 ][ 0 ]=ATTR_TEXTURE
+ai_attribute_codec_id[ 20 ][ 0 ]=1
+ai_attribute_dimension_minus1[ 20 ][ 0 ]=2
+ai_attribute_2d_bit_depth_minus1[ 20 ][ 0 ]=9
+ai_attribute_MSB_align_flag[ 20 ][ 0 ]=false
+ai_attribute_type_id[ 20 ][ 1 ]=ATTR_TRANSPARENCY
+ai_attribute_codec_id[ 20 ][ 1 ]=1
+ai_attribute_dimension_minus1[ 20 ][ 1 ]=0
+ai_attribute_2d_bit_depth_minus1[ 20 ][ 1 ]=9
+ai_attribute_MSB_align_flag[ 20 ][ 1 ]=false
 vps_extension_present_flag=true
 vps_packing_information_present_flag=false
 vps_miv_extension_present_flag=true

@@ -59,12 +59,12 @@ auto InputBitstream::getFloat32() -> float {
   return value;
 }
 
-auto ceilLog2(uint64_t range) -> unsigned {
+auto ceilLog2(uint64_t range) -> uint8_t {
   if (range == 0) {
     return 0;
   }
   --range;
-  unsigned bits = 0;
+  auto bits = uint8_t{};
   while (range > 0) {
     ++bits;
     range /= 2;
@@ -173,7 +173,7 @@ void OutputBitstream::putUVar_(uint64_t value, uint64_t range) {
 }
 
 void OutputBitstream::putUExpGolomb_(uint64_t value) {
-  auto bits = ceilLog2(value + 2) - 1;
+  auto bits = ceilLog2(value + 2) - 1U;
   for (auto i = 0U; i < bits; ++i) {
     putFlag(false);
   }

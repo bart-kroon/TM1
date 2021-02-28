@@ -40,7 +40,7 @@ TEST_CASE("camera_intrinsics", "[Common Atlas Frame MIV Extension]") {
   auto x = CameraIntrinsics{};
 
   SECTION("Default constructor: equirectangular") {
-    REQUIRE(toString(x, 1) == R"(ci_cam_type[ 1 ]=equirectangular
+    REQUIRE(toString(x, uint16_t{1}) == R"(ci_cam_type[ 1 ]=equirectangular
 ci_projection_plane_width_minus1[ 1 ]=0
 ci_projection_plane_height_minus1[ 1 ]=0
 ci_erp_phi_min[ 1 ]=0
@@ -59,7 +59,7 @@ ci_erp_theta_max[ 1 ]=0
         .ci_erp_theta_min(-1.F)
         .ci_erp_theta_max(1.F);
 
-    REQUIRE(toString(x, 1) == R"(ci_cam_type[ 1 ]=equirectangular
+    REQUIRE(toString(x, uint16_t{1}) == R"(ci_cam_type[ 1 ]=equirectangular
 ci_projection_plane_width_minus1[ 1 ]=0
 ci_projection_plane_height_minus1[ 1 ]=0
 ci_erp_phi_min[ 1 ]=-2
@@ -80,7 +80,7 @@ ci_erp_theta_max[ 1 ]=1
         .ci_perspective_center_hor(10.F)
         .ci_perspective_center_ver(5.F);
 
-    REQUIRE(toString(x, 1) == R"(ci_cam_type[ 1 ]=perspective
+    REQUIRE(toString(x, uint16_t{1}) == R"(ci_cam_type[ 1 ]=perspective
 ci_projection_plane_width_minus1[ 1 ]=19
 ci_projection_plane_height_minus1[ 1 ]=9
 ci_perspective_focal_hor[ 1 ]=50
@@ -99,7 +99,7 @@ ci_perspective_center_ver[ 1 ]=5
         .ci_ortho_width(100.F)
         .ci_ortho_height(50.F);
 
-    REQUIRE(toString(x, 1) == R"(ci_cam_type[ 1 ]=orthographic
+    REQUIRE(toString(x, uint16_t{1}) == R"(ci_cam_type[ 1 ]=orthographic
 ci_projection_plane_width_minus1[ 1 ]=1023
 ci_projection_plane_height_minus1[ 1 ]=767
 ci_ortho_width[ 1 ]=100
@@ -113,7 +113,7 @@ ci_ortho_height[ 1 ]=50
 TEST_CASE("camera_extrinsics", "[Common Atlas Frame MIV Extension]") {
   auto x = CameraExtrinsics{};
 
-  REQUIRE(toString(x, 1) == R"(ce_view_pos_x[ 1 ]=0
+  REQUIRE(toString(x, uint16_t{1}) == R"(ce_view_pos_x[ 1 ]=0
 ce_view_pos_y[ 1 ]=0
 ce_view_pos_z[ 1 ]=0
 ce_view_quat_x[ 1 ]=0
@@ -131,7 +131,7 @@ ce_view_quat_z[ 1 ]=0
         .ce_view_quat_y(9.F)
         .ce_view_quat_z(14.F);
 
-    REQUIRE(toString(x, 1) == R"(ce_view_pos_x[ 1 ]=3
+    REQUIRE(toString(x, uint16_t{1}) == R"(ce_view_pos_x[ 1 ]=3
 ce_view_pos_y[ 1 ]=1
 ce_view_pos_z[ 1 ]=4
 ce_view_quat_x[ 1 ]=5
@@ -150,7 +150,7 @@ TEST_CASE("depth_quantization", "[Common Atlas Frame MIV Extension]") {
   vps.vps_miv_extension_present_flag(true);
   vps.vps_miv_extension() = {};
 
-  REQUIRE(toString(x, 7) == R"(dq_quantization_law[ 7 ]=0
+  REQUIRE(toString(x, uint16_t{7}) == R"(dq_quantization_law[ 7 ]=0
 dq_norm_disp_low[ 7 ]=0
 dq_norm_disp_high[ 7 ]=0
 dq_depth_occ_map_threshold_default[ 7 ]=0
@@ -163,7 +163,7 @@ dq_depth_occ_map_threshold_default[ 7 ]=0
     x.dq_norm_disp_high(2.F);
     x.dq_depth_occ_map_threshold_default(200);
 
-    REQUIRE(toString(x, 2) == R"(dq_quantization_law[ 2 ]=0
+    REQUIRE(toString(x, uint16_t{2}) == R"(dq_quantization_law[ 2 ]=0
 dq_norm_disp_low[ 2 ]=0.02
 dq_norm_disp_high[ 2 ]=2
 dq_depth_occ_map_threshold_default[ 2 ]=200
@@ -176,7 +176,7 @@ dq_depth_occ_map_threshold_default[ 2 ]=200
 TEST_CASE("pruning_parent", "[Common Atlas Frame MIV Extension]") {
   SECTION("Example 1") {
     const auto x = PruningParents{};
-    REQUIRE(toString(x, 3) == R"(pp_is_root_flag[ 3 ]=true
+    REQUIRE(toString(x, uint16_t{3}) == R"(pp_is_root_flag[ 3 ]=true
 )");
 
     const uint16_t mvp_num_views_minus1 = 10;
@@ -185,7 +185,7 @@ TEST_CASE("pruning_parent", "[Common Atlas Frame MIV Extension]") {
 
   SECTION("Example 2") {
     const auto x = PruningParents{{2, 3, 5, 8}};
-    REQUIRE(toString(x, 5) == R"(pp_is_root_flag[ 5 ]=false
+    REQUIRE(toString(x, uint16_t{5}) == R"(pp_is_root_flag[ 5 ]=false
 pp_num_parent_minus1[ 5 ]=3
 pp_parent_id[ 5 ][ 0 ]=2
 pp_parent_id[ 5 ][ 1 ]=3

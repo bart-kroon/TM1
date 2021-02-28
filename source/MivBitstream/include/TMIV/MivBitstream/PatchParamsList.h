@@ -36,6 +36,7 @@
 
 #include <TMIV/MivBitstream/AtlasTileLayerRBSP.h>
 
+#include <TMIV/Common/Common.h>
 #include <TMIV/Common/LinAlg.h>
 #include <TMIV/Common/Matrix.h>
 #include <TMIV/Common/Vector.h>
@@ -81,7 +82,7 @@ struct PatchParams {
       -> PatchParams &;
   constexpr auto atlasPatchLoDScaleX(std::int32_t value) noexcept -> PatchParams &;
   constexpr auto atlasPatchLoDScaleY(std::int32_t value) noexcept -> PatchParams &;
-  constexpr auto atlasPatchEntityId(std::uint16_t value) noexcept -> PatchParams &;
+  constexpr auto atlasPatchEntityId(Common::SampleValue value) noexcept -> PatchParams &;
   constexpr auto atlasPatchDepthOccMapThreshold(std::uint32_t value) noexcept -> PatchParams &;
   auto atlasPatchAttributeOffset(Common::Vec3w value) noexcept -> PatchParams &;
   constexpr auto atlasPatchInpaintFlag(bool value) noexcept -> PatchParams &;
@@ -134,7 +135,7 @@ private:
   std::int32_t m_atlasPatchLoDScaleX{1};
   std::int32_t m_atlasPatchLoDScaleY{1};
   FlexiblePatchOrientation m_atlasPatchOrientationIndex{FlexiblePatchOrientation::FPO_INVALID};
-  std::optional<std::uint16_t> m_atlasPatchEntityId;
+  std::optional<Common::SampleValue> m_atlasPatchEntityId;
   std::optional<std::uint32_t> m_atlasPatchDepthOccMapThreshold;
   std::optional<Common::Vec3w> m_atlasPatchAttributeOffset{};
   bool m_atlasPatchInpaintFlag{};

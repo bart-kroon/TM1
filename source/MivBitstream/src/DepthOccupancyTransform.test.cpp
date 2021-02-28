@@ -53,7 +53,8 @@ TEST_CASE("OccupancyTransform") {
   SECTION("Test for occupancy (codec, full occupancy)") {
     const auto unit = OccupancyTransform{ViewParams{}};
 
-    const uint16_t x = GENERATE(0, 1, 0xFF, 0xFFF, 0xFFFF);
+    const auto x =
+        GENERATE(uint16_t{}, uint16_t{1}, uint16_t{0xFF}, uint16_t{0xFFF}, uint16_t{0xFFFF});
 
     REQUIRE(unit.occupant(x));
   }
@@ -64,10 +65,10 @@ TEST_CASE("OccupancyTransform") {
 
     const auto unit = OccupancyTransform{vp};
 
-    const uint16_t x1 = GENERATE(0, 1, 3999);
+    const auto x1 = GENERATE(uint16_t{}, uint16_t{1}, uint16_t{3999});
     REQUIRE(!unit.occupant(x1));
 
-    const uint16_t x2 = GENERATE(4000, 0xFFFF);
+    const auto x2 = GENERATE(uint16_t{4000}, uint16_t{0xFFFF});
     REQUIRE(unit.occupant(x2));
   }
 
@@ -90,10 +91,10 @@ TEST_CASE("OccupancyTransform") {
 
     const auto unit = OccupancyTransform{vp, pp};
 
-    const uint16_t x1 = GENERATE(0, 1, 999);
+    const auto x1 = GENERATE(uint16_t{}, uint16_t{1}, uint16_t{999});
     REQUIRE(!unit.occupant(x1));
 
-    const uint16_t x2 = GENERATE(1000, 4000, 0xFFFF);
+    const auto x2 = GENERATE(uint16_t{1000}, uint16_t{4000}, uint16_t{0xFFFF});
     REQUIRE(unit.occupant(x2));
   }
 }
@@ -137,9 +138,9 @@ TEST_CASE("DepthTransform") {
       dq.dq_norm_disp_low(normDispLow);
       dq.dq_norm_disp_high(normDispHigh);
 
-      const unsigned bits = GENERATE(1, 12);
+      const auto bits = GENERATE(1U, 12U);
       constexpr uint16_t lowLevel = 0;
-      const uint16_t highLevel = TMIV::Common::maxLevel(bits);
+      const auto highLevel = TMIV::Common::maxLevel<uint16_t>(bits);
 
       const auto unit = DepthTransform{dq, bits};
 
@@ -197,7 +198,7 @@ TEST_CASE("DepthTransform") {
   SECTION("Expand a frame of 10-bit levels to depth [m]") {
     const auto frame = [] {
       auto x = TMIV::Common::Depth10Frame{4, 3};
-      std::iota(x.getPlane(0).begin(), x.getPlane(0).end(), 0);
+      std::iota(x.getPlane(0).begin(), x.getPlane(0).end(), uint16_t{});
       return x;
     }();
 
@@ -217,7 +218,7 @@ TEST_CASE("DepthTransform") {
   SECTION("Expand a frame of 16-bit levels to depth [m]") {
     const auto frame = [] {
       auto x = TMIV::Common::Depth16Frame{4, 3};
-      std::iota(x.getPlane(0).begin(), x.getPlane(0).end(), 0xE000);
+      std::iota(x.getPlane(0).begin(), x.getPlane(0).end(), uint16_t{0xE000});
       return x;
     }();
 
@@ -225,7 +226,7 @@ TEST_CASE("DepthTransform") {
     dq.dq_norm_disp_low(3.F);
     dq.dq_norm_disp_high(7.F);
 
-    const auto unit = DepthTransform{dq, 4};
+    const auto unit = DepthTransform{dq, 16};
 
     const auto actual = unit.expandDepth(frame);
 
@@ -258,7 +259,7 @@ TEST_CASE("DepthTransform") {
 
     SECTION("Valid depth values are clamped to [minLevel, maxLevel]") {
       const auto x = GENERATE(1E-3F, 0.01, 0.1, 1., 10., 100.);
-      const auto minLevel = GENERATE(0, 1, 10, 100, 1000);
+      const auto minLevel = GENERATE(0U, 1U, 10U, 100U, 1000U);
 
       REQUIRE(minLevel <= unit.quantizeNormDisp(x, minLevel));
     }
@@ -297,7 +298,7 @@ TEST_CASE("DepthTransform") {
         for (unsigned i = 0; i <= maxLevel; ++i) {
           const auto far = std::min(normDispLow, normDispHigh);
           const auto near = std::max(normDispLow, normDispHigh);
-          const auto normDisp = far + (near - far) * TMIV::Common::expandValue(i, maxLevel);
+          const auto normDisp = far + (near - far) * TMIV::Common::expandValue(i, bits);
           if (0 < normDisp) {
             REQUIRE(unit.minNormDisp() <= normDisp);
             break;

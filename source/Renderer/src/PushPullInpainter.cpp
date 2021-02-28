@@ -61,8 +61,10 @@ auto weighedAverageWithMissingData(const std::array<YUVD, 4> &v, const std::arra
     static_assert(!occupant(YUVD{}));
     return YUVD{};
   }
-  return YUVD{(sum[0] + count / 2) / count, (sum[1] + count / 2) / count,
-              (sum[2] + count / 2) / count, (sum[3] + count / 2) / count};
+  return YUVD{Common::assertDownCast<uint16_t>((sum[0] + count / 2) / count),
+              Common::assertDownCast<uint16_t>((sum[1] + count / 2) / count),
+              Common::assertDownCast<uint16_t>((sum[2] + count / 2) / count),
+              Common::assertDownCast<uint16_t>((sum[3] + count / 2) / count)};
 }
 
 auto pushFilter(const std::array<YUVD, 4> &v) -> YUVD {

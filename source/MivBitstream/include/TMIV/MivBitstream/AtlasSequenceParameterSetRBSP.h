@@ -205,8 +205,8 @@ public:
   [[nodiscard]] auto aspsExtensionData() const -> const std::vector<bool> &;
 
   constexpr auto asps_atlas_sequence_parameter_set_id(std::uint8_t value) noexcept -> auto &;
-  constexpr auto asps_frame_width(std::uint16_t value) noexcept -> auto &;
-  constexpr auto asps_frame_height(std::uint16_t value) noexcept -> auto &;
+  constexpr auto asps_frame_width(int32_t value) noexcept -> auto &;
+  constexpr auto asps_frame_height(int32_t value) noexcept -> auto &;
   constexpr auto asps_geometry_3d_bit_depth_minus1(std::uint8_t value) noexcept -> auto &;
   constexpr auto asps_geometry_2d_bit_depth_minus1(std::uint8_t value) noexcept -> auto &;
   auto asps_log2_max_atlas_frame_order_cnt_lsb_minus4(std::uint8_t value) noexcept
@@ -253,8 +253,8 @@ public:
 
 private:
   std::uint8_t m_asps_atlas_sequence_parameter_set_id{};
-  std::uint16_t m_asps_frame_width{};
-  std::uint16_t m_asps_frame_height{};
+  int32_t m_asps_frame_width{};
+  int32_t m_asps_frame_height{};
   std::uint8_t m_asps_geometry_3d_bit_depth_minus1{};
   std::uint8_t m_asps_geometry_2d_bit_depth_minus1{};
   std::uint8_t m_asps_log2_patch_packing_block_size{};

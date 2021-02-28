@@ -68,7 +68,7 @@ auto ViewParams::operator==(const ViewParams &other) const -> bool {
 ViewParams::ViewParams(const Common::Json &node) {
   name = node.require("Name").as<std::string>();
 
-  const auto resolution = node.require("Resolution").asVec<int, 2>();
+  const auto resolution = node.require("Resolution").asVec<int32_t, 2>();
   ci.ci_projection_plane_width_minus1(resolution.x() - 1);
   ci.ci_projection_plane_height_minus1(resolution.y() - 1);
 

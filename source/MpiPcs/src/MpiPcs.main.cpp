@@ -118,12 +118,13 @@ private:
 
     fmt::print("MpiPcs output file: {}\n", mpiPcsWriter.getPath());
 
-    for (int frameId = 0; frameId < m_numberOfInputFrames; ++frameId) {
+    using Geometry = Common::MpiPcs::Attribute::Geometry;
+    const auto layerCount = Common::verifyDownCast<Geometry>(viewParams.nbMpiLayers);
 
+    for (int frameId = 0; frameId < m_numberOfInputFrames; ++frameId) {
       Common::MpiPcs::Frame mpiPcsFrame{viewSize};
 
-      for (int layerId = 0; layerId < viewParams.nbMpiLayers; ++layerId) {
-
+      for (Geometry layerId = 0; layerId < layerCount; ++layerId) {
         auto textureLayer = loadMpiTextureMpiLayer(json(), placeholders(), m_inputSequenceConfig,
                                                    frameId, layerId, viewParams.nbMpiLayers);
 
@@ -183,10 +184,13 @@ private:
     fmt::print("Texture output file {}\n", texturePath);
     fmt::print("Transparency output file {}\n", transparencyPath);
 
+    using Geometry = Common::MpiPcs::Attribute::Geometry;
+    const auto layerCount = Common::verifyDownCast<Geometry>(viewParams.nbMpiLayers);
+
     for (int frameId = 0; frameId < m_numberOfInputFrames; ++frameId) {
       const auto mpiPcsFrame = mpiPcsReader.read(frameId);
 
-      for (int layerId = 0; layerId < viewParams.nbMpiLayers; ++layerId) {
+      for (Geometry layerId = 0; layerId < layerCount; ++layerId) {
         const auto [textureLayer, transparencyLayer] = mpiPcsFrame.getLayer(layerId);
 
         textureLayer.dump(textureStream);

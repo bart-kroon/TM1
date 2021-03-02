@@ -63,6 +63,10 @@ def parseArguments():
 
 class IntegrationTest:
     def __init__(self):
+        minVersion = (3, 5)
+        if sys.version_info < minVersion:
+            raise RuntimeError('This script requires Python {}.{} or newer'.format(*minVersion))
+
         args = parseArguments()
 
         self.tmivInstallDir = args.tmiv_install_dir
@@ -77,9 +81,6 @@ class IntegrationTest:
         self.numComparisonMismatches = 0
         self.numComparisonErrors = 0
         self.stop = False
-
-        if not self.dryRun:
-            print('+ {}'.format(' '.join(sys.argv)), flush=True)
 
     def run(self):
         if not self.dryRun:

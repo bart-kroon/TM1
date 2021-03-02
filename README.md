@@ -215,20 +215,26 @@ For Visual Studio please substitute `test` for `RUN_TESTS`.
 
 The integration test runs the TMIV executables on real data to make sure that there are no runtime errors in a range of conditions, and it reports if any bitstreams or YUV files have changed compared to the reference (when provided).
 
-To run the integration test the following additional CMake variables are relevant:
-
-* `INTEGRATION_TEST_CONTENT_DIR` needs to be set to `/Content` (see [Running the TMIV encoder](#running-the-tmiv-encoder)).
-* `INTEGRATION_TEST_MAX_WORKERS` may be optionally set to limit the number of parallel processes.
-* `INTEGRATION_TEST_OUTPUT_DIR` defaults to `/tmiv_build/integration_test` but can be changed.
-* `INTEGRATION_TEST_REFERENCE_DIR`:
-   * is left empty to create the reference (typically of the development branch, e.g. `vx.y-dev`)
-   * is set equal to `INTEGRATION_TEST_OUTPUT_DIR` of that reference to compare against it.
-
-To run the test execute the following command inside your build directory:
+To run the test first _build_, _test_ and **install** the project. The integration test itself is a Python 3.5 script:
 
 ```shell
-cmake --build . --parallel --config Release --target integration_test
+$ python /Workspace/tmiv/scripts/test/integration_test.py
+Usage: integration_test.py TMIV_INSTALL_DIR TMIV_SOURCE_DIR CONTENT_DIR TEST_DIR [-g GIT_COMMAND] [-j MAX_WORKERS] [-r REFERENCE_DIR]
 ```
+
+whereby:
+
+* `python` needs to be a Python 3 interpreter, at least version 3.5. On some systems the command may be `python3` instead. (Try `python --version`.)
+* In this manual, TMIV_INSTALL_DIR is set as `/Workspace/tmiv_install`
+* In this manual, TMIV_SOURCE_DIR is set as `/Workspace/tmiv`
+* In this manual, CONTENT_DIR is set as `/Content`
+* TEST_DIR is the output directory of the configuration file. It is adviced to delete and recreate the directory before each run.
+* GIT_COMMAND is typically `git`. This option may be omitted but when provided the revision of TMIV is saved to the output directory for future reference.
+* The MAX_WORKERS parameter controls the number of threads. This is a runtime/memory consumption tradeoff. The default value is typically good enough.
+* The REFERENCE_DIR:
+   * is omitted to create the reference or for manual comparison between different runs (using `diff` or `WinMerge`).
+   * is set equal to the the output directory of a reference to compare against it. This is highly recommended.
+* Try `--help` for advanced options.
 
 # Instructions to run TMIV
 

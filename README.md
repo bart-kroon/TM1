@@ -336,7 +336,7 @@ For example:
   -c /Workspace/tmiv/config/ctc/miv_anchor/A_2_VVenC_encode_tex.cfg \
   -i /Experiment/A97/A/TMIV_A97_A_tex_c00_4096x2176_yuv420p10le.yuv \
   -b /Experiment/A97/A/QP3/TMIV_A97_A_QP3_tex_c00.bit \
-  -s 2320x960 -q 30 -f 97 -fr 30
+  -s 4096x2176 -q 30 -f 97 -fr 30
 ```
 
 In this example the following files will be produced after four invocations:

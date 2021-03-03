@@ -219,7 +219,7 @@ To run the test first _build_, _test_ and **install** the project. The integrati
 
 ```shell
 $ python /Workspace/tmiv/scripts/test/integration_test.py
-Usage: integration_test.py TMIV_INSTALL_DIR TMIV_SOURCE_DIR CONTENT_DIR TEST_DIR [-g GIT_COMMAND] [-j MAX_WORKERS] [-r REFERENCE_DIR]
+Usage: integration_test.py TMIV_INSTALL_DIR TMIV_SOURCE_DIR CONTENT_DIR TEST_DIR [-g GIT_COMMAND] [-j MAX_WORKERS] [-r REFERENCE_MD5_FILE]
 ```
 
 whereby:
@@ -228,12 +228,12 @@ whereby:
 * In this manual, TMIV_INSTALL_DIR is set as `/Workspace/tmiv_install`
 * In this manual, TMIV_SOURCE_DIR is set as `/Workspace/tmiv`
 * In this manual, CONTENT_DIR is set as `/Content`
-* TEST_DIR is the output directory of the configuration file. It is adviced to delete and recreate the directory before each run.
+* TEST_DIR is the output directory of the configuration file. It is advised to delete and recreate the directory before each run.
 * GIT_COMMAND is typically `git`. This option may be omitted but when provided the revision of TMIV is saved to the output directory for future reference.
 * The MAX_WORKERS parameter controls the number of threads. This is a runtime/memory consumption tradeoff. The default value is typically good enough.
-* The REFERENCE_DIR:
+* The REFERENCE_MD5_FILE:
    * is omitted to create the reference or for manual comparison between different runs (using `diff` or `WinMerge`).
-   * is set equal to the the output directory of a reference to compare against it. This is highly recommended.
+   * is set equal to an existing reference file containing output file MD5 sums to compare against it. This is highly recommended.
 * Try `--help` for advanced options.
 
 # Instructions to run TMIV

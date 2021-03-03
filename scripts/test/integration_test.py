@@ -34,7 +34,8 @@
 
 import argparse
 import concurrent.futures
-import filecmp
+from difflib import Differ
+import hashlib
 from pathlib import Path
 import subprocess
 import sys
@@ -53,12 +54,20 @@ def parseArguments():
     parser.add_argument("tmiv_install_dir", type=dirPath, help="Directory with the TM1 binaries, includes, etc")
     parser.add_argument("tmiv_source_dir", type=dirPath, help="Root of the TM1 repository")
     parser.add_argument("content_dir", type=dirPath)
-    parser.add_argument("output_dir", type=str, help="Output files will be stored here")
+    parser.add_argument("output_dir", type=Path, help="Output files will be stored here")
     parser.add_argument("-g", "--git-command", type=str)
     parser.add_argument("-j", "--max-workers", type=int)
-    parser.add_argument("-r", "--reference-dir", type=dirPath)
+    parser.add_argument("-r", "--reference-md5-file", type=Path)
     parser.add_argument("--dry-run", action="store_true", help="Only print TMIV commands without executing them")
     return parser.parse_args()
+
+
+def computeMd5Sum(fileName: Path):
+    hash_md5 = hashlib.md5()
+    with open(fileName, "rb") as f:
+        for chunk in iter(lambda: f.read(4096), b""):
+            hash_md5.update(chunk)
+    return hash_md5.hexdigest()
 
 
 class IntegrationTest:
@@ -72,14 +81,14 @@ class IntegrationTest:
         self.tmivInstallDir = args.tmiv_install_dir
         self.tmivSourceDir = args.tmiv_source_dir
         self.contentDir = args.content_dir
-        self.testDir = Path(args.output_dir)
+        self.testDir = args.output_dir
         self.gitCommand = args.git_command
         self.maxWorkers = args.max_workers
-        self.referenceDir = args.reference_dir
+        self.referenceMd5File = args.reference_md5_file
         self.dryRun = args.dry_run
+        self.md5sums = []
++        self.md5sumsFile = self.testDir / "integration_test.md5"
 
-        self.numComparisonMismatches = 0
-        self.numComparisonErrors = 0
         self.stop = False
 
     def run(self):
@@ -92,19 +101,20 @@ class IntegrationTest:
         app.inspectEnvironment()
 
         with concurrent.futures.ThreadPoolExecutor(max_workers=self.maxWorkers) as executor:
-            fA = self.testMivAnchor(executor)
-            fV = self.testMivViewAnchor(executor)
-            fG = self.testMivDsdeAnchor(executor)
-            fR = self.testBestReference(executor)
-            fM = self.testMivMpi(executor)
-            fS = self.testAdditiveSynthesizer(executor)
-            self.sync(fA + fV + fG + fR + fM + fS)
+            futures = self.testMivAnchor(executor)
+            futures += self.testMivViewAnchor(executor)
+            futures += self.testMivDsdeAnchor(executor)
+            futures += self.testBestReference(executor)
+            futures += self.testMivMpi(executor)
+            futures += self.testAdditiveSynthesizer(executor)
+            self.sync(futures)
 
-        if self.referenceDir:
-            print('Comparison mismatches :', self.numComparisonMismatches)
-            print('Comparison errors     :', self.numComparisonErrors)
+        self.storeMd5Sums()
 
-        return int((0 < self.numComparisonMismatches) or (0 < self.numComparisonErrors))
+        if self.referenceMd5File:
+            return self.compareMd5Files()
+
+        return 0
 
     def inspectEnvironment(self):
         self.checkIfProbeExistsInDir(
@@ -183,7 +193,7 @@ class IntegrationTest:
             '{0}/bin/Parser',
             '-b', '{3}/A3/E/TMIV_A3_E.bit'],
             '{3}/A3/E/TMIV_A3_E.hls',
-            [])
+            ['A3/E/TMIV_A3_E.hls'])
 
         f2_6 = self.launchCommand(executor, [f1], [
             '{0}/bin/BitrateReport',
@@ -264,7 +274,7 @@ class IntegrationTest:
             '{0}/bin/Parser',
             '-b', '{3}/V3/D/TMIV_V3_D.bit'],
             '{3}/V3/D/TMIV_V3_D.hls',
-            [])
+            ['V3/D/TMIV_V3_D.hls'])
 
         f2_3 = self.launchCommand(executor, [f1], [
             '{0}/bin/BitrateReport',
@@ -307,7 +317,7 @@ class IntegrationTest:
             '{0}/bin/Parser',
             '-b', '{3}/G3/N/TMIV_G3_N.bit'],
             '{3}/G3/N/TMIV_G3_N.hls',
-            [])
+            ['G3/N/TMIV_G3_N.hls'])
 
         f2_2 = self.launchCommand(executor, [f1], [
             '{0}/bin/BitrateReport',
@@ -410,7 +420,7 @@ class IntegrationTest:
             '{0}/bin/Parser',
             '-b', '{3}/M3/M/QP3/TMIV_M3_M_QP3.bit'],
             '{3}/M3/M/QP3/TMIV_M3_M_QP3.hls',
-            [])
+            ['M3/M/QP3/TMIV_M3_M_QP3.hls'])
 
         f4_2 = self.launchCommand(executor, [f3], [
             '{0}/bin/BitrateReport',
@@ -455,8 +465,8 @@ class IntegrationTest:
 
         self.runCommand(args, logFile)
 
-        if self.referenceDir and not self.dryRun:
-            self.compareFiles(outputFiles)
+        if not self.dryRun:
+            self.computeMd5Sums(outputFiles)
 
     def sync(self, futures):
         for future in concurrent.futures.as_completed(futures):
@@ -503,20 +513,32 @@ class IntegrationTest:
             raise RuntimeError(
                 f'{folder} does not appear to be a {what} directory because {probeFile} was not found.')
 
-    def compareFiles(self, outputFiles):
-        assert(self.referenceDir)
-        [matches, mismatches, errors] = filecmp.cmpfiles(
-            self.testDir, self.referenceDir, outputFiles, shallow=False)
+    def computeMd5Sums(self, outputFiles):
+        for f in outputFiles:
+            self.md5sums.append((computeMd5Sum(self.testDir / f), f))
 
-        for match in matches:
-            print('equal: {}'.format(match), flush=True)
-        for mismatch in mismatches:
-            print('MISMATCH: {}'.format(mismatch), flush=True)
-        for error in errors:
-            print('ERROR: {}'.format(error), flush=True)
+    def storeMd5Sums(self):
+        with open(self.md5sumsFile, 'w') as stream:
+            for md5sum in sorted(self.md5sums, key=lambda pair: pair[1]):
+                stream.write(f"{md5sum[0]} *{md5sum[1]}\n")
 
-        self.numComparisonMismatches += len(mismatches)
-        self.numComparisonErrors += len(errors)
+    def compareMd5Files(self):
+        assert(self.referenceMd5File)
+        reference = self.referenceMd5File.read_text().splitlines()
+        actual = self.md5sumsFile.read_text().splitlines()
+
+        haveDifferences = False
+        for line in Differ().compare(reference, actual):
+            if not line.startswith(" "):
+                if not haveDifferences:
+                    haveDifferences = True
+                    print("Different MD5 sums found:")
+                print(line)
+
+        if not haveDifferences:
+            print("All MD5 sums are equal to the reference.")
+
+        return int(haveDifferences)
 
 
 if __name__ == '__main__':

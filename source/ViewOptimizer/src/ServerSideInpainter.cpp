@@ -98,7 +98,7 @@ public:
     const float halfFovX = std::atan(0.5F * size.x() / std::abs(focal.x()));
     const float halfFovY = std::atan(0.5F * size.y() / std::abs(focal.y()));
 
-    const auto euler = TMIV::Common::quat2euler(vp.ce.rotation());
+    const auto euler = TMIV::Common::quat2euler(vp.pose.orientation);
     const auto yaw = euler[0];
     const auto pitch = euler[1];
     const auto phi = yaw;
@@ -181,7 +181,7 @@ private:
         .ci_erp_theta_max(fov.maxTheta());
 
     const auto center = centerOfGravity(m_sourceParams.viewParamsList);
-    vp.ce.ce_view_pos_x(center[0]).ce_view_pos_y(center[1]).ce_view_pos_z(center[2]);
+    std::copy(center.cbegin(), center.cend(), vp.pose.position.begin());
 
     vp.dq.dq_norm_disp_low(INFINITY);
     vp.dq.dq_norm_disp_high(-INFINITY);
@@ -207,9 +207,9 @@ private:
     auto count = 0.;
 
     for (const auto &vp : vpl) {
-      sumX += vp.ce.ce_view_pos_x();
-      sumY += vp.ce.ce_view_pos_y();
-      sumZ += vp.ce.ce_view_pos_z();
+      sumX += vp.pose.position.x();
+      sumY += vp.pose.position.y();
+      sumZ += vp.pose.position.z();
       ++count;
     }
 

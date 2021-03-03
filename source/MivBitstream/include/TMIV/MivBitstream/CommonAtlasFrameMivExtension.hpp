@@ -171,17 +171,17 @@ constexpr auto CameraExtrinsics::ce_view_pos_z(const float value) noexcept -> au
   return *this;
 }
 
-constexpr auto CameraExtrinsics::ce_view_quat_x(const float value) noexcept -> auto & {
+constexpr auto CameraExtrinsics::ce_view_quat_x(const int32_t value) noexcept -> auto & {
   m_ce_view_quat_x = value;
   return *this;
 }
 
-constexpr auto CameraExtrinsics::ce_view_quat_y(const float value) noexcept -> auto & {
+constexpr auto CameraExtrinsics::ce_view_quat_y(const int32_t value) noexcept -> auto & {
   m_ce_view_quat_y = value;
   return *this;
 }
 
-constexpr auto CameraExtrinsics::ce_view_quat_z(const float value) noexcept -> auto & {
+constexpr auto CameraExtrinsics::ce_view_quat_z(const int32_t value) noexcept -> auto & {
   m_ce_view_quat_z = value;
   return *this;
 }

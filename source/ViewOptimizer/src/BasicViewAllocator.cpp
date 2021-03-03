@@ -137,7 +137,7 @@ auto BasicViewAllocator::lumaSamplesPerSourceViewSortedDesc() const -> std::vect
 auto BasicViewAllocator::viewPositions() const -> std::vector<Common::Vec3d> {
   auto result = std::vector<Common::Vec3d>(params().viewParamsList.size());
   std::transform(params().viewParamsList.cbegin(), params().viewParamsList.cend(), result.begin(),
-                 [](const MivBitstream::ViewParams &vp) { return vp.ce.position(); });
+                 [](const MivBitstream::ViewParams &vp) { return vp.pose.position; });
   return result;
 }
 

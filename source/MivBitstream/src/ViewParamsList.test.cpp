@@ -37,11 +37,37 @@
 
 using namespace std::string_literals;
 
+TEST_CASE("Pose") {
+  SECTION("En- and decoding between pose and camera extrinsics") {
+    using TMIV::MivBitstream::Pose;
+
+    auto unit = Pose{};
+    unit.position = TMIV::Common::Vec3f{1.F, 2.F, 3.F};
+    unit.orientation = TMIV::Common::QuatF{0.3F, 0.3F, 0.1F, 0.9F};
+
+    auto expectedCameraExtrinsics = TMIV::MivBitstream::CameraExtrinsics{};
+    expectedCameraExtrinsics.ce_view_pos_x(1.F)
+        .ce_view_pos_y(2.F)
+        .ce_view_pos_z(3.F)
+        .ce_view_quat_x(322122560)
+        .ce_view_quat_y(322122560)
+        .ce_view_quat_z(107374184);
+    REQUIRE(unit.encodeToCameraExtrinsics() == expectedCameraExtrinsics);
+    REQUIRE(Pose::decodeFrom(expectedCameraExtrinsics) == unit);
+
+    std::ostringstream stream;
+    unit.printTo(stream, 1);
+    REQUIRE(stream.str() == R"(position[ 1 ]=(1.0, 2.0, 3.0)
+orientation[ 1 ]=0.9 + i 0.3 + j 0.3 + k 0.1
+)");
+  }
+}
+
 TEST_CASE("ViewParams") {
   SECTION("Default construction with default values") {
     const auto unit = TMIV::MivBitstream::ViewParams{};
 
-    CHECK(unit.ce == TMIV::MivBitstream::CameraExtrinsics{});
+    CHECK(unit.pose == TMIV::MivBitstream::Pose{});
     CHECK(unit.ci == TMIV::MivBitstream::CameraIntrinsics{});
     CHECK(unit.dq == TMIV::MivBitstream::DepthQuantization{});
     CHECK(!unit.pp.has_value());
@@ -74,17 +100,18 @@ TEST_CASE("ViewParams") {
     CHECK(unit.ci.ci_projection_plane_width_minus1() + 1 == 2048);
     CHECK(unit.ci.ci_projection_plane_height_minus1() + 1 == 1048);
 
-    CHECK(unit.ce.ce_view_pos_x() == Approx(-0.2878679633140564));
-    CHECK(unit.ce.ce_view_pos_y() == Approx(-0.0878679633140564));
-    CHECK(unit.ce.ce_view_pos_z() == 1.);
+    CHECK(unit.pose.position.x() == Approx(-0.2878679633140564));
+    CHECK(unit.pose.position.y() == Approx(-0.0878679633140564));
+    CHECK(unit.pose.position.z() == 1.);
 
     const auto q = TMIV::Common::euler2quat(
         TMIV::Common::Vec3d{TMIV::Common::deg2rad(45.00000125223908), TMIV::Common::deg2rad(19.3),
                             TMIV::Common::deg2rad(4.3)});
 
-    CHECK(unit.ce.ce_view_quat_x() == Approx(q.x()));
-    CHECK(unit.ce.ce_view_quat_y() == Approx(q.y()));
-    CHECK(unit.ce.ce_view_quat_z() == Approx(q.z()));
+    CHECK(unit.pose.orientation.x() == Approx(q.x()));
+    CHECK(unit.pose.orientation.y() == Approx(q.y()));
+    CHECK(unit.pose.orientation.z() == Approx(q.z()));
+    CHECK(unit.pose.orientation.w() == Approx(q.w()));
 
     CHECK(unit.dq.dq_norm_disp_low() == 2e-3F);
     CHECK(unit.dq.dq_norm_disp_high() == 10.F);

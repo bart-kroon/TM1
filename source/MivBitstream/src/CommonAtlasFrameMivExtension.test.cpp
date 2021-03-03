@@ -35,6 +35,8 @@
 
 #include <TMIV/MivBitstream/CommonAtlasFrameMivExtension.h>
 
+#include <limits>
+
 namespace TMIV::MivBitstream {
 TEST_CASE("camera_intrinsics", "[Common Atlas Frame MIV Extension]") {
   auto x = CameraIntrinsics{};
@@ -113,9 +115,9 @@ ci_ortho_height[ 1 ]=50
 TEST_CASE("camera_extrinsics", "[Common Atlas Frame MIV Extension]") {
   auto x = CameraExtrinsics{};
 
-  REQUIRE(toString(x, uint16_t{1}) == R"(ce_view_pos_x[ 1 ]=0
-ce_view_pos_y[ 1 ]=0
-ce_view_pos_z[ 1 ]=0
+  REQUIRE(toString(x, uint16_t{1}) == R"(ce_view_pos_x[ 1 ]=0.0
+ce_view_pos_y[ 1 ]=0.0
+ce_view_pos_z[ 1 ]=0.0
 ce_view_quat_x[ 1 ]=0
 ce_view_quat_y[ 1 ]=0
 ce_view_quat_z[ 1 ]=0
@@ -127,16 +129,16 @@ ce_view_quat_z[ 1 ]=0
     x.ce_view_pos_x(3.F)
         .ce_view_pos_y(1.F)
         .ce_view_pos_z(4.F)
-        .ce_view_quat_x(5.F)
-        .ce_view_quat_y(9.F)
-        .ce_view_quat_z(14.F);
+        .ce_view_quat_x(153)
+        .ce_view_quat_y(-1239)
+        .ce_view_quat_z(0);
 
-    REQUIRE(toString(x, uint16_t{1}) == R"(ce_view_pos_x[ 1 ]=3
-ce_view_pos_y[ 1 ]=1
-ce_view_pos_z[ 1 ]=4
-ce_view_quat_x[ 1 ]=5
-ce_view_quat_y[ 1 ]=9
-ce_view_quat_z[ 1 ]=14
+    REQUIRE(toString(x, uint16_t{1}) == R"(ce_view_pos_x[ 1 ]=3.0
+ce_view_pos_y[ 1 ]=1.0
+ce_view_pos_z[ 1 ]=4.0
+ce_view_quat_x[ 1 ]=153
+ce_view_quat_y[ 1 ]=-1239
+ce_view_quat_z[ 1 ]=0
 )");
 
     REQUIRE(bitCodingTest(x, 192));
@@ -213,9 +215,9 @@ TEST_CASE("miv_view_params_list", "[Common Atlas Frame MIV Extension]") {
     REQUIRE(toString(x) == R"(mvp_num_views_minus1=0
 mvp_view_enabled_present_flag=false
 mvp_explicit_view_id_flag=false
-ce_view_pos_x[ 0 ]=0
-ce_view_pos_y[ 0 ]=0
-ce_view_pos_z[ 0 ]=0
+ce_view_pos_x[ 0 ]=0.0
+ce_view_pos_y[ 0 ]=0.0
+ce_view_pos_z[ 0 ]=0.0
 ce_view_quat_x[ 0 ]=0
 ce_view_quat_y[ 0 ]=0
 ce_view_quat_z[ 0 ]=0
@@ -253,9 +255,9 @@ mvp_view_enabled_present_flag=true
 mvp_view_enabled_in_atlas_flag[ 0 ][ 0 ]=true
 mvp_view_complete_in_atlas_flag[ 0 ][ 0 ]=true
 mvp_explicit_view_id_flag=false
-ce_view_pos_x[ 0 ]=0
-ce_view_pos_y[ 0 ]=0
-ce_view_pos_z[ 0 ]=0
+ce_view_pos_x[ 0 ]=0.0
+ce_view_pos_y[ 0 ]=0.0
+ce_view_pos_z[ 0 ]=0.0
 ce_view_quat_x[ 0 ]=0
 ce_view_quat_y[ 0 ]=0
 ce_view_quat_z[ 0 ]=0
@@ -319,23 +321,23 @@ mvp_explicit_view_id_flag=true
 mvp_view_id[ 0 ]=0
 mvp_view_id[ 1 ]=2
 mvp_view_id[ 2 ]=1
-ce_view_pos_x[ 0 ]=0
-ce_view_pos_y[ 0 ]=0
-ce_view_pos_z[ 0 ]=0
+ce_view_pos_x[ 0 ]=0.0
+ce_view_pos_y[ 0 ]=0.0
+ce_view_pos_z[ 0 ]=0.0
 ce_view_quat_x[ 0 ]=0
 ce_view_quat_y[ 0 ]=0
 ce_view_quat_z[ 0 ]=0
 mvp_inpaint_flag[ 0 ]=false
-ce_view_pos_x[ 1 ]=0
-ce_view_pos_y[ 1 ]=0
-ce_view_pos_z[ 1 ]=0
+ce_view_pos_x[ 1 ]=0.0
+ce_view_pos_y[ 1 ]=0.0
+ce_view_pos_z[ 1 ]=0.0
 ce_view_quat_x[ 1 ]=0
 ce_view_quat_y[ 1 ]=0
 ce_view_quat_z[ 1 ]=0
 mvp_inpaint_flag[ 2 ]=false
-ce_view_pos_x[ 2 ]=0
-ce_view_pos_y[ 2 ]=0
-ce_view_pos_z[ 2 ]=0
+ce_view_pos_x[ 2 ]=0.0
+ce_view_pos_y[ 2 ]=0.0
+ce_view_pos_z[ 2 ]=0.0
 ce_view_quat_x[ 2 ]=0
 ce_view_quat_y[ 2 ]=0
 ce_view_quat_z[ 2 ]=0
@@ -374,9 +376,9 @@ pp_is_root_flag[ 2 ]=true
     REQUIRE(toString(x) == R"(mvp_num_views_minus1=0
 mvp_view_enabled_present_flag=false
 mvp_explicit_view_id_flag=false
-ce_view_pos_x[ 0 ]=0
-ce_view_pos_y[ 0 ]=0
-ce_view_pos_z[ 0 ]=0
+ce_view_pos_x[ 0 ]=0.0
+ce_view_pos_y[ 0 ]=0.0
+ce_view_pos_z[ 0 ]=0.0
 ce_view_quat_x[ 0 ]=0
 ce_view_quat_y[ 0 ]=0
 ce_view_quat_z[ 0 ]=0
@@ -404,9 +406,9 @@ mvp_pruning_graph_params_present_flag=false
     REQUIRE(toString(x) == R"(mvp_num_views_minus1=0
 mvp_view_enabled_present_flag=false
 mvp_explicit_view_id_flag=false
-ce_view_pos_x[ 0 ]=0
-ce_view_pos_y[ 0 ]=0
-ce_view_pos_z[ 0 ]=0
+ce_view_pos_x[ 0 ]=0.0
+ce_view_pos_y[ 0 ]=0.0
+ce_view_pos_z[ 0 ]=0.0
 ce_view_quat_x[ 0 ]=0
 ce_view_quat_y[ 0 ]=0
 ce_view_quat_z[ 0 ]=0
@@ -461,23 +463,23 @@ mvp_view_enabled_in_atlas_flag[ 0 ][ 0 ]=false
 mvp_view_enabled_in_atlas_flag[ 0 ][ 1 ]=false
 mvp_view_enabled_in_atlas_flag[ 0 ][ 2 ]=false
 mvp_explicit_view_id_flag=false
-ce_view_pos_x[ 0 ]=0
-ce_view_pos_y[ 0 ]=0
-ce_view_pos_z[ 0 ]=0
+ce_view_pos_x[ 0 ]=0.0
+ce_view_pos_y[ 0 ]=0.0
+ce_view_pos_z[ 0 ]=0.0
 ce_view_quat_x[ 0 ]=0
 ce_view_quat_y[ 0 ]=0
 ce_view_quat_z[ 0 ]=0
 mvp_inpaint_flag[ 0 ]=false
-ce_view_pos_x[ 1 ]=0
-ce_view_pos_y[ 1 ]=0
-ce_view_pos_z[ 1 ]=0
+ce_view_pos_x[ 1 ]=0.0
+ce_view_pos_y[ 1 ]=0.0
+ce_view_pos_z[ 1 ]=0.0
 ce_view_quat_x[ 1 ]=0
 ce_view_quat_y[ 1 ]=0
 ce_view_quat_z[ 1 ]=0
 mvp_inpaint_flag[ 1 ]=false
-ce_view_pos_x[ 2 ]=0
-ce_view_pos_y[ 2 ]=0
-ce_view_pos_z[ 2 ]=0
+ce_view_pos_x[ 2 ]=0.0
+ce_view_pos_y[ 2 ]=0.0
+ce_view_pos_z[ 2 ]=0.0
 ce_view_quat_x[ 2 ]=0
 ce_view_quat_y[ 2 ]=0
 ce_view_quat_z[ 2 ]=0
@@ -514,21 +516,21 @@ pp_is_root_flag[ 2 ]=true
         .ce_view_pos_x(1.F)
         .ce_view_pos_y(2.F)
         .ce_view_pos_z(3.F)
-        .ce_view_quat_x(4.F)
-        .ce_view_quat_y(5.F)
-        .ce_view_quat_z(6.F);
+        .ce_view_quat_x(std::numeric_limits<int16_t>::max())
+        .ce_view_quat_y(std::numeric_limits<int16_t>::min())
+        .ce_view_quat_z(1);
 
     REQUIRE(toString(x) == R"(came_update_extrinsics_flag=true
 came_update_intrinsics_flag=false
 came_update_depth_quantization_flag=false
 mvpue_num_view_updates_minus1=0
 mvpue_view_idx[ 0 ]=3
-ce_view_pos_x[ 0 ]=1
-ce_view_pos_y[ 0 ]=2
-ce_view_pos_z[ 0 ]=3
-ce_view_quat_x[ 0 ]=4
-ce_view_quat_y[ 0 ]=5
-ce_view_quat_z[ 0 ]=6
+ce_view_pos_x[ 0 ]=1.0
+ce_view_pos_y[ 0 ]=2.0
+ce_view_pos_z[ 0 ]=3.0
+ce_view_quat_x[ 0 ]=32767
+ce_view_quat_y[ 0 ]=-32768
+ce_view_quat_z[ 0 ]=1
 )");
 
     REQUIRE(bitCodingTest(x, 227, vps, nalCaf, casps));
@@ -615,18 +617,18 @@ TEST_CASE("miv_view_params_update_extrinsics", "[Common Atlas Frame MIV Extensio
         .ce_view_pos_x(3.F)
         .ce_view_pos_y(1.F)
         .ce_view_pos_z(4.F)
-        .ce_view_quat_x(5.F)
-        .ce_view_quat_y(9.F)
-        .ce_view_quat_z(14.F);
+        .ce_view_quat_x(-2)
+        .ce_view_quat_y(-1)
+        .ce_view_quat_z(0);
 
     REQUIRE(toString(x) == R"(mvpue_num_view_updates_minus1=0
 mvpue_view_idx[ 0 ]=6
-ce_view_pos_x[ 0 ]=3
-ce_view_pos_y[ 0 ]=1
-ce_view_pos_z[ 0 ]=4
-ce_view_quat_x[ 0 ]=5
-ce_view_quat_y[ 0 ]=9
-ce_view_quat_z[ 0 ]=14
+ce_view_pos_x[ 0 ]=3.0
+ce_view_pos_y[ 0 ]=1.0
+ce_view_pos_z[ 0 ]=4.0
+ce_view_quat_x[ 0 ]=-2
+ce_view_quat_y[ 0 ]=-1
+ce_view_quat_z[ 0 ]=0
 )");
 
     REQUIRE(bitCodingTest(x, 224));
@@ -638,33 +640,33 @@ ce_view_quat_z[ 0 ]=14
         .ce_view_pos_x(3.F)
         .ce_view_pos_y(1.F)
         .ce_view_pos_z(4.F)
-        .ce_view_quat_x(5.F)
-        .ce_view_quat_y(9.F)
-        .ce_view_quat_z(14.F);
+        .ce_view_quat_x(-1)
+        .ce_view_quat_y(0)
+        .ce_view_quat_z(-10);
     x.mvpue_view_idx(1, 3)
         .camera_extrinsics(1)
         .ce_view_pos_x(7.F)
         .ce_view_pos_y(8.F)
         .ce_view_pos_z(3.F)
-        .ce_view_quat_x(21.F)
-        .ce_view_quat_y(12.F)
-        .ce_view_quat_z(10.F);
+        .ce_view_quat_x(3)
+        .ce_view_quat_y(6)
+        .ce_view_quat_z(9);
 
     REQUIRE(toString(x) == R"(mvpue_num_view_updates_minus1=1
 mvpue_view_idx[ 0 ]=6
-ce_view_pos_x[ 0 ]=3
-ce_view_pos_y[ 0 ]=1
-ce_view_pos_z[ 0 ]=4
-ce_view_quat_x[ 0 ]=5
-ce_view_quat_y[ 0 ]=9
-ce_view_quat_z[ 0 ]=14
+ce_view_pos_x[ 0 ]=3.0
+ce_view_pos_y[ 0 ]=1.0
+ce_view_pos_z[ 0 ]=4.0
+ce_view_quat_x[ 0 ]=-1
+ce_view_quat_y[ 0 ]=0
+ce_view_quat_z[ 0 ]=-10
 mvpue_view_idx[ 1 ]=3
-ce_view_pos_x[ 1 ]=7
-ce_view_pos_y[ 1 ]=8
-ce_view_pos_z[ 1 ]=3
-ce_view_quat_x[ 1 ]=21
-ce_view_quat_y[ 1 ]=12
-ce_view_quat_z[ 1 ]=10
+ce_view_pos_x[ 1 ]=7.0
+ce_view_pos_y[ 1 ]=8.0
+ce_view_pos_z[ 1 ]=3.0
+ce_view_quat_x[ 1 ]=3
+ce_view_quat_y[ 1 ]=6
+ce_view_quat_z[ 1 ]=9
 )");
 
     REQUIRE(bitCodingTest(x, 432));

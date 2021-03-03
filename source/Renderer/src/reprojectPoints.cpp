@@ -36,12 +36,12 @@
 #include <TMIV/Common/Thread.h>
 
 namespace TMIV::Renderer {
-AffineTransform::AffineTransform(const MivBitstream::CameraExtrinsics &source,
-                                 const MivBitstream::CameraExtrinsics &target) {
-  const auto r1 = Common::QuatD(source.rotation());
-  const auto r2 = Common::QuatD(target.rotation());
-  const auto t1 = Common::Vec3d(source.position());
-  const auto t2 = Common::Vec3d(target.position());
+AffineTransform::AffineTransform(const MivBitstream::Pose &source,
+                                 const MivBitstream::Pose &target) {
+  const auto r1 = Common::QuatD(source.orientation);
+  const auto r2 = Common::QuatD(target.orientation);
+  const auto t1 = Common::Vec3d(source.position);
+  const auto t2 = Common::Vec3d(target.position);
 
   const auto r = conj(r2) * r1;
   const auto t = rotate(t1 - t2, conj(r2));
@@ -76,7 +76,7 @@ ProjectionHelper::List::List(const MivBitstream::ViewParamsList &viewParamsList)
 }
 
 ProjectionHelper::ProjectionHelper(const MivBitstream::ViewParams &viewParams)
-    : m_viewParams{viewParams}, m_rotation{viewParams.ce.rotation()} {
+    : m_viewParams{viewParams}, m_rotation{viewParams.pose.orientation} {
   switch (viewParams.ci.ci_cam_type()) {
   case MivBitstream::CiCamType::equirectangular:
     m_engine = std::make_unique<MetaEngine::Equirectangular>(viewParams.ci);
@@ -97,7 +97,7 @@ auto ProjectionHelper::getViewingDirection() const -> Common::Vec3f {
 }
 
 auto ProjectionHelper::changeFrame(const Common::Vec3f &P) const -> Common::Vec3f {
-  return rotate(P - m_viewParams.get().ce.position(), conj(m_rotation));
+  return rotate(P - m_viewParams.get().pose.position, conj(m_rotation));
 }
 
 auto ProjectionHelper::doProjection(const Common::Vec3f &P) const
@@ -109,7 +109,7 @@ auto ProjectionHelper::doProjection(const Common::Vec3f &P) const
 
 auto ProjectionHelper::doUnprojection(const Common::Vec2f &p, float d) const -> Common::Vec3f {
   auto P = m_engine->unprojectVertex(p, d);
-  return rotate(P, m_rotation) + m_viewParams.get().ce.position();
+  return rotate(P, m_rotation) + m_viewParams.get().pose.position;
 }
 
 auto ProjectionHelper::isStrictlyInsideViewport(const Common::Vec2f &p) const -> bool {

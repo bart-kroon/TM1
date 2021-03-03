@@ -566,9 +566,9 @@ auto SceneObjectInformation::decodeFrom(Common::InputBitstream &bitstream)
         if (currentObjectUpdate.soi_visibility_cones_update_flag.value()) {
           currentObjectUpdate.soi_visibility_cones = SoiVisibilityCones{};
           auto &cones = currentObjectUpdate.soi_visibility_cones.value();
-          cones.soi_direction_x = bitstream.readBits<std::int16_t>(16);
-          cones.soi_direction_y = bitstream.readBits<std::int16_t>(16);
-          cones.soi_direction_z = bitstream.readBits<std::int16_t>(16);
+          cones.soi_direction_x = bitstream.getInt16();
+          cones.soi_direction_y = bitstream.getInt16();
+          cones.soi_direction_z = bitstream.getInt16();
           cones.soi_angle = bitstream.getUint16();
         }
       }
@@ -668,9 +668,9 @@ void SceneObjectInformation::encodeTo(Common::OutputBitstream &bitstream) const 
         if (soi_visibility_cones_present_flag()) {
           bitstream.putFlag(soi_visibility_cones_update_flag(k));
           if (soi_visibility_cones_update_flag(k)) {
-            bitstream.writeBits(soi_direction_x(k), 16);
-            bitstream.writeBits(soi_direction_y(k), 16);
-            bitstream.writeBits(soi_direction_z(k), 16);
+            bitstream.putInt16(soi_direction_x(k));
+            bitstream.putInt16(soi_direction_y(k));
+            bitstream.putInt16(soi_direction_z(k));
             bitstream.writeBits(soi_angle(k), 16);
           }
         }

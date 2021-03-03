@@ -48,7 +48,7 @@ auto choosePatch(const MivBitstream::PatchParams &patch,
                  const MivBitstream::ViewParamsList &cameras,
                  const MivBitstream::ViewParams &target) -> bool {
   const auto &camera = cameras[patch.atlasPatchProjectionId()];
-  const auto R_t = AffineTransform(cameras[patch.atlasPatchProjectionId()].ce, target.ce);
+  const auto R_t = AffineTransform(cameras[patch.atlasPatchProjectionId()].pose, target.pose);
 
   auto uv = std::array<Common::Vec2f, 4>{};
   auto xy_v = std::array<Common::Vec2f, 8>{};

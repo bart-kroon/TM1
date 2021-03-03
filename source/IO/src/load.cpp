@@ -312,8 +312,8 @@ auto loadViewportMetadata(const Common::Json &config, const Placeholders &placeh
 
     const auto pose = loadPoseFromCSV(stream2, frameIndex);
 
-    result.ce.position(result.ce.position() + pose.position);
-    result.ce.rotation(euler2quat(Common::radperdeg * pose.rotation));
+    result.pose.position += pose.position;
+    result.pose.orientation = euler2quat(Common::radperdeg * pose.rotation);
   }
 
   return result;

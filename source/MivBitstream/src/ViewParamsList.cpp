@@ -41,12 +41,65 @@
 using namespace std::string_literals;
 
 namespace TMIV::MivBitstream {
+auto Pose::printTo(std::ostream &stream, std::uint16_t viewId) const -> std::ostream & {
+  fmt::print(stream, "position[ {} ]=({}, {}, {})\n", viewId, position.x(), position.y(),
+             position.z());
+  fmt::print(stream, "orientation[ {} ]={} + i {} + j {} + k {}\n", viewId, orientation.w(),
+             orientation.x(), orientation.y(), orientation.z());
+  return stream;
+}
+
+auto Pose::operator==(const Pose &other) const -> bool {
+  return position == other.position && orientation == other.orientation;
+}
+
+auto Pose::decodeFrom(const CameraExtrinsics &ce) -> Pose {
+  auto pose = Pose{};
+
+  pose.position.x() = ce.ce_view_pos_x();
+  pose.position.y() = ce.ce_view_pos_y();
+  pose.position.z() = ce.ce_view_pos_z();
+
+  pose.orientation.x() = std::ldexp(static_cast<float>(ce.ce_view_quat_x()), -30);
+  pose.orientation.y() = std::ldexp(static_cast<float>(ce.ce_view_quat_y()), -30);
+  pose.orientation.z() = std::ldexp(static_cast<float>(ce.ce_view_quat_z()), -30);
+
+  // Use fixed-point arithmetic for r2, because float only has 24 bits for the fraction.
+  const auto r2 = Common::sqr<int64_t>(ce.ce_view_quat_x()) +
+                  Common::sqr<int64_t>(ce.ce_view_quat_y()) +
+                  Common::sqr<int64_t>(ce.ce_view_quat_z());
+  static constexpr auto r2max = 0x1000'0000'0000'0000;
+  VERIFY_MIVBITSTREAM(r2 <= r2max);
+
+  pose.orientation.w() = std::sqrt(std::ldexp(static_cast<float>(r2max - r2), -60));
+  POSTCONDITION(0 <= pose.orientation.w());
+
+  return pose;
+}
+
+auto Pose::encodeToCameraExtrinsics() const -> CameraExtrinsics {
+  PRECONDITION(normalized(orientation));
+
+  auto ce = CameraExtrinsics{};
+
+  ce.ce_view_pos_x(position.x());
+  ce.ce_view_pos_y(position.y());
+  ce.ce_view_pos_z(position.z());
+
+  // Truncate x, y and z to guarantee x^2 + y^2 + z^2 <= 1 after reconstruction.
+  ce.ce_view_quat_x(static_cast<int32_t>(std::ldexp(orientation.x(), 30)));
+  ce.ce_view_quat_y(static_cast<int32_t>(std::ldexp(orientation.y(), 30)));
+  ce.ce_view_quat_z(static_cast<int32_t>(std::ldexp(orientation.z(), 30)));
+
+  return ce;
+}
+
 auto ViewParams::printTo(std::ostream &stream, uint16_t viewId) const -> std::ostream & {
   if (!name.empty()) {
     stream << "name[ " << viewId << " ]=\"" << name << "\"  # informative\n";
   }
 
-  ce.printTo(stream, viewId);
+  pose.printTo(stream, viewId);
   ci.printTo(stream, viewId);
   dq.printTo(stream, viewId);
 
@@ -62,7 +115,7 @@ auto ViewParams::printTo(std::ostream &stream, uint16_t viewId) const -> std::os
 }
 
 auto ViewParams::operator==(const ViewParams &other) const -> bool {
-  return ci == other.ci && ce == other.ce && dq == other.dq && pp == other.pp;
+  return ci == other.ci && pose == other.pose && dq == other.dq && pp == other.pp;
 }
 
 ViewParams::ViewParams(const Common::Json &node) {
@@ -72,8 +125,8 @@ ViewParams::ViewParams(const Common::Json &node) {
   ci.ci_projection_plane_width_minus1(resolution.x() - 1);
   ci.ci_projection_plane_height_minus1(resolution.y() - 1);
 
-  ce.position(node.require("Position").asVec<float, 3>());
-  ce.rotation(euler2quat(Common::radperdeg * node.require("Rotation").asVec<float, 3>()));
+  pose.position = node.require("Position").asVec<float, 3>();
+  pose.orientation = euler2quat(Common::radperdeg * node.require("Rotation").asVec<float, 3>());
 
   const auto depthRange = node.require("Depth_range").asVec<float, 2>();
   dq.dq_norm_disp_low(1.F / depthRange.y());
@@ -128,9 +181,9 @@ ViewParams::operator Common::Json() const {
   root["Resolution"s] = Array{Json{ci.ci_projection_plane_width_minus1() + 1},
                               Json{ci.ci_projection_plane_height_minus1() + 1}};
   root["Position"s] =
-      Array{Json{ce.ce_view_pos_x()}, Json{ce.ce_view_pos_y()}, Json{ce.ce_view_pos_z()}};
+      Array{Json{pose.position.x()}, Json{pose.position.y()}, Json{pose.position.z()}};
 
-  const auto euler = quat2euler(Common::QuatD{ce.rotation()});
+  const auto euler = quat2euler(Common::QuatD{pose.orientation});
   root["Rotation"s] = Array{Json{Common::rad2deg(euler.x())}, Json{Common::rad2deg(euler.y())},
                             Json{Common::rad2deg(euler.z())}};
 

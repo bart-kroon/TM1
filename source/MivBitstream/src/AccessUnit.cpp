@@ -95,13 +95,12 @@ auto AccessUnit::sequenceConfig() const -> SequenceConfig {
                    return c;
                  });
 
-  x.boundingBoxCenter = std::accumulate(
-      viewParamsList.cbegin(), viewParamsList.cend(), Common::Vec3d{},
-      [Z = 1. / static_cast<double>(viewParamsList.size())](const Common::Vec3d &init,
-                                                            const ViewParams &vp) {
-        return init + Common::Vec3d{Z * vp.ce.ce_view_pos_x(), Z * vp.ce.ce_view_pos_y(),
-                                    Z * vp.ce.ce_view_pos_z()};
-      });
+  x.boundingBoxCenter =
+      std::accumulate(viewParamsList.cbegin(), viewParamsList.cend(), Common::Vec3d{},
+                      [Z = 1. / static_cast<double>(viewParamsList.size())](
+                          const Common::Vec3d &init, const ViewParams &vp) {
+                        return init + Z * Common::Vec3d{vp.pose.position};
+                      });
 
   std::transform(viewParamsList.cbegin(), viewParamsList.cend(),
                  std::inserter(x.sourceCameraNames, x.sourceCameraNames.end()), [](const auto &vp) {

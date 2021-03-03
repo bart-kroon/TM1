@@ -62,15 +62,9 @@ public:
   constexpr auto ce_view_pos_x(float value) noexcept -> auto &;
   constexpr auto ce_view_pos_y(float value) noexcept -> auto &;
   constexpr auto ce_view_pos_z(float value) noexcept -> auto &;
-  constexpr auto ce_view_quat_x(float value) noexcept -> auto &;
-  constexpr auto ce_view_quat_y(float value) noexcept -> auto &;
-  constexpr auto ce_view_quat_z(float value) noexcept -> auto &;
-
-  [[nodiscard]] auto position() const noexcept -> Common::Vec3f;
-  [[nodiscard]] auto rotation() const noexcept -> Common::QuatF;
-
-  auto position(Common::Vec3f) noexcept -> CameraExtrinsics &;
-  auto rotation(Common::QuatF) noexcept -> CameraExtrinsics &;
+  constexpr auto ce_view_quat_x(int32_t value) noexcept -> auto &;
+  constexpr auto ce_view_quat_y(int32_t value) noexcept -> auto &;
+  constexpr auto ce_view_quat_z(int32_t value) noexcept -> auto &;
 
   auto printTo(std::ostream &stream, std::uint16_t viewId) const -> std::ostream &;
 
@@ -85,9 +79,9 @@ private:
   float m_ce_view_pos_x{};
   float m_ce_view_pos_y{};
   float m_ce_view_pos_z{};
-  float m_ce_view_quat_x{};
-  float m_ce_view_quat_y{};
-  float m_ce_view_quat_z{};
+  int32_t m_ce_view_quat_x{};
+  int32_t m_ce_view_quat_y{};
+  int32_t m_ce_view_quat_z{};
 };
 
 // 23090-12: ci_cam_type

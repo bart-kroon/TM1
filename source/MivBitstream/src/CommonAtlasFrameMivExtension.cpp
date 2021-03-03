@@ -214,41 +214,13 @@ void CameraIntrinsics::encodeTo(Common::OutputBitstream &bitstream) const {
   }
 }
 
-auto CameraExtrinsics::position() const noexcept -> Common::Vec3f {
-  return {ce_view_pos_x(), ce_view_pos_y(), ce_view_pos_z()};
-}
-
-auto CameraExtrinsics::rotation() const noexcept -> Common::QuatF {
-  const auto x = ce_view_quat_x();
-  const auto y = ce_view_quat_y();
-  const auto z = ce_view_quat_z();
-  const auto w = std::sqrt(std::max(0.F, 1.F - x * x - y * y - z * z));
-
-  return {x, y, z, w};
-}
-
-auto CameraExtrinsics::position(Common::Vec3f r) noexcept -> CameraExtrinsics & {
-  ce_view_pos_x(r.x());
-  ce_view_pos_y(r.y());
-  ce_view_pos_z(r.z());
-  return *this;
-}
-
-auto CameraExtrinsics::rotation(Common::QuatF q) noexcept -> CameraExtrinsics & {
-  PRECONDITION(normalized(q));
-  ce_view_quat_x(q.x());
-  ce_view_quat_y(q.y());
-  ce_view_quat_z(q.z());
-  return *this;
-}
-
 auto CameraExtrinsics::printTo(std::ostream &stream, uint16_t viewId) const -> std::ostream & {
-  stream << "ce_view_pos_x[ " << viewId << " ]=" << ce_view_pos_x() << '\n';
-  stream << "ce_view_pos_y[ " << viewId << " ]=" << ce_view_pos_y() << '\n';
-  stream << "ce_view_pos_z[ " << viewId << " ]=" << ce_view_pos_z() << '\n';
-  stream << "ce_view_quat_x[ " << viewId << " ]=" << ce_view_quat_x() << '\n';
-  stream << "ce_view_quat_y[ " << viewId << " ]=" << ce_view_quat_y() << '\n';
-  stream << "ce_view_quat_z[ " << viewId << " ]=" << ce_view_quat_z() << '\n';
+  fmt::print(stream, "ce_view_pos_x[ {} ]={}\n", viewId, ce_view_pos_x());
+  fmt::print(stream, "ce_view_pos_y[ {} ]={}\n", viewId, ce_view_pos_y());
+  fmt::print(stream, "ce_view_pos_z[ {} ]={}\n", viewId, ce_view_pos_z());
+  fmt::print(stream, "ce_view_quat_x[ {} ]={}\n", viewId, ce_view_quat_x());
+  fmt::print(stream, "ce_view_quat_y[ {} ]={}\n", viewId, ce_view_quat_y());
+  fmt::print(stream, "ce_view_quat_z[ {} ]={}\n", viewId, ce_view_quat_z());
   return stream;
 }
 
@@ -258,9 +230,9 @@ auto CameraExtrinsics::decodeFrom(Common::InputBitstream &bitstream) -> CameraEx
   x.ce_view_pos_x(bitstream.getFloat32());
   x.ce_view_pos_y(bitstream.getFloat32());
   x.ce_view_pos_z(bitstream.getFloat32());
-  x.ce_view_quat_x(bitstream.getFloat32());
-  x.ce_view_quat_y(bitstream.getFloat32());
-  x.ce_view_quat_z(bitstream.getFloat32());
+  x.ce_view_quat_x(bitstream.getInt32());
+  x.ce_view_quat_y(bitstream.getInt32());
+  x.ce_view_quat_z(bitstream.getInt32());
 
   return x;
 }
@@ -269,9 +241,9 @@ void CameraExtrinsics::encodeTo(Common::OutputBitstream &bitstream) const {
   bitstream.putFloat32(ce_view_pos_x());
   bitstream.putFloat32(ce_view_pos_y());
   bitstream.putFloat32(ce_view_pos_z());
-  bitstream.putFloat32(ce_view_quat_x());
-  bitstream.putFloat32(ce_view_quat_y());
-  bitstream.putFloat32(ce_view_quat_z());
+  bitstream.putInt32(ce_view_quat_x());
+  bitstream.putInt32(ce_view_quat_y());
+  bitstream.putInt32(ce_view_quat_z());
 }
 
 auto DepthQuantization::printTo(std::ostream &stream, uint16_t viewId) const -> std::ostream & {

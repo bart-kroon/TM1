@@ -44,6 +44,7 @@ namespace TMIV::Common {
 template <typename T> using Quaternion = stack::Vec4<T>;
 using QuatF = Quaternion<float>;
 using QuatD = Quaternion<double>;
+const auto neutralOrientation = QuatF{0.F, 0.F, 0.F, 1.F};
 
 // Quaternion product: a b
 template <typename T1, typename T2>

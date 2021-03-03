@@ -49,8 +49,8 @@ SCENARIO("Luma standard deviation in pruning") {
   auto viewParamsList =
       MivBitstream::ViewParamsList{std::vector<MivBitstream::ViewParams>(numOfCams)};
   for (int c = 0; c < numOfCams; c++) {
-    viewParamsList[c].ce.position(Common::Vec3f{0.0F, 0.0F, 0.0F});
-    viewParamsList[c].ce.rotation(Common::QuatF{0.0F, 0.0F, 0.0F, 0.0F});
+    viewParamsList[c].pose.position = Common::Vec3f{0.0F, 0.0F, 0.0F};
+    viewParamsList[c].pose.orientation = Common::neutralOrientation;
     viewParamsList[c].ci.ci_cam_type(MivBitstream::CiCamType::perspective);
     viewParamsList[c].ci.ci_perspective_center_hor(float(W) / 2.0F);
     viewParamsList[c].ci.ci_perspective_center_ver(float(H) / 2.0F);

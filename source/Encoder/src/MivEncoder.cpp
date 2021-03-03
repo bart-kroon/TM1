@@ -189,7 +189,7 @@ auto MivEncoder::commonAtlasFrame() const -> MivBitstream::CommonAtlasFrameRBSP 
     came.came_update_intrinsics_flag(false);
     came.came_update_depth_quantization_flag(false);
     for (size_t i = 0; i < viewParamsList.size(); ++i) {
-      if (viewParamsList[i].ce != m_params.viewParamsList[i].ce) {
+      if (!viewParamsList[i].pose.hasEqualCodeTo(m_params.viewParamsList[i].pose)) {
         came.came_update_extrinsics_flag(true);
       }
       if (viewParamsList[i].ci != m_params.viewParamsList[i].ci) {
@@ -226,7 +226,7 @@ auto MivEncoder::mivViewParamsList() const -> MivBitstream::MivViewParamsList {
 
   for (uint16_t i = 0; i <= mvpl.mvp_num_views_minus1(); ++i) {
     const auto &vp = vpl[i];
-    mvpl.camera_extrinsics(i) = vp.ce;
+    mvpl.camera_extrinsics(i) = vp.pose.encodeToCameraExtrinsics();
     mvpl.mvp_inpaint_flag(i, vp.isInpainted);
 
     if (i == 0 || !mvpl.mvp_intrinsic_params_equal_flag()) {
@@ -261,7 +261,8 @@ auto MivEncoder::mivViewParamsUpdateExtrinsics() const
   auto mvpue = MivBitstream::MivViewParamsUpdateExtrinsics{};
   auto viewIdx = std::vector<uint16_t>{};
   for (size_t v = 0; v < m_previouslySentMessages.viewParamsList.size(); ++v) {
-    if (m_previouslySentMessages.viewParamsList[v].ce != m_params.viewParamsList[v].ce) {
+    if (!m_previouslySentMessages.viewParamsList[v].pose.hasEqualCodeTo(
+            m_params.viewParamsList[v].pose)) {
       viewIdx.push_back(static_cast<uint16_t>(v));
     }
   }
@@ -269,7 +270,8 @@ auto MivEncoder::mivViewParamsUpdateExtrinsics() const
   mvpue.mvpue_num_view_updates_minus1(static_cast<uint16_t>(viewIdx.size() - 1));
   for (uint16_t i = 0; i <= mvpue.mvpue_num_view_updates_minus1(); ++i) {
     mvpue.mvpue_view_idx(i, viewIdx[i]);
-    mvpue.camera_extrinsics(i) = m_params.viewParamsList[viewIdx[i]].ce;
+    mvpue.camera_extrinsics(i) =
+        m_params.viewParamsList[viewIdx[i]].pose.encodeToCameraExtrinsics();
   }
   return mvpue;
 }

@@ -150,7 +150,7 @@ const auto encoderParams = []() {
       .ci_cam_type(TMIV::MivBitstream::CiCamType::orthographic)
       .ci_ortho_width(89.F)
       .ci_ortho_height(55.F);
-  vp_1.ce.ce_view_pos_x(1.f).ce_view_pos_y(2.f).ce_view_pos_z(3.F);
+  vp_1.pose.position = {1.F, 2.F, 3.F};
   vp_1.dq.dq_norm_disp_low(0.02F).dq_norm_disp_high(1.F);
 
   auto &vp_2 = params.viewParamsList.emplace_back();
@@ -161,7 +161,7 @@ const auto encoderParams = []() {
       .ci_perspective_center_ver(2.F)
       .ci_perspective_focal_hor(3.F)
       .ci_perspective_focal_ver(4.F);
-  vp_2.ce.ce_view_pos_x(10.F).ce_view_pos_y(-5.F).ce_view_pos_z(3.F);
+  vp_2.pose.position = {10.F, -5.F, 3.F};
   vp_2.dq.dq_norm_disp_low(-0.03F).dq_norm_disp_high(0.5F);
 
   for (auto &vp : params.viewParamsList) {
@@ -279,15 +279,13 @@ TEST_CASE("ServerSideInpainter") {
       }
 
       THEN("The added view is forward and upright") {
-        REQUIRE(params.viewParamsList.back().ce.ce_view_quat_x() == 0.F);
-        REQUIRE(params.viewParamsList.back().ce.ce_view_quat_y() == 0.F);
-        REQUIRE(params.viewParamsList.back().ce.ce_view_quat_z() == 0.F);
+        REQUIRE(params.viewParamsList.back().pose.orientation == TMIV::Common::neutralOrientation);
       }
 
       THEN("The cardinal point of the added view is at the center of gravity") {
-        REQUIRE(params.viewParamsList.back().ce.ce_view_pos_x() == 5.5F);
-        REQUIRE(params.viewParamsList.back().ce.ce_view_pos_y() == -1.5F);
-        REQUIRE(params.viewParamsList.back().ce.ce_view_pos_z() == 3.F);
+        REQUIRE(params.viewParamsList.back().pose.position.x() == 5.5F);
+        REQUIRE(params.viewParamsList.back().pose.position.y() == -1.5F);
+        REQUIRE(params.viewParamsList.back().pose.position.z() == 3.F);
       }
 
       THEN("The added view is an additional view") {

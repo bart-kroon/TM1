@@ -45,8 +45,7 @@ namespace TMIV::Renderer {
 // vector t.
 class AffineTransform {
 public:
-  AffineTransform(const MivBitstream::CameraExtrinsics &source,
-                  const MivBitstream::CameraExtrinsics &target);
+  AffineTransform(const MivBitstream::Pose &source, const MivBitstream::Pose &target);
 
   [[nodiscard]] auto translation() const -> auto & { return m_t; }
   auto operator()(Common::Vec3f x) const -> Common::Vec3f;
@@ -129,7 +128,7 @@ public:
 private:
   std::reference_wrapper<const MivBitstream::ViewParams> m_viewParams;
   std::unique_ptr<MetaEngine::Base> m_engine;
-  Common::QuatF m_rotation;
+  Common::QuatF m_rotation{Common::neutralOrientation};
 
 public:
   ProjectionHelper(const MivBitstream::ViewParams &viewParams);
@@ -141,7 +140,7 @@ public:
     return m_viewParams.get();
   }
   [[nodiscard]] auto getViewingPosition() const -> Common::Vec3f {
-    return m_viewParams.get().ce.position();
+    return m_viewParams.get().pose.position;
   }
   [[nodiscard]] auto getViewingDirection() const -> Common::Vec3f;
   [[nodiscard]] auto changeFrame(const Common::Vec3f &P) const -> Common::Vec3f;

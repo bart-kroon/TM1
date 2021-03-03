@@ -59,11 +59,11 @@ public:
   ~Impl() = default;
 
   static auto affineTransformList(const MivBitstream::ViewParamsList &viewParamsList,
-                                  const MivBitstream::CameraExtrinsics &target) {
+                                  const MivBitstream::Pose &target) {
     std::vector<AffineTransform> result;
     result.reserve(viewParamsList.size());
     for (const auto &source : viewParamsList) {
-      result.emplace_back(source.ce, target);
+      result.emplace_back(source.pose, target);
     }
     return result;
   }
@@ -76,7 +76,7 @@ public:
     const auto cols = atlas.frameSize().x();
     result.reserve(rows * cols);
 
-    const auto transformList = affineTransformList(frame.viewParamsList, viewportParams.ce);
+    const auto transformList = affineTransformList(frame.viewParamsList, viewportParams.pose);
 
     std::vector<MivBitstream::DepthTransform> depthTransform;
     depthTransform.reserve(atlas.patchParamsList.size());

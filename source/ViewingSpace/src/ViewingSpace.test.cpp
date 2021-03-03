@@ -46,7 +46,7 @@ TEST_CASE("Signed distance functions") {
   }
   const MivBitstream::Cuboid cuboid{{1.F, 2.F, 3.F}, {11.F, 13.F, 17.F}};
   const MivBitstream::Spheroid spheroid{{5.F, 4.F, 3.F}, {2.F, 3.F, 4.F}};
-  const Common::QuatF noRotation{0.F, 0.F, 0.F, 1.F};
+  const Common::QuatF noRotation{Common::neutralOrientation};
   SECTION("Cuboid") {
     REQUIRE(signedDistance(cuboid, noRotation, *cuboid.center).isInside());
     REQUIRE(signedDistance(cuboid, noRotation, *cuboid.center + 0.49F * cuboid.size).isInside());

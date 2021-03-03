@@ -273,8 +273,8 @@ private:
 
       for (const auto &helper : sourceHelperList) {
         auto N = Common::Mat3x3f{};
-        M += matprod(helper.getViewParams().ce.position(), 'N',
-                     helper.getViewParams().ce.position(), 'T', N);
+        M += matprod(helper.getViewParams().pose.position, 'N',
+                     helper.getViewParams().pose.position, 'T', N);
       }
 
       return epsilon < det(M);
@@ -476,7 +476,7 @@ private:
               m_sourceUnprojection[viewId](y, x) = P;
               m_sourceReprojection[viewId](y, x) = p;
               m_sourceRayDirection[viewId](y, x) =
-                  unit(P - targetHelper.getViewParams().ce.position());
+                  unit(P - targetHelper.getViewParams().pose.position);
             }
           });
     }

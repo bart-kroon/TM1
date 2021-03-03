@@ -47,7 +47,7 @@ template <typename Integer> auto InputBitstream::readBits(unsigned bits) -> Inte
     VERIFY_BITSTREAM(m_stream.good());
 
     const auto value = m_stream.get();
-    m_buffer = (m_buffer << charBits) | uchar(value);
+    m_buffer = (m_buffer << charBits) | static_cast<uchar>(value);
     m_size += charBits;
   }
 
@@ -56,7 +56,7 @@ template <typename Integer> auto InputBitstream::readBits(unsigned bits) -> Inte
   m_buffer &= (1 << m_size) - 1;
 
   VERIFY_BITSTREAM(static_cast<uint64_t>(Integer(value)) == value);
-  return Integer(value);
+  return static_cast<Integer>(value);
 }
 
 template <typename Integer> auto InputBitstream::getUVar(uint64_t range) -> Integer {
@@ -72,7 +72,7 @@ template <typename Integer> auto InputBitstream::getUExpGolomb() -> Integer {
   const auto value = mask + readBits<uint64_t>(leadingBits);
 
   VERIFY_BITSTREAM(static_cast<uint64_t>(Integer(value)) == value);
-  return Integer(value);
+  return static_cast<Integer>(value);
 }
 
 template <typename Integer> auto InputBitstream::getSExpGolomb() -> Integer {
@@ -81,7 +81,7 @@ template <typename Integer> auto InputBitstream::getSExpGolomb() -> Integer {
   const auto value = (codeNum & 1) == 1 ? absValue : -absValue;
 
   VERIFY_BITSTREAM(static_cast<int64_t>(Integer(value)) == value);
-  return Integer(value);
+  return static_cast<Integer>(value);
 }
 
 template <typename Integer> void OutputBitstream::writeBits(const Integer &value, unsigned bits) {

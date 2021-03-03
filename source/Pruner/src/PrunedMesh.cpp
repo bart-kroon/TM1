@@ -122,7 +122,7 @@ auto project(const Renderer::SceneVertexDescriptorList &vertices,
   return target.ci.dispatch([&](auto camType) {
     Renderer::ImageVertexDescriptorList result;
     Renderer::Engine<camType.value> engine{target.ci};
-    const auto R_t = Renderer::AffineTransform{source.ce, target.ce};
+    const auto R_t = Renderer::AffineTransform{source.pose, target.pose};
     result.reserve(result.size());
     std::transform(std::begin(vertices), std::end(vertices), back_inserter(result),
                    [&](Renderer::SceneVertexDescriptor v) {

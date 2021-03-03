@@ -36,12 +36,22 @@
 #include <TMIV/Common/Bitstream.h>
 
 #include <array>
+#include <limits>
 #include <utility>
 
 TEST_CASE("Bitstream primitives") {
   std::stringstream stream;
   TMIV::Common::OutputBitstream obitstream{stream};
   TMIV::Common::InputBitstream ibitstream{stream};
+
+  SECTION("i(16)") {
+    const int16_t reference = GENERATE(std::numeric_limits<std::int16_t>::min(), -123, -3, -2 - 1,
+                                       0, 1, 31, 32, 1000, std::numeric_limits<int16_t>::max());
+    obitstream.putInt16(reference);
+    obitstream.zeroAlign();
+    const auto actual = ibitstream.getInt16();
+    REQUIRE(actual == reference);
+  }
 
   SECTION("u(1)") {
     obitstream.putFlag(true);

@@ -256,8 +256,8 @@ auto interpolateShape(const MivBitstream::PrimitiveShape a, const MivBitstream::
   }
 
   // rotation
-  const auto rota = a.rotation.value_or(Common::QuatF{0.F, 0.F, 0.F, 1.F});
-  const auto rotb = b.rotation.value_or(Common::QuatF{0.F, 0.F, 0.F, 1.F});
+  const auto rota = a.rotation.value_or(Common::neutralOrientation);
+  const auto rotb = b.rotation.value_or(Common::neutralOrientation);
   output.rotation = (1. - w) * rota + w * rotb;
 #ifdef VERBOSE
   std::cout << "  rotation = " << output.rotation.value() << std::endl;

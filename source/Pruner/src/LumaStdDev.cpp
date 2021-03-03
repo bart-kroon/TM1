@@ -44,12 +44,12 @@
 namespace TMIV::Pruner {
 namespace {
 auto calculateCenterPosition(const MivBitstream::ViewParamsList &viewParamsList) -> Common::Vec3f {
-  Common::Vec3f minPos{viewParamsList[0].ce.position()};
-  Common::Vec3f maxPos{viewParamsList[0].ce.position()};
+  Common::Vec3f minPos{viewParamsList[0].pose.position};
+  Common::Vec3f maxPos{viewParamsList[0].pose.position};
 
   for (std::size_t i = 1; i < viewParamsList.size(); ++i) {
 
-    const Common::Vec3f currentPos{viewParamsList[i].ce.position()};
+    const Common::Vec3f currentPos{viewParamsList[i].pose.position};
 
     for (int j = 0; j < 3; j++) {
       minPos[j] = std::min(minPos[j], currentPos[j]);
@@ -62,7 +62,7 @@ auto calculateCenterPosition(const MivBitstream::ViewParamsList &viewParamsList)
 
 auto getDistanceToPosition(const MivBitstream::ViewParams &viewParams,
                            const Common::Vec3f &position) -> float {
-  const auto differenceVector = viewParams.ce.position() - position;
+  const auto differenceVector = viewParams.pose.position - position;
   return std::sqrt(differenceVector.x() * differenceVector.x() +
                    differenceVector.y() * differenceVector.y() +
                    differenceVector.z() * differenceVector.z());

@@ -40,7 +40,7 @@ namespace TMIV::ViewingSpace {
 //! \brief Viewing parameters for a viewing space query; angle values in degrees.
 struct ViewingParams {
   Common::Vec3f viewPosition;
-  Common::QuatF viewRotation;
+  Common::QuatF viewRotation{Common::neutralOrientation};
 };
 
 class ViewingSpaceEvaluator {

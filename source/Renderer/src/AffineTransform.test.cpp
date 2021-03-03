@@ -39,13 +39,12 @@ using TMIV::Common::Vec3f;
 using TMIV::Renderer::AffineTransform;
 
 TEST_CASE("AffineTransform") {
-  const auto neutral = TMIV::MivBitstream::CameraExtrinsics{};
-
-  auto translated = neutral;
-  translated.ce_view_pos_x(1.F).ce_view_pos_y(2.F).ce_view_pos_z(3.F);
-
-  auto rotated = neutral;
-  rotated.ce_view_quat_x(0.1F).ce_view_quat_y(0.3F).ce_view_quat_z(-0.3F);
+  const auto neutral = TMIV::MivBitstream::Pose{};
+  const auto translated =
+      TMIV::MivBitstream::Pose{{1.F, 2.F, 3.F}, TMIV::Common::neutralOrientation};
+  const auto rotated = [](auto x, auto y, auto z) -> TMIV::MivBitstream::Pose {
+    return {{}, {x, y, z, std::sqrt(1.F - x * x - y * y - z * z)}};
+  }(0.1F, 0.3F, -0.3F);
 
   SECTION("Construction") {
     auto nn = AffineTransform(neutral, neutral);
@@ -56,8 +55,8 @@ TEST_CASE("AffineTransform") {
 
     SECTION("Translation vector") {
       REQUIRE(nn.translation() == Vec3f{});
-      REQUIRE(nt.translation() == -translated.position());
-      REQUIRE(tn.translation() == translated.position());
+      REQUIRE(nt.translation() == -translated.position);
+      REQUIRE(tn.translation() == translated.position);
       REQUIRE(nr.translation() == Vec3f{});
       REQUIRE(rn.translation() == Vec3f{});
     }
@@ -70,15 +69,15 @@ TEST_CASE("AffineTransform") {
       SECTION("Translation") {
         for (const auto x : points) {
           REQUIRE(nn(x) == x);
-          REQUIRE(nt(x) == x - translated.position());
-          REQUIRE(tn(x) == x + translated.position());
+          REQUIRE(nt(x) == x - translated.position);
+          REQUIRE(tn(x) == x + translated.position);
         }
       }
 
       SECTION("Rotation") {
         for (const auto x : points) {
-          const auto nr_x_ref = rotate(x, conj(rotated.rotation()));
-          const auto rn_x_ref = rotate(x, rotated.rotation());
+          const auto nr_x_ref = rotate(x, conj(rotated.orientation));
+          const auto rn_x_ref = rotate(x, rotated.orientation);
 
           for (int d = 0; d < 3; ++d) {
             REQUIRE(nr(x)[d] == Approx(nr_x_ref[d]));

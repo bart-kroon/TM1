@@ -50,7 +50,7 @@ TEST_CASE("Quanternion<T>", "[quaternion]") {
   const auto p = QuatF{1.F, -2.F, 3.F, -4.F};     // some quaternion
   const auto q = QuatF{1.F, 3.F, 4.F, 7.F};       // another quaternion
   const auto r = QuatF{-0.2F, 0.4F, 0.4F, -0.8F}; // some versor
-  const auto u = QuatF{0.F, 0.F, 0.F, 1.F};       // zero rotation versor
+  const auto u = neutralOrientation;              // zero rotation versor
 
   SECTION("Quaternion convention (x, y, z, w)") {
     // p = w + ix + jz + kz

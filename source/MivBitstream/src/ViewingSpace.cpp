@@ -345,8 +345,8 @@ auto PrimitiveShape::operator==(const PrimitiveShape &other) const -> bool {
   if (guardBandSize != other.guardBandSize) {
     return false;
   }
-  if (!equalRotation(rotation.value_or(Common::QuatF{0.F, 0.F, 0.F, 1.F}),
-                     other.rotation.value_or(Common::QuatF{0.F, 0.F, 0.F, 1.F}))) {
+  if (!equalRotation(rotation.value_or(Common::neutralOrientation),
+                     other.rotation.value_or(Common::neutralOrientation))) {
     return false;
   }
   if (viewingDirectionConstraint != other.viewingDirectionConstraint) {

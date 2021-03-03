@@ -42,8 +42,8 @@ TEST_CASE("Convert AccessUnit to SequenceConfig") {
 
   SECTION("viewParams") {
     au.viewParamsList.resize(2);
-    au.viewParamsList.front().ce.ce_view_pos_x(2.).ce_view_pos_y(-3.).ce_view_pos_z(7.);
-    au.viewParamsList.back().ce.ce_view_pos_x(6.).ce_view_pos_y(13.).ce_view_pos_z(5.);
+    au.viewParamsList.front().pose.position = {2.F, -3.F, 7.F};
+    au.viewParamsList.back().pose.position = {6.F, 13.F, 5.F};
 
     au.viewParamsList.front().name = "front"s;
     au.viewParamsList.back().name = "back"s;

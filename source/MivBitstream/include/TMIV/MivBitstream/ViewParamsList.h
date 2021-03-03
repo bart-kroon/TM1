@@ -40,16 +40,33 @@
 #include <TMIV/Common/Vector.h>
 
 namespace TMIV::MivBitstream {
+struct Pose {
+  Common::Vec3f position;
+  Common::QuatF orientation{Common::neutralOrientation};
+
+  auto printTo(std::ostream &stream, std::uint16_t viewId) const -> std::ostream &;
+
+  [[nodiscard]] auto operator==(const Pose &other) const -> bool;
+  [[nodiscard]] auto operator!=(const Pose &other) const -> bool { return !operator==(other); }
+
+  [[nodiscard]] static auto decodeFrom(const CameraExtrinsics &ce) -> Pose;
+  [[nodiscard]] auto encodeToCameraExtrinsics() const -> CameraExtrinsics;
+
+  [[nodiscard]] auto hasEqualCodeTo(const Pose &other) const {
+    return encodeToCameraExtrinsics() == other.encodeToCameraExtrinsics();
+  }
+};
+
 struct ViewParams {
   CameraIntrinsics ci;
-  CameraExtrinsics ce;
+  Pose pose;
   DepthQuantization dq;
   std::optional<PruningParents> pp;
 
   ViewParams() = default;
-  ViewParams(const CameraIntrinsics &ci, const CameraExtrinsics &ce, const DepthQuantization &dq,
+  ViewParams(const CameraIntrinsics &ci, const Pose &pose, const DepthQuantization &dq,
              std::optional<PruningParents> pp, std::string name)
-      : ci{ci}, ce{ce}, dq{dq}, pp{std::move(pp)}, name{std::move(name)} {}
+      : ci{ci}, pose{pose}, dq{dq}, pp{std::move(pp)}, name{std::move(name)} {}
 
   // Not in the specification. Just to improve screen output
   std::string name{};

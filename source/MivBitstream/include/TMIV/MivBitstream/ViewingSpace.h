@@ -168,7 +168,7 @@ struct PrimitiveShape {
 
   struct ViewingDirectionConstraint {
     std::optional<float> guardBandDirectionSize{};
-    Common::QuatF directionRotation{0.F, 0.F, 0.F, 1.F};
+    Common::QuatF directionRotation{Common::neutralOrientation};
     float yawRange{360.F};
     float pitchRange{180.F};
 

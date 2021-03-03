@@ -16,6 +16,20 @@
 default:
   interruptible: true
 
+black:
+  image:
+    name: cytopia/black:latest
+    entrypoint: ["/bin/sh", "-c"]
+  tags: [ linux ]
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      changes:
+        - "**/*.py"
+  script:
+    - python3 -m black --check --diff scripts/
+
+
 GCC 9 Release:
   <<: *build_rules_definition
   image: rikorose/gcc-cmake:gcc-9

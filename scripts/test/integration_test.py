@@ -51,14 +51,18 @@ def dirPath(path_string: str) -> Path:
 
 def parseArguments():
     parser = argparse.ArgumentParser()
-    parser.add_argument("tmiv_install_dir", type=dirPath, help="Directory with the TM1 binaries, includes, etc")
+    parser.add_argument(
+        "tmiv_install_dir", type=dirPath, help="Directory with the TM1 binaries, includes, etc"
+    )
     parser.add_argument("tmiv_source_dir", type=dirPath, help="Root of the TM1 repository")
     parser.add_argument("content_dir", type=dirPath)
     parser.add_argument("output_dir", type=Path, help="Output files will be stored here")
     parser.add_argument("-g", "--git-command", type=str)
     parser.add_argument("-j", "--max-workers", type=int)
     parser.add_argument("-r", "--reference-md5-file", type=Path)
-    parser.add_argument("--dry-run", action="store_true", help="Only print TMIV commands without executing them")
+    parser.add_argument(
+        "--dry-run", action="store_true", help="Only print TMIV commands without executing them"
+    )
     return parser.parse_args()
 
 
@@ -74,7 +78,7 @@ class IntegrationTest:
     def __init__(self):
         minVersion = (3, 5)
         if sys.version_info < minVersion:
-            raise RuntimeError('This script requires Python {}.{} or newer'.format(*minVersion))
+            raise RuntimeError("This script requires Python {}.{} or newer".format(*minVersion))
 
         args = parseArguments()
 
@@ -87,16 +91,16 @@ class IntegrationTest:
         self.referenceMd5File = args.reference_md5_file
         self.dryRun = args.dry_run
         self.md5sums = []
-+        self.md5sumsFile = self.testDir / "integration_test.md5"
+        self.md5sumsFile = self.testDir / "integration_test.md5"
 
         self.stop = False
 
     def run(self):
         if not self.dryRun:
-            print('{{0}} = {}'.format(self.tmivInstallDir))
-            print('{{1}} = {}'.format(self.tmivSourceDir))
-            print('{{2}} = {}'.format(self.contentDir))
-            print('{{3}} = {}'.format(self.testDir), flush=True)
+            print("{{0}} = {}".format(self.tmivInstallDir))
+            print("{{1}} = {}".format(self.tmivSourceDir))
+            print("{{2}} = {}".format(self.contentDir))
+            print("{{3}} = {}".format(self.testDir), flush=True)
 
         app.inspectEnvironment()
 
@@ -118,341 +122,415 @@ class IntegrationTest:
 
     def inspectEnvironment(self):
         self.checkIfProbeExistsInDir(
-            'TMIV installation', self.tmivInstallDir, Path('include') / 'TMIV' / 'Decoder' / 'MivDecoder.h')
-        self.checkIfProbeExistsInDir('TMIV source', self.tmivSourceDir,
-                                     Path('README.md'))
-        self.checkIfProbeExistsInDir('content', self.contentDir,
-                                     Path('E') / 'v13_texture_1920x1080_yuv420p10le.yuv')
+            "TMIV installation",
+            self.tmivInstallDir,
+            Path("include") / "TMIV" / "Decoder" / "MivDecoder.h",
+        )
+        self.checkIfProbeExistsInDir("TMIV source", self.tmivSourceDir, Path("README.md"))
+        self.checkIfProbeExistsInDir(
+            "content", self.contentDir, Path("E") / "v13_texture_1920x1080_yuv420p10le.yuv"
+        )
 
         self.testDir.mkdir(exist_ok=True)
 
         if self.gitCommand and not self.dryRun:
-            with open(self.testDir / 'git.log', 'w') as stream:
+            with open(self.testDir / "git.log", "w") as stream:
                 for target in [None, stream]:
-                    subprocess.run([
-                        self.gitCommand, 'log', '-n', '10', '--decorate=short', '--oneline'],
-                        shell=False, cwd=self.tmivSourceDir, check=True, stdout=target)
                     subprocess.run(
-                        [self.gitCommand, 'status', '--short'],
-                        shell=False, cwd=self.tmivSourceDir, check=True, stdout=target)
+                        [self.gitCommand, "log", "-n", "10", "--decorate=short", "--oneline"],
+                        shell=False,
+                        cwd=self.tmivSourceDir,
+                        check=True,
+                        stdout=target,
+                    )
+                    subprocess.run(
+                        [self.gitCommand, "status", "--short"],
+                        shell=False,
+                        cwd=self.tmivSourceDir,
+                        check=True,
+                        stdout=target,
+                    )
 
     def testMivAnchor(self, executor):
-        (self.testDir / 'A3' / 'E' / 'QP3').mkdir(parents=True, exist_ok=True)
+        (self.testDir / "A3" / "E" / "QP3").mkdir(parents=True, exist_ok=True)
 
-        f1 = self.launchCommand(executor, [], [
-            '{0}/bin/Encoder',
-            '-c', '{1}/config/ctc/miv_anchor/A_1_TMIV_encode.json',
-            '-p', 'configDirectory', '{1}/config',
-            '-p', 'inputDirectory', '{2}',
-            '-p', 'outputDirectory', '{3}',
-            '-n', '3', '-s', 'E', '-p', 'intraPeriod', '2'],
-            '{3}/A3/E/TMIV_A3_E.log',
-            ['A3/E/TMIV_A3_E.bit',
-             'A3/E/TMIV_A3_E_geo_c00_960x2320_yuv420p10le.yuv',
-             'A3/E/TMIV_A3_E_geo_c01_960x2320_yuv420p10le.yuv',
-             'A3/E/TMIV_A3_E_tex_c00_1920x4640_yuv420p10le.yuv',
-             'A3/E/TMIV_A3_E_tex_c01_1920x4640_yuv420p10le.yuv'])
+        f1 = self.launchCommand(
+            executor,
+            [],
+            ["{0}/bin/Encoder", "-c", "{1}/config/ctc/miv_anchor/A_1_TMIV_encode.json"]
+            + ["-p", "configDirectory", "{1}/config", "-p", "inputDirectory", "{2}"]
+            + ["-p", "outputDirectory", "{3}", "-n", "3", "-s", "E", "-p", "intraPeriod", "2"],
+            "{3}/A3/E/TMIV_A3_E.log",
+            [
+                "A3/E/TMIV_A3_E.bit",
+                "A3/E/TMIV_A3_E_geo_c00_960x2320_yuv420p10le.yuv",
+                "A3/E/TMIV_A3_E_geo_c01_960x2320_yuv420p10le.yuv",
+                "A3/E/TMIV_A3_E_tex_c00_1920x4640_yuv420p10le.yuv",
+                "A3/E/TMIV_A3_E_tex_c01_1920x4640_yuv420p10le.yuv",
+            ],
+        )
 
-        f2_1 = self.launchCommand(executor, [f1], [
-            '{0}/bin/vvencFFapp',
-            '-c', '{1}/config/ctc/miv_anchor/A_2_VVenC_encode_geo.cfg',
-            '-i', '{3}/A3/E/TMIV_A3_E_geo_c00_960x2320_yuv420p10le.yuv',
-            '-b', '{3}/A3/E/QP3/TMIV_A3_E_QP3_geo_c00.bit',
-            '-s', '960x2320', '-q', '20', '-f', '3', '-fr', '30'],
-            '{3}/A3/E/QP3/TMIV_A3_E_QP3_geo_c00_vvenc.log',
-            ['A3/E/QP3/TMIV_A3_E_QP3_geo_c00.bit'])
+        f2_1 = self.launchCommand(
+            executor,
+            [f1],
+            ["{0}/bin/vvencFFapp", "-c", "{1}/config/ctc/miv_anchor/A_2_VVenC_encode_geo.cfg"]
+            + ["-i", "{3}/A3/E/TMIV_A3_E_geo_c00_960x2320_yuv420p10le.yuv", "-b"]
+            + ["{3}/A3/E/QP3/TMIV_A3_E_QP3_geo_c00.bit", "-s", "960x2320", "-q", "20"]
+            + ["-f", "3", "-fr", "30"],
+            "{3}/A3/E/QP3/TMIV_A3_E_QP3_geo_c00_vvenc.log",
+            ["A3/E/QP3/TMIV_A3_E_QP3_geo_c00.bit"],
+        )
 
-        f2_2 = self.launchCommand(executor, [f1], [
-            '{0}/bin/vvencFFapp',
-            '-c', '{1}/config/ctc/miv_anchor/A_2_VVenC_encode_geo.cfg',
-            '-i', '{3}/A3/E/TMIV_A3_E_geo_c01_960x2320_yuv420p10le.yuv',
-            '-b', '{3}/A3/E/QP3/TMIV_A3_E_QP3_geo_c01.bit',
-            '-s', '960x2320', '-q', '20', '-f', '3', '-fr', '30'],
-            '{3}/A3/E/QP3/TMIV_A3_E_QP3_geo_c01_vvenc.log',
-            ['A3/E/QP3/TMIV_A3_E_QP3_geo_c01.bit'])
+        f2_2 = self.launchCommand(
+            executor,
+            [f1],
+            ["{0}/bin/vvencFFapp", "-c", "{1}/config/ctc/miv_anchor/A_2_VVenC_encode_geo.cfg"]
+            + ["-i", "{3}/A3/E/TMIV_A3_E_geo_c01_960x2320_yuv420p10le.yuv", "-b"]
+            + ["{3}/A3/E/QP3/TMIV_A3_E_QP3_geo_c01.bit", "-s", "960x2320", "-q", "20"]
+            + ["-f", "3", "-fr", "30"],
+            "{3}/A3/E/QP3/TMIV_A3_E_QP3_geo_c01_vvenc.log",
+            ["A3/E/QP3/TMIV_A3_E_QP3_geo_c01.bit"],
+        )
 
-        f2_3 = self.launchCommand(executor, [f1], [
-            '{0}/bin/vvencFFapp',
-            '-c', '{1}/config/ctc/miv_anchor/A_2_VVenC_encode_tex.cfg',
-            '-i', '{3}/A3/E/TMIV_A3_E_tex_c00_1920x4640_yuv420p10le.yuv',
-            '-b', '{3}/A3/E/QP3/TMIV_A3_E_QP3_tex_c00.bit',
-            '-s', '1920x4640', '-q', '43', '-f', '3', '-fr', '30'],
-            '{3}/A3/E/QP3/TMIV_A3_E_QP3_tex_c00_vvenc.log',
-            ['A3/E/QP3/TMIV_A3_E_QP3_tex_c00.bit'])
+        f2_3 = self.launchCommand(
+            executor,
+            [f1],
+            ["{0}/bin/vvencFFapp", "-c", "{1}/config/ctc/miv_anchor/A_2_VVenC_encode_tex.cfg"]
+            + ["-i", "{3}/A3/E/TMIV_A3_E_tex_c00_1920x4640_yuv420p10le.yuv", "-b"]
+            + ["{3}/A3/E/QP3/TMIV_A3_E_QP3_tex_c00.bit", "-s", "1920x4640", "-q", "43"]
+            + ["-f", "3", "-fr", "30"],
+            "{3}/A3/E/QP3/TMIV_A3_E_QP3_tex_c00_vvenc.log",
+            ["A3/E/QP3/TMIV_A3_E_QP3_tex_c00.bit"],
+        )
 
-        f2_4 = self.launchCommand(executor, [f1], [
-            '{0}/bin/vvencFFapp',
-            '-c', '{1}/config/ctc/miv_anchor/A_2_VVenC_encode_tex.cfg',
-            '-i', '{3}/A3/E/TMIV_A3_E_tex_c01_1920x4640_yuv420p10le.yuv',
-            '-b', '{3}/A3/E/QP3/TMIV_A3_E_QP3_tex_c01.bit',
-            '-s', '1920x4640', '-q', '43', '-f', '3', '-fr', '30'],
-            '{3}/A3/E/QP3/TMIV_A3_E_QP3_tex_c01_vvenc.log',
-            ['A3/E/QP3/TMIV_A3_E_QP3_tex_c01.bit'])
+        f2_4 = self.launchCommand(
+            executor,
+            [f1],
+            ["{0}/bin/vvencFFapp", "-c", "{1}/config/ctc/miv_anchor/A_2_VVenC_encode_tex.cfg"]
+            + ["-i", "{3}/A3/E/TMIV_A3_E_tex_c01_1920x4640_yuv420p10le.yuv", "-b"]
+            + ["{3}/A3/E/QP3/TMIV_A3_E_QP3_tex_c01.bit", "-s", "1920x4640", "-q", "43"]
+            + ["-f", "3", "-fr", "30"],
+            "{3}/A3/E/QP3/TMIV_A3_E_QP3_tex_c01_vvenc.log",
+            ["A3/E/QP3/TMIV_A3_E_QP3_tex_c01.bit"],
+        )
 
-        f2_5 = self.launchCommand(executor, [f1], [
-            '{0}/bin/Parser',
-            '-b', '{3}/A3/E/TMIV_A3_E.bit'],
-            '{3}/A3/E/TMIV_A3_E.hls',
-            ['A3/E/TMIV_A3_E.hls'])
+        f2_5 = self.launchCommand(
+            executor,
+            [f1],
+            ["{0}/bin/Parser", "-b", "{3}/A3/E/TMIV_A3_E.bit"],
+            "{3}/A3/E/TMIV_A3_E.hls",
+            ["A3/E/TMIV_A3_E.hls"],
+        )
 
-        f2_6 = self.launchCommand(executor, [f1], [
-            '{0}/bin/BitrateReport',
-            '-b', '{3}/A3/E/TMIV_A3_E.bit'],
-            '{3}/A3/E/TMIV_A3_E.csv',
-            [])
+        f2_6 = self.launchCommand(
+            executor,
+            [f1],
+            ["{0}/bin/BitrateReport", "-b", "{3}/A3/E/TMIV_A3_E.bit"],
+            "{3}/A3/E/TMIV_A3_E.csv",
+            [],
+        )
 
-        f3_1 = self.launchCommand(executor, [f2_1], [
-            '{0}/bin/vvdecapp',
-            '-b', '{3}/A3/E/QP3/TMIV_A3_E_QP3_geo_c00.bit',
-            '-o', '{3}/A3/E/QP3/TMIV_A3_E_QP3_geo_c00_960x2320_yuv420p10le.yuv'],
-            '{3}/A3/E/QP3/TMIV_A3_E_QP3_geo_c00_vvdec.log',
-            ['A3/E/QP3/TMIV_A3_E_QP3_geo_c00_960x2320_yuv420p10le.yuv'])
+        f3_1 = self.launchCommand(
+            executor,
+            [f2_1],
+            ["{0}/bin/vvdecapp", "-b", "{3}/A3/E/QP3/TMIV_A3_E_QP3_geo_c00.bit"]
+            + ["-o", "{3}/A3/E/QP3/TMIV_A3_E_QP3_geo_c00_960x2320_yuv420p10le.yuv"],
+            "{3}/A3/E/QP3/TMIV_A3_E_QP3_geo_c00_vvdec.log",
+            ["A3/E/QP3/TMIV_A3_E_QP3_geo_c00_960x2320_yuv420p10le.yuv"],
+        )
 
-        f3_2 = self.launchCommand(executor, [f2_2], [
-            '{0}/bin/vvdecapp',
-            '-b', '{3}/A3/E/QP3/TMIV_A3_E_QP3_geo_c01.bit',
-            '-o', '{3}/A3/E/QP3/TMIV_A3_E_QP3_geo_c01_960x2320_yuv420p10le.yuv'],
-            '{3}/A3/E/QP3/TMIV_A3_E_QP3_geo_c01_vvdec.log',
-            ['A3/E/QP3/TMIV_A3_E_QP3_geo_c01_960x2320_yuv420p10le.yuv'])
+        f3_2 = self.launchCommand(
+            executor,
+            [f2_2],
+            ["{0}/bin/vvdecapp", "-b", "{3}/A3/E/QP3/TMIV_A3_E_QP3_geo_c01.bit"]
+            + ["-o", "{3}/A3/E/QP3/TMIV_A3_E_QP3_geo_c01_960x2320_yuv420p10le.yuv"],
+            "{3}/A3/E/QP3/TMIV_A3_E_QP3_geo_c01_vvdec.log",
+            ["A3/E/QP3/TMIV_A3_E_QP3_geo_c01_960x2320_yuv420p10le.yuv"],
+        )
 
-        f3_3 = self.launchCommand(executor, [f2_3], [
-            '{0}/bin/vvdecapp',
-            '-b', '{3}/A3/E/QP3/TMIV_A3_E_QP3_tex_c00.bit',
-            '-o', '{3}/A3/E/QP3/TMIV_A3_E_QP3_tex_c00_1920x4640_yuv420p10le.yuv'],
-            '{3}/A3/E/QP3/TMIV_A3_E_QP3_tex_c00_vvdec.log',
-            ['A3/E/QP3/TMIV_A3_E_QP3_tex_c00_1920x4640_yuv420p10le.yuv'])
+        f3_3 = self.launchCommand(
+            executor,
+            [f2_3],
+            ["{0}/bin/vvdecapp", "-b", "{3}/A3/E/QP3/TMIV_A3_E_QP3_tex_c00.bit"]
+            + ["-o", "{3}/A3/E/QP3/TMIV_A3_E_QP3_tex_c00_1920x4640_yuv420p10le.yuv"],
+            "{3}/A3/E/QP3/TMIV_A3_E_QP3_tex_c00_vvdec.log",
+            ["A3/E/QP3/TMIV_A3_E_QP3_tex_c00_1920x4640_yuv420p10le.yuv"],
+        )
 
-        f3_4 = self.launchCommand(executor, [f2_4], [
-            '{0}/bin/vvdecapp',
-            '-b', '{3}/A3/E/QP3/TMIV_A3_E_QP3_tex_c01.bit',
-            '-o', '{3}/A3/E/QP3/TMIV_A3_E_QP3_tex_c01_1920x4640_yuv420p10le.yuv'],
-            '{3}/A3/E/QP3/TMIV_A3_E_QP3_tex_c01_vvdec.log',
-            ['A3/E/QP3/TMIV_A3_E_QP3_tex_c01_1920x4640_yuv420p10le.yuv'])
+        f3_4 = self.launchCommand(
+            executor,
+            [f2_4],
+            ["{0}/bin/vvdecapp", "-b", "{3}/A3/E/QP3/TMIV_A3_E_QP3_tex_c01.bit"]
+            + ["-o", "{3}/A3/E/QP3/TMIV_A3_E_QP3_tex_c01_1920x4640_yuv420p10le.yuv"],
+            "{3}/A3/E/QP3/TMIV_A3_E_QP3_tex_c01_vvdec.log",
+            ["A3/E/QP3/TMIV_A3_E_QP3_tex_c01_1920x4640_yuv420p10le.yuv"],
+        )
 
-        f4 = self.launchCommand(executor, [f3_1, f3_2, f3_3, f3_4], [
-            '{0}/bin/Decoder',
-            '-c', '{1}/config/ctc/miv_anchor/A_4_TMIV_decode.json',
-            '-p', 'configDirectory', '{1}/config',
-            '-p', 'inputDirectory', '{3}',
-            '-p', 'outputDirectory', '{3}',
-            '-n', '3', '-N', '3', '-s', 'E', '-r', 'QP3', '-v', 'v11'],
-            '{3}/A3/E/QP3/A3_E_QP3_v11.log',
-            ['A3/E/QP3/A3_E_QP3_v11_tex_1920x1080_yuv420p10le.yuv'])
+        f4 = self.launchCommand(
+            executor,
+            [f3_1, f3_2, f3_3, f3_4],
+            ["{0}/bin/Decoder", "-c", "{1}/config/ctc/miv_anchor/A_4_TMIV_decode.json"]
+            + ["-p", "configDirectory", "{1}/config", "-p", "inputDirectory", "{3}"]
+            + ["-p", "outputDirectory", "{3}", "-n", "3", "-N", "3", "-s", "E"]
+            + ["-r", "QP3", "-v", "v11"],
+            "{3}/A3/E/QP3/A3_E_QP3_v11.log",
+            ["A3/E/QP3/A3_E_QP3_v11_tex_1920x1080_yuv420p10le.yuv"],
+        )
 
         return [f4, f2_5, f2_6]
 
     def testMivViewAnchor(self, executor):
-        (self.testDir / 'V3' / 'D' / 'R0').mkdir(parents=True, exist_ok=True)
+        (self.testDir / "V3" / "D" / "R0").mkdir(parents=True, exist_ok=True)
 
-        f1 = self.launchCommand(executor, [], [
-            '{0}/bin/Encoder',
-            '-c', '{1}/config/ctc/miv_view_anchor/V_1_TMIV_encode.json',
-            '-p', 'configDirectory', '{1}/config',
-            '-p', 'inputDirectory', '{2}',
-            '-p', 'outputDirectory', '{3}',
-            '-n', '3', '-s', 'D', '-p', 'intraPeriod', '2'],
-            '{3}/V3/D/TMIV_V3_D.log',
-            ['V3/D/TMIV_V3_D.bit',
-             'V3/D/TMIV_V3_D_geo_c00_1024x2176_yuv420p10le.yuv',
-             'V3/D/TMIV_V3_D_geo_c01_1024x2176_yuv420p10le.yuv',
-             'V3/D/TMIV_V3_D_tex_c00_2048x4352_yuv420p10le.yuv',
-             'V3/D/TMIV_V3_D_tex_c01_2048x4352_yuv420p10le.yuv'])
+        f1 = self.launchCommand(
+            executor,
+            [],
+            ["{0}/bin/Encoder", "-c", "{1}/config/ctc/miv_view_anchor/V_1_TMIV_encode.json"]
+            + ["-p", "configDirectory", "{1}/config", "-p", "inputDirectory", "{2}", "-p"]
+            + ["outputDirectory", "{3}", "-n", "3", "-s", "D", "-p", "intraPeriod", "2"],
+            "{3}/V3/D/TMIV_V3_D.log",
+            [
+                "V3/D/TMIV_V3_D.bit",
+                "V3/D/TMIV_V3_D_geo_c00_1024x2176_yuv420p10le.yuv",
+                "V3/D/TMIV_V3_D_geo_c01_1024x2176_yuv420p10le.yuv",
+                "V3/D/TMIV_V3_D_tex_c00_2048x4352_yuv420p10le.yuv",
+                "V3/D/TMIV_V3_D_tex_c01_2048x4352_yuv420p10le.yuv",
+            ],
+        )
 
-        f2_1 = self.launchCommand(executor, [f1], [
-            '{0}/bin/Decoder',
-            '-c', '{1}/config/ctc/miv_view_anchor/V_4_TMIV_decode.json',
-            '-p', 'configDirectory', '{1}/config',
-            '-p', 'inputDirectory', '{3}',
-            '-p', 'outputDirectory', '{3}',
-            '-p', 'inputGeometryVideoFramePathFmt', 'V{{0}}/{{1}}/TMIV_V{{0}}_{{1}}_geo_c{{3:02}}_{{4}}x{{5}}_yuv420p10le.yuv',
-            '-p', 'inputTextureVideoFramePathFmt', 'V{{0}}/{{1}}/TMIV_V{{0}}_{{1}}_tex_c{{3:02}}_{{4}}x{{5}}_yuv420p10le.yuv',
-            '-n', '3', '-N', '3', '-s', 'D', '-r', 'R0', '-v', 'v14'],
-            '{3}/V3/D/R0/V3_D_R0_v14.log',
-            ['V3/D/R0/V3_D_R0_v14_tex_2048x1088_yuv420p10le.yuv'])
+        f2_1 = self.launchCommand(
+            executor,
+            [f1],
+            ["{0}/bin/Decoder", "-c", "{1}/config/ctc/miv_view_anchor/V_4_TMIV_decode.json"]
+            + ["-p", "configDirectory", "{1}/config", "-p", "inputDirectory", "{3}", "-p"]
+            + ["outputDirectory", "{3}", "-p", "inputGeometryVideoFramePathFmt"]
+            + ["V{{0}}/{{1}}/TMIV_V{{0}}_{{1}}_geo_c{{3:02}}_{{4}}x{{5}}_yuv420p10le.yuv"]
+            + ["-p", "inputTextureVideoFramePathFmt"]
+            + ["V{{0}}/{{1}}/TMIV_V{{0}}_{{1}}_tex_c{{3:02}}_{{4}}x{{5}}_yuv420p10le.yuv"]
+            + ["-n", "3", "-N", "3", "-s", "D", "-r", "R0", "-v", "v14"],
+            "{3}/V3/D/R0/V3_D_R0_v14.log",
+            ["V3/D/R0/V3_D_R0_v14_tex_2048x1088_yuv420p10le.yuv"],
+        )
 
-        f2_2 = self.launchCommand(executor, [f1], [
-            '{0}/bin/Parser',
-            '-b', '{3}/V3/D/TMIV_V3_D.bit'],
-            '{3}/V3/D/TMIV_V3_D.hls',
-            ['V3/D/TMIV_V3_D.hls'])
+        f2_2 = self.launchCommand(
+            executor,
+            [f1],
+            ["{0}/bin/Parser", "-b", "{3}/V3/D/TMIV_V3_D.bit"],
+            "{3}/V3/D/TMIV_V3_D.hls",
+            ["V3/D/TMIV_V3_D.hls"],
+        )
 
-        f2_3 = self.launchCommand(executor, [f1], [
-            '{0}/bin/BitrateReport',
-            '-b', '{3}/V3/D/TMIV_V3_D.bit'],
-            '{3}/V3/D/TMIV_V3_D.csv',
-            [])
+        f2_3 = self.launchCommand(
+            executor,
+            [f1],
+            ["{0}/bin/BitrateReport", "-b", "{3}/V3/D/TMIV_V3_D.bit"],
+            "{3}/V3/D/TMIV_V3_D.csv",
+            [],
+        )
 
-        f2_4 = self.launchCommand(executor, [f1], [
-            '{0}/bin/Decoder',
-            '-c', '{1}/config/ctc/miv_view_anchor/V_4_TMIV_decode.json',
-            '-p', 'configDirectory', '{1}/config',
-            '-p', 'inputDirectory', '{3}',
-            '-p', 'outputDirectory', '{3}',
-            '-p', 'inputGeometryVideoFramePathFmt', 'V{{0}}/{{1}}/TMIV_V{{0}}_{{1}}_geo_c{{3:02}}_{{4}}x{{5}}_yuv420p10le.yuv',
-            '-p', 'inputTextureVideoFramePathFmt', 'V{{0}}/{{1}}/TMIV_V{{0}}_{{1}}_tex_c{{3:02}}_{{4}}x{{5}}_yuv420p10le.yuv',
-            '-n', '3', '-N', '3', '-s', 'D', '-r', 'R0', '-P', 'p02'],
-            '{3}/V3/D/R0/V3_D_R0_p02.log',
-            ['V3/D/R0/V3_D_R0_p02_tex_1920x1080_yuv420p10le.yuv'])
+        f2_4 = self.launchCommand(
+            executor,
+            [f1],
+            ["{0}/bin/Decoder", "-c", "{1}/config/ctc/miv_view_anchor/V_4_TMIV_decode.json"]
+            + ["-p", "configDirectory", "{1}/config", "-p", "inputDirectory", "{3}"]
+            + ["-p", "outputDirectory", "{3}", "-p", "inputGeometryVideoFramePathFmt"]
+            + ["V{{0}}/{{1}}/TMIV_V{{0}}_{{1}}_geo_c{{3:02}}_{{4}}x{{5}}_yuv420p10le.yuv"]
+            + ["-p", "inputTextureVideoFramePathFmt"]
+            + ["V{{0}}/{{1}}/TMIV_V{{0}}_{{1}}_tex_c{{3:02}}_{{4}}x{{5}}_yuv420p10le.yuv"]
+            + ["-n", "3", "-N", "3", "-s", "D", "-r", "R0", "-P", "p02"],
+            "{3}/V3/D/R0/V3_D_R0_p02.log",
+            ["V3/D/R0/V3_D_R0_p02_tex_1920x1080_yuv420p10le.yuv"],
+        )
 
         return [f2_1, f2_2, f2_3, f2_4]
 
     def testMivDsdeAnchor(self, executor):
-        (self.testDir / 'G3' / 'N' / 'R0').mkdir(parents=True, exist_ok=True)
+        (self.testDir / "G3" / "N" / "R0").mkdir(parents=True, exist_ok=True)
 
-        f1 = self.launchCommand(executor, [], [
-            '{0}/bin/Encoder',
-            '-c', '{1}/config/ctc/miv_dsde_anchor/G_1_TMIV_encode.json',
-            '-p', 'configDirectory', '{1}/config',
-            '-p', 'inputDirectory', '{2}',
-            '-p', 'outputDirectory', '{3}',
-            '-n', '3', '-s', 'N', '-p', 'intraPeriod', '2'],
-            '{3}/G3/N/TMIV_G3_N.log',
-            ['G3/N/TMIV_G3_N.bit',
-             'G3/N/TMIV_G3_N_tex_c00_2048x4352_yuv420p10le.yuv',
-             'G3/N/TMIV_G3_N_tex_c01_2048x4352_yuv420p10le.yuv',
-             'G3/N/TMIV_G3_N_tex_c02_2048x4352_yuv420p10le.yuv',
-             'G3/N/TMIV_G3_N_tex_c03_2048x4352_yuv420p10le.yuv'])
+        f1 = self.launchCommand(
+            executor,
+            [],
+            ["{0}/bin/Encoder", "-c", "{1}/config/ctc/miv_dsde_anchor/G_1_TMIV_encode.json"]
+            + ["-p", "configDirectory", "{1}/config", "-p", "inputDirectory", "{2}"]
+            + ["-p", "outputDirectory", "{3}", "-n", "3", "-s", "N", "-p", "intraPeriod", "2"],
+            "{3}/G3/N/TMIV_G3_N.log",
+            [
+                "G3/N/TMIV_G3_N.bit",
+                "G3/N/TMIV_G3_N_tex_c00_2048x4352_yuv420p10le.yuv",
+                "G3/N/TMIV_G3_N_tex_c01_2048x4352_yuv420p10le.yuv",
+                "G3/N/TMIV_G3_N_tex_c02_2048x4352_yuv420p10le.yuv",
+                "G3/N/TMIV_G3_N_tex_c03_2048x4352_yuv420p10le.yuv",
+            ],
+        )
 
-        f2_1 = self.launchCommand(executor, [f1], [
-            '{0}/bin/Parser',
-            '-b', '{3}/G3/N/TMIV_G3_N.bit'],
-            '{3}/G3/N/TMIV_G3_N.hls',
-            ['G3/N/TMIV_G3_N.hls'])
+        f2_1 = self.launchCommand(
+            executor,
+            [f1],
+            ["{0}/bin/Parser", "-b", "{3}/G3/N/TMIV_G3_N.bit"],
+            "{3}/G3/N/TMIV_G3_N.hls",
+            ["G3/N/TMIV_G3_N.hls"],
+        )
 
-        f2_2 = self.launchCommand(executor, [f1], [
-            '{0}/bin/BitrateReport',
-            '-b', '{3}/G3/N/TMIV_G3_N.bit'],
-            '{3}/G3/N/TMIV_G3_N.csv',
-            [])
+        f2_2 = self.launchCommand(
+            executor,
+            [f1],
+            ["{0}/bin/BitrateReport", "-b", "{3}/G3/N/TMIV_G3_N.bit"],
+            "{3}/G3/N/TMIV_G3_N.csv",
+            [],
+        )
 
-        f2_3 = self.launchCommand(executor, [f1], [
-            '{0}/bin/Decoder',
-            '-c', '{1}/config/ctc/miv_dsde_anchor/G_4_TMIV_decode.json',
-            '-p', 'configDirectory', '{1}/config',
-            '-p', 'inputDirectory', '{3}',
-            '-p', 'outputDirectory', '{3}',
-            '-p', 'inputGeometryVideoFramePathFmt', 'G{{0}}/{{1}}/TMIV_G{{0}}_{{1}}_geo_c{{3:02}}_{{4}}x{{5}}_yuv420p10le.yuv',
-            '-p', 'inputTextureVideoFramePathFmt', 'G{{0}}/{{1}}/TMIV_G{{0}}_{{1}}_tex_c{{3:02}}_{{4}}x{{5}}_yuv420p10le.yuv',
-            '-n', '3', '-N', '3', '-s', 'N', '-r', 'R0'],
-            '{3}/G3/N/R0/G3_N_R0_none.log',
-            ['G3/N/R0/TMIV_G3_N_R0_0000.json',
-             'G3/N/R0/TMIV_G3_N_R0_tex_pv00_2048x2048_yuv420p10le.yuv',
-             'G3/N/R0/TMIV_G3_N_R0_tex_pv01_2048x2048_yuv420p10le.yuv',
-             'G3/N/R0/TMIV_G3_N_R0_tex_pv02_2048x2048_yuv420p10le.yuv',
-             'G3/N/R0/TMIV_G3_N_R0_tex_pv03_2048x2048_yuv420p10le.yuv',
-             'G3/N/R0/TMIV_G3_N_R0_tex_pv04_2048x2048_yuv420p10le.yuv',
-             'G3/N/R0/TMIV_G3_N_R0_tex_pv05_2048x2048_yuv420p10le.yuv',
-             'G3/N/R0/TMIV_G3_N_R0_tex_pv06_2048x2048_yuv420p10le.yuv'])
+        f2_3 = self.launchCommand(
+            executor,
+            [f1],
+            ["{0}/bin/Decoder", "-c", "{1}/config/ctc/miv_dsde_anchor/G_4_TMIV_decode.json"]
+            + ["-p", "configDirectory", "{1}/config", "-p", "inputDirectory", "{3}"]
+            + ["-p", "outputDirectory", "{3}", "-p", "inputGeometryVideoFramePathFmt"]
+            + ["G{{0}}/{{1}}/TMIV_G{{0}}_{{1}}_geo_c{{3:02}}_{{4}}x{{5}}_yuv420p10le.yuv"]
+            + ["-p", "inputTextureVideoFramePathFmt"]
+            + ["G{{0}}/{{1}}/TMIV_G{{0}}_{{1}}_tex_c{{3:02}}_{{4}}x{{5}}_yuv420p10le.yuv"]
+            + ["-n", "3", "-N", "3", "-s", "N", "-r", "R0"],
+            "{3}/G3/N/R0/G3_N_R0_none.log",
+            [
+                "G3/N/R0/TMIV_G3_N_R0_0000.json",
+                "G3/N/R0/TMIV_G3_N_R0_tex_pv00_2048x2048_yuv420p10le.yuv",
+                "G3/N/R0/TMIV_G3_N_R0_tex_pv01_2048x2048_yuv420p10le.yuv",
+                "G3/N/R0/TMIV_G3_N_R0_tex_pv02_2048x2048_yuv420p10le.yuv",
+                "G3/N/R0/TMIV_G3_N_R0_tex_pv03_2048x2048_yuv420p10le.yuv",
+                "G3/N/R0/TMIV_G3_N_R0_tex_pv04_2048x2048_yuv420p10le.yuv",
+                "G3/N/R0/TMIV_G3_N_R0_tex_pv05_2048x2048_yuv420p10le.yuv",
+                "G3/N/R0/TMIV_G3_N_R0_tex_pv06_2048x2048_yuv420p10le.yuv",
+            ],
+        )
 
         return [f2_1, f2_2, f2_3]
 
     def testBestReference(self, executor):
-        (self.testDir / 'R3' / 'O' / 'R0').mkdir(parents=True, exist_ok=True)
+        (self.testDir / "R3" / "O" / "R0").mkdir(parents=True, exist_ok=True)
 
-        f1_1 = self.launchCommand(executor, [], [
-            '{0}/bin/Renderer',
-            '-c', '{1}/config/ctc/best_reference/R_1_TMIV_render.json',
-            '-p', 'configDirectory', '{1}/config',
-            '-p', 'inputDirectory', '{2}',
-            '-p', 'outputDirectory', '{3}',
-            '-n', '3', '-N', '3', '-s', 'O', '-r', 'R0', '-v', 'v01'],
-            '{3}/R3/O/R0/R3_O_R0_v01.log',
-            ['R3/O/R0/R3_O_R0_v01_geo_1920x1080_yuv420p16le.yuv',
-             'R3/O/R0/R3_O_R0_v01_tex_1920x1080_yuv420p10le.yuv'])
+        f1_1 = self.launchCommand(
+            executor,
+            [],
+            ["{0}/bin/Renderer", "-c", "{1}/config/ctc/best_reference/R_1_TMIV_render.json"]
+            + ["-p", "configDirectory", "{1}/config", "-p", "inputDirectory", "{2}"]
+            + ["-p", "outputDirectory", "{3}", "-n", "3", "-N", "3", "-s", "O", "-r", "R0"]
+            + ["-v", "v01"],
+            "{3}/R3/O/R0/R3_O_R0_v01.log",
+            [
+                "R3/O/R0/R3_O_R0_v01_geo_1920x1080_yuv420p16le.yuv",
+                "R3/O/R0/R3_O_R0_v01_tex_1920x1080_yuv420p10le.yuv",
+            ],
+        )
 
-        f1_2 = self.launchCommand(executor, [], [
-            '{0}/bin/Renderer',
-            '-c', '{1}/config/ctc/best_reference/R_1_TMIV_render.json',
-            '-p', 'configDirectory', '{1}/config',
-            '-p', 'inputDirectory', '{2}',
-            '-p', 'outputDirectory', '{3}',
-            '-n', '3', '-N', '3', '-s', 'O', '-r', 'R0', '-P', 'p02'],
-            '{3}/R3/O/R0/R3_O_R0_p02.log',
-            ['R3/O/R0/R3_O_R0_p02_geo_1920x1080_yuv420p16le.yuv',
-             'R3/O/R0/R3_O_R0_p02_tex_1920x1080_yuv420p10le.yuv'])
+        f1_2 = self.launchCommand(
+            executor,
+            [],
+            ["{0}/bin/Renderer", "-c", "{1}/config/ctc/best_reference/R_1_TMIV_render.json"]
+            + ["-p", "configDirectory", "{1}/config", "-p", "inputDirectory", "{2}"]
+            + ["-p", "outputDirectory", "{3}", "-n", "3", "-N", "3", "-s", "O"]
+            + ["-r", "R0", "-P", "p02"],
+            "{3}/R3/O/R0/R3_O_R0_p02.log",
+            [
+                "R3/O/R0/R3_O_R0_p02_geo_1920x1080_yuv420p16le.yuv",
+                "R3/O/R0/R3_O_R0_p02_tex_1920x1080_yuv420p10le.yuv",
+            ],
+        )
 
         return [f1_1, f1_2]
 
     def testMivMpi(self, executor):
-        (self.testDir / 'M3' / 'M' / 'QP3').mkdir(parents=True, exist_ok=True)
+        (self.testDir / "M3" / "M" / "QP3").mkdir(parents=True, exist_ok=True)
 
-        f1 = self.launchCommand(executor, [], [
-            '{0}/bin/MpiEncoder',
-            '-c', '{1}/config/test/miv_mpi/M_1_TMIV_encode.json',
-            '-p', 'configDirectory', '{1}/config',
-            '-p', 'inputDirectory', '{2}',
-            '-p', 'outputDirectory', '{3}',
-            '-n', '3', '-s', 'M', '-p', 'intraPeriod', '2'],
-            '{3}/M3/M/TMIV_M3_M.log',
-            ['M3/M/TMIV_M3_M.bit',
-             'M3/M/TMIV_M3_M_tra_c00_4096x4096_yuv420p10le.yuv',
-             'M3/M/TMIV_M3_M_tex_c00_4096x4096_yuv420p10le.yuv'])
+        f1 = self.launchCommand(
+            executor,
+            [],
+            ["{0}/bin/MpiEncoder", "-c", "{1}/config/test/miv_mpi/M_1_TMIV_encode.json"]
+            + ["-p", "configDirectory", "{1}/config", "-p", "inputDirectory", "{2}"]
+            + ["-p", "outputDirectory", "{3}", "-n", "3", "-s", "M", "-p", "intraPeriod", "2"],
+            "{3}/M3/M/TMIV_M3_M.log",
+            [
+                "M3/M/TMIV_M3_M.bit",
+                "M3/M/TMIV_M3_M_tra_c00_4096x4096_yuv420p10le.yuv",
+                "M3/M/TMIV_M3_M_tex_c00_4096x4096_yuv420p10le.yuv",
+            ],
+        )
 
-        f2_1 = self.launchCommand(executor, [f1], [
-            '{0}/bin/TAppEncoder',
-            '-c', '{1}/config/test/miv_mpi/M_2_HM_encode_tra.cfg',
-            '-i', '{3}/M3/M/TMIV_M3_M_tra_c00_4096x4096_yuv420p10le.yuv',
-            '-b', '{3}/M3/M/QP3/TMIV_M3_M_QP3_tra_c00.bit',
-            '-wdt', '4096', '-hgt', '4096', '-q', '35', '-f', '3', '-fr', '30'],
-            '{3}/M3/M/QP3/TMIV_M3_M_QP3_tra_c00.log',
-            ['M3/M/QP3/TMIV_M3_M_QP3_tra_c00.bit'])
+        f2_1 = self.launchCommand(
+            executor,
+            [f1],
+            ["{0}/bin/TAppEncoder", "-c", "{1}/config/test/miv_mpi/M_2_HM_encode_tra.cfg"]
+            + ["-i", "{3}/M3/M/TMIV_M3_M_tra_c00_4096x4096_yuv420p10le.yuv"]
+            + ["-b", "{3}/M3/M/QP3/TMIV_M3_M_QP3_tra_c00.bit", "-wdt", "4096", "-hgt", "4096"]
+            + ["-q", "35", "-f", "3", "-fr", "30"],
+            "{3}/M3/M/QP3/TMIV_M3_M_QP3_tra_c00.log",
+            ["M3/M/QP3/TMIV_M3_M_QP3_tra_c00.bit"],
+        )
 
-        f2_2 = self.launchCommand(executor, [f1], [
-            '{0}/bin/TAppEncoder',
-            '-c', '{1}/config/test/miv_mpi/M_2_HM_encode_tex.cfg',
-            '-i', '{3}/M3/M/TMIV_M3_M_tex_c00_4096x4096_yuv420p10le.yuv',
-            '-b', '{3}/M3/M/QP3/TMIV_M3_M_QP3_tex_c00.bit',
-            '-wdt', '4096', '-hgt', '4096', '-q', '30', '-f', '3', '-fr', '30'],
-            '{3}/M3/M/QP3/TMIV_M3_M_QP3_tex_c00.log',
-            ['M3/M/QP3/TMIV_M3_M_QP3_tex_c00.bit'])
+        f2_2 = self.launchCommand(
+            executor,
+            [f1],
+            ["{0}/bin/TAppEncoder", "-c", "{1}/config/test/miv_mpi/M_2_HM_encode_tex.cfg"]
+            + ["-i", "{3}/M3/M/TMIV_M3_M_tex_c00_4096x4096_yuv420p10le.yuv"]
+            + ["-b", "{3}/M3/M/QP3/TMIV_M3_M_QP3_tex_c00.bit", "-wdt", "4096", "-hgt", "4096"]
+            + ["-q", "30", "-f", "3", "-fr", "30"],
+            "{3}/M3/M/QP3/TMIV_M3_M_QP3_tex_c00.log",
+            ["M3/M/QP3/TMIV_M3_M_QP3_tex_c00.bit"],
+        )
 
-        f3 = self.launchCommand(executor, [f2_1, f2_2], [
-            '{0}/bin/Multiplexer',
-            '-c', '{1}/config/test/miv_mpi/M_3_TMIV_mux.json',
-            '-p', 'configDirectory', '{1}/config',
-            '-p', 'inputDirectory', '{3}',
-            '-p', 'outputDirectory', '{3}',
-            '-n', '3', '-s', 'M', '-r', 'QP3'],
-            '{3}/M3/M/QP3/TMIV_M3_M_QP3.log',
-            ['M3/M/QP3/TMIV_M3_M_QP3.bit'])
+        f3 = self.launchCommand(
+            executor,
+            [f2_1, f2_2],
+            ["{0}/bin/Multiplexer", "-c", "{1}/config/test/miv_mpi/M_3_TMIV_mux.json"]
+            + ["-p", "configDirectory", "{1}/config", "-p", "inputDirectory", "{3}"]
+            + ["-p", "outputDirectory", "{3}", "-n", "3", "-s", "M", "-r", "QP3"],
+            "{3}/M3/M/QP3/TMIV_M3_M_QP3.log",
+            ["M3/M/QP3/TMIV_M3_M_QP3.bit"],
+        )
 
-        f4_1 = self.launchCommand(executor, [f3], [
-            '{0}/bin/Parser',
-            '-b', '{3}/M3/M/QP3/TMIV_M3_M_QP3.bit'],
-            '{3}/M3/M/QP3/TMIV_M3_M_QP3.hls',
-            ['M3/M/QP3/TMIV_M3_M_QP3.hls'])
+        f4_1 = self.launchCommand(
+            executor,
+            [f3],
+            ["{0}/bin/Parser", "-b", "{3}/M3/M/QP3/TMIV_M3_M_QP3.bit"],
+            "{3}/M3/M/QP3/TMIV_M3_M_QP3.hls",
+            ["M3/M/QP3/TMIV_M3_M_QP3.hls"],
+        )
 
-        f4_2 = self.launchCommand(executor, [f3], [
-            '{0}/bin/BitrateReport',
-            '-b', '{3}/M3/M/QP3/TMIV_M3_M_QP3.bit'],
-            '{3}/M3/M/QP3/TMIV_M3_M_QP3.csv',
-            [])
+        f4_2 = self.launchCommand(
+            executor,
+            [f3],
+            ["{0}/bin/BitrateReport", "-b", "{3}/M3/M/QP3/TMIV_M3_M_QP3.bit"],
+            "{3}/M3/M/QP3/TMIV_M3_M_QP3.csv",
+            [],
+        )
 
-        f4_3 = self.launchCommand(executor, [f3], [
-            '{0}/bin/Decoder',
-            '-c', '{1}/config/test/miv_mpi/M_4_TMIV_decode.json',
-            '-p', 'configDirectory', '{1}/config',
-                  '-p', 'inputDirectory', '{3}',
-                  '-p', 'outputDirectory', '{3}',
-            '-n', '3', '-N', '3', '-s', 'M', '-r', 'QP3', '-v', 'viewport'],
-            '{3}/M3/M/QP3/M3_M_QP3_viewport.log',
-            ['M3/M/QP3/M3_M_QP3_viewport_tex_1920x1080_yuv420p10le.yuv'])
+        f4_3 = self.launchCommand(
+            executor,
+            [f3],
+            ["{0}/bin/Decoder", "-c", "{1}/config/test/miv_mpi/M_4_TMIV_decode.json"]
+            + ["-p", "configDirectory", "{1}/config", "-p", "inputDirectory", "{3}"]
+            + ["-p", "outputDirectory", "{3}", "-n", "3", "-N", "3", "-s", "M", "-r", "QP3"]
+            + ["-v", "viewport"],
+            "{3}/M3/M/QP3/M3_M_QP3_viewport.log",
+            ["M3/M/QP3/M3_M_QP3_viewport_tex_1920x1080_yuv420p10le.yuv"],
+        )
 
         return [f4_1, f4_2, f4_3]
 
     def testAdditiveSynthesizer(self, executor):
-        (self.testDir / 'S1' / 'C' / 'R0').mkdir(parents=True, exist_ok=True)
+        (self.testDir / "S1" / "C" / "R0").mkdir(parents=True, exist_ok=True)
 
-        f1 = self.launchCommand(executor, [], [
-            '{0}/bin/Renderer',
-            '-c', '{1}/config/test/additive_synthesizer/S_1_TMIV_render.json',
-            '-p', 'configDirectory', '{1}/config',
-            '-p', 'inputDirectory', '{2}',
-            '-p', 'outputDirectory', '{3}',
-            '-n', '1', '-N', '1', '-s', 'C', '-r', 'R0', '-P', 'p03'],
-            '{3}/S1/C/R0/S1_C_R0_p03.log',
-            ['S1/C/R0/S1_C_R0_p03_geo_2048x2048_yuv420p16le.yuv',
-             'S1/C/R0/S1_C_R0_p03_tex_2048x2048_yuv420p10le.yuv'])
+        f1 = self.launchCommand(
+            executor,
+            [],
+            ["{0}/bin/Renderer", "-c", "{1}/config/test/additive_synthesizer/S_1_TMIV_render.json"]
+            + ["-p", "configDirectory", "{1}/config", "-p", "inputDirectory", "{2}"]
+            + ["-p", "outputDirectory", "{3}", "-n", "1", "-N", "1", "-s", "C", "-r", "R0"]
+            + ["-P", "p03"],
+            "{3}/S1/C/R0/S1_C_R0_p03.log",
+            [
+                "S1/C/R0/S1_C_R0_p03_geo_2048x2048_yuv420p16le.yuv",
+                "S1/C/R0/S1_C_R0_p03_tex_2048x2048_yuv420p10le.yuv",
+            ],
+        )
 
         return [f1]
 
@@ -478,26 +556,34 @@ class IntegrationTest:
 
     def runCommand(self, args, logFile):
         if not self.dryRun:
-            print('+ {}'.format(' '.join(args)), flush=True)
+            print("+ {}".format(" ".join(args)), flush=True)
 
         # Replace placeholders within arguments
-        def f(arg): return arg.format(self.tmivInstallDir,
-                                      self.tmivSourceDir, self.contentDir, self.testDir)
+        def f(arg):
+            return arg.format(
+                self.tmivInstallDir, self.tmivSourceDir, self.contentDir, self.testDir
+            )
+
         args = list(map(f, args))
         logFile = f(logFile)
 
         if self.dryRun:
-            print(' '.join(args))
+            print(" ".join(args))
         else:
             # Execute the command in an interruptable way
-            popen = subprocess.Popen(args, shell=False, cwd=self.testDir, stdout=open(
-                logFile, 'w'), stderr=subprocess.STDOUT)
+            popen = subprocess.Popen(
+                args,
+                shell=False,
+                cwd=self.testDir,
+                stdout=open(logFile, "w"),
+                stderr=subprocess.STDOUT,
+            )
 
             while True:
                 time.sleep(1)
                 returncode = popen.poll()
                 if self.stop:
-                    print('Killing process {}'.format(args[0]))
+                    print("Killing process {}".format(args[0]))
                     popen.kill()
                     sys.exit(1)
                 elif returncode is None:
@@ -506,24 +592,28 @@ class IntegrationTest:
                     return
                 else:
                     raise RuntimeError(
-                        'EXECUTION FAILED!\n  * Log-file    : {}\n  * Command     : {}'.format(logFile, ' '.join(args)))
+                        "EXECUTION FAILED!\n  * Log-file    : {}\n  * Command     : {}".format(
+                            logFile, " ".join(args)
+                        )
+                    )
 
     def checkIfProbeExistsInDir(self, what: str, folder: Path, probeFile: Path) -> None:
         if not (folder / probeFile).exists():
             raise RuntimeError(
-                f'{folder} does not appear to be a {what} directory because {probeFile} was not found.')
+                f"{folder} does not appear to be a {what} directory because {probeFile} was not found."
+            )
 
     def computeMd5Sums(self, outputFiles):
         for f in outputFiles:
             self.md5sums.append((computeMd5Sum(self.testDir / f), f))
 
     def storeMd5Sums(self):
-        with open(self.md5sumsFile, 'w') as stream:
+        with open(self.md5sumsFile, "w") as stream:
             for md5sum in sorted(self.md5sums, key=lambda pair: pair[1]):
                 stream.write(f"{md5sum[0]} *{md5sum[1]}\n")
 
     def compareMd5Files(self):
-        assert(self.referenceMd5File)
+        assert self.referenceMd5File
         reference = self.referenceMd5File.read_text().splitlines()
         actual = self.md5sumsFile.read_text().splitlines()
 
@@ -541,7 +631,7 @@ class IntegrationTest:
         return int(haveDifferences)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     try:
         app = IntegrationTest()
         exit(app.run())

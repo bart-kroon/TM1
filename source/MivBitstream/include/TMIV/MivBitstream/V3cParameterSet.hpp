@@ -333,11 +333,16 @@ inline auto PackingInformation::pin_region_tile_id(std::size_t i, std::uint8_t v
   return *this;
 }
 
-inline auto PackingInformation::pin_region_type_id_minus2(std::size_t i, VuhUnitType value)
+inline auto PackingInformation::pin_region_type_id_minus2(std::size_t i, std::uint8_t value)
     -> auto & {
   VERIFY_V3CBITSTREAM(i <= pin_regions_count_minus1());
   m_pinRegions[i].pin_region_type_id_minus2 = value;
   return *this;
+}
+
+inline auto PackingInformation::pinRegionTypeId(std::size_t i, VuhUnitType value) -> auto & {
+  VERIFY_V3CBITSTREAM(value != VuhUnitType::V3C_VPS && value != VuhUnitType::V3C_AD);
+  return pin_region_type_id_minus2(i, Common::assertDownCast<uint8_t>(static_cast<int>(value) - 2));
 }
 
 inline auto PackingInformation::pin_region_top_left_x(std::size_t i, std::uint16_t value)

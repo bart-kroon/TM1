@@ -401,7 +401,7 @@ struct PinRegion {
   }
 
   std::uint8_t pin_region_tile_id{};
-  VuhUnitType pin_region_type_id_minus2{};
+  std::uint8_t pin_region_type_id_minus2{};
   std::uint16_t pin_region_top_left_x{};
   std::uint16_t pin_region_top_left_y{};
   std::uint16_t pin_region_width_minus1{};
@@ -426,7 +426,8 @@ public:
   [[nodiscard]] constexpr auto pin_codec_id() const noexcept -> std::uint8_t;
   [[nodiscard]] auto pin_regions_count_minus1() const -> std::size_t;
   [[nodiscard]] auto pin_region_tile_id(std::size_t i) const -> std::uint8_t;
-  [[nodiscard]] auto pin_region_type_id_minus2(std::size_t i) const -> VuhUnitType;
+  [[nodiscard]] auto pin_region_type_id_minus2(std::size_t i) const -> std::uint8_t;
+  [[nodiscard]] auto pinRegionTypeId(std::size_t i) const -> VuhUnitType;
   [[nodiscard]] auto pin_region_top_left_x(std::size_t i) const -> std::uint16_t;
   [[nodiscard]] auto pin_region_top_left_y(std::size_t i) const -> std::uint16_t;
   [[nodiscard]] auto pin_region_width_minus1(std::size_t i) const -> std::uint16_t;
@@ -444,7 +445,8 @@ public:
   constexpr auto pin_codec_id(std::uint8_t value) noexcept -> auto &;
   auto pin_regions_count_minus1(std::size_t value) -> auto &;
   auto pin_region_tile_id(std::size_t i, std::uint8_t value) -> auto &;
-  auto pin_region_type_id_minus2(std::size_t i, VuhUnitType value) -> auto &;
+  auto pin_region_type_id_minus2(std::size_t i, std::uint8_t value) -> auto &;
+  auto pinRegionTypeId(std::size_t i, VuhUnitType value) -> auto &;
   auto pin_region_top_left_x(std::size_t i, std::uint16_t value) -> auto &;
   auto pin_region_top_left_y(std::size_t i, std::uint16_t value) -> auto &;
   auto pin_region_width_minus1(std::size_t i, std::uint16_t value) -> auto &;

@@ -308,7 +308,7 @@ TEST_CASE("packing_information", "[V3C Parameter Set]") {
     REQUIRE(toString(unit, AtlasId{4}) == R"(pin_codec_id[ 4 ]=0
 pin_regions_count_minus1[ 4 ]=0
 pin_region_tile_id[ 4 ][ 0 ]=0
-pin_region_type_id_minus2[ 4 ][ 0 ]=V3C_VPS
+pin_region_type_id_minus2[ 4 ][ 0 ]=0 (V3C_OVD)
 pin_region_top_left_x[ 4 ][ 0 ]=0
 pin_region_top_left_y[ 4 ][ 0 ]=0
 pin_region_width_minus1[ 4 ][ 0 ]=0
@@ -345,10 +345,7 @@ pin_region_rotation_flag[ 4 ][ 0 ]=false
       unit.pin_region_tile_id(i, static_cast<uint8_t>(i + 5));
       unit.pin_region_top_left_y(i, static_cast<uint16_t>(i + 6));
       unit.pin_region_width_minus1(i, static_cast<uint16_t>(2 * i + 6));
-      // Testing with V3C_AVD an V3C_GVD
-      unit.pin_region_type_id_minus2(
-          i, static_cast<VuhUnitType>(static_cast<std::uint8_t>(VuhUnitType::V3C_AVD) - 2U -
-                                      static_cast<unsigned>(i)));
+      unit.pinRegionTypeId(i, i == 1 ? VuhUnitType::V3C_GVD : VuhUnitType::V3C_AVD);
       unit.pin_region_auxiliary_data_flag(i, static_cast<bool>(i));
       if (i == 0) {
         unit.pin_region_attr_type_id(i, static_cast<uint8_t>(i + 1));
@@ -361,7 +358,7 @@ pin_region_rotation_flag[ 4 ][ 0 ]=false
     REQUIRE(toString(unit, AtlasId{3}) == R"(pin_codec_id[ 3 ]=2
 pin_regions_count_minus1[ 3 ]=1
 pin_region_tile_id[ 3 ][ 0 ]=5
-pin_region_type_id_minus2[ 3 ][ 0 ]=V3C_OVD
+pin_region_type_id_minus2[ 3 ][ 0 ]=2 (V3C_AVD)
 pin_region_top_left_x[ 3 ][ 0 ]=0
 pin_region_top_left_y[ 3 ][ 0 ]=6
 pin_region_width_minus1[ 3 ][ 0 ]=6
@@ -376,7 +373,7 @@ pin_region_attr_partitions_flag[ 3 ][ 0 ]=true
 pin_region_attr_partition_index[ 3 ][ 0 ]=0
 pin_region_attr_partitions_minus1[ 3 ][ 0 ]=3
 pin_region_tile_id[ 3 ][ 1 ]=6
-pin_region_type_id_minus2[ 3 ][ 1 ]=V3C_AD
+pin_region_type_id_minus2[ 3 ][ 1 ]=1 (V3C_GVD)
 pin_region_top_left_x[ 3 ][ 1 ]=0
 pin_region_top_left_y[ 3 ][ 1 ]=7
 pin_region_width_minus1[ 3 ][ 1 ]=8
@@ -580,7 +577,7 @@ vps_packed_video_present_flag[ 30 ]=true
 pin_codec_id[ 30 ]=0
 pin_regions_count_minus1[ 30 ]=0
 pin_region_tile_id[ 30 ][ 0 ]=0
-pin_region_type_id_minus2[ 30 ][ 0 ]=V3C_VPS
+pin_region_type_id_minus2[ 30 ][ 0 ]=0 (V3C_OVD)
 pin_region_top_left_x[ 30 ][ 0 ]=0
 pin_region_top_left_y[ 30 ][ 0 ]=0
 pin_region_width_minus1[ 30 ][ 0 ]=0
@@ -594,7 +591,7 @@ vps_packed_video_present_flag[ 32 ]=true
 pin_codec_id[ 32 ]=0
 pin_regions_count_minus1[ 32 ]=0
 pin_region_tile_id[ 32 ][ 0 ]=0
-pin_region_type_id_minus2[ 32 ][ 0 ]=V3C_VPS
+pin_region_type_id_minus2[ 32 ][ 0 ]=0 (V3C_OVD)
 pin_region_top_left_x[ 32 ][ 0 ]=0
 pin_region_top_left_y[ 32 ][ 0 ]=0
 pin_region_width_minus1[ 32 ][ 0 ]=0

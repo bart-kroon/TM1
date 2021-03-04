@@ -294,7 +294,7 @@ private:
   }
 
   void filterDepthFrame(Common::Depth16Frame &frame) const noexcept {
-    const auto blurred = Common::boxBlur<int32_t>(frame.getPlane(0), m_blurKernel);
+    const auto blurred = Common::boxBlur<uint32_t>(frame.getPlane(0), m_blurKernel);
 
     std::transform(frame.getPlane(0).cbegin(), frame.getPlane(0).cend(), blurred.cbegin(),
                    frame.getPlane(0).begin(), [this](auto orig, auto blurred) {

@@ -44,17 +44,6 @@ namespace TMIV::MpiPcs {
 const std::string outputTexturePathFmt = "outputTexturePathFmt";
 const std::string outputTransparencyPathFmt = "outputTransparencyPathFmt";
 
-namespace {
-template <typename FORMAT> void padChroma(std::ostream &stream, int bytes) {
-  constexpr auto fillValue = Common::neutralColor<FORMAT>();
-  const auto padding = std::vector(bytes / sizeof(fillValue), fillValue);
-  auto buffer = std::vector<char>(bytes);
-  std::memcpy(buffer.data(), padding.data(), buffer.size());
-  stream.write(buffer.data(), buffer.size());
-}
-
-} // namespace
-
 class Application : public Common::Application {
 private:
   enum class ConversionMode { None, RawToPcs, PcsToRaw };
@@ -199,8 +188,9 @@ private:
         }
 
         transparencyLayer.dump(transparencyStream);
-        padChroma<Common::YUV400P8>(transparencyStream, transparencyLayer.getDiskSize() -
-                                                            transparencyLayer.getMemorySize());
+        Common::padChroma<Common::YUV400P8>(transparencyStream,
+                                            transparencyLayer.getDiskSize() -
+                                                transparencyLayer.getMemorySize());
         if (!transparencyStream.good()) {
           throw std::runtime_error(fmt::format("Failed to write to {}", transparencyPath));
         }

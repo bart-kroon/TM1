@@ -282,4 +282,14 @@ template <typename FORMAT> auto AnyFrame::as() const -> Frame<FORMAT> {
 
   return outputFrame;
 }
+
+template <typename FORMAT> void padChroma(std::ostream &stream, size_t bytes) {
+  static constexpr auto fillValue = Common::neutralColor<FORMAT>();
+  if (0 < bytes) {
+    const auto padding = std::vector(bytes / sizeof(fillValue), fillValue);
+    auto buffer = std::vector<char>(bytes);
+    std::memcpy(buffer.data(), padding.data(), buffer.size());
+    stream.write(buffer.data(), buffer.size());
+  }
+}
 } // namespace TMIV::Common

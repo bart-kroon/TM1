@@ -50,7 +50,7 @@ auto exampleInput(int rows, int cols) {
 
 auto sumPixelsInRectangle(const TMIV::Common::Mat<uint16_t> &in, const TMIV::Common::Vec2i &p_1,
                           const TMIV::Common::Vec2i &p_2) {
-  auto sum = intmax_t{};
+  auto sum = uintmax_t{};
 
   for (int i = p_1.y(); i < p_2.y(); ++i) {
     for (int j = p_1.x(); j < p_2.x(); ++j) {
@@ -61,7 +61,7 @@ auto sumPixelsInRectangle(const TMIV::Common::Mat<uint16_t> &in, const TMIV::Com
 }
 
 auto countPixelsInRectangle(const TMIV::Common::Vec2i &p_1, const TMIV::Common::Vec2i &p_2) {
-  auto count = intmax_t{};
+  auto count = uintmax_t{};
 
   for (int i = p_1.y(); i < p_2.y(); ++i) {
     for (int j = p_1.x(); j < p_2.x(); ++j) {
@@ -89,8 +89,7 @@ TEST_CASE("integralImage") {
   const auto cols = GENERATE(0, 1, 4);
   const auto in = exampleInput(rows, cols);
 
-  using SumType = int32_t;
-  const auto out = TMIV::Common::integralImage<SumType>(in);
+  const auto out = TMIV::Common::integralImage<uint64_t>(in);
 
   REQUIRE(out.width() == cols + size_t{1});
   REQUIRE(out.height() == rows + size_t{1});
@@ -106,7 +105,7 @@ TEST_CASE("sumRect") {
   const auto rows = 5;
   const auto cols = 4;
   const auto in = exampleInput(rows, cols);
-  const auto ii = TMIV::Common::integralImage<int32_t>(in);
+  const auto ii = TMIV::Common::integralImage<uint32_t>(in);
 
   SECTION("In bounds") {
     const auto i1 = GENERATE(0, 1, 2, 3, 4, 5);
@@ -136,7 +135,7 @@ TEST_CASE("boxBlur") {
   const auto in = exampleInput(rows, cols);
 
   const auto k = GENERATE(0, 1, 2);
-  const auto out = TMIV::Common::boxBlur<int32_t>(in, k);
+  const auto out = TMIV::Common::boxBlur<uint32_t>(in, k);
 
   for (int i = 0; i < rows; ++i) {
     for (int j = 0; j < cols; ++j) {

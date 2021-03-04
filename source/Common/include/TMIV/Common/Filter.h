@@ -40,22 +40,27 @@
 #include <cassert>
 
 namespace TMIV::Common {
-template <typename S, typename T> auto integralImage(const Mat<T> &in) -> Mat<S> {
+template <typename ElementSum, typename Element>
+auto integralImage(const Mat<Element> &in) -> Mat<ElementSum> {
+  static_assert(std::is_convertible_v<Element, ElementSum> && std::is_unsigned_v<ElementSum>);
+
   const auto rows = in.height();
   const auto cols = in.width();
 
-  auto out = Mat<S>({rows + 1, cols + 1});
+  auto out = Mat<ElementSum>({rows + 1, cols + 1});
 
   for (size_t i = 1; i <= rows; ++i) {
     for (size_t j = 1; j <= cols; ++j) {
-      out(i, j) = S{in(i - 1, j - 1)} + out(i - 1, j) + out(i, j - 1) - out(i - 1, j - 1);
+      out(i, j) = ElementSum{in(i - 1, j - 1)} + out(i - 1, j) + out(i, j - 1) - out(i - 1, j - 1);
     }
   }
   return out;
 }
 
-template <typename S>
-auto sumRect(const Mat<S> &ii, const Vec2i &p_1, const Vec2i &p_2) noexcept -> S {
+template <typename ElementSum>
+auto sumRect(const Mat<ElementSum> &ii, const Vec2i &p_1, const Vec2i &p_2) noexcept -> ElementSum {
+  static_assert(std::is_unsigned_v<ElementSum>);
+
   assert(p_1.x() <= p_2.x() && p_1.y() <= p_2.y());
   const auto i_1 = std::max(0, p_1.y());
   const auto j_1 = std::max(0, p_1.x());
@@ -65,11 +70,11 @@ auto sumRect(const Mat<S> &ii, const Vec2i &p_1, const Vec2i &p_2) noexcept -> S
   if (i_1 < i_2 && j_1 < j_2) {
     return ii(i_1, j_1) - ii(i_1, j_2) - ii(i_2, j_1) + ii(i_2, j_2);
   }
-  return S{};
+  return ElementSum{};
 }
 
-template <typename S>
-auto countRect(const Mat<S> &ii, const Vec2i &p_1, const Vec2i &p_2) noexcept -> int {
+template <typename ElementSum>
+auto countRect(const Mat<ElementSum> &ii, const Vec2i &p_1, const Vec2i &p_2) noexcept -> int {
   assert(p_1.x() <= p_2.x() && p_1.y() <= p_2.y());
   const auto i_1 = std::max(0, p_1.y());
   const auto j_1 = std::max(0, p_1.x());
@@ -82,9 +87,10 @@ auto countRect(const Mat<S> &ii, const Vec2i &p_1, const Vec2i &p_2) noexcept ->
   return 0;
 }
 
-template <typename S, typename T> auto boxBlur(const Mat<T> &in, int k) -> Mat<T> {
-  const auto ii = integralImage<S>(in);
-  auto out = Mat<T>{{in.height(), in.width()}};
+template <typename ElementSum, typename Element>
+auto boxBlur(const Mat<Element> &in, int k) -> Mat<Element> {
+  const auto ii = integralImage<ElementSum>(in);
+  auto out = Mat<Element>{{in.height(), in.width()}};
   const auto rows = static_cast<int>(in.height());
   const auto cols = static_cast<int>(in.width());
 
@@ -96,9 +102,9 @@ template <typename S, typename T> auto boxBlur(const Mat<T> &in, int k) -> Mat<T
       const auto count = countRect(ii, p_1, p_2);
       if (0 < count) {
         if (0 <= sum) {
-          out(i, j) = static_cast<T>((sum + count / 2) / count);
+          out(i, j) = static_cast<Element>((sum + count / 2) / count);
         } else {
-          out(i, j) = static_cast<T>((sum - count / 2) / count);
+          out(i, j) = static_cast<Element>((sum - count / 2) / count);
         }
       }
     }

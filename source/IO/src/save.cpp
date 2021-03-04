@@ -53,16 +53,6 @@ const std::string outputTransparencyVideoDataPathFmt = "outputTransparencyVideoD
 const std::string outputViewportGeometryPathFmt = "outputViewportGeometryPathFmt";
 const std::string outputViewportTexturePathFmt = "outputViewportTexturePathFmt";
 
-namespace {
-template <typename FORMAT> void padChroma(std::ostream &stream, int bytes) {
-  constexpr auto fillValue = Common::neutralColor<FORMAT>();
-  const auto padding = std::vector(bytes / sizeof(fillValue), fillValue);
-  auto buffer = std::vector<char>(bytes);
-  std::memcpy(buffer.data(), padding.data(), buffer.size());
-  stream.write(buffer.data(), buffer.size());
-}
-} // namespace
-
 template <typename FORMAT>
 void saveFrame(const std::filesystem::path &path, const Common::Frame<FORMAT> &frame,
                std::int32_t frameIndex) {
@@ -81,7 +71,7 @@ void saveFrame(const std::filesystem::path &path, const Common::Frame<FORMAT> &f
   }
 
   frame.dump(stream);
-  padChroma<FORMAT>(stream, frame.getDiskSize() - frame.getMemorySize());
+  Common::padChroma<FORMAT>(stream, frame.getDiskSize() - frame.getMemorySize());
   if (!stream.good()) {
     throw std::runtime_error(fmt::format("Failed to write to {}", path));
   }

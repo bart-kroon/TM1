@@ -491,8 +491,9 @@ auto Cluster::split(const ClusteringMap &clusteringMap, int overlap) const
       }
     }
   }
-  c1.numActivePixels_ = (c.numActivePixels_ * c1.filling_) / c.filling_; // Approximation
-  c2.numActivePixels_ = c.numActivePixels_ - c1.numActivePixels_;        // Approximation
+  c1.numActivePixels_ = Common::downCast<int>((int64_t{c.numActivePixels_} * c1.filling_) /
+                                              c.filling_);        // Approximations
+  c2.numActivePixels_ = c.numActivePixels_ - c1.numActivePixels_; // Approximations
   return std::pair<Cluster, Cluster>(c1, c2);
 }
 } // namespace TMIV::Packer

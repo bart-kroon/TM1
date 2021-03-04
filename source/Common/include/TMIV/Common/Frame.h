@@ -116,6 +116,8 @@ public:
   [[nodiscard]] static constexpr auto neutralColor();
 };
 
+template <typename FORMAT> void padChroma(std::ostream &stream, size_t bytes);
+
 auto yuv420p(const Frame<YUV444P8> &frame) -> Frame<YUV420P8>;
 auto yuv420p(const Frame<YUV444P10> &frame) -> Frame<YUV420P10>;
 auto yuv420p(const Frame<YUV444P16> &frame) -> Frame<YUV420P16>;

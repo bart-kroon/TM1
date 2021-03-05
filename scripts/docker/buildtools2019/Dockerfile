@@ -15,6 +15,10 @@ COPY Install.cmd C:\TEMP\
 COPY Git-2.30.1-64-bit.exe C:\TEMP\
 RUN C:\TEMP\Git-2.30.1-64-bit.exe /VERYSILENT /NORESTART /NOCANCEL /SP- /CLOSEAPPLICATIONS /RESTARTAPPLICATIONS /COMPONENTS="icons,ext\reg\shellhere,assoc,assoc_sh"
 
+# Copy Python installer
+COPY python-3.9.2-amd64.exe  C:\TEMP\
+RUN C:\TEMP\python-3.9.2-amd64.exe /quiet InstallAllUsers=1 PrependPath=1
+
 # Download collect.exe in case of an install failure.
 ADD https://aka.ms/vscollect.exe C:\TEMP\collect.exe
 

@@ -5,8 +5,8 @@ build
 build.*
 install
 install.*
-Catch2
 .idea/
 cmake-build-*/
 .vs
 CMakeSettings.json
+scripts/docker/buildtools2019/*.exe

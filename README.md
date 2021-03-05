@@ -1,8 +1,8 @@
 Test Model for MPEG Immersive Video (TMIV)
 ==========================================
 
-[![pipeline status](http://mpegx.int-evry.fr/software/MPEG/MIV/RS/TM1/badges/master/pipeline.svg)](http://mpegx.int-evry.fr/software/MPEG/MIV/RS/TM1/-/commits/master)
-[![coverage report](http://mpegx.int-evry.fr/software/MPEG/MIV/RS/TM1/badges/master/coverage.svg)](http://mpegx.int-evry.fr/software/MPEG/MIV/RS/TM1/-/graphs/master/charts)
+[![pipeline status](http://mpegx.int-evry.fr/software/MPEG/MIV/RS/TM1/badges/main/pipeline.svg)](http://mpegx.int-evry.fr/software/MPEG/MIV/RS/TM1/-/commits/main)
+[![coverage report](http://mpegx.int-evry.fr/software/MPEG/MIV/RS/TM1/badges/main/coverage.svg)](http://mpegx.int-evry.fr/software/MPEG/MIV/RS/TM1/-/graphs/main/charts)
 
 1. [Introduction](#introduction)
 1. [Scope](#scope)
@@ -137,7 +137,7 @@ The first step is to obtain source archives for TMIV and all external libraries 
 
 1. For the latest public release, visit this URL: https://gitlab.com/mpeg-i-visual/tmiv
 1. Click on the download button (next to the Clone button) and select "zip"
-1. Unzip, resulting in a directory `/Workspace/tmiv-master` such that the file `/Workspace/tmiv-master/README.md` exists.
+1. Unzip, resulting in a directory `/Workspace/tmiv-main` such that the file `/Workspace/tmiv-main/README.md` exists.
 1. Rename to `/Workspace/tmiv` to match with the following instructions.
 
 To select a specific release instead, e.g. 6.1, use this procedure instead:
@@ -147,7 +147,7 @@ To select a specific release instead, e.g. 6.1, use this procedure instead:
 1. Unzip, resulting in a directory `/Workspace/tmiv-v6.1` such that the file `/Workspace/tmiv-v6.1/README.md` exists.
 1. Rename to `/Workspace/tmiv` to match with the following instructions.
 
-The same instruction also works with the internal software repository. Pleae be aware, that the default branch of the internal repository is not `master` but the current development branch, e.g. `v7.0-dev`. This is not a stable version of TMIV.
+The same instruction also works with the internal software repository. Pleae be aware, that the default branch of the internal repository is not `main` but the current development branch, e.g. `v7.0-dev`. This is not a stable version of TMIV.
 
 In the next step add `-DNO_INTERNET=ON` to the first cmake command or set `NO_INTERNET` to `ON` in the CMake GUI. If the external libraries are placed in the right directories, then they are detected. Otherwise the location of each of the external libraries can be specified, for instance by entering the values in the CMake GUI.
 

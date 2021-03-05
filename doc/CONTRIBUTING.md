@@ -1,6 +1,6 @@
 # Contributing
 
-Contributions are expected to be in the form of merge requests to the [MPEG-internal repository](http://mpegx.int-evry.fr/software/MPEG/MIV/RS/TM1.git). The [public repository](https://gitlab.com/mpeg-i-visual/tmiv.git) is a mirror of the internal repository's `master` branch.
+Contributions are expected to be in the form of merge requests to the [MPEG-internal repository](http://mpegx.int-evry.fr/software/MPEG/MIV/RS/TM1.git). The [public repository](https://gitlab.com/mpeg-i-visual/tmiv.git) is a mirror of the internal repository's `main` branch.
 
 ## Testing
 
@@ -92,20 +92,24 @@ To avoid duplicate work, merge conflicts and/or confusion, we impose a limit on 
 Releases have semantic versioning x.y.z:
 
 - x: Major releases, no compatibility required between them
-- y: Minor releases, we require forward bitstream compatibility (e.g. 6.1 can read the bitstream produced by 6.0)
-- z: Bug fixes and non-code improvements (e.g. license, manual)
+- y: Minor releases, non-CTC releases, e.g. implementing more proposals and general improvements
+- z: Patch releases, bug fixes and non-code improvements (e.g. license, manual)
+
+Releases are tagged like `vx.y` or `vx.y.z`. The first patch of `v8.0` is `v8.0.1`. 
+
+NOTE: In general there is no bitstream compatibility between minor releases because it is an ongoing effort to make the test model conformant with the specification.
 
 ## Branches
 
 This repository has the following branch model:
 
-- Branch `master` is always at the latest release and in sync with the [public mirror](https://gitlab.com/mpeg-i-visual/tmiv) where the test model and reference software are published. Only masters can push and nobody can merge.
-- Branch `integration` is working on the next major/minor release out of the last MPEG meeting. Pushing is forbidden and only masters can merge. Developers need to do merge requests. If a master of one organization creates a merge request, another organization performs code review and merges.
-- Branch `vX.0-dev` is an experiment to allow collaborate work on non-controversial topics in preparation of the TMIV X major release. For the latest `vX.0-dev` branch, masters can push and merge. Developers need to do merge requests.
-- Branch `m12345` is the proponent branch to document m12345 and will be deleted after the MPEG meeting when integrated or rejected
-- Issue branches as created by gitlab, will be deleted after the merge request
+* The [public mirror](https://gitlab.com/mpeg-i-visual/tmiv) is updated whenever there is a new release
+* Branch `main` is working on the next major/minor/patch release out of the last MPEG meeting. Pushing is forbidden and only maintainers can merge. Developers need to do merge requests. If a software coordinator of one organization creates a merge request then a software coordinator of another organization performs code review and merges.
+* When an existing release needs to be patched, a `vx.y-dev` branch (e.g. `v8.0-dev`) is created. These branches are protected in the same way as the main branch and can also be the target of merge requests. These branches are removed as soon as the new release is tagged (e.g. `v8.0.2`).
+* Branch `m12345` is the proponent branch to document m12345 and will be deleted after the MPEG meeting when integrated or rejected
+* Issue branches as created by gitlab, will be deleted after the merge request
 
-Masters are @fleureauj, @franck.thudor, @vinod_mv and @bartkroon.
+Maintainers are @franck.thudor, @bartkroon, and @christoph_bachhuber.
 
 ## Code guidelines
 

@@ -65,7 +65,7 @@ template <typename T> auto conj(const Quaternion<T> &q) {
 
 // Unit quaternion test: ||q|| == 1
 template <typename T, typename Tolerance = T>
-auto normalized(const Quaternion<T> &q, Tolerance tol = static_cast<T>(1e-6F)) {
+auto isNormalized(const Quaternion<T> &q, Tolerance tol = static_cast<T>(1e-6F)) {
   return (norm(q) - 1) <= tol;
 }
 
@@ -78,7 +78,7 @@ template <typename T> auto quat(const stack::Vec3<T> &v) {
 //
 // Precondition: ||q|| == 1
 template <typename T1, typename T2> auto rotate(const Quaternion<T1> &p, const Quaternion<T2> &q) {
-  assert(normalized(q));
+  assert(isNormalized(q));
   return q * p * conj(q);
 }
 
@@ -138,7 +138,7 @@ template <typename T> auto quat2euler(const Quaternion<T> &q) {
 //
 // Precondition: ||q|| == 1
 template <typename T> auto rotationMatrix(const Quaternion<T> &q) {
-  assert(normalized(q));
+  assert(isNormalized(q));
 
   constexpr auto one = T{1};
   constexpr auto two = T{2};

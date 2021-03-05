@@ -64,13 +64,9 @@ auto Pose::decodeFrom(const CameraExtrinsics &ce) -> Pose {
   pose.orientation.y() = std::ldexp(static_cast<float>(ce.ce_view_quat_y()), -30);
   pose.orientation.z() = std::ldexp(static_cast<float>(ce.ce_view_quat_z()), -30);
 
-  // Use fixed-point arithmetic for r2, because float only has 24 bits for the fraction.
-  const auto r2 = Common::sqr<int64_t>(ce.ce_view_quat_x()) +
-                  Common::sqr<int64_t>(ce.ce_view_quat_y()) +
-                  Common::sqr<int64_t>(ce.ce_view_quat_z());
-  static constexpr auto r2max = 0x1000'0000'0000'0000;
+  const auto r2 = ce.hypotQuatXYZ();
+  static constexpr auto r2max = CameraExtrinsics::maxHypotQuatXYZ;
   VERIFY_MIVBITSTREAM(r2 <= r2max);
-
   pose.orientation.w() = std::sqrt(std::ldexp(static_cast<float>(r2max - r2), -60));
   POSTCONDITION(0 <= pose.orientation.w());
 
@@ -78,8 +74,6 @@ auto Pose::decodeFrom(const CameraExtrinsics &ce) -> Pose {
 }
 
 auto Pose::encodeToCameraExtrinsics() const -> CameraExtrinsics {
-  PRECONDITION(normalized(orientation));
-
   auto ce = CameraExtrinsics{};
 
   ce.ce_view_pos_x(position.x());
@@ -87,9 +81,13 @@ auto Pose::encodeToCameraExtrinsics() const -> CameraExtrinsics {
   ce.ce_view_pos_z(position.z());
 
   // Truncate x, y and z to guarantee x^2 + y^2 + z^2 <= 1 after reconstruction.
-  ce.ce_view_quat_x(static_cast<int32_t>(std::ldexp(orientation.x(), 30)));
-  ce.ce_view_quat_y(static_cast<int32_t>(std::ldexp(orientation.y(), 30)));
-  ce.ce_view_quat_z(static_cast<int32_t>(std::ldexp(orientation.z(), 30)));
+  const auto q = Common::QuatD{orientation};
+  PRECONDITION(isNormalized(q));
+  const auto Z = 1. / Common::norm(q); // minor correction
+  ce.ce_view_quat_x(static_cast<int32_t>(std::ldexp(Z * q.x(), 30)));
+  ce.ce_view_quat_y(static_cast<int32_t>(std::ldexp(Z * q.y(), 30)));
+  ce.ce_view_quat_z(static_cast<int32_t>(std::ldexp(Z * q.z(), 30)));
+  POSTCONDITION(ce.hypotQuatXYZ() <= CameraExtrinsics::maxHypotQuatXYZ);
 
   return ce;
 }

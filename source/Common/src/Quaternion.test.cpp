@@ -66,10 +66,10 @@ TEST_CASE("Quanternion<T>", "[quaternion]") {
   }
 
   SECTION("Unit quaternion test") {
-    REQUIRE(!normalized(p));
-    REQUIRE(!normalized(q));
-    REQUIRE(normalized(u));
-    REQUIRE(normalized(r));
+    REQUIRE(!isNormalized(p));
+    REQUIRE(!isNormalized(q));
+    REQUIRE(isNormalized(u));
+    REQUIRE(isNormalized(r));
   }
 
   SECTION("Quaternion multiplication") {

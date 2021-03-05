@@ -49,9 +49,9 @@ TEST_CASE("Pose") {
     expectedCameraExtrinsics.ce_view_pos_x(1.F)
         .ce_view_pos_y(2.F)
         .ce_view_pos_z(3.F)
-        .ce_view_quat_x(322122560)
-        .ce_view_quat_y(322122560)
-        .ce_view_quat_z(107374184);
+        .ce_view_quat_x(322122564)
+        .ce_view_quat_y(322122564)
+        .ce_view_quat_z(107374185);
     REQUIRE(unit.encodeToCameraExtrinsics() == expectedCameraExtrinsics);
     REQUIRE(Pose::decodeFrom(expectedCameraExtrinsics) == unit);
 

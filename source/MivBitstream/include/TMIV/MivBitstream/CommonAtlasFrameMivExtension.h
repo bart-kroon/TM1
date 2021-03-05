@@ -66,6 +66,9 @@ public:
   constexpr auto ce_view_quat_y(int32_t value) noexcept -> auto &;
   constexpr auto ce_view_quat_z(int32_t value) noexcept -> auto &;
 
+  constexpr auto hypotQuatXYZ() const noexcept;
+  static constexpr auto maxHypotQuatXYZ = 0x1000'0000'0000'0000;
+
   auto printTo(std::ostream &stream, std::uint16_t viewId) const -> std::ostream &;
 
   constexpr auto operator==(const CameraExtrinsics &other) const noexcept;

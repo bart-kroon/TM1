@@ -56,7 +56,7 @@ struct ViewingDirection {
 };
 
 static auto viewingDirection(const Common::QuatF &rotation) -> ViewingDirection {
-  assert(normalized(rotation));
+  assert(isNormalized(rotation));
   static const Common::Vec3f forwardAxis{1.F, 0.F, 0.F};
   const auto directionVector = rotate(forwardAxis, rotation);
 

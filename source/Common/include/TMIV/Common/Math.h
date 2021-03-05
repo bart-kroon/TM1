@@ -44,20 +44,29 @@ constexpr double M_PI = 3.141592653589793238462643383279;
 #endif
 constexpr double M_PI2 = M_PI / 2.0;
 
-template <typename T> auto deg2rad(T x) -> T { return x * static_cast<T>(M_PI / 180.); }
-template <typename T> auto rad2deg(T x) -> T { return x * static_cast<T>(180. / M_PI); }
-
-template <typename T> auto sqr(T val) -> T { return val * val; }
-template <typename T> auto cube(T val) -> T { return val * val * val; }
-template <typename T> auto sgn(T val) -> int { return int{T{} < val} - int{val < T{}}; }
-template <typename T> auto inRange(T val, T min, T max) -> bool {
-  return ((min <= val) && (val <= max));
+template <typename T> constexpr auto deg2rad(T x) noexcept {
+  return x * static_cast<T>(M_PI / 180.);
 }
+
+template <typename T> constexpr auto rad2deg(T x) noexcept {
+  return x * static_cast<T>(180. / M_PI);
+}
+
+template <typename T> constexpr auto sqr(T val) noexcept { return val * val; }
+
+template <typename T> constexpr auto cube(T val) noexcept { return val * val * val; }
+
+template <typename T> constexpr auto sgn(T val) noexcept { return int{T{} < val} - int{val < T{}}; }
+
+template <typename T> constexpr auto inRange(T val, T min, T max) noexcept {
+  return min <= val && val <= max;
+}
+
 template <typename T> auto is_zero(T val) -> T {
   using std::abs;
   return (abs(val) < std::numeric_limits<T>::epsilon());
 }
-template <typename T> auto pps2ppd(T pps) -> T {
+template <typename T> constexpr auto pps2ppd(T pps) noexcept {
   return std::sqrt(pps) * static_cast<T>(M_PI / 180.);
 }
 
@@ -68,7 +77,7 @@ template <typename T> auto conjugate(T v) -> T {
     return std::conj(v);
   }
 }
-template <typename T> auto align(T value, T alignment) -> T {
+template <typename T> constexpr auto align(T value, T alignment) noexcept {
   T misalignment = value % alignment;
   return (misalignment != 0) ? (value + (alignment - misalignment)) : value;
 }

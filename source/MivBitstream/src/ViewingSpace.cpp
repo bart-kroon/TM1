@@ -57,7 +57,7 @@ static auto decodeRotation(Common::InputBitstream &stream) -> Common::QuatF {
 }
 
 static auto equalRotation(const Common::QuatF &a, const Common::QuatF &b) -> bool {
-  assert(normalized(a, 1.0E-3F) && normalized(b, 1.0E-3F));
+  assert(isNormalized(a, 1.0E-3F) && isNormalized(b, 1.0E-3F));
   const float d = dot(a, b);
   return d > 0.9999F;
 }

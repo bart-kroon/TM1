@@ -36,8 +36,8 @@ include(cmake/VVenC.cmake)
 include(cmake/clang_tidy.cmake)
 
 foreach(subdir
-        Common 
-        MivBitstream 
+        Common
+        MivBitstream
         IO
         ViewOptimizer
         Pruner
@@ -45,7 +45,7 @@ foreach(subdir
         Packer
         GeometryQuantizer
         Renderer
-        ViewingSpace        
+        ViewingSpace
         VideoDecoder
         Encoder
         Decoder

@@ -1,3 +1,8 @@
+stages:
+  - check
+  - build
+  - integration
+
 .build_rules_template: &build_rules_definition
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
@@ -17,6 +22,7 @@ default:
   interruptible: true
 
 black:
+  stage: check
   image:
     name: cytopia/black:latest
     entrypoint: ["/bin/sh", "-c"]
@@ -32,6 +38,7 @@ black:
 
 GCC 9 Release:
   <<: *build_rules_definition
+  stage: build
   image: rikorose/gcc-cmake:gcc-9
   tags: [ linux ]
   script:
@@ -42,6 +49,7 @@ GCC 9 Release:
 
 Clang 11 Debug:
   <<: *build_rules_definition
+  stage: build
   image: cbachhuber/clang:11
   tags: [ linux, long-job ]
   script:
@@ -72,16 +80,52 @@ Clang 11 Debug:
 
 VC 16 Release:
   <<: *build_rules_definition
-  image: buildtools2019:latest
+  stage: build
+  image: buildtools2019:2021.03.04
   tags: [ windows ]
   script:
     - mkdir -p build
     - cd build
-    - 'cmake -G "Visual Studio 16 2019" -DCMAKE_CXX_FLAGS="/DWIN32 /D_WINDOWS /permissive- /w14640 /W4 /GR /EHsc /WX" -DENABLE_CLANG_TIDY=OFF ..'
+    - >
+      cmake -G "Visual Studio 16 2019" -DENABLE_CLANG_TIDY=OFF
+      -DCMAKE_CXX_FLAGS="/DWIN32 /D_WINDOWS /permissive- /w14640 /W4 /GR /EHsc /WX"
+      -DCMAKE_INSTALL_PREFIX=/builds/software/MPEG/MIV/RS/TM1/install
+      ..
     - 'cmake --build . --parallel --config Release --target ALL_BUILD'
     - 'cmake --build . --config Release --target RUN_TESTS'
+    - 'cmake --build . --config Release --target INSTALL'
+  artifacts:
+    expire_in: 1 day
+    paths:
+      - install/bin
+      - install/include/TMIV/Decoder/MivDecoder.h
+
+Integration Test:
+  <<: *build_rules_definition
+  stage: integration
+  image: buildtools2019:2021.03.04
+  dependencies:
+    - VC 16 Release
+  tags: [ windows ]
+  script:
+    - >
+      python scripts/test/integration_test.py
+      /builds/software/MPEG/MIV/RS/TM1/install
+      /builds/software/MPEG/MIV/RS/TM1
+      /ctc_content
+      /builds/software/MPEG/MIV/RS/TM1/integration_test
+      -r /builds/software/MPEG/MIV/RS/TM1/test/ci_integration_test.md5
+      -j 3 --ci
+  artifacts:
+    when: always
+    paths:
+      - integration_test/**/*.hls
+      - integration_test/**/*.json
+      - integration_test/**/*.log
+      - integration_test/**/*.md5
 
 AsciiDoc:
+  stage: build
   image: asciidoctor/docker-asciidoctor:1.2
   tags: [ linux ]
   rules:

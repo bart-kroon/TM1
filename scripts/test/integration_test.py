@@ -63,6 +63,11 @@ def parseArguments():
     parser.add_argument(
         "--dry-run", action="store_true", help="Only print TMIV commands without executing them"
     )
+    parser.add_argument(
+        "--ci",
+        action="store_true",
+        help="Run only CI-compatible jobs that do not need too many resources.",
+    )
     return parser.parse_args()
 
 
@@ -90,6 +95,7 @@ class IntegrationTest:
         self.maxWorkers = args.max_workers
         self.referenceMd5File = args.reference_md5_file
         self.dryRun = args.dry_run
+        self.ciOnly = args.ci
         self.md5sums = []
         self.md5sumsFile = self.testDir / "integration_test.md5"
 
@@ -109,8 +115,11 @@ class IntegrationTest:
             futures += self.testMivViewAnchor(executor)
             futures += self.testMivDsdeAnchor(executor)
             futures += self.testBestReference(executor)
-            futures += self.testMivMpi(executor)
             futures += self.testAdditiveSynthesizer(executor)
+
+            if not self.ciOnly:
+                futures += self.testMivMpi(executor)
+
             self.sync(futures)
 
         self.storeMd5Sums()

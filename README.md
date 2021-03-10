@@ -884,6 +884,8 @@ Some general parameters are defined in the root of the configuration file. All o
 
 These parameters are in the root of the configuration file and may be accessed by multiple components:
 
+* **startFrame**: int; first frame to be encoded.
+ By default, the encoder will select a start frame based on the sequence configuration.
 * Output video sub-bitstreams:
   * **haveOccupancyVideo:** bool; output occupancy video data (OVD) instead of  depth/occupancy coding within geometry video data (GVD). Make sure to use ExplicitOccupancy as the geometry quantizer.
   * **haveTextureVideo:** bool; output attribute video data (AVD) to encode the texture attribute. When false texture data is still needed as input of the test model.

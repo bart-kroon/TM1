@@ -55,14 +55,6 @@ foreach(subdir
     add_subdirectory(source/${subdir})
 endforeach()
 
-add_custom_target(clang_format
-    COMMAND
-        ${CMAKE_COMMAND}
-        "-DANALYZE_DIR=${CMAKE_SOURCE_DIR}/source"
-        "-P"
-        "${CMAKE_CURRENT_LIST_DIR}/cmake/clang_format.cmake")
-set_property(TARGET clang_format PROPERTY FOLDER "Utilities")
-
 add_custom_target(module_graph
     COMMAND
         ${CMAKE_COMMAND}

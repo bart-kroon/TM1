@@ -3,21 +3,6 @@ stages:
   - build
   - integration
 
-.build_rules_template: &build_rules_definition
-  rules:
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-      changes:
-        - .clang-format
-        - .clang-tidy
-        - .gitlab-ci.yml
-        - "**/CMakeLists.txt"
-        - "**/*.cmake"
-        - "**/*.cmake.in"
-        - "**/*.cpp"
-        - "**/*.h"
-        - "**/*.hpp"
-
 default:
   interruptible: true
 
@@ -35,10 +20,34 @@ black:
   script:
     - python3 -m black --check --diff scripts/
 
+.cpp_rules_template: &cpp_rules_definition
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      changes:
+        - .clang-format
+        - .clang-tidy
+        - .gitlab-ci.yml
+        - "**/CMakeLists.txt"
+        - "**/*.cmake"
+        - "**/*.cmake.in"
+        - "**/*.cpp"
+        - "**/*.h"
+        - "**/*.hpp"
+
+clang-format:
+  stage: check
+  <<: *cpp_rules_definition
+  image: cbachhuber/clang:11
+  tags: [ linux ]
+  script:
+    - ./scripts/check/clang_format.py
+    - git diff
+    - if [[ $(git diff) ]]; then echo "Formatting is wrong! See above."; return 1; fi
 
 GCC 9 Release:
-  <<: *build_rules_definition
   stage: build
+  <<: *cpp_rules_definition
   image: rikorose/gcc-cmake:gcc-9
   tags: [ linux ]
   script:
@@ -48,8 +57,8 @@ GCC 9 Release:
     - make -j $(nproc) test
 
 Clang 11 Debug:
-  <<: *build_rules_definition
   stage: build
+  <<: *cpp_rules_definition
   image: cbachhuber/clang:11
   tags: [ linux, long-job ]
   script:
@@ -63,9 +72,6 @@ Clang 11 Debug:
       ..
     - make -j $(nproc)
     - make -j $(nproc) test
-    - cmake --build . --target clang_format
-    - git diff
-    - if [[ $(git diff) ]]; then echo "Formatting is wrong! See above."; return 1; fi
     - cd ..
     - mkdir coverage_html
     - >
@@ -79,8 +85,8 @@ Clang 11 Debug:
     expire_in: 5 days
 
 VC 16 Release:
-  <<: *build_rules_definition
   stage: build
+  <<: *cpp_rules_definition
   image: buildtools2019:2021.03.04
   tags: [ windows ]
   script:
@@ -101,8 +107,8 @@ VC 16 Release:
       - install/include/TMIV/Decoder/MivDecoder.h
 
 Integration Test:
-  <<: *build_rules_definition
   stage: integration
+  <<: *cpp_rules_definition
   image: buildtools2019:2021.03.04
   dependencies:
     - VC 16 Release

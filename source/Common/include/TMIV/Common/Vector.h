@@ -274,6 +274,7 @@ auto normalize(V &v, U *n = nullptr) -> V & {
 template <typename V1, typename V2,
           typename R = std::common_type_t<typename V1::value_type, typename V2::value_type>>
 auto cosAngle(const V1 &v1, const V2 &v2) -> R {
+  using std::sqrt;
   return static_cast<R>(dot(v1, v2) / sqrt(norm2(v1) * norm2(v2)));
 }
 

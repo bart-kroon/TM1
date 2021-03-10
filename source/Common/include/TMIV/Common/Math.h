@@ -64,7 +64,7 @@ template <typename T> constexpr auto inRange(T val, T min, T max) noexcept {
 
 template <typename T> auto is_zero(T val) -> T {
   using std::abs;
-  return (abs(val) < std::numeric_limits<T>::epsilon());
+  return abs(val) < std::numeric_limits<T>::epsilon();
 }
 template <typename T> constexpr auto pps2ppd(T pps) noexcept {
   return std::sqrt(pps) * static_cast<T>(M_PI / 180.);

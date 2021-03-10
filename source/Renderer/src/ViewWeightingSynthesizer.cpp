@@ -972,8 +972,8 @@ private:
       auto &sourceColor = m_sourceColor[viewIdInpainted];
       const auto W = static_cast<int>(sourceColor.width());
       const auto H = static_cast<int>(sourceColor.height());
-      const auto j = std::clamp(int(round(uvBg.x())), 0, W - 1);
-      const auto i = std::clamp(int(round(uvBg.y())), 0, H - 1);
+      const auto j = std::clamp(int(std::round(uvBg.x())), 0, W - 1);
+      const auto i = std::clamp(int(std::round(uvBg.y())), 0, H - 1);
       m_viewportColor(y, x) = sourceColor(i, j);
     }
     m_viewportVisibility(y, x) = z;

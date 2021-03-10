@@ -392,7 +392,7 @@ auto PLU(shallow::Matrix<T> A, shallow::Matrix<T> LU, std::vector<int> &P) -> in
 
   for (size_type k = 0; k < n; k++) {
     auto iter = std::max_element(LU.col_begin(k) + k, LU.col_end(k),
-                                 [](T x, T y) { return (abs(x) < abs(y)); });
+                                 [](T x, T y) { return abs(x) < abs(y); });
     T pivot = *iter;
 
     if (abs(std::numeric_limits<T>::epsilon()) < abs(pivot)) {
@@ -466,6 +466,7 @@ template <typename MAT1, typename MAT2> auto PLU(const MAT1 &A, MAT2 &L, MAT2 &U
 namespace detail {
 template <typename T> auto chol(shallow::Matrix<T> A, shallow::Matrix<T> out) -> int {
   using size_type = Array::size_type;
+  using std::sqrt;
 
   size_type n = A.m();
   T x;

@@ -435,7 +435,7 @@ private:
                 << float(100.0 * nonPrunedArea / m_sampleBudget.value()) << "%)\n";
       std::cout << "Pruning luma threshold changed\n";
 
-      *m_lumaStdDev *= 1.5;
+      *m_lumaStdDev *= 1.5F;
       if (m_lumaStdDev.value() > 1.0F) {
         m_lumaStdDev.emplace(1.0F);
       }
@@ -674,6 +674,7 @@ private:
         curE += (w.r * d.r + w.g * d.g + w.b * d.b) / 3.0;
         weightSum += (w.r + w.g + w.b) / 3.0;
 
+        using std::sqrt;
         d.r = sqrt(d.r * d.r + eps);
         d.g = sqrt(d.g * d.g + eps);
         d.b = sqrt(d.b * d.b + eps);

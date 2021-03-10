@@ -100,7 +100,7 @@ template <> struct Engine<MivBitstream::CiCamType::equirectangular> {
         v += imageVertices[index].position.y() / 3.F;
       }
       const auto theta = theta0 + dtheta_dv * v;
-      triangle.area /= cos(theta);
+      triangle.area /= std::cos(theta);
     }
 
     return std::tuple{std::move(imageVertices), triangles, attributes};

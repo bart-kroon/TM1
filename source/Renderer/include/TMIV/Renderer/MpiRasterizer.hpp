@@ -54,6 +54,7 @@ inline auto MpiNumStrips(int rows) -> int {
   if (maximum <= hw) {
     return maximum;
   }
+  using std::sqrt;
   return static_cast<int>(std::lround(sqrt(hw * maximum)));
 }
 

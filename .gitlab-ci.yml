@@ -6,6 +6,19 @@ stages:
 default:
   interruptible: true
 
+no git reverts:
+  stage: check
+  image:
+    name: cbachhuber/clang:11
+  tags: [ linux ]
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+  script:
+    - git fetch origin $CI_DEFAULT_BRANCH:main
+    - COMMIT_MSGS=$(git log --pretty=format:%B main..HEAD)
+    - echo "$COMMIT_MSGS"
+    - if [[ "$COMMIT_MSGS" =~ .*^Revert.* ]]; then echo "Don't use reverts! Squash or rename this commit"; fail; fi
+
 black:
   stage: check
   image:

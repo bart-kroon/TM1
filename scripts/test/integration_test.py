@@ -87,13 +87,13 @@ class IntegrationTest:
 
         args = parseArguments()
 
-        self.tmivInstallDir = args.tmiv_install_dir
-        self.tmivSourceDir = args.tmiv_source_dir
-        self.contentDir = args.content_dir
-        self.testDir = args.output_dir
+        self.tmivInstallDir = args.tmiv_install_dir.absolute().resolve()
+        self.tmivSourceDir = args.tmiv_source_dir.absolute().resolve()
+        self.contentDir = args.content_dir.absolute().resolve()
+        self.testDir = args.output_dir.absolute().resolve()
         self.gitCommand = args.git_command
         self.maxWorkers = args.max_workers
-        self.referenceMd5File = args.reference_md5_file
+        self.referenceMd5File = args.reference_md5_file.absolute().resolve()
         self.dryRun = args.dry_run
         self.ciOnly = args.ci
         self.md5sums = []

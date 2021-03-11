@@ -31,8 +31,8 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_RENDERER_IINPAINTER_H_
-#define _TMIV_RENDERER_IINPAINTER_H_
+#ifndef TMIV_RENDERER_IINPAINTER_H
+#define TMIV_RENDERER_IINPAINTER_H
 
 #include <TMIV/Common/Frame.h>
 #include <TMIV/MivBitstream/EncoderParams.h>

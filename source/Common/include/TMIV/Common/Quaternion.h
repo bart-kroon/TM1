@@ -31,8 +31,8 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_COMMON_QUATERNION_H_
-#define _TMIV_COMMON_QUATERNION_H_
+#ifndef TMIV_COMMON_QUATERNION_H
+#define TMIV_COMMON_QUATERNION_H
 
 #include "Matrix.h"
 #include "Vector.h"

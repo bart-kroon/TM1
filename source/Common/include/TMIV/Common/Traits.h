@@ -31,8 +31,8 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_COMMON_TRAITS_H_
-#define _TMIV_COMMON_TRAITS_H_
+#ifndef TMIV_COMMON_TRAITS_H
+#define TMIV_COMMON_TRAITS_H
 
 #include <complex>
 #include <type_traits>

@@ -31,8 +31,8 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_COMMON_COMMON_H_
-#define _TMIV_COMMON_COMMON_H_
+#ifndef TMIV_COMMON_COMMON_H
+#define TMIV_COMMON_COMMON_H
 
 // Common data types and functions that are often used and do not need a
 // separate header file

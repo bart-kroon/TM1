@@ -31,8 +31,8 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_RENDERER_RASTERIZER_H_
-#define _TMIV_RENDERER_RASTERIZER_H_
+#ifndef TMIV_RENDERER_RASTERIZER_H
+#define TMIV_RENDERER_RASTERIZER_H
 
 #include "AccumulatingPixel.h"
 #include "Engine.h"

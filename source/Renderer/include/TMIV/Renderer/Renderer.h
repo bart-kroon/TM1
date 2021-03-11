@@ -31,8 +31,8 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_RENDERER_RENDERER_H_
-#define _TMIV_RENDERER_RENDERER_H_
+#ifndef TMIV_RENDERER_RENDERER_H
+#define TMIV_RENDERER_RENDERER_H
 
 #include <TMIV/Renderer/IInpainter.h>
 #include <TMIV/Renderer/IRenderer.h>

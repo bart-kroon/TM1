@@ -31,8 +31,8 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_PRUNER_PRUNED_MESH_H_
-#define _TMIV_PRUNER_PRUNED_MESH_H_
+#ifndef TMIV_PRUNER_PRUNED_MESH_H
+#define TMIV_PRUNER_PRUNED_MESH_H
 
 #include <TMIV/Common/Frame.h>
 #include <TMIV/Renderer/Engine.h>

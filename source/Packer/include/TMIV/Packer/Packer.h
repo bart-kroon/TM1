@@ -31,8 +31,8 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_PACKER_PACKER_H_
-#define _TMIV_PACKER_PACKER_H_
+#ifndef TMIV_PACKER_PACKER_H
+#define TMIV_PACKER_PACKER_H
 
 #include <TMIV/Packer/IPacker.h>
 

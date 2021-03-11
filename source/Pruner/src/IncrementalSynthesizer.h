@@ -31,8 +31,8 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_PRUNER_INCREMENTAL_SYNTHESIZER_H_
-#define _TMIV_PRUNER_INCREMENTAL_SYNTHESIZER_H_
+#ifndef TMIV_PRUNER_INCREMENTAL_SYNTHESIZER_H
+#define TMIV_PRUNER_INCREMENTAL_SYNTHESIZER_H
 
 #include <TMIV/Renderer/AccumulatingPixel.h>
 #include <TMIV/Renderer/Rasterizer.h>
@@ -56,4 +56,4 @@ struct IncrementalSynthesizer {
   const Common::Mat<Common::Vec3f> referenceYUV;
 };
 } // namespace TMIV::Pruner
-#endif // _TMIV_PRUNER_INCREMENTAL_SYNTHESIZER_H_
+#endif // TMIV_PRUNER_INCREMENTAL_SYNTHESIZER_H

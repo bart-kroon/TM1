@@ -31,8 +31,8 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_DECODER_MIVDECODER_H_
-#define _TMIV_DECODER_MIVDECODER_H_
+#ifndef TMIV_DECODER_MIVDECODER_H
+#define TMIV_DECODER_MIVDECODER_H
 
 #include <TMIV/Common/Frame.h>
 #include <TMIV/Decoder/AtlasDecoder.h>

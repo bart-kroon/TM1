@@ -31,8 +31,8 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_PRUNER_LUMA_STD_DEV_H_
-#define _TMIV_PRUNER_LUMA_STD_DEV_H_
+#ifndef TMIV_PRUNER_LUMA_STD_DEV_H
+#define TMIV_PRUNER_LUMA_STD_DEV_H
 
 #include "IncrementalSynthesizer.h"
 
@@ -51,4 +51,4 @@ auto calculateLumaStdDev(const Common::MVD16Frame &views,
                          float maxDepthError) -> std::optional<float>;
 } // namespace TMIV::Pruner
 
-#endif // _TMIV_PRUNER_LUMA_STD_DEV_H_
+#endif // TMIV_PRUNER_LUMA_STD_DEV_H

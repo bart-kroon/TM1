@@ -31,8 +31,8 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_COMMON_FACTORY_H_
-#define _TMIV_COMMON_FACTORY_H_
+#ifndef TMIV_COMMON_FACTORY_H
+#define TMIV_COMMON_FACTORY_H
 
 #include <TMIV/Common/Json.h>
 

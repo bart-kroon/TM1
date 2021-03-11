@@ -31,8 +31,8 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_COMMON_GRAPH_H_
-#define _TMIV_COMMON_GRAPH_H_
+#ifndef TMIV_COMMON_GRAPH_H
+#define TMIV_COMMON_GRAPH_H
 
 #include <type_traits>
 #include <vector>

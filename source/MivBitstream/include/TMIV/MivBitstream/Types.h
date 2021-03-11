@@ -31,8 +31,8 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_MIVBITSTREAM_TYPES_H_
-#define _TMIV_MIVBITSTREAM_TYPES_H_
+#ifndef TMIV_MIVBITSTREAM_TYPES_H
+#define TMIV_MIVBITSTREAM_TYPES_H
 
 #include <cstdint>
 #include <ostream>

@@ -31,8 +31,8 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_COMMON_JSON_H_
-#define _TMIV_COMMON_JSON_H_
+#ifndef TMIV_COMMON_JSON_H
+#define TMIV_COMMON_JSON_H
 
 #include <TMIV/Common/Vector.h>
 

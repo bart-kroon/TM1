@@ -31,8 +31,8 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_RENDERER_IRENDERER_H_
-#define _TMIV_RENDERER_IRENDERER_H_
+#ifndef TMIV_RENDERER_IRENDERER_H
+#define TMIV_RENDERER_IRENDERER_H
 
 #include <TMIV/Common/Frame.h>
 #include <TMIV/MivBitstream/AccessUnit.h>

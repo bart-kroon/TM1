@@ -31,8 +31,8 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_PRUNER_NOPRUNER_H_
-#define _TMIV_PRUNER_NOPRUNER_H_
+#ifndef TMIV_PRUNER_NOPRUNER_H
+#define TMIV_PRUNER_NOPRUNER_H
 
 #include <TMIV/Pruner/IPruner.h>
 

@@ -31,7 +31,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_MIVBITSTREAM_PATCHPARAMSLIST_H_
+#ifndef TMIV_MIVBITSTREAM_PATCHPARAMSLIST_H
 #error "Include the .h, not the .hpp"
 #endif
 

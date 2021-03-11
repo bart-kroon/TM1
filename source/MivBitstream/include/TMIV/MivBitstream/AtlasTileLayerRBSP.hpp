@@ -31,7 +31,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_MIVBITSTREAM_ATLASTILELAYERRBSP_H_
+#ifndef TMIV_MIVBITSTREAM_ATLASTILELAYERRBSP_H
 #error "Include the .h, not the .hpp"
 #endif
 

@@ -31,8 +31,8 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_PACKER_IPACKER_H_
-#define _TMIV_PACKER_IPACKER_H_
+#ifndef TMIV_PACKER_IPACKER_H
+#define TMIV_PACKER_IPACKER_H
 
 #include <TMIV/Common/Frame.h>
 #include <TMIV/MivBitstream/EncoderParams.h>

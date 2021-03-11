@@ -31,8 +31,8 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_COMMON_ARRAY_H_
-#define _TMIV_COMMON_ARRAY_H_
+#ifndef TMIV_COMMON_ARRAY_H
+#define TMIV_COMMON_ARRAY_H
 
 #include "Traits.h"
 
@@ -292,9 +292,9 @@ template <typename T> auto operator+(ptrdiff_t a, const dim_iterator<T> &rhs) ->
 namespace stack {
 using size_type = TMIV::Common::Array::size_type;
 
-template <size_type D, typename T, size_type... I> struct _Array {};
+template <size_type D, typename T, size_type... I> struct Array_ {};
 
-template <typename T, size_type M> struct _Array<1, T, M> {
+template <typename T, size_type M> struct Array_<1, T, M> {
 protected:
   std::array<T, M> m_v{};
 
@@ -317,22 +317,22 @@ public:
 };
 
 template <size_type D, typename T, size_type M, size_type N, size_type... I>
-struct _Array<D, T, M, N, I...> {
+struct Array_<D, T, M, N, I...> {
 protected:
-  std::array<_Array<D - 1, T, N, I...>, M> m_v;
+  std::array<Array_<D - 1, T, N, I...>, M> m_v;
 
 public:
   static constexpr auto size(size_type i) -> size_type {
-    return i != 0U ? _Array<D - 1, T, N, I...>::size(i - 1) : M;
+    return i != 0U ? Array_<D - 1, T, N, I...>::size(i - 1) : M;
   }
   static void sizes(size_type *iter) {
     *iter = M;
     // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-    _Array<D - 1, T, N, I...>::sizes(++iter);
+    Array_<D - 1, T, N, I...>::sizes(++iter);
   }
-  static constexpr auto size() -> size_type { return M * _Array<D - 1, T, N, I...>::size(); }
+  static constexpr auto size() -> size_type { return M * Array_<D - 1, T, N, I...>::size(); }
   static auto min_size() -> size_type {
-    return (std::min)(M, _Array<D - 1, T, N, I...>::min_size());
+    return (std::min)(M, Array_<D - 1, T, N, I...>::min_size());
   }
   auto data() -> T * {
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
@@ -344,16 +344,16 @@ public:
   }
   template <size_type K, typename... J>
   static constexpr auto offset(size_type i, size_type first, J... next) -> size_type {
-    return (i == K) ? _Array<D - 1, T, N, I...>::template offset<K>(i + 1, first, next...)
-                    : first * _Array<D - 1, T, N, I...>::size() +
-                          _Array<D - 1, T, N, I...>::template offset<K>(i + 1, next...);
+    return (i == K) ? Array_<D - 1, T, N, I...>::template offset<K>(i + 1, first, next...)
+                    : first * Array_<D - 1, T, N, I...>::size() +
+                          Array_<D - 1, T, N, I...>::template offset<K>(i + 1, next...);
   }
   static constexpr auto step(size_type i) -> size_type {
-    return i != 0U ? _Array<D - 1, T, N, I...>::step(i - 1)
-                   : M * _Array<D - 1, T, N, I...>::step(i);
+    return i != 0U ? Array_<D - 1, T, N, I...>::step(i - 1)
+                   : M * Array_<D - 1, T, N, I...>::step(i);
   }
   static constexpr auto diag_step() -> size_type {
-    return step(1) + _Array<D - 1, T, N, I...>::diag_step();
+    return step(1) + Array_<D - 1, T, N, I...>::diag_step();
   }
   template <typename... J> [[nodiscard]] auto get(size_type first, J... next) const -> T {
     return m_v[first].get(next...);
@@ -386,13 +386,13 @@ protected:
     tuple_type m_sizes;
 
   public:
-    Helper() { _Array<sizeof...(I), T, I...>::sizes(m_sizes.data()); };
+    Helper() { Array_<sizeof...(I), T, I...>::sizes(m_sizes.data()); };
     [[nodiscard]] auto sizes() const -> const tuple_type & { return m_sizes; }
   };
 
 protected:
   static Helper m_helper;
-  _Array<sizeof...(I), T, I...> m_v;
+  Array_<sizeof...(I), T, I...> m_v;
 
 public:
   //! \brief Default constructor
@@ -463,19 +463,19 @@ public:
   static constexpr auto dim() -> size_type { return sizeof...(I); }
   //! \brief Returns the array size along the i-th dimension.
   static constexpr auto size(size_type i) -> size_type {
-    return _Array<sizeof...(I), T, I...>::size(i);
+    return Array_<sizeof...(I), T, I...>::size(i);
   }
   //! \brief Returns the array sizes.
   static auto sizes() -> const tuple_type & {
     return m_helper.sizes();
-  } // tuple_type out; _Array<sizeof...(I), T, I...>::sizes(out.data()); return
+  } // tuple_type out; Array_<sizeof...(I), T, I...>::sizes(out.data()); return
     // out; }
   //! \brief Returns the array total length
-  static constexpr auto size() -> size_type { return _Array<sizeof...(I), T, I...>::size(); }
+  static constexpr auto size() -> size_type { return Array_<sizeof...(I), T, I...>::size(); }
   //! \brief Returns the gap between 2 consecutive elements on the ith
   //! dimension.
   static constexpr auto step(size_type i) -> size_type {
-    return _Array<sizeof...(I), T, I...>::step(i + 1);
+    return Array_<sizeof...(I), T, I...>::step(i + 1);
   }
   //! \brief Returns true if the array is empty.
   static constexpr auto empty() -> bool { return (size() == 0); }
@@ -515,74 +515,74 @@ public:
   template <size_type K, typename... J> auto dim_begin(J... next) const -> const_dim_iterator {
     return const_dim_iterator(
         // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-        data() + _Array<sizeof...(I), T, I...>::template offset<K>(0, next...),
-        _Array<sizeof...(I), T, I...>::step(K + 1));
+        data() + Array_<sizeof...(I), T, I...>::template offset<K>(0, next...),
+        Array_<sizeof...(I), T, I...>::step(K + 1));
   }
   template <size_type K, typename... J> auto dim_begin(J... next) -> dim_iterator {
     return dim_iterator(
         // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-        data() + _Array<sizeof...(I), T, I...>::template offset<K>(0, next...),
-        _Array<sizeof...(I), T, I...>::step(K + 1));
+        data() + Array_<sizeof...(I), T, I...>::template offset<K>(0, next...),
+        Array_<sizeof...(I), T, I...>::step(K + 1));
   }
   //! \brief Returns a const iterator along the Kth dimension to the first
   //! element of the hyperplane defined by next.
   template <size_type K, typename... J> auto cdim_begin(J... next) const -> const_dim_iterator {
     return const_dim_iterator(data() +
-                                  _Array<sizeof...(I), T, I...>::template offset<K>(0, next...),
-                              _Array<sizeof...(I), T, I...>::step(K + 1));
+                                  Array_<sizeof...(I), T, I...>::template offset<K>(0, next...),
+                              Array_<sizeof...(I), T, I...>::step(K + 1));
   }
   //! \brief Returns an iterator along the Kth dimension to the first element
   //! after the end of the hyperplane defined by next.
   template <size_type K, typename... J> auto dim_end(J... next) const -> const_dim_iterator {
     return const_dim_iterator(
         // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-        data() + _Array<sizeof...(I), T, I...>::template offset<K>(0, next...) +
+        data() + Array_<sizeof...(I), T, I...>::template offset<K>(0, next...) +
             // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-            _Array<sizeof...(I), T, I...>::step(K),
+            Array_<sizeof...(I), T, I...>::step(K),
         // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-        _Array<sizeof...(I), T, I...>::step(K + 1));
+        Array_<sizeof...(I), T, I...>::step(K + 1));
   }
   template <size_type K, typename... J> auto dim_end(J... next) -> dim_iterator {
-    return dim_iterator(data() + _Array<sizeof...(I), T, I...>::template offset<K>(0, next...) +
-                            _Array<sizeof...(I), T, I...>::step(K),
-                        _Array<sizeof...(I), T, I...>::step(K + 1));
+    return dim_iterator(data() + Array_<sizeof...(I), T, I...>::template offset<K>(0, next...) +
+                            Array_<sizeof...(I), T, I...>::step(K),
+                        Array_<sizeof...(I), T, I...>::step(K + 1));
   }
   //! \brief Returns a const iterator along the Kth dimension to the first
   //! element after the end of the hyperplane defined by next.
   template <size_type K, typename... J> auto cdim_end(J... next) const -> const_dim_iterator {
-    return const_dim_iterator(data() + _Array<sizeof...(I), T, I...>::template offset<K>(next...) +
-                                  _Array<sizeof...(I), T, I...>::step(K),
-                              _Array<sizeof...(I), T, I...>::step(K + 1));
+    return const_dim_iterator(data() + Array_<sizeof...(I), T, I...>::template offset<K>(next...) +
+                                  Array_<sizeof...(I), T, I...>::step(K),
+                              Array_<sizeof...(I), T, I...>::step(K + 1));
   }
   //! \brief Returns an iterator to the first diagonal element.
   [[nodiscard]] auto diag_begin() const -> const_diag_iterator {
-    return const_diag_iterator(data(), _Array<sizeof...(I), T, I...>::diag_step());
+    return const_diag_iterator(data(), Array_<sizeof...(I), T, I...>::diag_step());
   }
   auto diag_begin() -> diag_iterator {
-    return diag_iterator(data(), _Array<sizeof...(I), T, I...>::diag_step());
+    return diag_iterator(data(), Array_<sizeof...(I), T, I...>::diag_step());
   }
   //! \brief Returns a const iterator to the first diagonal element.
   [[nodiscard]] auto cdiag_begin() const -> const_diag_iterator {
-    return const_diag_iterator(data(), _Array<sizeof...(I), T, I...>::diag_step());
+    return const_diag_iterator(data(), Array_<sizeof...(I), T, I...>::diag_step());
   }
   //! \brief Returns an iterator to the first element afer the last diagonal
   //! element.
   [[nodiscard]] auto diag_end() const -> const_diag_iterator {
-    return const_diag_iterator(data() + _Array<sizeof...(I), T, I...>::min_size() *
-                                            _Array<sizeof...(I), T, I...>::diag_step(),
-                               _Array<sizeof...(I), T, I...>::diag_step());
+    return const_diag_iterator(data() + Array_<sizeof...(I), T, I...>::min_size() *
+                                            Array_<sizeof...(I), T, I...>::diag_step(),
+                               Array_<sizeof...(I), T, I...>::diag_step());
   }
   auto diag_end() -> diag_iterator {
-    return diag_iterator(data() + _Array<sizeof...(I), T, I...>::min_size() *
-                                      _Array<sizeof...(I), T, I...>::diag_step(),
-                         _Array<sizeof...(I), T, I...>::diag_step());
+    return diag_iterator(data() + Array_<sizeof...(I), T, I...>::min_size() *
+                                      Array_<sizeof...(I), T, I...>::diag_step(),
+                         Array_<sizeof...(I), T, I...>::diag_step());
   }
   //! \brief Returns a const iterator to the first element afer the last
   //! diagonal element.
   [[nodiscard]] auto cdiag_end() const -> const_diag_iterator {
-    return const_diag_iterator(data() + _Array<sizeof...(I), T, I...>::min_size() *
-                                            _Array<sizeof...(I), T, I...>::diag_step(),
-                               _Array<sizeof...(I), T, I...>::diag_step());
+    return const_diag_iterator(data() + Array_<sizeof...(I), T, I...>::min_size() *
+                                            Array_<sizeof...(I), T, I...>::diag_step(),
+                               Array_<sizeof...(I), T, I...>::diag_step());
   }
   //! \brief Returns m(i, j, k, ...)
   template <typename... J> auto operator()(J... idx) const -> T { return m_v.get(idx...); }

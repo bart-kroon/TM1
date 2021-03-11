@@ -31,8 +31,8 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_COMMON_FRAME_H_
-#define _TMIV_COMMON_FRAME_H_
+#ifndef TMIV_COMMON_FRAME_H
+#define TMIV_COMMON_FRAME_H
 
 #include <TMIV/Common/Common.h>
 #include <TMIV/Common/Matrix.h>

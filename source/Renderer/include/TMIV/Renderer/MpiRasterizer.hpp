@@ -31,7 +31,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_RENDERER_MPIRASTERIZER_H_
+#ifndef TMIV_RENDERER_MPIRASTERIZER_H
 #error "Include the .h, not the .hpp"
 #endif
 

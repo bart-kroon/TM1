@@ -31,8 +31,8 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_ENCODER_MIVENCODER_H_
-#define _TMIV_ENCODER_MIVENCODER_H_
+#ifndef TMIV_ENCODER_MIVENCODER_H
+#define TMIV_ENCODER_MIVENCODER_H
 
 #include <TMIV/MivBitstream/EncoderParams.h>
 #include <TMIV/MivBitstream/NalSampleStreamFormat.h>

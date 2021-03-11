@@ -31,8 +31,8 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_COMMON_THREAD_H_
-#define _TMIV_COMMON_THREAD_H_
+#ifndef TMIV_COMMON_THREAD_H
+#define TMIV_COMMON_THREAD_H
 
 #include <functional>
 #include <future>

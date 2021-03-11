@@ -31,8 +31,8 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_COMMON_MATRIX_H_
-#define _TMIV_COMMON_MATRIX_H_
+#ifndef TMIV_COMMON_MATRIX_H
+#define TMIV_COMMON_MATRIX_H
 
 #include "Array.h"
 

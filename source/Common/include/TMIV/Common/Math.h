@@ -31,8 +31,8 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_COMMON_MATH_H_
-#define _TMIV_COMMON_MATH_H_
+#ifndef TMIV_COMMON_MATH_H
+#define TMIV_COMMON_MATH_H
 
 #include <cmath>
 #include <complex>

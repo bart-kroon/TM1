@@ -31,8 +31,8 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_ENCODER_MPIENCODER_H_
-#define _TMIV_ENCODER_MPIENCODER_H_
+#ifndef TMIV_ENCODER_MPIENCODER_H
+#define TMIV_ENCODER_MPIENCODER_H
 
 #include <TMIV/Common/Json.h>
 #include <TMIV/Encoder/IMpiEncoder.h>

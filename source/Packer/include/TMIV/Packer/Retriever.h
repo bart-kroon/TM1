@@ -31,8 +31,8 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_PACKER_RETRIEVER_H_
-#define _TMIV_PACKER_RETRIEVER_H_
+#ifndef TMIV_PACKER_RETRIEVER_H
+#define TMIV_PACKER_RETRIEVER_H
 
 #include "Cluster.h"
 
@@ -41,4 +41,4 @@ namespace TMIV::Packer {
 auto retrieveClusters(int viewId, const Common::Mask &maskMap, int firstClusterId, bool isBasicView,
                       bool enableMerging) -> std::pair<ClusterList, ClusteringMap>;
 } // namespace TMIV::Packer
-#endif // _TMIV_PACKER_RETRIEVER_H_
+#endif // TMIV_PACKER_RETRIEVER_H

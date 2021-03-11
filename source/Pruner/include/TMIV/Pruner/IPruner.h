@@ -31,8 +31,8 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_PRUNER_IPRUNER_H_
-#define _TMIV_PRUNER_IPRUNER_H_
+#ifndef TMIV_PRUNER_IPRUNER_H
+#define TMIV_PRUNER_IPRUNER_H
 
 #include <TMIV/Common/Frame.h>
 #include <TMIV/MivBitstream/EncoderParams.h>

@@ -31,8 +31,8 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_ENCODER_ENCODER_H_
-#define _TMIV_ENCODER_ENCODER_H_
+#ifndef TMIV_ENCODER_ENCODER_H
+#define TMIV_ENCODER_ENCODER_H
 
 #include <TMIV/Aggregator/IAggregator.h>
 #include <TMIV/Common/Json.h>

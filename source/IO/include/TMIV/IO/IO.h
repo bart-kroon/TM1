@@ -31,8 +31,8 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_IO_IO_H_
-#define _TMIV_IO_IO_H_
+#ifndef TMIV_IO_IO_H
+#define TMIV_IO_IO_H
 
 #include <TMIV/Common/Frame.h>
 #include <TMIV/Common/Json.h>

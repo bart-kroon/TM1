@@ -31,8 +31,8 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_COMMON_LINALG_H_
-#define _TMIV_COMMON_LINALG_H_
+#ifndef TMIV_COMMON_LINALG_H
+#define TMIV_COMMON_LINALG_H
 
 #include "Math.h"
 #include "Matrix.h"

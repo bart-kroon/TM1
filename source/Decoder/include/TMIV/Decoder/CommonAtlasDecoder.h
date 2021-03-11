@@ -31,8 +31,8 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_DECODER_COMMONATLASDECODER_H_
-#define _TMIV_DECODER_COMMONATLASDECODER_H_
+#ifndef TMIV_DECODER_COMMONATLASDECODER_H
+#define TMIV_DECODER_COMMONATLASDECODER_H
 
 #include <TMIV/MivBitstream/AtlasAdaptationParameterSetRBSP.h>
 #include <TMIV/MivBitstream/AtlasSubBitstream.h>

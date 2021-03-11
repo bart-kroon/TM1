@@ -31,8 +31,8 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_MIVBITSTREAM_V3CUNIT_H_
-#define _TMIV_MIVBITSTREAM_V3CUNIT_H_
+#ifndef TMIV_MIVBITSTREAM_V3CUNIT_H
+#define TMIV_MIVBITSTREAM_V3CUNIT_H
 
 #include <TMIV/MivBitstream/AtlasSubBitstream.h>
 #include <TMIV/MivBitstream/Types.h>

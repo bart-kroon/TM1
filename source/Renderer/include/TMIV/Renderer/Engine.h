@@ -31,8 +31,8 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_RENDERER_ENGINE_H_
-#define _TMIV_RENDERER_ENGINE_H_
+#ifndef TMIV_RENDERER_ENGINE_H
+#define TMIV_RENDERER_ENGINE_H
 
 #include <TMIV/Common/LinAlg.h>
 #include <TMIV/MivBitstream/EncoderParams.h>

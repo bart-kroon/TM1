@@ -31,7 +31,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_COMMON_GRAPH_H_
+#ifndef TMIV_COMMON_GRAPH_H
 #error "Include the .h instead of the .hpp."
 #endif
 

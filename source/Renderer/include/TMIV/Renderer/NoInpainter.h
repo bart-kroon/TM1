@@ -31,8 +31,8 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_RENDERER_NO_INPAINTER_H_
-#define _TMIV_RENDERER_NO_INPAINTER_H_
+#ifndef TMIV_RENDERER_NO_INPAINTER_H
+#define TMIV_RENDERER_NO_INPAINTER_H
 
 #include <TMIV/Common/Json.h>
 #include <TMIV/Renderer/IInpainter.h>

@@ -31,8 +31,8 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_DECODER_DECODER_H_
-#define _TMIV_DECODER_DECODER_H_
+#ifndef TMIV_DECODER_DECODER_H
+#define TMIV_DECODER_DECODER_H
 
 #include <TMIV/Decoder/IDecoder.h>
 

@@ -31,7 +31,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_COMMON_FRAME_H_
+#ifndef TMIV_COMMON_FRAME_H
 #error "Include the .h instead of the .hpp."
 #endif
 

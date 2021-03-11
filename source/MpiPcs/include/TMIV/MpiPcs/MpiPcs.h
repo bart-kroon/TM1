@@ -31,8 +31,8 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_IO_MPIPCS_H_
-#define _TMIV_IO_MPIPCS_H_
+#ifndef TMIV_IO_MPIPCS_H
+#define TMIV_IO_MPIPCS_H
 
 #include <TMIV/IO/IO.h>
 

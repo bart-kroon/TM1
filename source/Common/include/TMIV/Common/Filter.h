@@ -31,8 +31,8 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_COMMON_FILTER_H_
-#define _TMIV_COMMON_FILTER_H_
+#ifndef TMIV_COMMON_FILTER_H
+#define TMIV_COMMON_FILTER_H
 
 #include "Matrix.h"
 #include "Vector.h"

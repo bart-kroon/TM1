@@ -31,7 +31,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_COMMON_JSON_H_
+#ifndef TMIV_COMMON_JSON_H
 #error "Include the .h, not the .hpp"
 #endif
 

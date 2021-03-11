@@ -31,8 +31,8 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_MIVBITSTREAM_ACCESSUNIT_H_
-#define _TMIV_MIVBITSTREAM_ACCESSUNIT_H_
+#ifndef TMIV_MIVBITSTREAM_ACCESSUNIT_H
+#define TMIV_MIVBITSTREAM_ACCESSUNIT_H
 
 #include <TMIV/MivBitstream/AtlasAdaptationParameterSetRBSP.h>
 #include <TMIV/MivBitstream/AtlasFrameParameterSetRBSP.h>

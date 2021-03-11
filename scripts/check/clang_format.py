@@ -50,7 +50,7 @@ def parse_arguments():
         "-b",
         "--target-branch",
         help="Target branch for changed files computation",
-        default="origin/master",
+        default="origin/main",
     )
     return parser.parse_args()
 

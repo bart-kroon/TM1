@@ -222,7 +222,7 @@ TEST_CASE("SequenceConfig") {
       REQUIRE(x.numberOfFrames == y.numberOfFrames);
 
       // NOTE(BK): Cannot use x == y because of floating-point conversions
-      for (std::size_t i = 0; i < x.cameras.size(); ++i) {
+      for (size_t i = 0; i < x.cameras.size(); ++i) {
         CHECK(x.cameras[i].bitDepthColor == y.cameras[i].bitDepthColor);
         CHECK(x.cameras[i].bitDepthDepth == y.cameras[i].bitDepthDepth);
         CHECK(x.cameras[i].bitDepthTransparency == y.cameras[i].bitDepthTransparency);

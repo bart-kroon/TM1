@@ -161,8 +161,7 @@ auto getPointCloudList(const ProjectionHelperList &sourceHelperList, unsigned N 
     -> PointCloudList;
 
 auto getOverlapping(const ProjectionHelperList &sourceHelperList,
-                    const PointCloudList &pointCloudList, std::size_t firstId, std::size_t secondId)
-    -> float;
+                    const PointCloudList &pointCloudList, size_t firstId, size_t secondId) -> float;
 
 auto computeOverlappingMatrix(const ProjectionHelperList &sourceHelperList) -> Common::Mat<float>;
 

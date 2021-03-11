@@ -38,7 +38,7 @@
 #include <vector>
 
 namespace TMIV::Common::Graph {
-using NodeId = std::size_t;
+using NodeId = size_t;
 
 template <typename T> class Link {
 public:
@@ -53,16 +53,16 @@ private:
 
 template <typename T> class SparseDirectedAcyclicGraph {
 public:
-  explicit SparseDirectedAcyclicGraph(std::size_t nb_nodes = 0) : m_adjacencyList{nb_nodes} {}
+  explicit SparseDirectedAcyclicGraph(size_t nb_nodes = 0) : m_adjacencyList{nb_nodes} {}
 
   void addNode() { m_adjacencyList.emplace_back(std::vector<Link<T>>{}); }
   void connect(NodeId start, NodeId destination, T weight);
 
-  [[nodiscard]] auto getNumberOfNodes() const -> std::size_t { return m_adjacencyList.size(); }
-  [[nodiscard]] auto getNeighbourhoodSize(NodeId node) const -> std::size_t {
+  [[nodiscard]] auto getNumberOfNodes() const -> size_t { return m_adjacencyList.size(); }
+  [[nodiscard]] auto getNeighbourhoodSize(NodeId node) const -> size_t {
     return m_adjacencyList[node].size();
   }
-  [[nodiscard]] auto getNeighbour(NodeId node, std::size_t id) const -> Link<T> {
+  [[nodiscard]] auto getNeighbour(NodeId node, size_t id) const -> Link<T> {
     return m_adjacencyList[node][id];
   }
   [[nodiscard]] auto getNeighbourhood(NodeId id) const -> const std::vector<Link<T>> & {
@@ -85,9 +85,9 @@ template <typename WeightType, std::enable_if_t<std::is_arithmetic_v<WeightType>
 auto operator<<(std::ostream &os,
                 const TMIV::Common::Graph::SparseDirectedAcyclicGraph<WeightType> &g)
     -> std::ostream & {
-  for (std::size_t i = 0; i < g.getNumberOfNodes(); i++) {
+  for (size_t i = 0; i < g.getNumberOfNodes(); i++) {
     os << "n" << i << " ->";
-    for (std::size_t j = 0; j < g.getNeighbourhoodSize(i); j++) {
+    for (size_t j = 0; j < g.getNeighbourhoodSize(i); j++) {
       auto l = g.getNeighbour(i, j);
       os << " n" << l.id() << "[" << l.weight() << "]";
     }

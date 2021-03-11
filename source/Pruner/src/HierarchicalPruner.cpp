@@ -72,15 +72,15 @@ auto createRgbImageFromYuvImage(const Common::Mat<Common::Vec3f> &yuvImage) {
 auto iterativeReweightedLeastSquaresOnNonPrunedPixels(
     const std::vector<size_t> &nonPrunedPixIndices, const Common::Mat<Common::Vec3f> &referenceRGB,
     const Common::Mat<Common::Vec3f> &synthesizedRGB, const std::vector<float> &weights,
-    const std::size_t colorChannel, const double eps) {
-  const std::size_t numPixels = nonPrunedPixIndices.size();
+    const size_t colorChannel, const double eps) {
+  const size_t numPixels = nonPrunedPixIndices.size();
   Common::Mat<double> A({numPixels, 4});
   Common::Mat<double> b({numPixels, 1});
   Common::Mat<double> x({4, 1});
   Common::Mat<double> A_t;
   Common::Mat<double> A_pseudo;
-  for (std::size_t i = 0; i < numPixels; ++i) {
-    std::size_t pixelIndex = nonPrunedPixIndices[i];
+  for (size_t i = 0; i < numPixels; ++i) {
+    size_t pixelIndex = nonPrunedPixIndices[i];
     const auto rR = static_cast<double>(referenceRGB[pixelIndex][0]);
     const auto rG = static_cast<double>(referenceRGB[pixelIndex][1]);
     const auto rB = static_cast<double>(referenceRGB[pixelIndex][2]);
@@ -624,7 +624,7 @@ private:
 
     const int maxIterNum = 10;
     const double eps = 1E-10;
-    Common::Mat<std::uint8_t> result(prunedMask.sizes(), 0);
+    Common::Mat<uint8_t> result(prunedMask.sizes(), 0);
     const auto referenceRGB{createRgbImageFromYuvImage(referenceYUV)};
     const auto synthesizedRGB{createRgbImageFromYuvImage(synthesizedYUV)};
 
@@ -634,7 +634,7 @@ private:
       return result;
     }
 
-    std::size_t numPixels = nonPrunedPixIndices.size();
+    size_t numPixels = nonPrunedPixIndices.size();
     std::vector<float> weightR(numPixels, 1.F);
     std::vector<float> weightG(numPixels, 1.F);
     std::vector<float> weightB(numPixels, 1.F);

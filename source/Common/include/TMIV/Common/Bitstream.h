@@ -42,7 +42,7 @@
 #include <type_traits>
 
 namespace TMIV::Common {
-auto ceilLog2(std::uint64_t range) -> uint8_t;
+auto ceilLog2(uint64_t range) -> uint8_t;
 
 class InputBitstream {
 public:
@@ -58,17 +58,17 @@ public:
 
   template <typename Integer> auto readBits(unsigned bits) -> Integer;
 
-  auto getFlag() -> bool { return readBits<std::uint8_t>(1) > 0; }
-  auto getUint8() { return readBits<std::uint8_t>(8); }
-  auto getUint16() { return readBits<std::uint16_t>(16); }
-  auto getUint32() { return readBits<std::uint32_t>(32); }
+  auto getFlag() -> bool { return readBits<uint8_t>(1) > 0; }
+  auto getUint8() { return readBits<uint8_t>(8); }
+  auto getUint16() { return readBits<uint16_t>(16); }
+  auto getUint32() { return readBits<uint32_t>(32); }
   auto getUint64() -> uint64_t;
   auto getInt16() { return static_cast<int16_t>(getUint16()); }
   auto getInt32() { return static_cast<int32_t>(getUint32()); }
   auto getFloat16() -> Common::Half;
   auto getFloat32() -> float;
 
-  template <typename Integer> auto getUVar(std::uint64_t range) -> Integer;
+  template <typename Integer> auto getUVar(uint64_t range) -> Integer;
 
   template <typename Integer> auto getUExpGolomb() -> Integer;
 
@@ -83,7 +83,7 @@ public:
   void reset();
 
   std::istream &m_stream;
-  std::uint64_t m_buffer{};
+  uint64_t m_buffer{};
   unsigned m_size{};
 };
 
@@ -102,16 +102,16 @@ public:
   template <typename Integer> void writeBits(const Integer &value, unsigned bits);
 
   void putFlag(bool value) { writeBits(int{value}, 1); }
-  void putUint8(std::uint8_t value) { writeBits(value, 8); }
-  void putUint16(std::uint16_t value) { writeBits(value, 16); }
-  void putUint32(std::uint32_t value) { writeBits(value, 32); }
-  void putUint64(std::uint64_t value);
+  void putUint8(uint8_t value) { writeBits(value, 8); }
+  void putUint16(uint16_t value) { writeBits(value, 16); }
+  void putUint32(uint32_t value) { writeBits(value, 32); }
+  void putUint64(uint64_t value);
   void putInt16(std::int16_t value) { putUint16(static_cast<uint16_t>(value)); }
   void putInt32(std::int32_t value) { putUint32(static_cast<uint32_t>(value)); }
   void putFloat16(Common::Half value);
   void putFloat32(float value);
 
-  template <typename Integer> void putUVar(const Integer &value, std::uint64_t range);
+  template <typename Integer> void putUVar(const Integer &value, uint64_t range);
 
   template <typename Integer> void putUExpGolomb(const Integer &value);
 
@@ -123,12 +123,12 @@ public:
   void rbspTrailingBits();
 
 private:
-  void writeBits_(std::uint64_t value, unsigned bits);
-  void putUVar_(std::uint64_t value, std::uint64_t range);
-  void putUExpGolomb_(std::uint64_t value);
+  void writeBits_(uint64_t value, unsigned bits);
+  void putUVar_(uint64_t value, uint64_t range);
+  void putUExpGolomb_(uint64_t value);
 
   std::ostream &m_stream;
-  std::uint64_t m_buffer{};
+  uint64_t m_buffer{};
   unsigned m_size{};
 };
 } // namespace TMIV::Common

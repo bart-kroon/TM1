@@ -41,7 +41,7 @@ auto SceneObjectInformation::soi_persistence_flag() const noexcept -> bool {
 
 auto SceneObjectInformation::soi_reset_flag() const noexcept -> bool { return m_soi_reset_flag; }
 
-auto SceneObjectInformation::soi_num_object_updates() const noexcept -> std::size_t {
+auto SceneObjectInformation::soi_num_object_updates() const noexcept -> size_t {
   return m_temporary_soi_num_object_updates.value_or(m_object_updates.size());
 }
 
@@ -140,194 +140,193 @@ auto SceneObjectInformation::soi_extension_present_flag() const -> bool {
   return *m_soi_extension_present_flag;
 }
 
-auto SceneObjectInformation::soi_3d_bounding_box_scale_log2() const -> std::uint8_t {
+auto SceneObjectInformation::soi_3d_bounding_box_scale_log2() const -> uint8_t {
   VERIFY_V3CBITSTREAM(soi_num_object_updates() > 0 && soi_3d_bounding_box_present_flag() &&
                       m_soi_3d_bounding_box_scale_log2);
   return *m_soi_3d_bounding_box_scale_log2;
 }
 
-auto SceneObjectInformation::soi_log2_max_object_idx_updated_minus1() const -> std::uint8_t {
+auto SceneObjectInformation::soi_log2_max_object_idx_updated_minus1() const -> uint8_t {
   VERIFY_V3CBITSTREAM(soi_num_object_updates() > 0);
   return m_soi_log2_max_object_idx_updated_minus1;
 }
 
-auto SceneObjectInformation::soi_log2_max_object_dependency_idx() const -> std::uint8_t {
+auto SceneObjectInformation::soi_log2_max_object_dependency_idx() const -> uint8_t {
   VERIFY_V3CBITSTREAM(soi_num_object_updates() > 0 && soi_object_dependency_present_flag() &&
                       m_soi_log2_max_object_dependency_idx);
   return *m_soi_log2_max_object_dependency_idx;
 }
 
-auto SceneObjectInformation::soi_object_idx(std::size_t i) const -> std::size_t {
+auto SceneObjectInformation::soi_object_idx(size_t i) const -> size_t {
   VERIFY_V3CBITSTREAM(soi_num_object_updates() > 0 && i < soi_num_object_updates());
   return m_object_updates[i].soi_object_idx;
 }
 
-auto SceneObjectInformation::soi_object_cancel_flag(std::size_t k) const -> bool {
+auto SceneObjectInformation::soi_object_cancel_flag(size_t k) const -> bool {
   VERIFY_V3CBITSTREAM(soi_num_object_updates() > 0 && k < soi_num_object_updates());
   return m_object_updates[k].soi_object_cancel_flag;
 }
 
-auto SceneObjectInformation::soi_object_label_update_flag(std::size_t k) const -> bool {
+auto SceneObjectInformation::soi_object_label_update_flag(size_t k) const -> bool {
   VERIFY_V3CBITSTREAM(isUpdateValid(k) && soi_object_label_present_flag() &&
                       m_object_updates[k].soi_object_label_update_flag);
   return *m_object_updates[k].soi_object_label_update_flag;
 }
 
-auto SceneObjectInformation::soi_object_label_idx(std::size_t k) const -> std::size_t {
+auto SceneObjectInformation::soi_object_label_idx(size_t k) const -> size_t {
   VERIFY_V3CBITSTREAM(isUpdateValid(k) && soi_object_label_update_flag(k) &&
                       m_object_updates[k].soi_object_label_idx);
   return *m_object_updates[k].soi_object_label_idx;
 }
 
-auto SceneObjectInformation::soi_priority_update_flag(std::size_t k) const -> bool {
+auto SceneObjectInformation::soi_priority_update_flag(size_t k) const -> bool {
   VERIFY_V3CBITSTREAM(isUpdateValid(k) && soi_priority_present_flag() &&
                       m_object_updates[k].soi_priority_update_flag);
   return *m_object_updates[k].soi_priority_update_flag;
 }
 
-auto SceneObjectInformation::soi_priority_value(std::size_t k) const -> std::uint8_t {
+auto SceneObjectInformation::soi_priority_value(size_t k) const -> uint8_t {
   VERIFY_V3CBITSTREAM(isUpdateValid(k) && soi_priority_present_flag() &&
                       soi_priority_update_flag(k) && m_object_updates[k].soi_priority_value);
   return *m_object_updates[k].soi_priority_value;
 }
 
-auto SceneObjectInformation::soi_object_hidden_flag(std::size_t k) const -> bool {
+auto SceneObjectInformation::soi_object_hidden_flag(size_t k) const -> bool {
   VERIFY_V3CBITSTREAM(isUpdateValid(k) && soi_object_hidden_present_flag() &&
                       m_object_updates[k].soi_object_hidden_flag);
   return *m_object_updates[k].soi_object_hidden_flag;
 }
 
-auto SceneObjectInformation::soi_object_dependency_update_flag(std::size_t k) const -> bool {
+auto SceneObjectInformation::soi_object_dependency_update_flag(size_t k) const -> bool {
   VERIFY_V3CBITSTREAM(isUpdateValid(k) && soi_object_dependency_present_flag() &&
                       m_object_updates[k].soi_object_dependency_update_flag);
   return *m_object_updates[k].soi_object_dependency_update_flag;
 }
 
-auto SceneObjectInformation::soi_object_num_dependencies(std::size_t k) const -> std::uint8_t {
+auto SceneObjectInformation::soi_object_num_dependencies(size_t k) const -> uint8_t {
   VERIFY_V3CBITSTREAM(isUpdateValid(k) && soi_object_dependency_present_flag());
   return static_cast<uint8_t>(m_object_updates[k].soi_object_dependency_idx.size());
 }
 
-auto SceneObjectInformation::soi_object_dependency_idx(std::size_t k, std::size_t j) const
-    -> std::size_t {
+auto SceneObjectInformation::soi_object_dependency_idx(size_t k, size_t j) const -> size_t {
   VERIFY_V3CBITSTREAM(isUpdateValid(k) && j < soi_object_num_dependencies(k) &&
                       soi_object_dependency_present_flag());
   return m_object_updates[k].soi_object_dependency_idx[j];
 }
 
-auto SceneObjectInformation::soi_visibility_cones_update_flag(std::size_t k) const -> bool {
+auto SceneObjectInformation::soi_visibility_cones_update_flag(size_t k) const -> bool {
   VERIFY_V3CBITSTREAM(isUpdateValid(k) && soi_visibility_cones_present_flag() &&
                       m_object_updates[k].soi_visibility_cones_update_flag);
   return *m_object_updates[k].soi_visibility_cones_update_flag;
 }
 
-auto SceneObjectInformation::soi_direction_x(std::size_t k) const -> std::int16_t {
+auto SceneObjectInformation::soi_direction_x(size_t k) const -> std::int16_t {
   VERIFY_V3CBITSTREAM(isUpdateValid(k) && soi_visibility_cones_update_flag(k) &&
                       m_object_updates[k].soi_visibility_cones);
   return m_object_updates[k].soi_visibility_cones->soi_direction_x;
 }
 
-auto SceneObjectInformation::soi_direction_y(std::size_t k) const -> std::int16_t {
+auto SceneObjectInformation::soi_direction_y(size_t k) const -> std::int16_t {
   VERIFY_V3CBITSTREAM(isUpdateValid(k) && soi_visibility_cones_update_flag(k) &&
                       m_object_updates[k].soi_visibility_cones);
   return m_object_updates[k].soi_visibility_cones->soi_direction_y;
 }
 
-auto SceneObjectInformation::soi_direction_z(std::size_t k) const -> std::int16_t {
+auto SceneObjectInformation::soi_direction_z(size_t k) const -> std::int16_t {
   VERIFY_V3CBITSTREAM(isUpdateValid(k) && soi_visibility_cones_update_flag(k) &&
                       m_object_updates[k].soi_visibility_cones);
   return m_object_updates[k].soi_visibility_cones->soi_direction_z;
 }
 
-auto SceneObjectInformation::soi_angle(std::size_t k) const -> std::uint16_t {
+auto SceneObjectInformation::soi_angle(size_t k) const -> uint16_t {
   VERIFY_V3CBITSTREAM(isUpdateValid(k) && soi_visibility_cones_update_flag(k) &&
                       m_object_updates[k].soi_visibility_cones);
   return m_object_updates[k].soi_visibility_cones->soi_angle;
 }
 
-auto SceneObjectInformation::soi_3d_bounding_box_update_flag(std::size_t k) const -> bool {
+auto SceneObjectInformation::soi_3d_bounding_box_update_flag(size_t k) const -> bool {
   VERIFY_V3CBITSTREAM(isUpdateValid(k) && soi_3d_bounding_box_present_flag() &&
                       m_object_updates[k].soi_3d_bounding_box_update_flag);
   return *m_object_updates[k].soi_3d_bounding_box_update_flag;
 }
 
-auto SceneObjectInformation::soi_3d_bounding_box_x(std::size_t k) const -> std::size_t {
+auto SceneObjectInformation::soi_3d_bounding_box_x(size_t k) const -> size_t {
   VERIFY_V3CBITSTREAM(isBoundingBoxValid(k));
   return m_object_updates[k].soi_3d_bounding_box->soi_3d_bounding_box_x;
 }
 
-auto SceneObjectInformation::soi_3d_bounding_box_y(std::size_t k) const -> std::size_t {
+auto SceneObjectInformation::soi_3d_bounding_box_y(size_t k) const -> size_t {
   VERIFY_V3CBITSTREAM(isBoundingBoxValid(k));
   return m_object_updates[k].soi_3d_bounding_box->soi_3d_bounding_box_y;
 }
 
-auto SceneObjectInformation::soi_3d_bounding_box_z(std::size_t k) const -> std::size_t {
+auto SceneObjectInformation::soi_3d_bounding_box_z(size_t k) const -> size_t {
   VERIFY_V3CBITSTREAM(isBoundingBoxValid(k));
   return m_object_updates[k].soi_3d_bounding_box->soi_3d_bounding_box_z;
 }
 
-auto SceneObjectInformation::soi_3d_bounding_box_size_x(std::size_t k) const -> std::size_t {
+auto SceneObjectInformation::soi_3d_bounding_box_size_x(size_t k) const -> size_t {
   VERIFY_V3CBITSTREAM(isBoundingBoxValid(k));
   return m_object_updates[k].soi_3d_bounding_box->soi_3d_bounding_box_size_x;
 }
 
-auto SceneObjectInformation::soi_3d_bounding_box_size_y(std::size_t k) const -> std::size_t {
+auto SceneObjectInformation::soi_3d_bounding_box_size_y(size_t k) const -> size_t {
   VERIFY_V3CBITSTREAM(isBoundingBoxValid(k));
   return m_object_updates[k].soi_3d_bounding_box->soi_3d_bounding_box_size_y;
 }
 
-auto SceneObjectInformation::soi_3d_bounding_box_size_z(std::size_t k) const -> std::size_t {
+auto SceneObjectInformation::soi_3d_bounding_box_size_z(size_t k) const -> size_t {
   VERIFY_V3CBITSTREAM(isBoundingBoxValid(k));
   return m_object_updates[k].soi_3d_bounding_box->soi_3d_bounding_box_size_z;
 }
 
-auto SceneObjectInformation::soi_collision_shape_update_flag(std::size_t k) const -> bool {
+auto SceneObjectInformation::soi_collision_shape_update_flag(size_t k) const -> bool {
   VERIFY_V3CBITSTREAM(isUpdateValid(k) && soi_collision_shape_present_flag() &&
                       m_object_updates[k].soi_collision_shape_update_flag);
   return *m_object_updates[k].soi_collision_shape_update_flag;
 }
 
-auto SceneObjectInformation::soi_collision_shape_id(std::size_t k) const -> std::uint16_t {
+auto SceneObjectInformation::soi_collision_shape_id(size_t k) const -> uint16_t {
   VERIFY_V3CBITSTREAM(isUpdateValid(k) && soi_collision_shape_update_flag(k) &&
                       m_object_updates[k].soi_collision_shape_id);
   return *m_object_updates[k].soi_collision_shape_id;
 }
 
-auto SceneObjectInformation::soi_point_style_update_flag(std::size_t k) const -> bool {
+auto SceneObjectInformation::soi_point_style_update_flag(size_t k) const -> bool {
   VERIFY_V3CBITSTREAM(isUpdateValid(k) && soi_point_style_present_flag() &&
                       m_object_updates[k].soi_point_style_update_flag);
   return *m_object_updates[k].soi_point_style_update_flag;
 }
 
-auto SceneObjectInformation::soi_point_shape_id(std::size_t k) const -> std::uint8_t {
+auto SceneObjectInformation::soi_point_shape_id(size_t k) const -> uint8_t {
   VERIFY_V3CBITSTREAM(isUpdateValid(k) && soi_point_style_update_flag(k) &&
                       m_object_updates[k].soi_point_shape_id);
   return *m_object_updates[k].soi_point_shape_id;
 }
 
-auto SceneObjectInformation::soi_point_size(std::size_t k) const -> std::uint16_t {
+auto SceneObjectInformation::soi_point_size(size_t k) const -> uint16_t {
   VERIFY_V3CBITSTREAM(isUpdateValid(k) && soi_point_style_update_flag(k) &&
                       m_object_updates[k].soi_point_size);
   return *m_object_updates[k].soi_point_size;
 }
 
-auto SceneObjectInformation::soi_material_id_update_flag(std::size_t k) const -> bool {
+auto SceneObjectInformation::soi_material_id_update_flag(size_t k) const -> bool {
   VERIFY_V3CBITSTREAM(isUpdateValid(k) && soi_material_id_present_flag() &&
                       m_object_updates[k].soi_material_id_update_flag);
   return *m_object_updates[k].soi_material_id_update_flag;
 }
 
-auto SceneObjectInformation::soi_material_id(std::size_t k) const -> std::uint16_t {
+auto SceneObjectInformation::soi_material_id(size_t k) const -> uint16_t {
   VERIFY_V3CBITSTREAM(isUpdateValid(k) && soi_material_id_update_flag(k) &&
                       m_object_updates[k].soi_material_id);
   return *m_object_updates[k].soi_material_id;
 }
 
-[[nodiscard]] auto SceneObjectInformation::isUpdateValid(std::size_t k) const -> bool {
+[[nodiscard]] auto SceneObjectInformation::isUpdateValid(size_t k) const -> bool {
   return soi_num_object_updates() > 0 && k < soi_num_object_updates() && !soi_object_cancel_flag(k);
 }
 
-[[nodiscard]] auto SceneObjectInformation::isBoundingBoxValid(std::size_t k) const -> bool {
+[[nodiscard]] auto SceneObjectInformation::isBoundingBoxValid(size_t k) const -> bool {
   return isUpdateValid(k) && soi_3d_bounding_box_present_flag() &&
          soi_3d_bounding_box_update_flag(k) && m_object_updates[k].soi_3d_bounding_box;
 }
@@ -337,18 +336,18 @@ auto putFlag(std::ostream &stream, std::string &&fieldName, bool flagValue) -> s
   return stream << fieldName << "=" << std::boolalpha << flagValue << "\n";
 }
 
-auto putIndexedFlag(std::ostream &stream, std::string &&fieldName, std::size_t index,
-                    bool flagValue) -> std::ostream & {
+auto putIndexedFlag(std::ostream &stream, std::string &&fieldName, size_t index, bool flagValue)
+    -> std::ostream & {
   return stream << fieldName << "(" << index << ")=" << std::boolalpha << flagValue << "\n";
 }
 
-auto putUnsigned(std::ostream &stream, std::string &&fieldName, std::size_t flagValue)
+auto putUnsigned(std::ostream &stream, std::string &&fieldName, size_t flagValue)
     -> std::ostream & {
   return stream << fieldName << "=" << flagValue << "\n";
 }
 
-auto putIndexedUnsigned(std::ostream &stream, std::string &&fieldName, std::size_t index,
-                        std::size_t flagValue) -> std::ostream & {
+auto putIndexedUnsigned(std::ostream &stream, std::string &&fieldName, size_t index,
+                        size_t flagValue) -> std::ostream & {
   return stream << fieldName << "(" << index << ")=" << flagValue << "\n";
 }
 } // namespace
@@ -378,7 +377,7 @@ auto operator<<(std::ostream &stream, const SceneObjectInformation &x) -> std::o
       putUnsigned(stream, "soi_log2_max_object_dependency_idx",
                   x.soi_log2_max_object_dependency_idx());
     }
-    for (std::size_t i = 0; i < x.soi_num_object_updates(); ++i) {
+    for (size_t i = 0; i < x.soi_num_object_updates(); ++i) {
       const auto k = static_cast<unsigned>(x.soi_object_idx(i));
       putUnsigned(stream, "soi_object_idx", k);
       putIndexedFlag(stream, "soi_object_cancel_flag", k, x.soi_object_cancel_flag(k));
@@ -405,7 +404,7 @@ auto operator<<(std::ostream &stream, const SceneObjectInformation &x) -> std::o
           if (x.soi_object_dependency_update_flag(k)) {
             putIndexedUnsigned(stream, "soi_object_num_dependencies", k,
                                x.soi_object_num_dependencies(k));
-            for (std::size_t j = 0; j < x.soi_object_num_dependencies(k); ++j) {
+            for (size_t j = 0; j < x.soi_object_num_dependencies(k); ++j) {
               stream << "soi_object_dependency_idx(" << k
                      << ")=" << static_cast<unsigned>(x.soi_object_dependency_idx(k, j)) << "\n";
             }
@@ -493,7 +492,7 @@ auto SceneObjectInformation::decodeFrom(Common::InputBitstream &bitstream)
   result.soi_persistence_flag(bitstream.getFlag());
   result.soi_reset_flag(bitstream.getFlag());
 
-  result.soi_num_object_updates(bitstream.getUExpGolomb<std::size_t>());
+  result.soi_num_object_updates(bitstream.getUExpGolomb<size_t>());
   if (result.soi_num_object_updates() > 0) {
     result.soi_simple_objects_flag(bitstream.getFlag());
     if (!result.soi_simple_objects_flag()) {
@@ -520,17 +519,17 @@ auto SceneObjectInformation::decodeFrom(Common::InputBitstream &bitstream)
       result.soi_extension_present_flag(false);
     }
     if (result.soi_3d_bounding_box_present_flag()) {
-      result.soi_3d_bounding_box_scale_log2(bitstream.readBits<std::uint8_t>(5));
+      result.soi_3d_bounding_box_scale_log2(bitstream.readBits<uint8_t>(5));
     }
-    result.soi_log2_max_object_idx_updated_minus1(bitstream.readBits<std::uint8_t>(5));
+    result.soi_log2_max_object_idx_updated_minus1(bitstream.readBits<uint8_t>(5));
     if (result.soi_object_dependency_present_flag()) {
-      result.soi_log2_max_object_dependency_idx(bitstream.readBits<std::uint8_t>(5));
+      result.soi_log2_max_object_dependency_idx(bitstream.readBits<uint8_t>(5));
     }
   }
   std::vector<SceneObjectUpdate> updates(result.soi_num_object_updates());
-  for (std::size_t i = 0; i < result.soi_num_object_updates(); ++i) {
+  for (size_t i = 0; i < result.soi_num_object_updates(); ++i) {
     updates[i].soi_object_idx =
-        bitstream.readBits<std::size_t>(result.soi_log2_max_object_idx_updated_minus1() + 1);
+        bitstream.readBits<size_t>(result.soi_log2_max_object_idx_updated_minus1() + 1);
     const auto k = updates[i].soi_object_idx;
     auto &currentObjectUpdate = updates[k];
     currentObjectUpdate.soi_object_cancel_flag = bitstream.getFlag();
@@ -538,13 +537,13 @@ auto SceneObjectInformation::decodeFrom(Common::InputBitstream &bitstream)
       if (result.soi_object_label_present_flag()) {
         currentObjectUpdate.soi_object_label_update_flag = bitstream.getFlag();
         if (currentObjectUpdate.soi_object_label_update_flag.value()) {
-          currentObjectUpdate.soi_object_label_idx = bitstream.getUExpGolomb<std::size_t>();
+          currentObjectUpdate.soi_object_label_idx = bitstream.getUExpGolomb<size_t>();
         }
       }
       if (result.soi_priority_present_flag()) {
         currentObjectUpdate.soi_priority_update_flag = bitstream.getFlag();
         if (currentObjectUpdate.soi_priority_update_flag.value()) {
-          currentObjectUpdate.soi_priority_value = bitstream.readBits<std::uint8_t>(4);
+          currentObjectUpdate.soi_priority_value = bitstream.readBits<uint8_t>(4);
         }
       }
       if (result.soi_object_hidden_present_flag()) {
@@ -554,10 +553,10 @@ auto SceneObjectInformation::decodeFrom(Common::InputBitstream &bitstream)
         currentObjectUpdate.soi_object_dependency_update_flag = bitstream.getFlag();
         if (currentObjectUpdate.soi_object_dependency_update_flag.value()) {
           currentObjectUpdate.soi_object_dependency_idx =
-              std::vector<std::size_t>(bitstream.readBits<std::size_t>(4));
+              std::vector<size_t>(bitstream.readBits<size_t>(4));
           for (auto &soi_object_dependency_index : currentObjectUpdate.soi_object_dependency_idx) {
             soi_object_dependency_index =
-                bitstream.readBits<std::size_t>(result.soi_log2_max_object_dependency_idx());
+                bitstream.readBits<size_t>(result.soi_log2_max_object_dependency_idx());
           }
         }
       }
@@ -577,25 +576,25 @@ auto SceneObjectInformation::decodeFrom(Common::InputBitstream &bitstream)
         if (currentObjectUpdate.soi_3d_bounding_box_update_flag.value()) {
           currentObjectUpdate.soi_3d_bounding_box = Soi3dBoundingBox{};
           auto &box = currentObjectUpdate.soi_3d_bounding_box.value();
-          box.soi_3d_bounding_box_x = bitstream.getUExpGolomb<std::size_t>();
-          box.soi_3d_bounding_box_y = bitstream.getUExpGolomb<std::size_t>();
-          box.soi_3d_bounding_box_z = bitstream.getUExpGolomb<std::size_t>();
-          box.soi_3d_bounding_box_size_x = bitstream.getUExpGolomb<std::size_t>();
-          box.soi_3d_bounding_box_size_y = bitstream.getUExpGolomb<std::size_t>();
-          box.soi_3d_bounding_box_size_z = bitstream.getUExpGolomb<std::size_t>();
+          box.soi_3d_bounding_box_x = bitstream.getUExpGolomb<size_t>();
+          box.soi_3d_bounding_box_y = bitstream.getUExpGolomb<size_t>();
+          box.soi_3d_bounding_box_z = bitstream.getUExpGolomb<size_t>();
+          box.soi_3d_bounding_box_size_x = bitstream.getUExpGolomb<size_t>();
+          box.soi_3d_bounding_box_size_y = bitstream.getUExpGolomb<size_t>();
+          box.soi_3d_bounding_box_size_z = bitstream.getUExpGolomb<size_t>();
         }
       }
       if (result.soi_collision_shape_present_flag()) {
         currentObjectUpdate.soi_collision_shape_update_flag = bitstream.getFlag();
         if (currentObjectUpdate.soi_collision_shape_update_flag.value()) {
-          currentObjectUpdate.soi_collision_shape_id = bitstream.readBits<std::uint16_t>(16);
+          currentObjectUpdate.soi_collision_shape_id = bitstream.readBits<uint16_t>(16);
         }
       }
       if (result.soi_point_style_present_flag()) {
         currentObjectUpdate.soi_point_style_update_flag = bitstream.getFlag();
         if (currentObjectUpdate.soi_point_style_update_flag.value()) {
-          currentObjectUpdate.soi_point_shape_id = bitstream.readBits<std::uint8_t>(8);
-          currentObjectUpdate.soi_point_size = bitstream.readBits<std::uint16_t>(16);
+          currentObjectUpdate.soi_point_shape_id = bitstream.readBits<uint8_t>(8);
+          currentObjectUpdate.soi_point_size = bitstream.readBits<uint16_t>(16);
         }
       }
       if (result.soi_material_id_present_flag()) {
@@ -635,7 +634,7 @@ void SceneObjectInformation::encodeTo(Common::OutputBitstream &bitstream) const 
     if (soi_object_dependency_present_flag()) {
       bitstream.writeBits(soi_log2_max_object_dependency_idx(), 5);
     }
-    for (std::size_t i = 0; i < soi_num_object_updates(); ++i) {
+    for (size_t i = 0; i < soi_num_object_updates(); ++i) {
       bitstream.writeBits(soi_object_idx(i), soi_log2_max_object_idx_updated_minus1() + 1);
       const auto k = soi_object_idx(i);
       bitstream.putFlag(soi_object_cancel_flag(k));
@@ -659,7 +658,7 @@ void SceneObjectInformation::encodeTo(Common::OutputBitstream &bitstream) const 
           bitstream.putFlag(soi_object_dependency_update_flag(k));
           if (soi_object_dependency_update_flag(k)) {
             bitstream.writeBits(soi_object_num_dependencies(k), 4);
-            for (std::uint8_t j = 0; j < soi_object_num_dependencies(k); ++j) {
+            for (uint8_t j = 0; j < soi_object_num_dependencies(k); ++j) {
               bitstream.writeBits(soi_object_dependency_idx(k, j),
                                   soi_log2_max_object_dependency_idx());
             }

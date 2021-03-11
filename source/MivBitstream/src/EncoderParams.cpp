@@ -71,8 +71,8 @@ EncoderParams::EncoderParams(bool haveTextureVideo, bool haveGeometryVideo, bool
     : EncoderParams{Common::SizeVector{{0xFFFF, 0xFFFF, 0xFFFF}}, haveTextureVideo,
                     haveGeometryVideo, haveOccupancyVideo} {}
 
-EncoderParams::EncoderParams(std::uint8_t textureBitDepth, std::uint8_t occupancyBitDepth,
-                             std::uint8_t geometryBitDepth, std::uint8_t transparencyBitDepth)
+EncoderParams::EncoderParams(uint8_t textureBitDepth, uint8_t occupancyBitDepth,
+                             uint8_t geometryBitDepth, uint8_t transparencyBitDepth)
     : EncoderParams{Common::SizeVector{{0xFFFF, 0xFFFF}}, textureBitDepth, occupancyBitDepth,
                     geometryBitDepth, transparencyBitDepth} {}
 
@@ -122,9 +122,9 @@ EncoderParams::EncoderParams(const Common::SizeVector &atlasSizes, bool haveText
   }
 }
 
-EncoderParams::EncoderParams(const Common::SizeVector &atlasSizes, std::uint8_t textureBitDepth,
-                             std::uint8_t occupancyBitDepth, std::uint8_t geometryBitDepth,
-                             std::uint8_t transparencyBitDepth) {
+EncoderParams::EncoderParams(const Common::SizeVector &atlasSizes, uint8_t textureBitDepth,
+                             uint8_t occupancyBitDepth, uint8_t geometryBitDepth,
+                             uint8_t transparencyBitDepth) {
   const bool haveTextureVideo = textureBitDepth != 0;
   const bool haveOccupancyVideo = occupancyBitDepth != 0;
   const bool haveGeometryVideo = geometryBitDepth != 0;

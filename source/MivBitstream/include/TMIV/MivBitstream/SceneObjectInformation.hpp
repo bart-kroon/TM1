@@ -100,21 +100,19 @@ constexpr auto SceneObjectInformation::soi_extension_present_flag(bool value) no
   m_soi_extension_present_flag = value;
   return *this;
 }
-constexpr auto
-SceneObjectInformation::soi_3d_bounding_box_scale_log2(const std::uint8_t value) noexcept
+constexpr auto SceneObjectInformation::soi_3d_bounding_box_scale_log2(const uint8_t value) noexcept
     -> auto & {
   m_soi_3d_bounding_box_scale_log2 = value;
   return *this;
 }
 constexpr auto
-SceneObjectInformation::soi_log2_max_object_idx_updated_minus1(const std::uint8_t value) noexcept
+SceneObjectInformation::soi_log2_max_object_idx_updated_minus1(const uint8_t value) noexcept
     -> auto & {
   m_soi_log2_max_object_idx_updated_minus1 = value;
   return *this;
 }
 constexpr auto
-SceneObjectInformation::soi_log2_max_object_dependency_idx(const std::uint8_t value) noexcept
-    -> auto & {
+SceneObjectInformation::soi_log2_max_object_dependency_idx(const uint8_t value) noexcept -> auto & {
   m_soi_log2_max_object_dependency_idx = value;
   return *this;
 }

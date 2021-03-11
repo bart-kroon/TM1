@@ -204,7 +204,7 @@ using PrimitiveShapeVector = std::vector<PrimitiveShape>;
 
 // 23090-12: elementary_shape( e )
 struct ElementaryShape {
-  [[nodiscard]] auto es_num_primitive_shapes_minus1() const noexcept -> std::uint8_t;
+  [[nodiscard]] auto es_num_primitive_shapes_minus1() const noexcept -> uint8_t;
   [[nodiscard]] constexpr auto es_primitive_shape_operation() const noexcept
       -> PrimitiveShapeOperation;
   [[nodiscard]] auto es_guard_band_present_flag() const noexcept -> bool;
@@ -256,9 +256,9 @@ using ElementaryShapeVector = std::vector<ElementaryShapeAndOperation>;
 
 // 23090-12: viewing_space( )
 struct ViewingSpace {
-  [[nodiscard]] auto vs_num_elementary_shapes_minus1() const -> std::size_t;
-  [[nodiscard]] auto vs_elementary_shape_operation(std::size_t e) const -> ElementaryShapeOperation;
-  [[nodiscard]] auto elementary_shape(std::size_t e) const -> ElementaryShape;
+  [[nodiscard]] auto vs_num_elementary_shapes_minus1() const -> size_t;
+  [[nodiscard]] auto vs_elementary_shape_operation(size_t e) const -> ElementaryShapeOperation;
+  [[nodiscard]] auto elementary_shape(size_t e) const -> ElementaryShape;
 
   ElementaryShapeVector elementaryShapes{};
 

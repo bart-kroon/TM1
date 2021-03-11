@@ -117,7 +117,7 @@ constexpr auto AtlasFrameParameterSetRBSP::afps_extension_present_flag() const n
 }
 
 constexpr auto
-AtlasFrameParameterSetRBSP::afps_atlas_frame_parameter_set_id(const std::uint8_t value) noexcept
+AtlasFrameParameterSetRBSP::afps_atlas_frame_parameter_set_id(const uint8_t value) noexcept
     -> auto & {
   VERIFY_MIVBITSTREAM(value <= 63U);
   m_afps_atlas_frame_parameter_set_id = value;
@@ -125,7 +125,7 @@ AtlasFrameParameterSetRBSP::afps_atlas_frame_parameter_set_id(const std::uint8_t
 }
 
 constexpr auto
-AtlasFrameParameterSetRBSP::afps_atlas_sequence_parameter_set_id(const std::uint8_t value) noexcept
+AtlasFrameParameterSetRBSP::afps_atlas_sequence_parameter_set_id(const uint8_t value) noexcept
     -> auto & {
   VERIFY_MIVBITSTREAM(value <= 63U);
   m_afps_atlas_sequence_parameter_set_id = value;
@@ -144,14 +144,15 @@ constexpr auto AtlasFrameParameterSetRBSP::afps_output_flag_present_flag(const b
   return *this;
 }
 
-constexpr auto AtlasFrameParameterSetRBSP::afps_num_ref_idx_default_active_minus1(
-    const std::uint8_t value) noexcept -> auto & {
+constexpr auto
+AtlasFrameParameterSetRBSP::afps_num_ref_idx_default_active_minus1(const uint8_t value) noexcept
+    -> auto & {
   m_afps_num_ref_idx_default_active_minus1 = value;
   return *this;
 }
 
 constexpr auto
-AtlasFrameParameterSetRBSP::afps_additional_lt_afoc_lsb_len(const std::uint8_t value) noexcept
+AtlasFrameParameterSetRBSP::afps_additional_lt_afoc_lsb_len(const uint8_t value) noexcept
     -> auto & {
   m_afps_additional_lt_afoc_lsb_len = value;
   return *this;

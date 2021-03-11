@@ -43,9 +43,9 @@ namespace TMIV::MivBitstream {
 class RecViewport {
 public:
   RecViewport() = default;
-  explicit RecViewport(std::uint16_t value1, bool value2 = true);
+  explicit RecViewport(uint16_t value1, bool value2 = true);
 
-  [[nodiscard]] auto rec_viewport_id() const noexcept -> std::uint16_t;
+  [[nodiscard]] auto rec_viewport_id() const noexcept -> uint16_t;
   [[nodiscard]] auto rec_viewport_cancel_flag() const noexcept -> bool;
   [[nodiscard]] auto rec_viewport_persistence_flag() const -> bool;
   [[nodiscard]] auto rec_viewport_center_view_flag() const -> bool;
@@ -59,7 +59,7 @@ public:
   [[nodiscard]] auto rec_viewport_hor_range() const -> float;
   [[nodiscard]] auto rec_viewport_ver_range() const -> float;
 
-  constexpr auto rec_viewport_id(const std::uint16_t value) noexcept -> auto &;
+  constexpr auto rec_viewport_id(const uint16_t value) noexcept -> auto &;
   constexpr auto rec_viewport_cancel_flag(const bool value) noexcept -> auto &;
   constexpr auto rec_viewport_persistence_flag(const bool value) noexcept -> auto &;
   constexpr auto rec_viewport_center_view_flag(const bool value) noexcept -> auto &;
@@ -83,7 +83,7 @@ public:
   void encodeTo(Common::OutputBitstream &bitstream) const;
 
 private:
-  std::uint16_t m_rec_viewport_id{};
+  uint16_t m_rec_viewport_id{};
   bool m_rec_viewport_cancel_flag{};
   std::optional<bool> m_rec_viewport_persistence_flag{};
   std::optional<bool> m_rec_viewport_center_view_flag{};

@@ -40,7 +40,7 @@
 template <typename T>
 auto putField(std::ostream &stream, const std::string &fieldName, T &&fieldValue) {
   stream << fieldName << "=";
-  if constexpr (std::is_same_v<std::uint8_t, std::decay_t<T>>) {
+  if constexpr (std::is_same_v<uint8_t, std::decay_t<T>>) {
     stream << static_cast<unsigned>(fieldValue) << "\n";
   } else if (std::is_same_v<bool, std::decay_t<T>>) {
     stream << std::boolalpha << fieldValue << "\n";
@@ -143,7 +143,7 @@ auto CommonAtlasSequenceParameterSetRBSP::casps_miv_extension_present_flag(bool 
   return *this;
 }
 
-auto CommonAtlasSequenceParameterSetRBSP::casps_extension_7bits(std::uint8_t value) noexcept
+auto CommonAtlasSequenceParameterSetRBSP::casps_extension_7bits(uint8_t value) noexcept
     -> CommonAtlasSequenceParameterSetRBSP & {
   PRECONDITION(casps_extension_present_flag());
   PRECONDITION(value < (1 << 7));
@@ -211,13 +211,12 @@ auto CommonAtlasSequenceParameterSetRBSP::decodeFrom(std::istream &stream)
   Common::InputBitstream bitstream{stream};
   CommonAtlasSequenceParameterSetRBSP result{};
 
-  result.casps_common_atlas_sequence_parameter_set_id(bitstream.readBits<std::uint8_t>(4));
-  result.casps_log2_max_common_atlas_frame_order_cnt_lsb_minus4(
-      bitstream.getUExpGolomb<std::uint8_t>());
+  result.casps_common_atlas_sequence_parameter_set_id(bitstream.readBits<uint8_t>(4));
+  result.casps_log2_max_common_atlas_frame_order_cnt_lsb_minus4(bitstream.getUExpGolomb<uint8_t>());
   result.casps_extension_present_flag(bitstream.getFlag());
   if (result.casps_extension_present_flag()) {
     result.casps_miv_extension_present_flag(bitstream.getFlag());
-    result.casps_extension_7bits(bitstream.readBits<std::uint8_t>(7));
+    result.casps_extension_7bits(bitstream.readBits<uint8_t>(7));
   }
   if (result.casps_miv_extension_present_flag()) {
     result.casps_miv_extension() = CaspsMivExtension::decodeFrom(bitstream);

@@ -63,7 +63,7 @@ public:
   void encodeTo(std::ostream &stream) const;
 
 private:
-  std::uint8_t m_ssnh_unit_size_precision_bytes_minus1{};
+  uint8_t m_ssnh_unit_size_precision_bytes_minus1{};
 };
 
 // 23090-5: sample_stream_nal_unit()

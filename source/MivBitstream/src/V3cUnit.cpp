@@ -41,7 +41,7 @@
 using TMIV::Common::overload;
 
 namespace TMIV::MivBitstream {
-auto V3cUnitHeader::vuh_v3c_parameter_set_id() const -> std::uint8_t {
+auto V3cUnitHeader::vuh_v3c_parameter_set_id() const -> uint8_t {
   VERIFY_V3CBITSTREAM(
       m_vuh_unit_type == VuhUnitType::V3C_AVD || m_vuh_unit_type == VuhUnitType::V3C_GVD ||
       m_vuh_unit_type == VuhUnitType::V3C_OVD || m_vuh_unit_type == VuhUnitType::V3C_AD ||
@@ -57,17 +57,17 @@ auto V3cUnitHeader::vuh_atlas_id() const -> AtlasId {
   return m_vuh_atlas_id;
 }
 
-auto V3cUnitHeader::vuh_attribute_index() const -> std::uint8_t {
+auto V3cUnitHeader::vuh_attribute_index() const -> uint8_t {
   VERIFY_V3CBITSTREAM(m_vuh_unit_type == VuhUnitType::V3C_AVD);
   return m_vuh_attribute_index;
 }
 
-auto V3cUnitHeader::vuh_attribute_partition_index() const -> std::uint8_t {
+auto V3cUnitHeader::vuh_attribute_partition_index() const -> uint8_t {
   VERIFY_V3CBITSTREAM(m_vuh_unit_type == VuhUnitType::V3C_AVD);
   return m_vuh_attribute_partition_index;
 }
 
-auto V3cUnitHeader::vuh_map_index() const -> std::uint8_t {
+auto V3cUnitHeader::vuh_map_index() const -> uint8_t {
   VERIFY_V3CBITSTREAM(m_vuh_unit_type == VuhUnitType::V3C_AVD ||
                       m_vuh_unit_type == VuhUnitType::V3C_GVD);
   return m_vuh_map_index;
@@ -79,7 +79,7 @@ auto V3cUnitHeader::vuh_auxiliary_video_flag() const -> bool {
   return m_vuh_auxiliary_video_flag;
 }
 
-auto V3cUnitHeader::vuh_v3c_parameter_set_id(const std::uint8_t value) noexcept -> V3cUnitHeader & {
+auto V3cUnitHeader::vuh_v3c_parameter_set_id(const uint8_t value) noexcept -> V3cUnitHeader & {
   PRECONDITION(m_vuh_unit_type == VuhUnitType::V3C_AVD || m_vuh_unit_type == VuhUnitType::V3C_GVD ||
                m_vuh_unit_type == VuhUnitType::V3C_OVD || m_vuh_unit_type == VuhUnitType::V3C_AD ||
                m_vuh_unit_type == VuhUnitType::V3C_CAD || m_vuh_unit_type == VuhUnitType::V3C_PVD);
@@ -95,20 +95,19 @@ auto V3cUnitHeader::vuh_atlas_id(AtlasId value) noexcept -> V3cUnitHeader & {
   return *this;
 }
 
-auto V3cUnitHeader::vuh_attribute_index(const std::uint8_t value) noexcept -> V3cUnitHeader & {
+auto V3cUnitHeader::vuh_attribute_index(const uint8_t value) noexcept -> V3cUnitHeader & {
   PRECONDITION(m_vuh_unit_type == VuhUnitType::V3C_AVD);
   m_vuh_attribute_index = value;
   return *this;
 }
 
-auto V3cUnitHeader::vuh_attribute_partition_index(const std::uint8_t value) noexcept
-    -> V3cUnitHeader & {
+auto V3cUnitHeader::vuh_attribute_partition_index(const uint8_t value) noexcept -> V3cUnitHeader & {
   PRECONDITION(m_vuh_unit_type == VuhUnitType::V3C_AVD);
   m_vuh_attribute_partition_index = value;
   return *this;
 }
 
-auto V3cUnitHeader::vuh_map_index(const std::uint8_t value) noexcept -> V3cUnitHeader & {
+auto V3cUnitHeader::vuh_map_index(const uint8_t value) noexcept -> V3cUnitHeader & {
   PRECONDITION(m_vuh_unit_type == VuhUnitType::V3C_AVD || m_vuh_unit_type == VuhUnitType::V3C_GVD);
   m_vuh_map_index = value;
   return *this;
@@ -189,7 +188,7 @@ auto V3cUnitHeader::decodeFrom(std::istream &stream) -> V3cUnitHeader {
   if (x.vuh_unit_type() == VuhUnitType::V3C_AVD || x.vuh_unit_type() == VuhUnitType::V3C_GVD ||
       x.vuh_unit_type() == VuhUnitType::V3C_OVD || x.vuh_unit_type() == VuhUnitType::V3C_AD ||
       x.vuh_unit_type() == VuhUnitType::V3C_CAD || x.vuh_unit_type() == VuhUnitType::V3C_PVD) {
-    x.vuh_v3c_parameter_set_id(bitstream.readBits<std::uint8_t>(4));
+    x.vuh_v3c_parameter_set_id(bitstream.readBits<uint8_t>(4));
   }
   if (x.vuh_unit_type() == VuhUnitType::V3C_AVD || x.vuh_unit_type() == VuhUnitType::V3C_GVD ||
       x.vuh_unit_type() == VuhUnitType::V3C_OVD || x.vuh_unit_type() == VuhUnitType::V3C_AD ||
@@ -197,22 +196,22 @@ auto V3cUnitHeader::decodeFrom(std::istream &stream) -> V3cUnitHeader {
     x.vuh_atlas_id(AtlasId::decodeFrom(bitstream));
   }
   if (x.vuh_unit_type() == VuhUnitType::V3C_AVD) {
-    x.vuh_attribute_index(bitstream.readBits<std::uint8_t>(7));
-    x.vuh_attribute_partition_index(bitstream.readBits<std::uint8_t>(5));
-    x.vuh_map_index(bitstream.readBits<std::uint8_t>(4));
+    x.vuh_attribute_index(bitstream.readBits<uint8_t>(7));
+    x.vuh_attribute_partition_index(bitstream.readBits<uint8_t>(5));
+    x.vuh_map_index(bitstream.readBits<uint8_t>(4));
     x.vuh_auxiliary_video_flag(bitstream.getFlag());
   } else if (x.vuh_unit_type() == VuhUnitType::V3C_GVD) {
-    x.vuh_map_index(bitstream.readBits<std::uint8_t>(4));
+    x.vuh_map_index(bitstream.readBits<uint8_t>(4));
     x.vuh_auxiliary_video_flag(bitstream.getFlag());
-    bitstream.readBits<std::uint16_t>(12);
+    bitstream.readBits<uint16_t>(12);
   } else if (x.vuh_unit_type() == VuhUnitType::V3C_OVD ||
              x.vuh_unit_type() == VuhUnitType::V3C_AD ||
              x.vuh_unit_type() == VuhUnitType::V3C_PVD) {
-    bitstream.readBits<std::uint32_t>(17);
+    bitstream.readBits<uint32_t>(17);
   } else if (x.vuh_unit_type() == VuhUnitType::V3C_CAD) {
-    bitstream.readBits<std::uint32_t>(23);
+    bitstream.readBits<uint32_t>(23);
   } else {
-    bitstream.readBits<std::uint32_t>(27);
+    bitstream.readBits<uint32_t>(27);
   }
 
   return x;

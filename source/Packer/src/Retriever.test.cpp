@@ -37,7 +37,7 @@
 
 namespace TMIV::Packer {
 namespace {
-const std::uint16_t INVALID = (1 << 16) - 1;
+const uint16_t INVALID = (1 << 16) - 1;
 
 void addRectangle(Common::Mask &mask, Common::Vec2i topLeft, Common::Vec2i bottomRight) {
   for (int x = topLeft.x(); x <= bottomRight.x(); ++x) {

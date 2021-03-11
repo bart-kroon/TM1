@@ -39,16 +39,16 @@
 #include <vector>
 
 namespace TMIV::Common {
-inline void parallel_for(std::size_t nbIter, std::function<void(std::size_t)> fun) {
-  auto segment_execute = [&](std::size_t first, std::size_t last) {
+inline void parallel_for(size_t nbIter, std::function<void(size_t)> fun) {
+  auto segment_execute = [&](size_t first, size_t last) {
     for (auto id = first; id < last; id++) {
       fun(id);
     }
   };
 
-  std::size_t chunkSize = (std::thread::hardware_concurrency() < nbIter)
-                              ? (nbIter / std::thread::hardware_concurrency())
-                              : 1;
+  size_t chunkSize = (std::thread::hardware_concurrency() < nbIter)
+                         ? (nbIter / std::thread::hardware_concurrency())
+                         : 1;
   std::vector<std::future<void>> threadList;
 
   for (size_t id = 0; id < nbIter; id += chunkSize) {
@@ -60,27 +60,26 @@ inline void parallel_for(std::size_t nbIter, std::function<void(std::size_t)> fu
   }
 }
 
-inline void parallel_for(std::size_t w, std::size_t h,
-                         std::function<void(std::size_t, std::size_t)> fun) {
-  std::size_t nbIter = w * h;
+inline void parallel_for(size_t w, size_t h, std::function<void(size_t, size_t)> fun) {
+  size_t nbIter = w * h;
 
-  auto segment_execute = [&](std::size_t first, std::size_t last) {
-    std::size_t i0 = first / w;
-    std::size_t i1 = std::max(i0 + 1, last / w);
+  auto segment_execute = [&](size_t first, size_t last) {
+    size_t i0 = first / w;
+    size_t i1 = std::max(i0 + 1, last / w);
 
-    for (std::size_t i = i0; i < i1; i++) {
-      for (std::size_t j = 0; j < w; j++) {
+    for (size_t i = i0; i < i1; i++) {
+      for (size_t j = 0; j < w; j++) {
         fun(i, j);
       }
     }
   };
 
   std::vector<std::future<void>> threadList;
-  std::size_t chunkSize = (std::thread::hardware_concurrency() < nbIter)
-                              ? (nbIter / std::thread::hardware_concurrency())
-                              : 1;
+  size_t chunkSize = (std::thread::hardware_concurrency() < nbIter)
+                         ? (nbIter / std::thread::hardware_concurrency())
+                         : 1;
 
-  std::size_t misalignment = (chunkSize % w);
+  size_t misalignment = (chunkSize % w);
 
   if (0 < misalignment) {
     chunkSize = chunkSize + (w - misalignment);

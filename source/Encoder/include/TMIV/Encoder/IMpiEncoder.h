@@ -61,7 +61,7 @@ public:
   virtual auto processAccessUnit(int firstFrameId, int lastFrameId)
       -> const MivBitstream::EncoderParams & = 0;
   virtual auto popAtlas() -> Common::MVD10Frame = 0;
-  [[nodiscard]] virtual auto maxLumaSamplesPerFrame() const -> std::size_t = 0;
+  [[nodiscard]] virtual auto maxLumaSamplesPerFrame() const -> size_t = 0;
 
 protected:
   auto readFrame(int frameIndex) -> Common::MpiPcs::Frame {

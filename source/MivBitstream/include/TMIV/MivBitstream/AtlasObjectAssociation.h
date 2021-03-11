@@ -42,9 +42,9 @@
 namespace TMIV::MivBitstream {
 
 struct AtlasObjectAssociationUpdateParameters {
-  std::uint8_t aoa_log2_max_object_idx_tracked_minus1;
-  std::vector<std::uint8_t> aoa_atlas_id;
-  std::vector<std::uint8_t> aoa_object_idx;
+  uint8_t aoa_log2_max_object_idx_tracked_minus1;
+  std::vector<uint8_t> aoa_atlas_id;
+  std::vector<uint8_t> aoa_object_idx;
   std::vector<std::vector<bool>> aoa_object_in_atlas;
 
   auto operator==(const AtlasObjectAssociationUpdateParameters &other) const noexcept -> bool {
@@ -63,26 +63,26 @@ public:
                          AtlasObjectAssociationUpdateParameters aoa_parameters)
       : m_aoa_persistence_flag{aoa_persistence_flag}
       , m_aoa_reset_flag{aoa_reset_flag}
-      , m_aoa_num_atlases_minus1{static_cast<std::uint8_t>(aoa_parameters.aoa_atlas_id.size() - 1U)}
+      , m_aoa_num_atlases_minus1{static_cast<uint8_t>(aoa_parameters.aoa_atlas_id.size() - 1U)}
       , m_aoa_parameters{std::move(aoa_parameters)} {}
 
   [[nodiscard]] auto aoa_persistence_flag() const noexcept -> bool;
   [[nodiscard]] auto aoa_reset_flag() const noexcept -> bool;
-  [[nodiscard]] auto aoa_num_atlases_minus1() const noexcept -> std::uint8_t;
-  [[nodiscard]] auto aoa_num_updates() const noexcept -> std::size_t;
-  [[nodiscard]] auto aoa_log2_max_object_idx_tracked_minus1() const -> std::uint8_t;
-  [[nodiscard]] auto aoa_atlas_id(std::size_t j) const -> std::uint8_t;
-  [[nodiscard]] auto aoa_object_idx(std::size_t i) const -> std::uint8_t;
-  [[nodiscard]] auto aoa_object_in_atlas(std::size_t i, std::size_t j) const -> bool;
+  [[nodiscard]] auto aoa_num_atlases_minus1() const noexcept -> uint8_t;
+  [[nodiscard]] auto aoa_num_updates() const noexcept -> size_t;
+  [[nodiscard]] auto aoa_log2_max_object_idx_tracked_minus1() const -> uint8_t;
+  [[nodiscard]] auto aoa_atlas_id(size_t j) const -> uint8_t;
+  [[nodiscard]] auto aoa_object_idx(size_t i) const -> uint8_t;
+  [[nodiscard]] auto aoa_object_in_atlas(size_t i, size_t j) const -> bool;
 
   constexpr auto aoa_persistence_flag(bool value) noexcept -> auto &;
   constexpr auto aoa_reset_flag(bool value) noexcept -> auto &;
-  constexpr auto aoa_num_atlases_minus1(std::uint8_t value) noexcept -> auto &;
-  auto aoa_num_updates(std::size_t value) -> auto &;
-  auto aoa_log2_max_object_idx_tracked_minus1(std::uint8_t value) noexcept -> auto &;
-  auto push_back_aoa_atlas_id(std::uint8_t value) -> auto &;
-  auto aoa_object_idx(std::size_t i, std::uint8_t value) noexcept -> auto &;
-  auto aoa_object_in_atlas(std::size_t i, std::size_t j, bool value) noexcept -> auto &;
+  constexpr auto aoa_num_atlases_minus1(uint8_t value) noexcept -> auto &;
+  auto aoa_num_updates(size_t value) -> auto &;
+  auto aoa_log2_max_object_idx_tracked_minus1(uint8_t value) noexcept -> auto &;
+  auto push_back_aoa_atlas_id(uint8_t value) -> auto &;
+  auto aoa_object_idx(size_t i, uint8_t value) noexcept -> auto &;
+  auto aoa_object_in_atlas(size_t i, size_t j, bool value) noexcept -> auto &;
 
   friend auto operator<<(std::ostream &stream, const AtlasObjectAssociation &x) -> std::ostream &;
 
@@ -93,11 +93,11 @@ public:
   void encodeTo(Common::OutputBitstream &bitstream) const;
 
 private:
-  void prepareAoaParameters(std::size_t aoa_num_updates);
+  void prepareAoaParameters(size_t aoa_num_updates);
 
   bool m_aoa_persistence_flag{};
   bool m_aoa_reset_flag{};
-  std::uint8_t m_aoa_num_atlases_minus1{};
+  uint8_t m_aoa_num_atlases_minus1{};
   std::optional<AtlasObjectAssociationUpdateParameters> m_aoa_parameters{};
 };
 } // namespace TMIV::MivBitstream

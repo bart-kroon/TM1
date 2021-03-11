@@ -39,7 +39,7 @@
 namespace TMIV::ViewOptimizer {
 class KMedoidsCost {
 public:
-  using Centroids = std::vector<std::size_t>;
+  using Centroids = std::vector<size_t>;
 
   explicit KMedoidsCost(Common::Mat<double> sqDist);
 

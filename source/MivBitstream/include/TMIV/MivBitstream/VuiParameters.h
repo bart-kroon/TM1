@@ -49,8 +49,8 @@ public:
   [[nodiscard]] constexpr auto cas_left_sign() const noexcept;
   [[nodiscard]] constexpr auto cas_up_sign() const noexcept;
 
-  constexpr auto cas_forward_axis(std::uint8_t value) noexcept -> auto &;
-  constexpr auto cas_delta_left_axis_minus1(std::uint8_t value) noexcept -> auto &;
+  constexpr auto cas_forward_axis(uint8_t value) noexcept -> auto &;
+  constexpr auto cas_delta_left_axis_minus1(uint8_t value) noexcept -> auto &;
   constexpr auto cas_forward_sign(bool value) noexcept -> auto &;
   constexpr auto cas_left_sign(bool value) noexcept -> auto &;
   constexpr auto cas_up_sign(bool value) noexcept -> auto &;
@@ -68,8 +68,8 @@ public:
   void encodeTo(Common::OutputBitstream &bitstream) const;
 
 private:
-  std::uint8_t m_cas_forward_axis{};
-  std::uint8_t m_cas_delta_left_axis_minus1{};
+  uint8_t m_cas_forward_axis{};
+  uint8_t m_cas_delta_left_axis_minus1{};
   bool m_cas_forward_sign{true};
   bool m_cas_left_sign{true};
   bool m_cas_up_sign{true};
@@ -84,16 +84,16 @@ class AtlasSequenceParameterSetRBSP;
 class VuiParameters {
 public:
   constexpr auto vui_timing_info_present_flag() const noexcept;
-  auto vui_num_units_in_tick() const -> std::uint32_t;
-  auto vui_time_scale() const -> std::uint32_t;
+  auto vui_num_units_in_tick() const -> uint32_t;
+  auto vui_time_scale() const -> uint32_t;
   auto vui_poc_proportional_to_timing_flag() const -> bool;
-  auto vui_num_ticks_poc_diff_one_minus1() const -> std::uint32_t;
+  auto vui_num_ticks_poc_diff_one_minus1() const -> uint32_t;
   auto vui_hrd_parameters_present_flag() const -> bool;
 
   constexpr auto vui_bitstream_restriction_present_flag() const noexcept;
   auto vui_tiles_fixed_structure_for_atlas_flag() const -> bool;
   auto vui_tiles_fixed_structure_for_video_substreams_flag() const -> bool;
-  auto vui_constrained_tiles_across_v3c_components_idc() const -> std::uint8_t;
+  auto vui_constrained_tiles_across_v3c_components_idc() const -> uint8_t;
   auto vui_max_num_tiles_per_atlas_minus1() const -> unsigned;
 
   constexpr auto vui_coordinate_system_parameters_present_flag() const noexcept;
@@ -102,24 +102,23 @@ public:
   constexpr auto vui_unit_in_metres_flag() const noexcept;
 
   constexpr auto vui_display_box_info_present_flag() const noexcept;
-  auto vui_display_box_origin(int d) const -> std::uint32_t;
-  auto vui_display_box_size(int d) const -> std::uint32_t;
+  auto vui_display_box_origin(int d) const -> uint32_t;
+  auto vui_display_box_size(int d) const -> uint32_t;
 
   constexpr auto vui_anchor_point_present_flag() const noexcept;
-  auto vui_anchor_point(int d) const -> std::uint32_t;
+  auto vui_anchor_point(int d) const -> uint32_t;
 
   constexpr auto vui_timing_info_present_flag(bool value) noexcept -> auto &;
-  auto vui_num_units_in_tick(std::uint32_t value) noexcept -> VuiParameters &;
-  auto vui_time_scale(std::uint32_t value) noexcept -> VuiParameters &;
+  auto vui_num_units_in_tick(uint32_t value) noexcept -> VuiParameters &;
+  auto vui_time_scale(uint32_t value) noexcept -> VuiParameters &;
   auto vui_poc_proportional_to_timing_flag(bool value) noexcept -> VuiParameters &;
-  auto vui_num_ticks_poc_diff_one_minus1(std::uint32_t value) -> VuiParameters &;
+  auto vui_num_ticks_poc_diff_one_minus1(uint32_t value) -> VuiParameters &;
   auto vui_hrd_parameters_present_flag(bool value) noexcept -> VuiParameters &;
 
   constexpr auto vui_bitstream_restriction_present_flag(bool value) noexcept -> auto &;
   auto vui_tiles_fixed_structure_for_atlas_flag(bool value) noexcept -> VuiParameters &;
   auto vui_tiles_fixed_structure_for_video_substreams_flag(bool value) noexcept -> VuiParameters &;
-  auto vui_constrained_tiles_across_v3c_components_idc(std::uint8_t value) noexcept
-      -> VuiParameters &;
+  auto vui_constrained_tiles_across_v3c_components_idc(uint8_t value) noexcept -> VuiParameters &;
   auto vui_max_num_tiles_per_atlas_minus1(unsigned value) noexcept -> VuiParameters &;
 
   constexpr auto vui_coordinate_system_parameters_present_flag(bool value) noexcept -> auto &;
@@ -128,11 +127,11 @@ public:
   constexpr auto vui_unit_in_metres_flag(bool value) noexcept -> auto &;
 
   constexpr auto vui_display_box_info_present_flag(bool value) noexcept -> auto &;
-  auto vui_display_box_origin(int d, std::uint32_t value) noexcept -> VuiParameters &;
-  auto vui_display_box_size(int d, std::uint32_t value) noexcept -> VuiParameters &;
+  auto vui_display_box_origin(int d, uint32_t value) noexcept -> VuiParameters &;
+  auto vui_display_box_size(int d, uint32_t value) noexcept -> VuiParameters &;
 
   constexpr auto vui_anchor_point_present_flag(bool value) noexcept -> auto &;
-  auto vui_anchor_point(int d, std::uint32_t value) noexcept -> VuiParameters &;
+  auto vui_anchor_point(int d, uint32_t value) noexcept -> VuiParameters &;
 
   friend auto operator<<(std::ostream &stream, const VuiParameters &x) -> std::ostream &;
 
@@ -147,16 +146,16 @@ public:
 
 private:
   bool m_vui_timing_info_present_flag{};
-  std::optional<std::uint32_t> m_vui_num_units_in_tick;
-  std::optional<std::uint32_t> m_vui_time_scale;
+  std::optional<uint32_t> m_vui_num_units_in_tick;
+  std::optional<uint32_t> m_vui_time_scale;
   std::optional<bool> m_vui_poc_proportional_to_timing_flag;
-  std::optional<std::uint32_t> m_vui_num_ticks_poc_diff_one_minus1;
+  std::optional<uint32_t> m_vui_num_ticks_poc_diff_one_minus1;
   std::optional<bool> m_vui_hrd_parameters_present_flag;
 
   bool m_vui_bitstream_restriction_present_flag{};
   std::optional<bool> m_vui_tiles_fixed_structure_for_atlas_flag;
   std::optional<bool> m_vui_tiles_fixed_structure_for_video_substreams_flag;
-  std::optional<std::uint8_t> m_vui_constrained_tiles_across_v3c_components_idc;
+  std::optional<uint8_t> m_vui_constrained_tiles_across_v3c_components_idc;
   std::optional<unsigned> m_vui_max_num_tiles_per_atlas_minus1;
 
   bool m_vui_coordinate_system_parameters_present_flag{};
@@ -165,11 +164,11 @@ private:
   bool m_vui_unit_in_metres_flag{};
 
   bool m_vui_display_box_info_present_flag{};
-  std::optional<std::array<std::uint32_t, 3>> m_vui_display_box_origin;
-  std::optional<std::array<std::uint32_t, 3>> m_vui_display_box_size;
+  std::optional<std::array<uint32_t, 3>> m_vui_display_box_origin;
+  std::optional<std::array<uint32_t, 3>> m_vui_display_box_size;
 
   bool m_vui_anchor_point_present_flag{};
-  std::optional<std::array<std::uint32_t, 3>> m_vui_anchor_point;
+  std::optional<std::array<uint32_t, 3>> m_vui_anchor_point;
 };
 } // namespace TMIV::MivBitstream
 

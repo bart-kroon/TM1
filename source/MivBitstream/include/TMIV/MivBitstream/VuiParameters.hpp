@@ -54,12 +54,12 @@ constexpr auto CoordinateSystemParameters::cas_left_sign() const noexcept {
 
 constexpr auto CoordinateSystemParameters::cas_up_sign() const noexcept { return m_cas_up_sign; }
 
-constexpr auto CoordinateSystemParameters::cas_forward_axis(std::uint8_t value) noexcept -> auto & {
+constexpr auto CoordinateSystemParameters::cas_forward_axis(uint8_t value) noexcept -> auto & {
   m_cas_forward_axis = value;
   return *this;
 }
 
-constexpr auto CoordinateSystemParameters::cas_delta_left_axis_minus1(std::uint8_t value) noexcept
+constexpr auto CoordinateSystemParameters::cas_delta_left_axis_minus1(uint8_t value) noexcept
     -> auto & {
   m_cas_delta_left_axis_minus1 = value;
   return *this;

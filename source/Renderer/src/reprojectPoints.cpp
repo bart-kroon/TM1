@@ -238,9 +238,9 @@ auto getPointCloudList(const ProjectionHelperList &sourceHelperList, unsigned N)
 }
 
 auto getOverlapping(const ProjectionHelperList &sourceHelperList,
-                    const PointCloudList &pointCloudList, std::size_t firstId, std::size_t secondId)
+                    const PointCloudList &pointCloudList, size_t firstId, size_t secondId)
     -> float {
-  std::size_t N = 0;
+  size_t N = 0;
 
   const ProjectionHelper &secondHelper = sourceHelperList[secondId];
   const PointCloud &firstPointCloud = pointCloudList[firstId];
@@ -258,11 +258,11 @@ auto getOverlapping(const ProjectionHelperList &sourceHelperList,
 
 auto computeOverlappingMatrix(const ProjectionHelperList &sourceHelperList) -> Common::Mat<float> {
   auto pointCloudList = getPointCloudList(sourceHelperList, 16);
-  std::size_t K = sourceHelperList.size();
+  size_t K = sourceHelperList.size();
   Common::Mat<float> overlappingMatrix({K, K});
 
-  for (std::size_t i = 0; i < K; i++) {
-    for (std::size_t j = 0; j < K; j++) {
+  for (size_t i = 0; i < K; i++) {
+    for (size_t j = 0; j < K; j++) {
       if (i != j) {
         overlappingMatrix(i, j) = getOverlapping(sourceHelperList, pointCloudList, i, j);
       } else {

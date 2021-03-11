@@ -42,7 +42,7 @@ namespace TMIV::Pruner {
 // frame of the source view
 auto unprojectPrunedView(const Common::TextureDepth16Frame &view,
                          const MivBitstream::ViewParams &viewParams,
-                         const Common::Mat<std::uint8_t> &mask)
+                         const Common::Mat<uint8_t> &mask)
     -> std::tuple<Renderer::SceneVertexDescriptorList, Renderer::TriangleDescriptorList,
                   std::vector<Common::Vec3f>>;
 

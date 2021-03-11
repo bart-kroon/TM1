@@ -39,7 +39,7 @@
 #include <vector>
 
 namespace TMIV::MivBitstream {
-enum class PayloadType : std::uint16_t {
+enum class PayloadType : uint16_t {
   buffering_period,
   atlas_frame_timing,
   filler_payload,
@@ -79,7 +79,7 @@ public:
   SeiMessage(PayloadType pt, std::string payload);
 
   [[nodiscard]] auto payloadType() const noexcept -> PayloadType;
-  [[nodiscard]] auto payloadSize() const noexcept -> std::size_t;
+  [[nodiscard]] auto payloadSize() const noexcept -> size_t;
   [[nodiscard]] auto payload() const noexcept -> const std::string &;
 
   friend auto operator<<(std::ostream &stream, const SeiMessage &x) -> std::ostream &;

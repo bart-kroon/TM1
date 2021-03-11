@@ -50,9 +50,9 @@
 #include <variant>
 
 namespace TMIV::MivBitstream {
-enum class AthType : std::uint8_t { P_TILE, I_TILE, SKIP_TILE };
+enum class AthType : uint8_t { P_TILE, I_TILE, SKIP_TILE };
 
-enum class FlexiblePatchOrientation : std::uint8_t {
+enum class FlexiblePatchOrientation : uint8_t {
   FPO_NULL,
   FPO_SWAP,
   FPO_MROT270 = FPO_SWAP,
@@ -65,7 +65,7 @@ enum class FlexiblePatchOrientation : std::uint8_t {
   FPO_INVALID = UINT8_MAX
 };
 
-enum class AtduPatchMode : std::uint8_t {
+enum class AtduPatchMode : uint8_t {
   I_INTRA,
   I_RAW,
   I_EOM,
@@ -105,21 +105,21 @@ public:
   [[nodiscard]] constexpr auto ath_ref_atlas_frame_list_asps_flag() const noexcept;
   [[nodiscard]] constexpr auto ath_pos_min_d_quantizer() const noexcept;
   [[nodiscard]] constexpr auto ath_pos_delta_max_d_quantizer() const noexcept;
-  [[nodiscard]] auto ath_patch_size_x_info_quantizer() const -> std::uint8_t;
-  [[nodiscard]] auto ath_patch_size_y_info_quantizer() const -> std::uint8_t;
+  [[nodiscard]] auto ath_patch_size_x_info_quantizer() const -> uint8_t;
+  [[nodiscard]] auto ath_patch_size_y_info_quantizer() const -> uint8_t;
 
   constexpr auto ath_no_output_of_prior_atlas_frames_flag(bool value) noexcept -> auto &;
-  constexpr auto ath_atlas_frame_parameter_set_id(const std::uint8_t value) noexcept -> auto &;
-  constexpr auto ath_atlas_adaptation_parameter_set_id(const std::uint8_t value) noexcept -> auto &;
-  constexpr auto ath_id(const std::uint8_t value) noexcept -> auto &;
+  constexpr auto ath_atlas_frame_parameter_set_id(const uint8_t value) noexcept -> auto &;
+  constexpr auto ath_atlas_adaptation_parameter_set_id(const uint8_t value) noexcept -> auto &;
+  constexpr auto ath_id(const uint8_t value) noexcept -> auto &;
   constexpr auto ath_type(const AthType value) noexcept -> auto &;
   constexpr auto ath_atlas_output_flag(const bool value) noexcept -> auto &;
-  constexpr auto ath_pos_min_d_quantizer(const std::uint8_t value) noexcept -> auto &;
-  constexpr auto ath_pos_delta_max_d_quantizer(const std::uint8_t value) noexcept -> auto &;
-  constexpr auto ath_atlas_frm_order_cnt_lsb(const std::uint16_t value) noexcept -> auto &;
+  constexpr auto ath_pos_min_d_quantizer(const uint8_t value) noexcept -> auto &;
+  constexpr auto ath_pos_delta_max_d_quantizer(const uint8_t value) noexcept -> auto &;
+  constexpr auto ath_atlas_frm_order_cnt_lsb(const uint16_t value) noexcept -> auto &;
   constexpr auto ath_ref_atlas_frame_list_asps_flag(const bool value) noexcept -> auto &;
-  auto ath_patch_size_x_info_quantizer(const std::uint8_t value) noexcept -> AtlasTileHeader &;
-  auto ath_patch_size_y_info_quantizer(const std::uint8_t value) noexcept -> AtlasTileHeader &;
+  auto ath_patch_size_x_info_quantizer(const uint8_t value) noexcept -> AtlasTileHeader &;
+  auto ath_patch_size_y_info_quantizer(const uint8_t value) noexcept -> AtlasTileHeader &;
 
   friend auto operator<<(std::ostream &stream, const AtlasTileHeader &x) -> std::ostream &;
 
@@ -136,17 +136,17 @@ public:
 
 private:
   std::optional<bool> m_ath_no_output_of_prior_atlas_frames_flag{};
-  std::uint8_t m_ath_atlas_frame_parameter_set_id{};
-  std::uint8_t m_ath_adaptation_parameter_set_id{};
-  std::uint8_t m_ath_id{};
+  uint8_t m_ath_atlas_frame_parameter_set_id{};
+  uint8_t m_ath_adaptation_parameter_set_id{};
+  uint8_t m_ath_id{};
   AthType m_ath_type{};
   std::optional<bool> m_ath_atlas_output_flag{};
-  std::uint16_t m_ath_atlas_frm_order_cnt_lsb{};
+  uint16_t m_ath_atlas_frm_order_cnt_lsb{};
   std::optional<bool> m_ath_ref_atlas_frame_list_asps_flag{};
-  std::optional<std::uint8_t> m_ath_pos_min_d_quantizer{};
-  std::optional<std::uint8_t> m_ath_pos_delta_max_d_quantizer{};
-  std::optional<std::uint8_t> m_ath_patch_size_x_info_quantizer{};
-  std::optional<std::uint8_t> m_ath_patch_size_y_info_quantizer{};
+  std::optional<uint8_t> m_ath_pos_min_d_quantizer{};
+  std::optional<uint8_t> m_ath_pos_delta_max_d_quantizer{};
+  std::optional<uint8_t> m_ath_patch_size_x_info_quantizer{};
+  std::optional<uint8_t> m_ath_patch_size_y_info_quantizer{};
 };
 
 // 23090-5: skip_patch_data_unit( patchIdx )
@@ -175,7 +175,7 @@ public:
   auto pdu_attribute_offset(Common::Vec3w value) noexcept -> auto &;
   constexpr auto pdu_inpaint_flag(bool value) noexcept -> auto &;
 
-  auto printTo(std::ostream &stream, unsigned tileId, std::size_t patchIdx) const -> std::ostream &;
+  auto printTo(std::ostream &stream, unsigned tileId, size_t patchIdx) const -> std::ostream &;
 
   auto operator==(const PduMivExtension &other) const -> bool;
   auto operator!=(const PduMivExtension &other) const -> bool;
@@ -214,15 +214,15 @@ public:
   [[nodiscard]] constexpr auto pdu_lod_scale_y_idc() const noexcept;
   [[nodiscard]] auto pdu_miv_extension() const noexcept -> PduMivExtension;
 
-  constexpr auto pdu_2d_pos_x(std::uint32_t value) noexcept -> auto &;
-  constexpr auto pdu_2d_pos_y(std::uint32_t value) noexcept -> auto &;
-  constexpr auto pdu_2d_size_x_minus1(std::uint32_t value) noexcept -> auto &;
-  constexpr auto pdu_2d_size_y_minus1(std::uint32_t value) noexcept -> auto &;
-  constexpr auto pdu_3d_offset_u(std::uint32_t value) noexcept -> auto &;
-  constexpr auto pdu_3d_offset_v(std::uint32_t value) noexcept -> auto &;
+  constexpr auto pdu_2d_pos_x(uint32_t value) noexcept -> auto &;
+  constexpr auto pdu_2d_pos_y(uint32_t value) noexcept -> auto &;
+  constexpr auto pdu_2d_size_x_minus1(uint32_t value) noexcept -> auto &;
+  constexpr auto pdu_2d_size_y_minus1(uint32_t value) noexcept -> auto &;
+  constexpr auto pdu_3d_offset_u(uint32_t value) noexcept -> auto &;
+  constexpr auto pdu_3d_offset_v(uint32_t value) noexcept -> auto &;
   constexpr auto pdu_3d_offset_d(Common::SampleValue value) noexcept -> auto &;
   constexpr auto pdu_3d_range_d(Common::SampleValue value) noexcept -> auto &;
-  constexpr auto pdu_projection_id(std::uint16_t value) noexcept -> auto &;
+  constexpr auto pdu_projection_id(uint16_t value) noexcept -> auto &;
   constexpr auto pdu_orientation_index(FlexiblePatchOrientation value) noexcept -> auto &;
   constexpr auto pdu_lod_enabled_flag(bool value) noexcept -> auto &;
   constexpr auto pdu_lod_scale_x_minus1(unsigned value) noexcept -> auto &;
@@ -231,7 +231,7 @@ public:
 
   [[nodiscard]] constexpr auto pdu_miv_extension() noexcept -> auto &;
 
-  auto printTo(std::ostream &stream, unsigned tileId, std::size_t patchIdx) const -> std::ostream &;
+  auto printTo(std::ostream &stream, unsigned tileId, size_t patchIdx) const -> std::ostream &;
 
   constexpr auto operator==(const PatchDataUnit &other) const noexcept;
   constexpr auto operator!=(const PatchDataUnit &other) const noexcept;
@@ -247,15 +247,15 @@ public:
                 const AtlasTileHeader &ath) const;
 
 private:
-  std::uint32_t m_pdu_2d_pos_x{};
-  std::uint32_t m_pdu_2d_pos_y{};
-  std::uint32_t m_pdu_2d_size_x_minus1{};
-  std::uint32_t m_pdu_2d_size_y_minus1{};
-  std::uint32_t m_pdu_3d_offset_u{};
-  std::uint32_t m_pdu_3d_offset_v{};
+  uint32_t m_pdu_2d_pos_x{};
+  uint32_t m_pdu_2d_pos_y{};
+  uint32_t m_pdu_2d_size_x_minus1{};
+  uint32_t m_pdu_2d_size_y_minus1{};
+  uint32_t m_pdu_3d_offset_u{};
+  uint32_t m_pdu_3d_offset_v{};
   Common::SampleValue m_pdu_3d_offset_d{};
   std::optional<Common::SampleValue> m_pdu_3d_range_d{};
-  std::uint16_t m_pdu_view_id{};
+  uint16_t m_pdu_view_id{};
   FlexiblePatchOrientation m_pdu_orientation_index{};
   std::optional<bool> m_pdu_lod_enabled_flag{};
   std::optional<unsigned> m_pdu_lod_scale_x_minus1{};
@@ -282,7 +282,7 @@ public:
   [[nodiscard]] auto skip_patch_data_unit() const noexcept -> const SkipPatchDataUnit &;
   [[nodiscard]] auto patch_data_unit() const noexcept -> const PatchDataUnit &;
 
-  auto printTo(std::ostream &stream, unsigned tileId, std::size_t patchIdx) const -> std::ostream &;
+  auto printTo(std::ostream &stream, unsigned tileId, size_t patchIdx) const -> std::ostream &;
 
   auto operator==(const PatchInformationData &other) const noexcept -> bool;
   auto operator!=(const PatchInformationData &other) const noexcept -> bool;
@@ -312,12 +312,12 @@ public:
   template <typename... Args>
   explicit AtlasTileDataUnit(Args &&...args) : m_vector{std::forward<Args>(args)...} {}
 
-  [[nodiscard]] auto atduTotalNumberOfPatches() const noexcept -> std::size_t;
-  [[nodiscard]] auto atdu_patch_mode(std::size_t p) const -> AtduPatchMode;
-  [[nodiscard]] auto patch_information_data(std::size_t p) const -> const PatchInformationData &;
+  [[nodiscard]] auto atduTotalNumberOfPatches() const noexcept -> size_t;
+  [[nodiscard]] auto atdu_patch_mode(size_t p) const -> AtduPatchMode;
+  [[nodiscard]] auto patch_information_data(size_t p) const -> const PatchInformationData &;
 
   // Visit all elements in the atlas tile data unit in ascending order. The expected signature of
-  // the visitor is: void(std::size_t p, AtduPatchMode, const PatchInformationData &)
+  // the visitor is: void(size_t p, AtduPatchMode, const PatchInformationData &)
   template <typename Visitor> void visit(Visitor &&visitor) const;
 
   auto printTo(std::ostream &stream, const AtlasTileHeader &ath) const -> std::ostream &;

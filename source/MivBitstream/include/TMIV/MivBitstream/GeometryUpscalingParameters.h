@@ -40,7 +40,7 @@
 
 namespace TMIV::MivBitstream {
 // 23090-12: Geometry upscaling parameter types
-enum class GupType : std::uint8_t {
+enum class GupType : uint8_t {
   HVR // Hypothetical view renderer
 };
 
@@ -52,12 +52,12 @@ public:
   [[nodiscard]] auto gup_type() const noexcept -> GupType;
   [[nodiscard]] auto gup_erode_threshold() const noexcept -> Common::Half;
   [[nodiscard]] auto gup_delta_threshold() const noexcept -> unsigned;
-  [[nodiscard]] auto gup_max_curvature() const noexcept -> std::uint8_t;
+  [[nodiscard]] auto gup_max_curvature() const noexcept -> uint8_t;
 
   auto gup_type(GupType value) noexcept -> GeometryUpscalingParameters &;
   auto gup_erode_threshold(Common::Half value) noexcept -> GeometryUpscalingParameters &;
   auto gup_delta_threshold(unsigned value) noexcept -> GeometryUpscalingParameters &;
-  auto gup_max_curvature(std::uint8_t value) noexcept -> GeometryUpscalingParameters &;
+  auto gup_max_curvature(uint8_t value) noexcept -> GeometryUpscalingParameters &;
 
   friend auto operator<<(std::ostream &stream, const GeometryUpscalingParameters &x)
       -> std::ostream &;
@@ -73,7 +73,7 @@ private:
   GupType m_gup_type{};
   Common::Half m_gup_erode_threshold{};
   unsigned m_gup_delta_threshold{};
-  std::uint8_t m_gup_max_curvature{};
+  uint8_t m_gup_max_curvature{};
 };
 } // namespace TMIV::MivBitstream
 

@@ -45,13 +45,13 @@
 
 namespace TMIV::Common {
 namespace Array {
-using size_type = std::size_t;
+using size_type = size_t;
 
 template <typename T> class const_iterator {
 public:
   using iterator_category = std::random_access_iterator_tag;
   using value_type = T;
-  using difference_type = std::ptrdiff_t;
+  using difference_type = ptrdiff_t;
   using pointer = T *;
   using reference = T &;
 
@@ -88,18 +88,18 @@ public:
     operator--();
     return tmp;
   }
-  auto operator+(std::ptrdiff_t n) const -> const_iterator { return const_iterator(m_p + n); }
-  auto operator+=(std::ptrdiff_t n) -> const_iterator & {
+  auto operator+(ptrdiff_t n) const -> const_iterator { return const_iterator(m_p + n); }
+  auto operator+=(ptrdiff_t n) -> const_iterator & {
     m_p += n;
     return *this;
   }
-  auto operator-(const const_iterator &iter) const -> std::ptrdiff_t { return m_p - iter.m_p; }
-  auto operator-(std::ptrdiff_t n) const -> const_iterator { return const_iterator(m_p - n); }
-  auto operator-=(std::ptrdiff_t n) -> const_iterator & {
+  auto operator-(const const_iterator &iter) const -> ptrdiff_t { return m_p - iter.m_p; }
+  auto operator-(ptrdiff_t n) const -> const_iterator { return const_iterator(m_p - n); }
+  auto operator-=(ptrdiff_t n) -> const_iterator & {
     m_p -= n;
     return *this;
   }
-  auto operator[](std::ptrdiff_t n) const -> const T & {
+  auto operator[](ptrdiff_t n) const -> const T & {
     // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     return m_p[n];
   }
@@ -111,7 +111,7 @@ public:
 };
 
 template <typename T>
-auto operator+(std::ptrdiff_t n, const const_iterator<T> &rhs) -> const_iterator<T> {
+auto operator+(ptrdiff_t n, const const_iterator<T> &rhs) -> const_iterator<T> {
   return rhs + n;
 }
 
@@ -139,21 +139,21 @@ public:
     operator--();
     return tmp;
   }
-  auto operator+(std::ptrdiff_t n) const -> iterator { return iterator(this->m_p + n); }
-  auto operator+=(std::ptrdiff_t n) -> iterator & {
+  auto operator+(ptrdiff_t n) const -> iterator { return iterator(this->m_p + n); }
+  auto operator+=(ptrdiff_t n) -> iterator & {
     this->m_p += n;
     return *this;
   }
-  auto operator-(const iterator &iter) const -> std::ptrdiff_t { return this->m_p - iter.m_p; }
-  auto operator-(std::ptrdiff_t n) const -> iterator { return iterator(this->m_p - n); }
-  auto operator-=(std::ptrdiff_t n) -> iterator & {
+  auto operator-(const iterator &iter) const -> ptrdiff_t { return this->m_p - iter.m_p; }
+  auto operator-(ptrdiff_t n) const -> iterator { return iterator(this->m_p - n); }
+  auto operator-=(ptrdiff_t n) -> iterator & {
     this->m_p -= n;
     return *this;
   }
-  auto operator[](std::ptrdiff_t n) -> T & { return (this->m_p)[n]; }
+  auto operator[](ptrdiff_t n) -> T & { return (this->m_p)[n]; }
 };
 
-template <typename T> auto operator+(std::ptrdiff_t n, const iterator<T> &rhs) -> iterator<T> {
+template <typename T> auto operator+(ptrdiff_t n, const iterator<T> &rhs) -> iterator<T> {
   return rhs + n;
 }
 
@@ -161,22 +161,22 @@ template <typename T> class const_dim_iterator {
 public:
   using iterator_category = std::random_access_iterator_tag;
   using value_type = T;
-  using difference_type = std::ptrdiff_t;
+  using difference_type = ptrdiff_t;
   using pointer = T *;
   using reference = T &;
 
 protected:
   T *m_p{};
-  std::ptrdiff_t m_step;
+  ptrdiff_t m_step;
 
 public:
-  explicit const_dim_iterator(const T *x = nullptr, std::ptrdiff_t s = 0)
+  explicit const_dim_iterator(const T *x = nullptr, ptrdiff_t s = 0)
       // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
       : m_p(const_cast<T *>(x)), m_step(s) {}
   const_dim_iterator(const const_dim_iterator &iter) = default;
   const_dim_iterator(const_dim_iterator &&iter) noexcept = default;
   ~const_dim_iterator() = default;
-  [[nodiscard]] auto n() const -> std::ptrdiff_t { return m_step; }
+  [[nodiscard]] auto n() const -> ptrdiff_t { return m_step; }
   auto operator=(const const_dim_iterator &rhs) -> const_dim_iterator & = default;
   auto operator=(const_dim_iterator &&rhs) noexcept -> const_dim_iterator & = default;
   auto operator==(const const_dim_iterator &rhs) const -> bool { return m_p == rhs.m_p; }
@@ -202,25 +202,25 @@ public:
     operator--();
     return out;
   }
-  auto operator+(std::ptrdiff_t a) const -> const_dim_iterator {
+  auto operator+(ptrdiff_t a) const -> const_dim_iterator {
     // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     return const_dim_iterator(m_p + a * m_step, this->m_step);
   }
-  auto operator+=(std::ptrdiff_t a) -> const_dim_iterator & {
+  auto operator+=(ptrdiff_t a) -> const_dim_iterator & {
     m_p += (a * m_step);
     return *this;
   }
-  auto operator-(const const_dim_iterator &iter) const -> std::ptrdiff_t {
+  auto operator-(const const_dim_iterator &iter) const -> ptrdiff_t {
     return (m_p - iter.m_p) / m_step;
   }
-  auto operator-(std::ptrdiff_t a) const -> const_dim_iterator {
+  auto operator-(ptrdiff_t a) const -> const_dim_iterator {
     return const_dim_iterator(m_p - a * m_step, this->m_step);
   }
-  auto operator-=(std::ptrdiff_t a) -> const_dim_iterator & {
+  auto operator-=(ptrdiff_t a) -> const_dim_iterator & {
     m_p -= (a * m_step);
     return *this;
   }
-  auto operator[](std::ptrdiff_t a) const -> const T & { return m_p[a * m_step]; }
+  auto operator[](ptrdiff_t a) const -> const T & { return m_p[a * m_step]; }
   auto operator<(const const_dim_iterator &rhs) const -> bool { return m_p < rhs.m_p; }
   auto operator<=(const const_dim_iterator &rhs) const -> bool { return m_p <= rhs.m_p; }
   auto operator>(const const_dim_iterator &rhs) const -> bool { return m_p > rhs.m_p; }
@@ -229,13 +229,13 @@ public:
 };
 
 template <typename T>
-auto operator+(std::ptrdiff_t a, const const_dim_iterator<T> &rhs) -> const_dim_iterator<T> {
+auto operator+(ptrdiff_t a, const const_dim_iterator<T> &rhs) -> const_dim_iterator<T> {
   return rhs + a;
 }
 
 template <typename T> class dim_iterator : public const_dim_iterator<T> {
 public:
-  explicit dim_iterator(T *x = nullptr, std::ptrdiff_t s = 0) : const_dim_iterator<T>(x, s) {}
+  explicit dim_iterator(T *x = nullptr, ptrdiff_t s = 0) : const_dim_iterator<T>(x, s) {}
   auto operator*() -> T & { return *this->m_p; }
   auto operator->() -> T * { return this->m_p; }
   auto operator++() -> dim_iterator & {
@@ -258,33 +258,32 @@ public:
     operator--();
     return out;
   }
-  auto operator+(std::ptrdiff_t a) const -> dim_iterator {
+  auto operator+(ptrdiff_t a) const -> dim_iterator {
     // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     return dim_iterator(this->m_p + (a * this->m_step), this->m_step);
   }
-  auto operator+=(std::ptrdiff_t a) -> dim_iterator & {
+  auto operator+=(ptrdiff_t a) -> dim_iterator & {
     // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     this->m_p += (a * this->m_step);
     return *this;
   }
-  auto operator-(const dim_iterator &iter) const -> std::ptrdiff_t {
+  auto operator-(const dim_iterator &iter) const -> ptrdiff_t {
     // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     return (this->m_p - iter.m_p) / this->m_step;
   }
-  auto operator-(std::ptrdiff_t a) const -> dim_iterator {
+  auto operator-(ptrdiff_t a) const -> dim_iterator {
     // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     return dim_iterator(this->m_p - a * this->m_step, this->m_step);
   }
-  auto operator-=(std::ptrdiff_t a) -> dim_iterator & {
+  auto operator-=(ptrdiff_t a) -> dim_iterator & {
     // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     this->m_p -= (a * this->m_step);
     return *this;
   }
-  auto operator[](std::ptrdiff_t a) -> T & { return this->m_p[a * this->m_step]; }
+  auto operator[](ptrdiff_t a) -> T & { return this->m_p[a * this->m_step]; }
 };
 
-template <typename T>
-auto operator+(std::ptrdiff_t a, const dim_iterator<T> &rhs) -> dim_iterator<T> {
+template <typename T> auto operator+(ptrdiff_t a, const dim_iterator<T> &rhs) -> dim_iterator<T> {
   return rhs + a;
 }
 
@@ -375,7 +374,7 @@ public:
   using const_dim_iterator = TMIV::Common::Array::const_dim_iterator<T>;
   using diag_iterator = TMIV::Common::Array::dim_iterator<T>;
   using const_diag_iterator = TMIV::Common::Array::const_dim_iterator<T>;
-  using difference_type = std::ptrdiff_t;
+  using difference_type = ptrdiff_t;
   using size_type = stack::size_type;
   using container_type = Array<T, I...>;
   using tuple_type = std::array<stack::size_type, sizeof...(I)>;
@@ -669,7 +668,7 @@ public:
   using const_dim_iterator = TMIV::Common::Array::const_dim_iterator<T>;
   using diag_iterator = TMIV::Common::Array::dim_iterator<T>;
   using const_diag_iterator = TMIV::Common::Array::const_dim_iterator<T>;
-  using difference_type = std::ptrdiff_t;
+  using difference_type = ptrdiff_t;
   using size_type = heap::size_type;
   using container_type = Array<D, T>;
   using tuple_type = std::array<heap::size_type, D>;
@@ -999,7 +998,7 @@ public:
   using const_dim_iterator = TMIV::Common::Array::const_dim_iterator<T>;
   using diag_iterator = TMIV::Common::Array::dim_iterator<T>;
   using const_diag_iterator = TMIV::Common::Array::const_dim_iterator<T>;
-  using difference_type = std::ptrdiff_t;
+  using difference_type = ptrdiff_t;
   using size_type = shallow::size_type;
   using container_type = Array<D, T>;
   using tuple_type = std::array<shallow::size_type, D>;

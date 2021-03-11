@@ -64,11 +64,11 @@ public:
   auto popAtlas() -> Common::MVD10Frame override;
 
   // Maximum aggregated luma samples per frame all groups combined
-  [[nodiscard]] auto maxLumaSamplesPerFrame() const -> std::size_t override;
+  [[nodiscard]] auto maxLumaSamplesPerFrame() const -> size_t override;
 
 private:
   // A grouping as an array of groupId-viewId pairs
-  using Grouping = std::vector<std::pair<std::size_t, std::size_t>>;
+  using Grouping = std::vector<std::pair<size_t, size_t>>;
 
   // Partition the views, thereby forming the groups
   virtual auto sourceSplitter(const MivBitstream::EncoderParams &params) -> Grouping;
@@ -88,7 +88,7 @@ private:
   auto mergeParams(const std::vector<const MivBitstream::EncoderParams *> &)
       -> const MivBitstream::EncoderParams &;
 
-  [[nodiscard]] auto numGroups() const -> std::size_t { return m_encoders.size(); }
+  [[nodiscard]] auto numGroups() const -> size_t { return m_encoders.size(); }
 
   Grouping m_grouping;
   std::vector<Encoder> m_encoders;

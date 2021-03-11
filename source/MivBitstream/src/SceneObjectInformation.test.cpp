@@ -42,10 +42,10 @@ namespace TMIV::MivBitstream {
 namespace {
 auto makeSceneObjectInformation(bool soi_persistence_flag, bool soi_reset_flag,
                                 bool soi_simple_objects_flag, bool soiObjectDataPresentFlags,
-                                std::size_t soi_num_object_updates,
-                                std::uint8_t soi_log2_max_object_idx_updated_minus1,
-                                std::uint8_t soi_3d_bounding_box_scale_log2 = 0,
-                                std::uint8_t soi_log2_max_object_dependency_idx = 0,
+                                size_t soi_num_object_updates,
+                                uint8_t soi_log2_max_object_idx_updated_minus1,
+                                uint8_t soi_3d_bounding_box_scale_log2 = 0,
+                                uint8_t soi_log2_max_object_dependency_idx = 0,
                                 bool fillAllUpdateFields = true) -> SceneObjectInformation;
 } // namespace
 
@@ -56,9 +56,9 @@ TEST_CASE("scene_object_information", "[Scene Object Information SEI payload syn
 soi_reset_flag=false
 soi_num_object_updates=0
 )");
-    const std::size_t expected_number_of_bits = 1    // soi_persistence_flag
-                                                + 1  // soi_reset_flag
-                                                + 1; // soi_num_object_updates
+    const size_t expected_number_of_bits = 1    // soi_persistence_flag
+                                           + 1  // soi_reset_flag
+                                           + 1; // soi_num_object_updates
     REQUIRE(bitCodingTest(unit, expected_number_of_bits));
   }
 
@@ -292,16 +292,16 @@ soi_material_id(1)=6
 }
 
 namespace {
-auto makeUpdates(std::size_t soi_num_object_updates, bool soi_simple_objects_flag,
+auto makeUpdates(size_t soi_num_object_updates, bool soi_simple_objects_flag,
                  bool soiObjectDataPresentFlags, bool fillAllFields)
     -> std::vector<SceneObjectUpdate>;
 
 auto makeSceneObjectInformation(bool soi_persistence_flag, bool soi_reset_flag,
                                 bool soi_simple_objects_flag, bool soiObjectDataPresentFlags,
-                                std::size_t soi_num_object_updates,
-                                std::uint8_t soi_log2_max_object_idx_updated_minus1,
-                                std::uint8_t soi_3d_bounding_box_scale_log2,
-                                std::uint8_t soi_log2_max_object_dependency_idx,
+                                size_t soi_num_object_updates,
+                                uint8_t soi_log2_max_object_idx_updated_minus1,
+                                uint8_t soi_3d_bounding_box_scale_log2,
+                                uint8_t soi_log2_max_object_dependency_idx,
                                 bool fillAllUpdateFields) -> SceneObjectInformation {
   SceneObjectInformation soi{};
   soi.soi_persistence_flag(soi_persistence_flag);
@@ -340,10 +340,10 @@ auto makeSceneObjectInformation(bool soi_persistence_flag, bool soi_reset_flag,
   return soi;
 }
 
-auto makeSoiVisibilityCones(std::uint16_t value) -> SoiVisibilityCones;
-auto makeSoi3dBoundingBox(std::uint16_t value) -> Soi3dBoundingBox;
+auto makeSoiVisibilityCones(uint16_t value) -> SoiVisibilityCones;
+auto makeSoi3dBoundingBox(uint16_t value) -> Soi3dBoundingBox;
 
-auto makeUpdates(std::size_t soi_num_object_updates, bool soi_simple_objects_flag,
+auto makeUpdates(size_t soi_num_object_updates, bool soi_simple_objects_flag,
                  bool soiObjectDataPresentFlags, bool fillAllFields)
     -> std::vector<SceneObjectUpdate> {
   auto updates{std::vector<SceneObjectUpdate>(soi_num_object_updates)};
@@ -361,7 +361,7 @@ auto makeUpdates(std::size_t soi_num_object_updates, bool soi_simple_objects_fla
             update.soi_priority_value = static_cast<uint8_t>(soi_object_idx / 2);
             update.soi_object_hidden_flag = true;
             update.soi_object_dependency_update_flag = true;
-            update.soi_object_dependency_idx = std::vector<std::size_t>(2);
+            update.soi_object_dependency_idx = std::vector<size_t>(2);
             update.soi_visibility_cones_update_flag = true;
             update.soi_visibility_cones =
                 makeSoiVisibilityCones(static_cast<uint16_t>(soi_object_idx));
@@ -384,7 +384,7 @@ auto makeUpdates(std::size_t soi_num_object_updates, bool soi_simple_objects_fla
         updates.begin(), updates.end(),
         [soi_object_idx = 0, soi_simple_objects_flag, soiObjectDataPresentFlags]() mutable {
           SceneObjectUpdate update{};
-          update.soi_object_idx = static_cast<std::size_t>(soi_object_idx);
+          update.soi_object_idx = static_cast<size_t>(soi_object_idx);
           update.soi_object_cancel_flag = false;
           if (!soi_simple_objects_flag && soiObjectDataPresentFlags) {
             update.soi_object_label_update_flag = false;
@@ -404,7 +404,7 @@ auto makeUpdates(std::size_t soi_num_object_updates, bool soi_simple_objects_fla
   return updates;
 }
 
-auto makeSoiVisibilityCones(std::uint16_t value) -> SoiVisibilityCones {
+auto makeSoiVisibilityCones(uint16_t value) -> SoiVisibilityCones {
   SoiVisibilityCones result{};
   result.soi_direction_x = static_cast<std::int16_t>(value++);
   result.soi_direction_y = static_cast<std::int16_t>(value++);
@@ -413,7 +413,7 @@ auto makeSoiVisibilityCones(std::uint16_t value) -> SoiVisibilityCones {
   return result;
 }
 
-auto makeSoi3dBoundingBox(std::uint16_t value) -> Soi3dBoundingBox {
+auto makeSoi3dBoundingBox(uint16_t value) -> Soi3dBoundingBox {
   Soi3dBoundingBox result{};
   result.soi_3d_bounding_box_x = value++;
   result.soi_3d_bounding_box_y = value++;

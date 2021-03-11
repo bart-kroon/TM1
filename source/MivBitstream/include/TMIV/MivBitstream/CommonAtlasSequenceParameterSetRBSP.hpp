@@ -89,13 +89,13 @@ constexpr auto CommonAtlasSequenceParameterSetRBSP::casps_extension_present_flag
 }
 
 constexpr auto CommonAtlasSequenceParameterSetRBSP::casps_common_atlas_sequence_parameter_set_id(
-    std::uint8_t value) noexcept -> auto & {
+    uint8_t value) noexcept -> auto & {
   m_casps_common_atlas_sequence_parameter_set_id = value;
   return *this;
 }
 constexpr auto
 CommonAtlasSequenceParameterSetRBSP::casps_log2_max_common_atlas_frame_order_cnt_lsb_minus4(
-    std::uint8_t value) noexcept -> auto & {
+    uint8_t value) noexcept -> auto & {
   m_casps_log2_max_common_atlas_frame_order_cnt_lsb_minus4 = value;
   return *this;
 }

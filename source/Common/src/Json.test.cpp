@@ -76,7 +76,7 @@ TEST_CASE("There are value constructors for each of JSON value types") {
     REQUIRE(Json{42.F}.as<double>() == 42.);
     REQUIRE(Json{42}.as<int>() == 42);
     REQUIRE(Json{42.}.as<float>() == 42.F);
-    REQUIRE(Json{std::uint32_t{42}}.as<short>() == 42);
+    REQUIRE(Json{uint32_t{42}}.as<short>() == 42);
   }
 
   SECTION("There is in-place value construction for JSON object") {
@@ -107,10 +107,10 @@ TEST_CASE("Json::as<T>() supports numeric conversion of integers") {
   REQUIRE(json.as<std::int16_t>() == 40);
   REQUIRE(json.as<std::int32_t>() == 40);
   REQUIRE(json.as<std::int64_t>() == 40);
-  REQUIRE(json.as<std::uint8_t>() == 40);
-  REQUIRE(json.as<std::uint16_t>() == 40);
-  REQUIRE(json.as<std::uint32_t>() == 40);
-  REQUIRE(json.as<std::uint64_t>() == 40);
+  REQUIRE(json.as<uint8_t>() == 40);
+  REQUIRE(json.as<uint16_t>() == 40);
+  REQUIRE(json.as<uint32_t>() == 40);
+  REQUIRE(json.as<uint64_t>() == 40);
   // NOTE(BK): Optional bounds checking to be added as part of #273
 
   SECTION("Converting an integer to a float is allowed because the user expects 40.0 and 40 to "
@@ -437,6 +437,6 @@ TEST_CASE("Json::asVector() converts a JSON array to a std::vector<T>") {
 
 TEST_CASE("Json::asVec() converts a JSON array to a Common::stack::Vector<T, M>") {
   auto json = Json{std::in_place_type_t<Json::Array>(), Json{1}, Json{2}, Json{3}};
-  REQUIRE(json.asVec<std::uint16_t, 3>() == Vec3w{1, 2, 3});
+  REQUIRE(json.asVec<uint16_t, 3>() == Vec3w{1, 2, 3});
 }
 } // namespace TMIV::Common

@@ -55,12 +55,11 @@ private:
 
   // Prepare cost calculation
   auto viewPositions() const -> Positions;
-  auto forwardView(const Positions &pos) const -> std::size_t;
+  auto forwardView(const Positions &pos) const -> size_t;
   static auto sqDistanceMatrix(const Positions &pos) -> Common::Mat<double>;
 
   // Partitioning around medians [https://en.wikipedia.org/wiki/K-medoids#Algorithms]
-  static auto selectInitialCentroids(const KMedoidsCost &cost, std::size_t first, std::size_t k)
-      -> Centroids;
+  static auto selectInitialCentroids(const KMedoidsCost &cost, size_t first, size_t k) -> Centroids;
   static auto updateCentroids(const KMedoidsCost &cost, Centroids centroids)
       -> std::optional<Centroids>;
 

@@ -186,7 +186,7 @@ template <typename T> auto Json::asVector() const -> std::vector<T> {
   return v;
 }
 
-template <typename T, std::size_t M> auto Json::asVec() const -> stack::Vector<T, M> {
+template <typename T, size_t M> auto Json::asVec() const -> stack::Vector<T, M> {
   stack::Vector<T, M> result;
   const auto &a = as<Array>();
   if (a.size() != M) {

@@ -133,8 +133,7 @@ private:
   }
 
   [[nodiscard]] static auto atlasAccessUnit(const Common::TextureDepth16Frame &frame,
-                                            std::uint16_t viewIndex)
-      -> MivBitstream::AtlasAccessUnit {
+                                            uint16_t viewIndex) -> MivBitstream::AtlasAccessUnit {
     auto aau = MivBitstream::AtlasAccessUnit();
 
     const auto w = frame.texture.getWidth();

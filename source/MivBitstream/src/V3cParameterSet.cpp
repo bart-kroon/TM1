@@ -183,7 +183,7 @@ auto operator<<(std::ostream &stream, AtlasId atlasId) -> std::ostream & {
 }
 
 auto AtlasId::decodeFrom(Common::InputBitstream &bitstream) -> AtlasId {
-  return AtlasId(bitstream.readBits<std::uint8_t>(6));
+  return AtlasId(bitstream.readBits<uint8_t>(6));
 }
 
 void AtlasId::encodeTo(Common::OutputBitstream &bitstream) const {
@@ -195,7 +195,7 @@ auto ProfileTierLevel::ptl_num_sub_profiles() const -> uint8_t {
   return static_cast<uint8_t>(m_subProfileIdcs.size());
 }
 
-auto ProfileTierLevel::ptl_sub_profile_idc(std::uint8_t i) const -> uint64_t {
+auto ProfileTierLevel::ptl_sub_profile_idc(uint8_t i) const -> uint64_t {
   VERIFY_V3CBITSTREAM(i < m_subProfileIdcs.size());
   return m_subProfileIdcs[i];
 }
@@ -207,7 +207,7 @@ auto ProfileTierLevel::ptl_profile_toolset_constraints_information() const
   return *m_ptl_profile_toolset_constraints_information;
 }
 
-auto ProfileTierLevel::ptl_num_sub_profiles(std::uint8_t value) noexcept -> ProfileTierLevel & {
+auto ProfileTierLevel::ptl_num_sub_profiles(uint8_t value) noexcept -> ProfileTierLevel & {
   m_subProfileIdcs = std::vector<uint64_t>(value, 0);
   return *this;
 }
@@ -220,8 +220,7 @@ auto ProfileTierLevel::ptl_extended_sub_profile_flag(bool value) -> ProfileTierL
   return *this;
 }
 
-auto ProfileTierLevel::ptl_sub_profile_idc(std::uint8_t i, std::uint64_t value)
-    -> ProfileTierLevel & {
+auto ProfileTierLevel::ptl_sub_profile_idc(uint8_t i, uint64_t value) -> ProfileTierLevel & {
   PRECONDITION(i < ptl_num_sub_profiles());
   PRECONDITION(ptl_extended_sub_profile_flag() || value <= UINT32_MAX);
   m_subProfileIdcs[i] = value;
@@ -442,7 +441,7 @@ auto AttributeInformation::ai_attribute_MSB_align_flag(uint8_t attributeId) cons
 }
 
 auto AttributeInformation::ai_attribute_map_absolute_coding_persistence_flag(
-    std::uint8_t attributeId) const -> bool {
+    uint8_t attributeId) const -> bool {
   VERIFY_V3CBITSTREAM(attributeId < ai_attribute_count());
   VERIFY_V3CBITSTREAM(
       m_aiAttributes[attributeId].ai_attribute_map_absolute_coding_persistence_flag.has_value());
@@ -468,8 +467,9 @@ auto AttributeInformation::ai_attribute_codec_id(uint8_t attributeId, uint8_t va
   return *this;
 }
 
-auto AttributeInformation::ai_attribute_map_absolute_coding_persistence_flag(
-    std::uint8_t attributeId, bool value) -> AttributeInformation & {
+auto AttributeInformation::ai_attribute_map_absolute_coding_persistence_flag(uint8_t attributeId,
+                                                                             bool value)
+    -> AttributeInformation & {
   VERIFY_V3CBITSTREAM(attributeId < ai_attribute_count());
   m_aiAttributes[attributeId].ai_attribute_map_absolute_coding_persistence_flag = value;
   return *this;
@@ -676,93 +676,93 @@ void ProfileToolsetConstraintsInformation::encodeTo(Common::OutputBitstream &bit
   bitstream.putUint8(ptc_num_reserved_constraint_bytes());
 }
 
-constexpr auto PackingInformation::pin_codec_id() const noexcept -> std::uint8_t {
+constexpr auto PackingInformation::pin_codec_id() const noexcept -> uint8_t {
   return m_pin_codec_id;
 }
 
-auto PackingInformation::pin_regions_count_minus1() const -> std::size_t {
+auto PackingInformation::pin_regions_count_minus1() const -> size_t {
   VERIFY_V3CBITSTREAM(!m_pinRegions.empty());
   return m_pinRegions.size() - 1U;
 }
 
-auto PackingInformation::pin_region_tile_id(std::size_t i) const -> std::uint8_t {
+auto PackingInformation::pin_region_tile_id(size_t i) const -> uint8_t {
   VERIFY_V3CBITSTREAM(i <= pin_regions_count_minus1());
   return m_pinRegions[i].pin_region_tile_id;
 }
 
-auto PackingInformation::pin_region_type_id_minus2(std::size_t i) const -> std::uint8_t {
+auto PackingInformation::pin_region_type_id_minus2(size_t i) const -> uint8_t {
   VERIFY_V3CBITSTREAM(i <= pin_regions_count_minus1());
   return m_pinRegions[i].pin_region_type_id_minus2;
 }
 
-auto PackingInformation::pinRegionTypeId(std::size_t i) const -> VuhUnitType {
+auto PackingInformation::pinRegionTypeId(size_t i) const -> VuhUnitType {
   return static_cast<VuhUnitType>(pin_region_type_id_minus2(i) + 2);
 }
 
-auto PackingInformation::pin_region_top_left_x(std::size_t i) const -> std::uint16_t {
+auto PackingInformation::pin_region_top_left_x(size_t i) const -> uint16_t {
   VERIFY_V3CBITSTREAM(i <= pin_regions_count_minus1());
   return m_pinRegions[i].pin_region_top_left_x;
 }
 
-auto PackingInformation::pin_region_top_left_y(std::size_t i) const -> std::uint16_t {
+auto PackingInformation::pin_region_top_left_y(size_t i) const -> uint16_t {
   VERIFY_V3CBITSTREAM(i <= pin_regions_count_minus1());
   return m_pinRegions[i].pin_region_top_left_y;
 }
 
-auto PackingInformation::pin_region_width_minus1(std::size_t i) const -> std::uint16_t {
+auto PackingInformation::pin_region_width_minus1(size_t i) const -> uint16_t {
   VERIFY_V3CBITSTREAM(i <= pin_regions_count_minus1());
   return m_pinRegions[i].pin_region_width_minus1;
 }
 
-auto PackingInformation::pin_region_height_minus1(std::size_t i) const -> std::uint16_t {
+auto PackingInformation::pin_region_height_minus1(size_t i) const -> uint16_t {
   VERIFY_V3CBITSTREAM(i <= pin_regions_count_minus1());
   return m_pinRegions[i].pin_region_height_minus1;
 }
 
-auto PackingInformation::pin_region_unpack_top_left_x(std::size_t i) const -> std::uint16_t {
+auto PackingInformation::pin_region_unpack_top_left_x(size_t i) const -> uint16_t {
   VERIFY_V3CBITSTREAM(i <= pin_regions_count_minus1());
   return m_pinRegions[i].pin_region_unpack_top_left_x;
 }
 
-auto PackingInformation::pin_region_unpack_top_left_y(std::size_t i) const -> std::uint16_t {
+auto PackingInformation::pin_region_unpack_top_left_y(size_t i) const -> uint16_t {
   VERIFY_V3CBITSTREAM(i <= pin_regions_count_minus1());
   return m_pinRegions[i].pin_region_unpack_top_left_y;
 }
 
-auto PackingInformation::pin_region_map_index(std::size_t i) const -> std::uint8_t {
+auto PackingInformation::pin_region_map_index(size_t i) const -> uint8_t {
   VERIFY_V3CBITSTREAM(i <= pin_regions_count_minus1());
   return m_pinRegions[i].pin_region_map_index;
 }
 
-auto PackingInformation::pin_region_rotation_flag(std::size_t i) const -> bool {
+auto PackingInformation::pin_region_rotation_flag(size_t i) const -> bool {
   VERIFY_V3CBITSTREAM(i <= pin_regions_count_minus1());
   return m_pinRegions[i].pin_region_rotation_flag;
 }
 
-auto PackingInformation::pin_region_auxiliary_data_flag(std::size_t i) const -> bool {
+auto PackingInformation::pin_region_auxiliary_data_flag(size_t i) const -> bool {
   VERIFY_V3CBITSTREAM(i <= pin_regions_count_minus1() &&
                       m_pinRegions[i].pin_region_auxiliary_data_flag);
   return m_pinRegions[i].pin_region_auxiliary_data_flag.value();
 }
 
-auto PackingInformation::pin_region_attr_type_id(std::size_t i) const -> std::uint8_t {
+auto PackingInformation::pin_region_attr_type_id(size_t i) const -> uint8_t {
   VERIFY_V3CBITSTREAM(i <= pin_regions_count_minus1() && m_pinRegions[i].pin_region_attr_type_id);
   return m_pinRegions[i].pin_region_attr_type_id.value();
 }
 
-auto PackingInformation::pin_region_attr_partitions_flag(std::size_t i) const -> bool {
+auto PackingInformation::pin_region_attr_partitions_flag(size_t i) const -> bool {
   VERIFY_V3CBITSTREAM(i <= pin_regions_count_minus1() &&
                       m_pinRegions[i].pin_region_attr_partitions_flag);
   return m_pinRegions[i].pin_region_attr_partitions_flag.value();
 }
 
-auto PackingInformation::pin_region_attr_partition_index(std::size_t i) const -> std::uint8_t {
+auto PackingInformation::pin_region_attr_partition_index(size_t i) const -> uint8_t {
   VERIFY_V3CBITSTREAM(i <= pin_regions_count_minus1() &&
                       m_pinRegions[i].pin_region_attr_partition_index);
   return m_pinRegions[i].pin_region_attr_partition_index.value();
 }
 
-auto PackingInformation::pin_region_attr_partitions_minus1(std::size_t i) const -> std::uint8_t {
+auto PackingInformation::pin_region_attr_partitions_minus1(size_t i) const -> uint8_t {
   VERIFY_V3CBITSTREAM(i <= pin_regions_count_minus1() &&
                       m_pinRegions[i].pin_region_attr_partitions_minus1);
   return m_pinRegions[i].pin_region_attr_partitions_minus1.value();
@@ -771,7 +771,7 @@ auto PackingInformation::pin_region_attr_partitions_minus1(std::size_t i) const 
 auto PackingInformation::printTo(std::ostream &stream, const AtlasId &j) const -> std::ostream & {
   fmt::print(stream, "pin_codec_id[ {} ]={}\n", j, pin_codec_id());
   fmt::print(stream, "pin_regions_count_minus1[ {} ]={}\n", j, pin_regions_count_minus1());
-  for (std::size_t i = 0; i <= pin_regions_count_minus1(); ++i) {
+  for (size_t i = 0; i <= pin_regions_count_minus1(); ++i) {
     fmt::print(stream, "pin_region_tile_id[ {} ][ {} ]={}\n", j, i, pin_region_tile_id(i));
     fmt::print(stream, "pin_region_type_id_minus2[ {} ][ {} ]={} ({})\n", j, i,
                pin_region_type_id_minus2(i), pinRegionTypeId(i));
@@ -821,8 +821,8 @@ auto PackingInformation::operator!=(const PackingInformation &other) const noexc
 auto PackingInformation::decodeFrom(Common::InputBitstream &bitstream) -> PackingInformation {
   PackingInformation result{};
   result.pin_codec_id(bitstream.getUint8());
-  result.pin_regions_count_minus1(bitstream.getUExpGolomb<std::size_t>());
-  for (std::size_t i = 0; i <= result.pin_regions_count_minus1(); ++i) {
+  result.pin_regions_count_minus1(bitstream.getUExpGolomb<size_t>());
+  for (size_t i = 0; i <= result.pin_regions_count_minus1(); ++i) {
     result.pin_region_tile_id(i, bitstream.getUint8());
     result.pin_region_type_id_minus2(i, bitstream.readBits<uint8_t>(2));
     result.pin_region_top_left_x(i, bitstream.getUint16());
@@ -831,19 +831,19 @@ auto PackingInformation::decodeFrom(Common::InputBitstream &bitstream) -> Packin
     result.pin_region_height_minus1(i, bitstream.getUint16());
     result.pin_region_unpack_top_left_x(i, bitstream.getUint16());
     result.pin_region_unpack_top_left_y(i, bitstream.getUint16());
-    result.pin_region_map_index(i, bitstream.readBits<std::uint8_t>(4));
+    result.pin_region_map_index(i, bitstream.readBits<uint8_t>(4));
     result.pin_region_rotation_flag(i, bitstream.getFlag());
     if (result.pinRegionTypeId(i) == VuhUnitType::V3C_AVD ||
         result.pinRegionTypeId(i) == VuhUnitType::V3C_GVD) {
       result.pin_region_auxiliary_data_flag(i, bitstream.getFlag());
     }
     if (result.pinRegionTypeId(i) == VuhUnitType::V3C_AVD) {
-      result.pin_region_attr_type_id(i, bitstream.readBits<std::uint8_t>(4));
+      result.pin_region_attr_type_id(i, bitstream.readBits<uint8_t>(4));
       result.pin_region_attr_partitions_flag(i, bitstream.getFlag());
       if (result.pin_region_attr_partitions_flag(i)) {
-        result.pin_region_attr_partition_index(i, bitstream.readBits<std::uint8_t>(5));
+        result.pin_region_attr_partition_index(i, bitstream.readBits<uint8_t>(5));
         if (result.pin_region_attr_partition_index(i) == 0) {
-          result.pin_region_attr_partitions_minus1(i, bitstream.readBits<std::uint8_t>(6));
+          result.pin_region_attr_partitions_minus1(i, bitstream.readBits<uint8_t>(6));
         }
       }
     }
@@ -854,7 +854,7 @@ auto PackingInformation::decodeFrom(Common::InputBitstream &bitstream) -> Packin
 void PackingInformation::encodeTo(Common::OutputBitstream &bitstream) const {
   bitstream.putUint8(pin_codec_id());
   bitstream.putUExpGolomb(pin_regions_count_minus1());
-  for (std::size_t i = 0; i <= pin_regions_count_minus1(); ++i) {
+  for (size_t i = 0; i <= pin_regions_count_minus1(); ++i) {
     bitstream.putUint8(pin_region_tile_id(i));
     bitstream.writeBits(pin_region_type_id_minus2(i), 2);
     bitstream.putUint16(pin_region_top_left_x(i));
@@ -882,13 +882,13 @@ void PackingInformation::encodeTo(Common::OutputBitstream &bitstream) const {
   }
 }
 
-auto GroupMapping::gm_group_id(std::size_t i) const -> std::uint8_t {
+auto GroupMapping::gm_group_id(size_t i) const -> uint8_t {
   VERIFY_MIVBITSTREAM(0 < gm_group_count());
   VERIFY_MIVBITSTREAM(i < m_gm_group_id.size());
   return m_gm_group_id[i];
 }
 
-auto GroupMapping::gm_group_id(std::size_t i, std::uint8_t value) -> GroupMapping & {
+auto GroupMapping::gm_group_id(size_t i, uint8_t value) -> GroupMapping & {
   VERIFY_MIVBITSTREAM(value < gm_group_count());
   if (m_gm_group_id.size() <= i) {
     m_gm_group_id.resize(i + 1, UINT8_MAX);
@@ -900,7 +900,7 @@ auto GroupMapping::gm_group_id(std::size_t i, std::uint8_t value) -> GroupMappin
 auto operator<<(std::ostream &stream, const GroupMapping &x) -> std::ostream & {
   fmt::print(stream, "gm_group_count={}\n", x.gm_group_count());
   if (x.gm_group_count() > 0) {
-    for (std::size_t i = 0; i < x.m_gm_group_id.size(); ++i) {
+    for (size_t i = 0; i < x.m_gm_group_id.size(); ++i) {
       fmt::print(stream, "gm_group_id[ {} ]={}\n", i, x.gm_group_id(i));
     }
   }
@@ -920,7 +920,7 @@ auto GroupMapping::decodeFrom(Common::InputBitstream &bitstream, const V3cParame
   auto result = GroupMapping{};
   result.gm_group_count(bitstream.readBits<uint8_t>(4));
   if (result.gm_group_count() > 0) {
-    for (std::uint8_t i = 0; i <= vps.vps_atlas_count_minus1(); ++i) {
+    for (uint8_t i = 0; i <= vps.vps_atlas_count_minus1(); ++i) {
       result.gm_group_id(i, bitstream.getUVar<uint8_t>(result.gm_group_count()));
     }
   }
@@ -930,7 +930,7 @@ auto GroupMapping::decodeFrom(Common::InputBitstream &bitstream, const V3cParame
 void GroupMapping::encodeTo(Common::OutputBitstream &bitstream, const V3cParameterSet &vps) const {
   bitstream.writeBits(gm_group_count(), 4);
   if (gm_group_count() > 0) {
-    for (std::uint8_t i = 0; i <= vps.vps_atlas_count_minus1(); ++i) {
+    for (uint8_t i = 0; i <= vps.vps_atlas_count_minus1(); ++i) {
       bitstream.putUVar(gm_group_id(i), gm_group_count());
     }
   }
@@ -1182,8 +1182,7 @@ auto V3cParameterSet::vps_miv_extension(const VpsMivExtension &value) -> V3cPara
   return *this;
 }
 
-auto V3cParameterSet::vpsExtensionData(std::vector<std::uint8_t> value) noexcept
-    -> V3cParameterSet & {
+auto V3cParameterSet::vpsExtensionData(std::vector<uint8_t> value) noexcept -> V3cParameterSet & {
   PRECONDITION(vps_extension_6bits() != 0);
   PRECONDITION(!value.empty());
   m_vpsExtensionData = std::move(value);

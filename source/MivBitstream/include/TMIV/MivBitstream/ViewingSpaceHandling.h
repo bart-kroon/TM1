@@ -40,13 +40,13 @@
 
 namespace TMIV::MivBitstream {
 // 23090-12: Viewing space handling device classes
-enum class VhDeviceClass : std::uint8_t { VHDC_ALL, VHDC_HMD, VHDC_PHONE, VHDC_ASD };
+enum class VhDeviceClass : uint8_t { VHDC_ALL, VHDC_HMD, VHDC_PHONE, VHDC_ASD };
 
 // 23090-12: Viewing space handling application classes
-enum class VhApplicationClass : std::uint8_t { VHAC_ALL, VHAC_AR, VHAC_VR, VHAC_WEB, VHAC_SD };
+enum class VhApplicationClass : uint8_t { VHAC_ALL, VHAC_AR, VHAC_VR, VHAC_WEB, VHAC_SD };
 
 // 23090-12: Viewing space handling method
-enum class VhMethod : std::uint8_t {
+enum class VhMethod : uint8_t {
   VHM_NULL,
   VHM_RENDER,
   VHM_FADE,
@@ -76,7 +76,7 @@ public:
   ViewingSpaceHandling() = default;
   explicit ViewingSpaceHandling(HandlingOptionList);
 
-  [[nodiscard]] auto vs_handling_options_count() const noexcept -> std::size_t;
+  [[nodiscard]] auto vs_handling_options_count() const noexcept -> size_t;
   [[nodiscard]] auto vs_handling_device_class(size_t h) const -> VhDeviceClass;
   [[nodiscard]] auto vs_handling_application_class(size_t h) const -> VhApplicationClass;
   [[nodiscard]] auto vs_handling_method(size_t h) const -> VhMethod;

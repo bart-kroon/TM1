@@ -46,7 +46,7 @@
 
 class StatisticalVariable {
 public:
-  auto operator<<(std::size_t value) -> auto & {
+  auto operator<<(size_t value) -> auto & {
     ++m_count;
     m_sum += value;
     return *this;
@@ -59,8 +59,8 @@ public:
   }
 
 private:
-  std::size_t m_count{};
-  std::size_t m_sum{};
+  size_t m_count{};
+  size_t m_sum{};
 };
 
 struct CompareVuh {
@@ -140,12 +140,8 @@ public:
     }
   }
 
-  void add(const TMIV::MivBitstream::V3cUnitHeader &vuh, std::size_t size) {
-    m_vuhStats[vuh] << size;
-  }
-  auto add(const TMIV::MivBitstream::NalUnitHeader &nuh, std::size_t size) {
-    m_nuhStats[nuh] << size;
-  }
+  void add(const TMIV::MivBitstream::V3cUnitHeader &vuh, size_t size) { m_vuhStats[vuh] << size; }
+  auto add(const TMIV::MivBitstream::NalUnitHeader &nuh, size_t size) { m_nuhStats[nuh] << size; }
 
 private:
   std::map<TMIV::MivBitstream::V3cUnitHeader, StatisticalVariable, CompareVuh> m_vuhStats;
@@ -164,7 +160,7 @@ public:
     }
   }
 
-  void parseV3cUnit(std::istream &stream, std::size_t numBytesInV3CUnit) {
+  void parseV3cUnit(std::istream &stream, size_t numBytesInV3CUnit) {
     auto vu = TMIV::MivBitstream::V3cUnit::decodeFrom(stream, numBytesInV3CUnit);
     m_report.add(vu.v3c_unit_header(), numBytesInV3CUnit);
     std::visit([this](const auto &x) { parseV3cUnitPayload(x); }, vu.v3c_unit_payload().payload());

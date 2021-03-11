@@ -193,10 +193,10 @@ auto MivDecoder::decodeVideoSubBitstreams() -> bool {
     const auto j = m_au.vps.vps_atlas_id(k);
 
     if (m_au.vps.vps_occupancy_video_present_flag(j)) {
-      result[static_cast<std::size_t>(decodeOccVideo(k))] = true;
+      result[static_cast<size_t>(decodeOccVideo(k))] = true;
     }
     if (m_au.vps.vps_geometry_video_present_flag(j)) {
-      result[static_cast<std::size_t>(decodeGeoVideo(k))] = true;
+      result[static_cast<size_t>(decodeGeoVideo(k))] = true;
     }
 
     // Note(FT): test the type of attribute to decode : texture AND/OR transparency
@@ -205,11 +205,11 @@ auto MivDecoder::decodeVideoSubBitstreams() -> bool {
          attributeIndex++) {
       if (m_au.vps.attribute_information(j).ai_attribute_type_id(attributeIndex) ==
           MivBitstream::AiAttributeTypeId::ATTR_TEXTURE) {
-        result[static_cast<std::size_t>(decodeAttrTextureVideo(k))] = true;
+        result[static_cast<size_t>(decodeAttrTextureVideo(k))] = true;
       }
       if (m_au.vps.attribute_information(j).ai_attribute_type_id(attributeIndex) ==
           MivBitstream::AiAttributeTypeId::ATTR_TRANSPARENCY) {
-        result[static_cast<std::size_t>(decodeAttrTransparencyVideo(k))] = true;
+        result[static_cast<size_t>(decodeAttrTransparencyVideo(k))] = true;
       }
     }
   }
@@ -379,19 +379,18 @@ auto MivDecoder::decodeBlockToPatchMap(size_t k, const MivBitstream::PatchParams
   std::fill(btpm.getPlane(0).begin(), btpm.getPlane(0).end(), Common::unusedPatchId);
 
   // Then the AtlasBlockToPatchMap array is updated as follows:
-  for (std::size_t p = 0; p < ppl.size(); ++p) {
-    const std::size_t xOrg = ppl[p].atlasPatch2dPosX() / patchPackingBlockSize;
-    const std::size_t yOrg = ppl[p].atlasPatch2dPosY() / patchPackingBlockSize;
-    const std::size_t atlasPatchWidthBlk =
-        (ppl[p].atlasPatch2dSizeX() + offset) / patchPackingBlockSize;
-    const std::size_t atlasPatchHeightBlk =
+  for (size_t p = 0; p < ppl.size(); ++p) {
+    const size_t xOrg = ppl[p].atlasPatch2dPosX() / patchPackingBlockSize;
+    const size_t yOrg = ppl[p].atlasPatch2dPosY() / patchPackingBlockSize;
+    const size_t atlasPatchWidthBlk = (ppl[p].atlasPatch2dSizeX() + offset) / patchPackingBlockSize;
+    const size_t atlasPatchHeightBlk =
         (ppl[p].atlasPatch2dSizeY() + offset) / patchPackingBlockSize;
 
-    for (std::size_t y = 0; y < atlasPatchHeightBlk; ++y) {
-      for (std::size_t x = 0; x < atlasPatchWidthBlk; ++x) {
+    for (size_t y = 0; y < atlasPatchHeightBlk; ++y) {
+      for (size_t x = 0; x < atlasPatchWidthBlk; ++x) {
         if (!asps.asps_patch_precedence_order_flag() ||
             btpm.getPlane(0)(yOrg + y, xOrg + x) == Common::unusedPatchId) {
-          btpm.getPlane(0)(yOrg + y, xOrg + x) = static_cast<std::uint16_t>(p);
+          btpm.getPlane(0)(yOrg + y, xOrg + x) = static_cast<uint16_t>(p);
         }
       }
     }

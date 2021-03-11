@@ -242,7 +242,7 @@ private:
       auto offsetId = m_blockBuffer.size();
 
       m_blockBuffer.resize(
-          offsetId + static_cast<std::size_t>(nbBlock),
+          offsetId + static_cast<size_t>(nbBlock),
           std::make_tuple(patchAtlasId[idx], patchId[idx], 0, patchAverageDepth[idx]));
 
       for (auto blockId = 0; blockId < nbBlock; blockId++, offsetId++) {
@@ -282,8 +282,8 @@ private:
 
     POSTCONDITION(0.F < maxValue);
 
-    Common::Mat<float> transparencyMap({static_cast<std::size_t>(atlas.frameSize().y()),
-                                        static_cast<std::size_t>(atlas.frameSize().x())});
+    Common::Mat<float> transparencyMap(
+        {static_cast<size_t>(atlas.frameSize().y()), static_cast<size_t>(atlas.frameSize().x())});
     const auto &transparencyPlane = frame.atlas[idx].transparencyFrame.getPlane(0);
 
     std::transform(transparencyPlane.begin(), transparencyPlane.end(), transparencyMap.begin(),

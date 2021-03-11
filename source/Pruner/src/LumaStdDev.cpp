@@ -47,7 +47,7 @@ auto calculateCenterPosition(const MivBitstream::ViewParamsList &viewParamsList)
   Common::Vec3f minPos{viewParamsList[0].pose.position};
   Common::Vec3f maxPos{viewParamsList[0].pose.position};
 
-  for (std::size_t i = 1; i < viewParamsList.size(); ++i) {
+  for (size_t i = 1; i < viewParamsList.size(); ++i) {
 
     const Common::Vec3f currentPos{viewParamsList[i].pose.position};
 
@@ -68,7 +68,7 @@ auto getDistanceToPosition(const MivBitstream::ViewParams &viewParams,
                    differenceVector.z() * differenceVector.z());
 }
 
-auto findCentralBasicView(const MivBitstream::ViewParamsList &viewParamsList) -> std::size_t {
+auto findCentralBasicView(const MivBitstream::ViewParamsList &viewParamsList) -> size_t {
 
   const auto centerPos = calculateCenterPosition(viewParamsList);
 
@@ -83,7 +83,7 @@ auto findCentralBasicView(const MivBitstream::ViewParamsList &viewParamsList) ->
                          return false;
                        });
 
-  return static_cast<std::size_t>(
+  return static_cast<size_t>(
       std::abs(std::distance(std::cbegin(viewParamsList), viewClosestToCenter)));
 }
 
@@ -184,7 +184,7 @@ auto calculateLumaStdDev(const Common::MVD16Frame &views,
 
   const auto synthesizers = initSynthesizersForFrameAnalysis(views, viewParamsList, config);
 
-  const std::size_t refViewId = findCentralBasicView(viewParamsList);
+  const size_t refViewId = findCentralBasicView(viewParamsList);
   auto refView = views[refViewId];
 
   const auto masks = initMasksForFrameAnalysis(views, viewParamsList);

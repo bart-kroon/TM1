@@ -58,12 +58,12 @@ public:
   [[nodiscard]] constexpr auto caf_extension_7bits() const noexcept;
   [[nodiscard]] auto cafExtensionData() const -> const std::vector<bool> &;
 
-  constexpr auto caf_common_atlas_sequence_parameter_set_id(std::uint8_t value) noexcept -> auto &;
-  constexpr auto caf_common_atlas_frm_order_cnt_lsb(std::uint16_t value) noexcept -> auto &;
+  constexpr auto caf_common_atlas_sequence_parameter_set_id(uint8_t value) noexcept -> auto &;
+  constexpr auto caf_common_atlas_frm_order_cnt_lsb(uint16_t value) noexcept -> auto &;
   constexpr auto caf_extension_present_flag(bool value) noexcept -> auto &;
   constexpr auto caf_miv_extension_present_flag(bool value) noexcept -> auto &;
   auto caf_miv_extension() noexcept -> CommonAtlasFrameMivExtension &;
-  constexpr auto caf_extension_7bits(std::uint8_t value) noexcept -> CommonAtlasFrameRBSP &;
+  constexpr auto caf_extension_7bits(uint8_t value) noexcept -> CommonAtlasFrameRBSP &;
   auto cafExtensionData(std::vector<bool> value) noexcept -> CommonAtlasFrameRBSP &;
 
   friend auto operator<<(std::ostream &stream, const CommonAtlasFrameRBSP &x) -> std::ostream &;
@@ -80,12 +80,12 @@ public:
                 unsigned maxCommonAtlasFrmOrderCntLsb) const;
 
 private:
-  std::uint8_t m_caf_common_atlas_sequence_parameter_set_id{};
-  std::uint16_t m_caf_common_atlas_frm_order_cnt_lsb{};
+  uint8_t m_caf_common_atlas_sequence_parameter_set_id{};
+  uint16_t m_caf_common_atlas_frm_order_cnt_lsb{};
   bool m_caf_extension_present_flag{};
   std::optional<bool> m_caf_miv_extension_present_flag{};
   std::optional<CommonAtlasFrameMivExtension> m_caf_miv_extension{};
-  std::optional<std::uint8_t> m_caf_extension_7bits{};
+  std::optional<uint8_t> m_caf_extension_7bits{};
   std::optional<std::vector<bool>> m_cafExtensionData{};
 };
 } // namespace TMIV::MivBitstream

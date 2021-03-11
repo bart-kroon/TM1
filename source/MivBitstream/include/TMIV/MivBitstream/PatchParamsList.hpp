@@ -121,7 +121,7 @@ constexpr auto PatchParams::atlasPatch3dRangeD(std::int32_t value) noexcept -> P
   return *this;
 }
 
-constexpr auto PatchParams::atlasPatchProjectionId(std::uint16_t value) noexcept -> PatchParams & {
+constexpr auto PatchParams::atlasPatchProjectionId(uint16_t value) noexcept -> PatchParams & {
   m_atlasPatchProjectionId = value;
   return *this;
 }
@@ -148,7 +148,7 @@ constexpr auto PatchParams::atlasPatchEntityId(Common::SampleValue value) noexce
   return *this;
 }
 
-constexpr auto PatchParams::atlasPatchDepthOccMapThreshold(std::uint32_t value) noexcept
+constexpr auto PatchParams::atlasPatchDepthOccMapThreshold(uint32_t value) noexcept
     -> PatchParams & {
   m_atlasPatchDepthOccMapThreshold = value;
   return *this;

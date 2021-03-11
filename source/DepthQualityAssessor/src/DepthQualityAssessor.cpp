@@ -73,7 +73,7 @@ auto textureNeighbourhood(const MAT &m, const Common::Vec2f &p)
 auto isLowQuality(float blendingFactor, float maxOutlierRatio,
                   const std::vector<Common::Mat<Common::Vec3f>> &sourceUnprojectionList,
                   const Renderer::ProjectionHelper &firstHelper,
-                  const Common::Mat<float> &firstDepth, std::size_t secondId) -> bool {
+                  const Common::Mat<float> &firstDepth, size_t secondId) -> bool {
   const auto &secondUnprojection = sourceUnprojectionList[secondId];
   std::atomic<size_t> outliers = 0U;
 

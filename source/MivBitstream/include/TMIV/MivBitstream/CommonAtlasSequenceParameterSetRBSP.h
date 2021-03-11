@@ -85,14 +85,13 @@ public:
   [[nodiscard]] auto casps_miv_extension() const -> const CaspsMivExtension &;
   [[nodiscard]] auto caspsExtensionData() const -> const std::vector<bool> &;
 
-  constexpr auto casps_common_atlas_sequence_parameter_set_id(std::uint8_t value) noexcept
-      -> auto &;
-  constexpr auto casps_log2_max_common_atlas_frame_order_cnt_lsb_minus4(std::uint8_t value) noexcept
+  constexpr auto casps_common_atlas_sequence_parameter_set_id(uint8_t value) noexcept -> auto &;
+  constexpr auto casps_log2_max_common_atlas_frame_order_cnt_lsb_minus4(uint8_t value) noexcept
       -> auto &;
   constexpr auto casps_extension_present_flag(bool flag) noexcept -> auto &;
   auto casps_miv_extension_present_flag(bool flag) noexcept
       -> CommonAtlasSequenceParameterSetRBSP &;
-  auto casps_extension_7bits(std::uint8_t value) noexcept -> CommonAtlasSequenceParameterSetRBSP &;
+  auto casps_extension_7bits(uint8_t value) noexcept -> CommonAtlasSequenceParameterSetRBSP &;
   auto casps_miv_extension() -> CaspsMivExtension &;
   auto caspsExtensionData(std::vector<bool> value) -> CommonAtlasSequenceParameterSetRBSP &;
 
@@ -107,11 +106,11 @@ public:
   void encodeTo(std::ostream &stream) const;
 
 private:
-  std::uint8_t m_casps_common_atlas_sequence_parameter_set_id{};
-  std::uint8_t m_casps_log2_max_common_atlas_frame_order_cnt_lsb_minus4{};
+  uint8_t m_casps_common_atlas_sequence_parameter_set_id{};
+  uint8_t m_casps_log2_max_common_atlas_frame_order_cnt_lsb_minus4{};
   bool m_casps_extension_present_flag{};
   std::optional<bool> m_casps_miv_extension_present_flag{};
-  std::optional<std::uint8_t> m_casps_extension_7bits{};
+  std::optional<uint8_t> m_casps_extension_7bits{};
   std::optional<CaspsMivExtension> m_casps_miv_extension{};
   std::optional<std::vector<bool>> m_caspsExtensionData{};
 };

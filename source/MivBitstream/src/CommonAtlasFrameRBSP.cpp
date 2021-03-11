@@ -111,16 +111,15 @@ auto CommonAtlasFrameRBSP::decodeFrom(
 
   auto x = CommonAtlasFrameRBSP{};
 
-  x.caf_common_atlas_sequence_parameter_set_id(bitstream.readBits<std::uint8_t>(4));
+  x.caf_common_atlas_sequence_parameter_set_id(bitstream.readBits<uint8_t>(4));
   const auto &casps = caspsById(caspsV, x.caf_common_atlas_sequence_parameter_set_id());
 
-  x.caf_common_atlas_frm_order_cnt_lsb(
-      bitstream.getUVar<std::uint16_t>(maxCommonAtlasFrmOrderCntLsb));
+  x.caf_common_atlas_frm_order_cnt_lsb(bitstream.getUVar<uint16_t>(maxCommonAtlasFrmOrderCntLsb));
   x.caf_extension_present_flag(bitstream.getFlag());
 
   if (x.caf_extension_present_flag()) {
     x.caf_miv_extension_present_flag(bitstream.getFlag());
-    x.caf_extension_7bits(bitstream.readBits<std::uint8_t>(7));
+    x.caf_extension_7bits(bitstream.readBits<uint8_t>(7));
   }
   if (x.caf_miv_extension_present_flag()) {
     x.caf_miv_extension() = CommonAtlasFrameMivExtension::decodeFrom(bitstream, vps, nuh, casps);

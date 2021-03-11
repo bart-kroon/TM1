@@ -162,7 +162,7 @@ constexpr auto AspsMivExtension::asme_patch_attribute_offset_enabled_flag(bool v
   return *this;
 }
 
-constexpr auto AspsMivExtension::asme_max_entity_id(std::uint16_t value) noexcept -> auto & {
+constexpr auto AspsMivExtension::asme_max_entity_id(uint16_t value) noexcept -> auto & {
   m_asme_max_entity_id = value;
   return *this;
 }
@@ -353,15 +353,13 @@ constexpr auto AtlasSequenceParameterSetRBSP::asps_frame_height(const int32_t va
 }
 
 constexpr auto
-AtlasSequenceParameterSetRBSP::asps_geometry_3d_bit_depth_minus1(std::uint8_t value) noexcept
-    -> auto & {
+AtlasSequenceParameterSetRBSP::asps_geometry_3d_bit_depth_minus1(uint8_t value) noexcept -> auto & {
   m_asps_geometry_3d_bit_depth_minus1 = value;
   return *this;
 }
 
 constexpr auto
-AtlasSequenceParameterSetRBSP::asps_geometry_2d_bit_depth_minus1(std::uint8_t value) noexcept
-    -> auto & {
+AtlasSequenceParameterSetRBSP::asps_geometry_2d_bit_depth_minus1(uint8_t value) noexcept -> auto & {
   m_asps_geometry_2d_bit_depth_minus1 = value;
   return *this;
 }

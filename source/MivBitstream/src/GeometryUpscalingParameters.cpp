@@ -37,7 +37,7 @@ namespace TMIV::MivBitstream {
 namespace {
 constexpr float inferredErodeThreshold = 1.F;
 constexpr unsigned inferredDeltaThreshold = 10;
-constexpr std::uint8_t inferredMaxCurvature = 5;
+constexpr uint8_t inferredMaxCurvature = 5;
 } // namespace
 
 auto operator<<(std::ostream &stream, GupType x) -> std::ostream & {
@@ -57,7 +57,7 @@ auto GeometryUpscalingParameters::gup_delta_threshold() const noexcept -> unsign
   return gup_type() == GupType::HVR ? m_gup_delta_threshold : inferredDeltaThreshold;
 }
 
-auto GeometryUpscalingParameters::gup_max_curvature() const noexcept -> std::uint8_t {
+auto GeometryUpscalingParameters::gup_max_curvature() const noexcept -> uint8_t {
   return gup_type() == GupType::HVR ? m_gup_max_curvature : inferredMaxCurvature;
 }
 
@@ -81,7 +81,7 @@ auto GeometryUpscalingParameters::gup_delta_threshold(unsigned value) noexcept
   return *this;
 }
 
-auto GeometryUpscalingParameters::gup_max_curvature(std::uint8_t value) noexcept
+auto GeometryUpscalingParameters::gup_max_curvature(uint8_t value) noexcept
     -> GeometryUpscalingParameters & {
   PRECONDITION(gup_type() == GupType::HVR);
   m_gup_max_curvature = value;
@@ -123,7 +123,7 @@ auto GeometryUpscalingParameters::decodeFrom(Common::InputBitstream &bitstream)
   if (x.gup_type() == GupType::HVR) {
     x.gup_erode_threshold(bitstream.getFloat16());
     x.gup_delta_threshold(bitstream.getUExpGolomb<unsigned>());
-    x.gup_max_curvature(bitstream.readBits<std::uint8_t>(3));
+    x.gup_max_curvature(bitstream.readBits<uint8_t>(3));
   }
   return x;
 }

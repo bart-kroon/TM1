@@ -207,7 +207,7 @@ auto AspsMivExtension::decodeFrom(Common::InputBitstream &bitstream) -> AspsMivE
   if (x.asme_patch_attribute_offset_enabled_flag()) {
     x.asme_patch_attribute_offset_bit_depth_minus1(bitstream.getUExpGolomb<uint16_t>());
   }
-  x.asme_max_entity_id(bitstream.getUExpGolomb<std::uint16_t>());
+  x.asme_max_entity_id(bitstream.getUExpGolomb<uint16_t>());
   x.asme_inpaint_enabled_flag(bitstream.getFlag());
   return x;
 }

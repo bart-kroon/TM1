@@ -71,7 +71,7 @@ auto SparseDirectedAcyclicGraph<T>::getDescendingOrderId() const -> std::vector<
 
     for (NodeId nodeId = 0; nodeId < getNumberOfNodes(); nodeId++) {
       if (!hasBeenMarked[nodeId]) {
-        const auto numberOfMarkedParents = static_cast<std::size_t>(
+        const auto numberOfMarkedParents = static_cast<size_t>(
             std::count_if(getNeighbourhood(nodeId).cbegin(), getNeighbourhood(nodeId).cend(),
                           [&hasBeenMarked = std::as_const(hasBeenMarked)](const auto &node) {
                             return hasBeenMarked[node.id()];

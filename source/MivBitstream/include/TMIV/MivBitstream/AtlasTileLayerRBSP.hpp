@@ -74,21 +74,20 @@ constexpr auto AtlasTileHeader::ath_no_output_of_prior_atlas_frames_flag(bool va
   return *this;
 }
 
-constexpr auto AtlasTileHeader::ath_atlas_frame_parameter_set_id(const std::uint8_t value) noexcept
+constexpr auto AtlasTileHeader::ath_atlas_frame_parameter_set_id(const uint8_t value) noexcept
     -> auto & {
   VERIFY_MIVBITSTREAM(value <= 63U);
   m_ath_atlas_frame_parameter_set_id = value;
   return *this;
 }
 
-constexpr auto
-AtlasTileHeader::ath_atlas_adaptation_parameter_set_id(const std::uint8_t value) noexcept
+constexpr auto AtlasTileHeader::ath_atlas_adaptation_parameter_set_id(const uint8_t value) noexcept
     -> auto & {
   m_ath_adaptation_parameter_set_id = value;
   return *this;
 }
 
-constexpr auto AtlasTileHeader::ath_id(const std::uint8_t value) noexcept -> auto & {
+constexpr auto AtlasTileHeader::ath_id(const uint8_t value) noexcept -> auto & {
   m_ath_id = value;
   return *this;
 }
@@ -103,7 +102,7 @@ constexpr auto AtlasTileHeader::ath_atlas_output_flag(const bool value) noexcept
   return *this;
 }
 
-constexpr auto AtlasTileHeader::ath_atlas_frm_order_cnt_lsb(const std::uint16_t value) noexcept
+constexpr auto AtlasTileHeader::ath_atlas_frm_order_cnt_lsb(const uint16_t value) noexcept
     -> auto & {
   m_ath_atlas_frm_order_cnt_lsb = value;
   return *this;
@@ -115,13 +114,12 @@ constexpr auto AtlasTileHeader::ath_ref_atlas_frame_list_asps_flag(const bool va
   return *this;
 }
 
-constexpr auto AtlasTileHeader::ath_pos_min_d_quantizer(const std::uint8_t value) noexcept
-    -> auto & {
+constexpr auto AtlasTileHeader::ath_pos_min_d_quantizer(const uint8_t value) noexcept -> auto & {
   m_ath_pos_min_d_quantizer = value;
   return *this;
 }
 
-constexpr auto AtlasTileHeader::ath_pos_delta_max_d_quantizer(const std::uint8_t value) noexcept
+constexpr auto AtlasTileHeader::ath_pos_delta_max_d_quantizer(const uint8_t value) noexcept
     -> auto & {
   m_ath_pos_delta_max_d_quantizer = value;
   return *this;
@@ -234,32 +232,32 @@ inline auto PatchDataUnit::pdu_miv_extension() const noexcept -> PduMivExtension
   return m_pdu_miv_extension.value_or(PduMivExtension{});
 }
 
-constexpr auto PatchDataUnit::pdu_2d_pos_x(std::uint32_t value) noexcept -> auto & {
+constexpr auto PatchDataUnit::pdu_2d_pos_x(uint32_t value) noexcept -> auto & {
   m_pdu_2d_pos_x = value;
   return *this;
 }
 
-constexpr auto PatchDataUnit::pdu_2d_pos_y(std::uint32_t value) noexcept -> auto & {
+constexpr auto PatchDataUnit::pdu_2d_pos_y(uint32_t value) noexcept -> auto & {
   m_pdu_2d_pos_y = value;
   return *this;
 }
 
-constexpr auto PatchDataUnit::pdu_2d_size_x_minus1(std::uint32_t value) noexcept -> auto & {
+constexpr auto PatchDataUnit::pdu_2d_size_x_minus1(uint32_t value) noexcept -> auto & {
   m_pdu_2d_size_x_minus1 = value;
   return *this;
 }
 
-constexpr auto PatchDataUnit::pdu_2d_size_y_minus1(std::uint32_t value) noexcept -> auto & {
+constexpr auto PatchDataUnit::pdu_2d_size_y_minus1(uint32_t value) noexcept -> auto & {
   m_pdu_2d_size_y_minus1 = value;
   return *this;
 }
 
-constexpr auto PatchDataUnit::pdu_3d_offset_u(std::uint32_t value) noexcept -> auto & {
+constexpr auto PatchDataUnit::pdu_3d_offset_u(uint32_t value) noexcept -> auto & {
   m_pdu_3d_offset_u = value;
   return *this;
 }
 
-constexpr auto PatchDataUnit::pdu_3d_offset_v(std::uint32_t value) noexcept -> auto & {
+constexpr auto PatchDataUnit::pdu_3d_offset_v(uint32_t value) noexcept -> auto & {
   m_pdu_3d_offset_v = value;
   return *this;
 }
@@ -274,7 +272,7 @@ constexpr auto PatchDataUnit::pdu_3d_range_d(Common::SampleValue value) noexcept
   return *this;
 }
 
-constexpr auto PatchDataUnit::pdu_projection_id(std::uint16_t value) noexcept -> auto & {
+constexpr auto PatchDataUnit::pdu_projection_id(uint16_t value) noexcept -> auto & {
   m_pdu_view_id = value;
   return *this;
 }
@@ -336,7 +334,7 @@ constexpr auto PatchDataUnit::operator!=(const PatchDataUnit &other) const noexc
 constexpr auto PatchInformationData::data() const noexcept -> auto & { return m_data; }
 
 template <typename Visitor> void AtlasTileDataUnit::visit(Visitor &&visitor) const {
-  for (std::size_t p = 0; p < m_vector.size(); ++p) {
+  for (size_t p = 0; p < m_vector.size(); ++p) {
     visitor(p, m_vector[p].first, m_vector[p].second);
   }
 }

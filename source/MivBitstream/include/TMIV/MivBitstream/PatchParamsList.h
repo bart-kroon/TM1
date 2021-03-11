@@ -77,13 +77,13 @@ struct PatchParams {
   constexpr auto atlasPatch3dOffsetV(std::int32_t value) noexcept -> PatchParams &;
   constexpr auto atlasPatch3dOffsetD(std::int32_t value) noexcept -> PatchParams &;
   constexpr auto atlasPatch3dRangeD(std::int32_t value) noexcept -> PatchParams &;
-  constexpr auto atlasPatchProjectionId(std::uint16_t value) noexcept -> PatchParams &;
+  constexpr auto atlasPatchProjectionId(uint16_t value) noexcept -> PatchParams &;
   constexpr auto atlasPatchOrientationIndex(FlexiblePatchOrientation value) noexcept
       -> PatchParams &;
   constexpr auto atlasPatchLoDScaleX(std::int32_t value) noexcept -> PatchParams &;
   constexpr auto atlasPatchLoDScaleY(std::int32_t value) noexcept -> PatchParams &;
   constexpr auto atlasPatchEntityId(Common::SampleValue value) noexcept -> PatchParams &;
-  constexpr auto atlasPatchDepthOccMapThreshold(std::uint32_t value) noexcept -> PatchParams &;
+  constexpr auto atlasPatchDepthOccMapThreshold(uint32_t value) noexcept -> PatchParams &;
   auto atlasPatchAttributeOffset(Common::Vec3w value) noexcept -> PatchParams &;
   constexpr auto atlasPatchInpaintFlag(bool value) noexcept -> PatchParams &;
 
@@ -131,12 +131,12 @@ private:
   std::int32_t m_atlasPatch3dOffsetV{};
   std::int32_t m_atlasPatch3dOffsetD{};
   std::int32_t m_atlasPatch3dRangeD{};
-  std::uint16_t m_atlasPatchProjectionId{};
+  uint16_t m_atlasPatchProjectionId{};
   std::int32_t m_atlasPatchLoDScaleX{1};
   std::int32_t m_atlasPatchLoDScaleY{1};
   FlexiblePatchOrientation m_atlasPatchOrientationIndex{FlexiblePatchOrientation::FPO_INVALID};
   std::optional<Common::SampleValue> m_atlasPatchEntityId;
-  std::optional<std::uint32_t> m_atlasPatchDepthOccMapThreshold;
+  std::optional<uint32_t> m_atlasPatchDepthOccMapThreshold;
   std::optional<Common::Vec3w> m_atlasPatchAttributeOffset{};
   bool m_atlasPatchInpaintFlag{};
 };

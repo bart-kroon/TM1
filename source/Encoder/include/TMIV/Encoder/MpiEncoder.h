@@ -59,7 +59,7 @@ private:
   std::vector<Common::BlockToPatchMap> m_blockToPatchMapPerAtlas;
   std::unique_ptr<Packer::IPacker> m_packer;
   int m_blockSize{};
-  std::size_t m_maxLumaSamplesPerFrame{};
+  size_t m_maxLumaSamplesPerFrame{};
   MivBitstream::EncoderParams m_params;
 
 public:
@@ -74,7 +74,7 @@ public:
   auto processAccessUnit(int firstFrameId, int lastFrameId)
       -> const MivBitstream::EncoderParams & override;
   auto popAtlas() -> Common::MVD10Frame override;
-  [[nodiscard]] auto maxLumaSamplesPerFrame() const -> std::size_t override {
+  [[nodiscard]] auto maxLumaSamplesPerFrame() const -> size_t override {
     return m_maxLumaSamplesPerFrame;
   }
 
@@ -82,7 +82,7 @@ private:
   auto vuiParameters() const -> MivBitstream::VuiParameters;
   void setGiGeometry3dCoordinatesBitdepthMinus1();
   void prepareIvau();
-  auto log2FocLsbMinus4() const -> std::uint8_t;
+  auto log2FocLsbMinus4() const -> uint8_t;
   void incrementFoc();
 };
 

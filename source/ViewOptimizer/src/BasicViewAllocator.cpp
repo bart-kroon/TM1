@@ -122,8 +122,8 @@ auto BasicViewAllocator::basicViewCount() const -> size_t {
   return count;
 }
 
-auto BasicViewAllocator::lumaSamplesPerSourceViewSortedDesc() const -> std::vector<std::size_t> {
-  auto result = std::vector<std::size_t>{};
+auto BasicViewAllocator::lumaSamplesPerSourceViewSortedDesc() const -> std::vector<size_t> {
+  auto result = std::vector<size_t>{};
   result.reserve(params().viewParamsList.size());
   std::transform(params().viewParamsList.cbegin(), params().viewParamsList.cend(),
                  std::back_inserter(result), [](const MivBitstream::ViewParams &vp) {
@@ -141,7 +141,7 @@ auto BasicViewAllocator::viewPositions() const -> std::vector<Common::Vec3d> {
   return result;
 }
 
-auto BasicViewAllocator::forwardView(const Positions &pos) const -> std::size_t {
+auto BasicViewAllocator::forwardView(const Positions &pos) const -> size_t {
   const auto N = pos.size();
   auto result = std::vector<double>(N, 1.);
 
@@ -173,8 +173,8 @@ auto BasicViewAllocator::sqDistanceMatrix(const Positions &pos) -> Common::Mat<d
   return result;
 }
 
-auto BasicViewAllocator::selectInitialCentroids(const KMedoidsCost &cost, std::size_t first,
-                                                std::size_t k) -> Centroids {
+auto BasicViewAllocator::selectInitialCentroids(const KMedoidsCost &cost, size_t first, size_t k)
+    -> Centroids {
   auto result = Centroids{};
   result.reserve(cost.N());
   VERIFY(k <= cost.N());
@@ -183,7 +183,7 @@ auto BasicViewAllocator::selectInitialCentroids(const KMedoidsCost &cost, std::s
 
   while (result.size() < k) {
     auto lowestCost = std::numeric_limits<double>::infinity();
-    auto newCentroid = std::optional<std::size_t>{};
+    auto newCentroid = std::optional<size_t>{};
 
     for (size_t i = 0; i < cost.N(); ++i) {
       if (!Common::contains(result, i)) {

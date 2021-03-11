@@ -751,7 +751,7 @@ private:
   }
 
   auto retrieveCandidateList(const Common::Graph::SparseDirectedAcyclicGraph<float> &pruningGraph,
-                             std::size_t y, std::size_t x, std::size_t prunedNodeId, float zPruned)
+                             size_t y, size_t x, size_t prunedNodeId, float zPruned)
       -> std::vector<std::pair<Common::Graph::NodeId, float>> {
     auto nodeQueue = std::queue<Common::Graph::NodeId>{};
     auto candidateList = std::vector<std::pair<Common::Graph::NodeId, float>>{};
@@ -785,9 +785,9 @@ private:
   }
 
   auto findBestRepresentativeNode(
-      const ProjectionHelperList &sourceHelperList, const std::size_t y, const std::size_t x,
-      std::size_t prunedNodeId,
-      const std::vector<std::pair<Common::Graph::NodeId, float>> &candidateList) -> std::size_t {
+      const ProjectionHelperList &sourceHelperList, const size_t y, const size_t x,
+      size_t prunedNodeId,
+      const std::vector<std::pair<Common::Graph::NodeId, float>> &candidateList) -> size_t {
 
     const auto &prunedHelper = sourceHelperList[prunedNodeId];
     const auto w_last = static_cast<int>(m_sourceDepth[prunedNodeId].width()) - 1;
@@ -1066,7 +1066,7 @@ private:
     return {oColor, oWeight};
   }
 
-  void incrementColorAndWeight(const Common::Vec2f &element, std::size_t sourceId,
+  void incrementColorAndWeight(const Common::Vec2f &element, size_t sourceId,
                                const std::pair<Common::Vec2f, float> &pn2,
                                const ProjectionHelperList &sourceHelperList, Common::Vec3f &oColor,
                                float &oWeight) const {

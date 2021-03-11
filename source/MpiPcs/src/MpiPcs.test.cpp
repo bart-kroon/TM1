@@ -96,7 +96,7 @@ TEST_CASE("MpiPcs writer and reader") {
     for (std::streamoff idx = 0; idx < expected_number_of_bytes; idx++) {
       std::array<char, 1> n{};
       ss.read(n.data(), n.size());
-      ss2 << fmt::format("{:02X}", std::uint8_t(n[0]));
+      ss2 << fmt::format("{:02X}", uint8_t(n[0]));
     }
     REQUIRE(ss2.str() == expected_string);
 
@@ -112,7 +112,7 @@ TEST_CASE("MpiPcs writer and reader") {
     for (std::streamoff idx = 0; idx < expected_number_of_bytes; idx++) {
       std::array<char, 1> n{};
       ss.read(n.data(), n.size());
-      ss3 << fmt::format("{:02X}", std::uint8_t(n[0]));
+      ss3 << fmt::format("{:02X}", uint8_t(n[0]));
     }
     REQUIRE(ss3.str() == expected_string);
   }

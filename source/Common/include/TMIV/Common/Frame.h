@@ -204,11 +204,11 @@ auto quantizeTexture(const Mat<Vec3f> &in) -> Frame<YUV444P10>;
 
 namespace MpiPcs {
 struct Attribute {
-  using Count = std::uint16_t;
+  using Count = uint16_t;
 
-  using Texture = std::array<std::uint16_t, 3>;
-  using Geometry = std::uint16_t;
-  using Transparency = std::uint8_t;
+  using Texture = std::array<uint16_t, 3>;
+  using Geometry = uint16_t;
+  using Transparency = uint8_t;
 
   static constexpr auto attributeSize = 9;
   static_assert(attributeSize == sizeof(Texture) + sizeof(Geometry) + sizeof(Transparency));
@@ -232,7 +232,7 @@ public:
 
   Frame() = default;
   Frame(const Vec2i &size)
-      : m_size{size}, m_pixelList{static_cast<std::size_t>(m_size.x() * m_size.y())} {}
+      : m_size{size}, m_pixelList{static_cast<size_t>(m_size.x() * m_size.y())} {}
   Frame(const Vec2i &size, std::vector<Pixel> pixelList)
       : m_size{size}, m_pixelList{std::move(pixelList)} {}
   auto operator==(const Frame &other) const noexcept -> bool;

@@ -109,20 +109,19 @@ public:
   [[nodiscard]] auto afps_miv_extension() const -> AfpsMivExtension;
   [[nodiscard]] auto afpsExtensionData() const -> const std::vector<bool> &;
 
-  constexpr auto afps_atlas_frame_parameter_set_id(const std::uint8_t value) noexcept -> auto &;
-  constexpr auto afps_atlas_sequence_parameter_set_id(const std::uint8_t value) noexcept -> auto &;
+  constexpr auto afps_atlas_frame_parameter_set_id(const uint8_t value) noexcept -> auto &;
+  constexpr auto afps_atlas_sequence_parameter_set_id(const uint8_t value) noexcept -> auto &;
   constexpr auto atlas_frame_tile_information(const AtlasFrameTileInformation &value) noexcept
       -> auto &;
   constexpr auto afps_output_flag_present_flag(const bool value) noexcept -> auto &;
-  constexpr auto afps_num_ref_idx_default_active_minus1(const std::uint8_t value) noexcept
-      -> auto &;
-  constexpr auto afps_additional_lt_afoc_lsb_len(const std::uint8_t value) noexcept -> auto &;
+  constexpr auto afps_num_ref_idx_default_active_minus1(const uint8_t value) noexcept -> auto &;
+  constexpr auto afps_additional_lt_afoc_lsb_len(const uint8_t value) noexcept -> auto &;
   constexpr auto afps_lod_mode_enabled_flag(const bool value) noexcept -> auto &;
   constexpr auto afps_raw_3d_offset_bit_count_explicit_mode_flag(const bool value) noexcept
       -> auto &;
   constexpr auto afps_extension_present_flag(const bool value) noexcept -> auto &;
   auto afps_miv_extension_present_flag(bool value) noexcept -> AtlasFrameParameterSetRBSP &;
-  auto afps_extension_7bits(std::uint8_t value) noexcept -> AtlasFrameParameterSetRBSP &;
+  auto afps_extension_7bits(uint8_t value) noexcept -> AtlasFrameParameterSetRBSP &;
   [[nodiscard]] auto afps_miv_extension() noexcept -> AfpsMivExtension &;
   auto afpsExtensionData(std::vector<bool> value) noexcept -> AtlasFrameParameterSetRBSP &;
 
@@ -140,17 +139,17 @@ public:
                 const std::vector<AtlasSequenceParameterSetRBSP> &aspsV) const;
 
 private:
-  std::uint8_t m_afps_atlas_frame_parameter_set_id{};
-  std::uint8_t m_afps_atlas_sequence_parameter_set_id{};
+  uint8_t m_afps_atlas_frame_parameter_set_id{};
+  uint8_t m_afps_atlas_sequence_parameter_set_id{};
   AtlasFrameTileInformation m_atlas_frame_tile_information;
   bool m_afps_output_flag_present_flag{};
-  std::uint8_t m_afps_num_ref_idx_default_active_minus1{};
-  std::uint8_t m_afps_additional_lt_afoc_lsb_len{};
+  uint8_t m_afps_num_ref_idx_default_active_minus1{};
+  uint8_t m_afps_additional_lt_afoc_lsb_len{};
   bool m_afps_lod_enabled_flag{};
   bool m_afps_raw_3d_offset_bit_count_explicit_mode_flag{};
   bool m_afps_extension_present_flag{};
   std::optional<bool> m_afps_miv_extension_present_flag{};
-  std::optional<std::uint8_t> m_afps_extension_7bits{};
+  std::optional<uint8_t> m_afps_extension_7bits{};
   std::optional<AfpsMivExtension> m_afme;
   std::optional<std::vector<bool>> m_afpsExtensionData;
 };

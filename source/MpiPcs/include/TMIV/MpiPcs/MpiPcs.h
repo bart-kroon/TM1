@@ -58,7 +58,7 @@ public:
 private:
   std::filesystem::path m_path{};
   Common::Vec2i m_size{};
-  std::vector<std::size_t> m_index{};
+  std::vector<size_t> m_index{};
   int32_t m_startFrame{};
   void buildIndex();
 };

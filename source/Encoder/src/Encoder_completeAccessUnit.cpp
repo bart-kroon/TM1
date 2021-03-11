@@ -173,7 +173,7 @@ void Encoder::updateAggregationStatistics(const Common::MaskList &aggregatedMask
 void Encoder::calculateAttributeOffset(
     std::vector<std::array<std::array<int64_t, 4>, 3>> patchAttrOffsetValuesFullGOP) {
 
-  for (std::uint8_t k = 0; k <= m_params.vps.vps_atlas_count_minus1(); ++k) {
+  for (uint8_t k = 0; k <= m_params.vps.vps_atlas_count_minus1(); ++k) {
     auto &asme = m_params.atlas[k].asme();
     asme.asme_patch_attribute_offset_enabled_flag(m_config.attributeOffsetFlag);
     if (!m_config.attributeOffsetFlag) {
@@ -190,7 +190,7 @@ void Encoder::calculateAttributeOffset(
   adaptBtpmToPatchCount(btpm);
 
   for (auto &videoFrame : m_videoFrameBuffer) {
-    for (std::uint8_t k = 0; k <= m_params.vps.vps_atlas_count_minus1(); ++k) {
+    for (uint8_t k = 0; k <= m_params.vps.vps_atlas_count_minus1(); ++k) {
       auto &atlas = videoFrame[k];
 
       for (int y = 0; y < atlas.texture.getHeight(); ++y) {

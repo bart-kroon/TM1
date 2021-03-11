@@ -40,7 +40,7 @@
 #include <string>
 
 namespace TMIV::MivBitstream {
-enum class NalUnitType : std::uint8_t {
+enum class NalUnitType : uint8_t {
   NAL_TRAIL_N,
   NAL_TRAIL_R,
   NAL_TSA_N,
@@ -127,8 +127,8 @@ public:
 
 private:
   NalUnitType m_nal_unit_type;
-  std::uint8_t m_nal_layer_id{};
-  std::uint8_t m_nal_temporal_id_plus1{};
+  uint8_t m_nal_layer_id{};
+  uint8_t m_nal_temporal_id_plus1{};
 };
 
 // 23090-5: nal_unit(NumBytesInNalUnit)
@@ -154,10 +154,10 @@ public:
     return !operator==(other);
   }
 
-  static auto decodeFrom(std::istream &stream, std::size_t numBytesInNalUnit) -> NalUnit;
+  static auto decodeFrom(std::istream &stream, size_t numBytesInNalUnit) -> NalUnit;
 
   // Returns the size of the NAL unit in bytes w/o zero byte padding
-  auto encodeTo(std::ostream &stream) const -> std::size_t;
+  auto encodeTo(std::ostream &stream) const -> size_t;
 
 private:
   NalUnitHeader m_nal_unit_header;

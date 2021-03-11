@@ -62,17 +62,17 @@ static auto equalRotation(const Common::QuatF &a, const Common::QuatF &b) -> boo
   return d > 0.9999F;
 }
 
-auto ViewingSpace::vs_num_elementary_shapes_minus1() const -> std::size_t {
+auto ViewingSpace::vs_num_elementary_shapes_minus1() const -> size_t {
   VERIFY_MIVBITSTREAM(!elementaryShapes.empty());
   return elementaryShapes.size() - 1U;
 }
 
-auto ViewingSpace::vs_elementary_shape_operation(std::size_t e) const -> ElementaryShapeOperation {
+auto ViewingSpace::vs_elementary_shape_operation(size_t e) const -> ElementaryShapeOperation {
   VERIFY_MIVBITSTREAM(e <= vs_num_elementary_shapes_minus1());
   return elementaryShapes[e].elementary_shape_operation;
 }
 
-auto ViewingSpace::elementary_shape(std::size_t e) const -> ElementaryShape {
+auto ViewingSpace::elementary_shape(size_t e) const -> ElementaryShape {
   VERIFY_MIVBITSTREAM(e <= vs_num_elementary_shapes_minus1());
   return elementaryShapes[e].elementary_shape;
 }
@@ -122,8 +122,8 @@ auto operator<<(std::ostream &stream, const ElementaryShape &elementaryShape) ->
   return stream;
 }
 
-auto ElementaryShape::es_num_primitive_shapes_minus1() const noexcept -> std::uint8_t {
-  return static_cast<std::uint8_t>(primitives.size() - 1U);
+auto ElementaryShape::es_num_primitive_shapes_minus1() const noexcept -> uint8_t {
+  return static_cast<uint8_t>(primitives.size() - 1U);
 }
 
 constexpr auto ElementaryShape::es_primitive_shape_operation() const noexcept
@@ -234,7 +234,7 @@ auto ElementaryShape::decodeFrom(Common::InputBitstream &stream) -> ElementarySh
   const auto directionConstraintPresent = stream.getFlag();
   const auto cameraInferred = stream.getFlag();
   elementaryShape.primitives.reserve(numPrimitives);
-  for (std::size_t i = 0; i < numPrimitives; ++i) {
+  for (size_t i = 0; i < numPrimitives; ++i) {
     TMIV::Common::Vec3f c{};
     if (cameraInferred) {
       elementaryShape.inferringViews.push_back(static_cast<int>(stream.getUint16()));
@@ -290,7 +290,7 @@ void ElementaryShape::encodeTo(Common::OutputBitstream &stream) const {
   for (int s = 0; s <= es_num_primitive_shapes_minus1(); s++) {
     const auto &p = primitives[static_cast<PrimitiveShapeVector::size_type>(s)];
     if (es_camera_inferred_flag()) {
-      stream.putUint16(static_cast<std::uint16_t>(es_view_idx(s)));
+      stream.putUint16(static_cast<uint16_t>(es_view_idx(s)));
     }
     stream.writeBits(es_primitive_shape_type(s), 2);
     visit([&](const auto &x) { x.encodeTo(stream, es_camera_inferred_flag()); }, p.primitive);

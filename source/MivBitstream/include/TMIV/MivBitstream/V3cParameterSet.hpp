@@ -122,19 +122,18 @@ constexpr auto OccupancyInformation::oi_occupancy_MSB_align_flag() const noexcep
   return m_oi_occupancy_MSB_align_flag;
 }
 
-constexpr auto OccupancyInformation::oi_occupancy_codec_id(std::uint8_t value) noexcept -> auto & {
+constexpr auto OccupancyInformation::oi_occupancy_codec_id(uint8_t value) noexcept -> auto & {
   m_oi_occupancy_codec_id = value;
   return *this;
 }
 
 constexpr auto
-OccupancyInformation::oi_lossy_occupancy_compression_threshold(std::uint8_t value) noexcept
-    -> auto & {
+OccupancyInformation::oi_lossy_occupancy_compression_threshold(uint8_t value) noexcept -> auto & {
   m_oi_lossy_occupancy_compression_threshold = value;
   return *this;
 }
 
-constexpr auto OccupancyInformation::oi_occupancy_2d_bit_depth_minus1(std::uint8_t value) noexcept
+constexpr auto OccupancyInformation::oi_occupancy_2d_bit_depth_minus1(uint8_t value) noexcept
     -> auto & {
   m_oi_occupancy_2d_bit_depth_minus1 = value;
   return *this;
@@ -161,12 +160,12 @@ constexpr auto GeometryInformation::gi_geometry_3d_coordinates_bit_depth_minus1(
   return m_gi_geometry_3d_coordinates_bit_depth_minus1;
 }
 
-constexpr auto GeometryInformation::gi_geometry_codec_id(std::uint8_t value) noexcept -> auto & {
+constexpr auto GeometryInformation::gi_geometry_codec_id(uint8_t value) noexcept -> auto & {
   m_gi_geometry_codec_id = value;
   return *this;
 }
 
-constexpr auto GeometryInformation::gi_geometry_2d_bit_depth_minus1(std::uint8_t value) noexcept
+constexpr auto GeometryInformation::gi_geometry_2d_bit_depth_minus1(uint8_t value) noexcept
     -> auto & {
   m_gi_geometry_2d_bit_depth_minus1 = value;
   return *this;
@@ -178,8 +177,7 @@ constexpr auto GeometryInformation::gi_geometry_MSB_align_flag(bool value) noexc
 }
 
 constexpr auto
-GeometryInformation::gi_geometry_3d_coordinates_bit_depth_minus1(std::uint8_t value) noexcept
-    -> auto & {
+GeometryInformation::gi_geometry_3d_coordinates_bit_depth_minus1(uint8_t value) noexcept -> auto & {
   m_gi_geometry_3d_coordinates_bit_depth_minus1 = value;
   return *this;
 }
@@ -252,15 +250,13 @@ constexpr auto ProfileToolsetConstraintsInformation::ptc_eom_constraint_flag(boo
 }
 
 constexpr auto
-ProfileToolsetConstraintsInformation::ptc_max_map_count_minus1(std::uint8_t value) noexcept
-    -> auto & {
+ProfileToolsetConstraintsInformation::ptc_max_map_count_minus1(uint8_t value) noexcept -> auto & {
   m_ptc_max_map_count_minus1 = value;
   return *this;
 }
 
 constexpr auto
-ProfileToolsetConstraintsInformation::ptc_max_atlas_count_minus1(std::uint8_t value) noexcept
-    -> auto & {
+ProfileToolsetConstraintsInformation::ptc_max_atlas_count_minus1(uint8_t value) noexcept -> auto & {
   m_ptc_max_atlas_count_minus1 = value;
   return *this;
 }
@@ -278,14 +274,15 @@ constexpr auto ProfileToolsetConstraintsInformation::ptc_plr_constraint_flag(boo
   return *this;
 }
 
-constexpr auto ProfileToolsetConstraintsInformation::ptc_attribute_max_dimension_minus1(
-    std::uint8_t value) noexcept -> auto & {
+constexpr auto
+ProfileToolsetConstraintsInformation::ptc_attribute_max_dimension_minus1(uint8_t value) noexcept
+    -> auto & {
   m_ptc_attribute_max_dimension_minus1 = value;
   return *this;
 }
 
 constexpr auto ProfileToolsetConstraintsInformation::ptc_attribute_max_dimension_partitions_minus1(
-    std::uint8_t value) noexcept -> auto & {
+    uint8_t value) noexcept -> auto & {
   m_ptc_attribute_max_dimension_partitions_minus1 = value;
   return *this;
 }
@@ -311,124 +308,113 @@ ProfileToolsetConstraintsInformation::ptc_restricted_geometry_flag(bool value) n
 }
 
 constexpr auto
-ProfileToolsetConstraintsInformation::ptc_num_reserved_constraint_bytes(std::uint8_t value) noexcept
+ProfileToolsetConstraintsInformation::ptc_num_reserved_constraint_bytes(uint8_t value) noexcept
     -> auto & {
   m_ptc_num_reserved_constraint_bytes = value;
   return *this;
 }
 
-constexpr auto PackingInformation::pin_codec_id(std::uint8_t value) noexcept -> auto & {
+constexpr auto PackingInformation::pin_codec_id(uint8_t value) noexcept -> auto & {
   m_pin_codec_id = value;
   return *this;
 }
 
-inline auto PackingInformation::pin_regions_count_minus1(std::size_t value) -> auto & {
+inline auto PackingInformation::pin_regions_count_minus1(size_t value) -> auto & {
   m_pinRegions = std::vector<PinRegion>(value + 1U);
   return *this;
 }
 
-inline auto PackingInformation::pin_region_tile_id(std::size_t i, std::uint8_t value) -> auto & {
+inline auto PackingInformation::pin_region_tile_id(size_t i, uint8_t value) -> auto & {
   VERIFY_V3CBITSTREAM(i <= pin_regions_count_minus1());
   m_pinRegions[i].pin_region_tile_id = value;
   return *this;
 }
 
-inline auto PackingInformation::pin_region_type_id_minus2(std::size_t i, std::uint8_t value)
-    -> auto & {
+inline auto PackingInformation::pin_region_type_id_minus2(size_t i, uint8_t value) -> auto & {
   VERIFY_V3CBITSTREAM(i <= pin_regions_count_minus1());
   m_pinRegions[i].pin_region_type_id_minus2 = value;
   return *this;
 }
 
-inline auto PackingInformation::pinRegionTypeId(std::size_t i, VuhUnitType value) -> auto & {
+inline auto PackingInformation::pinRegionTypeId(size_t i, VuhUnitType value) -> auto & {
   VERIFY_V3CBITSTREAM(value != VuhUnitType::V3C_VPS && value != VuhUnitType::V3C_AD);
   return pin_region_type_id_minus2(i, Common::assertDownCast<uint8_t>(static_cast<int>(value) - 2));
 }
 
-inline auto PackingInformation::pin_region_top_left_x(std::size_t i, std::uint16_t value)
-    -> auto & {
+inline auto PackingInformation::pin_region_top_left_x(size_t i, uint16_t value) -> auto & {
   VERIFY_V3CBITSTREAM(i <= pin_regions_count_minus1());
   m_pinRegions[i].pin_region_top_left_x = value;
   return *this;
 }
 
-inline auto PackingInformation::pin_region_top_left_y(std::size_t i, std::uint16_t value)
-    -> auto & {
+inline auto PackingInformation::pin_region_top_left_y(size_t i, uint16_t value) -> auto & {
   VERIFY_V3CBITSTREAM(i <= pin_regions_count_minus1());
   m_pinRegions[i].pin_region_top_left_y = value;
   return *this;
 }
 
-inline auto PackingInformation::pin_region_width_minus1(std::size_t i, std::uint16_t value)
-    -> auto & {
+inline auto PackingInformation::pin_region_width_minus1(size_t i, uint16_t value) -> auto & {
   VERIFY_V3CBITSTREAM(i <= pin_regions_count_minus1());
   m_pinRegions[i].pin_region_width_minus1 = value;
   return *this;
 }
 
-inline auto PackingInformation::pin_region_height_minus1(std::size_t i, std::uint16_t value)
-    -> auto & {
+inline auto PackingInformation::pin_region_height_minus1(size_t i, uint16_t value) -> auto & {
   VERIFY_V3CBITSTREAM(i <= pin_regions_count_minus1());
   m_pinRegions[i].pin_region_height_minus1 = value;
   return *this;
 }
 
-inline auto PackingInformation::pin_region_unpack_top_left_x(std::size_t i, std::uint16_t value)
-    -> auto & {
+inline auto PackingInformation::pin_region_unpack_top_left_x(size_t i, uint16_t value) -> auto & {
   VERIFY_V3CBITSTREAM(i <= pin_regions_count_minus1());
   m_pinRegions[i].pin_region_unpack_top_left_x = value;
   return *this;
 }
 
-inline auto PackingInformation::pin_region_unpack_top_left_y(std::size_t i, std::uint16_t value)
-    -> auto & {
+inline auto PackingInformation::pin_region_unpack_top_left_y(size_t i, uint16_t value) -> auto & {
   VERIFY_V3CBITSTREAM(i <= pin_regions_count_minus1());
   m_pinRegions[i].pin_region_unpack_top_left_y = value;
   return *this;
 }
 
-inline auto PackingInformation::pin_region_map_index(std::size_t i, std::uint8_t value) -> auto & {
+inline auto PackingInformation::pin_region_map_index(size_t i, uint8_t value) -> auto & {
   VERIFY_V3CBITSTREAM(i <= pin_regions_count_minus1());
   m_pinRegions[i].pin_region_map_index = value;
   return *this;
 }
 
-inline auto PackingInformation::pin_region_rotation_flag(std::size_t i, bool value) -> auto & {
+inline auto PackingInformation::pin_region_rotation_flag(size_t i, bool value) -> auto & {
   VERIFY_V3CBITSTREAM(i <= pin_regions_count_minus1());
   m_pinRegions[i].pin_region_rotation_flag = value;
   return *this;
 }
 
-inline auto PackingInformation::pin_region_auxiliary_data_flag(std::size_t i, bool value)
-    -> auto & {
+inline auto PackingInformation::pin_region_auxiliary_data_flag(size_t i, bool value) -> auto & {
   VERIFY_V3CBITSTREAM(i <= pin_regions_count_minus1());
   m_pinRegions[i].pin_region_auxiliary_data_flag = value;
   return *this;
 }
 
-inline auto PackingInformation::pin_region_attr_type_id(std::size_t i, std::uint8_t value)
-    -> auto & {
+inline auto PackingInformation::pin_region_attr_type_id(size_t i, uint8_t value) -> auto & {
   VERIFY_V3CBITSTREAM(i <= pin_regions_count_minus1());
   VERIFY_V3CBITSTREAM(value <= 4);
   m_pinRegions[i].pin_region_attr_type_id = value;
   return *this;
 }
 
-inline auto PackingInformation::pin_region_attr_partitions_flag(std::size_t i, bool value)
-    -> auto & {
+inline auto PackingInformation::pin_region_attr_partitions_flag(size_t i, bool value) -> auto & {
   VERIFY_V3CBITSTREAM(i <= pin_regions_count_minus1());
   m_pinRegions[i].pin_region_attr_partitions_flag = value;
   return *this;
 }
 
-inline auto PackingInformation::pin_region_attr_partition_index(std::size_t i, std::uint8_t value)
-    -> auto & {
+inline auto PackingInformation::pin_region_attr_partition_index(size_t i, uint8_t value) -> auto & {
   VERIFY_V3CBITSTREAM(i <= pin_regions_count_minus1());
   m_pinRegions[i].pin_region_attr_partition_index = value;
   return *this;
 }
 
-inline auto PackingInformation::pin_region_attr_partitions_minus1(std::size_t i, std::uint8_t value)
+inline auto PackingInformation::pin_region_attr_partitions_minus1(size_t i, uint8_t value)
     -> auto & {
   VERIFY_V3CBITSTREAM(i <= pin_regions_count_minus1());
   m_pinRegions[i].pin_region_attr_partitions_minus1 = value;
@@ -437,7 +423,7 @@ inline auto PackingInformation::pin_region_attr_partitions_minus1(std::size_t i,
 
 constexpr auto GroupMapping::gm_group_count() const noexcept { return m_gm_group_count; }
 
-constexpr auto GroupMapping::gm_group_count(std::uint8_t value) noexcept -> auto & {
+constexpr auto GroupMapping::gm_group_count(uint8_t value) noexcept -> auto & {
   m_gm_group_count = value;
   return *this;
 }
@@ -505,7 +491,7 @@ constexpr auto V3cParameterSet::vps_extension_6bits() const noexcept {
   return m_vps_extension_7bits.value_or(0);
 }
 
-constexpr auto V3cParameterSet::vps_v3c_parameter_set_id(std::uint8_t value) noexcept -> auto & {
+constexpr auto V3cParameterSet::vps_v3c_parameter_set_id(uint8_t value) noexcept -> auto & {
   m_vps_v3c_parameter_set_id = value;
   return *this;
 }

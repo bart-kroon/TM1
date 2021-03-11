@@ -36,42 +36,40 @@
 #include <fmt/ostream.h>
 
 namespace TMIV::MivBitstream {
-auto PackedIndependentRegions::pir_num_packed_frames_minus1() const -> std::uint8_t {
+auto PackedIndependentRegions::pir_num_packed_frames_minus1() const -> uint8_t {
   VERIFY_V3CBITSTREAM(!m_pirPackedFrames.empty());
-  return static_cast<std::uint8_t>(m_pirPackedFrames.size() - 1U);
+  return static_cast<uint8_t>(m_pirPackedFrames.size() - 1U);
 }
-auto PackedIndependentRegions::pir_packed_frame_id(std::uint8_t j) const -> std::uint8_t {
+auto PackedIndependentRegions::pir_packed_frame_id(uint8_t j) const -> uint8_t {
   VERIFY_V3CBITSTREAM(j <= pir_num_packed_frames_minus1());
   return m_pirPackedFrames[j].pir_packed_frame_id;
 }
-auto PackedIndependentRegions::pir_description_type_idc(std::uint8_t k) const -> std::uint8_t {
+auto PackedIndependentRegions::pir_description_type_idc(uint8_t k) const -> uint8_t {
   VERIFY_V3CBITSTREAM(k <= pir_num_packed_frames_minus1());
   if (std::holds_alternative<TileRegions>(m_pirPackedFrames[k].regions)) {
     return 0U;
   }
   return 1U;
 }
-auto PackedIndependentRegions::pir_num_regions_minus1(std::uint8_t k) const -> std::uint8_t {
+auto PackedIndependentRegions::pir_num_regions_minus1(uint8_t k) const -> uint8_t {
   VERIFY_V3CBITSTREAM(k <= pir_num_packed_frames_minus1());
-  return static_cast<std::uint8_t>(
+  return static_cast<uint8_t>(
       std::visit([](const auto &regions) { return regions.size(); }, m_pirPackedFrames[k].regions) -
       1);
 }
-auto PackedIndependentRegions::pir_top_left_tile_idx(std::uint8_t k, std::uint8_t i) const
-    -> std::size_t {
+auto PackedIndependentRegions::pir_top_left_tile_idx(uint8_t k, uint8_t i) const -> size_t {
   VERIFY_V3CBITSTREAM(k <= pir_num_packed_frames_minus1() && pir_description_type_idc(k) == 0 &&
                       i <= pir_num_regions_minus1(k));
   const auto &tileRegions = std::get<TileRegions>(m_pirPackedFrames[k].regions);
   return tileRegions[i].pir_top_left_tile_idx;
 }
-auto PackedIndependentRegions::pir_bottom_right_tile_idx(std::uint8_t k, std::uint8_t i) const
-    -> std::size_t {
+auto PackedIndependentRegions::pir_bottom_right_tile_idx(uint8_t k, uint8_t i) const -> size_t {
   VERIFY_V3CBITSTREAM(k <= pir_num_packed_frames_minus1() && pir_description_type_idc(k) == 0 &&
                       i <= pir_num_regions_minus1(k));
   const auto &tileRegions = std::get<TileRegions>(m_pirPackedFrames[k].regions);
   return tileRegions[i].pir_bottom_right_tile_idx;
 }
-auto PackedIndependentRegions::pir_subpic_id(std::uint8_t k, std::uint8_t i) const -> std::size_t {
+auto PackedIndependentRegions::pir_subpic_id(uint8_t k, uint8_t i) const -> size_t {
   VERIFY_V3CBITSTREAM(k <= pir_num_packed_frames_minus1() && pir_description_type_idc(k) == 1 &&
                       i <= pir_num_regions_minus1(k));
   const auto &subPicId = std::get<subPicIds>(m_pirPackedFrames[k].regions);
@@ -85,7 +83,7 @@ auto operator<<(std::ostream &stream, const PackedIndependentRegions &x) -> std:
     const auto k = x.pir_packed_frame_id(j);
     fmt::print(stream, "pir_description_type_idc[ {} ]={}\n", k, x.pir_description_type_idc(k));
     fmt::print(stream, "pir_num_regions_minus1[ {} ]={}\n", k, x.pir_num_regions_minus1(k));
-    for (std::uint8_t i = 0; i <= x.pir_num_regions_minus1(k); ++i) {
+    for (uint8_t i = 0; i <= x.pir_num_regions_minus1(k); ++i) {
       if (x.pir_description_type_idc(k) == 0) {
         fmt::print(stream, "pir_top_left_tile_idx[ {} ][ {} ]={}\n", k, i,
                    x.pir_top_left_tile_idx(k, i));
@@ -107,18 +105,18 @@ auto PackedIndependentRegions::operator==(const PackedIndependentRegions &other)
 auto PackedIndependentRegions::decodeFrom(Common::InputBitstream &bitstream)
     -> PackedIndependentRegions {
   PackedIndependentRegions result{};
-  result.pir_num_packed_frames_minus1(bitstream.readBits<std::uint8_t>(5));
+  result.pir_num_packed_frames_minus1(bitstream.readBits<uint8_t>(5));
   for (uint8_t j = 0; j <= result.pir_num_packed_frames_minus1(); ++j) {
-    result.pir_packed_frame_id(j, bitstream.readBits<std::uint8_t>(5));
+    result.pir_packed_frame_id(j, bitstream.readBits<uint8_t>(5));
     const auto k = result.pir_packed_frame_id(j);
-    result.pir_description_type_idc(k, bitstream.readBits<std::uint8_t>(2));
-    result.pir_num_regions_minus1(k, bitstream.readBits<std::uint8_t>(8));
-    for (std::uint8_t i = 0; i <= result.pir_num_regions_minus1(k); ++i) {
+    result.pir_description_type_idc(k, bitstream.readBits<uint8_t>(2));
+    result.pir_num_regions_minus1(k, bitstream.readBits<uint8_t>(8));
+    for (uint8_t i = 0; i <= result.pir_num_regions_minus1(k); ++i) {
       if (result.pir_description_type_idc(k) == 0) {
-        result.pir_top_left_tile_idx(k, i, bitstream.getUExpGolomb<std::size_t>());
-        result.pir_bottom_right_tile_idx(k, i, bitstream.getUExpGolomb<std::size_t>());
+        result.pir_top_left_tile_idx(k, i, bitstream.getUExpGolomb<size_t>());
+        result.pir_bottom_right_tile_idx(k, i, bitstream.getUExpGolomb<size_t>());
       } else {
-        result.pir_subpic_id(k, i, bitstream.getUExpGolomb<std::size_t>());
+        result.pir_subpic_id(k, i, bitstream.getUExpGolomb<size_t>());
       }
     }
   }
@@ -127,12 +125,12 @@ auto PackedIndependentRegions::decodeFrom(Common::InputBitstream &bitstream)
 
 void PackedIndependentRegions::encodeTo(Common::OutputBitstream &bitstream) const {
   bitstream.writeBits(pir_num_packed_frames_minus1(), 5);
-  for (std::uint8_t j = 0; j <= pir_num_packed_frames_minus1(); ++j) {
+  for (uint8_t j = 0; j <= pir_num_packed_frames_minus1(); ++j) {
     bitstream.writeBits(pir_packed_frame_id(j), 5);
     const auto k = pir_packed_frame_id(j);
     bitstream.writeBits(pir_description_type_idc(k), 2);
     bitstream.writeBits(pir_num_regions_minus1(k), 8);
-    for (std::uint8_t i = 0; i <= pir_num_regions_minus1(k); ++i) {
+    for (uint8_t i = 0; i <= pir_num_regions_minus1(k); ++i) {
       if (pir_description_type_idc(k) == 0) {
         bitstream.putUExpGolomb(pir_top_left_tile_idx(k, i));
         bitstream.putUExpGolomb(pir_bottom_right_tile_idx(k, i));

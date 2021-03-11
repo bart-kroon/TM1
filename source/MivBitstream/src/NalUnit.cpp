@@ -175,7 +175,7 @@ auto NalUnit::decodeFrom(std::istream &stream, size_t numBytesInNalUnit) -> NalU
   return NalUnit{nal_unit_header, rbsp};
 }
 
-auto NalUnit::encodeTo(std::ostream &stream) const -> std::size_t {
+auto NalUnit::encodeTo(std::ostream &stream) const -> size_t {
   m_nal_unit_header.encodeTo(stream);
   stream.write(m_rbsp.data(), m_rbsp.size());
   return size();

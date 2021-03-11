@@ -68,11 +68,10 @@ struct EncoderParams {
   EncoderParams(const Common::SizeVector &atlasSizes, bool haveTextureVideo, bool haveGeometryVideo,
                 bool haveOccupancyVideo);
 
-  explicit EncoderParams(std::uint8_t textureBitDepth, std::uint8_t occupancyBitDepth,
-                         std::uint8_t geometryBitDepth, std::uint8_t transparencyBitDepth);
-  EncoderParams(const Common::SizeVector &atlasSizes, std::uint8_t textureBitDepth,
-                std::uint8_t occupancyBitDepth, std::uint8_t geometryBitDepth,
-                std::uint8_t transparencyBitDepth);
+  explicit EncoderParams(uint8_t textureBitDepth, uint8_t occupancyBitDepth,
+                         uint8_t geometryBitDepth, uint8_t transparencyBitDepth);
+  EncoderParams(const Common::SizeVector &atlasSizes, uint8_t textureBitDepth,
+                uint8_t occupancyBitDepth, uint8_t geometryBitDepth, uint8_t transparencyBitDepth);
 
   V3cParameterSet vps;
   CommonAtlasSequenceParameterSetRBSP casps;
@@ -84,7 +83,7 @@ struct EncoderParams {
   bool lengthsInMeters{true};
 
   bool dqParamsPresentFlag{true};
-  std::uint16_t maxEntityId{0};
+  uint16_t maxEntityId{0};
 
   bool randomAccess{};
 

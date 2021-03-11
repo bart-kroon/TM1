@@ -69,7 +69,7 @@ public:
   constexpr auto hypotQuatXYZ() const noexcept;
   static constexpr auto maxHypotQuatXYZ = 0x1000'0000'0000'0000;
 
-  auto printTo(std::ostream &stream, std::uint16_t viewId) const -> std::ostream &;
+  auto printTo(std::ostream &stream, uint16_t viewId) const -> std::ostream &;
 
   constexpr auto operator==(const CameraExtrinsics &other) const noexcept;
   constexpr auto operator!=(const CameraExtrinsics &other) const noexcept;
@@ -88,7 +88,7 @@ private:
 };
 
 // 23090-12: ci_cam_type
-enum class CiCamType : std::uint8_t { equirectangular, perspective, orthographic };
+enum class CiCamType : uint8_t { equirectangular, perspective, orthographic };
 auto operator<<(std::ostream &, CiCamType) -> std::ostream &;
 
 using Equirectangular = std::integral_constant<CiCamType, CiCamType::equirectangular>;
@@ -134,7 +134,7 @@ public:
   // function f. This allows to template on the camera projection type.
   template <typename F> decltype(auto) dispatch(F f) const;
 
-  auto printTo(std::ostream &stream, std::uint16_t viewId) const -> std::ostream &;
+  auto printTo(std::ostream &stream, uint16_t viewId) const -> std::ostream &;
 
   constexpr auto operator==(const CameraIntrinsics &other) const noexcept;
   constexpr auto operator!=(const CameraIntrinsics &other) const noexcept;
@@ -171,7 +171,7 @@ public:
   constexpr auto dq_norm_disp_high(float value) noexcept -> auto &;
   constexpr auto dq_depth_occ_map_threshold_default(Common::SampleValue value) noexcept -> auto &;
 
-  auto printTo(std::ostream &stream, std::uint16_t viewId) const -> std::ostream &;
+  auto printTo(std::ostream &stream, uint16_t viewId) const -> std::ostream &;
 
   constexpr auto operator==(const DepthQuantization &other) const noexcept;
   constexpr auto operator!=(const DepthQuantization &other) const noexcept;
@@ -191,76 +191,75 @@ private:
 class PruningParents {
 public:
   PruningParents() = default;
-  explicit PruningParents(std::vector<std::uint16_t> pp_parent_id);
+  explicit PruningParents(std::vector<uint16_t> pp_parent_id);
 
   [[nodiscard]] auto pp_is_root_flag() const noexcept -> bool;
-  [[nodiscard]] auto pp_num_parent_minus1() const -> std::uint16_t;
-  [[nodiscard]] auto pp_parent_id(std::uint16_t i) const -> std::uint16_t;
+  [[nodiscard]] auto pp_num_parent_minus1() const -> uint16_t;
+  [[nodiscard]] auto pp_parent_id(uint16_t i) const -> uint16_t;
 
-  auto pp_parent_id(std::uint16_t i, std::uint16_t value) noexcept -> PruningParents &;
+  auto pp_parent_id(uint16_t i, uint16_t value) noexcept -> PruningParents &;
 
   [[nodiscard]] auto begin() const noexcept { return m_pp_parent_id.begin(); }
   [[nodiscard]] auto end() const noexcept { return m_pp_parent_id.end(); }
 
-  auto printTo(std::ostream &stream, std::uint16_t viewId) const -> std::ostream &;
+  auto printTo(std::ostream &stream, uint16_t viewId) const -> std::ostream &;
 
   auto operator==(const PruningParents &) const noexcept -> bool;
   auto operator!=(const PruningParents &) const noexcept -> bool;
 
-  static auto decodeFrom(Common::InputBitstream &bitstream, std::uint16_t mvp_num_views_minus1)
+  static auto decodeFrom(Common::InputBitstream &bitstream, uint16_t mvp_num_views_minus1)
       -> PruningParents;
 
-  void encodeTo(Common::OutputBitstream &bitstream, std::uint16_t mvp_num_views_minus1) const;
+  void encodeTo(Common::OutputBitstream &bitstream, uint16_t mvp_num_views_minus1) const;
 
 private:
-  std::vector<std::uint16_t> m_pp_parent_id;
+  std::vector<uint16_t> m_pp_parent_id;
 };
 
 // 23090-12: miv_view_params_list()
 class MivViewParamsList {
 public:
-  [[nodiscard]] auto mvp_num_views_minus1() const -> std::uint16_t;
+  [[nodiscard]] auto mvp_num_views_minus1() const -> uint16_t;
 
   [[nodiscard]] auto mvp_view_enabled_present_flag() const noexcept -> bool;
-  [[nodiscard]] auto mvp_view_enabled_in_atlas_flag(std::uint8_t atlasIdx,
-                                                    std::uint16_t viewIdx) const -> bool;
-  [[nodiscard]] auto mvp_view_complete_in_atlas_flag(std::uint8_t atlasIdx,
-                                                     std::uint16_t viewIdx) const -> bool;
+  [[nodiscard]] auto mvp_view_enabled_in_atlas_flag(uint8_t atlasIdx, uint16_t viewIdx) const
+      -> bool;
+  [[nodiscard]] auto mvp_view_complete_in_atlas_flag(uint8_t atlasIdx, uint16_t viewIdx) const
+      -> bool;
   [[nodiscard]] constexpr auto mvp_explicit_view_id_flag() const noexcept;
-  [[nodiscard]] auto mvp_view_id(std::uint16_t viewIdx) const -> std::uint16_t;
-  [[nodiscard]] auto mvp_inpaint_flag(std::uint16_t viewId) const -> bool;
+  [[nodiscard]] auto mvp_view_id(uint16_t viewIdx) const -> uint16_t;
+  [[nodiscard]] auto mvp_inpaint_flag(uint16_t viewId) const -> bool;
   [[nodiscard]] constexpr auto mvp_intrinsic_params_equal_flag() const noexcept;
   [[nodiscard]] auto mvp_depth_quantization_params_equal_flag() const -> bool;
   [[nodiscard]] constexpr auto mvp_pruning_graph_params_present_flag() const noexcept;
 
-  [[nodiscard]] auto camera_extrinsics(std::uint16_t viewId) const -> const CameraExtrinsics &;
+  [[nodiscard]] auto camera_extrinsics(uint16_t viewId) const -> const CameraExtrinsics &;
 
   // Return camera intrinsics for the specified view ID. The
   // mvp_intrinsic_params_equal_flag() case is handled for convenience.
-  [[nodiscard]] auto camera_intrinsics(std::uint16_t viewId = 0) const -> const CameraIntrinsics &;
+  [[nodiscard]] auto camera_intrinsics(uint16_t viewId = 0) const -> const CameraIntrinsics &;
 
   // Return depth quantization for the specified view ID. The
   // mvp_depth_quantization_params_equal_flag() case is handled for convenience.
-  [[nodiscard]] auto depth_quantization(std::uint16_t viewId = 0) const
-      -> const DepthQuantization &;
+  [[nodiscard]] auto depth_quantization(uint16_t viewId = 0) const -> const DepthQuantization &;
 
-  [[nodiscard]] auto pruning_parent(std::uint16_t viewId) const -> const PruningParents &;
+  [[nodiscard]] auto pruning_parent(uint16_t viewId) const -> const PruningParents &;
 
   // Calling this function will allocate the camera extrinsics list
-  auto mvp_num_views_minus1(std::uint16_t value) -> MivViewParamsList &;
+  auto mvp_num_views_minus1(uint16_t value) -> MivViewParamsList &;
 
   auto mvp_view_enabled_present_flag(bool value) noexcept -> MivViewParamsList &;
 
   // Sets mvp_view_enabled_in_atlas_flag[ a ][ i ] and also enables mvp_view_enabled_present_flag
   // for convenience
-  auto mvp_view_enabled_in_atlas_flag(std::uint8_t atlasIdx, std::uint16_t viewIdx, bool value)
+  auto mvp_view_enabled_in_atlas_flag(uint8_t atlasIdx, uint16_t viewIdx, bool value)
       -> MivViewParamsList &;
 
-  auto mvp_view_complete_in_atlas_flag(std::uint8_t atlasIdx, std::uint16_t viewIdx, bool value)
+  auto mvp_view_complete_in_atlas_flag(uint8_t atlasIdx, uint16_t viewIdx, bool value)
       -> MivViewParamsList &;
   auto mvp_explicit_view_id_flag(bool value) noexcept -> MivViewParamsList &;
-  auto mvp_view_id(std::uint16_t viewIdx, std::uint16_t viewId) -> MivViewParamsList &;
-  auto mvp_inpaint_flag(std::uint16_t viewId, bool value) -> MivViewParamsList &;
+  auto mvp_view_id(uint16_t viewIdx, uint16_t viewId) -> MivViewParamsList &;
+  auto mvp_inpaint_flag(uint16_t viewId, bool value) -> MivViewParamsList &;
 
   // Calling this function will allocate the camera intrinsics list
   auto mvp_intrinsic_params_equal_flag(bool value) -> MivViewParamsList &;
@@ -271,13 +270,13 @@ public:
   // Calling this function will allocate the pruning graph list
   auto mvp_pruning_graph_params_present_flag(bool value) -> MivViewParamsList &;
 
-  [[nodiscard]] auto camera_extrinsics(std::uint16_t viewId) noexcept -> CameraExtrinsics &;
-  [[nodiscard]] auto camera_intrinsics(std::uint16_t viewId = 0) noexcept -> CameraIntrinsics &;
-  [[nodiscard]] auto depth_quantization(std::uint16_t viewId = 0) noexcept -> DepthQuantization &;
-  [[nodiscard]] auto pruning_parent(std::uint16_t viewId) noexcept -> PruningParents &;
+  [[nodiscard]] auto camera_extrinsics(uint16_t viewId) noexcept -> CameraExtrinsics &;
+  [[nodiscard]] auto camera_intrinsics(uint16_t viewId = 0) noexcept -> CameraIntrinsics &;
+  [[nodiscard]] auto depth_quantization(uint16_t viewId = 0) noexcept -> DepthQuantization &;
+  [[nodiscard]] auto pruning_parent(uint16_t viewId) noexcept -> PruningParents &;
 
-  auto viewIndexToId(std::uint16_t index) const -> std::uint16_t;
-  auto viewIdToIndex(std::uint16_t id) const -> std::uint16_t;
+  auto viewIndexToId(uint16_t index) const -> uint16_t;
+  auto viewIdToIndex(uint16_t id) const -> uint16_t;
 
   friend auto operator<<(std::ostream &stream, const MivViewParamsList &x) -> std::ostream &;
 
@@ -301,7 +300,7 @@ private:
   bool m_mvp_view_enabled_present_flag{};
   std::vector<std::vector<ViewInAtlas>> m_viewInAtlas;
   bool m_mvp_explicit_view_id_flag{};
-  std::vector<std::uint16_t> m_mvp_view_id;
+  std::vector<uint16_t> m_mvp_view_id;
   std::vector<bool> m_mvpInpaintFlag{false};
   std::vector<CameraExtrinsics> m_camera_extrinsics{{}};
   bool m_mvp_intrinsic_params_equal_flag{};
@@ -315,15 +314,14 @@ private:
 // 23090-12: miv_view_params_update_extrinsics
 class MivViewParamsUpdateExtrinsics {
 public:
-  [[nodiscard]] auto mvpue_num_view_updates_minus1() const noexcept -> std::uint16_t;
-  [[nodiscard]] auto mvpue_view_idx(std::uint16_t i) const -> std::uint16_t;
-  [[nodiscard]] auto camera_extrinsics(std::uint16_t i) const -> const CameraExtrinsics &;
-  [[nodiscard]] auto camera_extrinsics(std::uint16_t i) noexcept -> CameraExtrinsics &;
+  [[nodiscard]] auto mvpue_num_view_updates_minus1() const noexcept -> uint16_t;
+  [[nodiscard]] auto mvpue_view_idx(uint16_t i) const -> uint16_t;
+  [[nodiscard]] auto camera_extrinsics(uint16_t i) const -> const CameraExtrinsics &;
+  [[nodiscard]] auto camera_extrinsics(uint16_t i) noexcept -> CameraExtrinsics &;
 
   // Calling this function will allocate the camera extrinsic update list
-  auto mvpue_num_view_updates_minus1(std::uint16_t value) -> MivViewParamsUpdateExtrinsics &;
-  auto mvpue_view_idx(std::uint16_t i, std::uint16_t value) noexcept
-      -> MivViewParamsUpdateExtrinsics &;
+  auto mvpue_num_view_updates_minus1(uint16_t value) -> MivViewParamsUpdateExtrinsics &;
+  auto mvpue_view_idx(uint16_t i, uint16_t value) noexcept -> MivViewParamsUpdateExtrinsics &;
 
   friend auto operator<<(std::ostream &stream, const MivViewParamsUpdateExtrinsics &x)
       -> std::ostream &;
@@ -344,14 +342,14 @@ private:
 // 23090-12: miv_view_params_update_intrinsics
 class MivViewParamsUpdateIntrinsics {
 public:
-  [[nodiscard]] auto mvpui_num_view_updates_minus1() const noexcept -> std::uint16_t;
-  [[nodiscard]] auto mvpui_view_idx(std::uint16_t i) const -> std::uint16_t;
-  [[nodiscard]] auto camera_intrinsics(std::uint16_t i) const -> const CameraIntrinsics &;
-  [[nodiscard]] auto camera_intrinsics(std::uint16_t i) noexcept -> CameraIntrinsics &;
+  [[nodiscard]] auto mvpui_num_view_updates_minus1() const noexcept -> uint16_t;
+  [[nodiscard]] auto mvpui_view_idx(uint16_t i) const -> uint16_t;
+  [[nodiscard]] auto camera_intrinsics(uint16_t i) const -> const CameraIntrinsics &;
+  [[nodiscard]] auto camera_intrinsics(uint16_t i) noexcept -> CameraIntrinsics &;
 
   // Calling this function will allocate the camera intrinsics update list
-  auto mvpui_num_view_updates_minus1(std::uint16_t value) -> MivViewParamsUpdateIntrinsics &;
-  auto mvpui_view_idx(uint16_t i, std::uint16_t value) noexcept -> MivViewParamsUpdateIntrinsics &;
+  auto mvpui_num_view_updates_minus1(uint16_t value) -> MivViewParamsUpdateIntrinsics &;
+  auto mvpui_view_idx(uint16_t i, uint16_t value) noexcept -> MivViewParamsUpdateIntrinsics &;
 
   friend auto operator<<(std::ostream &stream, const MivViewParamsUpdateIntrinsics &x)
       -> std::ostream &;
@@ -365,22 +363,21 @@ public:
 
 private:
   uint16_t m_mvpui_num_view_updates_minus1{};
-  std::vector<uint16_t> m_mvpui_view_idx{std::vector<std::uint16_t>(1U)};
+  std::vector<uint16_t> m_mvpui_view_idx{std::vector<uint16_t>(1U)};
   std::vector<CameraIntrinsics> m_camera_intrinsics{std::vector<CameraIntrinsics>(1U)};
 };
 
 // 23090-12: miv_view_params_update_depth_quantization
 class MivViewParamsUpdateDepthQuantization {
 public:
-  [[nodiscard]] auto mvpudq_num_view_updates_minus1() const noexcept -> std::uint16_t;
-  [[nodiscard]] auto mvpudq_view_idx(std::uint16_t i) const -> std::uint16_t;
-  [[nodiscard]] auto depth_quantization(std::uint16_t i) const -> const DepthQuantization &;
-  [[nodiscard]] auto depth_quantization(std::uint16_t i) noexcept -> DepthQuantization &;
+  [[nodiscard]] auto mvpudq_num_view_updates_minus1() const noexcept -> uint16_t;
+  [[nodiscard]] auto mvpudq_view_idx(uint16_t i) const -> uint16_t;
+  [[nodiscard]] auto depth_quantization(uint16_t i) const -> const DepthQuantization &;
+  [[nodiscard]] auto depth_quantization(uint16_t i) noexcept -> DepthQuantization &;
 
   // Calling this function will allocate the depth quantization update list
-  auto mvpudq_num_view_updates_minus1(std::uint16_t value)
-      -> MivViewParamsUpdateDepthQuantization &;
-  auto mvpudq_view_idx(uint16_t i, std::uint16_t value) noexcept
+  auto mvpudq_num_view_updates_minus1(uint16_t value) -> MivViewParamsUpdateDepthQuantization &;
+  auto mvpudq_view_idx(uint16_t i, uint16_t value) noexcept
       -> MivViewParamsUpdateDepthQuantization &;
 
   friend auto operator<<(std::ostream &stream, const MivViewParamsUpdateDepthQuantization &x)
@@ -396,7 +393,7 @@ public:
 
 private:
   uint16_t m_mvpudq_num_view_updates_minus1{};
-  std::vector<std::uint16_t> m_mvpudq_view_idx{};
+  std::vector<uint16_t> m_mvpudq_view_idx{};
   std::vector<DepthQuantization> m_depth_quantization;
 };
 

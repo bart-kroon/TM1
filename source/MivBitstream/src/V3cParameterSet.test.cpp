@@ -319,19 +319,19 @@ pin_region_map_index[ 4 ][ 0 ]=0
 pin_region_rotation_flag[ 4 ][ 0 ]=false
 )");
 
-    const std::size_t expectedNumberOfBits = 8             // pin_codec_id
-                                             + 1           // pin_regions_count_minus1
-                                             + 1 * (       // number in pin_regions_count_minus1 + 1
-                                                       +8  // pin_region_tile_id
-                                                       + 2 // pin_region_type_id_minus2
-                                                       + 16  // pin_region_top_left_x
-                                                       + 16  // pin_region_top_left_y
-                                                       + 16  // pin_region_width_minus1
-                                                       + 16  // pin_region_height_minus1
-                                                       + 16  // pin_region_unpack_top_left_x
-                                                       + 16  // pin_region_unpack_top_left_y
-                                                       + 4   // pin_region_map_index
-                                                       + 1); // pin_region_rotation_flag
+    const size_t expectedNumberOfBits = 8               // pin_codec_id
+                                        + 1             // pin_regions_count_minus1
+                                        + 1 * (         // number in pin_regions_count_minus1 + 1
+                                                  +8    // pin_region_tile_id
+                                                  + 2   // pin_region_type_id_minus2
+                                                  + 16  // pin_region_top_left_x
+                                                  + 16  // pin_region_top_left_y
+                                                  + 16  // pin_region_width_minus1
+                                                  + 16  // pin_region_height_minus1
+                                                  + 16  // pin_region_unpack_top_left_x
+                                                  + 16  // pin_region_unpack_top_left_y
+                                                  + 4   // pin_region_map_index
+                                                  + 1); // pin_region_rotation_flag
 
     REQUIRE(bitCodingTest(unit, expectedNumberOfBits));
   }
@@ -340,7 +340,7 @@ pin_region_rotation_flag[ 4 ][ 0 ]=false
     PackingInformation unit{};
     unit.pin_codec_id(2);
     unit.pin_regions_count_minus1(1);
-    for (std::size_t i = 0; i <= unit.pin_regions_count_minus1(); ++i) {
+    for (size_t i = 0; i <= unit.pin_regions_count_minus1(); ++i) {
       // Pseudorandom values
       unit.pin_region_tile_id(i, static_cast<uint8_t>(i + 5));
       unit.pin_region_top_left_y(i, static_cast<uint16_t>(i + 6));
@@ -385,36 +385,36 @@ pin_region_rotation_flag[ 3 ][ 1 ]=false
 pin_region_auxiliary_data_flag[ 3 ][ 1 ]=true
 )");
 
-    const std::size_t expectedNumberOfBits = 8               // pin_codec_id
-                                             + 3             // pin_regions_count_minus1
-                                             + 1 * (         // first region, with V3C_AVD
-                                                       8     // pin_region_tile_id
-                                                       + 2   // pin_region_type_id_minus2
-                                                       + 16  // pin_region_top_left_x
-                                                       + 16  // pin_region_top_left_y
-                                                       + 16  // pin_region_width_minus1
-                                                       + 16  // pin_region_height_minus1
-                                                       + 16  // pin_region_unpack_top_left_x
-                                                       + 16  // pin_region_unpack_top_left_y
-                                                       + 4   // pin_region_map_index
-                                                       + 1   // pin_region_rotation_flag
-                                                       + 1)  // pin_region_auxiliary_data_flag
-                                             + 1 * (         // second region, with V3C_GVD
-                                                       8     // pin_region_tile_id
-                                                       + 2   // pin_region_type_id_minus2
-                                                       + 16  // pin_region_top_left_x
-                                                       + 16  // pin_region_top_left_y
-                                                       + 16  // pin_region_width_minus1
-                                                       + 16  // pin_region_height_minus1
-                                                       + 16  // pin_region_unpack_top_left_x
-                                                       + 16  // pin_region_unpack_top_left_y
-                                                       + 4   // pin_region_map_index
-                                                       + 1   // pin_region_rotation_flag
-                                                       + 1   // pin_region_auxiliary_data_flag
-                                                       + 4   // pin_region_attr_type_id
-                                                       + 1   // pin_region_attr_partitions_flag
-                                                       + 5   // pin_region_attr_partition_index
-                                                       + 6); // pin_region_attr_partitions_minus1
+    const size_t expectedNumberOfBits = 8               // pin_codec_id
+                                        + 3             // pin_regions_count_minus1
+                                        + 1 * (         // first region, with V3C_AVD
+                                                  8     // pin_region_tile_id
+                                                  + 2   // pin_region_type_id_minus2
+                                                  + 16  // pin_region_top_left_x
+                                                  + 16  // pin_region_top_left_y
+                                                  + 16  // pin_region_width_minus1
+                                                  + 16  // pin_region_height_minus1
+                                                  + 16  // pin_region_unpack_top_left_x
+                                                  + 16  // pin_region_unpack_top_left_y
+                                                  + 4   // pin_region_map_index
+                                                  + 1   // pin_region_rotation_flag
+                                                  + 1)  // pin_region_auxiliary_data_flag
+                                        + 1 * (         // second region, with V3C_GVD
+                                                  8     // pin_region_tile_id
+                                                  + 2   // pin_region_type_id_minus2
+                                                  + 16  // pin_region_top_left_x
+                                                  + 16  // pin_region_top_left_y
+                                                  + 16  // pin_region_width_minus1
+                                                  + 16  // pin_region_height_minus1
+                                                  + 16  // pin_region_unpack_top_left_x
+                                                  + 16  // pin_region_unpack_top_left_y
+                                                  + 4   // pin_region_map_index
+                                                  + 1   // pin_region_rotation_flag
+                                                  + 1   // pin_region_auxiliary_data_flag
+                                                  + 4   // pin_region_attr_type_id
+                                                  + 1   // pin_region_attr_partitions_flag
+                                                  + 5   // pin_region_attr_partition_index
+                                                  + 6); // pin_region_attr_partitions_minus1
 
     REQUIRE(bitCodingTest(unit, expectedNumberOfBits));
   }

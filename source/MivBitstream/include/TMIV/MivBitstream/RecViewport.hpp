@@ -36,7 +36,7 @@
 #endif
 
 namespace TMIV::MivBitstream {
-constexpr auto RecViewport::rec_viewport_id(const std::uint16_t value) noexcept -> auto & {
+constexpr auto RecViewport::rec_viewport_id(const uint16_t value) noexcept -> auto & {
   m_rec_viewport_id = value;
   return *this;
 }

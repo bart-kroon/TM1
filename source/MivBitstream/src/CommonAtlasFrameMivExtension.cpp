@@ -301,8 +301,7 @@ auto PruningParents::pp_parent_id(uint16_t i) const -> uint16_t {
   return m_pp_parent_id[i];
 }
 
-auto PruningParents::pp_parent_id(std::uint16_t i, std::uint16_t value) noexcept
-    -> PruningParents & {
+auto PruningParents::pp_parent_id(uint16_t i, uint16_t value) noexcept -> PruningParents & {
   PRECONDITION(i < m_pp_parent_id.size());
   m_pp_parent_id[i] = value;
   return *this;
@@ -384,7 +383,7 @@ auto MivViewParamsList::mvp_view_id(uint16_t viewIdx) const -> uint16_t {
   return m_mvp_view_id[viewIdx];
 }
 
-auto MivViewParamsList::mvp_inpaint_flag(std::uint16_t viewId) const -> bool {
+auto MivViewParamsList::mvp_inpaint_flag(uint16_t viewId) const -> bool {
   const auto viewIndex = viewIdToIndex(viewId);
   return m_mvpInpaintFlag[viewIndex];
 }
@@ -508,7 +507,7 @@ auto MivViewParamsList::pruning_parent(uint16_t viewId) noexcept -> PruningParen
   return m_pruning_parent[viewId];
 }
 
-auto MivViewParamsList::viewIndexToId(std::uint16_t index) const -> std::uint16_t {
+auto MivViewParamsList::viewIndexToId(uint16_t index) const -> uint16_t {
   VERIFY_MIVBITSTREAM(index <= mvp_num_views_minus1());
   if (mvp_explicit_view_id_flag()) {
     return mvp_view_id(index);
@@ -516,7 +515,7 @@ auto MivViewParamsList::viewIndexToId(std::uint16_t index) const -> std::uint16_
   return index;
 }
 
-auto MivViewParamsList::viewIdToIndex(std::uint16_t id) const -> std::uint16_t {
+auto MivViewParamsList::viewIdToIndex(uint16_t id) const -> uint16_t {
   if (mvp_explicit_view_id_flag()) {
     const auto iter = std::find(m_mvp_view_id.cbegin(), m_mvp_view_id.cend(), id);
     VERIFY_MIVBITSTREAM(iter != m_mvp_view_id.cend());

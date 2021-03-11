@@ -40,7 +40,7 @@
 
 namespace TMIV::Encoder {
 namespace {
-auto createBlockToPatchMap(std::size_t k, TMIV::MivBitstream::EncoderParams &params)
+auto createBlockToPatchMap(size_t k, TMIV::MivBitstream::EncoderParams &params)
     -> Common::BlockToPatchMap {
   const auto &asps = params.atlas[k].asps;
   const auto &ppl = params.patchParamsList;
@@ -53,20 +53,20 @@ auto createBlockToPatchMap(std::size_t k, TMIV::MivBitstream::EncoderParams &par
 
   std::fill(btpm.getPlane(0).begin(), btpm.getPlane(0).end(), Common::unusedPatchId);
 
-  for (std::size_t p = 0; p < ppl.size(); ++p) {
+  for (size_t p = 0; p < ppl.size(); ++p) {
     const auto &pp = ppl[p];
 
     if (pp.atlasId == atlasId) {
-      const auto xOrg = static_cast<std::size_t>(pp.atlasPatch2dPosX());
-      const auto yOrg = static_cast<std::size_t>(pp.atlasPatch2dPosY());
-      const auto atlasPatchWidthBlk = static_cast<std::size_t>(pp.atlasPatch2dSizeX());
-      const auto atlasPatchHeightBlk = static_cast<std::size_t>(pp.atlasPatch2dSizeY());
+      const auto xOrg = static_cast<size_t>(pp.atlasPatch2dPosX());
+      const auto yOrg = static_cast<size_t>(pp.atlasPatch2dPosY());
+      const auto atlasPatchWidthBlk = static_cast<size_t>(pp.atlasPatch2dSizeX());
+      const auto atlasPatchHeightBlk = static_cast<size_t>(pp.atlasPatch2dSizeY());
 
-      for (std::size_t y = 0; y < atlasPatchHeightBlk; ++y) {
-        for (std::size_t x = 0; x < atlasPatchWidthBlk; ++x) {
+      for (size_t y = 0; y < atlasPatchHeightBlk; ++y) {
+        for (size_t x = 0; x < atlasPatchWidthBlk; ++x) {
           if (!asps.asps_patch_precedence_order_flag() ||
               btpm.getPlane(0)(yOrg + y, xOrg + x) == Common::unusedPatchId) {
-            btpm.getPlane(0)(yOrg + y, xOrg + x) = static_cast<std::uint16_t>(p);
+            btpm.getPlane(0)(yOrg + y, xOrg + x) = static_cast<uint16_t>(p);
           }
         }
       }
@@ -97,7 +97,7 @@ auto dilateTextureAtlas(Common::Texture444Frame &textureAtlas,
     std::swap(transparencyPrev, transparencyNext);
     std::swap(texturePrev, textureNext);
 
-    Common::parallel_for(w, h, [&](std::size_t row, std::size_t col) {
+    Common::parallel_for(w, h, [&](size_t row, size_t col) {
       int cnt = 0;
       Common::Vec3f yuv{};
       if (transparencyPrev(row, col) == 0) {
@@ -185,7 +185,7 @@ MpiEncoder::MpiEncoder(const Common::Json &rootNode, const Common::Json &compone
 }
 
 void MpiEncoder::prepareSequence(MivBitstream::EncoderParams sourceParams) {
-  m_blockSize = m_blockSizeDepthQualityDependent[static_cast<std::size_t>(
+  m_blockSize = m_blockSizeDepthQualityDependent[static_cast<size_t>(
       sourceParams.casme().casme_depth_low_quality_flag())];
   VERIFY(2 <= m_blockSize);
   VERIFY((m_blockSize & (m_blockSize - 1)) == 0);
@@ -246,7 +246,7 @@ auto MpiEncoder::processAccessUnit(int firstFrameId, int lastFrameId)
   for (int frameIndex = firstFrameId; frameIndex < lastFrameId; frameIndex++) {
     auto frame = readFrame(frameIndex);
 
-    Common::parallel_for(frame.getPixelList().size(), [&](std::size_t pixelId) {
+    Common::parallel_for(frame.getPixelList().size(), [&](size_t pixelId) {
       const auto &pixel = frame.getPixelList()[pixelId];
 
       for (const auto &attribute : pixel) {
@@ -316,13 +316,13 @@ auto MpiEncoder::popAtlas() -> Common::MVD10Frame {
 
     const auto &blockToPatchMap = m_blockToPatchMapPerAtlas[k];
 
-    Common::parallel_for(frameWidth, frameHeight, [&](std::size_t i, std::size_t j) {
+    Common::parallel_for(frameWidth, frameHeight, [&](size_t i, size_t j) {
       if (auto patchId = blockToPatchMap.getPlane(0)(i, j); patchId != Common::unusedPatchId) {
         const auto &patch = ppl[patchId];
         auto posInView = patch.atlasToView({static_cast<int>(j), static_cast<int>(i)});
 
         const auto &pixel = mpiFrame(posInView.y(), posInView.x());
-        auto layerId = static_cast<std::uint16_t>(patch.atlasPatch3dOffsetD());
+        auto layerId = static_cast<uint16_t>(patch.atlasPatch3dOffsetD());
 
         const auto iter =
             std::lower_bound(pixel.begin(), pixel.end(), layerId,
@@ -384,7 +384,7 @@ void MpiEncoder::prepareIvau() {
   m_params.atlas.resize(m_params.vps.vps_atlas_count_minus1() + size_t{1});
 
   auto numBitsMinus1 =
-      static_cast<std::uint8_t>(Common::ceilLog2(m_params.viewParamsList.front().nbMpiLayers) - 1);
+      static_cast<uint8_t>(Common::ceilLog2(m_params.viewParamsList.front().nbMpiLayers) - 1);
 
   for (size_t k = 0; k <= m_params.vps.vps_atlas_count_minus1(); ++k) {
     auto &atlas = m_params.atlas[k];
@@ -417,7 +417,7 @@ void MpiEncoder::prepareIvau() {
   }
 }
 
-auto MpiEncoder::log2FocLsbMinus4() const -> std::uint8_t {
+auto MpiEncoder::log2FocLsbMinus4() const -> uint8_t {
   // Avoid confusion but test MSB/LSB logic in decoder
   return Common::downCast<uint8_t>(std::max(4U, Common::ceilLog2(m_intraPeriod) + 1U) - 4U);
 }

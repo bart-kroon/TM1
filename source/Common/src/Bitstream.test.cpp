@@ -132,8 +132,7 @@ TEST_CASE("Bitstream primitives") {
   }
 
   SECTION("ue(v)") {
-    const auto referenceSequence =
-        std::array<std::uint64_t, 7>{123, 4, 400, 0, 1, 3, 0x123456789ABC};
+    const auto referenceSequence = std::array<uint64_t, 7>{123, 4, 400, 0, 1, 3, 0x123456789ABC};
     for (auto reference : referenceSequence) {
       obitstream.putUExpGolomb(reference);
     }
@@ -173,10 +172,10 @@ TEST_CASE("Bitstream primitives") {
 }
 
 TEST_CASE("ceilLog2") {
-  using ValuePair = std::pair<std::uint64_t, int>;
-  auto values = GENERATE(table<std::uint64_t, int>(
-      {ValuePair{0, 0}, ValuePair{1, 0}, ValuePair{2, 1}, ValuePair{10, 4}, ValuePair{21, 5},
-       ValuePair{64, 6}, ValuePair{100, 7}}));
+  using ValuePair = std::pair<uint64_t, int>;
+  auto values = GENERATE(
+      table<uint64_t, int>({ValuePair{0, 0}, ValuePair{1, 0}, ValuePair{2, 1}, ValuePair{10, 4},
+                            ValuePair{21, 5}, ValuePair{64, 6}, ValuePair{100, 7}}));
 
   const auto input = std::get<0>(values);
   const unsigned expected_result = std::get<1>(values);

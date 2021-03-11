@@ -64,8 +64,8 @@ CommonAtlasFrameRBSP::caf_common_atlas_sequence_parameter_set_id(uint8_t value) 
   return *this;
 }
 
-constexpr auto
-CommonAtlasFrameRBSP::caf_common_atlas_frm_order_cnt_lsb(std::uint16_t value) noexcept -> auto & {
+constexpr auto CommonAtlasFrameRBSP::caf_common_atlas_frm_order_cnt_lsb(uint16_t value) noexcept
+    -> auto & {
   m_caf_common_atlas_frm_order_cnt_lsb = value;
   return *this;
 }
@@ -80,7 +80,7 @@ constexpr auto CommonAtlasFrameRBSP::caf_miv_extension_present_flag(bool value) 
   return *this;
 }
 
-constexpr auto CommonAtlasFrameRBSP::caf_extension_7bits(std::uint8_t value) noexcept
+constexpr auto CommonAtlasFrameRBSP::caf_extension_7bits(uint8_t value) noexcept
     -> CommonAtlasFrameRBSP & {
   VERIFY_V3CBITSTREAM(caf_extension_present_flag());
   m_caf_extension_7bits = value;

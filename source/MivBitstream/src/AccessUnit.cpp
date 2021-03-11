@@ -69,7 +69,7 @@ auto AtlasAccessUnit::decOccFrameSize(const V3cParameterSet &vps) const noexcept
   return frameSize();
 }
 
-auto AtlasAccessUnit::patchId(unsigned row, unsigned column) const -> std::uint16_t {
+auto AtlasAccessUnit::patchId(unsigned row, unsigned column) const -> uint16_t {
   const auto k = asps.asps_log2_patch_packing_block_size();
   return blockToPatchMap.getPlane(0)(row >> k, column >> k);
 }

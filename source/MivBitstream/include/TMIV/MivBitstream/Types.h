@@ -38,15 +38,7 @@
 #include <ostream>
 
 namespace TMIV::MivBitstream {
-enum class VuhUnitType : std::uint8_t {
-  V3C_VPS,
-  V3C_AD,
-  V3C_OVD,
-  V3C_GVD,
-  V3C_AVD,
-  V3C_PVD,
-  V3C_CAD
-};
+enum class VuhUnitType : uint8_t { V3C_VPS, V3C_AD, V3C_OVD, V3C_GVD, V3C_AVD, V3C_PVD, V3C_CAD };
 
 constexpr auto operator<<(std::ostream &stream, const VuhUnitType x) -> std::ostream & {
   switch (x) {
@@ -69,13 +61,11 @@ constexpr auto operator<<(std::ostream &stream, const VuhUnitType x) -> std::ost
   }
 }
 
-constexpr auto operator==(VuhUnitType vuh_unit_type, std::uint8_t underlying_value) noexcept
-    -> bool {
-  return static_cast<std::uint8_t>(vuh_unit_type) == underlying_value;
+constexpr auto operator==(VuhUnitType vuh_unit_type, uint8_t underlying_value) noexcept -> bool {
+  return static_cast<uint8_t>(vuh_unit_type) == underlying_value;
 }
 
-constexpr auto operator==(std::uint8_t underlying_value, VuhUnitType vuh_unit_type) noexcept
-    -> bool {
+constexpr auto operator==(uint8_t underlying_value, VuhUnitType vuh_unit_type) noexcept -> bool {
   return operator==(vuh_unit_type, underlying_value);
 }
 

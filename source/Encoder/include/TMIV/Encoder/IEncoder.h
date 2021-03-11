@@ -52,7 +52,7 @@ public:
   virtual void pushFrame(Common::MVD16Frame views) = 0;
   virtual auto completeAccessUnit() -> const MivBitstream::EncoderParams & = 0;
   virtual auto popAtlas() -> Common::MVD10Frame = 0;
-  [[nodiscard]] virtual auto maxLumaSamplesPerFrame() const -> std::size_t = 0;
+  [[nodiscard]] virtual auto maxLumaSamplesPerFrame() const -> size_t = 0;
 };
 } // namespace TMIV::Encoder
 

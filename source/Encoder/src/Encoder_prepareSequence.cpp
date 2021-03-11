@@ -39,7 +39,7 @@
 
 namespace TMIV::Encoder {
 void Encoder::prepareSequence(MivBitstream::EncoderParams sourceParams) {
-  m_config.blockSize = m_config.blockSizeDepthQualityDependent[static_cast<std::size_t>(
+  m_config.blockSize = m_config.blockSizeDepthQualityDependent[static_cast<size_t>(
       sourceParams.casme().casme_depth_low_quality_flag())];
   VERIFY(2 <= m_config.blockSize);
   VERIFY((m_config.blockSize & (m_config.blockSize - 1)) == 0);
@@ -87,7 +87,7 @@ void Encoder::prepareSequence(MivBitstream::EncoderParams sourceParams) {
 
   if (0 < m_params.vme().group_mapping().gm_group_count()) {
     // Group atlases together to restrict atlas-level sub-bitstream access
-    for (std::size_t i = 0; i < atlasFrameSizes.size(); ++i) {
+    for (size_t i = 0; i < atlasFrameSizes.size(); ++i) {
       m_params.vme().group_mapping().gm_group_id(i, 0);
     }
   }
@@ -270,7 +270,7 @@ void Encoder::prepareIvau() {
   }
 }
 
-auto Encoder::log2FocLsbMinus4() const -> std::uint8_t {
+auto Encoder::log2FocLsbMinus4() const -> uint8_t {
   // Avoid confusion but test MSB/LSB logic in decoder
   return Common::downCast<uint8_t>(std::max(4U, Common::ceilLog2(m_config.intraPeriod) + 1U) - 4U);
 }

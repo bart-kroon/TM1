@@ -59,7 +59,7 @@ void checkRestrictions(const MivBitstream::AccessUnit &frame) {
 }
 
 void addAttributeOffset(MivBitstream::AccessUnit &frame) {
-  for (std::uint8_t k = 0; k <= frame.vps.vps_atlas_count_minus1(); ++k) {
+  for (uint8_t k = 0; k <= frame.vps.vps_atlas_count_minus1(); ++k) {
     const auto atlasId = frame.vps.vps_atlas_id(k);
     auto &atlas = frame.atlas[k];
 

@@ -63,8 +63,8 @@ private:
       -> MivBitstream::MivViewParamsUpdateIntrinsics;
   [[nodiscard]] auto mivViewParamsUpdateDepthQuantization() const
       -> MivBitstream::MivViewParamsUpdateDepthQuantization;
-  auto atlasSubBitstream(std::size_t k) -> MivBitstream::AtlasSubBitstream;
-  [[nodiscard]] auto atlasTileLayer(std::size_t k) const -> MivBitstream::AtlasTileLayerRBSP;
+  auto atlasSubBitstream(size_t k) -> MivBitstream::AtlasSubBitstream;
+  [[nodiscard]] auto atlasTileLayer(size_t k) const -> MivBitstream::AtlasTileLayerRBSP;
   [[nodiscard]] constexpr auto maxFrmOrderCntLsb() const {
     return 1U << (m_log2MaxFrmOrderCntLsbMinus4 + 4U);
   }

@@ -41,7 +41,7 @@
 using namespace std::string_literals;
 
 namespace TMIV::MivBitstream {
-auto Pose::printTo(std::ostream &stream, std::uint16_t viewId) const -> std::ostream & {
+auto Pose::printTo(std::ostream &stream, uint16_t viewId) const -> std::ostream & {
   fmt::print(stream, "position[ {} ]=({}, {}, {})\n", viewId, position.x(), position.y(),
              position.z());
   fmt::print(stream, "orientation[ {} ]={} + i {} + j {} + k {}\n", viewId, orientation.w(),

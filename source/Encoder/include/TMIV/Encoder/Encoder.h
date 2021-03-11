@@ -62,7 +62,7 @@ public:
   void pushFrame(Common::MVD16Frame sourceViews) override;
   auto completeAccessUnit() -> const MivBitstream::EncoderParams & override;
   auto popAtlas() -> Common::MVD10Frame override;
-  [[nodiscard]] auto maxLumaSamplesPerFrame() const -> std::size_t override;
+  [[nodiscard]] auto maxLumaSamplesPerFrame() const -> size_t override;
 
 private: // Encoder_prepareSequence.cpp
   [[nodiscard]] auto
@@ -74,7 +74,7 @@ private: // Encoder_prepareSequence.cpp
   void setGiGeometry3dCoordinatesBitdepthMinus1();
   void enableOccupancyPerView();
   void prepareIvau();
-  auto log2FocLsbMinus4() const -> std::uint8_t;
+  auto log2FocLsbMinus4() const -> uint8_t;
   auto patchSizeQuantizers() const -> Common::Vec2i;
 
 private: // Encoder_prepareAccessUnit.cpp
@@ -160,7 +160,7 @@ private:
   using NonAggregatedMask = Common::Mat<std::bitset<maxIntraPeriod>>;
   std::vector<NonAggregatedMask> m_nonAggregatedMask;
   std::vector<Common::MaskList> m_aggregatedEntityMask;
-  std::size_t m_maxLumaSamplesPerFrame{};
+  size_t m_maxLumaSamplesPerFrame{};
 };
 } // namespace TMIV::Encoder
 

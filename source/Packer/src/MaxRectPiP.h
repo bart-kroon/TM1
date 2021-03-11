@@ -56,7 +56,7 @@ public:
     [[nodiscard]] auto y() const -> int { return m_y; }
     [[nodiscard]] auto isRotated() const -> bool { return m_isRotated; }
   };
-  using OccupancyMap = TMIV::Common::Mat<std::uint8_t>;
+  using OccupancyMap = TMIV::Common::Mat<uint8_t>;
 
 private:
   class Rectangle {

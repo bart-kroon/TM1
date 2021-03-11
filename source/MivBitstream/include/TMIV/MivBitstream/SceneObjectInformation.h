@@ -54,7 +54,7 @@ struct SoiVisibilityCones {
   std::int16_t soi_direction_x{};
   std::int16_t soi_direction_y{};
   std::int16_t soi_direction_z{};
-  std::uint16_t soi_angle{};
+  uint16_t soi_angle{};
 };
 
 struct Soi3dBoundingBox {
@@ -67,12 +67,12 @@ struct Soi3dBoundingBox {
            (soi_3d_bounding_box_size_z == other.soi_3d_bounding_box_size_z);
   }
 
-  std::size_t soi_3d_bounding_box_x{};
-  std::size_t soi_3d_bounding_box_y{};
-  std::size_t soi_3d_bounding_box_z{};
-  std::size_t soi_3d_bounding_box_size_x{};
-  std::size_t soi_3d_bounding_box_size_y{};
-  std::size_t soi_3d_bounding_box_size_z{};
+  size_t soi_3d_bounding_box_x{};
+  size_t soi_3d_bounding_box_y{};
+  size_t soi_3d_bounding_box_z{};
+  size_t soi_3d_bounding_box_size_x{};
+  size_t soi_3d_bounding_box_size_y{};
+  size_t soi_3d_bounding_box_size_z{};
 };
 
 struct SceneObjectUpdate {
@@ -98,26 +98,26 @@ struct SceneObjectUpdate {
            (soi_material_id_update_flag == other.soi_material_id_update_flag) &&
            (soi_material_id == other.soi_material_id);
   }
-  std::size_t soi_object_idx{};
+  size_t soi_object_idx{};
   bool soi_object_cancel_flag{};
   std::optional<bool> soi_object_label_update_flag{};
-  std::optional<std::size_t> soi_object_label_idx{};
+  std::optional<size_t> soi_object_label_idx{};
   std::optional<bool> soi_priority_update_flag{};
-  std::optional<std::uint8_t> soi_priority_value{};
+  std::optional<uint8_t> soi_priority_value{};
   std::optional<bool> soi_object_hidden_flag{};
   std::optional<bool> soi_object_dependency_update_flag{};
-  std::vector<std::size_t> soi_object_dependency_idx{};
+  std::vector<size_t> soi_object_dependency_idx{};
   std::optional<bool> soi_visibility_cones_update_flag{};
   std::optional<SoiVisibilityCones> soi_visibility_cones{};
   std::optional<bool> soi_3d_bounding_box_update_flag{};
   std::optional<Soi3dBoundingBox> soi_3d_bounding_box{};
   std::optional<bool> soi_collision_shape_update_flag{};
-  std::optional<std::uint16_t> soi_collision_shape_id{};
+  std::optional<uint16_t> soi_collision_shape_id{};
   std::optional<bool> soi_point_style_update_flag{};
-  std::optional<std::uint8_t> soi_point_shape_id{};
-  std::optional<std::uint16_t> soi_point_size{};
+  std::optional<uint8_t> soi_point_shape_id{};
+  std::optional<uint16_t> soi_point_size{};
   std::optional<bool> soi_material_id_update_flag{};
-  std::optional<std::uint16_t> soi_material_id{};
+  std::optional<uint16_t> soi_material_id{};
 };
 
 // 23090-12: scene_object_information ( payloadSize )
@@ -125,7 +125,7 @@ class SceneObjectInformation {
 public:
   [[nodiscard]] auto soi_persistence_flag() const noexcept -> bool;
   [[nodiscard]] auto soi_reset_flag() const noexcept -> bool;
-  [[nodiscard]] auto soi_num_object_updates() const noexcept -> std::size_t;
+  [[nodiscard]] auto soi_num_object_updates() const noexcept -> size_t;
   [[nodiscard]] auto soi_simple_objects_flag() const -> bool;
   [[nodiscard]] auto soi_object_label_present_flag() const -> bool;
   [[nodiscard]] auto soi_priority_present_flag() const -> bool;
@@ -137,42 +137,42 @@ public:
   [[nodiscard]] auto soi_point_style_present_flag() const -> bool;
   [[nodiscard]] auto soi_material_id_present_flag() const -> bool;
   [[nodiscard]] auto soi_extension_present_flag() const -> bool;
-  [[nodiscard]] auto soi_3d_bounding_box_scale_log2() const -> std::uint8_t;
-  [[nodiscard]] auto soi_log2_max_object_idx_updated_minus1() const -> std::uint8_t;
-  [[nodiscard]] auto soi_log2_max_object_dependency_idx() const -> std::uint8_t;
-  [[nodiscard]] auto soi_object_idx(std::size_t i) const -> std::size_t;
-  [[nodiscard]] auto soi_object_cancel_flag(std::size_t k) const -> bool;
-  [[nodiscard]] auto soi_object_label_update_flag(std::size_t k) const -> bool;
-  [[nodiscard]] auto soi_object_label_idx(std::size_t k) const -> std::size_t;
-  [[nodiscard]] auto soi_priority_update_flag(std::size_t k) const -> bool;
-  [[nodiscard]] auto soi_priority_value(std::size_t k) const -> std::uint8_t;
-  [[nodiscard]] auto soi_object_hidden_flag(std::size_t k) const -> bool;
-  [[nodiscard]] auto soi_object_dependency_update_flag(std::size_t k) const -> bool;
-  [[nodiscard]] auto soi_object_num_dependencies(std::size_t k) const -> std::uint8_t;
-  [[nodiscard]] auto soi_object_dependency_idx(std::size_t k, std::size_t j) const -> std::size_t;
-  [[nodiscard]] auto soi_visibility_cones_update_flag(std::size_t k) const -> bool;
-  [[nodiscard]] auto soi_direction_x(std::size_t k) const -> std::int16_t;
-  [[nodiscard]] auto soi_direction_y(std::size_t k) const -> std::int16_t;
-  [[nodiscard]] auto soi_direction_z(std::size_t k) const -> std::int16_t;
-  [[nodiscard]] auto soi_angle(std::size_t k) const -> std::uint16_t;
-  [[nodiscard]] auto soi_3d_bounding_box_update_flag(std::size_t k) const -> bool;
-  [[nodiscard]] auto soi_3d_bounding_box_x(std::size_t k) const -> std::size_t;
-  [[nodiscard]] auto soi_3d_bounding_box_y(std::size_t k) const -> std::size_t;
-  [[nodiscard]] auto soi_3d_bounding_box_z(std::size_t k) const -> std::size_t;
-  [[nodiscard]] auto soi_3d_bounding_box_size_x(std::size_t k) const -> std::size_t;
-  [[nodiscard]] auto soi_3d_bounding_box_size_y(std::size_t k) const -> std::size_t;
-  [[nodiscard]] auto soi_3d_bounding_box_size_z(std::size_t k) const -> std::size_t;
-  [[nodiscard]] auto soi_collision_shape_update_flag(std::size_t k) const -> bool;
-  [[nodiscard]] auto soi_collision_shape_id(std::size_t k) const -> std::uint16_t;
-  [[nodiscard]] auto soi_point_style_update_flag(std::size_t k) const -> bool;
-  [[nodiscard]] auto soi_point_shape_id(std::size_t k) const -> std::uint8_t;
-  [[nodiscard]] auto soi_point_size(std::size_t k) const -> std::uint16_t;
-  [[nodiscard]] auto soi_material_id_update_flag(std::size_t k) const -> bool;
-  [[nodiscard]] auto soi_material_id(std::size_t k) const -> std::uint16_t;
+  [[nodiscard]] auto soi_3d_bounding_box_scale_log2() const -> uint8_t;
+  [[nodiscard]] auto soi_log2_max_object_idx_updated_minus1() const -> uint8_t;
+  [[nodiscard]] auto soi_log2_max_object_dependency_idx() const -> uint8_t;
+  [[nodiscard]] auto soi_object_idx(size_t i) const -> size_t;
+  [[nodiscard]] auto soi_object_cancel_flag(size_t k) const -> bool;
+  [[nodiscard]] auto soi_object_label_update_flag(size_t k) const -> bool;
+  [[nodiscard]] auto soi_object_label_idx(size_t k) const -> size_t;
+  [[nodiscard]] auto soi_priority_update_flag(size_t k) const -> bool;
+  [[nodiscard]] auto soi_priority_value(size_t k) const -> uint8_t;
+  [[nodiscard]] auto soi_object_hidden_flag(size_t k) const -> bool;
+  [[nodiscard]] auto soi_object_dependency_update_flag(size_t k) const -> bool;
+  [[nodiscard]] auto soi_object_num_dependencies(size_t k) const -> uint8_t;
+  [[nodiscard]] auto soi_object_dependency_idx(size_t k, size_t j) const -> size_t;
+  [[nodiscard]] auto soi_visibility_cones_update_flag(size_t k) const -> bool;
+  [[nodiscard]] auto soi_direction_x(size_t k) const -> std::int16_t;
+  [[nodiscard]] auto soi_direction_y(size_t k) const -> std::int16_t;
+  [[nodiscard]] auto soi_direction_z(size_t k) const -> std::int16_t;
+  [[nodiscard]] auto soi_angle(size_t k) const -> uint16_t;
+  [[nodiscard]] auto soi_3d_bounding_box_update_flag(size_t k) const -> bool;
+  [[nodiscard]] auto soi_3d_bounding_box_x(size_t k) const -> size_t;
+  [[nodiscard]] auto soi_3d_bounding_box_y(size_t k) const -> size_t;
+  [[nodiscard]] auto soi_3d_bounding_box_z(size_t k) const -> size_t;
+  [[nodiscard]] auto soi_3d_bounding_box_size_x(size_t k) const -> size_t;
+  [[nodiscard]] auto soi_3d_bounding_box_size_y(size_t k) const -> size_t;
+  [[nodiscard]] auto soi_3d_bounding_box_size_z(size_t k) const -> size_t;
+  [[nodiscard]] auto soi_collision_shape_update_flag(size_t k) const -> bool;
+  [[nodiscard]] auto soi_collision_shape_id(size_t k) const -> uint16_t;
+  [[nodiscard]] auto soi_point_style_update_flag(size_t k) const -> bool;
+  [[nodiscard]] auto soi_point_shape_id(size_t k) const -> uint8_t;
+  [[nodiscard]] auto soi_point_size(size_t k) const -> uint16_t;
+  [[nodiscard]] auto soi_material_id_update_flag(size_t k) const -> bool;
+  [[nodiscard]] auto soi_material_id(size_t k) const -> uint16_t;
 
   constexpr auto soi_persistence_flag(bool value) noexcept -> auto &;
   constexpr auto soi_reset_flag(bool value) noexcept -> auto &;
-  constexpr auto soi_num_object_updates(std::size_t value) noexcept -> auto &;
+  constexpr auto soi_num_object_updates(size_t value) noexcept -> auto &;
   constexpr auto soi_simple_objects_flag(bool value) noexcept -> auto &;
   constexpr auto soi_object_label_present_flag(bool value) noexcept -> auto &;
   constexpr auto soi_priority_present_flag(bool value) noexcept -> auto &;
@@ -184,9 +184,9 @@ public:
   constexpr auto soi_point_style_present_flag(bool value) noexcept -> auto &;
   constexpr auto soi_material_id_present_flag(bool value) noexcept -> auto &;
   constexpr auto soi_extension_present_flag(bool value) noexcept -> auto &;
-  constexpr auto soi_3d_bounding_box_scale_log2(std::uint8_t value) noexcept -> auto &;
-  constexpr auto soi_log2_max_object_idx_updated_minus1(std::uint8_t value) noexcept -> auto &;
-  constexpr auto soi_log2_max_object_dependency_idx(std::uint8_t value) noexcept -> auto &;
+  constexpr auto soi_3d_bounding_box_scale_log2(uint8_t value) noexcept -> auto &;
+  constexpr auto soi_log2_max_object_idx_updated_minus1(uint8_t value) noexcept -> auto &;
+  constexpr auto soi_log2_max_object_dependency_idx(uint8_t value) noexcept -> auto &;
   auto setSceneObjectUpdates(std::vector<SceneObjectUpdate> &&updates) noexcept -> void;
 
   friend auto operator<<(std::ostream &stream, const SceneObjectInformation &x) -> std::ostream &;
@@ -198,12 +198,12 @@ public:
   void encodeTo(Common::OutputBitstream &bitstream) const;
 
 private:
-  [[nodiscard]] auto isUpdateValid(std::size_t k) const -> bool;
-  [[nodiscard]] auto isBoundingBoxValid(std::size_t k) const -> bool;
+  [[nodiscard]] auto isUpdateValid(size_t k) const -> bool;
+  [[nodiscard]] auto isBoundingBoxValid(size_t k) const -> bool;
 
   bool m_soi_persistence_flag{};
   bool m_soi_reset_flag{};
-  std::optional<std::size_t> m_temporary_soi_num_object_updates{};
+  std::optional<size_t> m_temporary_soi_num_object_updates{};
   std::optional<bool> m_soi_simple_objects_flag{};
   std::optional<bool> m_soi_object_label_present_flag{};
   std::optional<bool> m_soi_priority_present_flag{};
@@ -215,9 +215,9 @@ private:
   std::optional<bool> m_soi_point_style_present_flag{};
   std::optional<bool> m_soi_material_id_present_flag{};
   std::optional<bool> m_soi_extension_present_flag{};
-  std::optional<std::uint8_t> m_soi_3d_bounding_box_scale_log2{};
-  std::uint8_t m_soi_log2_max_object_idx_updated_minus1{};
-  std::optional<std::uint8_t> m_soi_log2_max_object_dependency_idx{};
+  std::optional<uint8_t> m_soi_3d_bounding_box_scale_log2{};
+  uint8_t m_soi_log2_max_object_idx_updated_minus1{};
+  std::optional<uint8_t> m_soi_log2_max_object_dependency_idx{};
   std::vector<SceneObjectUpdate> m_object_updates{};
 };
 } // namespace TMIV::MivBitstream

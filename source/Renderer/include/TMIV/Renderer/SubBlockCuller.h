@@ -55,7 +55,7 @@ public:
 
 private:
   static void inplaceErasePatch(Common::BlockToPatchMap &patchMap,
-                                const MivBitstream::PatchParams &patch, std::uint16_t patchId,
+                                const MivBitstream::PatchParams &patch, uint16_t patchId,
                                 const MivBitstream::AtlasSequenceParameterSetRBSP &asps);
 };
 } // namespace TMIV::Renderer

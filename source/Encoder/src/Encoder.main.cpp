@@ -141,10 +141,10 @@ private:
 
     x.randomAccess = config.require("randomAccess").as<bool>();
 
-    x.vme().group_mapping().gm_group_count(config.require("numGroups").as<std::uint8_t>());
+    x.vme().group_mapping().gm_group_count(config.require("numGroups").as<uint8_t>());
 
     if (const auto node = config.optional("maxEntityId")) {
-      x.maxEntityId = node.as<std::uint16_t>();
+      x.maxEntityId = node.as<uint16_t>();
     }
 
     if (const auto &subnode = config.optional("ViewingSpace")) {

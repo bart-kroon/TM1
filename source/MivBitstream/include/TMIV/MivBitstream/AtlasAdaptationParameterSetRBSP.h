@@ -63,20 +63,20 @@ class AtlasAdaptationParameterSetRBSP {
 public:
   [[nodiscard]] constexpr auto aaps_atlas_adaptation_parameter_set_id() const noexcept;
   [[nodiscard]] constexpr auto aaps_log2_max_afoc_present_flag() const noexcept;
-  [[nodiscard]] auto aaps_log2_max_atlas_frame_order_cnt_lsb_minus4() const -> std::uint8_t;
+  [[nodiscard]] auto aaps_log2_max_atlas_frame_order_cnt_lsb_minus4() const -> uint8_t;
   [[nodiscard]] constexpr auto aaps_extension_present_flag() const noexcept;
   [[nodiscard]] constexpr auto aaps_vpcc_extension_present_flag() const noexcept;
   [[nodiscard]] constexpr auto aaps_extension_7bits() const noexcept;
   [[nodiscard]] auto aaps_vpcc_extension() const -> const AapsVpccExtension &;
   [[nodiscard]] auto aapsExtensionData() const -> const std::vector<bool> &;
 
-  constexpr auto aaps_atlas_adaptation_parameter_set_id(std::uint8_t value) noexcept -> auto &;
+  constexpr auto aaps_atlas_adaptation_parameter_set_id(uint8_t value) noexcept -> auto &;
   constexpr auto aaps_log2_max_afoc_present_flag(bool value) noexcept -> auto &;
-  auto aaps_log2_max_atlas_frame_order_cnt_lsb_minus4(std::uint8_t value) noexcept
+  auto aaps_log2_max_atlas_frame_order_cnt_lsb_minus4(uint8_t value) noexcept
       -> AtlasAdaptationParameterSetRBSP &;
   constexpr auto aaps_extension_present_flag(bool value) noexcept -> auto &;
   auto aaps_vpcc_extension_present_flag(bool value) noexcept -> AtlasAdaptationParameterSetRBSP &;
-  auto aaps_extension_7bits(std::uint8_t value) noexcept -> AtlasAdaptationParameterSetRBSP &;
+  auto aaps_extension_7bits(uint8_t value) noexcept -> AtlasAdaptationParameterSetRBSP &;
   auto aaps_vpcc_extension(const AapsVpccExtension &value) noexcept
       -> AtlasAdaptationParameterSetRBSP &;
   auto aapsExtensionData(std::vector<bool> value) noexcept -> AtlasAdaptationParameterSetRBSP &;
@@ -92,12 +92,12 @@ public:
   void encodeTo(std::ostream &stream) const;
 
 private:
-  std::uint8_t m_aaps_atlas_adaptation_parameter_set_id{};
+  uint8_t m_aaps_atlas_adaptation_parameter_set_id{};
   bool m_aaps_log2_max_afoc_present_flag{};
-  std::optional<std::uint8_t> m_aaps_log2_max_atlas_frame_order_cnt_lsb_minus4{};
+  std::optional<uint8_t> m_aaps_log2_max_atlas_frame_order_cnt_lsb_minus4{};
   bool m_aaps_extension_present_flag{};
   std::optional<bool> m_aaps_vpcc_extension_present_flag{};
-  std::optional<std::uint8_t> m_aaps_extension_7bits{};
+  std::optional<uint8_t> m_aaps_extension_7bits{};
   std::optional<AapsVpccExtension> m_aaps_vpcc_extension{};
   std::optional<std::vector<bool>> m_aapsExtensionData{};
 };

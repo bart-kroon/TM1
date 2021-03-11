@@ -42,7 +42,7 @@ namespace TMIV::MivBitstream {
 // 23090-5: sample_stream_v3c_header()
 class SampleStreamV3cHeader {
 public:
-  explicit SampleStreamV3cHeader(std::uint8_t ssvh_unit_size_precision_bytes_minus1);
+  explicit SampleStreamV3cHeader(uint8_t ssvh_unit_size_precision_bytes_minus1);
 
   [[nodiscard]] constexpr auto ssvh_unit_size_precision_bytes_minus1() const noexcept {
     return m_ssvh_unit_size_precision_bytes_minus1;
@@ -63,7 +63,7 @@ public:
   void encodeTo(std::ostream &stream) const;
 
 private:
-  std::uint8_t m_ssvh_unit_size_precision_bytes_minus1{};
+  uint8_t m_ssvh_unit_size_precision_bytes_minus1{};
 };
 
 // 23090-5: sample_stream_v3c_unit()

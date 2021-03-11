@@ -35,8 +35,8 @@
 
 namespace TMIV::Packer {
 
-static const std::uint16_t ACTIVE = 65534;
-static const std::uint16_t INVALID = 65535;
+static const uint16_t ACTIVE = 65534;
+static const uint16_t INVALID = 65535;
 
 using Common::Vec2i;
 
@@ -126,7 +126,7 @@ auto mergePatches(ClusterList &clusterList, int A, int B, const Cluster &cluster
     }
   }
   if (!cluster.isBasicView()) {
-    const auto clusterId = static_cast<std::uint16_t>(cluster.getClusterId());
+    const auto clusterId = static_cast<uint16_t>(cluster.getClusterId());
     for (int i_inter = i_top; i_inter <= i_bottom; i_inter++) {
       for (int j_inter = j_left; j_inter <= j_right; j_inter++) {
         if (clusteringBuffer(i_inter, j_inter) == ACTIVE) {

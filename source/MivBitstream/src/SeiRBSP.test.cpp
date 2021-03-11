@@ -101,13 +101,13 @@ payloadSize=8
   }
 }
 
-constexpr auto computeHeaderSizeFor(const std::size_t payload_size) -> std::size_t {
-  const std::size_t bytes_to_signal_payload_size = (257 + payload_size) / 256;
-  const std::size_t bytes_to_signal_payload_type = 1;
+constexpr auto computeHeaderSizeFor(const size_t payload_size) -> size_t {
+  const size_t bytes_to_signal_payload_size = (257 + payload_size) / 256;
+  const size_t bytes_to_signal_payload_type = 1;
   return bytes_to_signal_payload_size + bytes_to_signal_payload_type;
 }
 
-constexpr auto computePayloadAndHeaderSizeFor(const std::size_t payload_size) -> std::size_t {
+constexpr auto computePayloadAndHeaderSizeFor(const size_t payload_size) -> size_t {
   return payload_size + computeHeaderSizeFor(payload_size);
 }
 
@@ -129,7 +129,7 @@ payloadSize=8
   }
 
   SECTION("Example 2") {
-    const std::size_t number_of_bytes_of_atlas_object_association_payload = 7;
+    const size_t number_of_bytes_of_atlas_object_association_payload = 7;
 
     x.messages().emplace_back(PayloadType::filler_payload, std::string(1000, 'x'));
     x.messages().emplace_back(PayloadType::filler_payload, std::string(254, 'a'));
@@ -156,8 +156,8 @@ payloadSize=12
 payloadType=atlas_object_association
 payloadSize=7
 )");
-    const std::size_t trailing_byte = 1;
-    const std::size_t expected_number_of_bytes =
+    const size_t trailing_byte = 1;
+    const size_t expected_number_of_bytes =
         computePayloadAndHeaderSizeFor(1000) + computePayloadAndHeaderSizeFor(254) +
         computePayloadAndHeaderSizeFor(255) + computePayloadAndHeaderSizeFor(256) +
         computePayloadAndHeaderSizeFor(257) + computePayloadAndHeaderSizeFor(12) +

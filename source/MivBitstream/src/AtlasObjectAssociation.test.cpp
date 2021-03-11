@@ -44,10 +44,10 @@ aoa_reset_flag=false
 aoa_num_atlases_minus1=0
 aoa_num_updates=0
 )");
-    const std::size_t expected_number_of_bits = 1    // aoa_persistence_flag
-                                                + 1  // aoa_reset_flag
-                                                + 6  // aoa_num_atlases_minus1
-                                                + 1; // aoa_num_updates
+    const size_t expected_number_of_bits = 1    // aoa_persistence_flag
+                                           + 1  // aoa_reset_flag
+                                           + 6  // aoa_num_atlases_minus1
+                                           + 1; // aoa_num_updates
     REQUIRE(bitCodingTest(unit, expected_number_of_bits));
   }
 
@@ -75,14 +75,14 @@ aoa_object_idx(2)=1
 aoa_object_in_atlas(2, 0)=true
 aoa_object_in_atlas(2, 1)=true
 )");
-    const std::size_t expected_number_of_bits = 1    // aoa_persistence_flag
-                                                + 1  // aoa_reset_flag
-                                                + 6  // aoa_num_atlases_minus1
-                                                + 5  // aoa_num_updates
-                                                + 5  // aoa_log2_max_object_idx_tracked_minus1
-                                                + 12 // aoa_atlas_id
-                                                + 9  // aoa_object_idx
-                                                + 6; // aoa_object_in_atlas
+    const size_t expected_number_of_bits = 1    // aoa_persistence_flag
+                                           + 1  // aoa_reset_flag
+                                           + 6  // aoa_num_atlases_minus1
+                                           + 5  // aoa_num_updates
+                                           + 5  // aoa_log2_max_object_idx_tracked_minus1
+                                           + 12 // aoa_atlas_id
+                                           + 9  // aoa_object_idx
+                                           + 6; // aoa_object_in_atlas
     REQUIRE(bitCodingTest(unit, expected_number_of_bits));
   }
 }

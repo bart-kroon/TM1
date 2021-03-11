@@ -74,7 +74,7 @@ auto AtlasAdaptationParameterSetRBSP::aapsExtensionData() const -> const std::ve
 }
 
 auto AtlasAdaptationParameterSetRBSP::aaps_log2_max_atlas_frame_order_cnt_lsb_minus4(
-    std::uint8_t value) noexcept -> AtlasAdaptationParameterSetRBSP & {
+    uint8_t value) noexcept -> AtlasAdaptationParameterSetRBSP & {
   PRECONDITION(aaps_log2_max_afoc_present_flag());
   m_aaps_log2_max_atlas_frame_order_cnt_lsb_minus4 = value;
   return *this;
@@ -87,7 +87,7 @@ auto AtlasAdaptationParameterSetRBSP::aaps_vpcc_extension_present_flag(bool valu
   return *this;
 }
 
-auto AtlasAdaptationParameterSetRBSP::aaps_extension_7bits(std::uint8_t value) noexcept
+auto AtlasAdaptationParameterSetRBSP::aaps_extension_7bits(uint8_t value) noexcept
     -> AtlasAdaptationParameterSetRBSP & {
   PRECONDITION(aaps_extension_present_flag());
   m_aaps_extension_7bits = value;
@@ -179,7 +179,7 @@ auto AtlasAdaptationParameterSetRBSP::decodeFrom(std::istream &stream)
 
   if (x.aaps_extension_present_flag()) {
     x.aaps_vpcc_extension_present_flag(bitstream.getFlag());
-    x.aaps_extension_7bits(bitstream.readBits<std::uint8_t>(7));
+    x.aaps_extension_7bits(bitstream.readBits<uint8_t>(7));
   }
   if (x.aaps_vpcc_extension_present_flag()) {
     x.aaps_vpcc_extension(AapsVpccExtension::decodeFrom(bitstream));

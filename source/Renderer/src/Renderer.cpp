@@ -48,16 +48,7 @@ auto Renderer::renderFrame(const MivBitstream::AccessUnit &frame,
     -> Common::Texture444Depth16Frame {
   auto viewport = m_synthesizer->renderFrame(frame, viewportParams);
 
-  const auto hasNoAtlasEntities =
-      std::all_of(std::cbegin(frame.atlas), std::cend(frame.atlas), [](const auto &atlas) {
-        VERIFY_MIVBITSTREAM(atlas.asps.asps_extension_present_flag());
-        VERIFY_MIVBITSTREAM(atlas.asps.asps_miv_extension_present_flag());
-        return atlas.asps.asps_miv_extension().asme_max_entity_id() == 0;
-      });
-
-  if (hasNoAtlasEntities) {
-    m_inpainter->inplaceInpaint(viewport, viewportParams);
-  }
+  m_inpainter->inplaceInpaint(viewport, viewportParams);
 
   if (frame.vs) {
     m_viewingSpaceController->inplaceFading(viewport, viewportParams, *frame.vs);

@@ -14,8 +14,8 @@
     "outputDirectory": ".",
     "outputViewportTexturePathFmt": "E{0}/{1}/{2}/E{0}_{1}_{2}_{4}_tex_{5}x{6}_{7}.yuv",
     "Renderer": {
-        "Inpainter": {},
-        "InpainterMethod": "Inpainter",
+        "NoInpainter": {},
+        "InpainterMethod": "NoInpainter",
         "SynthesizerMethod": "ViewWeightingSynthesizer",
         "ViewingSpaceController": {},
         "ViewingSpaceControllerMethod": "ViewingSpaceController",

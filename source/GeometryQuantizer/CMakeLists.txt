@@ -6,9 +6,6 @@ create_tmiv_library(
     SOURCES
         "src/GeometryQuantizer.cpp"
         "src/ExplicitOccupancy.cpp"
-        "include/TMIV/GeometryQuantizer/ExplicitOccupancy.h"
-        "include/TMIV/GeometryQuantizer/IGeometryQuantizer.h"
-        "include/TMIV/GeometryQuantizer/GeometryQuantizer.h"
     PUBLIC
         TMIV::MivBitstreamLib
     )

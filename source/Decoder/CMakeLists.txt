@@ -11,19 +11,8 @@ create_tmiv_library(
         "src/OccupancyReconstructor.cpp"
         "src/EntityBasedPatchMapFilter.cpp"
         "src/MivDecoder.cpp"
-        "src/NalUnitSemantics.h"
         "src/V3cSampleStreamDecoder.cpp"
         "src/V3cUnitBuffer.cpp"
-        "include/TMIV/Decoder/IDecoder.h"
-        "include/TMIV/Decoder/AtlasDecoder.h"
-        "include/TMIV/Decoder/CommonAtlasDecoder.h"
-        "include/TMIV/Decoder/Decoder.h"
-        "include/TMIV/Decoder/GeometryScaler.h"
-        "include/TMIV/Decoder/OccupancyReconstructor.h"
-        "include/TMIV/Decoder/EntityBasedPatchMapFilter.h"
-        "include/TMIV/Decoder/MivDecoder.h"
-        "include/TMIV/Decoder/V3cSampleStreamDecoder.h"
-        "include/TMIV/Decoder/V3cUnitBuffer.h"
     PUBLIC
         TMIV::VideoDecoderLib
     )

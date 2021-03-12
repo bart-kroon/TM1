@@ -5,8 +5,6 @@ create_tmiv_library(
         AggregatorLib
     SOURCES
         "src/Aggregator.cpp"
-        "include/TMIV/Aggregator/IAggregator.h"
-        "include/TMIV/Aggregator/Aggregator.h"
     PUBLIC
         TMIV::CommonLib
     )

@@ -6,8 +6,6 @@ create_tmiv_library(
     SOURCES
         "src/SignedDistance.cpp"
         "src/ViewingSpaceEvaluator.cpp"
-        "include/TMIV/ViewingSpace/SignedDistance.h"
-        "include/TMIV/ViewingSpace/ViewingSpaceEvaluator.h"
     PUBLIC
         TMIV::MivBitstreamLib
     )

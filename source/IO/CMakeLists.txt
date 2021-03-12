@@ -22,7 +22,6 @@ create_tmiv_library(
     SOURCES
         "src/load.cpp"
         "src/save.cpp"
-        "include/TMIV/IO/IO.h"
     PUBLIC
         TMIV::MivBitstreamLib
         ${CppFilesystemLib}

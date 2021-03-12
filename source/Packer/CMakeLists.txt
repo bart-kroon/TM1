@@ -6,13 +6,8 @@ create_tmiv_library(
     SOURCES
         "src/Cluster.cpp"
         "src/MaxRectPiP.cpp"
-        "src/MaxRectPiP.h"
         "src/Packer.cpp"
         "src/Retriever.cpp"
-        "include/TMIV/Packer/Cluster.h"
-        "include/TMIV/Packer/IPacker.h"
-        "include/TMIV/Packer/Packer.h"
-        "include/TMIV/Packer/Retriever.h"
     PUBLIC
         TMIV::MivBitstreamLib
     )

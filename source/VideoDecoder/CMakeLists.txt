@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
 if (HAVE_HM)
     set(hmSources
         "src/HmVideoDecoder.cpp"
-        "include/TMIV/VideoDecoder/HmVideoDecoder.h")
+    )
 endif()
 
 create_tmiv_library(
@@ -12,8 +12,6 @@ create_tmiv_library(
     SOURCES
         "src/IVideoDecoder.cpp"
         "src/VideoServer.cpp"
-        "include/TMIV/VideoDecoder/IVideoDecoder.h"
-        "include/TMIV/VideoDecoder/VideoServer.h"
         ${hmSources}
     PUBLIC
         TMIV::MivBitstreamLib

@@ -21,7 +21,6 @@ create_tmiv_library(
         MpiPcsLib
     SOURCES
         "src/MpiPcs.cpp"
-        "include/TMIV/MpiPcs/MpiPcs.h"
     PUBLIC
         TMIV::IOLib
         ${CppFilesystemLib}

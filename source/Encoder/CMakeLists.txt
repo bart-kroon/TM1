@@ -14,13 +14,6 @@ create_tmiv_library(
         "src/GeometryDownscaler.cpp"
         "src/MivEncoder.cpp"
         "src/MpiEncoder.cpp"
-        "include/TMIV/Encoder/IEncoder.h"
-        "include/TMIV/Encoder/IMpiEncoder.h"
-        "include/TMIV/Encoder/Encoder.h"
-        "include/TMIV/Encoder/GroupBasedEncoder.h"
-        "include/TMIV/Encoder/GeometryDownscaler.h"
-        "include/TMIV/Encoder/MivEncoder.h"
-        "include/TMIV/Encoder/MpiEncoder.h"
     PUBLIC
         TMIV::ViewOptimizerLib
         TMIV::PrunerLib

@@ -199,7 +199,8 @@ void saveSequenceConfig(const Common::Json &config, const Placeholders &placehol
     const auto path = config.require(IO::outputDirectory).as<std::filesystem::path>() /
                       fmt::format(node.as<std::string>(), placeholders.numberOfInputFrames,
                                   placeholders.contentId, placeholders.testId, foc);
-    std::ofstream stream{path};
+    // NOTE(#483): Binary mode to prevent problems with cross-platform consistency checks
+    std::ofstream stream{path, std::ios::binary};
     const auto json = Common::Json{seqConfig};
     json.saveTo(stream);
   }

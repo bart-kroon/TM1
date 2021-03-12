@@ -226,8 +226,8 @@ class IntegrationTest:
         f2_5 = self.launchCommand(
             executor,
             [f1],
-            ["{0}/bin/Parser", "-b", "{3}/A3/E/TMIV_A3_E.bit"],
-            "{3}/A3/E/TMIV_A3_E.hls",
+            ["{0}/bin/Parser", "-b", "{3}/A3/E/TMIV_A3_E.bit", "-o", "{3}/A3/E/TMIV_A3_E.hls"],
+            None,
             ["A3/E/TMIV_A3_E.hls"],
         )
 
@@ -324,8 +324,8 @@ class IntegrationTest:
         f2_2 = self.launchCommand(
             executor,
             [f1],
-            ["{0}/bin/Parser", "-b", "{3}/V3/D/TMIV_V3_D.bit"],
-            "{3}/V3/D/TMIV_V3_D.hls",
+            ["{0}/bin/Parser", "-b", "{3}/V3/D/TMIV_V3_D.bit", "-o", "{3}/V3/D/TMIV_V3_D.hls"],
+            None,
             ["V3/D/TMIV_V3_D.hls"],
         )
 
@@ -375,8 +375,8 @@ class IntegrationTest:
         f2_1 = self.launchCommand(
             executor,
             [f1],
-            ["{0}/bin/Parser", "-b", "{3}/G3/N/TMIV_G3_N.bit"],
-            "{3}/G3/N/TMIV_G3_N.hls",
+            ["{0}/bin/Parser", "-b", "{3}/G3/N/TMIV_G3_N.bit", "-o", "{3}/G3/N/TMIV_G3_N.hls"],
+            None,
             ["G3/N/TMIV_G3_N.hls"],
         )
 
@@ -498,8 +498,10 @@ class IntegrationTest:
         f4_1 = self.launchCommand(
             executor,
             [f3],
-            ["{0}/bin/Parser", "-b", "{3}/M3/M/QP3/TMIV_M3_M_QP3.bit"],
-            "{3}/M3/M/QP3/TMIV_M3_M_QP3.hls",
+            ["{0}/bin/Parser"]
+            + ["-b", "{3}/M3/M/QP3/TMIV_M3_M_QP3.bit"]
+            + ["-o", "{3}/M3/M/QP3/TMIV_M3_M_QP3.hls"],
+            None,
             ["M3/M/QP3/TMIV_M3_M_QP3.hls"],
         )
 
@@ -574,7 +576,8 @@ class IntegrationTest:
             )
 
         args = list(map(f, args))
-        logFile = f(logFile)
+        if logFile:
+            logFile = f(logFile)
 
         if self.dryRun:
             print(" ".join(args))
@@ -584,7 +587,7 @@ class IntegrationTest:
                 args,
                 shell=False,
                 cwd=self.testDir,
-                stdout=open(logFile, "w"),
+                stdout=(open(logFile, "w") if logFile else None),
                 stderr=subprocess.STDOUT,
             )
 

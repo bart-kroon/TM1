@@ -49,13 +49,9 @@
 #include <TMIV/MivBitstream/ViewingSpace.h>
 #include <TMIV/MivBitstream/ViewingSpaceHandling.h>
 
-#include <cstring>
 #include <fstream>
-#include <iostream>
-#include <optional>
-#include <stdexcept>
-#include <variant>
-#include <vector>
+
+using namespace std::string_view_literals;
 
 class Parser {
 public:
@@ -277,23 +273,25 @@ private:
   unsigned m_maxCommonAtlasFrmOrderCntLsb{};
 };
 
-auto main(int argc, char *argv[]) -> int {
+auto main(int argc, const char *argv[]) -> int {
   try {
     const auto args = std::vector(argv, argv + argc);
 
-    if (args.size() != 3 || strcmp(args[1], "-b") != 0) {
-      std::clog << "Usage: Parser -b BITSTREAM" << std::endl;
+    if (args.size() != 5 || args[1] != "-b"sv || args[3] != "-o"sv) {
+      std::cerr << "Usage: Parser -b BITSTREAM [-o HLS_LOG_FILE]";
       return 1;
     }
-
-    std::ifstream stream{args[2], std::ios::binary};
-    if (!stream.good()) {
-      std::clog << "Failed to open bitstream for reading" << std::endl;
+    std::ifstream inStream{args[2], std::ios::binary};
+    if (!inStream.good()) {
+      fmt::print("Failed to open {} for reading.\n", args[2]);
       return 1;
     }
-
-    Parser parser{std::cout};
-    parser.parseV3cSampleStream(stream);
+    std::ofstream outStream{args[4], std::ios::binary};
+    if (!outStream.good()) {
+      fmt::print("Failed to open {} for writing.\n", args[4]);
+    }
+    Parser parser{outStream};
+    parser.parseV3cSampleStream(inStream);
     return 0;
   } catch (std::exception &e) {
     std::clog << e.what() << std::endl;

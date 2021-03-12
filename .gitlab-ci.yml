@@ -6,32 +6,11 @@ stages:
 default:
   interruptible: true
 
-no git reverts:
-  stage: check
-  image:
-    name: cbachhuber/clang:11
-  tags: [ linux ]
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-  script:
-    - git fetch origin $CI_DEFAULT_BRANCH:main
-    - COMMIT_MSGS=$(git log --pretty=format:%B main..HEAD)
-    - echo "$COMMIT_MSGS"
-    - if [[ "$COMMIT_MSGS" =~ .*^Revert.* ]]; then echo "Don't use reverts! Squash or rename this commit"; fail; fi
-
-black:
-  stage: check
-  image:
-    name: cytopia/black:latest
-    entrypoint: ["/bin/sh", "-c"]
-  tags: [ linux ]
-  rules:
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-      changes:
-        - "**/*.py"
-  script:
-    - python3 -m black --check --diff scripts/
+include:
+  - /.gitlab/ci/checks.yml
+  - /.gitlab/ci/builds.yml
+  - /.gitlab/ci/integration_test.yml
+  - /.gitlab/ci/asciidoc.yml
 
 .cpp_rules_template: &cpp_rules_definition
   rules:
@@ -41,6 +20,7 @@ black:
         - .clang-format
         - .clang-tidy
         - .gitlab-ci.yml
+        - ".gitlab/ci/*.yml"
         - "**/CMakeLists.txt"
         - "**/*.cmake"
         - "**/*.cmake.in"
@@ -49,116 +29,18 @@ black:
         - "**/*.hpp"
 
 clang-format:
-  stage: check
   <<: *cpp_rules_definition
-  image: cbachhuber/clang:11
-  tags: [ linux ]
-  script:
-    - ./scripts/check/clang_format.py
-    - git diff
-    - if [[ $(git diff) ]]; then echo "Formatting is wrong! See above."; return 1; fi
 
 GCC 9 Release:
-  stage: build
   <<: *cpp_rules_definition
-  image: rikorose/gcc-cmake:gcc-9
-  tags: [ linux ]
-  script:
-    - mkdir -p build && cd build
-    - cmake -DCMAKE_CXX_FLAGS="-Wall -Wextra -Wpedantic -Werror -Wfloat-conversion" -DENABLE_CLANG_TIDY=OFF -DCMAKE_BUILD_TYPE=Release ..
-    - make -j $(nproc)
-    - make -j $(nproc) test
 
 Clang 11 Debug:
-  stage: build
   <<: *cpp_rules_definition
-  image: cbachhuber/clang:11
-  tags: [ linux, long-job ]
-  script:
-    - mkdir -p build && cd build
-    - >
-      cmake
-      -DCMAKE_CXX_FLAGS="-stdlib=libc++
-      -Wall -Wextra -Wpedantic -Werror -Wunreachable-code-aggressive -Wimplicit-int-conversion
-      -fprofile-arcs -ftest-coverage"
-      -DCMAKE_BUILD_TYPE=Debug
-      ..
-    - make -j $(nproc)
-    - make -j $(nproc) test
-    - cd ..
-    - mkdir coverage_html
-    - >
-      gcovr build --gcov-executable 'llvm-cov-11 gcov' -f 'source/' -e '.*\.test\.cpp'
-      --xml coverage.xml --xml-pretty --html-details coverage_html/index.html --print-summary
-  artifacts:
-    reports:
-      cobertura: coverage.xml
-    paths:
-      - coverage_html/
-    expire_in: 5 days
 
 VC 16 Release:
-  stage: build
   <<: *cpp_rules_definition
-  image: buildtools2019:2021.03.04
-  tags: [ windows ]
-  script:
-    - mkdir -p build
-    - cd build
-    - >
-      cmake -G "Visual Studio 16 2019" -DENABLE_CLANG_TIDY=OFF
-      -DCMAKE_CXX_FLAGS="/DWIN32 /D_WINDOWS /permissive- /w14640 /W4 /GR /EHsc /WX"
-      -DCMAKE_INSTALL_PREFIX=/builds/software/MPEG/MIV/RS/TM1/install
-      ..
-    - 'cmake --build . --parallel --config Release --target ALL_BUILD'
-    - 'cmake --build . --config Release --target RUN_TESTS'
-    - 'cmake --build . --config Release --target INSTALL'
-  artifacts:
-    expire_in: 1 day
-    paths:
-      - install/bin
-      - install/include/TMIV/Decoder/MivDecoder.h
 
 Integration Test:
-  stage: integration
   <<: *cpp_rules_definition
-  image: buildtools2019:2021.03.04
   dependencies:
     - VC 16 Release
-  tags: [ windows ]
-  script:
-    - >
-      python scripts/test/integration_test.py
-      /builds/software/MPEG/MIV/RS/TM1/install
-      /builds/software/MPEG/MIV/RS/TM1
-      /ctc_content
-      /builds/software/MPEG/MIV/RS/TM1/integration_test
-      -r /builds/software/MPEG/MIV/RS/TM1/test/ci_integration_test.md5
-      -j 3 --ci
-  artifacts:
-    when: always
-    paths:
-      - integration_test/**/*.hls
-      - integration_test/**/*.json
-      - integration_test/**/*.log
-      - integration_test/**/*.md5
-
-AsciiDoc:
-  stage: build
-  image: asciidoctor/docker-asciidoctor:1.2
-  tags: [ linux ]
-  rules:
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-      changes:
-        - doc/test_model/**/*
-  script:
-    - cd doc/test_model
-    - asciidoctor --backend html5 -a data-uri index.adoc
-    - mv index.html ../../test_model.html
-    - asciidoctor-pdf -r asciidoctor-mathematical -a pdf-style=pdf_theme.yml index.adoc
-    - mv index.pdf ../../test_model.pdf
-  artifacts:
-    paths:
-      - test_model.html
-      - test_model.pdf

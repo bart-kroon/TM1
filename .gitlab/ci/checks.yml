@@ -1,0 +1,36 @@
+black:
+  stage: check
+  image:
+    name: cytopia/black:latest
+    entrypoint: ["/bin/sh", "-c"]
+  tags: [ linux ]
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      changes:
+        - "**/*.py"
+        - .gitlab/ci/checks.yml
+  script:
+    - python3 -m black --check --diff scripts/
+
+clang-format:
+  stage: check
+  image: cbachhuber/clang:11
+  tags: [ linux ]
+  script:
+    - ./scripts/check/clang_format.py
+    - git diff
+    - if [[ $(git diff) ]]; then echo "Formatting is wrong! See above."; return 1; fi
+
+no git reverts:
+  stage: check
+  image:
+    name: cbachhuber/clang:11
+  tags: [ linux ]
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+  script:
+    - git fetch origin $CI_DEFAULT_BRANCH:main
+    - COMMIT_MSGS=$(git log --pretty=format:%B main..HEAD)
+    - echo "$COMMIT_MSGS"
+    - if [[ "$COMMIT_MSGS" =~ .*^Revert.* ]]; then echo "Don't use reverts! Squash or rename this commit"; fail; fi

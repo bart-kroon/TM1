@@ -58,7 +58,7 @@ The following levels of testing have been defined:
 
 ### Appropriate level of testing
 
-The appropriate level of testing depends on the changes in the merge request, e.g.:
+The appropriate level of testing (for testing instructions, see [testing.md](/doc/testing.md)) depends on the changes in the merge request, e.g.:
   * Non-code change like manual: code reviewer reads through the changes
   * Full code coverage of an isolated unit: CI is sufficient (no need for the code reviewer to clone the branch)
   * Changes across units (incl. HLS) w/o change to YUV files: integration test
@@ -184,7 +184,7 @@ Syntax structures are in this context defined by the MIV and V-PCC/V3C specifica
 
 ### Break on exceptions
 
-If you want to debug bitstream related errors, e.g. if `VERIFY_*BITSTREAM` is throwing an exception, it is a good idea to set your IDE to break on unhandled exceptions ([Visual Studio instructions](https://docs.microsoft.com/en-us/visualstudio/debugger/managing-exceptions-with-the-debugger), [CLion instructions](https://www.jetbrains.com/help/clion/using-breakpoints.html#exception-breakpoints)and start a debugging session.
+If you want to debug bitstream related errors, e.g. if `VERIFY_*BITSTREAM` is throwing an exception, it is a good idea to set your IDE to break on unhandled exceptions ([Visual Studio instructions](https://docs.microsoft.com/en-us/visualstudio/debugger/managing-exceptions-with-the-debugger), [CLion instructions](https://www.jetbrains.com/help/clion/using-breakpoints.html#exception-breakpoints)) and start a debugging session.
 
 ## Test model document
 

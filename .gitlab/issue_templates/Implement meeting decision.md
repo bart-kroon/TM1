@@ -15,6 +15,6 @@
 
 * Please separate code merge requests (MRs) from test model documentation MRs
 * Please provide your contribution in (multiple) reasonably sized  MRs. Small MRs are much easier to review. Try to keep the number of changed lines below 300 per MR.
-* [Contribution guide](http://mpegx.int-evry.fr/software/MPEG/MIV/RS/TM1/-/blob/v8.0-dev/doc/CONTRIBUTING.md)
+* [Contribution guide](http://mpegx.int-evry.fr/software/MPEG/MIV/RS/TM1/-/blob/main/doc/contributing.md)
 
 /label ~mpeg133

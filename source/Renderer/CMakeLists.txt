@@ -55,7 +55,6 @@ create_catch2_unit_test(
         "src/Engine_orthographic.test.cpp"
         "src/MpiRasterizer.test.cpp"
         "src/Rasterizer.test.cpp"
-        "src/Renderer.test.cpp"
         "src/PushPull.test.cpp"
         "src/PushPullInpainter.test.cpp"
     PRIVATE
@@ -66,7 +65,6 @@ create_catch2_unit_test(
     TARGET
         RendererFrontTest
     SOURCES
-        "src/Front/RendererFront.test.cpp"
         "src/Front/mapInputToOutputFrames.test.cpp"
         "src/Front/MultipleFrameRenderer.test.cpp"
     PRIVATE

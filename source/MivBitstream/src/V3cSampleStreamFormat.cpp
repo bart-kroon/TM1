@@ -51,6 +51,7 @@ auto operator<<(std::ostream &stream, const SampleStreamV3cHeader &x) -> std::os
 auto SampleStreamV3cHeader::decodeFrom(std::istream &stream) -> SampleStreamV3cHeader {
   Common::InputBitstream bitstream{stream};
   const auto ssvh_unit_size_precision_bytes_minus1 = bitstream.readBits<uint8_t>(3);
+  VERIFY(stream.good());
   return SampleStreamV3cHeader{ssvh_unit_size_precision_bytes_minus1};
 }
 

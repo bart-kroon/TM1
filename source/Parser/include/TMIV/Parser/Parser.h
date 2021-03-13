@@ -31,5 +31,24 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#define CATCH_CONFIG_MAIN
-#include "test.h"
+#include <iosfwd>
+#include <memory>
+
+namespace TMIV::Parser {
+class Parser {
+public:
+  explicit Parser(std::ostream &log);
+  Parser(const Parser &) = delete;
+  Parser(Parser &&) = default;
+  auto operator=(const Parser &) -> Parser & = delete;
+  auto operator=(Parser &&) -> Parser & = default;
+  ~Parser();
+
+  void parseV3cSampleStream(std::istream &stream);
+
+private:
+  class Impl;
+
+  std::unique_ptr<Impl> m_impl;
+};
+} // namespace TMIV::Parser

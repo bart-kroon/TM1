@@ -17,7 +17,6 @@ create_catch2_unit_test(
         PackerTest
     SOURCES
         "src/Cluster.test.cpp"
-        "src/Packer.test.cpp"
         "src/Retriever.test.cpp"
     PRIVATE
         TMIV::PackerLib

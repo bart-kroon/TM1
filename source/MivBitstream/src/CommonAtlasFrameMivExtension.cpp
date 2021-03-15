@@ -234,7 +234,6 @@ auto CameraExtrinsics::decodeFrom(Common::InputBitstream &bitstream) -> CameraEx
   x.ce_view_quat_x(bitstream.getInt32());
   x.ce_view_quat_y(bitstream.getInt32());
   x.ce_view_quat_z(bitstream.getInt32());
-  VERIFY_MIVBITSTREAM(x.hypotQuatXYZ() <= maxHypotQuatXYZ);
 
   return x;
 }
@@ -244,7 +243,6 @@ void CameraExtrinsics::encodeTo(Common::OutputBitstream &bitstream) const {
   bitstream.putFloat32(ce_view_pos_y());
   bitstream.putFloat32(ce_view_pos_z());
 
-  PRECONDITION(hypotQuatXYZ() <= maxHypotQuatXYZ);
   bitstream.putInt32(ce_view_quat_x());
   bitstream.putInt32(ce_view_quat_y());
   bitstream.putInt32(ce_view_quat_z());

@@ -56,7 +56,6 @@ struct ViewingDirection {
 };
 
 static auto viewingDirection(const Common::QuatF &rotation) -> ViewingDirection {
-  assert(isNormalized(rotation));
   static const Common::Vec3f forwardAxis{1.F, 0.F, 0.F};
   const auto directionVector = rotate(forwardAxis, rotation);
 
@@ -256,8 +255,8 @@ auto interpolateShape(const MivBitstream::PrimitiveShape a, const MivBitstream::
   }
 
   // rotation
-  const auto rota = a.rotation.value_or(Common::neutralOrientation);
-  const auto rotb = b.rotation.value_or(Common::neutralOrientation);
+  const auto rota = a.rotation.value_or(Common::neutralOrientationF);
+  const auto rotb = b.rotation.value_or(Common::neutralOrientationF);
   output.rotation = (1. - w) * rota + w * rotb;
 #ifdef VERBOSE
   std::cout << "  rotation = " << output.rotation.value() << std::endl;

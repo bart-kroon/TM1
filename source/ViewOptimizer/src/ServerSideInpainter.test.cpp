@@ -278,7 +278,7 @@ TEST_CASE("ServerSideInpainter") {
       }
 
       THEN("The added view is forward and upright") {
-        REQUIRE(params.viewParamsList.back().pose.orientation == TMIV::Common::neutralOrientation);
+        REQUIRE(params.viewParamsList.back().pose.orientation == TMIV::Common::neutralOrientationD);
       }
 
       THEN("The cardinal point of the added view is at the center of gravity") {

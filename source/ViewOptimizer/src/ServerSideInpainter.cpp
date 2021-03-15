@@ -98,7 +98,7 @@ public:
     const float halfFovX = std::atan(0.5F * size.x() / std::abs(focal.x()));
     const float halfFovY = std::atan(0.5F * size.y() / std::abs(focal.y()));
 
-    const auto euler = TMIV::Common::quat2euler(vp.pose.orientation);
+    const auto euler = Common::Vec3f{Common::quat2euler(vp.pose.orientation)};
     const auto yaw = euler[0];
     const auto pitch = euler[1];
     const auto phi = yaw;

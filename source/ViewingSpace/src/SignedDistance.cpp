@@ -70,7 +70,7 @@ auto signedDistance(const MivBitstream::Halfspace &halfspace, const Common::Quat
 
 auto signedDistance(const MivBitstream::PrimitiveShape &shape, const Common::Vec3f &point)
     -> SignedDistance {
-  const auto rotation = shape.rotation.value_or(Common::neutralOrientation);
+  const auto rotation = shape.rotation.value_or(Common::neutralOrientationF);
   return std::visit([&](auto &&s) { return signedDistance(s, rotation, point); }, shape.primitive);
 }
 

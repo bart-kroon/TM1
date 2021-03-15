@@ -50,7 +50,7 @@ TEST_CASE("Quanternion<T>", "[quaternion]") {
   const auto p = QuatF{1.F, -2.F, 3.F, -4.F};     // some quaternion
   const auto q = QuatF{1.F, 3.F, 4.F, 7.F};       // another quaternion
   const auto r = QuatF{-0.2F, 0.4F, 0.4F, -0.8F}; // some versor
-  const auto u = neutralOrientation;              // zero rotation versor
+  const auto u = neutralOrientationF;             // zero rotation versor
 
   SECTION("Quaternion convention (x, y, z, w)") {
     // p = w + ix + jz + kz
@@ -61,15 +61,10 @@ TEST_CASE("Quanternion<T>", "[quaternion]") {
   }
 
   SECTION("Quaternion norm") {
+    REQUIRE(norm2(p) == 30.);
+    REQUIRE(norm2(q) == 75.);
     REQUIRE(norm(u) == 1.F);
     REQUIRE(norm(r) == 1.F);
-  }
-
-  SECTION("Unit quaternion test") {
-    REQUIRE(!isNormalized(p));
-    REQUIRE(!isNormalized(q));
-    REQUIRE(isNormalized(u));
-    REQUIRE(isNormalized(r));
   }
 
   SECTION("Quaternion multiplication") {
@@ -109,15 +104,24 @@ TEST_CASE("Quanternion<T>", "[quaternion]") {
     const auto roll_rad = 0.0204419943;
     const auto quat = euler2quat(Vec3d{yaw_rad, pitch_rad, roll_rad});
 
+    // Mathematica 12.1 is the source of truth for below four numbers:
+    // << Quaternions`
+    // Euler2Quat[y_, p_, r_] :=
+    //    Quaternion[Cos[y/2], 0, 0, Sin[y/2]] **
+    //    Quaternion[Cos[p/2], 0, Sin[p/2], 0] **
+    //    Quaternion[Cos[r/2], Sin[r/2], 0, 0]
+    // SetPrecision[
+    //    Euler2Quat[-0.4764713951, 0.0344346480, 0.0204419943], 16]
+
     REQUIRE(quat.x() == Approx(0.0139933465964437));
-    REQUIRE(quat.y() == Approx(0.0143176961628196));
-    REQUIRE(quat.z() == Approx(-0.2361122181516230));
-    REQUIRE(quat.w() == Approx(0.9715195367398130));
+    REQUIRE(quat.y() == Approx(0.01431769616180822));
+    REQUIRE(quat.z() == Approx(-0.2361122181339085));
+    REQUIRE(quat.w() == Approx(0.9715195367443717));
   }
 
   SECTION("Convert quaternion to Euler angles") {
     const auto euler = quat2euler(
-        QuatD{0.0139933465964437, 0.0143176961628196, -0.2361122181516230, 0.9715195367398130});
+        QuatD{0.0139933465964437, 0.01431769616180822, -0.2361122181339085, 0.9715195367443717});
 
     CHECK(euler.x() == Approx(-0.4764713951)); // yaw [rad]
     CHECK(euler.y() == Approx(0.0344346480));  // pitch [rad]

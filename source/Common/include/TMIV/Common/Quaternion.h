@@ -34,22 +34,25 @@
 #ifndef TMIV_COMMON_QUATERNION_H
 #define TMIV_COMMON_QUATERNION_H
 
-#include "Matrix.h"
-#include "Vector.h"
+#include <TMIV/Common/Matrix.h>
+#include <TMIV/Common/Vector.h>
+#include <TMIV/Common/verify.h>
 
 #include <cassert>
+#include <type_traits>
 
 namespace TMIV::Common {
-// Quaternion: q = w + ix + jy + kz with i^2 = j^2 + k^2 = -1
-template <typename T> using Quaternion = stack::Vec4<T>;
+// Quaternion: q = w + ix + jy + kz with i^2 = j^2 = k^2 = ijk = -1
+template <typename Float> using Quaternion = stack::Vec4<Float>;
 using QuatF = Quaternion<float>;
 using QuatD = Quaternion<double>;
-const auto neutralOrientation = QuatF{0.F, 0.F, 0.F, 1.F};
+const auto neutralOrientationF = QuatF{0.F, 0.F, 0.F, 1.F};
+const auto neutralOrientationD = QuatD{0., 0., 0., 1.};
 
 // Quaternion product: a b
-template <typename T1, typename T2>
-auto operator*(const Quaternion<T1> &a, const Quaternion<T2> &b) {
-  using R = std::common_type_t<T1, T2>;
+template <typename Float1, typename Float2>
+auto operator*(const Quaternion<Float1> &a, const Quaternion<Float2> &b) {
+  using R = std::common_type_t<Float1, Float2>;
   return Quaternion<R>{
       a.w() * b.x() + a.x() * b.w() + a.y() * b.z() - a.z() * b.y(), // x
       a.w() * b.y() - a.x() * b.z() + a.y() * b.w() + a.z() * b.x(), // y
@@ -59,41 +62,48 @@ auto operator*(const Quaternion<T1> &a, const Quaternion<T2> &b) {
 }
 
 // Quaternion conjugent: q -> w - ix - jy - kz
-template <typename T> auto conj(const Quaternion<T> &q) {
-  return Quaternion<T>{-q.x(), -q.y(), -q.z(), q.w()};
+template <typename Float> auto conj(const Quaternion<Float> &q) {
+  return Quaternion<Float>{-q.x(), -q.y(), -q.z(), q.w()};
 }
 
-// Unit quaternion test: ||q|| == 1
-template <typename T, typename Tolerance = T>
-auto isNormalized(const Quaternion<T> &q, Tolerance tol = static_cast<T>(1e-6F)) {
-  return (norm(q) - 1) <= tol;
+// Normalize a quaternion
+//
+// NOTE(#335): The new design principle is to assume quaternions are not normalized, and normalize
+// them at the point where this is a requirement (rotate, quat2euler, rotationMatrix, encoding).
+template <typename Float> auto normalize(Quaternion<Float> q) noexcept {
+  static_assert(std::is_floating_point_v<Float>);
+  const auto q2 = norm2(q);
+  PRECONDITION(Float{} < q2);
+  return q / std::sqrt(q2);
 }
 
 // Vector quaternion: v = (x, y, z) -> ix + jy + kz
-template <typename T> auto quat(const stack::Vec3<T> &v) {
-  return Quaternion<T>{v.x(), v.y(), v.z(), 0.F};
+template <typename Float> auto quat(const stack::Vec3<Float> &v) {
+  return Quaternion<Float>{v.x(), v.y(), v.z(), 0.F};
 }
 
-// Conjugate quaternion p by unit quaternion q: qpq^-1
-//
-// Precondition: ||q|| == 1
-template <typename T1, typename T2> auto rotate(const Quaternion<T1> &p, const Quaternion<T2> &q) {
-  assert(isNormalized(q));
-  return q * p * conj(q);
+// Conjugate quaternion p by unit quaternion q: qpq^-1 = qpq* / qq*
+template <typename Float1, typename Float2>
+auto rotate(const Quaternion<Float1> &p, const Quaternion<Float2> &q) {
+  static_assert(std::is_floating_point_v<Float1> && std::is_floating_point_v<Float2>);
+  return (q * p * conj(q)) / norm2(q);
 }
 
 // Rotate a vector by a unit quaternion
-template <typename T1, typename T2> auto rotate(const stack::Vec3<T1> &v, const Quaternion<T2> &q) {
+template <typename Float1, typename Float2>
+auto rotate(const stack::Vec3<Float1> &v, const Quaternion<Float2> &q) {
   const auto p = rotate(quat(v), q);
-  using T3 = typename decltype(p)::value_type;
-  return stack::Vec3<T3>{p.x(), p.y(), p.z()};
+  using Float3 = typename decltype(p)::value_type;
+  return stack::Vec3<Float3>{p.x(), p.y(), p.z()};
 }
 
 // Euler angles (yaw, pitch, roll) [rad] to quaternion conversion
 //
 // https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
-template <typename T> auto euler2quat(const stack::Vec3<T> &eulerAngles) {
-  using Q = Quaternion<T>;
+template <typename Float> auto euler2quat(const stack::Vec3<Float> &eulerAngles) {
+  static_assert(std::is_floating_point_v<Float>);
+
+  using Q = Quaternion<Float>;
   using std::cos;
   using std::sin;
 
@@ -101,33 +111,30 @@ template <typename T> auto euler2quat(const stack::Vec3<T> &eulerAngles) {
   const auto p = eulerAngles[1]; // pitch rotation [rad]
   const auto r = eulerAngles[2]; // roll rotation [rad]
 
-  constexpr auto zero = T{};
-  constexpr auto half = T{0.5F};
-
-  const auto qy = Q{zero, zero, sin(half * y), cos(half * y)};
-  const auto qp = Q{zero, sin(half * p), zero, cos(half * p)};
-  const auto qr = Q{sin(half * r), zero, zero, cos(half * r)};
+  const auto qy = Q{0.F, 0.F, sin(0.5F * y), cos(0.5F * y)};
+  const auto qp = Q{0.F, sin(0.5F * p), 0.F, cos(0.5F * p)};
+  const auto qr = Q{sin(0.5F * r), 0.F, 0.F, cos(0.5F * r)};
 
   return qy * qp * qr;
 }
 
-template <typename T> auto quat2euler(const Quaternion<T> &q) {
-  constexpr auto one = T{1.F};
-  constexpr auto two = T{2.F};
-  constexpr auto halfPi = static_cast<T>(M_PI2);
+template <typename Float> auto quat2euler(Quaternion<Float> q) {
+  q = normalize(q);
+
+  constexpr auto halfPi = static_cast<Float>(M_PI2);
 
   const auto cYaw = sqr(q.x()) - sqr(q.y()) - sqr(q.z()) + sqr(q.w());
-  const auto sYaw = two * (q.w() * q.z() + q.x() * q.y());
+  const auto sYaw = 2.F * (q.w() * q.z() + q.x() * q.y());
   const auto yaw = std::atan2(sYaw, cYaw);
 
-  const auto sPitch = two * (q.w() * q.y() - q.z() * q.x());
-  const auto pitch = std::abs(sPitch) < one ? std::asin(sPitch) : std::copysign(halfPi, sPitch);
+  const auto sPitch = 2.F * (q.w() * q.y() - q.z() * q.x());
+  const auto pitch = std::abs(sPitch) < 1.F ? std::asin(sPitch) : std::copysign(halfPi, sPitch);
 
   const auto cRoll = -sqr(q.x()) - sqr(q.y()) + sqr(q.z()) + sqr(q.w());
-  const auto sRoll = two * (q.w() * q.x() + q.y() * q.z());
+  const auto sRoll = 2.F * (q.w() * q.x() + q.y() * q.z());
   const auto roll = std::atan2(sRoll, cRoll);
 
-  return stack::Vec3<T>{yaw, pitch, roll};
+  return stack::Vec3<Float>{yaw, pitch, roll};
 }
 
 // Unit quaternion (q) to rotation matrix (R) conversion
@@ -135,41 +142,18 @@ template <typename T> auto quat2euler(const Quaternion<T> &q) {
 // The matrix R has the following property:
 //
 //    quat(Rv) == rotate(v, q))
-//
-// Precondition: ||q|| == 1
-template <typename T> auto rotationMatrix(const Quaternion<T> &q) {
-  assert(isNormalized(q));
+template <typename Float> auto rotationMatrix(Quaternion<Float> q) {
+  q = normalize(q);
 
-  constexpr auto one = T{1};
-  constexpr auto two = T{2};
-
-  return stack::Mat3x3<T>{one - two * (q.y() * q.y() + q.z() * q.z()),  // R_xx
-                          two * (q.x() * q.y() - q.z() * q.w()),        // R_xy
-                          two * (q.z() * q.x() + q.y() * q.w()),        // R_xz
-                          two * (q.x() * q.y() + q.z() * q.w()),        // R_yx
-                          one - two * (q.z() * q.z() + q.x() * q.x()),  // R_yy
-                          two * (q.y() * q.z() - q.x() * q.w()),        // R_yz
-                          two * (q.z() * q.x() - q.y() * q.w()),        // R_zx
-                          two * (q.y() * q.z() + q.x() * q.w()),        // R_zy
-                          one - two * (q.x() * q.x() + q.y() * q.y())}; // R_zz
-}
-
-// Great-circle distance (aka orthodromic distance)
-//
-// https://en.wikipedia.org/wiki/Great-circle_distance
-template <typename T1, typename T2>
-auto greatCircleDistance(const Quaternion<T1> &q1, const Quaternion<T2> &q2) {
-  using std::abs;
-  using std::acos;
-  using std::atan;
-
-  using R = std::common_type_t<T1, T2>;
-  const auto forward = stack::Vec3<R>{R(1), R(0), R(0)};
-  const auto v1 = rotate(forward, q1);
-  const auto v2 = rotate(forward, q2);
-  const auto dot12 = dot(v1, v2);
-  const auto cross12 = norm(cross(v1, v2));
-  return dot12 > cross12 ? atan(cross12 / dot12) : acos(dot12);
+  return stack::Mat3x3<Float>{1.F - 2.F * (q.y() * q.y() + q.z() * q.z()),  // R_xx
+                              2.F * (q.x() * q.y() - q.z() * q.w()),        // R_xy
+                              2.F * (q.z() * q.x() + q.y() * q.w()),        // R_xz
+                              2.F * (q.x() * q.y() + q.z() * q.w()),        // R_yx
+                              1.F - 2.F * (q.z() * q.z() + q.x() * q.x()),  // R_yy
+                              2.F * (q.y() * q.z() - q.x() * q.w()),        // R_yz
+                              2.F * (q.z() * q.x() - q.y() * q.w()),        // R_zx
+                              2.F * (q.y() * q.z() + q.x() * q.w()),        // R_zy
+                              1.F - 2.F * (q.x() * q.x() + q.y() * q.y())}; // R_zz
 }
 } // namespace TMIV::Common
 

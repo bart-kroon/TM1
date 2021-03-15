@@ -41,7 +41,7 @@ using TMIV::Renderer::AffineTransform;
 TEST_CASE("AffineTransform") {
   const auto neutral = TMIV::MivBitstream::Pose{};
   const auto translated =
-      TMIV::MivBitstream::Pose{{1.F, 2.F, 3.F}, TMIV::Common::neutralOrientation};
+      TMIV::MivBitstream::Pose{{1.F, 2.F, 3.F}, TMIV::Common::neutralOrientationD};
   const auto rotated = [](auto x, auto y, auto z) -> TMIV::MivBitstream::Pose {
     return {{}, {x, y, z, std::sqrt(1.F - x * x - y * y - z * z)}};
   }(0.1F, 0.3F, -0.3F);

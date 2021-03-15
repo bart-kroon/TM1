@@ -43,23 +43,48 @@ TEST_CASE("Pose") {
 
     auto unit = Pose{};
     unit.position = TMIV::Common::Vec3f{1.F, 2.F, 3.F};
-    unit.orientation = TMIV::Common::QuatF{0.3F, 0.3F, 0.1F, 0.9F};
+    unit.orientation = TMIV::Common::QuatD{0.3, 0.3, 0.1, 0.9};
 
-    auto expectedCameraExtrinsics = TMIV::MivBitstream::CameraExtrinsics{};
-    expectedCameraExtrinsics.ce_view_pos_x(1.F)
-        .ce_view_pos_y(2.F)
-        .ce_view_pos_z(3.F)
-        .ce_view_quat_x(322122564)
-        .ce_view_quat_y(322122564)
-        .ce_view_quat_z(107374185);
-    REQUIRE(unit.encodeToCameraExtrinsics() == expectedCameraExtrinsics);
-    REQUIRE(Pose::decodeFrom(expectedCameraExtrinsics) == unit);
+    const auto expectedCameraExtrinsics = []() {
+      auto ce = TMIV::MivBitstream::CameraExtrinsics{};
+      ce.ce_view_pos_x(1.F)
+          .ce_view_pos_y(2.F)
+          .ce_view_pos_z(3.F)
+          .ce_view_quat_x(322122547)  // 0.299999999813735...
+          .ce_view_quat_y(322122547)  // 0.299999999813735...
+          .ce_view_quat_z(107374182); // 0.099999999627471...
+      return ce;
+    }();
 
-    std::ostringstream stream;
-    unit.printTo(stream, 1);
-    REQUIRE(stream.str() == R"(position[ 1 ]=(1.0, 2.0, 3.0)
+    SECTION("Encode") {
+      const auto actualCameraExtrinsics = unit.encodeToCameraExtrinsics();
+      REQUIRE(actualCameraExtrinsics == expectedCameraExtrinsics);
+    }
+
+    SECTION("Decode") {
+      const auto actualPose = Pose::decodeFrom(expectedCameraExtrinsics);
+
+      REQUIRE(actualPose.position == unit.position);
+
+      const auto approx = [](const auto x) {
+        return Approx(x).epsilon(0).margin(std::ldexp(1, -31));
+      };
+      REQUIRE(actualPose.orientation.x() == approx(unit.orientation.x()));
+      REQUIRE(actualPose.orientation.y() == approx(unit.orientation.y()));
+      REQUIRE(actualPose.orientation.z() == approx(unit.orientation.z()));
+      REQUIRE(actualPose.orientation.w() == approx(unit.orientation.w()));
+    }
+
+    SECTION("Print") {
+      std::ostringstream stream;
+      unit.printTo(stream, 1);
+
+      const auto actualText = stream.str();
+      const auto *referenceText = R"(position[ 1 ]=(1.0, 2.0, 3.0)
 orientation[ 1 ]=0.9 + i 0.3 + j 0.3 + k 0.1
-)");
+)";
+      REQUIRE(actualText == referenceText);
+    }
   }
 }
 

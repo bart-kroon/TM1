@@ -42,7 +42,7 @@
 namespace TMIV::MivBitstream {
 struct Pose {
   Common::Vec3f position;
-  Common::QuatF orientation{Common::neutralOrientation};
+  Common::QuatD orientation{Common::neutralOrientationD};
 
   auto printTo(std::ostream &stream, uint16_t viewId) const -> std::ostream &;
 

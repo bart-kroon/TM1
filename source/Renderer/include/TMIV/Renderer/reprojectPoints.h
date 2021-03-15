@@ -128,7 +128,7 @@ public:
 private:
   std::reference_wrapper<const MivBitstream::ViewParams> m_viewParams;
   std::unique_ptr<MetaEngine::Base> m_engine;
-  Common::QuatF m_rotation{Common::neutralOrientation};
+  Common::QuatF m_rotation{Common::neutralOrientationF};
 
 public:
   ProjectionHelper(const MivBitstream::ViewParams &viewParams);

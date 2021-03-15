@@ -186,11 +186,6 @@ constexpr auto CameraExtrinsics::ce_view_quat_z(const int32_t value) noexcept ->
   return *this;
 }
 
-constexpr auto CameraExtrinsics::hypotQuatXYZ() const noexcept {
-  return Common::sqr<int64_t>(ce_view_quat_x()) + Common::sqr<int64_t>(ce_view_quat_y()) +
-         Common::sqr<int64_t>(ce_view_quat_z());
-}
-
 constexpr auto CameraExtrinsics::operator==(const CameraExtrinsics &other) const noexcept {
   return ce_view_pos_x() == other.ce_view_pos_x() && ce_view_pos_y() == other.ce_view_pos_y() &&
          ce_view_pos_z() == other.ce_view_pos_z() && ce_view_quat_x() == other.ce_view_quat_x() &&

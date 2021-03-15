@@ -57,8 +57,7 @@ static auto decodeRotation(Common::InputBitstream &stream) -> Common::QuatF {
 }
 
 static auto equalRotation(const Common::QuatF &a, const Common::QuatF &b) -> bool {
-  assert(isNormalized(a, 1.0E-3F) && isNormalized(b, 1.0E-3F));
-  const float d = dot(a, b);
+  const float d = dot(a, b) / std::sqrt(norm2(a) * norm2(b));
   return d > 0.9999F;
 }
 
@@ -345,8 +344,8 @@ auto PrimitiveShape::operator==(const PrimitiveShape &other) const -> bool {
   if (guardBandSize != other.guardBandSize) {
     return false;
   }
-  if (!equalRotation(rotation.value_or(Common::neutralOrientation),
-                     other.rotation.value_or(Common::neutralOrientation))) {
+  if (!equalRotation(rotation.value_or(Common::neutralOrientationF),
+                     other.rotation.value_or(Common::neutralOrientationF))) {
     return false;
   }
   if (viewingDirectionConstraint != other.viewingDirectionConstraint) {

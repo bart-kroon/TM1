@@ -60,15 +60,11 @@ auto Pose::decodeFrom(const CameraExtrinsics &ce) -> Pose {
   pose.position.y() = ce.ce_view_pos_y();
   pose.position.z() = ce.ce_view_pos_z();
 
-  pose.orientation.x() = std::ldexp(static_cast<float>(ce.ce_view_quat_x()), -30);
-  pose.orientation.y() = std::ldexp(static_cast<float>(ce.ce_view_quat_y()), -30);
-  pose.orientation.z() = std::ldexp(static_cast<float>(ce.ce_view_quat_z()), -30);
-
-  const auto r2 = ce.hypotQuatXYZ();
-  static constexpr auto r2max = CameraExtrinsics::maxHypotQuatXYZ;
-  VERIFY_MIVBITSTREAM(r2 <= r2max);
-  pose.orientation.w() = std::sqrt(std::ldexp(static_cast<float>(r2max - r2), -60));
-  POSTCONDITION(0 <= pose.orientation.w());
+  pose.orientation.x() = std::ldexp(ce.ce_view_quat_x(), -30);
+  pose.orientation.y() = std::ldexp(ce.ce_view_quat_y(), -30);
+  pose.orientation.z() = std::ldexp(ce.ce_view_quat_z(), -30);
+  pose.orientation.w() = 0.;
+  pose.orientation.w() = std::sqrt(std::max(0., 1. - norm2(pose.orientation)));
 
   return pose;
 }
@@ -80,14 +76,21 @@ auto Pose::encodeToCameraExtrinsics() const -> CameraExtrinsics {
   ce.ce_view_pos_y(position.y());
   ce.ce_view_pos_z(position.z());
 
-  // Truncate x, y and z to guarantee x^2 + y^2 + z^2 <= 1 after reconstruction.
-  const auto q = Common::QuatD{orientation};
-  PRECONDITION(isNormalized(q));
-  const auto Z = 1. / Common::norm(q); // minor correction
-  ce.ce_view_quat_x(static_cast<int32_t>(std::ldexp(Z * q.x(), 30)));
-  ce.ce_view_quat_y(static_cast<int32_t>(std::ldexp(Z * q.y(), 30)));
-  ce.ce_view_quat_z(static_cast<int32_t>(std::ldexp(Z * q.z(), 30)));
-  POSTCONDITION(ce.hypotQuatXYZ() <= CameraExtrinsics::maxHypotQuatXYZ);
+  const auto quantize = [](const auto x) {
+    return Common::assertDownCast<int32_t>(std::lround(std::ldexp(x, 30)));
+  };
+
+  const auto q = normalize(orientation);
+
+  // NOTE(#335): Rotation p -> q -> qpq* / qq* is not affected by any non-zero scalar multiplication
+  // but to avoid flips for -0, it is tested if w would be negative when quantized. This can be
+  // written out as w < -eps but then an error could be made in the calculation of eps for instance
+  // when the quantification equation is changed later.
+  const auto sign = 0 <= quantize(q.w()) ? 1 : -1;
+
+  ce.ce_view_quat_x(sign * quantize(q.x()));
+  ce.ce_view_quat_y(sign * quantize(q.y()));
+  ce.ce_view_quat_z(sign * quantize(q.z()));
 
   return ce;
 }

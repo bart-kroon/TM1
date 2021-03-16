@@ -147,6 +147,7 @@ auto Encoder::completeAccessUnit() -> const MivBitstream::EncoderParams & {
     m_packer->updateAggregatedEntityMasks(m_aggregatedEntityMask);
   }
 
+  m_packer->initialize(m_params.atlasSizes(), m_config.blockSize);
   m_params.patchParamsList = m_packer->pack(m_params.atlasSizes(), aggregatedMask,
                                             m_transportParams.viewParamsList, m_config.blockSize);
 

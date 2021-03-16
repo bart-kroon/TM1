@@ -95,6 +95,8 @@ Packer::Packer(const Common::Json &rootNode, const Common::Json &componentNode) 
   }
 }
 
+Packer::~Packer() = default;
+
 void Packer::updateAggregatedEntityMasks(const std::vector<Common::MaskList> &entityMasks) {
   for (const auto &entityMask : entityMasks) {
     m_aggregatedEntityMasks.push_back(entityMask);
@@ -147,6 +149,14 @@ auto Packer::computeClusterToPack(const MivBitstream::ViewParamsList &viewParams
   return clusterToPack;
 }
 
+void Packer::initialize(const Common::SizeVector &atlasSizes, const int blockSize) {
+  m_packerList.clear();
+  m_packerList.reserve(atlasSizes.size());
+  for (const auto &sz : atlasSizes) {
+    m_packerList.emplace_back(sz.x(), sz.y(), blockSize, m_pip);
+  }
+}
+
 auto Packer::pack(const Common::SizeVector &atlasSizes, const Common::MaskList &masks,
                   const MivBitstream::ViewParamsList &viewParamsList, const int m_blockSize)
     -> MivBitstream::PatchParamsList {
@@ -159,13 +169,7 @@ auto Packer::pack(const Common::SizeVector &atlasSizes, const Common::MaskList &
 
   // Packing
   MivBitstream::PatchParamsList atlasParamsVector{};
-  std::vector<MaxRectPiP> packerList{};
   MaxRectPiP::Output packerOutput{};
-
-  packerList.reserve(atlasSizes.size());
-  for (const auto &sz : atlasSizes) {
-    packerList.emplace_back(sz.x(), sz.y(), m_blockSize, m_pip);
-  }
 
   int patchId = 0;
   int clusteringMap_viewId = 0;
@@ -181,8 +185,8 @@ auto Packer::pack(const Common::SizeVector &atlasSizes, const Common::MaskList &
     if (m_minPatchSize * m_minPatchSize <= cluster.getArea()) {
       bool packed = false;
 
-      for (size_t atlasId = 0; atlasId < packerList.size(); ++atlasId) {
-        MaxRectPiP &packer = packerList[atlasId];
+      for (size_t atlasId = 0; atlasId < m_packerList.size(); ++atlasId) {
+        MaxRectPiP &packer = m_packerList[atlasId];
 
         if (packer.push(cluster, clusteringMap[clusteringMap_viewId], packerOutput)) {
           MivBitstream::PatchParams p;

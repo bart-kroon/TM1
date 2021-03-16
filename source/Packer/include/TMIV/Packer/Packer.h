@@ -42,6 +42,8 @@
 #include <tuple>
 
 namespace TMIV::Packer {
+class MaxRectPiP;
+
 class Packer : public IPacker {
   enum SORTING_METHOD { AREA_DESCENDING = 0, VIEW_ID_ASCENDING = 1 };
 
@@ -51,8 +53,9 @@ public:
   Packer(Packer &&) = default;
   auto operator=(const Packer &) -> Packer & = delete;
   auto operator=(Packer &&) -> Packer & = default;
-  ~Packer() override = default;
+  ~Packer() override;
 
+  void initialize(const Common::SizeVector &atlasSizes, const int blockSize) override;
   auto pack(const Common::SizeVector &atlasSize, const Common::MaskList &masks,
             const MivBitstream::ViewParamsList &viewParamsList, const int blockSize)
       -> MivBitstream::PatchParamsList override;
@@ -68,6 +71,7 @@ private:
   int m_maxEntityId{0};
   std::vector<Common::MaskList> m_aggregatedEntityMasks{};
   Common::Vec2i m_entityEncodeRange;
+  std::vector<MaxRectPiP> m_packerList;
   auto computeClusters(const Common::MaskList &masks,
                        const MivBitstream::ViewParamsList &viewParamsList)
       -> std::tuple<ClusterList, ClusteringMapList, std::vector<int>>;

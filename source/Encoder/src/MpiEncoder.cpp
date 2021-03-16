@@ -274,6 +274,7 @@ auto MpiEncoder::processAccessUnit(int firstFrameId, int lastFrameId)
   MivBitstream::ViewParamsList viewList(
       std::vector<MivBitstream::ViewParams>(mpiViewParams.nbMpiLayers, mpiViewParams));
 
+  m_packer->initialize(m_params.atlasSizes(), m_blockSize);
   auto patchParamsList =
       m_packer->pack(m_params.atlasSizes(), aggregatedMaskList, viewList, m_blockSize);
 

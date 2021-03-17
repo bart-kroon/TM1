@@ -233,60 +233,64 @@ auto MpiEncoder::processAccessUnit(int firstFrameId, int lastFrameId)
   Common::Vec2i mpiSize{static_cast<int>(mpiViewParams.ci.ci_projection_plane_width_minus1()) + 1,
                         static_cast<int>(mpiViewParams.ci.ci_projection_plane_height_minus1()) + 1};
 
-  // Mask aggregation
-  Common::MaskList aggregatedMaskList(mpiViewParams.nbMpiLayers,
-                                      Common::Mask{mpiSize.x(), mpiSize.y()});
-
-  for (auto &aggregatedMask : aggregatedMaskList) {
-    aggregatedMask.fillZero();
-  }
-
   m_mpiFrameBuffer.clear();
 
   for (int frameIndex = firstFrameId; frameIndex < lastFrameId; frameIndex++) {
-    auto frame = readFrame(frameIndex);
-
-    Common::parallel_for(frame.getPixelList().size(), [&](size_t pixelId) {
-      const auto &pixel = frame.getPixelList()[pixelId];
-
-      for (const auto &attribute : pixel) {
-        aggregatedMaskList[attribute.geometry].getPlane(0)[pixelId] = 255;
-      }
-    });
-
-    m_mpiFrameBuffer.emplace_back(std::move(frame));
+    m_mpiFrameBuffer.emplace_back(readFrame(frameIndex));
   }
 
-  std::cout << "Mask aggregation done" << std::endl;
+  m_params.patchParamsList.clear();
 
+  Common::Mask aggregatedMask{mpiSize.x(), mpiSize.y()};
+
+  std::vector<Common::Frame<Common::YUV400P16>> pixelLayerIndicesPerFrame(
+      lastFrameId - firstFrameId, Common::Frame<Common::YUV400P16>{mpiSize.x(), mpiSize.y()});
   size_t nbActivePixels{};
 
-  for (const auto &aggregatedMask : aggregatedMaskList) {
+  m_packer->initialize(m_params.atlasSizes(), m_blockSize);
+
+  for (auto layerId = 0; layerId < mpiViewParams.nbMpiLayers; ++layerId) {
+    aggregatedMask.fillZero();
+
+    for (size_t frameBufferIndex = 0; frameBufferIndex < pixelLayerIndicesPerFrame.size(); ++frameBufferIndex) {
+      const auto &frame = m_mpiFrameBuffer[frameBufferIndex];
+      auto &pixelLayerIndices = pixelLayerIndicesPerFrame[frameBufferIndex];
+
+      Common::parallel_for(frame.getPixelList().size(), [&](std::size_t pixelId) {
+        const auto &pixel = frame.getPixelList()[pixelId];
+        auto &pixelLayerIndex = pixelLayerIndices.getPlane(0)[pixelId];
+
+        if (pixelLayerIndex < pixel.size()) {
+          const auto &attribute = pixel[pixelLayerIndex];
+
+          if (attribute.geometry == layerId) {
+            aggregatedMask.getPlane(0)[pixelId] = 255;
+            pixelLayerIndex++;
+          }
+        }
+      });
+    }
+
     nbActivePixels +=
         std::count_if(aggregatedMask.getPlane(0).begin(), aggregatedMask.getPlane(0).end(),
                       [](auto x) { return (x > 0); });
+
+    auto patchParamsListLayer =
+        m_packer->pack(m_params.atlasSizes(), {aggregatedMask},
+                       MivBitstream::ViewParamsList{{mpiViewParams}}, m_blockSize);
+
+    for (auto &patchParams : patchParamsListLayer) {
+      patchParams.atlasPatch3dOffsetD(layerId);
+    }
+
+    std::move(patchParamsListLayer.begin(), patchParamsListLayer.end(),
+              back_inserter(m_params.patchParamsList));
   }
 
-  std::cout << "Aggregated luma samples per frame is " << (1e-6 * 2 * nbActivePixels) << "M\n";
+  fmt::print("Aggregated luma samples per frame is {}M\n", 1e-6 * 2 * nbActivePixels);
   m_maxLumaSamplesPerFrame = std::max(m_maxLumaSamplesPerFrame, nbActivePixels);
 
-  // Patch list
-  MivBitstream::ViewParamsList viewList(
-      std::vector<MivBitstream::ViewParams>(mpiViewParams.nbMpiLayers, mpiViewParams));
-
-  m_packer->initialize(m_params.atlasSizes(), m_blockSize);
-  auto patchParamsList =
-      m_packer->pack(m_params.atlasSizes(), aggregatedMaskList, viewList, m_blockSize);
-
-  for (auto &patchParams : patchParamsList) {
-    patchParams.atlasPatch3dOffsetD(patchParams.atlasPatchProjectionId());
-    patchParams.atlasPatchProjectionId(0);
-  }
-
-  m_params.patchParamsList = std::move(patchParamsList);
-
-  std::cout << "Packing done with nb of patches = "
-            << static_cast<int>(m_params.patchParamsList.size()) << std::endl;
+  fmt::print("Packing done with nb of patches = {}\n", m_params.patchParamsList.size());
 
   m_blockToPatchMapPerAtlas.clear();
 

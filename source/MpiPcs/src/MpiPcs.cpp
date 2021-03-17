@@ -104,7 +104,7 @@ auto Reader::read(std::istream &stream, std::int32_t posId, Common::Vec2i size)
     throw std::runtime_error(fmt::format("Failed to seek stream at position {}", posId));
   }
 
-  std::vector<Common::MpiPcs::Attribute::List> pixelList(size.x() * size.y());
+  std::vector<Common::MpiPcs::Pixel> pixelList(size.x() * size.y());
 
   const auto countList = readFromStream<Common::MpiPcs::Attribute::Count>(stream, pixelList.size());
 
@@ -116,8 +116,10 @@ auto Reader::read(std::istream &stream, std::int32_t posId, Common::Vec2i size)
   for (auto k = 0ULL, l = 0ULL; k < pixelList.size(); ++k) {
     auto &pixel = pixelList[k];
 
+    pixel.reserve(countList[k]);
+
     for (Common::MpiPcs::Attribute::Count i = 0; i < countList[k]; ++i, ++l) {
-      pixel.emplace_back(Common::MpiPcs::Attribute::fromBuffer(bufferList[l]));
+      pixel.push_back(Common::MpiPcs::Attribute::fromBuffer(bufferList[l]));
     }
   }
 

@@ -116,9 +116,10 @@ class IntegrationTest:
             futures += self.testMivDsdeAnchor(executor)
             futures += self.testBestReference(executor)
             futures += self.testAdditiveSynthesizer(executor)
+            futures += self.testMivMpi(executor)
 
-            if not self.ciOnly:
-                futures += self.testMivMpi(executor)
+            # if not self.ciOnly:
+            #    futures += self.testMyNonCiTest(executor)
 
             self.sync(futures)
 

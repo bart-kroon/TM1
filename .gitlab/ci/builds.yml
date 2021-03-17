@@ -44,6 +44,7 @@ VC 16 Release:
     - cd build
     - >
       cmake -G "Visual Studio 16 2019" -DENABLE_CLANG_TIDY=OFF
+      -DBUILD_TAppEncoder=TRUE -DBUILD_TAppDecoder=TRUE
       -DCMAKE_CXX_FLAGS="/DWIN32 /D_WINDOWS /permissive- /w14640 /W4 /GR /EHsc /WX"
       -DCMAKE_INSTALL_PREFIX=/builds/software/MPEG/MIV/RS/TM1/install
       ..

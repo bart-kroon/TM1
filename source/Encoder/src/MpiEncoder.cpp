@@ -252,7 +252,8 @@ auto MpiEncoder::processAccessUnit(int firstFrameId, int lastFrameId)
   for (auto layerId = 0; layerId < mpiViewParams.nbMpiLayers; ++layerId) {
     aggregatedMask.fillZero();
 
-    for (size_t frameBufferIndex = 0; frameBufferIndex < pixelLayerIndicesPerFrame.size(); ++frameBufferIndex) {
+    for (size_t frameBufferIndex = 0; frameBufferIndex < pixelLayerIndicesPerFrame.size();
+         ++frameBufferIndex) {
       const auto &frame = m_mpiFrameBuffer[frameBufferIndex];
       auto &pixelLayerIndices = pixelLayerIndicesPerFrame[frameBufferIndex];
 
@@ -329,7 +330,7 @@ auto MpiEncoder::popAtlas() -> Common::MVD10Frame {
         const auto &pixel = mpiFrame(posInView.y(), posInView.x());
         auto layerId = static_cast<uint16_t>(patch.atlasPatch3dOffsetD());
 
-        const auto iter =
+        auto *const iter =
             std::lower_bound(pixel.begin(), pixel.end(), layerId,
                              [](auto pixel_, auto layerId_) { return pixel_.geometry < layerId_; });
 

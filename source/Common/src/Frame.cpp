@@ -187,6 +187,84 @@ auto Attribute::toBuffer() const -> Buffer {
   return buffer;
 }
 
+Pixel::Pixel(size_type sz) {
+  m_size = sz;
+  m_capacity = sz;
+  m_data = std::make_unique<array_type>(m_capacity);
+}
+
+Pixel::Pixel(const Pixel &other) {
+  m_size = other.m_size;
+  m_capacity = m_size;
+  m_data = std::make_unique<array_type>(m_capacity);
+
+  std::copy(other.begin(), other.end(), begin());
+}
+
+Pixel::Pixel(Pixel &&other) noexcept {
+  m_size = other.m_size;
+  m_capacity = other.m_capacity;
+  m_data = std::move(other.m_data);
+
+  other.m_size = 0;
+  other.m_capacity = 0;
+  other.m_data = nullptr;
+}
+
+auto Pixel::operator=(const Pixel &other) -> Pixel & {
+  if (m_size != other.m_size) {
+    m_size = other.m_size;
+    m_capacity = m_size;
+    m_data = std::make_unique<array_type>(m_capacity);
+  }
+
+  std::copy(other.begin(), other.end(), begin());
+
+  return *this;
+}
+
+auto Pixel::operator=(Pixel &&other) noexcept -> Pixel & {
+  m_size = other.m_size;
+  m_capacity = other.m_capacity;
+  m_data = std::move(other.m_data);
+
+  other.m_size = 0;
+  other.m_capacity = 0;
+  other.m_data = nullptr;
+
+  return *this;
+}
+
+void Pixel::reserve(size_type sz) {
+  if (m_capacity < sz) {
+    m_capacity = sz;
+
+    auto data = std::make_unique<array_type>(m_capacity);
+    std::copy(begin(), end(), data.get());
+
+    m_data = std::move(data);
+  }
+}
+
+auto Pixel::operator==(const Pixel &other) const noexcept -> bool {
+  return (size() == other.size()) && std::equal(begin(), end(), other.begin());
+}
+
+void Pixel::push_back(const value_type &v) {
+  if (m_size < m_capacity) {
+    m_data.get()[m_size++] = v;
+  } else {
+    m_capacity = 3 * (m_capacity + 1) / 2;
+
+    auto data = std::make_unique<array_type>(m_capacity);
+    std::copy(begin(), end(), data.get());
+
+    m_data = std::move(data);
+
+    m_data.get()[m_size++] = v;
+  }
+}
+
 auto Frame::operator==(const Frame &other) const noexcept -> bool {
   return getPixelList().size() == other.getPixelList().size() &&
          getPixelList() == other.getPixelList();
@@ -202,9 +280,9 @@ void Frame::appendLayer(Attribute::Geometry layerId, const TextureTransparency8F
 
   const auto &a_plane = transparencyLayer.getPlane(0);
 
-  parallel_for(y_plane.size(), [&](size_t k) {
+  parallel_for(y_plane.size(), [&](std::size_t k) {
     if (0 < a_plane[k]) {
-      m_pixelList[k].emplace_back(
+      m_pixelList[k].push_back(
           Attribute{Attribute::Texture{y_plane[k], u_plane[k], v_plane[k]}, layerId, a_plane[k]});
     }
   });
@@ -216,9 +294,9 @@ auto Frame::getLayer(Attribute::Geometry layerId) const -> TextureTransparency8F
 
   textureFrame.fillNeutral();
 
-  parallel_for(m_pixelList.size(), [&](size_t k) {
+  parallel_for(m_pixelList.size(), [&](std::size_t k) {
     const auto &pixel = m_pixelList[k];
-    const auto iter =
+    auto *const iter =
         std::lower_bound(pixel.begin(), pixel.end(), layerId,
                          [](auto pixel_, auto layerId_) { return pixel_.geometry < layerId_; });
 

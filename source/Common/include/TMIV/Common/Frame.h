@@ -221,18 +221,54 @@ struct Attribute {
   Transparency transparency{};
 
   auto operator==(const Attribute &other) const noexcept -> bool;
+  auto operator<(const Attribute &other) const noexcept -> bool {
+    return (geometry < other.geometry);
+  }
 
   static auto fromBuffer(const Buffer &buffer) -> Attribute;
   [[nodiscard]] auto toBuffer() const -> Buffer;
 };
 
+class Pixel {
+public:
+  using value_type = Attribute;
+  using size_type = std::uint16_t;
+  using array_type = value_type[];
+  using iterator = std::unique_ptr<array_type>::pointer;
+
+private:
+  size_type m_size{};
+  size_type m_capacity{};
+  std::unique_ptr<array_type> m_data{};
+
+public:
+  Pixel() = default;
+  explicit Pixel(size_type sz);
+  ~Pixel() = default;
+  Pixel(const Pixel &other);
+  Pixel(Pixel &&other) noexcept;
+  auto operator=(const Pixel &other) -> Pixel &;
+  auto operator=(Pixel &&other) noexcept -> Pixel &;
+  auto capacity() const -> size_type { return m_capacity; }
+  auto size() const -> size_type { return m_size; }
+  auto empty() const -> bool { return (m_size == 0); }
+  void clear() { m_size = 0; }
+  void reserve(size_type sz);
+  auto begin() -> iterator { return m_data.get(); }
+  auto begin() const -> iterator { return m_data.get(); }
+  auto end() -> iterator { return m_data.get() + m_size; }
+  auto end() const -> iterator { return m_data.get() + m_size; }
+  auto operator[](size_type k) -> value_type & { return m_data.get()[k]; }
+  auto operator[](size_type k) const -> const value_type & { return m_data.get()[k]; }
+  auto operator==(const Pixel &other) const noexcept -> bool;
+  void push_back(const value_type &v);
+};
+
 class Frame {
 public:
-  using Pixel = Attribute::List;
-
   Frame() = default;
   Frame(const Vec2i &size)
-      : m_size{size}, m_pixelList{static_cast<size_t>(m_size.x() * m_size.y())} {}
+      : m_size{size}, m_pixelList{static_cast<Pixel::size_type>(m_size.x() * m_size.y())} {}
   Frame(const Vec2i &size, std::vector<Pixel> pixelList)
       : m_size{size}, m_pixelList{std::move(pixelList)} {}
   auto operator==(const Frame &other) const noexcept -> bool;

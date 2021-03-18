@@ -1,7 +1,7 @@
 Integration Test:
   stage: integration
   image: buildtools2019:2021.03.04
-  tags: [ windows ]
+  tags: [ windows, integration_test ]
   script:
     - >
       python scripts/test/integration_test.py

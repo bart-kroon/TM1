@@ -36,6 +36,7 @@
 #include <TMIV/Common/Common.h>
 
 #include <regex>
+#include <sstream>
 
 using namespace std::string_view_literals;
 

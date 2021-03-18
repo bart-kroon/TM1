@@ -46,7 +46,7 @@ auto main(int argc, const char *argv[]) -> int {
     const auto args = std::vector(argv, argv + argc);
 
     if (args.size() != 5 || args[1] != "-b"sv || args[3] != "-o"sv) {
-      std::cerr << "Usage: Parser -b BITSTREAM [-o HLS_LOG_FILE]";
+      std::cerr << "Usage: Parser -b BITSTREAM -o HLS_LOG_FILE";
       return 1;
     }
     std::ifstream inStream{args[2], std::ios::binary};

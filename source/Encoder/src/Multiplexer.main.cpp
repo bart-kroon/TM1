@@ -32,9 +32,8 @@
  */
 
 #include <TMIV/Common/Application.h>
+#include <TMIV/Encoder/Multiplexer.h>
 #include <TMIV/IO/IO.h>
-#include <TMIV/MivBitstream/V3cSampleStreamFormat.h>
-#include <TMIV/MivBitstream/V3cUnit.h>
 
 #include <filesystem>
 #include <fstream>
@@ -45,14 +44,13 @@
 using namespace std::string_view_literals;
 
 namespace TMIV::Encoder {
-class Multiplexer : public Common::Application {
+class MultiplexerApplication : public Common::Application {
 private:
   const std::string &m_contentId;
   std::int32_t m_numberOfInputFrames;
   const std::string &m_testId;
 
-  MivBitstream::V3cParameterSet m_vps;
-  std::vector<std::string> m_units;
+  std::unique_ptr<Multiplexer> m_multiplexer{};
 
   [[nodiscard]] auto placeholders() const {
     auto x = IO::Placeholders{};
@@ -63,7 +61,7 @@ private:
   }
 
 public:
-  explicit Multiplexer(std::vector<const char *> argv)
+  explicit MultiplexerApplication(std::vector<const char *> argv)
       : Common::Application{"Multiplexer", std::move(argv),
                             Common::Application::Options{
                                 {"-s", "Content ID (e.g. B for Museum)", false},
@@ -71,33 +69,73 @@ public:
                                 {"-r", "Test point (e.g. QP3 or R0)", false}}}
       , m_contentId{optionValues("-s").front()}
       , m_numberOfInputFrames{std::stoi(optionValues("-n"sv).front())}
-      , m_testId{optionValues("-r").front()} {}
+      , m_testId{optionValues("-r").front()}
+      , m_multiplexer{std::make_unique<Multiplexer>()} {
+    setBitstreamIstreamServers();
+  }
 
   void run() override {
-    // Decode V3C units and VPS
     readInputBitstream();
-
-    // Append all video sub bitstreams
-    for (size_t k = 0; k <= m_vps.vps_atlas_count_minus1(); ++k) {
-      const auto j = m_vps.vps_atlas_id(k);
-      checkRestrictions(j);
-
-      if (m_vps.vps_geometry_video_present_flag(j)) {
-        appendGvd(j);
-      }
-      if (m_vps.vps_occupancy_video_present_flag(j)) {
-        appendOvd(j);
-      }
-      if (m_vps.vps_attribute_video_present_flag(j)) {
-        const auto &ai = m_vps.attribute_information(j);
-        for (uint8_t i = 0; i < ai.ai_attribute_count(); ++i) {
-          const auto type = ai.ai_attribute_type_id(i);
-          appendAvd(j, i, type);
-        }
-      }
-    }
-
+    appendVideoSubBitstreams();
     writeOutputBitstream();
+  }
+
+  [[nodiscard]] auto openInputBitstream(const std::string &key,
+                                        const MivBitstream::AtlasId &atlasId,
+                                        int attributeIdx = 0) const {
+    const auto path = IO::inputSubBitstreamPath(key, json(), placeholders(), atlasId, attributeIdx);
+    auto stream = std::make_unique<std::ifstream>(path, std::ios::binary);
+    if (stream->fail()) {
+      throw std::runtime_error(fmt::format("Failed to open sub bitstream {} for reading", path));
+    }
+    std::cout << "Appending " << path << '\n';
+    return stream;
+  }
+
+  [[nodiscard]] auto openGeometryBitstream(const MivBitstream::AtlasId &atlasId) const
+      -> std::unique_ptr<std::istream> {
+    return openInputBitstream(IO::inputGeometryVsbPathFmt, atlasId);
+  }
+
+  [[nodiscard]] auto openOccupancyBitstream(const MivBitstream::AtlasId &atlasId) const
+      -> std::unique_ptr<std::istream> {
+    return openInputBitstream(IO::inputOccupancyVsbPathFmt, atlasId);
+  }
+
+  [[nodiscard]] auto openAttributeBitstream(MivBitstream::AiAttributeTypeId typeId,
+                                            const MivBitstream::AtlasId &atlasId,
+                                            int attributeIdx) const
+      -> std::unique_ptr<std::istream> {
+    const auto key = [typeId]() {
+      switch (typeId) {
+      case MivBitstream::AiAttributeTypeId::ATTR_TEXTURE:
+        return IO::inputTextureVsbPathFmt;
+      case MivBitstream::AiAttributeTypeId::ATTR_MATERIAL_ID:
+        return IO::inputMaterialIdVsbPathFmt;
+      case MivBitstream::AiAttributeTypeId::ATTR_TRANSPARENCY:
+        return IO::inputTransparencyVsbPathFmt;
+      case MivBitstream::AiAttributeTypeId::ATTR_REFLECTANCE:
+        return IO::inputReflectanceVsbPathFmt;
+      case MivBitstream::AiAttributeTypeId::ATTR_NORMAL:
+        return IO::inputNormalVsbPathFmt;
+      default:
+        throw std::runtime_error(fmt::format("No support for {}", typeId));
+      }
+    }();
+
+    return openInputBitstream(key, atlasId, attributeIdx);
+  }
+
+  void setBitstreamIstreamServers() {
+    m_multiplexer->setAttributeVideoBitstreamServer(
+        [this](MivBitstream::AiAttributeTypeId typeId, const MivBitstream::AtlasId &atlasId,
+               int attributeIdx) { return openAttributeBitstream(typeId, atlasId, attributeIdx); });
+
+    m_multiplexer->setGeometryVideoBitstreamServer(
+        [this](const MivBitstream::AtlasId &atlasId) { return openGeometryBitstream(atlasId); });
+
+    m_multiplexer->setOccupancyVideoBitstreamServer(
+        [this](const MivBitstream::AtlasId &atlasId) { return openOccupancyBitstream(atlasId); });
   }
 
 private:
@@ -107,139 +145,27 @@ private:
     if (!stream.good()) {
       throw std::runtime_error(fmt::format("Failed to open input bitstream {} for reading.", path));
     }
-
-    // Decode SSVH
-    const auto ssvh = MivBitstream::SampleStreamV3cHeader::decodeFrom(stream);
-
-    // Decode first V3C unit, which has to contain the VPS
-    const auto ssvu0 = MivBitstream::SampleStreamV3cUnit::decodeFrom(stream, ssvh);
-
-    // Decode the VPS
-    std::istringstream substream{ssvu0.ssvu_v3c_unit()};
-    const auto vuh = MivBitstream::V3cUnitHeader::decodeFrom(substream);
-    if (vuh.vuh_unit_type() != MivBitstream::VuhUnitType::V3C_VPS) {
-      throw std::runtime_error("the first V3C unit has to be the VPS");
-    }
-    m_vps = MivBitstream::V3cParameterSet::decodeFrom(substream);
-    std::cout << m_vps;
-
-    // Append the first V3C unit
-    m_units.push_back(ssvu0.ssvu_v3c_unit());
-
-    // Append the remaining V3C units
-    while (!stream.eof()) {
-      const auto ssvu = MivBitstream::SampleStreamV3cUnit::decodeFrom(stream, ssvh);
-      m_units.push_back(ssvu.ssvu_v3c_unit());
-      stream.peek();
-    }
-
-    std::cout << "Appended " << path << " with a total of " << m_units.size()
+    m_multiplexer->readInputBitstream(stream);
+    std::cout << "Appended " << path << " with a total of " << m_multiplexer->numberOfV3cUnits()
               << " V3C units including the VPS\n";
   }
 
-  void checkRestrictions(MivBitstream::AtlasId atlasId) const {
-    if (m_vps.vps_map_count_minus1(atlasId) > 0) {
-      throw std::runtime_error("Having multiple maps is not supported.");
-    }
-    if (m_vps.vps_auxiliary_video_present_flag(atlasId)) {
-      throw std::runtime_error("Auxiliary video is not supported.");
-    }
-  }
-
-  void appendGvd(MivBitstream::AtlasId atlasId) {
-    auto vuh = MivBitstream::V3cUnitHeader{MivBitstream::VuhUnitType::V3C_GVD};
-    vuh.vuh_v3c_parameter_set_id(m_vps.vps_v3c_parameter_set_id());
-    vuh.vuh_atlas_id(atlasId);
-    appendSubBitstream(vuh, IO::inputGeometryVsbPathFmt, atlasId);
-  }
-
-  void appendOvd(MivBitstream::AtlasId atlasId) {
-    auto vuh = MivBitstream::V3cUnitHeader{MivBitstream::VuhUnitType::V3C_OVD};
-    vuh.vuh_v3c_parameter_set_id(m_vps.vps_v3c_parameter_set_id());
-    vuh.vuh_atlas_id(atlasId);
-    appendSubBitstream(vuh, IO::inputOccupancyVsbPathFmt, atlasId);
-  }
-
-  void appendAvd(MivBitstream::AtlasId atlasId, uint8_t attributeIdx,
-                 MivBitstream::AiAttributeTypeId typeId) {
-    auto vuh = MivBitstream::V3cUnitHeader{MivBitstream::VuhUnitType::V3C_AVD};
-    vuh.vuh_v3c_parameter_set_id(m_vps.vps_v3c_parameter_set_id());
-    vuh.vuh_atlas_id(atlasId);
-    vuh.vuh_attribute_index(attributeIdx);
-
-    switch (typeId) {
-    case MivBitstream::AiAttributeTypeId::ATTR_TEXTURE:
-      return appendSubBitstream(vuh, IO::inputTextureVsbPathFmt, atlasId, attributeIdx);
-    case MivBitstream::AiAttributeTypeId::ATTR_MATERIAL_ID:
-      return appendSubBitstream(vuh, IO::inputMaterialIdVsbPathFmt, atlasId, attributeIdx);
-    case MivBitstream::AiAttributeTypeId::ATTR_TRANSPARENCY:
-      return appendSubBitstream(vuh, IO::inputTransparencyVsbPathFmt, atlasId, attributeIdx);
-    case MivBitstream::AiAttributeTypeId::ATTR_REFLECTANCE:
-      return appendSubBitstream(vuh, IO::inputReflectanceVsbPathFmt, atlasId, attributeIdx);
-    case MivBitstream::AiAttributeTypeId::ATTR_NORMAL:
-      return appendSubBitstream(vuh, IO::inputNormalVsbPathFmt, atlasId, attributeIdx);
-    default:
-      throw std::runtime_error(fmt::format("No support for {}", typeId));
-    }
-  }
-
-  void appendSubBitstream(const MivBitstream::V3cUnitHeader &vuh, const std::string &key,
-                          MivBitstream::AtlasId atlasId, int attributeIdx = 0) {
-    const auto path = IO::inputSubBitstreamPath(key, json(), placeholders(), atlasId, attributeIdx);
-    std::ifstream inStream{path, std::ios::binary};
-    if (!inStream.good()) {
-      throw std::runtime_error(fmt::format("Failed to open sub bitstream {} for reading", path));
-    }
-    std::ostringstream substream;
-    vuh.encodeTo(substream);
-    substream << inStream.rdbuf();
-
-    std::cout << "Appended " << path << '\n';
-    m_units.push_back(substream.str());
-  }
+  void appendVideoSubBitstreams() { m_multiplexer->appendVideoSubBitstreams(); }
 
   void writeOutputBitstream() const {
-    // Find size of largest unit
-    const auto maxSize =
-        max_element(std::cbegin(m_units), std::cend(m_units),
-                    [](const std::string &a, const std::string &b) { return a.size() < b.size(); })
-            ->size();
-
-    // Calculate how many bytes are needed to store that size
-    auto precisionBytesMinus1 = uint8_t{};
-    while (maxSize >= uint64_t{1} << 8 * (precisionBytesMinus1 + 1)) {
-      ++precisionBytesMinus1;
-    }
-
     const auto path = IO::outputBitstreamPath(json(), placeholders());
     std::ofstream stream{path, std::ios::binary};
     if (!stream.good()) {
       throw std::runtime_error(fmt::format("Failed to open {} for writing", path));
     }
-
-    // Write the sample stream header
-    const auto ssvh = MivBitstream::SampleStreamV3cHeader{precisionBytesMinus1};
-    ssvh.encodeTo(stream);
-    std::cout << '\n' << ssvh;
-
-    // Write the units
-    for (const auto &unit : m_units) {
-      const auto ssvu = MivBitstream::SampleStreamV3cUnit{unit};
-      ssvu.encodeTo(stream, ssvh);
-      std::cout << '\n' << ssvu;
-
-      // Print the V3C unit header (for fun, why not)
-      std::istringstream stream2{unit};
-      const auto vuh = MivBitstream::V3cUnitHeader::decodeFrom(stream2);
-      std::cout << vuh;
-    }
+    m_multiplexer->writeOutputBitstream(stream);
   }
 };
 } // namespace TMIV::Encoder
 
 auto main(int argc, char *argv[]) -> int {
   try {
-    TMIV::Encoder::Multiplexer app{{argv, argv + argc}};
+    TMIV::Encoder::MultiplexerApplication app{{argv, argv + argc}};
     app.startTime();
     app.run();
     app.printTime();

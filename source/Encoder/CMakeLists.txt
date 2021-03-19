@@ -46,12 +46,30 @@ create_tmiv_executable(
         TMIV::MpiPcsLib
     )
 
+create_tmiv_library(
+    TARGET
+        MultiplexerLib
+    SOURCES
+        "src/Multiplexer.cpp"
+    PUBLIC
+        TMIV::MivBitstreamLib
+)
+
+create_catch2_unit_test(
+    TARGET
+        MultiplexerTest
+    SOURCES
+        "src/Multiplexer.test.cpp"
+    PRIVATE
+        TMIV::MultiplexerLib
+)
+
 create_tmiv_executable(
     TARGET
         Multiplexer
     SOURCES
         "src/Multiplexer.main.cpp"
     PRIVATE
-        TMIV::MivBitstreamLib
+        TMIV::MultiplexerLib
         TMIV::IOLib
     )

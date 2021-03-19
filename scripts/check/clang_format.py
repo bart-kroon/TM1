@@ -38,7 +38,7 @@ from pathlib import Path
 import subprocess
 
 SCRIPT_DIR = Path(__file__).resolve().parent
-REPO_DIR = SCRIPT_DIR.parent
+REPO_DIR = SCRIPT_DIR.parents[1]
 
 
 def parse_arguments():

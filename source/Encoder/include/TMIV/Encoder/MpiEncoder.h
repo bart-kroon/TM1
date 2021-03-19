@@ -47,6 +47,9 @@ public:
   static constexpr auto maxIntraPeriod = 32;
 
 private:
+  // TODO(#358): This is a temporary solution. To be refactored in #301 or #302
+  Common::Json m_rootNode;
+
   // Parameters
   int m_intraPeriod{};
   Common::Vec2i m_blockSizeDepthQualityDependent;
@@ -60,7 +63,7 @@ private:
   std::unique_ptr<Packer::IPacker> m_packer;
   int m_blockSize{};
   size_t m_maxLumaSamplesPerFrame{};
-  MivBitstream::EncoderParams m_params;
+  EncoderParams m_params;
 
 public:
   MpiEncoder(const Common::Json &rootNode, const Common::Json &componentNode);
@@ -70,9 +73,8 @@ public:
   auto operator=(MpiEncoder &&) -> MpiEncoder & = default;
   ~MpiEncoder() override = default;
 
-  void prepareSequence(MivBitstream::EncoderParams params) override;
-  auto processAccessUnit(int firstFrameId, int lastFrameId)
-      -> const MivBitstream::EncoderParams & override;
+  void prepareSequence(const MivBitstream::SequenceConfig &config) override;
+  auto processAccessUnit(int firstFrameId, int lastFrameId) -> const EncoderParams & override;
   auto popAtlas() -> Common::MVD10Frame override;
   [[nodiscard]] auto maxLumaSamplesPerFrame() const -> size_t override {
     return m_maxLumaSamplesPerFrame;

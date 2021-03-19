@@ -62,39 +62,40 @@ auto computeDominantAxis(std::vector<float> &Tx, std::vector<float> &Ty, std::ve
 } // namespace
 
 GroupBasedEncoder::GroupBasedEncoder(const Common::Json &rootNode,
-                                     const Common::Json &componentNode) {
-  const auto numGroups_ = rootNode.require("numGroups").as<size_t>();
-
-  while (m_encoders.size() < numGroups_) {
+                                     const Common::Json &componentNode)
+    : m_numGroups{rootNode.require("m_numGroups").as<uint8_t>()} {
+  while (m_encoders.size() < m_numGroups) {
     m_encoders.emplace_back(rootNode, componentNode);
   }
 }
 
-void GroupBasedEncoder::prepareSequence(MivBitstream::EncoderParams params) {
-  m_grouping = sourceSplitter(params);
+void GroupBasedEncoder::prepareSequence(const MivBitstream::SequenceConfig &sequenceConfig,
+                                        const Common::MVD16Frame &firstFrame) {
+  m_grouping = sourceSplitter(sequenceConfig);
 
-  for (size_t groupId = 0; groupId != numGroups(); ++groupId) {
-    m_encoders[groupId].prepareSequence(splitParams(groupId, params));
+  for (size_t groupId = 0; groupId != m_numGroups; ++groupId) {
+    m_encoders[groupId].prepareSequence(filterSourceCameraNames(groupId, sequenceConfig),
+                                        splitViews(groupId, firstFrame));
   }
 }
 
 void GroupBasedEncoder::prepareAccessUnit() {
-  for (size_t groupId = 0; groupId != numGroups(); ++groupId) {
+  for (size_t groupId = 0; groupId != m_numGroups; ++groupId) {
     m_encoders[groupId].prepareAccessUnit();
   }
 }
 
 void GroupBasedEncoder::pushFrame(Common::MVD16Frame views) {
-  for (size_t groupId = 0; groupId != numGroups(); ++groupId) {
+  for (size_t groupId = 0; groupId != m_numGroups; ++groupId) {
     std::cout << "Processing group " << groupId << ":\n";
     m_encoders[groupId].pushFrame(splitViews(groupId, views));
   }
 }
 
-auto GroupBasedEncoder::completeAccessUnit() -> const MivBitstream::EncoderParams & {
-  auto perGroupParams = std::vector<const MivBitstream::EncoderParams *>(numGroups(), nullptr);
+auto GroupBasedEncoder::completeAccessUnit() -> const EncoderParams & {
+  auto perGroupParams = std::vector<const EncoderParams *>(m_numGroups, nullptr);
 
-  for (size_t groupId = 0; groupId != numGroups(); ++groupId) {
+  for (size_t groupId = 0; groupId != m_numGroups; ++groupId) {
     perGroupParams[groupId] = &m_encoders[groupId].completeAccessUnit();
   }
 
@@ -119,11 +120,11 @@ auto GroupBasedEncoder::maxLumaSamplesPerFrame() const -> size_t {
       [](size_t sum, const auto &x) { return sum + x.maxLumaSamplesPerFrame(); });
 }
 
-auto GroupBasedEncoder::sourceSplitter(const MivBitstream::EncoderParams &params) -> Grouping {
+auto GroupBasedEncoder::sourceSplitter(const MivBitstream::SequenceConfig &sequenceConfig)
+    -> Grouping {
   auto grouping = Grouping{};
 
-  const auto &viewParamsList = params.viewParamsList;
-  const auto numGroups = params.vme().group_mapping().gm_group_count();
+  const auto viewParamsList = sequenceConfig.sourceViewParams();
 
   // Compute axial ranges and find the dominant one
   auto Tx = std::vector<float>{};
@@ -148,12 +149,12 @@ auto GroupBasedEncoder::sourceSplitter(const MivBitstream::EncoderParams &params
     viewsLabels.push_back(static_cast<uint8_t>(camIndex));
   }
 
-  for (unsigned gIndex = 0; gIndex < numGroups; gIndex++) {
+  for (uint8_t groupIndex = 0; groupIndex < m_numGroups; groupIndex++) {
     viewsInGroup.clear();
     auto camerasInGroup = MivBitstream::ViewParamsList{};
     auto camerasOutGroup = MivBitstream::ViewParamsList{};
-    if (gIndex + 1U < numGroups) {
-      numViewsPerGroup.push_back(static_cast<int>(std::floor(viewParamsList.size() / numGroups)));
+    if (groupIndex + 1U < m_numGroups) {
+      numViewsPerGroup.push_back(static_cast<int>(std::floor(viewParamsList.size() / m_numGroups)));
       int64_t maxElementIndex = 0;
 
       if (dominantAxis == 0) {
@@ -176,7 +177,7 @@ auto GroupBasedEncoder::sourceSplitter(const MivBitstream::EncoderParams &params
       iota(sortedCamerasId.begin(), sortedCamerasId.end(), 0); // initalization
       std::sort(sortedCamerasId.begin(), sortedCamerasId.end(),
                 [&distance](size_t i1, size_t i2) { return distance[i1] < distance[i2]; });
-      for (int camIndex = 0; camIndex < numViewsPerGroup[gIndex]; camIndex++) {
+      for (int camIndex = 0; camIndex < numViewsPerGroup[groupIndex]; camIndex++) {
         camerasInGroup.push_back(viewsPool[sortedCamerasId[camIndex]]);
       }
 
@@ -185,14 +186,15 @@ auto GroupBasedEncoder::sourceSplitter(const MivBitstream::EncoderParams &params
       Ty.clear();
       Tz.clear();
       camerasOutGroup.clear();
-      for (size_t camIndex = numViewsPerGroup[gIndex]; camIndex < viewsPool.size(); camIndex++) {
+      for (size_t camIndex = numViewsPerGroup[groupIndex]; camIndex < viewsPool.size();
+           camIndex++) {
         camerasOutGroup.push_back(viewsPool[sortedCamerasId[camIndex]]);
         Tx.push_back(viewsPool[sortedCamerasId[camIndex]].pose.position.x());
         Ty.push_back(viewsPool[sortedCamerasId[camIndex]].pose.position.y());
         Tz.push_back(viewsPool[sortedCamerasId[camIndex]].pose.position.z());
       }
 
-      std::cout << "Views selected for group " << gIndex << ": ";
+      std::cout << "Views selected for group " << groupIndex << ": ";
       const auto *sep = "";
       for (size_t i = 0; i < camerasInGroup.size(); i++) {
         std::cout << sep << unsigned{viewsLabels[sortedCamerasId[i]]};
@@ -211,12 +213,12 @@ auto GroupBasedEncoder::sourceSplitter(const MivBitstream::EncoderParams &params
     } else {
       numViewsPerGroup.push_back(
           static_cast<int>((viewParamsList.size() -
-                            (numGroups - 1) * std::floor(viewParamsList.size() / numGroups))));
+                            (m_numGroups - 1) * std::floor(viewParamsList.size() / m_numGroups))));
 
       camerasInGroup.clear();
       std::copy(std::cbegin(viewsPool), std::cend(viewsPool), back_inserter(camerasInGroup));
 
-      std::cout << "Views selected for group " << gIndex << ": ";
+      std::cout << "Views selected for group " << groupIndex << ": ";
       const auto *sep = "";
       for (size_t i = 0; i < camerasInGroup.size(); i++) {
         std::cout << sep << int{viewsLabels[i]};
@@ -226,29 +228,29 @@ auto GroupBasedEncoder::sourceSplitter(const MivBitstream::EncoderParams &params
       std::cout << '\n';
     }
     for (const auto viewInGroup : viewsInGroup) {
-      grouping.emplace_back(gIndex, viewInGroup);
+      grouping.emplace_back(groupIndex, viewInGroup);
     }
   }
   return grouping;
 }
 
-auto GroupBasedEncoder::splitParams(size_t groupId, const MivBitstream::EncoderParams &params) const
-    -> MivBitstream::EncoderParams {
-  // Independent metadata should work automatically. Just copy all metadata to all groups.
-  auto result = params;
-  result.viewParamsList.clear();
+auto GroupBasedEncoder::filterSourceCameraNames(
+    size_t groupId, const MivBitstream::SequenceConfig &sequenceConfig) const
+    -> MivBitstream::SequenceConfig {
+  auto result = sequenceConfig;
+  result.sourceCameraNames.clear();
 
   // Only include the views that are part of this group
   for (const auto &[groupId_, viewId] : m_grouping) {
     if (groupId_ == groupId) {
-      result.viewParamsList.push_back(params.viewParamsList[viewId]);
+      result.sourceCameraNames.push_back(sequenceConfig.sourceCameraNames[viewId]);
     }
   }
 
   return result;
 }
 
-auto GroupBasedEncoder::splitViews(size_t groupId, Common::MVD16Frame &views) const
+auto GroupBasedEncoder::splitViews(size_t groupId, const Common::MVD16Frame &views) const
     -> Common::MVD16Frame {
   auto result = Common::MVD16Frame{};
 
@@ -324,9 +326,8 @@ auto GroupBasedEncoder::mergeVps(const std::vector<const MivBitstream::V3cParame
   return x;
 }
 
-auto GroupBasedEncoder::mergeParams(
-    const std::vector<const MivBitstream::EncoderParams *> &perGroupParams)
-    -> const MivBitstream::EncoderParams & {
+auto GroupBasedEncoder::mergeParams(const std::vector<const EncoderParams *> &perGroupParams)
+    -> const EncoderParams & {
   // Start with first group
   m_params = *perGroupParams.front();
   m_params.patchParamsList.clear();

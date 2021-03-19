@@ -15,7 +15,6 @@ create_tmiv_library(
         "src/CommonAtlasFrameRBSP.cpp"
         "src/CommonAtlasSequenceParameterSetRBSP.cpp"
         "src/DepthOccupancyTransform.cpp"
-        "src/EncoderParams.cpp"
         "src/GeometryUpscalingParameters.cpp"
         "src/VuiParameters.cpp"
         "src/NalSampleStreamFormat.cpp"

@@ -35,7 +35,8 @@
 #define TMIV_ENCODER_IMPIENCODER_H
 
 #include <TMIV/Common/Frame.h>
-#include <TMIV/MivBitstream/EncoderParams.h>
+#include <TMIV/Encoder/EncoderParams.h>
+#include <TMIV/MivBitstream/SequenceConfig.h>
 
 namespace TMIV::Encoder {
 // TODO(BK): Study if IEncoder and IMpiEncoder can be fully or partially aligned to reduce code
@@ -57,9 +58,8 @@ public:
   void setMpiPcsFrameReader(const MpiPcsFrameReader &mpiPcsFrameReader) {
     m_mpiPcsFrameReader = mpiPcsFrameReader;
   }
-  virtual void prepareSequence(MivBitstream::EncoderParams params) = 0;
-  virtual auto processAccessUnit(int firstFrameId, int lastFrameId)
-      -> const MivBitstream::EncoderParams & = 0;
+  virtual void prepareSequence(const MivBitstream::SequenceConfig &config) = 0;
+  virtual auto processAccessUnit(int firstFrameId, int lastFrameId) -> const EncoderParams & = 0;
   virtual auto popAtlas() -> Common::MVD10Frame = 0;
   [[nodiscard]] virtual auto maxLumaSamplesPerFrame() const -> size_t = 0;
 

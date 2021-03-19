@@ -35,7 +35,8 @@
 #define TMIV_ENCODER_IENCODER_H
 
 #include <TMIV/Common/Frame.h>
-#include <TMIV/MivBitstream/EncoderParams.h>
+#include <TMIV/Encoder/EncoderParams.h>
+#include <TMIV/MivBitstream/SequenceConfig.h>
 
 namespace TMIV::Encoder {
 class IEncoder {
@@ -47,10 +48,11 @@ public:
   auto operator=(IEncoder &&) -> IEncoder & = default;
   virtual ~IEncoder() = default;
 
-  virtual void prepareSequence(MivBitstream::EncoderParams params) = 0;
+  virtual void prepareSequence(const MivBitstream::SequenceConfig &sequenceConfig,
+                               const Common::MVD16Frame &firstFrame) = 0;
   virtual void prepareAccessUnit() = 0;
   virtual void pushFrame(Common::MVD16Frame views) = 0;
-  virtual auto completeAccessUnit() -> const MivBitstream::EncoderParams & = 0;
+  virtual auto completeAccessUnit() -> const EncoderParams & = 0;
   virtual auto popAtlas() -> Common::MVD10Frame = 0;
   [[nodiscard]] virtual auto maxLumaSamplesPerFrame() const -> size_t = 0;
 };

@@ -35,9 +35,15 @@
 #define TMIV_PRUNER_IPRUNER_H
 
 #include <TMIV/Common/Frame.h>
-#include <TMIV/MivBitstream/EncoderParams.h>
+#include <TMIV/MivBitstream/ViewParamsList.h>
 
 namespace TMIV::Pruner {
+struct PrunerParams {
+  MivBitstream::ViewParamsList viewParamsList;
+  bool depthLowQualityFlag;
+  int64_t sampleBudget;
+};
+
 class IPruner {
 public:
   IPruner() = default;
@@ -47,9 +53,10 @@ public:
   auto operator=(IPruner &&) -> IPruner & = default;
   virtual ~IPruner() = default;
 
-  virtual void prepareSequence(MivBitstream::EncoderParams &params) = 0;
-  virtual auto prune(const MivBitstream::EncoderParams &params, const Common::MVD16Frame &views)
-      -> Common::MaskList = 0;
+  [[nodiscard]] virtual auto prepareSequence(PrunerParams params)
+      -> MivBitstream::ViewParamsList = 0;
+  virtual auto prune(const MivBitstream::ViewParamsList &viewParamsList,
+                     const Common::MVD16Frame &views) -> Common::MaskList = 0;
 };
 } // namespace TMIV::Pruner
 

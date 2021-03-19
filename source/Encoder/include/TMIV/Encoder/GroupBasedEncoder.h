@@ -49,7 +49,8 @@ public:
   ~GroupBasedEncoder() override = default;
 
   // Let each per-group encoder prepare the sequence
-  void prepareSequence(MivBitstream::EncoderParams params) override;
+  void prepareSequence(const MivBitstream::SequenceConfig &sequenceConfig,
+                       const Common::MVD16Frame &firstFrame) override;
 
   // Let each per-group encoder prepare the access unit
   void prepareAccessUnit() override;
@@ -58,7 +59,7 @@ public:
   void pushFrame(Common::MVD16Frame views) override;
 
   // Let each per-group encoer complete the access unit and merge the metadata
-  auto completeAccessUnit() -> const MivBitstream::EncoderParams & override;
+  auto completeAccessUnit() -> const EncoderParams & override;
 
   // Pop atlases from each group and merge them into a single array
   auto popAtlas() -> Common::MVD10Frame override;
@@ -71,29 +72,27 @@ private:
   using Grouping = std::vector<std::pair<size_t, size_t>>;
 
   // Partition the views, thereby forming the groups
-  virtual auto sourceSplitter(const MivBitstream::EncoderParams &params) -> Grouping;
+  virtual auto sourceSplitter(const MivBitstream::SequenceConfig &sequenceConfig) -> Grouping;
 
-  // Split per-group sequence parameters
-  [[nodiscard]] virtual auto splitParams(size_t groupId,
-                                         const MivBitstream::EncoderParams &params) const
-      -> MivBitstream::EncoderParams;
+  // Split per-group sequence configuration
+  [[nodiscard]] auto
+  filterSourceCameraNames(size_t groupId, const MivBitstream::SequenceConfig &sequenceConfig) const
+      -> MivBitstream::SequenceConfig;
 
   // Split per-group views
-  auto splitViews(size_t groupId, Common::MVD16Frame &views) const -> Common::MVD16Frame;
+  auto splitViews(size_t groupId, const Common::MVD16Frame &views) const -> Common::MVD16Frame;
 
   static auto mergeVps(const std::vector<const MivBitstream::V3cParameterSet *> &vps)
       -> MivBitstream::V3cParameterSet;
 
   // Merge per-group encoder parameters
-  auto mergeParams(const std::vector<const MivBitstream::EncoderParams *> &)
-      -> const MivBitstream::EncoderParams &;
+  auto mergeParams(const std::vector<const EncoderParams *> &) -> const EncoderParams &;
 
-  [[nodiscard]] auto numGroups() const -> size_t { return m_encoders.size(); }
-
+  uint8_t m_numGroups;
   Grouping m_grouping;
   std::vector<Encoder> m_encoders;
-  MivBitstream::EncoderParams m_params;
-  std::vector<const MivBitstream::EncoderParams *> m_perGroupParams;
+  EncoderParams m_params;
+  std::vector<const EncoderParams *> m_perGroupParams;
 };
 } // namespace TMIV::Encoder
 

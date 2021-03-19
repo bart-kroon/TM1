@@ -35,7 +35,7 @@
 #define TMIV_RENDERER_ENGINE_H
 
 #include <TMIV/Common/LinAlg.h>
-#include <TMIV/MivBitstream/EncoderParams.h>
+#include <TMIV/MivBitstream/ViewParamsList.h>
 
 namespace TMIV::Renderer {
 struct SceneVertexDescriptor {

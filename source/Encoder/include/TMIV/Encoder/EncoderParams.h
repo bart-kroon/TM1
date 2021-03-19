@@ -32,29 +32,38 @@
  */
 
 #ifndef TMIV_MIVBITSTREAM_ENCODERPARAMS_H
-#error "Include the .h, not the .hpp"
+#define TMIV_MIVBITSTREAM_ENCODERPARAMS_H
+
+#include <TMIV/MivBitstream/AtlasTileLayerRBSP.h>
+#include <TMIV/MivBitstream/CommonAtlasFrameRBSP.h>
+#include <TMIV/MivBitstream/CommonAtlasSequenceParameterSetRBSP.h>
+#include <TMIV/MivBitstream/PatchParamsList.h>
+#include <TMIV/MivBitstream/V3cParameterSet.h>
+#include <TMIV/MivBitstream/ViewParamsList.h>
+#include <TMIV/MivBitstream/ViewingSpace.h>
+
+namespace TMIV::Encoder {
+struct EncoderAtlasParams {
+  MivBitstream::AtlasSequenceParameterSetRBSP asps;
+  MivBitstream::AtlasFrameParameterSetRBSP afps;
+  MivBitstream::AtlasTileHeader ath;
+};
+
+struct EncoderParams {
+  MivBitstream::V3cParameterSet vps;
+  MivBitstream::CommonAtlasSequenceParameterSetRBSP casps;
+  std::optional<MivBitstream::ViewingSpace> viewingSpace{};
+
+  double frameRate{};
+  MivBitstream::ViewParamsList viewParamsList;
+  MivBitstream::PatchParamsList patchParamsList;
+  bool lengthsInMeters{true};
+  bool dqParamsPresentFlag{true};
+  uint16_t maxEntityId{0};
+  bool randomAccess{};
+
+  std::vector<EncoderAtlasParams> atlas;
+};
+} // namespace TMIV::Encoder
+
 #endif
-
-namespace TMIV::MivBitstream {
-inline EncoderAtlasParams::EncoderAtlasParams() {
-  asps.asps_num_ref_atlas_frame_lists_in_asps(1);
-  ath.ath_type(AthType::I_TILE);
-}
-
-inline auto operator<<(std::ostream &stream, const EncoderAtlasParams &x) -> std::ostream & {
-  stream << x.asps << x.afps << x.ath;
-  return stream;
-}
-
-inline auto EncoderAtlasParams::operator==(const EncoderAtlasParams &other) const -> bool {
-  return asps == other.asps && afps == other.afps && ath == other.ath;
-}
-
-inline auto operator<<(std::ostream &stream, const EncoderParams &x) -> std::ostream & {
-  for (const auto &atlas : x.atlas) {
-    stream << atlas.asps << atlas.afps << atlas.ath;
-  }
-  stream << "Total number of patches: " << x.patchParamsList.size() << '\n';
-  return stream;
-}
-} // namespace TMIV::MivBitstream

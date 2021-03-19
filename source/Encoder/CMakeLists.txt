@@ -10,6 +10,8 @@ create_tmiv_library(
         "src/Encoder_pushFrame.cpp"
         "src/Encoder_completeAccessUnit.cpp"
         "src/Encoder_popFrame.cpp"
+        "src/ExplicitOccupancy.cpp"
+        "src/GeometryQuantizer.cpp"
         "src/GroupBasedEncoder.cpp"
         "src/GeometryDownscaler.cpp"
         "src/MivEncoder.cpp"
@@ -19,10 +21,8 @@ create_tmiv_library(
         TMIV::PrunerLib
         TMIV::AggregatorLib
         TMIV::PackerLib
-        TMIV::GeometryQuantizerLib
         TMIV::DepthQualityAssessorLib
     )
-
 
 create_tmiv_executable(
     TARGET
@@ -72,4 +72,13 @@ create_tmiv_executable(
     PRIVATE
         TMIV::MultiplexerLib
         TMIV::IOLib
+    )
+
+create_catch2_unit_test(
+    TARGET
+        EncoderTest
+    SOURCES
+        "src/GeometryQuantizer.test.cpp"
+    PRIVATE
+        TMIV::EncoderLib
     )

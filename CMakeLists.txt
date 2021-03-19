@@ -43,7 +43,6 @@ foreach(subdir
         Pruner
         Aggregator
         Packer
-        GeometryQuantizer
         Renderer
         ViewingSpace
         VideoDecoder

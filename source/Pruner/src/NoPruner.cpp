@@ -36,12 +36,14 @@
 namespace TMIV::Pruner {
 NoPruner::NoPruner(const Common::Json & /* rootConfig */, const Common::Json & /* nodeConfig */) {}
 
-void NoPruner::prepareSequence(MivBitstream::EncoderParams & /*params */) {}
+auto NoPruner::prepareSequence(PrunerParams params) -> MivBitstream::ViewParamsList {
+  return params.viewParamsList;
+}
 
-auto NoPruner::prune(const MivBitstream::EncoderParams &params, const Common::MVD16Frame &
-                     /* views */) -> Common::MaskList {
-  auto mask = Common::MaskList(params.viewParamsList.size());
-  transform(params.viewParamsList.cbegin(), params.viewParamsList.cend(), mask.begin(),
+auto NoPruner::prune(const MivBitstream::ViewParamsList &viewParamsList,
+                     const Common::MVD16Frame & /* views */) -> Common::MaskList {
+  auto mask = Common::MaskList(viewParamsList.size());
+  transform(viewParamsList.cbegin(), viewParamsList.cend(), mask.begin(),
             [](const MivBitstream::ViewParams &vp) {
               auto mask = Common::Mask{vp.ci.ci_projection_plane_width_minus1() + 1,
                                        vp.ci.ci_projection_plane_height_minus1() + 1};

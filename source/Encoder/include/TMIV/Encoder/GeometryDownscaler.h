@@ -35,19 +35,19 @@
 #define TMIV_ENCODER_GEOMETRYDOWNSCALER_H
 
 #include <TMIV/Common/Frame.h>
-#include <TMIV/MivBitstream/EncoderParams.h>
+#include <TMIV/Encoder/EncoderParams.h>
 
 namespace TMIV::Encoder {
 class GeometryDownscaler {
 public:
   GeometryDownscaler(const Common::Json & /*unused*/, const Common::Json & /*unused*/);
 
-  auto transformParams(MivBitstream::EncoderParams) -> const MivBitstream::EncoderParams &;
+  auto transformParams(EncoderParams) -> const EncoderParams &;
   auto transformFrame(Common::MVD10Frame frame) -> Common::MVD10Frame;
 
 private:
   bool m_geometryScaleEnabledFlag{};
-  MivBitstream::EncoderParams m_params;
+  EncoderParams m_params;
 };
 } // namespace TMIV::Encoder
 

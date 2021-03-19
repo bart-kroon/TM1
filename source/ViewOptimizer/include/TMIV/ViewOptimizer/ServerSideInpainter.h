@@ -38,8 +38,6 @@
 
 #include <memory>
 
-using namespace std::string_literals;
-
 namespace TMIV::ViewOptimizer {
 class ServerSideInpainter : public IViewOptimizer {
 public:
@@ -50,8 +48,7 @@ public:
   ServerSideInpainter &operator=(ServerSideInpainter &&) = default;
   ~ServerSideInpainter();
 
-  auto optimizeParams(MivBitstream::EncoderParams params)
-      -> const MivBitstream::EncoderParams & override;
+  auto optimizeParams(const SourceParams &params) -> ViewOptimizerParams override;
   [[nodiscard]] auto optimizeFrame(Common::MVD16Frame frame) const -> Common::MVD16Frame override;
 
 private:

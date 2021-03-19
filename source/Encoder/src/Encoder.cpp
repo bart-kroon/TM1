@@ -35,20 +35,20 @@
 
 #include <TMIV/Common/Factory.h>
 
-#include <TMIV/GeometryQuantizer/ExplicitOccupancy.h>
-
 #include <iostream>
 
 // Encoder sub-component interfaces
 using TMIV::Aggregator::IAggregator;
-using TMIV::GeometryQuantizer::IGeometryQuantizer;
 using TMIV::Packer::IPacker;
 using TMIV::Pruner::IPruner;
 using TMIV::ViewOptimizer::IViewOptimizer;
 
 namespace TMIV::Encoder {
 Encoder::Encoder(const Common::Json &rootNode, const Common::Json &componentNode)
-    : m_viewOptimizer{Common::create<IViewOptimizer>("ViewOptimizer", rootNode, componentNode)}
+    : m_rootNode{rootNode}
+    , m_depthQualityAssessor{Common::create<DepthQualityAssessor::IDepthQualityAssessor>(
+          "DepthQualityAssessor", rootNode, componentNode)}
+    , m_viewOptimizer{Common::create<IViewOptimizer>("ViewOptimizer", rootNode, componentNode)}
     , m_pruner{Common::create<Pruner::IPruner>("Pruner", rootNode, componentNode)}
     , m_aggregator{Common::create<IAggregator>("Aggregator", rootNode, componentNode)}
     , m_packer{Common::create<IPacker>("Packer", rootNode, componentNode)}
@@ -71,8 +71,10 @@ Encoder::Configuration::Configuration(const Common::Json &rootNode,
     , dilationIter{componentNode.require("dilate").as<int>()}
     , dynamicDepthRange{rootNode.require("dynamicDepthRange").as<bool>()}
     , attributeOffsetFlag{haveTexture && rootNode.require("attributeOffsetEnabledFlag").as<bool>()}
-    , attributeOffsetBitCount{
-          attributeOffsetFlag ? rootNode.require("attributeOffsetBitCount").as<int>() : 0} {
+    , randomAccess{rootNode.require("randomAccess").as<bool>()}
+    , numGroups{rootNode.require("numGroups").as<uint8_t>()}
+    , maxEntityId{rootNode.require("maxEntityId").as<uint16_t>()}
+    , omafV1CompatibleFlag{rootNode.require("OmafV1CompatibleFlag").as<bool>()} {
   if (const auto &node = componentNode.optional("overrideAtlasFrameSizes")) {
     std::cout
         << "WARNING: Overriding atlas frame sizes is meant for internal/preliminary experiments "
@@ -84,18 +86,31 @@ Encoder::Configuration::Configuration(const Common::Json &rootNode,
     maxLumaSampleRate = rootNode.require("maxLumaSampleRate").as<double>();
     maxLumaPictureSize = rootNode.require("maxLumaPictureSize").as<int>();
     maxAtlases = rootNode.require("maxAtlases").as<int>();
-    const auto numGroups = rootNode.require("numGroups").as<int>();
-    maxAtlases = maxAtlases / std::max(1, numGroups);
+    maxAtlases = maxAtlases / std::max(1, int{numGroups});
+  }
+
+  if (!haveGeometry) {
+    dqParamsPresentFlag = rootNode.require("dqParamsPresentFlag").as<bool>();
+  }
+
+  if (attributeOffsetFlag) {
+    attributeOffsetBitCount = rootNode.require("attributeOffsetBitCount").as<int>();
   }
 
   // Read the entity encoding range if existed
-  if (const auto &subnode = rootNode.optional("EntityEncodeRange")) {
-    entityEncRange = subnode.asVec<Common::SampleValue, 2>();
+  if (0 < maxEntityId) {
+    entityEncRange = rootNode.require("EntityEncodeRange").asVec<Common::SampleValue, 2>();
   }
 
-  if (intraPeriod > maxIntraPeriod) {
-    throw std::runtime_error("The intraPeriod parameter cannot be greater than maxIntraPeriod.");
+  if (const auto &node = componentNode.optional("depthLowQualityFlag")) {
+    depthLowQualityFlag = node.as<int>();
   }
+
+  if (const auto &node = rootNode.optional("ViewingSpace")) {
+    viewingSpace = MivBitstream::ViewingSpace::loadFromJson(node, rootNode);
+  }
+
+  VERIFY(intraPeriod <= maxIntraPeriod);
 }
 
 auto Encoder::maxLumaSamplesPerFrame() const -> size_t { return m_maxLumaSamplesPerFrame; }

@@ -45,7 +45,7 @@ MivEncoder::MivEncoder(std::ostream &stream) : m_stream{stream} {
   m_stream.flush();
 }
 
-void MivEncoder::writeAccessUnit(const MivBitstream::EncoderParams &params) {
+void MivEncoder::writeAccessUnit(const EncoderParams &params) {
   m_params = params;
 
   if (m_irap) {

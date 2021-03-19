@@ -41,4 +41,3 @@ TEST_CASE("First test") {
   //  std::istringstream stream{TestUtils::createTestBitstream()};
   //  unit.readInputBitstream(stream);
 }
-

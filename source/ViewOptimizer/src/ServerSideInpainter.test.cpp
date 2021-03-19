@@ -55,9 +55,9 @@ public:
   // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
   static inline bool constructed = false;
 
-  auto optimizeParams(TMIV::MivBitstream::EncoderParams params)
-      -> const TMIV::MivBitstream::EncoderParams & override {
-    m_params = std::move(params);
+  auto optimizeParams(const TMIV::ViewOptimizer::SourceParams &params)
+      -> TMIV::ViewOptimizer::ViewOptimizerParams override {
+    m_params = {params.viewParamsList};
     for (auto &vp : m_params.viewParamsList) {
       vp.name = "transport";
     }
@@ -70,7 +70,7 @@ public:
   }
 
 private:
-  TMIV::MivBitstream::EncoderParams m_params;
+  TMIV::ViewOptimizer::ViewOptimizerParams m_params;
 };
 
 class FakeSynthesizer : public TMIV::Renderer::ISynthesizer {
@@ -140,8 +140,8 @@ const auto construct = []() {
 )"s)};
 };
 
-const auto encoderParams = []() {
-  auto params = TMIV::MivBitstream::EncoderParams{};
+const auto sourceParams = []() {
+  auto params = TMIV::ViewOptimizer::SourceParams{};
 
   auto &vp_1 = params.viewParamsList.emplace_back();
   vp_1.ci.ci_projection_plane_width_minus1(1023)
@@ -167,11 +167,12 @@ const auto encoderParams = []() {
     vp.name = "source";
   }
 
-  params.casme().casme_depth_low_quality_flag(false);
+  params.depthLowQualityFlag = false;
+
   return params;
 };
 
-const auto inputFrame = [](const TMIV::MivBitstream::EncoderParams &params) {
+const auto inputFrame = [](const TMIV::ViewOptimizer::SourceParams &params) {
   REQUIRE(!params.viewParamsList.empty());
   auto frame = TMIV::Common::MVD16Frame{};
 
@@ -246,7 +247,7 @@ TEST_CASE("ServerSideInpainter") {
 
   GIVEN("A server-side inpainter and typical parameters") {
     auto ssi = construct();
-    const auto inParams = encoderParams();
+    const auto inParams = sourceParams();
 
     FakeInpainter::called = false;
 
@@ -330,7 +331,7 @@ TEST_CASE("ServerSideInpainter") {
   GIVEN("A server-side inpainter and only perspective views") {
     auto ssi = construct();
 
-    auto inParams = encoderParams();
+    auto inParams = sourceParams();
     inParams.viewParamsList.front().ci = inParams.viewParamsList.back().ci;
 
     FakeInpainter::called = false;
@@ -361,7 +362,7 @@ TEST_CASE("ServerSideInpainter") {
 
     WHEN("Using typical inputs for the server-side inpainter") {
       auto ssi = construct();
-      const auto inParams = encoderParams();
+      const auto inParams = sourceParams();
       const auto inFrame = inputFrame(inParams);
       const auto outParams = ssi.optimizeParams(inParams);
       const auto outFrame = ssi.optimizeFrame(inFrame);
@@ -439,7 +440,7 @@ TEST_CASE("ServerSideInpainter") {
   }
 
   SECTION("The depth is converted from 16-bit to 10-bit range prior to synthesis") {
-    const auto inParams = encoderParams();
+    const auto inParams = sourceParams();
     auto inFrame = inputFrame(inParams);
 
     inFrame.front().depth.getPlane(0)[0] = 0xFFFF;
@@ -477,8 +478,8 @@ TEST_CASE("ServerSideInpainter") {
         };
 
     auto ssi = construct();
-    auto inParams = encoderParams();
-    inParams.casme().casme_depth_low_quality_flag(dlqf);
+    auto inParams = sourceParams();
+    inParams.depthLowQualityFlag = dlqf;
     auto params = ssi.optimizeParams(inParams);
     auto frame = ssi.optimizeFrame(inputFrame(inParams));
 

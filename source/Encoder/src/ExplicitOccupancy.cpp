@@ -31,7 +31,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/GeometryQuantizer/ExplicitOccupancy.h>
+#include <TMIV/Encoder/ExplicitOccupancy.h>
 
 #include <TMIV/Common/verify.h>
 #include <TMIV/MivBitstream/DepthOccupancyTransform.h>
@@ -39,7 +39,7 @@
 #include <iostream>
 #include <stdexcept>
 
-namespace TMIV::GeometryQuantizer {
+namespace TMIV::Encoder {
 ExplicitOccupancy::ExplicitOccupancy(const Common::Json & /*unused*/,
                                      const Common::Json &componentNode) {
   if (const auto &subnode = componentNode.optional("occupancyScale")) {
@@ -50,35 +50,38 @@ ExplicitOccupancy::ExplicitOccupancy(const Common::Json & /*unused*/,
   }
 }
 
-auto ExplicitOccupancy::setOccupancyParams(MivBitstream::EncoderParams params)
-    -> const MivBitstream::EncoderParams & {
+auto ExplicitOccupancy::setOccupancyParams(EncoderParams params) -> const EncoderParams & {
   m_inParams = std::move(params);
   m_outParams = m_inParams;
 
-  m_outParams.vme().vme_embedded_occupancy_enabled_flag(false);
-  m_outParams.vme().vme_occupancy_scale_enabled_flag(true);
+  auto &vme = m_outParams.vps.vps_miv_extension();
+  vme.vme_embedded_occupancy_enabled_flag(false).vme_occupancy_scale_enabled_flag(true);
+
   for (size_t k = 0; k <= m_outParams.vps.vps_atlas_count_minus1(); ++k) {
     const auto j = m_outParams.vps.vps_atlas_id(k);
     m_outParams.vps.vps_occupancy_video_present_flag(j, true);
   }
-  m_depthLowQualityFlag = m_outParams.casme().casme_depth_low_quality_flag();
+  m_depthLowQualityFlag = m_outParams.casps.casps_miv_extension().casme_depth_low_quality_flag();
 
-  m_embeddedOccupancyFlag = m_outParams.vme().vme_embedded_occupancy_enabled_flag();
-  m_occupancyScaleEnabledFlag = m_outParams.vme().vme_occupancy_scale_enabled_flag();
+  m_embeddedOccupancyFlag = vme.vme_embedded_occupancy_enabled_flag();
+  m_occupancyScaleEnabledFlag = vme.vme_occupancy_scale_enabled_flag();
 
   if (!m_embeddedOccupancyFlag && m_occupancyScaleEnabledFlag) {
     for (auto &atlas : m_outParams.atlas) {
-      atlas.asme().asme_embedded_occupancy_enabled_flag(false).asme_occupancy_scale_enabled_flag(
-          true);
+      auto &asme = atlas.asps.asps_extension_present_flag(true)
+                       .asps_miv_extension_present_flag(true)
+                       .asps_miv_extension();
+      asme.asme_embedded_occupancy_enabled_flag(false).asme_occupancy_scale_enabled_flag(true);
+
       if (m_occupancyScaleConfig) {
-        atlas.asme().asme_occupancy_scale_factor_x_minus1(
+        asme.asme_occupancy_scale_factor_x_minus1(
             Common::downCast<uint16_t>(m_occupancyScale[0] - 1));
-        atlas.asme().asme_occupancy_scale_factor_y_minus1(
+        asme.asme_occupancy_scale_factor_y_minus1(
             Common::downCast<uint16_t>(m_occupancyScale[1] - 1));
       } else {
-        atlas.asme().asme_occupancy_scale_factor_x_minus1(
+        asme.asme_occupancy_scale_factor_x_minus1(
             Common::downCast<uint16_t>((1 << atlas.asps.asps_log2_patch_packing_block_size()) - 1));
-        atlas.asme().asme_occupancy_scale_factor_y_minus1(
+        asme.asme_occupancy_scale_factor_y_minus1(
             Common::downCast<uint16_t>((1 << atlas.asps.asps_log2_patch_packing_block_size()) - 1));
       }
     }
@@ -86,8 +89,7 @@ auto ExplicitOccupancy::setOccupancyParams(MivBitstream::EncoderParams params)
   return m_outParams;
 }
 
-auto ExplicitOccupancy::transformParams(MivBitstream::EncoderParams params)
-    -> const MivBitstream::EncoderParams & {
+auto ExplicitOccupancy::transformParams(EncoderParams params) -> const EncoderParams & {
   m_inParams = std::move(params);
   m_outParams = m_inParams;
 
@@ -171,4 +173,4 @@ void ExplicitOccupancy::padGeometryFromLeft(Common::MVD10Frame &atlases) {
     }
   }
 }
-} // namespace TMIV::GeometryQuantizer
+} // namespace TMIV::Encoder

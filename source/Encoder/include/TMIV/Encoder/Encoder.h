@@ -36,9 +36,10 @@
 
 #include <TMIV/Aggregator/IAggregator.h>
 #include <TMIV/Common/Json.h>
+#include <TMIV/DepthQualityAssessor/IDepthQualityAssessor.h>
 #include <TMIV/Encoder/GeometryDownscaler.h>
 #include <TMIV/Encoder/IEncoder.h>
-#include <TMIV/GeometryQuantizer/IGeometryQuantizer.h>
+#include <TMIV/Encoder/IGeometryQuantizer.h>
 #include <TMIV/Packer/IPacker.h>
 #include <TMIV/Pruner/IPruner.h>
 #include <TMIV/ViewOptimizer/IViewOptimizer.h>
@@ -57,19 +58,22 @@ public:
   auto operator=(Encoder &&) -> Encoder & = default;
   ~Encoder() override = default;
 
-  void prepareSequence(MivBitstream::EncoderParams params) override;
+  void prepareSequence(const MivBitstream::SequenceConfig &sequenceConfig,
+                       const Common::MVD16Frame &firstFrame) override;
   void prepareAccessUnit() override;
   void pushFrame(Common::MVD16Frame sourceViews) override;
-  auto completeAccessUnit() -> const MivBitstream::EncoderParams & override;
+  auto completeAccessUnit() -> const EncoderParams & override;
   auto popAtlas() -> Common::MVD10Frame override;
   [[nodiscard]] auto maxLumaSamplesPerFrame() const -> size_t override;
 
 private: // Encoder_prepareSequence.cpp
   [[nodiscard]] auto
-  calculateNominalAtlasFrameSizes(const MivBitstream::EncoderParams &params) const
-      -> Common::SizeVector;
-  [[nodiscard]] auto calculateViewGridSize(const MivBitstream::EncoderParams &params) const
+  calculateNominalAtlasFrameSizes(const MivBitstream::ViewParamsList &viewParamsList,
+                                  double frameRate) const -> Common::SizeVector;
+  [[nodiscard]] auto calculateViewGridSize(const MivBitstream::ViewParamsList &viewParamsList) const
       -> Common::Vec2i;
+  auto createVps(const std::vector<Common::Vec2i> &atlasFrameSizes) const
+      -> MivBitstream::V3cParameterSet;
   auto vuiParameters() const -> MivBitstream::VuiParameters;
   void setGiGeometry3dCoordinatesBitdepthMinus1();
   void enableOccupancyPerView();
@@ -113,13 +117,15 @@ private: // Encoder_completeAccessUnit.cpp
 private:
   struct Configuration {
     Configuration(const Common::Json & /*rootNode*/, const Common::Json & /*componentNode*/);
+
     int intraPeriod;
-    int blockSize{};
+    int blockSize{}; // TODO(#358): This is not a configuration parameter
     Common::Vec2i blockSizeDepthQualityDependent;
+    std::optional<bool> depthLowQualityFlag;
     double maxLumaSampleRate{};
     int maxLumaPictureSize{};
-    double maxBlockRate{};
-    int maxBlocksPerAtlas{};
+    double maxBlockRate{};   // TODO(#358): This is not a configuration parameter
+    int maxBlocksPerAtlas{}; // TODO(#358): This is not a configuration parameter
     int maxAtlases{};
     bool haveTexture;
     bool haveGeometry;
@@ -131,28 +137,38 @@ private:
     Common::stack::Vec2<Common::SampleValue> entityEncRange;
     bool dynamicDepthRange;
     bool attributeOffsetFlag;
-    int attributeOffsetBitCount;
+    int attributeOffsetBitCount{};
+    bool dqParamsPresentFlag{true};
+    bool randomAccess;
+    uint8_t numGroups;
+    uint16_t maxEntityId{};
+    std::optional<MivBitstream::ViewingSpace> viewingSpace;
+    bool omafV1CompatibleFlag;
   };
 
   // Encoder_popFrame.cpp
   void incrementFoc();
 
+  // TODO(#358): This is a temporary solution, to be refactored in #301 or #302
+  Common::Json m_rootNode;
+
   // Encoder sub-components
+  std::unique_ptr<DepthQualityAssessor::IDepthQualityAssessor> m_depthQualityAssessor;
   std::unique_ptr<ViewOptimizer::IViewOptimizer> m_viewOptimizer;
   std::unique_ptr<Pruner::IPruner> m_pruner;
   std::unique_ptr<Aggregator::IAggregator> m_aggregator;
   std::unique_ptr<Packer::IPacker> m_packer;
-  std::unique_ptr<GeometryQuantizer::IGeometryQuantizer> m_geometryQuantizer;
+  std::unique_ptr<IGeometryQuantizer> m_geometryQuantizer;
   GeometryDownscaler m_geometryDownscaler;
 
   Configuration m_config;
 
   // View-optimized encoder input
-  MivBitstream::EncoderParams m_transportParams;
+  ViewOptimizer::ViewOptimizerParams m_transportParams;
   std::vector<Common::MVD16Frame> m_transportViews;
 
   // Encoder output (ready for HM)
-  MivBitstream::EncoderParams m_params;
+  EncoderParams m_params;
   std::deque<Common::MVD16Frame> m_videoFrameBuffer;
 
   // Mask aggregation state

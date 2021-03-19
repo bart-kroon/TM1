@@ -35,7 +35,6 @@
 
 #include <TMIV/Common/Application.h>
 #include <TMIV/Common/Factory.h>
-#include <TMIV/DepthQualityAssessor/IDepthQualityAssessor.h>
 #include <TMIV/Encoder/MivEncoder.h>
 #include <TMIV/IO/IO.h>
 
@@ -50,7 +49,6 @@ void registerComponents();
 class Application : public Common::Application {
 private:
   std::unique_ptr<IEncoder> m_encoder;
-  std::unique_ptr<DepthQualityAssessor::IDepthQualityAssessor> m_depthQualityAssessor;
   const std::string &m_contentId;
   std::int32_t m_numberOfInputFrames;
   std::int32_t m_intraPeriod;
@@ -74,8 +72,6 @@ public:
                                 {"-s", "Content ID (e.g. B for Museum)", false},
                                 {"-n", "Number of input frames (e.g. 97)", false}}}
       , m_encoder{create<IEncoder>("Encoder")}
-      , m_depthQualityAssessor{create<DepthQualityAssessor::IDepthQualityAssessor>(
-            "DepthQualityAssessor")}
       , m_contentId{optionValues("-s"sv).front()}
       , m_numberOfInputFrames{std::stoi(optionValues("-n"sv).front())}
       , m_intraPeriod{json().require("intraPeriod").as<std::int32_t>()}
@@ -98,16 +94,9 @@ public:
   }
 
   void run() override {
-    auto sourceParams = loadSourceParams(json(), m_inputSequenceConfig);
-
-    // TODO(BK): Somehow move these details into EncoderLib
-    if (json().require("haveGeometryVideo").as<bool>() && !json().optional("depthLowQualityFlag")) {
-      const auto frame = IO::loadMultiviewFrame(json(), placeholders(), m_inputSequenceConfig, 0);
-      sourceParams.casme().casme_depth_low_quality_flag(m_depthQualityAssessor->isLowDepthQuality(
-          m_inputSequenceConfig.sourceViewParams(), frame));
-    }
-
-    m_encoder->prepareSequence(sourceParams);
+    m_encoder->prepareSequence(
+        m_inputSequenceConfig,
+        IO::loadMultiviewFrame(json(), placeholders(), m_inputSequenceConfig, 0));
 
     for (int i = 0; i < m_numberOfInputFrames; i += m_intraPeriod) {
       int lastFrame = std::min(m_numberOfInputFrames, i + m_intraPeriod);
@@ -118,48 +107,6 @@ public:
   }
 
 private:
-  // TODO(BK): Move this to EncoderLib
-  static auto loadSourceParams(const Common::Json &config,
-                               const MivBitstream::SequenceConfig &sequenceConfig)
-      -> MivBitstream::EncoderParams {
-    const auto haveTextureVideo = config.require("haveTextureVideo").as<bool>();
-    const auto haveGeometryVideo = config.require("haveGeometryVideo").as<bool>();
-    const auto haveOccupancyVideo = config.require("haveOccupancyVideo").as<bool>();
-    auto x = MivBitstream::EncoderParams{haveTextureVideo, haveGeometryVideo, haveOccupancyVideo};
-
-    x.viewParamsList = sequenceConfig.sourceViewParams();
-    x.frameRate = sequenceConfig.frameRate;
-    x.lengthsInMeters = sequenceConfig.lengthsInMeters;
-
-    if (const auto &node = config.optional("depthLowQualityFlag")) {
-      x.casme().casme_depth_low_quality_flag(node.as<bool>());
-    }
-
-    if (const auto &node = config.optional("dqParamsPresentFlag")) {
-      x.dqParamsPresentFlag = node.as<bool>();
-    }
-
-    x.randomAccess = config.require("randomAccess").as<bool>();
-
-    x.vme().group_mapping().gm_group_count(config.require("numGroups").as<uint8_t>());
-
-    if (const auto node = config.optional("maxEntityId")) {
-      x.maxEntityId = node.as<uint16_t>();
-    }
-
-    if (const auto &subnode = config.optional("ViewingSpace")) {
-      x.viewingSpace = MivBitstream::ViewingSpace::loadFromJson(subnode, config);
-    }
-
-    if (config.require("OmafV1CompatibleFlag").as<bool>()) {
-      x.casps.casps_extension_present_flag(true)
-          .casps_miv_extension_present_flag(true)
-          .casps_miv_extension()
-          .casme_omaf_v1_compatible_flag(true);
-    }
-    return x;
-  }
-
   void encodeAccessUnit(std::int32_t firstFrame, std::int32_t lastFrame) {
     std::cout << "Access unit: [" << firstFrame << ", " << lastFrame << ")\n";
     m_encoder->prepareAccessUnit();

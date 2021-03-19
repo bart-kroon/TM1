@@ -40,8 +40,7 @@
 
 namespace TMIV::Encoder {
 namespace {
-auto createBlockToPatchMap(size_t k, TMIV::MivBitstream::EncoderParams &params)
-    -> Common::BlockToPatchMap {
+auto createBlockToPatchMap(size_t k, EncoderParams &params) -> Common::BlockToPatchMap {
   const auto &asps = params.atlas[k].asps;
   const auto &ppl = params.patchParamsList;
 
@@ -151,61 +150,96 @@ auto reshapeTransparencyAtlas(Common::Transparency8Frame &transparencyAtlas,
 } // namespace
 
 MpiEncoder::MpiEncoder(const Common::Json &rootNode, const Common::Json &componentNode)
-    : m_packer{Common::create<Packer::IPacker>("Packer", rootNode, componentNode)} {
-  // Parameters
-  m_intraPeriod = rootNode.require("intraPeriod").as<int>();
-  m_blockSizeDepthQualityDependent =
-      rootNode.require("blockSizeDepthQualityDependent").asVec<int, 2>();
+    : m_rootNode{rootNode}
+    , m_intraPeriod{rootNode.require("intraPeriod").as<int>()}
+    , m_blockSizeDepthQualityDependent{rootNode.require("blockSizeDepthQualityDependent")
+                                           .asVec<int, 2>()}
+    , m_textureDilation{componentNode.require("TextureDilation").as<unsigned>()}
+    , m_transparencyDynamic{componentNode.require("TransparencyDynamic").as<unsigned>()}
+    , m_packer{Common::create<Packer::IPacker>("Packer", rootNode, componentNode)} {
+  VERIFY(m_intraPeriod <= maxIntraPeriod);
 
   // Enforce user-specified atlas size
   auto node = componentNode.require("overrideAtlasFrameSizes");
   for (const auto &subnode : node.as<Common::Json::Array>()) {
     m_overrideAtlasFrameSizes.push_back(subnode.asVec<int, 2>());
   }
-
-  if (m_intraPeriod > maxIntraPeriod) {
-    throw std::runtime_error("The intraPeriod parameter cannot be greater than maxIntraPeriod.");
-  }
-
-  // Testing forbidden parameters
-  bool haveOccupancyVideo{rootNode.require("haveOccupancyVideo").as<bool>()};
-  if (haveOccupancyVideo) {
-    throw std::runtime_error("No occupancy is allowed with current version of MPI "
-                             "encoder. Please use haveOccupancyVideo = false !!!");
-  }
-  bool haveGeometryVideo{rootNode.require("haveGeometryVideo").as<bool>()};
-  if (haveGeometryVideo) {
-    throw std::runtime_error("No geometry is allowed with current version of MPI "
-                             "encoder. Please use haveGeometryVideo = false !!!");
-  }
-
-  // MPI-specific parameters
-  m_textureDilation = componentNode.require("TextureDilation").as<int>();
-  m_transparencyDynamic = componentNode.require("TransparencyDynamic").as<int>();
 }
 
-void MpiEncoder::prepareSequence(MivBitstream::EncoderParams sourceParams) {
-  m_blockSize = m_blockSizeDepthQualityDependent[static_cast<size_t>(
-      sourceParams.casme().casme_depth_low_quality_flag())];
+void MpiEncoder::prepareSequence(const MivBitstream::SequenceConfig &sequenceConfig) {
+  m_params = {};
+  auto &vps = m_params.vps;
+
+  vps.profile_tier_level()
+      .ptl_level_idc(MivBitstream::PtlLevelIdc::Level_3_5)
+      .ptl_profile_codec_group_idc(MivBitstream::PtlProfileCodecGroupIdc::HEVC_Main10)
+      .ptl_profile_reconstruction_idc(MivBitstream::PtlProfileReconstructionIdc::MIV_Main)
+      .ptl_profile_toolset_idc(MivBitstream::PtlProfilePccToolsetIdc::MIV_Extended)
+      .ptl_toolset_constraints_present_flag(true)
+      .ptl_profile_toolset_constraints_information([]() {
+        // TODO(#358): Add a mutable accessor for ptci to avoid needing to write a lambda
+        auto ptci = MivBitstream::ProfileToolsetConstraintsInformation{};
+        ptci.ptc_restricted_geometry_flag(true);
+        return ptci;
+      }());
+
+  VERIFY_MIVBITSTREAM(!m_overrideAtlasFrameSizes.empty());
+  vps.vps_atlas_count_minus1(uint8_t(m_overrideAtlasFrameSizes.size() - 1));
+
+  for (size_t k = 0; k < m_overrideAtlasFrameSizes.size(); ++k) {
+    const auto j = MivBitstream::AtlasId{uint8_t(k)};
+    vps.vps_atlas_id(k, j)
+        .vps_frame_width(j, m_overrideAtlasFrameSizes[k].x())
+        .vps_frame_height(j, m_overrideAtlasFrameSizes[k].y())
+        .vps_attribute_video_present_flag(j, true);
+
+    vps.attribute_information(j).ai_attribute_count(2);
+
+    static constexpr auto textureBitDepth = 10;
+    static constexpr auto transparencyBitDepth = 10;
+
+    vps.attribute_information(j)
+        .ai_attribute_type_id(0, MivBitstream::AiAttributeTypeId::ATTR_TEXTURE)
+        .ai_attribute_dimension_minus1(0, 2)
+        .ai_attribute_2d_bit_depth_minus1(0, textureBitDepth - 1);
+
+    vps.attribute_information(j)
+        .ai_attribute_type_id(1, MivBitstream::AiAttributeTypeId::ATTR_TRANSPARENCY)
+        .ai_attribute_dimension_minus1(1, 0)
+        .ai_attribute_2d_bit_depth_minus1(1, transparencyBitDepth - 1);
+  }
+
+  m_params.viewParamsList = sequenceConfig.sourceViewParams();
+  m_params.frameRate = sequenceConfig.frameRate;
+
+  auto depthLowQualityFlag = false;
+
+  if (const auto &node = m_rootNode.optional("depthLowQualityFlag")) {
+    depthLowQualityFlag = node.as<bool>();
+    m_params.casps.casps_extension_present_flag(true)
+        .casps_miv_extension_present_flag(true)
+        .casps_miv_extension()
+        .casme_depth_low_quality_flag(depthLowQualityFlag);
+  }
+
+  if (const auto &subnode = m_rootNode.optional("ViewingSpace")) {
+    m_params.viewingSpace = MivBitstream::ViewingSpace::loadFromJson(subnode, m_rootNode);
+  }
+
+  m_blockSize = m_blockSizeDepthQualityDependent[depthLowQualityFlag ? 1U : 0U];
   VERIFY(2 <= m_blockSize);
   VERIFY((m_blockSize & (m_blockSize - 1)) == 0);
 
-  // Create IVS with VPS with right number of atlases but copy other parts from input IVS
-  m_params = MivBitstream::EncoderParams{m_overrideAtlasFrameSizes, 10, 0, 0, 10};
-
-  m_params.vme() = sourceParams.vme();
-
   // Group atlases together to restrict atlas-level sub-bitstream access
-  auto &gm = m_params.vme().group_mapping();
+  auto &gm = vps.vps_extension_present_flag(true)
+                 .vps_miv_extension_present_flag(true)
+                 .vps_miv_extension()
+                 .group_mapping();
   gm.gm_group_count(1);
   for (size_t i = 0; i < m_overrideAtlasFrameSizes.size(); ++i) {
     gm.gm_group_id(i, 0);
   }
 
-  m_params.viewParamsList = sourceParams.viewParamsList;
-  m_params.frameRate = sourceParams.frameRate;
-  m_params.lengthsInMeters = sourceParams.lengthsInMeters;
-  m_params.maxEntityId = sourceParams.maxEntityId;
   m_params.casps.casps_extension_present_flag(true)
       .casps_miv_extension_present_flag(true)
       .casps_log2_max_common_atlas_frame_order_cnt_lsb_minus4(log2FocLsbMinus4())
@@ -213,7 +247,6 @@ void MpiEncoder::prepareSequence(MivBitstream::EncoderParams sourceParams) {
       .casme_depth_quantization_params_present_flag(true)
       .casme_vui_params_present_flag(true)
       .vui_parameters(vuiParameters());
-  m_params.viewingSpace = sourceParams.viewingSpace;
 
   // NOTE(FT)/m55089 implementation : need to have only non basic views to allow for splitting the
   // patches
@@ -227,8 +260,7 @@ void MpiEncoder::prepareSequence(MivBitstream::EncoderParams sourceParams) {
   prepareIvau();
 }
 
-auto MpiEncoder::processAccessUnit(int firstFrameId, int lastFrameId)
-    -> const MivBitstream::EncoderParams & {
+auto MpiEncoder::processAccessUnit(int firstFrameId, int lastFrameId) -> const EncoderParams & {
   const auto &mpiViewParams = m_params.viewParamsList.front();
   Common::Vec2i mpiSize{static_cast<int>(mpiViewParams.ci.ci_projection_plane_width_minus1()) + 1,
                         static_cast<int>(mpiViewParams.ci.ci_projection_plane_height_minus1()) + 1};
@@ -247,7 +279,7 @@ auto MpiEncoder::processAccessUnit(int firstFrameId, int lastFrameId)
       lastFrameId - firstFrameId, Common::Frame<Common::YUV400P16>{mpiSize.x(), mpiSize.y()});
   size_t nbActivePixels{};
 
-  m_packer->initialize(m_params.atlasSizes(), m_blockSize);
+  m_packer->initialize(m_overrideAtlasFrameSizes, m_blockSize);
 
   for (auto layerId = 0; layerId < mpiViewParams.nbMpiLayers; ++layerId) {
     aggregatedMask.fillZero();
@@ -277,7 +309,7 @@ auto MpiEncoder::processAccessUnit(int firstFrameId, int lastFrameId)
                       [](auto x) { return (x > 0); });
 
     auto patchParamsListLayer =
-        m_packer->pack(m_params.atlasSizes(), {aggregatedMask},
+        m_packer->pack(m_overrideAtlasFrameSizes, {aggregatedMask},
                        MivBitstream::ViewParamsList{{mpiViewParams}}, m_blockSize);
 
     for (auto &patchParams : patchParamsListLayer) {
@@ -408,18 +440,17 @@ void MpiEncoder::prepareIvau() {
         .asps_normal_axis_limits_quantization_enabled_flag(true)
         .asps_max_number_projections_minus1(
             static_cast<uint16_t>(m_params.viewParamsList.size() - 1))
-        .asps_log2_patch_packing_block_size(Common::ceilLog2(m_blockSize));
-
-    atlas.asme().asme_max_entity_id(m_params.maxEntityId);
-
-    // Signalling patch_constant_flag requires ASME to be present
-    if (m_params.vps.vps_miv_extension_present_flag()) {
-      atlas.asme().asme_patch_constant_depth_flag(true);
-    }
+        .asps_log2_patch_packing_block_size(Common::ceilLog2(m_blockSize))
+        .asps_num_ref_atlas_frame_lists_in_asps(1)
+        .asps_extension_present_flag(true)
+        .asps_miv_extension_present_flag(true)
+        .asps_miv_extension()
+        .asme_patch_constant_depth_flag(true);
 
     // Set ATH parameters
-    atlas.ath.ath_ref_atlas_frame_list_asps_flag(true);
-    atlas.ath.ath_pos_min_d_quantizer(uint8_t(0));
+    atlas.ath.ath_type(MivBitstream::AthType::I_TILE)
+        .ath_ref_atlas_frame_list_asps_flag(true)
+        .ath_pos_min_d_quantizer(uint8_t{});
   }
 }
 

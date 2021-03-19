@@ -35,10 +35,10 @@
 #include <TMIV/Common/Factory.h>
 #include <TMIV/DepthQualityAssessor/DepthQualityAssessor.h>
 #include <TMIV/Encoder/Encoder.h>
+#include <TMIV/Encoder/ExplicitOccupancy.h>
+#include <TMIV/Encoder/GeometryQuantizer.h>
 #include <TMIV/Encoder/GroupBasedEncoder.h>
 #include <TMIV/Encoder/MpiEncoder.h>
-#include <TMIV/GeometryQuantizer/ExplicitOccupancy.h>
-#include <TMIV/GeometryQuantizer/GeometryQuantizer.h>
 #include <TMIV/Packer/Packer.h>
 #include <TMIV/Pruner/HierarchicalPruner.h>
 #include <TMIV/Pruner/NoPruner.h>
@@ -66,9 +66,9 @@ void registerComponents() {
   auto &mpiEncoders = Common::Factory<IMpiEncoder>::getInstance();
   mpiEncoders.registerAs<MpiEncoder>("MpiEncoder");
 
-  auto &geometryQuantizers = Common::Factory<GeometryQuantizer::IGeometryQuantizer>::getInstance();
-  geometryQuantizers.registerAs<GeometryQuantizer::GeometryQuantizer>("GeometryQuantizer");
-  geometryQuantizers.registerAs<GeometryQuantizer::ExplicitOccupancy>("ExplicitOccupancy");
+  auto &geometryQuantizers = Common::Factory<IGeometryQuantizer>::getInstance();
+  geometryQuantizers.registerAs<GeometryQuantizer>("GeometryQuantizer");
+  geometryQuantizers.registerAs<ExplicitOccupancy>("ExplicitOccupancy");
 
   auto &packers = Common::Factory<Packer::IPacker>::getInstance();
   packers.registerAs<Packer::Packer>("Packer");

@@ -46,9 +46,8 @@ public:
   auto operator=(NoPruner &&) -> NoPruner & = default;
   ~NoPruner() override = default;
 
-  void prepareSequence(MivBitstream::EncoderParams & /* params */) override;
-
-  auto prune(const MivBitstream::EncoderParams &params, const Common::MVD16Frame & /* views */)
+  auto prepareSequence(PrunerParams params) -> MivBitstream::ViewParamsList override;
+  auto prune(const MivBitstream::ViewParamsList &viewParamsList, const Common::MVD16Frame &views)
       -> Common::MaskList override;
 };
 } // namespace TMIV::Pruner

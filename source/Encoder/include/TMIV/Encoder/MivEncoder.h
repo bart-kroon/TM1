@@ -34,7 +34,7 @@
 #ifndef TMIV_ENCODER_MIVENCODER_H
 #define TMIV_ENCODER_MIVENCODER_H
 
-#include <TMIV/MivBitstream/EncoderParams.h>
+#include <TMIV/Encoder/EncoderParams.h>
 #include <TMIV/MivBitstream/NalSampleStreamFormat.h>
 #include <TMIV/MivBitstream/V3cSampleStreamFormat.h>
 
@@ -45,7 +45,7 @@ class MivEncoder {
 public:
   MivEncoder(std::ostream &stream);
 
-  void writeAccessUnit(const MivBitstream::EncoderParams &);
+  void writeAccessUnit(const EncoderParams &);
 
 private:
   struct PreviouslySentMessages {
@@ -80,7 +80,7 @@ private:
   std::ostream &m_stream;
   MivBitstream::SampleStreamV3cHeader m_ssvh{2};
   MivBitstream::SampleStreamNalHeader m_ssnh{2};
-  MivBitstream::EncoderParams m_params;
+  EncoderParams m_params;
   PreviouslySentMessages m_previouslySentMessages{};
   bool m_irap{true};
   uint8_t m_log2MaxFrmOrderCntLsbMinus4{};

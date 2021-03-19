@@ -35,9 +35,18 @@
 #define TMIV_VIEWOPTIMIZER_IVIEWOPTIMIZER_H
 
 #include <TMIV/Common/Frame.h>
-#include <TMIV/MivBitstream/EncoderParams.h>
+#include <TMIV/MivBitstream/ViewParamsList.h>
 
 namespace TMIV::ViewOptimizer {
+struct SourceParams {
+  MivBitstream::ViewParamsList viewParamsList;
+  bool depthLowQualityFlag{};
+};
+
+struct ViewOptimizerParams {
+  MivBitstream::ViewParamsList viewParamsList;
+};
+
 class IViewOptimizer {
 public:
   IViewOptimizer() = default;
@@ -48,8 +57,7 @@ public:
   virtual ~IViewOptimizer() = default;
 
   // Optimize camera parameters for the sequence
-  virtual auto optimizeParams(MivBitstream::EncoderParams params)
-      -> const MivBitstream::EncoderParams & = 0;
+  virtual auto optimizeParams(const SourceParams &params) -> ViewOptimizerParams = 0;
 
   // Optimize a frame in the intra period
   [[nodiscard]] virtual auto optimizeFrame(Common::MVD16Frame views) const

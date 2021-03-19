@@ -2,13 +2,13 @@
     "attributeOffsetEnabledFlag": false,
     "blockSizeDepthQualityDependent": [ 16, 32 ],
     "configDirectory": "config",
-    "DepthQualityAssessor": {
-        "blendingFactor": 0.03,
-        "maxOutlierRatio": 0.001
-    },
-    "DepthQualityAssessorMethod": "DepthQualityAssessor",
     "dynamicDepthRange": true,
     "Encoder": {
+        "DepthQualityAssessor": {
+            "blendingFactor": 0.03,
+            "maxOutlierRatio": 0.001
+        },
+        "DepthQualityAssessorMethod": "DepthQualityAssessor",
         "Aggregator": {},
         "AggregatorMethod": "Aggregator",
         "ServerSideInpainter": {
@@ -62,6 +62,7 @@
     "inputTexturePathFmt": "{1}/{3}_texture_{4}x{5}_{6}.yuv",
     "intraPeriod": 32,
     "maxAtlases": 2,
+    "maxEntityId": 0,
     "maxLumaPictureSize": 8912896,
     "maxLumaSampleRate": 1069547520.0,
     "numGroups": 0,

@@ -31,13 +31,13 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef TMIV_GEOMETRYQUANTIZER_IGEOMETRYQUANTIZER_H
-#define TMIV_GEOMETRYQUANTIZER_IGEOMETRYQUANTIZER_H
+#ifndef TMIV_ENCODER_IGEOMETRYQUANTIZER_H
+#define TMIV_ENCODER_IGEOMETRYQUANTIZER_H
 
 #include <TMIV/Common/Frame.h>
-#include <TMIV/MivBitstream/EncoderParams.h>
+#include <TMIV/Encoder/EncoderParams.h>
 
-namespace TMIV::GeometryQuantizer {
+namespace TMIV::Encoder {
 class IGeometryQuantizer {
 public:
   IGeometryQuantizer() = default;
@@ -47,12 +47,10 @@ public:
   auto operator=(IGeometryQuantizer &&) -> IGeometryQuantizer & = default;
   virtual ~IGeometryQuantizer() = default;
 
-  virtual auto setOccupancyParams(MivBitstream::EncoderParams params)
-      -> const MivBitstream::EncoderParams & = 0;
-  virtual auto transformParams(MivBitstream::EncoderParams params)
-      -> const MivBitstream::EncoderParams & = 0;
+  virtual auto setOccupancyParams(EncoderParams params) -> const EncoderParams & = 0;
+  virtual auto transformParams(EncoderParams params) -> const EncoderParams & = 0;
   virtual auto transformAtlases(const Common::MVD16Frame &) -> Common::MVD10Frame = 0;
 };
-} // namespace TMIV::GeometryQuantizer
+} // namespace TMIV::Encoder
 
 #endif

@@ -48,7 +48,7 @@ void Encoder::pushFrame(Common::MVD16Frame sourceViews) {
 
 void Encoder::pushSingleEntityFrame(Common::MVD16Frame sourceViews) {
   auto transportViews = m_viewOptimizer->optimizeFrame(std::move(sourceViews));
-  const auto masks = m_pruner->prune(m_transportParams, transportViews);
+  const auto masks = m_pruner->prune(m_transportParams.viewParamsList, transportViews);
   updateNonAggregatedMask(transportViews, masks);
   m_transportViews.push_back(std::move(transportViews));
   m_aggregator->pushMask(masks);
@@ -99,7 +99,7 @@ void Encoder::updateNonAggregatedMask(const Common::MVD16Frame &transportViews,
   Common::MaskList dilatedMasks = masks; // Atlas dilation
 
   // Atlas dilation
-  if (m_params.casme().casme_depth_low_quality_flag()) {
+  if (m_params.casps.casps_miv_extension().casme_depth_low_quality_flag()) {
     for (size_t viewId = 0; viewId < masks.size(); ++viewId) {
       for (int n = 0; n < m_config.dilationIter; ++n) {
         dilatedMasks[viewId].getPlane(0) = dilate(dilatedMasks[viewId].getPlane(0));
@@ -134,7 +134,7 @@ void Encoder::pushMultiEntityFrame(Common::MVD16Frame sourceViews) {
     std::cout << "Processing entity " << entityId << '\n';
 
     const auto transportEntityViews = entitySeparator(transportViews, entityId);
-    auto masks = m_pruner->prune(m_transportParams, transportEntityViews);
+    auto masks = m_pruner->prune(m_transportParams.viewParamsList, transportEntityViews);
     updateMasks(transportEntityViews, masks);
     aggregateEntityMasks(masks, entityId);
     mergeMasks(mergedMasks, masks);

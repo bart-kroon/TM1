@@ -54,7 +54,6 @@ using Common::TextureDepth16Frame;
 using MivBitstream::AccessUnit;
 using MivBitstream::AtlasAccessUnit;
 using MivBitstream::CommonAtlasSequenceParameterSetRBSP;
-using MivBitstream::EncoderParams;
 using MivBitstream::ViewParams;
 using MivBitstream::ViewParamsList;
 using Renderer::IInpainter;
@@ -128,8 +127,8 @@ private:
   int m_blurKernel;
   int m_inpaintThreshold;
   float m_fieldOfViewMargin;
-  EncoderParams m_sourceParams;
-  EncoderParams m_transportParams;
+  SourceParams m_sourceParams;
+  ViewOptimizerParams m_transportParams;
 
 public:
   Impl(const Json &rootNode, const Json &componentNode)
@@ -148,8 +147,8 @@ public:
       , m_inpaintThreshold{componentNode.require("inpaintThreshold").as<int>()}
       , m_fieldOfViewMargin{componentNode.require("fieldOfViewMargin").as<float>()} {}
 
-  auto optimizeParams(EncoderParams params) -> const EncoderParams & {
-    m_sourceParams = std::move(params);
+  auto optimizeParams(const SourceParams &params) -> ViewOptimizerParams {
+    m_sourceParams = params;
     m_transportParams = m_optimizer->optimizeParams(m_sourceParams);
     m_transportParams.viewParamsList.push_back(syntheticViewParams());
     return m_transportParams;
@@ -244,14 +243,11 @@ private:
                    });
 
     // Transfer depth low quality flag
-    if (m_sourceParams.casps.casps_miv_extension_present_flag()) {
-      const auto dlqf = m_sourceParams.casps.casps_miv_extension().casme_depth_low_quality_flag();
-      inFrame.casps = CommonAtlasSequenceParameterSetRBSP{};
-      inFrame.casps->casps_extension_present_flag(true)
-          .casps_miv_extension_present_flag(true)
-          .casps_miv_extension()
-          .casme_depth_low_quality_flag(dlqf);
-    }
+    inFrame.casps = CommonAtlasSequenceParameterSetRBSP{};
+    inFrame.casps->casps_extension_present_flag(true)
+        .casps_miv_extension_present_flag(true)
+        .casps_miv_extension()
+        .casme_depth_low_quality_flag(m_sourceParams.depthLowQualityFlag);
 
     return inFrame;
   }
@@ -311,8 +307,8 @@ ServerSideInpainter::ServerSideInpainter(const Json &rootNode, const Json &compo
 
 ServerSideInpainter::~ServerSideInpainter() = default;
 
-auto ServerSideInpainter::optimizeParams(EncoderParams params) -> const EncoderParams & {
-  return m_impl->optimizeParams(std::move(params));
+auto ServerSideInpainter::optimizeParams(const SourceParams &params) -> ViewOptimizerParams {
+  return m_impl->optimizeParams(params);
 }
 
 auto ServerSideInpainter::optimizeFrame(MVD16Frame frame) const -> MVD16Frame {

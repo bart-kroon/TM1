@@ -34,8 +34,6 @@
 #include <TMIV/Common/Factory.h>
 #include <TMIV/Renderer/Renderer.h>
 
-#include <algorithm>
-
 namespace TMIV::Renderer {
 Renderer::Renderer(const Common::Json &rootNode, const Common::Json &componentNode)
     : m_synthesizer{Common::create<ISynthesizer>("Synthesizer", rootNode, componentNode)}

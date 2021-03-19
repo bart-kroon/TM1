@@ -35,7 +35,7 @@
 #define TMIV_RENDERER_IINPAINTER_H
 
 #include <TMIV/Common/Frame.h>
-#include <TMIV/MivBitstream/EncoderParams.h>
+#include <TMIV/MivBitstream/ViewParamsList.h>
 
 namespace TMIV::Renderer {
 class IInpainter {

@@ -33,42 +33,43 @@
 
 #include <catch2/catch.hpp>
 
-#include <TMIV/GeometryQuantizer/GeometryQuantizer.h>
+#include <TMIV/Encoder/GeometryQuantizer.h>
 
 #include <TMIV/Common/Common.h>
 
-namespace TMIV::GeometryQuantizer {
 SCENARIO("Geometry quantization") {
-  GeometryQuantizer depthOccupancy{37};
+  TMIV::Encoder::GeometryQuantizer depthOccupancy{37};
 
-  auto sourceViewParams = MivBitstream::ViewParams{};
+  auto sourceViewParams = TMIV::MivBitstream::ViewParams{};
   sourceViewParams.ci.ci_projection_plane_width_minus1(1919)
       .ci_projection_plane_height_minus1(1079)
-      .ci_cam_type(MivBitstream::CiCamType::equirectangular)
-      .ci_erp_phi_min(-Common::halfCycle)
-      .ci_erp_phi_max(Common::halfCycle)
-      .ci_erp_theta_min(-Common::quarterCycle)
-      .ci_erp_theta_max(Common::quarterCycle);
+      .ci_cam_type(TMIV::MivBitstream::CiCamType::equirectangular)
+      .ci_erp_phi_min(-TMIV::Common::halfCycle)
+      .ci_erp_phi_max(TMIV::Common::halfCycle)
+      .ci_erp_theta_min(-TMIV::Common::quarterCycle)
+      .ci_erp_theta_max(TMIV::Common::quarterCycle);
   sourceViewParams.dq.dq_norm_disp_low(0.2F).dq_norm_disp_high(2.2F);
 
   GIVEN("View parameters without invalid depth") {
-    auto sourceParams = MivBitstream::EncoderParams{};
+    auto sourceParams = TMIV::Encoder::EncoderParams{};
     sourceParams.vps.vps_extension_present_flag(true);
     sourceParams.vps.vps_miv_extension_present_flag(true);
     sourceParams.vps.vps_miv_extension().vme_embedded_occupancy_enabled_flag(true);
-    sourceParams.viewParamsList = MivBitstream::ViewParamsList{{sourceViewParams}};
+    sourceParams.viewParamsList = TMIV::MivBitstream::ViewParamsList{{sourceViewParams}};
 
     WHEN("Modifying the depth range") {
       const auto codedParams = depthOccupancy.transformParams(sourceParams);
 
-      THEN("The camera parameters are unmodified") { REQUIRE(codedParams == sourceParams); }
+      THEN("The camera parameters are unmodified") {
+        REQUIRE(codedParams.viewParamsList == sourceParams.viewParamsList);
+      }
     }
   }
 
   GIVEN("View parameters with invalid depth") {
     sourceViewParams.hasOccupancy = true;
-    auto sourceSeqParams = MivBitstream::EncoderParams{};
-    sourceSeqParams.viewParamsList = MivBitstream::ViewParamsList{{sourceViewParams}};
+    auto sourceSeqParams = TMIV::Encoder::EncoderParams{};
+    sourceSeqParams.viewParamsList = TMIV::MivBitstream::ViewParamsList{{sourceViewParams}};
 
     WHEN("Modifying the depth range") {
       const auto codedSeqParams = depthOccupancy.transformParams(sourceSeqParams);
@@ -93,4 +94,3 @@ SCENARIO("Geometry quantization") {
     }
   }
 }
-} // namespace TMIV::GeometryQuantizer

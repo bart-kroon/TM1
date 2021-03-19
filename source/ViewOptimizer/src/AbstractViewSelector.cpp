@@ -42,9 +42,8 @@ AbstractViewSelector::AbstractViewSelector(const Common::Json & /* rootNode */,
                                            const Common::Json &componentNode)
     : m_outputAdditionalViews{componentNode.require("outputAdditionalViews").as<bool>()} {}
 
-auto AbstractViewSelector::optimizeParams(MivBitstream::EncoderParams params)
-    -> const MivBitstream::EncoderParams & {
-  m_params = std::move(params);
+auto AbstractViewSelector::optimizeParams(const SourceParams &params) -> ViewOptimizerParams {
+  m_params = {params.viewParamsList};
   m_isBasicView = isBasicView();
 
   for (size_t i = 0; i < m_params.viewParamsList.size(); ++i) {

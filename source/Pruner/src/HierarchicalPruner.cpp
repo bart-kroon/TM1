@@ -139,8 +139,7 @@ private:
   const float m_maxColorError{};
   const Renderer::AccumulatingPixel<Common::Vec3f> m_config;
   std::optional<float> m_lumaStdDev{};
-  std::optional<int> m_sampleBudget{};
-  MivBitstream::EncoderParams m_params;
+  PrunerParams m_params;
   std::vector<std::unique_ptr<IncrementalSynthesizer>> m_synthesizers;
   std::vector<size_t> m_clusterIds;
   struct Cluster {
@@ -345,14 +344,7 @@ public:
     }
   }
 
-  void calculateSampleBudget(MivBitstream::EncoderParams &params) {
-    m_sampleBudget = 0;
-    for (const auto size : params.atlasSizes()) {
-      *m_sampleBudget += size.x() * size.y();
-    }
-  }
-
-  void prepareSequence(MivBitstream::EncoderParams &params) {
+  auto prepareSequence(PrunerParams params) -> MivBitstream::ViewParamsList {
     auto &viewParamsList = params.viewParamsList;
     Renderer::ProjectionHelperList cameraHelperList{viewParamsList};
 
@@ -394,12 +386,14 @@ public:
         viewParamsList[camId].pp = MivBitstream::PruningParents{std::move(parentIdList)};
       }
     }
-    calculateSampleBudget(params);
+    m_params.depthLowQualityFlag = params.depthLowQualityFlag;
+    m_params.sampleBudget = params.sampleBudget;
+    return std::move(params.viewParamsList);
   }
 
-  auto prune(const MivBitstream::EncoderParams &params, const Common::MVD16Frame &views)
+  auto prune(const MivBitstream::ViewParamsList &viewParamsList, const Common::MVD16Frame &views)
       -> Common::MaskList {
-    m_params = params;
+    m_params.viewParamsList = viewParamsList;
 
     bool isItFirstFrame = false;
     if (!m_lumaStdDev.has_value()) {
@@ -428,11 +422,10 @@ private:
                                 int percentageRatio) {
     std::cout << "Pruning luma threshold:   " << (m_lumaStdDev.value() * m_maxLumaError) << "\n";
 
-    PRECONDITION(m_sampleBudget.has_value());
-    while (nonPrunedArea > (m_sampleBudget.value() * percentageRatio / 100) &&
+    while (nonPrunedArea > (m_params.sampleBudget * percentageRatio / 100) &&
            m_lumaStdDev.value() < 1.0F) {
       std::cout << "Non-pruned exceeds " << percentageRatio << "% of total sample budget ("
-                << float(100.0 * nonPrunedArea / m_sampleBudget.value()) << "%)\n";
+                << float(100.0 * nonPrunedArea / m_params.sampleBudget) << "%)\n";
       std::cout << "Pruning luma threshold changed\n";
 
       *m_lumaStdDev *= 1.5F;
@@ -743,8 +736,7 @@ private:
           if (*k != 0) {
             *i = 0;
           }
-        } else if (m_params.casme().casme_depth_low_quality_flag() &&
-                   (depthError < -depthErrorEps)) {
+        } else if (m_params.depthLowQualityFlag && depthError < -depthErrorEps) {
           if (*k != 0) {
             *k = 0;
             *i = 255;
@@ -785,12 +777,12 @@ HierarchicalPruner::HierarchicalPruner(const Common::Json & /* unused */,
 
 HierarchicalPruner::~HierarchicalPruner() = default;
 
-void HierarchicalPruner::prepareSequence(MivBitstream::EncoderParams &params) {
+auto HierarchicalPruner::prepareSequence(PrunerParams params) -> MivBitstream::ViewParamsList {
   return m_impl->prepareSequence(params);
 }
 
-auto HierarchicalPruner::prune(const MivBitstream::EncoderParams &params,
+auto HierarchicalPruner::prune(const MivBitstream::ViewParamsList &viewParamsList,
                                const Common::MVD16Frame &views) -> Common::MaskList {
-  return m_impl->prune(params, views);
+  return m_impl->prune(viewParamsList, views);
 }
 } // namespace TMIV::Pruner

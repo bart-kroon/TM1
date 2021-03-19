@@ -43,16 +43,17 @@ GeometryDownscaler::GeometryDownscaler(const Common::Json &rootNode,
   }
 }
 
-auto GeometryDownscaler::transformParams(MivBitstream::EncoderParams params)
-    -> const MivBitstream::EncoderParams & {
+auto GeometryDownscaler::transformParams(EncoderParams params) -> const EncoderParams & {
   m_params = std::move(params);
 
   if (m_geometryScaleEnabledFlag && (m_params.vps.profile_tier_level().ptl_profile_toolset_idc() !=
                                      MivBitstream::PtlProfilePccToolsetIdc::MIV_Geometry_Absent)) {
-    m_params.vme().vme_geometry_scale_enabled_flag(true);
+    m_params.vps.vps_miv_extension().vme_geometry_scale_enabled_flag(true);
 
     for (auto &atlas : m_params.atlas) {
-      atlas.asme()
+      atlas.asps.asps_extension_present_flag(true)
+          .asps_miv_extension_present_flag(true)
+          .asps_miv_extension()
           .asme_geometry_scale_enabled_flag(true)
           .asme_geometry_scale_factor_x_minus1(1)
           .asme_geometry_scale_factor_y_minus1(1);
@@ -91,7 +92,7 @@ auto maxPool(const Common::Depth10Frame &frame, Common::Vec2i frameSize) -> Comm
 } // namespace
 
 auto GeometryDownscaler::transformFrame(Common::MVD10Frame frame) -> Common::MVD10Frame {
-  if (m_params.vme().vme_geometry_scale_enabled_flag()) {
+  if (m_params.vps.vps_miv_extension().vme_geometry_scale_enabled_flag()) {
     for (size_t atlasId = 0; atlasId < frame.size(); ++atlasId) {
       const auto &asps = m_params.atlas[atlasId].asps;
 

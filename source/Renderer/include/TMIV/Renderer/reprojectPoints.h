@@ -34,8 +34,6 @@
 #ifndef TMIV_RENDERER_REPROJECTPOINTS_H
 #define TMIV_RENDERER_REPROJECTPOINTS_H
 
-#include <TMIV/Common/Quaternion.h>
-#include <TMIV/MivBitstream/EncoderParams.h>
 #include <TMIV/Renderer/Engine.h>
 
 namespace TMIV::Renderer {

@@ -31,14 +31,14 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/GeometryQuantizer/GeometryQuantizer.h>
+#include <TMIV/Encoder/GeometryQuantizer.h>
 
 #include <TMIV/MivBitstream/DepthOccupancyTransform.h>
 
 #include <iostream>
 #include <stdexcept>
 
-namespace TMIV::GeometryQuantizer {
+namespace TMIV::Encoder {
 GeometryQuantizer::GeometryQuantizer(uint16_t depthOccThresholdIfSet)
     : m_depthOccThresholdIfSet{depthOccThresholdIfSet} {
   if (depthOccThresholdIfSet < 1) {
@@ -57,21 +57,26 @@ GeometryQuantizer::GeometryQuantizer(const Common::Json & /*unused*/,
     : GeometryQuantizer{
           static_cast<uint16_t>(nodeConfig.require("depthOccThresholdIfSet").as<int>())} {}
 
-auto GeometryQuantizer::setOccupancyParams(MivBitstream::EncoderParams params)
-    -> const MivBitstream::EncoderParams & {
+auto GeometryQuantizer::setOccupancyParams(EncoderParams params) -> const EncoderParams & {
   m_inParams = std::move(params);
   m_outParams = m_inParams;
+
   const auto isOccupancyEmbedded = m_outParams.vps.profile_tier_level().ptl_profile_toolset_idc() !=
                                    MivBitstream::PtlProfilePccToolsetIdc::MIV_Geometry_Absent;
-  m_outParams.vme().vme_embedded_occupancy_enabled_flag(isOccupancyEmbedded);
+
+  m_outParams.vps.vps_miv_extension().vme_embedded_occupancy_enabled_flag(isOccupancyEmbedded);
+
   for (auto &atlas : m_outParams.atlas) {
-    atlas.asme().asme_embedded_occupancy_enabled_flag(isOccupancyEmbedded);
+    atlas.asps.asps_extension_present_flag(true)
+        .asps_miv_extension_present_flag(true)
+        .asps_miv_extension()
+        .asme_embedded_occupancy_enabled_flag(isOccupancyEmbedded);
   }
+
   return m_outParams;
 }
 
-auto GeometryQuantizer::transformParams(MivBitstream::EncoderParams params)
-    -> const MivBitstream::EncoderParams & {
+auto GeometryQuantizer::transformParams(EncoderParams params) -> const EncoderParams & {
   m_inParams = std::move(params);
   m_outParams = m_inParams;
 
@@ -132,4 +137,4 @@ auto GeometryQuantizer::transformAtlases(const Common::MVD16Frame &inAtlases)
 
   return outAtlases;
 }
-} // namespace TMIV::GeometryQuantizer
+} // namespace TMIV::Encoder

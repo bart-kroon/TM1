@@ -31,50 +31,42 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef TMIV_GEOMETRYQUANTIZER_EXPLICITOCCUPANCY_H
-#define TMIV_GEOMETRYQUANTIZER_EXPLICITOCCUPANCY_H
+#ifndef TMIV_ENCODER_GEOMETRYQUANTIZER_H
+#define TMIV_ENCODER_GEOMETRYQUANTIZER_H
 
-#include <TMIV/GeometryQuantizer/IGeometryQuantizer.h>
+#include <TMIV/Encoder/IGeometryQuantizer.h>
 
 #include <TMIV/Common/Json.h>
 
-namespace TMIV::GeometryQuantizer {
-class ExplicitOccupancy : public IGeometryQuantizer {
+namespace TMIV::Encoder {
+class GeometryQuantizer : public IGeometryQuantizer {
 public:
-  // Initialize with specified depthOccMapThresholdIfSet
+  // Initialize with specified depthOccThresholdIfSet
   //
   // When incoming view parameters have useOccupancy() set, then the outgoing view parameters
-  // will have the specified depthOccMapThresholdIfSet value.
-  // explicit ExplicitOccupancy(uint16_t depthOccMapThresholdIfSet);
+  // will have the specified depthOccThresholdIfSet value.
+  explicit GeometryQuantizer(uint16_t depthOccThresholdIfSet);
 
-  ExplicitOccupancy(const Common::Json & /*unused*/, const Common::Json & /*unused*/);
-  ExplicitOccupancy(const ExplicitOccupancy &) = default;
-  ExplicitOccupancy(ExplicitOccupancy &&) = default;
-  auto operator=(const ExplicitOccupancy &) -> ExplicitOccupancy & = default;
-  auto operator=(ExplicitOccupancy &&) -> ExplicitOccupancy & = default;
-  ~ExplicitOccupancy() override = default;
+  GeometryQuantizer(const Common::Json & /*unused*/, const Common::Json & /*unused*/);
+  GeometryQuantizer(const GeometryQuantizer &) = default;
+  GeometryQuantizer(GeometryQuantizer &&) = default;
+  auto operator=(const GeometryQuantizer &) -> GeometryQuantizer & = default;
+  auto operator=(GeometryQuantizer &&) -> GeometryQuantizer & = default;
+  ~GeometryQuantizer() override = default;
 
-  auto setOccupancyParams(MivBitstream::EncoderParams params)
-      -> const MivBitstream::EncoderParams & override;
+  auto setOccupancyParams(EncoderParams params) -> const EncoderParams & override;
   // No change when useOccupancy() is false. Otherwise set the depth/occupancy map threshold
-  // to depthOccMapThresholdIfSet and adjust the normalized disparity range.
-  auto transformParams(MivBitstream::EncoderParams) -> const MivBitstream::EncoderParams & override;
-
-  void padGeometryFromLeft(Common::MVD10Frame &atlases);
+  // to depthOccThresholdIfSet and adjust the normalized disparity range.
+  auto transformParams(EncoderParams params) -> const EncoderParams & override;
 
   // Transform depth bit depth and range
   auto transformAtlases(const Common::MVD16Frame &inAtlases) -> Common::MVD10Frame override;
 
 private:
-  // uint16_t m_depthOccMapThresholdIfSet{};
-  MivBitstream::EncoderParams m_inParams;
-  MivBitstream::EncoderParams m_outParams;
-  Common::Vec2i m_occupancyScale;
-  bool m_occupancyScaleConfig;
-  bool m_depthLowQualityFlag{};
-  bool m_embeddedOccupancyFlag{};
-  bool m_occupancyScaleEnabledFlag{};
+  uint16_t m_depthOccThresholdIfSet{};
+  EncoderParams m_inParams;
+  EncoderParams m_outParams;
 };
-} // namespace TMIV::GeometryQuantizer
+} // namespace TMIV::Encoder
 
 #endif

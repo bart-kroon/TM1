@@ -3,13 +3,13 @@
     "attributeOffsetEnabledFlag": true,
     "blockSizeDepthQualityDependent": [ 16, 32 ],
     "configDirectory": "config",
-    "DepthQualityAssessor": {
-        "blendingFactor": 0.03,
-        "maxOutlierRatio": 0.001
-    },
-    "DepthQualityAssessorMethod": "DepthQualityAssessor",
     "dynamicDepthRange": true,
     "Encoder": {
+        "DepthQualityAssessor": {
+            "blendingFactor": 0.03,
+            "maxOutlierRatio": 0.001
+        },
+        "DepthQualityAssessorMethod": "DepthQualityAssessor",
         "Aggregator": {},
         "AggregatorMethod": "Aggregator",
         "BasicViewAllocator": {

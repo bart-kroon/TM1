@@ -30,7 +30,6 @@
   "inputSequenceConfigPathFmt": "ctc/sequences/{1}.json",
   "intraPeriod": 32,
   "maxAtlases": 1,
-  "maxEntities": 1,
   "oneViewPerAtlasFlag": false,
   "outputBitstreamPathFmt": "M{0}/{1}/TMIV_M{0}_{1}.bit",
   "outputDirectory": ".",

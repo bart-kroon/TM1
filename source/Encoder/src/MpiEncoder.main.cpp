@@ -99,22 +99,15 @@ public:
   }
 
   void run() override {
-    auto sourceParams = loadSourceParams(json(), m_inputSequenceConfig);
-
     if (1 < m_inputSequenceConfig.sourceViewParams().size()) {
       throw std::runtime_error("Only one input MPI camera is allowed with current version of MPI "
                                "encoder. Please change inputCameraNames field in json !!!");
     }
 
-    const auto &mpiViewParams = sourceParams.viewParamsList.front();
-    Common::Vec2i mpiSize{static_cast<int>(mpiViewParams.ci.ci_projection_plane_width_minus1()) + 1,
-                          static_cast<int>(mpiViewParams.ci.ci_projection_plane_height_minus1()) +
-                              1};
-
     m_encoder->setMpiPcsFrameReader(
         [&](int frameIndex) -> Common::MpiPcs::Frame { return m_mpiPcsReader.read(frameIndex); });
 
-    m_encoder->prepareSequence(sourceParams);
+    m_encoder->prepareSequence(m_inputSequenceConfig);
 
     for (int i = 0; i < m_numberOfInputFrames; i += m_intraPeriod) {
       int lastFrame = std::min(m_numberOfInputFrames, i + m_intraPeriod);
@@ -125,47 +118,6 @@ public:
   }
 
 private:
-  // TODO(BK): Move this to EncoderLib
-  static auto loadSourceParams(const Common::Json &config,
-                               const MivBitstream::SequenceConfig &sequenceConfig)
-      -> MivBitstream::EncoderParams {
-    const auto haveGeometryVideo = config.require("haveGeometryVideo").as<bool>();
-    const auto haveOccupancyVideo = config.require("haveOccupancyVideo").as<bool>();
-
-    if (haveOccupancyVideo) {
-      throw std::runtime_error("No occupancy is allowed with current version of MPI "
-                               "encoder. Please use haveOccupancyVideo = false !!!");
-    }
-    if (haveGeometryVideo) {
-      throw std::runtime_error("No geometry is allowed with current version of MPI "
-                               "encoder. Please use haveGeometryVideo = false !!!");
-    }
-
-    std::vector<Common::Vec2i> m_overrideAtlasFrameSizes{};
-
-    // Enforce user-specified atlas size
-    if (auto node = config.require("overrideAtlasFrameSizes")) {
-      for (const auto &subnode : node.as<Common::Json::Array>()) {
-        m_overrideAtlasFrameSizes.push_back(subnode.asVec<int, 2>());
-      }
-    }
-
-    auto x = MivBitstream::EncoderParams{m_overrideAtlasFrameSizes, 10, 0, 0, 10};
-
-    x.viewParamsList = sequenceConfig.sourceViewParams();
-    x.frameRate = sequenceConfig.frameRate;
-
-    if (const auto &node = config.optional("depthLowQualityFlag")) {
-      x.casme().casme_depth_low_quality_flag(node.as<bool>());
-    }
-
-    if (const auto &subnode = config.optional("ViewingSpace")) {
-      x.viewingSpace = MivBitstream::ViewingSpace::loadFromJson(subnode, config);
-    }
-
-    return x;
-  }
-
   void encodeAccessUnit(int firstFrame, int lastFrame) {
     std::cout << "Access unit: [" << firstFrame << ", " << lastFrame << ")\n";
     m_mivEncoder->writeAccessUnit(m_encoder->processAccessUnit(firstFrame, lastFrame));

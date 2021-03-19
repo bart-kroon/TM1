@@ -40,8 +40,8 @@
 namespace TMIV::Pruner {
 struct PrunerParams {
   MivBitstream::ViewParamsList viewParamsList;
-  bool depthLowQualityFlag;
-  int64_t sampleBudget;
+  bool depthLowQualityFlag{};
+  int64_t sampleBudget{};
 };
 
 class IPruner {

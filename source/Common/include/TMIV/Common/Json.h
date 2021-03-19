@@ -121,7 +121,7 @@ public:
   static auto loadFrom(std::istream &stream) -> Json;
 
   // Format a JSON
-  auto format() const -> std::string;
+  [[nodiscard]] auto format() const -> std::string;
 
   // Save a JSON to a stream
   auto saveTo(std::ostream &stream, int level = 0) const -> std::ostream &;

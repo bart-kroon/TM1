@@ -72,19 +72,19 @@ private: // Encoder_prepareSequence.cpp
                                   double frameRate) const -> Common::SizeVector;
   [[nodiscard]] auto calculateViewGridSize(const MivBitstream::ViewParamsList &viewParamsList) const
       -> Common::Vec2i;
-  auto createVps(const std::vector<Common::Vec2i> &atlasFrameSizes) const
+  [[nodiscard]] auto createVps(const std::vector<Common::Vec2i> &atlasFrameSizes) const
       -> MivBitstream::V3cParameterSet;
-  auto vuiParameters() const -> MivBitstream::VuiParameters;
+  [[nodiscard]] auto vuiParameters() const -> MivBitstream::VuiParameters;
   void setGiGeometry3dCoordinatesBitdepthMinus1();
   void enableOccupancyPerView();
   void prepareIvau();
-  auto log2FocLsbMinus4() const -> uint8_t;
-  auto patchSizeQuantizers() const -> Common::Vec2i;
+  [[nodiscard]] auto log2FocLsbMinus4() const -> uint8_t;
+  [[nodiscard]] auto patchSizeQuantizers() const -> Common::Vec2i;
 
-private: // Encoder_prepareAccessUnit.cpp
+  // Encoder_prepareAccessUnit.cpp
   void resetNonAggregatedMask();
 
-private: // Encoder_pushFrame.cpp
+  // Encoder_pushFrame.cpp
   void pushSingleEntityFrame(Common::MVD16Frame sourceViews);
   void updateNonAggregatedMask(const Common::MVD16Frame &transportViews,
                                const Common::MaskList &masks);
@@ -97,7 +97,7 @@ private: // Encoder_pushFrame.cpp
   static void updateMasks(const Common::MVD16Frame &views, Common::MaskList &masks);
   void aggregateEntityMasks(Common::MaskList &masks, Common::SampleValue entityId);
 
-private: // Encoder_completeAccessUnit.cpp
+  // Encoder_completeAccessUnit.cpp
   void scaleGeometryDynamicRange();
   void updateAggregationStatistics(const Common::MaskList &aggregatedMask);
   void constructVideoFrames();
@@ -105,7 +105,7 @@ private: // Encoder_completeAccessUnit.cpp
       std::vector<std::array<std::array<int64_t, 4>, 3>> patchAttrOffsetValuesFullGOP);
   auto calculatePatchAttrOffsetValuesFullGOP(
       std::vector<std::array<std::array<int64_t, 4>, 3>> &patchAttrOffsetValuesFullGOP) -> int;
-  auto calculateBtpm() const -> std::vector<std::vector<std::vector<int>>>;
+  [[nodiscard]] auto calculateBtpm() const -> std::vector<std::vector<std::vector<int>>>;
   void adaptBtpmToPatchCount(std::vector<std::vector<std::vector<int>>> &btpm) const;
   auto writePatchInAtlas(const MivBitstream::PatchParams &patchParams,
                          const Common::TextureDepth16Frame &view, Common::MVD16Frame &frame,
@@ -114,7 +114,6 @@ private: // Encoder_completeAccessUnit.cpp
                   Common::TextureDepthFrame<Common::YUV400P16> &atlas, int yOcc, int xOcc,
                   const Common::Vec2i &pView, const Common::Vec2i &pAtlas) const;
 
-private:
   struct Configuration {
     Configuration(const Common::Json & /*rootNode*/, const Common::Json & /*componentNode*/);
 

@@ -109,17 +109,17 @@ public:
   [[nodiscard]] auto ath_patch_size_y_info_quantizer() const -> uint8_t;
 
   constexpr auto ath_no_output_of_prior_atlas_frames_flag(bool value) noexcept -> auto &;
-  constexpr auto ath_atlas_frame_parameter_set_id(const uint8_t value) noexcept -> auto &;
-  constexpr auto ath_atlas_adaptation_parameter_set_id(const uint8_t value) noexcept -> auto &;
-  constexpr auto ath_id(const uint8_t value) noexcept -> auto &;
-  constexpr auto ath_type(const AthType value) noexcept -> auto &;
-  constexpr auto ath_atlas_output_flag(const bool value) noexcept -> auto &;
-  constexpr auto ath_pos_min_d_quantizer(const uint8_t value) noexcept -> auto &;
-  constexpr auto ath_pos_delta_max_d_quantizer(const uint8_t value) noexcept -> auto &;
-  constexpr auto ath_atlas_frm_order_cnt_lsb(const uint16_t value) noexcept -> auto &;
-  constexpr auto ath_ref_atlas_frame_list_asps_flag(const bool value) noexcept -> auto &;
-  auto ath_patch_size_x_info_quantizer(const uint8_t value) noexcept -> AtlasTileHeader &;
-  auto ath_patch_size_y_info_quantizer(const uint8_t value) noexcept -> AtlasTileHeader &;
+  constexpr auto ath_atlas_frame_parameter_set_id(uint8_t value) noexcept -> auto &;
+  constexpr auto ath_atlas_adaptation_parameter_set_id(uint8_t value) noexcept -> auto &;
+  constexpr auto ath_id(uint8_t value) noexcept -> auto &;
+  constexpr auto ath_type(AthType value) noexcept -> auto &;
+  constexpr auto ath_atlas_output_flag(bool value) noexcept -> auto &;
+  constexpr auto ath_pos_min_d_quantizer(uint8_t value) noexcept -> auto &;
+  constexpr auto ath_pos_delta_max_d_quantizer(uint8_t value) noexcept -> auto &;
+  constexpr auto ath_atlas_frm_order_cnt_lsb(uint16_t value) noexcept -> auto &;
+  constexpr auto ath_ref_atlas_frame_list_asps_flag(bool value) noexcept -> auto &;
+  auto ath_patch_size_x_info_quantizer(uint8_t value) noexcept -> AtlasTileHeader &;
+  auto ath_patch_size_y_info_quantizer(uint8_t value) noexcept -> AtlasTileHeader &;
 
   friend auto operator<<(std::ostream &stream, const AtlasTileHeader &x) -> std::ostream &;
 

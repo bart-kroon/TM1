@@ -249,15 +249,15 @@ public:
   Pixel(Pixel &&other) noexcept;
   auto operator=(const Pixel &other) -> Pixel &;
   auto operator=(Pixel &&other) noexcept -> Pixel &;
-  auto capacity() const -> size_type { return m_capacity; }
-  auto size() const -> size_type { return m_size; }
-  auto empty() const -> bool { return (m_size == 0); }
+  [[nodiscard]] auto capacity() const -> size_type { return m_capacity; }
+  [[nodiscard]] auto size() const -> size_type { return m_size; }
+  [[nodiscard]] auto empty() const -> bool { return (m_size == 0); }
   void clear() { m_size = 0; }
   void reserve(size_type sz);
   auto begin() -> iterator { return m_data.get(); }
-  auto begin() const -> iterator { return m_data.get(); }
+  [[nodiscard]] auto begin() const -> iterator { return m_data.get(); }
   auto end() -> iterator { return m_data.get() + m_size; }
-  auto end() const -> iterator { return m_data.get() + m_size; }
+  [[nodiscard]] auto end() const -> iterator { return m_data.get() + m_size; }
   auto operator[](size_type k) -> value_type & { return m_data.get()[k]; }
   auto operator[](size_type k) const -> const value_type & { return m_data.get()[k]; }
   auto operator==(const Pixel &other) const noexcept -> bool;

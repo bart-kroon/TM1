@@ -81,10 +81,10 @@ public:
   }
 
 private:
-  auto vuiParameters() const -> MivBitstream::VuiParameters;
+  [[nodiscard]] auto vuiParameters() const -> MivBitstream::VuiParameters;
   void setGiGeometry3dCoordinatesBitdepthMinus1();
   void prepareIvau();
-  auto log2FocLsbMinus4() const -> uint8_t;
+  [[nodiscard]] auto log2FocLsbMinus4() const -> uint8_t;
   void incrementFoc();
 };
 

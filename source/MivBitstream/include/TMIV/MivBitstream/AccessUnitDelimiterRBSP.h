@@ -39,7 +39,7 @@
 namespace TMIV::MivBitstream {
 // 23090-5: aframe_type
 enum class AframeType : uint8_t { I, P_and_I, SKIP_P_and_I, SKIP };
-auto operator<<(std::ostream &, AframeType) -> std::ostream &;
+auto operator<<(std::ostream & /*stream*/, AframeType /*x*/) -> std::ostream &;
 
 // 23090-5: access_unit_delimiter_rbsp()
 class AccessUnitDelimiterRBSP {

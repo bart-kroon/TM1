@@ -80,13 +80,15 @@ private:
       -> MivBitstream::SequenceConfig;
 
   // Split per-group views
-  auto splitViews(size_t groupId, const Common::MVD16Frame &views) const -> Common::MVD16Frame;
+  [[nodiscard]] auto splitViews(size_t groupId, const Common::MVD16Frame &views) const
+      -> Common::MVD16Frame;
 
   static auto mergeVps(const std::vector<const MivBitstream::V3cParameterSet *> &vps)
       -> MivBitstream::V3cParameterSet;
 
   // Merge per-group encoder parameters
-  auto mergeParams(const std::vector<const EncoderParams *> &) -> const EncoderParams &;
+  auto mergeParams(const std::vector<const EncoderParams *> & /*perGroupParams*/)
+      -> const EncoderParams &;
 
   uint8_t m_numGroups;
   Grouping m_grouping;

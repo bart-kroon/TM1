@@ -49,11 +49,11 @@ public:
   [[nodiscard]] auto optimizeFrame(Common::MVD16Frame views) const -> Common::MVD16Frame override;
 
 protected:
-  virtual auto isBasicView() const -> std::vector<bool> = 0;
-  constexpr auto params() const noexcept -> auto & { return m_params; }
+  [[nodiscard]] virtual auto isBasicView() const -> std::vector<bool> = 0;
+  [[nodiscard]] constexpr auto params() const noexcept -> auto & { return m_params; }
 
 private:
-  template <typename T> void inplaceEraseAdditionalViews(std::vector<T> &) const;
+  template <typename T> void inplaceEraseAdditionalViews(std::vector<T> & /*views*/) const;
   void printSummary() const;
 
   bool m_outputAdditionalViews;

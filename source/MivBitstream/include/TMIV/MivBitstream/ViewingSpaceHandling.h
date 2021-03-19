@@ -56,9 +56,9 @@ enum class VhMethod : uint8_t {
   VHM_ROTATE
 };
 
-auto operator<<(std::ostream &, VhDeviceClass) -> std::ostream &;
-auto operator<<(std::ostream &, VhApplicationClass) -> std::ostream &;
-auto operator<<(std::ostream &, VhMethod) -> std::ostream &;
+auto operator<<(std::ostream & /*stream*/, VhDeviceClass /*x*/) -> std::ostream &;
+auto operator<<(std::ostream & /*stream*/, VhApplicationClass /*x*/) -> std::ostream &;
+auto operator<<(std::ostream & /*stream*/, VhMethod /*x*/) -> std::ostream &;
 
 struct HandlingOption {
   VhDeviceClass vs_handling_device_class;
@@ -74,7 +74,7 @@ using HandlingOptionList = std::vector<HandlingOption>;
 class ViewingSpaceHandling {
 public:
   ViewingSpaceHandling() = default;
-  explicit ViewingSpaceHandling(HandlingOptionList);
+  explicit ViewingSpaceHandling(HandlingOptionList /*value*/);
 
   [[nodiscard]] auto vs_handling_options_count() const noexcept -> size_t;
   [[nodiscard]] auto vs_handling_device_class(size_t h) const -> VhDeviceClass;

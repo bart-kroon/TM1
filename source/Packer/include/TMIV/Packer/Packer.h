@@ -55,9 +55,9 @@ public:
   auto operator=(Packer &&) -> Packer & = default;
   ~Packer() override;
 
-  void initialize(const Common::SizeVector &atlasSizes, const int blockSize) override;
+  void initialize(const Common::SizeVector &atlasSizes, int blockSize) override;
   auto pack(const Common::SizeVector &atlasSize, const Common::MaskList &masks,
-            const MivBitstream::ViewParamsList &viewParamsList, const int blockSize)
+            const MivBitstream::ViewParamsList &viewParamsList, int blockSize)
       -> MivBitstream::PatchParamsList override;
   void updateAggregatedEntityMasks(const std::vector<Common::MaskList> &entityMasks) override;
 

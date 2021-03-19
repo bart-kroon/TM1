@@ -44,9 +44,9 @@ public:
   ServerSideInpainter(const Common::Json &rootNode, const Common::Json &componentNode);
   ServerSideInpainter(const ServerSideInpainter &) = delete;
   ServerSideInpainter(ServerSideInpainter &&) = default;
-  ServerSideInpainter &operator=(const ServerSideInpainter &) = delete;
-  ServerSideInpainter &operator=(ServerSideInpainter &&) = default;
-  ~ServerSideInpainter();
+  auto operator=(const ServerSideInpainter &) -> ServerSideInpainter & = delete;
+  auto operator=(ServerSideInpainter &&) -> ServerSideInpainter & = default;
+  ~ServerSideInpainter() override;
 
   auto optimizeParams(const SourceParams &params) -> ViewOptimizerParams override;
   [[nodiscard]] auto optimizeFrame(Common::MVD16Frame frame) const -> Common::MVD16Frame override;

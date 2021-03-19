@@ -54,10 +54,10 @@ struct CameraConfig {
   Colorspace depthColorspace{Colorspace::yuv420};
   Colorspace entitiesColorspace{Colorspace::yuv420};
 
-  auto textureVideoFormat() const -> std::string;
-  auto transparencyVideoFormat() const -> std::string;
-  auto geometryVideoFormat() const -> std::string;
-  auto entitiesVideoFormat() const -> std::string;
+  [[nodiscard]] auto textureVideoFormat() const -> std::string;
+  [[nodiscard]] auto transparencyVideoFormat() const -> std::string;
+  [[nodiscard]] auto geometryVideoFormat() const -> std::string;
+  [[nodiscard]] auto entitiesVideoFormat() const -> std::string;
 
   CameraConfig() = default;
   explicit CameraConfig(const Common::Json &config);

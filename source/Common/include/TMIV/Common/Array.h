@@ -390,7 +390,6 @@ protected:
     [[nodiscard]] auto sizes() const -> const tuple_type & { return m_sizes; }
   };
 
-protected:
   static Helper m_helper;
   Array_<sizeof...(I), T, I...> m_v;
 
@@ -512,7 +511,8 @@ public:
   [[nodiscard]] auto cend() const -> const_iterator { return const_iterator(data() + size()); }
   //! \brief Returns an iterator along the Kth dimension to the first element of
   //! the hyperplane defined by next.
-  template <size_type K, typename... J> auto dim_begin(J... next) const -> const_dim_iterator {
+  template <size_type K, typename... J>
+  [[nodiscard]] auto dim_begin(J... next) const -> const_dim_iterator {
     return const_dim_iterator(
         // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
         data() + Array_<sizeof...(I), T, I...>::template offset<K>(0, next...),
@@ -533,7 +533,8 @@ public:
   }
   //! \brief Returns an iterator along the Kth dimension to the first element
   //! after the end of the hyperplane defined by next.
-  template <size_type K, typename... J> auto dim_end(J... next) const -> const_dim_iterator {
+  template <size_type K, typename... J>
+  [[nodiscard]] auto dim_end(J... next) const -> const_dim_iterator {
     return const_dim_iterator(
         // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
         data() + Array_<sizeof...(I), T, I...>::template offset<K>(0, next...) +
@@ -854,7 +855,8 @@ public:
   }
   //! \brief Returns a const iterator along the Kth dimension to the first
   //! element of the hyperplane defined by next.
-  template <size_type K, typename... I> auto cdim_begin(I... next) const -> const_dim_iterator {
+  template <size_type K, typename... I>
+  [[nodiscard]] [[nodiscard]] auto cdim_begin(I... next) const -> const_dim_iterator {
     return const_dim_iterator(data() + offset<K>(0, next...), m_step[K + 1]);
   }
   //! \brief Returns an iterator along the Kth dimension to the first element
@@ -868,7 +870,8 @@ public:
   }
   //! \brief Returns a const iterator along the Kth dimension to the first
   //! element after the end of the hyperplane defined by next.
-  template <size_type K, typename... I> auto cdim_end(I... next) const -> const_dim_iterator {
+  template <size_type K, typename... I>
+  [[nodiscard]] auto cdim_end(I... next) const -> const_dim_iterator {
     return const_dim_iterator(data() + offset<K>(0, next...) + m_step[K], m_step[K + 1]);
   }
   //! \brief Returns an iterator to the first diagonal element.
@@ -1167,7 +1170,8 @@ public:
   }
   //! \brief Returns a const iterator along the Kth dimension to the first
   //! element of the hyperplane defined by next.
-  template <size_type K, typename... I> auto cdim_begin(I... next) const -> const_dim_iterator {
+  template <size_type K, typename... I>
+  [[nodiscard]] [[nodiscard]] auto cdim_begin(I... next) const -> const_dim_iterator {
     return const_dim_iterator(m_data + offset<K>(0, next...), m_step[K + 1]);
   }
   //! \brief Returns an iterator along the Kth dimension to the first element
@@ -1183,7 +1187,8 @@ public:
   }
   //! \brief Returns a const iterator along the Kth dimension to the first
   //! element after the end of the hyperplane defined by next.
-  template <size_type K, typename... I> auto cdim_end(I... next) const -> const_dim_iterator {
+  template <size_type K, typename... I>
+  [[nodiscard]] [[nodiscard]] auto cdim_end(I... next) const -> const_dim_iterator {
     return const_dim_iterator(m_data + offset<K>(0, next...) + m_step[K], m_step[K + 1]);
   }
   //! \brief Returns an iterator to the first diagonal element.
@@ -1292,7 +1297,9 @@ protected:
 template <typename A, class = typename A::dim_iterator>
 auto operator<<(std::ostream &os, const A &a) -> std::ostream & {
   typename A::size_type step = a.size(a.dim() - 1);
-  typename A::const_iterator iter, iter1 = a.begin(), iter2 = a.end();
+  typename A::const_iterator iter;
+  typename A::const_iterator iter1 = a.begin();
+  typename A::const_iterator iter2 = a.end();
 
   for (iter = iter1; iter != iter2; iter += step) {
     std::for_each(iter, iter + step, [&os](typename A::value_type v) { os << v << " "; });

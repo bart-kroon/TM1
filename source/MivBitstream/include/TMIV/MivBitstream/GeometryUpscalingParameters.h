@@ -44,7 +44,7 @@ enum class GupType : uint8_t {
   HVR // Hypothetical view renderer
 };
 
-auto operator<<(std::ostream &, GupType) -> std::ostream &;
+auto operator<<(std::ostream & /*stream*/, GupType /*x*/) -> std::ostream &;
 
 // 23090-12: geometry_upscaling_parameters( payloadSize )
 class GeometryUpscalingParameters {

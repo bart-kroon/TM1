@@ -42,7 +42,7 @@ class GeometryDownscaler {
 public:
   GeometryDownscaler(const Common::Json & /*unused*/, const Common::Json & /*unused*/);
 
-  auto transformParams(EncoderParams) -> const EncoderParams &;
+  auto transformParams(EncoderParams /*params*/) -> const EncoderParams &;
   auto transformFrame(Common::MVD10Frame frame) -> Common::MVD10Frame;
 
 private:

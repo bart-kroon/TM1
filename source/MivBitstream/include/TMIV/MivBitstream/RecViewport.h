@@ -59,19 +59,19 @@ public:
   [[nodiscard]] auto rec_viewport_hor_range() const -> float;
   [[nodiscard]] auto rec_viewport_ver_range() const -> float;
 
-  constexpr auto rec_viewport_id(const uint16_t value) noexcept -> auto &;
-  constexpr auto rec_viewport_cancel_flag(const bool value) noexcept -> auto &;
-  constexpr auto rec_viewport_persistence_flag(const bool value) noexcept -> auto &;
-  constexpr auto rec_viewport_center_view_flag(const bool value) noexcept -> auto &;
-  constexpr auto rec_viewport_left_view_flag(const bool value) noexcept -> auto &;
-  constexpr auto rec_viewport_pos_x(const float value) noexcept -> auto &;
-  constexpr auto rec_viewport_pos_y(const float value) noexcept -> auto &;
-  constexpr auto rec_viewport_pos_z(const float value) noexcept -> auto &;
-  constexpr auto rec_viewport_quat_x(const float value) noexcept -> auto &;
-  constexpr auto rec_viewport_quat_y(const float value) noexcept -> auto &;
-  constexpr auto rec_viewport_quat_z(const float value) noexcept -> auto &;
-  constexpr auto rec_viewport_hor_range(const float value) noexcept -> auto &;
-  constexpr auto rec_viewport_ver_range(const float value) noexcept -> auto &;
+  constexpr auto rec_viewport_id(uint16_t value) noexcept -> auto &;
+  constexpr auto rec_viewport_cancel_flag(bool value) noexcept -> auto &;
+  constexpr auto rec_viewport_persistence_flag(bool value) noexcept -> auto &;
+  constexpr auto rec_viewport_center_view_flag(bool value) noexcept -> auto &;
+  constexpr auto rec_viewport_left_view_flag(bool value) noexcept -> auto &;
+  constexpr auto rec_viewport_pos_x(float value) noexcept -> auto &;
+  constexpr auto rec_viewport_pos_y(float value) noexcept -> auto &;
+  constexpr auto rec_viewport_pos_z(float value) noexcept -> auto &;
+  constexpr auto rec_viewport_quat_x(float value) noexcept -> auto &;
+  constexpr auto rec_viewport_quat_y(float value) noexcept -> auto &;
+  constexpr auto rec_viewport_quat_z(float value) noexcept -> auto &;
+  constexpr auto rec_viewport_hor_range(float value) noexcept -> auto &;
+  constexpr auto rec_viewport_ver_range(float value) noexcept -> auto &;
 
   friend auto operator<<(std::ostream &stream, const RecViewport &x) -> std::ostream &;
 

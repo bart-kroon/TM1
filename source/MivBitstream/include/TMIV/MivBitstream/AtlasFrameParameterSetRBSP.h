@@ -49,14 +49,14 @@ namespace TMIV::MivBitstream {
 //   * asps_auxiliary_video_enabled_flag == 0
 class AtlasFrameTileInformation {
 public:
-  [[nodiscard]] constexpr auto afti_single_tile_in_atlas_frame_flag() const noexcept;
-  [[nodiscard]] constexpr auto afti_signalled_tile_id_flag() const noexcept;
+  [[nodiscard]] static constexpr auto afti_single_tile_in_atlas_frame_flag() noexcept;
+  [[nodiscard]] static constexpr auto afti_signalled_tile_id_flag() noexcept;
 
   friend auto operator<<(std::ostream &stream, const AtlasFrameTileInformation &x)
       -> std::ostream &;
 
-  constexpr auto operator==(const AtlasFrameTileInformation &) const noexcept;
-  constexpr auto operator!=(const AtlasFrameTileInformation &) const noexcept;
+  constexpr auto operator==(const AtlasFrameTileInformation & /*unused*/) const noexcept;
+  constexpr auto operator!=(const AtlasFrameTileInformation & /*unused*/) const noexcept;
 
   static auto decodeFrom(Common::InputBitstream &bitstream) -> AtlasFrameTileInformation;
 
@@ -68,9 +68,9 @@ class AtlasFrameParameterSetRBSP;
 // 23090-12: afps_miv_extension( )
 class AfpsMivExtension {
 public:
-  constexpr auto afme_inpaint_lod_enabled_flag() const noexcept;
-  constexpr auto afme_inpaint_lod_scale_x_minus1() const noexcept;
-  constexpr auto afme_inpaint_lod_scale_y_idc() const noexcept;
+  [[nodiscard]] constexpr auto afme_inpaint_lod_enabled_flag() const noexcept;
+  [[nodiscard]] constexpr auto afme_inpaint_lod_scale_x_minus1() const noexcept;
+  [[nodiscard]] constexpr auto afme_inpaint_lod_scale_y_idc() const noexcept;
 
   constexpr auto afme_inpaint_lod_enabled_flag(bool value) noexcept -> auto &;
   auto afme_inpaint_lod_scale_x_minus1(unsigned value) noexcept -> AfpsMivExtension &;
@@ -109,17 +109,16 @@ public:
   [[nodiscard]] auto afps_miv_extension() const -> AfpsMivExtension;
   [[nodiscard]] auto afpsExtensionData() const -> const std::vector<bool> &;
 
-  constexpr auto afps_atlas_frame_parameter_set_id(const uint8_t value) noexcept -> auto &;
-  constexpr auto afps_atlas_sequence_parameter_set_id(const uint8_t value) noexcept -> auto &;
+  constexpr auto afps_atlas_frame_parameter_set_id(uint8_t value) noexcept -> auto &;
+  constexpr auto afps_atlas_sequence_parameter_set_id(uint8_t value) noexcept -> auto &;
   constexpr auto atlas_frame_tile_information(const AtlasFrameTileInformation &value) noexcept
       -> auto &;
-  constexpr auto afps_output_flag_present_flag(const bool value) noexcept -> auto &;
-  constexpr auto afps_num_ref_idx_default_active_minus1(const uint8_t value) noexcept -> auto &;
-  constexpr auto afps_additional_lt_afoc_lsb_len(const uint8_t value) noexcept -> auto &;
-  constexpr auto afps_lod_mode_enabled_flag(const bool value) noexcept -> auto &;
-  constexpr auto afps_raw_3d_offset_bit_count_explicit_mode_flag(const bool value) noexcept
-      -> auto &;
-  constexpr auto afps_extension_present_flag(const bool value) noexcept -> auto &;
+  constexpr auto afps_output_flag_present_flag(bool value) noexcept -> auto &;
+  constexpr auto afps_num_ref_idx_default_active_minus1(uint8_t value) noexcept -> auto &;
+  constexpr auto afps_additional_lt_afoc_lsb_len(uint8_t value) noexcept -> auto &;
+  constexpr auto afps_lod_mode_enabled_flag(bool value) noexcept -> auto &;
+  constexpr auto afps_raw_3d_offset_bit_count_explicit_mode_flag(bool value) noexcept -> auto &;
+  constexpr auto afps_extension_present_flag(bool value) noexcept -> auto &;
   auto afps_miv_extension_present_flag(bool value) noexcept -> AtlasFrameParameterSetRBSP &;
   auto afps_extension_7bits(uint8_t value) noexcept -> AtlasFrameParameterSetRBSP &;
   [[nodiscard]] auto afps_miv_extension() noexcept -> AfpsMivExtension &;

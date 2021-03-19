@@ -57,7 +57,7 @@ public:
   auto setOccupancyParams(EncoderParams params) -> const EncoderParams & override;
   // No change when useOccupancy() is false. Otherwise set the depth/occupancy map threshold
   // to depthOccMapThresholdIfSet and adjust the normalized disparity range.
-  auto transformParams(EncoderParams) -> const EncoderParams & override;
+  auto transformParams(EncoderParams /*params*/) -> const EncoderParams & override;
 
   void padGeometryFromLeft(Common::MVD10Frame &atlases);
 

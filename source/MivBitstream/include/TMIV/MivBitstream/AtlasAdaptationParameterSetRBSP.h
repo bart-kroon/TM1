@@ -84,8 +84,8 @@ public:
   friend auto operator<<(std::ostream &stream, const AtlasAdaptationParameterSetRBSP &x)
       -> std::ostream &;
 
-  auto operator==(const AtlasAdaptationParameterSetRBSP &) const -> bool;
-  auto operator!=(const AtlasAdaptationParameterSetRBSP &) const -> bool;
+  auto operator==(const AtlasAdaptationParameterSetRBSP & /*other*/) const -> bool;
+  auto operator!=(const AtlasAdaptationParameterSetRBSP & /*other*/) const -> bool;
 
   static auto decodeFrom(std::istream &stream) -> AtlasAdaptationParameterSetRBSP;
 

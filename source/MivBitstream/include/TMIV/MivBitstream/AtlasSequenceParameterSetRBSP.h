@@ -85,7 +85,7 @@ public:
 
   constexpr auto asps_vpcc_remove_duplicate_point_enabled_flag(bool value) noexcept -> auto &;
 
-  friend auto operator<<(std::ostream &stream, const AspsVpccExtension &) -> std::ostream &;
+  friend auto operator<<(std::ostream &stream, const AspsVpccExtension & /*x*/) -> std::ostream &;
 
   constexpr auto operator==(const AspsVpccExtension &other) const noexcept;
   constexpr auto operator!=(const AspsVpccExtension &other) const noexcept;
@@ -133,7 +133,7 @@ public:
   constexpr auto asme_max_entity_id(uint16_t value) noexcept -> auto &;
   constexpr auto asme_inpaint_enabled_flag(bool value) noexcept -> auto &;
 
-  friend auto operator<<(std::ostream &stream, const AspsMivExtension &) -> std::ostream &;
+  friend auto operator<<(std::ostream &stream, const AspsMivExtension & /*x*/) -> std::ostream &;
 
   constexpr auto operator==(const AspsMivExtension &other) const noexcept;
   constexpr auto operator!=(const AspsMivExtension &other) const noexcept;

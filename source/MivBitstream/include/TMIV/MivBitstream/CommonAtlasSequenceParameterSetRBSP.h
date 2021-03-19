@@ -58,8 +58,8 @@ public:
 
   friend auto operator<<(std::ostream &stream, const CaspsMivExtension &x) -> std::ostream &;
 
-  auto operator==(const CaspsMivExtension &) const noexcept -> bool;
-  auto operator!=(const CaspsMivExtension &) const noexcept -> bool;
+  auto operator==(const CaspsMivExtension & /*other*/) const noexcept -> bool;
+  auto operator!=(const CaspsMivExtension & /*other*/) const noexcept -> bool;
 
   static auto decodeFrom(Common::InputBitstream &stream) -> CaspsMivExtension;
 

@@ -56,8 +56,8 @@ private:
 
 class HalfError : public std::runtime_error {
 public:
-  explicit HalfError(uint16_t);
-  explicit HalfError(float);
+  explicit HalfError(uint16_t /*code*/);
+  explicit HalfError(float /*value*/);
 };
 } // namespace TMIV::Common
 

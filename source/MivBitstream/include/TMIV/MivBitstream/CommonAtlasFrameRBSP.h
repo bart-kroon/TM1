@@ -68,8 +68,8 @@ public:
 
   friend auto operator<<(std::ostream &stream, const CommonAtlasFrameRBSP &x) -> std::ostream &;
 
-  auto operator==(const CommonAtlasFrameRBSP &) const -> bool;
-  auto operator!=(const CommonAtlasFrameRBSP &) const -> bool;
+  auto operator==(const CommonAtlasFrameRBSP & /*other*/) const -> bool;
+  auto operator!=(const CommonAtlasFrameRBSP & /*other*/) const -> bool;
 
   static auto decodeFrom(std::istream &stream, const V3cParameterSet &vps, const NalUnitHeader &nuh,
                          const std::vector<CommonAtlasSequenceParameterSetRBSP> &caspsV,

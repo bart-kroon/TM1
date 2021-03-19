@@ -50,7 +50,6 @@ public:
   template <typename U>
   using promoted_type = VectorInterface<typename A::template promoted_type<U>>;
 
-public:
   using A::A;
   VectorInterface() : A() {}
   explicit VectorInterface(const A &a) : A(a) {}
@@ -166,7 +165,9 @@ template <typename T, typename U, typename V>
 auto solid(const Vec3<T> &a, const Vec3<U> &b, const Vec3<V> &c) -> double {
   using std::abs;
   using std::atan;
-  double na = norm(a), nb = norm(b), nc = norm(c);
+  double na = norm(a);
+  double nb = norm(b);
+  double nc = norm(c);
   double out = 2. * atan(abs(triple(a, b, c)) /
                          (na * nb * nc + na * dot(b, c) + nb * dot(a, c) + nc * dot(a, b)));
 

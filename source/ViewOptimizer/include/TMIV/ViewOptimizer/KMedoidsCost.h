@@ -44,7 +44,7 @@ public:
   explicit KMedoidsCost(Common::Mat<double> sqDist);
 
   auto operator()(const Centroids &centroids) const -> double;
-  auto N() const noexcept { return m_sqDist.width(); }
+  [[nodiscard]] auto N() const noexcept { return m_sqDist.width(); }
 
 private:
   Common::Mat<double> m_sqDist;

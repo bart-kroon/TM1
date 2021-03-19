@@ -98,7 +98,7 @@ private:
   void decodeAtlas(size_t k);
   auto decodePatchParamsList(size_t k, MivBitstream::PatchParamsList &ppl) const
       -> const MivBitstream::PatchParamsList &;
-  auto decodeBlockToPatchMap(size_t k, const MivBitstream::PatchParamsList &ppl) const
+  [[nodiscard]] auto decodeBlockToPatchMap(size_t k, const MivBitstream::PatchParamsList &ppl) const
       -> Common::BlockToPatchMap;
 
   auto decodeOccVideo(size_t k) -> bool;

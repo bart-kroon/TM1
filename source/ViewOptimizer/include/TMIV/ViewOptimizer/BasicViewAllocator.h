@@ -46,16 +46,16 @@ public:
   BasicViewAllocator(const Common::Json &rootNode, const Common::Json &componentNode);
 
 protected:
-  auto isBasicView() const -> std::vector<bool> override;
+  [[nodiscard]] auto isBasicView() const -> std::vector<bool> override;
 
 private:
   // Calculate 'k'
-  auto basicViewCount() const -> size_t;
-  auto lumaSamplesPerSourceViewSortedDesc() const -> std::vector<size_t>;
+  [[nodiscard]] auto basicViewCount() const -> size_t;
+  [[nodiscard]] auto lumaSamplesPerSourceViewSortedDesc() const -> std::vector<size_t>;
 
   // Prepare cost calculation
-  auto viewPositions() const -> Positions;
-  auto forwardView(const Positions &pos) const -> size_t;
+  [[nodiscard]] auto viewPositions() const -> Positions;
+  [[nodiscard]] auto forwardView(const Positions &pos) const -> size_t;
   static auto sqDistanceMatrix(const Positions &pos) -> Common::Mat<double>;
 
   // Partitioning around medians [https://en.wikipedia.org/wiki/K-medoids#Algorithms]

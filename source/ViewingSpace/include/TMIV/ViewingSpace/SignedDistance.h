@@ -77,7 +77,7 @@ struct SignedDistance {
     return *this;
   }
 
-  [[nodiscard]] auto isInside() const -> bool { return value < 0.f; }
+  [[nodiscard]] auto isInside() const -> bool { return value < 0.F; }
   [[nodiscard]] auto isOutside() const -> bool { return !isInside(); }
 };
 

@@ -64,7 +64,8 @@ public:
 protected:
   [[nodiscard]] auto json() const -> const Json &;
 
-  auto optionValues(std::string_view option) const -> const std::vector<std::string> &;
+  [[nodiscard]] auto optionValues(std::string_view option) const
+      -> const std::vector<std::string> &;
 
   // Use the configuration file with a factory to create a component/module
   template <class Interface, typename... Args> [[nodiscard]] auto create(Args &&...next) const {
@@ -76,7 +77,7 @@ private:
   void add_file(const std::filesystem::path &path);
   void add_parameter(std::string key, std::string_view value);
   void add_stream(std::istream &stream);
-  [[nodiscard]] auto getComponentParentAndName(const Json &node, const std::string &name) const
+  [[nodiscard]] static auto getComponentParentAndName(const Json &node, const std::string &name)
       -> std::pair<const Json &, std::string> {
     return {node, name};
   }

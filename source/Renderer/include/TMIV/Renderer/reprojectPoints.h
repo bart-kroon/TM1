@@ -93,7 +93,6 @@ template <MivBitstream::CiCamType camType> class Variant : public Base, public E
 public:
   using engine_type = Engine<camType>;
 
-public:
   using engine_type::Engine;
   using engine_type::operator=;
   [[nodiscard]] auto unprojectVertex(Common::Vec2f uv, float depth) const

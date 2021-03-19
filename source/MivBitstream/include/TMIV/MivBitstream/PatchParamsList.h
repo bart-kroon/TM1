@@ -116,8 +116,9 @@ struct PatchParams {
   static auto decodePdu(const PatchDataUnit &pdu, const AtlasSequenceParameterSetRBSP &asps,
                         const AtlasFrameParameterSetRBSP &afps, const AtlasTileHeader &ath)
       -> PatchParams;
-  auto encodePdu(const AtlasSequenceParameterSetRBSP &asps, const AtlasFrameParameterSetRBSP &afps,
-                 const AtlasTileHeader &ath) const -> PatchDataUnit;
+  [[nodiscard]] auto encodePdu(const AtlasSequenceParameterSetRBSP &asps,
+                               const AtlasFrameParameterSetRBSP &afps,
+                               const AtlasTileHeader &ath) const -> PatchDataUnit;
 
   auto operator==(const PatchParams &other) const -> bool;
   auto operator!=(const PatchParams &other) const -> bool { return !operator==(other); };

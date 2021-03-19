@@ -48,7 +48,7 @@ public:
   HmVideoDecoder(HmVideoDecoder &&) = default;
   auto operator=(const HmVideoDecoder &) -> HmVideoDecoder & = delete;
   auto operator=(HmVideoDecoder &&) -> HmVideoDecoder & = default;
-  virtual ~HmVideoDecoder();
+  ~HmVideoDecoder() override;
 
   void decode(std::istream &stream) override;
   void addFrameListener(FrameListener listener) override;

@@ -48,9 +48,9 @@ public:
   auto operator=(IPacker &&) -> IPacker & = default;
   virtual ~IPacker() = default;
 
-  virtual void initialize(const Common::SizeVector &atlasSizes, const int blockSize) = 0;
+  virtual void initialize(const Common::SizeVector &atlasSizes, int blockSize) = 0;
   virtual auto pack(const Common::SizeVector &atlasSize, const Common::MaskList &masks,
-                    const MivBitstream::ViewParamsList &viewParamsList, const int blockSize)
+                    const MivBitstream::ViewParamsList &viewParamsList, int blockSize)
       -> MivBitstream::PatchParamsList = 0;
   virtual void updateAggregatedEntityMasks(const std::vector<Common::MaskList> &entityMasks) = 0;
 };

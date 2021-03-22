@@ -289,7 +289,7 @@ auto MpiEncoder::processAccessUnit(int firstFrameId, int lastFrameId) -> const E
       const auto &frame = m_mpiFrameBuffer[frameBufferIndex];
       auto &pixelLayerIndices = pixelLayerIndicesPerFrame[frameBufferIndex];
 
-      Common::parallel_for(frame.getPixelList().size(), [&](std::size_t pixelId) {
+      Common::parallel_for(frame.getPixelList().size(), [&](size_t pixelId) {
         const auto &pixel = frame.getPixelList()[pixelId];
         auto &pixelLayerIndex = pixelLayerIndices.getPlane(0)[pixelId];
 

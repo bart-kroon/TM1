@@ -280,7 +280,7 @@ void Frame::appendLayer(Attribute::Geometry layerId, const TextureTransparency8F
 
   const auto &a_plane = transparencyLayer.getPlane(0);
 
-  parallel_for(y_plane.size(), [&](std::size_t k) {
+  parallel_for(y_plane.size(), [&](size_t k) {
     if (0 < a_plane[k]) {
       m_pixelList[k].push_back(
           Attribute{Attribute::Texture{y_plane[k], u_plane[k], v_plane[k]}, layerId, a_plane[k]});
@@ -294,7 +294,7 @@ auto Frame::getLayer(Attribute::Geometry layerId) const -> TextureTransparency8F
 
   textureFrame.fillNeutral();
 
-  parallel_for(m_pixelList.size(), [&](std::size_t k) {
+  parallel_for(m_pixelList.size(), [&](size_t k) {
     const auto &pixel = m_pixelList[k];
     auto *const iter =
         std::lower_bound(pixel.begin(), pixel.end(), layerId,

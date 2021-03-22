@@ -28,6 +28,7 @@ if(BUILD_VVenC)
     endif()
     
     set_property(TARGET vvenc vvencFFapp PROPERTY FOLDER "VVenC")
+    target_compile_features(vvenc PUBLIC cxx_std_14)
     install(TARGETS vvencFFapp EXPORT TMIVTargets RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 endif()
 
@@ -52,6 +53,7 @@ if(BUILD_VVdeC)
     endif()
 
     set_property(TARGET vvdec vvdecapp PROPERTY FOLDER "VVenC")
+    target_compile_features(vvdec PUBLIC cxx_std_14)
     install(TARGETS vvdecapp EXPORT TMIVTargets RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 endif()
 

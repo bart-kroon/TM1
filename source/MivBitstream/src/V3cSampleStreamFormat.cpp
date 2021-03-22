@@ -58,6 +58,7 @@ auto SampleStreamV3cHeader::decodeFrom(std::istream &stream) -> SampleStreamV3cH
 void SampleStreamV3cHeader::encodeTo(std::ostream &stream) const {
   Common::OutputBitstream bitstream{stream};
   bitstream.writeBits(m_ssvh_unit_size_precision_bytes_minus1, 3);
+  bitstream.zeroAlign();
 }
 
 SampleStreamV3cUnit::SampleStreamV3cUnit(std::string ssvu_v3c_unit)

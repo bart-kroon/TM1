@@ -88,7 +88,7 @@ template <typename UnsignedResult = SampleValue>
 constexpr auto quantizeValue(float x, unsigned bits) -> UnsignedResult {
   const auto maxLevel_ = maxLevel<UnsignedResult>(bits);
   if (x >= 0.F && x < 1.F) {
-    return static_cast<UnsignedResult>(x * static_cast<float>(maxLevel_) + 0.5F);
+    return static_cast<UnsignedResult>(std::llround(x * static_cast<float>(maxLevel_)));
   }
   if (1.F <= x) {
     return maxLevel_;

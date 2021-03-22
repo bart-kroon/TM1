@@ -233,13 +233,19 @@ class Pixel {
 public:
   using value_type = Attribute;
   using size_type = std::uint16_t;
+
+  // NOTE(#488): This low-level construct was chosen to reduce the memory footprint of MPI frames.
+  //
+  // NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,modernize-avoid-c-arrays)
   using array_type = value_type[];
-  using iterator = std::unique_ptr<array_type>::pointer;
+
+  using DataPtr = std::unique_ptr<array_type>;
+  using iterator = DataPtr::pointer;
 
 private:
   size_type m_size{};
   size_type m_capacity{};
-  std::unique_ptr<array_type> m_data{};
+  DataPtr m_data{};
 
 public:
   Pixel() = default;
@@ -284,9 +290,7 @@ private:
   Vec2i m_size{};
   std::vector<Pixel> m_pixelList{};
 };
-
 } // namespace MpiPcs
-
 } // namespace TMIV::Common
 
 #endif

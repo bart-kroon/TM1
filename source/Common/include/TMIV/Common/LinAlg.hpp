@@ -351,7 +351,7 @@ template <typename MAT1, typename MAT2> void square(const MAT1 &A, MAT2 &out) {
   detail::square(shallow::Matrix<T>(A), shallow::Matrix<T>(out));
 }
 
-template <typename MAT> decltype(square_type(MAT())) square(const MAT &A) {
+template <typename MAT> auto square(const MAT &A) {
   decltype(square_type(MAT())) out;
   square(A, out);
   return out;
@@ -370,7 +370,7 @@ template <typename MAT1, typename MAT2> void transquare(const MAT1 &A, MAT2 &out
   detail::transquare(shallow::Matrix<T>(A), shallow::Matrix<T>(out));
 }
 
-template <typename MAT> decltype(transquare_type(MAT())) transquare(const MAT &A) {
+template <typename MAT> auto transquare(const MAT &A) {
   decltype(transquare_type(MAT())) out;
   transquare(A, out);
   return out;

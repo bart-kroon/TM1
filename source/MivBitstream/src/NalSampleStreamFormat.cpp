@@ -58,6 +58,7 @@ auto SampleStreamNalHeader::decodeFrom(std::istream &stream) -> SampleStreamNalH
 void SampleStreamNalHeader::encodeTo(std::ostream &stream) const {
   Common::OutputBitstream bitstream{stream};
   bitstream.writeBits(m_ssnh_unit_size_precision_bytes_minus1, 3);
+  bitstream.zeroAlign();
 }
 
 SampleStreamNalUnit::SampleStreamNalUnit(std::string ssnu_nal_unit)

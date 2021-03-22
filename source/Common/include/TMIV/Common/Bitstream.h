@@ -35,6 +35,7 @@
 #define TMIV_COMMON_BITSTREAM_H
 
 #include <TMIV/Common/Half.h>
+#include <TMIV/Common/verify.h>
 
 #include <cstdint>
 #include <istream>
@@ -94,7 +95,7 @@ public:
   OutputBitstream(OutputBitstream &&) = default;
   auto operator=(const OutputBitstream &) -> OutputBitstream & = delete;
   auto operator=(OutputBitstream &&) -> OutputBitstream & = delete;
-  ~OutputBitstream() { zeroAlign(); }
+  ~OutputBitstream() { PRECONDITION(byteAligned()); }
 
   // Output bit position indicator
   [[nodiscard]] auto tellp() const -> std::streampos;

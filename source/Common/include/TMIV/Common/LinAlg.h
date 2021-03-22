@@ -132,7 +132,7 @@ template <typename T> auto square_type(heap::Vector<T>) -> heap::Matrix<T>;
 template <typename T> auto square_type(heap::Matrix<T>) -> heap::Matrix<T>;
 
 template <typename MAT1, typename MAT2> void square(const MAT1 &A, MAT2 &out);
-template <typename MAT> decltype(square_type(MAT())) square(const MAT &A);
+template <typename MAT> auto square(const MAT &A);
 
 //! \brief Computes and returns A' * A.
 template <typename T, Array::size_type M, Array::size_type N>
@@ -140,7 +140,7 @@ auto transquare_type(stack::Matrix<T, M, N>) -> stack::Matrix<T, N, N>;
 template <typename T> auto transquare_type(heap::Matrix<T>) -> heap::Matrix<T>;
 
 template <typename MAT1, typename MAT2> void transquare(const MAT1 &A, MAT2 &out);
-template <typename MAT> decltype(transquare_type(MAT())) transquare(const MAT &A);
+template <typename MAT> auto transquare(const MAT &A);
 
 //! \brief Computes the PLU factorization of the matrix A.
 //! \param[in] A Matrix to decompose.

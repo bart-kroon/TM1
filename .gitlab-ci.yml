@@ -41,6 +41,5 @@ VC 16 Release:
   <<: *cpp_rules_definition
 
 Integration Test:
-  <<: *cpp_rules_definition
   dependencies:
     - VC 16 Release

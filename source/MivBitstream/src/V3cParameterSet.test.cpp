@@ -511,14 +511,11 @@ gm_group_count=0
         .occupancy_information(j0, {})
         .vps_geometry_video_present_flag(j1, true)
         .geometry_information(j1, {})
-        .vps_attribute_video_present_flag(j2, true)
-        .attribute_information(j2, {})
+        .vps_attribute_video_present_flag(j1, true)
+        .attribute_information(j1, {})
         .vps_extension_present_flag(true)
         .vps_miv_extension_present_flag(true)
         .vps_packing_information_present_flag(true)
-        .vps_packed_video_present_flag(j0, true)
-        .packing_information(j0, {})
-        .vps_packed_video_present_flag(j1, false)
         .vps_packed_video_present_flag(j2, true)
         .packing_information(j2, {})
         .vps_miv_extension(VpsMivExtension{})
@@ -555,11 +552,12 @@ vps_map_count_minus1[ 31 ]=0
 vps_auxiliary_video_present_flag[ 31 ]=false
 vps_occupancy_video_present_flag[ 31 ]=false
 vps_geometry_video_present_flag[ 31 ]=true
-vps_attribute_video_present_flag[ 31 ]=false
+vps_attribute_video_present_flag[ 31 ]=true
 gi_geometry_codec_id[ 31 ]=0
 gi_geometry_2d_bit_depth_minus1[ 31 ]=0
 gi_geometry_MSB_align_flag[ 31 ]=false
 gi_geometry_3d_coordinates_bit_depth_minus1[ 31 ]=0
+ai_attribute_count[ 31 ]=0
 vps_atlas_id[ 2 ]=32
 vps_frame_width[ 32 ]=0
 vps_frame_height[ 32 ]=0
@@ -567,25 +565,12 @@ vps_map_count_minus1[ 32 ]=15
 vps_auxiliary_video_present_flag[ 32 ]=false
 vps_occupancy_video_present_flag[ 32 ]=false
 vps_geometry_video_present_flag[ 32 ]=false
-vps_attribute_video_present_flag[ 32 ]=true
-ai_attribute_count[ 32 ]=0
+vps_attribute_video_present_flag[ 32 ]=false
 vps_extension_present_flag=true
 vps_packing_information_present_flag=true
 vps_miv_extension_present_flag=true
 vps_extension_6bits=63
-vps_packed_video_present_flag[ 30 ]=true
-pin_codec_id[ 30 ]=0
-pin_regions_count_minus1[ 30 ]=0
-pin_region_tile_id[ 30 ][ 0 ]=0
-pin_region_type_id_minus2[ 30 ][ 0 ]=0 (V3C_OVD)
-pin_region_top_left_x[ 30 ][ 0 ]=0
-pin_region_top_left_y[ 30 ][ 0 ]=0
-pin_region_width_minus1[ 30 ][ 0 ]=0
-pin_region_unpack_top_left_x[ 30 ][ 0 ]=0
-pin_region_unpack_top_left_y[ 30 ][ 0 ]=0
-pin_region_height_minus1[ 30 ][ 0 ]=0
-pin_region_map_index[ 30 ][ 0 ]=0
-pin_region_rotation_flag[ 30 ][ 0 ]=false
+vps_packed_video_present_flag[ 30 ]=false
 vps_packed_video_present_flag[ 31 ]=false
 vps_packed_video_present_flag[ 32 ]=true
 pin_codec_id[ 32 ]=0
@@ -608,7 +593,7 @@ vps_extension_data_byte=2
 vps_extension_data_byte=250
 vps_extension_data_byte=15
 )");
-    const size_t expected_number_of_bytes = 40 + (2 * 15); // two times packing_information
+    const size_t expected_number_of_bytes = 40 + 15;
     REQUIRE(byteCodingTest(vps, expected_number_of_bytes));
   }
 

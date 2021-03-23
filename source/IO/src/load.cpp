@@ -61,6 +61,7 @@ const std::string inputTransparencyPathFmt = "inputTransparencyPathFmt";
 const std::string inputTransparencyVideoFramePathFmt = "inputTransparencyVideoFramePathFmt";
 const std::string inputTransparencyVsbPathFmt = "inputTransparencyVideoSubBitstreamPathFmt";
 const std::string inputViewportParamsPathFmt = "inputViewportParamsPathFmt"s;
+const std::string inputPackedVsbPathFmt = "inputPackedVideoSubBitstreamPathFmt";
 
 template <typename FORMAT>
 auto loadFrame(const std::filesystem::path &path, std::int32_t frameIndex, Common::Vec2i frameSize)

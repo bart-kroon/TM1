@@ -46,6 +46,10 @@ void Multiplexer::setOccupancyVideoBitstreamServer(OccupancyVideoBitstreamServer
   m_openOccupancyVideoBitstream = std::move(server);
 }
 
+void Multiplexer::setPackedVideoBitstreamServer(PackedVideoBitstreamServer server) {
+  m_openPackedVideoBitstream = std::move(server);
+}
+
 void Multiplexer::readInputBitstream(std::istream &stream) {
   // Decode SSVH
   const auto ssvh = MivBitstream::SampleStreamV3cHeader::decodeFrom(stream);
@@ -77,6 +81,13 @@ void Multiplexer::appendVideoSubBitstreams() {
   for (size_t k = 0; k <= m_vps.vps_atlas_count_minus1(); ++k) {
     const auto j = m_vps.vps_atlas_id(k);
     checkRestrictions(j);
+
+    if (m_vps.vps_packing_information_present_flag()) {
+      if (m_vps.vps_packed_video_present_flag(j)) {
+        appendPvd(j);
+        continue;
+      }
+    }
 
     if (m_vps.vps_geometry_video_present_flag(j)) {
       appendGvd(j);
@@ -156,6 +167,28 @@ void Multiplexer::appendAvd(MivBitstream::AtlasId atlasId, uint8_t attributeIdx,
   vuh.vuh_attribute_index(attributeIdx);
 
   appendSubBitstream(vuh, m_openAttributeVideoBitstream(typeId, atlasId, attributeIdx));
+}
+
+void Multiplexer::appendPvd(MivBitstream::AtlasId atlasId) {
+  auto vuh = MivBitstream::V3cUnitHeader{MivBitstream::VuhUnitType::V3C_PVD};
+  vuh.vuh_v3c_parameter_set_id(m_vps.vps_v3c_parameter_set_id());
+  vuh.vuh_atlas_id(atlasId);
+  appendSubBitstream(vuh, m_openPackedVideoBitstream(atlasId));
+}
+
+void Multiplexer::addPackingInformation() {
+  m_vps.vps_packing_information_present_flag(true);
+
+  for (size_t k = 0; k <= m_vps.vps_atlas_count_minus1(); ++k) {
+    const auto j = m_vps.vps_atlas_id(k);
+
+    // TODO (LK) Get the packing information from JSON
+    if (m_vps.vps_packed_video_present_flag(j)) {
+      m_vps.vps_occupancy_video_present_flag(j, false);
+      m_vps.vps_geometry_video_present_flag(j, false);
+      m_vps.vps_attribute_video_present_flag(j, false);
+    }
+  }
 }
 
 void Multiplexer::appendSubBitstream(const MivBitstream::V3cUnitHeader &vuh,

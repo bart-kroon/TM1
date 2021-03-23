@@ -49,6 +49,7 @@ using TMIV::MivBitstream::NalUnit;
 using TMIV::MivBitstream::NalUnitHeader;
 using TMIV::MivBitstream::NalUnitType;
 using TMIV::MivBitstream::OccupancyInformation;
+using TMIV::MivBitstream::PackingInformation;
 using TMIV::MivBitstream::SampleStreamNalHeader;
 using TMIV::MivBitstream::SampleStreamNalUnit;
 using TMIV::MivBitstream::SampleStreamV3cHeader;
@@ -62,7 +63,8 @@ enum class VpsContent {
   default_constructed,
   two_maps,
   with_auxiliary_video,
-  two_atlases_and_some_videos
+  two_atlases_and_some_videos,
+  two_atlases_one_with_packed_video
 };
 
 template <typename Payload> auto createTestV3cUnit(const V3cUnitHeader &vuh, Payload &&payload) {
@@ -73,10 +75,10 @@ template <typename Payload> auto createTestV3cUnit(const V3cUnitHeader &vuh, Pay
   return stream.str();
 }
 
-auto createVps(VpsContent vpsType) {
+auto createVps(VpsContent vpsContent) {
   auto vps = V3cParameterSet{};
 
-  switch (vpsType) {
+  switch (vpsContent) {
   case VpsContent::default_constructed:
     break;
   case VpsContent::two_maps:
@@ -85,21 +87,31 @@ auto createVps(VpsContent vpsType) {
   case VpsContent::with_auxiliary_video:
     vps.vps_auxiliary_video_present_flag(AtlasId{0}, true);
     break;
+  case VpsContent::two_atlases_one_with_packed_video:
+    vps.vps_atlas_count_minus1(1)
+        .vps_atlas_id(1, AtlasId{1})
+        .vps_extension_present_flag(true)
+        .vps_packing_information_present_flag(true)
+        .vps_packed_video_present_flag(AtlasId{0}, true)
+        .packing_information(AtlasId{0}, PackingInformation{})
+        .vps_geometry_video_present_flag(AtlasId{1}, true)
+        .geometry_information(AtlasId{1}, GeometryInformation{});
+    break;
   case VpsContent::two_atlases_and_some_videos:
-    vps.vps_atlas_count_minus1(1);
-    vps.vps_atlas_id(1, AtlasId{1});
-    vps.vps_geometry_video_present_flag(AtlasId{0}, true);
-    vps.geometry_information(AtlasId{0}, GeometryInformation{});
-    vps.vps_geometry_video_present_flag(AtlasId{1}, true);
-    vps.geometry_information(AtlasId{1}, GeometryInformation{});
-    vps.vps_attribute_video_present_flag(AtlasId{0}, true);
     AttributeInformation ai{};
-    vps.attribute_information(AtlasId{0},
-                              ai.ai_attribute_count(2)
-                                  .ai_attribute_type_id(0, AiAttributeTypeId::ATTR_NORMAL)
-                                  .ai_attribute_type_id(1, AiAttributeTypeId::ATTR_TEXTURE));
-    vps.vps_occupancy_video_present_flag(AtlasId{1}, true);
-    vps.occupancy_information(AtlasId{1}, OccupancyInformation{});
+    vps.vps_atlas_count_minus1(1)
+        .vps_atlas_id(1, AtlasId{1})
+        .vps_geometry_video_present_flag(AtlasId{0}, true)
+        .geometry_information(AtlasId{0}, GeometryInformation{})
+        .vps_geometry_video_present_flag(AtlasId{1}, true)
+        .geometry_information(AtlasId{1}, GeometryInformation{})
+        .vps_attribute_video_present_flag(AtlasId{0}, true)
+        .attribute_information(AtlasId{0},
+                               ai.ai_attribute_count(2)
+                                   .ai_attribute_type_id(0, AiAttributeTypeId::ATTR_NORMAL)
+                                   .ai_attribute_type_id(1, AiAttributeTypeId::ATTR_TEXTURE))
+        .vps_occupancy_video_present_flag(AtlasId{1}, true)
+        .occupancy_information(AtlasId{1}, OccupancyInformation{});
     break;
   };
 
@@ -219,6 +231,10 @@ auto makeMultiplexerWithFakeVideoBitstreamServers() -> TMIV::Encoder::Multiplexe
     return std::make_unique<std::istringstream>(fmt::format("test_occupancy atlasId={}", atlasId));
   });
 
+  unit.setPackedVideoBitstreamServer([](const AtlasId &atlasId) {
+    return std::make_unique<std::istringstream>(fmt::format("test_packed atlasId={}", atlasId));
+  });
+
   return unit;
 }
 
@@ -246,4 +262,20 @@ TEST_CASE("VPS with two atlases") {
                                  "test_attribute typeId=ATTR_TEXTURE attributeIdx=1 atlasId=0");
   requireThatNextV3cUnitContains(result, ssvh, "test_geometry atlasId=1");
   requireThatNextV3cUnitContains(result, ssvh, "test_occupancy atlasId=1");
+}
+
+TEST_CASE("VPS with two atlases, one with packed video") {
+  auto unit = makeMultiplexerWithFakeVideoBitstreamServers();
+  std::istringstream inStream{createTestBitstream(VpsContent::two_atlases_one_with_packed_video)};
+
+  unit.readInputBitstream(inStream);
+  unit.addPackingInformation();
+  unit.appendVideoSubBitstreams();
+  std::ostringstream outStream;
+  unit.writeOutputBitstream(outStream);
+
+  std::istringstream result{outStream.str()};
+  const auto ssvh = checkStreamBeginning(result, VpsContent::two_atlases_one_with_packed_video);
+  requireThatNextV3cUnitContains(result, ssvh, "test_packed atlasId=0");
+  requireThatNextV3cUnitContains(result, ssvh, "test_geometry atlasId=1");
 }

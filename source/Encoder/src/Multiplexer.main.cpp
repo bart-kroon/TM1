@@ -76,6 +76,7 @@ public:
 
   void run() override {
     readInputBitstream();
+    addPackingInformation();
     appendVideoSubBitstreams();
     writeOutputBitstream();
   }
@@ -100,6 +101,11 @@ public:
   [[nodiscard]] auto openOccupancyBitstream(const MivBitstream::AtlasId &atlasId) const
       -> std::unique_ptr<std::istream> {
     return openInputBitstream(IO::inputOccupancyVsbPathFmt, atlasId);
+  }
+
+  [[nodiscard]] auto openPackedBitstream(const MivBitstream::AtlasId &atlasId) const
+      -> std::unique_ptr<std::istream> {
+    return openInputBitstream(IO::inputPackedVsbPathFmt, atlasId);
   }
 
   [[nodiscard]] auto openAttributeBitstream(MivBitstream::AiAttributeTypeId typeId,
@@ -136,6 +142,9 @@ public:
 
     m_multiplexer->setOccupancyVideoBitstreamServer(
         [this](const MivBitstream::AtlasId &atlasId) { return openOccupancyBitstream(atlasId); });
+
+    m_multiplexer->setPackedVideoBitstreamServer(
+        [this](const MivBitstream::AtlasId &atlasId) { return openPackedBitstream(atlasId); });
   }
 
 private:
@@ -148,6 +157,18 @@ private:
     m_multiplexer->readInputBitstream(stream);
     std::cout << "Appended " << path << " with a total of " << m_multiplexer->numberOfV3cUnits()
               << " V3C units including the VPS\n";
+  }
+
+  void addPackingInformation() {
+    bool packingInformationPresent = false;
+
+    if (json().optional("packingInformationPresent")) {
+      packingInformationPresent = json().optional("packingInformationPresent").as<bool>();
+    }
+
+    if (packingInformationPresent) {
+      m_multiplexer->addPackingInformation();
+    }
   }
 
   void appendVideoSubBitstreams() { m_multiplexer->appendVideoSubBitstreams(); }

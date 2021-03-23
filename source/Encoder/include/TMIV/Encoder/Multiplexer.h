@@ -49,14 +49,17 @@ public:
   using GeometryVideoBitstreamServer =
       std::function<std::unique_ptr<std::istream>(const MivBitstream::AtlasId &)>;
   using OccupancyVideoBitstreamServer = GeometryVideoBitstreamServer;
+  using PackedVideoBitstreamServer = GeometryVideoBitstreamServer;
 
   void setAttributeVideoBitstreamServer(AttributeVideoBitstreamServer server);
   void setGeometryVideoBitstreamServer(GeometryVideoBitstreamServer server);
   void setOccupancyVideoBitstreamServer(OccupancyVideoBitstreamServer server);
+  void setPackedVideoBitstreamServer(PackedVideoBitstreamServer server);
 
   void readInputBitstream(std::istream &stream);
   void appendVideoSubBitstreams();
   void writeOutputBitstream(std::ostream &stream) const;
+  void addPackingInformation();
 
   [[nodiscard]] auto numberOfV3cUnits() const { return m_units.size(); }
 
@@ -66,6 +69,7 @@ private:
   void appendOvd(MivBitstream::AtlasId atlasId);
   void appendAvd(MivBitstream::AtlasId atlasId, uint8_t attributeIdx,
                  MivBitstream::AiAttributeTypeId typeId);
+  void appendPvd(MivBitstream::AtlasId atlasId);
   void appendSubBitstream(const MivBitstream::V3cUnitHeader &vuh,
                           std::unique_ptr<std::istream> stream);
 
@@ -75,6 +79,7 @@ private:
   AttributeVideoBitstreamServer m_openAttributeVideoBitstream{};
   GeometryVideoBitstreamServer m_openGeometryVideoBitstream{};
   OccupancyVideoBitstreamServer m_openOccupancyVideoBitstream{};
+  PackedVideoBitstreamServer m_openPackedVideoBitstream{};
 };
 } // namespace TMIV::Encoder
 #endif // TMIV_ENCODER_MULTIPLEXER_H

@@ -1013,15 +1013,27 @@ auto V3cParameterSet::vps_auxiliary_video_present_flag(AtlasId j) const -> bool 
 }
 
 auto V3cParameterSet::vps_occupancy_video_present_flag(AtlasId j) const -> bool {
-  return atlas(j).vps_occupancy_video_present_flag;
+  const auto result = atlas(j).vps_occupancy_video_present_flag;
+  if (result && vps_packing_information_present_flag()) {
+    VERIFY_V3CBITSTREAM(!vps_packed_video_present_flag(j));
+  }
+  return result;
 }
 
 auto V3cParameterSet::vps_geometry_video_present_flag(AtlasId j) const -> bool {
-  return atlas(j).vps_geometry_video_present_flag;
+  const auto result = atlas(j).vps_geometry_video_present_flag;
+  if (result && vps_packing_information_present_flag()) {
+    VERIFY_V3CBITSTREAM(!vps_packed_video_present_flag(j));
+  }
+  return result;
 }
 
 auto V3cParameterSet::vps_attribute_video_present_flag(AtlasId j) const -> bool {
-  return atlas(j).vps_attribute_video_present_flag;
+  const auto result = atlas(j).vps_attribute_video_present_flag;
+  if (result && vps_packing_information_present_flag()) {
+    VERIFY_V3CBITSTREAM(!vps_packed_video_present_flag(j));
+  }
+  return result;
 }
 
 auto V3cParameterSet::occupancy_information(AtlasId j) const -> const OccupancyInformation & {
@@ -1042,9 +1054,15 @@ auto V3cParameterSet::attribute_information(AtlasId j) const -> const AttributeI
   return *atlas(j).attribute_information;
 }
 
-auto V3cParameterSet::vps_packed_video_present_flag(const AtlasId &j) const {
+auto V3cParameterSet::vps_packed_video_present_flag(const AtlasId &j) const -> bool {
   VERIFY_V3CBITSTREAM(vps_packing_information_present_flag());
-  return atlas(j).vps_packed_video_present_flag;
+  const auto result = atlas(j).vps_packed_video_present_flag;
+  if (result) {
+    VERIFY_V3CBITSTREAM(!vps_occupancy_video_present_flag(j));
+    VERIFY_V3CBITSTREAM(!vps_geometry_video_present_flag(j));
+    VERIFY_V3CBITSTREAM(!vps_attribute_video_present_flag(j));
+  }
+  return result;
 }
 
 auto V3cParameterSet::packing_information(const AtlasId &j) const {

@@ -63,6 +63,7 @@ extern const std::string inputTransparencyPathFmt;
 extern const std::string inputTransparencyVideoFramePathFmt;
 extern const std::string inputTransparencyVsbPathFmt;
 extern const std::string inputViewportParamsPathFmt;
+extern const std::string inputPackedVsbPathFmt;
 
 extern const std::string outputBitstreamPathFmt;
 extern const std::string outputBlockToPatchMapPathFmt;

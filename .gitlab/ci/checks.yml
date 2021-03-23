@@ -22,7 +22,7 @@ clang-format:
     - git diff
     - if [[ $(git diff) ]]; then echo "Formatting is wrong! See above."; return 1; fi
 
-no git reverts:
+no multi-line commit messages:
   stage: check
   image:
     name: cbachhuber/clang:11
@@ -31,6 +31,6 @@ no git reverts:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
   script:
     - git fetch origin $CI_DEFAULT_BRANCH:main
-    - COMMIT_MSGS=$(git log --pretty=format:%B main..HEAD)
-    - echo "$COMMIT_MSGS"
-    - if [[ "$COMMIT_MSGS" =~ .*^Revert.* ]]; then echo "Don't use reverts! Squash or rename this commit"; fail; fi
+    - NUM_COMMIT_MESSAGE_LINES=$(git log --pretty=format:%B main..HEAD | sed '/^\s*$/d' | wc -l)
+    - NUM_COMMITS=$(git rev-list --count main..HEAD)
+    - if [[ "$NUM_COMMIT_MESSAGE_LINES" -ne "$NUM_COMMITS" ]]; then echo "Don't use multi-line commits!"; fail; fi

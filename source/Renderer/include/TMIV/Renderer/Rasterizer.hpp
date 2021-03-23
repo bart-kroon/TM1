@@ -237,20 +237,41 @@ constexpr const auto eps = intfp{1};
 constexpr const auto one = eps << bits;
 constexpr const auto half = one / intfp{2};
 
-inline auto fixed(float x) -> intfp {
+inline auto fixed(float x) noexcept -> intfp {
   using std::ldexp;
   return static_cast<intfp>(std::floor(0.5F + ldexp(x, bits)));
 }
-inline auto fixed(Common::Vec2f v) -> Vec2fp { return {fixed(v.x()), fixed(v.y())}; }
-inline auto fixed(int x) -> intfp { return static_cast<intfp>(x) << bits; }
-inline auto fpfloor(intfp x) -> int { return static_cast<int>(x >> bits); }
-inline auto fpceil(intfp x) -> int { return fpfloor(x + one - eps); }
+
+inline auto fixed(Common::Vec2f v) noexcept { return Vec2fp{fixed(v.x()), fixed(v.y())}; }
+constexpr auto fixed(int x) noexcept { return static_cast<intfp>(x) << bits; }
+constexpr auto fpfloor(intfp x) noexcept { return static_cast<int>(x >> bits); }
+constexpr auto fpceil(intfp x) noexcept { return fpfloor(x + one - eps); }
 } // namespace fixed_point
+
+namespace detail {
+struct TriangleInfo {
+  int u1;
+  int u2;
+  int v1;
+  int v2;
+  fixed_point::intfp area;
+  float invArea;
+};
+
+auto determineTriangleBoundingBoxAndArea(int rows, int cols,
+                                         const std::array<fixed_point::Vec2fp, 3> &uv) noexcept
+    -> std::optional<TriangleInfo>;
+
+// Calculate the Barycentric coordinate of the pixel center
+// (u + 1/2, v + 1/2)
+auto calculateBarycentricCoordinate(int u, int v, const TriangleInfo &info,
+                                    const std::array<fixed_point::Vec2fp, 3> &uv)
+    -> std::optional<std::array<float, 3>>;
+} // namespace detail
 
 template <typename... T>
 void Rasterizer<T...>::rasterTriangle(TriangleDescriptor descriptor, const Batch &batch,
                                       Strip &strip) {
-  using namespace fixed_point;
   using std::ldexp;
   using std::max;
   using std::min;
@@ -260,86 +281,54 @@ void Rasterizer<T...>::rasterTriangle(TriangleDescriptor descriptor, const Batch
   const auto n2 = descriptor.indices[2];
 
   // Image coordinate within strip
-  const auto stripOffset = Vec2fp{0, fixed(strip.i1)};
-  const auto uv0 = fixed(batch.vertices[n0].position) - stripOffset;
-  const auto uv1 = fixed(batch.vertices[n1].position) - stripOffset;
-  const auto uv2 = fixed(batch.vertices[n2].position) - stripOffset;
+  using fixed_point::fixed;
+  const auto stripOffset = fixed_point::Vec2fp{0, fixed(strip.i1)};
+  const auto uv = std::array{fixed(batch.vertices[n0].position) - stripOffset,
+                             fixed(batch.vertices[n1].position) - stripOffset,
+                             fixed(batch.vertices[n2].position) - stripOffset};
 
-  // Determine triangle bounding box
-  const auto u1 = std::max(0, fpfloor(std::min({uv0.x(), uv1.x(), uv2.x()})));
-  const auto u2 = std::min(strip.cols, 1 + fpceil(std::max({uv0.x(), uv1.x(), uv2.x()})));
-  if (u1 >= u2) {
-    return; // Cull
-  }
-  const auto v1 = std::max(0, fpfloor(std::min({uv0.y(), uv1.y(), uv2.y()})));
-  const auto v2 = std::min(strip.rows(), 1 + fpceil(std::max({uv0.y(), uv1.y(), uv2.y()})));
-  if (v1 >= v2) {
-    return; // Cull
-  }
+  if (const auto triangleInfo =
+          detail::determineTriangleBoundingBoxAndArea(strip.rows(), strip.cols, uv)) {
+    const auto area_f = ldexp(static_cast<float>(triangleInfo->area), -2 * fixed_point::bits);
 
-  // Determine (unclipped) parallelogram area
-  const auto area =
-      (uv1.y() - uv2.y()) * (uv0.x() - uv2.x()) + (uv2.x() - uv1.x()) * (uv0.y() - uv2.y());
-  if (area <= 0) {
-    return; // Cull
-  }
-  const auto area_f = ldexp(static_cast<float>(area), -2 * bits);
-  const auto inv_area = 1.F / static_cast<float>(area);
+    // Calculate feature values for determining blending weights
+    const auto stretching = 0.5F * area_f / descriptor.area;
+    const auto rayAngle = (1 / 3.F) * (batch.vertices[n0].rayAngle + batch.vertices[n1].rayAngle +
+                                       batch.vertices[n2].rayAngle);
 
-  // Calculate feature values for determining blending weights
-  const auto stretching = 0.5F * area_f / descriptor.area;
-  const auto rayAngle = (1 / 3.F) * (batch.vertices[n0].rayAngle + batch.vertices[n1].rayAngle +
-                                     batch.vertices[n2].rayAngle);
+    // Fetch normalized disparity values (diopters)
+    const auto d0 = 1.F / batch.vertices[n0].depth;
+    const auto d1 = 1.F / batch.vertices[n1].depth;
+    const auto d2 = 1.F / batch.vertices[n2].depth;
 
-  // Fetch normalized disparity values (diopters)
-  const auto d0 = 1.F / batch.vertices[n0].depth;
-  const auto d1 = 1.F / batch.vertices[n1].depth;
-  const auto d2 = 1.F / batch.vertices[n2].depth;
+    // Fetch multiple attributes (e.g. color)
+    const auto a0 = detail::fetchAttributes(n0, batch.attributes);
+    const auto a1 = detail::fetchAttributes(n1, batch.attributes);
+    const auto a2 = detail::fetchAttributes(n2, batch.attributes);
 
-  // Fetch multiple attributes (e.g. color)
-  const auto a0 = detail::fetchAttributes(n0, batch.attributes);
-  const auto a1 = detail::fetchAttributes(n1, batch.attributes);
-  const auto a2 = detail::fetchAttributes(n2, batch.attributes);
+    // For each pixel in the bounding box
+    for (int v = triangleInfo->v1; v < triangleInfo->v2; ++v) {
+      for (int u = triangleInfo->u1; u < triangleInfo->u2; ++u) {
+        if (const auto coord = detail::calculateBarycentricCoordinate(u, v, *triangleInfo, uv)) {
+          const auto [w0, w1, w2] = *coord;
 
-  // For each pixel in the bounding box
-  for (int v = v1; v < v2; ++v) {
-    for (int u = u1; u < u2; ++u) {
-      // Calculate the Barycentric coordinate of the pixel center (x +
-      // 1/2, y + 1/2)
-      const auto X0 = (uv1.y() - uv2.y()) * (fixed(u) - uv2.x() + half) +
-                      (uv2.x() - uv1.x()) * (fixed(v) - uv2.y() + half);
-      if (X0 < 0) {
-        continue;
+          // Barycentric interpolation of normalized disparity and attributes
+          // (e.g. color)
+          const auto d = w0 * d0 + w1 * d1 + w2 * d2;
+          const auto a = blendAttributes(w0, a0, w1, a1, w2, a2);
+
+          // Blend pixel
+          assert(v * strip.cols + u < static_cast<int>(strip.matrix.size()));
+          auto &P = strip.matrix[v * strip.cols + u];
+
+          auto p = m_pixel.construct(a, d, rayAngle, stretching);
+          if (w0 == 0.F || w1 == 0.F || w2 == 0.F) {
+            // Count edge points half assuming there is an adjacent triangle
+            p.normWeight *= 0.5F;
+          }
+          P = m_pixel.blend(P, p);
+        }
       }
-      const auto X1 = (uv2.y() - uv0.y()) * (fixed(u) - uv2.x() + half) +
-                      (uv0.x() - uv2.x()) * (fixed(v) - uv2.y() + half);
-      if (X1 < 0) {
-        continue;
-      }
-      const auto X2 = area - X0 - X1;
-      if (X2 < 0) {
-        continue;
-      }
-
-      const auto w0 = inv_area * static_cast<float>(X0);
-      const auto w1 = inv_area * static_cast<float>(X1);
-      const auto w2 = inv_area * static_cast<float>(X2);
-
-      // Barycentric interpolation of normalized disparity and attributes
-      // (e.g. color)
-      const auto d = w0 * d0 + w1 * d1 + w2 * d2;
-      const auto a = blendAttributes(w0, a0, w1, a1, w2, a2);
-
-      // Blend pixel
-      assert(v * strip.cols + u < static_cast<int>(strip.matrix.size()));
-      auto &P = strip.matrix[v * strip.cols + u];
-
-      auto p = m_pixel.construct(a, d, rayAngle, stretching);
-      if (X0 == 0 || X1 == 0 || X2 == 0) {
-        // Count edge points half assuming there is an adjacent triangle
-        p.normWeight *= 0.5F;
-      }
-      P = m_pixel.blend(P, p);
     }
   }
 }

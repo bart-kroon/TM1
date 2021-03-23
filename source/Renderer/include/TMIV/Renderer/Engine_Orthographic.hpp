@@ -56,8 +56,7 @@ template <> struct Engine<MivBitstream::CiCamType::orthographic> {
   }
 
   // Projection equation
-  [[nodiscard]] auto projectVertex(const SceneVertexDescriptor &v) const
-      -> ImageVertexDescriptor const {
+  [[nodiscard]] auto projectVertex(const SceneVertexDescriptor &v) const -> ImageVertexDescriptor {
     return {Common::Vec2f{ppw * (0.5F + v.position.y() / ow), pph * (0.5F + v.position.z() / oh)},
             v.position.x(), v.rayAngle};
   }

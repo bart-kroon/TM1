@@ -9,6 +9,7 @@ create_tmiv_library(
         "src/SubBlockCuller.cpp"
         "src/AdditiveSynthesizer.cpp"
         "src/ViewingSpaceController.cpp"
+        "src/Rasterizer.cpp"
         "src/reprojectPoints.cpp"
         "src/ViewWeightingSynthesizer.cpp"
         "src/MpiSynthesizer.cpp"

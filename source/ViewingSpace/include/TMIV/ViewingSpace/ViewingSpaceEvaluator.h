@@ -44,9 +44,9 @@ struct ViewingParams {
 };
 
 class ViewingSpaceEvaluator {
+public:
   ViewingSpaceEvaluator() = delete;
 
-public:
   static auto computeInclusion(const MivBitstream::ViewingSpace &viewingSpace,
                                const ViewingParams &viewingParams) -> float;
 };

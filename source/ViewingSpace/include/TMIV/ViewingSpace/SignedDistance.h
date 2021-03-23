@@ -38,16 +38,16 @@
 #include <TMIV/Common/Vector.h>
 #include <TMIV/MivBitstream/ViewingSpace.h>
 
+#include <cfloat>
+
 namespace TMIV::ViewingSpace {
 //! \brief Represents a distance from the surface of a shape.
 struct SignedDistance {
-  float value;
+  float value{FLT_MAX};
 
-  SignedDistance() : value(std::numeric_limits<float>::max()) {}
-  explicit SignedDistance(float d) : value(d) {}
+  SignedDistance() = default;
+  explicit SignedDistance(float d) : value{d} {}
   explicit operator float() const { return value; }
-
-  SignedDistance(const SignedDistance &other) = default;
 
   //! \brief Compute signed distance corresponding to union of shapes.
   auto operator+(const SignedDistance &other) const -> SignedDistance {

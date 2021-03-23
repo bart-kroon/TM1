@@ -256,7 +256,7 @@ private:
 
   TDecTop m_cTDecTop{};
 
-  std::vector<FrameListener> m_frameListeners;
+  std::vector<FrameListener> m_frameListeners{};
 
   int m_iPOCLastDisplay{-MAX_INT};
   int m_iSkipFrame{};

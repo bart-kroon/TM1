@@ -190,7 +190,6 @@ inline void swap_vec2fp(Vec2fp &p1, Vec2fp &p2) {
 template <typename... T>
 void MpiRasterizer<T...>::rasterTriangle(TriangleDescriptor descriptor, const Batch &batch,
                                          Strip &strip, const FragmentShader &fragmentShader) {
-  using namespace mpi_fixed_point;
   using std::ldexp;
   using std::max;
   using std::min;
@@ -200,12 +199,16 @@ void MpiRasterizer<T...>::rasterTriangle(TriangleDescriptor descriptor, const Ba
   const auto n2 = descriptor.indices[2];
 
   // Image coordinate within strip
+  using mpi_fixed_point::fixed;
+  using mpi_fixed_point::Vec2fp;
   const auto stripOffset = Vec2fp{0, fixed(strip.i1)};
   const Vec2fp uv0 = fixed(batch.vertices[n0].position) - stripOffset;
   Vec2fp uv1 = fixed(batch.vertices[n1].position) - stripOffset;
   Vec2fp uv2 = fixed(batch.vertices[n2].position) - stripOffset;
 
   // Determine triangle bounding box
+  using mpi_fixed_point::fpceil;
+  using mpi_fixed_point::fpfloor;
   const auto u1 = max(0, fpfloor(min({uv0.x(), uv1.x(), uv2.x()})));
   const auto u2 = min(strip.cols, 1 + fpceil(max({uv0.x(), uv1.x(), uv2.x()})));
 
@@ -229,7 +232,7 @@ void MpiRasterizer<T...>::rasterTriangle(TriangleDescriptor descriptor, const Ba
   // Switch to positively oriented triangle if necessary
   if (area < 0) {
     area = std::abs(area);
-    swap_vec2fp(uv1, uv2);
+    mpi_fixed_point::swap_vec2fp(uv1, uv2);
     a1.swap(a2);
   }
 
@@ -243,6 +246,7 @@ void MpiRasterizer<T...>::rasterTriangle(TriangleDescriptor descriptor, const Ba
     for (int u = u1; u < u2; ++u) {
       // Calculate the Barycentric coordinate of the pixel center (x +
       // 1/2, y + 1/2)
+      using mpi_fixed_point::half;
       const auto X0 = (uv1.y() - uv2.y()) * (fixed(u) - uv2.x() + half) +
                       (uv2.x() - uv1.x()) * (fixed(v) - uv2.y() + half);
       if (X0 < 0) {

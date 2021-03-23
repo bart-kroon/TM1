@@ -44,6 +44,11 @@
 namespace TMIV::VideoDecoder {
 class IVideoDecoder {
 public:
+  IVideoDecoder() = default;
+  IVideoDecoder(const IVideoDecoder &) = delete;
+  IVideoDecoder(IVideoDecoder &&) = default;
+  auto operator=(const IVideoDecoder &) -> IVideoDecoder & = delete;
+  auto operator=(IVideoDecoder &&) -> IVideoDecoder & = default;
   virtual ~IVideoDecoder();
 
   // Factory method to create a video decoder based on the codec group

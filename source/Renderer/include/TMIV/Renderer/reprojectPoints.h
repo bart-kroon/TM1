@@ -86,7 +86,7 @@ public:
   [[nodiscard]] virtual auto unprojectVertex(Common::Vec2f uv, float depth) const
       -> Common::Vec3f = 0;
   [[nodiscard]] virtual auto projectVertex(const SceneVertexDescriptor &v) const
-      -> ImageVertexDescriptor const = 0;
+      -> ImageVertexDescriptor = 0;
 };
 
 template <MivBitstream::CiCamType camType> class Variant : public Base, public Engine<camType> {
@@ -100,7 +100,7 @@ public:
     return engine_type::unprojectVertex(uv, depth);
   }
   [[nodiscard]] auto projectVertex(const SceneVertexDescriptor &v) const
-      -> ImageVertexDescriptor const override {
+      -> ImageVertexDescriptor override {
     return engine_type::projectVertex(v);
   }
 };
@@ -116,10 +116,6 @@ public:
   class List : public std::vector<ProjectionHelper> {
   public:
     List(const MivBitstream::ViewParamsList &viewParamsList);
-    List(const List &) = default;
-    List(List &&) = default;
-    auto operator=(const List &) -> List & = default;
-    auto operator=(List &&) -> List & = default;
   };
 
 private:

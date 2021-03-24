@@ -55,7 +55,7 @@ auto createBlockToPatchMap(size_t k, EncoderParams &params) -> Common::BlockToPa
   for (size_t p = 0; p < ppl.size(); ++p) {
     const auto &pp = ppl[p];
 
-    if (pp.atlasId == atlasId) {
+    if (pp.atlasId() == atlasId) {
       const auto xOrg = static_cast<size_t>(pp.atlasPatch2dPosX());
       const auto yOrg = static_cast<size_t>(pp.atlasPatch2dPosY());
       const auto atlasPatchWidthBlk = static_cast<size_t>(pp.atlasPatch2dSizeX());

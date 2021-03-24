@@ -73,15 +73,15 @@ struct Cuboid {
   Cuboid() = default;
   Cuboid(Common::Vec3f _center, Common::Vec3f _size) : center{_center}, size{_size} {}
 
-  [[nodiscard]] auto cp_center_x() const noexcept -> float {
+  [[nodiscard]] auto cp_center_x() const -> float {
     VERIFY_BITSTREAM(center);
     return center->x();
   }
-  [[nodiscard]] auto cp_center_y() const noexcept -> float {
+  [[nodiscard]] auto cp_center_y() const -> float {
     VERIFY_BITSTREAM(center);
     return center->y();
   }
-  [[nodiscard]] auto cp_center_z() const noexcept -> float {
+  [[nodiscard]] auto cp_center_z() const -> float {
     VERIFY_BITSTREAM(center);
     return center->z();
   }
@@ -108,15 +108,15 @@ struct Spheroid {
   explicit Spheroid(Common::Vec3f _radius) : radius{_radius} {}
   Spheroid(Common::Vec3f _center, Common::Vec3f _radius) : center{_center}, radius{_radius} {}
 
-  [[nodiscard]] auto sp_center_x() const noexcept -> float {
+  [[nodiscard]] auto sp_center_x() const -> float {
     VERIFY_BITSTREAM(center);
     return center->x();
   }
-  [[nodiscard]] auto sp_center_y() const noexcept -> float {
+  [[nodiscard]] auto sp_center_y() const -> float {
     VERIFY_BITSTREAM(center);
     return center->y();
   }
-  [[nodiscard]] auto sp_center_z() const noexcept -> float {
+  [[nodiscard]] auto sp_center_z() const -> float {
     VERIFY_BITSTREAM(center);
     return center->z();
   }

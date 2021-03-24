@@ -49,8 +49,10 @@
 namespace TMIV::MivBitstream {
 // PatchParams is the in-memory representation of PatchDataUnit (PDU). The PDU is not suitable for
 // in-memory use because of the delta coding and quantization of some of the fields.
-struct PatchParams {
-  AtlasId atlasId{};
+class PatchParams {
+public:
+  [[nodiscard]] constexpr auto atlasId() const noexcept;
+  constexpr decltype(auto) atlasId(AtlasId value) noexcept;
 
   [[nodiscard]] constexpr auto atlasPatch2dPosX() const noexcept;
   [[nodiscard]] constexpr auto atlasPatch2dPosY() const noexcept;
@@ -124,6 +126,8 @@ struct PatchParams {
   auto operator!=(const PatchParams &other) const -> bool { return !operator==(other); };
 
 private:
+  AtlasId m_atlasId{};
+
   std::int32_t m_atlasPatch2dPosX{};
   std::int32_t m_atlasPatch2dPosY{};
   std::int32_t m_atlasPatch2dSizeX{};

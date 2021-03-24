@@ -74,8 +74,7 @@ constexpr auto AtlasTileHeader::ath_no_output_of_prior_atlas_frames_flag(bool va
   return *this;
 }
 
-constexpr auto AtlasTileHeader::ath_atlas_frame_parameter_set_id(const uint8_t value) noexcept
-    -> auto & {
+constexpr auto AtlasTileHeader::ath_atlas_frame_parameter_set_id(const uint8_t value) -> auto & {
   VERIFY_MIVBITSTREAM(value <= 63U);
   m_ath_atlas_frame_parameter_set_id = value;
   return *this;

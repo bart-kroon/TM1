@@ -76,11 +76,11 @@ public:
 
   auto pir_num_packed_frames_minus1(uint8_t value) -> auto &;
   auto pir_packed_frame_id(uint8_t j, uint8_t value) noexcept -> auto &;
-  auto pir_description_type_idc(uint8_t k, uint8_t value) noexcept -> auto &;
+  auto pir_description_type_idc(uint8_t k, uint8_t value) -> auto &;
   auto pir_num_regions_minus1(uint8_t k, uint8_t value) -> auto &;
-  auto pir_top_left_tile_idx(uint8_t k, uint8_t i, size_t value) noexcept -> auto &;
-  auto pir_bottom_right_tile_idx(uint8_t k, uint8_t i, size_t value) noexcept -> auto &;
-  auto pir_subpic_id(uint8_t k, uint8_t i, size_t value) noexcept -> auto &;
+  auto pir_top_left_tile_idx(uint8_t k, uint8_t i, size_t value) -> auto &;
+  auto pir_bottom_right_tile_idx(uint8_t k, uint8_t i, size_t value) -> auto &;
+  auto pir_subpic_id(uint8_t k, uint8_t i, size_t value) -> auto &;
 
   friend auto operator<<(std::ostream &stream, const PackedIndependentRegions &x) -> std::ostream &;
 

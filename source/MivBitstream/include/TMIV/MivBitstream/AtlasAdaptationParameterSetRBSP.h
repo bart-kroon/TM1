@@ -70,7 +70,7 @@ public:
   [[nodiscard]] auto aaps_vpcc_extension() const -> const AapsVpccExtension &;
   [[nodiscard]] auto aapsExtensionData() const -> const std::vector<bool> &;
 
-  constexpr auto aaps_atlas_adaptation_parameter_set_id(uint8_t value) noexcept -> auto &;
+  constexpr auto aaps_atlas_adaptation_parameter_set_id(uint8_t value) -> auto &;
   constexpr auto aaps_log2_max_afoc_present_flag(bool value) noexcept -> auto &;
   auto aaps_log2_max_atlas_frame_order_cnt_lsb_minus4(uint8_t value) noexcept
       -> AtlasAdaptationParameterSetRBSP &;

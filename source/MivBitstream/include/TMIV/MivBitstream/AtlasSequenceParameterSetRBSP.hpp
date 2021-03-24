@@ -71,7 +71,7 @@ constexpr auto AspsMivExtension::asme_geometry_scale_enabled_flag() const noexce
   return m_asme_geometry_scale_enabled_flag;
 }
 
-constexpr auto AspsMivExtension::asme_occupancy_scale_enabled_flag() const noexcept {
+constexpr auto AspsMivExtension::asme_occupancy_scale_enabled_flag() const {
   VERIFY_MIVBITSTREAM(!asme_embedded_occupancy_enabled_flag());
   return m_asme_occupancy_scale_enabled_flag;
 }
@@ -103,7 +103,7 @@ constexpr auto AspsMivExtension::asme_embedded_occupancy_enabled_flag(bool value
   return *this;
 }
 
-constexpr auto AspsMivExtension::asme_depth_occ_threshold_flag(bool value) noexcept -> auto & {
+constexpr auto AspsMivExtension::asme_depth_occ_threshold_flag(bool value) -> auto & {
   VERIFY_MIVBITSTREAM(asme_embedded_occupancy_enabled_flag());
   m_asme_depth_occ_map_threshold_flag = value;
   return *this;
@@ -114,15 +114,13 @@ constexpr auto AspsMivExtension::asme_geometry_scale_enabled_flag(bool value) no
   return *this;
 }
 
-constexpr auto AspsMivExtension::asme_geometry_scale_factor_x_minus1(uint16_t value) noexcept
-    -> auto & {
+constexpr auto AspsMivExtension::asme_geometry_scale_factor_x_minus1(uint16_t value) -> auto & {
   VERIFY_MIVBITSTREAM(asme_geometry_scale_enabled_flag());
   m_asme_geometry_scale_factor_x_minus1 = value;
   return *this;
 }
 
-constexpr auto AspsMivExtension::asme_geometry_scale_factor_y_minus1(uint16_t value) noexcept
-    -> auto & {
+constexpr auto AspsMivExtension::asme_geometry_scale_factor_y_minus1(uint16_t value) -> auto & {
   VERIFY_MIVBITSTREAM(asme_geometry_scale_enabled_flag());
   m_asme_geometry_scale_factor_y_minus1 = value;
   return *this;
@@ -133,24 +131,22 @@ constexpr auto AspsMivExtension::asme_occupancy_scale_enabled_flag(bool value) n
   return *this;
 }
 
-constexpr auto AspsMivExtension::asme_occupancy_scale_factor_x_minus1(uint16_t value) noexcept
-    -> auto & {
+constexpr auto AspsMivExtension::asme_occupancy_scale_factor_x_minus1(uint16_t value) -> auto & {
   VERIFY_MIVBITSTREAM(!asme_embedded_occupancy_enabled_flag());
   VERIFY_MIVBITSTREAM(asme_occupancy_scale_enabled_flag());
   m_asme_occupancy_scale_factor_x_minus1 = value;
   return *this;
 }
 
-constexpr auto AspsMivExtension::asme_occupancy_scale_factor_y_minus1(uint16_t value) noexcept
-    -> auto & {
+constexpr auto AspsMivExtension::asme_occupancy_scale_factor_y_minus1(uint16_t value) -> auto & {
   VERIFY_MIVBITSTREAM(!asme_embedded_occupancy_enabled_flag());
   VERIFY_MIVBITSTREAM(asme_occupancy_scale_enabled_flag());
   m_asme_occupancy_scale_factor_y_minus1 = value;
   return *this;
 }
 
-constexpr auto
-AspsMivExtension::asme_patch_attribute_offset_bit_depth_minus1(uint16_t value) noexcept -> auto & {
+constexpr auto AspsMivExtension::asme_patch_attribute_offset_bit_depth_minus1(uint16_t value)
+    -> auto & {
   VERIFY_MIVBITSTREAM(asme_patch_attribute_offset_enabled_flag());
   m_asme_patch_attribute_offset_bit_depth_minus1 = value;
   return *this;
@@ -177,7 +173,7 @@ constexpr auto AspsMivExtension::asme_inpaint_enabled_flag(bool value) noexcept 
   return *this;
 }
 
-constexpr auto AspsMivExtension::operator==(const AspsMivExtension &other) const noexcept {
+constexpr auto AspsMivExtension::operator==(const AspsMivExtension &other) const {
   if (asme_embedded_occupancy_enabled_flag() && other.asme_embedded_occupancy_enabled_flag()) {
     if (asme_depth_occ_threshold_flag() != other.asme_depth_occ_threshold_flag()) {
       return false;
@@ -219,7 +215,7 @@ constexpr auto AspsMivExtension::operator==(const AspsMivExtension &other) const
          asme_inpaint_enabled_flag() == other.asme_inpaint_enabled_flag();
 }
 
-constexpr auto AspsMivExtension::operator!=(const AspsMivExtension &other) const noexcept {
+constexpr auto AspsMivExtension::operator!=(const AspsMivExtension &other) const {
   return !operator==(other);
 }
 
@@ -333,8 +329,7 @@ constexpr auto AtlasSequenceParameterSetRBSP::asps_extension_6bits() const noexc
 }
 
 constexpr auto
-AtlasSequenceParameterSetRBSP::asps_atlas_sequence_parameter_set_id(const uint8_t value) noexcept
-    -> auto & {
+AtlasSequenceParameterSetRBSP::asps_atlas_sequence_parameter_set_id(const uint8_t value) -> auto & {
   VERIFY_MIVBITSTREAM(value <= 63U);
   m_asps_atlas_sequence_parameter_set_id = value;
   return *this;

@@ -109,7 +109,7 @@ public:
   [[nodiscard]] auto ath_patch_size_y_info_quantizer() const -> uint8_t;
 
   constexpr auto ath_no_output_of_prior_atlas_frames_flag(bool value) noexcept -> auto &;
-  constexpr auto ath_atlas_frame_parameter_set_id(uint8_t value) noexcept -> auto &;
+  constexpr auto ath_atlas_frame_parameter_set_id(uint8_t value) -> auto &;
   constexpr auto ath_atlas_adaptation_parameter_set_id(uint8_t value) noexcept -> auto &;
   constexpr auto ath_id(uint8_t value) noexcept -> auto &;
   constexpr auto ath_type(AthType value) noexcept -> auto &;
@@ -274,7 +274,9 @@ public:
 
   PatchInformationData() = default;
 
-  template <typename Value>
+  // NOTE(#488): SFINAE to preserve rule of zero [bugprone-forwarding-reference-overload]
+  template <typename Value,
+            typename = std::enable_if_t<!std::is_same_v<std::decay_t<Value>, PatchInformationData>>>
   constexpr explicit PatchInformationData(Value &&value) : m_data{std::forward<Value>(value)} {}
 
   [[nodiscard]] constexpr auto data() const noexcept -> auto &;

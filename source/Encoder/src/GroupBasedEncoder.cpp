@@ -379,8 +379,8 @@ auto GroupBasedEncoder::mergeParams(const std::vector<const EncoderParams *> &pe
     // Copy patches in group order
     for (const auto &patch : perGroupParam->patchParamsList) {
       m_params.patchParamsList.push_back(patch);
-      m_params.patchParamsList.back().atlasId = MivBitstream::AtlasId{
-          static_cast<uint8_t>(perGroupParam->vps.indexOf(patch.atlasId) + atlasIdOffset)};
+      m_params.patchParamsList.back().atlasId(MivBitstream::AtlasId{
+          static_cast<uint8_t>(perGroupParam->vps.indexOf(patch.atlasId()) + atlasIdOffset)});
       m_params.patchParamsList.back().atlasPatchProjectionId(patch.atlasPatchProjectionId() +
                                                              viewIdOffset);
     }

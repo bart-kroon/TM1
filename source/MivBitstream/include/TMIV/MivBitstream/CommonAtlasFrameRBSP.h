@@ -63,7 +63,7 @@ public:
   constexpr auto caf_extension_present_flag(bool value) noexcept -> auto &;
   constexpr auto caf_miv_extension_present_flag(bool value) noexcept -> auto &;
   auto caf_miv_extension() noexcept -> CommonAtlasFrameMivExtension &;
-  constexpr auto caf_extension_7bits(uint8_t value) noexcept -> CommonAtlasFrameRBSP &;
+  constexpr auto caf_extension_7bits(uint8_t value) -> CommonAtlasFrameRBSP &;
   auto cafExtensionData(std::vector<bool> value) noexcept -> CommonAtlasFrameRBSP &;
 
   friend auto operator<<(std::ostream &stream, const CommonAtlasFrameRBSP &x) -> std::ostream &;

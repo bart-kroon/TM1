@@ -47,8 +47,7 @@ inline auto PackedIndependentRegions::pir_packed_frame_id(uint8_t j, uint8_t val
   m_pirPackedFrames[j].pir_packed_frame_id = value;
   return *this;
 }
-inline auto PackedIndependentRegions::pir_description_type_idc(uint8_t k, uint8_t value) noexcept
-    -> auto & {
+inline auto PackedIndependentRegions::pir_description_type_idc(uint8_t k, uint8_t value) -> auto & {
   if (value == 0) {
     m_pirPackedFrames[k].regions = TileRegions(1U);
   } else if (value == 1) {
@@ -66,20 +65,19 @@ inline auto PackedIndependentRegions::pir_num_regions_minus1(uint8_t k, uint8_t 
   }
   return *this;
 }
-inline auto PackedIndependentRegions::pir_top_left_tile_idx(uint8_t k, uint8_t i,
-                                                            size_t value) noexcept -> auto & {
+inline auto PackedIndependentRegions::pir_top_left_tile_idx(uint8_t k, uint8_t i, size_t value)
+    -> auto & {
   auto &tileRegions = std::get<TileRegions>(m_pirPackedFrames[k].regions);
   tileRegions[i].pir_top_left_tile_idx = value;
   return *this;
 }
-inline auto PackedIndependentRegions::pir_bottom_right_tile_idx(uint8_t k, uint8_t i,
-                                                                size_t value) noexcept -> auto & {
+inline auto PackedIndependentRegions::pir_bottom_right_tile_idx(uint8_t k, uint8_t i, size_t value)
+    -> auto & {
   auto &tileRegions = std::get<TileRegions>(m_pirPackedFrames[k].regions);
   tileRegions[i].pir_bottom_right_tile_idx = value;
   return *this;
 }
-inline auto PackedIndependentRegions::pir_subpic_id(uint8_t k, uint8_t i, size_t value) noexcept
-    -> auto & {
+inline auto PackedIndependentRegions::pir_subpic_id(uint8_t k, uint8_t i, size_t value) -> auto & {
   auto &subPicId = std::get<subPicIds>(m_pirPackedFrames[k].regions);
   subPicId[i] = value;
   return *this;

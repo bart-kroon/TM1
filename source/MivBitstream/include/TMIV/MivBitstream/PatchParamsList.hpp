@@ -38,6 +38,13 @@
 #include <cassert>
 
 namespace TMIV::MivBitstream {
+constexpr auto PatchParams::atlasId() const noexcept { return m_atlasId; }
+
+constexpr decltype(auto) PatchParams::atlasId(AtlasId value) noexcept {
+  m_atlasId = value;
+  return *this;
+}
+
 constexpr auto PatchParams::atlasPatch2dPosX() const noexcept { return m_atlasPatch2dPosX; }
 
 constexpr auto PatchParams::atlasPatch2dPosY() const noexcept { return m_atlasPatch2dPosY; }
@@ -165,7 +172,7 @@ constexpr auto PatchParams::atlasPatchInpaintFlag(bool value) noexcept -> PatchP
 }
 
 inline auto PatchParams::operator==(const PatchParams &other) const -> bool {
-  return atlasId == other.atlasId && atlasPatch2dPosX() == other.atlasPatch2dPosX() &&
+  return atlasId() == other.atlasId() && atlasPatch2dPosX() == other.atlasPatch2dPosX() &&
          atlasPatch2dPosY() == other.atlasPatch2dPosY() &&
          atlasPatch2dSizeX() == other.atlasPatch2dSizeX() &&
          atlasPatch2dSizeY() == other.atlasPatch2dSizeY() &&

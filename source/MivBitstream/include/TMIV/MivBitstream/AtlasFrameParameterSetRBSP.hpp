@@ -114,16 +114,14 @@ constexpr auto AtlasFrameParameterSetRBSP::afps_extension_present_flag() const n
   return m_afps_extension_present_flag;
 }
 
-constexpr auto
-AtlasFrameParameterSetRBSP::afps_atlas_frame_parameter_set_id(const uint8_t value) noexcept
+constexpr auto AtlasFrameParameterSetRBSP::afps_atlas_frame_parameter_set_id(const uint8_t value)
     -> auto & {
   VERIFY_MIVBITSTREAM(value <= 63U);
   m_afps_atlas_frame_parameter_set_id = value;
   return *this;
 }
 
-constexpr auto
-AtlasFrameParameterSetRBSP::afps_atlas_sequence_parameter_set_id(const uint8_t value) noexcept
+constexpr auto AtlasFrameParameterSetRBSP::afps_atlas_sequence_parameter_set_id(const uint8_t value)
     -> auto & {
   VERIFY_MIVBITSTREAM(value <= 63U);
   m_afps_atlas_sequence_parameter_set_id = value;

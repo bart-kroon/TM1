@@ -109,8 +109,8 @@ public:
   [[nodiscard]] auto afps_miv_extension() const -> AfpsMivExtension;
   [[nodiscard]] auto afpsExtensionData() const -> const std::vector<bool> &;
 
-  constexpr auto afps_atlas_frame_parameter_set_id(uint8_t value) noexcept -> auto &;
-  constexpr auto afps_atlas_sequence_parameter_set_id(uint8_t value) noexcept -> auto &;
+  constexpr auto afps_atlas_frame_parameter_set_id(uint8_t value) -> auto &;
+  constexpr auto afps_atlas_sequence_parameter_set_id(uint8_t value) -> auto &;
   constexpr auto atlas_frame_tile_information(const AtlasFrameTileInformation &value) noexcept
       -> auto &;
   constexpr auto afps_output_flag_present_flag(bool value) noexcept -> auto &;

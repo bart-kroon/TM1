@@ -92,7 +92,9 @@ public:
   using Payload =
       std::variant<std::monostate, V3cParameterSet, AtlasSubBitstream, VideoSubBitstream>;
 
-  template <typename Value>
+  // NOTE(#488): SFINAE to keep rule of zero [bugprone-forwarding-reference-overload]
+  template <typename Value,
+            typename = std::enable_if_t<!std::is_same_v<std::decay_t<Value>, V3cUnitPayload>>>
   constexpr explicit V3cUnitPayload(Value &&value) : m_payload{std::forward<Value>(value)} {}
 
   [[nodiscard]] constexpr auto payload() const noexcept -> auto & { return m_payload; }

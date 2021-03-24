@@ -229,7 +229,7 @@ void Encoder::adaptBtpmToPatchCount(std::vector<std::vector<std::vector<int>>> &
   int patchCnt = 0;
   for (const auto &patch : m_params.patchParamsList) {
 
-    size_t atlasId = m_params.vps.indexOf(patch.atlasId);
+    size_t atlasId = m_params.vps.indexOf(patch.atlasId());
 
     const auto &currentAtlas = m_videoFrameBuffer[0][atlasId];
     int AH = currentAtlas.texture.getHeight() / m_config.blockSize;
@@ -382,7 +382,7 @@ void Encoder::constructVideoFrames() {
     for (const auto &patch : m_params.patchParamsList) {
       const auto &view = views[patch.atlasPatchProjectionId()];
 
-      const auto k = m_params.vps.indexOf(patch.atlasId);
+      const auto k = m_params.vps.indexOf(patch.atlasId());
       if (0 < m_params.atlas[k].asps.asps_miv_extension().asme_max_entity_id()) {
         Common::MVD16Frame tempViews;
         tempViews.push_back(view);
@@ -416,7 +416,7 @@ auto Encoder::writePatchInAtlas(const MivBitstream::PatchParams &patchParams,
                                 const Common::TextureDepth16Frame &view, Common::MVD16Frame &frame,
                                 int frameId) -> std::array<std::array<int64_t, 4>, 3> {
 
-  const auto k = m_params.vps.indexOf(patchParams.atlasId);
+  const auto k = m_params.vps.indexOf(patchParams.atlasId());
   auto &atlas = frame[k];
 
   // TODO(BK): It would be better if atlasPatch... functions are std::int32_t or std::int64_t
@@ -486,7 +486,7 @@ auto Encoder::writePatchInAtlas(const MivBitstream::PatchParams &patchParams,
               depth = 1; // Avoid marking valid depth as invalid
             }
             atlas.depth.getPlane(0)(pAtlas.y(), pAtlas.x()) = depth;
-            if (depth > 0 && m_params.vps.vps_occupancy_video_present_flag(patchParams.atlasId)) {
+            if (depth > 0 && m_params.vps.vps_occupancy_video_present_flag(patchParams.atlasId())) {
               atlas.occupancy.getPlane(0)(yOcc, xOcc) = 1;
             }
           }
@@ -509,7 +509,7 @@ void Encoder::adaptAtlas(const MivBitstream::PatchParams &patchParams,
                          Common::TextureDepthFrame<Common::YUV400P16> &atlas, int yOcc, int xOcc,
                          const Common::Vec2i &pView, const Common::Vec2i &pAtlas) const {
   atlas.depth.getPlane(0)(pAtlas.y(), pAtlas.x()) = 0;
-  if (m_params.vps.vps_occupancy_video_present_flag(patchParams.atlasId)) {
+  if (m_params.vps.vps_occupancy_video_present_flag(patchParams.atlasId())) {
     atlas.occupancy.getPlane(0)(yOcc, xOcc) = 0;
   }
   if (m_config.haveTexture) {

@@ -191,7 +191,7 @@ auto Packer::pack(const Common::SizeVector &atlasSizes, const Common::MaskList &
         if (packer.push(cluster, clusteringMap[clusteringMap_viewId], packerOutput)) {
           MivBitstream::PatchParams p;
 
-          p.atlasId = MivBitstream::AtlasId{static_cast<uint8_t>(atlasId)};
+          p.atlasId(MivBitstream::AtlasId{static_cast<uint8_t>(atlasId)});
           p.atlasPatchProjectionId(static_cast<uint16_t>(cluster.getViewId()));
           p.atlasPatch2dPosX(packerOutput.x());
           p.atlasPatch2dPosY(packerOutput.y());
@@ -210,7 +210,7 @@ auto Packer::pack(const Common::SizeVector &atlasSizes, const Common::MaskList &
             p.atlasPatchEntityId(cluster.getEntityId());
             std::cout << "Packing patch " << patchId << " of entity " << *p.atlasPatchEntityId()
                       << " from view " << p.atlasPatchProjectionId() << " with #active pixels "
-                      << cluster.getNumActivePixels() << " in atlas " << p.atlasId << std::endl;
+                      << cluster.getNumActivePixels() << " in atlas " << p.atlasId() << std::endl;
           }
 
           atlasParamsVector.push_back(p);

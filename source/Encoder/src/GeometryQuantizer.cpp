@@ -111,8 +111,8 @@ auto GeometryQuantizer::transformAtlases(const Common::MVD16Frame &inAtlases)
     const auto inOccupancyTransform = MivBitstream::OccupancyTransform{inViewParams};
     const auto inDepthTransform = MivBitstream::DepthTransform{inViewParams.dq, 16};
     const auto outDepthTransform = MivBitstream::DepthTransform{outViewParams.dq, patch, 10};
-    const auto kIn = m_inParams.vps.indexOf(patch.atlasId);
-    const auto kOut = m_outParams.vps.indexOf(patch.atlasId);
+    const auto kIn = m_inParams.vps.indexOf(patch.atlasId());
+    const auto kOut = m_outParams.vps.indexOf(patch.atlasId());
 
     for (size_t i = 0; i < static_cast<size_t>(patch.atlasPatch2dSizeY()); ++i) {
       for (size_t j = 0; j < static_cast<size_t>(patch.atlasPatch2dSizeX()); ++j) {

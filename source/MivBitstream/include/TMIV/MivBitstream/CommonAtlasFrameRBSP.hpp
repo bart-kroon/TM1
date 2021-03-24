@@ -80,8 +80,7 @@ constexpr auto CommonAtlasFrameRBSP::caf_miv_extension_present_flag(bool value) 
   return *this;
 }
 
-constexpr auto CommonAtlasFrameRBSP::caf_extension_7bits(uint8_t value) noexcept
-    -> CommonAtlasFrameRBSP & {
+constexpr auto CommonAtlasFrameRBSP::caf_extension_7bits(uint8_t value) -> CommonAtlasFrameRBSP & {
   VERIFY_V3CBITSTREAM(caf_extension_present_flag());
   m_caf_extension_7bits = value;
   return *this;

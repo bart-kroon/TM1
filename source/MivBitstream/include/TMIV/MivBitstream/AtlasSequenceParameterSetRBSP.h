@@ -109,7 +109,7 @@ public:
   [[nodiscard]] constexpr auto asme_geometry_scale_enabled_flag() const noexcept;
   [[nodiscard]] auto asme_geometry_scale_factor_x_minus1() const -> uint16_t;
   [[nodiscard]] auto asme_geometry_scale_factor_y_minus1() const -> uint16_t;
-  [[nodiscard]] constexpr auto asme_occupancy_scale_enabled_flag() const noexcept;
+  [[nodiscard]] constexpr auto asme_occupancy_scale_enabled_flag() const;
   [[nodiscard]] auto asme_occupancy_scale_factor_x_minus1() const -> uint16_t;
   [[nodiscard]] auto asme_occupancy_scale_factor_y_minus1() const -> uint16_t;
   [[nodiscard]] constexpr auto asme_patch_constant_depth_flag() const noexcept;
@@ -120,23 +120,23 @@ public:
 
   constexpr auto asme_ancillary_atlas_flag(bool value) noexcept -> auto &;
   constexpr auto asme_embedded_occupancy_enabled_flag(bool value) noexcept -> auto &;
-  constexpr auto asme_depth_occ_threshold_flag(bool value) noexcept -> auto &;
+  constexpr auto asme_depth_occ_threshold_flag(bool value) -> auto &;
   constexpr auto asme_geometry_scale_enabled_flag(bool value) noexcept -> auto &;
-  constexpr auto asme_geometry_scale_factor_x_minus1(uint16_t value) noexcept -> auto &;
-  constexpr auto asme_geometry_scale_factor_y_minus1(uint16_t value) noexcept -> auto &;
+  constexpr auto asme_geometry_scale_factor_x_minus1(uint16_t value) -> auto &;
+  constexpr auto asme_geometry_scale_factor_y_minus1(uint16_t value) -> auto &;
   constexpr auto asme_occupancy_scale_enabled_flag(bool value) noexcept -> auto &;
-  constexpr auto asme_occupancy_scale_factor_x_minus1(uint16_t value) noexcept -> auto &;
-  constexpr auto asme_occupancy_scale_factor_y_minus1(uint16_t value) noexcept -> auto &;
+  constexpr auto asme_occupancy_scale_factor_x_minus1(uint16_t value) -> auto &;
+  constexpr auto asme_occupancy_scale_factor_y_minus1(uint16_t value) -> auto &;
   constexpr auto asme_patch_constant_depth_flag(bool value) noexcept -> auto &;
   constexpr auto asme_patch_attribute_offset_enabled_flag(bool value) noexcept -> auto &;
-  constexpr auto asme_patch_attribute_offset_bit_depth_minus1(uint16_t value) noexcept -> auto &;
+  constexpr auto asme_patch_attribute_offset_bit_depth_minus1(uint16_t value) -> auto &;
   constexpr auto asme_max_entity_id(uint16_t value) noexcept -> auto &;
   constexpr auto asme_inpaint_enabled_flag(bool value) noexcept -> auto &;
 
   friend auto operator<<(std::ostream &stream, const AspsMivExtension & /*x*/) -> std::ostream &;
 
-  constexpr auto operator==(const AspsMivExtension &other) const noexcept;
-  constexpr auto operator!=(const AspsMivExtension &other) const noexcept;
+  constexpr auto operator==(const AspsMivExtension &other) const;
+  constexpr auto operator!=(const AspsMivExtension &other) const;
 
   static auto decodeFrom(Common::InputBitstream &bitstream) -> AspsMivExtension;
 
@@ -203,7 +203,7 @@ public:
   [[nodiscard]] auto asps_miv_extension() const -> const AspsMivExtension &;
   [[nodiscard]] auto aspsExtensionData() const -> const std::vector<bool> &;
 
-  constexpr auto asps_atlas_sequence_parameter_set_id(uint8_t value) noexcept -> auto &;
+  constexpr auto asps_atlas_sequence_parameter_set_id(uint8_t value) -> auto &;
   constexpr auto asps_frame_width(int32_t value) noexcept -> auto &;
   constexpr auto asps_frame_height(int32_t value) noexcept -> auto &;
   constexpr auto asps_geometry_3d_bit_depth_minus1(uint8_t value) noexcept -> auto &;

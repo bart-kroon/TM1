@@ -981,7 +981,8 @@ private:
 
   void computeShadingMapWithRegularPixels(size_t x, size_t y,
                                           const ProjectionHelperList &sourceHelperList,
-                                          const ProjectionHelper &targetHelper) {
+                                          const ProjectionHelper &targetHelper,
+                                          const Common::Mat<float> &viewportVisibility) {
     static const auto offsetList =
         std::array{Common::Vec2i({0, 0}),   Common::Vec2i({1, 0}),  Common::Vec2i({1, 1}),
                    Common::Vec2i({0, -1}),  Common::Vec2i({1, -1}), Common::Vec2i({0, 1}),
@@ -989,8 +990,8 @@ private:
 
     static const auto d2 = std::array{0.F, 1.F, 2.F, 1.F, 2.F, 1.F, 2.F, 1.F, 2.F};
 
-    const auto w_last = static_cast<int>(m_viewportVisibility.width()) - 1;
-    const auto h_last = static_cast<int>(m_viewportVisibility.height()) - 1;
+    const auto w_last = static_cast<int>(viewportVisibility.width()) - 1;
+    const auto h_last = static_cast<int>(viewportVisibility.height()) - 1;
 
     auto stack = std::vector<Common::Vec2f>{};
 
@@ -998,7 +999,7 @@ private:
       const auto xo = std::clamp(static_cast<int>(x) + offsetList[i].x(), 0, w_last);
       const auto yo = std::clamp(static_cast<int>(y) + offsetList[i].y(), 0, h_last);
 
-      const auto z = m_viewportVisibility(yo, xo);
+      const auto z = viewportVisibility(yo, xo);
 
       if (isValidDepth(z)) {
         const auto ksi = 1.F / (1.F + d2[i]);
@@ -1014,8 +1015,8 @@ private:
 
     m_viewportColor(y, x) =
         eps < oWeight ? oColor / oWeight
-                      : (isValidDepth(m_viewportVisibility(y, x)) ? Common::Vec3f{-1.F, -1.F, -1.F}
-                                                                  : Common::Vec3f{});
+                      : (isValidDepth(viewportVisibility(y, x)) ? Common::Vec3f{-1.F, -1.F, -1.F}
+                                                                : Common::Vec3f{});
   }
 
   void computeShadingMap(const ProjectionHelperList &sourceHelperList,
@@ -1023,12 +1024,15 @@ private:
     m_viewportColor.resize(targetHelper.getViewParams().ci.projectionPlaneSize().y(),
                            targetHelper.getViewParams().ci.projectionPlaneSize().x());
 
+    const auto viewportVisibility = m_viewportVisibility;
+
     Common::parallel_for(
         m_viewportVisibility.width(), m_viewportVisibility.height(), [&](size_t y, size_t x) {
           if (!isValidDepth(m_viewportVisibility(y, x)) && hasInpaintedViews()) {
             computeShadingMapWithInpaintedPixels(x, y, sourceHelperList, targetHelper);
           } else {
-            computeShadingMapWithRegularPixels(x, y, sourceHelperList, targetHelper);
+            computeShadingMapWithRegularPixels(x, y, sourceHelperList, targetHelper,
+                                               viewportVisibility);
           }
         });
   }

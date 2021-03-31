@@ -49,7 +49,7 @@ template <typename Mat1, typename Mat2> auto transpose(const Mat1 &in, Mat2 &out
   if (in.isRow() || in.isColumn()) {
     std::copy(in.begin(), in.end(), out.begin());
   } else {
-    for (Array::size_type i = 0; i < out.m(); i++) {
+    for (size_t i = 0; i < out.m(); i++) {
       std::copy(in.col_begin(i), in.col_end(i), out.row_begin(i));
     }
   }

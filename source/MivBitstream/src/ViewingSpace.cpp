@@ -234,7 +234,6 @@ auto ElementaryShape::decodeFrom(Common::InputBitstream &stream) -> ElementarySh
   const auto cameraInferred = stream.getFlag();
   elementaryShape.primitives.reserve(numPrimitives);
   for (size_t i = 0; i < numPrimitives; ++i) {
-    TMIV::Common::Vec3f c{};
     if (cameraInferred) {
       elementaryShape.inferringViews.push_back(static_cast<int>(stream.getUint16()));
     }

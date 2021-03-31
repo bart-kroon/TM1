@@ -127,7 +127,7 @@ auto initMasksForFrameAnalysis(const Common::MVD16Frame &views,
 }
 
 auto isAnyNeighboringPixelSimilar(const int H, const int W, int pixelIdx, const int numOfBins2,
-                                  float middleVal, TMIV::Common::Array::const_iterator<float> &jY)
+                                  float middleVal, TMIV::Common::Mat<float>::const_iterator &jY)
     -> bool {
 
   const auto h = pixelIdx / W;

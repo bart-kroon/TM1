@@ -221,15 +221,16 @@ public:
           return std::abs(ci.ci_erp_phi_max() - ci.ci_erp_phi_min());
         },
         [&](MivBitstream::Perspective /*unused*/) {
-          return 2.F *
-                 std::atan(ci.projectionPlaneSize().x() / (2 * ci.ci_perspective_focal_hor()));
+          return 2.F * std::atan(static_cast<float>(ci.projectionPlaneSize().x()) /
+                                 (2 * ci.ci_perspective_focal_hor()));
         },
         [&](MivBitstream::Orthographic /*unused*/) { return Common::halfCycle; }));
   }
 
   // Resolution in px^2/rad^2
   static auto resolution(const MivBitstream::ViewParams &viewParams) -> float {
-    return Common::sqr(viewParams.ci.projectionPlaneSize().x() / xFoV(viewParams));
+    return Common::sqr(static_cast<float>(viewParams.ci.projectionPlaneSize().x()) /
+                       xFoV(viewParams));
   }
 
   static auto resolutionRatio(const MivBitstream::AccessUnit &frame,

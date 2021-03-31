@@ -269,7 +269,7 @@ private:
                            const ProjectionHelper &targetHelper) {
     const auto isTridimensional = [&]() -> bool {
       constexpr auto epsilon = 1e-2F;
-      auto M = Common::Mat3x3f{Common::Mat3x3f::zeros()};
+      auto M = Common::Mat3x3f{};
 
       for (const auto &helper : sourceHelperList) {
         auto N = Common::Mat3x3f{};

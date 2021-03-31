@@ -48,7 +48,7 @@ TEST_CASE("Stack Matrix 2x2 default constructor") {
   REQUIRE(unit.m() == 2);
   REQUIRE(unit.n() == 2);
 
-  for (Mat2x2f::size_type index = 0; index < 2; ++index) {
+  for (size_t index = 0; index < 2; ++index) {
     std::for_each(unit.row_begin(index), unit.row_end(index),
                   [](const auto element) { REQUIRE(element == Approx(0.0F)); });
   }
@@ -74,7 +74,8 @@ TEST_CASE("Non-quadratic matrix is not symmetric") {
 
 TEST_CASE("Stack Matrix 3x3 with custom elements") {
   Mat3x3f unit{};
-  for (Mat3x3f::size_type index = 0; index < 3; ++index) {
+
+  for (size_t index = 0; index < 3; ++index) {
     std::iota(unit.row_begin(index), unit.row_end(index), static_cast<float>(3 * index));
   }
 

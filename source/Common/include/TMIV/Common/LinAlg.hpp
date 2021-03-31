@@ -185,9 +185,10 @@ template <typename T, size_t M> auto abs(const stack::Vector<T, M> &A) -> stack:
 }
 
 namespace detail {
-template <typename T>
-void matprod(shallow::Matrix<T> A, char mA, shallow::Matrix<T> B, char mB, shallow::Matrix<T> C) {
-  using size_type = Array::size_type;
+template <typename MatrixA, typename MatrixB, typename MatrixC>
+void matprod(const MatrixA &A, char mA, const MatrixB &B, char mB, MatrixC &C) {
+  using size_type = size_t;
+  using T = typename MatrixC::value_type;
 
   if (mA == 'N') {
     if (mB == 'N') {
@@ -270,10 +271,8 @@ void matprod(shallow::Matrix<T> A, char mA, shallow::Matrix<T> B, char mB, shall
 
 template <typename MAT1, typename MAT2, typename MAT3>
 auto matprod(const MAT1 &A, char mA, const MAT2 &B, char mB, MAT3 &C) -> MAT3 & {
-  using T = typename MAT1::value_type;
-
   C.resize((mA == 'N') ? A.m() : A.n(), (mB == 'N') ? B.n() : B.m());
-  detail::matprod(shallow::Matrix<T>(A), mA, shallow::Matrix<T>(B), mB, shallow::Matrix<T>(C));
+  detail::matprod(A, mA, B, mB, C);
   return C;
 }
 
@@ -289,7 +288,7 @@ auto operator*(const heap::Matrix<T> &A, const heap::Vector<U> &B)
   return matprod(A, 'N', B, 'N', out);
 }
 
-template <typename T, typename U, Array::size_type M>
+template <typename T, typename U, size_t M>
 auto operator*(const heap::Matrix<T> &A, const stack::Vector<U, M> &B)
     -> heap::Vector<std::common_type_t<T, U>> {
   heap::Vector<std::common_type_t<T, U>> out;
@@ -303,35 +302,35 @@ auto operator*(const heap::Matrix<T> &A, const heap::Matrix<U> &B)
   return matprod(A, 'N', B, 'N', out);
 }
 
-template <typename T, typename U, Array::size_type M, Array::size_type N>
+template <typename T, typename U, size_t M, size_t N>
 auto operator*(const heap::Matrix<T> &A, const stack::Matrix<U, M, N> &B)
     -> heap::Matrix<std::common_type_t<T, U>> {
   heap::Matrix<std::common_type_t<T, U>> out;
   return matprod(A, 'N', B, 'N', out);
 }
 
-template <typename T, typename U, Array::size_type M, Array::size_type N>
+template <typename T, typename U, size_t M, size_t N>
 auto operator*(const stack::Matrix<T, M, N> &A, const stack::Vector<U, N> &B)
     -> stack::Vector<std::common_type_t<T, U>, M> {
   stack::Vector<std::common_type_t<T, U>, M> out;
   return matprod(A, 'N', B, 'N', out);
 }
 
-template <typename T, typename U, Array::size_type M, Array::size_type N>
+template <typename T, typename U, size_t M, size_t N>
 auto operator*(const stack::Matrix<T, M, N> &A, const heap::Vector<U> &B)
     -> heap::Vector<std::common_type_t<T, U>> {
   heap::Vector<std::common_type_t<T, U>> out;
   return matprod(A, 'N', B, 'N', out);
 }
 
-template <typename T, typename U, Array::size_type M, Array::size_type N>
+template <typename T, typename U, size_t M, size_t N>
 auto operator*(const stack::Matrix<T, M, N> &A, const heap::Matrix<U> &B)
     -> heap::Matrix<std::common_type_t<T, U>> {
   heap::Matrix<std::common_type_t<T, U>> out;
   return matprod(A, 'N', B, 'N', out);
 }
 
-template <typename T, typename U, Array::size_type M, Array::size_type N, Array::size_type O>
+template <typename T, typename U, size_t M, size_t N, size_t O>
 auto operator*(const stack::Matrix<T, M, N> &A, const stack::Matrix<U, N, O> &B)
     -> stack::Matrix<std::common_type_t<T, U>, M, O> {
   stack::Matrix<std::common_type_t<T, U>, M, O> out;
@@ -339,16 +338,14 @@ auto operator*(const stack::Matrix<T, M, N> &A, const stack::Matrix<U, N, O> &B)
 }
 
 namespace detail {
-template <typename T> void square(shallow::Matrix<T> A, shallow::Matrix<T> out) {
+template <typename MatrixA, typename MatrixOut> void square(MatrixA &A, MatrixOut &out) {
   matprod(A, 'N', A, 'T', out);
 }
 } // namespace detail
 
 template <typename MAT1, typename MAT2> void square(const MAT1 &A, MAT2 &out) {
-  using T = typename MAT1::value_type;
-
   out.resize(A.m(), A.m());
-  detail::square(shallow::Matrix<T>(A), shallow::Matrix<T>(out));
+  detail::square(A, out);
 }
 
 template <typename MAT> auto square(const MAT &A) {
@@ -358,16 +355,14 @@ template <typename MAT> auto square(const MAT &A) {
 }
 
 namespace detail {
-template <typename T> void transquare(shallow::Matrix<T> A, shallow::Matrix<T> out) {
+template <typename MatrixA, typename MatrixOut> void transquare(MatrixA &A, MatrixOut &out) {
   detail::matprod(A, 'T', A, 'N', out);
 }
 } // namespace detail
 
 template <typename MAT1, typename MAT2> void transquare(const MAT1 &A, MAT2 &out) {
-  using T = typename MAT1::value_type;
-
   out.resize(A.n(), A.n());
-  detail::transquare(shallow::Matrix<T>(A), shallow::Matrix<T>(out));
+  detail::transquare(A, out);
 }
 
 template <typename MAT> auto transquare(const MAT &A) {
@@ -377,9 +372,10 @@ template <typename MAT> auto transquare(const MAT &A) {
 }
 
 namespace detail {
-template <typename T>
-auto PLU(shallow::Matrix<T> A, shallow::Matrix<T> LU, std::vector<int> &P) -> int {
-  using size_type = Array::size_type;
+template <typename MatrixA, typename MatrixLU>
+auto PLU(MatrixA &A, MatrixLU &LU, ::std::vector<int> &P) -> int {
+  using T = typename MatrixLU::value_type;
+  using size_type = size_t;
   using std::abs;
 
   int nb_permutations = 0;
@@ -421,14 +417,12 @@ auto PLU(shallow::Matrix<T> A, shallow::Matrix<T> LU, std::vector<int> &P) -> in
 
 template <typename MAT1, typename MAT2>
 auto PLU(const MAT1 &A, MAT2 &LU, std::vector<int> &P) -> int {
-  using T = typename MAT1::value_type;
-
   LU.resize(A.m(), A.n());
-  return detail::PLU(shallow::Matrix<T>(A), shallow::Matrix<T>(LU), P);
+  return detail::PLU(A, LU, P);
 }
 
 template <typename MAT1, typename MAT2> auto PLU(const MAT1 &A, MAT2 &L, MAT2 &U, MAT2 &P) -> int {
-  using size_type = Array::size_type;
+  using size_type = size_t;
   using T1 = typename MAT2::value_type;
   using T2 = typename MAT2::value_type;
 
@@ -464,8 +458,9 @@ template <typename MAT1, typename MAT2> auto PLU(const MAT1 &A, MAT2 &L, MAT2 &U
 }
 
 namespace detail {
-template <typename T> auto chol(shallow::Matrix<T> A, shallow::Matrix<T> out) -> int {
-  using size_type = Array::size_type;
+template <typename MatrixA, typename MatrixOut> auto chol(MatrixA &A, MatrixOut &out) -> int {
+  using size_type = size_t;
+  using T = typename MatrixOut::value_type;
   using std::sqrt;
 
   size_type n = A.m();
@@ -498,10 +493,8 @@ template <typename T> auto chol(shallow::Matrix<T> A, shallow::Matrix<T> out) ->
 } // namespace detail
 
 template <typename MAT1, typename MAT2> auto chol(const MAT1 &A, MAT2 &out) -> int {
-  using T = typename MAT1::value_type;
-
   out.resize(A.m(), A.m());
-  return detail::chol(shallow::Matrix<T>(A), shallow::Matrix<T>(out));
+  return detail::chol(A, out);
 }
 
 template <typename MAT> auto chol(const MAT &A, int *info) -> MAT {
@@ -516,7 +509,8 @@ template <typename MAT> auto chol(const MAT &A, int *info) -> MAT {
 }
 
 namespace detail {
-template <typename T> auto det(shallow::Matrix<T> A, int *info) -> T {
+template <typename MatrixA> auto det(MatrixA &A, int *info) {
+  using T = typename MatrixA::value_type;
   heap::Matrix<T> LU;
   std::vector<int> P;
   int n = PLU(A, LU, P);
@@ -547,9 +541,7 @@ template <typename MAT> auto det(const MAT &A, int *info) -> typename MAT::value
       out = sqr(out);
     }
   } else {
-    using T = typename MAT::value_type;
-
-    out = detail::det(shallow::Matrix<T>(A), &information);
+    out = detail::det(A, &information);
   }
 
   if (info) {
@@ -560,9 +552,10 @@ template <typename MAT> auto det(const MAT &A, int *info) -> typename MAT::value
 }
 
 namespace detail {
-template <typename T>
-auto mldivide(shallow::Matrix<T> A, shallow::Matrix<T> B, shallow::Matrix<T> out) -> int {
-  using size_type = Array::size_type;
+template <typename MatrixA, typename MatrixB, typename MatrixOut>
+auto mldivide(MatrixA &A, MatrixB &B, MatrixOut &out) -> int {
+  using T = typename MatrixOut::value_type;
+  using size_type = size_t;
 
   // PLU decomposition
   heap::Matrix<T> LU;
@@ -606,10 +599,8 @@ auto mldivide(shallow::Matrix<T> A, shallow::Matrix<T> B, shallow::Matrix<T> out
 
 template <typename MAT1, typename MAT2, typename MAT3>
 auto mldivide(const MAT1 &A, const MAT2 &B, MAT3 &out) -> int {
-  using T = typename MAT1::value_type;
-
   out.resize(B.m(), B.n());
-  return detail::mldivide(shallow::Matrix<T>(A), shallow::Matrix<T>(B), shallow::Matrix<T>(out));
+  return detail::mldivide(A, B, out);
 }
 
 template <typename MAT1, typename MAT2>
@@ -625,9 +616,10 @@ auto mldivide(const MAT1 &A, const MAT2 &B, int *info) -> MAT2 {
 }
 
 namespace detail {
-template <typename T>
-auto mrdivide(shallow::Matrix<T> A, shallow::Matrix<T> B, shallow::Matrix<T> out) -> int {
-  using size_type = Array::size_type;
+template <typename MatrixA, typename MatrixB, typename MatrixOut>
+auto mrdivide(MatrixA &A, MatrixB &B, MatrixOut &out) -> int {
+  using T = typename MatrixOut::value_type;
+  using size_type = size_t;
 
   // PLU decomposition
   heap::Matrix<T> LU;
@@ -671,10 +663,8 @@ auto mrdivide(shallow::Matrix<T> A, shallow::Matrix<T> B, shallow::Matrix<T> out
 
 template <typename MAT1, typename MAT2, typename MAT3>
 auto mrdivide(const MAT1 &A, const MAT2 &B, MAT3 &out) -> int {
-  using T = typename MAT1::value_type;
-
   out.resize(A.m(), A.n());
-  return detail::mrdivide(shallow::Matrix<T>(A), shallow::Matrix<T>(B), shallow::Matrix<T>(out));
+  return detail::mrdivide(A, B, out);
 }
 
 template <typename MAT1, typename MAT2>
@@ -690,17 +680,19 @@ auto mrdivide(const MAT1 &A, const MAT2 &B, int *info) -> MAT1 {
 }
 
 namespace detail {
-template <typename T> auto inv(shallow::Matrix<T> A, shallow::Matrix<T> out) -> int {
-  auto I = heap::Matrix<T>::eye({A.m(), A.m()});
-  return mldivide(std::move(A), shallow::Matrix<T>(I), std::move(out));
+template <typename MatrixA, typename MatrixOut> auto inv(MatrixA &A, MatrixOut &out) -> int {
+  using T = typename MatrixA::value_type;
+
+  auto I = A;
+  I = 0;
+  std::fill(I.diag_begin(), I.diag_end(), T{1});
+  return mldivide(A, I, out);
 }
 } // namespace detail
 
 template <typename MAT1, typename MAT2> auto inv(const MAT1 &A, MAT2 &out) -> int {
-  using T = typename MAT1::value_type;
-
   out.resize(A.m(), A.n());
-  return detail::inv(shallow::Matrix<T>(A), shallow::Matrix<T>(out));
+  return detail::inv(A, out);
 }
 
 template <typename MAT> auto inv(const MAT &A, int *info) -> MAT {

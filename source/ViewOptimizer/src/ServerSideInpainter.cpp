@@ -94,8 +94,8 @@ public:
     const auto focal = Vec2f{vp.ci.ci_perspective_focal_hor(), vp.ci.ci_perspective_focal_ver()};
 
     // half angle of the field of view of the perspective projection
-    const float halfFovX = std::atan(0.5F * size.x() / std::abs(focal.x()));
-    const float halfFovY = std::atan(0.5F * size.y() / std::abs(focal.y()));
+    const float halfFovX = std::atan(0.5F * static_cast<float>(size.x()) / std::abs(focal.x()));
+    const float halfFovY = std::atan(0.5F * static_cast<float>(size.y()) / std::abs(focal.y()));
 
     const auto euler = Common::Vec3f{Common::quat2euler(vp.pose.orientation)};
     const auto yaw = euler[0];

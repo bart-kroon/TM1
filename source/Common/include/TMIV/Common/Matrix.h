@@ -39,97 +39,59 @@
 namespace TMIV::Common {
 template <typename A> class MatrixInterface : public A {
 public:
-  using size_type = typename A::size_type;
   using value_type = typename A::value_type;
-  using const_row_iterator = typename A::const_dim_iterator;
-  using row_iterator = typename A::dim_iterator;
-  using const_column_iterator = typename A::const_dim_iterator;
-  using column_iterator = typename A::dim_iterator;
 
   using A::A;
   MatrixInterface() : A() {}
   explicit MatrixInterface(const A &a) : A(a) {}
   explicit MatrixInterface(A &&a) : A(std::move(a)) {}
+
   using A::operator=;
-  auto operator=(const A &a) -> MatrixInterface & {
+
+  auto operator=(const A &a) noexcept -> auto & {
     A::operator=(a);
     return *this;
   }
-  auto operator=(A &&a) -> MatrixInterface & {
+
+  auto operator=(A &&a) noexcept -> auto & {
     A::operator=(std::move(a));
     return *this;
   }
-  //! \brief Returns the number of rows of the matrix.
-  [[nodiscard]] auto m() const -> size_type { return A::size(0); }
-  //! \brief Returns the number of columns of the matrix.
-  [[nodiscard]] auto n() const -> size_type { return A::size(1); }
-  //! \brief Returns the number of rows of the matrix.
-  [[nodiscard]] auto height() const -> size_type { return A::size(0); }
-  //! \brief Returns the number of columns of the matrix.
-  [[nodiscard]] auto width() const -> size_type { return A::size(1); }
-  //! \brief Overloaded resize operator.
+
+  [[nodiscard]] auto m() const noexcept { return A::size(0); }
+  [[nodiscard]] auto n() const noexcept { return A::size(1); }
+  [[nodiscard]] auto height() const noexcept { return A::size(0); }
+  [[nodiscard]] auto width() const noexcept { return A::size(1); }
+
   using A::resize;
-  void resize(size_type a, size_type b) { A::resize({a, b}); }
-  //! \brief Returns an iterator to the first element of the ith row.
-  [[nodiscard]] auto row_begin(size_type i) const -> const_row_iterator {
-    return A::template dim_begin<1>(i);
-  }
-  auto row_begin(size_type i) -> row_iterator { return A::template dim_begin<1>(i); }
-  //! \brief Returns a const iterator to the first element of the ith row.
-  [[nodiscard]] auto crow_begin(size_type i) const -> const_row_iterator {
-    return A::template cdim_begin<1>(i);
-  }
-  //! \brief Returns an iterator to the first element after the end of the ith
-  //! row.
-  [[nodiscard]] auto row_end(size_type i) const -> const_row_iterator {
-    return A::template dim_end<1>(i);
-  }
-  auto row_end(size_type i) -> row_iterator { return A::template dim_end<1>(i); }
-  //! \brief Returns a const iterator to the first element after the end of the
-  //! ith row.
-  [[nodiscard]] auto crow_end(size_type i) const -> const_row_iterator {
-    return A::template cdim_end<1>(i);
-  }
-  //! \brief Returns an iterator to the first element of the jth column.
-  [[nodiscard]] auto col_begin(size_type j) const -> const_column_iterator {
-    return A::template dim_begin<0>(j);
-  }
-  auto col_begin(size_type j) -> column_iterator { return A::template dim_begin<0>(j); }
-  //! \brief Returns a const iterator to the first element of the jth column.
-  [[nodiscard]] auto ccol_begin(size_type j) const -> const_column_iterator {
-    return A::template cdim_begin<0>(j);
-  }
-  //! \brief Returns an iterator to the first element after the end of the jth
-  //! column.
-  [[nodiscard]] auto col_end(size_type j) const -> const_column_iterator {
-    return A::template dim_end<0>(j);
-  }
-  auto col_end(size_type j) -> column_iterator { return A::template dim_end<0>(j); }
-  //! \brief Returns a const iterator to the first element after the end of the
-  //! jth column.
-  [[nodiscard]] auto ccol_end(size_type j) const -> const_column_iterator {
-    return A::template cdim_end<0>(j);
-  }
-  //! \brief Returns true if the matrix is a row.
-  [[nodiscard]] auto isRow() const -> bool { return (m() == 1); }
-  //! \brief Returns true if the matrix is a column.
-  [[nodiscard]] auto isColumn() const -> bool { return (n() == 1); }
-  //! \brief Returns true if the matrix is positive.
+  void resize(size_t a, size_t b) { A::resize({a, b}); }
+
+  [[nodiscard]] auto row_begin(size_t i) const noexcept { return A::template dim_begin<1>(i); }
+  [[nodiscard]] auto row_begin(size_t i) noexcept { return A::template dim_begin<1>(i); }
+  [[nodiscard]] auto crow_begin(size_t i) const noexcept { return A::template cdim_begin<1>(i); }
+  [[nodiscard]] auto row_end(size_t i) const noexcept { return A::template dim_end<1>(i); }
+  [[nodiscard]] auto row_end(size_t i) noexcept { return A::template dim_end<1>(i); }
+  [[nodiscard]] auto crow_end(size_t i) const noexcept { return A::template cdim_end<1>(i); }
+  [[nodiscard]] auto col_begin(size_t j) const noexcept { return A::template dim_begin<0>(j); }
+  [[nodiscard]] auto col_begin(size_t j) noexcept { return A::template dim_begin<0>(j); }
+  [[nodiscard]] auto ccol_begin(size_t j) const noexcept { return A::template cdim_begin<0>(j); }
+  [[nodiscard]] auto col_end(size_t j) const noexcept { return A::template dim_end<0>(j); }
+  [[nodiscard]] auto col_end(size_t j) noexcept { return A::template dim_end<0>(j); }
+  [[nodiscard]] auto ccol_end(size_t j) const noexcept { return A::template cdim_end<0>(j); }
+
+  [[nodiscard]] auto isRow() const -> bool { return m() == 1; }
+  [[nodiscard]] auto isColumn() const -> bool { return n() == 1; }
   [[nodiscard]] auto isPositive() const -> bool;
 };
 
 namespace stack {
-template <typename T, size_type M, size_type N> using Matrix = MatrixInterface<Array<T, M, N>>;
+template <typename T, size_t M, size_t N> using Matrix = MatrixInterface<Array<T, M, N>>;
 template <typename T> using Mat2x2 = Matrix<T, 2, 2>;
 template <typename T> using Mat2x3 = Matrix<T, 2, 3>;
 template <typename T> using Mat3x3 = Matrix<T, 3, 3>;
 } // namespace stack
 
 namespace heap {
-template <typename T> using Matrix = MatrixInterface<Array<2, T>>;
-}
-
-namespace shallow {
 template <typename T> using Matrix = MatrixInterface<Array<2, T>>;
 }
 
@@ -140,12 +102,12 @@ using Mat2x2f = stack::Mat2x2<float>;
 using Mat3x3f = stack::Mat3x3<float>;
 template <typename T> using Mat = heap::Matrix<T>;
 
-//! \brief Returns the type of the transpose of the matrix given as input.
-template <typename T, Array::size_type M, Array::size_type N>
+// Returns the type of the transpose of the matrix given as input
+template <typename T, size_t M, size_t N>
 auto transpose_type(stack::Matrix<T, M, N>) -> stack::Matrix<T, N, M>;
 template <typename T> auto transpose_type(heap::Matrix<T>) -> heap::Matrix<T>;
 
-//! \brief Returns the transpose of the matrix given as input.
+// Returns the transpose of the matrix given as input
 template <typename Mat1, typename Mat2> auto transpose(const Mat1 &in, Mat2 &out) -> Mat2 &;
 template <typename Mat> auto transpose(const Mat &m) -> decltype(transpose_type(Mat()));
 

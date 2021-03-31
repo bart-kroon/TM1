@@ -114,8 +114,8 @@ auto choosePatch(const MivBitstream::PatchParams &patch,
       xy_v_ymin = i[1];
     }
   }
-  return !(xy_v_xmin > target.ci.projectionPlaneSize().x() || xy_v_xmax < 0 || xy_v_ymax < 0 ||
-           xy_v_ymin > target.ci.projectionPlaneSize().y() ||
+  return !(xy_v_xmin > static_cast<float>(target.ci.projectionPlaneSize().x()) || xy_v_xmax < 0 ||
+           xy_v_ymax < 0 || xy_v_ymin > static_cast<float>(target.ci.projectionPlaneSize().y()) ||
            (xy_v_xmin != xy_v_xmin && xy_v_xmax != xy_v_xmax && xy_v_ymin != xy_v_ymin &&
             xy_v_ymax != xy_v_ymax));
 }

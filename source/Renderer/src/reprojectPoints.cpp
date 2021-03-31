@@ -113,14 +113,17 @@ auto ProjectionHelper::doUnprojection(const Common::Vec2f &p, float d) const -> 
 }
 
 auto ProjectionHelper::isStrictlyInsideViewport(const Common::Vec2f &p) const -> bool {
-  return ((0.5F <= p.x()) && (p.x() <= (m_viewParams.get().ci.projectionPlaneSize().x() - 0.5F))) &&
-         ((0.5F <= p.y()) && (p.y() <= (m_viewParams.get().ci.projectionPlaneSize().y() - 0.5F)));
+  return 0.5F <= p.x() &&
+         p.x() <= (static_cast<float>(m_viewParams.get().ci.projectionPlaneSize().x()) - 0.5F) &&
+         0.5F <= p.y() &&
+         p.y() <= (static_cast<float>(m_viewParams.get().ci.projectionPlaneSize().y()) - 0.5F);
 }
 
 auto ProjectionHelper::isInsideViewport(const Common::Vec2f &p) const -> bool {
-  return ((-0.5F <= p.x()) &&
-          (p.x() <= (m_viewParams.get().ci.projectionPlaneSize().x() + 0.5F))) &&
-         ((-0.5F <= p.y()) && (p.y() <= (m_viewParams.get().ci.projectionPlaneSize().y() + 0.5F)));
+  return -0.5F <= p.x() &&
+         p.x() <= (static_cast<float>(m_viewParams.get().ci.projectionPlaneSize().x()) + 0.5F) &&
+         -0.5F <= p.y() &&
+         p.y() <= (static_cast<float>(m_viewParams.get().ci.projectionPlaneSize().y()) + 0.5F);
 }
 
 auto ProjectionHelper::isValidDepth(float d) const -> bool {

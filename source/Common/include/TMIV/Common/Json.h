@@ -141,7 +141,7 @@ public:
   //  * When this node is not a JSON number, throws a `std::runtime_error`.
   //  * Numbers without mantissa and exponent are stored as Json::Integer, others as Json::Number
   //    which is a floating-point type.
-  template <typename T> decltype(auto) as() const;
+  template <typename T> auto as() const -> decltype(auto);
 
   // Access a JSON object by key
   //  * When a key is missing, returns `null`.

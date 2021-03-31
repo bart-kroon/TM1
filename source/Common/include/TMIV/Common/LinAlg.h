@@ -100,33 +100,32 @@ template <typename MAT> auto matprod(const MAT &A, char mA, const MAT &B, char m
 template <typename T, typename U>
 auto operator*(const heap::Matrix<T> &A, const heap::Vector<U> &B)
     -> heap::Vector<std::common_type_t<T, U>>;
-template <typename T, typename U, Array::size_type M>
+template <typename T, typename U, size_t M>
 auto operator*(const heap::Matrix<T> &A, const stack::Vector<U, M> &B)
     -> heap::Vector<std::common_type_t<T, U>>;
 template <typename T, typename U>
 auto operator*(const heap::Matrix<T> &A, const heap::Matrix<U> &B)
     -> heap::Matrix<std::common_type_t<T, U>>;
-template <typename T, typename U, Array::size_type M, Array::size_type N>
+template <typename T, typename U, size_t M, size_t N>
 auto operator*(const heap::Matrix<T> &A, const stack::Matrix<U, M, N> &B)
     -> heap::Matrix<std::common_type_t<T, U>>;
 
-template <typename T, typename U, Array::size_type M, Array::size_type N>
+template <typename T, typename U, size_t M, size_t N>
 auto operator*(const stack::Matrix<T, M, N> &A, const stack::Vector<U, N> &B)
     -> stack::Vector<std::common_type_t<T, U>, M>;
-template <typename T, typename U, Array::size_type M, Array::size_type N>
+template <typename T, typename U, size_t M, size_t N>
 auto operator*(const stack::Matrix<T, M, N> &A, const heap::Vector<U> &B)
     -> heap::Vector<std::common_type_t<T, U>>;
-template <typename T, typename U, Array::size_type M, Array::size_type N>
+template <typename T, typename U, size_t M, size_t N>
 auto operator*(const stack::Matrix<T, M, N> &A, const heap::Matrix<U> &B)
     -> heap::Matrix<std::common_type_t<T, U>>;
-template <typename T, typename U, Array::size_type M, Array::size_type N, Array::size_type O>
+template <typename T, typename U, size_t M, size_t N, size_t O>
 auto operator*(const stack::Matrix<T, M, N> &A, const stack::Matrix<U, N, O> &B)
     -> stack::Matrix<std::common_type_t<T, U>, M, O>;
 
 //! \brief Computes and returns A * A'.
-template <typename T, Array::size_type M>
-auto square_type(stack::Vector<T, M>) -> stack::Matrix<T, M, M>;
-template <typename T, Array::size_type M, Array::size_type N>
+template <typename T, size_t M> auto square_type(stack::Vector<T, M>) -> stack::Matrix<T, M, M>;
+template <typename T, size_t M, size_t N>
 auto square_type(stack::Matrix<T, M, N>) -> stack::Matrix<T, M, M>;
 template <typename T> auto square_type(heap::Vector<T>) -> heap::Matrix<T>;
 template <typename T> auto square_type(heap::Matrix<T>) -> heap::Matrix<T>;
@@ -135,7 +134,7 @@ template <typename MAT1, typename MAT2> void square(const MAT1 &A, MAT2 &out);
 template <typename MAT> auto square(const MAT &A);
 
 //! \brief Computes and returns A' * A.
-template <typename T, Array::size_type M, Array::size_type N>
+template <typename T, size_t M, size_t N>
 auto transquare_type(stack::Matrix<T, M, N>) -> stack::Matrix<T, N, N>;
 template <typename T> auto transquare_type(heap::Matrix<T>) -> heap::Matrix<T>;
 

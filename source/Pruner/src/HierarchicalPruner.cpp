@@ -695,7 +695,7 @@ private:
     auto &mask = m_masks[synthesizer.index].getPlane(0);
     auto &status = m_status[synthesizer.index].getPlane(0);
     Common::Mat<uint8_t> colorInconsistencyMask;
-    Common::Array::iterator<uint8_t> iColor;
+    Common::Mat<uint8_t>::iterator iColor;
     if (m_enable2ndPassPruner) {
       colorInconsistencyMask = getColorInconsistencyMask(
           synthesizer.referenceYUV, synthesizer.rasterizer.attribute<0>(), mask);

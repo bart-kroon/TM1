@@ -127,7 +127,7 @@ template <typename T, typename> inline auto Json::operator=(const T &value) -> J
   return *this;
 }
 
-template <typename T> decltype(auto) Json::as() const {
+template <typename T> auto Json::as() const -> decltype(auto) {
   try {
     if constexpr (std::is_same_v<T, bool>) {
       return std::any_cast<bool>(m_node);
@@ -192,7 +192,7 @@ template <typename T, size_t M> auto Json::asVec() const -> stack::Vector<T, M> 
   if (a.size() != M) {
     throw std::runtime_error("JSON int vector has wrong length");
   }
-  for (stack::size_type i = 0; i != M; ++i) {
+  for (size_t i = 0; i != M; ++i) {
     result[i] = a[i].as<T>();
   }
   return result;

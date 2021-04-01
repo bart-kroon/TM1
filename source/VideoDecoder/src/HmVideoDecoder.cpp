@@ -210,14 +210,14 @@ private:
         const auto width = comPicYuv.getWidth(componentId);
         const auto height = comPicYuv.getHeight(componentId);
 
-        x.bitdepth[k] = m_outputBitDepth[toChannelType(componentId)];
-        x.planes[k].resize(static_cast<size_t>(height), static_cast<size_t>(width));
+        Common::at(x.bitdepth, k) = Common::at(m_outputBitDepth, toChannelType(componentId));
+        Common::at(x.planes, k).resize(static_cast<size_t>(height), static_cast<size_t>(width));
 
         const auto *row = comPicYuv.getAddr(componentId);
 
         for (int i = 0; i < height; ++i) {
           // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-          std::copy(row, row + width, x.planes[k].row_begin(i));
+          std::copy(row, row + width, Common::at(x.planes, k).row_begin(i));
           // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
           row += comPicYuv.getStride(componentId);
         }

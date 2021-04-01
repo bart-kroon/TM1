@@ -80,14 +80,14 @@ auto sampleKernel(const Common::Texture444Frame &attrFrame, const Common::Vec2i 
   auto channels = std::array<std::vector<uint16_t>, 3>{};
 
   for (int d = 0; d < 3; ++d) {
-    channels[d] = sampleKernel(attrFrame.getPlane(d), loc, kernelPoints);
+    Common::at(channels, d) = sampleKernel(attrFrame.getPlane(d), loc, kernelPoints);
   }
 
   auto samples = std::vector<Common::Vec3w>(channels.front().size());
 
   for (size_t i = 0; i < channels.front().size(); ++i) {
     for (int d = 0; d < 3; ++d) {
-      samples[i][d] = channels[d][i];
+      samples[i][d] = Common::at(channels, d)[i];
     }
   }
 

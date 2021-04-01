@@ -152,8 +152,9 @@ template <typename FORMAT> void Frame<FORMAT>::resize(int32_t w, int32_t h) {
   m_height = h;
 
   for (int planeId = 0; planeId < numberOfPlanes; planeId++) {
-    m_planes[planeId].resize(detail::PixelFormatHelper<FORMAT>::getPlaneHeight(planeId, h),
-                             detail::PixelFormatHelper<FORMAT>::getPlaneWidth(planeId, w));
+    at(m_planes, planeId)
+        .resize(detail::PixelFormatHelper<FORMAT>::getPlaneHeight(planeId, h),
+                detail::PixelFormatHelper<FORMAT>::getPlaneWidth(planeId, w));
   }
 }
 
@@ -164,11 +165,11 @@ template <typename FORMAT> auto Frame<FORMAT>::getPlanes() const -> const auto &
 }
 
 template <typename FORMAT> auto Frame<FORMAT>::getPlane(int index) const -> const auto & {
-  return m_planes[index];
+  return at(m_planes, index);
 }
 
 template <typename FORMAT> auto Frame<FORMAT>::getPlane(int index) -> auto & {
-  return m_planes[index];
+  return at(m_planes, index);
 }
 
 template <typename FORMAT> auto Frame<FORMAT>::getWidth() const { return m_width; }
@@ -254,26 +255,28 @@ template <typename FORMAT> auto AnyFrame::as() const -> Frame<FORMAT> {
   auto maxOutputValue = (uint64_t{1} << outputFrame.getBitDepth()) - 1;
 
   for (size_t k = 0; k < outputPlanes.size(); ++k) {
-    if (planes[k].empty()) {
+    if (at(planes, k).empty()) {
       // Fill neutral when a plane is missing
-      std::fill(std::begin(outputPlanes[k]), std::end(outputPlanes[k]), outputFrame.neutralColor());
+      std::fill(std::begin(at(outputPlanes, k)), std::end(at(outputPlanes, k)),
+                outputFrame.neutralColor());
     } else {
-      const auto maxInputValue = (uint64_t{1} << bitdepth[k]) - 1;
+      const auto maxInputValue = (uint64_t{1} << at(bitdepth, k)) - 1;
 
-      if (planes[k].size() == outputPlanes[k].size() && maxInputValue == maxOutputValue) {
+      if (at(planes, k).size() == at(outputPlanes, k).size() && maxInputValue == maxOutputValue) {
         // Plane with same format: direct copy (optimization)
         using base_type = typename detail::PixelFormatHelper<FORMAT>::base_type;
-        std::transform(std::cbegin(planes[k]), std::cend(planes[k]), std::begin(outputPlanes[k]),
+        std::transform(std::cbegin(at(planes, k)), std::cend(at(planes, k)),
+                       std::begin(at(outputPlanes, k)),
                        [](const auto x) { return static_cast<base_type>(x); });
       } else {
         // Plane with different format: spatial and range scaling
-        for (size_t i = 0; i < outputPlanes[k].height(); ++i) {
-          const size_t n = i * planes[k].height() / outputPlanes[k].height();
-          for (size_t j = 0; j < outputPlanes[k].width(); ++j) {
-            const size_t m = j * planes[k].width() / outputPlanes[k].width();
+        for (size_t i = 0; i < at(outputPlanes, k).height(); ++i) {
+          const size_t n = i * at(planes, k).height() / at(outputPlanes, k).height();
+          for (size_t j = 0; j < at(outputPlanes, k).width(); ++j) {
+            const size_t m = j * at(planes, k).width() / at(outputPlanes, k).width();
             using base_type = typename Frame<FORMAT>::base_type;
-            outputPlanes[k](i, j) = static_cast<base_type>(
-                (planes[k](n, m) * maxOutputValue + maxInputValue / 2) / maxInputValue);
+            at(outputPlanes, k)(i, j) = static_cast<base_type>(
+                (at(planes, k)(n, m) * maxOutputValue + maxInputValue / 2) / maxInputValue);
           }
         }
       }

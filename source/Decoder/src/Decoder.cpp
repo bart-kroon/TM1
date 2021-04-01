@@ -97,7 +97,7 @@ void addAttributeOffset(MivBitstream::AccessUnit &frame) {
         for (int c = 0; c < 3; c++) {
           const auto pduAttributeOffset = Common::assertDownCast<int16_t>(
               (pp.atlasPatchAttributeOffset()[c] << bitShift) - inputMedVal);
-          auto &value = YUV[c](y, x);
+          auto &value = at(YUV, c)(y, x);
 
           if (value + pduAttributeOffset > inputMaxVal) {
             value = Common::assertDownCast<uint16_t>(inputMaxVal);

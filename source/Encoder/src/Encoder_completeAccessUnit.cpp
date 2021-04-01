@@ -71,14 +71,18 @@ void adaptPatchStatsToTexture(std::array<PatchStats, 3> &patchStats,
       atlas.texture.getPlane(p)(pAtlas.y() / 2, pAtlas.x() / 2) =
           view.texture.getPlane(p)(pView.y() / 2, pView.x() / 2);
 
-      patchStats[p].sumVal += atlas.texture.getPlane(p)(pAtlas.y() / 2, pAtlas.x() / 2);
-      patchStats[p].cntVal += 1;
+      Common::at(patchStats, p).sumVal += atlas.texture.getPlane(p)(pAtlas.y() / 2, pAtlas.x() / 2);
+      Common::at(patchStats, p).cntVal += 1;
 
-      if (patchStats[p].minVal > atlas.texture.getPlane(p)(pAtlas.y() / 2, pAtlas.x() / 2)) {
-        patchStats[p].minVal = atlas.texture.getPlane(p)(pAtlas.y() / 2, pAtlas.x() / 2);
+      if (Common::at(patchStats, p).minVal >
+          atlas.texture.getPlane(p)(pAtlas.y() / 2, pAtlas.x() / 2)) {
+        Common::at(patchStats, p).minVal =
+            atlas.texture.getPlane(p)(pAtlas.y() / 2, pAtlas.x() / 2);
       }
-      if (patchStats[p].maxVal < atlas.texture.getPlane(p)(pAtlas.y() / 2, pAtlas.x() / 2)) {
-        patchStats[p].maxVal = atlas.texture.getPlane(p)(pAtlas.y() / 2, pAtlas.x() / 2);
+      if (Common::at(patchStats, p).maxVal <
+          atlas.texture.getPlane(p)(pAtlas.y() / 2, pAtlas.x() / 2)) {
+        Common::at(patchStats, p).maxVal =
+            atlas.texture.getPlane(p)(pAtlas.y() / 2, pAtlas.x() / 2);
       }
     }
   }
@@ -331,10 +335,10 @@ void Encoder::constructVideoFrames() {
     for (int p = 0; p < int(m_params.patchParamsList.size()); p++) {
       std::array<std::array<int64_t, 4>, 3> tmp{};
       for (int c = 0; c < 3; c++) {
-        tmp[c][0] = textureMaxVal;
-        tmp[c][1] = 0;
-        tmp[c][2] = 0;
-        tmp[c][3] = 0;
+        Common::at(tmp, c)[0] = textureMaxVal;
+        Common::at(tmp, c)[1] = 0;
+        Common::at(tmp, c)[2] = 0;
+        Common::at(tmp, c)[3] = 0;
       }
       patchAttrOffsetValuesFullGOP.push_back(tmp);
     }
@@ -395,14 +399,20 @@ void Encoder::constructVideoFrames() {
 
       if (m_config.attributeOffsetFlag) {
         for (int c = 0; c < 3; c++) {
-          if (patchAttrOffsetValuesFullGOP[patchCnt][c][0] > patchAttrOffsetValues1Frame[c][0]) {
-            patchAttrOffsetValuesFullGOP[patchCnt][c][0] = patchAttrOffsetValues1Frame[c][0];
+          if (patchAttrOffsetValuesFullGOP[patchCnt][c][0] >
+              Common::at(patchAttrOffsetValues1Frame, c)[0]) {
+            patchAttrOffsetValuesFullGOP[patchCnt][c][0] =
+                Common::at(patchAttrOffsetValues1Frame, c)[0];
           }
-          if (patchAttrOffsetValuesFullGOP[patchCnt][c][1] < patchAttrOffsetValues1Frame[c][1]) {
-            patchAttrOffsetValuesFullGOP[patchCnt][c][1] = patchAttrOffsetValues1Frame[c][1];
+          if (patchAttrOffsetValuesFullGOP[patchCnt][c][1] <
+              Common::at(patchAttrOffsetValues1Frame, c)[1]) {
+            patchAttrOffsetValuesFullGOP[patchCnt][c][1] =
+                Common::at(patchAttrOffsetValues1Frame, c)[1];
           }
-          patchAttrOffsetValuesFullGOP[patchCnt][c][2] += patchAttrOffsetValues1Frame[c][2];
-          patchAttrOffsetValuesFullGOP[patchCnt][c][3] += patchAttrOffsetValues1Frame[c][3];
+          patchAttrOffsetValuesFullGOP[patchCnt][c][2] +=
+              Common::at(patchAttrOffsetValues1Frame, c)[2];
+          patchAttrOffsetValuesFullGOP[patchCnt][c][3] +=
+              Common::at(patchAttrOffsetValues1Frame, c)[3];
         }
         patchCnt++;
       }
@@ -499,10 +509,10 @@ auto Encoder::writePatchInAtlas(const MivBitstream::PatchParams &patchParams,
 
   std::array<std::array<int64_t, 4>, 3> ret{};
   for (int c = 0; c < 3; c++) {
-    ret[c][0] = patchStats[c].minVal;
-    ret[c][1] = patchStats[c].maxVal;
-    ret[c][2] = patchStats[c].sumVal;
-    ret[c][3] = patchStats[c].cntVal;
+    Common::at(ret, c)[0] = Common::at(patchStats, c).minVal;
+    Common::at(ret, c)[1] = Common::at(patchStats, c).maxVal;
+    Common::at(ret, c)[2] = Common::at(patchStats, c).sumVal;
+    Common::at(ret, c)[3] = Common::at(patchStats, c).cntVal;
   }
   return ret;
 }

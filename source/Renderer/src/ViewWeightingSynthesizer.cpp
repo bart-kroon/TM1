@@ -124,10 +124,10 @@ auto computeMatrixM(const std::array<Common::Vec2i, N> &offsetList,
   auto M = Common::Mat2x2f{0.F, 0.F, 0.F, 0.F};
 
   for (size_t i = 0U; i < offsetList.size(); i++) {
-    if (isValidDepth(Q[i].second)) {
-      const auto dp = Q[i].first - C;
-      M += W[i] * Common::stack::Mat2x2<float>{dp.x() * dp.x(), dp.x() * dp.y(), dp.x() * dp.y(),
-                                               dp.y() * dp.y()};
+    if (isValidDepth(Common::at(Q, i).second)) {
+      const auto dp = Common::at(Q, i).first - C;
+      M += Common::at(W, i) * Common::stack::Mat2x2<float>{dp.x() * dp.x(), dp.x() * dp.y(),
+                                                           dp.x() * dp.y(), dp.y() * dp.y()};
     }
   }
   return M;
@@ -613,19 +613,19 @@ private:
     const auto h_last = static_cast<int>(m_sourceReprojection[viewId].height()) - 1;
 
     for (size_t i = 0U; i < offsetList.size(); i++) {
-      const auto xo = std::clamp(x + offsetList[i].x(), 0, w_last);
-      const auto yo = std::clamp(y + offsetList[i].y(), 0, h_last);
+      const auto xo = std::clamp(x + Common::at(offsetList, i).x(), 0, w_last);
+      const auto yo = std::clamp(y + Common::at(offsetList, i).y(), 0, h_last);
 
-      Q[i] = m_sourceReprojection[viewId](yo, xo);
+      Common::at(Q, i) = m_sourceReprojection[viewId](yo, xo);
 
-      if (isValidDepth(Q[i].second)) {
+      if (isValidDepth(Common::at(Q, i).second)) {
         const auto OQ = m_sourceRayDirection[viewId](yo, xo);
 
         const float a = std::acos(dot(OP, OQ)) / m_cameraDistortion[viewId];
         const float wi = std::exp(-a * a);
 
-        W[i] = wi;
-        C += wi * Q[i].first;
+        Common::at(W, i) = wi;
+        C += wi * Common::at(Q, i).first;
         WT += wi;
       }
     }
@@ -896,19 +896,19 @@ private:
         auto depthBuffer = std::array<float, 9>{};
 
         for (size_t i = 0; i < depthBuffer.size(); i++) {
-          const auto xo = std::clamp(static_cast<int>(x) + offsetList[i].x(), 0, w_last);
-          const auto yo = std::clamp(static_cast<int>(y) + offsetList[i].y(), 0, h_last);
+          const auto xo = std::clamp(static_cast<int>(x) + at(offsetList, i).x(), 0, w_last);
+          const auto yo = std::clamp(static_cast<int>(y) + at(offsetList, i).y(), 0, h_last);
 
           const auto z = firstDepth(yo, xo);
 
-          depthBuffer[i] = isValidDepth(z) ? z : 0.F;
+          Common::at(depthBuffer, i) = isValidDepth(z) ? z : 0.F;
         }
 
         std::sort(depthBuffer.begin(), depthBuffer.end());
 
         for (size_t i = 4; i < 6; i++) {
-          if (0.F < depthBuffer[i]) {
-            secondDepth(y, x) = depthBuffer[i];
+          if (0.F < Common::at(depthBuffer, i)) {
+            secondDepth(y, x) = Common::at(depthBuffer, i);
             return;
           }
         }
@@ -992,13 +992,13 @@ private:
     auto stack = std::vector<Common::Vec2f>{};
 
     for (size_t i = 0U; i < offsetList.size(); i++) {
-      const auto xo = std::clamp(static_cast<int>(x) + offsetList[i].x(), 0, w_last);
-      const auto yo = std::clamp(static_cast<int>(y) + offsetList[i].y(), 0, h_last);
+      const auto xo = std::clamp(static_cast<int>(x) + Common::at(offsetList, i).x(), 0, w_last);
+      const auto yo = std::clamp(static_cast<int>(y) + Common::at(offsetList, i).y(), 0, h_last);
 
       const auto z = viewportVisibility(yo, xo);
 
       if (isValidDepth(z)) {
-        const auto ksi = 1.F / (1.F + d2[i]);
+        const auto ksi = 1.F / (1.F + Common::at(d2, i));
         insertWeightedDepthInStack(stack, ksi, z, m_blendingFactor);
       }
     }

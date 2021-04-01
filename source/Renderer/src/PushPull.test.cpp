@@ -174,22 +174,22 @@ TEST_CASE("inplacePull") {
     auto out = std::pair{TMIV::Common::Texture444Frame{6, 6}, TMIV::Common::Depth16Frame{6, 6}};
     TMIV::Renderer::PushPull::inplacePullFrame(
         in, out, [&](const std::array<YUVD, 4> &pixelValues, const auto & /* unused */) {
-          ++countX[std::get<0>(pixelValues[0])][std::get<0>(pixelValues[1])];
-          ++countY[std::get<1>(pixelValues[0])][std::get<1>(pixelValues[2])];
+          ++TMIV::Common::at(countX, std::get<0>(pixelValues[0]), std::get<0>(pixelValues[1]));
+          ++TMIV::Common::at(countY, std::get<1>(pixelValues[0]), std::get<1>(pixelValues[2]));
           return YUVD{};
         });
 
     for (int i : {0, 1, 2}) {
       for (int j : {0, 1, 2}) {
         if (std::abs(i - j) == 1) {
-          REQUIRE(countX[i][j] == 6);
-          REQUIRE(countY[i][j] == 6);
+          REQUIRE(TMIV::Common::at(countX, i, j) == 6);
+          REQUIRE(TMIV::Common::at(countY, i, j) == 6);
         } else if (i == j && (i == 0 || i == 2)) {
-          REQUIRE(countX[i][j] == 6);
-          REQUIRE(countY[i][j] == 6);
+          REQUIRE(TMIV::Common::at(countX, i, j) == 6);
+          REQUIRE(TMIV::Common::at(countY, i, j) == 6);
         } else {
-          REQUIRE(countX[i][j] == 0);
-          REQUIRE(countY[i][j] == 0);
+          REQUIRE(TMIV::Common::at(countX, i, j) == 0);
+          REQUIRE(TMIV::Common::at(countY, i, j) == 0);
         }
       }
     }

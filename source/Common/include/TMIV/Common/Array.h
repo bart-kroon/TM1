@@ -171,7 +171,7 @@ private:
     result[m_dim - 1] = 1;
 
     for (ptrdiff_t i = m_dim - 1; 0 < i; --i) {
-      result[i - 1] = result[i] * m_sizes[i];
+      at(result, i - 1) = at(result, i) * at(m_sizes, i);
     }
     return result;
   }();
@@ -180,7 +180,7 @@ private:
     auto result = size_t{};
 
     for (size_t i = 0; i < m_dim; ++i) {
-      result += m_step[i];
+      result += at(m_step, i);
     }
     return result;
   }();
@@ -189,11 +189,11 @@ private:
     auto result = size_t{};
 
     for (size_t i = 0; i < m_dim && i < L; ++i) {
-      result += m_step[i] * index[i];
+      result += at(m_step, i) * at(index, i);
     }
 #ifndef NDEBUG
     for (size_t i = m_dim; i < L; ++i) {
-      ASSERT(index[i] == 0);
+      ASSERT(at(index, i) == 0);
     }
 #endif
     return result;
@@ -206,11 +206,11 @@ private:
 
     if constexpr (0 < K) {
       for (size_t i = 0; i < K; ++i) {
-        result += m_step[i] * index[1 + i];
+        result += at(m_step, i) * at(index, 1 + i);
       }
     }
     for (size_t i = K + 1; i < m_dim; ++i) {
-      result += m_step[i] * index[i];
+      result += at(m_step, i) * at(index, i);
     }
     return result;
   }
@@ -223,12 +223,12 @@ private:
     const auto minDim = std::min(dim(), that.dim());
 
     for (size_t i = 0; i < minDim; ++i) {
-      if (m_sizes[i] != that.size(i)) {
+      if (at(m_sizes, i) != that.size(i)) {
         return false;
       }
     }
     for (size_t i = minDim; i < m_dim; ++i) {
-      if (m_sizes[i] != 1) {
+      if (at(m_sizes, i) != 1) {
         return false;
       }
     }
@@ -319,7 +319,7 @@ public:
   [[nodiscard]] static constexpr auto dim() noexcept { return m_dim; }
 
   [[nodiscard]] static constexpr auto size() noexcept { return m_size; }
-  [[nodiscard]] static constexpr auto size(size_t i) noexcept { return m_sizes[i]; }
+  [[nodiscard]] static constexpr auto size(size_t i) noexcept { return at(m_sizes, i); }
 
   [[nodiscard]] static constexpr auto sizes() noexcept { return m_sizes; }
 
@@ -645,7 +645,7 @@ public:
   static constexpr auto dim() noexcept { return D; }
 
   // Returns the array size along the i-th dimension
-  [[nodiscard]] auto size(size_t i) const noexcept { return m_size[i]; }
+  [[nodiscard]] auto size(size_t i) const noexcept { return at(m_size, i); }
 
   // Returns the array sizes
   [[nodiscard]] auto sizes() const noexcept -> decltype(auto) { return m_size; }
@@ -804,7 +804,7 @@ public:
 
 private:
   template <size_t K> [[nodiscard]] auto offset(size_t i, size_t first = 0) const noexcept {
-    return (i == K) ? first : first * m_step[i + 1];
+    return (i == K) ? first : first * at(m_step, i + 1);
   }
   template <size_t K, typename... I>
   [[nodiscard]] auto offset(size_t i, size_t first, I... next) const noexcept {
@@ -814,7 +814,7 @@ private:
   [[nodiscard]] auto pos(size_t /*unused*/, size_t first) const noexcept { return first; }
   template <typename... I>
   [[nodiscard]] auto pos(size_t i, size_t first, I... next) const noexcept {
-    return first * m_step[i] + pos(i + 1, next...);
+    return first * at(m_step, i) + pos(i + 1, next...);
   }
 };
 } // namespace heap

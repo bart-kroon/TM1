@@ -193,10 +193,10 @@ auto MivDecoder::decodeVideoSubBitstreams() -> bool {
     const auto j = m_au.vps.vps_atlas_id(k);
 
     if (m_au.vps.vps_occupancy_video_present_flag(j)) {
-      result[static_cast<size_t>(decodeOccVideo(k))] = true;
+      Common::at(result, static_cast<size_t>(decodeOccVideo(k))) = true;
     }
     if (m_au.vps.vps_geometry_video_present_flag(j)) {
-      result[static_cast<size_t>(decodeGeoVideo(k))] = true;
+      Common::at(result, static_cast<size_t>(decodeGeoVideo(k))) = true;
     }
 
     // Note(FT): test the type of attribute to decode : texture AND/OR transparency
@@ -205,11 +205,11 @@ auto MivDecoder::decodeVideoSubBitstreams() -> bool {
          attributeIndex++) {
       if (m_au.vps.attribute_information(j).ai_attribute_type_id(attributeIndex) ==
           MivBitstream::AiAttributeTypeId::ATTR_TEXTURE) {
-        result[static_cast<size_t>(decodeAttrTextureVideo(k))] = true;
+        Common::at(result, static_cast<size_t>(decodeAttrTextureVideo(k))) = true;
       }
       if (m_au.vps.attribute_information(j).ai_attribute_type_id(attributeIndex) ==
           MivBitstream::AiAttributeTypeId::ATTR_TRANSPARENCY) {
-        result[static_cast<size_t>(decodeAttrTransparencyVideo(k))] = true;
+        Common::at(result, static_cast<size_t>(decodeAttrTransparencyVideo(k))) = true;
       }
     }
   }

@@ -49,12 +49,12 @@ auto weighedAverageWithMissingData(const std::array<YUVD, 4> &v, const std::arra
   auto sum = std::array<int, 4>{};
   auto count = 0;
   for (int i = 0; i < 4; ++i) {
-    if (occupant(v[i])) {
-      sum[0] += weights[i] * std::get<0>(v[i]);
-      sum[1] += weights[i] * std::get<1>(v[i]);
-      sum[2] += weights[i] * std::get<2>(v[i]);
-      sum[3] += weights[i] * std::get<3>(v[i]);
-      count += weights[i];
+    if (occupant(Common::at(v, i))) {
+      sum[0] += Common::at(weights, i) * std::get<0>(Common::at(v, i));
+      sum[1] += Common::at(weights, i) * std::get<1>(Common::at(v, i));
+      sum[2] += Common::at(weights, i) * std::get<2>(Common::at(v, i));
+      sum[3] += Common::at(weights, i) * std::get<3>(Common::at(v, i));
+      count += Common::at(weights, i);
     }
   }
   if (count == 0) {

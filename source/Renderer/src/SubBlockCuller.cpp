@@ -67,7 +67,7 @@ auto choosePatch(const MivBitstream::PatchParams &patch,
   const auto patch_dep_far = depthTransform.expandDepth(0);
 
   for (int i = 0; i < 4; i++) {
-    const auto xyz = R_t(unprojectVertex(uv[i], patch_dep_near, camera.ci));
+    const auto xyz = R_t(unprojectVertex(Common::at(uv, i), patch_dep_near, camera.ci));
     const auto rayAngle = Common::angle(xyz, xyz - R_t.translation());
     SceneVertexDescriptor v;
     v.position = xyz;
@@ -76,10 +76,10 @@ auto choosePatch(const MivBitstream::PatchParams &patch,
       Engine<camType> engine{target.ci};
       return engine.projectVertex(v);
     });
-    xy_v[i] = pix.position;
+    Common::at(xy_v, i) = pix.position;
   }
   for (int i = 0; i < 4; i++) {
-    const auto xyz = R_t(unprojectVertex(uv[i], patch_dep_far, camera.ci));
+    const auto xyz = R_t(unprojectVertex(Common::at(uv, i), patch_dep_far, camera.ci));
     const auto rayAngle = Common::angle(xyz, xyz - R_t.translation());
     SceneVertexDescriptor v;
     v.position = xyz;
@@ -89,7 +89,7 @@ auto choosePatch(const MivBitstream::PatchParams &patch,
       return engine.projectVertex(v);
     });
     // wangbin modify
-    xy_v[i + 4] = pix.position;
+    at(xy_v, i + 4) = pix.position;
   }
 
   // TODO(BK): Magic constant assumes meters

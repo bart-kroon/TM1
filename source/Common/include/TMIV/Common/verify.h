@@ -41,6 +41,14 @@
 
 #include <fmt/format.h>
 
+#if defined(__clang__) || defined(__GNUC__)
+// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
+#define LIKELY(x) __builtin_expect(!!(x), 1)
+#else
+// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
+#define LIKELY(x) (!!(x))
+#endif
+
 // Check that externally provided information (e.g. files, parameters, etc.) is correct
 //
 //  * This is an external error source and thus an exception of type std::runtime_error will be
@@ -51,7 +59,7 @@
 //
 // NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define VERIFY(condition)                                                                          \
-  static_cast<void>(!!(condition) ||                                                               \
+  static_cast<void>(LIKELY(condition) ||                                                           \
                     (::TMIV::Common::runtimeError(#condition, __FILE__, __LINE__), false))
 
 // Like the assert macro from <cassert>. We cannot use that because the libc++ implementation
@@ -79,7 +87,7 @@
 //
 // NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define VERIFY_V3CBITSTREAM(condition)                                                             \
-  static_cast<void>(!!(condition) ||                                                               \
+  static_cast<void>(LIKELY(condition) ||                                                           \
                     (::TMIV::Common::v3cBitstreamError(#condition, __FILE__, __LINE__), false))
 
 // NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
@@ -95,7 +103,7 @@
 //
 // NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define VERIFY_MIVBITSTREAM(condition)                                                             \
-  static_cast<void>(!!(condition) ||                                                               \
+  static_cast<void>(LIKELY(condition) ||                                                           \
                     (::TMIV::Common::mivBitstreamError(#condition, __FILE__, __LINE__), false))
 
 // NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
@@ -111,7 +119,7 @@
 //
 // NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define VERIFY_BITSTREAM(condition)                                                                \
-  static_cast<void>(!!(condition) ||                                                               \
+  static_cast<void>(LIKELY(condition) ||                                                           \
                     (::TMIV::Common::bitstreamError(#condition, __FILE__, __LINE__), false))
 
 // NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
@@ -126,7 +134,7 @@
 // NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define CONSTRAIN_PTL(condition)                                                                   \
   static_cast<void>(                                                                               \
-      (!!(condition) || (::TMIV::Common::ptlError(#condition, __FILE__, __LINE__), false)))
+      (LIKELY(condition) || (::TMIV::Common::ptlError(#condition, __FILE__, __LINE__), false)))
 
 // Known limitation of the current implementation (not in line with ISO/IEC 23090-12)
 //
@@ -135,8 +143,8 @@
 //
 // NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define LIMITATION(condition)                                                                      \
-  static_cast<void>(                                                                               \
-      (!!(condition) || (::TMIV::Common::assertionFailed(#condition, __FILE__, __LINE__), false)))
+  static_cast<void>((LIKELY(condition) ||                                                          \
+                     (::TMIV::Common::assertionFailed(#condition, __FILE__, __LINE__), false)))
 
 // Check for a precondition on an operation that will start (assumptions on the input)
 //
@@ -146,8 +154,8 @@
 //
 // NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define PRECONDITION(condition)                                                                    \
-  static_cast<void>(                                                                               \
-      (!!(condition) || (::TMIV::Common::assertionFailed(#condition, __FILE__, __LINE__), false)))
+  static_cast<void>((LIKELY(condition) ||                                                          \
+                     (::TMIV::Common::assertionFailed(#condition, __FILE__, __LINE__), false)))
 
 // Check for a postcondition on an operation that just took place (assumptions on the output)
 //
@@ -157,8 +165,8 @@
 //
 // NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define POSTCONDITION(condition)                                                                   \
-  static_cast<void>(                                                                               \
-      (!!(condition) || (::TMIV::Common::assertionFailed(#condition, __FILE__, __LINE__), false)))
+  static_cast<void>((LIKELY(condition) ||                                                          \
+                     (::TMIV::Common::assertionFailed(#condition, __FILE__, __LINE__), false)))
 
 // Mark unreachable code
 //
@@ -321,6 +329,27 @@ template <typename Out, typename In> constexpr auto assertDownCast(In input) noe
     ASSERT(input <= static_cast<In>(std::numeric_limits<Out>::max()));
   }
   return static_cast<Out>(input);
+}
+
+// Like gsl::at but prints a message before abnormal program termination and supports nested arrays
+template <typename Container>
+constexpr auto at(Container &container, size_t index) noexcept -> decltype(auto) {
+  PRECONDITION(index < container.size());
+  // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index)
+  return container[index];
+}
+
+// Like gsl::at but prints a message before abnormal program termination and supports nested arrays
+template <typename T>
+constexpr auto at(const std::initializer_list<T> init, size_t index) noexcept -> decltype(auto) {
+  PRECONDITION(index < init.size());
+  return *(init.begin() + index);
+}
+
+// Like gsl::at but prints a message before abnormal program termination and supports nested arrays
+template <typename Container, typename... SizeT>
+constexpr auto at(Container &container, size_t index0, SizeT... index) noexcept -> decltype(auto) {
+  return at(at(container, index0), index...);
 }
 } // namespace TMIV::Common
 

@@ -87,6 +87,6 @@ void SampleStreamV3cUnit::encodeTo(std::ostream &stream,
                                    const SampleStreamV3cHeader &header) const {
   Common::writeBytes(stream, m_ssvu_v3c_unit.size(),
                      header.ssvh_unit_size_precision_bytes_minus1() + size_t{1});
-  stream.write(m_ssvu_v3c_unit.data(), m_ssvu_v3c_unit.size());
+  stream.write(m_ssvu_v3c_unit.data(), Common::downCast<std::streamsize>(m_ssvu_v3c_unit.size()));
 }
 } // namespace TMIV::MivBitstream

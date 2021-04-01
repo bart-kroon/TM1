@@ -425,7 +425,7 @@ private:
     while (nonPrunedArea > (m_params.sampleBudget * percentageRatio / 100) &&
            m_lumaStdDev.value() < 1.0F) {
       std::cout << "Non-pruned exceeds " << percentageRatio << "% of total sample budget ("
-                << float(100.0 * nonPrunedArea / m_params.sampleBudget) << "%)\n";
+                << (100.0 * nonPrunedArea / static_cast<double>(m_params.sampleBudget)) << "%)\n";
       std::cout << "Pruning luma threshold changed\n";
 
       *m_lumaStdDev *= 1.5F;

@@ -113,7 +113,7 @@ constexpr auto CameraIntrinsics::ci_ortho_height(const float value) noexcept -> 
   return *this;
 }
 
-template <typename F> decltype(auto) CameraIntrinsics::dispatch(F f) const {
+template <typename F> auto CameraIntrinsics::dispatch(F f) const -> decltype(auto) {
   switch (ci_cam_type()) {
   case CiCamType::equirectangular:
     return f(Equirectangular{});

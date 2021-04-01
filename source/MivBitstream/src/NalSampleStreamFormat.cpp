@@ -87,6 +87,6 @@ void SampleStreamNalUnit::encodeTo(std::ostream &stream,
                                    const SampleStreamNalHeader &header) const {
   Common::writeBytes(stream, m_ssnu_nal_unit.size(),
                      header.ssnh_unit_size_precision_bytes_minus1() + size_t{1});
-  stream.write(m_ssnu_nal_unit.data(), m_ssnu_nal_unit.size());
+  stream.write(m_ssnu_nal_unit.data(), Common::downCast<std::streamsize>(m_ssnu_nal_unit.size()));
 }
 } // namespace TMIV::MivBitstream

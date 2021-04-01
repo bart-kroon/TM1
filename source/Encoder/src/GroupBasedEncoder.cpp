@@ -211,9 +211,8 @@ auto GroupBasedEncoder::sourceSplitter(const MivBitstream::SequenceConfig &seque
 
       viewsPool = camerasOutGroup;
     } else {
-      numViewsPerGroup.push_back(
-          static_cast<int>((viewParamsList.size() -
-                            (m_numGroups - 1) * std::floor(viewParamsList.size() / m_numGroups))));
+      numViewsPerGroup.push_back(static_cast<int>(
+          (viewParamsList.size() - (m_numGroups - 1) * (viewParamsList.size() / m_numGroups))));
 
       camerasInGroup.clear();
       std::copy(std::cbegin(viewsPool), std::cend(viewsPool), back_inserter(camerasInGroup));

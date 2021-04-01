@@ -352,6 +352,7 @@ auto putIndexedUnsigned(std::ostream &stream, std::string &&fieldName, size_t in
 }
 } // namespace
 
+// NOLINTNEXTLINE(readability-function-cognitive-complexity)
 auto operator<<(std::ostream &stream, const SceneObjectInformation &x) -> std::ostream & {
   putFlag(stream, "soi_persistence_flag", x.soi_persistence_flag());
   putFlag(stream, "soi_reset_flag", x.soi_reset_flag());
@@ -486,6 +487,7 @@ auto SceneObjectInformation::operator==(const SceneObjectInformation &other) con
          (m_object_updates == other.m_object_updates);
 }
 
+// NOLINTNEXTLINE(readability-function-cognitive-complexity)
 auto SceneObjectInformation::decodeFrom(Common::InputBitstream &bitstream)
     -> SceneObjectInformation {
   SceneObjectInformation result{};
@@ -609,6 +611,7 @@ auto SceneObjectInformation::decodeFrom(Common::InputBitstream &bitstream)
   return result;
 }
 
+// NOLINTNEXTLINE(readability-function-cognitive-complexity)
 void SceneObjectInformation::encodeTo(Common::OutputBitstream &bitstream) const {
   bitstream.putFlag(soi_persistence_flag());
   bitstream.putFlag(soi_reset_flag());

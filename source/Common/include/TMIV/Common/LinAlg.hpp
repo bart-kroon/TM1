@@ -185,188 +185,122 @@ template <typename T, size_t M> auto abs(const stack::Vector<T, M> &A) -> stack:
 }
 
 namespace detail {
-template <typename MatrixA, typename MatrixB, typename MatrixC>
-void matprod(const MatrixA &A, char mA, const MatrixB &B, char mB, MatrixC &C) {
-  using size_type = size_t;
-  using T = typename MatrixC::value_type;
+// Matrix product A_ij B_jk == C_ik
+template <typename MAT1, typename MAT2, typename MAT3>
+auto matrixProduct(const MAT1 &A, const MAT2 &B, MAT3 &C) -> MAT3 & {
+  C.resize(A.m(), B.n());
 
-  if (mA == 'N') {
-    if (mB == 'N') {
-      for (size_type i = 0; i < C.m(); i++) {
-        for (size_type j = 0; j < C.n(); j++) {
-          C(i, j) = std::inner_product(A.crow_begin(i), A.crow_end(i), B.ccol_begin(j), T{});
-        }
-      }
-    } else if (mB == 'T') {
-      for (size_type i = 0; i < C.m(); i++) {
-        for (size_type j = 0; j < C.n(); j++) {
-          C(i, j) = std::inner_product(A.crow_begin(i), A.crow_end(i), B.crow_begin(j), T{});
-        }
-      }
-    } else {
-      for (size_type i = 0; i < C.m(); i++) {
-        for (size_type j = 0; j < C.n(); j++) {
-          C(i, j) = std::inner_product(
-              A.crow_begin(i), A.crow_end(i), B.crow_begin(j), T{},
-              [](const T &v1, const T &v2) { return (v1 + v2); },
-              [](const T &v1, const T &v2) { return (v1 * conjugate(v2)); });
-        }
-      }
-    }
-  } else if (mA == 'T') {
-    if (mB == 'N') {
-      for (size_type i = 0; i < C.m(); i++) {
-        for (size_type j = 0; j < C.n(); j++) {
-          C(i, j) = std::inner_product(A.ccol_begin(i), A.ccol_end(i), B.ccol_begin(j), T{});
-        }
-      }
-    } else if (mB == 'T') {
-      for (size_type i = 0; i < C.m(); i++) {
-        for (size_type j = 0; j < C.n(); j++) {
-          C(i, j) = std::inner_product(A.ccol_begin(i), A.ccol_end(i), B.crow_begin(j), T{});
-        }
-      }
-    } else {
-      for (size_type i = 0; i < C.m(); i++) {
-        for (size_type j = 0; j < C.n(); j++) {
-          C(i, j) = std::inner_product(
-              A.ccol_begin(i), A.ccol_end(i), B.crow_begin(j), T{},
-              [](const T &v1, const T &v2) { return (v1 + v2); },
-              [](const T &v1, const T &v2) { return (v1 * conjugate(v2)); });
-        }
-      }
-    }
-  } else {
-    if (mB == 'N') {
-      for (size_type i = 0; i < C.m(); i++) {
-        for (size_type j = 0; j < C.n(); j++) {
-          C(i, j) = std::inner_product(
-              A.ccol_begin(i), A.ccol_end(i), B.ccol_begin(j), T{},
-              [](const T &v1, const T &v2) { return (v1 + v2); },
-              [](const T &v1, const T &v2) { return (conjugate(v1) * v2); });
-        }
-      }
-    } else if (mB == 'T') {
-      for (size_type i = 0; i < C.m(); i++) {
-        for (size_type j = 0; j < C.n(); j++) {
-          C(i, j) = std::inner_product(
-              A.ccol_begin(i), A.ccol_end(i), B.crow_begin(j), T{},
-              [](const T &v1, const T &v2) { return (v1 + v2); },
-              [](const T &v1, const T &v2) { return (conjugate(v1) * v2); });
-        }
-      }
-    } else {
-      for (size_type i = 0; i < C.m(); i++) {
-        for (size_type j = 0; j < C.n(); j++) {
-          C(i, j) = std::inner_product(
-              A.ccol_begin(i), A.ccol_end(i), B.crow_begin(j), T{},
-              [](const T &v1, const T &v2) { return (v1 + v2); },
-              [](const T &v1, const T &v2) { return (conjugate(v1) * conjugate(v2)); });
-        }
-      }
+  using T = typename MAT3::value_type;
+
+  for (size_t i = 0; i < C.m(); i++) {
+    for (size_t j = 0; j < C.n(); j++) {
+      C(i, j) = std::inner_product(A.crow_begin(i), A.crow_end(i), B.ccol_begin(j), T{});
     }
   }
-}
-} // namespace detail
-
-template <typename MAT1, typename MAT2, typename MAT3>
-auto matprod(const MAT1 &A, char mA, const MAT2 &B, char mB, MAT3 &C) -> MAT3 & {
-  C.resize((mA == 'N') ? A.m() : A.n(), (mB == 'N') ? B.n() : B.m());
-  detail::matprod(A, mA, B, mB, C);
   return C;
 }
-
-template <typename MAT> auto matprod(const MAT &A, char mA, const MAT &B, char mB) -> MAT {
-  MAT C;
-  return matprod(A, mA, B, mB, C);
-}
+} // namespace detail
 
 template <typename T, typename U>
 auto operator*(const heap::Matrix<T> &A, const heap::Vector<U> &B)
     -> heap::Vector<std::common_type_t<T, U>> {
   heap::Vector<std::common_type_t<T, U>> out;
-  return matprod(A, 'N', B, 'N', out);
+  return detail::matrixProduct(A, B, out);
 }
 
 template <typename T, typename U, size_t M>
 auto operator*(const heap::Matrix<T> &A, const stack::Vector<U, M> &B)
     -> heap::Vector<std::common_type_t<T, U>> {
   heap::Vector<std::common_type_t<T, U>> out;
-  return matprod(A, 'N', B, 'N', out);
+  return detail::matrixProduct(A, B, out);
 }
 
 template <typename T, typename U>
 auto operator*(const heap::Matrix<T> &A, const heap::Matrix<U> &B)
     -> heap::Matrix<std::common_type_t<T, U>> {
   heap::Matrix<std::common_type_t<T, U>> out;
-  return matprod(A, 'N', B, 'N', out);
+  return detail::matrixProduct(A, B, out);
 }
 
 template <typename T, typename U, size_t M, size_t N>
 auto operator*(const heap::Matrix<T> &A, const stack::Matrix<U, M, N> &B)
     -> heap::Matrix<std::common_type_t<T, U>> {
   heap::Matrix<std::common_type_t<T, U>> out;
-  return matprod(A, 'N', B, 'N', out);
+  return detail::matrixProduct(A, B, out);
 }
 
 template <typename T, typename U, size_t M, size_t N>
 auto operator*(const stack::Matrix<T, M, N> &A, const stack::Vector<U, N> &B)
     -> stack::Vector<std::common_type_t<T, U>, M> {
   stack::Vector<std::common_type_t<T, U>, M> out;
-  return matprod(A, 'N', B, 'N', out);
+  return detail::matrixProduct(A, B, out);
 }
 
 template <typename T, typename U, size_t M, size_t N>
 auto operator*(const stack::Matrix<T, M, N> &A, const heap::Vector<U> &B)
     -> heap::Vector<std::common_type_t<T, U>> {
   heap::Vector<std::common_type_t<T, U>> out;
-  return matprod(A, 'N', B, 'N', out);
+  return detail::matrixProduct(A, B, out);
 }
 
 template <typename T, typename U, size_t M, size_t N>
 auto operator*(const stack::Matrix<T, M, N> &A, const heap::Matrix<U> &B)
     -> heap::Matrix<std::common_type_t<T, U>> {
   heap::Matrix<std::common_type_t<T, U>> out;
-  return matprod(A, 'N', B, 'N', out);
+  return detail::matrixProduct(A, B, out);
 }
 
 template <typename T, typename U, size_t M, size_t N, size_t O>
 auto operator*(const stack::Matrix<T, M, N> &A, const stack::Matrix<U, N, O> &B)
     -> stack::Matrix<std::common_type_t<T, U>, M, O> {
   stack::Matrix<std::common_type_t<T, U>, M, O> out;
-  return matprod(A, 'N', B, 'N', out);
+  return detail::matrixProduct(A, B, out);
 }
 
 namespace detail {
-template <typename MatrixA, typename MatrixOut> void square(MatrixA &A, MatrixOut &out) {
-  matprod(A, 'N', A, 'T', out);
-}
+template <typename T, size_t M> auto square_type(stack::Vector<T, M>) -> stack::Matrix<T, M, M>;
+template <typename T, size_t M, size_t N>
+auto square_type(stack::Matrix<T, M, N>) -> stack::Matrix<T, M, M>;
 } // namespace detail
 
 template <typename MAT1, typename MAT2> void square(const MAT1 &A, MAT2 &out) {
   out.resize(A.m(), A.m());
-  detail::square(A, out);
+
+  using T = typename MAT2::value_type;
+
+  for (size_t i = 0; i < out.m(); i++) {
+    for (size_t j = 0; j < out.n(); j++) {
+      out(i, j) = std::inner_product(A.crow_begin(i), A.crow_end(i), A.crow_begin(j), T{});
+    }
+  }
 }
 
 template <typename MAT> auto square(const MAT &A) {
-  decltype(square_type(MAT())) out;
+  decltype(detail::square_type(MAT())) out;
   square(A, out);
   return out;
 }
 
 namespace detail {
-template <typename MatrixA, typename MatrixOut> void transquare(MatrixA &A, MatrixOut &out) {
-  detail::matprod(A, 'T', A, 'N', out);
-}
+template <typename T, size_t M, size_t N>
+auto transquare_type(stack::Matrix<T, M, N>) -> stack::Matrix<T, N, N>;
+template <typename T> auto transquare_type(heap::Matrix<T>) -> heap::Matrix<T>;
 } // namespace detail
 
 template <typename MAT1, typename MAT2> void transquare(const MAT1 &A, MAT2 &out) {
   out.resize(A.n(), A.n());
-  detail::transquare(A, out);
+
+  using T = typename MAT2::value_type;
+
+  for (size_t i = 0; i < out.m(); i++) {
+    for (size_t j = 0; j < out.n(); j++) {
+      out(i, j) = std::inner_product(A.ccol_begin(i), A.ccol_end(i), A.ccol_begin(j), T{});
+    }
+  }
 }
 
 template <typename MAT> auto transquare(const MAT &A) {
-  decltype(transquare_type(MAT())) out;
+  decltype(detail::transquare_type(MAT())) out;
   transquare(A, out);
   return out;
 }

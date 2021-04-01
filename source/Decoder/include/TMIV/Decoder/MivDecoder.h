@@ -46,6 +46,10 @@ class MivDecoder {
 public: // Decoder interface
   explicit MivDecoder(V3cUnitSource source);
 
+  MivDecoder(const MivDecoder &other) = delete;
+  MivDecoder(MivDecoder &&other) = default;
+  auto operator=(const MivDecoder &other) -> MivDecoder & = delete;
+  auto operator=(MivDecoder &&other) -> MivDecoder & = default;
   ~MivDecoder();
 
   // Provide a frame server for out-of-band occupancy video data (OVD). OVD video sub bitstreams

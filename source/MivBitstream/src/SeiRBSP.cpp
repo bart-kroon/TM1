@@ -142,7 +142,7 @@ auto SeiMessage::decodeFrom(std::istream &stream) -> SeiMessage {
   const auto payloadType = PayloadType(decodeSeiHeaderValue(stream));
   const auto payloadSize = decodeSeiHeaderValue(stream);
   auto buffer = std::vector<char>(payloadSize);
-  stream.read(buffer.data(), buffer.size());
+  stream.read(buffer.data(), Common::downCast<std::streamsize>(buffer.size()));
   return {payloadType, std::string(buffer.data(), buffer.size())};
 }
 
@@ -159,7 +159,7 @@ void encodeSeiHeaderValue(std::ostream &stream, size_t value) {
 void SeiMessage::encodeTo(std::ostream &stream) const {
   encodeSeiHeaderValue(stream, static_cast<unsigned>(payloadType()));
   encodeSeiHeaderValue(stream, payloadSize());
-  stream.write(payload().data(), payload().size());
+  stream.write(payload().data(), Common::downCast<std::streamsize>(payload().size()));
 }
 
 SeiRBSP::SeiRBSP(std::vector<SeiMessage> messages) : m_messages{std::move(messages)} {}

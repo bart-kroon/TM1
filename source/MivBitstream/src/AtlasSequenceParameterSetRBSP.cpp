@@ -79,7 +79,8 @@ auto RefListStruct::decodeFrom(Common::InputBitstream &bitstream,
 
     if (abs_delta_afoc_st != 0) {
       const auto strpf_entry_sign_flag = bitstream.getFlag();
-      x = strpf_entry_sign_flag ? abs_delta_afoc_st : -abs_delta_afoc_st;
+      x = Common::verifyDownCast<int16_t>(strpf_entry_sign_flag ? abs_delta_afoc_st
+                                                                : -abs_delta_afoc_st);
     }
   }
 

@@ -53,15 +53,15 @@ template <> struct Engine<MivBitstream::CiCamType::equirectangular> {
   explicit Engine(const MivBitstream::CameraIntrinsics &ci)
       : phi0{ci.ci_erp_phi_max()}
       , theta0{ci.ci_erp_theta_max()}
-      , dphi_du{-(ci.ci_erp_phi_max() - ci.ci_erp_phi_min()) / ci.projectionPlaneSize().x()}
-      , dtheta_dv{-(ci.ci_erp_theta_max() - ci.ci_erp_theta_min()) / ci.projectionPlaneSize().y()}
-      , u0{ci.projectionPlaneSize().x() * ci.ci_erp_phi_max() /
+      , dphi_du{-(ci.ci_erp_phi_max() - ci.ci_erp_phi_min()) / ci.projectionPlaneSizeF().x()}
+      , dtheta_dv{-(ci.ci_erp_theta_max() - ci.ci_erp_theta_min()) / ci.projectionPlaneSizeF().y()}
+      , u0{ci.projectionPlaneSizeF().x() * ci.ci_erp_phi_max() /
            (ci.ci_erp_phi_max() - ci.ci_erp_phi_min())}
-      , v0{ci.projectionPlaneSize().y() * ci.ci_erp_theta_max() /
+      , v0{ci.projectionPlaneSizeF().y() * ci.ci_erp_theta_max() /
            (ci.ci_erp_theta_max() - ci.ci_erp_theta_min())}
-      , du_dphi{-ci.projectionPlaneSize().x() / (ci.ci_erp_phi_max() - ci.ci_erp_phi_min())}
-      , dv_dtheta{-ci.projectionPlaneSize().y() / (ci.ci_erp_theta_max() - ci.ci_erp_theta_min())} {
-  }
+      , du_dphi{-ci.projectionPlaneSizeF().x() / (ci.ci_erp_phi_max() - ci.ci_erp_phi_min())}
+      , dv_dtheta{-ci.projectionPlaneSizeF().y() /
+                  (ci.ci_erp_theta_max() - ci.ci_erp_theta_min())} {}
 
   // Unprojection equation
   [[nodiscard]] auto unprojectVertex(Common::Vec2f uv, float depth) const -> Common::Vec3f {

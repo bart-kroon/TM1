@@ -40,7 +40,7 @@
 namespace TMIV::MivBitstream {
 constexpr auto PatchParams::atlasId() const noexcept { return m_atlasId; }
 
-constexpr decltype(auto) PatchParams::atlasId(AtlasId value) noexcept {
+constexpr auto PatchParams::atlasId(AtlasId value) noexcept -> decltype(auto) {
   m_atlasId = value;
   return *this;
 }
@@ -199,19 +199,19 @@ constexpr auto PatchParams::isRotated() const noexcept {
          atlasPatchOrientationIndex() == FlexiblePatchOrientation::FPO_MROT90;
 }
 
-constexpr decltype(auto) PatchParams::atlasPatch3dSizeU() const noexcept {
+constexpr auto PatchParams::atlasPatch3dSizeU() const noexcept -> decltype(auto) {
   return isRotated() ? atlasPatch2dSizeY() : atlasPatch2dSizeX();
 }
 
-constexpr decltype(auto) PatchParams::atlasPatch3dSizeV() const noexcept {
+constexpr auto PatchParams::atlasPatch3dSizeV() const noexcept -> decltype(auto) {
   return isRotated() ? atlasPatch2dSizeX() : atlasPatch2dSizeY();
 }
 
-constexpr decltype(auto) PatchParams::atlasPatch3dSizeU(std::int32_t value) noexcept {
+constexpr auto PatchParams::atlasPatch3dSizeU(std::int32_t value) noexcept -> decltype(auto) {
   return isRotated() ? atlasPatch2dSizeY(value) : atlasPatch2dSizeX(value);
 }
 
-constexpr decltype(auto) PatchParams::atlasPatch3dSizeV(std::int32_t value) noexcept {
+constexpr auto PatchParams::atlasPatch3dSizeV(std::int32_t value) noexcept -> decltype(auto) {
   return isRotated() ? atlasPatch2dSizeX(value) : atlasPatch2dSizeY(value);
 }
 

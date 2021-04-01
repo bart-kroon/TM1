@@ -41,56 +41,77 @@ static const uint16_t INVALID = 65535;
 using Common::Vec2i;
 
 namespace {
-template <typename ClusterBufferType>
-void addCandidate(int a, int b, std::queue<Vec2i> &candidates, ClusterBufferType &clusteringBuffer,
-                  int ID, Cluster &subCluster) {
-  if (clusteringBuffer(a, b) == ACTIVE) {
-    candidates.push({a, b});
-    subCluster.push(a, b);
-    clusteringBuffer(a, b) = static_cast<uint16_t>(ID);
-  }
-}
+template <typename ClusterBufferType> class SubRegionGrower {
+public:
+  SubRegionGrower(ClusterList &clusterList, int A, int B, const Cluster &cluster,
+                  std::queue<Vec2i> &candidates, ClusterBufferType &clusteringBuffer)
+      : m_clusterList{clusterList}
+      , m_A{A}
+      , m_B{B}
+      , m_cluster{cluster}
+      , m_candidates{candidates}
+      , m_clusteringBuffer{clusteringBuffer} {}
 
-template <typename ClusterBufferType>
-auto mergePatches(ClusterList &clusterList, int A, int B, const Cluster &cluster,
-                  std::queue<Vec2i> &&candidates, ClusterBufferType &clusteringBuffer) -> int {
-  auto growSubRegion = [&](int ID) {
-    Cluster subCluster(cluster.getViewId(), cluster.isBasicView(), ID, cluster.getEntityId());
-    while (!candidates.empty()) {
-      const auto a = candidates.front().x();
-      const auto b = candidates.front().y();
+  auto operator()(int ID) {
+    Cluster subCluster(m_cluster.getViewId(), m_cluster.isBasicView(), ID, m_cluster.getEntityId());
+    while (!m_candidates.empty()) {
+      const auto a = m_candidates.front().x();
+      const auto b = m_candidates.front().y();
 
       subCluster.push(a, b);
-      clusteringBuffer(a, b) = static_cast<uint16_t>(ID);
+      m_clusteringBuffer(a, b) = static_cast<uint16_t>(ID);
 
       if (0 < a) {
-        addCandidate(a - 1, b, candidates, clusteringBuffer, ID, subCluster);
+        addCandidate(a - 1, b, ID, subCluster);
         if (0 < b) {
-          addCandidate(a - 1, b - 1, candidates, clusteringBuffer, ID, subCluster);
+          addCandidate(a - 1, b - 1, ID, subCluster);
         }
-        if (b < B - 1) {
-          addCandidate(a - 1, b + 1, candidates, clusteringBuffer, ID, subCluster);
+        if (b < m_B - 1) {
+          addCandidate(a - 1, b + 1, ID, subCluster);
         }
       }
-      if (a < A - 1) {
-        addCandidate(a + 1, b, candidates, clusteringBuffer, ID, subCluster);
+      if (a < m_A - 1) {
+        addCandidate(a + 1, b, ID, subCluster);
         if (0 < b) {
-          addCandidate(a + 1, b - 1, candidates, clusteringBuffer, ID, subCluster);
+          addCandidate(a + 1, b - 1, ID, subCluster);
         }
-        if (b < B - 1) {
-          addCandidate(a + 1, b + 1, candidates, clusteringBuffer, ID, subCluster);
+        if (b < m_B - 1) {
+          addCandidate(a + 1, b + 1, ID, subCluster);
         }
       }
       if (0 < b) {
-        addCandidate(a, b - 1, candidates, clusteringBuffer, ID, subCluster);
+        addCandidate(a, b - 1, ID, subCluster);
       }
-      if (b < B - 1) {
-        addCandidate(a, b + 1, candidates, clusteringBuffer, ID, subCluster);
+      if (b < m_B - 1) {
+        addCandidate(a, b + 1, ID, subCluster);
       }
-      candidates.pop();
+      m_candidates.pop();
     }
-    clusterList.push_back(subCluster);
-  };
+    m_clusterList.push_back(subCluster);
+  }
+
+private:
+  void addCandidate(int a, int b, int ID, Cluster &subCluster) {
+    if (m_clusteringBuffer(a, b) == ACTIVE) {
+      m_candidates.push({a, b});
+      subCluster.push(a, b);
+      m_clusteringBuffer(a, b) = static_cast<uint16_t>(ID);
+    }
+  }
+
+  ClusterList &m_clusterList;
+  int m_A;
+  int m_B;
+  const Cluster &m_cluster;
+  std::queue<Vec2i> &m_candidates;
+  ClusterBufferType &m_clusteringBuffer;
+};
+
+template <typename ClusterBufferType>
+auto mergePatches(ClusterList &clusterList, int A, int B, const Cluster &cluster,
+                  std::queue<Vec2i> candidates, ClusterBufferType &clusteringBuffer) -> int {
+  SubRegionGrower<ClusterBufferType> growSubRegion{clusterList, A,          B,
+                                                   cluster,     candidates, clusteringBuffer};
 
   const auto i_top = cluster.imin();
   const auto i_bottom = cluster.imax();

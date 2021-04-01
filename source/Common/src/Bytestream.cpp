@@ -67,7 +67,7 @@ auto getUint64(std::istream &stream) -> uint64_t { return readBytes(stream, 8); 
 
 auto readString(std::istream &stream, size_t bytes) -> std::string {
   auto result = std::string(bytes, '\0');
-  stream.read(result.data(), bytes);
+  stream.read(result.data(), assertDownCast<std::streamsize>(bytes));
   VERIFY_BITSTREAM(stream.good());
   return result;
 }
@@ -99,7 +99,7 @@ void putUint32(std::ostream &stream, uint32_t value) { writeBytes(stream, value,
 void putUint64(std::ostream &stream, uint64_t value) { writeBytes(stream, value, 8); }
 
 void writeString(std::ostream &stream, const std::string &buffer) {
-  stream.write(buffer.data(), buffer.size());
+  stream.write(buffer.data(), assertDownCast<std::streamsize>(buffer.size()));
   VERIFY_BITSTREAM(stream.good());
 }
 

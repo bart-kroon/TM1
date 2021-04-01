@@ -177,7 +177,7 @@ auto NalUnit::decodeFrom(std::istream &stream, size_t numBytesInNalUnit) -> NalU
 
 auto NalUnit::encodeTo(std::ostream &stream) const -> size_t {
   m_nal_unit_header.encodeTo(stream);
-  stream.write(m_rbsp.data(), m_rbsp.size());
+  stream.write(m_rbsp.data(), Common::downCast<std::streamsize>(m_rbsp.size()));
   return size();
 }
 } // namespace TMIV::MivBitstream

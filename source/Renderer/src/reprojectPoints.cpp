@@ -113,17 +113,13 @@ auto ProjectionHelper::doUnprojection(const Common::Vec2f &p, float d) const -> 
 }
 
 auto ProjectionHelper::isStrictlyInsideViewport(const Common::Vec2f &p) const -> bool {
-  return 0.5F <= p.x() &&
-         p.x() <= (static_cast<float>(m_viewParams.get().ci.projectionPlaneSize().x()) - 0.5F) &&
-         0.5F <= p.y() &&
-         p.y() <= (static_cast<float>(m_viewParams.get().ci.projectionPlaneSize().y()) - 0.5F);
+  return 0.5F <= p.x() && p.x() <= (m_viewParams.get().ci.projectionPlaneSizeF().x() - 0.5F) &&
+         0.5F <= p.y() && p.y() <= (m_viewParams.get().ci.projectionPlaneSizeF().y() - 0.5F);
 }
 
 auto ProjectionHelper::isInsideViewport(const Common::Vec2f &p) const -> bool {
-  return -0.5F <= p.x() &&
-         p.x() <= (static_cast<float>(m_viewParams.get().ci.projectionPlaneSize().x()) + 0.5F) &&
-         -0.5F <= p.y() &&
-         p.y() <= (static_cast<float>(m_viewParams.get().ci.projectionPlaneSize().y()) + 0.5F);
+  return -0.5F <= p.x() && p.x() <= (m_viewParams.get().ci.projectionPlaneSizeF().x() + 0.5F) &&
+         -0.5F <= p.y() && p.y() <= (m_viewParams.get().ci.projectionPlaneSizeF().y() + 0.5F);
 }
 
 auto ProjectionHelper::isValidDepth(float d) const -> bool {
@@ -137,18 +133,18 @@ auto ProjectionHelper::getAngularResolution() const -> float {
 
   switch (ci.ci_cam_type()) {
   case MivBitstream::CiCamType::equirectangular: {
-    auto nbPixel = static_cast<float>(ci.projectionPlaneSize().x() * ci.projectionPlaneSize().y());
+    auto nbPixel = ci.projectionPlaneSizeF().x() * ci.projectionPlaneSizeF().y();
     float DT = ci.ci_erp_phi_max() - ci.ci_erp_phi_min();
     float DS = std::sin(ci.ci_erp_theta_max()) - std::sin(ci.ci_erp_theta_min());
 
     return nbPixel / (DS * DT);
   }
   case MivBitstream::CiCamType::perspective: {
-    auto nbPixel = static_cast<float>(ci.projectionPlaneSize().x() * ci.projectionPlaneSize().y());
+    auto nbPixel = ci.projectionPlaneSizeF().x() * ci.projectionPlaneSizeF().y();
     const auto projectionFocalLength =
         (ci.ci_perspective_focal_hor() + ci.ci_perspective_focal_ver()) / 2.F;
-    auto w = static_cast<float>(ci.projectionPlaneSize().x());
-    auto h = static_cast<float>(ci.projectionPlaneSize().y());
+    auto w = ci.projectionPlaneSizeF().x();
+    auto h = ci.projectionPlaneSizeF().y();
     float omega =
         4.F * std::atan(nbPixel /
                         (2.F * projectionFocalLength *
@@ -157,7 +153,7 @@ auto ProjectionHelper::getAngularResolution() const -> float {
     return nbPixel / omega;
   }
   case MivBitstream::CiCamType::orthographic: {
-    auto nbPixel = static_cast<float>(ci.projectionPlaneSize().x() * ci.projectionPlaneSize().y());
+    auto nbPixel = ci.projectionPlaneSizeF().x() * ci.projectionPlaneSizeF().y();
     return nbPixel / Common::hemiSphere;
   }
   default:
@@ -178,11 +174,9 @@ auto ProjectionHelper::getRadialRange() const -> Common::Vec2f {
   }
   case MivBitstream::CiCamType::perspective: {
     const auto &ci = m_viewParams.get().ci;
-    float x = (static_cast<float>(m_viewParams.get().ci.projectionPlaneSize().x()) -
-               ci.ci_perspective_center_hor()) /
+    float x = (m_viewParams.get().ci.projectionPlaneSizeF().x() - ci.ci_perspective_center_hor()) /
               ci.ci_perspective_focal_hor();
-    float y = (static_cast<float>(m_viewParams.get().ci.projectionPlaneSize().y()) -
-               ci.ci_perspective_center_ver()) /
+    float y = (m_viewParams.get().ci.projectionPlaneSizeF().y() - ci.ci_perspective_center_ver()) /
               ci.ci_perspective_focal_ver();
 
     return {1.F / m_viewParams.get().dq.dq_norm_disp_high(),
@@ -208,12 +202,12 @@ auto ProjectionHelper::getPointCloud(unsigned N) const -> PointCloud {
   for (unsigned i = 0U; i < N; i++) {
     float y = 0.F;
 
-    float px = x * static_cast<float>(m_viewParams.get().ci.projectionPlaneSize().x());
+    float px = x * m_viewParams.get().ci.projectionPlaneSizeF().x();
 
     for (unsigned j = 0U; j < N; j++) {
       float d = depthRange.x();
 
-      float py = y * static_cast<float>(m_viewParams.get().ci.projectionPlaneSize().y());
+      float py = y * m_viewParams.get().ci.projectionPlaneSizeF().y();
 
       for (unsigned k = 0U; k < N; k++) {
         pointCloud.emplace_back(doUnprojection({px, py}, d));

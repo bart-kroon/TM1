@@ -378,16 +378,15 @@ private:
       // Populate the triangles if not too big
       auto N = static_cast<int>(vertices.size()) - 1;
 
-      if (isTriangleDimensionNotTooBig(
-              vertices[N - 3].position.x(), vertices[N - 2].position.x(),
-              vertices[N - 1].position.x(),
-              static_cast<float>(viewportParams.ci.projectionPlaneSize().x()))) {
+      if (isTriangleDimensionNotTooBig(vertices[N - 3].position.x(), vertices[N - 2].position.x(),
+                                       vertices[N - 1].position.x(),
+                                       viewportParams.ci.projectionPlaneSizeF().x())) {
         triangles.push_back({{N - 3, N - 2, N - 1}, 0.F});
       }
 
-      if (isTriangleDimensionNotTooBig(
-              vertices[N - 3].position.x(), vertices[N - 1].position.x(), vertices[N].position.x(),
-              static_cast<float>(viewportParams.ci.projectionPlaneSize().x()))) {
+      if (isTriangleDimensionNotTooBig(vertices[N - 3].position.x(), vertices[N - 1].position.x(),
+                                       vertices[N].position.x(),
+                                       viewportParams.ci.projectionPlaneSizeF().x())) {
         triangles.push_back({{N - 3, N - 1, N}, 0.F});
       }
     }

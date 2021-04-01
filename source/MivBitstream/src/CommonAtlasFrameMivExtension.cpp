@@ -56,6 +56,11 @@ auto CameraIntrinsics::projectionPlaneSize() const -> Common::Vec2i {
   return {ci_projection_plane_width_minus1() + 1, ci_projection_plane_height_minus1() + 1};
 }
 
+auto CameraIntrinsics::projectionPlaneSizeF() const -> Common::Vec2f {
+  return {static_cast<float>(ci_projection_plane_width_minus1() + 1),
+          static_cast<float>(ci_projection_plane_height_minus1() + 1)};
+}
+
 auto CameraIntrinsics::ci_erp_phi_min() const -> float {
   VERIFY_MIVBITSTREAM(ci_cam_type() == CiCamType::equirectangular);
   VERIFY_MIVBITSTREAM(m_ci_erp_phi_min.has_value());

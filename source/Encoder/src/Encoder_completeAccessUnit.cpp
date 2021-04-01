@@ -172,7 +172,8 @@ void Encoder::updateAggregationStatistics(const Common::MaskList &aggregatedMask
         return sum + 2 * std::count_if(mask.getPlane(0).begin(), mask.getPlane(0).end(),
                                        [](auto x) { return x > 0; });
       });
-  std::cout << "Aggregated luma samples per frame is " << (1e-6 * lumaSamplesPerFrame) << "M\n";
+  std::cout << "Aggregated luma samples per frame is "
+            << (1e-6 * static_cast<double>(lumaSamplesPerFrame)) << "M\n";
   m_maxLumaSamplesPerFrame = std::max(m_maxLumaSamplesPerFrame, lumaSamplesPerFrame);
 }
 
@@ -318,7 +319,7 @@ auto Encoder::calculatePatchAttrOffsetValuesFullGOP(
          static_cast<uint16_t>(patchAttrOffsetValuesFullGOP[p][1][2]),
          static_cast<uint16_t>(patchAttrOffsetValuesFullGOP[p][2][2])});
   }
-  return bitShift;
+  return Common::verifyDownCast<int>(bitShift);
 }
 
 void Encoder::constructVideoFrames() {
@@ -412,6 +413,7 @@ void Encoder::constructVideoFrames() {
   calculateAttributeOffset(patchAttrOffsetValuesFullGOP);
 }
 
+// NOLINTNEXTLINE(readability-function-cognitive-complexity)
 auto Encoder::writePatchInAtlas(const MivBitstream::PatchParams &patchParams,
                                 const Common::TextureDepth16Frame &view, Common::MVD16Frame &frame,
                                 int frameId) -> std::array<std::array<int64_t, 4>, 3> {

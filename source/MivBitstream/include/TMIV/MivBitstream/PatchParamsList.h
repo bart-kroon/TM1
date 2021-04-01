@@ -52,7 +52,7 @@ namespace TMIV::MivBitstream {
 class PatchParams {
 public:
   [[nodiscard]] constexpr auto atlasId() const noexcept;
-  constexpr decltype(auto) atlasId(AtlasId value) noexcept;
+  constexpr auto atlasId(AtlasId value) noexcept -> decltype(auto);
 
   [[nodiscard]] constexpr auto atlasPatch2dPosX() const noexcept;
   [[nodiscard]] constexpr auto atlasPatch2dPosY() const noexcept;
@@ -91,10 +91,10 @@ public:
 
   // Is the patch rotated such that width and height swap?
   [[nodiscard]] constexpr auto isRotated() const noexcept;
-  [[nodiscard]] constexpr decltype(auto) atlasPatch3dSizeU() const noexcept;
-  [[nodiscard]] constexpr decltype(auto) atlasPatch3dSizeV() const noexcept;
-  constexpr decltype(auto) atlasPatch3dSizeU(std::int32_t value) noexcept;
-  constexpr decltype(auto) atlasPatch3dSizeV(std::int32_t value) noexcept;
+  [[nodiscard]] constexpr auto atlasPatch3dSizeU() const noexcept -> decltype(auto);
+  [[nodiscard]] constexpr auto atlasPatch3dSizeV() const noexcept -> decltype(auto);
+  constexpr auto atlasPatch3dSizeU(std::int32_t value) noexcept -> decltype(auto);
+  constexpr auto atlasPatch3dSizeV(std::int32_t value) noexcept -> decltype(auto);
 
   // Pixel position conversion from atlas (x, y) to view (u, v)
   //

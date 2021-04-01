@@ -14,7 +14,9 @@ readability-*,
 -readability-magic-numbers
 '
 
-WarningsAsErrors: '*'
+HeaderFilterRegex: 'source/.*/include/TMIV/.*'
+
+WarningsAsErrors: '*,-cppcoreguidelines-pro-bounds-pointer-arithmetic'
 
 FormatStyle: file
 
@@ -29,3 +31,5 @@ CheckOptions:
     value:  7
   - key:    readability-function-size.VariableThreshold
     value:  32
+  - key:    readability-function-cognitive-complexity.Threshold
+    value:  47

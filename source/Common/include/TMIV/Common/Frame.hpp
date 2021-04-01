@@ -194,7 +194,7 @@ template <typename FORMAT> constexpr auto Frame<FORMAT>::getBitDepth() { return 
 template <typename FORMAT> void Frame<FORMAT>::read(std::istream &stream) {
   for (auto &plane : m_planes) {
     auto buffer = std::vector<char>(plane.size() * sizeof(plane[0]));
-    stream.read(buffer.data(), buffer.size());
+    stream.read(buffer.data(), assertDownCast<std::streamsize>(buffer.size()));
     std::memcpy(plane.data(), buffer.data(), buffer.size());
   }
 }
@@ -203,7 +203,7 @@ template <typename FORMAT> void Frame<FORMAT>::dump(std::ostream &stream) const 
   for (const auto &plane : m_planes) {
     auto buffer = std::vector<char>(plane.size() * sizeof(plane[0]));
     std::memcpy(buffer.data(), plane.data(), buffer.size());
-    stream.write(buffer.data(), buffer.size());
+    stream.write(buffer.data(), assertDownCast<std::streamsize>(buffer.size()));
   }
 }
 
@@ -289,7 +289,7 @@ template <typename FORMAT> void padChroma(std::ostream &stream, size_t bytes) {
     const auto padding = std::vector(bytes / sizeof(fillValue), fillValue);
     auto buffer = std::vector<char>(bytes);
     std::memcpy(buffer.data(), padding.data(), buffer.size());
-    stream.write(buffer.data(), buffer.size());
+    stream.write(buffer.data(), assertDownCast<std::streamsize>(buffer.size()));
   }
 }
 } // namespace TMIV::Common

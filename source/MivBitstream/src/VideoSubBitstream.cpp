@@ -33,6 +33,8 @@
 
 #include <TMIV/MivBitstream/VideoSubBitstream.h>
 
+#include <TMIV/Common/verify.h>
+
 #include <sstream>
 #include <utility>
 
@@ -57,6 +59,6 @@ auto VideoSubBitstream::decodeFrom(std::istream &stream) -> VideoSubBitstream {
 }
 
 void VideoSubBitstream::encodeTo(std::ostream &stream) const {
-  stream.write(m_data.data(), m_data.size());
+  stream.write(m_data.data(), Common::downCast<std::streamsize>(m_data.size()));
 }
 } // namespace TMIV::MivBitstream

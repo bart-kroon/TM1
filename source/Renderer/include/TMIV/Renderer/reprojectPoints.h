@@ -125,10 +125,13 @@ private:
 
 public:
   ProjectionHelper(const MivBitstream::ViewParams &viewParams);
+
   ProjectionHelper(const ProjectionHelper &) = delete;
   ProjectionHelper(ProjectionHelper &&) = default;
   auto operator=(const ProjectionHelper &) -> ProjectionHelper & = delete;
-  auto operator=(ProjectionHelper &&) -> ProjectionHelper & = delete;
+  auto operator=(ProjectionHelper &&) -> ProjectionHelper & = default;
+  ~ProjectionHelper() = default;
+
   [[nodiscard]] auto getViewParams() const -> const MivBitstream::ViewParams & {
     return m_viewParams.get();
   }

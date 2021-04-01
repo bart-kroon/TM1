@@ -242,6 +242,12 @@ void MivDecoder::checkCapabilities() const {
   }
 }
 
+namespace {
+auto clockInSeconds() {
+  return static_cast<double>(std::clock()) / static_cast<double>(CLOCKS_PER_SEC);
+}
+} // namespace
+
 auto MivDecoder::startVideoDecoder(const MivBitstream::V3cUnitHeader &vuh, double &totalTime)
     -> std::unique_ptr<VideoDecoder::VideoServer> {
   std::string data;
@@ -256,13 +262,13 @@ auto MivDecoder::startVideoDecoder(const MivBitstream::V3cUnitHeader &vuh, doubl
     return {}; // Out-of-band?
   }
 
-  const double t0 = std::clock();
+  const auto t0 = clockInSeconds();
   auto server = std::make_unique<VideoDecoder::VideoServer>(
       VideoDecoder::IVideoDecoder::create(
           m_au.vps.profile_tier_level().ptl_profile_codec_group_idc()),
       data);
   server->wait();
-  totalTime += (std::clock() - t0) / CLOCKS_PER_SEC;
+  totalTime += clockInSeconds() - t0;
   return server;
 }
 
@@ -422,7 +428,7 @@ auto MivDecoder::decodePatchParamsList(size_t k, MivBitstream::PatchParamsList &
 }
 
 auto MivDecoder::decodeOccVideo(size_t k) -> bool {
-  const double t0 = clock();
+  const auto t0 = clockInSeconds();
 
   if (m_occVideoDecoder[k]) {
     auto frame = m_occVideoDecoder[k]->getFrame();
@@ -441,12 +447,12 @@ auto MivDecoder::decodeOccVideo(size_t k) -> bool {
     MIVBITSTREAM_ERROR("Out-of-band occupancy video data but no frame server provided");
   }
 
-  m_totalOccVideoDecodingTime += (clock() - t0) / CLOCKS_PER_SEC;
+  m_totalOccVideoDecodingTime += clockInSeconds() - t0;
   return true;
 }
 
 auto MivDecoder::decodeGeoVideo(size_t k) -> bool {
-  const double t0 = clock();
+  const auto t0 = clockInSeconds();
 
   if (m_geoVideoDecoder[k]) {
     auto frame = m_geoVideoDecoder[k]->getFrame();
@@ -465,12 +471,12 @@ auto MivDecoder::decodeGeoVideo(size_t k) -> bool {
     MIVBITSTREAM_ERROR("Out-of-band geometry video data but no frame server provided");
   }
 
-  m_totalGeoVideoDecodingTime += (clock() - t0) / CLOCKS_PER_SEC;
+  m_totalGeoVideoDecodingTime += clockInSeconds() - t0;
   return true;
 }
 
 auto MivDecoder::decodeAttrTextureVideo(size_t k) -> bool {
-  const double t0 = clock();
+  const auto t0 = clockInSeconds();
 
   if (m_textureVideoDecoder[k]) {
     auto frame = m_textureVideoDecoder[k]->getFrame();
@@ -489,12 +495,12 @@ auto MivDecoder::decodeAttrTextureVideo(size_t k) -> bool {
     MIVBITSTREAM_ERROR("Out-of-band texture video data but no frame server provided");
   }
 
-  m_totalAttrVideoDecodingTime += (clock() - t0) / CLOCKS_PER_SEC;
+  m_totalAttrVideoDecodingTime += clockInSeconds() - t0;
   return true;
 }
 
 auto MivDecoder::decodeAttrTransparencyVideo(size_t k) -> bool {
-  const double t0 = clock();
+  const auto t0 = clockInSeconds();
 
   if (m_transparencyVideoDecoder[k]) {
     auto frame = m_transparencyVideoDecoder[k]->getFrame();
@@ -513,7 +519,7 @@ auto MivDecoder::decodeAttrTransparencyVideo(size_t k) -> bool {
     MIVBITSTREAM_ERROR("Out-of-band transparency video data but no frame server provided");
   }
 
-  m_totalAttrVideoDecodingTime += (clock() - t0) / CLOCKS_PER_SEC;
+  m_totalAttrVideoDecodingTime += clockInSeconds() - t0;
   return true;
 }
 

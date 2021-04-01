@@ -42,7 +42,7 @@ template <typename T>
 auto readFromStream(std::istream &stream, const unsigned long long int numberOfItems)
     -> std::vector<T> {
   std::string itemBuffer(numberOfItems * sizeof(T), '0');
-  stream.read(itemBuffer.data(), itemBuffer.size());
+  stream.read(itemBuffer.data(), Common::downCast<std::streamsize>(itemBuffer.size()));
   if (!stream.good()) {
     throw std::runtime_error("Failed to read stream");
   }
@@ -173,7 +173,8 @@ void Reader::buildIndex() {
     std::string attributeCountBuffer(countList.size() * sizeof(Common::MpiPcs::Attribute::Count),
                                      '0');
 
-    stream.read(attributeCountBuffer.data(), attributeCountBuffer.size());
+    stream.read(attributeCountBuffer.data(),
+                Common::downCast<std::streamsize>(attributeCountBuffer.size()));
     if (!stream.good()) {
       throw std::runtime_error(fmt::format("Failed to read from {}", m_path));
     }
@@ -182,8 +183,9 @@ void Reader::buildIndex() {
 
     const auto nbAttribute = std::accumulate(countList.begin(), countList.end(), 0ULL);
 
-    pos += countList.size() * sizeof(Common::MpiPcs::Attribute::Count) +
-           nbAttribute * Common::MpiPcs::Attribute::attributeSize;
+    pos += Common::downCast<std::streamoff>(countList.size() *
+                                                sizeof(Common::MpiPcs::Attribute::Count) +
+                                            nbAttribute * Common::MpiPcs::Attribute::attributeSize);
   }
 }
 
@@ -233,7 +235,7 @@ void Writer::writeToStream(std::ostream &stream, std::vector<T> &items) const {
   std::string itemBuffer(items.size() * sizeof(T), '0');
   memcpy(itemBuffer.data(), items.data(), itemBuffer.size());
 
-  stream.write(itemBuffer.data(), itemBuffer.size());
+  stream.write(itemBuffer.data(), Common::downCast<std::streamsize>(itemBuffer.size()));
   if (!stream.good()) {
     throw std::runtime_error(fmt::format("Failed to write to {}", m_path));
   }

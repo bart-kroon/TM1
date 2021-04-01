@@ -320,7 +320,8 @@ auto MpiEncoder::processAccessUnit(int firstFrameId, int lastFrameId) -> const E
               back_inserter(m_params.patchParamsList));
   }
 
-  fmt::print("Aggregated luma samples per frame is {}M\n", 1e-6 * 2 * nbActivePixels);
+  fmt::print("Aggregated luma samples per frame is {}M\n",
+             1e-6 * 2 * static_cast<double>(nbActivePixels));
   m_maxLumaSamplesPerFrame = std::max(m_maxLumaSamplesPerFrame, nbActivePixels);
 
   fmt::print("Packing done with nb of patches = {}\n", m_params.patchParamsList.size());

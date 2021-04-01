@@ -34,6 +34,7 @@
 #include <TMIV/Renderer/Inpainter.h>
 
 #include <TMIV/Common/Common.h>
+#include <TMIV/Common/verify.h>
 
 #include <cmath>
 
@@ -43,6 +44,7 @@ constexpr auto depthBlendingThreshold = 655.36; // 1% of bit depth
 
 enum class InpaintingType { horizontal, vertical, omnidirectional };
 
+// NOLINTNEXTLINE(readability-function-cognitive-complexity)
 void perform2WayInpainting(Common::Texture444Depth16Frame &yuvd, InpaintingType inpaintingType,
                            const Common::Mat<int> &nonEmptyNeighbor1,
                            const Common::Mat<int> &nonEmptyNeighbor2,
@@ -228,7 +230,7 @@ void inpaintOmnidirectionalView(Common::Texture444Depth16Frame &yuvd,
 
       auto newPP = iNewH * width + iNewW;
 
-      mapERP2Cassini(h, w) = newPP;
+      mapERP2Cassini(h, w) = Common::assertDownCast<int>(newPP);
       if (isHole(iNewH, iNewW) == 1) {
         mapCassini2ERP(iNewH, iNewW) = oldPP;
       }

@@ -272,9 +272,7 @@ private:
       auto M = Common::Mat3x3f{};
 
       for (const auto &helper : sourceHelperList) {
-        auto N = Common::Mat3x3f{};
-        M += matprod(helper.getViewParams().pose.position, 'N',
-                     helper.getViewParams().pose.position, 'T', N);
+        M += square(helper.getViewParams().pose.position);
       }
 
       return epsilon < det(M);
@@ -342,12 +340,10 @@ private:
     for (auto i = 0U; i < N; i++) {
       auto y = 0.F;
 
-      const auto px =
-          x * static_cast<float>(targetHelper.getViewParams().ci.projectionPlaneSize().x());
+      const auto px = x * targetHelper.getViewParams().ci.projectionPlaneSizeF().x();
 
       for (auto j = 0U; j < N; j++) {
-        const auto py =
-            y * static_cast<float>(targetHelper.getViewParams().ci.projectionPlaneSize().y());
+        const auto py = y * targetHelper.getViewParams().ci.projectionPlaneSizeF().y();
 
         pointCloud.push_back(targetHelper.doUnprojection({px, py}, depthRange.x()));
         pointCloud.push_back(targetHelper.doUnprojection({px, py}, depthRange.y()));

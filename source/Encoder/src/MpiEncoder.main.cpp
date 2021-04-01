@@ -132,11 +132,13 @@ private:
 
   void reportSummary(std::streampos bytesWritten) const {
     fmt::print("Maximum luma samples per frame is {}\n", m_encoder->maxLumaSamplesPerFrame());
-    fmt::print("Total size is {} B ({} kb)\n", bytesWritten, 8e-3 * bytesWritten);
+    fmt::print("Total size is {} B ({} kb)\n", bytesWritten,
+               8e-3 * static_cast<double>(bytesWritten));
     fmt::print("Frame count is {}\n", m_numberOfInputFrames);
     fmt::print("Frame rate is {} Hz\n", m_inputSequenceConfig.frameRate);
-    fmt::print("Total bitrate is {} kbps\n",
-               8e-3 * bytesWritten * m_inputSequenceConfig.frameRate / m_numberOfInputFrames);
+    fmt::print("Total bitrate is {} kbps\n", 8e-3 * static_cast<double>(bytesWritten) *
+                                                 m_inputSequenceConfig.frameRate /
+                                                 m_numberOfInputFrames);
   }
 };
 } // namespace TMIV::Encoder

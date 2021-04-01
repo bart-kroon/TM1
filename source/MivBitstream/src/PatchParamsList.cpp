@@ -42,51 +42,55 @@ auto PatchParams::decodePdu(const PatchDataUnit &pdu, const AtlasSequenceParamet
   auto pp = PatchParams{};
 
   const auto patchPackingBlockSize = 1U << asps.asps_log2_patch_packing_block_size();
-  pp.atlasPatch2dPosX(pdu.pdu_2d_pos_x() * patchPackingBlockSize);
-  pp.atlasPatch2dPosY(pdu.pdu_2d_pos_y() * patchPackingBlockSize);
+  pp.atlasPatch2dPosX(Common::verifyDownCast<int32_t>(pdu.pdu_2d_pos_x() * patchPackingBlockSize));
+  pp.atlasPatch2dPosY(Common::verifyDownCast<int32_t>(pdu.pdu_2d_pos_y() * patchPackingBlockSize));
 
-  pp.atlasPatch3dOffsetU(pdu.pdu_3d_offset_u());
-  pp.atlasPatch3dOffsetV(pdu.pdu_3d_offset_v());
+  pp.atlasPatch3dOffsetU(Common::verifyDownCast<int32_t>(pdu.pdu_3d_offset_u()));
+  pp.atlasPatch3dOffsetV(Common::verifyDownCast<int32_t>(pdu.pdu_3d_offset_v()));
 
   const auto offsetDQuantizer = 1U << ath.ath_pos_min_d_quantizer();
-  pp.atlasPatch3dOffsetD(pdu.pdu_3d_offset_d() * offsetDQuantizer);
+  pp.atlasPatch3dOffsetD(Common::verifyDownCast<int32_t>(pdu.pdu_3d_offset_d() * offsetDQuantizer));
 
   if (asps.asps_normal_axis_max_delta_value_enabled_flag()) {
     const auto rangeDQuantizer = 1U << ath.ath_pos_delta_max_d_quantizer();
-    pp.atlasPatch3dRangeD(pdu.pdu_3d_range_d() == 0 ? 0
-                                                    : (pdu.pdu_3d_range_d() * rangeDQuantizer) - 1);
+    pp.atlasPatch3dRangeD(Common::verifyDownCast<int32_t>(
+        pdu.pdu_3d_range_d() == 0 ? 0 : (pdu.pdu_3d_range_d() * rangeDQuantizer) - 1));
   } else {
     const auto rangeDBitDepth = std::min(asps.asps_geometry_2d_bit_depth_minus1() + 1U,
                                          asps.asps_geometry_3d_bit_depth_minus1() + 1U);
     const auto rangeD = 1U << rangeDBitDepth;
-    pp.atlasPatch3dRangeD(rangeD - 1);
+    pp.atlasPatch3dRangeD(Common::verifyDownCast<int32_t>(rangeD - 1));
   }
 
   pp.atlasPatchProjectionId(pdu.pdu_projection_id());
   pp.atlasPatchOrientationIndex(pdu.pdu_orientation_index());
 
   if (pdu.pdu_lod_enabled_flag()) {
-    pp.atlasPatchLoDScaleX(pdu.pdu_lod_scale_x_minus1() + 1U);
-    pp.atlasPatchLoDScaleY((pdu.pdu_lod_scale_x_minus1() == 0 ? 2U : 1U) +
-                           pdu.pdu_lod_scale_y_idc());
+    pp.atlasPatchLoDScaleX(Common::verifyDownCast<int32_t>(pdu.pdu_lod_scale_x_minus1() + 1U));
+    pp.atlasPatchLoDScaleY(Common::verifyDownCast<int32_t>(
+        (pdu.pdu_lod_scale_x_minus1() == 0 ? 2U : 1U) + pdu.pdu_lod_scale_y_idc()));
   } else if (afps.afps_miv_extension_present_flag()) {
     const auto &afme = afps.afps_miv_extension();
     if (afme.afme_inpaint_lod_enabled_flag()) {
-      pp.atlasPatchLoDScaleX(afme.afme_inpaint_lod_scale_x_minus1() + 1U);
-      pp.atlasPatchLoDScaleY((afme.afme_inpaint_lod_scale_x_minus1() == 0 ? 2U : 1U) +
-                             afme.afme_inpaint_lod_scale_y_idc());
+      pp.atlasPatchLoDScaleX(
+          Common::verifyDownCast<int32_t>(afme.afme_inpaint_lod_scale_x_minus1() + 1U));
+      pp.atlasPatchLoDScaleY(
+          Common::verifyDownCast<int32_t>((afme.afme_inpaint_lod_scale_x_minus1() == 0 ? 2U : 1U) +
+                                          afme.afme_inpaint_lod_scale_y_idc()));
     }
   }
 
   const auto patchSizeXQuantizer = asps.asps_patch_size_quantizer_present_flag()
                                        ? 1U << ath.ath_patch_size_x_info_quantizer()
                                        : patchPackingBlockSize;
-  pp.atlasPatch2dSizeX((pdu.pdu_2d_size_x_minus1() + 1) * patchSizeXQuantizer);
+  pp.atlasPatch2dSizeX(
+      Common::verifyDownCast<int32_t>((pdu.pdu_2d_size_x_minus1() + 1) * patchSizeXQuantizer));
 
   const auto patchSizeYQuantizer = asps.asps_patch_size_quantizer_present_flag()
                                        ? 1U << ath.ath_patch_size_y_info_quantizer()
                                        : patchPackingBlockSize;
-  pp.atlasPatch2dSizeY((pdu.pdu_2d_size_y_minus1() + 1) * patchSizeYQuantizer);
+  pp.atlasPatch2dSizeY(
+      Common::verifyDownCast<int32_t>((pdu.pdu_2d_size_y_minus1() + 1) * patchSizeYQuantizer));
 
   if (asps.asps_miv_extension_present_flag()) {
     const auto &asme = asps.asps_miv_extension();

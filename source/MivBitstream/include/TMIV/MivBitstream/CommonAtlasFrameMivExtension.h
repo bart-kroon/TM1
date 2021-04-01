@@ -126,10 +126,11 @@ public:
   constexpr auto ci_ortho_height(float value) noexcept -> auto &;
 
   [[nodiscard]] auto projectionPlaneSize() const -> Common::Vec2i;
+  [[nodiscard]] auto projectionPlaneSizeF() const -> Common::Vec2f;
 
   // Wrap the ci_cam_type in an integral constant and pass a value of that type to the unary
   // function f. This allows to template on the camera projection type.
-  template <typename F> decltype(auto) dispatch(F f) const;
+  template <typename F> auto dispatch(F f) const -> decltype(auto);
 
   auto printTo(std::ostream &stream, uint16_t viewId) const -> std::ostream &;
 

@@ -167,7 +167,7 @@ auto calculateStdDev(const std::vector<int> &differenceHistogram) -> std::option
 
   for (int bin = 0; bin < static_cast<int>(differenceHistogram.size()); ++bin) {
     const float value = average - static_cast<float>(bin) + static_cast<float>(numOfBins2);
-    sum += static_cast<std::int64_t>(differenceHistogram[bin] * value * value);
+    sum += static_cast<std::int64_t>(static_cast<float>(differenceHistogram[bin]) * value * value);
   }
 
   return std::sqrt(static_cast<float>(sum) / static_cast<float>(numSamples)) / 4.0F;

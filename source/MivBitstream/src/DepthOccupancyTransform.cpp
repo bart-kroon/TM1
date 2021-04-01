@@ -48,7 +48,7 @@ DepthTransform::DepthTransform(const DepthQuantization &dq, unsigned bits)
   const auto maxLevel = std::ldexp(1.F, static_cast<int>(bits)) - 1.F;
   const auto lowestLevel = std::ceil(std::nextafter(-far / (near - far) * maxLevel, INFINITY));
   m_minNormDisp = far + (near - far) * (lowestLevel / maxLevel);
-  assert(0 < m_minNormDisp);
+  ASSERT(0 < m_minNormDisp);
 }
 
 DepthTransform::DepthTransform(const DepthQuantization &dq, const PatchParams &patchParams,

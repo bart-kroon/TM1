@@ -68,8 +68,9 @@ protected:
       -> const std::vector<std::string> &;
 
   // Use the configuration file with a factory to create a component/module
-  template <class Interface, typename... Args> [[nodiscard]] auto create(Args &&...next) const {
-    auto result = getComponentParentAndName(json(), std::forward<Args>(next)...);
+  template <class Interface, typename... Args>
+  [[nodiscard]] auto create(const std::string &name, Args &&...next) const {
+    auto result = getComponentParentAndName(json(), name, std::forward<Args>(next)...);
     return Common::create<Interface>(std::move(result.second), json(), result.first);
   }
 

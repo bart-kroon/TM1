@@ -318,7 +318,7 @@ void Rasterizer<T...>::rasterTriangle(TriangleDescriptor descriptor, const Batch
           const auto a = blendAttributes(w0, a0, w1, a1, w2, a2);
 
           // Blend pixel
-          assert(v * strip.cols + u < static_cast<int>(strip.matrix.size()));
+          ASSERT(v * strip.cols + u < static_cast<int>(strip.matrix.size()));
           auto &P = strip.matrix[v * strip.cols + u];
 
           auto p = m_pixel.construct(a, d, rayAngle, stretching);

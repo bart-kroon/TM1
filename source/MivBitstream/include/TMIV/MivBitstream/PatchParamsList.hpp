@@ -191,7 +191,7 @@ inline auto PatchParams::operator==(const PatchParams &other) const -> bool {
 }
 
 constexpr auto PatchParams::isRotated() const noexcept {
-  assert(atlasPatchOrientationIndex() <= FlexiblePatchOrientation::FPO_MROT180);
+  ASSERT(atlasPatchOrientationIndex() <= FlexiblePatchOrientation::FPO_MROT180);
 
   return atlasPatchOrientationIndex() == FlexiblePatchOrientation::FPO_ROT90 ||
          atlasPatchOrientationIndex() == FlexiblePatchOrientation::FPO_SWAP ||

@@ -54,6 +54,18 @@
   static_cast<void>(!!(condition) ||                                                               \
                     (::TMIV::Common::runtimeError(#condition, __FILE__, __LINE__), false))
 
+// Like the assert macro from <cassert>. We cannot use that because the libc++ implementation
+// triggers cppcoreguidelines-pro-bounds-array-to-pointer-decay.
+#ifdef NDEBUG
+// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
+#define ASSERT(condition) (static_cast<void>(0))
+#else
+// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
+#define ASSERT(condition)                                                                          \
+  static_cast<void>(!!(condition) ||                                                               \
+                    (::TMIV::Common::assertionFailed(#condition, __FILE__, __LINE__), false))
+#endif
+
 // NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define RUNTIME_ERROR(what) ::TMIV::Common::runtimeError(what, __FILE__, __LINE__)
 
@@ -128,7 +140,7 @@
 
 // Check for a precondition on an operation that will start (assumptions on the input)
 //
-//  * For hot inner loops use `assert` from the <cassert> header instead.
+//  * For hot inner loops use `ASSERT` from the <cassert> header instead.
 //  * When this triggers, this is always a bug in the test model.
 //  * This is an internal error source and thus an abnormal program termination will be triggered.
 //
@@ -139,7 +151,7 @@
 
 // Check for a postcondition on an operation that just took place (assumptions on the output)
 //
-//  * For hot inner loops use `assert` from the <cassert> header instead.
+//  * For hot inner loops use `ASSERT` from the <cassert> header instead.
 //  * When this triggers, this is always a bug in the test model.
 //  * This is an internal error source and thus an abnormal program termination will be triggered.
 //
@@ -300,13 +312,13 @@ template <typename Out, typename In> constexpr auto assertDownCast(In input) noe
   static_assert(std::is_arithmetic_v<In> && std::is_integral_v<Out>);
 
   if constexpr (std::is_signed_v<In> && std::is_unsigned_v<Out>) {
-    assert(0 <= input);
+    ASSERT(0 <= input);
   }
   if constexpr (std::numeric_limits<In>::digits > std::numeric_limits<Out>::digits) {
     if constexpr (std::is_signed_v<In> && std::is_signed_v<Out>) {
-      assert(std::numeric_limits<Out>::min() <= input);
+      ASSERT(std::numeric_limits<Out>::min() <= input);
     }
-    assert(input <= static_cast<In>(std::numeric_limits<Out>::max()));
+    ASSERT(input <= static_cast<In>(std::numeric_limits<Out>::max()));
   }
   return static_cast<Out>(input);
 }

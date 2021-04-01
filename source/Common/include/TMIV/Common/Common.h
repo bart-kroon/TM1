@@ -34,8 +34,9 @@
 #ifndef TMIV_COMMON_COMMON_H
 #define TMIV_COMMON_COMMON_H
 
-// Common data types and functions that are often used and do not need a
-// separate header file
+// Common data types and functions that are often used and do not need a separate header file
+
+#include <TMIV/Common/verify.h>
 
 #include <algorithm>
 #include <cassert>
@@ -72,14 +73,14 @@ using SampleValue = uint_fast32_t;
 template <typename UnsignedResult = SampleValue>
 constexpr auto maxLevel(unsigned bits) noexcept -> UnsignedResult {
   static_assert(std::is_unsigned_v<UnsignedResult>);
-  assert(bits <= std::numeric_limits<UnsignedResult>::digits);
+  ASSERT(bits <= std::numeric_limits<UnsignedResult>::digits);
   return static_cast<UnsignedResult>((UnsignedResult{1} << bits) - 1U);
 }
 
 // Expand an integral value to floating-point using a linear transfer function
 constexpr auto expandValue(SampleValue x, unsigned bits) -> float {
-  assert(x <= maxLevel(bits));
-  assert(0 < bits);
+  ASSERT(x <= maxLevel(bits));
+  ASSERT(0 < bits);
   return static_cast<float>(x) / static_cast<float>(maxLevel(bits));
 }
 

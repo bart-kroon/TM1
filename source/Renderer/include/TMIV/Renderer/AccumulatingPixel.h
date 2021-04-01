@@ -62,9 +62,9 @@ template <typename... T> struct PixelAccumulator : private PixelAttributes<T...>
       , normWeight{normWeight_}
       , normDisp{normDisp_}
       , stretching{stretching_} {
-    assert(normWeight_ >= 0.F);
-    assert(normDisp_ >= 0.F);
-    assert(stretching_ > 0.F);
+    ASSERT(normWeight_ >= 0.F);
+    ASSERT(normDisp_ >= 0.F);
+    ASSERT(stretching_ > 0.F);
   }
 
   // weight is implicit as normWeight *
@@ -105,9 +105,9 @@ template <typename... T> struct PixelValue : private PixelAttributes<T...> {
       , normDisp{normDisp_}
       , normWeight{normWeight_}
       , stretching{stretching_} {
-    assert(normDisp_ >= 0.F);
-    assert(normWeight_ >= 0.F);
-    assert(stretching_ >= 0.F);
+    ASSERT(normDisp_ >= 0.F);
+    ASSERT(normWeight_ >= 0.F);
+    ASSERT(stretching_ >= 0.F);
   }
 
   // Normalized disparity in diopters
@@ -152,7 +152,7 @@ public:
   // Construct a pixel accumulator from a single synthesized pixel
   [[nodiscard]] auto construct(Attributes attributes, float normDisp, float rayAngle,
                                float stretching) const -> Accumulator {
-    assert(normDisp >= 0.F);
+    ASSERT(normDisp >= 0.F);
     return {attributes, rayAngleWeight(rayAngle) * stretchingWeight(stretching), normDisp,
             stretching};
   }
@@ -184,7 +184,7 @@ public:
       // a is in front of b
       const float w_a =
           a.normWeight / (a.normWeight + b.normWeight * normDispWeight(b.normDisp - a.normDisp));
-      assert(w_a >= 0.F);
+      ASSERT(w_a >= 0.F);
       const float w_b = 1.F - w_a;
 
       // Optimization: No alpha blending when w_b is almost zero
@@ -198,7 +198,7 @@ public:
       // b is in front of a
       const float w_b =
           b.normWeight / (b.normWeight + a.normWeight * normDispWeight(a.normDisp - b.normDisp));
-      assert(w_b >= 0.F);
+      ASSERT(w_b >= 0.F);
       const float w_a = 1.F - w_b;
 
       // Optimization: No alpha blending when w_a is almost zero

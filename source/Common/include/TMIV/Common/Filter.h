@@ -61,7 +61,7 @@ template <typename ElementSum>
 auto sumRect(const Mat<ElementSum> &ii, const Vec2i &p_1, const Vec2i &p_2) noexcept -> ElementSum {
   static_assert(std::is_unsigned_v<ElementSum>);
 
-  assert(p_1.x() <= p_2.x() && p_1.y() <= p_2.y());
+  ASSERT(p_1.x() <= p_2.x() && p_1.y() <= p_2.y());
   const auto i_1 = std::max(0, p_1.y());
   const auto j_1 = std::max(0, p_1.x());
   const auto i_2 = std::min(static_cast<int>(ii.height() - 1), p_2.y());
@@ -75,7 +75,7 @@ auto sumRect(const Mat<ElementSum> &ii, const Vec2i &p_1, const Vec2i &p_2) noex
 
 template <typename ElementSum>
 auto countRect(const Mat<ElementSum> &ii, const Vec2i &p_1, const Vec2i &p_2) noexcept -> int {
-  assert(p_1.x() <= p_2.x() && p_1.y() <= p_2.y());
+  ASSERT(p_1.x() <= p_2.x() && p_1.y() <= p_2.y());
   const auto i_1 = std::max(0, p_1.y());
   const auto j_1 = std::max(0, p_1.x());
   const auto i_2 = std::min(static_cast<int>(ii.height() - 1), p_2.y());

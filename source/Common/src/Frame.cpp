@@ -181,7 +181,7 @@ auto Attribute::toBuffer() const -> Buffer {
 
   const auto blob = stream.str(); // likely SSO
   static_assert(buffer.size() == attributeSize);
-  assert(blob.size() == buffer.size());
+  ASSERT(blob.size() == buffer.size());
 
   std::copy(blob.cbegin(), blob.cend(), buffer.begin());
   return buffer;

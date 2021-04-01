@@ -85,7 +85,7 @@ static auto blend(const std::optional<DirectionConstraint> &ao,
   const auto &a = ao.value_or(DirectionConstraint());
   const auto &b = bo.value_or(DirectionConstraint());
 
-  assert(s >= 0.F && s <= 1.F);
+  ASSERT(s >= 0.F && s <= 1.F);
   const float sa = 1.F - s;
   const float sb = s;
 
@@ -463,7 +463,7 @@ auto ViewingSpaceEvaluator::computeInclusion(const MivBitstream::ViewingSpace &v
   }
 #endif
 
-  assert(Common::inRange(result, 0.F, 1.F));
+  ASSERT(Common::inRange(result, 0.F, 1.F));
   return result;
 }
 

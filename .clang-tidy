@@ -3,7 +3,6 @@ Checks: '
 bugprone-*,
 cppcoreguidelines-*,
 -cppcoreguidelines-avoid-magic-numbers,
--cppcoreguidelines-pro-bounds-array-to-pointer-decay,
 -cppcoreguidelines-pro-bounds-constant-array-index,
 google-readability-braces-around-statements,
 google-build-using-namespace,

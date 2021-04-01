@@ -187,7 +187,7 @@ struct PrimitiveShape {
 };
 
 inline auto PrimitiveShape::shapeType() const -> PrimitiveShapeType {
-  assert(primitive.index() != std::variant_npos);
+  ASSERT(primitive.index() != std::variant_npos);
   if (std::holds_alternative<Cuboid>(primitive)) {
     return PrimitiveShapeType::cuboid;
   }

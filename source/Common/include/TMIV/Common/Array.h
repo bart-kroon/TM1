@@ -60,13 +60,13 @@ private:
 public:
   constexpr explicit SteppedIterator(Iter begin, ptrdiff_t offset, ptrdiff_t step) noexcept
       : m_begin{begin}, m_offset{offset}, m_step{step} {
-    assert(0 < step);
+    ASSERT(0 < step);
   }
 
   [[deprecated]] [[nodiscard]] auto n() const noexcept { return m_step; }
 
   [[nodiscard]] constexpr auto operator==(const SteppedIterator &rhs) const noexcept {
-    assert(m_begin == rhs.m_begin);
+    ASSERT(m_begin == rhs.m_begin);
     return m_offset == rhs.m_offset;
   }
 
@@ -75,7 +75,7 @@ public:
   }
 
   [[nodiscard]] constexpr auto operator<(const SteppedIterator &rhs) const noexcept {
-    assert(m_begin == rhs.m_begin);
+    ASSERT(m_begin == rhs.m_begin);
     return m_offset < rhs.m_offset;
   }
 
@@ -131,7 +131,7 @@ public:
   }
 
   [[nodiscard]] constexpr auto operator-(const SteppedIterator &iter) const noexcept {
-    assert(0 < m_step);
+    ASSERT(0 < m_step);
     return (m_offset - iter.m_offset) / m_step;
   }
 
@@ -193,7 +193,7 @@ private:
     }
 #ifndef NDEBUG
     for (size_t i = m_dim; i < L; ++i) {
-      assert(index[i] == 0);
+      ASSERT(index[i] == 0);
     }
 #endif
     return result;
@@ -276,7 +276,7 @@ public:
   template <typename OtherArray, typename = typename OtherArray::dim_iterator,
             typename = std::enable_if_t<!std::is_same_v<Array, OtherArray>>>
   explicit Array(const OtherArray &that) noexcept : Array{} {
-    assert(isEquallyShaped(that));
+    ASSERT(isEquallyShaped(that));
     cx::transform(that.cbegin(), that.cend(), begin(), Convert{});
   }
 
@@ -293,7 +293,7 @@ public:
   template <typename OtherArray, typename = typename OtherArray::dim_iterator,
             typename = std::enable_if_t<!std::is_same_v<Array, OtherArray>>>
   constexpr auto operator=(const OtherArray &that) noexcept -> auto & {
-    assert(isEquallyShaped(that));
+    ASSERT(isEquallyShaped(that));
     cx::transform(that.cbegin(), that.cend(), begin(), Convert{});
     return *this;
   }
@@ -309,11 +309,11 @@ public:
   constexpr void swap(Array &that) noexcept { return cx::swap(*this, that); }
 
   static constexpr void resize([[maybe_unused]] const tuple_type &newSize) noexcept {
-    assert(newSize == m_sizes);
+    ASSERT(newSize == m_sizes);
   }
 
   static constexpr void reshape([[maybe_unused]] const tuple_type &newSize) noexcept {
-    assert(newSize == m_sizes);
+    ASSERT(newSize == m_sizes);
   }
 
   [[nodiscard]] static constexpr auto dim() noexcept { return m_dim; }

@@ -41,7 +41,7 @@ namespace TMIV::ViewingSpace {
 // Based on https://www.iquilezles.org/www/articles/distfunctions/distfunctions.htm
 auto signedDistance(const MivBitstream::Cuboid &cuboid, const Common::QuatF &rotation,
                     const Common::Vec3f &point) -> SignedDistance {
-  assert(cuboid.center.has_value() && "Cuboid center must have a value assigned");
+  ASSERT(cuboid.center.has_value() && "Cuboid center must have a value assigned");
   const auto p = rotate(point - *cuboid.center, conj(rotation));
   const auto q = abs(p) - 0.5F * cuboid.size;
   return SignedDistance(norm(max(q, 0.F)) + std::min(std::max(q.x(), std::max(q.y(), q.z())), 0.F));
@@ -50,7 +50,7 @@ auto signedDistance(const MivBitstream::Cuboid &cuboid, const Common::QuatF &rot
 // Based on https://www.iquilezles.org/www/articles/distfunctions/distfunctions.htm
 auto signedDistance(const MivBitstream::Spheroid &spheroid, const Common::QuatF &rotation,
                     const Common::Vec3f &point) -> SignedDistance {
-  assert(spheroid.center.has_value() && "Spheroid center must have a value assigned");
+  ASSERT(spheroid.center.has_value() && "Spheroid center must have a value assigned");
   const auto p = rotate(point - *spheroid.center, conj(rotation));
   const auto r = spheroid.radius;
   const auto r2 = Common::Vec3f({r.x() * r.x(), r.y() * r.y(), r.z() * r.z()});

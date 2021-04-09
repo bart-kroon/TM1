@@ -286,7 +286,7 @@ class Frame {
 public:
   Frame() = default;
   Frame(const Vec2i &size)
-      : m_size{size}, m_pixelList{static_cast<Pixel::size_type>(m_size.x() * m_size.y())} {}
+      : m_size{size}, m_pixelList{static_cast<std::size_t>(m_size.x() * m_size.y())} {}
   Frame(const Vec2i &size, std::vector<Pixel> pixelList)
       : m_size{size}, m_pixelList{std::move(pixelList)} {}
   auto operator==(const Frame &other) const noexcept -> bool;

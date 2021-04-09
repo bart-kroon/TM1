@@ -52,13 +52,14 @@ public:
   Reader(const Common::Json &config, const IO::Placeholders &placeholders,
          const MivBitstream::SequenceConfig &sc, bool buildIndexOn = true);
   [[nodiscard]] auto getPath() const -> const std::filesystem::path & { return m_path; }
-  auto read(std::istream &stream, std::int32_t posId, Common::Vec2i size) -> Common::MpiPcs::Frame;
+  auto read(std::istream &stream, std::streampos posId, Common::Vec2i size)
+      -> Common::MpiPcs::Frame;
   auto read(std::int32_t frameId) -> Common::MpiPcs::Frame;
 
 private:
   std::filesystem::path m_path{};
   Common::Vec2i m_size{};
-  std::vector<size_t> m_index{};
+  std::vector<std::streampos> m_index{};
   int32_t m_startFrame{};
   void buildIndex();
 };

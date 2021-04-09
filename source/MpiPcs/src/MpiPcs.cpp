@@ -97,7 +97,7 @@ Reader::Reader(const Common::Json &config, const IO::Placeholders &placeholders,
   }
 }
 
-auto Reader::read(std::istream &stream, std::int32_t posId, Common::Vec2i size)
+auto Reader::read(std::istream &stream, std::streampos posId, Common::Vec2i size)
     -> Common::MpiPcs::Frame {
   stream.seekg(posId);
   if (!stream.good()) {
@@ -126,7 +126,7 @@ auto Reader::read(std::istream &stream, std::int32_t posId, Common::Vec2i size)
   return Common::MpiPcs::Frame{m_size, std::move(pixelList)};
 }
 
-auto Reader::read(std::int32_t frameId) -> Common::MpiPcs::Frame {
+auto Reader::read(int32_t frameId) -> Common::MpiPcs::Frame {
   std::ifstream stream{m_path, std::ifstream::binary};
   if (!stream.good()) {
     throw std::runtime_error(fmt::format("Failed to open {} for reading", m_path));
@@ -135,7 +135,7 @@ auto Reader::read(std::int32_t frameId) -> Common::MpiPcs::Frame {
   fmt::print("Loading MPI pcs frame {0} with start frame offset {1} (= {2}).\n", frameId,
              m_startFrame, frameId + m_startFrame);
 
-  return read(stream, static_cast<std::int32_t>(m_index[frameId + m_startFrame]), m_size);
+  return read(stream, m_index[frameId + m_startFrame], m_size);
 }
 
 void Reader::buildIndex() {

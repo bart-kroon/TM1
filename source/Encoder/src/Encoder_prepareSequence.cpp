@@ -110,10 +110,11 @@ void Encoder::prepareSequence(const MivBitstream::SequenceConfig &sequenceConfig
 
   setGiGeometry3dCoordinatesBitdepthMinus1();
 
-  const auto sampleBudget = std::accumulate(
-      m_params.atlas.cbegin(), m_params.atlas.cend(), int64_t{}, [](auto sum, const auto &atlas) {
-        return sum + atlas.asps.asps_frame_width() * atlas.asps.asps_frame_height();
-      });
+  int32_t sampleBudget = 0;
+  for (size_t k = 0; k <= m_params.vps.vps_atlas_count_minus1(); ++k) {
+    const auto j = m_params.vps.vps_atlas_id(k);
+    sampleBudget += (m_params.vps.vps_frame_width(j) * m_params.vps.vps_frame_height(j));
+  }
 
   // Register pruning relation
   m_params.viewParamsList = m_pruner->prepareSequence(Pruner::PrunerParams{

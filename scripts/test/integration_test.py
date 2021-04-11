@@ -123,10 +123,11 @@ class IntegrationTest:
 
             self.sync(futures)
 
-        self.storeMd5Sums()
+        if not self.dryRun:
+            self.storeMd5Sums()
 
-        if self.referenceMd5File:
-            return self.compareMd5Files()
+            if self.referenceMd5File:
+                return self.compareMd5Files()
 
         return 0
 
@@ -162,7 +163,8 @@ class IntegrationTest:
                     )
 
     def testMivAnchor(self, executor):
-        (self.testDir / "A3" / "E" / "QP3").mkdir(parents=True, exist_ok=True)
+        if not self.dryRun:
+            (self.testDir / "A3" / "E" / "QP3").mkdir(parents=True, exist_ok=True)
 
         f1 = self.launchCommand(
             executor,
@@ -290,7 +292,8 @@ class IntegrationTest:
         return [f4, f2_5, f2_6]
 
     def testMivViewAnchor(self, executor):
-        (self.testDir / "V3" / "D" / "R0").mkdir(parents=True, exist_ok=True)
+        if not self.dryRun:
+            (self.testDir / "V3" / "D" / "R0").mkdir(parents=True, exist_ok=True)
 
         f1 = self.launchCommand(
             executor,
@@ -355,7 +358,8 @@ class IntegrationTest:
         return [f2_1, f2_2, f2_3, f2_4]
 
     def testMivDsdeAnchor(self, executor):
-        (self.testDir / "G3" / "N" / "R0").mkdir(parents=True, exist_ok=True)
+        if not self.dryRun:
+            (self.testDir / "G3" / "N" / "R0").mkdir(parents=True, exist_ok=True)
 
         f1 = self.launchCommand(
             executor,
@@ -415,7 +419,8 @@ class IntegrationTest:
         return [f2_1, f2_2, f2_3]
 
     def testBestReference(self, executor):
-        (self.testDir / "R3" / "O" / "R0").mkdir(parents=True, exist_ok=True)
+        if not self.dryRun:
+            (self.testDir / "R3" / "O" / "R0").mkdir(parents=True, exist_ok=True)
 
         f1_1 = self.launchCommand(
             executor,
@@ -448,7 +453,8 @@ class IntegrationTest:
         return [f1_1, f1_2]
 
     def testMivMpi(self, executor):
-        (self.testDir / "M3" / "M" / "QP3").mkdir(parents=True, exist_ok=True)
+        if not self.dryRun:
+            (self.testDir / "M3" / "M" / "QP3").mkdir(parents=True, exist_ok=True)
 
         f1 = self.launchCommand(
             executor,
@@ -528,7 +534,8 @@ class IntegrationTest:
         return [f4_1, f4_2, f4_3]
 
     def testAdditiveSynthesizer(self, executor):
-        (self.testDir / "S1" / "C" / "R0").mkdir(parents=True, exist_ok=True)
+        if not self.dryRun:
+            (self.testDir / "S1" / "C" / "R0").mkdir(parents=True, exist_ok=True)
 
         f1 = self.launchCommand(
             executor,

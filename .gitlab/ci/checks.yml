@@ -31,6 +31,6 @@ no multi-line commit messages:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
   script:
     - git fetch origin $CI_DEFAULT_BRANCH:main
-    - NUM_COMMIT_MESSAGE_LINES=$(git log --pretty=format:%B main..HEAD | sed '/^\s*$/d' | wc -l)
+    - NUM_COMMIT_MESSAGE_LINES=$(git log --pretty=format:%B main..HEAD | sed '/^\s*$/d' | grep -c "")
     - NUM_COMMITS=$(git rev-list --count main..HEAD)
     - if [[ "$NUM_COMMIT_MESSAGE_LINES" -ne "$NUM_COMMITS" ]]; then echo "Don't use multi-line commits!"; fail; fi

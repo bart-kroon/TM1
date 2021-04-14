@@ -147,31 +147,27 @@ ce_view_quat_z[ 1 ]=0
 
 TEST_CASE("depth_quantization", "[Common Atlas Frame MIV Extension]") {
   auto x = DepthQuantization{};
-  auto vps = V3cParameterSet{};
-  vps.vps_extension_present_flag(true);
-  vps.vps_miv_extension_present_flag(true);
-  vps.vps_miv_extension() = {};
 
   REQUIRE(toString(x, uint16_t{7}) == R"(dq_quantization_law[ 7 ]=0
 dq_norm_disp_low[ 7 ]=0
 dq_norm_disp_high[ 7 ]=0
-dq_depth_occ_map_threshold_default[ 7 ]=0
+dq_depth_occ_threshold_default[ 7 ]=0
 )");
 
-  REQUIRE(bitCodingTest(x, 73, vps));
+  REQUIRE(bitCodingTest(x, 73));
 
   SECTION("Example 2") {
     x.dq_norm_disp_low(0.02F);
     x.dq_norm_disp_high(2.F);
-    x.dq_depth_occ_map_threshold_default(200);
+    x.dq_depth_occ_threshold_default(200);
 
     REQUIRE(toString(x, uint16_t{2}) == R"(dq_quantization_law[ 2 ]=0
 dq_norm_disp_low[ 2 ]=0.02
 dq_norm_disp_high[ 2 ]=2
-dq_depth_occ_map_threshold_default[ 2 ]=200
+dq_depth_occ_threshold_default[ 2 ]=200
 )");
 
-    REQUIRE(bitCodingTest(x, 87, vps));
+    REQUIRE(bitCodingTest(x, 87));
   }
 }
 
@@ -272,7 +268,7 @@ mvp_depth_quantization_params_equal_flag=false
 dq_quantization_law[ 0 ]=0
 dq_norm_disp_low[ 0 ]=0
 dq_norm_disp_high[ 0 ]=0
-dq_depth_occ_map_threshold_default[ 0 ]=0
+dq_depth_occ_threshold_default[ 0 ]=0
 mvp_pruning_graph_params_present_flag=false
 )");
 
@@ -352,7 +348,7 @@ mvp_depth_quantization_params_equal_flag=true
 dq_quantization_law[ 0 ]=0
 dq_norm_disp_low[ 0 ]=0
 dq_norm_disp_high[ 0 ]=0
-dq_depth_occ_map_threshold_default[ 0 ]=0
+dq_depth_occ_threshold_default[ 0 ]=0
 mvp_pruning_graph_params_present_flag=true
 pp_is_root_flag[ 0 ]=true
 pp_is_root_flag[ 1 ]=true
@@ -393,7 +389,7 @@ mvp_depth_quantization_params_equal_flag=false
 dq_quantization_law[ 0 ]=0
 dq_norm_disp_low[ 0 ]=0
 dq_norm_disp_high[ 0 ]=0
-dq_depth_occ_map_threshold_default[ 0 ]=0
+dq_depth_occ_threshold_default[ 0 ]=0
 mvp_pruning_graph_params_present_flag=false
 )");
 
@@ -494,7 +490,7 @@ mvp_depth_quantization_params_equal_flag=true
 dq_quantization_law[ 0 ]=0
 dq_norm_disp_low[ 0 ]=0
 dq_norm_disp_high[ 0 ]=0
-dq_depth_occ_map_threshold_default[ 0 ]=0
+dq_depth_occ_threshold_default[ 0 ]=0
 mvp_pruning_graph_params_present_flag=true
 pp_is_root_flag[ 0 ]=true
 pp_is_root_flag[ 1 ]=true
@@ -577,7 +573,7 @@ ci_erp_theta_max[ 0 ]=1
         .mvpudq_num_view_updates_minus1(0)
         .mvpudq_view_idx(0, 6)
         .depth_quantization(0)
-        .dq_depth_occ_map_threshold_default(64)
+        .dq_depth_occ_threshold_default(64)
         .dq_norm_disp_low(1.F)
         .dq_norm_disp_high(100.F);
 
@@ -589,7 +585,7 @@ mvpudq_view_idx[ 0 ]=6
 dq_quantization_law[ 0 ]=0
 dq_norm_disp_low[ 0 ]=1
 dq_norm_disp_high[ 0 ]=100
-dq_depth_occ_map_threshold_default[ 0 ]=64
+dq_depth_occ_threshold_default[ 0 ]=64
 )");
 
     REQUIRE(bitCodingTest(x, 120, vps, nalCaf, casps));
@@ -753,16 +749,12 @@ ci_ortho_height[ 1 ]=50
 
 TEST_CASE("miv_view_params_update_depth_quantization", "[Common Atlas Frame MIV Extension]") {
   auto x = MivViewParamsUpdateDepthQuantization{};
-  auto vps = V3cParameterSet{};
-  vps.vps_extension_present_flag(true);
-  vps.vps_miv_extension_present_flag(true);
-  vps.vps_miv_extension() = {};
 
   SECTION("Example 1: Test with 1 update.") {
     x.mvpudq_num_view_updates_minus1(0);
     x.mvpudq_view_idx(0, 6)
         .depth_quantization(0)
-        .dq_depth_occ_map_threshold_default(64)
+        .dq_depth_occ_threshold_default(64)
         .dq_norm_disp_low(1.F)
         .dq_norm_disp_high(100.F);
 
@@ -771,9 +763,9 @@ mvpudq_view_idx[ 0 ]=6
 dq_quantization_law[ 0 ]=0
 dq_norm_disp_low[ 0 ]=1
 dq_norm_disp_high[ 0 ]=100
-dq_depth_occ_map_threshold_default[ 0 ]=64
+dq_depth_occ_threshold_default[ 0 ]=64
 )");
-    REQUIRE(bitCodingTest(x, 117, vps));
+    REQUIRE(bitCodingTest(x, 117));
   }
 }
 } // namespace TMIV::MivBitstream

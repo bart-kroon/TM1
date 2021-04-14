@@ -75,8 +75,8 @@ SCENARIO("Geometry quantization") {
       const auto codedSeqParams = depthOccupancy.transformParams(sourceSeqParams);
       const auto &codedViewParams = codedSeqParams.viewParamsList.front();
 
-      THEN("dq_depth_occ_map_threshold_default (T) >> 0") {
-        const auto T = codedViewParams.dq.dq_depth_occ_map_threshold_default();
+      THEN("dq_depth_occ_threshold_default (T) >> 0") {
+        const auto T = codedViewParams.dq.dq_depth_occ_threshold_default();
         REQUIRE(T >= 8);
 
         THEN("Coded level 2T matches with source level 0") {
@@ -84,7 +84,7 @@ SCENARIO("Geometry quantization") {
           const auto twoT = static_cast<float>(2 * T);
 
           auto refViewParams = sourceViewParams;
-          refViewParams.dq.dq_depth_occ_map_threshold_default(T)
+          refViewParams.dq.dq_depth_occ_threshold_default(T)
               .dq_norm_disp_low(0.2F - twoT * 2.F / (1023.F - twoT))
               .dq_norm_disp_high(2.2F);
 

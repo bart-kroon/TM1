@@ -82,7 +82,7 @@ auto GeometryQuantizer::transformParams(EncoderParams params) -> const EncoderPa
 
   for (auto &x : m_outParams.viewParamsList) {
     if (x.hasOccupancy) {
-      x.dq.dq_depth_occ_map_threshold_default(m_depthOccThresholdIfSet); // =T
+      x.dq.dq_depth_occ_threshold_default(m_depthOccThresholdIfSet); // =T
       const auto nearLevel = 1023.F;
       const auto farLevel = static_cast<float>(2 * m_depthOccThresholdIfSet);
       // Mapping is [2T, 1023] --> [old far, near]. What is level 0? (the new far)

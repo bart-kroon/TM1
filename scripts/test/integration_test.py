@@ -104,8 +104,9 @@ class IntegrationTest:
         self.testDir = args.output_dir.absolute().resolve()
         self.gitCommand = args.git_command
         self.maxWorkers = args.max_workers
-        if self.referenceMd5File:
-            self.referenceMd5File = args.reference_md5_file.absolute().resolve()
+        self.referenceMd5File = (
+            args.reference_md5_file.absolute().resolve() if args.reference_md5_file else None
+        )
         self.dryRun = args.dry_run
         self.ciOnly = args.ci
         self.md5sums = []

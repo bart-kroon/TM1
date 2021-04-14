@@ -61,7 +61,7 @@ TEST_CASE("OccupancyTransform") {
 
   SECTION("Test for occupancy (codec, per-view occupancy)") {
     auto vp = ViewParams{};
-    vp.dq.dq_depth_occ_map_threshold_default(4000);
+    vp.dq.dq_depth_occ_threshold_default(4000);
 
     const auto unit = OccupancyTransform{vp};
 
@@ -74,7 +74,7 @@ TEST_CASE("OccupancyTransform") {
 
   SECTION("Test for occupancy (codec, per-view occupancy)") {
     auto vp = ViewParams{};
-    vp.dq.dq_depth_occ_map_threshold_default(4000);
+    vp.dq.dq_depth_occ_threshold_default(4000);
 
     const auto unit = OccupancyTransform{vp, PatchParams{}};
 
@@ -84,7 +84,7 @@ TEST_CASE("OccupancyTransform") {
 
   SECTION("Test for occupancy (codec, per-patch occupancy)") {
     auto vp = ViewParams{};
-    vp.dq.dq_depth_occ_map_threshold_default(4000);
+    vp.dq.dq_depth_occ_threshold_default(4000);
 
     auto pp = PatchParams{};
     pp.atlasPatchDepthOccMapThreshold(1000);

@@ -39,7 +39,7 @@
 
 namespace TMIV::MivBitstream {
 inline OccupancyTransform::OccupancyTransform(const ViewParams &viewParams) {
-  m_threshold = viewParams.dq.dq_depth_occ_map_threshold_default();
+  m_threshold = viewParams.dq.dq_depth_occ_threshold_default();
   if (m_threshold == 0 && viewParams.hasOccupancy) {
     m_threshold = 1; // Handle invalid depth for source views, transport views and viewports
   }
@@ -49,7 +49,7 @@ inline OccupancyTransform::OccupancyTransform(const ViewParams &viewParams,
                                               const PatchParams &patchParams) {
   m_threshold = patchParams.atlasPatchDepthOccMapThreshold()
                     ? *patchParams.atlasPatchDepthOccMapThreshold()
-                    : viewParams.dq.dq_depth_occ_map_threshold_default();
+                    : viewParams.dq.dq_depth_occ_threshold_default();
   if (m_threshold == 0 && viewParams.hasOccupancy) {
     m_threshold = 1; // Handle invalid depth for source views, transport views and viewports
   }

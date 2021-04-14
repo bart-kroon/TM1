@@ -202,8 +202,8 @@ constexpr auto DepthQuantization::dq_norm_disp_low() const noexcept { return m_d
 
 constexpr auto DepthQuantization::dq_norm_disp_high() const noexcept { return m_dq_norm_disp_high; }
 
-constexpr auto DepthQuantization::dq_depth_occ_map_threshold_default() const noexcept {
-  return m_dq_depth_occ_map_threshold_default;
+constexpr auto DepthQuantization::dq_depth_occ_threshold_default() const noexcept {
+  return m_dq_depth_occ_threshold_default;
 }
 
 constexpr auto DepthQuantization::dq_norm_disp_low(const float value) noexcept -> auto & {
@@ -216,17 +216,16 @@ constexpr auto DepthQuantization::dq_norm_disp_high(const float value) noexcept 
   return *this;
 }
 
-constexpr auto
-DepthQuantization::dq_depth_occ_map_threshold_default(Common::SampleValue value) noexcept
+constexpr auto DepthQuantization::dq_depth_occ_threshold_default(Common::SampleValue value) noexcept
     -> auto & {
-  m_dq_depth_occ_map_threshold_default = value;
+  m_dq_depth_occ_threshold_default = value;
   return *this;
 }
 
 constexpr auto DepthQuantization::operator==(const DepthQuantization &other) const noexcept {
   return dq_norm_disp_low() == other.dq_norm_disp_low() &&
          dq_norm_disp_high() == other.dq_norm_disp_high() &&
-         dq_depth_occ_map_threshold_default() == other.dq_depth_occ_map_threshold_default();
+         dq_depth_occ_threshold_default() == other.dq_depth_occ_threshold_default();
 }
 
 constexpr auto DepthQuantization::operator!=(const DepthQuantization &other) const noexcept {

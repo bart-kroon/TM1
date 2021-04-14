@@ -163,26 +163,25 @@ public:
   [[nodiscard]] static constexpr auto dq_quantization_law() noexcept;
   [[nodiscard]] constexpr auto dq_norm_disp_low() const noexcept;
   [[nodiscard]] constexpr auto dq_norm_disp_high() const noexcept;
-  [[nodiscard]] constexpr auto dq_depth_occ_map_threshold_default() const noexcept;
+  [[nodiscard]] constexpr auto dq_depth_occ_threshold_default() const noexcept;
 
   constexpr auto dq_norm_disp_low(float value) noexcept -> auto &;
   constexpr auto dq_norm_disp_high(float value) noexcept -> auto &;
-  constexpr auto dq_depth_occ_map_threshold_default(Common::SampleValue value) noexcept -> auto &;
+  constexpr auto dq_depth_occ_threshold_default(Common::SampleValue value) noexcept -> auto &;
 
   auto printTo(std::ostream &stream, uint16_t viewId) const -> std::ostream &;
 
   constexpr auto operator==(const DepthQuantization &other) const noexcept;
   constexpr auto operator!=(const DepthQuantization &other) const noexcept;
 
-  static auto decodeFrom(Common::InputBitstream &bitstream, const V3cParameterSet &vps)
-      -> DepthQuantization;
+  static auto decodeFrom(Common::InputBitstream &bitstream) -> DepthQuantization;
 
-  void encodeTo(Common::OutputBitstream &bitstream, const V3cParameterSet &vps) const;
+  void encodeTo(Common::OutputBitstream &bitstream) const;
 
 private:
   float m_dq_norm_disp_low{};
   float m_dq_norm_disp_high{};
-  Common::SampleValue m_dq_depth_occ_map_threshold_default{};
+  Common::SampleValue m_dq_depth_occ_threshold_default{};
 };
 
 // 23090-12: pruning_parents()
@@ -384,10 +383,9 @@ public:
   auto operator==(const MivViewParamsUpdateDepthQuantization & /*other*/) const noexcept -> bool;
   auto operator!=(const MivViewParamsUpdateDepthQuantization & /*other*/) const noexcept -> bool;
 
-  static auto decodeFrom(Common::InputBitstream &bitstream, const V3cParameterSet &vps)
-      -> MivViewParamsUpdateDepthQuantization;
+  static auto decodeFrom(Common::InputBitstream &bitstream) -> MivViewParamsUpdateDepthQuantization;
 
-  void encodeTo(Common::OutputBitstream &bitstream, const V3cParameterSet &vps) const;
+  void encodeTo(Common::OutputBitstream &bitstream) const;
 
 private:
   uint16_t m_mvpudq_num_view_updates_minus1{};

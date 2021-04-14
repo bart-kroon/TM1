@@ -962,9 +962,6 @@ auto VpsMivExtension::decodeFrom(Common::InputBitstream &bitstream, const V3cPar
   if (!x.vme_embedded_occupancy_enabled_flag()) {
     x.vme_occupancy_scale_enabled_flag(bitstream.getFlag());
   }
-  for (uint8_t atlasIdx = 0; atlasIdx <= vps.vps_atlas_count_minus1(); ++atlasIdx) {
-    bitstream.getFlag();
-  }
   x.group_mapping() = GroupMapping::decodeFrom(bitstream, vps);
   return x;
 }
@@ -975,9 +972,6 @@ void VpsMivExtension::encodeTo(Common::OutputBitstream &bitstream,
   bitstream.putFlag(vme_embedded_occupancy_enabled_flag());
   if (!vme_embedded_occupancy_enabled_flag()) {
     bitstream.putFlag(vme_occupancy_scale_enabled_flag());
-  }
-  for (unsigned atlasIdx = 0; atlasIdx <= vps.vps_atlas_count_minus1(); ++atlasIdx) {
-    bitstream.putFlag(false);
   }
   group_mapping().encodeTo(bitstream, vps);
 }

@@ -194,7 +194,6 @@ These parameters are in the root of the configuration file and may be accessed b
         * 1: Single group, all atlases are needed for rendering (as with the MIV anchor)
         * 2: _N_ groups, with the group-based encoder, partitions views to independently encode multiple groups of atlases.
 * Metadata:
-    * **OmafV1CompatibleFlag:** bool; when enabled the equally-named flag is written in the bitstream.
     * **dqParamsPresentFlag:** bool; optional parameter, when false the depth quantization parameters are not written to the bitstream.
     * **randomAccess:** bool; when true complete MIV metadata (inclding VPS, CAD, AD V3C units) are written per IRAP to the bitstream such that there is no dependency when parsing metadata between different IRAPs.
 

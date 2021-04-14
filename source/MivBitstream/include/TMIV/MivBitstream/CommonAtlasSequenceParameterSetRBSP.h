@@ -44,13 +44,11 @@ namespace TMIV::MivBitstream {
 // 23090-12: casps_miv_extension( )
 class CaspsMivExtension {
 public:
-  [[nodiscard]] constexpr auto casme_omaf_v1_compatible_flag() const noexcept;
   [[nodiscard]] constexpr auto casme_depth_low_quality_flag() const noexcept;
   [[nodiscard]] constexpr auto casme_depth_quantization_params_present_flag() const noexcept;
   [[nodiscard]] constexpr auto casme_vui_params_present_flag() const noexcept;
   [[nodiscard]] auto vui_parameters() const -> const VuiParameters &;
 
-  constexpr auto casme_omaf_v1_compatible_flag(bool value) noexcept -> auto &;
   constexpr auto casme_depth_low_quality_flag(bool value) noexcept -> auto &;
   constexpr auto casme_depth_quantization_params_present_flag(bool value) noexcept -> auto &;
   constexpr auto casme_vui_params_present_flag(bool value) noexcept -> auto &;
@@ -66,7 +64,6 @@ public:
   void encodeTo(Common::OutputBitstream &stream) const;
 
 private:
-  bool m_casme_omaf_v1_compatible_flag{};
   bool m_casme_depth_low_quality_flag{};
   bool m_casme_depth_quantization_params_present_flag{};
   bool m_casme_vui_params_present_flag{};

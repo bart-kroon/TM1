@@ -63,7 +63,6 @@
     "maxLumaPictureSize": 4456448,
     "maxLumaSampleRate": 2139095040.0,
     "numGroups": 3,
-    "OmafV1CompatibleFlag": false,
     "oneViewPerAtlasFlag": false,
     "outputBitstreamPathFmt": "U{0}/{1}/TMIV_U{0}_{1}.bit",
     "outputDirectory": ".",

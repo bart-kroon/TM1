@@ -142,7 +142,6 @@ private: // Encoder_prepareSequence.cpp
     uint8_t numGroups;
     uint16_t maxEntityId{};
     std::optional<MivBitstream::ViewingSpace> viewingSpace;
-    bool omafV1CompatibleFlag;
   };
 
   // Encoder_popFrame.cpp

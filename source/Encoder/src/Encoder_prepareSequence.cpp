@@ -101,7 +101,6 @@ void Encoder::prepareSequence(const MivBitstream::SequenceConfig &sequenceConfig
       .casps_miv_extension()
       .casme_depth_low_quality_flag(depthLowQualityFlag)
       .casme_depth_quantization_params_present_flag(m_config.dqParamsPresentFlag)
-      .casme_omaf_v1_compatible_flag(m_config.omafV1CompatibleFlag)
       .casme_vui_params_present_flag(true)
       .vui_parameters(vuiParameters());
 

@@ -50,7 +50,6 @@
     "maxLumaSampleRate": 1069547520.0,
     "numberOfFrames": 17,
     "numGroups": 0,
-    "OmafV1CompatibleFlag": false,
     "oneViewPerAtlasFlag": false,
     "outputBitstreamPathFmt": "G{0}/{1}/TMIV_G{0}_{1}.bit",
     "outputTextureVideoDataPathFmt": "G{0}/{1}/TMIV_G{0}_{1}_tex_c{3:02}_{4}x{5}_yuv420p10le.yuv",

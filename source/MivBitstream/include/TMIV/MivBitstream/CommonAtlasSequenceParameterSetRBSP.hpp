@@ -36,10 +36,6 @@
 #endif
 
 namespace TMIV::MivBitstream {
-constexpr auto CaspsMivExtension::casme_omaf_v1_compatible_flag() const noexcept {
-  return m_casme_omaf_v1_compatible_flag;
-}
-
 constexpr auto CaspsMivExtension::casme_depth_low_quality_flag() const noexcept {
   return m_casme_depth_low_quality_flag;
 }
@@ -50,11 +46,6 @@ constexpr auto CaspsMivExtension::casme_depth_quantization_params_present_flag()
 
 constexpr auto CaspsMivExtension::casme_vui_params_present_flag() const noexcept {
   return m_casme_vui_params_present_flag;
-}
-
-constexpr auto CaspsMivExtension::casme_omaf_v1_compatible_flag(bool value) noexcept -> auto & {
-  m_casme_omaf_v1_compatible_flag = value;
-  return *this;
 }
 
 constexpr auto CaspsMivExtension::casme_depth_low_quality_flag(bool value) noexcept -> auto & {

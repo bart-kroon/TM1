@@ -73,8 +73,7 @@ Encoder::Configuration::Configuration(const Common::Json &rootNode,
     , attributeOffsetFlag{haveTexture && rootNode.require("attributeOffsetEnabledFlag").as<bool>()}
     , randomAccess{rootNode.require("randomAccess").as<bool>()}
     , numGroups{rootNode.require("numGroups").as<uint8_t>()}
-    , maxEntityId{rootNode.require("maxEntityId").as<uint16_t>()}
-    , omafV1CompatibleFlag{rootNode.require("OmafV1CompatibleFlag").as<bool>()} {
+    , maxEntityId{rootNode.require("maxEntityId").as<uint16_t>()} {
   if (const auto &node = componentNode.optional("overrideAtlasFrameSizes")) {
     std::cout
         << "WARNING: Overriding atlas frame sizes is meant for internal/preliminary experiments "

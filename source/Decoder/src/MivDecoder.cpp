@@ -33,7 +33,9 @@
 
 #include <TMIV/Decoder/MivDecoder.h>
 
+#include <TMIV/Common/Bytestream.h>
 #include <TMIV/Common/verify.h>
+#include <TMIV/VideoDecoder/VideoDecoderFactory.h>
 
 #include <fmt/format.h>
 
@@ -221,8 +223,6 @@ auto MivDecoder::decodeVideoSubBitstreams() -> bool {
 }
 
 void MivDecoder::checkCapabilities() const {
-  CONSTRAIN_PTL(m_au.vps.profile_tier_level().ptl_profile_codec_group_idc() ==
-                MivBitstream::PtlProfileCodecGroupIdc::HEVC_Main10);
   CONSTRAIN_PTL(m_au.vps.profile_tier_level().ptl_profile_toolset_idc() ==
                     MivBitstream::PtlProfilePccToolsetIdc::MIV_Main ||
                 m_au.vps.profile_tier_level().ptl_profile_toolset_idc() ==
@@ -249,27 +249,50 @@ auto clockInSeconds() {
 } // namespace
 
 auto MivDecoder::startVideoDecoder(const MivBitstream::V3cUnitHeader &vuh, double &totalTime)
-    -> std::unique_ptr<VideoDecoder::VideoServer> {
-  std::string data;
-  while (auto vu = m_inputBuffer(vuh)) {
-    // TODO(BK): Let the video decoder pull V3C units. This implementation assumes the bitstream is
-    // short enough to fit in memory. The reason for this shortcut is that the change requires
-    // parsing of the Annex B byte stream, which can be easily done but it requires an additional
-    // implementation effort.
-    data += vu->v3c_unit_payload().video_sub_bitstream().data();
-  }
-  if (data.empty()) {
-    return {}; // Out-of-band?
+    -> std::unique_ptr<VideoDecoder::IVideoDecoder> {
+  // Adapt the V3C unit buffer to a video sub-bitstream source
+  const auto videoSubBitstreamSource = [this, vuh]() -> std::string {
+    if (auto v3cUnit = m_inputBuffer(vuh)) {
+      return v3cUnit->v3c_unit_payload().video_sub_bitstream().data();
+    }
+    return {};
+  };
+
+  // Test if the first unit can be read
+  auto blob = videoSubBitstreamSource();
+  if (blob.empty()) {
+    return {}; // The fall-back is to require out-of-band video
   }
 
+  // Adapt the video sub-bitstream source to an ISOBMFF NAL unit source.
+  const auto nalUnitSource = [videoSubBitstreamSource,
+                              buffer = std::move(blob)]() mutable -> std::string {
+    // Pull in data when needed
+    if (buffer.empty()) {
+      buffer = videoSubBitstreamSource();
+    }
+    if (buffer.empty()) {
+      return {};
+    }
+    // Decode the NAL unit size
+    // NOTE(#494): For V3C, LengthSizeMinusOne is equal to 3.
+    std::istringstream stream{buffer.substr(0, 4)};
+    const auto size = Common::getUint32(stream);
+
+    // Decode the payload bytes
+    auto payload = buffer.substr(4, size);
+    VERIFY_V3CBITSTREAM(payload.size() == size);
+    buffer = buffer.substr(4 + size);
+
+    // Return the NAL unit of the video sub-bitstream
+    return payload;
+  };
+
   const auto t0 = clockInSeconds();
-  auto server = std::make_unique<VideoDecoder::VideoServer>(
-      VideoDecoder::IVideoDecoder::create(
-          m_au.vps.profile_tier_level().ptl_profile_codec_group_idc()),
-      data);
-  server->wait();
+  auto videoDecoder = VideoDecoder::create(
+      nalUnitSource, m_au.vps.profile_tier_level().ptl_profile_codec_group_idc());
   totalTime += clockInSeconds() - t0;
-  return server;
+  return videoDecoder;
 }
 
 void MivDecoder::decodeCommonAtlas() {
@@ -427,7 +450,9 @@ auto MivDecoder::decodePatchParamsList(size_t k, MivBitstream::PatchParamsList &
   return ppl;
 }
 
+// TODO(m56532): Generalize to a decoding _any_ video sub-bitstream in a consistently
 auto MivDecoder::decodeOccVideo(size_t k) -> bool {
+  fmt::print("Decode frame V3C_OVD {} FOC={}\n", m_au.vps.vps_atlas_id(k), m_au.foc);
   const auto t0 = clockInSeconds();
 
   if (m_occVideoDecoder[k]) {
@@ -436,7 +461,6 @@ auto MivDecoder::decodeOccVideo(size_t k) -> bool {
       return false;
     }
     m_au.atlas[k].decOccFrame = frame->as<Common::YUV400P10>();
-    m_occVideoDecoder[k]->wait();
   } else if (m_occFrameServer) {
     m_au.atlas[k].decOccFrame = m_occFrameServer(m_au.vps.vps_atlas_id(k), m_au.foc,
                                                  m_au.atlas[k].decOccFrameSize(m_au.vps));
@@ -452,6 +476,7 @@ auto MivDecoder::decodeOccVideo(size_t k) -> bool {
 }
 
 auto MivDecoder::decodeGeoVideo(size_t k) -> bool {
+  fmt::print("Decode frame V3C_GVD {} FOC={}\n", m_au.vps.vps_atlas_id(k), m_au.foc);
   const auto t0 = clockInSeconds();
 
   if (m_geoVideoDecoder[k]) {
@@ -460,7 +485,6 @@ auto MivDecoder::decodeGeoVideo(size_t k) -> bool {
       return false;
     }
     m_au.atlas[k].decGeoFrame = frame->as<Common::YUV400P10>();
-    m_geoVideoDecoder[k]->wait();
   } else if (m_geoFrameServer) {
     m_au.atlas[k].decGeoFrame = m_geoFrameServer(m_au.vps.vps_atlas_id(k), m_au.foc,
                                                  m_au.atlas[k].decGeoFrameSize(m_au.vps));
@@ -476,6 +500,8 @@ auto MivDecoder::decodeGeoVideo(size_t k) -> bool {
 }
 
 auto MivDecoder::decodeAttrTextureVideo(size_t k) -> bool {
+  fmt::print("Decode frame V3C_AVD {} {} FOC={}\n", m_au.vps.vps_atlas_id(k),
+             MivBitstream::AiAttributeTypeId::ATTR_TEXTURE, m_au.foc);
   const auto t0 = clockInSeconds();
 
   if (m_textureVideoDecoder[k]) {
@@ -484,7 +510,6 @@ auto MivDecoder::decodeAttrTextureVideo(size_t k) -> bool {
       return false;
     }
     m_au.atlas[k].attrFrame = frame->as<Common::YUV444P10>();
-    m_textureVideoDecoder[k]->wait();
   } else if (m_textureFrameServer) {
     m_au.atlas[k].attrFrame =
         m_textureFrameServer(m_au.vps.vps_atlas_id(k), m_au.foc, m_au.atlas[k].frameSize());
@@ -500,6 +525,8 @@ auto MivDecoder::decodeAttrTextureVideo(size_t k) -> bool {
 }
 
 auto MivDecoder::decodeAttrTransparencyVideo(size_t k) -> bool {
+  fmt::print("Decode frame V3C_AVD {} {} FOC={}\n", m_au.vps.vps_atlas_id(k),
+             MivBitstream::AiAttributeTypeId::ATTR_TRANSPARENCY, m_au.foc);
   const auto t0 = clockInSeconds();
 
   if (m_transparencyVideoDecoder[k]) {
@@ -508,7 +535,6 @@ auto MivDecoder::decodeAttrTransparencyVideo(size_t k) -> bool {
       return false;
     }
     m_au.atlas[k].transparencyFrame = frame->as<Common::YUV400P10>();
-    m_transparencyVideoDecoder[k]->wait();
   } else if (m_transparencyFrameServer) {
     m_au.atlas[k].transparencyFrame =
         m_transparencyFrameServer(m_au.vps.vps_atlas_id(k), m_au.foc, m_au.atlas[k].frameSize());

@@ -31,32 +31,23 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef TMIV_VIDEODECODER_VIDEOSERVER_H
-#define TMIV_VIDEODECODER_VIDEOSERVER_H
-
 #include <TMIV/VideoDecoder/IVideoDecoder.h>
 
-namespace TMIV::VideoDecoder {
-// The VideoServer uses a thread to change from push to pull mechanism.
-class VideoServer {
-public:
-  explicit VideoServer(std::unique_ptr<IVideoDecoder> decoder, const std::string &bitstream);
-  VideoServer(const VideoServer &) = delete;
-  VideoServer(VideoServer &&) = default;
-  auto operator=(const VideoServer &) -> VideoServer & = delete;
-  auto operator=(VideoServer &&) -> VideoServer & = default;
-  ~VideoServer();
-
-  // Wait for the video server to block or stop
-  void wait();
-
-  // Get the next frame. If there are no more frames the result will be empty.
-  auto getFrame() -> std::unique_ptr<Common::AnyFrame>;
-
-private:
-  class Impl;
-  std::unique_ptr<Impl> m_impl;
-};
-} // namespace TMIV::VideoDecoder
-
+#if HAVE_HM
+#include <TMIV/VideoDecoder/HmVideoDecoder.h>
 #endif
+
+#include <fmt/format.h>
+
+namespace TMIV::VideoDecoder {
+auto create(NalUnitSource source, MivBitstream::PtlProfileCodecGroupIdc codecGroupIdc)
+    -> std::unique_ptr<IVideoDecoder> {
+#if HAVE_HM
+  if (codecGroupIdc == MivBitstream::PtlProfileCodecGroupIdc::HEVC_Main10) {
+    return std::make_unique<HmVideoDecoder>(std::move(source));
+  }
+#endif
+  throw std::runtime_error(
+      fmt::format("There is no in-built support for the {} codec group IDC", codecGroupIdc));
+}
+} // namespace TMIV::VideoDecoder

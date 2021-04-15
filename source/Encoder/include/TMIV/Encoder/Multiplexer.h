@@ -70,8 +70,8 @@ private:
   void appendAvd(MivBitstream::AtlasId atlasId, uint8_t attributeIdx,
                  MivBitstream::AiAttributeTypeId typeId);
   void appendPvd(MivBitstream::AtlasId atlasId);
-  void appendSubBitstream(const MivBitstream::V3cUnitHeader &vuh,
-                          std::unique_ptr<std::istream> stream);
+  void appendVideoSubBitstream(const MivBitstream::V3cUnitHeader &vuh,
+                               std::unique_ptr<std::istream> stream);
 
   MivBitstream::V3cParameterSet m_vps{};
   std::vector<std::string> m_units{};

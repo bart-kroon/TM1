@@ -58,6 +58,7 @@ TEST_CASE("v3c_unit_header", "[V3C Unit]") {
 )");
 
     REQUIRE(byteCodingTest(x, 4));
+    REQUIRE(x.summary() == "V3C_VPS");
   }
 
   SECTION("AD") {
@@ -69,6 +70,7 @@ vuh_atlas_id=0
 )");
 
     REQUIRE(byteCodingTest(x, 4));
+    REQUIRE(x.summary() == "V3C_AD vps:0 atlas:0");
 
     SECTION("Example") {
       x.vuh_v3c_parameter_set_id(1).vuh_atlas_id(AtlasId{2});
@@ -79,6 +81,7 @@ vuh_atlas_id=2
 )");
 
       REQUIRE(byteCodingTest(x, 4));
+      REQUIRE(x.summary() == "V3C_AD vps:1 atlas:2");
     }
   }
 
@@ -101,6 +104,7 @@ vuh_atlas_id=1
 )");
 
       REQUIRE(byteCodingTest(x, 4));
+      REQUIRE(x.summary() == "V3C_OVD vps:2 atlas:1");
     }
   }
 
@@ -128,6 +132,7 @@ vuh_auxiliary_video_flag=false
 )");
 
       REQUIRE(byteCodingTest(x, 4));
+      REQUIRE(x.summary() == "V3C_GVD vps:2 atlas:0 map:0 aux:false");
     }
   }
 
@@ -144,6 +149,7 @@ vuh_auxiliary_video_flag=false
 )");
 
     REQUIRE(byteCodingTest(x, 4));
+    REQUIRE(x.summary() == "V3C_AVD vps:0 atlas:0 attr:0 part:0 map:0 aux:false");
 
     SECTION("Example") {
       x.vuh_v3c_parameter_set_id(2)
@@ -163,6 +169,7 @@ vuh_auxiliary_video_flag=false
 )");
 
       REQUIRE(byteCodingTest(x, 4));
+      REQUIRE(x.summary() == "V3C_AVD vps:2 atlas:2 attr:3 part:0 map:0 aux:false");
     }
   }
 
@@ -173,6 +180,7 @@ vuh_v3c_parameter_set_id=0
 )");
 
     REQUIRE(byteCodingTest(unit, 4));
+    REQUIRE(unit.summary() == "V3C_CAD vps:0");
 
     SECTION("Example") {
       unit.vuh_v3c_parameter_set_id(2);
@@ -182,6 +190,7 @@ vuh_v3c_parameter_set_id=2
 )");
 
       REQUIRE(byteCodingTest(unit, 4));
+      REQUIRE(unit.summary() == "V3C_CAD vps:2");
     }
   }
 
@@ -193,6 +202,7 @@ vuh_atlas_id=0
 )");
 
     REQUIRE(byteCodingTest(unit, 4));
+    REQUIRE(unit.summary() == "V3C_PVD vps:0 atlas:0");
 
     SECTION("Example") {
       unit.vuh_v3c_parameter_set_id(2).vuh_atlas_id({});
@@ -203,6 +213,7 @@ vuh_atlas_id=0
 )");
 
       REQUIRE(byteCodingTest(unit, 4));
+      REQUIRE(unit.summary() == "V3C_PVD vps:2 atlas:0");
     }
   }
 }

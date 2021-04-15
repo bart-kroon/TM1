@@ -38,6 +38,8 @@
 #include <TMIV/Common/Common.h>
 #include <TMIV/Common/verify.h>
 
+#include <fmt/ostream.h>
+
 using TMIV::Common::overload;
 
 namespace TMIV::MivBitstream {
@@ -141,6 +143,26 @@ auto operator<<(std::ostream &stream, const V3cUnitHeader &x) -> std::ostream & 
            << "\nvuh_auxiliary_video_flag=" << std::boolalpha << x.vuh_auxiliary_video_flag();
   }
   return stream << '\n';
+}
+
+auto V3cUnitHeader::summary() const -> std::string {
+  std::ostringstream stream;
+
+  stream << vuh_unit_type();
+
+  if (vuh_unit_type() != VuhUnitType::V3C_VPS) {
+    fmt::print(stream, " vps:{}", vuh_v3c_parameter_set_id());
+  }
+  if (vuh_unit_type() != VuhUnitType::V3C_VPS && vuh_unit_type() != VuhUnitType::V3C_CAD) {
+    fmt::print(stream, " atlas:{}", vuh_atlas_id());
+  }
+  if (vuh_unit_type() == VuhUnitType::V3C_AVD) {
+    fmt::print(stream, " attr:{} part:{} map:{} aux:{}", vuh_attribute_index(),
+               vuh_attribute_partition_index(), vuh_map_index(), vuh_auxiliary_video_flag());
+  } else if (vuh_unit_type() == VuhUnitType::V3C_GVD) {
+    fmt::print(stream, " map:{} aux:{}", vuh_map_index(), vuh_auxiliary_video_flag());
+  }
+  return stream.str();
 }
 
 auto V3cUnitHeader::operator==(const V3cUnitHeader &other) const -> bool {

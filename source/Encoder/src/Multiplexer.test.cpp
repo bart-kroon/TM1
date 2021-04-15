@@ -59,6 +59,8 @@ using TMIV::MivBitstream::V3cUnit;
 using TMIV::MivBitstream::V3cUnitHeader;
 using TMIV::MivBitstream::VuhUnitType;
 
+using namespace std::string_view_literals;
+
 enum class VpsContent {
   default_constructed,
   two_maps,
@@ -219,20 +221,24 @@ auto makeMultiplexerWithFakeVideoBitstreamServers() -> TMIV::Encoder::Multiplexe
 
   unit.setAttributeVideoBitstreamServer(
       [](AiAttributeTypeId typeId, const AtlasId &atlasId, int attributeIdx) {
-        return std::make_unique<std::istringstream>(fmt::format(
-            "test_attribute typeId={} attributeIdx={} atlasId={}", typeId, attributeIdx, atlasId));
+        return std::make_unique<std::istringstream>(
+            fmt::format("\0\0\0\1test_attribute typeId={} attributeIdx={} atlasId={}"sv, typeId,
+                        attributeIdx, atlasId));
       });
 
   unit.setGeometryVideoBitstreamServer([](const AtlasId &atlasId) {
-    return std::make_unique<std::istringstream>(fmt::format("test_geometry atlasId={}", atlasId));
+    return std::make_unique<std::istringstream>(
+        fmt::format("\0\0\0\1test_geometry atlasId={}"sv, atlasId));
   });
 
   unit.setOccupancyVideoBitstreamServer([](const AtlasId &atlasId) {
-    return std::make_unique<std::istringstream>(fmt::format("test_occupancy atlasId={}", atlasId));
+    return std::make_unique<std::istringstream>(
+        fmt::format("\0\0\0\1test_occupancy atlasId={}"sv, atlasId));
   });
 
   unit.setPackedVideoBitstreamServer([](const AtlasId &atlasId) {
-    return std::make_unique<std::istringstream>(fmt::format("test_packed atlasId={}", atlasId));
+    return std::make_unique<std::istringstream>(
+        fmt::format("\0\0\0\1test_packed atlasId={}"sv, atlasId));
   });
 
   return unit;

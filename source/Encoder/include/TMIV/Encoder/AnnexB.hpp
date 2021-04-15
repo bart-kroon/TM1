@@ -3,7 +3,7 @@
  * and contributor rights, including patent rights, and no such rights are
  * granted under this license.
  *
- * Copyright (c) 2010-2021, ITU/ISO/IEC
+ * Copyright (c) 2010-2020, ISO/IEC
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -14,7 +14,7 @@
  *  * Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- *  * Neither the name of the ITU/ISO/IEC nor the names of its contributors may
+ *  * Neither the name of the ISO/IEC nor the names of its contributors may
  *    be used to endorse or promote products derived from this software without
  *    specific prior written permission.
  *
@@ -31,31 +31,56 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef TMIV_VIDEODECODER_HMVIDEODECODER_H
-#define TMIV_VIDEODECODER_HMVIDEODECODER_H
-
-#if !HAVE_HM
-#error HM is disabled
+#ifndef TMIV_ENCODER_ANNEX_B_H
+#error "Include the .h, not the .hpp"
 #endif
 
-#include <TMIV/VideoDecoder/IVideoDecoder.h>
+#include <TMIV/Common/verify.h>
 
-namespace TMIV::VideoDecoder {
-class HmVideoDecoder : public IVideoDecoder {
-public:
-  explicit HmVideoDecoder(NalUnitSource source);
-  HmVideoDecoder(const HmVideoDecoder &) = delete;
-  HmVideoDecoder(HmVideoDecoder &&) = delete;
-  auto operator=(const HmVideoDecoder &) -> HmVideoDecoder & = delete;
-  auto operator=(HmVideoDecoder &&) -> HmVideoDecoder & = delete;
-  ~HmVideoDecoder() override;
+namespace TMIV::Encoder {
+template <typename StreamChar, typename StreamTraits, typename BufferChar>
+void readNalUnitFromAnnexBStreamIntoBuffer(std::basic_istream<StreamChar, StreamTraits> &stream,
+                                           std::vector<BufferChar> &buffer) {
+  VERIFY(stream.good());
 
-  auto getFrame() -> std::unique_ptr<Common::AnyFrame> override;
+  buffer.clear();
 
-private:
-  class Impl;
-  std::unique_ptr<Impl> m_impl;
-};
-} // namespace TMIV::VideoDecoder
+  if (stream.peek(), stream.eof()) {
+    return;
+  }
 
-#endif
+  VERIFY_BITSTREAM(stream.get() == 0);
+  VERIFY_BITSTREAM(stream.get() == 0);
+
+  auto code = stream.get();
+  VERIFY_BITSTREAM(code == 0 || code == 1);
+
+  if (code == 0) {
+    code = stream.get();
+    VERIFY_BITSTREAM(code == 1);
+  }
+
+  auto zeroCount = 0;
+  code = stream.get();
+
+  while (code != std::char_traits<StreamChar>::eof()) {
+    if (code == 0 && zeroCount < 3) {
+      ++zeroCount;
+    } else if (code == 1 && 2 <= zeroCount) {
+      stream.seekg(std::streamoff{-1} - zeroCount, std::ios::cur);
+      return;
+    } else {
+      while (0 < zeroCount) {
+        buffer.emplace_back();
+        --zeroCount;
+      }
+      static_assert(sizeof(StreamChar) == 1);
+      static_assert(sizeof(BufferChar) == 1);
+      buffer.push_back(static_cast<StreamChar>(code));
+    }
+    code = stream.get();
+  }
+
+  stream.clear();
+}
+} // namespace TMIV::Encoder

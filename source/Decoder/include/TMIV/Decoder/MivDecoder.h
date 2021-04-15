@@ -39,7 +39,7 @@
 #include <TMIV/Decoder/CommonAtlasDecoder.h>
 #include <TMIV/Decoder/V3cUnitBuffer.h>
 #include <TMIV/MivBitstream/AccessUnit.h>
-#include <TMIV/VideoDecoder/VideoServer.h>
+#include <TMIV/VideoDecoder/IVideoDecoder.h>
 
 namespace TMIV::Decoder {
 class MivDecoder {
@@ -89,7 +89,7 @@ private:
   void resetDecoder();
   void checkCapabilities() const;
   auto startVideoDecoder(const MivBitstream::V3cUnitHeader &vuh, double &totalTime)
-      -> std::unique_ptr<VideoDecoder::VideoServer>;
+      -> std::unique_ptr<VideoDecoder::IVideoDecoder>;
 
   void decodeCommonAtlas();
   void decodeViewParamsList();
@@ -120,10 +120,10 @@ private:
 
   std::unique_ptr<CommonAtlasDecoder> m_commonAtlasDecoder;
   std::vector<std::unique_ptr<AtlasDecoder>> m_atlasDecoder;
-  std::vector<std::unique_ptr<VideoDecoder::VideoServer>> m_occVideoDecoder;
-  std::vector<std::unique_ptr<VideoDecoder::VideoServer>> m_geoVideoDecoder;
-  std::vector<std::unique_ptr<VideoDecoder::VideoServer>> m_textureVideoDecoder;
-  std::vector<std::unique_ptr<VideoDecoder::VideoServer>> m_transparencyVideoDecoder;
+  std::vector<std::unique_ptr<VideoDecoder::IVideoDecoder>> m_occVideoDecoder;
+  std::vector<std::unique_ptr<VideoDecoder::IVideoDecoder>> m_geoVideoDecoder;
+  std::vector<std::unique_ptr<VideoDecoder::IVideoDecoder>> m_textureVideoDecoder;
+  std::vector<std::unique_ptr<VideoDecoder::IVideoDecoder>> m_transparencyVideoDecoder;
 
   std::optional<CommonAtlasDecoder::AccessUnit> m_commonAtlasAu;
   std::vector<std::optional<AtlasDecoder::AccessUnit>> m_atlasAu;

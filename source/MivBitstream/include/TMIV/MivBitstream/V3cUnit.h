@@ -76,6 +76,8 @@ public:
 
   void encodeTo(std::ostream &stream) const;
 
+  [[nodiscard]] auto summary() const -> std::string;
+
 private:
   VuhUnitType m_vuh_unit_type;
   uint8_t m_vuh_v3c_parameter_set_id{};

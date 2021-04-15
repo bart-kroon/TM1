@@ -10,29 +10,14 @@ create_tmiv_library(
     TARGET
         VideoDecoderLib
     SOURCES
-        "src/IVideoDecoder.cpp"
-        "src/VideoServer.cpp"
+        "src/VideoDecoderFactory.cpp"
+        "src/VideoDecoderBase.cpp"
         ${hmSources}
     PUBLIC
         TMIV::MivBitstreamLib
-    PRIVATE
-        Threads::Threads
     )
 
 if (HAVE_HM)
     target_link_libraries(VideoDecoderLib PRIVATE TMIV::TLibDecoder)
     target_compile_definitions(VideoDecoderLib PRIVATE HAVE_HM)
-endif()
-
-option(BUILD_VideoDecoder "Build TMIV exectable VideoDecoder" FALSE)
-
-if (BUILD_VideoDecoder)
-    create_tmiv_executable(
-        TARGET
-            VideoDecoder
-        SOURCES
-            "src/VideoDecoder.main.cpp"
-        PRIVATE
-            VideoDecoderLib
-        )
 endif()

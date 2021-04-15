@@ -78,6 +78,7 @@ create_catch2_unit_test(
     TARGET
         EncoderTest
     SOURCES
+        "src/AnnexB.test.cpp"
         "src/GeometryQuantizer.test.cpp"
     PRIVATE
         TMIV::EncoderLib

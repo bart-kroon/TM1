@@ -3,7 +3,7 @@
  * and contributor rights, including patent rights, and no such rights are
  * granted under this license.
  *
- * Copyright (c) 2010-2021, ITU/ISO/IEC
+ * Copyright (c) 2010-2021, ISO/IEC
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,30 +31,32 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef TMIV_VIDEODECODER_HMVIDEODECODER_H
-#define TMIV_VIDEODECODER_HMVIDEODECODER_H
-
-#if !HAVE_HM
-#error HM is disabled
-#endif
+#ifndef TMIV_VIDEODECODER_VIDEODECODERBASE_H
+#define TMIV_VIDEODECODER_VIDEODECODERBASE_H
 
 #include <TMIV/VideoDecoder/IVideoDecoder.h>
 
 namespace TMIV::VideoDecoder {
-class HmVideoDecoder : public IVideoDecoder {
+class VideoDecoderBase : public IVideoDecoder {
 public:
-  explicit HmVideoDecoder(NalUnitSource source);
-  HmVideoDecoder(const HmVideoDecoder &) = delete;
-  HmVideoDecoder(HmVideoDecoder &&) = delete;
-  auto operator=(const HmVideoDecoder &) -> HmVideoDecoder & = delete;
-  auto operator=(HmVideoDecoder &&) -> HmVideoDecoder & = delete;
-  ~HmVideoDecoder() override;
+  explicit VideoDecoderBase(NalUnitSource source);
 
   auto getFrame() -> std::unique_ptr<Common::AnyFrame> override;
 
+protected:
+  // Do some decoding. Return true iff there is more to decode.
+  virtual auto decodeSome() -> bool = 0;
+
+  // Take a NAL unit from the source
+  auto takeNalUnit() -> std::string;
+
+  // Add a frame to the buffer (in picture order)
+  void outputFrame(std::unique_ptr<Common::AnyFrame> frame);
+
 private:
-  class Impl;
-  std::unique_ptr<Impl> m_impl;
+  NalUnitSource m_source;
+  std::vector<std::unique_ptr<Common::AnyFrame>> m_frameBuffer;
+  bool m_eos{};
 };
 } // namespace TMIV::VideoDecoder
 

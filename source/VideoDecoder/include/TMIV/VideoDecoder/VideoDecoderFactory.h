@@ -33,22 +33,7 @@
 
 #include <TMIV/VideoDecoder/IVideoDecoder.h>
 
-#ifdef HAVE_HM
-#include <TMIV/VideoDecoder/HmVideoDecoder.h>
-#endif
-
 namespace TMIV::VideoDecoder {
-IVideoDecoder::~IVideoDecoder() = default;
-
-auto IVideoDecoder::create(TMIV::MivBitstream::PtlProfileCodecGroupIdc codecGroupIdc)
-    -> std::unique_ptr<IVideoDecoder> {
-#ifdef HAVE_HM
-  if (codecGroupIdc == MivBitstream::PtlProfileCodecGroupIdc::HEVC_Main10) {
-    return std::make_unique<HmVideoDecoder>();
-  }
-#endif
-  std::ostringstream what;
-  what << "TMIV does not include a " << codecGroupIdc << " video decoder";
-  throw std::runtime_error(what.str());
-}
+auto create(NalUnitSource source, MivBitstream::PtlProfileCodecGroupIdc codecGroupIdc)
+    -> std::unique_ptr<IVideoDecoder>;
 } // namespace TMIV::VideoDecoder

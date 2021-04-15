@@ -3,7 +3,7 @@
  * and contributor rights, including patent rights, and no such rights are
  * granted under this license.
  *
- * Copyright (c) 2010-2021, ITU/ISO/IEC
+ * Copyright (c) 2010-2020, ISO/IEC
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -14,7 +14,7 @@
  *  * Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- *  * Neither the name of the ITU/ISO/IEC nor the names of its contributors may
+ *  * Neither the name of the ISO/IEC nor the names of its contributors may
  *    be used to endorse or promote products derived from this software without
  *    specific prior written permission.
  *
@@ -31,31 +31,24 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef TMIV_VIDEODECODER_HMVIDEODECODER_H
-#define TMIV_VIDEODECODER_HMVIDEODECODER_H
+#ifndef TMIV_ENCODER_ANNEX_B_H
+#define TMIV_ENCODER_ANNEX_B_H
 
-#if !HAVE_HM
-#error HM is disabled
-#endif
+#include <istream>
+#include <vector>
 
-#include <TMIV/VideoDecoder/IVideoDecoder.h>
+namespace TMIV::Encoder {
+// Read a NAL unit into a buffer
+//
+//  * The NAL unit is read into the buffer, replacing the current data.
+//  * When the stream is at the end, the buffer is empty.
+//  * When the stream is fails or when the start code could not be parsed, an exception is thrown.
+//  * When the buffer needs to be enlarged, std::bad_alloc may be thrown.
+template <typename StreamChar, typename StreamTraits, typename BufferChar>
+void readNalUnitFromAnnexBStreamIntoBuffer(std::basic_istream<StreamChar, StreamTraits> &stream,
+                                           std::vector<BufferChar> &buffer);
+} // namespace TMIV::Encoder
 
-namespace TMIV::VideoDecoder {
-class HmVideoDecoder : public IVideoDecoder {
-public:
-  explicit HmVideoDecoder(NalUnitSource source);
-  HmVideoDecoder(const HmVideoDecoder &) = delete;
-  HmVideoDecoder(HmVideoDecoder &&) = delete;
-  auto operator=(const HmVideoDecoder &) -> HmVideoDecoder & = delete;
-  auto operator=(HmVideoDecoder &&) -> HmVideoDecoder & = delete;
-  ~HmVideoDecoder() override;
-
-  auto getFrame() -> std::unique_ptr<Common::AnyFrame> override;
-
-private:
-  class Impl;
-  std::unique_ptr<Impl> m_impl;
-};
-} // namespace TMIV::VideoDecoder
+#include "AnnexB.hpp"
 
 #endif

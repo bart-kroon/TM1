@@ -3,7 +3,7 @@
  * and contributor rights, including patent rights, and no such rights are
  * granted under this license.
  *
- * Copyright (c) 2010-2021, ITU/ISO/IEC
+ * Copyright (c) 2010-2021, ISO/IEC
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,31 +31,28 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef TMIV_VIDEODECODER_HMVIDEODECODER_H
-#define TMIV_VIDEODECODER_HMVIDEODECODER_H
-
-#if !HAVE_HM
-#error HM is disabled
-#endif
-
-#include <TMIV/VideoDecoder/IVideoDecoder.h>
+#include <TMIV/VideoDecoder/VideoDecoderBase.h>
 
 namespace TMIV::VideoDecoder {
-class HmVideoDecoder : public IVideoDecoder {
-public:
-  explicit HmVideoDecoder(NalUnitSource source);
-  HmVideoDecoder(const HmVideoDecoder &) = delete;
-  HmVideoDecoder(HmVideoDecoder &&) = delete;
-  auto operator=(const HmVideoDecoder &) -> HmVideoDecoder & = delete;
-  auto operator=(HmVideoDecoder &&) -> HmVideoDecoder & = delete;
-  ~HmVideoDecoder() override;
+VideoDecoderBase::VideoDecoderBase(NalUnitSource source) : m_source{std::move(source)} {}
 
-  auto getFrame() -> std::unique_ptr<Common::AnyFrame> override;
+auto VideoDecoderBase::getFrame() -> std::unique_ptr<Common::AnyFrame> {
+  while (m_frameBuffer.empty() && !m_eos) {
+    if (!decodeSome()) {
+      m_eos = true;
+    }
+  }
+  if (m_frameBuffer.empty()) {
+    return {};
+  }
+  auto frame = std::move(m_frameBuffer.front());
+  m_frameBuffer.erase(m_frameBuffer.begin());
+  return frame;
+}
 
-private:
-  class Impl;
-  std::unique_ptr<Impl> m_impl;
-};
+auto VideoDecoderBase::takeNalUnit() -> std::string { return m_source(); }
+
+void VideoDecoderBase::outputFrame(std::unique_ptr<Common::AnyFrame> frame) {
+  m_frameBuffer.push_back(std::move(frame));
+}
 } // namespace TMIV::VideoDecoder
-
-#endif

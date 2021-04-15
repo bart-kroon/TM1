@@ -33,6 +33,9 @@
 
 #include <TMIV/Encoder/Multiplexer.h>
 
+#include <TMIV/Common/Bytestream.h>
+#include <TMIV/Encoder/AnnexB.h>
+
 namespace TMIV::Encoder {
 void Multiplexer::setAttributeVideoBitstreamServer(AttributeVideoBitstreamServer server) {
   m_openAttributeVideoBitstream = std::move(server);
@@ -121,18 +124,11 @@ void Multiplexer::writeOutputBitstream(std::ostream &stream) const {
   // Write the sample stream header
   const auto ssvh = MivBitstream::SampleStreamV3cHeader{precisionBytesMinus1};
   ssvh.encodeTo(stream);
-  std::cout << '\n' << ssvh;
 
   // Write the units
   for (const auto &unit : m_units) {
     const auto ssvu = MivBitstream::SampleStreamV3cUnit{unit};
     ssvu.encodeTo(stream, ssvh);
-    std::cout << '\n' << ssvu;
-
-    // Print the V3C unit header (for fun, why not)
-    std::istringstream stream2{unit};
-    const auto vuh = MivBitstream::V3cUnitHeader::decodeFrom(stream2);
-    std::cout << vuh;
   }
 }
 
@@ -149,14 +145,14 @@ void Multiplexer::appendGvd(MivBitstream::AtlasId atlasId) {
   auto vuh = MivBitstream::V3cUnitHeader{MivBitstream::VuhUnitType::V3C_GVD};
   vuh.vuh_v3c_parameter_set_id(m_vps.vps_v3c_parameter_set_id());
   vuh.vuh_atlas_id(atlasId);
-  appendSubBitstream(vuh, m_openGeometryVideoBitstream(atlasId));
+  appendVideoSubBitstream(vuh, m_openGeometryVideoBitstream(atlasId));
 }
 
 void Multiplexer::appendOvd(MivBitstream::AtlasId atlasId) {
   auto vuh = MivBitstream::V3cUnitHeader{MivBitstream::VuhUnitType::V3C_OVD};
   vuh.vuh_v3c_parameter_set_id(m_vps.vps_v3c_parameter_set_id());
   vuh.vuh_atlas_id(atlasId);
-  appendSubBitstream(vuh, m_openOccupancyVideoBitstream(atlasId));
+  appendVideoSubBitstream(vuh, m_openOccupancyVideoBitstream(atlasId));
 }
 
 void Multiplexer::appendAvd(MivBitstream::AtlasId atlasId, uint8_t attributeIdx,
@@ -166,14 +162,14 @@ void Multiplexer::appendAvd(MivBitstream::AtlasId atlasId, uint8_t attributeIdx,
   vuh.vuh_atlas_id(atlasId);
   vuh.vuh_attribute_index(attributeIdx);
 
-  appendSubBitstream(vuh, m_openAttributeVideoBitstream(typeId, atlasId, attributeIdx));
+  appendVideoSubBitstream(vuh, m_openAttributeVideoBitstream(typeId, atlasId, attributeIdx));
 }
 
 void Multiplexer::appendPvd(MivBitstream::AtlasId atlasId) {
   auto vuh = MivBitstream::V3cUnitHeader{MivBitstream::VuhUnitType::V3C_PVD};
   vuh.vuh_v3c_parameter_set_id(m_vps.vps_v3c_parameter_set_id());
   vuh.vuh_atlas_id(atlasId);
-  appendSubBitstream(vuh, m_openPackedVideoBitstream(atlasId));
+  appendVideoSubBitstream(vuh, m_openPackedVideoBitstream(atlasId));
 }
 
 void Multiplexer::addPackingInformation() {
@@ -191,13 +187,21 @@ void Multiplexer::addPackingInformation() {
   }
 }
 
-void Multiplexer::appendSubBitstream(const MivBitstream::V3cUnitHeader &vuh,
-                                     std::unique_ptr<std::istream> stream) {
+void Multiplexer::appendVideoSubBitstream(const MivBitstream::V3cUnitHeader &vuh,
+                                          std::unique_ptr<std::istream> stream) {
   std::ostringstream substream;
   vuh.encodeTo(substream);
-  substream << stream->rdbuf();
+
+  std::vector<char> buffer;
+  readNalUnitFromAnnexBStreamIntoBuffer(*stream, buffer);
+  VERIFY_BITSTREAM(!buffer.empty());
+  do {
+    fmt::print("[{}] NAL unit: {} bytes\n", vuh.summary(), buffer.size());
+    Common::putUint32(substream, Common::downCast<uint32_t>(buffer.size()));
+    substream.write(buffer.data(), Common::downCast<std::streamsize>(buffer.size()));
+    readNalUnitFromAnnexBStreamIntoBuffer(*stream, buffer);
+  } while (!buffer.empty());
 
   m_units.push_back(substream.str());
 }
-
 } // namespace TMIV::Encoder

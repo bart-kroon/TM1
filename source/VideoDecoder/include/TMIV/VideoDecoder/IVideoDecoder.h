@@ -42,6 +42,10 @@
 #include <memory>
 
 namespace TMIV::VideoDecoder {
+// A NAL unit source is a function that returns NAL units as a string (blob of bytes). An empty
+// string indicates that thare are no more NAL units.
+using NalUnitSource = std::function<std::string()>;
+
 class IVideoDecoder {
 public:
   IVideoDecoder() = default;
@@ -49,16 +53,11 @@ public:
   IVideoDecoder(IVideoDecoder &&) = default;
   auto operator=(const IVideoDecoder &) -> IVideoDecoder & = delete;
   auto operator=(IVideoDecoder &&) -> IVideoDecoder & = default;
-  virtual ~IVideoDecoder();
+  virtual ~IVideoDecoder() = default;
 
-  // Factory method to create a video decoder based on the codec group
-  static auto create(TMIV::MivBitstream::PtlProfileCodecGroupIdc codecGroupIdc)
-      -> std::unique_ptr<IVideoDecoder>;
-
-  using FrameListener = std::function<void(const Common::AnyFrame &)>;
-
-  virtual void decode(std::istream &stream) = 0;
-  virtual void addFrameListener(FrameListener listener) = 0;
+  // Get the next frame in picture order. If there are no more frames then the result will be empty.
+  // Side-effects may be that NAL units may be taken from the source and there may be screen output.
+  virtual auto getFrame() -> std::unique_ptr<Common::AnyFrame> = 0;
 };
 } // namespace TMIV::VideoDecoder
 

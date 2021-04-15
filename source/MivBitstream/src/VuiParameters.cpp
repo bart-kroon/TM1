@@ -130,19 +130,19 @@ auto VuiParameters::coordinate_system_parameters() const -> const CoordinateSyst
 auto VuiParameters::vui_display_box_origin(int d) const -> uint32_t {
   VERIFY_V3CBITSTREAM(vui_display_box_info_present_flag());
   VERIFY_V3CBITSTREAM(m_vui_display_box_origin.has_value());
-  return (*m_vui_display_box_origin)[d];
+  return Common::at(*m_vui_display_box_origin, d);
 }
 
 auto VuiParameters::vui_display_box_size(int d) const -> uint32_t {
   VERIFY_V3CBITSTREAM(vui_display_box_info_present_flag());
   VERIFY_V3CBITSTREAM(m_vui_display_box_size.has_value());
-  return (*m_vui_display_box_size)[d];
+  return Common::at(*m_vui_display_box_size, d);
 }
 
 auto VuiParameters::vui_anchor_point(int d) const -> uint32_t {
   VERIFY_V3CBITSTREAM(vui_anchor_point_present_flag());
   VERIFY_V3CBITSTREAM(m_vui_anchor_point.has_value());
-  return (*m_vui_anchor_point)[d];
+  return Common::at(*m_vui_anchor_point, d);
 }
 
 auto VuiParameters::vui_num_units_in_tick(uint32_t value) noexcept -> VuiParameters & {
@@ -215,7 +215,7 @@ auto VuiParameters::vui_display_box_origin(int d, uint32_t value) noexcept -> Vu
   if (!m_vui_display_box_origin) {
     m_vui_display_box_origin = std::array<uint32_t, 3>{};
   }
-  (*m_vui_display_box_origin)[d] = value;
+  Common::at(*m_vui_display_box_origin, d) = value;
   return *this;
 }
 
@@ -224,7 +224,7 @@ auto VuiParameters::vui_display_box_size(int d, uint32_t value) noexcept -> VuiP
   if (!m_vui_display_box_size) {
     m_vui_display_box_size = std::array<uint32_t, 3>{};
   }
-  (*m_vui_display_box_size)[d] = value;
+  Common::at(*m_vui_display_box_size, d) = value;
   return *this;
 }
 
@@ -233,7 +233,7 @@ auto VuiParameters::vui_anchor_point(int d, uint32_t value) noexcept -> VuiParam
   if (!m_vui_anchor_point) {
     m_vui_anchor_point = std::array<uint32_t, 3>{};
   }
-  (*m_vui_anchor_point)[d] = value;
+  Common::at(*m_vui_anchor_point, d) = value;
   return *this;
 }
 

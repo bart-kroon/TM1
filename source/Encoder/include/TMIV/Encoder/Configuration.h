@@ -31,9 +31,47 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/VideoDecoder/IVideoDecoder.h>
+#ifndef TMIV_ENCODER_CONFIGURATION_H
+#define TMIV_ENCODER_CONFIGURATION_H
 
-namespace TMIV::VideoDecoder {
-auto create(NalUnitSource source, MivBitstream::PtlProfileCodecGroupIdc codecGroupIdc)
-    -> std::unique_ptr<IVideoDecoder>;
-} // namespace TMIV::VideoDecoder
+#include <TMIV/Common/Json.h>
+#include <TMIV/MivBitstream/V3cParameterSet.h>
+#include <TMIV/MivBitstream/ViewingSpace.h>
+
+namespace TMIV::Encoder {
+static constexpr auto maxIntraPeriod = 32;
+
+struct Configuration {
+  Configuration(const Common::Json & /*rootNode*/, const Common::Json & /*componentNode*/);
+
+  int intraPeriod;
+  int blockSize{}; // TODO(#358): This is not a configuration parameter
+  Common::Vec2i blockSizeDepthQualityDependent;
+  std::optional<bool> depthLowQualityFlag;
+  double maxLumaSampleRate{};
+  int maxLumaPictureSize{};
+  double maxBlockRate{};   // TODO(#358): This is not a configuration parameter
+  int maxBlocksPerAtlas{}; // TODO(#358): This is not a configuration parameter
+  int maxAtlases{};
+  bool haveTexture;
+  bool haveGeometry;
+  bool haveOccupancy;
+  bool oneViewPerAtlasFlag;
+  std::vector<Common::Vec2i> overrideAtlasFrameSizes{};
+  bool geometryScaleEnabledFlag;
+  int dilationIter;
+  Common::stack::Vec2<Common::SampleValue> entityEncRange;
+  bool dynamicDepthRange;
+  bool attributeOffsetFlag;
+  int attributeOffsetBitCount{};
+  bool dqParamsPresentFlag{true};
+  bool randomAccess;
+  uint8_t numGroups;
+  uint16_t maxEntityId{};
+  std::optional<MivBitstream::ViewingSpace> viewingSpace;
+  MivBitstream::PtlProfileCodecGroupIdc codecGroupIdc{};
+  MivBitstream::PtlProfilePccToolsetIdc toolsetIdc{};
+};
+} // namespace TMIV::Encoder
+
+#endif

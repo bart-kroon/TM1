@@ -35,8 +35,8 @@
 #define TMIV_ENCODER_ENCODER_H
 
 #include <TMIV/Aggregator/IAggregator.h>
-#include <TMIV/Common/Json.h>
 #include <TMIV/DepthQualityAssessor/IDepthQualityAssessor.h>
+#include <TMIV/Encoder/Configuration.h>
 #include <TMIV/Encoder/GeometryDownscaler.h>
 #include <TMIV/Encoder/IEncoder.h>
 #include <TMIV/Encoder/IGeometryQuantizer.h>
@@ -114,36 +114,6 @@ private: // Encoder_prepareSequence.cpp
                   Common::TextureDepthFrame<Common::YUV400P16> &atlas, int yOcc, int xOcc,
                   const Common::Vec2i &pView, const Common::Vec2i &pAtlas) const;
 
-  struct Configuration {
-    Configuration(const Common::Json & /*rootNode*/, const Common::Json & /*componentNode*/);
-
-    int intraPeriod;
-    int blockSize{}; // TODO(#358): This is not a configuration parameter
-    Common::Vec2i blockSizeDepthQualityDependent;
-    std::optional<bool> depthLowQualityFlag;
-    double maxLumaSampleRate{};
-    int maxLumaPictureSize{};
-    double maxBlockRate{};   // TODO(#358): This is not a configuration parameter
-    int maxBlocksPerAtlas{}; // TODO(#358): This is not a configuration parameter
-    int maxAtlases{};
-    bool haveTexture;
-    bool haveGeometry;
-    bool haveOccupancy;
-    bool oneViewPerAtlasFlag;
-    std::vector<Common::Vec2i> overrideAtlasFrameSizes{};
-    bool geometryScaleEnabledFlag;
-    int dilationIter;
-    Common::stack::Vec2<Common::SampleValue> entityEncRange;
-    bool dynamicDepthRange;
-    bool attributeOffsetFlag;
-    int attributeOffsetBitCount{};
-    bool dqParamsPresentFlag{true};
-    bool randomAccess;
-    uint8_t numGroups;
-    uint16_t maxEntityId{};
-    std::optional<MivBitstream::ViewingSpace> viewingSpace;
-  };
-
   // Encoder_popFrame.cpp
   void incrementFoc();
 
@@ -170,7 +140,6 @@ private: // Encoder_prepareSequence.cpp
   std::deque<Common::MVD16Frame> m_videoFrameBuffer;
 
   // Mask aggregation state
-  static constexpr auto maxIntraPeriod = 32;
   using NonAggregatedMask = Common::Mat<std::bitset<maxIntraPeriod>>;
   std::vector<NonAggregatedMask> m_nonAggregatedMask;
   std::vector<Common::MaskList> m_aggregatedEntityMask;

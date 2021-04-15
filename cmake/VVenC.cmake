@@ -33,14 +33,16 @@ if(BUILD_VVenC)
 endif()
 
 if(BUILD_VVdeC)
+    set(HAVE_VVDEC ON)
+
     if(NO_INTERNET)
-        set(LOCAL_VVDEC_DIR ${CMAKE_SOURCE_DIR}/../vvdec-0.2.0.0 CACHE PATH "Path to the local VVdeC directory" )
+        set(LOCAL_VVDEC_DIR ${CMAKE_SOURCE_DIR}/../vvdec-1.0.1 CACHE PATH "Path to the local VVdeC directory" )
         message(STATUS "Looking for a local copy of VVdeC in ${LOCAL_VVDEC_DIR}")
-        fetchcontent_declare(VVDEC URL ${LOCAL_VVDEC_DIR})
+         fetchcontent_declare(VVDEC URL ${LOCAL_VVDEC_DIR})
     else()
         fetchcontent_declare(VVDEC
             GIT_REPOSITORY https://github.com/fraunhoferhhi/vvdec
-            GIT_TAG "v0.2.0.0"
+            GIT_TAG "v1.0.1"
             GIT_PROGRESS TRUE
         )
     endif()
@@ -53,7 +55,6 @@ if(BUILD_VVdeC)
     endif()
 
     set_property(TARGET vvdec vvdecapp PROPERTY FOLDER "VVenC")
-    target_compile_features(vvdec PUBLIC cxx_std_14)
+    target_compile_features(vvdec PUBLIC cxx_std_17)
     install(TARGETS vvdecapp EXPORT TMIVTargets RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 endif()
-

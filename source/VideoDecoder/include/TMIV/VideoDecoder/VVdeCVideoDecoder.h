@@ -31,9 +31,31 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#ifndef TMIV_VIDEODECODER_VVDECVIDEODECODER_H
+#define TMIV_VIDEODECODER_VVDECVIDEODECODER_H
+
+#if !HAVE_VVDEC
+#error VVDeC is disabled
+#endif
+
 #include <TMIV/VideoDecoder/IVideoDecoder.h>
 
 namespace TMIV::VideoDecoder {
-auto create(NalUnitSource source, MivBitstream::PtlProfileCodecGroupIdc codecGroupIdc)
-    -> std::unique_ptr<IVideoDecoder>;
+class VVdeCVideoDecoder : public IVideoDecoder {
+public:
+  explicit VVdeCVideoDecoder(NalUnitSource source);
+  VVdeCVideoDecoder(const VVdeCVideoDecoder &) = delete;
+  VVdeCVideoDecoder(VVdeCVideoDecoder &&) = delete;
+  auto operator=(const VVdeCVideoDecoder &) -> VVdeCVideoDecoder & = delete;
+  auto operator=(VVdeCVideoDecoder &&) -> VVdeCVideoDecoder & = delete;
+  ~VVdeCVideoDecoder() override;
+
+  auto getFrame() -> std::unique_ptr<Common::AnyFrame> override;
+
+private:
+  class Impl;
+  std::unique_ptr<Impl> m_impl;
+};
 } // namespace TMIV::VideoDecoder
+
+#endif

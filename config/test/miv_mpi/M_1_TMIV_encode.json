@@ -20,6 +20,8 @@
     "TransparencyDynamic": 4
   },
   "EncoderMethod": "MpiEncoder",
+  "codecGroupIdc": "VVC Main10",
+  "toolsetIdc": "MIV Main",
   "geometryScaleEnabledFlag": false,
   "haveGeometryVideo": false,
   "haveOccupancyVideo": false,

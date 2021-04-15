@@ -48,6 +48,8 @@
         "ViewOptimizerMethod": "BasicViewAllocator"
     },
     "EncoderMethod": "Encoder",
+    "codecGroupIdc": "HEVC Main10",
+    "toolsetIdc": "MIV Main",
     "EntityEncodeRange": [
         8,
         16

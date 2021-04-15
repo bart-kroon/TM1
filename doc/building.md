@@ -56,9 +56,9 @@ The first step is to obtain source archives for TMIV and all external libraries 
 
 ### Catch2 testing framework
 
-1. Visit this URL: https://github.com/catchorg/Catch2/tree/v2.11.1
+1. Visit this URL: https://github.com/catchorg/Catch2/tree/v2.13.4
 1. Click on the green button "Code" and select "Download ZIP"
-1. Unzip, resulting in a directory `/Workspace/Catch2-2.11.1` such that the file `/Workspace/Catch2-2.11.1/README.md` exists.
+1. Unzip, resulting in a directory `/Workspace/Catch2-2.13.4` such that the file `/Workspace/Catch2-2.13.4/README.md` exists.
 
 ### {fmt} string formatting library
 
@@ -81,9 +81,9 @@ The first step is to obtain source archives for TMIV and all external libraries 
 
 ### Fraunhofer Versatile Video Decoder (VVdeC)
 
-1. Visit this URL: https://github.com/fraunhoferhhi/vvdec/tree/v0.2.0.0
+1. Visit this URL: https://github.com/fraunhoferhhi/vvdec/tree/v1.0.1
 1. Click on the green "Code" button and select "Download ZIP"
-1. Unzip, resulting in a directory `/Workspace/vvdec-0.2.0.0` such that the file `/Workspace/vvdec-0.2.0.0/README.md` exists.
+1. Unzip, resulting in a directory `/Workspace/vvdec-1.0.1` such that the file `/Workspace/vvdec-1.0.1/README.md` exists.
 
 ### This project
 

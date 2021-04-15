@@ -334,7 +334,8 @@ template <typename Out, typename In> constexpr auto assertDownCast(In input) noe
 // Like gsl::at but prints a message before abnormal program termination and supports nested arrays
 template <typename Container>
 constexpr auto at(Container &container, size_t index) noexcept -> decltype(auto) {
-  PRECONDITION(index < container.size());
+  using std::size;
+  PRECONDITION(index < size(container));
   // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index)
   return container[index];
 }

@@ -31,6 +31,8 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <catch2/catch.hpp>
+
 #include <TMIV/VideoDecoder/VideoDecoderFactory.h>
 
 #if HAVE_HM
@@ -41,22 +43,47 @@
 #include <TMIV/VideoDecoder/VVdeCVideoDecoder.h>
 #endif
 
-#include <fmt/ostream.h>
+using namespace std::string_literals;
 
-namespace TMIV::VideoDecoder {
-auto create(NalUnitSource source, MivBitstream::PtlProfileCodecGroupIdc codecGroupIdc)
-    -> std::unique_ptr<IVideoDecoder> {
+TEST_CASE("VideoDecoder::VideoDecoderFactory") {
+  using Catch::Contains;
+  using TMIV::MivBitstream::PtlProfileCodecGroupIdc;
+  using TMIV::VideoDecoder::create;
+
+  const auto nalUnitSource = []() { return ""s; };
+
+  const auto checkNoSupport = [=](const auto codecGroupIdc) {
+    REQUIRE_THROWS_WITH(create(nalUnitSource, codecGroupIdc), Contains("no built-in support"));
+  };
+
+  SECTION("HEVC Main10 has optional built-in support based on the HEVC Test Model (HM)") {
 #if HAVE_HM
-  if (codecGroupIdc == MivBitstream::PtlProfileCodecGroupIdc::HEVC_Main10) {
-    return std::make_unique<HmVideoDecoder>(std::move(source));
-  }
+    const auto decoder = create(nalUnitSource, PtlProfileCodecGroupIdc::HEVC_Main10);
+    REQUIRE(dynamic_cast<TMIV::VideoDecoder::HmVideoDecoder *>(decoder.get()) != nullptr);
+#else
+    checkNoSupport(PtlProfileCodecGroupIdc::HEVC_Main10);
 #endif
+  }
+
+  SECTION("VVC Main10 has optional built-in support based on the VVdeC decoder") {
 #if HAVE_VVDEC
-  if (codecGroupIdc == MivBitstream::PtlProfileCodecGroupIdc::VVC_Main10) {
-    return std::make_unique<VVdeCVideoDecoder>(std::move(source));
-  }
+    const auto decoder = create(nalUnitSource, PtlProfileCodecGroupIdc::VVC_Main10);
+    REQUIRE(dynamic_cast<TMIV::VideoDecoder::VVdeCVideoDecoder *>(decoder.get()) != nullptr);
+#else
+    checkNoSupport(PtlProfileCodecGroupIdc::VVC_Main10);
 #endif
-  throw std::runtime_error(
-      fmt::format("There is no built-in support for the {} codec group IDC", codecGroupIdc));
+  }
+
+  SECTION("All other codec group IDC's (incl. MP4RA) are not (yet) supported") {
+    const auto codecGroupIdc =
+        GENERATE(PtlProfileCodecGroupIdc::AVC_Progressive_High, PtlProfileCodecGroupIdc::HEVC444,
+                 PtlProfileCodecGroupIdc::MP4RA, PtlProfileCodecGroupIdc{33});
+    checkNoSupport(codecGroupIdc);
+
+    SECTION("Check the full error message because there has been a formatting problem") {
+      REQUIRE_THROWS_WITH(
+          create(nalUnitSource, PtlProfileCodecGroupIdc::AVC_Progressive_High),
+          "There is no built-in support for the AVC Progressive High codec group IDC");
+    }
+  }
 }
-} // namespace TMIV::VideoDecoder

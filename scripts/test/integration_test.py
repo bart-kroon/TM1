@@ -243,65 +243,46 @@ class IntegrationTest:
             ["A3/E/QP3/TMIV_A3_E_QP3_tex_c01.bit"],
         )
 
+        f3 = self.launchCommand(
+            executor,
+            [f2_1, f2_2, f2_3, f2_4],
+            ["{0}/bin/Multiplexer", "-c", "{1}/config/test/miv_anchor/A_3_TMIV_mux.json"]
+            + ["-p", "inputDirectory", "{3}", "-p", "outputDirectory", "{3}"]
+            + ["-n", "3", "-s", "E", "-r", "QP3"],
+            "{3}/A3/E/QP3/TMIV_A3_E_QP3.log",
+            ["A3/E/QP3/TMIV_A3_E_QP3.bit"],
+        )
+
         f2_5 = self.launchCommand(
             executor,
-            [f1],
-            ["{0}/bin/Parser", "-b", "{3}/A3/E/TMIV_A3_E.bit", "-o", "{3}/A3/E/TMIV_A3_E.hls"],
+            [f3],
+            [
+                "{0}/bin/Parser",
+                "-b",
+                "{3}/A3/E/QP3/TMIV_A3_E_QP3.bit",
+                "-o",
+                "{3}/A3/E/QP3/TMIV_A3_E_QP3.hls",
+            ],
             None,
-            ["A3/E/TMIV_A3_E.hls"],
+            ["A3/E/QP3/TMIV_A3_E_QP3.hls"],
         )
 
         f2_6 = self.launchCommand(
             executor,
-            [f1],
-            ["{0}/bin/BitrateReport", "-b", "{3}/A3/E/TMIV_A3_E.bit"],
-            "{3}/A3/E/TMIV_A3_E.csv",
+            [f3],
+            ["{0}/bin/BitrateReport", "-b", "{3}/A3/E/QP3/TMIV_A3_E_QP3.bit"],
+            "{3}/A3/E/QP3/TMIV_A3_E_QP3.csv",
             [],
-        )
-
-        f3_1 = self.launchCommand(
-            executor,
-            [f2_1],
-            ["{0}/bin/vvdecapp", "-b", "{3}/A3/E/QP3/TMIV_A3_E_QP3_geo_c00.bit"]
-            + ["-o", f"{{3}}/A3/E/QP3/TMIV_A3_E_QP3_geo_c00_{geometryResolution}_yuv420p10le.yuv"],
-            "{3}/A3/E/QP3/TMIV_A3_E_QP3_geo_c00_vvdec.log",
-            [f"A3/E/QP3/TMIV_A3_E_QP3_geo_c00_{geometryResolution}_yuv420p10le.yuv"],
-        )
-
-        f3_2 = self.launchCommand(
-            executor,
-            [f2_2],
-            ["{0}/bin/vvdecapp", "-b", "{3}/A3/E/QP3/TMIV_A3_E_QP3_geo_c01.bit"]
-            + ["-o", f"{{3}}/A3/E/QP3/TMIV_A3_E_QP3_geo_c01_{geometryResolution}_yuv420p10le.yuv"],
-            "{3}/A3/E/QP3/TMIV_A3_E_QP3_geo_c01_vvdec.log",
-            [f"A3/E/QP3/TMIV_A3_E_QP3_geo_c01_{geometryResolution}_yuv420p10le.yuv"],
-        )
-
-        f3_3 = self.launchCommand(
-            executor,
-            [f2_3],
-            ["{0}/bin/vvdecapp", "-b", "{3}/A3/E/QP3/TMIV_A3_E_QP3_tex_c00.bit"]
-            + ["-o", f"{{3}}/A3/E/QP3/TMIV_A3_E_QP3_tex_c00_{textureResolution}_yuv420p10le.yuv"],
-            "{3}/A3/E/QP3/TMIV_A3_E_QP3_tex_c00_vvdec.log",
-            [f"A3/E/QP3/TMIV_A3_E_QP3_tex_c00_{textureResolution}_yuv420p10le.yuv"],
-        )
-
-        f3_4 = self.launchCommand(
-            executor,
-            [f2_4],
-            ["{0}/bin/vvdecapp", "-b", "{3}/A3/E/QP3/TMIV_A3_E_QP3_tex_c01.bit"]
-            + ["-o", f"{{3}}/A3/E/QP3/TMIV_A3_E_QP3_tex_c01_{textureResolution}_yuv420p10le.yuv"],
-            "{3}/A3/E/QP3/TMIV_A3_E_QP3_tex_c01_vvdec.log",
-            [f"A3/E/QP3/TMIV_A3_E_QP3_tex_c01_{textureResolution}_yuv420p10le.yuv"],
         )
 
         f4 = self.launchCommand(
             executor,
-            [f3_1, f3_2, f3_3, f3_4],
+            [f3],
             ["{0}/bin/Decoder", "-c", "{1}/config/ctc/miv_anchor/A_4_TMIV_decode.json"]
             + ["-p", "configDirectory", "{1}/config", "-p", "inputDirectory", "{3}"]
             + ["-p", "outputDirectory", "{3}", "-n", "3", "-N", "3", "-s", "E"]
-            + ["-r", "QP3", "-v", "v11"],
+            + ["-r", "QP3", "-v", "v11"]
+            + ["-p", "inputBitstreamPathFmt", "{3}/A3/E/QP3/TMIV_A3_E_QP3.bit"],
             "{3}/A3/E/QP3/A3_E_QP3_v11.log",
             [f"A3/E/QP3/A3_E_QP3_v11_tex_{renderResolution}_yuv420p10le.yuv"],
         )

@@ -4,6 +4,7 @@ create_tmiv_library(
     TARGET
         EncoderLib
     SOURCES
+        "src/Configuration.cpp"    
         "src/Encoder.cpp"
         "src/Encoder_prepareSequence.cpp"
         "src/Encoder_prepareAccessUnit.cpp"
@@ -79,6 +80,7 @@ create_catch2_unit_test(
         EncoderTest
     SOURCES
         "src/AnnexB.test.cpp"
+        "src/Configuration.test.cpp"
         "src/GeometryQuantizer.test.cpp"
     PRIVATE
         TMIV::EncoderLib

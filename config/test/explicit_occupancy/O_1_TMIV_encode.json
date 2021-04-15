@@ -48,6 +48,8 @@
         "ViewOptimizerMethod": "BasicViewAllocator"
     },
     "EncoderMethod": "Encoder",
+    "codecGroupIdc": "HEVC Main10",
+    "toolsetIdc": "MIV Extended",
     "geometryScaleEnabledFlag": true,
     "haveGeometryVideo": true,
     "haveOccupancyVideo": true,

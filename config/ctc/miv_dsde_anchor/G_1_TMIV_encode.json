@@ -35,6 +35,8 @@
         "ViewOptimizerMethod": "BasicViewAllocator"
     },
     "EncoderMethod": "Encoder",
+    "codecGroupIdc": "VVC Main10",
+    "toolsetIdc": "MIV Geometry Absent",
     "haveGeometryVideo": false,
     "haveOccupancyVideo": false,
     "haveTextureVideo": true,

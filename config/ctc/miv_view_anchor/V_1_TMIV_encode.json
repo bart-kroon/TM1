@@ -51,6 +51,8 @@
         "ViewOptimizerMethod": "ServerSideInpainter"
     },
     "EncoderMethod": "Encoder",
+    "codecGroupIdc": "VVC Main10",
+    "toolsetIdc": "MIV Main",
     "geometryScaleEnabledFlag": true,
     "haveGeometryVideo": true,
     "haveOccupancyVideo": false,

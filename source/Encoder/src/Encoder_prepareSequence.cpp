@@ -196,13 +196,9 @@ auto Encoder::createVps(const std::vector<Common::Vec2i> &atlasFrameSizes) const
 
   vps.profile_tier_level()
       .ptl_level_idc(MivBitstream::PtlLevelIdc::Level_3_5)
-      .ptl_profile_codec_group_idc(MivBitstream::PtlProfileCodecGroupIdc::HEVC_Main10)
+      .ptl_profile_codec_group_idc(m_config.codecGroupIdc)
       .ptl_profile_reconstruction_idc(MivBitstream::PtlProfileReconstructionIdc::MIV_Main)
-      .ptl_profile_toolset_idc(m_config.haveGeometry
-                                   ? (m_config.haveOccupancy
-                                          ? MivBitstream::PtlProfilePccToolsetIdc::MIV_Extended
-                                          : MivBitstream::PtlProfilePccToolsetIdc::MIV_Main)
-                                   : MivBitstream::PtlProfilePccToolsetIdc::MIV_Geometry_Absent);
+      .ptl_profile_toolset_idc(m_config.toolsetIdc);
 
   VERIFY_MIVBITSTREAM(!atlasFrameSizes.empty());
   vps.vps_atlas_count_minus1(static_cast<uint8_t>(atlasFrameSizes.size() - 1));

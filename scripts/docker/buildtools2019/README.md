@@ -14,7 +14,6 @@ This instruction is based on:
 1. In a single directory, place:
    * This [Dockerfile](/contrib/buildtools2019/Dockerfile)
    * This [Install.cmd](/contrib/buildtools2019/Install.cmd)
-   * [A specific version of the Git for Windows installer](https://github.com/git-for-windows/git/releases/download/v2.30.1.windows.1/Git-2.30.1-64-bit.exe) from a [specific release](https://github.com/git-for-windows/git/releases/tag/v2.30.1.windows.1) named `Git-2.30.1-64-bit.exe` (exactly the same as in the Dockerfile)
 1. Run: `docker build -t buildtools2019:yyyy.mm.dd -m 2GB .`
 1. Test the new image.
 1. Redirect `buildtools2019:latest` to the new image.

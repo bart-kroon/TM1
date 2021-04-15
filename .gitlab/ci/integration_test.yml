@@ -1,6 +1,6 @@
 Integration Test:
   stage: integration
-  image: buildtools2019:2021.04.02
+  image: buildtools2019:2021.04.14
   tags: [ windows, integration_test ]
   rules:
     - if: $CI_PIPELINE_SOURCE == "schedule"

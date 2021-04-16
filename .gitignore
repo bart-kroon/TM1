@@ -10,3 +10,4 @@ cmake-build-*/
 .vs
 CMakeSettings.json
 scripts/docker/buildtools2019/*.exe
+**/__pycache__/

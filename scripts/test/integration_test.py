@@ -34,7 +34,6 @@
 
 import argparse
 import concurrent.futures
-from dataclasses import dataclass
 from difflib import Differ
 import hashlib
 from pathlib import Path
@@ -42,15 +41,10 @@ import subprocess
 import sys
 import time
 
+SCRIPTS_DIR = Path(__file__).resolve().parent.parent
+sys.path.append(str(SCRIPTS_DIR))
 
-@dataclass
-class Resolution:
-    width: int
-    height: int
-    __slots__ = ("width", "height")
-
-    def __str__(self):
-        return f"{self.width}x{self.height}"
+from common.video_types import Resolution
 
 
 def dirPath(path_string: str) -> Path:

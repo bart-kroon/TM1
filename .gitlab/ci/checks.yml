@@ -13,6 +13,26 @@ black:
   script:
     - python3 -m black --check --diff scripts/
 
+pytest:
+  stage: check
+  image: python:latest
+  tags: [ linux ]
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      changes:
+        - "**/*.py"
+        - .gitlab/ci/checks.yml
+  cache:
+    paths:
+      - .cache/pip
+  variables:
+    PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+  before_script:
+    - python3 -m pip install pytest pyfakefs
+  script:
+    - pytest scripts
+
 clang-format:
   stage: check
   image: cbachhuber/clang:11

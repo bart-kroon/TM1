@@ -160,7 +160,7 @@ MpiEncoder::MpiEncoder(const Common::Json &rootNode, const Common::Json &compone
   VERIFY(m_intraPeriod <= maxIntraPeriod);
 
   // Enforce user-specified atlas size
-  auto node = componentNode.require("overrideAtlasFrameSizes");
+  auto node = rootNode.require("overrideAtlasFrameSizes");
   for (const auto &subnode : node.as<Common::Json::Array>()) {
     m_overrideAtlasFrameSizes.push_back(subnode.asVec<int, 2>());
   }

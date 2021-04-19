@@ -4,19 +4,9 @@
         0,
         0
     ],
-    "Content_name": "Mpi_Fan",
+    "Content_name": "Mpi_Fan_Pcs",
     "Fps": 30,
     "Frames_number": 17,
-    "Informative": {
-        "BoundingBox_size": 0.4,
-        "Cameras_number": 1,
-        "Document": "MPEG2020/M55089",
-        "Object_range": [
-            0.5,
-            12.5
-        ],
-        "RigRadius": 0.4
-    },
     "Version": "2.0",
     "cameras": [
         {
@@ -63,13 +53,13 @@
             "BitDepthTransparency": 8,
             "ColorSpace": "YUV444",
             "Depth_range": [
-                0.4160835445,
-                12.86596775
+                0.05352102593,
+                16.41784096
             ],
             "Depthmap": 0,
             "Focal": [
-                437.32421875,
-                437.32421875
+                437.3241882,
+                437.3241882
             ],
             "HasInvalidDepth": false,
             "Name": "mpi",
@@ -79,13 +69,13 @@
                 1.449999332
             ],
             "Principle_point": [
-                522.0,
-                253.0
+                524.0,
+                256.0
             ],
             "Projection": "Perspective",
             "Resolution": [
-                1044,
-                506
+                1048,
+                512
             ],
             "Rotation": [
                 -33.91259003,
@@ -93,7 +83,7 @@
                 0.0
             ],
             "TransparencyColorSpace": "YUV400",
-            "nbMpiLayers": 423
+            "nbMpiLayers": 1024
         }
     ],
     "frameRanges": [

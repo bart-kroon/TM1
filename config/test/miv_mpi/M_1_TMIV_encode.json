@@ -6,7 +6,6 @@
 
   "dynamicDepthRange": false,
   "MpiEncoder": {
-    "overrideAtlasFrameSizes": [ [ 4096, 4096 ] ],
     "PackerMethod": "Packer",
     "Packer": {
       "enableMerging": true,

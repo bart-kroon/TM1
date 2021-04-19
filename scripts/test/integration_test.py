@@ -146,7 +146,7 @@ class IntegrationTest:
         )
         self.checkIfProbeExistsInDir("TMIV source", self.tmivSourceDir, Path("README.md"))
         self.checkIfProbeExistsInDir(
-            "content", self.contentDir, Path("E") / "v13_texture_1920x1080_yuv420p10le.yuv"
+            "content", self.contentDir, Path("E") / "v13_texture_480x270_yuv420p10le.yuv"
         )
 
         self.testDir.mkdir(exist_ok=True)
@@ -173,16 +173,18 @@ class IntegrationTest:
         if not self.dryRun:
             (self.testDir / "A3" / "E" / "QP3").mkdir(parents=True, exist_ok=True)
 
-        geometryResolution = Resolution(960, 2320)
-        textureResolution = Resolution(1920, 4640)
-        renderResolution = Resolution(1920, 1080)
+        geometryResolution = Resolution(512, 512)
+        textureResolution = Resolution(1024, 1024)
+        renderResolution = Resolution(480, 270)
 
         f1 = self.launchCommand(
             executor,
             [],
             ["{0}/bin/Encoder", "-c", "{1}/config/ctc/miv_anchor/A_1_TMIV_encode.json"]
             + ["-p", "configDirectory", "{1}/config", "-p", "inputDirectory", "{2}"]
-            + ["-p", "outputDirectory", "{3}", "-n", "3", "-s", "E", "-p", "intraPeriod", "2"],
+            + ["-p", "outputDirectory", "{3}", "-n", "3", "-s", "E", "-p", "intraPeriod", "2"]
+            + ["-p", "inputSequenceConfigPathFmt", "test/sequences/T{{1}}.json"]
+            + ["-p", "maxLumaPictureSize", "1048576"],
             "{3}/A3/E/TMIV_A3_E.log",
             [
                 "A3/E/TMIV_A3_E.bit",
@@ -276,7 +278,8 @@ class IntegrationTest:
             + ["-p", "configDirectory", "{1}/config", "-p", "inputDirectory", "{3}"]
             + ["-p", "outputDirectory", "{3}", "-n", "3", "-N", "3", "-s", "E"]
             + ["-r", "QP3", "-v", "v11"]
-            + ["-p", "inputBitstreamPathFmt", "{3}/A3/E/QP3/TMIV_A3_E_QP3.bit"],
+            + ["-p", "inputBitstreamPathFmt", "{3}/A3/E/QP3/TMIV_A3_E_QP3.bit"]
+            + ["-p", "inputViewportParamsPathFmt", "test/sequences/T{{1}}.json"],
             "{3}/A3/E/QP3/A3_E_QP3_v11.log",
             [f"A3/E/QP3/A3_E_QP3_v11_tex_{renderResolution}_yuv420p10le.yuv"],
         )
@@ -287,16 +290,19 @@ class IntegrationTest:
         if not self.dryRun:
             (self.testDir / "V3" / "D" / "R0").mkdir(parents=True, exist_ok=True)
 
-        geometryResolution = Resolution(1024, 2176)
-        textureResolution = Resolution(2048, 4352)
-        renderResolution = Resolution(1920, 1080)
+        geometryResolution = Resolution(512, 1024)
+        textureResolution = Resolution(1024, 2048)
+        poseTraceRenderResolution = Resolution(480, 270)
+        cameraRenderResolution = Resolution(512, 272)
 
         f1 = self.launchCommand(
             executor,
             [],
             ["{0}/bin/Encoder", "-c", "{1}/config/ctc/miv_view_anchor/V_1_TMIV_encode.json"]
             + ["-p", "configDirectory", "{1}/config", "-p", "inputDirectory", "{2}", "-p"]
-            + ["outputDirectory", "{3}", "-n", "3", "-s", "D", "-p", "intraPeriod", "2"],
+            + ["outputDirectory", "{3}", "-n", "3", "-s", "D", "-p", "intraPeriod", "2"]
+            + ["-p", "inputSequenceConfigPathFmt", "test/sequences/T{{1}}.json"]
+            + ["-p", "maxLumaPictureSize", "2097152"],
             "{3}/V3/D/TMIV_V3_D.log",
             [
                 "V3/D/TMIV_V3_D.bit",
@@ -316,9 +322,10 @@ class IntegrationTest:
             + ["V{{0}}/{{1}}/TMIV_V{{0}}_{{1}}_geo_c{{3:02}}_{{4}}x{{5}}_yuv420p10le.yuv"]
             + ["-p", "inputTextureVideoFramePathFmt"]
             + ["V{{0}}/{{1}}/TMIV_V{{0}}_{{1}}_tex_c{{3:02}}_{{4}}x{{5}}_yuv420p10le.yuv"]
+            + ["-p", "inputViewportParamsPathFmt", "test/sequences/T{{1}}.json"]
             + ["-n", "3", "-N", "3", "-s", "D", "-r", "R0", "-v", "v14"],
             "{3}/V3/D/R0/V3_D_R0_v14.log",
-            ["V3/D/R0/V3_D_R0_v14_tex_2048x1088_yuv420p10le.yuv"],
+            [f"V3/D/R0/V3_D_R0_v14_tex_{cameraRenderResolution}_yuv420p10le.yuv"],
         )
 
         f2_2 = self.launchCommand(
@@ -346,9 +353,10 @@ class IntegrationTest:
             + ["V{{0}}/{{1}}/TMIV_V{{0}}_{{1}}_geo_c{{3:02}}_{{4}}x{{5}}_yuv420p10le.yuv"]
             + ["-p", "inputTextureVideoFramePathFmt"]
             + ["V{{0}}/{{1}}/TMIV_V{{0}}_{{1}}_tex_c{{3:02}}_{{4}}x{{5}}_yuv420p10le.yuv"]
+            + ["-p", "inputViewportParamsPathFmt", "test/sequences/T{{1}}.json"]
             + ["-n", "3", "-N", "3", "-s", "D", "-r", "R0", "-P", "p02"],
             "{3}/V3/D/R0/V3_D_R0_p02.log",
-            [f"V3/D/R0/V3_D_R0_p02_tex_{renderResolution}_yuv420p10le.yuv"],
+            [f"V3/D/R0/V3_D_R0_p02_tex_{poseTraceRenderResolution}_yuv420p10le.yuv"],
         )
 
         return [f2_1, f2_2, f2_3, f2_4]
@@ -357,21 +365,22 @@ class IntegrationTest:
         if not self.dryRun:
             (self.testDir / "G3" / "N" / "R0").mkdir(parents=True, exist_ok=True)
 
-        geometryResolution = Resolution(2048, 4352)
-        textureResolution = Resolution(2048, 4352)
-        renderResolution = Resolution(2048, 2048)
+        textureResolution = Resolution(512, 1024)
+        renderResolution = Resolution(512, 512)
 
         f1 = self.launchCommand(
             executor,
             [],
             ["{0}/bin/Encoder", "-c", "{1}/config/ctc/miv_dsde_anchor/G_1_TMIV_encode.json"]
             + ["-p", "configDirectory", "{1}/config", "-p", "inputDirectory", "{2}"]
-            + ["-p", "outputDirectory", "{3}", "-n", "3", "-s", "N", "-p", "intraPeriod", "2"],
+            + ["-p", "outputDirectory", "{3}", "-n", "3", "-s", "N", "-p", "intraPeriod", "2"]
+            + ["-p", "inputSequenceConfigPathFmt", "test/sequences/T{{1}}.json"]
+            + ["-p", "maxLumaPictureSize", "524288"],
             "{3}/G3/N/TMIV_G3_N.log",
             [
                 "G3/N/TMIV_G3_N.bit",
-                f"G3/N/TMIV_G3_N_tex_c00_{geometryResolution}_yuv420p10le.yuv",
-                f"G3/N/TMIV_G3_N_tex_c01_{geometryResolution}_yuv420p10le.yuv",
+                f"G3/N/TMIV_G3_N_tex_c00_{textureResolution}_yuv420p10le.yuv",
+                f"G3/N/TMIV_G3_N_tex_c01_{textureResolution}_yuv420p10le.yuv",
                 f"G3/N/TMIV_G3_N_tex_c02_{textureResolution}_yuv420p10le.yuv",
                 f"G3/N/TMIV_G3_N_tex_c03_{textureResolution}_yuv420p10le.yuv",
             ],
@@ -422,7 +431,7 @@ class IntegrationTest:
         if not self.dryRun:
             (self.testDir / "R3" / "O" / "R0").mkdir(parents=True, exist_ok=True)
 
-        resolution = Resolution(1920, 1080)
+        resolution = Resolution(480, 270)
 
         f1_1 = self.launchCommand(
             executor,
@@ -430,6 +439,8 @@ class IntegrationTest:
             ["{0}/bin/Renderer", "-c", "{1}/config/ctc/best_reference/R_1_TMIV_render.json"]
             + ["-p", "configDirectory", "{1}/config", "-p", "inputDirectory", "{2}"]
             + ["-p", "outputDirectory", "{3}", "-n", "3", "-N", "3", "-s", "O", "-r", "R0"]
+            + ["-p", "inputSequenceConfigPathFmt", "test/sequences/T{{1}}.json"]
+            + ["-p", "inputViewportParamsPathFmt", "test/sequences/T{{1}}.json"]
             + ["-v", "v01"],
             "{3}/R3/O/R0/R3_O_R0_v01.log",
             [
@@ -444,6 +455,8 @@ class IntegrationTest:
             ["{0}/bin/Renderer", "-c", "{1}/config/ctc/best_reference/R_1_TMIV_render.json"]
             + ["-p", "configDirectory", "{1}/config", "-p", "inputDirectory", "{2}"]
             + ["-p", "outputDirectory", "{3}", "-n", "3", "-N", "3", "-s", "O"]
+            + ["-p", "inputSequenceConfigPathFmt", "test/sequences/T{{1}}.json"]
+            + ["-p", "inputViewportParamsPathFmt", "test/sequences/T{{1}}.json"]
             + ["-r", "R0", "-P", "p02"],
             "{3}/R3/O/R0/R3_O_R0_p02.log",
             [
@@ -458,15 +471,17 @@ class IntegrationTest:
         if not self.dryRun:
             (self.testDir / "M3" / "M" / "QP3").mkdir(parents=True, exist_ok=True)
 
-        atlasResolution = Resolution(4096, 4096)
-        renderResolution = Resolution(1920, 1080)
+        atlasResolution = Resolution(1280, 1280)
+        renderResolution = Resolution(480, 270)
 
         f1 = self.launchCommand(
             executor,
             [],
             ["{0}/bin/MpiEncoder", "-c", "{1}/config/test/miv_mpi/M_1_TMIV_encode.json"]
             + ["-p", "configDirectory", "{1}/config", "-p", "inputDirectory", "{2}"]
-            + ["-p", "outputDirectory", "{3}", "-n", "3", "-s", "M", "-p", "intraPeriod", "2"],
+            + ["-p", "outputDirectory", "{3}", "-n", "3", "-s", "M", "-p", "intraPeriod", "2"]
+            + ["-p", "inputSequenceConfigPathFmt", "test/sequences/T{{1}}.json"]
+            + ["-p", "overrideAtlasFrameSizes", "[[ 1280, 1280 ]]"],
             "{3}/M3/M/TMIV_M3_M.log",
             [
                 "M3/M/TMIV_M3_M.bit",
@@ -480,7 +495,8 @@ class IntegrationTest:
             [f1],
             ["{0}/bin/TAppEncoder", "-c", "{1}/config/test/miv_mpi/M_2_HM_encode_tra.cfg"]
             + ["-i", f"{{3}}/M3/M/TMIV_M3_M_tra_c00_{atlasResolution}_yuv420p10le.yuv"]
-            + ["-b", "{3}/M3/M/QP3/TMIV_M3_M_QP3_tra_c00.bit", "-wdt", "4096", "-hgt", "4096"]
+            + ["-b", "{3}/M3/M/QP3/TMIV_M3_M_QP3_tra_c00.bit"]
+            + ["-wdt", str(atlasResolution.width), "-hgt", str(atlasResolution.height)]
             + ["-q", "35", "-f", "3", "-fr", "30"],
             "{3}/M3/M/QP3/TMIV_M3_M_QP3_tra_c00.log",
             ["M3/M/QP3/TMIV_M3_M_QP3_tra_c00.bit"],
@@ -491,7 +507,8 @@ class IntegrationTest:
             [f1],
             ["{0}/bin/TAppEncoder", "-c", "{1}/config/test/miv_mpi/M_2_HM_encode_tex.cfg"]
             + ["-i", f"{{3}}/M3/M/TMIV_M3_M_tex_c00_{atlasResolution}_yuv420p10le.yuv"]
-            + ["-b", "{3}/M3/M/QP3/TMIV_M3_M_QP3_tex_c00.bit", "-wdt", "4096", "-hgt", "4096"]
+            + ["-b", "{3}/M3/M/QP3/TMIV_M3_M_QP3_tex_c00.bit"]
+            + ["-wdt", str(atlasResolution.width), "-hgt", str(atlasResolution.height)]
             + ["-q", "30", "-f", "3", "-fr", "30"],
             "{3}/M3/M/QP3/TMIV_M3_M_QP3_tex_c00.log",
             ["M3/M/QP3/TMIV_M3_M_QP3_tex_c00.bit"],
@@ -530,6 +547,7 @@ class IntegrationTest:
             [f3],
             ["{0}/bin/Decoder", "-c", "{1}/config/test/miv_mpi/M_4_TMIV_decode.json"]
             + ["-p", "configDirectory", "{1}/config", "-p", "inputDirectory", "{3}"]
+            + ["-p", "inputViewportParamsPathFmt", "test/sequences/T{{1}}.json"]
             + ["-p", "outputDirectory", "{3}", "-n", "3", "-N", "3", "-s", "M", "-r", "QP3"]
             + ["-v", "viewport"],
             "{3}/M3/M/QP3/M3_M_QP3_viewport.log",
@@ -542,7 +560,7 @@ class IntegrationTest:
         if not self.dryRun:
             (self.testDir / "S1" / "C" / "R0").mkdir(parents=True, exist_ok=True)
 
-        renderResolution = Resolution(2048, 2048)
+        renderResolution = Resolution(512, 512)
 
         f1 = self.launchCommand(
             executor,
@@ -550,6 +568,8 @@ class IntegrationTest:
             ["{0}/bin/Renderer", "-c", "{1}/config/test/additive_synthesizer/S_1_TMIV_render.json"]
             + ["-p", "configDirectory", "{1}/config", "-p", "inputDirectory", "{2}"]
             + ["-p", "outputDirectory", "{3}", "-n", "1", "-N", "1", "-s", "C", "-r", "R0"]
+            + ["-p", "inputSequenceConfigPathFmt", "test/sequences/T{{1}}.json"]
+            + ["-p", "inputViewportParamsPathFmt", "test/sequences/T{{1}}.json"]
             + ["-P", "p03"],
             "{3}/S1/C/R0/S1_C_R0_p03.log",
             [

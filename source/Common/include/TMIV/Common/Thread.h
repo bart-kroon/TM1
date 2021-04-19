@@ -39,6 +39,12 @@
 #include <vector>
 
 namespace TMIV::Common {
+inline auto threadCount() -> auto & {
+  static auto singletonValue = std::thread::hardware_concurrency();
+
+  return singletonValue;
+}
+
 inline void parallel_for(size_t nbIter, std::function<void(size_t)> fun) {
   auto segment_execute = [&](size_t first, size_t last) {
     for (auto id = first; id < last; id++) {
@@ -46,9 +52,7 @@ inline void parallel_for(size_t nbIter, std::function<void(size_t)> fun) {
     }
   };
 
-  size_t chunkSize = (std::thread::hardware_concurrency() < nbIter)
-                         ? (nbIter / std::thread::hardware_concurrency())
-                         : 1;
+  const auto chunkSize = threadCount() < nbIter ? nbIter / threadCount() : 1;
   std::vector<std::future<void>> threadList;
 
   for (size_t id = 0; id < nbIter; id += chunkSize) {
@@ -75,9 +79,7 @@ inline void parallel_for(size_t w, size_t h, std::function<void(size_t, size_t)>
   };
 
   std::vector<std::future<void>> threadList;
-  size_t chunkSize = (std::thread::hardware_concurrency() < nbIter)
-                         ? (nbIter / std::thread::hardware_concurrency())
-                         : 1;
+  auto chunkSize = threadCount() < nbIter ? nbIter / threadCount() : 1;
 
   size_t misalignment = (chunkSize % w);
 

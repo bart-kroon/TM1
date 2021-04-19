@@ -33,8 +33,10 @@
 
 #include <TMIV/Common/Application.h>
 
+#include <TMIV/Common/Thread.h>
 #include <TMIV/Common/verify.h>
 
+#include <cstdlib>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
@@ -65,6 +67,13 @@ Application::Application(const char *tool, std::vector<const char *> argv, Optio
       const auto *arg1 = take();
       const auto *arg2 = take();
       add_parameter(arg1, arg2);
+    } else if ("-j"sv == option) {
+      const auto arg = std::atoi(take());
+      if (0 < arg) {
+        Common::threadCount() = arg;
+      } else {
+        throw std::runtime_error("The -j option has as argument a positive number");
+      }
     } else if ("--help"sv == option) {
       m_json = Json{};
       break;
@@ -86,13 +95,17 @@ Application::Application(const char *tool, std::vector<const char *> argv, Optio
                              [](const auto &o) { return !o.multiple && o.values.empty(); })) {
     std::ostringstream what;
     what << "Usage: " << tool
-         << " [OPTIONS...] (-c CONFIGURATION)+ (-p KEY VALUE)*\n\nOptions are:";
+         << " [OPTIONS...] (-c CONFIGURATION)+ (-p KEY VALUE)* [-j THREAD_COUNT]\n\nOptions are:";
     for (const auto &o : m_options) {
       what << fmt::format("\n  {:3} {:47} {}", o.option, o.description,
                           o.multiple ? "zero or more allowed" : "required exactly once");
     }
-    what << "\n\nNote: when the same parameter is provided multiple times on the "
-            "command-line,\nthrough -c or -p, then the right-most argument has precedence.";
+    what << R"(
+
+NOTE 1: When the same parameter is provided multiple times on the command-line,
+        through -c or -p, then the right-most argument has precedence.
+NOTE 2: The default thread count is equal to the logical processor count of the
+        system. Use -j 1 to disable parallal processing.)";
     throw std::runtime_error(what.str());
   }
 }

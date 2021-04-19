@@ -37,11 +37,11 @@
 
 #include "blend.h"
 #include <TMIV/Common/Common.h>
+#include <TMIV/Common/Thread.h>
 
 #include <cassert>
 #include <cmath>
 #include <future>
-#include <thread>
 
 namespace TMIV::Renderer {
 namespace detail {
@@ -50,7 +50,7 @@ namespace detail {
 //
 // Example: 8 hyper cores, 2048 rows ==> 128 strips of 16 rows each
 inline auto numStrips(int rows) -> int {
-  const double hw = std::thread::hardware_concurrency();
+  const double hw = Common::threadCount();
   const int maximum = (rows + 3) / 4;
   if (maximum <= hw) {
     return maximum;

@@ -57,8 +57,11 @@ VC 16 Release:
   stage: build
   image: buildtools2019:2021.04.14
   tags: [ windows ]
+  cache:
+    paths:
+      - build
   script:
-    - mkdir -p build
+    - python -c "import os; os.makedirs('build', exist_ok=True)"
     - cd build
     - >
       cmake -G "Visual Studio 16 2019" -DENABLE_CLANG_TIDY=OFF

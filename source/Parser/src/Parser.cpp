@@ -50,6 +50,8 @@
 #include <TMIV/MivBitstream/V3cUnit.h>
 #include <TMIV/MivBitstream/ViewingSpace.h>
 #include <TMIV/MivBitstream/ViewingSpaceHandling.h>
+#include <TMIV/MivBitstream/ViewportCameraParameters.h>
+#include <TMIV/MivBitstream/ViewportPosition.h>
 
 using namespace std::string_view_literals;
 
@@ -225,6 +227,10 @@ private:
       return parseViewingSpaceSei(bitstream);
     case TMIV::MivBitstream::PayloadType::viewing_space_handling:
       return parseViewingSpaceHandlingSei(bitstream);
+    case TMIV::MivBitstream::PayloadType::viewport_camera_parameters:
+      return parseViewportCameraParametersSei(bitstream);
+    case TMIV::MivBitstream::PayloadType::viewport_position:
+      return parseViewportPositionSei(bitstream);
     default:
       std::cout << "Unknown SEI message:\n" << message;
     }
@@ -263,6 +269,16 @@ private:
   void parseViewingSpaceHandlingSei(TMIV::Common::InputBitstream &bitstream) {
     const auto vsh = TMIV::MivBitstream::ViewingSpaceHandling::decodeFrom(bitstream);
     m_log << vsh;
+  }
+
+  void parseViewportCameraParametersSei(TMIV::Common::InputBitstream &bitstream) {
+    const auto vs = TMIV::MivBitstream::ViewportCameraParameters::decodeFrom(bitstream);
+    m_log << vs;
+  }
+
+  void parseViewportPositionSei(TMIV::Common::InputBitstream &bitstream) {
+    const auto vs = TMIV::MivBitstream::ViewportPosition::decodeFrom(bitstream);
+    m_log << vs;
   }
 
   std::ostream &m_log;

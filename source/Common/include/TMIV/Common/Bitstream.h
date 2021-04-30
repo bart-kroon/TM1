@@ -35,7 +35,6 @@
 #define TMIV_COMMON_BITSTREAM_H
 
 #include <TMIV/Common/Half.h>
-#include <TMIV/Common/verify.h>
 
 #include <cstdint>
 #include <istream>
@@ -48,11 +47,6 @@ auto ceilLog2(uint64_t range) -> uint8_t;
 class InputBitstream {
 public:
   explicit InputBitstream(std::istream &stream) : m_stream{stream} {}
-  InputBitstream(const InputBitstream &) = delete;
-  InputBitstream(InputBitstream &&) = default;
-  auto operator=(const InputBitstream &) -> InputBitstream & = delete;
-  auto operator=(InputBitstream &&) -> InputBitstream & = delete;
-  ~InputBitstream() = default;
 
   // Input bit position indicator
   [[nodiscard]] auto tellg() const -> std::streampos;
@@ -91,11 +85,6 @@ public:
 class OutputBitstream {
 public:
   explicit OutputBitstream(std::ostream &stream) : m_stream{stream} {}
-  OutputBitstream(const OutputBitstream &) = delete;
-  OutputBitstream(OutputBitstream &&) = default;
-  auto operator=(const OutputBitstream &) -> OutputBitstream & = delete;
-  auto operator=(OutputBitstream &&) -> OutputBitstream & = delete;
-  ~OutputBitstream() { PRECONDITION(byteAligned()); }
 
   // Output bit position indicator
   [[nodiscard]] auto tellp() const -> std::streampos;

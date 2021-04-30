@@ -3,7 +3,7 @@
  * and contributor rights, including patent rights, and no such rights are
  * granted under this license.
  *
- * Copyright (c) 2010-2021, ISO/IEC
+ * Copyright (c) 2010-2020, ISO/IEC
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,43 +31,38 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef TMIV_MIVBITSTREAM_ENCODERPARAMS_H
-#define TMIV_MIVBITSTREAM_ENCODERPARAMS_H
+#ifndef TMIV_MIVBITSTREAM_VIEWPORTPOSITION_H
+#define TMIV_MIVBITSTREAM_VIEWPORTPOSITION_H
 
-#include <TMIV/MivBitstream/AtlasTileLayerRBSP.h>
-#include <TMIV/MivBitstream/CommonAtlasFrameRBSP.h>
-#include <TMIV/MivBitstream/CommonAtlasSequenceParameterSetRBSP.h>
-#include <TMIV/MivBitstream/PatchParamsList.h>
-#include <TMIV/MivBitstream/V3cParameterSet.h>
 #include <TMIV/MivBitstream/ViewParamsList.h>
-#include <TMIV/MivBitstream/ViewingSpace.h>
-#include <TMIV/MivBitstream/ViewportCameraParameters.h>
-#include <TMIV/MivBitstream/ViewportPosition.h>
 
-namespace TMIV::Encoder {
-struct EncoderAtlasParams {
-  MivBitstream::AtlasSequenceParameterSetRBSP asps;
-  MivBitstream::AtlasFrameParameterSetRBSP afps;
-  MivBitstream::AtlasTileHeader ath;
+namespace TMIV::MivBitstream {
+// 23090-5: viewport_position( )
+struct ViewportPosition {
+  uint16_t vp_viewport_id{};
+  bool vp_camera_parameters_present_flag{};
+  uint16_t vp_vcp_camera_id{};
+  bool vp_cancel_flag{};
+  bool vp_persistent_flag{};
+  Common::Vec3f vp_position{};
+  int16_t vp_rotation_qx{};
+  int16_t vp_rotation_qy{};
+  int16_t vp_rotation_qz{};
+  bool vp_center_view_flag{};
+  bool vp_left_view_flag{};
+
+  [[nodiscard]] auto vp_orientation() const -> Common::QuatF;
+
+  friend auto operator<<(std::ostream &stream, const ViewportPosition &vp) -> std::ostream &;
+  auto operator==(const ViewportPosition &other) const -> bool;
+  auto operator!=(const ViewportPosition &other) const -> bool { return !operator==(other); }
+
+  static auto decodeFrom(Common::InputBitstream &stream) -> ViewportPosition;
+  void encodeTo(Common::OutputBitstream &stream) const;
+
+  static auto fromViewParams(const ViewParams &viewParams) -> ViewportPosition;
 };
 
-struct EncoderParams {
-  MivBitstream::V3cParameterSet vps;
-  MivBitstream::CommonAtlasSequenceParameterSetRBSP casps;
-  std::optional<MivBitstream::ViewingSpace> viewingSpace{};
-  std::optional<MivBitstream::ViewportCameraParameters> viewportCameraParameters{};
-  std::optional<MivBitstream::ViewportPosition> viewportPosition{};
-
-  double frameRate{};
-  MivBitstream::ViewParamsList viewParamsList;
-  MivBitstream::PatchParamsList patchParamsList;
-  bool lengthsInMeters{true};
-  bool dqParamsPresentFlag{true};
-  uint16_t maxEntityId{0};
-  bool randomAccess{};
-
-  std::vector<EncoderAtlasParams> atlas;
-};
-} // namespace TMIV::Encoder
+} // namespace TMIV::MivBitstream
 
 #endif

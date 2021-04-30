@@ -55,6 +55,8 @@ TEST_CASE("TMIV::Encoder::Configuration") {
     "oneViewPerAtlasFlag": false,
     "dynamicDepthRange": false,
     "randomAccess": false,
+    "viewportCameraParametersSei": false,
+    "viewportPositionSei": true,
     "numGroups": 0,
     "maxEntityId": 0,
     "maxLumaSampleRate": 0,
@@ -79,6 +81,8 @@ TEST_CASE("TMIV::Encoder::Configuration") {
     CHECK_FALSE(unit.dynamicDepthRange);
     CHECK(unit.dqParamsPresentFlag);
     CHECK_FALSE(unit.randomAccess);
+    CHECK_FALSE(unit.viewportCameraParametersSei);
+    CHECK(unit.viewportPositionSei);
     CHECK(unit.numGroups == 0);
     CHECK(unit.maxEntityId == 0);
     CHECK(unit.maxLumaSampleRate == 0.);
@@ -173,6 +177,8 @@ TEST_CASE("TMIV::Encoder::Configuration") {
     "dqParamsPresentFlag": false,
     "attributeOffsetEnabledFlag": false,
     "randomAccess": true,
+    "viewportCameraParametersSei": true,
+    "viewportPositionSei": false,
     "numGroups": 3,
     "maxEntityId": 5,
     "EntityEncodeRange": [0, 4],
@@ -195,6 +201,8 @@ TEST_CASE("TMIV::Encoder::Configuration") {
     CHECK_FALSE(unit.dynamicDepthRange);
     CHECK_FALSE(unit.dqParamsPresentFlag);
     CHECK(unit.randomAccess);
+    CHECK(unit.viewportCameraParametersSei);
+    CHECK_FALSE(unit.viewportPositionSei);
     CHECK(unit.numGroups == 3);
     CHECK(unit.maxEntityId == 5);
     CHECK(unit.codecGroupIdc == PtlProfileCodecGroupIdc::AVC_Progressive_High);

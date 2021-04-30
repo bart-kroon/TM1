@@ -44,6 +44,8 @@
 #include <TMIV/MivBitstream/V3cParameterSet.h>
 #include <TMIV/MivBitstream/ViewParamsList.h>
 #include <TMIV/MivBitstream/ViewingSpace.h>
+#include <TMIV/MivBitstream/ViewportCameraParameters.h>
+#include <TMIV/MivBitstream/ViewportPosition.h>
 
 #include <TMIV/Common/Frame.h>
 
@@ -83,6 +85,8 @@ struct AccessUnit {
   ViewParamsList viewParamsList;
   std::vector<AtlasAccessUnit> atlas;
   std::optional<ViewingSpace> vs;
+  std::optional<ViewportCameraParameters> vcp;
+  std::optional<ViewportPosition> vp;
   std::optional<VuiParameters> vui;
   std::optional<GeometryUpscalingParameters> gup;
 

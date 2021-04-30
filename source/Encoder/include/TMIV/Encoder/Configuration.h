@@ -37,6 +37,8 @@
 #include <TMIV/Common/Json.h>
 #include <TMIV/MivBitstream/V3cParameterSet.h>
 #include <TMIV/MivBitstream/ViewingSpace.h>
+#include <TMIV/MivBitstream/ViewportCameraParameters.h>
+#include <TMIV/MivBitstream/ViewportPosition.h>
 
 namespace TMIV::Encoder {
 static constexpr auto maxIntraPeriod = 32;
@@ -65,6 +67,8 @@ struct Configuration {
   bool attributeOffsetFlag;
   int attributeOffsetBitCount{};
   bool dqParamsPresentFlag{true};
+  bool viewportCameraParametersSei;
+  bool viewportPositionSei;
   bool randomAccess;
   uint8_t numGroups;
   uint16_t maxEntityId{};

@@ -105,6 +105,15 @@ void Encoder::prepareSequence(const MivBitstream::SequenceConfig &sequenceConfig
       .vui_parameters(vuiParameters());
 
   m_params.viewingSpace = m_config.viewingSpace;
+
+  if (m_config.viewportCameraParametersSei) {
+    m_params.viewportCameraParameters = MivBitstream::ViewportCameraParameters::fromViewParams(
+        sequenceConfig.cameraByName("viewport").viewParams);
+  }
+  if (m_config.viewportPositionSei) {
+    m_params.viewportPosition = MivBitstream::ViewportPosition::fromViewParams(
+        sequenceConfig.cameraByName("viewport").viewParams);
+  }
   m_params.randomAccess = m_config.randomAccess;
 
   setGiGeometry3dCoordinatesBitdepthMinus1();

@@ -51,6 +51,8 @@ private:
   struct PreviouslySentMessages {
     MivBitstream::ViewParamsList viewParamsList{};
     std::optional<MivBitstream::ViewingSpace> viewingSpace{};
+    std::optional<MivBitstream::ViewportCameraParameters> viewportCameraParameters{};
+    std::optional<MivBitstream::ViewportPosition> viewportPosition{};
   };
 
   [[nodiscard]] auto ptlMaxDecodesIdc() const -> MivBitstream::PtlMaxDecodesIdc;

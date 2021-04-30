@@ -30,6 +30,8 @@ create_tmiv_library(
         "src/ViewingSpace.cpp"
         "src/ViewingSpaceHandling.cpp"
         "src/ViewParamsList.cpp"
+        "src/ViewportCameraParameters.cpp"
+        "src/ViewportPosition.cpp"
         "src/V3cParameterSet.cpp"
         "src/V3cSampleStreamFormat.cpp"
         "src/V3cUnit.cpp"
@@ -65,6 +67,8 @@ create_catch2_unit_test(
         "src/ViewingSpace.test.cpp"
         "src/ViewingSpaceHandling.test.cpp"
         "src/ViewParamsList.test.cpp"
+        "src/ViewportCameraParameters.test.cpp"
+        "src/ViewportPosition.test.cpp"
         "src/V3cParameterSet.test.cpp"
         "src/V3cUnit.test.cpp"
     PRIVATE

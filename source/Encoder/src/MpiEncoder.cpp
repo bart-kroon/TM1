@@ -225,6 +225,14 @@ void MpiEncoder::prepareSequence(const MivBitstream::SequenceConfig &sequenceCon
   if (const auto &subnode = m_rootNode.optional("ViewingSpace")) {
     m_params.viewingSpace = MivBitstream::ViewingSpace::loadFromJson(subnode, m_rootNode);
   }
+  if (m_rootNode.require("viewportCameraParametersSei").as<bool>()) {
+    m_params.viewportCameraParameters = MivBitstream::ViewportCameraParameters::fromViewParams(
+        sequenceConfig.cameraByName("viewport").viewParams);
+  }
+  if (m_rootNode.require("viewportPositionSei").as<bool>()) {
+    m_params.viewportPosition = MivBitstream::ViewportPosition::fromViewParams(
+        sequenceConfig.cameraByName("viewport").viewParams);
+  }
 
   m_blockSize = m_blockSizeDepthQualityDependent[depthLowQualityFlag ? 1U : 0U];
   VERIFY(2 <= m_blockSize);

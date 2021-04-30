@@ -41,6 +41,8 @@
     "haveOccupancyVideo": false,
     "haveTextureVideo": true,
     "randomAccess": false,
+    "viewportCameraParametersSei": false,
+    "viewportPositionSei": false,
     "dqParamsPresentFlag": false,
     "inputDirectory": ".",
     "inputSequenceConfigPathFmt": "ctc/sequences/{1}.json",

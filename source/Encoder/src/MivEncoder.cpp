@@ -389,6 +389,20 @@ void MivEncoder::encodePrefixSeiMessages(MivBitstream::AtlasSubBitstream &asb) {
     m_previouslySentMessages.viewingSpace = m_params.viewingSpace;
   }
 
+  if (m_params.viewportCameraParameters.has_value() &&
+      m_previouslySentMessages.viewportCameraParameters != m_params.viewportCameraParameters) {
+    seiMessages.emplace_back(encodeSeiMessage(
+        *m_params.viewportCameraParameters, MivBitstream::PayloadType::viewport_camera_parameters));
+    m_previouslySentMessages.viewportCameraParameters = m_params.viewportCameraParameters;
+  }
+
+  if (m_params.viewportPosition.has_value() &&
+      m_previouslySentMessages.viewportPosition != m_params.viewportPosition) {
+    seiMessages.emplace_back(
+        encodeSeiMessage(*m_params.viewportPosition, MivBitstream::PayloadType::viewport_position));
+    m_previouslySentMessages.viewportPosition = m_params.viewportPosition;
+  }
+
   if (!seiMessages.empty()) {
     MivBitstream::SeiRBSP seiRbsp{std::move(seiMessages)};
     encodeSeiRbspToAsb(asb, seiRbsp, nuhPrefixNsei);

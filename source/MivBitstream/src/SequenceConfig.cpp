@@ -121,14 +121,6 @@ auto CameraConfig::operator!=(const CameraConfig &other) const noexcept -> bool 
   return !operator==(other);
 }
 
-auto SequenceConfig::FrameRange::operator==(const FrameRange &other) const noexcept -> bool {
-  return maxNumberOfFrames == other.maxNumberOfFrames && startFrame == other.startFrame;
-}
-
-auto SequenceConfig::FrameRange::operator!=(const FrameRange &other) const noexcept -> bool {
-  return !operator==(other);
-}
-
 SequenceConfig::SequenceConfig(const Common::Json &config) {
   boundingBoxCenter = config.require("BoundingBox_center").asVec<double, 3>();
   contentName = config.require("Content_name").as<std::string>();
@@ -156,14 +148,6 @@ SequenceConfig::SequenceConfig(const Common::Json &config) {
       }
     }
   }
-
-  if (const auto &node = config.optional("frameRanges")) {
-    for (const auto &subnode : node.as<Common::Json::Array>()) {
-      frameRanges.push_back({subnode.require("maxNumberOfFrames").as<std::int32_t>(),
-                             subnode.require("startFrame").as<std::int32_t>()});
-    }
-  }
-
   if (const auto &node = config.optional("lengthsInMeters")) {
     lengthsInMeters = node.as<bool>();
   }
@@ -218,40 +202,6 @@ auto SequenceConfig::sourceViewParams() const -> ViewParamsList {
   std::transform(sourceCameraNames.cbegin(), sourceCameraNames.cend(), vpl.begin(),
                  [this](const std::string &name) { return cameraByName(name).viewParams; });
   return ViewParamsList{vpl};
-}
-
-auto SequenceConfig::startFrameGiven(std::int32_t numberOfInputFrames,
-                                     const Common::Json &config) const -> std::int32_t {
-  // Bounds check the argument
-  if (numberOfInputFrames < 0 || numberOfFrames < numberOfInputFrames) {
-    throw std::runtime_error(fmt::format("The number of input frames {} is out of bounds given the "
-                                         "total number of frames {} in the sequence",
-                                         numberOfInputFrames, numberOfFrames));
-  }
-  // When a range is invalid, a runtime error is thrown even when the range is not selected.
-  // This promotes finding such configuration errors quickly.
-  for (const auto [maxNumberOfFrames, startFrame] : frameRanges) {
-    if (startFrame < 0 || maxNumberOfFrames < 0 ||
-        numberOfFrames < startFrame + maxNumberOfFrames) {
-      throw std::runtime_error(fmt::format("The frame range [{0}, {0} + {1}) is out of bounds "
-                                           "given the total number of frames {2} in the sequence",
-                                           startFrame, maxNumberOfFrames, numberOfFrames));
-    }
-  }
-  // Allow for direct configuration of the start frame
-  if (const auto &node = config.optional("startFrame")) {
-    const auto startFrame = node.as<int32_t>();
-    VERIFY(0 <= startFrame && startFrame + numberOfInputFrames <= numberOfFrames);
-    return startFrame;
-  }
-  // The first matching frame range wins
-  for (const auto [maxNumberOfFrames, startFrame] : frameRanges) {
-    if (numberOfInputFrames <= maxNumberOfFrames) {
-      return startFrame;
-    }
-  }
-  // The default behaviour is to to return zero (no start frame offset)
-  return 0;
 }
 
 auto SequenceConfig::operator==(const SequenceConfig &other) const noexcept -> bool {

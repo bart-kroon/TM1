@@ -184,7 +184,7 @@ class IntegrationTest:
             + ["-p", "configDirectory", "{1}/config", "-p", "inputDirectory", "{2}"]
             + ["-p", "outputDirectory", "{3}", "-n", "3", "-s", "E", "-p", "intraPeriod", "2"]
             + ["-p", "inputSequenceConfigPathFmt", "test/sequences/T{{1}}.json"]
-            + ["-p", "maxLumaPictureSize", "1048576"],
+            + ["-p", "maxLumaPictureSize", "1048576", "-f", "135"],
             "{3}/A3/E/TMIV_A3_E.log",
             [
                 "A3/E/TMIV_A3_E.bit",
@@ -302,7 +302,7 @@ class IntegrationTest:
             + ["-p", "configDirectory", "{1}/config", "-p", "inputDirectory", "{2}", "-p"]
             + ["outputDirectory", "{3}", "-n", "3", "-s", "D", "-p", "intraPeriod", "2"]
             + ["-p", "inputSequenceConfigPathFmt", "test/sequences/T{{1}}.json"]
-            + ["-p", "maxLumaPictureSize", "2097152"],
+            + ["-p", "maxLumaPictureSize", "2097152", "-f", "40"],
             "{3}/V3/D/TMIV_V3_D.log",
             [
                 "V3/D/TMIV_V3_D.bit",
@@ -375,7 +375,7 @@ class IntegrationTest:
             + ["-p", "configDirectory", "{1}/config", "-p", "inputDirectory", "{2}"]
             + ["-p", "outputDirectory", "{3}", "-n", "3", "-s", "N", "-p", "intraPeriod", "2"]
             + ["-p", "inputSequenceConfigPathFmt", "test/sequences/T{{1}}.json"]
-            + ["-p", "maxLumaPictureSize", "524288"],
+            + ["-p", "maxLumaPictureSize", "524288", "-f", "60"],
             "{3}/G3/N/TMIV_G3_N.log",
             [
                 "G3/N/TMIV_G3_N.bit",
@@ -441,7 +441,7 @@ class IntegrationTest:
             + ["-p", "outputDirectory", "{3}", "-n", "3", "-N", "3", "-s", "O", "-r", "R0"]
             + ["-p", "inputSequenceConfigPathFmt", "test/sequences/T{{1}}.json"]
             + ["-p", "inputViewportParamsPathFmt", "test/sequences/T{{1}}.json"]
-            + ["-v", "v01"],
+            + ["-v", "v01", "-f", "0"],
             "{3}/R3/O/R0/R3_O_R0_v01.log",
             [
                 f"R3/O/R0/R3_O_R0_v01_geo_{resolution}_yuv420p16le.yuv",
@@ -457,7 +457,7 @@ class IntegrationTest:
             + ["-p", "outputDirectory", "{3}", "-n", "3", "-N", "3", "-s", "O"]
             + ["-p", "inputSequenceConfigPathFmt", "test/sequences/T{{1}}.json"]
             + ["-p", "inputViewportParamsPathFmt", "test/sequences/T{{1}}.json"]
-            + ["-r", "R0", "-P", "p02"],
+            + ["-r", "R0", "-P", "p02", "-f", "0"],
             "{3}/R3/O/R0/R3_O_R0_p02.log",
             [
                 f"R3/O/R0/R3_O_R0_p02_geo_{resolution}_yuv420p16le.yuv",
@@ -570,7 +570,7 @@ class IntegrationTest:
             + ["-p", "outputDirectory", "{3}", "-n", "1", "-N", "1", "-s", "C", "-r", "R0"]
             + ["-p", "inputSequenceConfigPathFmt", "test/sequences/T{{1}}.json"]
             + ["-p", "inputViewportParamsPathFmt", "test/sequences/T{{1}}.json"]
-            + ["-P", "p03"],
+            + ["-P", "p03", "-f", "0"],
             "{3}/S1/C/R0/S1_C_R0_p03.log",
             [
                 f"S1/C/R0/S1_C_R0_p03_geo_{renderResolution}_yuv420p16le.yuv",

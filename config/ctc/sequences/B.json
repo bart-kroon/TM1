@@ -4,10 +4,6 @@
     "BoundingBox_center": [0, 0, 1.65],
     "Fps": 30,
     "Frames_number": 300,
-    "frameRanges": [{
-        "maxNumberOfFrames": 97,
-        "startFrame": 100
-    }],
     "Informative": {
         "Cameras_number": 24,
         "RigRadius": 0.3

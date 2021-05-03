@@ -1,7 +1,6 @@
 {
   "configDirectory": "config",
   "inputSequenceConfigPathFmt": "ctc/sequences/{1}.json",
-  "numberOfFrames": 17,
   "inputDirectory": ".",
   "inputMpiPcsPathFmt": "{1}/{3}.pcs",
   "inputTexturePathFmt": "{1}/{3}_texture_{4}x{5}_{6}.yuv",

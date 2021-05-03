@@ -63,12 +63,14 @@ public:
                                 {"-s", "Content ID (e.g. B for Museum)", false},
                                 {"-n", "Number of input frames (e.g. 97)", false},
                                 {"-N", "Number of output frames (e.g. 300)", false},
+                                {"-f", "Input start frame (e.g. 23)", false},
                                 {"-r", "Test point (e.g. QP3 or R0)", false},
                                 {"-v", "Source view to render (e.g. v11)", true},
                                 {"-P", "Pose trace to render (e.g. p02)", true}}}
       , m_placeholders{optionValues("-s").front(), optionValues("-r").front(),
                        std::stoi(optionValues("-n"sv).front()),
-                       std::stoi(optionValues("-N"sv).front())}
+                       std::stoi(optionValues("-N"sv).front()),
+                       std::stoi(optionValues("-f"sv).front())}
       , m_renderer{json(), optionValues("-v"), optionValues("-P"), m_placeholders}
       , m_inputToOutputFrameIdMap{Renderer::Front::mapInputToOutputFrames(
             m_placeholders.numberOfInputFrames, m_placeholders.numberOfOutputFrames)} {

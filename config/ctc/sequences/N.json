@@ -3,10 +3,6 @@
     "Content_name": "Chess",
     "Fps": 30,
     "Frames_number": 300,
-    "frameRanges": [{
-        "maxNumberOfFrames": 97,
-        "startFrame": 60
-    }],
     "Informative": {
         "Cameras_number": 10,
         "RigRadius": 0.3,

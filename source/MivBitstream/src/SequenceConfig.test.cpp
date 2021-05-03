@@ -252,7 +252,6 @@ TEST_CASE("SequenceConfig") {
     CHECK(unit.frameRate == 25);
     CHECK(unit.numberOfFrames == 97);
     CHECK(unit.cameras.empty());
-    CHECK(unit.frameRanges.empty());
 
     SECTION("operator ==") {
       REQUIRE(unit == unit);
@@ -285,124 +284,6 @@ TEST_CASE("SequenceConfig") {
     SECTION("operator ==") {
       REQUIRE(unit == unit);
       REQUIRE(unit != SequenceConfig{});
-    }
-  }
-
-  SECTION("Load from JSON, set frameRanges") {
-    const auto json = TMIV::Common::Json::parse(R"(
-{
-    "BoundingBox_center": [ -0.5, -0.5, 1.0 ],
-    "Content_name": "Example",
-    "Fps": 25,
-    "Frames_number": 100,
-    "frameRanges": [{
-        "maxNumberOfFrames": 10,
-        "startFrame": 45
-    }, {
-        "maxNumberOfFrames": 81,
-        "startFrame": 16
-    }, {
-        "maxNumberOfFrames": 97,
-        "startFrame": 2
-    }],
-    "cameras": [ ]
-}
-)");
-    const auto unit = SequenceConfig{json};
-    const auto ref = std::vector<SequenceConfig::FrameRange>{{10, 45}, {81, 16}, {97, 2}};
-    CHECK(unit.frameRanges == ref);
-  }
-
-  SECTION("SequenceConfig::startFrameGiven") {
-    SECTION("Behavior without frame ranges") {
-      auto unit = SequenceConfig{};
-      unit.numberOfFrames = 100;
-
-      SECTION("startFrameGiven with argument in full frame range returns zero") {
-        const auto numberOfInputFrames = GENERATE(0, 1, 99, 100);
-        CHECK(unit.startFrameGiven(numberOfInputFrames, TMIV::Common::Json::null) == 0);
-      }
-
-      SECTION("startFrameGiven with argument out of range throws") {
-        const auto numberOfInputFrames = GENERATE(-1, 101);
-        REQUIRE_THROWS(unit.startFrameGiven(numberOfInputFrames, TMIV::Common::Json::null));
-      }
-    }
-
-    SECTION("Behavior with an example frame range list") {
-      auto unit = SequenceConfig{};
-      unit.numberOfFrames = 100;
-      unit.frameRanges = {{10, 45}, {81, 16}, {97, 2}};
-
-      SECTION("startFrameGiven with argument in first frame range returns that start frame") {
-        const auto numberOfInputFrames = GENERATE(0, 1, 9, 10);
-        CHECK(unit.startFrameGiven(numberOfInputFrames, TMIV::Common::Json::null) == 45);
-      }
-
-      SECTION("startFrameGiven with argument in second frame range returns that start frame") {
-        const auto numberOfInputFrames = GENERATE(11, 12, 80, 81);
-        CHECK(unit.startFrameGiven(numberOfInputFrames, TMIV::Common::Json::null) == 16);
-      }
-
-      SECTION("startFrameGiven with argument in third frame range returns that start frame") {
-        const auto numberOfInputFrames = GENERATE(82, 83, 96, 97);
-        CHECK(unit.startFrameGiven(numberOfInputFrames, TMIV::Common::Json::null) == 2);
-      }
-
-      SECTION("startFrameGiven with argument in full frame range returns zero") {
-        const auto numberOfInputFrames = GENERATE(98, 99, 100);
-        CHECK(unit.startFrameGiven(numberOfInputFrames, TMIV::Common::Json::null) == 0);
-      }
-
-      SECTION("startFrameGiven with argument out of range") {
-        const auto numberOfInputFrames = GENERATE(-1, 101);
-        REQUIRE_THROWS(unit.startFrameGiven(numberOfInputFrames, TMIV::Common::Json::null));
-      }
-    }
-
-    SECTION("The first matching frame range wins") {
-      auto unit = SequenceConfig{};
-      unit.numberOfFrames = 100;
-      unit.frameRanges = {{81, 16}, {10, 45}, {97, 2}};
-
-      SECTION("startFrameGiven with argument in first frame range returns that start frame") {
-        const auto numberOfInputFrames = GENERATE(0, 1, 9, 10, 11, 12, 80, 81);
-        CHECK(unit.startFrameGiven(numberOfInputFrames, TMIV::Common::Json::null) == 16);
-      }
-
-      SECTION("startFrameGiven with argument in third frame range returns that start frame") {
-        const auto numberOfInputFrames = GENERATE(82, 83, 96, 97);
-        CHECK(unit.startFrameGiven(numberOfInputFrames, TMIV::Common::Json::null) == 2);
-      }
-
-      SECTION("startFrameGiven with argument in full frame range returns zero") {
-        const auto numberOfInputFrames = GENERATE(98, 99, 100);
-        CHECK(unit.startFrameGiven(numberOfInputFrames, TMIV::Common::Json::null) == 0);
-      }
-
-      SECTION("startFrameGiven with argument out of range") {
-        const auto numberOfInputFrames = GENERATE(-1, 101);
-        REQUIRE_THROWS(unit.startFrameGiven(numberOfInputFrames, TMIV::Common::Json::null));
-      }
-    }
-
-    SECTION("When a range itself is invalid, a runtime error is thrown even when the range is not "
-            "selected (to promote finding such configuration errors quickly)") {
-      auto unit = SequenceConfig{};
-      unit.numberOfFrames = 96;
-      unit.frameRanges = {{10, 45}, {81, 16}, {97, 2}};
-      const auto numberOfInputFrames = GENERATE(0, 1, 30, 90, 99, 100);
-      REQUIRE_THROWS(unit.startFrameGiven(numberOfInputFrames, TMIV::Common::Json::null));
-    }
-
-    SECTION("Direct configuration of start frame") {
-      auto unit = SequenceConfig{};
-      unit.numberOfFrames = 100;
-      const auto startFrame = GENERATE(0, 42, 99);
-      const auto mainConfig =
-          TMIV::Common::Json{std::in_place_type_t<TMIV::Common::Json::Object>{},
-                             std::pair{"startFrame"s, TMIV::Common::Json{startFrame}}};
-      CHECK(unit.startFrameGiven(1, mainConfig) == startFrame);
     }
   }
 

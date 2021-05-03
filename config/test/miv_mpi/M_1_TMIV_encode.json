@@ -39,7 +39,5 @@
   "depthLowQualityFlag": false,
   "overrideAtlasFrameSizes": [ [ 4096, 4096 ] ],
   "viewportCameraParametersSei": false,
-  "viewportPositionSei": false,
-  "numberOfFrames": 17,
-  "startFrame": 0
+  "viewportPositionSei": false
 }

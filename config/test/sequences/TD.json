@@ -644,12 +644,6 @@
             ]
         }
     ],
-    "frameRanges": [
-        {
-            "maxNumberOfFrames": 97,
-            "startFrame": 40
-        }
-    ],
     "lengthsInMeters": true,
     "sourceCameraNames": [
         "v0",

@@ -49,7 +49,8 @@ private:
   enum class ConversionMode { None, RawToPcs, PcsToRaw };
 
   const std::string &m_contentId;
-  std::int32_t m_numberOfInputFrames;
+  int32_t m_numberOfInputFrames;
+  int32_t m_startFrame;
   MivBitstream::SequenceConfig m_inputSequenceConfig;
   ConversionMode m_conversionMode{ConversionMode::None};
 
@@ -57,6 +58,7 @@ private:
     auto x = IO::Placeholders{};
     x.contentId = m_contentId;
     x.numberOfInputFrames = m_numberOfInputFrames;
+    x.startFrame = m_startFrame;
     return x;
   }
 
@@ -66,9 +68,11 @@ public:
                             Common::Application::Options{
                                 {"-s", "Content ID (e.g. B for Museum)", false},
                                 {"-n", "Number of input frames (e.g. 97)", false},
+                                {"-f", "Input start frame (e.g. 23)", false},
                                 {"-x", "Conversion mode (raw2pcs or pcs2raw)", false}}}
       , m_contentId{optionValues("-s"sv).front()}
       , m_numberOfInputFrames{std::stoi(optionValues("-n"sv).front())}
+      , m_startFrame{std::stoi(optionValues("-f"sv).front())}
       , m_inputSequenceConfig{IO::loadSequenceConfig(json(), placeholders(), 0)} {
 
     const auto &conversionModeOption = optionValues("-x"sv).front();

@@ -2,10 +2,6 @@
     "Version": "2.0",
     "Content_name": "Frog",
     "Frames_number": 300,
-    "frameRanges": [{
-        "maxNumberOfFrames": 97,
-        "startFrame": 135
-    }],
     "Fps": 30,
     "BoundingBox_center": [
         0,

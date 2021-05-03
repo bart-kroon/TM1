@@ -81,10 +81,11 @@ extern const std::string outputViewportGeometryPathFmt;
 extern const std::string outputViewportTexturePathFmt;
 
 struct Placeholders {
-  std::string contentId{};    // e.g. A
-  std::string testId{"R0"};   // e.g. QP3 or R0
-  int numberOfInputFrames{};  // e.g. 97
-  int numberOfOutputFrames{}; // e.g. 300
+  std::string contentId{};        // e.g. A
+  std::string testId{"R0"};       // e.g. QP3 or R0
+  int32_t numberOfInputFrames{};  // e.g. 97
+  int32_t numberOfOutputFrames{}; // e.g. 300
+  int32_t startFrame{};           // e.g. 23
 };
 
 template <typename FORMAT>

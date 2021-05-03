@@ -4,10 +4,6 @@
     "BoundingBox_center": [0, 0, 0],
     "Fps": 30,
     "Frames_number": 120,
-    "frameRanges": [{
-        "maxNumberOfFrames": 97,
-        "startFrame": 23
-    }],
     "Informative": {
         "BoundingBox_size": 0.207846,
         "Document": "MPEG2018/M42415"

@@ -371,13 +371,6 @@
     "Content_name": "Street",
     "Fps": 25,
     "Frames_number": 250,
-    "frameRanges": [{
-        "maxNumberOfFrames": 17,
-        "startFrame": 225
-    }, {
-        "maxNumberOfFrames": 97,
-        "startFrame": 145
-    }],
     "Informative": {
         "Converted_by": "VSRS_to_JSON.py",
         "New_units": "mm",

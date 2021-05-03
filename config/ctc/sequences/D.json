@@ -8,10 +8,6 @@
     ],
     "Fps": 30,
     "Frames_number": 300,
-    "frameRanges": [{
-        "maxNumberOfFrames": 97,
-        "startFrame": 40
-    }],
     "Informative": {
         "Converted_by": "VSRS_to_JSON.py",
         "Original_units": "m",

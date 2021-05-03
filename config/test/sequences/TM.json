@@ -86,12 +86,6 @@
             "nbMpiLayers": 1024
         }
     ],
-    "frameRanges": [
-        {
-            "maxNumberOfFrames": 17,
-            "startFrame": 0
-        }
-    ],
     "lengthsInMeters": true,
     "sourceCameraNames": [
         "mpi"

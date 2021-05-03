@@ -371,9 +371,10 @@ auto PduMivExtension::decodeFrom(Common::InputBitstream &bitstream,
     }
     if (asme.asme_patch_attribute_offset_enabled_flag()) {
       int bits = asps.asps_miv_extension().asme_patch_attribute_offset_bit_depth_minus1() + 1;
-      x.pdu_attribute_offset({bitstream.readBits<uint16_t>(bits),
-                              bitstream.readBits<uint16_t>(bits),
-                              bitstream.readBits<uint16_t>(bits)});
+      const auto offset0 = bitstream.readBits<uint16_t>(bits);
+      const auto offset1 = bitstream.readBits<uint16_t>(bits);
+      const auto offset2 = bitstream.readBits<uint16_t>(bits);
+      x.pdu_attribute_offset({offset0, offset1, offset2});
     }
     if (asme.asme_inpaint_enabled_flag()) {
       x.pdu_inpaint_flag(bitstream.getFlag());

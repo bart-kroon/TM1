@@ -16,8 +16,13 @@ create_tmiv_library(
         Threads::Threads
     )
 
+configure_file(include/TMIV/Common/Version.h.in include/TMIV/Common/Version.h @ONLY)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/include/TMIV/Common/Version.h
+        DESTINATION include/TMIV/Common)
+
 target_include_directories(CommonLib
     PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
         "$<INSTALL_INTERFACE:include>")
 
 target_compile_features(CommonLib

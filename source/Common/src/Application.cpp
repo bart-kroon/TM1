@@ -34,13 +34,13 @@
 #include <TMIV/Common/Application.h>
 
 #include <TMIV/Common/Thread.h>
+#include <TMIV/Common/Version.h>
 #include <TMIV/Common/verify.h>
 
 #include <cstdlib>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
-#include <sstream>
 #include <stdexcept>
 
 using namespace std::string_view_literals;
@@ -74,6 +74,9 @@ Application::Application(const char *tool, std::vector<const char *> argv, Optio
       } else {
         throw std::runtime_error("The -j option has as argument a positive number");
       }
+    } else if ("--version"sv == option) {
+      fmt::print("TMIV {} version {}\n", tool, version);
+      exit(0);
     } else if ("--help"sv == option) {
       m_json = Json{};
       break;

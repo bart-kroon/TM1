@@ -34,7 +34,7 @@ Use the following steps to encode a bitstream and render a viewport:
 
 ### Running the TMIV encoder
 
-For this example, we will be using the MIV anchor [A_1_TMIV_encode.json](/config/ctc/miv_anchor/A_1_TMIV_encode.json) configuration and [A.json](/config/ctc/sequences/A.json) sequence configuration.
+For this example, we will be using the MIV anchor [A_1_TMIV_encode.json](/config/ctc/miv_anchor/A_1_TMIV_encode.json) configuration and [A.json](/config/ctc/sequences/A.json) sequence configuration on sequence A (ClassroomVideo) with 97 input frames starting from frame 23.
 
 1. Place the color and depth videos [[5]](/README.md#references) in a folder arbitrarily named `/Content` in this description.
     * Your organization or one of the maintainers of this repository may be able to provide the test sequences to you.
@@ -49,7 +49,7 @@ For this example, we will be using the MIV anchor [A_1_TMIV_encode.json](/config
 1. Finally, assuming that you have built and installed the encoder application, you can start it from the command line:
 
 ```shell
-/Workspace/tmiv_install/bin/Encoder -n 97 -s A \
+/Workspace/tmiv_install/bin/Encoder -n 97 -s A -f 23 \
     -c /Workspace/tmiv/config/ctc/miv_anchor/A_1_TMIV_encode.json \
     -p configDirectory /Workspace/tmiv/config \
     -p inputDirectory /Content \
@@ -197,10 +197,11 @@ For this example, we will be using the best reference [R_1_TMIV_render.json](/co
 1. Specify the number of output frames (`-N` argument), e.g. 300:
     * For views the actual number of output frames is never more than the number of input frames,
     * For pose traces the input frames are mirrored and the number of output frames can exceed the number of input frames.
+1. Specify the start frame (`-f` argument), e.g. 23.
 1. Finally, assuming that you have built and installed the renderer application, you can start it from the command line:
 
 ```shell
-/Workspace/tmiv_install/bin/Renderer -n 97 -N 300 -s A -r R0 -v v11 -P p02 \
+/Workspace/tmiv_install/bin/Renderer -n 97 -N 300 -s A -r R0 -v v11 -P p02 -f 23 \
     -c /Workspace/tmiv/config/ctc/best_reference/R_1_TMIV_render.json \
     -p configDirectory /Workspace/tmiv/config \
     -p inputDirectory /Content \
@@ -434,7 +435,7 @@ Assuming that the .pcs file of the MPI content is available in the `/Content` di
 ```
 running the following command:
 ```shell
-/Workspace/tmiv_install/bin/MpiPcs -n 17 -s M -x pcs2raw \
+/Workspace/tmiv_install/bin/MpiPcs -n 17 -f 0 -s M -x pcs2raw \
     -c /Workspace/tmiv/config/test/miv_mpi/M_5_MPI_transcode.json /
     -p configDirectory /Workspace/tmiv/config /
     -p inputDirectory /Content /
@@ -457,7 +458,7 @@ Assuming that the texture and transparency files of the MPI content are availabl
 ```
 running the following command:
 ```shell
-/Workspace/tmiv_install/bin/MpiPcs -n 17 -s M -x raw2pcs \
+/Workspace/tmiv_install/bin/MpiPcs -n 17 -f 0 -s M -x raw2pcs \
     -c /Workspace/tmiv/config/test/miv_mpi/M_5_MPI_transcode.json /
     -p configDirectory /Workspace/tmiv/config /
     -p inputDirectory /Experiment /

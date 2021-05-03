@@ -65,7 +65,6 @@ public:
   [[nodiscard]] auto jmin() const -> int { return jmin_; }
   [[nodiscard]] auto imax() const -> int { return imax_; }
   [[nodiscard]] auto jmax() const -> int { return jmax_; }
-  [[nodiscard]] auto getFilling() const -> int { return filling_; }
   [[nodiscard]] auto width() const -> int { return (jmax_ - jmin_ + 1); }
   [[nodiscard]] auto height() const -> int { return (imax_ - imin_ + 1); }
   [[nodiscard]] auto getArea() const -> int { return width() * height(); }
@@ -119,7 +118,6 @@ private:
   int jmin_ = std::numeric_limits<int>::max();
   int imax_ = std::numeric_limits<int>::min();
   int jmax_ = std::numeric_limits<int>::min();
-  int filling_ = 0;
 };
 } // namespace TMIV::Packer
 

@@ -265,9 +265,9 @@ auto Packer::computeClusters(const Common::MaskList &masks,
         // Entity clustering
         Common::Mask mask = m_aggregatedEntityMasks[entityId - m_entityEncodeRange[0]][viewId];
 
-        auto clusteringOutput =
-            retrieveClusters(viewId, mask, static_cast<int>(clusterList.size()),
-                             viewParamsList[viewId].isBasicView, m_enableMerging);
+        auto clusteringOutput = retrieveClusters(viewId, mask, static_cast<int>(clusterList.size()),
+                                                 viewParamsList[viewId].isBasicView,
+                                                 m_enableMerging, m_maxEntityId > 0);
 
         for (auto &cluster : clusteringOutput.first) {
           cluster = Cluster::setEntityId(cluster, entityId);
@@ -290,7 +290,7 @@ auto Packer::computeClusters(const Common::MaskList &masks,
     } else {
       auto clusteringOutput =
           retrieveClusters(viewId, masks[viewId], static_cast<int>(clusterList.size()),
-                           viewParamsList[viewId].isBasicView, m_enableMerging);
+                           viewParamsList[viewId].isBasicView, m_enableMerging, m_maxEntityId > 0);
 
       std::move(clusteringOutput.first.begin(), clusteringOutput.first.end(),
                 back_inserter(clusterList));

@@ -56,7 +56,7 @@ void Cluster::push(int i, int j) {
     jmax_ = j;
   }
 
-  filling_++;
+  numActivePixels_++;
 }
 
 auto Cluster::setEntityId(Cluster &c, int entityId) -> Cluster {
@@ -66,7 +66,6 @@ auto Cluster::setEntityId(Cluster &c, int entityId) -> Cluster {
   d.jmin_ = c.jmin_;
   d.jmax_ = c.jmax_;
   d.numActivePixels_ = c.numActivePixels_;
-  d.filling_ = c.filling_;
   return d;
 }
 
@@ -82,7 +81,6 @@ auto Cluster::align(const Cluster &c, int alignment) -> Cluster {
                      // help renderer
 
   d.numActivePixels_ = c.numActivePixels_;
-  d.filling_ = c.filling_;
 
   return d;
 }
@@ -98,7 +96,6 @@ auto Cluster::merge(const Cluster &c1, const Cluster &c2) -> Cluster {
   c.jmax_ = std::max(c1.jmax_, c2.jmax_);
 
   c.numActivePixels_ = c1.numActivePixels_ + c2.numActivePixels_;
-  c.filling_ = (c1.filling_ + c2.filling_);
 
   return c;
 }
@@ -491,9 +488,6 @@ auto Cluster::split(const ClusteringMap &clusteringMap, int overlap) const
       }
     }
   }
-  c1.numActivePixels_ = Common::downCast<int>((int64_t{c.numActivePixels_} * c1.filling_) /
-                                              c.filling_);        // Approximations
-  c2.numActivePixels_ = c.numActivePixels_ - c1.numActivePixels_; // Approximations
   return std::pair<Cluster, Cluster>(c1, c2);
 }
 } // namespace TMIV::Packer

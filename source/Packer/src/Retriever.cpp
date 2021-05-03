@@ -260,7 +260,7 @@ void updateOutput(const bool isBasicView, const Cluster &cluster, const int subC
 } // namespace
 
 auto retrieveClusters(const int viewId, const Common::Mask &maskMap, const int firstClusterId,
-                      const bool isBasicView, const bool enableMerging)
+                      const bool isBasicView, const bool enableMerging, const bool multiEntity)
     -> std::pair<ClusterList, ClusteringMap> {
   std::pair<ClusterList, ClusteringMap> out(ClusterList(),
                                             ClusteringMap(maskMap.getWidth(), maskMap.getHeight()));
@@ -276,28 +276,41 @@ auto retrieveClusters(const int viewId, const Common::Mask &maskMap, const int f
   // Region growing
   int clusterId = firstClusterId;
   auto iter_seed = activeList.begin();
-
-  while (iter_seed != activeList.end()) {
-    div_t dv = div(*iter_seed, B);
+  // NOTE(FT): a basic view is packed as a single patch, hence no need for any clustering, except
+  // when entities are present.
+  if (isBasicView && !multiEntity) {
     Cluster cluster(viewId, isBasicView, clusterId, 0);
-
-    cluster.push(dv.quot, dv.rem);
-    clusteringBuffer(dv.quot, dv.rem) = static_cast<uint16_t>(clusterId);
-
-    auto candidates = getInitialCandidates(clusteringBuffer, A, B, clusterId, cluster, dv);
-
-    const auto subClusterId = [&]() {
-      if (enableMerging) {
-        return mergePatches(clusterList, A, B, cluster, std::move(candidates), clusteringBuffer);
+    for (size_t i = 0; i < maskBuffer.size(); i++) {
+      if (0 < maskBuffer[i]) {
+        div_t dv = div(static_cast<int>(i), B);
+        cluster.push(dv.quot, dv.rem);
+        clusteringBuffer[i] = static_cast<uint16_t>(clusterId);
       }
-      return clusterId;
-    }();
+    }
+    clusterList.push_back(cluster);
 
-    updateSeedAndNumberOfActivePixels(activeList, cluster, clusteringBuffer, iter_seed);
+  } else {
+    while (iter_seed != activeList.end()) {
+      div_t dv = div(*iter_seed, B);
+      Cluster cluster(viewId, isBasicView, clusterId, 0);
 
-    updateOutput(isBasicView, cluster, subClusterId, clusterList, clusterId);
+      cluster.push(dv.quot, dv.rem);
+      clusteringBuffer(dv.quot, dv.rem) = static_cast<uint16_t>(clusterId);
+
+      auto candidates = getInitialCandidates(clusteringBuffer, A, B, clusterId, cluster, dv);
+
+      const auto subClusterId = [&]() {
+        if (enableMerging) {
+          return mergePatches(clusterList, A, B, cluster, std::move(candidates), clusteringBuffer);
+        }
+        return clusterId;
+      }();
+
+      updateSeedAndNumberOfActivePixels(activeList, cluster, clusteringBuffer, iter_seed);
+
+      updateOutput(isBasicView, cluster, subClusterId, clusterList, clusterId);
+    }
   }
-
   return out;
 }
 

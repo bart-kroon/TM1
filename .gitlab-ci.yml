@@ -10,7 +10,6 @@ include:
   - /.gitlab/ci/checks.yml
   - /.gitlab/ci/builds.yml
   - /.gitlab/ci/integration_test.yml
-  - /.gitlab/ci/asciidoc.yml
 
 .cpp_rules_template: &cpp_rules_definition
   rules:

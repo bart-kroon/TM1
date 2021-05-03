@@ -9,11 +9,9 @@
 * [ ] If needed: Update configuration
 * [ ] If needed: Update integration test
 * [ ] If needed: Update the manual
-* [ ] If needed: Update the test model document
 
 ## Hints
 
-* Please separate code merge requests (MRs) from test model documentation MRs
 * Please provide your contribution in (multiple) reasonably sized  MRs. Small MRs are much easier to review. Try to keep the number of changed lines below 300 per MR.
 * [Contribution guide](http://mpegx.int-evry.fr/software/MPEG/MIV/RS/TM1/-/blob/main/doc/contributing.md)
 

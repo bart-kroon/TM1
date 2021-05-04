@@ -48,6 +48,9 @@ auto choosePatch(const MivBitstream::PatchParams &patch,
                  const MivBitstream::ViewParamsList &cameras,
                  const MivBitstream::ViewParams &target) -> bool {
   const auto &camera = cameras[patch.atlasPatchProjectionId()];
+  if (camera.isInpainted) {
+    return true;
+  }
   const auto R_t = AffineTransform(cameras[patch.atlasPatchProjectionId()].pose, target.pose);
 
   auto uv = std::array<Common::Vec2f, 4>{};
@@ -65,6 +68,21 @@ auto choosePatch(const MivBitstream::PatchParams &patch,
   const auto depthTransform = MivBitstream::DepthTransform{camera.dq, patch, depthBitDepth};
   const auto patch_dep_near = depthTransform.expandDepth(Common::maxLevel(depthBitDepth));
   const auto patch_dep_far = depthTransform.expandDepth(0);
+  auto patch_dep_far_mod = patch_dep_far;
+
+  if (camera.ci.ci_cam_type() == MivBitstream::CiCamType::equirectangular) {
+    const auto delta_phi = w / static_cast<float>(camera.ci.projectionPlaneSize().x()) *
+                           (camera.ci.ci_erp_phi_max() - camera.ci.ci_erp_phi_min());
+    const auto delta_theta = h / static_cast<float>(camera.ci.projectionPlaneSize().y()) *
+                             (camera.ci.ci_erp_theta_max() - camera.ci.ci_erp_theta_min());
+    const auto modified_depth_x = patch_dep_far;
+    const auto modified_depth_y = modified_depth_x * tan(delta_phi / 2);
+    const auto modified_depth_z = modified_depth_x * tan(delta_theta / 2) / cos(delta_phi / 2);
+
+    patch_dep_far_mod = static_cast<float>(std::sqrt(modified_depth_x * modified_depth_x +
+                                                     modified_depth_y * modified_depth_y +
+                                                     modified_depth_z * modified_depth_z));
+  }
 
   for (int i = 0; i < 4; i++) {
     const auto xyz = R_t(unprojectVertex(Common::at(uv, i), patch_dep_near, camera.ci));
@@ -78,8 +96,9 @@ auto choosePatch(const MivBitstream::PatchParams &patch,
     });
     Common::at(xy_v, i) = pix.position;
   }
+
   for (int i = 0; i < 4; i++) {
-    const auto xyz = R_t(unprojectVertex(Common::at(uv, i), patch_dep_far, camera.ci));
+    const auto xyz = R_t(unprojectVertex(Common::at(uv, i), patch_dep_far_mod, camera.ci));
     const auto rayAngle = Common::angle(xyz, xyz - R_t.translation());
     SceneVertexDescriptor v;
     v.position = xyz;
@@ -88,7 +107,6 @@ auto choosePatch(const MivBitstream::PatchParams &patch,
       Engine<camType> engine{target.ci};
       return engine.projectVertex(v);
     });
-    // wangbin modify
     at(xy_v, i + 4) = pix.position;
   }
 
@@ -114,12 +132,12 @@ auto choosePatch(const MivBitstream::PatchParams &patch,
       xy_v_ymin = i[1];
     }
   }
-  return !(xy_v_xmin > static_cast<float>(target.ci.projectionPlaneSize().x()) || xy_v_xmax < 0 ||
-           xy_v_ymax < 0 || xy_v_ymin > static_cast<float>(target.ci.projectionPlaneSize().y()) ||
+  return !(xy_v_xmin > static_cast<float>(target.ci.projectionPlaneSize().x() + 64) ||
+           xy_v_xmax < -64 || xy_v_ymax < -64 ||
+           xy_v_ymin > static_cast<float>(target.ci.projectionPlaneSize().y() + 64) ||
            (xy_v_xmin != xy_v_xmin && xy_v_xmax != xy_v_xmax && xy_v_ymin != xy_v_ymin &&
             xy_v_ymax != xy_v_ymax));
 }
-
 auto divideInBlocks(const MivBitstream::PatchParams &patch) {
   // The size of the sub-block is fixed for now
   constexpr std::int32_t blockSize = 128;
@@ -161,9 +179,9 @@ auto SubBlockCuller::filterBlockToPatchMap(const MivBitstream::AccessUnit &frame
     const auto &patch = atlas.patchParamsList[patchIdx];
     const auto &view = frame.viewParamsList[patch.atlasPatchProjectionId()];
 
-    if (patch.atlasPatch3dSizeU() == view.ci.ci_projection_plane_width_minus1() + 1 &&
-        patch.atlasPatch3dSizeV() == view.ci.ci_projection_plane_height_minus1() + 1 &&
-        patch.atlasPatchOrientationIndex() == MivBitstream::FlexiblePatchOrientation::FPO_NULL) {
+    if ((patch.atlasPatch3dSizeU() == view.ci.ci_projection_plane_width_minus1() + 1 ||
+         patch.atlasPatch3dSizeV() == view.ci.ci_projection_plane_height_minus1() + 1) &&
+        (patch.atlasPatchOrientationIndex() == MivBitstream::FlexiblePatchOrientation::FPO_NULL)) {
       for (const auto &block : divideInBlocks(patch)) {
         if (!choosePatch(block, frame.viewParamsList, viewportParams)) {
           inplaceErasePatch(result, block, static_cast<uint16_t>(patchIdx), atlas.asps);

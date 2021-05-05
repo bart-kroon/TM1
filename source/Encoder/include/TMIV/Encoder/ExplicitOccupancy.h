@@ -41,11 +41,7 @@
 namespace TMIV::Encoder {
 class ExplicitOccupancy : public IGeometryQuantizer {
 public:
-  // Initialize with specified depthOccMapThresholdIfSet
-  //
-  // When incoming view parameters have useOccupancy() set, then the outgoing view parameters
-  // will have the specified depthOccMapThresholdIfSet value.
-  // explicit ExplicitOccupancy(uint16_t depthOccMapThresholdIfSet);
+  ExplicitOccupancy() = default;
 
   ExplicitOccupancy(const Common::Json & /*unused*/, const Common::Json & /*unused*/);
   ExplicitOccupancy(const ExplicitOccupancy &) = default;
@@ -55,8 +51,7 @@ public:
   ~ExplicitOccupancy() override = default;
 
   auto setOccupancyParams(EncoderParams params) -> const EncoderParams & override;
-  // No change when useOccupancy() is false. Otherwise set the depth/occupancy map threshold
-  // to depthOccMapThresholdIfSet and adjust the normalized disparity range.
+
   auto transformParams(EncoderParams /*params*/) -> const EncoderParams & override;
 
   void padGeometryFromLeft(Common::MVD10Frame &atlases);
@@ -65,11 +60,10 @@ public:
   auto transformAtlases(const Common::MVD16Frame &inAtlases) -> Common::MVD10Frame override;
 
 private:
-  // uint16_t m_depthOccMapThresholdIfSet{};
   EncoderParams m_inParams;
   EncoderParams m_outParams;
   Common::Vec2i m_occupancyScale;
-  bool m_occupancyScaleConfig;
+  bool m_occupancyScaleConfig{false};
   bool m_depthLowQualityFlag{};
   bool m_embeddedOccupancyFlag{};
   bool m_occupancyScaleEnabledFlag{};

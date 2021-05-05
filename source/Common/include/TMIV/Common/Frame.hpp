@@ -215,6 +215,13 @@ template <typename FORMAT> void Frame<FORMAT>::fillZero() {
   }
 }
 
+template <typename FORMAT> void Frame<FORMAT>::fillValue(uint16_t value) {
+  using base_type = typename detail::PixelFormatHelper<FORMAT>::base_type;
+  for (int k = 0; k < getNumberOfPlanes(); ++k) {
+    std::fill(std::begin(getPlane(k)), std::end(getPlane(k)), base_type{value});
+  }
+}
+
 template <typename FORMAT> void Frame<FORMAT>::fillNeutral() {
   for (int k = 0; k < getNumberOfPlanes(); ++k) {
     std::fill(std::begin(getPlane(k)), std::end(getPlane(k)), neutralColor());

@@ -58,11 +58,10 @@ auto AtlasAccessUnit::decOccFrameSize(const V3cParameterSet &vps) const noexcept
       const auto &asme = asps.asps_miv_extension();
       const int codedUnpaddedOccupancyWidth =
           asps.asps_frame_width() / (asme.asme_occupancy_scale_factor_x_minus1() + 1);
-      const int codedUnpadedOccupancyHeight =
+      const int codedUnpaddedOccupancyHeight =
           asps.asps_frame_height() / (asme.asme_occupancy_scale_factor_y_minus1() + 1);
-      const int codedOccupancyWidth = codedUnpaddedOccupancyWidth + codedUnpaddedOccupancyWidth % 2;
-      const int codedOccupancyHeight =
-          codedUnpadedOccupancyHeight + codedUnpadedOccupancyHeight % 2;
+      const int codedOccupancyWidth = Common::align(codedUnpaddedOccupancyWidth, 2);
+      const int codedOccupancyHeight = Common::align(codedUnpaddedOccupancyHeight, 2);
       return Common::Vec2i{codedOccupancyWidth, codedOccupancyHeight};
     }
   }

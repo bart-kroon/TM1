@@ -326,6 +326,10 @@ auto Encoder::calculatePatchAttrOffsetValuesFullGOP(
   return Common::verifyDownCast<int>(bitShift);
 }
 
+auto computeOccUnoccupiedLevel(uint8_t occBitDepthMinus1) -> uint16_t {
+  return Common::assertDownCast<uint16_t>(1 << occBitDepthMinus1);
+}
+
 void Encoder::constructVideoFrames() {
   int frameId = 0;
 
@@ -377,7 +381,9 @@ void Encoder::constructVideoFrames() {
           occFrameHeight /= asme.asme_occupancy_scale_factor_y_minus1() + 1;
         }
         frame.occupancy.resize(Common::align(occFrameWidth, 2), Common::align(occFrameHeight, 2));
-        frame.occupancy.fillZero();
+        const auto unoccupiedLevel = computeOccUnoccupiedLevel(
+            vps.occupancy_information(j).oi_occupancy_2d_bit_depth_minus1());
+        frame.occupancy.fillValue(unoccupiedLevel);
       }
     }
 
@@ -499,7 +505,12 @@ auto Encoder::writePatchInAtlas(const MivBitstream::PatchParams &patchParams,
             }
             atlas.depth.getPlane(0)(pAtlas.y(), pAtlas.x()) = depth;
             if (depth > 0 && m_params.vps.vps_occupancy_video_present_flag(patchParams.atlasId())) {
-              atlas.occupancy.getPlane(0)(yOcc, xOcc) = 1;
+              const auto occupiedLevel = Common::assertDownCast<uint16_t>(
+                  computeOccUnoccupiedLevel(
+                      m_params.vps.occupancy_information(patchParams.atlasId())
+                          .oi_occupancy_2d_bit_depth_minus1()) *
+                  3);
+              atlas.occupancy.getPlane(0)(yOcc, xOcc) = occupiedLevel;
             }
           }
         }
@@ -522,7 +533,10 @@ void Encoder::adaptAtlas(const MivBitstream::PatchParams &patchParams,
                          const Common::Vec2i &pView, const Common::Vec2i &pAtlas) const {
   atlas.depth.getPlane(0)(pAtlas.y(), pAtlas.x()) = 0;
   if (m_params.vps.vps_occupancy_video_present_flag(patchParams.atlasId())) {
-    atlas.occupancy.getPlane(0)(yOcc, xOcc) = 0;
+    const auto unoccupiedLevel =
+        computeOccUnoccupiedLevel(m_params.vps.occupancy_information(patchParams.atlasId())
+                                      .oi_occupancy_2d_bit_depth_minus1());
+    atlas.occupancy.getPlane(0)(yOcc, xOcc) = unoccupiedLevel;
   }
   if (m_config.haveTexture) {
     atlas.texture.getPlane(0)(pAtlas.y(), pAtlas.x()) = textureMedVal;

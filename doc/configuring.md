@@ -218,6 +218,11 @@ Most of the parameters are defined in the root. The exception is:
   threshold when occupancy information is encoded in the geometry video data of
   a specific view.
 
+### Explicit occupancy
+
+* **occupancyScale:** int[2]; the downscale factor of occupancy maps applied
+  across all atlases when occupancy is signaled explicitly.
+
 ### Hierarchical pruner
 
 * **depthParameter:** float; weighting parameter of depth ordering in the trial

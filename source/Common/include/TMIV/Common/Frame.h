@@ -103,6 +103,9 @@ public:
   // NOTE(BK): samples are already set to zero on construction
   void fillZero();
 
+  // Set all samples to a specific value
+  void fillValue(uint16_t value);
+
   // Set all samples to the neutral color
   void fillNeutral();
 

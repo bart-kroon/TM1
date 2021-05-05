@@ -45,8 +45,6 @@ ExplicitOccupancy::ExplicitOccupancy(const Common::Json & /*unused*/,
   if (const auto &subnode = componentNode.optional("occupancyScale")) {
     m_occupancyScaleConfig = true;
     m_occupancyScale = subnode.asVec<int, 2>();
-  } else {
-    m_occupancyScaleConfig = false;
   }
 }
 
@@ -73,17 +71,17 @@ auto ExplicitOccupancy::setOccupancyParams(EncoderParams params) -> const Encode
                        .asps_miv_extension();
       asme.asme_embedded_occupancy_enabled_flag(false).asme_occupancy_scale_enabled_flag(true);
 
+      uint16_t scaleX = 0;
+      uint16_t scaleY = 0;
       if (m_occupancyScaleConfig) {
-        asme.asme_occupancy_scale_factor_x_minus1(
-            Common::downCast<uint16_t>(m_occupancyScale[0] - 1));
-        asme.asme_occupancy_scale_factor_y_minus1(
-            Common::downCast<uint16_t>(m_occupancyScale[1] - 1));
+        scaleX = Common::downCast<uint16_t>(m_occupancyScale[0]);
+        scaleY = Common::downCast<uint16_t>(m_occupancyScale[1]);
       } else {
-        asme.asme_occupancy_scale_factor_x_minus1(
-            Common::downCast<uint16_t>((1 << atlas.asps.asps_log2_patch_packing_block_size()) - 1));
-        asme.asme_occupancy_scale_factor_y_minus1(
-            Common::downCast<uint16_t>((1 << atlas.asps.asps_log2_patch_packing_block_size()) - 1));
+        scaleX = Common::downCast<uint16_t>(1 << atlas.asps.asps_log2_patch_packing_block_size());
+        scaleY = Common::downCast<uint16_t>(1 << atlas.asps.asps_log2_patch_packing_block_size());
       }
+      asme.asme_occupancy_scale_factor_x_minus1(scaleX - 1);
+      asme.asme_occupancy_scale_factor_y_minus1(scaleY - 1);
     }
   }
   return m_outParams;

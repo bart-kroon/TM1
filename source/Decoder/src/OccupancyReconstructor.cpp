@@ -34,42 +34,56 @@
 #include <TMIV/Decoder/OccupancyReconstructor.h>
 
 namespace TMIV::Decoder {
+
+void sampleOccupancyReconstruction(MivBitstream::AtlasAccessUnit &atlas,
+                                   MivBitstream::V3cParameterSet &vps,
+                                   MivBitstream::ViewParamsList &viewParamsList, int y, int x) {
+  atlas.occFrame.getPlane(0)(y, x) = 0;
+  auto patchId = atlas.patchId(y, x);
+  if (patchId != Common::unusedPatchId) {
+    if (vps.vps_miv_extension().vme_embedded_occupancy_enabled_flag()) {
+      if (atlas.asps.asps_miv_extension_present_flag() &&
+          atlas.asps.asps_miv_extension().asme_patch_constant_depth_flag()) {
+        atlas.occFrame.getPlane(0)(y, x) = 1;
+      } else {
+        // occupancy is embedded in geometry
+        uint32_t depthOccupancyThreshold = 0;
+        if (atlas.asps.asps_miv_extension_present_flag() &&
+            atlas.asps.asps_miv_extension().asme_depth_occ_threshold_flag()) {
+          depthOccupancyThreshold =
+              *atlas.patchParamsList[patchId].atlasPatchDepthOccMapThreshold();
+        } else {
+          uint16_t v = atlas.patchParamsList[patchId].atlasPatchProjectionId();
+          depthOccupancyThreshold = viewParamsList[v].dq.dq_depth_occ_threshold_default();
+        }
+        if (depthOccupancyThreshold <= atlas.geoFrame.getPlane(0)(y, x)) {
+          atlas.occFrame.getPlane(0)(y, x) = 1;
+        }
+      }
+    } else {
+      // no occupancy information is available (i.e. atlas is complete)
+      atlas.occFrame.getPlane(0)(y, x) = 1;
+    }
+  }
+}
+
 void OccupancyReconstructor::reconstruct(MivBitstream::AccessUnit &frame) {
   for (size_t k = 0; k <= frame.vps.vps_atlas_count_minus1(); ++k) {
     auto &atlas = frame.atlas[k];
     atlas.occFrame = Common::Occupancy10Frame{atlas.frameSize().x(), atlas.frameSize().y()};
     for (auto y = 0; y < atlas.frameSize().y(); y++) {
       for (auto x = 0; x < atlas.frameSize().x(); x++) {
-        auto patchId = atlas.patchId(y, x);
-        if (patchId == Common::unusedPatchId) {
-          atlas.occFrame.getPlane(0)(y, x) = 0;
-        } else if (!frame.vps.vps_occupancy_video_present_flag(frame.vps.vps_atlas_id(k))) {
-          if (frame.vps.vps_miv_extension().vme_embedded_occupancy_enabled_flag()) {
-            // occupancy is embedded in geometry
-            uint32_t depthOccupancyThreshold = 0;
-            if (!atlas.asps.asps_miv_extension_present_flag() ||
-                !atlas.asps.asps_miv_extension().asme_depth_occ_threshold_flag()) {
-              uint16_t v = atlas.patchParamsList[patchId].atlasPatchProjectionId();
-              depthOccupancyThreshold = frame.viewParamsList[v].dq.dq_depth_occ_threshold_default();
-            } else {
-              depthOccupancyThreshold =
-                  *atlas.patchParamsList[patchId].atlasPatchDepthOccMapThreshold();
-            }
-            if (atlas.asps.asps_miv_extension_present_flag() &&
-                atlas.asps.asps_miv_extension().asme_patch_constant_depth_flag()) {
-              atlas.occFrame.getPlane(0)(y, x) = 1;
-            } else {
-              atlas.occFrame.getPlane(0)(y, x) =
-                  (atlas.geoFrame.getPlane(0)(y, x) < depthOccupancyThreshold) ? 0 : 1;
-            }
-          } else {
-            // no occupancy information is available (i.e. atlas is complete)
-            atlas.occFrame.getPlane(0)(y, x) = 1;
-          }
+        if (!frame.vps.vps_occupancy_video_present_flag(frame.vps.vps_atlas_id(k))) {
+          sampleOccupancyReconstruction(atlas, frame.vps, frame.viewParamsList, y, x);
         } else {
           // occupancy is signaled explicitly
           int asmeOccupancyFrameScaleFactorX = 1;
           int asmeOccupancyFrameScaleFactorY = 1;
+          const auto occThreshold = frame.vps.occupancy_information(frame.vps.vps_atlas_id(k))
+                                        .oi_lossy_occupancy_compression_threshold()
+                                    << (frame.vps.occupancy_information(frame.vps.vps_atlas_id(k))
+                                            .oi_occupancy_2d_bit_depth_minus1() +
+                                        1 - 8);
 
           const auto &asme = atlas.asps.asps_miv_extension();
           if (!asme.asme_embedded_occupancy_enabled_flag() &&
@@ -77,8 +91,9 @@ void OccupancyReconstructor::reconstruct(MivBitstream::AccessUnit &frame) {
             asmeOccupancyFrameScaleFactorX = asme.asme_occupancy_scale_factor_x_minus1() + 1;
             asmeOccupancyFrameScaleFactorY = asme.asme_occupancy_scale_factor_y_minus1() + 1;
           }
-          atlas.occFrame.getPlane(0)(y, x) = atlas.decOccFrame.getPlane(0)(
-              y / asmeOccupancyFrameScaleFactorY, x / asmeOccupancyFrameScaleFactorX);
+          atlas.occFrame.getPlane(0)(y, x) = Common::assertDownCast<uint16_t>(
+              atlas.decOccFrame.getPlane(0)(y / asmeOccupancyFrameScaleFactorY,
+                                            x / asmeOccupancyFrameScaleFactorX) > occThreshold);
         }
       }
     }

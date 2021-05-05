@@ -228,9 +228,8 @@ auto Encoder::createVps(const std::vector<Common::Vec2i> &atlasFrameSizes) const
     if (m_config.haveOccupancy) {
       vps.occupancy_information(j)
           .oi_occupancy_codec_id(0)
-          .oi_lossy_occupancy_compression_threshold(0) // set similar to V-PCC
-          .oi_occupancy_2d_bit_depth_minus1(
-              9) // doing binary lossless coding for now but writing as yuv420p10le files
+          .oi_lossy_occupancy_compression_threshold(128)
+          .oi_occupancy_2d_bit_depth_minus1(9)
           .oi_occupancy_MSB_align_flag(false);
     }
 

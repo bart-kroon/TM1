@@ -82,6 +82,7 @@ create_catch2_unit_test(
         "src/AnnexB.test.cpp"
         "src/Configuration.test.cpp"
         "src/GeometryQuantizer.test.cpp"
+        "src/ExplicitOccupancy.test.cpp"
         "src/MivEncoder.test.cpp"
     PRIVATE
         TMIV::EncoderLib

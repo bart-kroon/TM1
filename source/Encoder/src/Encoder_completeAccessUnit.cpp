@@ -110,6 +110,10 @@ void Encoder::scaleGeometryDynamicRange() {
       }
     }
 
+    if (maxDepthMapValWithinGOP == minDepthMapValWithinGOP) {
+      continue;
+    }
+
     for (size_t f = 0; f < numOfFrames; f++) {
       for (auto &geometry : m_transportViews[f][v].depth.getPlane(0)) {
         geometry = static_cast<uint16_t>(

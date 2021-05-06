@@ -270,7 +270,7 @@ auto Frame::operator==(const Frame &other) const noexcept -> bool {
          getPixelList() == other.getPixelList();
 }
 
-void Frame::appendLayer(Attribute::Geometry layerId, const TextureTransparency8Frame &layer) {
+void Frame::appendLayer(Attribute::GeometryValue layerId, const TextureTransparency8Frame &layer) {
   auto textureLayer = yuv444p(layer.texture);
   const auto &transparencyLayer = layer.transparency;
 
@@ -282,13 +282,13 @@ void Frame::appendLayer(Attribute::Geometry layerId, const TextureTransparency8F
 
   parallel_for(y_plane.size(), [&](size_t k) {
     if (0 < a_plane[k]) {
-      m_pixelList[k].push_back(
-          Attribute{Attribute::Texture{y_plane[k], u_plane[k], v_plane[k]}, layerId, a_plane[k]});
+      m_pixelList[k].push_back(Attribute{
+          Attribute::TextureValue{y_plane[k], u_plane[k], v_plane[k]}, layerId, a_plane[k]});
     }
   });
 }
 
-auto Frame::getLayer(Attribute::Geometry layerId) const -> TextureTransparency8Frame {
+auto Frame::getLayer(Attribute::GeometryValue layerId) const -> TextureTransparency8Frame {
   Texture444Frame textureFrame{m_size.x(), m_size.y()};
   Transparency8Frame transparencyFrame{m_size.x(), m_size.y()};
 

@@ -339,9 +339,9 @@ TEST_CASE("MpiPcs : Attribute") {
   }
 
   SECTION("construction from attribute") {
-    const auto t = MpiPcs::Attribute::Texture{1, 10, 100};
-    const auto g = MpiPcs::Attribute::Geometry{3};
-    const auto a = MpiPcs::Attribute::Transparency{77};
+    const auto t = MpiPcs::Attribute::TextureValue{1, 10, 100};
+    const auto g = MpiPcs::Attribute::GeometryValue{3};
+    const auto a = MpiPcs::Attribute::TransparencyValue{77};
     MpiPcs::Attribute unit_1{t, g, a};
     REQUIRE(unit_1.texture == t);
     REQUIRE(unit_1.geometry == g);

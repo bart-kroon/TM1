@@ -209,19 +209,20 @@ namespace MpiPcs {
 struct Attribute {
   using Count = uint16_t;
 
-  using Texture = std::array<uint16_t, 3>;
-  using Geometry = uint16_t;
-  using Transparency = uint8_t;
+  using TextureValue = std::array<uint16_t, 3>;
+  using GeometryValue = uint16_t;
+  using TransparencyValue = uint8_t;
 
   static constexpr auto attributeSize = 9;
-  static_assert(attributeSize == sizeof(Texture) + sizeof(Geometry) + sizeof(Transparency));
+  static_assert(attributeSize ==
+                sizeof(TextureValue) + sizeof(GeometryValue) + sizeof(TransparencyValue));
 
   using Buffer = std::array<char, attributeSize>;
   using List = std::vector<Attribute>;
 
-  Texture texture{};
-  Geometry geometry{};
-  Transparency transparency{};
+  TextureValue texture{};
+  GeometryValue geometry{};
+  TransparencyValue transparency{};
 
   auto operator==(const Attribute &other) const noexcept -> bool;
   auto operator<(const Attribute &other) const noexcept -> bool {
@@ -298,8 +299,8 @@ public:
     ASSERT(i * m_size.x() + j < static_cast<int>(m_pixelList.size()));
     return m_pixelList[i * m_size.x() + j];
   }
-  void appendLayer(Attribute::Geometry layerId, const TextureTransparency8Frame &layer);
-  [[nodiscard]] auto getLayer(Attribute::Geometry layerId) const -> TextureTransparency8Frame;
+  void appendLayer(Attribute::GeometryValue layerId, const TextureTransparency8Frame &layer);
+  [[nodiscard]] auto getLayer(Attribute::GeometryValue layerId) const -> TextureTransparency8Frame;
 
 private:
   Vec2i m_size{};

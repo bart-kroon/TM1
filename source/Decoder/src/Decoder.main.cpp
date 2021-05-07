@@ -36,6 +36,7 @@
 #include <TMIV/Common/Application.h>
 #include <TMIV/Common/Factory.h>
 #include <TMIV/Decoder/MivDecoder.h>
+#include <TMIV/Decoder/OutputLog.h>
 #include <TMIV/Decoder/V3cSampleStreamDecoder.h>
 #include <TMIV/IO/IO.h>
 #include <TMIV/MivBitstream/SequenceConfig.h>
@@ -63,6 +64,7 @@ private:
   Decoder::V3cSampleStreamDecoder m_vssDecoder;
   Decoder::MivDecoder m_mivDecoder;
   MivBitstream::SequenceConfig m_outputSequenceConfig;
+  std::ofstream m_outputLog;
 
 public:
   explicit Application(std::vector<const char *> argv)
@@ -86,23 +88,19 @@ public:
       , m_vssDecoder{createVssDecoder()}
       , m_mivDecoder{[this]() { return m_vssDecoder(); }} {
     setFrameServers(m_mivDecoder);
+    tryOpenOutputLog();
   }
 
   void run() override {
     while (auto frame = m_mivDecoder()) {
+      if (m_outputLog.is_open()) {
+        writeFrameToOutputLog(*frame, m_outputLog);
+      }
+
       // Check which frames to render if we would
       const auto range = m_inputToOutputFrameIdMap.equal_range(frame->foc);
       if (range.first == range.second) {
         return;
-      }
-
-      auto &ptl = frame->vps.profile_tier_level();
-      if (m_renderer.isOptimizedForRestrictedGeometry()) {
-        if (ptl.ptl_profile_toolset_idc() != MivBitstream::PtlProfilePccToolsetIdc::MIV_Extended ||
-            !ptl.ptl_toolset_constraints_present_flag() ||
-            !ptl.ptl_profile_toolset_constraints_information().ptc_restricted_geometry_flag()) {
-          throw std::runtime_error("Restricted geometry only renderer.");
-        }
       }
 
       // Recover geometry, occupancy, and filter blockToPatchMap
@@ -166,6 +164,18 @@ private:
           }
           return Common::Transparency10Frame{};
         });
+  }
+
+  void tryOpenOutputLog() {
+    if (const auto &node = json().optional("outputLogPath")) {
+      const auto outputLogPath = node.as<std::string>();
+      m_outputLog.open(outputLogPath, std::ios::out | std::ios::binary);
+
+      if (!m_outputLog) {
+        throw std::runtime_error(
+            fmt::format("Failed to open output log \"{}\" for writing", outputLogPath));
+      }
+    }
   }
 
   void outputSequenceConfig(MivBitstream::SequenceConfig sc, std::int32_t foc) {

@@ -13,6 +13,7 @@ create_tmiv_library(
         "src/MivDecoder.cpp"
         "src/V3cSampleStreamDecoder.cpp"
         "src/V3cUnitBuffer.cpp"
+        "src/OutputLog.cpp"
     PUBLIC
         TMIV::VideoDecoderLib
     )
@@ -26,4 +27,13 @@ create_tmiv_executable(
     PRIVATE
         TMIV::DecoderLib
         TMIV::RendererFrontLib
+    )
+
+create_catch2_unit_test(
+    TARGET
+        DecoderTest
+    SOURCES
+        "src/OutputLog.test.cpp"
+    PRIVATE
+        TMIV::DecoderLib
     )

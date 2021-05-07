@@ -18,3 +18,4 @@ Integration Test:
       - integration_test/**/*.json
       - integration_test/**/*.log
       - integration_test/**/*.md5
+      - integration_test/**/*.dec

@@ -468,3 +468,9 @@ will generate the `.pcs` file:
 ```
 /Experiment/M/mpi.pcs
 ```
+
+## MIV conformance testing [ISO/IEC 23090-23]
+
+Specifying *outputLogPath* either in a configuration file via `-c` or on the command-line using the `-p`, instructs the TMIV decoder to output a log-file for conformance testing. 
+
+This option may be combined with other TMIV decoder actions such as rendering views. None of these actions will affect the log-file.

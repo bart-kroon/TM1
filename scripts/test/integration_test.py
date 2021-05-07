@@ -277,11 +277,14 @@ class IntegrationTest:
             ["{0}/bin/Decoder", "-c", "{1}/config/ctc/miv_anchor/A_4_TMIV_decode.json"]
             + ["-p", "configDirectory", "{1}/config", "-p", "inputDirectory", "{3}"]
             + ["-p", "outputDirectory", "{3}", "-n", "3", "-N", "3", "-s", "E"]
-            + ["-r", "QP3", "-v", "v11"]
+            + ["-r", "QP3", "-v", "v11", "-p", "outputLogPath", "{3}/A3/E/QP3/TMIV_A3_E_QP3.dec"]
             + ["-p", "inputBitstreamPathFmt", "{3}/A3/E/QP3/TMIV_A3_E_QP3.bit"]
             + ["-p", "inputViewportParamsPathFmt", "test/sequences/T{{1}}.json"],
             "{3}/A3/E/QP3/A3_E_QP3_v11.log",
-            [f"A3/E/QP3/A3_E_QP3_v11_tex_{renderResolution}_yuv420p10le.yuv"],
+            [
+                "A3/E/QP3/TMIV_A3_E_QP3.dec",
+                f"A3/E/QP3/A3_E_QP3_v11_tex_{renderResolution}_yuv420p10le.yuv",
+            ],
         )
 
         return [f4, f2_5, f2_6]

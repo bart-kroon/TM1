@@ -115,7 +115,7 @@ TEST_CASE("Decoder::writeFrameToOutputLog") {
 
     SECTION("Unused patch ID translates to 0xFFFFFFFF") {
       const auto value =
-          GENERATE(uint16_t{}, uint16_t{1}, uint16_t{1000}, TMIV::Common::unusedPatchId);
+          GENERATE(uint16_t{}, uint16_t{1}, uint16_t{1000}, uint16_t{TMIV::Common::unusedPatchId});
       CAPTURE(value);
 
       // Video frames use the same hash function but do not have this logic

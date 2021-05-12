@@ -351,8 +351,8 @@ dq_norm_disp_high[ 0 ]=0
 dq_depth_occ_threshold_default[ 0 ]=0
 mvp_pruning_graph_params_present_flag=true
 pp_is_root_flag[ 0 ]=true
-pp_is_root_flag[ 1 ]=true
 pp_is_root_flag[ 2 ]=true
+pp_is_root_flag[ 1 ]=true
 )");
 
     REQUIRE(bitCodingTest(x, 837, vps, casps));

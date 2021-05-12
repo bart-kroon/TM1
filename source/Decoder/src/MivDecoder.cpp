@@ -345,19 +345,20 @@ void MivDecoder::decodeViewParamsList() {
 void MivDecoder::decodeMvpl(const MivBitstream::MivViewParamsList &mvpl, bool dqParamsPresentFlag) {
   m_au.viewParamsList.assign(mvpl.mvp_num_views_minus1() + size_t{1}, {});
 
-  for (uint16_t viewId = 0; viewId <= mvpl.mvp_num_views_minus1(); ++viewId) {
-    auto &vp = m_au.viewParamsList[viewId];
-    vp.pose = MivBitstream::Pose::decodeFrom(mvpl.camera_extrinsics(viewId));
-    vp.isInpainted = mvpl.mvp_inpaint_flag(viewId);
-    vp.ci = mvpl.camera_intrinsics(viewId);
+  for (uint16_t viewIdx = 0; viewIdx <= mvpl.mvp_num_views_minus1(); ++viewIdx) {
+    auto &vp = m_au.viewParamsList[viewIdx];
+    vp.pose = MivBitstream::Pose::decodeFrom(mvpl.camera_extrinsics(viewIdx));
+    vp.isInpainted = mvpl.mvp_inpaint_flag(viewIdx);
+    vp.ci = mvpl.camera_intrinsics(viewIdx);
     if (dqParamsPresentFlag) {
-      vp.dq = mvpl.depth_quantization(viewId);
+      vp.dq = mvpl.depth_quantization(viewIdx);
     }
     if (mvpl.mvp_pruning_graph_params_present_flag()) {
+      const auto viewId = mvpl.viewIndexToId(viewIdx);
       vp.pp = mvpl.pruning_parent(viewId);
     }
 
-    vp.name = fmt::format("pv{:02}", viewId);
+    vp.name = fmt::format("pv{:02}", viewIdx);
   }
 }
 

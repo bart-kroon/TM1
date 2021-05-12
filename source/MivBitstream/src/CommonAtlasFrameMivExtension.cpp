@@ -408,8 +408,9 @@ auto MivViewParamsList::depth_quantization(uint16_t viewId) const -> const Depth
 
 auto MivViewParamsList::pruning_parent(uint16_t viewId) const -> const PruningParents & {
   VERIFY_MIVBITSTREAM(mvp_pruning_graph_params_present_flag());
-  VERIFY_MIVBITSTREAM(viewId < m_pruning_parent.size());
-  return m_pruning_parent[viewId];
+  const auto viewIdx = viewIdToIndex(viewId);
+  VERIFY_MIVBITSTREAM(viewIdx < m_pruning_parent.size());
+  return m_pruning_parent[viewIdx];
 }
 
 auto MivViewParamsList::mvp_num_views_minus1(uint16_t value) -> MivViewParamsList & {
@@ -499,9 +500,10 @@ auto MivViewParamsList::depth_quantization(uint16_t viewId) noexcept -> DepthQua
   return m_depth_quantization[viewId];
 }
 
-auto MivViewParamsList::pruning_parent(uint16_t viewId) noexcept -> PruningParents & {
-  PRECONDITION(viewId < m_pruning_parent.size());
-  return m_pruning_parent[viewId];
+auto MivViewParamsList::pruning_parent(uint16_t viewId) -> PruningParents & {
+  const auto viewIdx = viewIdToIndex(viewId);
+  PRECONDITION(viewIdx < m_pruning_parent.size());
+  return m_pruning_parent[viewIdx];
 }
 
 auto MivViewParamsList::viewIndexToId(uint16_t index) const -> uint16_t {
@@ -579,7 +581,8 @@ auto operator<<(std::ostream &stream, const MivViewParamsList &x) -> std::ostrea
          << x.mvp_pruning_graph_params_present_flag() << '\n';
   if (x.mvp_pruning_graph_params_present_flag()) {
     for (uint16_t v = 0; v <= x.mvp_num_views_minus1(); ++v) {
-      x.pruning_parent(v).printTo(stream, v);
+      const auto viewId = x.viewIndexToId(v);
+      x.pruning_parent(viewId).printTo(stream, viewId);
     }
   }
   return stream;
@@ -661,7 +664,8 @@ auto MivViewParamsList::decodeFrom(Common::InputBitstream &bitstream, const V3cP
 
   if (x.mvp_pruning_graph_params_present_flag()) {
     for (uint16_t v = 0; v <= x.mvp_num_views_minus1(); ++v) {
-      x.pruning_parent(v) = PruningParents::decodeFrom(bitstream, x.mvp_num_views_minus1());
+      const auto viewId = x.viewIndexToId(v);
+      x.pruning_parent(viewId) = PruningParents::decodeFrom(bitstream, x.mvp_num_views_minus1());
     }
   }
   return x;
@@ -721,7 +725,8 @@ void MivViewParamsList::encodeTo(Common::OutputBitstream &bitstream, const V3cPa
 
   if (mvp_pruning_graph_params_present_flag()) {
     for (uint16_t v = 0; v <= mvp_num_views_minus1(); ++v) {
-      pruning_parent(v).encodeTo(bitstream, mvp_num_views_minus1());
+      const auto viewId = viewIndexToId(v);
+      pruning_parent(viewId).encodeTo(bitstream, mvp_num_views_minus1());
     }
   }
 }

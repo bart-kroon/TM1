@@ -237,7 +237,8 @@ auto MivEncoder::mivViewParamsList() const -> MivBitstream::MivViewParamsList {
     }
     PRECONDITION(vp.pp.has_value() == mvpl.mvp_pruning_graph_params_present_flag());
     if (vp.pp.has_value()) {
-      mvpl.pruning_parent(i) = *vp.pp;
+      const auto viewId = mvpl.viewIndexToId(i);
+      mvpl.pruning_parent(viewId) = *vp.pp;
     }
   }
 

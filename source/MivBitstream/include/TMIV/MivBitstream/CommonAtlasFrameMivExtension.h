@@ -210,6 +210,7 @@ public:
   void encodeTo(Common::OutputBitstream &bitstream, uint16_t mvp_num_views_minus1) const;
 
 private:
+  // NOTE(FT): m_pp_parent_id is a vector of view IDs, not view indices (see m56972)
   std::vector<uint16_t> m_pp_parent_id;
 };
 
@@ -270,7 +271,7 @@ public:
   [[nodiscard]] auto camera_extrinsics(uint16_t viewId) noexcept -> CameraExtrinsics &;
   [[nodiscard]] auto camera_intrinsics(uint16_t viewId = 0) noexcept -> CameraIntrinsics &;
   [[nodiscard]] auto depth_quantization(uint16_t viewId = 0) noexcept -> DepthQuantization &;
-  [[nodiscard]] auto pruning_parent(uint16_t viewId) noexcept -> PruningParents &;
+  [[nodiscard]] auto pruning_parent(uint16_t viewId) -> PruningParents &;
 
   [[nodiscard]] auto viewIndexToId(uint16_t index) const -> uint16_t;
   [[nodiscard]] auto viewIdToIndex(uint16_t id) const -> uint16_t;

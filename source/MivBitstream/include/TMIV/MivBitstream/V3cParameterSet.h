@@ -384,7 +384,7 @@ struct PinRegion {
            (pin_region_top_left_y == other.pin_region_top_left_y) &&
            (pin_region_width_minus1 == other.pin_region_width_minus1) &&
            (pin_region_height_minus1 == other.pin_region_height_minus1) &&
-           (pin_region_top_left_x == other.pin_region_unpack_top_left_y) &&
+           (pin_region_unpack_top_left_x == other.pin_region_unpack_top_left_x) &&
            (pin_region_unpack_top_left_y == other.pin_region_unpack_top_left_y) &&
            (pin_region_map_index == other.pin_region_map_index) &&
            (pin_region_rotation_flag == other.pin_region_rotation_flag) &&

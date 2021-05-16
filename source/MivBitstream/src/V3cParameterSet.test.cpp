@@ -302,121 +302,220 @@ ai_attribute_MSB_align_flag[ 7 ][ 1 ]=true
 }
 
 TEST_CASE("packing_information", "[V3C Parameter Set]") {
-  SECTION("Default Constructor") {
-    const PackingInformation unit{};
+  SECTION("Default Constructor + 1 Occupancy Region") {
+    PackingInformation unit{};
+    unit.pin_occupancy_present_flag(true)
+        .pin_occupancy_2d_bit_depth_minus1(7)
+        .pin_occupancy_MSB_align_flag(true)
+        .pin_lossy_occupancy_compression_threshold(64);
 
     REQUIRE(toString(unit, AtlasId{4}) == R"(pin_codec_id[ 4 ]=0
+pin_occupancy_present_flag[ 4 ]=true
+pin_geometry_present_flag[ 4 ]=false
+pin_attribute_present_flag[ 4 ]=false
+pin_occupancy_2d_bit_depth_minus1[ 4 ]=7
+pin_occupancy_MSB_align_flag[ 4 ]=true
+pin_lossy_occupancy_compression_threshold[ 4 ]=64
 pin_regions_count_minus1[ 4 ]=0
 pin_region_tile_id[ 4 ][ 0 ]=0
 pin_region_type_id_minus2[ 4 ][ 0 ]=0 (V3C_OVD)
 pin_region_top_left_x[ 4 ][ 0 ]=0
 pin_region_top_left_y[ 4 ][ 0 ]=0
 pin_region_width_minus1[ 4 ][ 0 ]=0
+pin_region_height_minus1[ 4 ][ 0 ]=0
 pin_region_unpack_top_left_x[ 4 ][ 0 ]=0
 pin_region_unpack_top_left_y[ 4 ][ 0 ]=0
-pin_region_height_minus1[ 4 ][ 0 ]=0
-pin_region_map_index[ 4 ][ 0 ]=0
 pin_region_rotation_flag[ 4 ][ 0 ]=false
 )");
 
-    const size_t expectedNumberOfBits = 8               // pin_codec_id
-                                        + 1             // pin_regions_count_minus1
-                                        + 1 * (         // number in pin_regions_count_minus1 + 1
-                                                  +8    // pin_region_tile_id
-                                                  + 2   // pin_region_type_id_minus2
-                                                  + 16  // pin_region_top_left_x
-                                                  + 16  // pin_region_top_left_y
-                                                  + 16  // pin_region_width_minus1
-                                                  + 16  // pin_region_height_minus1
-                                                  + 16  // pin_region_unpack_top_left_x
-                                                  + 16  // pin_region_unpack_top_left_y
-                                                  + 4   // pin_region_map_index
-                                                  + 1); // pin_region_rotation_flag
-
-    REQUIRE(bitCodingTest(unit, expectedNumberOfBits));
+    REQUIRE(bitCodingTest(unit, 133));
   }
 
-  SECTION("Relevant region types") {
+  SECTION("2 Regions: 1 Attribute + 1 Geometry") {
     PackingInformation unit{};
-    unit.pin_codec_id(2);
-    unit.pin_regions_count_minus1(1);
+    unit.pin_codec_id(2)
+        .pin_attribute_present_flag(true)
+        .pin_geometry_present_flag(true)
+        .pin_geometry_2d_bit_depth_minus1(9)
+        .pin_geometry_MSB_align_flag(false)
+        .pin_geometry_3d_coordinates_bit_depth_minus1(9)
+        .pin_attribute_count(1)
+        .pin_attribute_type_id(0, AiAttributeTypeId::ATTR_TEXTURE)
+        .pin_attribute_2d_bit_depth_minus1(0, 9)
+        .pin_attribute_MSB_align_flag(0, true)
+        .pin_attribute_map_absolute_coding_persistence_flag(0, false)
+        .pin_attribute_dimension_minus1(0, 0)
+        .pin_regions_count_minus1(1);
+
     for (size_t i = 0; i <= unit.pin_regions_count_minus1(); ++i) {
-      // Pseudorandom values
       unit.pin_region_tile_id(i, static_cast<uint8_t>(i + 5));
       unit.pin_region_top_left_y(i, static_cast<uint16_t>(i + 6));
       unit.pin_region_width_minus1(i, static_cast<uint16_t>(2 * i + 6));
       unit.pinRegionTypeId(i, i == 1 ? VuhUnitType::V3C_GVD : VuhUnitType::V3C_AVD);
+      unit.pin_region_map_index(i, static_cast<uint8_t>(i));
       unit.pin_region_auxiliary_data_flag(i, static_cast<bool>(i));
       if (i == 0) {
         unit.pin_region_attr_type_id(i, static_cast<uint8_t>(i + 1));
-        unit.pin_region_attr_partitions_flag(i, true);
-        unit.pin_region_attr_partition_index(i, 0);
-        unit.pin_region_attr_partitions_minus1(i, static_cast<uint8_t>(i + 3));
       }
     }
 
     REQUIRE(toString(unit, AtlasId{3}) == R"(pin_codec_id[ 3 ]=2
+pin_occupancy_present_flag[ 3 ]=false
+pin_geometry_present_flag[ 3 ]=true
+pin_attribute_present_flag[ 3 ]=true
+pin_geometry_2d_bit_depth_minus1[ 3 ]=9
+pin_geometry_MSB_align_flag[ 3 ]=false
+pin_geometry_3d_coordinates_bit_depth_minus1[ 3 ]=9
+pin_attribute_count[ 3 ]=1
+pin_attribute_type_id[ 3 ][ 0 ]=ATTR_TEXTURE
+pin_attribute_2d_bit_depth_minus1[ 3 ][ 0 ]=9
+pin_attribute_MSB_align_flag[ 3 ][ 0 ]=true
+pin_attribute_map_absolute_coding_persistence_flag[ 3 ][ 0 ]=false
+pin_attribute_dimension_minus1[ 3 ][ 0 ]=0
 pin_regions_count_minus1[ 3 ]=1
 pin_region_tile_id[ 3 ][ 0 ]=5
 pin_region_type_id_minus2[ 3 ][ 0 ]=2 (V3C_AVD)
 pin_region_top_left_x[ 3 ][ 0 ]=0
 pin_region_top_left_y[ 3 ][ 0 ]=6
 pin_region_width_minus1[ 3 ][ 0 ]=6
+pin_region_height_minus1[ 3 ][ 0 ]=0
 pin_region_unpack_top_left_x[ 3 ][ 0 ]=0
 pin_region_unpack_top_left_y[ 3 ][ 0 ]=0
-pin_region_height_minus1[ 3 ][ 0 ]=0
-pin_region_map_index[ 3 ][ 0 ]=0
 pin_region_rotation_flag[ 3 ][ 0 ]=false
+pin_region_map_index[ 3 ][ 0 ]=0
 pin_region_auxiliary_data_flag[ 3 ][ 0 ]=false
 pin_region_attr_type_id[ 3 ][ 0 ]=1
-pin_region_attr_partitions_flag[ 3 ][ 0 ]=true
-pin_region_attr_partition_index[ 3 ][ 0 ]=0
-pin_region_attr_partitions_minus1[ 3 ][ 0 ]=3
 pin_region_tile_id[ 3 ][ 1 ]=6
 pin_region_type_id_minus2[ 3 ][ 1 ]=1 (V3C_GVD)
 pin_region_top_left_x[ 3 ][ 1 ]=0
 pin_region_top_left_y[ 3 ][ 1 ]=7
 pin_region_width_minus1[ 3 ][ 1 ]=8
+pin_region_height_minus1[ 3 ][ 1 ]=0
 pin_region_unpack_top_left_x[ 3 ][ 1 ]=0
 pin_region_unpack_top_left_y[ 3 ][ 1 ]=0
-pin_region_height_minus1[ 3 ][ 1 ]=0
-pin_region_map_index[ 3 ][ 1 ]=0
 pin_region_rotation_flag[ 3 ][ 1 ]=false
+pin_region_map_index[ 3 ][ 1 ]=1
 pin_region_auxiliary_data_flag[ 3 ][ 1 ]=true
 )");
 
-    const size_t expectedNumberOfBits = 8               // pin_codec_id
-                                        + 3             // pin_regions_count_minus1
-                                        + 1 * (         // first region, with V3C_AVD
-                                                  8     // pin_region_tile_id
-                                                  + 2   // pin_region_type_id_minus2
-                                                  + 16  // pin_region_top_left_x
-                                                  + 16  // pin_region_top_left_y
-                                                  + 16  // pin_region_width_minus1
-                                                  + 16  // pin_region_height_minus1
-                                                  + 16  // pin_region_unpack_top_left_x
-                                                  + 16  // pin_region_unpack_top_left_y
-                                                  + 4   // pin_region_map_index
-                                                  + 1   // pin_region_rotation_flag
-                                                  + 1)  // pin_region_auxiliary_data_flag
-                                        + 1 * (         // second region, with V3C_GVD
-                                                  8     // pin_region_tile_id
-                                                  + 2   // pin_region_type_id_minus2
-                                                  + 16  // pin_region_top_left_x
-                                                  + 16  // pin_region_top_left_y
-                                                  + 16  // pin_region_width_minus1
-                                                  + 16  // pin_region_height_minus1
-                                                  + 16  // pin_region_unpack_top_left_x
-                                                  + 16  // pin_region_unpack_top_left_y
-                                                  + 4   // pin_region_map_index
-                                                  + 1   // pin_region_rotation_flag
-                                                  + 1   // pin_region_auxiliary_data_flag
-                                                  + 4   // pin_region_attr_type_id
-                                                  + 1   // pin_region_attr_partitions_flag
-                                                  + 5   // pin_region_attr_partition_index
-                                                  + 6); // pin_region_attr_partitions_minus1
+    REQUIRE(bitCodingTest(unit, 274));
+  }
 
-    REQUIRE(bitCodingTest(unit, expectedNumberOfBits));
+  SECTION("4 Regions: 1 Attribute + 2 Geometry + 1 Occupancy") {
+    PackingInformation unit{};
+    unit.pin_codec_id(2)
+        .pin_occupancy_present_flag(true)
+        .pin_geometry_present_flag(true)
+        .pin_attribute_present_flag(true)
+        .pin_occupancy_2d_bit_depth_minus1(1)
+        .pin_occupancy_MSB_align_flag(true)
+        .pin_lossy_occupancy_compression_threshold(1)
+        .pin_geometry_2d_bit_depth_minus1(1)
+        .pin_geometry_MSB_align_flag(true)
+        .pin_geometry_3d_coordinates_bit_depth_minus1(1)
+        .pin_attribute_count(static_cast<uint8_t>(1))
+        .pin_attribute_type_id(0, AiAttributeTypeId::ATTR_TEXTURE)
+        .pin_attribute_2d_bit_depth_minus1(0, 1)
+        .pin_attribute_MSB_align_flag(0, true)
+        .pin_attribute_map_absolute_coding_persistence_flag(static_cast<uint8_t>(0), true)
+        .pin_attribute_dimension_minus1(0, 1)
+        .pin_attribute_dimension_partitions_minus1(0, 1)
+        .pin_attribute_partition_channels_minus1(0, static_cast<uint8_t>(1),
+                                                 static_cast<uint8_t>(0))
+        .pin_attribute_partition_channels_minus1(0, static_cast<uint8_t>(1),
+                                                 static_cast<uint8_t>(1))
+        .pin_regions_count_minus1(3)
+        .pin_region_tile_id(0, static_cast<uint8_t>(5))
+        .pinRegionTypeId(0, VuhUnitType::V3C_AVD)
+        .pin_region_top_left_y(0, static_cast<uint16_t>(6))
+        .pin_region_width_minus1(0, static_cast<uint16_t>(6))
+        .pin_region_map_index(0, static_cast<uint8_t>(0))
+        .pin_region_auxiliary_data_flag(0, false)
+        .pin_region_attr_type_id(0, static_cast<uint8_t>(1))
+        .pin_region_attr_partition_index(0, 0)
+        .pin_region_tile_id(1, static_cast<uint8_t>(5))
+        .pinRegionTypeId(1, VuhUnitType::V3C_GVD)
+        .pin_region_top_left_y(1, static_cast<uint16_t>(6))
+        .pin_region_width_minus1(1, static_cast<uint16_t>(6))
+        .pin_region_map_index(1, static_cast<uint8_t>(0))
+        .pin_region_auxiliary_data_flag(1, false)
+        .pin_region_tile_id(2, static_cast<uint8_t>(5))
+        .pinRegionTypeId(2, VuhUnitType::V3C_GVD)
+        .pin_region_top_left_y(2, static_cast<uint16_t>(6))
+        .pin_region_width_minus1(2, static_cast<uint16_t>(6))
+        .pin_region_map_index(2, static_cast<uint8_t>(0))
+        .pin_region_auxiliary_data_flag(2, false)
+        .pin_region_tile_id(3, static_cast<uint8_t>(5))
+        .pinRegionTypeId(3, VuhUnitType::V3C_OVD)
+        .pin_region_top_left_y(3, static_cast<uint16_t>(6))
+        .pin_region_width_minus1(3, static_cast<uint16_t>(6));
+
+    REQUIRE(toString(unit, AtlasId{3}) == R"(pin_codec_id[ 3 ]=2
+pin_occupancy_present_flag[ 3 ]=true
+pin_geometry_present_flag[ 3 ]=true
+pin_attribute_present_flag[ 3 ]=true
+pin_occupancy_2d_bit_depth_minus1[ 3 ]=1
+pin_occupancy_MSB_align_flag[ 3 ]=true
+pin_lossy_occupancy_compression_threshold[ 3 ]=1
+pin_geometry_2d_bit_depth_minus1[ 3 ]=1
+pin_geometry_MSB_align_flag[ 3 ]=true
+pin_geometry_3d_coordinates_bit_depth_minus1[ 3 ]=1
+pin_attribute_count[ 3 ]=1
+pin_attribute_type_id[ 3 ][ 0 ]=ATTR_TEXTURE
+pin_attribute_2d_bit_depth_minus1[ 3 ][ 0 ]=1
+pin_attribute_MSB_align_flag[ 3 ][ 0 ]=true
+pin_attribute_map_absolute_coding_persistence_flag[ 3 ][ 0 ]=true
+pin_attribute_dimension_minus1[ 3 ][ 0 ]=1
+pin_attribute_dimension_partitions_minus1[ 3 ][ 0 ]=1
+pin_attribute_partition_channels_minus1[ 3 ][ 0 ] [ 1 ]=1
+pin_regions_count_minus1[ 3 ]=3
+pin_region_tile_id[ 3 ][ 0 ]=5
+pin_region_type_id_minus2[ 3 ][ 0 ]=2 (V3C_AVD)
+pin_region_top_left_x[ 3 ][ 0 ]=0
+pin_region_top_left_y[ 3 ][ 0 ]=6
+pin_region_width_minus1[ 3 ][ 0 ]=6
+pin_region_height_minus1[ 3 ][ 0 ]=0
+pin_region_unpack_top_left_x[ 3 ][ 0 ]=0
+pin_region_unpack_top_left_y[ 3 ][ 0 ]=0
+pin_region_rotation_flag[ 3 ][ 0 ]=false
+pin_region_map_index[ 3 ][ 0 ]=0
+pin_region_auxiliary_data_flag[ 3 ][ 0 ]=false
+pin_region_attr_type_id[ 3 ][ 0 ]=1
+pin_region_attr_partition_index[ 3 ][ 0 ]=0
+pin_region_tile_id[ 3 ][ 1 ]=5
+pin_region_type_id_minus2[ 3 ][ 1 ]=1 (V3C_GVD)
+pin_region_top_left_x[ 3 ][ 1 ]=0
+pin_region_top_left_y[ 3 ][ 1 ]=6
+pin_region_width_minus1[ 3 ][ 1 ]=6
+pin_region_height_minus1[ 3 ][ 1 ]=0
+pin_region_unpack_top_left_x[ 3 ][ 1 ]=0
+pin_region_unpack_top_left_y[ 3 ][ 1 ]=0
+pin_region_rotation_flag[ 3 ][ 1 ]=false
+pin_region_map_index[ 3 ][ 1 ]=0
+pin_region_auxiliary_data_flag[ 3 ][ 1 ]=false
+pin_region_tile_id[ 3 ][ 2 ]=5
+pin_region_type_id_minus2[ 3 ][ 2 ]=1 (V3C_GVD)
+pin_region_top_left_x[ 3 ][ 2 ]=0
+pin_region_top_left_y[ 3 ][ 2 ]=6
+pin_region_width_minus1[ 3 ][ 2 ]=6
+pin_region_height_minus1[ 3 ][ 2 ]=0
+pin_region_unpack_top_left_x[ 3 ][ 2 ]=0
+pin_region_unpack_top_left_y[ 3 ][ 2 ]=0
+pin_region_rotation_flag[ 3 ][ 2 ]=false
+pin_region_map_index[ 3 ][ 2 ]=0
+pin_region_auxiliary_data_flag[ 3 ][ 2 ]=false
+pin_region_tile_id[ 3 ][ 3 ]=5
+pin_region_type_id_minus2[ 3 ][ 3 ]=0 (V3C_OVD)
+pin_region_top_left_x[ 3 ][ 3 ]=0
+pin_region_top_left_y[ 3 ][ 3 ]=6
+pin_region_width_minus1[ 3 ][ 3 ]=6
+pin_region_height_minus1[ 3 ][ 3 ]=0
+pin_region_unpack_top_left_x[ 3 ][ 3 ]=0
+pin_region_unpack_top_left_y[ 3 ][ 3 ]=0
+pin_region_rotation_flag[ 3 ][ 3 ]=false
+)");
+
+    REQUIRE(bitCodingTest(unit, 520));
   }
 }
 
@@ -496,6 +595,11 @@ gm_group_count=0
     const auto j0 = AtlasId{30};
     const auto j1 = AtlasId{31};
     const auto j2 = AtlasId{32};
+    PackingInformation packInfo{};
+    packInfo.pin_occupancy_present_flag(true)
+        .pin_occupancy_2d_bit_depth_minus1(7)
+        .pin_occupancy_MSB_align_flag(true)
+        .pin_lossy_occupancy_compression_threshold(64);
     vps.vps_v3c_parameter_set_id(15)
         .vps_atlas_count_minus1(2)
         .vps_atlas_id(0, j0)
@@ -517,7 +621,7 @@ gm_group_count=0
         .vps_miv_extension_present_flag(true)
         .vps_packing_information_present_flag(true)
         .vps_packed_video_present_flag(j2, true)
-        .packing_information(j2, {})
+        .packing_information(j2, packInfo)
         .vps_miv_extension(VpsMivExtension{})
         .vps_extension_6bits(63)
         .vpsExtensionData({2, 250, 15});
@@ -574,16 +678,21 @@ vps_packed_video_present_flag[ 30 ]=false
 vps_packed_video_present_flag[ 31 ]=false
 vps_packed_video_present_flag[ 32 ]=true
 pin_codec_id[ 32 ]=0
+pin_occupancy_present_flag[ 32 ]=true
+pin_geometry_present_flag[ 32 ]=false
+pin_attribute_present_flag[ 32 ]=false
+pin_occupancy_2d_bit_depth_minus1[ 32 ]=7
+pin_occupancy_MSB_align_flag[ 32 ]=true
+pin_lossy_occupancy_compression_threshold[ 32 ]=64
 pin_regions_count_minus1[ 32 ]=0
 pin_region_tile_id[ 32 ][ 0 ]=0
 pin_region_type_id_minus2[ 32 ][ 0 ]=0 (V3C_OVD)
 pin_region_top_left_x[ 32 ][ 0 ]=0
 pin_region_top_left_y[ 32 ][ 0 ]=0
 pin_region_width_minus1[ 32 ][ 0 ]=0
+pin_region_height_minus1[ 32 ][ 0 ]=0
 pin_region_unpack_top_left_x[ 32 ][ 0 ]=0
 pin_region_unpack_top_left_y[ 32 ][ 0 ]=0
-pin_region_height_minus1[ 32 ][ 0 ]=0
-pin_region_map_index[ 32 ][ 0 ]=0
 pin_region_rotation_flag[ 32 ][ 0 ]=false
 vme_geometry_scale_enabled_flag=false
 vme_embedded_occupancy_enabled_flag=true
@@ -593,8 +702,7 @@ vps_extension_data_byte=2
 vps_extension_data_byte=250
 vps_extension_data_byte=15
 )");
-    const size_t expected_number_of_bytes = 40 + 15;
-    REQUIRE(byteCodingTest(vps, expected_number_of_bytes));
+    REQUIRE(byteCodingTest(vps, 57));
   }
 
   SECTION("Example 3 for mpi") {

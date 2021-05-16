@@ -680,9 +680,10 @@ constexpr auto PackingInformation::pin_codec_id() const noexcept -> uint8_t {
   return m_pin_codec_id;
 }
 
-auto PackingInformation::pin_regions_count_minus1() const -> size_t {
-  VERIFY_V3CBITSTREAM(!m_pinRegions.empty());
-  return m_pinRegions.size() - 1U;
+auto PackingInformation::pin_regions_count_minus1() const -> uint8_t {
+  VERIFY_MIVBITSTREAM(m_pin_attribute_count || m_pin_geometry_present_flag ||
+                      m_pin_occupancy_present_flag);
+  return m_pin_regions_count_minus1;
 }
 
 auto PackingInformation::pin_region_tile_id(size_t i) const -> uint8_t {
@@ -729,14 +730,15 @@ auto PackingInformation::pin_region_unpack_top_left_y(size_t i) const -> uint16_
   return m_pinRegions[i].pin_region_unpack_top_left_y;
 }
 
-auto PackingInformation::pin_region_map_index(size_t i) const -> uint8_t {
-  VERIFY_V3CBITSTREAM(i <= pin_regions_count_minus1());
-  return m_pinRegions[i].pin_region_map_index;
-}
-
 auto PackingInformation::pin_region_rotation_flag(size_t i) const -> bool {
   VERIFY_V3CBITSTREAM(i <= pin_regions_count_minus1());
   return m_pinRegions[i].pin_region_rotation_flag;
+}
+
+auto PackingInformation::pin_region_map_index(size_t i) const -> uint8_t {
+  VERIFY_V3CBITSTREAM(i <= pin_regions_count_minus1());
+  VERIFY_V3CBITSTREAM(m_pinRegions[i].pin_region_map_index.has_value());
+  return m_pinRegions[i].pin_region_map_index.value();
 }
 
 auto PackingInformation::pin_region_auxiliary_data_flag(size_t i) const -> bool {
@@ -750,26 +752,147 @@ auto PackingInformation::pin_region_attr_type_id(size_t i) const -> uint8_t {
   return m_pinRegions[i].pin_region_attr_type_id.value();
 }
 
-auto PackingInformation::pin_region_attr_partitions_flag(size_t i) const -> bool {
-  VERIFY_V3CBITSTREAM(i <= pin_regions_count_minus1() &&
-                      m_pinRegions[i].pin_region_attr_partitions_flag);
-  return m_pinRegions[i].pin_region_attr_partitions_flag.value();
-}
-
 auto PackingInformation::pin_region_attr_partition_index(size_t i) const -> uint8_t {
   VERIFY_V3CBITSTREAM(i <= pin_regions_count_minus1() &&
                       m_pinRegions[i].pin_region_attr_partition_index);
   return m_pinRegions[i].pin_region_attr_partition_index.value();
 }
 
-auto PackingInformation::pin_region_attr_partitions_minus1(size_t i) const -> uint8_t {
-  VERIFY_V3CBITSTREAM(i <= pin_regions_count_minus1() &&
-                      m_pinRegions[i].pin_region_attr_partitions_minus1);
-  return m_pinRegions[i].pin_region_attr_partitions_minus1.value();
+auto PackingInformation::pin_occupancy_present_flag() const -> bool {
+  return m_pin_occupancy_present_flag;
+}
+
+auto PackingInformation::pin_geometry_present_flag() const -> bool {
+  return m_pin_geometry_present_flag;
+}
+
+auto PackingInformation::pin_attribute_present_flag() const -> bool {
+  return m_pin_attribute_present_flag;
+}
+
+auto PackingInformation::pin_occupancy_2d_bit_depth_minus1() const -> uint8_t {
+  VERIFY_MIVBITSTREAM(m_pin_occupancy_2d_bit_depth_minus1.has_value());
+  return *m_pin_occupancy_2d_bit_depth_minus1;
+}
+
+auto PackingInformation::pin_occupancy_MSB_align_flag() const -> bool {
+  VERIFY_MIVBITSTREAM(m_pin_occupancy_MSB_align_flag.has_value());
+  return *m_pin_occupancy_MSB_align_flag;
+}
+
+auto PackingInformation::pin_lossy_occupancy_compression_threshold() const -> uint8_t {
+  VERIFY_MIVBITSTREAM(m_pin_lossy_occupancy_compression_threshold.has_value());
+  return *m_pin_lossy_occupancy_compression_threshold;
+}
+
+auto PackingInformation::pin_geometry_2d_bit_depth_minus1() const -> uint8_t {
+  VERIFY_MIVBITSTREAM(m_pin_geometry_2d_bit_depth_minus1.has_value());
+  return *m_pin_geometry_2d_bit_depth_minus1;
+}
+
+auto PackingInformation::pin_geometry_MSB_align_flag() const -> bool {
+  VERIFY_MIVBITSTREAM(m_pin_geometry_MSB_align_flag.has_value());
+  return *m_pin_geometry_MSB_align_flag;
+}
+
+auto PackingInformation::pin_geometry_3d_coordinates_bit_depth_minus1() const -> uint8_t {
+  VERIFY_MIVBITSTREAM(m_pin_geometry_3d_coordinates_bit_depth_minus1.has_value());
+  return *m_pin_geometry_3d_coordinates_bit_depth_minus1;
+}
+
+auto PackingInformation::pin_attribute_count() const -> uint8_t {
+  VERIFY_MIVBITSTREAM(m_pin_attribute_count.has_value());
+  return *m_pin_attribute_count;
+}
+
+auto PackingInformation::pin_attribute_type_id(size_t i) const -> AiAttributeTypeId {
+  VERIFY_MIVBITSTREAM(m_pinAttributeInformation.has_value());
+  PRECONDITION(i < m_pinAttributeInformation.value().size());
+  return m_pinAttributeInformation->at(i).pin_attribute_type_id;
+}
+
+auto PackingInformation::pin_attribute_2d_bit_depth_minus1(size_t i) const -> uint8_t {
+  VERIFY_MIVBITSTREAM(m_pinAttributeInformation.has_value());
+  PRECONDITION(i < m_pinAttributeInformation.value().size());
+  return m_pinAttributeInformation->at(i).pin_attribute_2d_bit_depth_minus1;
+}
+
+auto PackingInformation::pin_attribute_MSB_align_flag(size_t i) const -> bool {
+  VERIFY_MIVBITSTREAM(m_pinAttributeInformation.has_value());
+  PRECONDITION(i < m_pinAttributeInformation.value().size());
+  return m_pinAttributeInformation->at(i).pin_attribute_MSB_align_flag;
+}
+
+auto PackingInformation::pin_attribute_map_absolute_coding_persistence_flag(size_t i) const
+    -> bool {
+  VERIFY_MIVBITSTREAM(m_pinAttributeInformation.has_value());
+  PRECONDITION(i < m_pinAttributeInformation.value().size());
+  return m_pinAttributeInformation->at(i).pin_attribute_map_absolute_coding_persistence_flag;
+}
+
+auto PackingInformation::pin_attribute_dimension_minus1(size_t i) const -> uint8_t {
+  VERIFY_MIVBITSTREAM(m_pinAttributeInformation.has_value());
+  PRECONDITION(i < m_pinAttributeInformation.value().size());
+  return m_pinAttributeInformation->at(i).pin_attribute_dimension_minus1;
+}
+
+auto PackingInformation::pin_attribute_dimension_partitions_minus1(size_t i) const -> uint8_t {
+  VERIFY_MIVBITSTREAM(m_pinAttributeInformation.has_value());
+  PRECONDITION(i < m_pinAttributeInformation.value().size());
+  return *m_pinAttributeInformation->at(i).pin_attribute_dimension_partitions_minus1;
+}
+
+auto PackingInformation::pin_attribute_partition_channels_minus1(size_t i, uint8_t l) const
+    -> uint8_t {
+  VERIFY_MIVBITSTREAM(m_pinAttributeInformation.has_value());
+  PRECONDITION(i < m_pinAttributeInformation.value().size());
+  return m_pinAttributeInformation->at(i).pin_attribute_partition_channels_minus1->at(l);
 }
 
 auto PackingInformation::printTo(std::ostream &stream, const AtlasId &j) const -> std::ostream & {
   fmt::print(stream, "pin_codec_id[ {} ]={}\n", j, pin_codec_id());
+  fmt::print(stream, "pin_occupancy_present_flag[ {} ]={}\n", j, pin_occupancy_present_flag());
+  fmt::print(stream, "pin_geometry_present_flag[ {} ]={}\n", j, pin_geometry_present_flag());
+  fmt::print(stream, "pin_attribute_present_flag[ {} ]={}\n", j, pin_attribute_present_flag());
+  if (pin_occupancy_present_flag()) {
+    fmt::print(stream, "pin_occupancy_2d_bit_depth_minus1[ {} ]={}\n", j,
+               pin_occupancy_2d_bit_depth_minus1());
+    fmt::print(stream, "pin_occupancy_MSB_align_flag[ {} ]={}\n", j,
+               pin_occupancy_MSB_align_flag());
+    fmt::print(stream, "pin_lossy_occupancy_compression_threshold[ {} ]={}\n", j,
+               pin_lossy_occupancy_compression_threshold());
+  }
+  if (pin_geometry_present_flag()) {
+    fmt::print(stream, "pin_geometry_2d_bit_depth_minus1[ {} ]={}\n", j,
+               pin_geometry_2d_bit_depth_minus1());
+    fmt::print(stream, "pin_geometry_MSB_align_flag[ {} ]={}\n", j, pin_geometry_MSB_align_flag());
+    fmt::print(stream, "pin_geometry_3d_coordinates_bit_depth_minus1[ {} ]={}\n", j,
+               pin_geometry_3d_coordinates_bit_depth_minus1());
+  }
+  if (pin_attribute_present_flag()) {
+    fmt::print(stream, "pin_attribute_count[ {} ]={}\n", j, pin_attribute_count());
+    for (size_t i = 0; i < pin_attribute_count(); i++) {
+      fmt::print(stream, "pin_attribute_type_id[ {} ][ {} ]={}\n", j, i, pin_attribute_type_id(i));
+      fmt::print(stream, "pin_attribute_2d_bit_depth_minus1[ {} ][ {} ]={}\n", j, i,
+                 pin_attribute_2d_bit_depth_minus1(i));
+      fmt::print(stream, "pin_attribute_MSB_align_flag[ {} ][ {} ]={}\n", j, i,
+                 pin_attribute_MSB_align_flag(i));
+      fmt::print(stream, "pin_attribute_map_absolute_coding_persistence_flag[ {} ][ {} ]={}\n", j,
+                 i, pin_attribute_map_absolute_coding_persistence_flag(i));
+      fmt::print(stream, "pin_attribute_dimension_minus1[ {} ][ {} ]={}\n", j, i,
+                 pin_attribute_dimension_minus1(i));
+      if (pin_attribute_dimension_minus1(i) > 0) {
+        fmt::print(stream, "pin_attribute_dimension_partitions_minus1[ {} ][ {} ]={}\n", j, i,
+                   pin_attribute_dimension_partitions_minus1(i));
+        auto l = pin_attribute_dimension_partitions_minus1(i);
+        for (uint8_t m = 0; m < l; m++) {
+          fmt::print(stream, "pin_attribute_partition_channels_minus1[ {} ][ {} ] [ {} ]={}\n", j,
+                     i, l, pin_attribute_partition_channels_minus1(i, static_cast<uint8_t>(l)));
+        }
+      }
+    }
+  }
+
   fmt::print(stream, "pin_regions_count_minus1[ {} ]={}\n", j, pin_regions_count_minus1());
   for (size_t i = 0; i <= pin_regions_count_minus1(); ++i) {
     fmt::print(stream, "pin_region_tile_id[ {} ][ {} ]={}\n", j, i, pin_region_tile_id(i));
@@ -779,31 +902,25 @@ auto PackingInformation::printTo(std::ostream &stream, const AtlasId &j) const -
     fmt::print(stream, "pin_region_top_left_y[ {} ][ {} ]={}\n", j, i, pin_region_top_left_y(i));
     fmt::print(stream, "pin_region_width_minus1[ {} ][ {} ]={}\n", j, i,
                pin_region_width_minus1(i));
+    fmt::print(stream, "pin_region_height_minus1[ {} ][ {} ]={}\n", j, i,
+               pin_region_height_minus1(i));
     fmt::print(stream, "pin_region_unpack_top_left_x[ {} ][ {} ]={}\n", j, i,
                pin_region_unpack_top_left_x(i));
     fmt::print(stream, "pin_region_unpack_top_left_y[ {} ][ {} ]={}\n", j, i,
                pin_region_unpack_top_left_y(i));
-    fmt::print(stream, "pin_region_height_minus1[ {} ][ {} ]={}\n", j, i,
-               pin_region_height_minus1(i));
-    fmt::print(stream, "pin_region_map_index[ {} ][ {} ]={}\n", j, i, pin_region_map_index(i));
     fmt::print(stream, "pin_region_rotation_flag[ {} ][ {} ]={}\n", j, i,
                pin_region_rotation_flag(i));
     if (pinRegionTypeId(i) == VuhUnitType::V3C_AVD || pinRegionTypeId(i) == VuhUnitType::V3C_GVD) {
+      fmt::print(stream, "pin_region_map_index[ {} ][ {} ]={}\n", j, i, pin_region_map_index(i));
       fmt::print(stream, "pin_region_auxiliary_data_flag[ {} ][ {} ]={}\n", j, i,
                  pin_region_auxiliary_data_flag(i));
     }
     if (pinRegionTypeId(i) == VuhUnitType::V3C_AVD) {
       fmt::print(stream, "pin_region_attr_type_id[ {} ][ {} ]={}\n", j, i,
                  pin_region_attr_type_id(i));
-      fmt::print(stream, "pin_region_attr_partitions_flag[ {} ][ {} ]={}\n", j, i,
-                 pin_region_attr_partitions_flag(i));
-      if (pin_region_attr_partitions_flag(i)) {
+      if (pin_attribute_dimension_minus1(i) > 0) {
         fmt::print(stream, "pin_region_attr_partition_index[ {} ][ {} ]={}\n", j, i,
                    pin_region_attr_partition_index(i));
-        if (pin_region_attr_partition_index(i) == 0) {
-          fmt::print(stream, "pin_region_attr_partitions_minus1[ {} ][ {} ]={}\n", j, i,
-                     pin_region_attr_partitions_minus1(i));
-        }
       }
     }
   }
@@ -811,7 +928,21 @@ auto PackingInformation::printTo(std::ostream &stream, const AtlasId &j) const -
 }
 
 auto PackingInformation::operator==(const PackingInformation &other) const noexcept -> bool {
-  return (m_pin_codec_id == other.m_pin_codec_id) && (m_pinRegions == other.m_pinRegions);
+  return (m_pin_codec_id == other.m_pin_codec_id) &&
+         (m_pin_occupancy_present_flag == other.m_pin_occupancy_present_flag) &&
+         (m_pin_geometry_present_flag == other.m_pin_geometry_present_flag) &&
+         (m_pin_attribute_present_flag == other.m_pin_attribute_present_flag) &&
+         (m_pin_occupancy_2d_bit_depth_minus1 == other.m_pin_occupancy_2d_bit_depth_minus1) &&
+         (m_pin_occupancy_MSB_align_flag == other.m_pin_occupancy_MSB_align_flag) &&
+         (m_pin_lossy_occupancy_compression_threshold ==
+          other.m_pin_lossy_occupancy_compression_threshold) &&
+         (m_pin_geometry_2d_bit_depth_minus1 == other.m_pin_geometry_2d_bit_depth_minus1) &&
+         (m_pin_geometry_MSB_align_flag == other.m_pin_geometry_MSB_align_flag) &&
+         (m_pin_geometry_3d_coordinates_bit_depth_minus1 ==
+          other.m_pin_geometry_3d_coordinates_bit_depth_minus1) &&
+         (m_pin_attribute_count == other.m_pin_attribute_count) &&
+         (m_pinAttributeInformation == other.m_pinAttributeInformation) &&
+         (m_pinRegions == other.m_pinRegions);
 }
 
 auto PackingInformation::operator!=(const PackingInformation &other) const noexcept -> bool {
@@ -821,7 +952,50 @@ auto PackingInformation::operator!=(const PackingInformation &other) const noexc
 auto PackingInformation::decodeFrom(Common::InputBitstream &bitstream) -> PackingInformation {
   PackingInformation result{};
   result.pin_codec_id(bitstream.getUint8());
-  result.pin_regions_count_minus1(bitstream.getUExpGolomb<size_t>());
+  result.pin_occupancy_present_flag(bitstream.getFlag());
+  result.pin_geometry_present_flag(bitstream.getFlag());
+  result.pin_attribute_present_flag(bitstream.getFlag());
+
+  if (result.pin_occupancy_present_flag()) {
+    result.pin_occupancy_2d_bit_depth_minus1(bitstream.readBits<uint8_t>(5));
+    result.pin_occupancy_MSB_align_flag(bitstream.getFlag());
+    result.pin_lossy_occupancy_compression_threshold(bitstream.getUint8());
+  }
+  if (result.pin_geometry_present_flag()) {
+    result.pin_geometry_2d_bit_depth_minus1(bitstream.readBits<uint8_t>(5));
+    result.pin_geometry_MSB_align_flag(bitstream.getFlag());
+    result.pin_geometry_3d_coordinates_bit_depth_minus1(bitstream.readBits<uint8_t>(5));
+  }
+
+  if (result.pin_attribute_present_flag()) {
+    result.pin_attribute_count(bitstream.readBits<uint8_t>(4));
+    for (size_t i = 0; i < result.pin_attribute_count(); i++) {
+      result.pin_attribute_type_id(i, bitstream.readBits<AiAttributeTypeId>(4));
+      result.pin_attribute_2d_bit_depth_minus1(i, bitstream.readBits<uint8_t>(5));
+      result.pin_attribute_MSB_align_flag(i, bitstream.getFlag());
+      result.pin_attribute_map_absolute_coding_persistence_flag(i, bitstream.getFlag());
+      result.pin_attribute_dimension_minus1(i, bitstream.readBits<uint8_t>(6));
+      if (result.pin_attribute_dimension_minus1(i) > 0) {
+        result.pin_attribute_dimension_partitions_minus1(i, bitstream.readBits<uint8_t>(6));
+        auto remainingDimensions = result.pin_attribute_dimension_minus1(i);
+        const auto l = result.pin_attribute_dimension_partitions_minus1(i);
+        for (uint8_t m = 0; m < l; m++) {
+          if (l - m == remainingDimensions) {
+            result.pin_attribute_partition_channels_minus1(i, static_cast<uint8_t>(l), 0);
+          } else {
+            result.pin_attribute_partition_channels_minus1(i, static_cast<uint8_t>(l),
+                                                           bitstream.getUExpGolomb<uint8_t>());
+            remainingDimensions -= static_cast<uint8_t>(
+                result.pin_attribute_partition_channels_minus1(i, static_cast<uint8_t>(l)) + 1);
+          }
+        }
+        result.pin_attribute_partition_channels_minus1(i, static_cast<uint8_t>(l),
+                                                       remainingDimensions);
+      }
+    }
+  }
+
+  result.pin_regions_count_minus1(bitstream.getUExpGolomb<uint8_t>());
   for (size_t i = 0; i <= result.pin_regions_count_minus1(); ++i) {
     result.pin_region_tile_id(i, bitstream.getUint8());
     result.pin_region_type_id_minus2(i, bitstream.readBits<uint8_t>(2));
@@ -831,20 +1005,16 @@ auto PackingInformation::decodeFrom(Common::InputBitstream &bitstream) -> Packin
     result.pin_region_height_minus1(i, bitstream.getUint16());
     result.pin_region_unpack_top_left_x(i, bitstream.getUint16());
     result.pin_region_unpack_top_left_y(i, bitstream.getUint16());
-    result.pin_region_map_index(i, bitstream.readBits<uint8_t>(4));
     result.pin_region_rotation_flag(i, bitstream.getFlag());
     if (result.pinRegionTypeId(i) == VuhUnitType::V3C_AVD ||
         result.pinRegionTypeId(i) == VuhUnitType::V3C_GVD) {
+      result.pin_region_map_index(i, bitstream.readBits<uint8_t>(4));
       result.pin_region_auxiliary_data_flag(i, bitstream.getFlag());
     }
     if (result.pinRegionTypeId(i) == VuhUnitType::V3C_AVD) {
       result.pin_region_attr_type_id(i, bitstream.readBits<uint8_t>(4));
-      result.pin_region_attr_partitions_flag(i, bitstream.getFlag());
-      if (result.pin_region_attr_partitions_flag(i)) {
+      if (result.pin_attribute_dimension_minus1(i) > 0) {
         result.pin_region_attr_partition_index(i, bitstream.readBits<uint8_t>(5));
-        if (result.pin_region_attr_partition_index(i) == 0) {
-          result.pin_region_attr_partitions_minus1(i, bitstream.readBits<uint8_t>(6));
-        }
       }
     }
   }
@@ -853,6 +1023,46 @@ auto PackingInformation::decodeFrom(Common::InputBitstream &bitstream) -> Packin
 
 void PackingInformation::encodeTo(Common::OutputBitstream &bitstream) const {
   bitstream.putUint8(pin_codec_id());
+  bitstream.putFlag(pin_occupancy_present_flag());
+  bitstream.putFlag(pin_geometry_present_flag());
+  bitstream.putFlag(pin_attribute_present_flag());
+  if (pin_occupancy_present_flag()) {
+    bitstream.writeBits(pin_occupancy_2d_bit_depth_minus1(), 5);
+    bitstream.putFlag(pin_occupancy_MSB_align_flag());
+    bitstream.putUint8(pin_lossy_occupancy_compression_threshold());
+  }
+  if (pin_geometry_present_flag()) {
+    bitstream.writeBits(pin_geometry_2d_bit_depth_minus1(), 5);
+    bitstream.putFlag(pin_geometry_MSB_align_flag());
+    bitstream.writeBits(pin_geometry_3d_coordinates_bit_depth_minus1(), 5);
+  }
+  if (pin_attribute_present_flag()) {
+    bitstream.writeBits(pin_attribute_count(), 4);
+    for (size_t i = 0; i < pin_attribute_count(); i++) {
+      bitstream.writeBits(pin_attribute_type_id(i), 4);
+      bitstream.writeBits(pin_attribute_2d_bit_depth_minus1(i), 5);
+      bitstream.putFlag(pin_attribute_MSB_align_flag(i));
+      bitstream.putFlag(pin_attribute_map_absolute_coding_persistence_flag(i));
+      bitstream.writeBits(pin_attribute_dimension_minus1(i), 6);
+      if (pin_attribute_dimension_minus1(i) > 0) {
+        bitstream.writeBits(pin_attribute_dimension_partitions_minus1(i), 6);
+        auto remainingDimensions = pin_attribute_dimension_minus1(i);
+        const auto l = pin_attribute_dimension_partitions_minus1(i);
+        for (uint8_t m = 0; m < l; m++) {
+          if (l - m == remainingDimensions) {
+            // pin_attribute_partition_channels_minus1(i, static_cast<uint8_t>(l), 0);
+          } else {
+            bitstream.putUExpGolomb(
+                pin_attribute_partition_channels_minus1(i, static_cast<uint8_t>(l)));
+            remainingDimensions -= static_cast<uint8_t>(
+                pin_attribute_partition_channels_minus1(i, static_cast<uint8_t>(l)) + 1);
+          }
+        }
+        // pin_attribute_partition_channels_minus1(i, static_cast<uint8_t>(l), remainingDimensions);
+      }
+    }
+  }
+
   bitstream.putUExpGolomb(pin_regions_count_minus1());
   for (size_t i = 0; i <= pin_regions_count_minus1(); ++i) {
     bitstream.putUint8(pin_region_tile_id(i));
@@ -863,20 +1073,17 @@ void PackingInformation::encodeTo(Common::OutputBitstream &bitstream) const {
     bitstream.putUint16(pin_region_unpack_top_left_x(i));
     bitstream.putUint16(pin_region_unpack_top_left_y(i));
     bitstream.putUint16(pin_region_height_minus1(i));
-    bitstream.writeBits(pin_region_map_index(i), 4);
     bitstream.putFlag(pin_region_rotation_flag(i));
+
     if ((pinRegionTypeId(i) == VuhUnitType::V3C_AVD) ||
         pinRegionTypeId(i) == VuhUnitType::V3C_GVD) {
+      bitstream.writeBits(pin_region_map_index(i), 4);
       bitstream.putFlag(pin_region_auxiliary_data_flag(i));
     }
     if (pinRegionTypeId(i) == VuhUnitType::V3C_AVD) {
       bitstream.writeBits(pin_region_attr_type_id(i), 4);
-      bitstream.putFlag(pin_region_attr_partitions_flag(i));
-      if (pin_region_attr_partitions_flag(i)) {
+      if (pin_attribute_dimension_minus1(i) > 0) {
         bitstream.writeBits(pin_region_attr_partition_index(i), 5);
-        if (pin_region_attr_partition_index(i) == 0) {
-          bitstream.writeBits(pin_region_attr_partitions_minus1(i), 6);
-        }
       }
     }
   }

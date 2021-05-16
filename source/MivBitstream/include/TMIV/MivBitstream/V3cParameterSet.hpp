@@ -319,7 +319,23 @@ constexpr auto PackingInformation::pin_codec_id(uint8_t value) noexcept -> auto 
   return *this;
 }
 
-inline auto PackingInformation::pin_regions_count_minus1(size_t value) -> auto & {
+inline auto PackingInformation::pin_occupancy_present_flag(bool value) -> auto & {
+  m_pin_occupancy_present_flag = value;
+  return *this;
+}
+
+inline auto PackingInformation::pin_geometry_present_flag(bool value) -> auto & {
+  m_pin_geometry_present_flag = value;
+  return *this;
+}
+
+inline auto PackingInformation::pin_attribute_present_flag(bool value) -> auto & {
+  m_pin_attribute_present_flag = value;
+  return *this;
+}
+
+inline auto PackingInformation::pin_regions_count_minus1(uint8_t value) -> auto & {
+  m_pin_regions_count_minus1 = value;
   m_pinRegions = std::vector<PinRegion>(value + 1U);
   return *this;
 }
@@ -332,6 +348,15 @@ inline auto PackingInformation::pin_region_tile_id(size_t i, uint8_t value) -> a
 
 inline auto PackingInformation::pin_region_type_id_minus2(size_t i, uint8_t value) -> auto & {
   VERIFY_V3CBITSTREAM(i <= pin_regions_count_minus1());
+  if (value + 2 == VuhUnitType::V3C_AVD) {
+    VERIFY_V3CBITSTREAM(pin_attribute_present_flag());
+  }
+  if (value + 2 == VuhUnitType::V3C_GVD) {
+    VERIFY_V3CBITSTREAM(pin_geometry_present_flag());
+  }
+  if (value + 2 == VuhUnitType::V3C_OVD) {
+    VERIFY_V3CBITSTREAM(pin_occupancy_present_flag());
+  }
   m_pinRegions[i].pin_region_type_id_minus2 = value;
   return *this;
 }
@@ -402,22 +427,109 @@ inline auto PackingInformation::pin_region_attr_type_id(size_t i, uint8_t value)
   return *this;
 }
 
-inline auto PackingInformation::pin_region_attr_partitions_flag(size_t i, bool value) -> auto & {
-  VERIFY_V3CBITSTREAM(i <= pin_regions_count_minus1());
-  m_pinRegions[i].pin_region_attr_partitions_flag = value;
-  return *this;
-}
-
 inline auto PackingInformation::pin_region_attr_partition_index(size_t i, uint8_t value) -> auto & {
   VERIFY_V3CBITSTREAM(i <= pin_regions_count_minus1());
   m_pinRegions[i].pin_region_attr_partition_index = value;
   return *this;
 }
 
-inline auto PackingInformation::pin_region_attr_partitions_minus1(size_t i, uint8_t value)
+inline auto PackingInformation::pin_occupancy_2d_bit_depth_minus1(uint8_t value) -> auto & {
+  m_pin_occupancy_2d_bit_depth_minus1 = value;
+  return *this;
+}
+
+inline auto PackingInformation::pin_occupancy_MSB_align_flag(bool value) -> auto & {
+  m_pin_occupancy_MSB_align_flag = value;
+  return *this;
+}
+
+inline auto PackingInformation::pin_lossy_occupancy_compression_threshold(uint8_t value) -> auto & {
+  m_pin_lossy_occupancy_compression_threshold = value;
+  return *this;
+}
+
+inline auto PackingInformation::pin_geometry_2d_bit_depth_minus1(uint8_t value) -> auto & {
+  m_pin_geometry_2d_bit_depth_minus1 = value;
+  return *this;
+}
+
+inline auto PackingInformation::pin_geometry_MSB_align_flag(bool value) -> auto & {
+  m_pin_geometry_MSB_align_flag = value;
+  return *this;
+}
+
+inline auto PackingInformation::pin_geometry_3d_coordinates_bit_depth_minus1(uint8_t value)
     -> auto & {
-  VERIFY_V3CBITSTREAM(i <= pin_regions_count_minus1());
-  m_pinRegions[i].pin_region_attr_partitions_minus1 = value;
+  m_pin_geometry_3d_coordinates_bit_depth_minus1 = value;
+  return *this;
+}
+
+inline auto PackingInformation::pin_attribute_count(uint8_t value) -> auto & {
+  m_pin_attribute_count = value;
+  m_pinAttributeInformation = std::vector<PinAttributeInformation>(value);
+  return *this;
+}
+
+inline auto PackingInformation::pin_attribute_type_id(size_t i, AiAttributeTypeId value) -> auto & {
+  VERIFY_V3CBITSTREAM(i < pin_attribute_count());
+  VERIFY_V3CBITSTREAM(m_pinAttributeInformation.has_value());
+  Common::at(m_pinAttributeInformation.value(), i).pin_attribute_type_id = value;
+  return *this;
+}
+
+inline auto PackingInformation::pin_attribute_2d_bit_depth_minus1(size_t i, uint8_t value)
+    -> auto & {
+  VERIFY_V3CBITSTREAM(i < pin_attribute_count());
+  VERIFY_V3CBITSTREAM(m_pinAttributeInformation.has_value());
+  Common::at(m_pinAttributeInformation.value(), i).pin_attribute_2d_bit_depth_minus1 = value;
+  return *this;
+}
+
+inline auto PackingInformation::pin_attribute_MSB_align_flag(size_t i, bool value) -> auto & {
+  VERIFY_V3CBITSTREAM(i < pin_attribute_count());
+  VERIFY_V3CBITSTREAM(m_pinAttributeInformation.has_value());
+  Common::at(m_pinAttributeInformation.value(), i).pin_attribute_MSB_align_flag = value;
+  return *this;
+}
+
+inline auto PackingInformation::pin_attribute_map_absolute_coding_persistence_flag(size_t i,
+                                                                                   bool value)
+    -> auto & {
+  VERIFY_V3CBITSTREAM(i < pin_attribute_count());
+  VERIFY_V3CBITSTREAM(m_pinAttributeInformation.has_value());
+  Common::at(m_pinAttributeInformation.value(), i)
+      .pin_attribute_map_absolute_coding_persistence_flag = value;
+  return *this;
+}
+
+inline auto PackingInformation::pin_attribute_dimension_minus1(size_t i, uint8_t value) -> auto & {
+  VERIFY_V3CBITSTREAM(i < pin_attribute_count());
+  VERIFY_V3CBITSTREAM(m_pinAttributeInformation.has_value());
+  Common::at(m_pinAttributeInformation.value(), i).pin_attribute_dimension_minus1 = value;
+  return *this;
+}
+
+inline auto PackingInformation::pin_attribute_dimension_partitions_minus1(size_t i, uint8_t value)
+    -> auto & {
+  VERIFY_V3CBITSTREAM(i < pin_attribute_count());
+  VERIFY_V3CBITSTREAM(m_pinAttributeInformation.has_value());
+  Common::at(m_pinAttributeInformation.value(), i).pin_attribute_dimension_partitions_minus1 =
+      value;
+  Common::at(m_pinAttributeInformation.value(), i).pin_attribute_partition_channels_minus1 =
+      std::vector<uint8_t>(value + 1U);
+  return *this;
+}
+
+inline auto PackingInformation::pin_attribute_partition_channels_minus1(size_t i, uint8_t l,
+                                                                        uint8_t value) -> auto & {
+  VERIFY_V3CBITSTREAM(m_pinAttributeInformation.has_value());
+  VERIFY_V3CBITSTREAM(i < pin_attribute_count());
+  VERIFY_V3CBITSTREAM(l < Common::at(m_pinAttributeInformation.value(), i)
+                              .pin_attribute_partition_channels_minus1.value()
+                              .size());
+  Common::at(Common::at(m_pinAttributeInformation.value(), i)
+                 .pin_attribute_partition_channels_minus1.value(),
+             l) = value;
   return *this;
 }
 

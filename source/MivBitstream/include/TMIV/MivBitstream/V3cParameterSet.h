@@ -386,13 +386,11 @@ struct PinRegion {
            (pin_region_height_minus1 == other.pin_region_height_minus1) &&
            (pin_region_unpack_top_left_x == other.pin_region_unpack_top_left_x) &&
            (pin_region_unpack_top_left_y == other.pin_region_unpack_top_left_y) &&
-           (pin_region_map_index == other.pin_region_map_index) &&
            (pin_region_rotation_flag == other.pin_region_rotation_flag) &&
+           (pin_region_map_index == other.pin_region_map_index) &&
            (pin_region_auxiliary_data_flag == other.pin_region_auxiliary_data_flag) &&
            (pin_region_attr_type_id == other.pin_region_attr_type_id) &&
-           (pin_region_attr_partitions_flag == other.pin_region_attr_partitions_flag) &&
-           (pin_region_attr_partition_index == other.pin_region_attr_partition_index) &&
-           (pin_region_attr_partitions_minus1 == other.pin_region_attr_partitions_minus1);
+           (pin_region_attr_partition_index == other.pin_region_attr_partition_index);
   }
 
   uint8_t pin_region_tile_id{};
@@ -403,13 +401,34 @@ struct PinRegion {
   uint16_t pin_region_height_minus1{};
   uint16_t pin_region_unpack_top_left_x{};
   uint16_t pin_region_unpack_top_left_y{};
-  uint8_t pin_region_map_index{};
   bool pin_region_rotation_flag{};
+  std::optional<uint8_t> pin_region_map_index{};
   std::optional<bool> pin_region_auxiliary_data_flag{};
   std::optional<uint8_t> pin_region_attr_type_id{};
-  std::optional<bool> pin_region_attr_partitions_flag{};
   std::optional<uint8_t> pin_region_attr_partition_index{};
-  std::optional<uint8_t> pin_region_attr_partitions_minus1{};
+};
+
+struct PinAttributeInformation {
+  auto operator==(const PinAttributeInformation &other) const noexcept -> bool {
+    return (pin_attribute_type_id == other.pin_attribute_type_id) &&
+           (pin_attribute_2d_bit_depth_minus1 == other.pin_attribute_2d_bit_depth_minus1) &&
+           (pin_attribute_MSB_align_flag == other.pin_attribute_MSB_align_flag) &&
+           (pin_attribute_map_absolute_coding_persistence_flag ==
+            other.pin_attribute_map_absolute_coding_persistence_flag) &&
+           (pin_attribute_dimension_minus1 == other.pin_attribute_dimension_minus1) &&
+           (pin_attribute_dimension_partitions_minus1 ==
+            other.pin_attribute_dimension_partitions_minus1) &&
+           (pin_attribute_partition_channels_minus1 ==
+            other.pin_attribute_partition_channels_minus1);
+  }
+
+  AiAttributeTypeId pin_attribute_type_id{};
+  uint8_t pin_attribute_2d_bit_depth_minus1{};
+  bool pin_attribute_MSB_align_flag{};
+  bool pin_attribute_map_absolute_coding_persistence_flag{};
+  uint8_t pin_attribute_dimension_minus1{};
+  std::optional<uint8_t> pin_attribute_dimension_partitions_minus1{};
+  std::optional<std::vector<uint8_t>> pin_attribute_partition_channels_minus1{};
 };
 
 // 23090-5: packing_information( j )
@@ -419,7 +438,24 @@ struct PinRegion {
 class PackingInformation {
 public:
   [[nodiscard]] constexpr auto pin_codec_id() const noexcept -> uint8_t;
-  [[nodiscard]] auto pin_regions_count_minus1() const -> size_t;
+  [[nodiscard]] auto pin_occupancy_present_flag() const -> bool;
+  [[nodiscard]] auto pin_geometry_present_flag() const -> bool;
+  [[nodiscard]] auto pin_attribute_present_flag() const -> bool;
+  [[nodiscard]] auto pin_occupancy_2d_bit_depth_minus1() const -> uint8_t;
+  [[nodiscard]] auto pin_occupancy_MSB_align_flag() const -> bool;
+  [[nodiscard]] auto pin_lossy_occupancy_compression_threshold() const -> uint8_t;
+  [[nodiscard]] auto pin_geometry_2d_bit_depth_minus1() const -> uint8_t;
+  [[nodiscard]] auto pin_geometry_MSB_align_flag() const -> bool;
+  [[nodiscard]] auto pin_geometry_3d_coordinates_bit_depth_minus1() const -> uint8_t;
+  [[nodiscard]] auto pin_attribute_count() const -> uint8_t;
+  [[nodiscard]] auto pin_attribute_type_id(size_t i) const -> AiAttributeTypeId;
+  [[nodiscard]] auto pin_attribute_2d_bit_depth_minus1(size_t i) const -> uint8_t;
+  [[nodiscard]] auto pin_attribute_MSB_align_flag(size_t i) const -> bool;
+  [[nodiscard]] auto pin_attribute_map_absolute_coding_persistence_flag(size_t i) const -> bool;
+  [[nodiscard]] auto pin_attribute_dimension_minus1(size_t i) const -> uint8_t;
+  [[nodiscard]] auto pin_attribute_dimension_partitions_minus1(size_t i) const -> uint8_t;
+  [[nodiscard]] auto pin_attribute_partition_channels_minus1(size_t i, uint8_t l) const -> uint8_t;
+  [[nodiscard]] auto pin_regions_count_minus1() const -> uint8_t;
   [[nodiscard]] auto pin_region_tile_id(size_t i) const -> uint8_t;
   [[nodiscard]] auto pin_region_type_id_minus2(size_t i) const -> uint8_t;
   [[nodiscard]] auto pinRegionTypeId(size_t i) const -> VuhUnitType;
@@ -429,16 +465,32 @@ public:
   [[nodiscard]] auto pin_region_height_minus1(size_t i) const -> uint16_t;
   [[nodiscard]] auto pin_region_unpack_top_left_x(size_t i) const -> uint16_t;
   [[nodiscard]] auto pin_region_unpack_top_left_y(size_t i) const -> uint16_t;
-  [[nodiscard]] auto pin_region_map_index(size_t i) const -> uint8_t;
   [[nodiscard]] auto pin_region_rotation_flag(size_t i) const -> bool;
+  [[nodiscard]] auto pin_region_map_index(size_t i) const -> uint8_t;
   [[nodiscard]] auto pin_region_auxiliary_data_flag(size_t i) const -> bool;
   [[nodiscard]] auto pin_region_attr_type_id(size_t i) const -> uint8_t;
-  [[nodiscard]] auto pin_region_attr_partitions_flag(size_t i) const -> bool;
   [[nodiscard]] auto pin_region_attr_partition_index(size_t i) const -> uint8_t;
   [[nodiscard]] auto pin_region_attr_partitions_minus1(size_t i) const -> uint8_t;
 
   constexpr auto pin_codec_id(uint8_t value) noexcept -> auto &;
-  auto pin_regions_count_minus1(size_t value) -> auto &;
+  auto pin_occupancy_present_flag(bool value) -> auto &;
+  auto pin_geometry_present_flag(bool value) -> auto &;
+  auto pin_attribute_present_flag(bool value) -> auto &;
+  auto pin_occupancy_2d_bit_depth_minus1(uint8_t value) -> auto &;
+  auto pin_occupancy_MSB_align_flag(bool value) -> auto &;
+  auto pin_lossy_occupancy_compression_threshold(uint8_t value) -> auto &;
+  auto pin_geometry_2d_bit_depth_minus1(uint8_t value) -> auto &;
+  auto pin_geometry_MSB_align_flag(bool value) -> auto &;
+  auto pin_geometry_3d_coordinates_bit_depth_minus1(uint8_t value) -> auto &;
+  auto pin_attribute_count(uint8_t value) -> auto &;
+  auto pin_attribute_type_id(size_t i, AiAttributeTypeId value) -> auto &;
+  auto pin_attribute_2d_bit_depth_minus1(size_t i, uint8_t value) -> auto &;
+  auto pin_attribute_MSB_align_flag(size_t i, bool value) -> auto &;
+  auto pin_attribute_map_absolute_coding_persistence_flag(size_t i, bool value) -> auto &;
+  auto pin_attribute_dimension_minus1(size_t i, uint8_t value) -> auto &;
+  auto pin_attribute_dimension_partitions_minus1(size_t i, uint8_t value) -> auto &;
+  auto pin_attribute_partition_channels_minus1(size_t i, uint8_t l, uint8_t value) -> auto &;
+  auto pin_regions_count_minus1(uint8_t value) -> auto &;
   auto pin_region_tile_id(size_t i, uint8_t value) -> auto &;
   auto pin_region_type_id_minus2(size_t i, uint8_t value) -> auto &;
   auto pinRegionTypeId(size_t i, VuhUnitType value) -> auto &;
@@ -452,9 +504,7 @@ public:
   auto pin_region_rotation_flag(size_t i, bool value) -> auto &;
   auto pin_region_auxiliary_data_flag(size_t i, bool value) -> auto &;
   auto pin_region_attr_type_id(size_t i, uint8_t value) -> auto &;
-  auto pin_region_attr_partitions_flag(size_t i, bool value) -> auto &;
   auto pin_region_attr_partition_index(size_t i, uint8_t value) -> auto &;
-  auto pin_region_attr_partitions_minus1(size_t i, uint8_t value) -> auto &;
 
   auto printTo(std::ostream &stream, const AtlasId &j) const -> std::ostream &;
 
@@ -467,6 +517,18 @@ public:
 
 private:
   uint8_t m_pin_codec_id{};
+  bool m_pin_occupancy_present_flag{};
+  bool m_pin_geometry_present_flag{};
+  bool m_pin_attribute_present_flag{};
+  std::optional<uint8_t> m_pin_occupancy_2d_bit_depth_minus1{};
+  std::optional<bool> m_pin_occupancy_MSB_align_flag{};
+  std::optional<uint8_t> m_pin_lossy_occupancy_compression_threshold{};
+  std::optional<uint8_t> m_pin_geometry_2d_bit_depth_minus1{};
+  std::optional<bool> m_pin_geometry_MSB_align_flag{};
+  std::optional<uint8_t> m_pin_geometry_3d_coordinates_bit_depth_minus1{};
+  std::optional<uint8_t> m_pin_attribute_count{};
+  std::optional<std::vector<PinAttributeInformation>> m_pinAttributeInformation{};
+  uint8_t m_pin_regions_count_minus1{};
   std::vector<PinRegion> m_pinRegions{std::vector<PinRegion>(1U)};
 };
 

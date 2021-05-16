@@ -89,16 +89,21 @@ auto createVps(VpsContent vpsContent) {
   case VpsContent::with_auxiliary_video:
     vps.vps_auxiliary_video_present_flag(AtlasId{0}, true);
     break;
-  case VpsContent::two_atlases_one_with_packed_video:
+  case VpsContent::two_atlases_one_with_packed_video: {
+    PackingInformation packInfo{};
+    packInfo.pin_occupancy_present_flag(true)
+        .pin_occupancy_2d_bit_depth_minus1(7)
+        .pin_occupancy_MSB_align_flag(true)
+        .pin_lossy_occupancy_compression_threshold(64);
     vps.vps_atlas_count_minus1(1)
         .vps_atlas_id(1, AtlasId{1})
         .vps_extension_present_flag(true)
         .vps_packing_information_present_flag(true)
         .vps_packed_video_present_flag(AtlasId{0}, true)
-        .packing_information(AtlasId{0}, PackingInformation{})
+        .packing_information(AtlasId{0}, packInfo)
         .vps_geometry_video_present_flag(AtlasId{1}, true)
         .geometry_information(AtlasId{1}, GeometryInformation{});
-    break;
+  } break;
   case VpsContent::two_atlases_and_some_videos:
     AttributeInformation ai{};
     vps.vps_atlas_count_minus1(1)

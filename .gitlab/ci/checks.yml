@@ -53,4 +53,4 @@ no multi-line commit messages:
     - git fetch origin $CI_DEFAULT_BRANCH:main
     - NUM_COMMIT_MESSAGE_LINES=$(git log --pretty=format:%B main..HEAD | sed '/^\s*$/d' | grep -c "")
     - NUM_COMMITS=$(git rev-list --count main..HEAD)
-    - if [[ "$NUM_COMMIT_MESSAGE_LINES" -ne "$NUM_COMMITS" ]]; then echo "Don't use multi-line commits!"; fail; fi
+    - if [[ "$NUM_COMMIT_MESSAGE_LINES" -ne "$NUM_COMMITS" ]]; then echo "Merge requests with multi-line commit messages result in a wrong commit message on main. Please rewrite the commit message(s) to have only one line."; fail; fi

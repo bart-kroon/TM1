@@ -31,9 +31,14 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#ifndef TMIV_VIDEODECODER_VIDEODECODERFACTORY_H
+#define TMIV_VIDEODECODER_VIDEODECODERFACTORY_H
+
 #include <TMIV/VideoDecoder/IVideoDecoder.h>
 
 namespace TMIV::VideoDecoder {
 auto create(NalUnitSource source, MivBitstream::PtlProfileCodecGroupIdc codecGroupIdc)
     -> std::unique_ptr<IVideoDecoder>;
 } // namespace TMIV::VideoDecoder
+
+#endif

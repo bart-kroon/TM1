@@ -15,7 +15,7 @@ GCC 9 Release:
       -DLOCAL_FMT_DIR=/dependencies/fmt-7_0_3/
       -DLOCAL_HM_DIR=/dependencies/HM-16_16/
       -DLOCAL_VVDEC_DIR=/dependencies/vvdec-1_0_1/
-      -DLOCAL_VVENC_DIR=/dependencies/vvenc-0_2_0_0/
+      -DLOCAL_VVENC_DIR=/dependencies/vvenc-0_3_1_0/
       ..
     - make -j $(nproc)
     - make -j $(nproc) test
@@ -37,7 +37,7 @@ Clang 11 Debug:
       -DLOCAL_FMT_DIR=/dependencies/fmt-7_0_3/
       -DLOCAL_HM_DIR=/dependencies/HM-16_16/
       -DLOCAL_VVDEC_DIR=/dependencies/vvdec-1_0_1/
-      -DLOCAL_VVENC_DIR=/dependencies/vvenc-0_2_0_0/
+      -DLOCAL_VVENC_DIR=/dependencies/vvenc-0_3_1_0/
       ..
     - make -j $(nproc)
     - make -j $(nproc) test
@@ -55,7 +55,7 @@ Clang 11 Debug:
 
 VC 16 Release:
   stage: build
-  image: buildtools2019:2021.04.14
+  image: buildtools2019:2021.05.18
   tags: [ windows ]
   cache:
     paths:
@@ -73,7 +73,7 @@ VC 16 Release:
       -DLOCAL_FMT_DIR=/dependencies/fmt-7_0_3/
       -DLOCAL_HM_DIR=/dependencies/HM-16_16/
       -DLOCAL_VVDEC_DIR=/dependencies/vvdec-1_0_1/
-      -DLOCAL_VVENC_DIR=/dependencies/vvenc-0_2_0_0/
+      -DLOCAL_VVENC_DIR=/dependencies/vvenc-0_3_1_0/
       ..
     - 'cmake --build . --parallel --config Release --target ALL_BUILD'
     - 'cmake --build . --config Release --target RUN_TESTS'

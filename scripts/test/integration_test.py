@@ -278,7 +278,6 @@ class IntegrationTest:
             + ["-p", "configDirectory", "{1}/config", "-p", "inputDirectory", "{3}"]
             + ["-p", "outputDirectory", "{3}", "-n", "3", "-N", "3", "-s", "E"]
             + ["-r", "QP3", "-v", "v11", "-p", "outputLogPath", "{3}/A3/E/QP3/TMIV_A3_E_QP3.dec"]
-            + ["-p", "inputBitstreamPathFmt", "{3}/A3/E/QP3/TMIV_A3_E_QP3.bit"]
             + ["-p", "inputViewportParamsPathFmt", "test/sequences/T{{1}}.json"],
             "{3}/A3/E/QP3/A3_E_QP3_v11.log",
             [
@@ -325,6 +324,7 @@ class IntegrationTest:
             + ["V{{0}}/{{1}}/TMIV_V{{0}}_{{1}}_geo_c{{3:02}}_{{4}}x{{5}}_yuv420p10le.yuv"]
             + ["-p", "inputTextureVideoFramePathFmt"]
             + ["V{{0}}/{{1}}/TMIV_V{{0}}_{{1}}_tex_c{{3:02}}_{{4}}x{{5}}_yuv420p10le.yuv"]
+            + ["-p", "inputBitstreamPathFmt", "V3/D/TMIV_V3_D.bit"]
             + ["-p", "inputViewportParamsPathFmt", "test/sequences/T{{1}}.json"]
             + ["-n", "3", "-N", "3", "-s", "D", "-r", "R0", "-v", "v14"],
             "{3}/V3/D/R0/V3_D_R0_v14.log",
@@ -356,6 +356,7 @@ class IntegrationTest:
             + ["V{{0}}/{{1}}/TMIV_V{{0}}_{{1}}_geo_c{{3:02}}_{{4}}x{{5}}_yuv420p10le.yuv"]
             + ["-p", "inputTextureVideoFramePathFmt"]
             + ["V{{0}}/{{1}}/TMIV_V{{0}}_{{1}}_tex_c{{3:02}}_{{4}}x{{5}}_yuv420p10le.yuv"]
+            + ["-p", "inputBitstreamPathFmt", "V3/D/TMIV_V3_D.bit"]
             + ["-p", "inputViewportParamsPathFmt", "test/sequences/T{{1}}.json"]
             + ["-n", "3", "-N", "3", "-s", "D", "-r", "R0", "-P", "p02"],
             "{3}/V3/D/R0/V3_D_R0_p02.log",
@@ -414,6 +415,7 @@ class IntegrationTest:
             + ["G{{0}}/{{1}}/TMIV_G{{0}}_{{1}}_geo_c{{3:02}}_{{4}}x{{5}}_yuv420p10le.yuv"]
             + ["-p", "inputTextureVideoFramePathFmt"]
             + ["G{{0}}/{{1}}/TMIV_G{{0}}_{{1}}_tex_c{{3:02}}_{{4}}x{{5}}_yuv420p10le.yuv"]
+            + ["-p", "inputBitstreamPathFmt", "G3/N/TMIV_G3_N.bit"]
             + ["-n", "3", "-N", "3", "-s", "N", "-r", "R0"],
             "{3}/G3/N/R0/G3_N_R0_none.log",
             [

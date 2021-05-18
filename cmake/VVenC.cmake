@@ -9,25 +9,25 @@ endif()
 
 if(BUILD_VVenC)
     if(NO_INTERNET)
-        set(LOCAL_VVENC_DIR ${CMAKE_SOURCE_DIR}/../vvenc-0.2.0.0 CACHE PATH "Path to the local VVenC directory" )
+        set(LOCAL_VVENC_DIR ${CMAKE_SOURCE_DIR}/../vvenc-0.3.1.0 CACHE PATH "Path to the local VVenC directory" )
         message(STATUS "Looking for a local copy of VVenC in ${LOCAL_VVENC_DIR}")
         fetchcontent_declare(VVENC URL ${LOCAL_VVENC_DIR})
     else()
         fetchcontent_declare(VVENC
             GIT_REPOSITORY https://github.com/fraunhoferhhi/vvenc
-            GIT_TAG "v0.2.0.0"
+            GIT_TAG "v0.3.1.0"
             GIT_PROGRESS TRUE
         )
     endif()
 
-    set(vvenc_ADD_SUBDIRECTORIES "source/App/vvencFFapp")
+    set(vvenc_ADD_SUBDIRECTORIES "source/Lib/apputils;source/App/vvencFFapp")
     fetchcontent_makeavailable(VVENC)
     
     if (NOT MSVC)
         target_compile_options(vvenc PUBLIC "-w")        
     endif()
     
-    set_property(TARGET vvenc vvencFFapp PROPERTY FOLDER "VVenC")
+    set_property(TARGET vvenc apputils vvencFFapp PROPERTY FOLDER "VVenC")
     target_compile_features(vvenc PUBLIC cxx_std_14)
     install(TARGETS vvencFFapp EXPORT TMIVTargets RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 endif()

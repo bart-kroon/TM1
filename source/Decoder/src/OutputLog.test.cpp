@@ -46,7 +46,7 @@ TEST_CASE("Decoder::writeFrameToOutputLog") {
     auto frame = AccessUnit{};
     frame.atlas.emplace_back().asps.asps_frame_width(8).asps_frame_height(5);
     writeFrameToOutputLog(frame, stream);
-    std::string reference = "-1 0 0 I_TILE 0 0 8 5 00000000 00000000 00000000 00000000\n";
+    std::string reference = "-1 0 8 5 00000000 00000000 00000000 00000000\n";
     REQUIRE(stream.str() == reference);
 
     SECTION("Same frame twice gives two equal rows") {
@@ -57,14 +57,14 @@ TEST_CASE("Decoder::writeFrameToOutputLog") {
 
     SECTION("Frame order count") {
       frame.foc = 7;
-      reference += "7 0 0 I_TILE 0 0 8 5 00000000 00000000 00000000 00000000\n";
+      reference += "7 0 8 5 00000000 00000000 00000000 00000000\n";
       writeFrameToOutputLog(frame, stream);
       REQUIRE(stream.str() == reference);
     }
 
     SECTION("Atlas ID") {
       frame.vps.vps_atlas_id(0, AtlasId{7});
-      reference += "-1 7 0 I_TILE 0 0 8 5 00000000 00000000 00000000 00000000\n";
+      reference += "-1 7 8 5 00000000 00000000 00000000 00000000\n";
       writeFrameToOutputLog(frame, stream);
       REQUIRE(stream.str() == reference);
     }
@@ -74,28 +74,28 @@ TEST_CASE("Decoder::writeFrameToOutputLog") {
 
       frame.atlas.front().decOccFrame.resize(8, 10);
       frame.atlas.front().decOccFrame.fillValue(23);
-      reference += "-1 0 0 I_TILE 0 0 8 5 e9bf42e6 00000000 00000000 00000000\n";
+      reference += "-1 0 8 5 e9bf42e6 00000000 00000000 00000000\n";
       writeFrameToOutputLog(frame, stream);
       REQUIRE(TMIV::Decoder::videoDataHash(frame.atlas.front()) == 0xE9BF42E6);
       REQUIRE(stream.str() == reference);
 
       frame.atlas.front().decGeoFrame.resize(10, 4);
       frame.atlas.front().decGeoFrame.fillValue(25);
-      reference += "-1 0 0 I_TILE 0 0 8 5 14c31f8e 00000000 00000000 00000000\n";
+      reference += "-1 0 8 5 14c31f8e 00000000 00000000 00000000\n";
       writeFrameToOutputLog(frame, stream);
       REQUIRE(TMIV::Decoder::videoDataHash(frame.atlas.front()) == 0x14C31F8E);
       REQUIRE(stream.str() == reference);
 
       frame.atlas.front().attrFrame.resize(12, 26);
       frame.atlas.front().attrFrame.fillValue(100);
-      reference += "-1 0 0 I_TILE 0 0 8 5 7afd08cd 00000000 00000000 00000000\n";
+      reference += "-1 0 8 5 7afd08cd 00000000 00000000 00000000\n";
       writeFrameToOutputLog(frame, stream);
       REQUIRE(TMIV::Decoder::videoDataHash(frame.atlas.front()) == 0x7AFD08CD);
       REQUIRE(stream.str() == reference);
 
       frame.atlas.front().transparencyFrame.resize(10, 8);
       frame.atlas.front().transparencyFrame.fillValue(88);
-      reference += "-1 0 0 I_TILE 0 0 8 5 4033b1a2 00000000 00000000 00000000\n";
+      reference += "-1 0 8 5 4033b1a2 00000000 00000000 00000000\n";
       writeFrameToOutputLog(frame, stream);
       REQUIRE(TMIV::Decoder::videoDataHash(frame.atlas.front()) == 0x4033B1A2);
       REQUIRE(stream.str() == reference);
@@ -107,7 +107,7 @@ TEST_CASE("Decoder::writeFrameToOutputLog") {
       frame.atlas.front().blockToPatchMap.resize(8, 10);
       frame.atlas.front().blockToPatchMap.fillValue(23);
       frame.atlas.front().blockToPatchMap.getPlane(0)(3, 4) = TMIV::Common::unusedPatchId;
-      reference += "-1 0 0 I_TILE 0 0 8 5 00000000 59fe0999 00000000 00000000\n";
+      reference += "-1 0 8 5 00000000 59fe0999 00000000 00000000\n";
       writeFrameToOutputLog(frame, stream);
       REQUIRE(TMIV::Decoder::blockToPatchMapHash(frame.atlas.front()) == 0x59FE0999);
       REQUIRE(stream.str() == reference);
@@ -152,7 +152,7 @@ TEST_CASE("Decoder::writeFrameToOutputLog") {
           .atlasPatchOrientationIndex(TMIV::MivBitstream::FlexiblePatchOrientation::FPO_MROT180)
           .atlasPatchProjectionId(10);
 
-      reference += "-1 0 0 I_TILE 0 0 8 5 00000000 00000000 659eb2c7 00000000\n";
+      reference += "-1 0 8 5 00000000 00000000 659eb2c7 00000000\n";
       writeFrameToOutputLog(frame, stream);
       REQUIRE(TMIV::Decoder::patchParamsListHash(frame.atlas.front().patchParamsList) ==
               0x659eb2c7);
@@ -196,7 +196,7 @@ TEST_CASE("Decoder::writeFrameToOutputLog") {
         v.dq.dq_depth_occ_threshold_default(40);
       }
 
-      reference += "-1 0 0 I_TILE 0 0 8 5 00000000 00000000 00000000 2285353c\n";
+      reference += "-1 0 8 5 00000000 00000000 00000000 2285353c\n";
       writeFrameToOutputLog(frame, stream);
       REQUIRE(TMIV::Decoder::viewParamsListHash(frame.viewParamsList) == 0x2285353C);
       REQUIRE(stream.str() == reference);
@@ -209,8 +209,8 @@ TEST_CASE("Decoder::writeFrameToOutputLog") {
     frame.atlas.emplace_back().asps.asps_frame_width(8).asps_frame_height(5);
     frame.atlas.emplace_back().asps.asps_frame_width(13).asps_frame_height(6);
     writeFrameToOutputLog(frame, stream);
-    std::string reference = R"(-1 0 0 I_TILE 0 0 8 5 00000000 00000000 00000000 00000000
--1 3 0 I_TILE 0 0 13 6 00000000 00000000 00000000 00000000
+    std::string reference = R"(-1 0 8 5 00000000 00000000 00000000 00000000
+-1 3 13 6 00000000 00000000 00000000 00000000
 )";
     REQUIRE(stream.str() == reference);
   }

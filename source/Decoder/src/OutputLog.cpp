@@ -189,13 +189,12 @@ void writeFrameToOutputLog(const MivBitstream::AccessUnit &frame, std::ostream &
   const auto vplHashString = HashFunction::toString(viewParamsListHash(frame.viewParamsList));
 
   for (uint8_t k = 0; k <= frame.vps.vps_atlas_count_minus1(); ++k) {
-    fmt::print(stream, FMT_STRING("{} {} 0 I_TILE 0 0 {} {} {} {} {} {}\n"), frame.foc,
-               frame.vps.vps_atlas_id(k), frame.atlas[k].asps.asps_frame_width(),
-               frame.atlas[k].asps.asps_frame_height(),
-               HashFunction::toString(videoDataHash(frame.atlas[k])),
-               HashFunction::toString(blockToPatchMapHash(frame.atlas[k])),
-               HashFunction::toString(patchParamsListHash(frame.atlas[k].patchParamsList)),
-               vplHashString);
+    fmt::print(
+        stream, FMT_STRING("{} {} {} {} {} {} {} {}\n"), frame.foc, frame.vps.vps_atlas_id(k),
+        frame.atlas[k].asps.asps_frame_width(), frame.atlas[k].asps.asps_frame_height(),
+        HashFunction::toString(videoDataHash(frame.atlas[k])),
+        HashFunction::toString(blockToPatchMapHash(frame.atlas[k])),
+        HashFunction::toString(patchParamsListHash(frame.atlas[k].patchParamsList)), vplHashString);
   }
 }
 } // namespace TMIV::Decoder

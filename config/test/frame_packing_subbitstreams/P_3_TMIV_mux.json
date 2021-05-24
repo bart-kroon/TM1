@@ -1,0 +1,8 @@
+{
+    "inputBitstreamPathFmt": "P{0}/{1}/TMIV_P{0}_{1}.bit",
+    "inputDirectory": ".",
+    "inputPackedVideoSubBitstreamPathFmt": "P{0}/{1}/{2}/TMIV_P{0}_{1}_{2}_pac_c{3:02}.bit",
+    "outputBitstreamPathFmt": "P{0}/{1}/{2}/TMIV_P{0}_{1}_{2}_pac.bit",
+    "outputDirectory": ".",
+    "packingInformationPresent": true
+}

@@ -52,6 +52,7 @@ TEST_CASE("TMIV::Encoder::Configuration") {
     "haveTextureVideo": false,
     "haveGeometryVideo": true,
     "haveOccupancyVideo": false,
+    "framePacking": false,
     "oneViewPerAtlasFlag": false,
     "dynamicDepthRange": false,
     "randomAccess": false,
@@ -87,6 +88,7 @@ TEST_CASE("TMIV::Encoder::Configuration") {
     CHECK(unit.maxEntityId == 0);
     CHECK(unit.maxLumaSampleRate == 0.);
     CHECK(unit.maxLumaPictureSize == 0);
+    CHECK_FALSE(unit.framePacking);
     CHECK(unit.maxAtlases == 0);
     CHECK(unit.codecGroupIdc == PtlProfileCodecGroupIdc::HEVC_Main10);
     CHECK(unit.toolsetIdc == PtlProfilePccToolsetIdc::MIV_Main);
@@ -172,6 +174,7 @@ TEST_CASE("TMIV::Encoder::Configuration") {
     "haveTextureVideo": true,
     "haveGeometryVideo": false,
     "haveOccupancyVideo": false,
+    "framePacking": false,
     "oneViewPerAtlasFlag": true,
     "dynamicDepthRange": false,
     "dqParamsPresentFlag": false,
@@ -205,6 +208,7 @@ TEST_CASE("TMIV::Encoder::Configuration") {
     CHECK_FALSE(unit.viewportPositionSei);
     CHECK(unit.numGroups == 3);
     CHECK(unit.maxEntityId == 5);
+    CHECK_FALSE(unit.framePacking);
     CHECK(unit.codecGroupIdc == PtlProfileCodecGroupIdc::AVC_Progressive_High);
     CHECK(unit.toolsetIdc == PtlProfilePccToolsetIdc::MIV_Geometry_Absent);
     CHECK(unit.dilationIter == 5);
@@ -255,5 +259,38 @@ TEST_CASE("TMIV::Encoder::Configuration") {
 })"));
       REQUIRE_THROWS_WITH((Configuration{root, component}), Contains("!haveOccupancy"));
     }
+  }
+
+  SECTION("Enable Frame Packing") {
+    const auto root = Json::parse(R"({
+    "intraPeriod": 13,
+    "blockSizeDepthQualityDependent": [8, 4],
+    "haveTextureVideo": false,
+    "haveGeometryVideo": false,
+    "haveOccupancyVideo": false,
+    "framePacking": true,
+    "viewportCameraParametersSei": false,
+    "viewportPositionSei": false,
+    "oneViewPerAtlasFlag": true,
+    "dynamicDepthRange": false,
+    "dqParamsPresentFlag": false,
+    "attributeOffsetEnabledFlag": false,
+    "randomAccess": true,
+    "numGroups": 3,
+    "maxEntityId": 5,
+    "EntityEncodeRange": [0, 4],
+    "codecGroupIdc": "AVC Progressive High",
+    "toolsetIdc": "MIV Geometry Absent"
+})"sv);
+
+    const auto component = Json::parse(R"({
+    "dilate": 5
+})"sv);
+
+    const auto unit = Configuration{root, component};
+
+    CHECK(unit.framePacking);
+    CHECK_FALSE(unit.haveTexture);
+    CHECK_FALSE(unit.haveGeometry);
   }
 }

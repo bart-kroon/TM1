@@ -52,6 +52,7 @@
     "haveGeometryVideo": true,
     "haveOccupancyVideo": false,
     "haveTextureVideo": true,
+    "framePacking": false,
     "randomAccess": true,
     "viewportCameraParametersSei": false,
     "viewportPositionSei": false,

@@ -31,51 +31,53 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef TMIV_ENCODER_CONFIGURATION_H
-#define TMIV_ENCODER_CONFIGURATION_H
+#ifndef TMIV_ENCODER_FRAMEPACK_H
+#define TMIV_ENCODER_FRAMEPACK_H
 
-#include <TMIV/Common/Json.h>
-#include <TMIV/MivBitstream/V3cParameterSet.h>
-#include <TMIV/MivBitstream/ViewingSpace.h>
-#include <TMIV/MivBitstream/ViewportCameraParameters.h>
-#include <TMIV/MivBitstream/ViewportPosition.h>
+#include <TMIV/Common/Frame.h>
+#include <TMIV/Encoder/EncoderParams.h>
 
 namespace TMIV::Encoder {
-static constexpr auto maxIntraPeriod = 32;
+class FramePack {
+public:
+  void constructFramePack(Common::MVD10Frame &frame);
+  auto setPackingInformation(EncoderParams params) -> const EncoderParams &;
 
-struct Configuration {
-  Configuration(const Common::Json & /*rootNode*/, const Common::Json & /*componentNode*/);
+private:
+  struct RegionCounts {
+    uint8_t attr{};
+    uint8_t geo{};
+    uint8_t occ{};
+  };
 
-  int intraPeriod;
-  int blockSize{}; // TODO(#358): This is not a configuration parameter
-  Common::Vec2i blockSizeDepthQualityDependent;
-  std::optional<bool> depthLowQualityFlag;
-  double maxLumaSampleRate{};
-  int maxLumaPictureSize{};
-  double maxBlockRate{};   // TODO(#358): This is not a configuration parameter
-  int maxBlocksPerAtlas{}; // TODO(#358): This is not a configuration parameter
-  int maxAtlases{};
-  bool haveTexture;
-  bool haveGeometry;
-  bool haveOccupancy;
-  bool framePacking;
-  bool oneViewPerAtlasFlag;
-  std::vector<Common::Vec2i> overrideAtlasFrameSizes{};
-  bool geometryScaleEnabledFlag;
-  int dilationIter;
-  Common::stack::Vec2<Common::SampleValue> entityEncRange;
-  bool dynamicDepthRange;
-  bool attributeOffsetFlag;
-  int attributeOffsetBitCount{};
-  bool dqParamsPresentFlag{true};
-  bool viewportCameraParametersSei;
-  bool viewportPositionSei;
-  bool randomAccess;
-  uint8_t numGroups;
-  uint16_t maxEntityId{};
-  std::optional<MivBitstream::ViewingSpace> viewingSpace;
-  MivBitstream::PtlProfileCodecGroupIdc codecGroupIdc{};
-  MivBitstream::PtlProfilePccToolsetIdc toolsetIdc{};
+  struct RegionSizes {
+    Common::Vec2u frame{0, 0};
+    Common::Vec2u geo{0, 0};
+    Common::Vec2u occ{0, 0};
+    Common::Vec2u pac{0, 0};
+  };
+
+  void combinePlanes(size_t atlasIdx, Common::TextureFrame &atlasTexture);
+  void extractScaledGeometry(size_t atlasIdx, Common::heap::Matrix<uint16_t> &planeDepth);
+  void updateVideoPresentFlags(MivBitstream::AtlasId atlasId);
+  void updatePinOccupancyInformation(MivBitstream::AtlasId atlasId);
+  auto computeOccupancySizeAndRegionCount(size_t atlasIdx) -> uint8_t;
+  void updatePinGeometryInformation(MivBitstream::AtlasId atlasId);
+  auto computeGeometrySizeAndRegionCount(size_t atlasIdx) -> uint8_t;
+  void updatePinAttributeInformation(MivBitstream::AtlasId atlasId);
+  void setAttributePinRegion(size_t i, const Common::Vec2u &frameSize);
+  void setGeometryPinRegion(size_t i, size_t atlasIdx, const RegionCounts &regionCounts);
+  void setOccupancyPinRegion(size_t i, size_t atlasIdx, const RegionCounts &regionCounts);
+  void updatePinRegionInformation(size_t i);
+
+  std::vector<RegionSizes> m_regionSizes{};
+  EncoderParams m_params;
+  TMIV::MivBitstream::PackingInformation m_packingInformation{};
+  TMIV::MivBitstream::PinRegion m_pinRegion{};
+
+  Common::FramePack10Frame m_framePack{};
+  std::vector<char> m_bufferDepth{};
+  size_t m_depthPaddingBytes{};
 };
 } // namespace TMIV::Encoder
 

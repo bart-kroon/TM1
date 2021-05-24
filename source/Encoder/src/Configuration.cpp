@@ -44,6 +44,7 @@ Configuration::Configuration(const Common::Json &rootNode, const Common::Json &c
     , haveTexture{rootNode.require("haveTextureVideo").as<bool>()}
     , haveGeometry{rootNode.require("haveGeometryVideo").as<bool>()}
     , haveOccupancy{rootNode.require("haveOccupancyVideo").as<bool>()}
+    , framePacking{rootNode.require("framePacking").as<bool>()}
     , oneViewPerAtlasFlag{rootNode.require("oneViewPerAtlasFlag").as<bool>()}
     , geometryScaleEnabledFlag{haveGeometry && haveTexture &&
                                rootNode.require("geometryScaleEnabledFlag").as<bool>()}

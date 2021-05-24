@@ -302,4 +302,12 @@ template <typename FORMAT> void padChroma(std::ostream &stream, size_t bytes) {
     stream.write(buffer.data(), assertDownCast<std::streamsize>(buffer.size()));
   }
 }
+
+template <typename FORMAT> void padChroma(std::vector<char> &buf, size_t bytes) {
+  static constexpr auto fillValue = Common::neutralColor<FORMAT>();
+  if (0 < bytes) {
+    const auto padding = std::vector(bytes / sizeof(fillValue), fillValue);
+    std::memcpy(buf.data(), padding.data(), bytes);
+  }
+}
 } // namespace TMIV::Common

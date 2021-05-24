@@ -25,6 +25,7 @@
   "haveGeometryVideo": false,
   "haveOccupancyVideo": false,
   "haveTextureVideo": true,
+  "framePacking": false,
   "randomAccess": false,
   "inputDirectory": ".",
   "inputMpiPcsPathFmt": "{1}/{3}.pcs",

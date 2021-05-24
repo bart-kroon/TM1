@@ -41,6 +41,9 @@ auto Encoder::popAtlas() -> Common::MVD10Frame {
     auto frame = m_geometryDownscaler.transformFrame(
         m_geometryQuantizer->transformAtlases(m_videoFrameBuffer.front()));
     m_videoFrameBuffer.pop_front();
+    if (m_config.framePacking) {
+      m_framePack.constructFramePack(frame);
+    }
     return frame;
   }
 
@@ -49,6 +52,9 @@ auto Encoder::popAtlas() -> Common::MVD10Frame {
     frame[i].texture = std::move(m_videoFrameBuffer.front()[i].texture);
   }
   m_videoFrameBuffer.pop_front();
+  if (m_config.framePacking) {
+    m_framePack.constructFramePack(frame);
+  }
   return frame;
 }
 

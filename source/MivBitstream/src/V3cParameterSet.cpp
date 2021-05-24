@@ -1070,9 +1070,9 @@ void PackingInformation::encodeTo(Common::OutputBitstream &bitstream) const {
     bitstream.putUint16(pin_region_top_left_x(i));
     bitstream.putUint16(pin_region_top_left_y(i));
     bitstream.putUint16(pin_region_width_minus1(i));
+    bitstream.putUint16(pin_region_height_minus1(i));
     bitstream.putUint16(pin_region_unpack_top_left_x(i));
     bitstream.putUint16(pin_region_unpack_top_left_y(i));
-    bitstream.putUint16(pin_region_height_minus1(i));
     bitstream.putFlag(pin_region_rotation_flag(i));
 
     if ((pinRegionTypeId(i) == VuhUnitType::V3C_AVD) ||
@@ -1266,7 +1266,7 @@ auto V3cParameterSet::vps_packed_video_present_flag(const AtlasId &j) const -> b
   return result;
 }
 
-auto V3cParameterSet::packing_information(const AtlasId &j) const {
+auto V3cParameterSet::packing_information(const AtlasId &j) const -> const PackingInformation & {
   VERIFY_V3CBITSTREAM(vps_packed_video_present_flag(j));
   VERIFY_V3CBITSTREAM(atlas(j).packing_information.has_value());
   return *atlas(j).packing_information;
@@ -1409,7 +1409,6 @@ auto V3cParameterSet::vpsExtensionData(std::vector<uint8_t> value) noexcept -> V
 }
 
 auto V3cParameterSet::occupancy_information(AtlasId j) -> OccupancyInformation & {
-  VERIFY_V3CBITSTREAM(vps_occupancy_video_present_flag(j));
   auto &oi = atlas(j).occupancy_information;
   if (!oi) {
     oi = OccupancyInformation{};

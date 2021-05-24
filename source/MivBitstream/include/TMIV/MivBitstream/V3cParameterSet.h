@@ -610,7 +610,7 @@ public:
   [[nodiscard]] constexpr auto vps_miv_extension_present_flag() const noexcept;
   [[nodiscard]] constexpr auto vps_extension_6bits() const noexcept;
   [[nodiscard]] auto vps_packed_video_present_flag(const AtlasId &j) const -> bool;
-  [[nodiscard]] auto packing_information(const AtlasId &j) const;
+  [[nodiscard]] auto packing_information(const AtlasId &j) const -> const PackingInformation &;
   [[nodiscard]] auto vps_miv_extension() const -> const VpsMivExtension &;
   [[nodiscard]] auto vps_extension_length_minus1() const -> size_t;
   [[nodiscard]] auto vpsExtensionData() const -> const std::vector<uint8_t> &;

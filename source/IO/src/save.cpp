@@ -52,6 +52,7 @@ const std::string outputTextureVideoDataPathFmt = "outputTextureVideoDataPathFmt
 const std::string outputTransparencyVideoDataPathFmt = "outputTransparencyVideoDataPathFmt";
 const std::string outputViewportGeometryPathFmt = "outputViewportGeometryPathFmt";
 const std::string outputViewportTexturePathFmt = "outputViewportTexturePathFmt";
+const std::string outputFramePackVideoDataPathFmt = "outputFramePackVideoDataPathFmt";
 
 template <typename FORMAT>
 void saveFrame(const std::filesystem::path &path, const Common::Frame<FORMAT> &frame,
@@ -107,6 +108,13 @@ void saveAtlasFrame(const Common::Json &config, const Placeholders &placeholders
                                         frame[k].occupancy.getWidth(),
                                         frame[k].occupancy.getHeight()),
                 frame[k].occupancy, frameIndex);
+    }
+    if (const auto &node = config.optional(outputFramePackVideoDataPathFmt)) {
+      saveFrame(outputDir / fmt::format(node.as<std::string>(), placeholders.numberOfInputFrames,
+                                        placeholders.contentId, placeholders.testId, k,
+                                        frame[k].framePack.getWidth(),
+                                        frame[k].framePack.getHeight()),
+                frame[k].framePack, frameIndex);
     }
   }
 }

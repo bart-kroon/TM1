@@ -108,7 +108,7 @@ Application::Application(const char *tool, std::vector<const char *> argv, Optio
 NOTE 1: When the same parameter is provided multiple times on the command-line,
         through -c or -p, then the right-most argument has precedence.
 NOTE 2: The default thread count is equal to the logical processor count of the
-        system. Use -j 1 to disable parallal processing.)";
+        system. Use -j 1 to disable parallel processing.)";
     throw std::runtime_error(what.str());
   }
 }

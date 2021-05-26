@@ -75,9 +75,9 @@ The first step is to obtain source archives for TMIV and all external libraries 
 
 ### Fraunhofer Versatile Video Encoder (VVenC)
 
-1. Visit this URL: https://github.com/fraunhoferhhi/vvenc/tree/v0.2.0.0
+1. Visit this URL: https://github.com/fraunhoferhhi/vvenc/tree/v0.3.1.0
 1. Click on the green "Code" button and select "Download ZIP"
-1. Unzip, resulting in a directory `/Workspace/vvenc-0.2.0.0` such that the file `/Workspace/vvenc-0.2.0.0/README.md` exists.
+1. Unzip, resulting in a directory `/Workspace/vvenc-0.3.1.0` such that the file `/Workspace/vvenc-0.3.1.0/README.md` exists.
 
 ### Fraunhofer Versatile Video Decoder (VVdeC)
 

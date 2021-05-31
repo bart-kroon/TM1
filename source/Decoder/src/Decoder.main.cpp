@@ -164,6 +164,13 @@ private:
           }
           return Common::Transparency10Frame{};
         });
+    mivDecoder.setFramePackServer([this](MivBitstream::AtlasId atlasId, int32_t frameIndex,
+                                         Common::Vec2i frameSize) -> Common::FramePack444Frame {
+      if (frameIndex < m_placeholders.numberOfInputFrames) {
+        return IO::loadFramePackVideoFrame(json(), m_placeholders, atlasId, frameIndex, frameSize);
+      }
+      return Common::FramePack444Frame{};
+    });
   }
 
   void tryOpenOutputLog() {

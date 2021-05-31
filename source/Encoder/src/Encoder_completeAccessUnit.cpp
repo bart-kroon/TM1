@@ -173,7 +173,7 @@ auto Encoder::completeAccessUnit() -> const EncoderParams & {
   const auto &paramsScaled = m_geometryDownscaler.transformParams(paramsQuantized);
 
   if (m_config.framePacking) {
-    const auto &paramsWithFramePackInfo = m_framePack.setPackingInformation(paramsScaled);
+    const auto &paramsWithFramePackInfo = m_framePacker.setPackingInformation(paramsScaled);
     return paramsWithFramePackInfo;
   }
   return paramsScaled;

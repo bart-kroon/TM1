@@ -14,6 +14,7 @@ create_tmiv_library(
         "src/V3cSampleStreamDecoder.cpp"
         "src/V3cUnitBuffer.cpp"
         "src/OutputLog.cpp"
+        "src/FrameUnpacker.cpp"
     PUBLIC
         TMIV::VideoDecoderLib
     )
@@ -34,6 +35,7 @@ create_catch2_unit_test(
         DecoderTest
     SOURCES
         "src/OutputLog.test.cpp"
+       "src/FrameUnpacker.test.cpp"
     PRIVATE
         TMIV::DecoderLib
     )

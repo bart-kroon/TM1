@@ -81,6 +81,12 @@ public: // Decoder interface
       MivBitstream::AtlasId atlasId, std::int32_t frameId, Common::Vec2i frameSize)>;
   void setTransparencyFrameServer(TransparencyFrameServer value);
 
+  // Provide a frame server for out-of-band packed video data (PVD). PVD video sub bitstreams
+  // within the bitstreams take precedence.
+  using FramePackServer = std::function<Common::FramePack444Frame(
+      MivBitstream::AtlasId atlasId, std::int32_t frameId, Common::Vec2i frameSize)>;
+  void setFramePackServer(FramePackServer value);
+
   auto operator()() -> std::optional<MivBitstream::AccessUnit>;
 
 private:
@@ -109,6 +115,7 @@ private:
   auto decodeGeoVideo(size_t k) -> bool;
   auto decodeAttrTextureVideo(size_t k) -> bool;
   auto decodeAttrTransparencyVideo(size_t k) -> bool;
+  auto decodeFramePackVideo(size_t k) -> bool;
 
   void summarizeVps() const;
 
@@ -117,6 +124,7 @@ private:
   GeoFrameServer m_geoFrameServer;
   TextureFrameServer m_textureFrameServer;
   TransparencyFrameServer m_transparencyFrameServer;
+  FramePackServer m_framePackServer;
 
   std::unique_ptr<CommonAtlasDecoder> m_commonAtlasDecoder;
   std::vector<std::unique_ptr<AtlasDecoder>> m_atlasDecoder;
@@ -124,6 +132,7 @@ private:
   std::vector<std::unique_ptr<VideoDecoder::IVideoDecoder>> m_geoVideoDecoder;
   std::vector<std::unique_ptr<VideoDecoder::IVideoDecoder>> m_textureVideoDecoder;
   std::vector<std::unique_ptr<VideoDecoder::IVideoDecoder>> m_transparencyVideoDecoder;
+  std::vector<std::unique_ptr<VideoDecoder::IVideoDecoder>> m_framePackVideoDecoder;
 
   std::optional<CommonAtlasDecoder::AccessUnit> m_commonAtlasAu;
   std::vector<std::optional<AtlasDecoder::AccessUnit>> m_atlasAu;
@@ -132,6 +141,7 @@ private:
   double m_totalOccVideoDecodingTime{};
   double m_totalGeoVideoDecodingTime{};
   double m_totalAttrVideoDecodingTime{};
+  double m_totalFramePackVideoDecodingTime{};
 };
 } // namespace TMIV::Decoder
 

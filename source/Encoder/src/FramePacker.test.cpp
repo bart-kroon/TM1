@@ -40,7 +40,7 @@ using namespace std::string_view_literals;
 using Catch::Contains;
 using TMIV::Common::Json;
 
-TEST_CASE("TMIV::Encoder::FramePack, 1 Atlas with texture and geometry") {
+TEST_CASE("TMIV::Encoder::FramePacker, 1 Atlas with texture and geometry") {
   auto params = TMIV::Encoder::EncoderParams{};
   params.vps.vps_atlas_count_minus1(0);
   const auto atlasId = params.vps.vps_atlas_id(0);
@@ -48,8 +48,8 @@ TEST_CASE("TMIV::Encoder::FramePack, 1 Atlas with texture and geometry") {
       .vps_attribute_video_present_flag(atlasId, true)
       .vps_extension_present_flag(true)
       .vps_miv_extension_present_flag(true)
-      .vps_frame_width(atlasId, 1920)
-      .vps_frame_height(atlasId, 4640)
+      .vps_frame_width(atlasId, 32)
+      .vps_frame_height(atlasId, 64)
       .attribute_information(atlasId)
       .ai_attribute_count(1);
   params.atlas.push_back(TMIV::Encoder::EncoderAtlasParams{});
@@ -61,12 +61,12 @@ TEST_CASE("TMIV::Encoder::FramePack, 1 Atlas with texture and geometry") {
 
   SECTION("Full-Scale Geoemtry") {
     asmeAtlas.asme_geometry_scale_enabled_flag(false);
-    atlas.texture.resize(1920, 4640);
-    atlas.depth.resize(1920, 4640);
+    atlas.texture.resize(32, 64);
+    atlas.depth.resize(32, 64);
     frame.push_back(atlas);
 
-    TMIV::Encoder::FramePack unit{};
-    auto outParams = unit.setPackingInformation(params);
+    TMIV::Encoder::FramePacker unit{};
+    const auto outParams = unit.setPackingInformation(params);
     CHECK(outParams.vps.vps_attribute_video_present_flag(atlasId) == false);
     CHECK(outParams.vps.vps_geometry_video_present_flag(atlasId) == false);
     CHECK(outParams.vps.vps_packed_video_present_flag(atlasId) == true);
@@ -75,31 +75,31 @@ TEST_CASE("TMIV::Encoder::FramePack, 1 Atlas with texture and geometry") {
     CHECK(outParams.vps.packing_information(atlasId).pin_region_type_id_minus2(0) == 2); // V3C_AVD
     CHECK(outParams.vps.packing_information(atlasId).pin_region_top_left_x(0) == 0);
     CHECK(outParams.vps.packing_information(atlasId).pin_region_top_left_y(0) == 0);
-    CHECK(outParams.vps.packing_information(atlasId).pin_region_width_minus1(0) == 1919);
-    CHECK(outParams.vps.packing_information(atlasId).pin_region_height_minus1(0) == 4639);
+    CHECK(outParams.vps.packing_information(atlasId).pin_region_width_minus1(0) == 31);
+    CHECK(outParams.vps.packing_information(atlasId).pin_region_height_minus1(0) == 63);
     CHECK(outParams.vps.packing_information(atlasId).pin_region_unpack_top_left_x(0) == 0);
     CHECK(outParams.vps.packing_information(atlasId).pin_region_unpack_top_left_y(0) == 0);
     CHECK(outParams.vps.packing_information(atlasId).pin_region_type_id_minus2(1) == 1); // V3C_GVD
     CHECK(outParams.vps.packing_information(atlasId).pin_region_top_left_x(1) == 0);
-    CHECK(outParams.vps.packing_information(atlasId).pin_region_top_left_y(1) == 4640);
-    CHECK(outParams.vps.packing_information(atlasId).pin_region_width_minus1(1) == 1919);
-    CHECK(outParams.vps.packing_information(atlasId).pin_region_height_minus1(1) == 4639);
+    CHECK(outParams.vps.packing_information(atlasId).pin_region_top_left_y(1) == 64);
+    CHECK(outParams.vps.packing_information(atlasId).pin_region_width_minus1(1) == 31);
+    CHECK(outParams.vps.packing_information(atlasId).pin_region_height_minus1(1) == 63);
     CHECK(outParams.vps.packing_information(atlasId).pin_region_unpack_top_left_x(1) == 0);
     CHECK(outParams.vps.packing_information(atlasId).pin_region_unpack_top_left_y(1) == 0);
     unit.constructFramePack(frame);
-    CHECK(frame[0].framePack.getWidth() == 1920);
-    CHECK(frame[0].framePack.getHeight() == 9280);
+    CHECK(frame[0].framePack.getWidth() == 32);
+    CHECK(frame[0].framePack.getHeight() == 128);
   }
 
   SECTION("Downscaled Geometry [2, 2]") {
     asmeAtlas.asme_geometry_scale_enabled_flag(true)
         .asme_geometry_scale_factor_x_minus1(1)
         .asme_geometry_scale_factor_y_minus1(1);
-    atlas.texture.resize(1920, 4640);
-    atlas.depth.resize(960, 2320);
+    atlas.texture.resize(32, 64);
+    atlas.depth.resize(16, 32);
     frame.push_back(atlas);
 
-    TMIV::Encoder::FramePack unit{};
+    TMIV::Encoder::FramePacker unit{};
     auto outParams = unit.setPackingInformation(params);
     CHECK(outParams.vps.vps_attribute_video_present_flag(atlasId) == false);
     CHECK(outParams.vps.vps_geometry_video_present_flag(atlasId) == false);
@@ -109,39 +109,39 @@ TEST_CASE("TMIV::Encoder::FramePack, 1 Atlas with texture and geometry") {
     CHECK(outParams.vps.packing_information(atlasId).pin_region_type_id_minus2(0) == 2); // V3C_AVD
     CHECK(outParams.vps.packing_information(atlasId).pin_region_top_left_x(0) == 0);
     CHECK(outParams.vps.packing_information(atlasId).pin_region_top_left_y(0) == 0);
-    CHECK(outParams.vps.packing_information(atlasId).pin_region_width_minus1(0) == 1919);
-    CHECK(outParams.vps.packing_information(atlasId).pin_region_height_minus1(0) == 4639);
+    CHECK(outParams.vps.packing_information(atlasId).pin_region_width_minus1(0) == 31);
+    CHECK(outParams.vps.packing_information(atlasId).pin_region_height_minus1(0) == 63);
     CHECK(outParams.vps.packing_information(atlasId).pin_region_unpack_top_left_x(0) == 0);
     CHECK(outParams.vps.packing_information(atlasId).pin_region_unpack_top_left_y(0) == 0);
     CHECK(outParams.vps.packing_information(atlasId).pin_region_type_id_minus2(1) == 1); // V3C_GVD
     CHECK(outParams.vps.packing_information(atlasId).pin_region_top_left_x(1) == 0);
-    CHECK(outParams.vps.packing_information(atlasId).pin_region_top_left_y(1) == 4640);
-    CHECK(outParams.vps.packing_information(atlasId).pin_region_width_minus1(1) == 959);
-    CHECK(outParams.vps.packing_information(atlasId).pin_region_height_minus1(1) == 1159);
+    CHECK(outParams.vps.packing_information(atlasId).pin_region_top_left_y(1) == 64);
+    CHECK(outParams.vps.packing_information(atlasId).pin_region_width_minus1(1) == 15);
+    CHECK(outParams.vps.packing_information(atlasId).pin_region_height_minus1(1) == 15);
     CHECK(outParams.vps.packing_information(atlasId).pin_region_unpack_top_left_x(1) == 0);
     CHECK(outParams.vps.packing_information(atlasId).pin_region_unpack_top_left_y(1) == 0);
     CHECK(outParams.vps.packing_information(atlasId).pin_region_type_id_minus2(2) == 1); // V3C_GVD
-    CHECK(outParams.vps.packing_information(atlasId).pin_region_top_left_x(2) == 960);
-    CHECK(outParams.vps.packing_information(atlasId).pin_region_top_left_y(2) == 4640);
-    CHECK(outParams.vps.packing_information(atlasId).pin_region_width_minus1(2) == 959);
-    CHECK(outParams.vps.packing_information(atlasId).pin_region_height_minus1(2) == 1159);
+    CHECK(outParams.vps.packing_information(atlasId).pin_region_top_left_x(2) == 16);
+    CHECK(outParams.vps.packing_information(atlasId).pin_region_top_left_y(2) == 64);
+    CHECK(outParams.vps.packing_information(atlasId).pin_region_width_minus1(2) == 15);
+    CHECK(outParams.vps.packing_information(atlasId).pin_region_height_minus1(2) == 15);
     CHECK(outParams.vps.packing_information(atlasId).pin_region_unpack_top_left_x(2) == 0);
-    CHECK(outParams.vps.packing_information(atlasId).pin_region_unpack_top_left_y(2) == 1160);
+    CHECK(outParams.vps.packing_information(atlasId).pin_region_unpack_top_left_y(2) == 16);
     unit.constructFramePack(frame);
-    CHECK(frame[0].framePack.getWidth() == 1920);
-    CHECK(frame[0].framePack.getHeight() == 5800);
+    CHECK(frame[0].framePack.getWidth() == 32);
+    CHECK(frame[0].framePack.getHeight() == 80);
   }
 
   SECTION("Downscaled Geometry [4, 1]") {
     asmeAtlas.asme_geometry_scale_enabled_flag(true)
         .asme_geometry_scale_factor_x_minus1(3)
         .asme_geometry_scale_factor_y_minus1(0);
-    atlas.texture.resize(1920, 4640);
-    atlas.depth.resize(480, 4640);
+    atlas.texture.resize(32, 64);
+    atlas.depth.resize(8, 64);
     frame.push_back(atlas);
 
-    TMIV::Encoder::FramePack unit{};
-    auto outParams = unit.setPackingInformation(params);
+    TMIV::Encoder::FramePacker unit{};
+    const auto outParams = unit.setPackingInformation(params);
     CHECK(outParams.vps.vps_attribute_video_present_flag(atlasId) == false);
     CHECK(outParams.vps.vps_geometry_video_present_flag(atlasId) == false);
     CHECK(outParams.vps.vps_packed_video_present_flag(atlasId) == true);
@@ -150,45 +150,45 @@ TEST_CASE("TMIV::Encoder::FramePack, 1 Atlas with texture and geometry") {
     CHECK(outParams.vps.packing_information(atlasId).pin_region_type_id_minus2(0) == 2); // V3C_AVD
     CHECK(outParams.vps.packing_information(atlasId).pin_region_top_left_x(0) == 0);
     CHECK(outParams.vps.packing_information(atlasId).pin_region_top_left_y(0) == 0);
-    CHECK(outParams.vps.packing_information(atlasId).pin_region_width_minus1(0) == 1919);
-    CHECK(outParams.vps.packing_information(atlasId).pin_region_height_minus1(0) == 4639);
+    CHECK(outParams.vps.packing_information(atlasId).pin_region_width_minus1(0) == 31);
+    CHECK(outParams.vps.packing_information(atlasId).pin_region_height_minus1(0) == 63);
     CHECK(outParams.vps.packing_information(atlasId).pin_region_unpack_top_left_x(0) == 0);
     CHECK(outParams.vps.packing_information(atlasId).pin_region_unpack_top_left_y(0) == 0);
     CHECK(outParams.vps.packing_information(atlasId).pin_region_type_id_minus2(1) == 1); // V3C_GVD
     CHECK(outParams.vps.packing_information(atlasId).pin_region_top_left_x(1) == 0);
-    CHECK(outParams.vps.packing_information(atlasId).pin_region_top_left_y(1) == 4640);
-    CHECK(outParams.vps.packing_information(atlasId).pin_region_width_minus1(1) == 479);
-    CHECK(outParams.vps.packing_information(atlasId).pin_region_height_minus1(1) == 1159);
+    CHECK(outParams.vps.packing_information(atlasId).pin_region_top_left_y(1) == 64);
+    CHECK(outParams.vps.packing_information(atlasId).pin_region_width_minus1(1) == 7);
+    CHECK(outParams.vps.packing_information(atlasId).pin_region_height_minus1(1) == 15);
     CHECK(outParams.vps.packing_information(atlasId).pin_region_unpack_top_left_x(1) == 0);
     CHECK(outParams.vps.packing_information(atlasId).pin_region_unpack_top_left_y(1) == 0);
     CHECK(outParams.vps.packing_information(atlasId).pin_region_type_id_minus2(2) == 1); // V3C_GVD
-    CHECK(outParams.vps.packing_information(atlasId).pin_region_top_left_x(2) == 480);
-    CHECK(outParams.vps.packing_information(atlasId).pin_region_top_left_y(2) == 4640);
-    CHECK(outParams.vps.packing_information(atlasId).pin_region_width_minus1(2) == 479);
-    CHECK(outParams.vps.packing_information(atlasId).pin_region_height_minus1(2) == 1159);
+    CHECK(outParams.vps.packing_information(atlasId).pin_region_top_left_x(2) == 8);
+    CHECK(outParams.vps.packing_information(atlasId).pin_region_top_left_y(2) == 64);
+    CHECK(outParams.vps.packing_information(atlasId).pin_region_width_minus1(2) == 7);
+    CHECK(outParams.vps.packing_information(atlasId).pin_region_height_minus1(2) == 15);
     CHECK(outParams.vps.packing_information(atlasId).pin_region_unpack_top_left_x(2) == 0);
-    CHECK(outParams.vps.packing_information(atlasId).pin_region_unpack_top_left_y(2) == 1160);
+    CHECK(outParams.vps.packing_information(atlasId).pin_region_unpack_top_left_y(2) == 16);
     CHECK(outParams.vps.packing_information(atlasId).pin_region_type_id_minus2(3) == 1); // V3C_GVD
-    CHECK(outParams.vps.packing_information(atlasId).pin_region_top_left_x(3) == 960);
-    CHECK(outParams.vps.packing_information(atlasId).pin_region_top_left_y(3) == 4640);
-    CHECK(outParams.vps.packing_information(atlasId).pin_region_width_minus1(3) == 479);
-    CHECK(outParams.vps.packing_information(atlasId).pin_region_height_minus1(3) == 1159);
+    CHECK(outParams.vps.packing_information(atlasId).pin_region_top_left_x(3) == 16);
+    CHECK(outParams.vps.packing_information(atlasId).pin_region_top_left_y(3) == 64);
+    CHECK(outParams.vps.packing_information(atlasId).pin_region_width_minus1(3) == 7);
+    CHECK(outParams.vps.packing_information(atlasId).pin_region_height_minus1(3) == 15);
     CHECK(outParams.vps.packing_information(atlasId).pin_region_unpack_top_left_x(3) == 0);
-    CHECK(outParams.vps.packing_information(atlasId).pin_region_unpack_top_left_y(3) == 2320);
+    CHECK(outParams.vps.packing_information(atlasId).pin_region_unpack_top_left_y(3) == 32);
     CHECK(outParams.vps.packing_information(atlasId).pin_region_type_id_minus2(4) == 1); // V3C_GVD
-    CHECK(outParams.vps.packing_information(atlasId).pin_region_top_left_x(4) == 1440);
-    CHECK(outParams.vps.packing_information(atlasId).pin_region_top_left_y(4) == 4640);
-    CHECK(outParams.vps.packing_information(atlasId).pin_region_width_minus1(4) == 479);
-    CHECK(outParams.vps.packing_information(atlasId).pin_region_height_minus1(4) == 1159);
+    CHECK(outParams.vps.packing_information(atlasId).pin_region_top_left_x(4) == 24);
+    CHECK(outParams.vps.packing_information(atlasId).pin_region_top_left_y(4) == 64);
+    CHECK(outParams.vps.packing_information(atlasId).pin_region_width_minus1(4) == 7);
+    CHECK(outParams.vps.packing_information(atlasId).pin_region_height_minus1(4) == 15);
     CHECK(outParams.vps.packing_information(atlasId).pin_region_unpack_top_left_x(4) == 0);
-    CHECK(outParams.vps.packing_information(atlasId).pin_region_unpack_top_left_y(4) == 3480);
+    CHECK(outParams.vps.packing_information(atlasId).pin_region_unpack_top_left_y(4) == 48);
     unit.constructFramePack(frame);
-    CHECK(frame[0].framePack.getWidth() == 1920);
-    CHECK(frame[0].framePack.getHeight() == 5800);
+    CHECK(frame[0].framePack.getWidth() == 32);
+    CHECK(frame[0].framePack.getHeight() == 80);
   }
 }
 
-TEST_CASE("TMIV::Encoder::FramePack, 1 Atlas with texture, geometry, and occupancy") {
+TEST_CASE("TMIV::Encoder::FramePacker, 1 Atlas with texture, geometry, and occupancy") {
   auto params = TMIV::Encoder::EncoderParams{};
   params.vps.vps_atlas_count_minus1(0);
   TMIV::MivBitstream::AtlasId atlasId = params.vps.vps_atlas_id(0);
@@ -197,8 +197,8 @@ TEST_CASE("TMIV::Encoder::FramePack, 1 Atlas with texture, geometry, and occupan
       .vps_attribute_video_present_flag(atlasId, true)
       .vps_extension_present_flag(true)
       .vps_miv_extension_present_flag(true)
-      .vps_frame_width(atlasId, 1920)
-      .vps_frame_height(atlasId, 4640)
+      .vps_frame_width(atlasId, 32)
+      .vps_frame_height(atlasId, 64)
       .attribute_information(atlasId)
       .ai_attribute_count(1);
 
@@ -211,12 +211,12 @@ TEST_CASE("TMIV::Encoder::FramePack, 1 Atlas with texture, geometry, and occupan
 
   SECTION("Full-Scale Geoemtry & Full-Scale Occupancy") {
     asmeAtlas.asme_geometry_scale_enabled_flag(false).asme_occupancy_scale_enabled_flag(false);
-    atlas.texture.resize(1920, 4640);
-    atlas.depth.resize(1920, 4640);
-    atlas.occupancy.resize(1920, 4640);
+    atlas.texture.resize(32, 64);
+    atlas.depth.resize(32, 64);
+    atlas.occupancy.resize(32, 64);
     frame.push_back(atlas);
 
-    TMIV::Encoder::FramePack unit{};
+    TMIV::Encoder::FramePacker unit{};
     const auto outParams = unit.setPackingInformation(params);
     CHECK(outParams.vps.vps_attribute_video_present_flag(atlasId) == false);
     CHECK(outParams.vps.vps_geometry_video_present_flag(atlasId) == false);
@@ -227,26 +227,26 @@ TEST_CASE("TMIV::Encoder::FramePack, 1 Atlas with texture, geometry, and occupan
     CHECK(outParams.vps.packing_information(atlasId).pin_region_type_id_minus2(0) == 2); // V3C_AVD
     CHECK(outParams.vps.packing_information(atlasId).pin_region_top_left_x(0) == 0);
     CHECK(outParams.vps.packing_information(atlasId).pin_region_top_left_y(0) == 0);
-    CHECK(outParams.vps.packing_information(atlasId).pin_region_width_minus1(0) == 1919);
-    CHECK(outParams.vps.packing_information(atlasId).pin_region_height_minus1(0) == 4639);
+    CHECK(outParams.vps.packing_information(atlasId).pin_region_width_minus1(0) == 31);
+    CHECK(outParams.vps.packing_information(atlasId).pin_region_height_minus1(0) == 63);
     CHECK(outParams.vps.packing_information(atlasId).pin_region_unpack_top_left_x(0) == 0);
     CHECK(outParams.vps.packing_information(atlasId).pin_region_unpack_top_left_y(0) == 0);
     CHECK(outParams.vps.packing_information(atlasId).pin_region_type_id_minus2(1) == 1); // V3C_GVD
     CHECK(outParams.vps.packing_information(atlasId).pin_region_top_left_x(1) == 0);
-    CHECK(outParams.vps.packing_information(atlasId).pin_region_top_left_y(1) == 4640);
-    CHECK(outParams.vps.packing_information(atlasId).pin_region_width_minus1(1) == 1919);
-    CHECK(outParams.vps.packing_information(atlasId).pin_region_height_minus1(1) == 4639);
+    CHECK(outParams.vps.packing_information(atlasId).pin_region_top_left_y(1) == 64);
+    CHECK(outParams.vps.packing_information(atlasId).pin_region_width_minus1(1) == 31);
+    CHECK(outParams.vps.packing_information(atlasId).pin_region_height_minus1(1) == 63);
     CHECK(outParams.vps.packing_information(atlasId).pin_region_unpack_top_left_x(1) == 0);
     CHECK(outParams.vps.packing_information(atlasId).pin_region_unpack_top_left_y(1) == 0);
     CHECK(outParams.vps.packing_information(atlasId).pin_region_type_id_minus2(2) == 0); // V3C_OVD
     CHECK(outParams.vps.packing_information(atlasId).pin_region_top_left_x(2) == 0);
-    CHECK(outParams.vps.packing_information(atlasId).pin_region_top_left_y(2) == 9280);
-    CHECK(outParams.vps.packing_information(atlasId).pin_region_width_minus1(2) == 1919);
-    CHECK(outParams.vps.packing_information(atlasId).pin_region_height_minus1(2) == 4639);
+    CHECK(outParams.vps.packing_information(atlasId).pin_region_top_left_y(2) == 128);
+    CHECK(outParams.vps.packing_information(atlasId).pin_region_width_minus1(2) == 31);
+    CHECK(outParams.vps.packing_information(atlasId).pin_region_height_minus1(2) == 63);
     CHECK(outParams.vps.packing_information(atlasId).pin_region_unpack_top_left_x(2) == 0);
     CHECK(outParams.vps.packing_information(atlasId).pin_region_unpack_top_left_y(2) == 0);
     // unit.constructFramePack(frame); // TODO(Basel Salahieh): Add occupancy support
-    // CHECK(frame[0].framePack.getWidth() == 1920);
+    // CHECK(frame[0].framePack.getWidth() == 32);
     // CHECK(frame[0].framePack.getHeight() == 13920);
   }
 }

@@ -17,7 +17,7 @@ create_tmiv_library(
         "src/GeometryDownscaler.cpp"
         "src/MivEncoder.cpp"
         "src/MpiEncoder.cpp"
-        "src/FramePack.cpp"
+        "src/FramePacker.cpp"
     PUBLIC
         TMIV::ViewOptimizerLib
         TMIV::PrunerLib
@@ -85,7 +85,7 @@ create_catch2_unit_test(
         "src/GeometryQuantizer.test.cpp"
         "src/ExplicitOccupancy.test.cpp"
         "src/MivEncoder.test.cpp"
-	"src/FramePack.test.cpp"
+	"src/FramePacker.test.cpp"
     PRIVATE
         TMIV::EncoderLib
     )

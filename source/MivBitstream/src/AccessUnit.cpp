@@ -51,6 +51,22 @@ auto AtlasAccessUnit::decGeoFrameSize(const V3cParameterSet &vps) const noexcept
   return frameSize();
 }
 
+auto AtlasAccessUnit::decPacFrameSize(const V3cParameterSet &vps) const noexcept -> Common::Vec2i {
+  const auto &asme = asps.asps_miv_extension();
+  const auto &vme = vps.vps_miv_extension();
+  auto depthW = asps.asps_frame_width();
+  auto depthH = asps.asps_frame_height();
+  if (vme.vme_geometry_scale_enabled_flag()) {
+    depthW = asps.asps_frame_width() / (asme.asme_geometry_scale_factor_x_minus1() + 1);
+    depthH = asps.asps_frame_height() / (asme.asme_geometry_scale_factor_y_minus1() + 1);
+  }
+  auto numberOfRegions = asps.asps_frame_width() / depthW;
+  auto totalHeight = asps.asps_frame_height() + (depthH / numberOfRegions);
+  auto totalWidth = asps.asps_frame_width();
+
+  return Common::Vec2i{totalWidth, totalHeight};
+}
+
 auto AtlasAccessUnit::decOccFrameSize(const V3cParameterSet &vps) const noexcept -> Common::Vec2i {
   if (vps.vps_miv_extension_present_flag()) {
     const auto &vme = vps.vps_miv_extension();

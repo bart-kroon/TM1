@@ -60,6 +60,7 @@ struct AtlasAccessUnit {
   Common::Occupancy10Frame decOccFrame;
   Common::Occupancy10Frame occFrame;
   Common::Transparency10Frame transparencyFrame;
+  Common::FramePack444Frame decPacFrame;
 
   Common::BlockToPatchMap blockToPatchMap;
   PatchParamsList patchParamsList;
@@ -72,6 +73,9 @@ struct AtlasAccessUnit {
 
   // Occupancy frame size
   [[nodiscard]] auto decOccFrameSize(const V3cParameterSet &vps) const noexcept -> Common::Vec2i;
+
+  // FramePack frame size
+  [[nodiscard]] auto decPacFrameSize(const V3cParameterSet &vps) const noexcept -> Common::Vec2i;
 
   // Index into the block to patch map using nominal atlas coordinates
   [[nodiscard]] auto patchId(unsigned row, unsigned column) const -> uint16_t;

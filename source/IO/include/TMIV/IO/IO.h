@@ -109,6 +109,9 @@ auto loadTextureVideoFrame(const Common::Json &config, const Placeholders &place
 auto loadTransparencyVideoFrame(const Common::Json &config, const Placeholders &placeholders,
                                 MivBitstream::AtlasId atlasId, uint32_t frameId,
                                 Common::Vec2i frameSize) -> Common::Transparency10Frame;
+auto loadFramePackVideoFrame(const Common::Json &config, const Placeholders &placeholders,
+                             MivBitstream::AtlasId atlasId, uint32_t frameId,
+                             Common::Vec2i frameSize) -> Common::FramePack444Frame;
 auto loadSequenceConfig(const Common::Json &config, const Placeholders &placeholders,
                         std::int32_t frameIndex) -> MivBitstream::SequenceConfig;
 auto tryLoadSequenceConfig(const Common::Json &config, const Placeholders &placeholders,

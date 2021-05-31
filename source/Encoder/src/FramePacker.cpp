@@ -31,10 +31,10 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/Encoder/FramePack.h>
+#include <TMIV/Encoder/FramePacker.h>
 
 namespace TMIV::Encoder {
-void FramePack::combinePlanes(size_t atlasIdx, Common::TextureFrame &atlasTexture) {
+void FramePacker::combinePlanes(size_t atlasIdx, Common::TextureFrame &atlasTexture) {
   auto bufferTextureDepth =
       std::vector<char>(m_regionSizes[atlasIdx].pac.x() * m_regionSizes[atlasIdx].pac.y() * 2);
 
@@ -58,11 +58,12 @@ void FramePack::combinePlanes(size_t atlasIdx, Common::TextureFrame &atlasTextur
                   bufferPadding.size());
     }
     std::memcpy(buf.data(), bufferTextureDepth.data(), bufferTextureDepth.size());
-    m_framePack.getPlane(i) = buf;
+    m_framePacker.getPlane(i) = buf;
   }
 }
 
-void FramePack::extractScaledGeometry(size_t atlasIdx, Common::heap::Matrix<uint16_t> &planeDepth) {
+void FramePacker::extractScaledGeometry(size_t atlasIdx,
+                                        Common::heap::Matrix<uint16_t> &planeDepth) {
   auto bufferDepthWxH = std::vector<char>(
       (m_regionSizes[atlasIdx].geo.x() * m_regionSizes[atlasIdx].geo.y()) * sizeof(planeDepth[0]));
   m_bufferDepth.resize((m_regionSizes[atlasIdx].frame.x() *
@@ -88,15 +89,14 @@ void FramePack::extractScaledGeometry(size_t atlasIdx, Common::heap::Matrix<uint
   }
 }
 
-void FramePack::constructFramePack(Common::MVD10Frame &frame) {
+void FramePacker::constructFramePack(Common::MVD10Frame &frame) {
   // Current implementation is limited to texture attribute and geometry
   auto atlasIdx = 0;
   for (auto &atlas : frame) {
-
     if (m_regionSizes[atlasIdx].pac.x() == 0 || m_regionSizes[atlasIdx].pac.x() == 0) {
-      throw std::runtime_error(
-          "Packed frame size is not set, please make sure to call FramePack::setPackingInformation "
-          "to set it properly before FramePack::constructFramePack");
+      throw std::runtime_error("Packed frame size is not set, please make sure to call "
+                               "FramePacker::setPackingInformation "
+                               "to set it properly before FramePacker::constructFramePack");
     }
     m_bufferDepth =
         std::vector<char>((m_regionSizes[atlasIdx].frame.x() * m_regionSizes[atlasIdx].geo.y()) *
@@ -110,13 +110,14 @@ void FramePack::constructFramePack(Common::MVD10Frame &frame) {
     }
 
     combinePlanes(atlasIdx, atlas.texture);
-    m_framePack.resize(m_regionSizes[atlasIdx].pac.x(), m_regionSizes[atlasIdx].pac.y());
-    atlas.framePack = m_framePack;
+    m_framePacker.resize(static_cast<int32_t>(m_regionSizes[atlasIdx].pac.x()),
+                         static_cast<int32_t>(m_regionSizes[atlasIdx].pac.y()));
+    atlas.framePack = m_framePacker;
     atlasIdx++;
   }
 }
 
-void FramePack::updateVideoPresentFlags(MivBitstream::AtlasId atlasId) {
+void FramePacker::updateVideoPresentFlags(MivBitstream::AtlasId atlasId) {
   m_packingInformation
       .pin_occupancy_present_flag(m_params.vps.vps_occupancy_video_present_flag(atlasId))
       .pin_geometry_present_flag(m_params.vps.vps_geometry_video_present_flag(atlasId))
@@ -126,7 +127,7 @@ void FramePack::updateVideoPresentFlags(MivBitstream::AtlasId atlasId) {
       .vps_attribute_video_present_flag(atlasId, false);
 }
 
-void FramePack::updatePinOccupancyInformation(MivBitstream::AtlasId atlasId) {
+void FramePacker::updatePinOccupancyInformation(MivBitstream::AtlasId atlasId) {
   m_packingInformation.pin_occupancy_2d_bit_depth_minus1(
       m_params.vps.occupancy_information(atlasId).oi_occupancy_2d_bit_depth_minus1());
   m_packingInformation.pin_occupancy_MSB_align_flag(
@@ -135,7 +136,7 @@ void FramePack::updatePinOccupancyInformation(MivBitstream::AtlasId atlasId) {
       m_params.vps.occupancy_information(atlasId).oi_lossy_occupancy_compression_threshold());
 }
 
-auto FramePack::computeOccupancySizeAndRegionCount(size_t atlasIdx) -> uint8_t {
+auto FramePacker::computeOccupancySizeAndRegionCount(size_t atlasIdx) -> uint8_t {
   m_regionSizes[atlasIdx].occ = m_regionSizes[atlasIdx].frame;
   const auto &asmeAtlas = m_params.atlas[atlasIdx].asps.asps_miv_extension();
   const bool occScaled = asmeAtlas.asme_occupancy_scale_enabled_flag();
@@ -150,7 +151,7 @@ auto FramePack::computeOccupancySizeAndRegionCount(size_t atlasIdx) -> uint8_t {
   return static_cast<uint8_t>(m_regionSizes[atlasIdx].frame.x() / m_regionSizes[atlasIdx].occ.x());
 }
 
-auto FramePack::computeGeometrySizeAndRegionCount(size_t atlasIdx) -> uint8_t {
+auto FramePacker::computeGeometrySizeAndRegionCount(size_t atlasIdx) -> uint8_t {
   m_regionSizes[atlasIdx].geo = m_regionSizes[atlasIdx].frame;
   const auto &asmeAtlas = m_params.atlas[atlasIdx].asps.asps_miv_extension();
   const bool geoScaled = asmeAtlas.asme_geometry_scale_enabled_flag();
@@ -165,7 +166,7 @@ auto FramePack::computeGeometrySizeAndRegionCount(size_t atlasIdx) -> uint8_t {
   return static_cast<uint8_t>(m_regionSizes[atlasIdx].frame.x() / m_regionSizes[atlasIdx].geo.x());
 }
 
-void FramePack::updatePinGeometryInformation(MivBitstream::AtlasId atlasId) {
+void FramePacker::updatePinGeometryInformation(MivBitstream::AtlasId atlasId) {
   m_packingInformation.pin_geometry_2d_bit_depth_minus1(
       m_params.vps.geometry_information(atlasId).gi_geometry_2d_bit_depth_minus1());
   m_packingInformation.pin_geometry_MSB_align_flag(
@@ -174,7 +175,7 @@ void FramePack::updatePinGeometryInformation(MivBitstream::AtlasId atlasId) {
       m_params.vps.geometry_information(atlasId).gi_geometry_3d_coordinates_bit_depth_minus1());
 }
 
-void FramePack::updatePinAttributeInformation(MivBitstream::AtlasId atlasId) {
+void FramePacker::updatePinAttributeInformation(MivBitstream::AtlasId atlasId) {
   m_packingInformation.pin_attribute_count(
       m_params.vps.attribute_information(atlasId).ai_attribute_count());
   for (uint8_t i = 0; i < m_params.vps.attribute_information(atlasId).ai_attribute_count(); i++) {
@@ -188,7 +189,7 @@ void FramePack::updatePinAttributeInformation(MivBitstream::AtlasId atlasId) {
   }
 }
 
-void FramePack::updatePinRegionInformation(size_t i) {
+void FramePacker::updatePinRegionInformation(size_t i) {
   m_packingInformation.pin_region_tile_id(i, 0);
   m_packingInformation.pin_region_type_id_minus2(i, m_pinRegion.pin_region_type_id_minus2);
   m_packingInformation.pin_region_top_left_x(i, m_pinRegion.pin_region_top_left_x);
@@ -205,11 +206,11 @@ void FramePack::updatePinRegionInformation(size_t i) {
     m_packingInformation.pin_region_auxiliary_data_flag(i, false);
   }
   if (m_pinRegion.pin_region_type_id_minus2 + 2 == MivBitstream::VuhUnitType::V3C_AVD) {
-    m_packingInformation.pin_region_attr_type_id(i, 0);
+    m_packingInformation.pin_region_attr_index(i, 0);
   }
 }
 
-void FramePack::setAttributePinRegion(size_t i, const Common::Vec2u &frameSize) {
+void FramePacker::setAttributePinRegion(size_t i, const Common::Vec2u &frameSize) {
   m_pinRegion.pin_region_type_id_minus2 = static_cast<uint16_t>(2);
   m_pinRegion.pin_region_top_left_x = 0;
   m_pinRegion.pin_region_top_left_y = static_cast<uint16_t>(frameSize.y() * i);
@@ -219,7 +220,8 @@ void FramePack::setAttributePinRegion(size_t i, const Common::Vec2u &frameSize) 
   m_pinRegion.pin_region_unpack_top_left_y = 0;
 }
 
-void FramePack::setGeometryPinRegion(size_t i, size_t atlasIdx, const RegionCounts &regionCounts) {
+void FramePacker::setGeometryPinRegion(size_t i, size_t atlasIdx,
+                                       const RegionCounts &regionCounts) {
   m_pinRegion.pin_region_type_id_minus2 = static_cast<uint16_t>(1);
   m_pinRegion.pin_region_top_left_x =
       static_cast<uint16_t>(m_regionSizes[atlasIdx].geo.x() * (i - regionCounts.attr));
@@ -233,7 +235,8 @@ void FramePack::setGeometryPinRegion(size_t i, size_t atlasIdx, const RegionCoun
       (i - regionCounts.attr) * (m_regionSizes[atlasIdx].geo.y() / regionCounts.geo));
 }
 
-void FramePack::setOccupancyPinRegion(size_t i, size_t atlasIdx, const RegionCounts &regionCounts) {
+void FramePacker::setOccupancyPinRegion(size_t i, size_t atlasIdx,
+                                        const RegionCounts &regionCounts) {
   m_pinRegion.pin_region_type_id_minus2 = static_cast<uint16_t>(0);
   m_pinRegion.pin_region_top_left_x = static_cast<uint16_t>(
       m_regionSizes[atlasIdx].occ.x() * (i - (regionCounts.attr + regionCounts.geo)));
@@ -249,14 +252,13 @@ void FramePack::setOccupancyPinRegion(size_t i, size_t atlasIdx, const RegionCou
                             (m_regionSizes[atlasIdx].occ.y() / regionCounts.occ));
 }
 
-auto FramePack::setPackingInformation(EncoderParams params) -> const EncoderParams & {
+auto FramePacker::setPackingInformation(EncoderParams params) -> const EncoderParams & {
   // Current implementation is limited to texture attribute, geometry, and occupancy
   m_params = std::move(params);
 
   m_params.vps.vps_packing_information_present_flag(true);
-
+  m_regionSizes.clear();
   for (size_t atlasIdx = 0; atlasIdx <= m_params.vps.vps_atlas_count_minus1(); atlasIdx++) {
-
     const auto atlasId = m_params.vps.vps_atlas_id(atlasIdx);
     updateVideoPresentFlags(atlasId);
 

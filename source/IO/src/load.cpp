@@ -60,6 +60,7 @@ const std::string inputTextureVsbPathFmt = "inputTextureVideoSubBitstreamPathFmt
 const std::string inputTransparencyPathFmt = "inputTransparencyPathFmt";
 const std::string inputTransparencyVideoFramePathFmt = "inputTransparencyVideoFramePathFmt";
 const std::string inputTransparencyVsbPathFmt = "inputTransparencyVideoSubBitstreamPathFmt";
+const std::string inputPackedVideoFramePathFmt = "inputPackedVideoFramePathFmt";
 const std::string inputViewportParamsPathFmt = "inputViewportParamsPathFmt"s;
 const std::string inputPackedVsbPathFmt = "inputPackedVideoSubBitstreamPathFmt";
 
@@ -360,6 +361,13 @@ auto loadTransparencyVideoFrame(const Common::Json &config, const Placeholders &
                                 Common::Vec2i frameSize) -> Common::Transparency10Frame {
   return loadVideoFrame<Common::YUV400P10>(IO::inputTransparencyVideoFramePathFmt, config,
                                            placeholders, atlasId, frameId, frameSize);
+}
+
+auto loadFramePackVideoFrame(const Common::Json &config, const Placeholders &placeholders,
+                             MivBitstream::AtlasId atlasId, uint32_t frameId,
+                             Common::Vec2i frameSize) -> Common::FramePack444Frame {
+  return Common::yuv444p(loadVideoFrame<Common::YUV420P10>(
+      IO::inputPackedVideoFramePathFmt, config, placeholders, atlasId, frameId, frameSize));
 }
 
 namespace detail {

@@ -37,7 +37,7 @@
 #include <TMIV/Aggregator/IAggregator.h>
 #include <TMIV/DepthQualityAssessor/IDepthQualityAssessor.h>
 #include <TMIV/Encoder/Configuration.h>
-#include <TMIV/Encoder/FramePack.h>
+#include <TMIV/Encoder/FramePacker.h>
 #include <TMIV/Encoder/GeometryDownscaler.h>
 #include <TMIV/Encoder/IEncoder.h>
 #include <TMIV/Encoder/IGeometryQuantizer.h>
@@ -129,7 +129,7 @@ private: // Encoder_prepareSequence.cpp
   std::unique_ptr<Packer::IPacker> m_packer;
   std::unique_ptr<IGeometryQuantizer> m_geometryQuantizer;
   GeometryDownscaler m_geometryDownscaler;
-  FramePack m_framePack;
+  FramePacker m_framePacker;
 
   Configuration m_config;
 

@@ -153,6 +153,7 @@ using Occupancy10Frame = Frame<YUV400P10>;
 using Transparency8Frame = Frame<YUV400P8>;
 using Transparency10Frame = Frame<YUV400P10>;
 using FramePack10Frame = Frame<YUV420P10>;
+using FramePack444Frame = Frame<YUV444P10>;
 using Mask = Frame<YUV400P8>;
 using BlockToPatchMap = Frame<YUV400P16>;
 const auto unusedPatchId = UINT16_MAX;

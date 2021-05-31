@@ -355,7 +355,7 @@ pin_region_rotation_flag[ 4 ][ 0 ]=false
       unit.pin_region_map_index(i, static_cast<uint8_t>(i));
       unit.pin_region_auxiliary_data_flag(i, static_cast<bool>(i));
       if (i == 0) {
-        unit.pin_region_attr_type_id(i, static_cast<uint8_t>(i + 1));
+        unit.pin_region_attr_index(i, static_cast<uint8_t>(0));
       }
     }
 
@@ -384,7 +384,7 @@ pin_region_unpack_top_left_y[ 3 ][ 0 ]=0
 pin_region_rotation_flag[ 3 ][ 0 ]=false
 pin_region_map_index[ 3 ][ 0 ]=0
 pin_region_auxiliary_data_flag[ 3 ][ 0 ]=false
-pin_region_attr_type_id[ 3 ][ 0 ]=1
+pin_region_attr_index[ 3 ][ 0 ]=0
 pin_region_tile_id[ 3 ][ 1 ]=6
 pin_region_type_id_minus2[ 3 ][ 1 ]=1 (V3C_GVD)
 pin_region_top_left_x[ 3 ][ 1 ]=0
@@ -398,7 +398,7 @@ pin_region_map_index[ 3 ][ 1 ]=1
 pin_region_auxiliary_data_flag[ 3 ][ 1 ]=true
 )");
 
-    REQUIRE(bitCodingTest(unit, 274));
+    REQUIRE(bitCodingTest(unit, 280));
   }
 
   SECTION("4 Regions: 1 Attribute + 2 Geometry + 1 Occupancy") {
@@ -420,10 +420,6 @@ pin_region_auxiliary_data_flag[ 3 ][ 1 ]=true
         .pin_attribute_map_absolute_coding_persistence_flag(static_cast<uint8_t>(0), true)
         .pin_attribute_dimension_minus1(0, 1)
         .pin_attribute_dimension_partitions_minus1(0, 1)
-        .pin_attribute_partition_channels_minus1(0, static_cast<uint8_t>(1),
-                                                 static_cast<uint8_t>(0))
-        .pin_attribute_partition_channels_minus1(0, static_cast<uint8_t>(1),
-                                                 static_cast<uint8_t>(1))
         .pin_regions_count_minus1(3)
         .pin_region_tile_id(0, static_cast<uint8_t>(5))
         .pinRegionTypeId(0, VuhUnitType::V3C_AVD)
@@ -431,7 +427,7 @@ pin_region_auxiliary_data_flag[ 3 ][ 1 ]=true
         .pin_region_width_minus1(0, static_cast<uint16_t>(6))
         .pin_region_map_index(0, static_cast<uint8_t>(0))
         .pin_region_auxiliary_data_flag(0, false)
-        .pin_region_attr_type_id(0, static_cast<uint8_t>(1))
+        .pin_region_attr_index(0, static_cast<uint8_t>(0))
         .pin_region_attr_partition_index(0, 0)
         .pin_region_tile_id(1, static_cast<uint8_t>(5))
         .pinRegionTypeId(1, VuhUnitType::V3C_GVD)
@@ -467,7 +463,7 @@ pin_attribute_MSB_align_flag[ 3 ][ 0 ]=true
 pin_attribute_map_absolute_coding_persistence_flag[ 3 ][ 0 ]=true
 pin_attribute_dimension_minus1[ 3 ][ 0 ]=1
 pin_attribute_dimension_partitions_minus1[ 3 ][ 0 ]=1
-pin_attribute_partition_channels_minus1[ 3 ][ 0 ] [ 1 ]=1
+pin_attribute_partition_channels_minus1[ 3 ][ 0 ] [ 1 ]=0
 pin_regions_count_minus1[ 3 ]=3
 pin_region_tile_id[ 3 ][ 0 ]=5
 pin_region_type_id_minus2[ 3 ][ 0 ]=2 (V3C_AVD)
@@ -480,7 +476,7 @@ pin_region_unpack_top_left_y[ 3 ][ 0 ]=0
 pin_region_rotation_flag[ 3 ][ 0 ]=false
 pin_region_map_index[ 3 ][ 0 ]=0
 pin_region_auxiliary_data_flag[ 3 ][ 0 ]=false
-pin_region_attr_type_id[ 3 ][ 0 ]=1
+pin_region_attr_index[ 3 ][ 0 ]=0
 pin_region_attr_partition_index[ 3 ][ 0 ]=0
 pin_region_tile_id[ 3 ][ 1 ]=5
 pin_region_type_id_minus2[ 3 ][ 1 ]=1 (V3C_GVD)
@@ -515,7 +511,7 @@ pin_region_unpack_top_left_y[ 3 ][ 3 ]=0
 pin_region_rotation_flag[ 3 ][ 3 ]=false
 )");
 
-    REQUIRE(bitCodingTest(unit, 520));
+    REQUIRE(bitCodingTest(unit, 526));
   }
 }
 

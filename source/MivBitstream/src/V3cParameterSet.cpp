@@ -747,9 +747,9 @@ auto PackingInformation::pin_region_auxiliary_data_flag(size_t i) const -> bool 
   return m_pinRegions[i].pin_region_auxiliary_data_flag.value();
 }
 
-auto PackingInformation::pin_region_attr_type_id(size_t i) const -> uint8_t {
-  VERIFY_V3CBITSTREAM(i <= pin_regions_count_minus1() && m_pinRegions[i].pin_region_attr_type_id);
-  return m_pinRegions[i].pin_region_attr_type_id.value();
+auto PackingInformation::pin_region_attr_index(size_t i) const -> uint8_t {
+  VERIFY_V3CBITSTREAM(i <= pin_regions_count_minus1() && m_pinRegions[i].pin_region_attr_index);
+  return m_pinRegions[i].pin_region_attr_index.value();
 }
 
 auto PackingInformation::pin_region_attr_partition_index(size_t i) const -> uint8_t {
@@ -916,8 +916,7 @@ auto PackingInformation::printTo(std::ostream &stream, const AtlasId &j) const -
                  pin_region_auxiliary_data_flag(i));
     }
     if (pinRegionTypeId(i) == VuhUnitType::V3C_AVD) {
-      fmt::print(stream, "pin_region_attr_type_id[ {} ][ {} ]={}\n", j, i,
-                 pin_region_attr_type_id(i));
+      fmt::print(stream, "pin_region_attr_index[ {} ][ {} ]={}\n", j, i, pin_region_attr_index(i));
       if (pin_attribute_dimension_minus1(i) > 0) {
         fmt::print(stream, "pin_region_attr_partition_index[ {} ][ {} ]={}\n", j, i,
                    pin_region_attr_partition_index(i));
@@ -968,7 +967,7 @@ auto PackingInformation::decodeFrom(Common::InputBitstream &bitstream) -> Packin
   }
 
   if (result.pin_attribute_present_flag()) {
-    result.pin_attribute_count(bitstream.readBits<uint8_t>(4));
+    result.pin_attribute_count(bitstream.readBits<uint8_t>(7));
     for (size_t i = 0; i < result.pin_attribute_count(); i++) {
       result.pin_attribute_type_id(i, bitstream.readBits<AiAttributeTypeId>(4));
       result.pin_attribute_2d_bit_depth_minus1(i, bitstream.readBits<uint8_t>(5));
@@ -978,18 +977,18 @@ auto PackingInformation::decodeFrom(Common::InputBitstream &bitstream) -> Packin
       if (result.pin_attribute_dimension_minus1(i) > 0) {
         result.pin_attribute_dimension_partitions_minus1(i, bitstream.readBits<uint8_t>(6));
         auto remainingDimensions = result.pin_attribute_dimension_minus1(i);
-        const auto l = result.pin_attribute_dimension_partitions_minus1(i);
-        for (uint8_t m = 0; m < l; m++) {
-          if (l - m == remainingDimensions) {
-            result.pin_attribute_partition_channels_minus1(i, static_cast<uint8_t>(l), 0);
+        const auto m = result.pin_attribute_dimension_partitions_minus1(i);
+        for (uint8_t k = 0; k < m; k++) {
+          if (m - k == remainingDimensions) {
+            result.pin_attribute_partition_channels_minus1(i, static_cast<uint8_t>(k), 0);
           } else {
-            result.pin_attribute_partition_channels_minus1(i, static_cast<uint8_t>(l),
+            result.pin_attribute_partition_channels_minus1(i, static_cast<uint8_t>(k),
                                                            bitstream.getUExpGolomb<uint8_t>());
-            remainingDimensions -= static_cast<uint8_t>(
-                result.pin_attribute_partition_channels_minus1(i, static_cast<uint8_t>(l)) + 1);
           }
+          remainingDimensions -= static_cast<uint8_t>(
+              result.pin_attribute_partition_channels_minus1(i, static_cast<uint8_t>(k)) + 1);
         }
-        result.pin_attribute_partition_channels_minus1(i, static_cast<uint8_t>(l),
+        result.pin_attribute_partition_channels_minus1(i, static_cast<uint8_t>(m),
                                                        remainingDimensions);
       }
     }
@@ -1012,8 +1011,9 @@ auto PackingInformation::decodeFrom(Common::InputBitstream &bitstream) -> Packin
       result.pin_region_auxiliary_data_flag(i, bitstream.getFlag());
     }
     if (result.pinRegionTypeId(i) == VuhUnitType::V3C_AVD) {
-      result.pin_region_attr_type_id(i, bitstream.readBits<uint8_t>(4));
-      if (result.pin_attribute_dimension_minus1(i) > 0) {
+      result.pin_region_attr_index(i, bitstream.readBits<uint8_t>(7));
+      const auto k = result.pin_region_attr_index(i);
+      if (result.pin_attribute_dimension_minus1(k) > 0) {
         result.pin_region_attr_partition_index(i, bitstream.readBits<uint8_t>(5));
       }
     }
@@ -1037,7 +1037,7 @@ void PackingInformation::encodeTo(Common::OutputBitstream &bitstream) const {
     bitstream.writeBits(pin_geometry_3d_coordinates_bit_depth_minus1(), 5);
   }
   if (pin_attribute_present_flag()) {
-    bitstream.writeBits(pin_attribute_count(), 4);
+    bitstream.writeBits(pin_attribute_count(), 7);
     for (size_t i = 0; i < pin_attribute_count(); i++) {
       bitstream.writeBits(pin_attribute_type_id(i), 4);
       bitstream.writeBits(pin_attribute_2d_bit_depth_minus1(i), 5);
@@ -1047,18 +1047,15 @@ void PackingInformation::encodeTo(Common::OutputBitstream &bitstream) const {
       if (pin_attribute_dimension_minus1(i) > 0) {
         bitstream.writeBits(pin_attribute_dimension_partitions_minus1(i), 6);
         auto remainingDimensions = pin_attribute_dimension_minus1(i);
-        const auto l = pin_attribute_dimension_partitions_minus1(i);
-        for (uint8_t m = 0; m < l; m++) {
-          if (l - m == remainingDimensions) {
-            // pin_attribute_partition_channels_minus1(i, static_cast<uint8_t>(l), 0);
-          } else {
+        const auto m = pin_attribute_dimension_partitions_minus1(i);
+        for (uint8_t k = 0; k < m; k++) {
+          if (m - k != remainingDimensions) {
             bitstream.putUExpGolomb(
-                pin_attribute_partition_channels_minus1(i, static_cast<uint8_t>(l)));
-            remainingDimensions -= static_cast<uint8_t>(
-                pin_attribute_partition_channels_minus1(i, static_cast<uint8_t>(l)) + 1);
+                pin_attribute_partition_channels_minus1(i, static_cast<uint8_t>(k)));
           }
+          remainingDimensions -= static_cast<uint8_t>(
+              pin_attribute_partition_channels_minus1(i, static_cast<uint8_t>(k)) + 1);
         }
-        // pin_attribute_partition_channels_minus1(i, static_cast<uint8_t>(l), remainingDimensions);
       }
     }
   }
@@ -1081,8 +1078,9 @@ void PackingInformation::encodeTo(Common::OutputBitstream &bitstream) const {
       bitstream.putFlag(pin_region_auxiliary_data_flag(i));
     }
     if (pinRegionTypeId(i) == VuhUnitType::V3C_AVD) {
-      bitstream.writeBits(pin_region_attr_type_id(i), 4);
-      if (pin_attribute_dimension_minus1(i) > 0) {
+      bitstream.writeBits(pin_region_attr_index(i), 7);
+      const auto k = pin_region_attr_index(i);
+      if (pin_attribute_dimension_minus1(k) > 0) {
         bitstream.writeBits(pin_region_attr_partition_index(i), 5);
       }
     }

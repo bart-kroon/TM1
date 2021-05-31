@@ -420,10 +420,10 @@ inline auto PackingInformation::pin_region_auxiliary_data_flag(size_t i, bool va
   return *this;
 }
 
-inline auto PackingInformation::pin_region_attr_type_id(size_t i, uint8_t value) -> auto & {
+inline auto PackingInformation::pin_region_attr_index(size_t i, uint8_t value) -> auto & {
   VERIFY_V3CBITSTREAM(i <= pin_regions_count_minus1());
   VERIFY_V3CBITSTREAM(value <= 4);
-  m_pinRegions[i].pin_region_attr_type_id = value;
+  m_pinRegions[i].pin_region_attr_index = value;
   return *this;
 }
 

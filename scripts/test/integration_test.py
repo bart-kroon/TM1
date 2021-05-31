@@ -124,6 +124,7 @@ class IntegrationTest:
             futures += self.testBestReference(executor)
             futures += self.testAdditiveSynthesizer(executor)
             futures += self.testMivMpi(executor)
+            futures += self.testFramePacking(executor)
 
             # if not self.ciOnly:
             #    futures += self.testMyNonCiTest(executor)
@@ -560,6 +561,61 @@ class IntegrationTest:
         )
 
         return [f4_1, f4_2, f4_3]
+
+    def testFramePacking(self, executor):
+        if not self.dryRun:
+            (self.testDir / "P3" / "E" / "R0").mkdir(parents=True, exist_ok=True)
+
+        packedResolution = Resolution(1024, 1280)
+        renderResolution = Resolution(480, 270)
+
+        f1 = self.launchCommand(
+            executor,
+            [],
+            ["{0}/bin/Encoder", "-c", "{1}/config/test/frame_packing/P_1_TMIV_encode.json"]
+            + ["-p", "configDirectory", "{1}/config", "-p", "inputDirectory", "{2}"]
+            + ["-p", "outputDirectory", "{3}", "-n", "3", "-s", "E", "-p", "intraPeriod", "2"]
+            + ["-p", "inputSequenceConfigPathFmt", "test/sequences/T{{1}}.json"]
+            + ["-p", "maxLumaPictureSize", "1048576", "-f", "135"],
+            "{3}/P3/E/TMIV_P3_E.log",
+            [
+                "P3/E/TMIV_P3_E.bit",
+                f"P3/E/TMIV_P3_E_pac_c00_{packedResolution}_yuv420p10le.yuv",
+                f"P3/E/TMIV_P3_E_pac_c01_{packedResolution}_yuv420p10le.yuv",
+            ],
+        )
+
+        f2_1 = self.launchCommand(
+            executor,
+            [f1],
+            ["{0}/bin/Decoder", "-c", "{1}/config/test/frame_packing/P_4_TMIV_decode.json"]
+            + ["-p", "configDirectory", "{1}/config", "-p", "inputDirectory", "{3}", "-p"]
+            + ["outputDirectory", "{3}", "-p", "inputPackedVideoFramePathFmt"]
+            + ["P{{0}}/{{1}}/TMIV_P{{0}}_{{1}}_pac_c{{3:02}}_{{4}}x{{5}}_yuv420p10le.yuv"]
+            + ["-p", "inputBitstreamPathFmt", "P3/E/TMIV_P3_E.bit"]
+            + ["-p", "inputViewportParamsPathFmt", "test/sequences/T{{1}}.json"]
+            + ["-n", "3", "-N", "3", "-s", "E", "-r", "R0", "-v", "v11"],
+            "{3}/P3/E/R0/P3_E_R0_v11.log",
+            [f"P3/E/R0/P3_E_R0_v11_tex_{renderResolution}_yuv420p10le.yuv"],
+        )
+
+        f2_2 = self.launchCommand(
+            executor,
+            [f1],
+            ["{0}/bin/Parser", "-b", "{3}/P3/E/TMIV_P3_E.bit", "-o", "{3}/P3/E/TMIV_P3_E.hls"],
+            None,
+            ["P3/E/TMIV_P3_E.hls"],
+        )
+
+        f2_3 = self.launchCommand(
+            executor,
+            [f1],
+            ["{0}/bin/BitrateReport", "-b", "{3}/P3/E/TMIV_P3_E.bit"],
+            "{3}/P3/E/TMIV_P3_E.csv",
+            [],
+        )
+
+        return [f2_1, f2_2, f2_3]
 
     def testAdditiveSynthesizer(self, executor):
         if not self.dryRun:

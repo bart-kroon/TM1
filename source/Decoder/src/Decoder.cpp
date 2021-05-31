@@ -34,6 +34,7 @@
 #include <TMIV/Decoder/Decoder.h>
 
 #include <TMIV/Common/Factory.h>
+#include <TMIV/Decoder/FrameUnpacker.h>
 #include <TMIV/Decoder/GeometryScaler.h>
 #include <TMIV/Decoder/OccupancyReconstructor.h>
 #include <TMIV/MivBitstream/AccessUnit.h>
@@ -73,8 +74,19 @@ void addAttributeOffset(MivBitstream::AccessUnit &frame) {
     const auto H = atlas.attrFrame.getHeight();
     const auto W = atlas.attrFrame.getWidth();
 
-    const auto &ai = frame.vps.attribute_information(atlasId);
-    const auto inputBitCount = ai.ai_attribute_2d_bit_depth_minus1(0) + 1;
+    const auto inputBitCount = [&]() {
+      if (frame.vps.vps_attribute_video_present_flag(atlasId)) {
+        const auto &ai = frame.vps.attribute_information(atlasId);
+        return ai.ai_attribute_2d_bit_depth_minus1(0) + 1;
+      }
+      if (frame.vps.vps_packing_information_present_flag() &&
+          frame.vps.vps_packed_video_present_flag(atlasId) &&
+          frame.vps.packing_information(atlasId).pin_attribute_present_flag()) {
+        return frame.vps.packing_information(atlasId).pin_attribute_2d_bit_depth_minus1(0) + 1;
+      }
+      return 0;
+    }();
+
     const auto inputMaxVal = (1 << inputBitCount) - 1;
     const auto inputMedVal = 1 << (inputBitCount - 1);
 
@@ -115,6 +127,10 @@ void addAttributeOffset(MivBitstream::AccessUnit &frame) {
 
 void Decoder::recoverFrame(MivBitstream::AccessUnit &frame) {
   checkRestrictions(frame);
+  if (frame.vps.vps_packing_information_present_flag()) {
+    FrameUnpacker frameUnpacker;
+    frameUnpacker.inplaceUnpack(frame);
+  }
   addAttributeOffset(frame);
   m_geometryScaler.inplaceScale(frame);
   OccupancyReconstructor::reconstruct(frame);

@@ -398,7 +398,10 @@ void GeometryScaler::inplaceScale(MivBitstream::AccessUnit &frame) const {
     const auto j = frame.vps.vps_atlas_id(k);
     auto &atlas = frame.atlas[k];
     // only try to upscale the depth is the geometry present flag is true
-    if (frame.vps.vps_geometry_video_present_flag(j)) {
+    if (frame.vps.vps_geometry_video_present_flag(j) ||
+        (frame.vps.vps_packing_information_present_flag() &&
+         frame.vps.vps_packed_video_present_flag(j) &&
+         frame.vps.packing_information(j).pin_geometry_present_flag())) {
       if (!atlas.attrFrame.empty() && !atlas.decGeoFrame.empty() &&
           atlas.decGeoFrame.getSize() != atlas.attrFrame.getSize()) {
         atlas.geoFrame = scale(atlas, frame.gup.value_or(m_defaultGup));

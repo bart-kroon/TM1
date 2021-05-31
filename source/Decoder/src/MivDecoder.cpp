@@ -73,6 +73,8 @@ void MivDecoder::setTransparencyFrameServer(TransparencyFrameServer value) {
   m_transparencyFrameServer = std::move(value);
 }
 
+void MivDecoder::setFramePackServer(FramePackServer value) { m_framePackServer = std::move(value); }
+
 auto MivDecoder::operator()() -> std::optional<MivBitstream::AccessUnit> {
   m_au.irap = expectIrap();
 
@@ -135,6 +137,7 @@ void MivDecoder::resetDecoder() {
   m_geoVideoDecoder.clear();
   m_textureVideoDecoder.clear();
   m_transparencyVideoDecoder.clear();
+  m_framePackVideoDecoder.clear();
 
   for (size_t k = 0; k <= m_au.vps.vps_atlas_count_minus1(); ++k) {
     const auto j = m_au.vps.vps_atlas_id(k);
@@ -160,6 +163,15 @@ void MivDecoder::resetDecoder() {
       m_geoVideoDecoder.push_back(nullptr);
     }
 
+    if (m_au.vps.vps_packing_information_present_flag() &&
+        m_au.vps.vps_packed_video_present_flag(j)) {
+      auto vuhGvd = MivBitstream::V3cUnitHeader{MivBitstream::VuhUnitType::V3C_GVD};
+      vuhGvd.vuh_v3c_parameter_set_id(m_au.vps.vps_v3c_parameter_set_id()).vuh_atlas_id(j);
+      m_framePackVideoDecoder.push_back(
+          startVideoDecoder(vuhGvd, m_totalFramePackVideoDecodingTime));
+    } else {
+      m_framePackVideoDecoder.push_back(nullptr);
+    }
     bool attrTextureAbsent = true;
     bool attrTransparencyAbsent = true;
     if (m_au.vps.vps_attribute_video_present_flag(j)) {
@@ -194,6 +206,10 @@ auto MivDecoder::decodeVideoSubBitstreams() -> bool {
   for (size_t k = 0; k <= m_au.vps.vps_atlas_count_minus1(); ++k) {
     const auto j = m_au.vps.vps_atlas_id(k);
 
+    if (m_au.vps.vps_packing_information_present_flag() &&
+        m_au.vps.vps_packed_video_present_flag(j)) {
+      Common::at(result, static_cast<size_t>(decodeFramePackVideo(k))) = true;
+    }
     if (m_au.vps.vps_occupancy_video_present_flag(j)) {
       Common::at(result, static_cast<size_t>(decodeOccVideo(k))) = true;
     }
@@ -552,6 +568,29 @@ auto MivDecoder::decodeAttrTransparencyVideo(size_t k) -> bool {
   return true;
 }
 
+auto MivDecoder::decodeFramePackVideo(size_t k) -> bool {
+  const double t0 = clock();
+
+  if (m_framePackVideoDecoder[k]) {
+    auto frame = m_framePackVideoDecoder[k]->getFrame();
+    if (!frame) {
+      return false;
+    }
+    m_au.atlas[k].decPacFrame = frame->as<Common::YUV444P10>();
+  } else if (m_framePackServer) {
+    m_au.atlas[k].decPacFrame = m_framePackServer(m_au.vps.vps_atlas_id(k), m_au.foc,
+                                                  m_au.atlas[k].decPacFrameSize(m_au.vps));
+    if (m_au.atlas[k].decPacFrame.empty()) {
+      return false;
+    }
+  } else {
+    MIVBITSTREAM_ERROR("Out-of-band framepack video data but no frame server provided");
+  }
+
+  m_totalFramePackVideoDecodingTime += clockInSeconds() - t0;
+  return true;
+}
+
 void MivDecoder::summarizeVps() const {
   const auto &vps = m_au.vps;
   const auto &ptl = vps.profile_tier_level();
@@ -586,6 +625,12 @@ void MivDecoder::summarizeVps() const {
         if (i + 1 == ai.ai_attribute_count()) {
           fmt::print("]");
         }
+      }
+    }
+    if (vps.vps_packing_information_present_flag()) {
+      if (vps.vps_packed_video_present_flag(j)) {
+        const auto &pin = vps.packing_information(j);
+        fmt::print("; [PIN: numRegions {}]", pin.pin_regions_count_minus1() + 1);
       }
     }
     fmt::print("\n");

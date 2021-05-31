@@ -389,7 +389,7 @@ struct PinRegion {
            (pin_region_rotation_flag == other.pin_region_rotation_flag) &&
            (pin_region_map_index == other.pin_region_map_index) &&
            (pin_region_auxiliary_data_flag == other.pin_region_auxiliary_data_flag) &&
-           (pin_region_attr_type_id == other.pin_region_attr_type_id) &&
+           (pin_region_attr_index == other.pin_region_attr_index) &&
            (pin_region_attr_partition_index == other.pin_region_attr_partition_index);
   }
 
@@ -404,7 +404,7 @@ struct PinRegion {
   bool pin_region_rotation_flag{};
   std::optional<uint8_t> pin_region_map_index{};
   std::optional<bool> pin_region_auxiliary_data_flag{};
-  std::optional<uint8_t> pin_region_attr_type_id{};
+  std::optional<uint8_t> pin_region_attr_index{};
   std::optional<uint8_t> pin_region_attr_partition_index{};
 };
 
@@ -468,9 +468,8 @@ public:
   [[nodiscard]] auto pin_region_rotation_flag(size_t i) const -> bool;
   [[nodiscard]] auto pin_region_map_index(size_t i) const -> uint8_t;
   [[nodiscard]] auto pin_region_auxiliary_data_flag(size_t i) const -> bool;
-  [[nodiscard]] auto pin_region_attr_type_id(size_t i) const -> uint8_t;
+  [[nodiscard]] auto pin_region_attr_index(size_t i) const -> uint8_t;
   [[nodiscard]] auto pin_region_attr_partition_index(size_t i) const -> uint8_t;
-  [[nodiscard]] auto pin_region_attr_partitions_minus1(size_t i) const -> uint8_t;
 
   constexpr auto pin_codec_id(uint8_t value) noexcept -> auto &;
   auto pin_occupancy_present_flag(bool value) -> auto &;
@@ -503,7 +502,7 @@ public:
   auto pin_region_map_index(size_t i, uint8_t value) -> auto &;
   auto pin_region_rotation_flag(size_t i, bool value) -> auto &;
   auto pin_region_auxiliary_data_flag(size_t i, bool value) -> auto &;
-  auto pin_region_attr_type_id(size_t i, uint8_t value) -> auto &;
+  auto pin_region_attr_index(size_t i, uint8_t value) -> auto &;
   auto pin_region_attr_partition_index(size_t i, uint8_t value) -> auto &;
 
   auto printTo(std::ostream &stream, const AtlasId &j) const -> std::ostream &;

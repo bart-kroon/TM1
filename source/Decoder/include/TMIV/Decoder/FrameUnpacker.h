@@ -31,54 +31,48 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef TMIV_ENCODER_FRAMEPACK_H
-#define TMIV_ENCODER_FRAMEPACK_H
+#ifndef TMIV_DECODER_FRAMEPACK_H
+#define TMIV_DECODER_FRAMEPACK_H
 
 #include <TMIV/Common/Frame.h>
-#include <TMIV/Encoder/EncoderParams.h>
+#include <TMIV/Common/Json.h>
+#include <TMIV/MivBitstream/AccessUnit.h>
 
-namespace TMIV::Encoder {
-class FramePack {
+namespace TMIV::Decoder {
+class FrameUnpacker {
 public:
-  void constructFramePack(Common::MVD10Frame &frame);
-  auto setPackingInformation(EncoderParams params) -> const EncoderParams &;
+  void inplaceUnpack(MivBitstream::AccessUnit &frame);
 
 private:
-  struct RegionCounts {
-    uint8_t attr{};
-    uint8_t geo{};
-    uint8_t occ{};
+  struct RegionParams {
+    std::vector<uint8_t> regionTypeId;
+    std::vector<uint16_t> regionPackedOffsetX;
+    std::vector<uint16_t> regionPackedOffsetY;
+    std::vector<uint16_t> regionWidth;
+    std::vector<uint16_t> regionHeight;
+    std::vector<uint16_t> regionUnpackedOffsetX;
+    std::vector<uint16_t> regionUnpackedOffsetY;
+    std::vector<bool> regionRotationFlag;
+    std::vector<bool> regionAuxilaryDataFlag;
+    std::vector<uint8_t> regionAttrTypeID;
   };
-
-  struct RegionSizes {
-    Common::Vec2u frame{0, 0};
-    Common::Vec2u geo{0, 0};
-    Common::Vec2u occ{0, 0};
-    Common::Vec2u pac{0, 0};
+  struct UnpackSizes {
+    Common::Vec2u unpckOccSize{0, 0};
+    Common::Vec2u unpckGeoSize{0, 0};
+    Common::Vec2u unpckAttrSize{0, 0};
   };
+  RegionParams m_regionParams;
+  UnpackSizes m_unpackSizes;
+  uint8_t m_numRegions{1};
+  uint8_t m_numAttributes{1};
+  uint8_t m_numPartitions{1};
+  uint8_t m_numMaps{1};
 
-  void combinePlanes(size_t atlasIdx, Common::TextureFrame &atlasTexture);
-  void extractScaledGeometry(size_t atlasIdx, Common::heap::Matrix<uint16_t> &planeDepth);
-  void updateVideoPresentFlags(MivBitstream::AtlasId atlasId);
-  void updatePinOccupancyInformation(MivBitstream::AtlasId atlasId);
-  auto computeOccupancySizeAndRegionCount(size_t atlasIdx) -> uint8_t;
-  void updatePinGeometryInformation(MivBitstream::AtlasId atlasId);
-  auto computeGeometrySizeAndRegionCount(size_t atlasIdx) -> uint8_t;
-  void updatePinAttributeInformation(MivBitstream::AtlasId atlasId);
-  void setAttributePinRegion(size_t i, const Common::Vec2u &frameSize);
-  void setGeometryPinRegion(size_t i, size_t atlasIdx, const RegionCounts &regionCounts);
-  void setOccupancyPinRegion(size_t i, size_t atlasIdx, const RegionCounts &regionCounts);
-  void updatePinRegionInformation(size_t i);
-
-  std::vector<RegionSizes> m_regionSizes{};
-  EncoderParams m_params;
-  TMIV::MivBitstream::PackingInformation m_packingInformation{};
-  TMIV::MivBitstream::PinRegion m_pinRegion{};
-
-  Common::FramePack10Frame m_framePack{};
-  std::vector<char> m_bufferDepth{};
-  size_t m_depthPaddingBytes{};
+  void readRegionParams(const TMIV::MivBitstream::PackingInformation &PackingInfo);
+  void calculateUnpackSizes();
+  void initializeUnpackComponents(TMIV::MivBitstream::AtlasAccessUnit &atlas) const;
+  void extractUnpackedComponents(TMIV::MivBitstream::AtlasAccessUnit &atlas);
 };
-} // namespace TMIV::Encoder
+} // namespace TMIV::Decoder
 
 #endif

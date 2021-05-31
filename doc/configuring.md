@@ -95,6 +95,7 @@ Unless specified otherwise, the base directory for these path formats is `inputD
     * 4, 5: frame width and height.
 * **inputOccupancyVideoFramePathFmt**: the path format of the uncompresed occupancy video data (OVD), consumed by the Decoder for out-of-band video decoding, e.g. for testing alternative video codecs, with the same placeholders as `inputGeometryVideoFramePathFmt`.
 * **inputTextureVideoFramePathFmt**: the path format of the uncompresed attribute video data (AVD) with attribute ID `ATTR_TEXTURE`, consumed by the Decoder for out-of-band video decoding, e.g. for testing alternative video codecs, with the same placeholders as `inputGeometryVideoFramePathFmt`.
+* **inputPackedVideoFramePathFmt**: the path format of the uncompresed packed video data (PVD), consumed by the Decoder for out-of-band video decoding, with the same placeholders as `inputGeometryVideoFramePathFmt`.
 * **inputTransparencyVideoFramePathFmt**: the path format of the uncompresed attribute video data (AVD) with attribute ID `ATTR_TRANSPARENCY`, with the same placeholders as `inputGeometryVideoFramePathFmt`.
 * **inputGeometryVsbPathFmt**: the path format of the geometry video sub-bitstream, consumed by the Multiplexer, with placeholders:
     * 0: number of input frames,
@@ -108,6 +109,7 @@ Unless specified otherwise, the base directory for these path formats is `inputD
     * 2: test ID,
     * 3: atlas index,
     * 4: attribute index.
+* **inputPackedVsbPathFmt**: the path format of the packed video sub-bitstream, consumed by the Multiplexer, with the same placeholders as `inputGeometryVsbPathFmt`.
 * **inputNormalVsbPathFmt**: the path format of the attribute video sub-bitstream with attribute ID `ATTR_NORMAL`, consumed by the Multiplexer, with the same placeholders as `inputTextureVsbPathFmt`.
 * **inputTransparencyVsbPathFmt**: the path format of the attribute video sub-bitstream with attribute ID `ATTR_TRANSPARENCY`, consumed by the Multiplexer, with the same placeholders as `inputTextureVsbPathFmt`.
 * **inputMaterialIdVsbPathFmt**: the path format of the attribute video sub-bitstream with attribute ID `ATTR_MATERIAL_ID`, consumed by the Multiplexer, with the same placeholders as `inputTextureVsbPathFmt`.
@@ -140,9 +142,10 @@ Unless specified otherwise, the base directory for these path formats is `output
     * 3: atlas index,
     * 4, 5: frame width and height.
 * **outputGeometryVideoDataPathFmt**: the path format of the uncompressed geometry video data (GVD), produced by the Encoder, with the same placeholders as `outputBlockToPatchMapPathFmt`.
-* **outputOccupancyVideoDataPathFmt**: the path format of the uncompressed occupancy video data (GVD), produced by the Encoder, with the same placeholders as `outputBlockToPatchMapPathFmt`.
-* **outputTextureVideoDataPathFmt**: the path format of the uncompressed attribute video data (GVD) with attribute ID `ATTR_TEXTURE`, produced by the Encoder, with the same placeholders as `outputBlockToPatchMapPathFmt`.
-* **outputTransparencyVideoDataPathFmt**: the path format of the uncompressed attribute video data (GVD) with attribute ID `ATTR_TRANSPARENCY`, with the same placeholders as `outputBlockToPatchMapPathFmt`.
+* **outputOccupancyVideoDataPathFmt**: the path format of the uncompressed occupancy video data (OVD), produced by the Encoder, with the same placeholders as `outputBlockToPatchMapPathFmt`.
+* **outputTextureVideoDataPathFmt**: the path format of the uncompressed attribute video data (AVD) with attribute ID `ATTR_TEXTURE`, produced by the Encoder, with the same placeholders as `outputBlockToPatchMapPathFmt`.
+* **outputPackedVideoDataPathFmt**: the path format of the uncompressed packed video data (PVD), produced by the Encoder, with the same placeholders as `outputBlockToPatchMapPathFmt`.
+* **outputTransparencyVideoDataPathFmt**: the path format of the uncompressed attribute video data (AVD) with attribute ID `ATTR_TRANSPARENCY`, with the same placeholders as `outputBlockToPatchMapPathFmt`.
 * **outputMultiviewGeometryPathFmt**: the path format of the reconstructed multiview geometry (depth) data, produced by the Decoder, with placeholders:
     * 0: number of input frames,
     * 1: content ID,
@@ -180,6 +183,7 @@ These parameters are in the root of the configuration file and may be accessed b
 * Output video sub-bitstreams:
     * **haveOccupancyVideo:** bool; output occupancy video data (OVD) instead of  depth/occupancy coding within geometry video data (GVD). Make sure to use ExplicitOccupancy as the geometry quantizer.
     * **haveTextureVideo:** bool; output attribute video data (AVD) to encode the texture attribute. When false texture data is still needed as input of the test model.
+    * **framePacking:** bool; output packed video data (PVD) to encode the packed components together in a single video frame.
     * **haveTransparencyVideo:** bool; output attribute video data (AVD) to encode the transparency attribute. :construction:
     * **haveGeometryVideo:** bool; output geometry video data (GVD) to encode depth and optionally also occuapncy information. Without geometry, depth estimation is shifted from a pre-encoding to a post-decoding process.
     * **geometryScaleEnabledFlag:** bool; when true geometry is downscaled by a factor of two in respect to the atlas frame size. Otherwise geometry is at full resolution.

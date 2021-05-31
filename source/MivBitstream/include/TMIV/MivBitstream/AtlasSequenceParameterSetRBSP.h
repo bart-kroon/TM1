@@ -120,16 +120,16 @@ public:
 
   constexpr auto asme_ancillary_atlas_flag(bool value) noexcept -> auto &;
   constexpr auto asme_embedded_occupancy_enabled_flag(bool value) noexcept -> auto &;
-  constexpr auto asme_depth_occ_threshold_flag(bool value) -> auto &;
+  constexpr auto asme_depth_occ_threshold_flag(bool value) noexcept -> auto &;
   constexpr auto asme_geometry_scale_enabled_flag(bool value) noexcept -> auto &;
-  constexpr auto asme_geometry_scale_factor_x_minus1(uint16_t value) -> auto &;
-  constexpr auto asme_geometry_scale_factor_y_minus1(uint16_t value) -> auto &;
+  constexpr auto asme_geometry_scale_factor_x_minus1(uint16_t value) noexcept -> auto &;
+  constexpr auto asme_geometry_scale_factor_y_minus1(uint16_t value) noexcept -> auto &;
   constexpr auto asme_occupancy_scale_enabled_flag(bool value) noexcept -> auto &;
   constexpr auto asme_occupancy_scale_factor_x_minus1(uint16_t value) -> auto &;
   constexpr auto asme_occupancy_scale_factor_y_minus1(uint16_t value) -> auto &;
   constexpr auto asme_patch_constant_depth_flag(bool value) noexcept -> auto &;
   constexpr auto asme_patch_attribute_offset_enabled_flag(bool value) noexcept -> auto &;
-  constexpr auto asme_patch_attribute_offset_bit_depth_minus1(uint16_t value) -> auto &;
+  constexpr auto asme_patch_attribute_offset_bit_depth_minus1(uint16_t value) noexcept -> auto &;
   constexpr auto asme_max_entity_id(uint16_t value) noexcept -> auto &;
   constexpr auto asme_inpaint_enabled_flag(bool value) noexcept -> auto &;
 

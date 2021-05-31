@@ -75,28 +75,28 @@ auto AtlasAdaptationParameterSetRBSP::aapsExtensionData() const -> const std::ve
 
 auto AtlasAdaptationParameterSetRBSP::aaps_log2_max_atlas_frame_order_cnt_lsb_minus4(
     uint8_t value) noexcept -> AtlasAdaptationParameterSetRBSP & {
-  PRECONDITION(aaps_log2_max_afoc_present_flag());
+  aaps_log2_max_afoc_present_flag(true);
   m_aaps_log2_max_atlas_frame_order_cnt_lsb_minus4 = value;
   return *this;
 }
 
 auto AtlasAdaptationParameterSetRBSP::aaps_vpcc_extension_present_flag(bool value) noexcept
     -> AtlasAdaptationParameterSetRBSP & {
-  PRECONDITION(aaps_extension_present_flag());
+  aaps_extension_present_flag(true);
   m_aaps_vpcc_extension_present_flag = value;
   return *this;
 }
 
 auto AtlasAdaptationParameterSetRBSP::aaps_extension_7bits(uint8_t value) noexcept
     -> AtlasAdaptationParameterSetRBSP & {
-  PRECONDITION(aaps_extension_present_flag());
+  aaps_extension_present_flag(true);
   m_aaps_extension_7bits = value;
   return *this;
 }
 
 auto AtlasAdaptationParameterSetRBSP::aaps_vpcc_extension(const AapsVpccExtension &value) noexcept
     -> AtlasAdaptationParameterSetRBSP & {
-  PRECONDITION(aaps_vpcc_extension_present_flag());
+  aaps_vpcc_extension_present_flag(true);
   m_aaps_vpcc_extension = value;
   return *this;
 }

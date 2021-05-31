@@ -76,7 +76,7 @@ private:
   [[nodiscard]] auto isCyclic(NodeId nodeId, std::vector<bool> &visited,
                               std::vector<bool> &nodesInCurrentPath) const -> bool;
 
-  std::vector<std::vector<Link<T>>> m_adjacencyList;
+  std::vector<std::vector<Link<T>>> m_adjacencyList{};
 };
 } // namespace TMIV::Common::Graph
 

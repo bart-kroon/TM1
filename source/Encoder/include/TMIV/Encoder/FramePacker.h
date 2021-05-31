@@ -72,8 +72,8 @@ private:
 
   std::vector<RegionSizes> m_regionSizes{};
   EncoderParams m_params;
-  TMIV::MivBitstream::PackingInformation m_packingInformation{};
-  TMIV::MivBitstream::PinRegion m_pinRegion{};
+  MivBitstream::PackingInformation m_packingInformation{};
+  MivBitstream::PinRegion m_pinRegion{};
 
   Common::FramePack10Frame m_framePacker{};
   std::vector<char> m_bufferDepth{};

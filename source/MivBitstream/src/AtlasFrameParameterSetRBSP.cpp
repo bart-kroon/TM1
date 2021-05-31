@@ -88,13 +88,13 @@ void AtlasFrameTileInformation::encodeTo(Common::OutputBitstream &bitstream) {
 
 auto AfpsMivExtension::afme_inpaint_lod_scale_x_minus1(unsigned value) noexcept
     -> AfpsMivExtension & {
-  PRECONDITION(afme_inpaint_lod_enabled_flag());
+  afme_inpaint_lod_enabled_flag(true);
   m_afme_inpaint_lod_scale_x_minus1 = value;
   return *this;
 }
 
 auto AfpsMivExtension::afme_inpaint_lod_scale_y_idc(unsigned value) noexcept -> AfpsMivExtension & {
-  PRECONDITION(afme_inpaint_lod_enabled_flag());
+  afme_inpaint_lod_enabled_flag(true);
   m_afme_inpaint_lod_scale_y_idc = value;
   return *this;
 }
@@ -151,20 +151,20 @@ auto AtlasFrameParameterSetRBSP::afpsExtensionData() const -> const std::vector<
 
 auto AtlasFrameParameterSetRBSP::afps_miv_extension_present_flag(bool value) noexcept
     -> AtlasFrameParameterSetRBSP & {
-  PRECONDITION(afps_extension_present_flag());
+  afps_extension_present_flag(true);
   m_afps_miv_extension_present_flag = value;
   return *this;
 }
 
 auto AtlasFrameParameterSetRBSP::afps_extension_7bits(uint8_t value) noexcept
     -> AtlasFrameParameterSetRBSP & {
-  PRECONDITION(afps_extension_present_flag());
+  afps_extension_present_flag(true);
   m_afps_extension_7bits = value;
   return *this;
 }
 
 auto AtlasFrameParameterSetRBSP::afps_miv_extension() noexcept -> AfpsMivExtension & {
-  PRECONDITION(afps_miv_extension_present_flag());
+  afps_miv_extension_present_flag(true);
   if (!m_afme) {
     m_afme = AfpsMivExtension{};
   }

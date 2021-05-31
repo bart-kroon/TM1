@@ -235,7 +235,8 @@ public:
   auto ptl_extended_sub_profile_flag(bool value) -> ProfileTierLevel &;
   auto ptl_sub_profile_idc(uint8_t i, uint64_t value) -> ProfileTierLevel &;
   constexpr auto ptl_toolset_constraints_present_flag(bool value) noexcept -> auto &;
-  auto ptl_profile_toolset_constraints_information(ProfileToolsetConstraintsInformation value)
+  auto
+  ptl_profile_toolset_constraints_information(ProfileToolsetConstraintsInformation value) noexcept
       -> ProfileTierLevel &;
 
   friend auto operator<<(std::ostream &stream, const ProfileTierLevel &x) -> std::ostream &;
@@ -641,7 +642,7 @@ public:
   [[nodiscard]] auto occupancy_information(AtlasId j) -> OccupancyInformation &;
   [[nodiscard]] auto geometry_information(AtlasId j) -> GeometryInformation &;
   [[nodiscard]] auto attribute_information(AtlasId j) -> AttributeInformation &;
-  [[nodiscard]] auto vps_miv_extension() noexcept -> VpsMivExtension &;
+  [[nodiscard]] auto vps_miv_extension() -> VpsMivExtension &;
 
   // Convenience function
   [[nodiscard]] auto indexOf(AtlasId atlasId) const -> size_t;

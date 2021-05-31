@@ -228,8 +228,8 @@ auto ProfileTierLevel::ptl_sub_profile_idc(uint8_t i, uint64_t value) -> Profile
 }
 
 auto ProfileTierLevel::ptl_profile_toolset_constraints_information(
-    ProfileToolsetConstraintsInformation value) -> ProfileTierLevel & {
-  PRECONDITION(ptl_toolset_constraints_present_flag());
+    ProfileToolsetConstraintsInformation value) noexcept -> ProfileTierLevel & {
+  ptl_toolset_constraints_present_flag(true);
   m_ptl_profile_toolset_constraints_information.emplace(value);
   return *this;
 }
@@ -1361,19 +1361,19 @@ auto V3cParameterSet::attribute_information(AtlasId j, AttributeInformation valu
 
 auto V3cParameterSet::vps_packing_information_present_flag(bool value) noexcept
     -> V3cParameterSet & {
-  PRECONDITION(vps_extension_present_flag());
+  vps_extension_present_flag(true);
   m_vps_packing_information_present_flag = value;
   return *this;
 }
 
 auto V3cParameterSet::vps_miv_extension_present_flag(bool value) noexcept -> V3cParameterSet & {
-  PRECONDITION(vps_extension_present_flag());
+  vps_extension_present_flag(true);
   m_vps_miv_extension_present_flag = value;
   return *this;
 }
 
 auto V3cParameterSet::vps_extension_6bits(uint8_t value) noexcept -> V3cParameterSet & {
-  PRECONDITION(vps_extension_present_flag());
+  vps_extension_present_flag(true);
   PRECONDITION(value < 0x80);
   m_vps_extension_7bits = value;
   return *this;
@@ -1381,7 +1381,7 @@ auto V3cParameterSet::vps_extension_6bits(uint8_t value) noexcept -> V3cParamete
 
 auto V3cParameterSet::vps_packed_video_present_flag(const AtlasId &j, bool value)
     -> V3cParameterSet & {
-  VERIFY_V3CBITSTREAM(vps_packing_information_present_flag());
+  vps_packing_information_present_flag(true);
   atlas(j).vps_packed_video_present_flag = value;
   return *this;
 }
@@ -1394,7 +1394,7 @@ auto V3cParameterSet::packing_information(const AtlasId &j, PackingInformation v
 }
 
 auto V3cParameterSet::vps_miv_extension(const VpsMivExtension &value) -> V3cParameterSet & {
-  VERIFY_V3CBITSTREAM(vps_miv_extension_present_flag());
+  vps_miv_extension_present_flag(true);
   m_vps_miv_extension = value;
   return *this;
 }
@@ -1430,8 +1430,8 @@ auto V3cParameterSet::attribute_information(AtlasId j) -> AttributeInformation &
   return *ai;
 }
 
-auto V3cParameterSet::vps_miv_extension() noexcept -> VpsMivExtension & {
-  PRECONDITION(vps_miv_extension_present_flag());
+auto V3cParameterSet::vps_miv_extension() -> VpsMivExtension & {
+  vps_miv_extension_present_flag(true);
   if (!m_vps_miv_extension) {
     m_vps_miv_extension = VpsMivExtension{};
   }

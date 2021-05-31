@@ -451,7 +451,7 @@ auto MivViewParamsList::mvp_explicit_view_id_flag(bool value) noexcept -> MivVie
 }
 
 auto MivViewParamsList::mvp_view_id(uint16_t viewIdx, uint16_t viewId) -> MivViewParamsList & {
-  PRECONDITION(mvp_explicit_view_id_flag());
+  mvp_explicit_view_id_flag(true);
   if (m_mvp_view_id.size() < mvp_num_views_minus1() + size_t{1}) {
     m_mvp_view_id.resize(mvp_num_views_minus1() + size_t{1});
   }
@@ -779,27 +779,27 @@ auto CommonAtlasFrameMivExtension::miv_view_params_list() noexcept -> MivViewPar
   return *m_miv_view_params_list;
 }
 
-auto CommonAtlasFrameMivExtension::miv_view_params_update_extrinsics()
+auto CommonAtlasFrameMivExtension::miv_view_params_update_extrinsics() noexcept
     -> MivViewParamsUpdateExtrinsics & {
-  PRECONDITION(came_update_extrinsics_flag());
+  came_update_extrinsics_flag(true);
   if (!m_miv_view_params_update_extrinsics) {
     m_miv_view_params_update_extrinsics = MivViewParamsUpdateExtrinsics{};
   }
   return *m_miv_view_params_update_extrinsics;
 }
 
-auto CommonAtlasFrameMivExtension::miv_view_params_update_intrinsics()
+auto CommonAtlasFrameMivExtension::miv_view_params_update_intrinsics() noexcept
     -> MivViewParamsUpdateIntrinsics & {
-  PRECONDITION(came_update_intrinsics_flag());
+  came_update_intrinsics_flag(true);
   if (!m_miv_view_params_update_intrinsics) {
     m_miv_view_params_update_intrinsics = MivViewParamsUpdateIntrinsics{};
   }
   return *m_miv_view_params_update_intrinsics;
 }
 
-auto CommonAtlasFrameMivExtension::miv_view_params_update_depth_quantization()
+auto CommonAtlasFrameMivExtension::miv_view_params_update_depth_quantization() noexcept
     -> MivViewParamsUpdateDepthQuantization & {
-  PRECONDITION(came_update_depth_quantization_flag());
+  came_update_depth_quantization_flag(true);
   if (!m_miv_view_params_update_depth_quantization) {
     m_miv_view_params_update_depth_quantization = MivViewParamsUpdateDepthQuantization{};
   }

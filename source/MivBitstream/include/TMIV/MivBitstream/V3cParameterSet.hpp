@@ -349,13 +349,13 @@ inline auto PackingInformation::pin_region_tile_id(size_t i, uint8_t value) -> a
 inline auto PackingInformation::pin_region_type_id_minus2(size_t i, uint8_t value) -> auto & {
   VERIFY_V3CBITSTREAM(i <= pin_regions_count_minus1());
   if (value + 2 == VuhUnitType::V3C_AVD) {
-    VERIFY_V3CBITSTREAM(pin_attribute_present_flag());
+    pin_attribute_present_flag(true);
   }
   if (value + 2 == VuhUnitType::V3C_GVD) {
-    VERIFY_V3CBITSTREAM(pin_geometry_present_flag());
+    pin_geometry_present_flag(true);
   }
   if (value + 2 == VuhUnitType::V3C_OVD) {
-    VERIFY_V3CBITSTREAM(pin_occupancy_present_flag());
+    pin_occupancy_present_flag(true);
   }
   m_pinRegions[i].pin_region_type_id_minus2 = value;
   return *this;

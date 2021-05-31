@@ -569,7 +569,7 @@ auto MivDecoder::decodeAttrTransparencyVideo(size_t k) -> bool {
 }
 
 auto MivDecoder::decodeFramePackVideo(size_t k) -> bool {
-  const double t0 = clock();
+  const auto t0 = clockInSeconds();
 
   if (m_framePackVideoDecoder[k]) {
     auto frame = m_framePackVideoDecoder[k]->getFrame();

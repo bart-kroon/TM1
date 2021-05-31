@@ -89,7 +89,7 @@ public:
   auto casps_miv_extension_present_flag(bool flag) noexcept
       -> CommonAtlasSequenceParameterSetRBSP &;
   auto casps_extension_7bits(uint8_t value) noexcept -> CommonAtlasSequenceParameterSetRBSP &;
-  auto casps_miv_extension() -> CaspsMivExtension &;
+  auto casps_miv_extension() noexcept -> CaspsMivExtension &;
   auto caspsExtensionData(std::vector<bool> value) -> CommonAtlasSequenceParameterSetRBSP &;
 
   friend auto operator<<(std::ostream &stream, const CommonAtlasSequenceParameterSetRBSP &x)

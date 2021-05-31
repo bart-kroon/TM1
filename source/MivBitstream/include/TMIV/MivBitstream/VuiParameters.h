@@ -112,7 +112,7 @@ public:
   auto vui_num_units_in_tick(uint32_t value) noexcept -> VuiParameters &;
   auto vui_time_scale(uint32_t value) noexcept -> VuiParameters &;
   auto vui_poc_proportional_to_timing_flag(bool value) noexcept -> VuiParameters &;
-  auto vui_num_ticks_poc_diff_one_minus1(uint32_t value) -> VuiParameters &;
+  auto vui_num_ticks_poc_diff_one_minus1(uint32_t value) noexcept -> VuiParameters &;
   auto vui_hrd_parameters_present_flag(bool value) noexcept -> VuiParameters &;
 
   constexpr auto vui_bitstream_restriction_present_flag(bool value) noexcept -> auto &;

@@ -69,8 +69,10 @@ constexpr auto AfpsMivExtension::afme_inpaint_lod_enabled_flag(bool value) noexc
   return *this;
 }
 
-constexpr auto AfpsMivExtension::operator==(const AfpsMivExtension & /* other */) const noexcept {
-  return true;
+constexpr auto AfpsMivExtension::operator==(const AfpsMivExtension &other) const noexcept {
+  return m_afme_inpaint_lod_enabled_flag == other.m_afme_inpaint_lod_enabled_flag &&
+         m_afme_inpaint_lod_scale_x_minus1 == other.m_afme_inpaint_lod_scale_x_minus1 &&
+         m_afme_inpaint_lod_scale_y_idc == other.m_afme_inpaint_lod_scale_y_idc;
 }
 
 constexpr auto AfpsMivExtension::operator!=(const AfpsMivExtension &other) const noexcept {

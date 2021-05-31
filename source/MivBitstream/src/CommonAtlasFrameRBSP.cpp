@@ -52,7 +52,7 @@ auto CommonAtlasFrameRBSP::cafExtensionData() const -> const std::vector<bool> &
 }
 
 auto CommonAtlasFrameRBSP::caf_miv_extension() noexcept -> CommonAtlasFrameMivExtension & {
-  PRECONDITION(caf_miv_extension_present_flag());
+  caf_miv_extension_present_flag(true);
   if (!m_caf_miv_extension.has_value()) {
     m_caf_miv_extension = CommonAtlasFrameMivExtension{};
   }

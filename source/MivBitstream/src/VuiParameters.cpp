@@ -146,64 +146,64 @@ auto VuiParameters::vui_anchor_point(int d) const -> uint32_t {
 }
 
 auto VuiParameters::vui_num_units_in_tick(uint32_t value) noexcept -> VuiParameters & {
-  PRECONDITION(vui_timing_info_present_flag());
+  vui_timing_info_present_flag(true);
   m_vui_num_units_in_tick = value;
   return *this;
 }
 
 auto VuiParameters::vui_time_scale(uint32_t value) noexcept -> VuiParameters & {
-  PRECONDITION(vui_timing_info_present_flag());
+  vui_timing_info_present_flag(true);
   m_vui_time_scale = value;
   return *this;
 }
 
 auto VuiParameters::vui_poc_proportional_to_timing_flag(bool value) noexcept -> VuiParameters & {
-  PRECONDITION(vui_timing_info_present_flag());
+  vui_timing_info_present_flag(true);
   m_vui_poc_proportional_to_timing_flag = value;
   return *this;
 }
 
-auto VuiParameters::vui_num_ticks_poc_diff_one_minus1(uint32_t value) -> VuiParameters & {
-  PRECONDITION(vui_poc_proportional_to_timing_flag());
+auto VuiParameters::vui_num_ticks_poc_diff_one_minus1(uint32_t value) noexcept -> VuiParameters & {
+  vui_poc_proportional_to_timing_flag(true);
   m_vui_num_ticks_poc_diff_one_minus1 = value;
   return *this;
 }
 
 auto VuiParameters::vui_hrd_parameters_present_flag(bool value) noexcept -> VuiParameters & {
-  PRECONDITION(vui_timing_info_present_flag());
+  vui_timing_info_present_flag(true);
   m_vui_hrd_parameters_present_flag = value;
   return *this;
 }
 
 auto VuiParameters::vui_tiles_fixed_structure_for_atlas_flag(bool value) noexcept
     -> VuiParameters & {
-  PRECONDITION(vui_bitstream_restriction_present_flag());
+  vui_bitstream_restriction_present_flag(true);
   m_vui_tiles_fixed_structure_for_atlas_flag = value;
   return *this;
 }
 
 auto VuiParameters::vui_tiles_fixed_structure_for_video_substreams_flag(bool value) noexcept
     -> VuiParameters & {
-  PRECONDITION(vui_bitstream_restriction_present_flag());
+  vui_bitstream_restriction_present_flag(true);
   m_vui_tiles_fixed_structure_for_video_substreams_flag = value;
   return *this;
 }
 
 auto VuiParameters::vui_constrained_tiles_across_v3c_components_idc(uint8_t value) noexcept
     -> VuiParameters & {
-  PRECONDITION(vui_bitstream_restriction_present_flag());
+  vui_bitstream_restriction_present_flag(true);
   m_vui_constrained_tiles_across_v3c_components_idc = value;
   return *this;
 }
 
 auto VuiParameters::vui_max_num_tiles_per_atlas_minus1(unsigned value) noexcept -> VuiParameters & {
-  PRECONDITION(vui_bitstream_restriction_present_flag());
+  vui_bitstream_restriction_present_flag(true);
   m_vui_max_num_tiles_per_atlas_minus1 = value;
   return *this;
 }
 
 auto VuiParameters::coordinate_system_parameters() noexcept -> CoordinateSystemParameters & {
-  PRECONDITION(vui_coordinate_system_parameters_present_flag());
+  vui_coordinate_system_parameters_present_flag(true);
   if (!m_coordinate_system_parameters) {
     m_coordinate_system_parameters = CoordinateSystemParameters{};
   }
@@ -211,7 +211,7 @@ auto VuiParameters::coordinate_system_parameters() noexcept -> CoordinateSystemP
 }
 
 auto VuiParameters::vui_display_box_origin(int d, uint32_t value) noexcept -> VuiParameters & {
-  PRECONDITION(vui_display_box_info_present_flag());
+  vui_display_box_info_present_flag(true);
   if (!m_vui_display_box_origin) {
     m_vui_display_box_origin = std::array<uint32_t, 3>{};
   }
@@ -220,7 +220,7 @@ auto VuiParameters::vui_display_box_origin(int d, uint32_t value) noexcept -> Vu
 }
 
 auto VuiParameters::vui_display_box_size(int d, uint32_t value) noexcept -> VuiParameters & {
-  PRECONDITION(vui_display_box_info_present_flag());
+  vui_display_box_info_present_flag(true);
   if (!m_vui_display_box_size) {
     m_vui_display_box_size = std::array<uint32_t, 3>{};
   }
@@ -229,7 +229,7 @@ auto VuiParameters::vui_display_box_size(int d, uint32_t value) noexcept -> VuiP
 }
 
 auto VuiParameters::vui_anchor_point(int d, uint32_t value) noexcept -> VuiParameters & {
-  PRECONDITION(vui_anchor_point_present_flag());
+  vui_anchor_point_present_flag(true);
   if (!m_vui_anchor_point) {
     m_vui_anchor_point = std::array<uint32_t, 3>{};
   }

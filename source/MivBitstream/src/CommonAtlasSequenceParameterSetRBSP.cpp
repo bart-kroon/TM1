@@ -57,7 +57,7 @@ auto CaspsMivExtension::vui_parameters() const -> const VuiParameters & {
 }
 
 auto CaspsMivExtension::vui_parameters(const VuiParameters &value) noexcept -> CaspsMivExtension & {
-  PRECONDITION(casme_vui_params_present_flag());
+  casme_vui_params_present_flag(true);
   m_vui_parameters = value;
   return *this;
 }
@@ -134,21 +134,21 @@ auto CommonAtlasSequenceParameterSetRBSP::caspsExtensionData() const -> const st
 
 auto CommonAtlasSequenceParameterSetRBSP::casps_miv_extension_present_flag(bool flag) noexcept
     -> CommonAtlasSequenceParameterSetRBSP & {
-  PRECONDITION(casps_extension_present_flag());
+  casps_extension_present_flag(true);
   m_casps_miv_extension_present_flag = flag;
   return *this;
 }
 
 auto CommonAtlasSequenceParameterSetRBSP::casps_extension_7bits(uint8_t value) noexcept
     -> CommonAtlasSequenceParameterSetRBSP & {
-  PRECONDITION(casps_extension_present_flag());
+  casps_extension_present_flag(true);
   PRECONDITION(value < (1 << 7));
   m_casps_extension_7bits = value;
   return *this;
 }
 
-auto CommonAtlasSequenceParameterSetRBSP::casps_miv_extension() -> CaspsMivExtension & {
-  PRECONDITION(casps_miv_extension_present_flag());
+auto CommonAtlasSequenceParameterSetRBSP::casps_miv_extension() noexcept -> CaspsMivExtension & {
+  casps_miv_extension_present_flag(true);
   if (!m_casps_miv_extension.has_value()) {
     m_casps_miv_extension = CaspsMivExtension{};
   }

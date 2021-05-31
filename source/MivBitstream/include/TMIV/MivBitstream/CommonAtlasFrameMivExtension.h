@@ -412,9 +412,11 @@ public:
   auto came_update_intrinsics_flag(bool value) noexcept -> CommonAtlasFrameMivExtension &;
   auto came_update_depth_quantization_flag(bool value) noexcept -> CommonAtlasFrameMivExtension &;
   [[nodiscard]] auto miv_view_params_list() noexcept -> MivViewParamsList &;
-  [[nodiscard]] auto miv_view_params_update_extrinsics() -> MivViewParamsUpdateExtrinsics &;
-  [[nodiscard]] auto miv_view_params_update_intrinsics() -> MivViewParamsUpdateIntrinsics &;
-  [[nodiscard]] auto miv_view_params_update_depth_quantization()
+  [[nodiscard]] auto miv_view_params_update_extrinsics() noexcept
+      -> MivViewParamsUpdateExtrinsics &;
+  [[nodiscard]] auto miv_view_params_update_intrinsics() noexcept
+      -> MivViewParamsUpdateIntrinsics &;
+  [[nodiscard]] auto miv_view_params_update_depth_quantization() noexcept
       -> MivViewParamsUpdateDepthQuantization &;
 
   friend auto operator<<(std::ostream &stream, const CommonAtlasFrameMivExtension &x)

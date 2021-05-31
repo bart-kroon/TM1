@@ -283,21 +283,21 @@ auto AtlasSequenceParameterSetRBSP::asps_num_ref_atlas_frame_lists_in_asps(const
 
 auto AtlasSequenceParameterSetRBSP::asps_vpcc_extension_present_flag(const bool value) noexcept
     -> AtlasSequenceParameterSetRBSP & {
-  PRECONDITION(asps_extension_present_flag());
+  asps_extension_present_flag(true);
   m_asps_vpcc_extension_present_flag = value;
   return *this;
 }
 
 auto AtlasSequenceParameterSetRBSP::asps_miv_extension_present_flag(const bool value) noexcept
     -> AtlasSequenceParameterSetRBSP & {
-  PRECONDITION(asps_extension_present_flag());
+  asps_extension_present_flag(true);
   m_asps_miv_extension_present_flag = value;
   return *this;
 }
 
 auto AtlasSequenceParameterSetRBSP::asps_extension_6bits(const uint8_t value) noexcept
     -> AtlasSequenceParameterSetRBSP & {
-  PRECONDITION(asps_extension_present_flag());
+  asps_extension_present_flag(true);
   PRECONDITION(value < 0x40);
   m_asps_extension_6bits = value;
   return *this;
@@ -324,13 +324,13 @@ auto AtlasSequenceParameterSetRBSP::ref_list_struct(uint8_t rlsIdx) -> RefListSt
 
 auto AtlasSequenceParameterSetRBSP::asps_max_number_projections_minus1(
     const unsigned value) noexcept -> AtlasSequenceParameterSetRBSP & {
-  PRECONDITION(asps_extended_projection_enabled_flag());
+  asps_extended_projection_enabled_flag(true);
   m_asps_max_number_projections_minus1 = value;
   return *this;
 }
 
 auto AtlasSequenceParameterSetRBSP::asps_vpcc_extension() noexcept -> AspsVpccExtension & {
-  PRECONDITION(asps_vpcc_extension_present_flag());
+  asps_vpcc_extension_present_flag(true);
   if (!m_asve) {
     m_asve = AspsVpccExtension{};
   }
@@ -338,7 +338,7 @@ auto AtlasSequenceParameterSetRBSP::asps_vpcc_extension() noexcept -> AspsVpccEx
 }
 
 auto AtlasSequenceParameterSetRBSP::asps_miv_extension() noexcept -> AspsMivExtension & {
-  PRECONDITION(asps_miv_extension_present_flag());
+  asps_miv_extension_present_flag(true);
   if (!m_asme) {
     m_asme = AspsMivExtension{};
   }

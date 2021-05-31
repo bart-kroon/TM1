@@ -35,7 +35,7 @@ pytest:
 
 clang-format:
   stage: check
-  image: cbachhuber/clang:11
+  image: cbachhuber/clang:12
   tags: [ linux ]
   script:
     - ./scripts/check/clang_format.py
@@ -45,7 +45,7 @@ clang-format:
 no multi-line commit messages:
   stage: check
   image:
-    name: cbachhuber/clang:11
+    name: cbachhuber/clang:12
   tags: [ linux ]
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"

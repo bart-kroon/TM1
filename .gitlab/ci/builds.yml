@@ -1,6 +1,6 @@
 GCC 9 Release:
   stage: build
-  image: cbachhuber/tmiv-clang:1
+  image: cbachhuber/tmiv-clang:2
   tags: [ linux ]
   before_script:
     - export CXX=/usr/lib/ccache/g++
@@ -20,9 +20,9 @@ GCC 9 Release:
     - make -j $(nproc)
     - make -j $(nproc) test
 
-Clang 11 Debug:
+Clang 12 Debug:
   stage: build
-  image: cbachhuber/tmiv-clang:1
+  image: cbachhuber/tmiv-clang:2
   tags: [ linux, long-job ]
   script:
     - mkdir -p build && cd build
@@ -44,7 +44,7 @@ Clang 11 Debug:
     - cd ..
     - mkdir coverage_html
     - >
-      gcovr build --gcov-executable 'llvm-cov-11 gcov' -f 'source/' -e '.*\.test\.cpp'
+      gcovr build --gcov-executable 'llvm-cov-12 gcov' -f 'source/' -e '.*\.test\.cpp'
       --xml coverage.xml --xml-pretty --html-details coverage_html/index.html --print-summary
   artifacts:
     reports:

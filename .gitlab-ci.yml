@@ -33,7 +33,7 @@ clang-format:
 GCC 9 Release:
   <<: *cpp_rules_definition
 
-Clang 11 Debug:
+Clang 12 Debug:
   <<: *cpp_rules_definition
 
 VC 16 Release:

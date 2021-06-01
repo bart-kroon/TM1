@@ -52,8 +52,7 @@ GeometryQuantizer::GeometryQuantizer(uint16_t depthOccThresholdIfSet)
   }
 }
 
-GeometryQuantizer::GeometryQuantizer(const Common::Json & /*unused*/,
-                                     const Common::Json &nodeConfig)
+GeometryQuantizer::GeometryQuantizer(const Common::Json &nodeConfig)
     : GeometryQuantizer{
           static_cast<uint16_t>(nodeConfig.require("depthOccThresholdIfSet").as<int>())} {}
 

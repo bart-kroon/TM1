@@ -40,14 +40,6 @@
 #include <stdexcept>
 
 namespace TMIV::Encoder {
-ExplicitOccupancy::ExplicitOccupancy(const Common::Json & /*unused*/,
-                                     const Common::Json &componentNode) {
-  if (const auto &subnode = componentNode.optional("occupancyScale")) {
-    m_occupancyScaleConfig = true;
-    m_occupancyScale = subnode.asVec<int, 2>();
-  }
-}
-
 auto ExplicitOccupancy::setOccupancyParams(EncoderParams params) -> const EncoderParams & {
   m_inParams = std::move(params);
   m_outParams = m_inParams;

@@ -34,12 +34,13 @@
 #ifndef TMIV_ENCODER_GEOMETRYQUANTIZER_H
 #define TMIV_ENCODER_GEOMETRYQUANTIZER_H
 
-#include <TMIV/Encoder/IGeometryQuantizer.h>
+#include <TMIV/Common/Frame.h>
+#include <TMIV/Encoder/EncoderParams.h>
 
 #include <TMIV/Common/Json.h>
 
 namespace TMIV::Encoder {
-class GeometryQuantizer : public IGeometryQuantizer {
+class GeometryQuantizer {
 public:
   // Initialize with specified depthOccThresholdIfSet
   //
@@ -47,20 +48,15 @@ public:
   // will have the specified depthOccThresholdIfSet value.
   explicit GeometryQuantizer(uint16_t depthOccThresholdIfSet);
 
-  GeometryQuantizer(const Common::Json & /*unused*/, const Common::Json & /*unused*/);
-  GeometryQuantizer(const GeometryQuantizer &) = default;
-  GeometryQuantizer(GeometryQuantizer &&) = default;
-  auto operator=(const GeometryQuantizer &) -> GeometryQuantizer & = default;
-  auto operator=(GeometryQuantizer &&) -> GeometryQuantizer & = default;
-  ~GeometryQuantizer() override = default;
+  GeometryQuantizer(const Common::Json &nodeConfig);
 
-  auto setOccupancyParams(EncoderParams params) -> const EncoderParams & override;
+  auto setOccupancyParams(EncoderParams params) -> const EncoderParams &;
   // No change when useOccupancy() is false. Otherwise set the depth/occupancy map threshold
   // to depthOccThresholdIfSet and adjust the normalized disparity range.
-  auto transformParams(EncoderParams params) -> const EncoderParams & override;
+  auto transformParams(EncoderParams params) -> const EncoderParams &;
 
   // Transform depth bit depth and range
-  auto transformAtlases(const Common::MVD16Frame &inAtlases) -> Common::MVD10Frame override;
+  auto transformAtlases(const Common::MVD16Frame &inAtlases) -> Common::MVD10Frame;
 
 private:
   uint16_t m_depthOccThresholdIfSet{};

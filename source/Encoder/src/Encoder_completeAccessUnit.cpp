@@ -165,11 +165,11 @@ auto Encoder::completeAccessUnit() -> const EncoderParams & {
   m_params.patchParamsList = m_packer->pack(atlasSizes, aggregatedMask,
                                             m_transportParams.viewParamsList, m_config.blockSize);
 
-  m_params = m_geometryQuantizer->setOccupancyParams(m_params);
+  m_params = m_geometryQuantizer.setOccupancyParams(m_params);
 
   constructVideoFrames();
 
-  const auto &paramsQuantized = m_geometryQuantizer->transformParams(m_params);
+  const auto &paramsQuantized = m_geometryQuantizer.transformParams(m_params);
   const auto &paramsScaled = m_geometryDownscaler.transformParams(paramsQuantized);
 
   if (m_config.framePacking) {

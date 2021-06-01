@@ -34,30 +34,22 @@
 #ifndef TMIV_ENCODER_EXPLICITOCCUPANCY_H
 #define TMIV_ENCODER_EXPLICITOCCUPANCY_H
 
-#include <TMIV/Encoder/IGeometryQuantizer.h>
+#include <TMIV/Common/Frame.h>
+#include <TMIV/Encoder/EncoderParams.h>
 
 #include <TMIV/Common/Json.h>
 
 namespace TMIV::Encoder {
-class ExplicitOccupancy : public IGeometryQuantizer {
+class ExplicitOccupancy {
 public:
-  ExplicitOccupancy() = default;
+  auto setOccupancyParams(EncoderParams params) -> const EncoderParams &;
 
-  ExplicitOccupancy(const Common::Json & /*unused*/, const Common::Json & /*unused*/);
-  ExplicitOccupancy(const ExplicitOccupancy &) = default;
-  ExplicitOccupancy(ExplicitOccupancy &&) = default;
-  auto operator=(const ExplicitOccupancy &) -> ExplicitOccupancy & = default;
-  auto operator=(ExplicitOccupancy &&) -> ExplicitOccupancy & = default;
-  ~ExplicitOccupancy() override = default;
-
-  auto setOccupancyParams(EncoderParams params) -> const EncoderParams & override;
-
-  auto transformParams(EncoderParams /*params*/) -> const EncoderParams & override;
+  auto transformParams(EncoderParams /*params*/) -> const EncoderParams &;
 
   void padGeometryFromLeft(Common::MVD10Frame &atlases);
 
   // Transform depth bit depth and range
-  auto transformAtlases(const Common::MVD16Frame &inAtlases) -> Common::MVD10Frame override;
+  auto transformAtlases(const Common::MVD16Frame &inAtlases) -> Common::MVD10Frame;
 
 private:
   EncoderParams m_inParams;

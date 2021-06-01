@@ -35,8 +35,6 @@
 #include <TMIV/Common/Factory.h>
 #include <TMIV/DepthQualityAssessor/DepthQualityAssessor.h>
 #include <TMIV/Encoder/Encoder.h>
-#include <TMIV/Encoder/ExplicitOccupancy.h>
-#include <TMIV/Encoder/GeometryQuantizer.h>
 #include <TMIV/Encoder/GroupBasedEncoder.h>
 #include <TMIV/Encoder/MpiEncoder.h>
 #include <TMIV/Packer/Packer.h>
@@ -56,8 +54,8 @@ void registerComponents() {
   auto &aggregators = Common::Factory<Aggregator::IAggregator>::getInstance();
   aggregators.registerAs<Aggregator::Aggregator>("Aggregator");
 
-  auto &assesors = Common::Factory<DepthQualityAssessor::IDepthQualityAssessor>::getInstance();
-  assesors.registerAs<DepthQualityAssessor::DepthQualityAssessor>("DepthQualityAssessor");
+  auto &assessors = Common::Factory<DepthQualityAssessor::IDepthQualityAssessor>::getInstance();
+  assessors.registerAs<DepthQualityAssessor::DepthQualityAssessor>("DepthQualityAssessor");
 
   auto &encoders = Common::Factory<IEncoder>::getInstance();
   encoders.registerAs<Encoder>("Encoder");
@@ -65,10 +63,6 @@ void registerComponents() {
 
   auto &mpiEncoders = Common::Factory<IMpiEncoder>::getInstance();
   mpiEncoders.registerAs<MpiEncoder>("MpiEncoder");
-
-  auto &geometryQuantizers = Common::Factory<IGeometryQuantizer>::getInstance();
-  geometryQuantizers.registerAs<GeometryQuantizer>("GeometryQuantizer");
-  geometryQuantizers.registerAs<ExplicitOccupancy>("ExplicitOccupancy");
 
   auto &packers = Common::Factory<Packer::IPacker>::getInstance();
   packers.registerAs<Packer::Packer>("Packer");

@@ -742,8 +742,7 @@ auto CommonAtlasFrameMivExtension::came_update_intrinsics_flag() const -> bool {
 }
 
 auto CommonAtlasFrameMivExtension::came_update_depth_quantization_flag() const -> bool {
-  VERIFY_MIVBITSTREAM(m_came_update_depth_quantization_flag.has_value());
-  return *m_came_update_depth_quantization_flag;
+  return m_came_update_depth_quantization_flag.value_or(false);
 }
 
 auto CommonAtlasFrameMivExtension::miv_view_params_list() const -> const MivViewParamsList & {
@@ -907,8 +906,7 @@ auto CommonAtlasFrameMivExtension::decodeFrom(Common::InputBitstream &bitstream,
     if (x.came_update_intrinsics_flag()) {
       x.miv_view_params_update_intrinsics() = MivViewParamsUpdateIntrinsics::decodeFrom(bitstream);
     }
-    if (casme.casme_depth_quantization_params_present_flag() &&
-        x.came_update_depth_quantization_flag()) {
+    if (x.came_update_depth_quantization_flag()) {
       x.miv_view_params_update_depth_quantization() =
           MivViewParamsUpdateDepthQuantization::decodeFrom(bitstream);
     }
@@ -925,19 +923,17 @@ void CommonAtlasFrameMivExtension::encodeTo(
   } else {
     bitstream.putFlag(came_update_extrinsics_flag());
     bitstream.putFlag(came_update_intrinsics_flag());
+
     if (casps.casps_miv_extension().casme_depth_quantization_params_present_flag()) {
       bitstream.putFlag(came_update_depth_quantization_flag());
     }
-
     if (came_update_extrinsics_flag()) {
       miv_view_params_update_extrinsics().encodeTo(bitstream);
     }
     if (came_update_intrinsics_flag()) {
       miv_view_params_update_intrinsics().encodeTo(bitstream);
     }
-    const auto &casme = casps.casps_miv_extension();
-    if (casme.casme_depth_quantization_params_present_flag() &&
-        came_update_depth_quantization_flag()) {
+    if (came_update_depth_quantization_flag()) {
       miv_view_params_update_depth_quantization().encodeTo(bitstream);
     }
   }

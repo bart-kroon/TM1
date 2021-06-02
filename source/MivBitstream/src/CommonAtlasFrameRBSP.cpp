@@ -39,7 +39,7 @@
 
 namespace TMIV::MivBitstream {
 
-auto CommonAtlasFrameRBSP::caf_miv_extension() const -> const CommonAtlasFrameMivExtension & {
+auto CommonAtlasFrameRBSP::caf_miv_extension() const -> const CafMivExtension & {
   VERIFY_V3CBITSTREAM(caf_miv_extension_present_flag());
   VERIFY_V3CBITSTREAM(m_caf_miv_extension.has_value());
   return *m_caf_miv_extension;
@@ -51,10 +51,10 @@ auto CommonAtlasFrameRBSP::cafExtensionData() const -> const std::vector<bool> &
   return *m_cafExtensionData;
 }
 
-auto CommonAtlasFrameRBSP::caf_miv_extension() noexcept -> CommonAtlasFrameMivExtension & {
+auto CommonAtlasFrameRBSP::caf_miv_extension() noexcept -> CafMivExtension & {
   caf_miv_extension_present_flag(true);
   if (!m_caf_miv_extension.has_value()) {
-    m_caf_miv_extension = CommonAtlasFrameMivExtension{};
+    m_caf_miv_extension = CafMivExtension{};
   }
   return *m_caf_miv_extension;
 }
@@ -122,7 +122,7 @@ auto CommonAtlasFrameRBSP::decodeFrom(
     x.caf_extension_7bits(bitstream.readBits<uint8_t>(7));
   }
   if (x.caf_miv_extension_present_flag()) {
-    x.caf_miv_extension() = CommonAtlasFrameMivExtension::decodeFrom(bitstream, vps, nuh, casps);
+    x.caf_miv_extension() = CafMivExtension::decodeFrom(bitstream, vps, nuh, casps);
   }
   if (x.caf_extension_7bits() != 0) {
     auto cafExtensionData = std::vector<bool>{};

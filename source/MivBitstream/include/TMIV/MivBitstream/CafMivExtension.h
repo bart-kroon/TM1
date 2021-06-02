@@ -31,8 +31,8 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef TMIV_MIVBITSTREAM_COMMONATLASFRAMEMIVEXTENSION_H
-#define TMIV_MIVBITSTREAM_COMMONATLASFRAMEMIVEXTENSION_H
+#ifndef TMIV_MIVBITSTREAM_CAFMIVEXTENSION_H
+#define TMIV_MIVBITSTREAM_CAFMIVEXTENSION_H
 
 #include <TMIV/MivBitstream/CommonAtlasSequenceParameterSetRBSP.h>
 #include <TMIV/MivBitstream/NalUnit.h>
@@ -395,7 +395,7 @@ private:
 };
 
 // 23090-12: caf_miv_extension( )
-class CommonAtlasFrameMivExtension {
+class CafMivExtension {
 public:
   [[nodiscard]] auto came_update_extrinsics_flag() const -> bool;
   [[nodiscard]] auto came_update_intrinsics_flag() const -> bool;
@@ -408,9 +408,9 @@ public:
   [[nodiscard]] auto miv_view_params_update_depth_quantization() const
       -> const MivViewParamsUpdateDepthQuantization &;
 
-  auto came_update_extrinsics_flag(bool value) noexcept -> CommonAtlasFrameMivExtension &;
-  auto came_update_intrinsics_flag(bool value) noexcept -> CommonAtlasFrameMivExtension &;
-  auto came_update_depth_quantization_flag(bool value) noexcept -> CommonAtlasFrameMivExtension &;
+  auto came_update_extrinsics_flag(bool value) noexcept -> CafMivExtension &;
+  auto came_update_intrinsics_flag(bool value) noexcept -> CafMivExtension &;
+  auto came_update_depth_quantization_flag(bool value) noexcept -> CafMivExtension &;
   [[nodiscard]] auto miv_view_params_list() noexcept -> MivViewParamsList &;
   [[nodiscard]] auto miv_view_params_update_extrinsics() noexcept
       -> MivViewParamsUpdateExtrinsics &;
@@ -419,15 +419,14 @@ public:
   [[nodiscard]] auto miv_view_params_update_depth_quantization() noexcept
       -> MivViewParamsUpdateDepthQuantization &;
 
-  friend auto operator<<(std::ostream &stream, const CommonAtlasFrameMivExtension &x)
-      -> std::ostream &;
+  friend auto operator<<(std::ostream &stream, const CafMivExtension &x) -> std::ostream &;
 
-  auto operator==(const CommonAtlasFrameMivExtension & /*other*/) const -> bool;
-  auto operator!=(const CommonAtlasFrameMivExtension & /*other*/) const -> bool;
+  auto operator==(const CafMivExtension & /*other*/) const -> bool;
+  auto operator!=(const CafMivExtension & /*other*/) const -> bool;
 
   static auto decodeFrom(Common::InputBitstream &bitstream, const V3cParameterSet &vps,
                          const NalUnitHeader &nuh, const CommonAtlasSequenceParameterSetRBSP &casps)
-      -> CommonAtlasFrameMivExtension;
+      -> CafMivExtension;
 
   void encodeTo(Common::OutputBitstream &bitstream, const V3cParameterSet &vps,
                 const NalUnitHeader &nuh, const CommonAtlasSequenceParameterSetRBSP &casps) const;
@@ -443,6 +442,6 @@ private:
 };
 } // namespace TMIV::MivBitstream
 
-#include "CommonAtlasFrameMivExtension.hpp"
+#include "CafMivExtension.hpp"
 
 #endif

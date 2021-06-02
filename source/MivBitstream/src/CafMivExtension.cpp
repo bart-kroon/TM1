@@ -31,7 +31,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/MivBitstream/CommonAtlasFrameMivExtension.h>
+#include <TMIV/MivBitstream/CafMivExtension.h>
 #include <TMIV/MivBitstream/CommonAtlasSequenceParameterSetRBSP.h>
 
 #include <cmath>
@@ -731,54 +731,54 @@ void MivViewParamsList::encodeTo(Common::OutputBitstream &bitstream, const V3cPa
   }
 }
 
-auto CommonAtlasFrameMivExtension::came_update_extrinsics_flag() const -> bool {
+auto CafMivExtension::came_update_extrinsics_flag() const -> bool {
   VERIFY_MIVBITSTREAM(m_came_update_extrinsics_flag.has_value());
   return *m_came_update_extrinsics_flag;
 }
 
-auto CommonAtlasFrameMivExtension::came_update_intrinsics_flag() const -> bool {
+auto CafMivExtension::came_update_intrinsics_flag() const -> bool {
   VERIFY_MIVBITSTREAM(m_came_update_intrinsics_flag.has_value());
   return *m_came_update_intrinsics_flag;
 }
 
-auto CommonAtlasFrameMivExtension::came_update_depth_quantization_flag() const -> bool {
+auto CafMivExtension::came_update_depth_quantization_flag() const -> bool {
   return m_came_update_depth_quantization_flag.value_or(false);
 }
 
-auto CommonAtlasFrameMivExtension::miv_view_params_list() const -> const MivViewParamsList & {
+auto CafMivExtension::miv_view_params_list() const -> const MivViewParamsList & {
   VERIFY_MIVBITSTREAM(m_miv_view_params_list.has_value());
   return *m_miv_view_params_list;
 }
 
-auto CommonAtlasFrameMivExtension::miv_view_params_update_extrinsics() const
+auto CafMivExtension::miv_view_params_update_extrinsics() const
     -> const MivViewParamsUpdateExtrinsics & {
   VERIFY_MIVBITSTREAM(came_update_extrinsics_flag());
   VERIFY_MIVBITSTREAM(m_miv_view_params_update_extrinsics.has_value());
   return *m_miv_view_params_update_extrinsics;
 }
 
-auto CommonAtlasFrameMivExtension::miv_view_params_update_intrinsics() const
+auto CafMivExtension::miv_view_params_update_intrinsics() const
     -> const MivViewParamsUpdateIntrinsics & {
   VERIFY_MIVBITSTREAM(came_update_intrinsics_flag());
   VERIFY_MIVBITSTREAM(m_miv_view_params_update_intrinsics.has_value());
   return *m_miv_view_params_update_intrinsics;
 }
 
-auto CommonAtlasFrameMivExtension::miv_view_params_update_depth_quantization() const
+auto CafMivExtension::miv_view_params_update_depth_quantization() const
     -> const MivViewParamsUpdateDepthQuantization & {
   VERIFY_MIVBITSTREAM(came_update_depth_quantization_flag());
   VERIFY_MIVBITSTREAM(m_miv_view_params_update_depth_quantization.has_value());
   return *m_miv_view_params_update_depth_quantization;
 }
 
-auto CommonAtlasFrameMivExtension::miv_view_params_list() noexcept -> MivViewParamsList & {
+auto CafMivExtension::miv_view_params_list() noexcept -> MivViewParamsList & {
   if (!m_miv_view_params_list) {
     m_miv_view_params_list = MivViewParamsList{};
   }
   return *m_miv_view_params_list;
 }
 
-auto CommonAtlasFrameMivExtension::miv_view_params_update_extrinsics() noexcept
+auto CafMivExtension::miv_view_params_update_extrinsics() noexcept
     -> MivViewParamsUpdateExtrinsics & {
   came_update_extrinsics_flag(true);
   if (!m_miv_view_params_update_extrinsics) {
@@ -787,7 +787,7 @@ auto CommonAtlasFrameMivExtension::miv_view_params_update_extrinsics() noexcept
   return *m_miv_view_params_update_extrinsics;
 }
 
-auto CommonAtlasFrameMivExtension::miv_view_params_update_intrinsics() noexcept
+auto CafMivExtension::miv_view_params_update_intrinsics() noexcept
     -> MivViewParamsUpdateIntrinsics & {
   came_update_intrinsics_flag(true);
   if (!m_miv_view_params_update_intrinsics) {
@@ -796,7 +796,7 @@ auto CommonAtlasFrameMivExtension::miv_view_params_update_intrinsics() noexcept
   return *m_miv_view_params_update_intrinsics;
 }
 
-auto CommonAtlasFrameMivExtension::miv_view_params_update_depth_quantization() noexcept
+auto CafMivExtension::miv_view_params_update_depth_quantization() noexcept
     -> MivViewParamsUpdateDepthQuantization & {
   came_update_depth_quantization_flag(true);
   if (!m_miv_view_params_update_depth_quantization) {
@@ -805,25 +805,23 @@ auto CommonAtlasFrameMivExtension::miv_view_params_update_depth_quantization() n
   return *m_miv_view_params_update_depth_quantization;
 }
 
-auto CommonAtlasFrameMivExtension::came_update_extrinsics_flag(bool value) noexcept
-    -> CommonAtlasFrameMivExtension & {
+auto CafMivExtension::came_update_extrinsics_flag(bool value) noexcept -> CafMivExtension & {
   m_came_update_extrinsics_flag = value;
   return *this;
 }
 
-auto CommonAtlasFrameMivExtension::came_update_intrinsics_flag(bool value) noexcept
-    -> CommonAtlasFrameMivExtension & {
+auto CafMivExtension::came_update_intrinsics_flag(bool value) noexcept -> CafMivExtension & {
   m_came_update_intrinsics_flag = value;
   return *this;
 }
 
-auto CommonAtlasFrameMivExtension::came_update_depth_quantization_flag(bool value) noexcept
-    -> CommonAtlasFrameMivExtension & {
+auto CafMivExtension::came_update_depth_quantization_flag(bool value) noexcept
+    -> CafMivExtension & {
   m_came_update_depth_quantization_flag = value;
   return *this;
 }
 
-auto operator<<(std::ostream &stream, const CommonAtlasFrameMivExtension &x) -> std::ostream & {
+auto operator<<(std::ostream &stream, const CafMivExtension &x) -> std::ostream & {
   if (x.m_miv_view_params_list) {
     stream << "miv_view_params_list=" << x.miv_view_params_list();
   } else {
@@ -848,8 +846,7 @@ auto operator<<(std::ostream &stream, const CommonAtlasFrameMivExtension &x) -> 
   return stream;
 }
 
-auto CommonAtlasFrameMivExtension::operator==(const CommonAtlasFrameMivExtension &other) const
-    -> bool {
+auto CafMivExtension::operator==(const CafMivExtension &other) const -> bool {
   if (m_miv_view_params_list != other.m_miv_view_params_list) {
     return false;
   }
@@ -878,16 +875,15 @@ auto CommonAtlasFrameMivExtension::operator==(const CommonAtlasFrameMivExtension
   return true;
 }
 
-auto CommonAtlasFrameMivExtension::operator!=(const CommonAtlasFrameMivExtension &other) const
-    -> bool {
+auto CafMivExtension::operator!=(const CafMivExtension &other) const -> bool {
   return !operator==(other);
 }
 
-auto CommonAtlasFrameMivExtension::decodeFrom(Common::InputBitstream &bitstream,
-                                              const V3cParameterSet &vps, const NalUnitHeader &nuh,
-                                              const CommonAtlasSequenceParameterSetRBSP &casps)
-    -> CommonAtlasFrameMivExtension {
-  auto x = CommonAtlasFrameMivExtension{};
+auto CafMivExtension::decodeFrom(Common::InputBitstream &bitstream, const V3cParameterSet &vps,
+                                 const NalUnitHeader &nuh,
+                                 const CommonAtlasSequenceParameterSetRBSP &casps)
+    -> CafMivExtension {
+  auto x = CafMivExtension{};
 
   if (nuh.nal_unit_type() == NalUnitType::NAL_CAF_IDR) {
     x.miv_view_params_list() = MivViewParamsList::decodeFrom(bitstream, vps, casps);
@@ -915,9 +911,9 @@ auto CommonAtlasFrameMivExtension::decodeFrom(Common::InputBitstream &bitstream,
   return x;
 }
 
-void CommonAtlasFrameMivExtension::encodeTo(
-    Common::OutputBitstream &bitstream, const V3cParameterSet &vps, const NalUnitHeader &nuh,
-    const CommonAtlasSequenceParameterSetRBSP &casps) const {
+void CafMivExtension::encodeTo(Common::OutputBitstream &bitstream, const V3cParameterSet &vps,
+                               const NalUnitHeader &nuh,
+                               const CommonAtlasSequenceParameterSetRBSP &casps) const {
   if (nuh.nal_unit_type() == NalUnitType::NAL_CAF_IDR) {
     miv_view_params_list().encodeTo(bitstream, vps, casps);
   } else {

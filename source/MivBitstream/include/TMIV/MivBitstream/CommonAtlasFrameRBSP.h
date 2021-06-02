@@ -34,7 +34,7 @@
 #ifndef TMIV_MIVBITSTREAM_COMMONATLASFRAMERBSP_H
 #define TMIV_MIVBITSTREAM_COMMONATLASFRAMERBSP_H
 
-#include <TMIV/MivBitstream/CommonAtlasFrameMivExtension.h>
+#include <TMIV/MivBitstream/CafMivExtension.h>
 #include <TMIV/MivBitstream/V3cParameterSet.h>
 
 #include <TMIV/Common/Bitstream.h>
@@ -54,7 +54,7 @@ public:
   [[nodiscard]] constexpr auto caf_common_atlas_frm_order_cnt_lsb() const noexcept;
   [[nodiscard]] constexpr auto caf_extension_present_flag() const noexcept;
   [[nodiscard]] constexpr auto caf_miv_extension_present_flag() const noexcept;
-  [[nodiscard]] auto caf_miv_extension() const -> const CommonAtlasFrameMivExtension &;
+  [[nodiscard]] auto caf_miv_extension() const -> const CafMivExtension &;
   [[nodiscard]] constexpr auto caf_extension_7bits() const noexcept;
   [[nodiscard]] auto cafExtensionData() const -> const std::vector<bool> &;
 
@@ -62,7 +62,7 @@ public:
   constexpr auto caf_common_atlas_frm_order_cnt_lsb(uint16_t value) noexcept -> auto &;
   constexpr auto caf_extension_present_flag(bool value) noexcept -> auto &;
   constexpr auto caf_miv_extension_present_flag(bool value) noexcept -> auto &;
-  auto caf_miv_extension() noexcept -> CommonAtlasFrameMivExtension &;
+  auto caf_miv_extension() noexcept -> CafMivExtension &;
   constexpr auto caf_extension_7bits(uint8_t value) noexcept -> CommonAtlasFrameRBSP &;
   auto cafExtensionData(std::vector<bool> value) noexcept -> CommonAtlasFrameRBSP &;
 
@@ -84,7 +84,7 @@ private:
   uint16_t m_caf_common_atlas_frm_order_cnt_lsb{};
   bool m_caf_extension_present_flag{};
   std::optional<bool> m_caf_miv_extension_present_flag{};
-  std::optional<CommonAtlasFrameMivExtension> m_caf_miv_extension{};
+  std::optional<CafMivExtension> m_caf_miv_extension{};
   std::optional<uint8_t> m_caf_extension_7bits{};
   std::optional<std::vector<bool>> m_cafExtensionData{};
 };

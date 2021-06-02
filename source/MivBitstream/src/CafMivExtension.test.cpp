@@ -33,7 +33,7 @@
 
 #include "test.h"
 
-#include <TMIV/MivBitstream/CommonAtlasFrameMivExtension.h>
+#include <TMIV/MivBitstream/CafMivExtension.h>
 
 #include <limits>
 
@@ -419,7 +419,7 @@ mvp_pruning_graph_params_present_flag=false
 }
 
 TEST_CASE("caf_miv_extension", "[Common Atlas Frame MIV Extension]") {
-  auto x = CommonAtlasFrameMivExtension{};
+  auto x = CafMivExtension{};
   auto vps = V3cParameterSet{};
   vps.vps_miv_extension() = {};
   auto casps = CommonAtlasSequenceParameterSetRBSP{};

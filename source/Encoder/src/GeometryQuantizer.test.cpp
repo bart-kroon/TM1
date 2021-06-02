@@ -52,8 +52,6 @@ SCENARIO("Geometry quantization") {
 
   GIVEN("View parameters without invalid depth") {
     auto sourceParams = TMIV::Encoder::EncoderParams{};
-    sourceParams.vps.vps_extension_present_flag(true);
-    sourceParams.vps.vps_miv_extension_present_flag(true);
     sourceParams.vps.vps_miv_extension().vme_embedded_occupancy_enabled_flag(true);
     sourceParams.viewParamsList = TMIV::MivBitstream::ViewParamsList{{sourceViewParams}};
 

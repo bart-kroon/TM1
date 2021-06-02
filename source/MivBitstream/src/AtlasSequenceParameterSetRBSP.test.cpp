@@ -103,10 +103,8 @@ asme_inpaint_enabled_flag=false
     auto unit = AspsMivExtension{};
     unit.asme_embedded_occupancy_enabled_flag(true)
         .asme_depth_occ_threshold_flag(true)
-        .asme_geometry_scale_enabled_flag(true)
         .asme_geometry_scale_factor_x_minus1(1)
         .asme_geometry_scale_factor_y_minus1(2)
-        .asme_patch_attribute_offset_enabled_flag(true)
         .asme_patch_attribute_offset_bit_depth_minus1(3)
         .asme_max_entity_id(15)
         .asme_inpaint_enabled_flag(true);
@@ -129,7 +127,6 @@ asme_inpaint_enabled_flag=true
   SECTION("Embedded occupancy disabled, occupancy scale enabled") {
     auto unit = AspsMivExtension{};
     unit.asme_embedded_occupancy_enabled_flag(false)
-        .asme_occupancy_scale_enabled_flag(true)
         .asme_occupancy_scale_factor_x_minus1(2)
         .asme_occupancy_scale_factor_y_minus1(3);
 
@@ -226,8 +223,6 @@ asps_extension_6bits=0
         .vps_frame_width({}, 0xFFFF)
         .vps_frame_height({}, 0xFFFF)
         .vps_map_count_minus1({}, 1)
-        .vps_extension_present_flag(true)
-        .vps_miv_extension_present_flag(true)
         .vps_miv_extension()
         .vme_geometry_scale_enabled_flag(true)
         .vme_embedded_occupancy_enabled_flag(true);
@@ -249,16 +244,13 @@ asps_extension_6bits=0
         .asps_patch_precedence_order_flag(true)
         .asps_patch_size_quantizer_present_flag(true)
         .asps_map_count_minus1(1)
-        .asps_extension_present_flag(true)
-        .asps_vpcc_extension_present_flag(true)
-        .asps_miv_extension_present_flag(true)
         .asps_extension_6bits(63);
     x.asps_vpcc_extension().asps_vpcc_remove_duplicate_point_enabled_flag(true);
     x.asps_miv_extension()
         .asme_ancillary_atlas_flag(true)
         .asme_embedded_occupancy_enabled_flag(true)
         .asme_depth_occ_threshold_flag(true)
-        .asme_geometry_scale_enabled_flag(true)
+
         .asme_geometry_scale_factor_x_minus1(1)
         .asme_geometry_scale_factor_y_minus1(2)
         .asme_patch_constant_depth_flag(true);

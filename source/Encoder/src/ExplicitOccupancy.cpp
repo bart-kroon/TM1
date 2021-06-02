@@ -58,10 +58,8 @@ auto ExplicitOccupancy::setOccupancyParams(EncoderParams params) -> const Encode
 
   if (!m_embeddedOccupancyFlag && m_occupancyScaleEnabledFlag) {
     for (auto &atlas : m_outParams.atlas) {
-      auto &asme = atlas.asps.asps_extension_present_flag(true)
-                       .asps_miv_extension_present_flag(true)
-                       .asps_miv_extension();
-      asme.asme_embedded_occupancy_enabled_flag(false).asme_occupancy_scale_enabled_flag(true);
+      auto &asme = atlas.asps.asps_miv_extension();
+      asme.asme_embedded_occupancy_enabled_flag(false);
 
       uint16_t scaleX = 0;
       uint16_t scaleY = 0;

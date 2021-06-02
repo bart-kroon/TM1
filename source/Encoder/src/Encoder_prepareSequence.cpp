@@ -96,12 +96,9 @@ void Encoder::prepareSequence(const MivBitstream::SequenceConfig &sequenceConfig
   m_params.lengthsInMeters = sequenceConfig.lengthsInMeters;
   m_params.maxEntityId = m_config.maxEntityId;
   m_params.casps.casps_log2_max_common_atlas_frame_order_cnt_lsb_minus4(log2FocLsbMinus4())
-      .casps_extension_present_flag(true)
-      .casps_miv_extension_present_flag(true)
       .casps_miv_extension()
       .casme_depth_low_quality_flag(depthLowQualityFlag)
       .casme_depth_quantization_params_present_flag(m_config.dqParamsPresentFlag)
-      .casme_vui_params_present_flag(true)
       .vui_parameters(vuiParameters());
 
   m_params.viewingSpace = m_config.viewingSpace;
@@ -242,8 +239,7 @@ auto Encoder::createVps(const std::vector<Common::Vec2i> &atlasFrameSizes) const
     }
   }
 
-  auto &vme =
-      vps.vps_extension_present_flag(true).vps_miv_extension_present_flag(true).vps_miv_extension();
+  auto &vme = vps.vps_miv_extension();
   vme.group_mapping().gm_group_count(m_config.numGroups);
 
   if (0 < vme.group_mapping().gm_group_count()) {
@@ -261,13 +257,12 @@ auto Encoder::vuiParameters() const -> MivBitstream::VuiParameters {
   LIMITATION(timeScale == numUnitsInTick * m_params.frameRate);
 
   auto vui = MivBitstream::VuiParameters{};
-  vui.vui_timing_info_present_flag(true)
-      .vui_num_units_in_tick(numUnitsInTick)
+  vui.vui_num_units_in_tick(numUnitsInTick)
       .vui_time_scale(timeScale)
       .vui_poc_proportional_to_timing_flag(false)
       .vui_hrd_parameters_present_flag(false);
   vui.vui_unit_in_metres_flag(m_params.lengthsInMeters);
-  vui.vui_coordinate_system_parameters_present_flag(true).coordinate_system_parameters() = {};
+  vui.coordinate_system_parameters() = {};
   return vui;
 }
 
@@ -325,10 +320,7 @@ void Encoder::prepareIvau() {
     }
 
     if (0 < m_params.maxEntityId) {
-      atlas.asps.asps_extension_present_flag(true)
-          .asps_miv_extension_present_flag(true)
-          .asps_miv_extension()
-          .asme_max_entity_id(m_params.maxEntityId);
+      atlas.asps.asps_miv_extension().asme_max_entity_id(m_params.maxEntityId);
     }
 
     // Set ATH parameters

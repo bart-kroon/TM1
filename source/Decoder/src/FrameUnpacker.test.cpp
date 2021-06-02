@@ -49,15 +49,10 @@ TEST_CASE("TMIV::Decoder::FrameUnpacker: 1 Atlas with texture and geometry") {
   const auto atlasId = TMIV::MivBitstream::AtlasId{0};
 
   auto &vps = frame.vps;
-  vps.vps_map_count_minus1(atlasId, 0)
-      .vps_extension_present_flag(true)
-      .vps_packing_information_present_flag(true)
-      .vps_packed_video_present_flag(atlasId, true);
+  vps.vps_map_count_minus1(atlasId, 0).vps_packed_video_present_flag(atlasId, true);
 
   TMIV::MivBitstream::PackingInformation packingInformation = {};
-  packingInformation.pin_attribute_present_flag(true)
-      .pin_geometry_present_flag(true)
-      .pin_geometry_2d_bit_depth_minus1(9)
+  packingInformation.pin_geometry_2d_bit_depth_minus1(9)
       .pin_geometry_MSB_align_flag(false)
       .pin_geometry_3d_coordinates_bit_depth_minus1(9)
       .pin_attribute_count(1)

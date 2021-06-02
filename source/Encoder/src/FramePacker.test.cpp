@@ -46,14 +46,12 @@ TEST_CASE("TMIV::Encoder::FramePacker, 1 Atlas with texture and geometry") {
   const auto atlasId = params.vps.vps_atlas_id(0);
   params.vps.vps_geometry_video_present_flag(atlasId, true)
       .vps_attribute_video_present_flag(atlasId, true)
-      .vps_extension_present_flag(true)
       .vps_miv_extension_present_flag(true)
       .vps_frame_width(atlasId, 32)
       .vps_frame_height(atlasId, 64)
       .attribute_information(atlasId)
       .ai_attribute_count(1);
   params.atlas.push_back(TMIV::Encoder::EncoderAtlasParams{});
-  params.atlas[0].asps.asps_extension_present_flag(true).asps_miv_extension_present_flag(true);
   auto &asmeAtlas = params.atlas[0].asps.asps_miv_extension();
 
   auto frame = TMIV::Common::MVD10Frame{};
@@ -92,9 +90,7 @@ TEST_CASE("TMIV::Encoder::FramePacker, 1 Atlas with texture and geometry") {
   }
 
   SECTION("Downscaled Geometry [2, 2]") {
-    asmeAtlas.asme_geometry_scale_enabled_flag(true)
-        .asme_geometry_scale_factor_x_minus1(1)
-        .asme_geometry_scale_factor_y_minus1(1);
+    asmeAtlas.asme_geometry_scale_factor_x_minus1(1).asme_geometry_scale_factor_y_minus1(1);
     atlas.texture.resize(32, 64);
     atlas.depth.resize(16, 32);
     frame.push_back(atlas);
@@ -133,9 +129,7 @@ TEST_CASE("TMIV::Encoder::FramePacker, 1 Atlas with texture and geometry") {
   }
 
   SECTION("Downscaled Geometry [4, 1]") {
-    asmeAtlas.asme_geometry_scale_enabled_flag(true)
-        .asme_geometry_scale_factor_x_minus1(3)
-        .asme_geometry_scale_factor_y_minus1(0);
+    asmeAtlas.asme_geometry_scale_factor_x_minus1(3).asme_geometry_scale_factor_y_minus1(0);
     atlas.texture.resize(32, 64);
     atlas.depth.resize(8, 64);
     frame.push_back(atlas);
@@ -195,7 +189,6 @@ TEST_CASE("TMIV::Encoder::FramePacker, 1 Atlas with texture, geometry, and occup
   params.vps.vps_occupancy_video_present_flag(atlasId, true)
       .vps_geometry_video_present_flag(atlasId, true)
       .vps_attribute_video_present_flag(atlasId, true)
-      .vps_extension_present_flag(true)
       .vps_miv_extension_present_flag(true)
       .vps_frame_width(atlasId, 32)
       .vps_frame_height(atlasId, 64)
@@ -203,7 +196,6 @@ TEST_CASE("TMIV::Encoder::FramePacker, 1 Atlas with texture, geometry, and occup
       .ai_attribute_count(1);
 
   params.atlas.push_back(TMIV::Encoder::EncoderAtlasParams{});
-  params.atlas[0].asps.asps_extension_present_flag(true).asps_miv_extension_present_flag(true);
   auto &asmeAtlas = params.atlas[0].asps.asps_miv_extension();
 
   auto frame = TMIV::Common::MVD10Frame{};

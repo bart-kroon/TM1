@@ -43,8 +43,6 @@ TEST_CASE("common_atlas_frame_rbsp", "[Common Atlas Frame RBSP]") {
   const auto maxCommonAtlasFrmOrderCntLsb = 32;
 
   auto vps = V3cParameterSet{};
-  vps.vps_extension_present_flag(true);
-  vps.vps_miv_extension_present_flag(true);
   vps.vps_miv_extension() = {};
 
   const auto caspsV = [] {
@@ -52,8 +50,6 @@ TEST_CASE("common_atlas_frame_rbsp", "[Common Atlas Frame RBSP]") {
     for (const auto id : {uint8_t{}, uint8_t{14}, uint8_t{15}}) {
       v.emplace_back()
           .casps_common_atlas_sequence_parameter_set_id(id)
-          .casps_extension_present_flag(true)
-          .casps_miv_extension_present_flag(true)
           .casps_miv_extension()
           .casme_depth_quantization_params_present_flag(id % 2 == 0);
     }
@@ -72,7 +68,6 @@ caf_extension_present_flag=false
   SECTION("Extension present, but no MIV extension") {
     x.caf_common_atlas_sequence_parameter_set_id(15)
         .caf_common_atlas_frm_order_cnt_lsb(31)
-        .caf_extension_present_flag(true)
         .caf_miv_extension_present_flag(false)
         .caf_extension_7bits(127)
         .cafExtensionData({true, false});
@@ -92,8 +87,6 @@ caf_extension_data_flag=false
   SECTION("MIV extension present") {
     x.caf_common_atlas_sequence_parameter_set_id(14)
         .caf_common_atlas_frm_order_cnt_lsb(30)
-        .caf_extension_present_flag(true)
-        .caf_miv_extension_present_flag(true)
         .caf_miv_extension()
         .came_update_extrinsics_flag(false)
         .came_update_intrinsics_flag(false)

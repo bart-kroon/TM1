@@ -243,10 +243,8 @@ private:
 
     // Transfer depth low quality flag
     inFrame.casps = CommonAtlasSequenceParameterSetRBSP{};
-    inFrame.casps->casps_extension_present_flag(true)
-        .casps_miv_extension_present_flag(true)
-        .casps_miv_extension()
-        .casme_depth_low_quality_flag(m_sourceParams.depthLowQualityFlag);
+    inFrame.casps->casps_miv_extension().casme_depth_low_quality_flag(
+        m_sourceParams.depthLowQualityFlag);
 
     return inFrame;
   }

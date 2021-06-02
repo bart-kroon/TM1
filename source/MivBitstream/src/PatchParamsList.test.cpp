@@ -202,8 +202,6 @@ TEST_CASE("TMIV::MivBitstream::PatchParams") {
           .asps_geometry_3d_bit_depth_minus1(5)
           .asps_normal_axis_max_delta_value_enabled_flag(true)
           .asps_patch_size_quantizer_present_flag(true)
-          .asps_extension_present_flag(true)
-          .asps_miv_extension_present_flag(true)
           .asps_miv_extension()
           .asme_embedded_occupancy_enabled_flag(true)
           .asme_depth_occ_threshold_flag(true)
@@ -241,18 +239,10 @@ TEST_CASE("TMIV::MivBitstream::PatchParams") {
     pdu.pdu_miv_extension().pdu_inpaint_flag(true);
 
     auto asps = AtlasSequenceParameterSetRBSP{};
-    asps.asps_extension_present_flag(true)
-        .asps_miv_extension_present_flag(true)
-        .asps_miv_extension()
-        .asme_inpaint_enabled_flag(true);
+    asps.asps_miv_extension().asme_inpaint_enabled_flag(true);
 
     auto afps = AtlasFrameParameterSetRBSP{};
-    afps.afps_extension_present_flag(true)
-        .afps_miv_extension_present_flag(true)
-        .afps_miv_extension()
-        .afme_inpaint_lod_enabled_flag(true)
-        .afme_inpaint_lod_scale_x_minus1(3)
-        .afme_inpaint_lod_scale_y_idc(3);
+    afps.afps_miv_extension().afme_inpaint_lod_scale_x_minus1(3).afme_inpaint_lod_scale_y_idc(3);
 
     const auto unit = PatchParams::decodePdu(pdu, asps, afps, {});
 
@@ -348,8 +338,7 @@ TEST_CASE("TMIV::MivBitstream::PatchParams") {
           .asps_geometry_3d_bit_depth_minus1(5)
           .asps_normal_axis_max_delta_value_enabled_flag(true)
           .asps_patch_size_quantizer_present_flag(true)
-          .asps_extension_present_flag(true)
-          .asps_miv_extension_present_flag(true)
+
           .asps_miv_extension()
           .asme_embedded_occupancy_enabled_flag(true)
           .asme_depth_occ_threshold_flag(true)
@@ -388,18 +377,10 @@ TEST_CASE("TMIV::MivBitstream::PatchParams") {
       unit.atlasPatchLoDScaleX(4).atlasPatchLoDScaleY(4).atlasPatchInpaintFlag(true);
 
       auto asps = AtlasSequenceParameterSetRBSP{};
-      asps.asps_extension_present_flag(true)
-          .asps_miv_extension_present_flag(true)
-          .asps_miv_extension()
-          .asme_inpaint_enabled_flag(true);
+      asps.asps_miv_extension().asme_inpaint_enabled_flag(true);
 
       auto afps = AtlasFrameParameterSetRBSP{};
-      afps.afps_extension_present_flag(true)
-          .afps_miv_extension_present_flag(true)
-          .afps_miv_extension()
-          .afme_inpaint_lod_enabled_flag(true)
-          .afme_inpaint_lod_scale_x_minus1(3)
-          .afme_inpaint_lod_scale_y_idc(3);
+      afps.afps_miv_extension().afme_inpaint_lod_scale_x_minus1(3).afme_inpaint_lod_scale_y_idc(3);
 
       const auto pdu = unit.encodePdu(asps, afps, {});
 

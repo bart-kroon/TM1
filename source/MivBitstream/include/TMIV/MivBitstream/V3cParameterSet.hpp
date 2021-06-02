@@ -434,37 +434,44 @@ inline auto PackingInformation::pin_region_attr_partition_index(size_t i, uint8_
 }
 
 inline auto PackingInformation::pin_occupancy_2d_bit_depth_minus1(uint8_t value) -> auto & {
+  pin_occupancy_present_flag(true);
   m_pin_occupancy_2d_bit_depth_minus1 = value;
   return *this;
 }
 
 inline auto PackingInformation::pin_occupancy_MSB_align_flag(bool value) -> auto & {
+  pin_occupancy_present_flag(true);
   m_pin_occupancy_MSB_align_flag = value;
   return *this;
 }
 
 inline auto PackingInformation::pin_lossy_occupancy_compression_threshold(uint8_t value) -> auto & {
+  pin_occupancy_present_flag(true);
   m_pin_lossy_occupancy_compression_threshold = value;
   return *this;
 }
 
 inline auto PackingInformation::pin_geometry_2d_bit_depth_minus1(uint8_t value) -> auto & {
+  pin_attribute_present_flag(true);
   m_pin_geometry_2d_bit_depth_minus1 = value;
   return *this;
 }
 
 inline auto PackingInformation::pin_geometry_MSB_align_flag(bool value) -> auto & {
+  pin_attribute_present_flag(true);
   m_pin_geometry_MSB_align_flag = value;
   return *this;
 }
 
 inline auto PackingInformation::pin_geometry_3d_coordinates_bit_depth_minus1(uint8_t value)
     -> auto & {
+  pin_attribute_present_flag(true);
   m_pin_geometry_3d_coordinates_bit_depth_minus1 = value;
   return *this;
 }
 
 inline auto PackingInformation::pin_attribute_count(uint8_t value) -> auto & {
+  pin_attribute_present_flag(true);
   m_pin_attribute_count = value;
   m_pinAttributeInformation = std::vector<PinAttributeInformation>(value);
   return *this;

@@ -175,7 +175,6 @@ void MpiEncoder::prepareSequence(const MivBitstream::SequenceConfig &sequenceCon
       .ptl_profile_codec_group_idc(MivBitstream::PtlProfileCodecGroupIdc::HEVC_Main10)
       .ptl_profile_reconstruction_idc(MivBitstream::PtlProfileReconstructionIdc::MIV_Main)
       .ptl_profile_toolset_idc(MivBitstream::PtlProfilePccToolsetIdc::MIV_Extended)
-      .ptl_toolset_constraints_present_flag(true)
       .ptl_profile_toolset_constraints_information([]() {
         // TODO(#358): Add a mutable accessor for ptci to avoid needing to write a lambda
         auto ptci = MivBitstream::ProfileToolsetConstraintsInformation{};
@@ -216,10 +215,7 @@ void MpiEncoder::prepareSequence(const MivBitstream::SequenceConfig &sequenceCon
 
   if (const auto &node = m_rootNode.optional("depthLowQualityFlag")) {
     depthLowQualityFlag = node.as<bool>();
-    m_params.casps.casps_extension_present_flag(true)
-        .casps_miv_extension_present_flag(true)
-        .casps_miv_extension()
-        .casme_depth_low_quality_flag(depthLowQualityFlag);
+    m_params.casps.casps_miv_extension().casme_depth_low_quality_flag(depthLowQualityFlag);
   }
 
   if (const auto &subnode = m_rootNode.optional("ViewingSpace")) {
@@ -239,21 +235,15 @@ void MpiEncoder::prepareSequence(const MivBitstream::SequenceConfig &sequenceCon
   VERIFY((m_blockSize & (m_blockSize - 1)) == 0);
 
   // Group atlases together to restrict atlas-level sub-bitstream access
-  auto &gm = vps.vps_extension_present_flag(true)
-                 .vps_miv_extension_present_flag(true)
-                 .vps_miv_extension()
-                 .group_mapping();
+  auto &gm = vps.vps_miv_extension().group_mapping();
   gm.gm_group_count(1);
   for (size_t i = 0; i < m_overrideAtlasFrameSizes.size(); ++i) {
     gm.gm_group_id(i, 0);
   }
 
-  m_params.casps.casps_extension_present_flag(true)
-      .casps_miv_extension_present_flag(true)
-      .casps_log2_max_common_atlas_frame_order_cnt_lsb_minus4(log2FocLsbMinus4())
+  m_params.casps.casps_log2_max_common_atlas_frame_order_cnt_lsb_minus4(log2FocLsbMinus4())
       .casps_miv_extension()
       .casme_depth_quantization_params_present_flag(true)
-      .casme_vui_params_present_flag(true)
       .vui_parameters(vuiParameters());
 
   // NOTE(FT)/m55089 implementation : need to have only non basic views to allow for splitting the
@@ -404,13 +394,12 @@ auto MpiEncoder::vuiParameters() const -> MivBitstream::VuiParameters {
   LIMITATION(timeScale == numUnitsInTick * m_params.frameRate);
 
   auto vui = MivBitstream::VuiParameters{};
-  vui.vui_timing_info_present_flag(true)
-      .vui_num_units_in_tick(numUnitsInTick)
+  vui.vui_num_units_in_tick(numUnitsInTick)
       .vui_time_scale(timeScale)
       .vui_poc_proportional_to_timing_flag(false)
       .vui_hrd_parameters_present_flag(false);
   vui.vui_unit_in_metres_flag(true);
-  vui.vui_coordinate_system_parameters_present_flag(true).coordinate_system_parameters() = {};
+  vui.coordinate_system_parameters() = {};
   return vui;
 }
 
@@ -451,8 +440,6 @@ void MpiEncoder::prepareIvau() {
             static_cast<uint16_t>(m_params.viewParamsList.size() - 1))
         .asps_log2_patch_packing_block_size(Common::ceilLog2(m_blockSize))
         .asps_num_ref_atlas_frame_lists_in_asps(1)
-        .asps_extension_present_flag(true)
-        .asps_miv_extension_present_flag(true)
         .asps_miv_extension()
         .asme_patch_constant_depth_flag(true);
 

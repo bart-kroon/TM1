@@ -176,8 +176,6 @@ auto MivEncoder::commonAtlasFrame() const -> MivBitstream::CommonAtlasFrameRBSP 
 
   caf.caf_common_atlas_sequence_parameter_set_id(0)
       .caf_common_atlas_frm_order_cnt_lsb(m_frmOrderCntLsb)
-      .caf_extension_present_flag(true)
-      .caf_miv_extension_present_flag(true)
       .caf_miv_extension();
   auto &came = caf.caf_miv_extension();
   if (m_irap) {
@@ -249,7 +247,6 @@ auto MivEncoder::mivViewParamsList() const -> MivBitstream::MivViewParamsList {
       mvpl.mvp_view_complete_in_atlas_flag(a, v, m_params.viewParamsList[v].isBasicView);
     }
   }
-  mvpl.mvp_explicit_view_id_flag(true);
   for (uint16_t v = 0; v <= mvpl.mvp_num_views_minus1(); ++v) {
     mvpl.mvp_view_id(v, v);
   }

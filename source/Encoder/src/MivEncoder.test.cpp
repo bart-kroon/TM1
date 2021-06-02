@@ -57,10 +57,7 @@ TEST_CASE("Encoder::MivEcoder") {
           .ath_ref_atlas_frame_list_asps_flag(true);
 
       [[maybe_unused]] auto &vp = result.viewParamsList.emplace_back();
-
-      [[maybe_unused]] auto &casme = result.casps.casps_extension_present_flag(true)
-                                         .casps_miv_extension_present_flag(true)
-                                         .casps_miv_extension();
+      [[maybe_unused]] auto &casme = result.casps.casps_miv_extension();
 
       return result;
     }();

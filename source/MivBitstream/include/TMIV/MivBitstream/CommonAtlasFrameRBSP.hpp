@@ -76,6 +76,7 @@ constexpr auto CommonAtlasFrameRBSP::caf_extension_present_flag(bool value) noex
 }
 
 constexpr auto CommonAtlasFrameRBSP::caf_miv_extension_present_flag(bool value) noexcept -> auto & {
+  caf_extension_present_flag(true);
   m_caf_miv_extension_present_flag = value;
   return *this;
 }

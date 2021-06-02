@@ -199,12 +199,8 @@ pp_parent_id[ 5 ][ 3 ]=8
 TEST_CASE("miv_view_params_list", "[Common Atlas Frame MIV Extension]") {
   auto x = MivViewParamsList{};
   auto vps = V3cParameterSet{};
-  vps.vps_extension_present_flag(true);
-  vps.vps_miv_extension_present_flag(true);
   vps.vps_miv_extension() = {};
   auto casps = CommonAtlasSequenceParameterSetRBSP{};
-  casps.casps_extension_present_flag(true);
-  casps.casps_miv_extension_present_flag(true);
   casps.casps_miv_extension() = {};
 
   SECTION("Default constructor") {
@@ -279,7 +275,6 @@ mvp_pruning_graph_params_present_flag=false
     vps.vps_atlas_count_minus1(1);
     casps.casps_miv_extension().casme_depth_quantization_params_present_flag(true);
     x.mvp_num_views_minus1(2)
-        .mvp_view_enabled_present_flag(true)
         .mvp_view_enabled_in_atlas_flag(0, 0, true)
         .mvp_view_complete_in_atlas_flag(0, 0, true)
         .mvp_view_enabled_in_atlas_flag(0, 1, true)
@@ -289,7 +284,6 @@ mvp_pruning_graph_params_present_flag=false
         .mvp_view_enabled_in_atlas_flag(1, 1, false)
         .mvp_view_enabled_in_atlas_flag(1, 2, true)
         .mvp_view_complete_in_atlas_flag(1, 2, false)
-        .mvp_explicit_view_id_flag(true)
         .mvp_view_id(0, 0)
         .mvp_view_id(1, 2)
         .mvp_view_id(2, 1)
@@ -427,12 +421,8 @@ mvp_pruning_graph_params_present_flag=false
 TEST_CASE("caf_miv_extension", "[Common Atlas Frame MIV Extension]") {
   auto x = CommonAtlasFrameMivExtension{};
   auto vps = V3cParameterSet{};
-  vps.vps_extension_present_flag(true);
-  vps.vps_miv_extension_present_flag(true);
   vps.vps_miv_extension() = {};
   auto casps = CommonAtlasSequenceParameterSetRBSP{};
-  casps.casps_extension_present_flag(true);
-  casps.casps_miv_extension_present_flag(true);
   casps.casps_miv_extension() = {};
   const auto nalCaf = NalUnitHeader{NalUnitType::NAL_CAF, 0, 1};
   const auto nalIdrCaf = NalUnitHeader{NalUnitType::NAL_IDR_CAF, 0, 1};

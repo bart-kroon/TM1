@@ -50,7 +50,6 @@ casme_vui_params_present_flag=false
     CaspsMivExtension unit{};
     unit.casme_depth_low_quality_flag(true)
         .casme_depth_quantization_params_present_flag(false)
-        .casme_vui_params_present_flag(true)
         .vui_parameters({});
     REQUIRE(toString(unit) == R"(casme_depth_low_quality_flag=true
 casme_depth_quantization_params_present_flag=false
@@ -80,9 +79,7 @@ casps_extension_present_flag=false
 
   CommonAtlasSequenceParameterSetRBSP unit{};
   SECTION("Extension present, MIV extension flag unset") {
-    unit.casps_extension_present_flag(true)
-        .casps_miv_extension_present_flag(false)
-        .casps_extension_7bits(0);
+    unit.casps_miv_extension_present_flag(false).casps_extension_7bits(0);
     REQUIRE(toString(unit) == R"(casps_common_atlas_sequence_parameter_set_id=0
 casps_log2_max_common_atlas_frame_order_cnt_lsb_minus4=0
 casps_extension_present_flag=true
@@ -94,8 +91,6 @@ casps_extension_7bits=0
 
   SECTION("Extension present, MIV extension flag true") {
     unit.casps_common_atlas_sequence_parameter_set_id(5)
-        .casps_extension_present_flag(true)
-        .casps_miv_extension_present_flag(true)
         .casps_extension_7bits(0)
         .casps_miv_extension() = CaspsMivExtension{};
     REQUIRE(toString(unit) == R"(casps_common_atlas_sequence_parameter_set_id=5
@@ -112,7 +107,6 @@ casme_vui_params_present_flag=false
 
   SECTION("Extension present, casps_extension_7bits nonzero") {
     unit.casps_log2_max_common_atlas_frame_order_cnt_lsb_minus4(3)
-        .casps_extension_present_flag(true)
         .casps_miv_extension_present_flag(false)
         .casps_extension_7bits(127)
         .caspsExtensionData({true, true, false});

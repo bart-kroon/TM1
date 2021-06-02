@@ -66,10 +66,7 @@ auto GeometryQuantizer::setOccupancyParams(EncoderParams params) -> const Encode
   m_outParams.vps.vps_miv_extension().vme_embedded_occupancy_enabled_flag(isOccupancyEmbedded);
 
   for (auto &atlas : m_outParams.atlas) {
-    atlas.asps.asps_extension_present_flag(true)
-        .asps_miv_extension_present_flag(true)
-        .asps_miv_extension()
-        .asme_embedded_occupancy_enabled_flag(isOccupancyEmbedded);
+    atlas.asps.asps_miv_extension().asme_embedded_occupancy_enabled_flag(isOccupancyEmbedded);
   }
 
   return m_outParams;

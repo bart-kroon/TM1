@@ -119,7 +119,6 @@ ptl_toolset_constraints_present_flag=false
         .ptl_extended_sub_profile_flag(true)
         .ptl_sub_profile_idc(0, 3)
         .ptl_sub_profile_idc(1, UINT64_MAX)
-        .ptl_toolset_constraints_present_flag(true)
         .ptl_profile_toolset_constraints_information(ptci);
 
     REQUIRE(toString(x) == R"(ptl_tier_flag=true
@@ -304,8 +303,7 @@ ai_attribute_MSB_align_flag[ 7 ][ 1 ]=true
 TEST_CASE("packing_information", "[V3C Parameter Set]") {
   SECTION("Default Constructor + 1 Occupancy Region") {
     PackingInformation unit{};
-    unit.pin_occupancy_present_flag(true)
-        .pin_occupancy_2d_bit_depth_minus1(7)
+    unit.pin_occupancy_2d_bit_depth_minus1(7)
         .pin_occupancy_MSB_align_flag(true)
         .pin_lossy_occupancy_compression_threshold(64);
 
@@ -334,8 +332,6 @@ pin_region_rotation_flag[ 4 ][ 0 ]=false
   SECTION("2 Regions: 1 Attribute + 1 Geometry") {
     PackingInformation unit{};
     unit.pin_codec_id(2)
-        .pin_attribute_present_flag(true)
-        .pin_geometry_present_flag(true)
         .pin_geometry_2d_bit_depth_minus1(9)
         .pin_geometry_MSB_align_flag(false)
         .pin_geometry_3d_coordinates_bit_depth_minus1(9)
@@ -404,9 +400,6 @@ pin_region_auxiliary_data_flag[ 3 ][ 1 ]=true
   SECTION("4 Regions: 1 Attribute + 2 Geometry + 1 Occupancy") {
     PackingInformation unit{};
     unit.pin_codec_id(2)
-        .pin_occupancy_present_flag(true)
-        .pin_geometry_present_flag(true)
-        .pin_attribute_present_flag(true)
         .pin_occupancy_2d_bit_depth_minus1(1)
         .pin_occupancy_MSB_align_flag(true)
         .pin_lossy_occupancy_compression_threshold(1)
@@ -549,9 +542,7 @@ TEST_CASE("v3c_parameter_set", "[V3C Parameter Set]") {
     vps.vps_atlas_id(0, {});
     vps.vps_frame_width({}, 1920);
     vps.vps_frame_height({}, 1080);
-    vps.vps_extension_present_flag(true);
     vps.vps_packing_information_present_flag(false);
-    vps.vps_miv_extension_present_flag(true);
     vps.vps_miv_extension()
         .vme_geometry_scale_enabled_flag(true)
         .vme_embedded_occupancy_enabled_flag(true);
@@ -592,8 +583,7 @@ gm_group_count=0
     const auto j1 = AtlasId{31};
     const auto j2 = AtlasId{32};
     PackingInformation packInfo{};
-    packInfo.pin_occupancy_present_flag(true)
-        .pin_occupancy_2d_bit_depth_minus1(7)
+    packInfo.pin_occupancy_2d_bit_depth_minus1(7)
         .pin_occupancy_MSB_align_flag(true)
         .pin_lossy_occupancy_compression_threshold(64);
     vps.vps_v3c_parameter_set_id(15)
@@ -613,9 +603,6 @@ gm_group_count=0
         .geometry_information(j1, {})
         .vps_attribute_video_present_flag(j1, true)
         .attribute_information(j1, {})
-        .vps_extension_present_flag(true)
-        .vps_miv_extension_present_flag(true)
-        .vps_packing_information_present_flag(true)
         .vps_packed_video_present_flag(j2, true)
         .packing_information(j2, packInfo)
         .vps_miv_extension(VpsMivExtension{})
@@ -707,7 +694,7 @@ vps_extension_data_byte=15
     ptci.ptc_restricted_geometry_flag(true);
 
     auto x = ProfileTierLevel{};
-    x.ptl_toolset_constraints_present_flag(true).ptl_profile_toolset_constraints_information(ptci);
+    x.ptl_profile_toolset_constraints_information(ptci);
 
     auto y = AttributeInformation{};
     y.ai_attribute_count(2)
@@ -735,8 +722,6 @@ vps_extension_data_byte=15
         .vps_occupancy_video_present_flag(j0, false)
         .vps_attribute_video_present_flag(j0, true)
         .attribute_information(j0, y)
-        .vps_extension_present_flag(true)
-        .vps_miv_extension_present_flag(true)
         .vps_packing_information_present_flag(false)
         .vps_miv_extension(VpsMivExtension{})
         .vps_extension_6bits(0);

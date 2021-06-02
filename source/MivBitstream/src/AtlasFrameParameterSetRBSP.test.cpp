@@ -92,8 +92,6 @@ afps_extension_present_flag=false
         .afps_additional_lt_afoc_lsb_len(25)
         .afps_lod_mode_enabled_flag(true)
         .afps_raw_3d_offset_bit_count_explicit_mode_flag(true)
-        .afps_extension_present_flag(true)
-        .afps_miv_extension_present_flag(true)
         .afps_extension_7bits(127)
         .afpsExtensionData({false, true})
         .afps_miv_extension() = {};
@@ -132,10 +130,7 @@ afps_extension_data_flag=true
         .afps_additional_lt_afoc_lsb_len(25)
         .afps_lod_mode_enabled_flag(false)
         .afps_raw_3d_offset_bit_count_explicit_mode_flag(true)
-        .afps_extension_present_flag(true)
-        .afps_miv_extension_present_flag(true)
         .afps_miv_extension()
-        .afme_inpaint_lod_enabled_flag(true)
         .afme_inpaint_lod_scale_x_minus1(4)
         .afme_inpaint_lod_scale_y_idc(13);
 

@@ -51,10 +51,7 @@ auto GeometryDownscaler::transformParams(EncoderParams params) -> const EncoderP
     m_params.vps.vps_miv_extension().vme_geometry_scale_enabled_flag(true);
 
     for (auto &atlas : m_params.atlas) {
-      atlas.asps.asps_extension_present_flag(true)
-          .asps_miv_extension_present_flag(true)
-          .asps_miv_extension()
-          .asme_geometry_scale_enabled_flag(true)
+      atlas.asps.asps_miv_extension()
           .asme_geometry_scale_factor_x_minus1(1)
           .asme_geometry_scale_factor_y_minus1(1);
     }

@@ -122,10 +122,7 @@ private:
 
     PRECONDITION(m_depthLowQualityFlag.has_value());
     au.casps.emplace(MivBitstream::CommonAtlasSequenceParameterSetRBSP{});
-    au.casps->casps_extension_present_flag(true)
-        .casps_miv_extension_present_flag(true)
-        .casps_miv_extension()
-        .casme_depth_low_quality_flag(*m_depthLowQualityFlag);
+    au.casps->casps_miv_extension().casme_depth_low_quality_flag(*m_depthLowQualityFlag);
 
     std::transform(frame.cbegin(), frame.cend(), std::back_inserter(au.atlas),
                    [viewIndex = uint16_t{}](const Common::TextureDepth16Frame &frame) mutable {
@@ -143,10 +140,7 @@ private:
 
     aau.asps.asps_frame_width(static_cast<uint16_t>(w));
     aau.asps.asps_frame_height(static_cast<uint16_t>(h));
-    aau.asps.asps_extension_present_flag(true)
-        .asps_miv_extension_present_flag(true)
-        .asps_miv_extension()
-        .asme_max_entity_id(0);
+    aau.asps.asps_miv_extension().asme_max_entity_id(0);
 
     aau.attrFrame = Common::yuv444p(frame.texture);
 

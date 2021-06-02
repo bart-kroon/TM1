@@ -41,35 +41,22 @@ SCENARIO("Explicit occupancy") {
   TMIV::Encoder::ExplicitOccupancy explicitOccupancy{};
 
   auto sourceParams = TMIV::Encoder::EncoderParams{};
-  sourceParams.vps.vps_extension_present_flag(true)
-      .vps_miv_extension_present_flag(true)
-      .vps_atlas_count_minus1(1)
+  sourceParams.vps.vps_atlas_count_minus1(1)
       .vps_atlas_id(size_t(0), TMIV::MivBitstream::AtlasId(0))
       .vps_atlas_id(size_t(1), TMIV::MivBitstream::AtlasId(1))
       .vps_miv_extension()
       .vme_embedded_occupancy_enabled_flag(false);
-  sourceParams.casps.casps_extension_present_flag(true)
-      .casps_miv_extension_present_flag(true)
-      .casps_miv_extension()
-      .casme_depth_low_quality_flag(true);
+  sourceParams.casps.casps_miv_extension().casme_depth_low_quality_flag(true);
   sourceParams.atlas.emplace_back();
   sourceParams.atlas[0].asps.asps_frame_width(1920);
   sourceParams.atlas[0].asps.asps_frame_height(4640);
   sourceParams.atlas[0].asps.asps_log2_patch_packing_block_size(5);
-  sourceParams.atlas[0]
-      .asps.asps_extension_present_flag(true)
-      .asps_miv_extension_present_flag(true)
-      .asps_miv_extension()
-      .asme_occupancy_scale_enabled_flag(true);
+  sourceParams.atlas[0].asps.asps_miv_extension().asme_occupancy_scale_enabled_flag(true);
   sourceParams.atlas.emplace_back();
   sourceParams.atlas[1].asps.asps_frame_width(2048);
   sourceParams.atlas[1].asps.asps_frame_height(4352);
   sourceParams.atlas[1].asps.asps_log2_patch_packing_block_size(4);
-  sourceParams.atlas[1]
-      .asps.asps_extension_present_flag(true)
-      .asps_miv_extension_present_flag(true)
-      .asps_miv_extension()
-      .asme_occupancy_scale_enabled_flag(true);
+  sourceParams.atlas[1].asps.asps_miv_extension().asme_occupancy_scale_enabled_flag(true);
 
   GIVEN("Signaling occupancy maps explicitly") {
 

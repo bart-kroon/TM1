@@ -81,7 +81,7 @@ TEST_CASE("Convert AccessUnit to SequenceConfig") {
 
   SECTION("frameRate") {
     auto vui = TMIV::MivBitstream::VuiParameters{};
-    vui.vui_timing_info_present_flag(true).vui_time_scale(240).vui_num_units_in_tick(10);
+    vui.vui_time_scale(240).vui_num_units_in_tick(10);
     au.vui = vui;
 
     const TMIV::MivBitstream::SequenceConfig sc = au.sequenceConfig();

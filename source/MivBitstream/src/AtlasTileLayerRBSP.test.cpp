@@ -136,13 +136,10 @@ pdu_orientation_index[ 0 ][ 101 ]=FPO_NULL
         .asps_normal_axis_max_delta_value_enabled_flag(true)
         .asps_extended_projection_enabled_flag(true)
         .asps_max_number_projections_minus1(511)
-        .asps_extension_present_flag(true)
-        .asps_miv_extension_present_flag(true)
         .asps_miv_extension()
         .asme_embedded_occupancy_enabled_flag(true)
         .asme_depth_occ_threshold_flag(true)
         .asme_max_entity_id(100)
-        .asme_patch_attribute_offset_enabled_flag(true)
         .asme_patch_attribute_offset_bit_depth_minus1(5)
         .asme_inpaint_enabled_flag(true);
 
@@ -191,8 +188,7 @@ pdu_inpaint_flag[ 12 ][ 102 ]=false
         .asps_normal_axis_max_delta_value_enabled_flag(true)
         .asps_extended_projection_enabled_flag(true)
         .asps_max_number_projections_minus1(511)
-        .asps_extension_present_flag(true)
-        .asps_miv_extension_present_flag(true)
+
         .asps_miv_extension()
         .asme_max_entity_id(100);
 

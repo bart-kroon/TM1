@@ -274,8 +274,6 @@ auto GroupBasedEncoder::mergeVps(const std::vector<const MivBitstream::V3cParame
   x.profile_tier_level(vps.front()->profile_tier_level())
       .vps_v3c_parameter_set_id(vps.front()->vps_v3c_parameter_set_id())
       .vps_atlas_count_minus1(static_cast<uint8_t>(atlasCount - 1))
-      .vps_extension_present_flag(true)
-      .vps_miv_extension_present_flag(true)
       .vps_miv_extension(vps.front()->vps_miv_extension());
 
   auto &gm = x.vps_miv_extension().group_mapping();

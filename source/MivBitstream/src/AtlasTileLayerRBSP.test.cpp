@@ -128,6 +128,24 @@ pdu_orientation_index[ 0 ][ 101 ]=FPO_NULL
 
   REQUIRE(bitCodingTest(x, 11, aspsV, afpsV, ath));
 
+  SECTION("Minimal MIV extension (no change)") {
+    aspsV.front().asps_miv_extension() = {};
+    x.pdu_miv_extension() = {};
+
+    REQUIRE(toString(x, 0, 101) == R"(pdu_2d_pos_x[ 0 ][ 101 ]=0
+pdu_2d_pos_y[ 0 ][ 101 ]=0
+pdu_2d_size_x_minus1[ 0 ][ 101 ]=0
+pdu_2d_size_y_minus1[ 0 ][ 101 ]=0
+pdu_3d_offset_u[ 0 ][ 101 ]=0
+pdu_3d_offset_v[ 0 ][ 101 ]=0
+pdu_3d_offset_d[ 0 ][ 101 ]=0
+pdu_projection_id[ 0 ][ 101 ]=0
+pdu_orientation_index[ 0 ][ 101 ]=FPO_NULL
+)");
+
+    REQUIRE(bitCodingTest(x, 11, aspsV, afpsV, ath));
+  }
+
   SECTION("Example 1") {
     aspsV.front()
         .asps_geometry_3d_bit_depth_minus1(14)
@@ -188,7 +206,6 @@ pdu_inpaint_flag[ 12 ][ 102 ]=false
         .asps_normal_axis_max_delta_value_enabled_flag(true)
         .asps_extended_projection_enabled_flag(true)
         .asps_max_number_projections_minus1(511)
-
         .asps_miv_extension()
         .asme_max_entity_id(100);
 

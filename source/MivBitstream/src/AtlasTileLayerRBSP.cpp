@@ -360,55 +360,50 @@ auto PduMivExtension::decodeFrom(Common::InputBitstream &bitstream,
                                  const AtlasSequenceParameterSetRBSP &asps) -> PduMivExtension {
   auto x = PduMivExtension{};
 
-  if (asps.asps_miv_extension_present_flag()) {
-    const auto &asme = asps.asps_miv_extension();
-    if (0 < asme.asme_max_entity_id()) {
-      x.pdu_entity_id(bitstream.getUVar<Common::SampleValue>(asme.asme_max_entity_id()));
-    }
-    if (asme.asme_depth_occ_threshold_flag()) {
-      x.pdu_depth_occ_threshold(
-          bitstream.readBits<Common::SampleValue>(asps.asps_geometry_2d_bit_depth_minus1() + 1));
-    }
-    if (asme.asme_patch_attribute_offset_enabled_flag()) {
-      int bits = asps.asps_miv_extension().asme_patch_attribute_offset_bit_depth_minus1() + 1;
-      const auto offset0 = bitstream.readBits<uint16_t>(bits);
-      const auto offset1 = bitstream.readBits<uint16_t>(bits);
-      const auto offset2 = bitstream.readBits<uint16_t>(bits);
-      x.pdu_attribute_offset({offset0, offset1, offset2});
-    }
-    if (asme.asme_inpaint_enabled_flag()) {
-      x.pdu_inpaint_flag(bitstream.getFlag());
-    }
+  const auto &asme = asps.asps_miv_extension();
+  if (0 < asme.asme_max_entity_id()) {
+    x.pdu_entity_id(bitstream.getUVar<Common::SampleValue>(asme.asme_max_entity_id()));
+  }
+  if (asme.asme_depth_occ_threshold_flag()) {
+    x.pdu_depth_occ_threshold(
+        bitstream.readBits<Common::SampleValue>(asps.asps_geometry_2d_bit_depth_minus1() + 1));
+  }
+  if (asme.asme_patch_attribute_offset_enabled_flag()) {
+    int bits = asps.asps_miv_extension().asme_patch_attribute_offset_bit_depth_minus1() + 1;
+    const auto offset0 = bitstream.readBits<uint16_t>(bits);
+    const auto offset1 = bitstream.readBits<uint16_t>(bits);
+    const auto offset2 = bitstream.readBits<uint16_t>(bits);
+    x.pdu_attribute_offset({offset0, offset1, offset2});
+  }
+  if (asme.asme_inpaint_enabled_flag()) {
+    x.pdu_inpaint_flag(bitstream.getFlag());
   }
   return x;
 }
 
 void PduMivExtension::encodeTo(Common::OutputBitstream &bitstream,
                                const AtlasSequenceParameterSetRBSP &asps) const {
-  if (asps.asps_extension_present_flag() && asps.asps_miv_extension_present_flag()) {
-    const auto &asme = asps.asps_miv_extension();
-    if (0 < asme.asme_max_entity_id()) {
-      bitstream.putUVar(pdu_entity_id(), asme.asme_max_entity_id());
-    } else {
-      PRECONDITION(!m_pdu_entity_id.has_value());
-    }
-    if (asme.asme_depth_occ_threshold_flag()) {
-      bitstream.writeBits(pdu_depth_occ_threshold(), asps.asps_geometry_2d_bit_depth_minus1() + 1);
-    } else {
-      PRECONDITION(!m_pdu_depth_occ_threshold.has_value());
-    }
-    if (asme.asme_patch_attribute_offset_enabled_flag()) {
-      const auto bits =
-          asps.asps_miv_extension().asme_patch_attribute_offset_bit_depth_minus1() + 1;
-      PRECONDITION(m_pdu_attribute_offset.has_value());
-      bitstream.writeBits(uint16_t(pdu_attribute_offset().x()), bits);
-      bitstream.writeBits(uint16_t(pdu_attribute_offset().y()), bits);
-      bitstream.writeBits(uint16_t(pdu_attribute_offset().z()), bits);
-    }
-    if (asme.asme_inpaint_enabled_flag()) {
-      PRECONDITION(m_pdu_inpaint_flag.has_value());
-      bitstream.putFlag(pdu_inpaint_flag());
-    }
+  const auto &asme = asps.asps_miv_extension();
+  if (0 < asme.asme_max_entity_id()) {
+    bitstream.putUVar(pdu_entity_id(), asme.asme_max_entity_id());
+  } else {
+    PRECONDITION(!m_pdu_entity_id.has_value());
+  }
+  if (asme.asme_depth_occ_threshold_flag()) {
+    bitstream.writeBits(pdu_depth_occ_threshold(), asps.asps_geometry_2d_bit_depth_minus1() + 1);
+  } else {
+    PRECONDITION(!m_pdu_depth_occ_threshold.has_value());
+  }
+  if (asme.asme_patch_attribute_offset_enabled_flag()) {
+    const auto bits = asps.asps_miv_extension().asme_patch_attribute_offset_bit_depth_minus1() + 1;
+    PRECONDITION(m_pdu_attribute_offset.has_value());
+    bitstream.writeBits(uint16_t(pdu_attribute_offset().x()), bits);
+    bitstream.writeBits(uint16_t(pdu_attribute_offset().y()), bits);
+    bitstream.writeBits(uint16_t(pdu_attribute_offset().z()), bits);
+  }
+  if (asme.asme_inpaint_enabled_flag()) {
+    PRECONDITION(m_pdu_inpaint_flag.has_value());
+    bitstream.putFlag(pdu_inpaint_flag());
   }
 }
 

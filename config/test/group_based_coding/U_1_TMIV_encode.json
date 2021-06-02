@@ -3,6 +3,7 @@
     "attributeOffsetEnabledFlag": true,
     "blockSizeDepthQualityDependent": [ 16, 32 ],
     "configDirectory": "config",
+    "colorCorrectionEnabledFlag": false,
     "dynamicDepthRange": true,
     "GroupBasedEncoder": {
         "DepthQualityAssessor": {

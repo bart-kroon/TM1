@@ -48,6 +48,10 @@ void Encoder::pushFrame(Common::MVD16Frame sourceViews) {
 
 void Encoder::pushSingleEntityFrame(Common::MVD16Frame sourceViews) {
   auto transportViews = m_viewOptimizer->optimizeFrame(std::move(sourceViews));
+  if (m_config.colorCorrectionEnabledFlag) {
+    m_colorCorrectionMaps.push_back(
+        assessColorConsistency(transportViews, m_transportParams.viewParamsList));
+  }
   const auto masks = m_pruner->prune(m_transportParams.viewParamsList, transportViews);
   updateNonAggregatedMask(transportViews, masks);
   m_transportViews.push_back(std::move(transportViews));

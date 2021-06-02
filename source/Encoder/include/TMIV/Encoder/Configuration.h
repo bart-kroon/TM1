@@ -70,6 +70,7 @@ struct Configuration {
   bool dqParamsPresentFlag{true};
   bool viewportCameraParametersSei;
   bool viewportPositionSei;
+  bool colorCorrectionEnabledFlag;
   bool randomAccess;
   uint8_t numGroups;
   uint16_t maxEntityId{};

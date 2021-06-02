@@ -3,7 +3,7 @@
   "attributeOffsetEnabledFlag": true,
   "blockSizeDepthQualityDependent": [ 8, 8 ],
   "configDirectory": "config",
-
+  "colorCorrectionEnabledFlag": false,
   "dynamicDepthRange": false,
   "MpiEncoder": {
     "PackerMethod": "Packer",

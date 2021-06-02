@@ -53,6 +53,8 @@ Configuration::Configuration(const Common::Json &rootNode, const Common::Json &c
     , attributeOffsetFlag{haveTexture && rootNode.require("attributeOffsetEnabledFlag").as<bool>()}
     , viewportCameraParametersSei{rootNode.require("viewportCameraParametersSei").as<bool>()}
     , viewportPositionSei{rootNode.require("viewportPositionSei").as<bool>()}
+    , colorCorrectionEnabledFlag{haveTexture &&
+                                 rootNode.require("colorCorrectionEnabledFlag").as<bool>()}
     , randomAccess{rootNode.require("randomAccess").as<bool>()}
     , numGroups{rootNode.require("numGroups").as<uint8_t>()}
     , maxEntityId{rootNode.require("maxEntityId").as<uint16_t>()} {

@@ -6,6 +6,7 @@ create_tmiv_library(
     SOURCES
         "src/Configuration.cpp"    
         "src/Encoder.cpp"
+        "src/Encoder_assessColorConsistency.cpp"
         "src/Encoder_prepareSequence.cpp"
         "src/Encoder_prepareAccessUnit.cpp"
         "src/Encoder_pushFrame.cpp"
@@ -84,6 +85,7 @@ create_catch2_unit_test(
         "src/Configuration.test.cpp"
         "src/GeometryQuantizer.test.cpp"
         "src/ExplicitOccupancy.test.cpp"
+        "src/ColorConsistencyAssessor.test.cpp"
         "src/MivEncoder.test.cpp"
 	"src/FramePacker.test.cpp"
     PRIVATE

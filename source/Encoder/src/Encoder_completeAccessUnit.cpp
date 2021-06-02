@@ -50,7 +50,8 @@ struct PatchStats {
 void adaptPatchStatsToTexture(std::array<PatchStats, 3> &patchStats,
                               const Common::TextureDepth16Frame &view,
                               Common::TextureDepthFrame<Common::YUV400P16> &atlas,
-                              const Common::Vec2i &pView, const Common::Vec2i &pAtlas) {
+                              const Common::Vec2i &pView, const Common::Vec2i &pAtlas,
+                              Common::Vec3i &colorCorrectionOffset) {
   // Y
   atlas.texture.getPlane(0)(pAtlas.y(), pAtlas.x()) =
       view.texture.getPlane(0)(pView.y(), pView.x());
@@ -64,6 +65,9 @@ void adaptPatchStatsToTexture(std::array<PatchStats, 3> &patchStats,
   if (patchStats[0].maxVal < atlas.texture.getPlane(0)(pAtlas.y(), pAtlas.x())) {
     patchStats[0].maxVal = atlas.texture.getPlane(0)(pAtlas.y(), pAtlas.x());
   }
+  const auto valY =
+      int32_t{atlas.texture.getPlane(0)(pAtlas.y(), pAtlas.x())} + colorCorrectionOffset.x();
+  atlas.texture.getPlane(0)(pAtlas.y(), pAtlas.x()) = Common::assertDownCast<uint16_t>(valY);
 
   // UV
   if ((pView.x() % 2) == 0 && (pView.y() % 2) == 0) {
@@ -85,6 +89,14 @@ void adaptPatchStatsToTexture(std::array<PatchStats, 3> &patchStats,
             atlas.texture.getPlane(p)(pAtlas.y() / 2, pAtlas.x() / 2);
       }
     }
+    const auto valU = int32_t{atlas.texture.getPlane(1)(pAtlas.y() / 2, pAtlas.x() / 2)} +
+                      colorCorrectionOffset.y();
+    const auto valV = int32_t{atlas.texture.getPlane(2)(pAtlas.y() / 2, pAtlas.x() / 2)} +
+                      colorCorrectionOffset.z();
+    atlas.texture.getPlane(1)(pAtlas.y() / 2, pAtlas.x() / 2) =
+        Common::assertDownCast<uint16_t>(valU);
+    atlas.texture.getPlane(2)(pAtlas.y() / 2, pAtlas.x() / 2) =
+        Common::assertDownCast<uint16_t>(valV);
   }
 }
 } // namespace
@@ -141,6 +153,58 @@ void Encoder::scaleGeometryDynamicRange() {
   }
 }
 
+void Encoder::correctColors() {
+  for (auto &patch : m_params.patchParamsList) {
+
+    int sumErrY = 0;
+    int sumErrU = 0;
+    int sumErrV = 0;
+
+    int cnt = 0;
+
+    Common::Vec3i ccOffset;
+
+    const auto w = patch.atlasPatch3dSizeU();
+    const auto h = patch.atlasPatch3dSizeV();
+    const auto xM = patch.atlasPatch3dOffsetU();
+    const auto yM = patch.atlasPatch3dOffsetV();
+
+    for (size_t frame = 0; frame < m_transportViews.size(); frame++) {
+
+      const auto &view = m_transportViews[frame][patch.atlasPatchProjectionId()];
+      const auto &colorCorrectionMap = m_colorCorrectionMaps[frame][patch.atlasPatchProjectionId()];
+      const auto &textureViewMap = view.texture;
+
+      for (int32_t y = 0; y < h; y++) {
+        for (int32_t x = 0; x < w; x++) {
+          const Common::Vec2i pView = {xM + x, yM + y};
+
+          if (pView.y() >= textureViewMap.getHeight() || pView.x() >= textureViewMap.getWidth() ||
+              pView.y() < 0 || pView.x() < 0) {
+            continue;
+          }
+
+          cnt++;
+
+          if (colorCorrectionMap(pView.y(), pView.x()).x() != 0 &&
+              m_nonAggregatedMask[patch.atlasPatchProjectionId()](pView.y(), pView.x())[frame]) {
+
+            sumErrY += colorCorrectionMap(pView.y(), pView.x()).x();
+            sumErrU += colorCorrectionMap(pView.y(), pView.x()).y();
+            sumErrV += colorCorrectionMap(pView.y(), pView.x()).z();
+          }
+        }
+      }
+    }
+
+    ccOffset.x() = sumErrY / cnt;
+    ccOffset.y() = sumErrU / cnt;
+    ccOffset.z() = sumErrV / cnt;
+
+    m_patchColorCorrectionOffset.push_back(ccOffset);
+  }
+}
+
 auto Encoder::completeAccessUnit() -> const EncoderParams & {
   m_aggregator->completeAccessUnit();
   const auto &aggregatedMask = m_aggregator->getAggregatedMask();
@@ -166,6 +230,14 @@ auto Encoder::completeAccessUnit() -> const EncoderParams & {
                                             m_transportParams.viewParamsList, m_config.blockSize);
 
   m_params = m_geometryQuantizer.setOccupancyParams(m_params);
+
+  if (m_config.colorCorrectionEnabledFlag) {
+    correctColors();
+  } else {
+    for (size_t p = 0; p < m_params.patchParamsList.size(); p++) {
+      m_patchColorCorrectionOffset.emplace_back();
+    }
+  }
 
   constructVideoFrames();
 
@@ -271,7 +343,6 @@ void Encoder::adaptBtpmToPatchCount(std::vector<std::vector<std::vector<int>>> &
               continue;
             }
 
-            // std::cout << ay << "\t" << ax << "\n";
             btpm[atlasId][ay][ax] = patchCnt;
           }
         }
@@ -399,7 +470,8 @@ void Encoder::constructVideoFrames() {
     int patchCnt = 0;
     auto patchAttrOffsetValues1Frame = std::array<std::array<int64_t, 4>, 3>{};
 
-    for (const auto &patch : m_params.patchParamsList) {
+    for (size_t patchIdx = 0; patchIdx < m_params.patchParamsList.size(); patchIdx++) {
+      const auto &patch = m_params.patchParamsList[patchIdx];
       const auto &view = views[patch.atlasPatchProjectionId()];
 
       const auto k = m_params.vps.indexOf(patch.atlasId());
@@ -407,9 +479,10 @@ void Encoder::constructVideoFrames() {
         Common::MVD16Frame tempViews;
         tempViews.push_back(view);
         const auto &entityViews = entitySeparator(tempViews, *patch.atlasPatchEntityId());
-        patchAttrOffsetValues1Frame = writePatchInAtlas(patch, entityViews[0], atlasList, frameId);
+        patchAttrOffsetValues1Frame =
+            writePatchInAtlas(patch, entityViews[0], atlasList, frameId, patchIdx);
       } else {
-        patchAttrOffsetValues1Frame = writePatchInAtlas(patch, view, atlasList, frameId);
+        patchAttrOffsetValues1Frame = writePatchInAtlas(patch, view, atlasList, frameId, patchIdx);
       }
 
       if (m_config.attributeOffsetFlag) {
@@ -441,7 +514,8 @@ void Encoder::constructVideoFrames() {
 // NOLINTNEXTLINE(readability-function-cognitive-complexity)
 auto Encoder::writePatchInAtlas(const MivBitstream::PatchParams &patchParams,
                                 const Common::TextureDepth16Frame &view, Common::MVD16Frame &frame,
-                                int frameId) -> std::array<std::array<int64_t, 4>, 3> {
+                                int frameId, size_t patchIdx)
+    -> std::array<std::array<int64_t, 4>, 3> {
 
   const auto k = m_params.vps.indexOf(patchParams.atlasId());
   auto &atlas = frame[k];
@@ -501,7 +575,8 @@ auto Encoder::writePatchInAtlas(const MivBitstream::PatchParams &patchParams,
           }
 
           if (m_config.haveTexture) {
-            adaptPatchStatsToTexture(patchStats, view, atlas, pView, pAtlas);
+            adaptPatchStatsToTexture(patchStats, view, atlas, pView, pAtlas,
+                                     m_patchColorCorrectionOffset[patchIdx]);
           }
 
           // Depth

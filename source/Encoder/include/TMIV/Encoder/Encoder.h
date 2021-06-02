@@ -50,6 +50,9 @@
 #include <memory>
 
 namespace TMIV::Encoder {
+auto assessColorConsistency(Common::MVD16Frame views, MivBitstream::ViewParamsList params)
+    -> std::vector<Common::Mat<Common::Vec3i>>;
+
 class Encoder : public IEncoder {
 public:
   Encoder(const Common::Json & /*rootNode*/, const Common::Json & /*componentNode*/);
@@ -102,6 +105,7 @@ private: // Encoder_prepareSequence.cpp
   void scaleGeometryDynamicRange();
   void updateAggregationStatistics(const Common::MaskList &aggregatedMask);
   void constructVideoFrames();
+  void correctColors();
   void calculateAttributeOffset(
       std::vector<std::array<std::array<int64_t, 4>, 3>> patchAttrOffsetValuesFullGOP);
   auto calculatePatchAttrOffsetValuesFullGOP(
@@ -110,7 +114,7 @@ private: // Encoder_prepareSequence.cpp
   void adaptBtpmToPatchCount(std::vector<std::vector<std::vector<int>>> &btpm) const;
   auto writePatchInAtlas(const MivBitstream::PatchParams &patchParams,
                          const Common::TextureDepth16Frame &view, Common::MVD16Frame &frame,
-                         int frameId) -> std::array<std::array<int64_t, 4>, 3>;
+                         int frameId, size_t patchIdx) -> std::array<std::array<int64_t, 4>, 3>;
   void adaptAtlas(const MivBitstream::PatchParams &patchParams,
                   Common::TextureDepthFrame<Common::YUV400P16> &atlas, int yOcc, int xOcc,
                   const Common::Vec2i &pView, const Common::Vec2i &pAtlas) const;
@@ -146,6 +150,9 @@ private: // Encoder_prepareSequence.cpp
   std::vector<NonAggregatedMask> m_nonAggregatedMask;
   std::vector<Common::MaskList> m_aggregatedEntityMask;
   size_t m_maxLumaSamplesPerFrame{};
+
+  std::vector<std::vector<Common::Mat<Common::Vec3i>>> m_colorCorrectionMaps;
+  std::vector<Common::Vec3i> m_patchColorCorrectionOffset;
 };
 } // namespace TMIV::Encoder
 

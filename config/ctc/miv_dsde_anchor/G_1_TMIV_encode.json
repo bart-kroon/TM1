@@ -2,6 +2,7 @@
     "attributeOffsetEnabledFlag": false,
     "blockSizeDepthQualityDependent": [ 16, 32 ],
     "configDirectory": "config",
+    "colorCorrectionEnabledFlag": false,
     "dynamicDepthRange": false,
     "Encoder": {
         "DepthQualityAssessor": {

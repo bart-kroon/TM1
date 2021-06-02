@@ -1,6 +1,7 @@
 {
     "blockSizeDepthQualityDependent": [ 16, 32 ],
     "configDirectory": "config",
+    "colorCorrectionEnabledFlag": false,
     "dynamicDepthRange": true,
     "Encoder": {
         "DepthQualityAssessor": {

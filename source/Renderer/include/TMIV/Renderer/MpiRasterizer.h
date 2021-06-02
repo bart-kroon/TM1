@@ -39,7 +39,6 @@
 #include <array>
 
 namespace TMIV::Renderer {
-
 template <typename... T> using PixelAttributes = std::tuple<T...>;
 
 template <typename... T> class MpiRasterizer {

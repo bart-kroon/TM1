@@ -34,7 +34,6 @@
 #include <TMIV/MivBitstream/ViewportCameraParameters.h>
 
 namespace TMIV::MivBitstream {
-
 constexpr auto unit2deg(uint32_t v) -> float { return static_cast<float>(v) / 65536.F; }
 auto deg2unit(float v, uint32_t delta) -> uint32_t {
   return std::clamp(static_cast<uint32_t>(std::round(v * 65536.F)), 0U, delta * 65536U - 1U);
@@ -60,7 +59,6 @@ auto ViewportCameraParameters::vcp_perspective_vertical_fov_in_degrees() const -
 }
 
 auto operator<<(std::ostream &stream, const ViewportCameraParameters &vcp) -> std::ostream & {
-
   stream << "vcp_camera_id=" << vcp.vcp_camera_id << '\n';
   stream << "vcp_cancel_flag=" << std::boolalpha << vcp.vcp_cancel_flag << '\n';
 
@@ -106,7 +104,6 @@ auto ViewportCameraParameters::operator==(const ViewportCameraParameters &other)
 
 auto ViewportCameraParameters::decodeFrom(Common::InputBitstream &stream)
     -> ViewportCameraParameters {
-
   ViewportCameraParameters vcp;
 
   vcp.vcp_camera_id = stream.readBits<uint16_t>(10);
@@ -139,7 +136,6 @@ auto ViewportCameraParameters::decodeFrom(Common::InputBitstream &stream)
 }
 
 void ViewportCameraParameters::encodeTo(Common::OutputBitstream &stream) const {
-
   stream.writeBits<uint16_t>(vcp_camera_id, 10);
   stream.putFlag(vcp_cancel_flag);
 
@@ -169,7 +165,6 @@ void ViewportCameraParameters::encodeTo(Common::OutputBitstream &stream) const {
 
 auto ViewportCameraParameters::fromViewParams(const ViewParams &viewParams)
     -> ViewportCameraParameters {
-
   ViewportCameraParameters vcp;
   auto w = viewParams.ci.ci_projection_plane_width_minus1() + 1;
   auto h = viewParams.ci.ci_projection_plane_height_minus1() + 1;

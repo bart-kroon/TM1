@@ -38,7 +38,6 @@ auto roundToAlignment(int val, int alignment) -> int {
 }
 
 namespace TMIV::Packer {
-
 Cluster::Cluster(int viewId, bool isBasicView, int clusterId, int entityId)
     : viewId_(viewId), m_isBasicView{isBasicView}, clusterId_(clusterId), entityId_(entityId) {}
 
@@ -378,7 +377,6 @@ void Cluster::recursiveSplit(const ClusteringMap &clusteringMap, std::vector<Clu
 auto Cluster::createAggregatedQueues(const ClusteringMap &clusteringMap,
                                      const bool aggregateHorizontally) const
     -> std::tuple<std::array<std::deque<int>, 2>, std::array<std::deque<int>, 2>> {
-
   const auto aggregationDimensionSize = aggregateHorizontally ? height() : width();
 
   std::array<std::deque<int>, 2> min_agg{};

@@ -40,7 +40,7 @@ clang-format:
   script:
     - ./scripts/check/clang_format.py
     - git diff
-    - if [[ $(git diff) ]]; then echo "Formatting is wrong! See above."; return 1; fi
+    - if [[ $(git diff) ]]; then echo "Formatting is wrong. Please see above."; return 1; fi
 
 no multi-line commit messages:
   stage: check
@@ -54,3 +54,12 @@ no multi-line commit messages:
     - NUM_COMMIT_MESSAGE_LINES=$(git log --pretty=format:%B main..HEAD | sed '/^\s*$/d' | grep -c "")
     - NUM_COMMITS=$(git rev-list --count main..HEAD)
     - if [[ "$NUM_COMMIT_MESSAGE_LINES" -ne "$NUM_COMMITS" ]]; then echo "Merge requests with multi-line commit messages result in a wrong commit message on main. Please rewrite the commit message(s) to have only one line."; fail; fi
+
+Code quality checks:
+  stage: check
+  image: cbachhuber/clang:12
+  tags: [ linux ]
+  script:
+    - ./scripts/check/code_quality_checks.py
+    - git diff
+    - if [[ $(git diff) ]]; then echo "A check triggered. Please see above."; return 1; fi

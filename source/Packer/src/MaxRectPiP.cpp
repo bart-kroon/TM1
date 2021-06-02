@@ -128,7 +128,6 @@ auto MaxRectPiP::push(const Cluster &c, const ClusteringMap &clusteringMap, Outp
 
 void MaxRectPiP::updateOccupancyMap(const Cluster &c, const ClusteringMap &clusteringMap,
                                     const MaxRectPiP::Output &packerOutput) {
-
   const auto &clusteringBuffer = clusteringMap.getPlane(0);
   bool isRotated = packerOutput.isRotated();
   int w = c.width();

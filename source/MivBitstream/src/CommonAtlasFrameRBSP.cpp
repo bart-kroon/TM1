@@ -38,7 +38,6 @@
 #include <cmath>
 
 namespace TMIV::MivBitstream {
-
 auto CommonAtlasFrameRBSP::caf_miv_extension() const -> const CafMivExtension & {
   VERIFY_V3CBITSTREAM(caf_miv_extension_present_flag());
   VERIFY_V3CBITSTREAM(m_caf_miv_extension.has_value());

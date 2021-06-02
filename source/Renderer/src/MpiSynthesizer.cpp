@@ -100,7 +100,6 @@ public:
   Impl(float minAlpha) { m_minAlpha = minAlpha; }
 
   static auto isTriangleDimensionNotTooBig(float x0, float x1, float x2, float W) -> bool {
-
     float xMin = std::min(x0, std::min(x1, x2));
     float xMax = std::max(x0, std::max(x1, x2));
 
@@ -109,7 +108,6 @@ public:
 
   // Handling properly the seam for 360 degrees scenes
   static auto shouldRepeat(const MivBitstream::ViewParams &viewParams) -> bool {
-
     return ((viewParams.ci.ci_cam_type() == MivBitstream::CiCamType::equirectangular) &&
             ((0.99F * Common::fullCycle <
               (viewParams.ci.ci_erp_phi_max() - viewParams.ci.ci_erp_phi_min()))));

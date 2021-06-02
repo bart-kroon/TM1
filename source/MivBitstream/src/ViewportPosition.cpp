@@ -34,7 +34,6 @@
 #include <TMIV/MivBitstream/ViewportPosition.h>
 
 namespace TMIV::MivBitstream {
-
 template <typename T> constexpr auto quat2unit(T v) -> int16_t {
   return std::clamp(static_cast<int16_t>(std::round(v * static_cast<T>(16384))),
                     static_cast<int16_t>(-16384), static_cast<int16_t>(16384));
@@ -122,7 +121,6 @@ auto ViewportPosition::decodeFrom(Common::InputBitstream &stream) -> ViewportPos
 }
 
 void ViewportPosition::encodeTo(Common::OutputBitstream &stream) const {
-
   stream.putUExpGolomb<uint16_t>(vp_viewport_id);
   stream.putFlag(vp_camera_parameters_present_flag);
 

@@ -36,7 +36,6 @@
 #include <fstream>
 
 namespace TMIV::MpiPcs {
-
 namespace {
 template <typename T>
 auto readFromStream(std::istream &stream, const unsigned long long int numberOfItems)

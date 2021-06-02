@@ -126,12 +126,10 @@ auto assessColorConsistency(Common::MVD16Frame views, MivBitstream::ViewParamsLi
   int H = refView.texture.getHeight();
 
   for (auto &s : synthesizers) {
-
     Common::Mat<Common::Vec3i> currentCCMap;
     currentCCMap.resize(H, W);
 
     if (s->index != refViewId) {
-
       auto overtices = Pruner::project(ivertices, params[refViewId], params[s->index]);
       Pruner::weightedSphere(params[s->index].ci, overtices, triangles);
       s->rasterizer.submit(overtices, attributes, triangles);

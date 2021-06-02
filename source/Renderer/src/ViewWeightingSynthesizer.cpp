@@ -784,7 +784,6 @@ private:
       const ProjectionHelperList &sourceHelperList, const size_t y, const size_t x,
       size_t prunedNodeId,
       const std::vector<std::pair<Common::Graph::NodeId, float>> &candidateList) -> size_t {
-
     const auto &prunedHelper = sourceHelperList[prunedNodeId];
     const auto w_last = static_cast<int>(m_sourceDepth[prunedNodeId].width()) - 1;
     const auto h_last = static_cast<int>(m_sourceDepth[prunedNodeId].height()) - 1;

@@ -689,7 +689,6 @@ vps_extension_data_byte=15
   }
 
   SECTION("Example 3 for mpi") {
-
     auto ptci = ProfileToolsetConstraintsInformation{};
     ptci.ptc_restricted_geometry_flag(true);
 

@@ -40,7 +40,6 @@
 #include <vector>
 
 namespace TMIV::MivBitstream {
-
 struct AtlasObjectAssociationUpdateParameters {
   uint8_t aoa_log2_max_object_idx_tracked_minus1;
   std::vector<uint8_t> aoa_atlas_id;

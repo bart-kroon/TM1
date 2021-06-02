@@ -39,7 +39,6 @@
 using namespace std::string_view_literals;
 
 TEST_CASE("TMIV::Decoder::FrameUnpacker: 1 Atlas with texture and geometry") {
-
   using Catch::Contains;
 
   TMIV::Decoder::FrameUnpacker unit{};

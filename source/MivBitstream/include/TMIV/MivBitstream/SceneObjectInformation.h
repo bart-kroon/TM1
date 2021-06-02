@@ -43,7 +43,6 @@
 #include <vector>
 
 namespace TMIV::MivBitstream {
-
 struct SoiVisibilityCones {
   [[nodiscard]] constexpr auto operator==(const SoiVisibilityCones &other) const noexcept -> bool {
     return (soi_direction_x == other.soi_direction_x) &&

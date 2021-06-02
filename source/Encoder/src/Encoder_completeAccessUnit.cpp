@@ -155,7 +155,6 @@ void Encoder::scaleGeometryDynamicRange() {
 
 void Encoder::correctColors() {
   for (auto &patch : m_params.patchParamsList) {
-
     int sumErrY = 0;
     int sumErrU = 0;
     int sumErrV = 0;
@@ -170,7 +169,6 @@ void Encoder::correctColors() {
     const auto yM = patch.atlasPatch3dOffsetV();
 
     for (size_t frame = 0; frame < m_transportViews.size(); frame++) {
-
       const auto &view = m_transportViews[frame][patch.atlasPatchProjectionId()];
       const auto &colorCorrectionMap = m_colorCorrectionMaps[frame][patch.atlasPatchProjectionId()];
       const auto &textureViewMap = view.texture;
@@ -188,7 +186,6 @@ void Encoder::correctColors() {
 
           if (colorCorrectionMap(pView.y(), pView.x()).x() != 0 &&
               m_nonAggregatedMask[patch.atlasPatchProjectionId()](pView.y(), pView.x())[frame]) {
-
             sumErrY += colorCorrectionMap(pView.y(), pView.x()).x();
             sumErrU += colorCorrectionMap(pView.y(), pView.x()).y();
             sumErrV += colorCorrectionMap(pView.y(), pView.x()).z();
@@ -265,7 +262,6 @@ void Encoder::updateAggregationStatistics(const Common::MaskList &aggregatedMask
 // TODO(BK): Avoid functions like this one that are too long and/or poorly named
 void Encoder::calculateAttributeOffset(
     std::vector<std::array<std::array<int64_t, 4>, 3>> patchAttrOffsetValuesFullGOP) {
-
   for (uint8_t k = 0; k <= m_params.vps.vps_atlas_count_minus1(); ++k) {
     auto &asme = m_params.atlas[k].asps.asps_miv_extension();
     asme.asme_patch_attribute_offset_enabled_flag(m_config.attributeOffsetFlag);
@@ -314,7 +310,6 @@ void Encoder::calculateAttributeOffset(
 void Encoder::adaptBtpmToPatchCount(std::vector<std::vector<std::vector<int>>> &btpm) const {
   int patchCnt = 0;
   for (const auto &patch : m_params.patchParamsList) {
-
     size_t atlasId = m_params.vps.indexOf(patch.atlasId());
 
     const auto &currentAtlas = m_videoFrameBuffer[0][atlasId];
@@ -328,10 +323,8 @@ void Encoder::adaptBtpmToPatchCount(std::vector<std::vector<std::vector<int>>> &
 
     for (int dyAligned = 0; dyAligned < h; dyAligned += m_config.blockSize) {
       for (int dxAligned = 0; dxAligned < w; dxAligned += m_config.blockSize) {
-
         for (int dy = dyAligned; dy < dyAligned + m_config.blockSize; dy++) {
           for (int dx = dxAligned; dx < dxAligned + m_config.blockSize; dx++) {
-
             Common::Vec2i pView = {xM + dx, yM + dy};
             Common::Vec2i pAtlas = patch.viewToAtlas(pView);
 
@@ -516,7 +509,6 @@ auto Encoder::writePatchInAtlas(const MivBitstream::PatchParams &patchParams,
                                 const Common::TextureDepth16Frame &view, Common::MVD16Frame &frame,
                                 int frameId, size_t patchIdx)
     -> std::array<std::array<int64_t, 4>, 3> {
-
   const auto k = m_params.vps.indexOf(patchParams.atlasId());
   auto &atlas = frame[k];
 

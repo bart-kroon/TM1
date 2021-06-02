@@ -32,7 +32,6 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 # THE POSSIBILITY OF SUCH DAMAGE.
 
-import argparse
 import multiprocessing
 from pathlib import Path
 import subprocess
@@ -41,40 +40,14 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 REPO_DIR = SCRIPT_DIR.parents[1]
 
 
-def parse_arguments():
-    parser = argparse.ArgumentParser(description="Apply clang-format")
-    parser.add_argument(
-        "-c", "--changed-only", help="Check only files changed in the branch", action="store_true"
-    )
-    parser.add_argument(
-        "-b",
-        "--target-branch",
-        help="Target branch for changed files computation",
-        default="origin/main",
-    )
-    return parser.parse_args()
-
-
-def apply_clang_format(args):
-    files = get_files_to_format(args.changed_only, args.target_branch)
+def apply_clang_format():
+    files = get_files_to_format()
     with multiprocessing.Pool(multiprocessing.cpu_count()) as pool:
         pool.map(apply_clang_format_to_single_file, files)
 
 
-def get_files_to_format(check_changed_files_only, target_branch):
-    if check_changed_files_only:
-        git_command = [
-            "git",
-            "diff",
-            "--no-merges",
-            "--name-only",
-            "--diff-filter=d",
-            target_branch,
-        ]
-    else:
-        git_command = ["git", "ls-files"]
-
-    files_to_format = subprocess.check_output(git_command, cwd=REPO_DIR).splitlines()
+def get_files_to_format():
+    files_to_format = subprocess.check_output(["git", "ls-files"], cwd=REPO_DIR).splitlines()
     files_to_format = [REPO_DIR / str(f, "utf-8") for f in files_to_format]
 
     return list(filter(lambda f: f.suffix in (".cpp", ".hpp", ".h"), files_to_format))
@@ -85,6 +58,5 @@ def apply_clang_format_to_single_file(cpp_file):
 
 
 if __name__ == "__main__":
-    args = parse_arguments()
-    apply_clang_format(args)
+    apply_clang_format()
     exit(0)

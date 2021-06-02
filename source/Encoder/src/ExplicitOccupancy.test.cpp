@@ -59,7 +59,6 @@ SCENARIO("Explicit occupancy") {
   sourceParams.atlas[1].asps.asps_miv_extension().asme_occupancy_scale_enabled_flag(true);
 
   GIVEN("Signaling occupancy maps explicitly") {
-
     WHEN("Calling transformParams") {
       const auto codedParams = explicitOccupancy.transformParams(sourceParams);
 

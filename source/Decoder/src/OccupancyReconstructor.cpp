@@ -34,7 +34,6 @@
 #include <TMIV/Decoder/OccupancyReconstructor.h>
 
 namespace TMIV::Decoder {
-
 void sampleOccupancyReconstruction(MivBitstream::AtlasAccessUnit &atlas,
                                    MivBitstream::V3cParameterSet &vps,
                                    MivBitstream::ViewParamsList &viewParamsList, int y, int x) {

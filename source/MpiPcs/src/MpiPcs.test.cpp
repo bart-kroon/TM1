@@ -41,7 +41,6 @@ using Catch::Matchers::Contains;
 
 namespace TMIV::MpiPcs {
 TEST_CASE("MpiPcs writer and reader") {
-
   SECTION("FileHeader") {
     std::vector<char> header_items = {'M', 'P', 'I', '_', 'P', 'C', 'S', '_', '1', '\0'};
     std::string expected_header(header_items.begin(), header_items.end());

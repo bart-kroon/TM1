@@ -43,7 +43,6 @@
 #include <fmt/format.h>
 
 namespace TMIV::Common::Graph {
-
 template <typename T>
 void SparseDirectedAcyclicGraph<T>::connect(const NodeId start, const NodeId destination,
                                             const T weight) {

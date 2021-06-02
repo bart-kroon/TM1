@@ -634,7 +634,6 @@ private:
 
     double prevE = -1.0;
     for (int iter = 0; iter < maxIterNum; ++iter) {
-
       const auto x1{iterativeReweightedLeastSquaresOnNonPrunedPixels(
           nonPrunedPixIndices, referenceRGB, synthesizedRGB, weightR, 0, eps)};
       const auto x2{iterativeReweightedLeastSquaresOnNonPrunedPixels(

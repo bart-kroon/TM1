@@ -663,7 +663,6 @@ TEST_CASE("miv_view_params_update_intrinsics", "[Common Atlas Frame MIV Extensio
   auto x = MivViewParamsUpdateIntrinsics{};
 
   SECTION("Default constructor") {
-
     REQUIRE(toString(x) == R"(mvpui_num_view_updates_minus1=0
 mvpui_view_idx[ 0 ]=0
 ci_cam_type[ 0 ]=equirectangular

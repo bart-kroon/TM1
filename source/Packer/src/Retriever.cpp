@@ -34,7 +34,6 @@
 #include <TMIV/Packer/Retriever.h>
 
 namespace TMIV::Packer {
-
 static const uint16_t ACTIVE = 65534;
 static const uint16_t INVALID = 65535;
 
@@ -217,7 +216,6 @@ auto getInitialCandidates(ClusterBufferType &clusteringBuffer, const int A, cons
 template <typename ClusterBufferType, typename MaskBufferType>
 auto buildActiveList(const MaskBufferType &maskBuffer, ClusterBufferType &clusteringBuffer)
     -> std::vector<int> {
-
   std::vector<int> activeList{};
 
   for (size_t i = 0; i < maskBuffer.size(); i++) {

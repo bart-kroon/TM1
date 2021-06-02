@@ -40,7 +40,6 @@
 using namespace std::string_view_literals;
 
 namespace TMIV::MpiPcs {
-
 const std::string outputTexturePathFmt = "outputTexturePathFmt";
 const std::string outputTransparencyPathFmt = "outputTransparencyPathFmt";
 
@@ -74,7 +73,6 @@ public:
       , m_numberOfInputFrames{std::stoi(optionValues("-n"sv).front())}
       , m_startFrame{std::stoi(optionValues("-f"sv).front())}
       , m_inputSequenceConfig{IO::loadSequenceConfig(json(), placeholders(), 0)} {
-
     const auto &conversionModeOption = optionValues("-x"sv).front();
 
     if (conversionModeOption == "raw2pcs") {

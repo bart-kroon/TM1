@@ -251,7 +251,6 @@ void CommonAtlasSequenceParameterSetRBSP::encodeTo(std::ostream &stream) const {
 
 auto caspsById(const std::vector<CommonAtlasSequenceParameterSetRBSP> &caspsV, int id)
     -> const CommonAtlasSequenceParameterSetRBSP & {
-
   const auto result = std::find_if(std::cbegin(caspsV), std::cend(caspsV), [id](const auto &casps) {
     return id == casps.casps_common_atlas_sequence_parameter_set_id();
   });

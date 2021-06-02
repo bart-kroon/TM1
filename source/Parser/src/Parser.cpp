@@ -126,8 +126,8 @@ private:
       return parseAaps(stream);
     case TMIV::MivBitstream::NalUnitType::NAL_CASPS:
       return parseCasps(stream);
-    case TMIV::MivBitstream::NalUnitType::NAL_CAF:
-    case TMIV::MivBitstream::NalUnitType::NAL_IDR_CAF:
+    case TMIV::MivBitstream::NalUnitType::NAL_CAF_TRIAL:
+    case TMIV::MivBitstream::NalUnitType::NAL_CAF_IDR:
       return parseCaf(stream, nu.nal_unit_header());
     default:
       std::cout << "Unknown NAL unit:\n" << nu;

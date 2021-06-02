@@ -80,21 +80,18 @@ enum class NalUnitType : uint8_t {
   NAL_SUFFIX_ESEI,
   NAL_AAPS,
   NAL_CASPS,
-  NAL_IDR_CAF,
-  NAL_CAF,
+  NAL_CAF_IDR,
+  NAL_CAF_TRIAL,
   NAL_RSV_NACL_51 = 51,
   NAL_RSV_NACL_52,
   NAL_RSV_NACL_53,
   NAL_RSV_NACL_54,
   NAL_RSV_NACL_55,
   NAL_UNSPEC_56 = 56,
-  //  NAL_UNSPEC_57,
-  //  NAL_UNSPEC_58,
   NAL_UNSPEC_59 = 59,
   NAL_UNSPEC_60,
   NAL_UNSPEC_61,
-  NAL_UNSPEC_62,
-  //  NAL_UNSPEC_63
+  NAL_UNSPEC_62
 };
 
 auto operator<<(std::ostream &stream, NalUnitType x) -> std::ostream &;

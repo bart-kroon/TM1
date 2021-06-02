@@ -889,7 +889,7 @@ auto CommonAtlasFrameMivExtension::decodeFrom(Common::InputBitstream &bitstream,
     -> CommonAtlasFrameMivExtension {
   auto x = CommonAtlasFrameMivExtension{};
 
-  if (nuh.nal_unit_type() == NalUnitType::NAL_IDR_CAF) {
+  if (nuh.nal_unit_type() == NalUnitType::NAL_CAF_IDR) {
     x.miv_view_params_list() = MivViewParamsList::decodeFrom(bitstream, vps, casps);
   } else {
     x.came_update_extrinsics_flag(bitstream.getFlag());
@@ -918,7 +918,7 @@ auto CommonAtlasFrameMivExtension::decodeFrom(Common::InputBitstream &bitstream,
 void CommonAtlasFrameMivExtension::encodeTo(
     Common::OutputBitstream &bitstream, const V3cParameterSet &vps, const NalUnitHeader &nuh,
     const CommonAtlasSequenceParameterSetRBSP &casps) const {
-  if (nuh.nal_unit_type() == NalUnitType::NAL_IDR_CAF) {
+  if (nuh.nal_unit_type() == NalUnitType::NAL_CAF_IDR) {
     miv_view_params_list().encodeTo(bitstream, vps, casps);
   } else {
     bitstream.putFlag(came_update_extrinsics_flag());

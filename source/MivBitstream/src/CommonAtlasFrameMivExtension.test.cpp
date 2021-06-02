@@ -424,8 +424,8 @@ TEST_CASE("caf_miv_extension", "[Common Atlas Frame MIV Extension]") {
   vps.vps_miv_extension() = {};
   auto casps = CommonAtlasSequenceParameterSetRBSP{};
   casps.casps_miv_extension() = {};
-  const auto nalCaf = NalUnitHeader{NalUnitType::NAL_CAF, 0, 1};
-  const auto nalIdrCaf = NalUnitHeader{NalUnitType::NAL_IDR_CAF, 0, 1};
+  const auto nalCaf = NalUnitHeader{NalUnitType::NAL_CAF_TRIAL, 0, 1};
+  const auto nalIdrCaf = NalUnitHeader{NalUnitType::NAL_CAF_IDR, 0, 1};
 
   SECTION("Initialize view parameters") {
     casps.casps_miv_extension().casme_depth_quantization_params_present_flag(true);

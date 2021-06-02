@@ -160,7 +160,7 @@ casps_log2_max_common_atlas_frame_order_cnt_lsb_minus4=0
 casps_extension_present_flag=false
 
 ----------------------------------------------------------------------------------------------------
-nal_unit_type=NAL_CAF
+nal_unit_type=NAL_CAF_TRIAL
 nal_layer_id=0
 nal_temporal_id_plus1=1
 NumBytesInRbsp=2
@@ -169,7 +169,7 @@ caf_common_atlas_frm_order_cnt_lsb=0
 caf_extension_present_flag=false
 
 ----------------------------------------------------------------------------------------------------
-nal_unit_type=NAL_IDR_CAF
+nal_unit_type=NAL_CAF_IDR
 nal_layer_id=0
 nal_temporal_id_plus1=1
 NumBytesInRbsp=2

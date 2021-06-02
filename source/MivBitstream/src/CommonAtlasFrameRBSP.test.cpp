@@ -38,8 +38,8 @@
 namespace TMIV::MivBitstream {
 TEST_CASE("common_atlas_frame_rbsp", "[Common Atlas Frame RBSP]") {
   auto x = CommonAtlasFrameRBSP{};
-  const auto nuhIdrCaf = NalUnitHeader{NalUnitType::NAL_IDR_CAF, 0, 1};
-  const auto nuhCaf = NalUnitHeader{NalUnitType::NAL_CAF, 0, 1};
+  const auto nuhIdrCaf = NalUnitHeader{NalUnitType::NAL_CAF_IDR, 0, 1};
+  const auto nuhCaf = NalUnitHeader{NalUnitType::NAL_CAF_TRIAL, 0, 1};
   const auto maxCommonAtlasFrmOrderCntLsb = 32;
 
   auto vps = V3cParameterSet{};

@@ -69,7 +69,7 @@ auto CommonAtlasDecoder::decodeAsb() -> bool {
 
 namespace {
 constexpr auto isIrap(MivBitstream::NalUnitType nut) noexcept -> bool {
-  return nut == MivBitstream::NalUnitType::NAL_IDR_CAF;
+  return nut == MivBitstream::NalUnitType::NAL_CAF_IDR;
 }
 } // namespace
 

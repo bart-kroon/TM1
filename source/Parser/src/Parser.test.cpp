@@ -143,8 +143,8 @@ auto createTestAtlasData(const SampleStreamNalHeader &ssnh) {
 
   ad.nal_units().push_back(createTestAapsNalUnit());
   ad.nal_units().push_back(createTestCaspsNalUnit());
-  ad.nal_units().push_back(createTestCafNalUnit(NalUnitType::NAL_CAF));
-  ad.nal_units().push_back(createTestCafNalUnit(NalUnitType::NAL_IDR_CAF));
+  ad.nal_units().push_back(createTestCafNalUnit(NalUnitType::NAL_CAF_TRIAL));
+  ad.nal_units().push_back(createTestCafNalUnit(NalUnitType::NAL_CAF_IDR));
 
   return ad;
 }

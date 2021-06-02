@@ -117,10 +117,10 @@ auto operator<<(std::ostream &stream, NalUnitType x) -> std::ostream & {
     return stream << "NAL_AAPS";
   case NalUnitType::NAL_CASPS:
     return stream << "NAL_CASPS";
-  case NalUnitType::NAL_IDR_CAF:
-    return stream << "NAL_IDR_CAF";
-  case NalUnitType::NAL_CAF:
-    return stream << "NAL_CAF";
+  case NalUnitType::NAL_CAF_IDR:
+    return stream << "NAL_CAF_IDR";
+  case NalUnitType::NAL_CAF_TRIAL:
+    return stream << "NAL_CAF_TRIAL";
   default:
     return stream << "[unknown:" << static_cast<int>(x) << "]";
   }

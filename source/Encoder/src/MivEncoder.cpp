@@ -146,10 +146,10 @@ void encodeSeiRbspToAsb(MivBitstream::AtlasSubBitstream &asb, const MivBitstream
 const auto nuhAsps = MivBitstream::NalUnitHeader{MivBitstream::NalUnitType::NAL_ASPS, 0, 1};
 const auto nuhAfps = MivBitstream::NalUnitHeader{MivBitstream::NalUnitType::NAL_AFPS, 0, 1};
 const auto nuhCasps = MivBitstream::NalUnitHeader{MivBitstream::NalUnitType::NAL_CASPS, 0, 1};
-const auto nuhCaf = MivBitstream::NalUnitHeader{MivBitstream::NalUnitType::NAL_CAF, 0, 1};
+const auto nuhCaf = MivBitstream::NalUnitHeader{MivBitstream::NalUnitType::NAL_CAF_TRIAL, 0, 1};
 const auto nuhCra = MivBitstream::NalUnitHeader{MivBitstream::NalUnitType::NAL_CRA, 0, 1};
 const auto nuhIdr = MivBitstream::NalUnitHeader{MivBitstream::NalUnitType::NAL_IDR_N_LP, 0, 1};
-const auto nuhIdrCaf = MivBitstream::NalUnitHeader{MivBitstream::NalUnitType::NAL_IDR_CAF, 0, 1};
+const auto nuhIdrCaf = MivBitstream::NalUnitHeader{MivBitstream::NalUnitType::NAL_CAF_IDR, 0, 1};
 const auto nuhPrefixNsei =
     MivBitstream::NalUnitHeader{MivBitstream::NalUnitType::NAL_PREFIX_NSEI, 0, 1};
 } // namespace

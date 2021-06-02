@@ -59,8 +59,8 @@ constexpr auto isAcl(MivBitstream::NalUnitType nut) noexcept -> bool {
 }
 
 constexpr auto isCaf(MivBitstream::NalUnitType nut) noexcept -> bool {
-  return (nut == MivBitstream::NalUnitType::NAL_CAF) ||
-         (nut == MivBitstream::NalUnitType::NAL_IDR_CAF);
+  return (nut == MivBitstream::NalUnitType::NAL_CAF_TRIAL) ||
+         (nut == MivBitstream::NalUnitType::NAL_CAF_IDR);
 }
 
 constexpr auto isSuffixNalUnit(MivBitstream::NalUnitType nut) noexcept -> bool {

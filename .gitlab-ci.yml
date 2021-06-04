@@ -30,7 +30,7 @@ include:
 clang-format:
   <<: *cpp_rules_definition
 
-Code quality checks:
+Code quality rules:
   <<: *cpp_rules_definition
 
 GCC 9 Release:

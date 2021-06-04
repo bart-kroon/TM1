@@ -94,7 +94,7 @@ void addAttributeOffset(MivBitstream::AccessUnit &frame) {
         atlas.asps.asps_miv_extension().asme_patch_attribute_offset_bit_depth_minus1() + 1;
     const int bitShift = inputBitCount - scaledBitCount;
 
-    const int btpmScale = int(YUV[0].width() / btpm.width());
+    const int btpmScale = static_cast<int>(YUV[0].width() / btpm.width());
 
     for (int y = 0; y < H; y++) {
       const int ys = y / btpmScale;

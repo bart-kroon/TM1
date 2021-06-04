@@ -64,8 +64,8 @@ SCENARIO("Color consistency assessment") {
     viewParamsList[c].pose.position = Common::Vec3f{0.0F, 0.0F, 0.0F};
     viewParamsList[c].pose.orientation = Common::neutralOrientationF;
     viewParamsList[c].ci.ci_cam_type(MivBitstream::CiCamType::perspective);
-    viewParamsList[c].ci.ci_perspective_center_hor(float(W) / 2.0F);
-    viewParamsList[c].ci.ci_perspective_center_ver(float(H) / 2.0F);
+    viewParamsList[c].ci.ci_perspective_center_hor(static_cast<float>(W) / 2.0F);
+    viewParamsList[c].ci.ci_perspective_center_ver(static_cast<float>(H) / 2.0F);
     viewParamsList[c].ci.ci_perspective_focal_hor(1.0F);
     viewParamsList[c].ci.ci_perspective_focal_ver(1.0F);
     viewParamsList[c].ci.ci_projection_plane_height_minus1(H - 1);

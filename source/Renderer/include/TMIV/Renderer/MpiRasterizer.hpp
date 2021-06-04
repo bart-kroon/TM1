@@ -87,7 +87,7 @@ MpiRasterizer<T...>::MpiRasterizer(Common::Vec2i size)
 
 template <typename... T>
 MpiRasterizer<T...>::MpiRasterizer(Common::Vec2i size, int numStrips)
-    : m_size{unsigned(size.y()), unsigned(size.x())} {
+    : m_size{static_cast<size_t>(size.y()), static_cast<size_t>(size.x())} {
   PRECONDITION(size.x() >= 0 && size.y() >= 0);
   PRECONDITION(numStrips > 0);
   m_strips.reserve(numStrips);

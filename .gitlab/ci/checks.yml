@@ -55,11 +55,11 @@ no multi-line commit messages:
     - NUM_COMMITS=$(git rev-list --count main..HEAD)
     - if [[ "$NUM_COMMIT_MESSAGE_LINES" -ne "$NUM_COMMITS" ]]; then echo "Merge requests with multi-line commit messages result in a wrong commit message on main. Please rewrite the commit message(s) to have only one line."; fail; fi
 
-Code quality checks:
+Code quality rules:
   stage: check
   image: cbachhuber/clang:12
   tags: [ linux ]
   script:
-    - ./scripts/check/code_quality_checks.py
+    - ./scripts/check/code_quality_rules.py
     - git diff
-    - if [[ $(git diff) ]]; then echo "A check triggered. Please see above."; return 1; fi
+    - if [[ $(git diff) ]]; then echo "At least one code quality rule check has triggered. Please see above."; return 1; fi

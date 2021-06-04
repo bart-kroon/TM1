@@ -72,7 +72,7 @@ void FrameUnpacker::readRegionParams(const TMIV::MivBitstream::PackingInformatio
     if (m_regionParams.regionTypeId[i] == MivBitstream::VuhUnitType::V3C_AVD) {
       const auto type = PackingInfo.pin_attribute_type_id(PackingInfo.pin_region_attr_index(i));
       LIMITATION(type == TMIV::MivBitstream::AiAttributeTypeId::ATTR_TEXTURE);
-      m_regionParams.regionAttrTypeID[i] = uint8_t(type);
+      m_regionParams.regionAttrTypeID[i] = static_cast<uint8_t>(type);
     }
   }
 }

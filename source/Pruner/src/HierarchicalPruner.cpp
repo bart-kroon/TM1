@@ -514,7 +514,7 @@ private:
     const auto lumaSamplesPerFrame = 2. * sumValues / 255e6;
     std::cout << "Non-pruned luma samples per frame is " << lumaSamplesPerFrame << "M\n";
 
-    return int((lumaSamplesPerFrame * 1e6) / 2);
+    return static_cast<int>((lumaSamplesPerFrame * 1e6) / 2);
   }
 
   // Synthesize the specified view to all remaining partial views.

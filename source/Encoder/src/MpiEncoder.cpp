@@ -183,10 +183,10 @@ void MpiEncoder::prepareSequence(const MivBitstream::SequenceConfig &sequenceCon
       }());
 
   VERIFY_MIVBITSTREAM(!m_overrideAtlasFrameSizes.empty());
-  vps.vps_atlas_count_minus1(uint8_t(m_overrideAtlasFrameSizes.size() - 1));
+  vps.vps_atlas_count_minus1(static_cast<uint8_t>(m_overrideAtlasFrameSizes.size() - 1));
 
   for (size_t k = 0; k < m_overrideAtlasFrameSizes.size(); ++k) {
-    const auto j = MivBitstream::AtlasId{uint8_t(k)};
+    const auto j = MivBitstream::AtlasId{static_cast<uint8_t>(k)};
     vps.vps_atlas_id(k, j)
         .vps_frame_width(j, m_overrideAtlasFrameSizes[k].x())
         .vps_frame_height(j, m_overrideAtlasFrameSizes[k].y())

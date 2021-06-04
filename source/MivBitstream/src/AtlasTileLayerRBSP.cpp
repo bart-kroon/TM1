@@ -397,9 +397,9 @@ void PduMivExtension::encodeTo(Common::OutputBitstream &bitstream,
   if (asme.asme_patch_attribute_offset_enabled_flag()) {
     const auto bits = asps.asps_miv_extension().asme_patch_attribute_offset_bit_depth_minus1() + 1;
     PRECONDITION(m_pdu_attribute_offset.has_value());
-    bitstream.writeBits(uint16_t(pdu_attribute_offset().x()), bits);
-    bitstream.writeBits(uint16_t(pdu_attribute_offset().y()), bits);
-    bitstream.writeBits(uint16_t(pdu_attribute_offset().z()), bits);
+    bitstream.writeBits(pdu_attribute_offset().x(), bits);
+    bitstream.writeBits(pdu_attribute_offset().y(), bits);
+    bitstream.writeBits(pdu_attribute_offset().z(), bits);
   }
   if (asme.asme_inpaint_enabled_flag()) {
     PRECONDITION(m_pdu_inpaint_flag.has_value());

@@ -42,8 +42,8 @@ SCENARIO("Explicit occupancy") {
 
   auto sourceParams = TMIV::Encoder::EncoderParams{};
   sourceParams.vps.vps_atlas_count_minus1(1)
-      .vps_atlas_id(size_t(0), TMIV::MivBitstream::AtlasId(0))
-      .vps_atlas_id(size_t(1), TMIV::MivBitstream::AtlasId(1))
+      .vps_atlas_id(0, TMIV::MivBitstream::AtlasId(0))
+      .vps_atlas_id(1, TMIV::MivBitstream::AtlasId(1))
       .vps_miv_extension()
       .vme_embedded_occupancy_enabled_flag(false);
   sourceParams.casps.casps_miv_extension().casme_depth_low_quality_flag(true);

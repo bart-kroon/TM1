@@ -34,7 +34,7 @@
 #include <TMIV/Packer/Cluster.h>
 
 auto roundToAlignment(int val, int alignment) -> int {
-  return ((int(val - 1) / alignment + 1) * alignment);
+  return ((val - 1) / alignment + 1) * alignment;
 }
 
 namespace TMIV::Packer {

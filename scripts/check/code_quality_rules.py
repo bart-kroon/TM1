@@ -36,45 +36,50 @@ import argparse
 import multiprocessing
 import pathlib
 import subprocess
+import re
 
 SCRIPT_DIR = pathlib.Path(__file__).resolve().parent
 REPO_DIR = SCRIPT_DIR.parents[1]
 
 
-def check_for_empty_line_after_curly_brace(text):
+def remove_empty_lines_after_curly_brace(text):
     return text.replace("{\n\n", "{\n")
 
 
-def apply_all_checks_to_a_single_cpp_file(file):
+SUB_FUNCTION_STYLE_CAST_TO_PRIMITIVE_TYPES = re.compile(
+    r"(//[^\n]+)?(operator|function)?([^a-z0-9_:])(nullptr_t|signed|unsigned|short|long|int|bool|char|float|double|u?int(_fast|_least)?(8|16|32|64)_t|u?intmax_t|u?intptr_t|size_t|ptrdiff_t|streamoff)\("
+)
+
+
+def replace_function_style_cast_to_primitive_types_by_static_cast(text, verbose):
+    return SUB_FUNCTION_STYLE_CAST_TO_PRIMITIVE_TYPES.sub(
+        lambda x: replace_function_style_cast_to_primitive_types_by_static_cast_replace(x, verbose),
+        text,
+    )
+
+
+def replace_function_style_cast_to_primitive_types_by_static_cast_replace(match, verbose):
+    if verbose:
+        for i in range(len(match.groups())):
+            print("{}match[{}] = {}".format("" if i == 0 else "  ", i, match[i]))
+
+    if match[1] or match[2]:
+        return match[0]
+    return "{0}static_cast<{1}>(".format(match[3], match[4])
+
+
+def apply_all_rules_to_a_single_cpp_file(file, verbose=False):
     with open(file, mode="r") as stream:
         text = stream.read()
 
     original = text
-    text = check_for_empty_line_after_curly_brace(text)
+    text = remove_empty_lines_after_curly_brace(text)
+    text = replace_function_style_cast_to_primitive_types_by_static_cast(text, verbose)
 
     if original != text:
         print("At least one check triggered on", file)
         with open(file, mode="w") as stream:
             stream.write(text)
-
-
-def get_list_of_changed_files(target_branch):
-    return map(
-        lambda x: pathlib.Path(x),
-        subprocess.run(
-            [
-                "git",
-                "diff",
-                "--no-merges",
-                "--name-only",
-                "--diff-filter=d",
-                target_branch,
-            ],
-            cwd=REPO_DIR,
-            check=True,
-            stdout=subprocess.STDOUT,
-        ).stdout.splitlines(),
-    )
 
 
 def get_list_of_files():
@@ -90,36 +95,30 @@ def filter_cpp_files(files):
     return list(filter(lambda f: f.suffix in (".cpp", ".hpp", ".h"), files))
 
 
-def apply_all_checks_to_multiple_cpp_files(cpp_files):
-    with multiprocessing.Pool(multiprocessing.cpu_count()) as pool:
-        pool.map(apply_all_checks_to_a_single_cpp_file, cpp_files)
+def apply_all_rules_to_multiple_cpp_files(cpp_files, verbose):
+    if verbose:
+        for cpp_file in cpp_files:
+            print(cpp_file)
+            apply_all_rules_to_a_single_cpp_file(cpp_file, verbose=True)
+    else:
+        with multiprocessing.Pool(multiprocessing.cpu_count()) as pool:
+            pool.map(apply_all_rules_to_a_single_cpp_file, cpp_files)
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description="Apply multiple project-specific checks")
+    parser = argparse.ArgumentParser(description="Apply multiple project-specific rules")
     parser.add_argument(
-        "-c", "--changed-only", help="Check only changed files", action="store_true"
-    )
-    parser.add_argument("file", help="Check specified file", nargs="*", type=pathlib.Path)
-    parser.add_argument(
-        "-b",
-        "--target-branch",
-        help="Target branch for changed files computation",
-        default="origin/main",
+        "-v",
+        "--verbose",
+        help="Print information on the rule-checking process (also disables parallel processing)",
+        action="store_true",
     )
     return parser.parse_args()
 
 
 if __name__ == "__main__":
     args = parse_args()
-    files = args.file
-
-    if len(files) == 0:
-        if args.changed_only:
-            files = get_list_of_changed_files(args.target_branch)
-        else:
-            files = get_list_of_files()
-
+    files = get_list_of_files()
     cpp_files = filter_cpp_files(files)
-    apply_all_checks_to_multiple_cpp_files(cpp_files)
+    apply_all_rules_to_multiple_cpp_files(cpp_files, args.verbose)
     exit(0)

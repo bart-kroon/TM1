@@ -382,7 +382,7 @@ auto Encoder::calculatePatchAttrOffsetValuesFullGOP(
       if (patchAttrOffsetValuesFullGOP[p][c][0] - patchAttrOffsetValuesFullGOP[p][c][2] < 0) {
         patchAttrOffsetValuesFullGOP[p][c][2] = patchAttrOffsetValuesFullGOP[p][c][0];
       } else if (patchAttrOffsetValuesFullGOP[p][c][1] - patchAttrOffsetValuesFullGOP[p][c][2] >
-                 int64_t(textureMaxVal)) {
+                 static_cast<int64_t>(textureMaxVal)) {
         patchAttrOffsetValuesFullGOP[p][c][2] =
             patchAttrOffsetValuesFullGOP[p][c][1] - textureMaxVal;
       }
@@ -409,7 +409,7 @@ void Encoder::constructVideoFrames() {
   auto patchAttrOffsetValuesFullGOP = std::vector<std::array<std::array<int64_t, 4>, 3>>{};
 
   if (m_config.attributeOffsetFlag) {
-    for (int p = 0; p < int(m_params.patchParamsList.size()); p++) {
+    for (size_t p = 0; p < m_params.patchParamsList.size(); ++p) {
       std::array<std::array<int64_t, 4>, 3> tmp{};
       for (int c = 0; c < 3; c++) {
         Common::at(tmp, c)[0] = textureMaxVal;

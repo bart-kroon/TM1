@@ -83,7 +83,7 @@ struct AtlasAccessUnit {
 
 struct AccessUnit {
   bool irap{};
-  std::int32_t foc{-1};
+  int32_t foc{-1};
   V3cParameterSet vps;
   std::optional<CommonAtlasSequenceParameterSetRBSP> casps;
   ViewParamsList viewParamsList;

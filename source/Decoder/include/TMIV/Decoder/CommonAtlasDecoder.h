@@ -61,7 +61,7 @@ public:
 
   struct AccessUnit {
     bool irap{};
-    std::int32_t foc{};
+    int32_t foc{};
     MivBitstream::CommonAtlasSequenceParameterSetRBSP casps;
     MivBitstream::CommonAtlasFrameRBSP caf;
     MivBitstream::GeometryUpscalingParameters gup;
@@ -86,10 +86,10 @@ private:
   MivBitstream::V3cParameterSet m_vps;
 
   std::list<MivBitstream::NalUnit> m_buffer;
-  std::int32_t m_foc{};
+  int32_t m_foc{};
 
   std::vector<MivBitstream::CommonAtlasSequenceParameterSetRBSP> m_caspsV;
-  std::int32_t m_maxCommonAtlasFrmOrderCntLsb{};
+  int32_t m_maxCommonAtlasFrmOrderCntLsb{};
 };
 } // namespace TMIV::Decoder
 

@@ -185,7 +185,7 @@ private:
     }
   }
 
-  void outputSequenceConfig(MivBitstream::SequenceConfig sc, std::int32_t foc) {
+  void outputSequenceConfig(MivBitstream::SequenceConfig sc, int32_t foc) {
     // NOTE(#463): Inject the frame count into the sequence configuration, because the decoder
     // library does not have that knowledge.
     sc.numberOfFrames = std::stoi(optionValues("-n"sv).front());

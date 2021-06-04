@@ -68,8 +68,7 @@ void MultipleFrameRenderer::renderMultipleFrames(const MivBitstream::AccessUnit 
   }
 }
 
-void MultipleFrameRenderer::renderFrame(MivBitstream::AccessUnit frame,
-                                        std::int32_t outputFrameIndex,
+void MultipleFrameRenderer::renderFrame(MivBitstream::AccessUnit frame, int32_t outputFrameIndex,
                                         const std::string &cameraName, bool isPoseTrace) const {
   fmt::print("Rendering input frame {} to output frame {} for target {} {}.\n", frame.foc,
              outputFrameIndex, isPoseTrace ? "pose trace" : "view", cameraName);

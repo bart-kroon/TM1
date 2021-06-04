@@ -65,7 +65,7 @@ const std::string inputViewportParamsPathFmt = "inputViewportParamsPathFmt"s;
 const std::string inputPackedVsbPathFmt = "inputPackedVideoSubBitstreamPathFmt";
 
 template <typename FORMAT>
-auto loadFrame(const std::filesystem::path &path, std::int32_t frameIndex, Common::Vec2i frameSize)
+auto loadFrame(const std::filesystem::path &path, int32_t frameIndex, Common::Vec2i frameSize)
     -> Common::Frame<FORMAT> {
   auto result = Common::Frame<FORMAT>(frameSize.x(), frameSize.y());
 
@@ -88,12 +88,12 @@ auto loadFrame(const std::filesystem::path &path, std::int32_t frameIndex, Commo
   return result;
 }
 
-template auto loadFrame(const std::filesystem::path &path, std::int32_t frameIndex,
+template auto loadFrame(const std::filesystem::path &path, int32_t frameIndex,
                         Common::Vec2i frameSize) -> Common::Frame<Common::YUV400P10>;
 
 namespace {
 template <typename FORMAT>
-auto loadSourceDepth_(int bits, const std::filesystem::path &path, std::int32_t frameIndex,
+auto loadSourceDepth_(int bits, const std::filesystem::path &path, int32_t frameIndex,
                       const Common::Vec2i &frameSize) {
   auto depth16 = Common::Depth16Frame{frameSize.x(), frameSize.y()};
 
@@ -109,7 +109,7 @@ auto loadSourceDepth_(int bits, const std::filesystem::path &path, std::int32_t 
   return depth16;
 }
 
-auto loadSourceDepth(int bits, const std::filesystem::path &path, std::int32_t frameIndex,
+auto loadSourceDepth(int bits, const std::filesystem::path &path, int32_t frameIndex,
                      const Common::Vec2i &frameSize) {
   if (0 < bits && bits <= 8) {
     return loadSourceDepth_<Common::YUV400P8>(bits, path, frameIndex, frameSize);
@@ -121,7 +121,7 @@ auto loadSourceDepth(int bits, const std::filesystem::path &path, std::int32_t f
 }
 
 template <typename FORMAT>
-auto loadSourceEntities_(const std::filesystem::path &path, std::int32_t frameIndex,
+auto loadSourceEntities_(const std::filesystem::path &path, int32_t frameIndex,
                          const Common::Vec2i &frameSize) {
   auto entities16 = Common::EntityMap{frameSize.x(), frameSize.y()};
 
@@ -133,7 +133,7 @@ auto loadSourceEntities_(const std::filesystem::path &path, std::int32_t frameIn
   return entities16;
 }
 
-auto loadSourceEntities(int bits, const std::filesystem::path &path, std::int32_t frameIndex,
+auto loadSourceEntities(int bits, const std::filesystem::path &path, int32_t frameIndex,
                         const Common::Vec2i frameSize) {
   if (0 < bits && bits <= 8) {
     return loadSourceEntities_<Common::YUV400P8>(path, frameIndex, frameSize);
@@ -146,7 +146,7 @@ auto loadSourceEntities(int bits, const std::filesystem::path &path, std::int32_
 } // namespace
 
 auto loadMultiviewFrame(const Common::Json &config, const Placeholders &placeholders,
-                        const MivBitstream::SequenceConfig &sc, std::int32_t frameIndex)
+                        const MivBitstream::SequenceConfig &sc, int32_t frameIndex)
     -> Common::MVD16Frame {
   auto frame = Common::MVD16Frame(sc.sourceCameraNames.size());
 
@@ -201,7 +201,7 @@ auto loadMultiviewFrame(const Common::Json &config, const Placeholders &placehol
 }
 
 auto loadMpiTextureMpiLayer(const Common::Json &config, const Placeholders &placeholders,
-                            const MivBitstream::SequenceConfig &sc, std::int32_t frameIndex,
+                            const MivBitstream::SequenceConfig &sc, int32_t frameIndex,
                             int mpiLayerIndex, int nbMpiLayers) -> Common::TextureFrame {
   const auto inputDir = config.require(inputDirectory).as<std::filesystem::path>();
   const auto &node = config.require(inputTexturePathFmt);
@@ -224,7 +224,7 @@ auto loadMpiTextureMpiLayer(const Common::Json &config, const Placeholders &plac
 }
 
 auto loadMpiTransparencyMpiLayer(const Common::Json &config, const Placeholders &placeholders,
-                                 const MivBitstream::SequenceConfig &sc, std::int32_t frameIndex,
+                                 const MivBitstream::SequenceConfig &sc, int32_t frameIndex,
                                  int mpiLayerIndex, int nbMpiLayers) -> Common::Transparency8Frame {
   const auto inputDir = config.require(inputDirectory).as<std::filesystem::path>();
   const auto &node = config.require(inputTransparencyPathFmt);
@@ -249,7 +249,7 @@ struct Pose {
   Common::Vec3f rotation;
 };
 
-auto loadPoseFromCSV(std::istream &stream, std::int32_t frameIndex) -> Pose {
+auto loadPoseFromCSV(std::istream &stream, int32_t frameIndex) -> Pose {
   std::string line;
   getline(stream, line);
 
@@ -283,7 +283,7 @@ auto loadPoseFromCSV(std::istream &stream, std::int32_t frameIndex) -> Pose {
 } // namespace
 
 auto loadViewportMetadata(const Common::Json &config, const Placeholders &placeholders,
-                          std::int32_t frameIndex, const std::string &cameraName, bool isPoseTrace)
+                          int32_t frameIndex, const std::string &cameraName, bool isPoseTrace)
     -> MivBitstream::ViewParams {
   const auto viewportParamsPath =
       config.require(configDirectory).as<std::filesystem::path>() /
@@ -373,7 +373,7 @@ auto loadFramePackVideoFrame(const Common::Json &config, const Placeholders &pla
 namespace detail {
 template <bool allowNullopt>
 auto tryLoadSequenceConfig(const Common::Json &config, const Placeholders &placeholders,
-                           std::int32_t frameIndex)
+                           int32_t frameIndex)
     -> std::conditional_t<allowNullopt, std::optional<MivBitstream::SequenceConfig>,
                           MivBitstream::SequenceConfig> {
   const auto relPath = fmt::format(config.require(IO::inputSequenceConfigPathFmt).as<std::string>(),
@@ -399,12 +399,12 @@ auto tryLoadSequenceConfig(const Common::Json &config, const Placeholders &place
 } // namespace detail
 
 auto loadSequenceConfig(const Common::Json &config, const Placeholders &placeholders,
-                        std::int32_t frameIndex) -> MivBitstream::SequenceConfig {
+                        int32_t frameIndex) -> MivBitstream::SequenceConfig {
   return detail::tryLoadSequenceConfig<false>(config, placeholders, frameIndex);
 }
 
 auto tryLoadSequenceConfig(const Common::Json &config, const Placeholders &placeholders,
-                           std::int32_t frameIndex) -> std::optional<MivBitstream::SequenceConfig> {
+                           int32_t frameIndex) -> std::optional<MivBitstream::SequenceConfig> {
   return detail::tryLoadSequenceConfig<true>(config, placeholders, frameIndex);
 }
 

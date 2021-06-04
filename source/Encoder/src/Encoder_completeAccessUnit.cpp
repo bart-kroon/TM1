@@ -512,11 +512,11 @@ auto Encoder::writePatchInAtlas(const MivBitstream::PatchParams &patchParams,
   const auto k = m_params.vps.indexOf(patchParams.atlasId());
   auto &atlas = frame[k];
 
-  // TODO(BK): It would be better if atlasPatch... functions are std::int32_t or std::int64_t
-  const auto sizeU = static_cast<std::int32_t>(patchParams.atlasPatch3dSizeU());
-  const auto sizeV = static_cast<std::int32_t>(patchParams.atlasPatch3dSizeV());
-  const auto posU = static_cast<std::int32_t>(patchParams.atlasPatch3dOffsetU());
-  const auto posV = static_cast<std::int32_t>(patchParams.atlasPatch3dOffsetV());
+  // TODO(BK): It would be better if atlasPatch... functions are int32_t or int64_t
+  const auto sizeU = static_cast<int32_t>(patchParams.atlasPatch3dSizeU());
+  const auto sizeV = static_cast<int32_t>(patchParams.atlasPatch3dSizeV());
+  const auto posU = static_cast<int32_t>(patchParams.atlasPatch3dOffsetU());
+  const auto posV = static_cast<int32_t>(patchParams.atlasPatch3dOffsetV());
 
   const auto &inViewParams = m_transportParams.viewParamsList[patchParams.atlasPatchProjectionId()];
   const auto &outViewParams = m_params.viewParamsList[patchParams.atlasPatchProjectionId()];

@@ -61,7 +61,7 @@ public:
   }
 
 private:
-  void renderFrame(MivBitstream::AccessUnit frame, std::int32_t outputFrameIndex,
+  void renderFrame(MivBitstream::AccessUnit frame, int32_t outputFrameIndex,
                    const std::string &cameraName, bool isPoseTrace) const;
 
   const Common::Json &m_config;

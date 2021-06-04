@@ -39,8 +39,7 @@ namespace TMIV::Renderer::Front {
 namespace {
 // Returns a frame index. If frameIndex is strictly less than the actual number of frames in the
 // encoded stream, then regular values are returned else mirrored indices are computed.
-auto getExtendedIndex(std::int32_t outputFrameIndex, std::int32_t numberOfInputFrames)
-    -> std::int32_t {
+auto getExtendedIndex(int32_t outputFrameIndex, int32_t numberOfInputFrames) -> int32_t {
   if (numberOfInputFrames <= 0) {
     throw std::runtime_error("Cannot extend frame index with zero input frames");
   }
@@ -52,7 +51,7 @@ auto getExtendedIndex(std::int32_t outputFrameIndex, std::int32_t numberOfInputF
 } // namespace
 
 // TODO(BK): Lock behavior with unit tests
-auto mapInputToOutputFrames(std::int32_t numberOfInputFrames, std::int32_t numberOfOutputFrames)
+auto mapInputToOutputFrames(int32_t numberOfInputFrames, int32_t numberOfOutputFrames)
     -> FrameMapping {
   auto x = FrameMapping{};
 
@@ -63,7 +62,7 @@ auto mapInputToOutputFrames(std::int32_t numberOfInputFrames, std::int32_t numbe
     throw std::runtime_error("Negative number of output frames");
   }
 
-  for (std::int32_t outputFrame = 0; outputFrame < numberOfOutputFrames; ++outputFrame) {
+  for (int32_t outputFrame = 0; outputFrame < numberOfOutputFrames; ++outputFrame) {
     const auto inputFrame = getExtendedIndex(outputFrame, numberOfInputFrames);
     x.emplace(inputFrame, outputFrame);
   }

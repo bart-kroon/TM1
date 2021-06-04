@@ -53,8 +53,8 @@ class Application : public Common::Application {
 private:
   std::unique_ptr<IMpiEncoder> m_encoder;
   const std::string &m_contentId;
-  std::int32_t m_numberOfInputFrames;
-  std::int32_t m_intraPeriod;
+  int32_t m_numberOfInputFrames;
+  int32_t m_intraPeriod;
 
   MivBitstream::SequenceConfig m_inputSequenceConfig;
   MpiPcs::Reader m_mpiPcsReader;
@@ -78,7 +78,7 @@ public:
       , m_encoder{create<IMpiEncoder>("Encoder")}
       , m_contentId{optionValues("-s"sv).front()}
       , m_numberOfInputFrames{std::stoi(optionValues("-n"sv).front())}
-      , m_intraPeriod{json().require("intraPeriod").as<std::int32_t>()}
+      , m_intraPeriod{json().require("intraPeriod").as<int32_t>()}
       , m_inputSequenceConfig{IO::loadSequenceConfig(json(), placeholders(), 0)}
       , m_mpiPcsReader{json(), placeholders(), m_inputSequenceConfig}
       , m_outputBitstreamPath{IO::outputBitstreamPath(json(), placeholders())}

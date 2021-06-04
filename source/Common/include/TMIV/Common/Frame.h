@@ -247,7 +247,7 @@ struct Attribute {
 // the implementation of the "new" Pixel class which is a small vector which takes into account that
 // the number of non-empty layers per pixel will be quite small (very less than 65535), you may
 // observe that the sum of each m_pixelList attribute will now be half lower. Indeed the Pixel is
-// made of 2 std::uint16_t and 1 pointer. The former calculus now gives 4500 x 3500 x 32 x (2 x 2 +
+// made of 2 uint16_t and 1 pointer. The former calculus now gives 4500 x 3500 x 32 x (2 x 2 +
 // 8) = 4.32GB i.e. more than 4GB saved. Smarter implementation to save even more memory could be
 // envisioned (with look-up tables), but you would lose in usability from my point of view.
 class Pixel {
@@ -293,7 +293,7 @@ class Frame {
 public:
   Frame() = default;
   Frame(const Vec2i &size)
-      : m_size{size}, m_pixelList{static_cast<std::size_t>(m_size.x() * m_size.y())} {}
+      : m_size{size}, m_pixelList{static_cast<size_t>(m_size.x() * m_size.y())} {}
   Frame(const Vec2i &size, std::vector<Pixel> pixelList)
       : m_size{size}, m_pixelList{std::move(pixelList)} {}
   auto operator==(const Frame &other) const noexcept -> bool;

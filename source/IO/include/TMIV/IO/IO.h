@@ -89,13 +89,13 @@ struct Placeholders {
 };
 
 template <typename FORMAT>
-auto loadFrame(const std::filesystem::path &path, std::int32_t frameIndex, Common::Vec2i frameSize)
+auto loadFrame(const std::filesystem::path &path, int32_t frameIndex, Common::Vec2i frameSize)
     -> Common::Frame<FORMAT>;
 auto loadMultiviewFrame(const Common::Json &config, const Placeholders &placeholders,
-                        const MivBitstream::SequenceConfig &sc, std::int32_t frameIndex)
+                        const MivBitstream::SequenceConfig &sc, int32_t frameIndex)
     -> Common::MVD16Frame;
 auto loadViewportMetadata(const Common::Json &config, const Placeholders &placeholders,
-                          std::int32_t frameIndex, const std::string &cameraName, bool isPoseTrace)
+                          int32_t frameIndex, const std::string &cameraName, bool isPoseTrace)
     -> MivBitstream::ViewParams;
 auto loadOccupancyVideoFrame(const Common::Json &config, const Placeholders &placeholders,
                              MivBitstream::AtlasId atlasId, uint32_t frameId,
@@ -113,16 +113,16 @@ auto loadFramePackVideoFrame(const Common::Json &config, const Placeholders &pla
                              MivBitstream::AtlasId atlasId, uint32_t frameId,
                              Common::Vec2i frameSize) -> Common::FramePack444Frame;
 auto loadSequenceConfig(const Common::Json &config, const Placeholders &placeholders,
-                        std::int32_t frameIndex) -> MivBitstream::SequenceConfig;
+                        int32_t frameIndex) -> MivBitstream::SequenceConfig;
 auto tryLoadSequenceConfig(const Common::Json &config, const Placeholders &placeholders,
-                           std::int32_t frameIndex) -> std::optional<MivBitstream::SequenceConfig>;
+                           int32_t frameIndex) -> std::optional<MivBitstream::SequenceConfig>;
 
 auto loadMpiTextureMpiLayer(const Common::Json &config, const Placeholders &placeholders,
-                            const MivBitstream::SequenceConfig &sc, std::int32_t frameIndex,
+                            const MivBitstream::SequenceConfig &sc, int32_t frameIndex,
                             int mpiLayerIndex, int nbMpiLayers) -> Common::TextureFrame;
 
 auto loadMpiTransparencyMpiLayer(const Common::Json &config, const Placeholders &placeholders,
-                                 const MivBitstream::SequenceConfig &sc, std::int32_t frameIndex,
+                                 const MivBitstream::SequenceConfig &sc, int32_t frameIndex,
                                  int mpiLayerIndex, int nbMpiLayers) -> Common::Transparency8Frame;
 
 auto inputBitstreamPath(const Common::Json &config, const Placeholders &placeholders)
@@ -133,20 +133,19 @@ auto inputSubBitstreamPath(const std::string &key, const Common::Json &config,
 
 template <typename FORMAT>
 void saveFrame(const std::filesystem::path &path, const Common::Frame<FORMAT> &frame,
-               std::int32_t frameIndex);
+               int32_t frameIndex);
 void saveAtlasFrame(const Common::Json &config, const Placeholders &placeholders,
-                    std::int32_t frameIndex, const Common::MVD10Frame &frame);
-void saveViewport(const Common::Json &config, const Placeholders &placeholders,
-                  std::int32_t frameIndex, const std::string &name,
-                  const Common::TextureDepth16Frame &frame);
+                    int32_t frameIndex, const Common::MVD10Frame &frame);
+void saveViewport(const Common::Json &config, const Placeholders &placeholders, int32_t frameIndex,
+                  const std::string &name, const Common::TextureDepth16Frame &frame);
 void saveBlockToPatchMaps(const Common::Json &config, const Placeholders &placeholders,
-                          std::int32_t frameIndex, const MivBitstream::AccessUnit &frame);
+                          int32_t frameIndex, const MivBitstream::AccessUnit &frame);
 void savePrunedFrame(const Common::Json &config, const Placeholders &placeholders,
-                     std::int32_t frameIndex,
+                     int32_t frameIndex,
                      const std::pair<std::vector<Common::Texture444Depth10Frame>, Common::MaskList>
                          &prunedViewsAndMasks);
-void saveSequenceConfig(const Common::Json &config, const Placeholders &placeholders,
-                        std::int32_t foc, const MivBitstream::SequenceConfig &seqConfig);
+void saveSequenceConfig(const Common::Json &config, const Placeholders &placeholders, int32_t foc,
+                        const MivBitstream::SequenceConfig &seqConfig);
 
 // Construct the output bitstream path and create the parent directories
 auto outputBitstreamPath(const Common::Json &config, const Placeholders &placeholders)

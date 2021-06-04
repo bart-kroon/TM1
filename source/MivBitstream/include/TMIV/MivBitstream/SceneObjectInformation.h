@@ -50,9 +50,9 @@ struct SoiVisibilityCones {
            (soi_direction_z == other.soi_direction_z) && (soi_angle == other.soi_angle);
   }
 
-  std::int16_t soi_direction_x{};
-  std::int16_t soi_direction_y{};
-  std::int16_t soi_direction_z{};
+  int16_t soi_direction_x{};
+  int16_t soi_direction_y{};
+  int16_t soi_direction_z{};
   uint16_t soi_angle{};
 };
 
@@ -150,9 +150,9 @@ public:
   [[nodiscard]] auto soi_object_num_dependencies(size_t k) const -> uint8_t;
   [[nodiscard]] auto soi_object_dependency_idx(size_t k, size_t j) const -> size_t;
   [[nodiscard]] auto soi_visibility_cones_update_flag(size_t k) const -> bool;
-  [[nodiscard]] auto soi_direction_x(size_t k) const -> std::int16_t;
-  [[nodiscard]] auto soi_direction_y(size_t k) const -> std::int16_t;
-  [[nodiscard]] auto soi_direction_z(size_t k) const -> std::int16_t;
+  [[nodiscard]] auto soi_direction_x(size_t k) const -> int16_t;
+  [[nodiscard]] auto soi_direction_y(size_t k) const -> int16_t;
+  [[nodiscard]] auto soi_direction_z(size_t k) const -> int16_t;
   [[nodiscard]] auto soi_angle(size_t k) const -> uint16_t;
   [[nodiscard]] auto soi_3d_bounding_box_update_flag(size_t k) const -> bool;
   [[nodiscard]] auto soi_3d_bounding_box_x(size_t k) const -> size_t;

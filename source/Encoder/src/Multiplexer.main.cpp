@@ -47,7 +47,7 @@ namespace TMIV::Encoder {
 class MultiplexerApplication : public Common::Application {
 private:
   const std::string &m_contentId;
-  std::int32_t m_numberOfInputFrames;
+  int32_t m_numberOfInputFrames;
   const std::string &m_testId;
 
   std::unique_ptr<Multiplexer> m_multiplexer{};

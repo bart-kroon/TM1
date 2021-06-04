@@ -80,7 +80,7 @@ public:
   }
 
   void run() override {
-    for (std::int32_t foc = 0;; ++foc) {
+    for (int32_t foc = 0;; ++foc) {
       // Check which frames to render if we would
       const auto range = m_inputToOutputFrameIdMap.equal_range(foc);
       if (range.first == range.second) {
@@ -103,7 +103,7 @@ public:
   }
 
 private:
-  void updateParams(std::int32_t foc) {
+  void updateParams(int32_t foc) {
     if (foc == 0) {
       m_inputSequenceConfig = IO::loadSequenceConfig(json(), m_placeholders, 0);
     } else if (auto sc = IO::tryLoadSequenceConfig(json(), m_placeholders, foc)) {
@@ -114,7 +114,7 @@ private:
 
   // TODO(BK): Add a IRenderer::renderFrame overload that takes a MVD16Frame
   [[nodiscard]] auto accessUnit(const Common::MVD16Frame &frame,
-                                const MivBitstream::ViewParamsList &vpl, std::int32_t foc) const
+                                const MivBitstream::ViewParamsList &vpl, int32_t foc) const
       -> MivBitstream::AccessUnit {
     auto au = MivBitstream::AccessUnit{};
     au.viewParamsList = vpl;

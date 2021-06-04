@@ -96,8 +96,8 @@ public:
   void putUint16(uint16_t value) { writeBits(value, 16); }
   void putUint32(uint32_t value) { writeBits(value, 32); }
   void putUint64(uint64_t value);
-  void putInt16(std::int16_t value) { putUint16(static_cast<uint16_t>(value)); }
-  void putInt32(std::int32_t value) { putUint32(static_cast<uint32_t>(value)); }
+  void putInt16(int16_t value) { putUint16(static_cast<uint16_t>(value)); }
+  void putInt32(int32_t value) { putUint32(static_cast<uint32_t>(value)); }
   void putFloat16(Common::Half value);
   void putFloat32(float value);
 
@@ -105,7 +105,7 @@ public:
 
   template <typename Integer> void putUExpGolomb(const Integer &value);
 
-  void putSExpGolomb(std::int64_t value);
+  void putSExpGolomb(int64_t value);
 
   [[nodiscard]] auto byteAligned() const -> bool;
   void byteAlignment();

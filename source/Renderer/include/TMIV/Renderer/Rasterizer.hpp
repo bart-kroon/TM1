@@ -229,7 +229,7 @@ void Rasterizer<T...>::submitTriangle(TriangleDescriptor descriptor, const Batch
 
 // Switch to fixed-point vertices to correctly handle edge points
 namespace fixed_point {
-using intfp = std::int_fast32_t;
+using intfp = int_fast32_t;
 using Vec2fp = Common::stack::Vec2<intfp>;
 
 constexpr const auto bits = intfp{4};

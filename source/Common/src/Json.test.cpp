@@ -95,18 +95,18 @@ TEST_CASE("There are value constructors for each of JSON value types") {
 TEST_CASE("Json::Integer is a sufficiently large signed integer") {
   static_assert(std::is_integral_v<Json::Integer>);
   static_assert(std::is_signed_v<Json::Integer>);
-  static_assert(std::is_same_v<std::common_type_t<Json::Integer, std::int64_t>, Json::Integer>);
+  static_assert(std::is_same_v<std::common_type_t<Json::Integer, int64_t>, Json::Integer>);
   // Do not assume that Json::Integer is a specific type because that will break code when
-  // Json::Integer is changed for an even larger type, e.g. std::intmax_t == std::int128_t
+  // Json::Integer is changed for an even larger type, e.g. intmax_t == __int128_t
 }
 
 TEST_CASE("Json::as<T>() supports numeric conversion of integers") {
   auto json = Json{40};
   REQUIRE(json.as<char>() == '\x28');
-  REQUIRE(json.as<std::int8_t>() == 40);
-  REQUIRE(json.as<std::int16_t>() == 40);
-  REQUIRE(json.as<std::int32_t>() == 40);
-  REQUIRE(json.as<std::int64_t>() == 40);
+  REQUIRE(json.as<int8_t>() == 40);
+  REQUIRE(json.as<int16_t>() == 40);
+  REQUIRE(json.as<int32_t>() == 40);
+  REQUIRE(json.as<int64_t>() == 40);
   REQUIRE(json.as<uint8_t>() == 40);
   REQUIRE(json.as<uint16_t>() == 40);
   REQUIRE(json.as<uint32_t>() == 40);
@@ -229,8 +229,8 @@ TEST_CASE("Parse a JSON") {
     REQUIRE(Json::parse("0"sv).as<int>() == 0);
     REQUIRE(Json::parse("-1234"sv).as<int>() == -1234);
     REQUIRE(Json::parse("774"sv).as<int>() == 774);
-    REQUIRE(Json::parse("-9223372036854775808"sv).as<std::int64_t>() == INT64_MIN);
-    REQUIRE(Json::parse("9223372036854775807"sv).as<std::int64_t>() == INT64_MAX);
+    REQUIRE(Json::parse("-9223372036854775808"sv).as<int64_t>() == INT64_MIN);
+    REQUIRE(Json::parse("9223372036854775807"sv).as<int64_t>() == INT64_MAX);
     REQUIRE(Json::parse("0.0"sv).as<double>() == 0.);
     REQUIRE(Json::parse("42E-002"sv).as<float>() == 0.42F);
     REQUIRE(Json::parse("2.4E+3"sv).as<double>() == 2400.);

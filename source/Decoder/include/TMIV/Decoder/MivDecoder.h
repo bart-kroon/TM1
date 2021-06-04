@@ -55,13 +55,13 @@ public: // Decoder interface
   // Provide a frame server for out-of-band occupancy video data (OVD). OVD video sub bitstreams
   // within the bitstreams take precedence.
   using OccFrameServer = std::function<Common::Occupancy10Frame(
-      MivBitstream::AtlasId atlasId, std::int32_t frameIndex, Common::Vec2i frameSize)>;
+      MivBitstream::AtlasId atlasId, int32_t frameIndex, Common::Vec2i frameSize)>;
   void setOccFrameServer(OccFrameServer value);
 
   // Provide a frame server for out-of-band geometry video data (GVD). GVD video sub bitstreams
   // within the bitstreams take precedence.
   using GeoFrameServer = std::function<Common::Depth10Frame(
-      MivBitstream::AtlasId atlasId, std::int32_t frameIndex, Common::Vec2i frameSize)>;
+      MivBitstream::AtlasId atlasId, int32_t frameIndex, Common::Vec2i frameSize)>;
   void setGeoFrameServer(GeoFrameServer value);
 
   // Provide a frame server for out-of-band attribute video data (AVD). AVD video sub bitstreams
@@ -73,18 +73,18 @@ public: // Decoder interface
   // NOTE 2: This version of the test model only supports zero, one or two attributes, among texture
   // and transparency.
   using TextureFrameServer = std::function<Common::Texture444Frame(
-      MivBitstream::AtlasId atlasId, std::int32_t frameId, Common::Vec2i frameSize)>;
+      MivBitstream::AtlasId atlasId, int32_t frameId, Common::Vec2i frameSize)>;
   void setTextureFrameServer(TextureFrameServer value);
 
   // Additional frame server for transparency.
   using TransparencyFrameServer = std::function<Common::Transparency10Frame(
-      MivBitstream::AtlasId atlasId, std::int32_t frameId, Common::Vec2i frameSize)>;
+      MivBitstream::AtlasId atlasId, int32_t frameId, Common::Vec2i frameSize)>;
   void setTransparencyFrameServer(TransparencyFrameServer value);
 
   // Provide a frame server for out-of-band packed video data (PVD). PVD video sub bitstreams
   // within the bitstreams take precedence.
   using FramePackServer = std::function<Common::FramePack444Frame(
-      MivBitstream::AtlasId atlasId, std::int32_t frameId, Common::Vec2i frameSize)>;
+      MivBitstream::AtlasId atlasId, int32_t frameId, Common::Vec2i frameSize)>;
   void setFramePackServer(FramePackServer value);
 
   auto operator()() -> std::optional<MivBitstream::AccessUnit>;

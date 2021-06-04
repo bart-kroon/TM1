@@ -71,19 +71,19 @@ public:
   [[nodiscard]] auto atlasPatchAttributeOffset() const;
   [[nodiscard]] constexpr auto atlasPatchInpaintFlag() const noexcept;
 
-  constexpr auto atlasPatch2dPosX(std::int32_t value) noexcept -> PatchParams &;
-  constexpr auto atlasPatch2dPosY(std::int32_t value) noexcept -> PatchParams &;
-  constexpr auto atlasPatch2dSizeX(std::int32_t value) noexcept -> PatchParams &;
-  constexpr auto atlasPatch2dSizeY(std::int32_t value) noexcept -> PatchParams &;
-  constexpr auto atlasPatch3dOffsetU(std::int32_t value) noexcept -> PatchParams &;
-  constexpr auto atlasPatch3dOffsetV(std::int32_t value) noexcept -> PatchParams &;
-  constexpr auto atlasPatch3dOffsetD(std::int32_t value) noexcept -> PatchParams &;
-  constexpr auto atlasPatch3dRangeD(std::int32_t value) noexcept -> PatchParams &;
+  constexpr auto atlasPatch2dPosX(int32_t value) noexcept -> PatchParams &;
+  constexpr auto atlasPatch2dPosY(int32_t value) noexcept -> PatchParams &;
+  constexpr auto atlasPatch2dSizeX(int32_t value) noexcept -> PatchParams &;
+  constexpr auto atlasPatch2dSizeY(int32_t value) noexcept -> PatchParams &;
+  constexpr auto atlasPatch3dOffsetU(int32_t value) noexcept -> PatchParams &;
+  constexpr auto atlasPatch3dOffsetV(int32_t value) noexcept -> PatchParams &;
+  constexpr auto atlasPatch3dOffsetD(int32_t value) noexcept -> PatchParams &;
+  constexpr auto atlasPatch3dRangeD(int32_t value) noexcept -> PatchParams &;
   constexpr auto atlasPatchProjectionId(uint16_t value) noexcept -> PatchParams &;
   constexpr auto atlasPatchOrientationIndex(FlexiblePatchOrientation value) noexcept
       -> PatchParams &;
-  constexpr auto atlasPatchLoDScaleX(std::int32_t value) noexcept -> PatchParams &;
-  constexpr auto atlasPatchLoDScaleY(std::int32_t value) noexcept -> PatchParams &;
+  constexpr auto atlasPatchLoDScaleX(int32_t value) noexcept -> PatchParams &;
+  constexpr auto atlasPatchLoDScaleY(int32_t value) noexcept -> PatchParams &;
   constexpr auto atlasPatchEntityId(Common::SampleValue value) noexcept -> PatchParams &;
   constexpr auto atlasPatchDepthOccMapThreshold(uint32_t value) noexcept -> PatchParams &;
   auto atlasPatchAttributeOffset(Common::Vec3w value) noexcept -> PatchParams &;
@@ -93,8 +93,8 @@ public:
   [[nodiscard]] constexpr auto isRotated() const noexcept;
   [[nodiscard]] constexpr auto atlasPatch3dSizeU() const noexcept -> decltype(auto);
   [[nodiscard]] constexpr auto atlasPatch3dSizeV() const noexcept -> decltype(auto);
-  constexpr auto atlasPatch3dSizeU(std::int32_t value) noexcept -> decltype(auto);
-  constexpr auto atlasPatch3dSizeV(std::int32_t value) noexcept -> decltype(auto);
+  constexpr auto atlasPatch3dSizeU(int32_t value) noexcept -> decltype(auto);
+  constexpr auto atlasPatch3dSizeV(int32_t value) noexcept -> decltype(auto);
 
   // Pixel position conversion from atlas (x, y) to view (u, v)
   //
@@ -128,17 +128,17 @@ public:
 private:
   AtlasId m_atlasId{};
 
-  std::int32_t m_atlasPatch2dPosX{};
-  std::int32_t m_atlasPatch2dPosY{};
-  std::int32_t m_atlasPatch2dSizeX{};
-  std::int32_t m_atlasPatch2dSizeY{};
-  std::int32_t m_atlasPatch3dOffsetU{};
-  std::int32_t m_atlasPatch3dOffsetV{};
-  std::int32_t m_atlasPatch3dOffsetD{};
-  std::int32_t m_atlasPatch3dRangeD{};
+  int32_t m_atlasPatch2dPosX{};
+  int32_t m_atlasPatch2dPosY{};
+  int32_t m_atlasPatch2dSizeX{};
+  int32_t m_atlasPatch2dSizeY{};
+  int32_t m_atlasPatch3dOffsetU{};
+  int32_t m_atlasPatch3dOffsetV{};
+  int32_t m_atlasPatch3dOffsetD{};
+  int32_t m_atlasPatch3dRangeD{};
   uint16_t m_atlasPatchProjectionId{};
-  std::int32_t m_atlasPatchLoDScaleX{1};
-  std::int32_t m_atlasPatchLoDScaleY{1};
+  int32_t m_atlasPatchLoDScaleX{1};
+  int32_t m_atlasPatchLoDScaleY{1};
   FlexiblePatchOrientation m_atlasPatchOrientationIndex{FlexiblePatchOrientation::FPO_INVALID};
   std::optional<Common::SampleValue> m_atlasPatchEntityId;
   std::optional<uint32_t> m_atlasPatchDepthOccMapThreshold;

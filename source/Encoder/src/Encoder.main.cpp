@@ -50,9 +50,9 @@ class Application : public Common::Application {
 private:
   std::unique_ptr<IEncoder> m_encoder;
   const std::string &m_contentId;
-  std::int32_t m_numberOfInputFrames;
+  int32_t m_numberOfInputFrames;
   int32_t m_startFrame;
-  std::int32_t m_intraPeriod;
+  int32_t m_intraPeriod;
 
   MivBitstream::SequenceConfig m_inputSequenceConfig;
   std::filesystem::path m_outputBitstreamPath;
@@ -78,7 +78,7 @@ public:
       , m_contentId{optionValues("-s"sv).front()}
       , m_numberOfInputFrames{std::stoi(optionValues("-n"sv).front())}
       , m_startFrame{std::stoi(optionValues("-f"sv).front())}
-      , m_intraPeriod{json().require("intraPeriod").as<std::int32_t>()}
+      , m_intraPeriod{json().require("intraPeriod").as<int32_t>()}
       , m_inputSequenceConfig{IO::loadSequenceConfig(json(), placeholders(), 0)}
       , m_outputBitstreamPath{IO::outputBitstreamPath(json(), placeholders())}
       , m_outputBitstream{m_outputBitstreamPath, std::ios::binary} {
@@ -111,7 +111,7 @@ public:
   }
 
 private:
-  void encodeAccessUnit(std::int32_t firstFrame, std::int32_t lastFrame) {
+  void encodeAccessUnit(int32_t firstFrame, int32_t lastFrame) {
     std::cout << "Access unit: [" << firstFrame << ", " << lastFrame << ")\n";
     m_encoder->prepareAccessUnit();
     pushFrames(firstFrame, lastFrame);
@@ -119,15 +119,15 @@ private:
     popAtlases(firstFrame, lastFrame);
   }
 
-  void pushFrames(std::int32_t firstFrame, std::int32_t lastFrame) {
-    for (std::int32_t i = firstFrame; i < lastFrame; ++i) {
+  void pushFrames(int32_t firstFrame, int32_t lastFrame) {
+    for (int32_t i = firstFrame; i < lastFrame; ++i) {
       m_encoder->pushFrame(
           IO::loadMultiviewFrame(json(), placeholders(), m_inputSequenceConfig, i));
     }
   }
 
   void popAtlases(int firstFrame, int lastFrame) {
-    for (std::int32_t i = firstFrame; i < lastFrame; ++i) {
+    for (int32_t i = firstFrame; i < lastFrame; ++i) {
       IO::saveAtlasFrame(json(), placeholders(), i, m_encoder->popAtlas());
     }
   }

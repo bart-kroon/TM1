@@ -54,7 +54,7 @@ public:
   [[nodiscard]] auto getPath() const -> const std::filesystem::path & { return m_path; }
   auto read(std::istream &stream, std::streampos posId, Common::Vec2i size)
       -> Common::MpiPcs::Frame;
-  auto read(std::int32_t frameId) -> Common::MpiPcs::Frame;
+  auto read(int32_t frameId) -> Common::MpiPcs::Frame;
 
 private:
   std::filesystem::path m_path{};

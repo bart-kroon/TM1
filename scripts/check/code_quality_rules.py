@@ -42,67 +42,89 @@ SCRIPT_DIR = pathlib.Path(__file__).resolve().parent
 REPO_DIR = SCRIPT_DIR.parents[1]
 
 
-def remove_empty_lines_after_curly_brace(text):
-    return text.replace("{\n\n", "{\n")
+class CodeQualityRules:
+    def __init__(self, verbose, dry_run):
+        self.verbose = verbose
+        self.dry_run = dry_run
 
+    ### code quality rules ###
 
-SUB_FUNCTION_STYLE_CAST_TO_PRIMITIVE_TYPES = re.compile(
-    r"(//[^\n]+)?(operator|function)?([^a-z0-9_:])(nullptr_t|signed|unsigned|short|long|int|bool|char|float|double|u?int(_fast|_least)?(8|16|32|64)_t|u?intmax_t|u?intptr_t|size_t|ptrdiff_t|streamoff)\("
-)
+    def remove_empty_lines_after_curly_brace(self, text):
+        return text.replace("{\n\n", "{\n")
 
+    def remove_std_primitive_types(self, text):
+        return re.sub(
+            r"std::(u?int(_fast|_least)?(8|16|32|64)_t|u?intmax_t|u?intptr_t|size_t|ptrdiff_t)[^a-zA-Z0-9_]",
+            self.remove_std_primitive_types_replace,
+            text,
+        )
 
-def replace_function_style_cast_to_primitive_types_by_static_cast(text, verbose):
-    return SUB_FUNCTION_STYLE_CAST_TO_PRIMITIVE_TYPES.sub(
-        lambda x: replace_function_style_cast_to_primitive_types_by_static_cast_replace(x, verbose),
-        text,
-    )
+    def remove_std_primitive_types_replace(self, match):
+        if self.verbose:
+            print(
+                "Check: Drop the std:: in front of C11 fundamental type typedefs, e.g. int16_t, size_t"
+            )
+            for i in range(len(match.groups())):
+                print("{}match[{}] = '{}'".format("" if i == 0 else "  ", i, match[i]))
 
+        return match[0][5:]
 
-def replace_function_style_cast_to_primitive_types_by_static_cast_replace(match, verbose):
-    if verbose:
-        for i in range(len(match.groups())):
-            print("{}match[{}] = {}".format("" if i == 0 else "  ", i, match[i]))
+    def replace_function_style_cast_to_primitive_types_by_static_cast(self, text):
+        return re.sub(
+            r"(//[^\n]+)?(operator|function)?([^a-z0-9_:])(nullptr_t|signed|unsigned|short|long|int|bool|char|float|double|u?int(_fast|_least)?(8|16|32|64)_t|u?intmax_t|u?intptr_t|size_t|ptrdiff_t|streamoff)\(",
+            self.replace_function_style_cast_to_primitive_types_by_static_cast_replace,
+            text,
+        )
 
-    if match[1] or match[2]:
-        return match[0]
-    return "{0}static_cast<{1}>(".format(match[3], match[4])
+    def replace_function_style_cast_to_primitive_types_by_static_cast_replace(self, match):
+        if self.verbose:
+            print("Check: Replace a function-style cast to primitive type with a static_cast")
+            for i in range(len(match.groups())):
+                print("{}match[{}] = '{}'".format("" if i == 0 else "  ", i, match[i]))
 
+        if match[1] or match[2]:
+            return match[0]
+        return "{0}static_cast<{1}>(".format(match[3], match[4])
 
-def apply_all_rules_to_a_single_cpp_file(file, verbose=False):
-    with open(file, mode="r") as stream:
-        text = stream.read()
+    ### other logic ###
 
-    original = text
-    text = remove_empty_lines_after_curly_brace(text)
-    text = replace_function_style_cast_to_primitive_types_by_static_cast(text, verbose)
+    def apply_all_rules_to_a_single_cpp_file(self, file):
+        with open(file, mode="r") as stream:
+            text = stream.read()
 
-    if original != text:
-        print("At least one check triggered on", file)
-        with open(file, mode="w") as stream:
-            stream.write(text)
+        original = text
+        for method in (
+            self.remove_empty_lines_after_curly_brace,
+            self.remove_std_primitive_types,
+            self.replace_function_style_cast_to_primitive_types_by_static_cast,
+        ):
+            text = method(text)
 
+        if original != text:
+            print("At least one check triggered on", file)
+            if not self.dry_run:
+                with open(file, mode="w") as stream:
+                    stream.write(text)
 
-def get_list_of_files():
-    return map(
-        lambda x: pathlib.Path(x),
-        subprocess.run(
-            ["git", "ls-files"], cwd=REPO_DIR, check=True, stdout=subprocess.PIPE, text=True
-        ).stdout.splitlines(),
-    )
+    def get_list_of_files(self):
+        return map(
+            lambda x: pathlib.Path(x),
+            subprocess.run(
+                ["git", "ls-files"], cwd=REPO_DIR, check=True, stdout=subprocess.PIPE, text=True
+            ).stdout.splitlines(),
+        )
 
+    def filter_cpp_files(self, files):
+        return list(filter(lambda f: f.suffix in (".cpp", ".hpp", ".h"), files))
 
-def filter_cpp_files(files):
-    return list(filter(lambda f: f.suffix in (".cpp", ".hpp", ".h"), files))
-
-
-def apply_all_rules_to_multiple_cpp_files(cpp_files, verbose):
-    if verbose:
-        for cpp_file in cpp_files:
-            print(cpp_file)
-            apply_all_rules_to_a_single_cpp_file(cpp_file, verbose=True)
-    else:
-        with multiprocessing.Pool(multiprocessing.cpu_count()) as pool:
-            pool.map(apply_all_rules_to_a_single_cpp_file, cpp_files)
+    def apply_all_rules_to_multiple_cpp_files(self, cpp_files):
+        if self.verbose:
+            for cpp_file in cpp_files:
+                print(cpp_file)
+                self.apply_all_rules_to_a_single_cpp_file(cpp_file)
+        else:
+            with multiprocessing.Pool(multiprocessing.cpu_count()) as pool:
+                pool.map(self.apply_all_rules_to_a_single_cpp_file, cpp_files)
 
 
 def parse_args():
@@ -113,12 +135,18 @@ def parse_args():
         help="Print information on the rule-checking process (also disables parallel processing)",
         action="store_true",
     )
+    parser.add_argument(
+        "--dry-run",
+        help="Run the script but do not change the files (also disabled parallel processing)",
+        action="store_true",
+    )
     return parser.parse_args()
 
 
 if __name__ == "__main__":
     args = parse_args()
-    files = get_list_of_files()
-    cpp_files = filter_cpp_files(files)
-    apply_all_rules_to_multiple_cpp_files(cpp_files, args.verbose)
+    app = CodeQualityRules(args.verbose, args.dry_run)
+    files = app.get_list_of_files()
+    cpp_files = app.filter_cpp_files(files)
+    app.apply_all_rules_to_multiple_cpp_files(cpp_files)
     exit(0)

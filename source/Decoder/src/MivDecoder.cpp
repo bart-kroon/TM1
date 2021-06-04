@@ -414,7 +414,7 @@ auto MivDecoder::decodeBlockToPatchMap(size_t k, const MivBitstream::PatchParams
     -> Common::BlockToPatchMap {
   const auto &asps = m_au.atlas[k].asps;
 
-  const std::int32_t log2PatchPackingBlockSize = asps.asps_log2_patch_packing_block_size();
+  const int32_t log2PatchPackingBlockSize = asps.asps_log2_patch_packing_block_size();
   const auto patchPackingBlockSize = 1 << log2PatchPackingBlockSize;
   const auto offset = patchPackingBlockSize - 1;
 

@@ -88,42 +88,42 @@ constexpr auto PatchParams::atlasPatchInpaintFlag() const noexcept {
   return m_atlasPatchInpaintFlag;
 }
 
-constexpr auto PatchParams::atlasPatch2dPosX(std::int32_t value) noexcept -> PatchParams & {
+constexpr auto PatchParams::atlasPatch2dPosX(int32_t value) noexcept -> PatchParams & {
   m_atlasPatch2dPosX = value;
   return *this;
 }
 
-constexpr auto PatchParams::atlasPatch2dPosY(std::int32_t value) noexcept -> PatchParams & {
+constexpr auto PatchParams::atlasPatch2dPosY(int32_t value) noexcept -> PatchParams & {
   m_atlasPatch2dPosY = value;
   return *this;
 }
 
-constexpr auto PatchParams::atlasPatch2dSizeX(std::int32_t value) noexcept -> PatchParams & {
+constexpr auto PatchParams::atlasPatch2dSizeX(int32_t value) noexcept -> PatchParams & {
   m_atlasPatch2dSizeX = value;
   return *this;
 }
 
-constexpr auto PatchParams::atlasPatch2dSizeY(std::int32_t value) noexcept -> PatchParams & {
+constexpr auto PatchParams::atlasPatch2dSizeY(int32_t value) noexcept -> PatchParams & {
   m_atlasPatch2dSizeY = value;
   return *this;
 }
 
-constexpr auto PatchParams::atlasPatch3dOffsetU(std::int32_t value) noexcept -> PatchParams & {
+constexpr auto PatchParams::atlasPatch3dOffsetU(int32_t value) noexcept -> PatchParams & {
   m_atlasPatch3dOffsetU = value;
   return *this;
 }
 
-constexpr auto PatchParams::atlasPatch3dOffsetV(std::int32_t value) noexcept -> PatchParams & {
+constexpr auto PatchParams::atlasPatch3dOffsetV(int32_t value) noexcept -> PatchParams & {
   m_atlasPatch3dOffsetV = value;
   return *this;
 }
 
-constexpr auto PatchParams::atlasPatch3dOffsetD(std::int32_t value) noexcept -> PatchParams & {
+constexpr auto PatchParams::atlasPatch3dOffsetD(int32_t value) noexcept -> PatchParams & {
   m_atlasPatch3dOffsetD = value;
   return *this;
 }
 
-constexpr auto PatchParams::atlasPatch3dRangeD(std::int32_t value) noexcept -> PatchParams & {
+constexpr auto PatchParams::atlasPatch3dRangeD(int32_t value) noexcept -> PatchParams & {
   m_atlasPatch3dRangeD = value;
   return *this;
 }
@@ -139,12 +139,12 @@ constexpr auto PatchParams::atlasPatchOrientationIndex(FlexiblePatchOrientation 
   return *this;
 }
 
-constexpr auto PatchParams::atlasPatchLoDScaleX(std::int32_t value) noexcept -> PatchParams & {
+constexpr auto PatchParams::atlasPatchLoDScaleX(int32_t value) noexcept -> PatchParams & {
   m_atlasPatchLoDScaleX = value;
   return *this;
 }
 
-constexpr auto PatchParams::atlasPatchLoDScaleY(std::int32_t value) noexcept -> PatchParams & {
+constexpr auto PatchParams::atlasPatchLoDScaleY(int32_t value) noexcept -> PatchParams & {
   m_atlasPatchLoDScaleY = value;
   return *this;
 }
@@ -207,11 +207,11 @@ constexpr auto PatchParams::atlasPatch3dSizeV() const noexcept -> decltype(auto)
   return isRotated() ? atlasPatch2dSizeX() : atlasPatch2dSizeY();
 }
 
-constexpr auto PatchParams::atlasPatch3dSizeU(std::int32_t value) noexcept -> decltype(auto) {
+constexpr auto PatchParams::atlasPatch3dSizeU(int32_t value) noexcept -> decltype(auto) {
   return isRotated() ? atlasPatch2dSizeY(value) : atlasPatch2dSizeX(value);
 }
 
-constexpr auto PatchParams::atlasPatch3dSizeV(std::int32_t value) noexcept -> decltype(auto) {
+constexpr auto PatchParams::atlasPatch3dSizeV(int32_t value) noexcept -> decltype(auto) {
   return isRotated() ? atlasPatch2dSizeX(value) : atlasPatch2dSizeY(value);
 }
 

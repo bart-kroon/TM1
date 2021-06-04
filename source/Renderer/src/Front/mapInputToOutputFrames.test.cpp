@@ -42,8 +42,8 @@ TEST_CASE("Map input to output frames") {
   static_assert(std::is_same_v<FrameMapping, decltype(mapInputToOutputFrames(0, 0))>);
 
   GIVEN("a negative number of input frames") {
-    const std::int32_t numberOfInputFrames = GENERATE(INT32_MIN, -1);
-    const std::int32_t numberOfOutputFrames = GENERATE(0, 1, 2);
+    const int32_t numberOfInputFrames = GENERATE(INT32_MIN, -1);
+    const int32_t numberOfOutputFrames = GENERATE(0, 1, 2);
 
     THEN("a runtime error is thrown") {
       REQUIRE_THROWS(mapInputToOutputFrames(numberOfInputFrames, numberOfOutputFrames));
@@ -51,8 +51,8 @@ TEST_CASE("Map input to output frames") {
   }
 
   GIVEN("a negative number of output frames") {
-    const std::int32_t numberOfInputFrames = GENERATE(0, 1, 2);
-    const std::int32_t numberOfOutputFrames = GENERATE(INT32_MIN, -1);
+    const int32_t numberOfInputFrames = GENERATE(0, 1, 2);
+    const int32_t numberOfOutputFrames = GENERATE(INT32_MIN, -1);
 
     THEN("a runtime error is thrown") {
       REQUIRE_THROWS(mapInputToOutputFrames(numberOfInputFrames, numberOfOutputFrames));

@@ -220,19 +220,19 @@ auto SceneObjectInformation::soi_visibility_cones_update_flag(size_t k) const ->
   return *m_object_updates[k].soi_visibility_cones_update_flag;
 }
 
-auto SceneObjectInformation::soi_direction_x(size_t k) const -> std::int16_t {
+auto SceneObjectInformation::soi_direction_x(size_t k) const -> int16_t {
   VERIFY_V3CBITSTREAM(isUpdateValid(k) && soi_visibility_cones_update_flag(k) &&
                       m_object_updates[k].soi_visibility_cones);
   return m_object_updates[k].soi_visibility_cones->soi_direction_x;
 }
 
-auto SceneObjectInformation::soi_direction_y(size_t k) const -> std::int16_t {
+auto SceneObjectInformation::soi_direction_y(size_t k) const -> int16_t {
   VERIFY_V3CBITSTREAM(isUpdateValid(k) && soi_visibility_cones_update_flag(k) &&
                       m_object_updates[k].soi_visibility_cones);
   return m_object_updates[k].soi_visibility_cones->soi_direction_y;
 }
 
-auto SceneObjectInformation::soi_direction_z(size_t k) const -> std::int16_t {
+auto SceneObjectInformation::soi_direction_z(size_t k) const -> int16_t {
   VERIFY_V3CBITSTREAM(isUpdateValid(k) && soi_visibility_cones_update_flag(k) &&
                       m_object_updates[k].soi_visibility_cones);
   return m_object_updates[k].soi_visibility_cones->soi_direction_z;

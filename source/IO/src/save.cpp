@@ -56,7 +56,7 @@ const std::string outputPackedVideoDataPathFmt = "outputPackedVideoDataPathFmt";
 
 template <typename FORMAT>
 void saveFrame(const std::filesystem::path &path, const Common::Frame<FORMAT> &frame,
-               std::int32_t frameIndex) {
+               int32_t frameIndex) {
   create_directories(path.parent_path());
 
   std::fstream stream(path, frameIndex == 0 ? std::ios::out | std::ios::binary
@@ -79,7 +79,7 @@ void saveFrame(const std::filesystem::path &path, const Common::Frame<FORMAT> &f
 }
 
 void saveAtlasFrame(const Common::Json &config, const Placeholders &placeholders,
-                    std::int32_t frameIndex, const Common::MVD10Frame &frame) {
+                    int32_t frameIndex, const Common::MVD10Frame &frame) {
   const auto outputDir = config.require(outputDirectory).as<std::filesystem::path>();
 
   for (size_t k = 0; k < frame.size(); ++k) {
@@ -119,9 +119,8 @@ void saveAtlasFrame(const Common::Json &config, const Placeholders &placeholders
   }
 }
 
-void saveViewport(const Common::Json &config, const Placeholders &placeholders,
-                  std::int32_t frameIndex, const std::string &name,
-                  const Common::TextureDepth16Frame &frame) {
+void saveViewport(const Common::Json &config, const Placeholders &placeholders, int32_t frameIndex,
+                  const std::string &name, const Common::TextureDepth16Frame &frame) {
   const auto outputDir = config.require(outputDirectory).as<std::filesystem::path>();
   auto saved = false;
 
@@ -152,7 +151,7 @@ void saveViewport(const Common::Json &config, const Placeholders &placeholders,
 }
 
 void saveBlockToPatchMaps(const Common::Json &config, const Placeholders &placeholders,
-                          std::int32_t frameIndex, const MivBitstream::AccessUnit &frame) {
+                          int32_t frameIndex, const MivBitstream::AccessUnit &frame) {
   const auto outputDir = config.require(outputDirectory).as<std::filesystem::path>();
 
   if (const auto &node = config.optional(outputBlockToPatchMapPathFmt)) {
@@ -167,7 +166,7 @@ void saveBlockToPatchMaps(const Common::Json &config, const Placeholders &placeh
 }
 
 void savePrunedFrame(const Common::Json &config, const Placeholders &placeholders,
-                     std::int32_t frameIndex,
+                     int32_t frameIndex,
                      const std::pair<std::vector<Common::Texture444Depth10Frame>, Common::MaskList>
                          &prunedViewsAndMasks) {
   const auto outputDir = config.require(outputDirectory).as<std::filesystem::path>();
@@ -201,8 +200,8 @@ void savePrunedFrame(const Common::Json &config, const Placeholders &placeholder
   }
 }
 
-void saveSequenceConfig(const Common::Json &config, const Placeholders &placeholders,
-                        std::int32_t foc, const MivBitstream::SequenceConfig &seqConfig) {
+void saveSequenceConfig(const Common::Json &config, const Placeholders &placeholders, int32_t foc,
+                        const MivBitstream::SequenceConfig &seqConfig) {
   if (const auto &node = config.optional(IO::outputSequenceConfigPathFmt)) {
     const auto path = config.require(IO::outputDirectory).as<std::filesystem::path>() /
                       fmt::format(node.as<std::string>(), placeholders.numberOfInputFrames,

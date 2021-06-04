@@ -156,7 +156,7 @@ void CommonAtlasDecoder::decodeSuffixNalUnit(AccessUnit &au, const MivBitstream:
 void CommonAtlasDecoder::decodeCasps(std::istream &stream) {
   auto casps = MivBitstream::CommonAtlasSequenceParameterSetRBSP::decodeFrom(stream);
 
-  const auto maxCommonAtlasFrmOrderCntLsb = static_cast<std::int32_t>(
+  const auto maxCommonAtlasFrmOrderCntLsb = static_cast<int32_t>(
       1U << (casps.casps_log2_max_common_atlas_frame_order_cnt_lsb_minus4() + 4U));
   VERIFY_MIVBITSTREAM(m_maxCommonAtlasFrmOrderCntLsb == 0 ||
                       m_maxCommonAtlasFrmOrderCntLsb == maxCommonAtlasFrmOrderCntLsb);

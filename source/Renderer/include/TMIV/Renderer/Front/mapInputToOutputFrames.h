@@ -38,9 +38,9 @@
 #include <map>
 
 namespace TMIV::Renderer::Front {
-using FrameMapping = std::multimap<std::int32_t, std::int32_t>;
+using FrameMapping = std::multimap<int32_t, int32_t>;
 
-auto mapInputToOutputFrames(std::int32_t numberOfInputFrames, std::int32_t numberOfOutputFrames)
+auto mapInputToOutputFrames(int32_t numberOfInputFrames, int32_t numberOfOutputFrames)
     -> FrameMapping;
 } // namespace TMIV::Renderer::Front
 

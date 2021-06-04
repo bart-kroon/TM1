@@ -140,7 +140,7 @@ auto choosePatch(const MivBitstream::PatchParams &patch,
 }
 auto divideInBlocks(const MivBitstream::PatchParams &patch) {
   // The size of the sub-block is fixed for now
-  constexpr std::int32_t blockSize = 128;
+  constexpr int32_t blockSize = 128;
 
   const auto gridWidth = (patch.atlasPatch2dSizeX() + blockSize - 1) / blockSize;
   const auto gridHeight = (patch.atlasPatch2dSizeY() + blockSize - 1) / blockSize;

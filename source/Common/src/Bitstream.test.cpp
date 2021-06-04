@@ -45,8 +45,8 @@ TEST_CASE("Bitstream primitives") {
   TMIV::Common::InputBitstream ibitstream{stream};
 
   SECTION("i(16)") {
-    const int16_t reference = GENERATE(std::numeric_limits<std::int16_t>::min(), -123, -3, -2 - 1,
-                                       0, 1, 31, 32, 1000, std::numeric_limits<int16_t>::max());
+    const int16_t reference = GENERATE(std::numeric_limits<int16_t>::min(), -123, -3, -2 - 1, 0, 1,
+                                       31, 32, 1000, std::numeric_limits<int16_t>::max());
     obitstream.putInt16(reference);
     obitstream.zeroAlign();
     const auto actual = ibitstream.getInt16();
@@ -144,8 +144,7 @@ TEST_CASE("Bitstream primitives") {
   }
 
   SECTION("se(v)") {
-    const auto referenceSequence =
-        std::array<std::int64_t, 7>{-123, 4, -400, 0, 1, -3, 0x123456789ABC};
+    const auto referenceSequence = std::array<int64_t, 7>{-123, 4, -400, 0, 1, -3, 0x123456789ABC};
     for (auto reference : referenceSequence) {
       obitstream.putSExpGolomb(reference);
     }

@@ -55,10 +55,10 @@ class AtlasSequenceParameterSetRBSP;
 class RefListStruct {
 public:
   RefListStruct() = default;
-  explicit RefListStruct(std::vector<std::int16_t> deltaAfocSt);
+  explicit RefListStruct(std::vector<int16_t> deltaAfocSt);
 
   [[nodiscard]] auto num_ref_entries() const noexcept -> size_t;
-  [[nodiscard]] auto deltaAfocSt(size_t i) const -> std::int16_t;
+  [[nodiscard]] auto deltaAfocSt(size_t i) const -> int16_t;
 
   auto printTo(std::ostream &stream, uint8_t rlsIdx) const -> std::ostream &;
 
@@ -72,7 +72,7 @@ public:
                 const AtlasSequenceParameterSetRBSP &asps) const;
 
 private:
-  std::vector<std::int16_t> m_deltaAfocSt;
+  std::vector<int16_t> m_deltaAfocSt;
 };
 
 // 23090-5: asps_vpcc_extension( )

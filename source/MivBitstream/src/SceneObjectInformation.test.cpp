@@ -406,9 +406,9 @@ auto makeUpdates(size_t soi_num_object_updates, bool soi_simple_objects_flag,
 
 auto makeSoiVisibilityCones(uint16_t value) -> SoiVisibilityCones {
   SoiVisibilityCones result{};
-  result.soi_direction_x = static_cast<std::int16_t>(value++);
-  result.soi_direction_y = static_cast<std::int16_t>(value++);
-  result.soi_direction_z = static_cast<std::int16_t>(value++);
+  result.soi_direction_x = static_cast<int16_t>(value++);
+  result.soi_direction_y = static_cast<int16_t>(value++);
+  result.soi_direction_z = static_cast<int16_t>(value++);
   result.soi_angle = value;
   return result;
 }

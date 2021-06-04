@@ -97,23 +97,23 @@ Unless specified otherwise, the base directory for these path formats is `inputD
 * **inputTextureVideoFramePathFmt**: the path format of the uncompresed attribute video data (AVD) with attribute ID `ATTR_TEXTURE`, consumed by the Decoder for out-of-band video decoding, e.g. for testing alternative video codecs, with the same placeholders as `inputGeometryVideoFramePathFmt`.
 * **inputPackedVideoFramePathFmt**: the path format of the uncompresed packed video data (PVD), consumed by the Decoder for out-of-band video decoding, with the same placeholders as `inputGeometryVideoFramePathFmt`.
 * **inputTransparencyVideoFramePathFmt**: the path format of the uncompresed attribute video data (AVD) with attribute ID `ATTR_TRANSPARENCY`, with the same placeholders as `inputGeometryVideoFramePathFmt`.
-* **inputGeometryVsbPathFmt**: the path format of the geometry video sub-bitstream, consumed by the Multiplexer, with placeholders:
+* **inputGeometryVideoSubBitstreamPathFmt**: the path format of the geometry video sub-bitstream, consumed by the Multiplexer, with placeholders:
     * 0: number of input frames,
     * 1: content ID,
     * 2: test ID,
     * 3: atlas index.
-* **inputOccupancyVsbPathFmt**: the path format of the occupancy video sub-bitstream, consumed by the Multiplexer, with the same placeholders as `inputGeometryVsbPathFmt`.
-* **inputTextureVsbPathFmt**: the path format of the attribute video sub-bitstream with attribute ID `ATTR_TEXTURE`, consumed by the Multiplexer, with placeholders:
+* **inputOccupancyVideoSubBitstreamPathFmt**: the path format of the occupancy video sub-bitstream, consumed by the Multiplexer, with the same placeholders as `inputGeometryVideoSubBitstreamPathFmt`.
+* **inputTextureVideoSubBitstreamPathFmt**: the path format of the attribute video sub-bitstream with attribute ID `ATTR_TEXTURE`, consumed by the Multiplexer, with placeholders:
     * 0: number of input frames,
     * 1: content ID,
     * 2: test ID,
     * 3: atlas index,
     * 4: attribute index.
-* **inputPackedVsbPathFmt**: the path format of the packed video sub-bitstream, consumed by the Multiplexer, with the same placeholders as `inputGeometryVsbPathFmt`.
-* **inputNormalVsbPathFmt**: the path format of the attribute video sub-bitstream with attribute ID `ATTR_NORMAL`, consumed by the Multiplexer, with the same placeholders as `inputTextureVsbPathFmt`.
-* **inputTransparencyVsbPathFmt**: the path format of the attribute video sub-bitstream with attribute ID `ATTR_TRANSPARENCY`, consumed by the Multiplexer, with the same placeholders as `inputTextureVsbPathFmt`.
-* **inputMaterialIdVsbPathFmt**: the path format of the attribute video sub-bitstream with attribute ID `ATTR_MATERIAL_ID`, consumed by the Multiplexer, with the same placeholders as `inputTextureVsbPathFmt`.
-* **inputReflectanceVsbPathFmt**: the path format of the attribute video sub-bitstream with attribute ID `ATTR_REFLECTANCE`, consumed by the Multiplexer, with the same placeholders as `inputTextureVsbPathFmt`.
+* **inputPackedVideoSubBitstreamPathFmt**: the path format of the packed video sub-bitstream, consumed by the Multiplexer, with the same placeholders as `inputGeometryVideoSubBitstreamPathFmt`.
+* **inputNormalVideoSubBitstreamPathFmt**: the path format of the attribute video sub-bitstream with attribute ID `ATTR_NORMAL`, consumed by the Multiplexer, with the same placeholders as `inputTextureVideoSubBitstreamPathFmt`.
+* **inputTransparencyVideoSubBitstreamPathFmt**: the path format of the attribute video sub-bitstream with attribute ID `ATTR_TRANSPARENCY`, consumed by the Multiplexer, with the same placeholders as `inputTextureVideoSubBitstreamPathFmt`.
+* **inputMaterialIdVideoSubBitstreamPathFmt**: the path format of the attribute video sub-bitstream with attribute ID `ATTR_MATERIAL_ID`, consumed by the Multiplexer, with the same placeholders as `inputTextureVideoSubBitstreamPathFmt`.
+* **inputReflectanceVideoSubBitstreamPathFmt**: the path format of the attribute video sub-bitstream with attribute ID `ATTR_REFLECTANCE`, consumed by the Multiplexer, with the same placeholders as `inputTextureVideoSubBitstreamPathFmt`.
 * **inputPoseTracePathFmt**: the path format of the pose trace CSV file, with `configDirectory` as base directory and placeholders:
     * 0: number of input frames,
     * 1: content ID,

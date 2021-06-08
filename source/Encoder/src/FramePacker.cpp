@@ -240,9 +240,14 @@ void FramePacker::setOccupancyPinRegion(size_t i, size_t atlasIdx,
   m_pinRegion.pin_region_type_id_minus2 = static_cast<uint16_t>(0);
   m_pinRegion.pin_region_top_left_x = static_cast<uint16_t>(
       m_regionSizes[atlasIdx].occ.x() * (i - (regionCounts.attr + regionCounts.geo)));
-  m_pinRegion.pin_region_top_left_y =
-      static_cast<uint16_t>(m_regionSizes[atlasIdx].frame.y() * regionCounts.attr +
-                            (m_regionSizes[atlasIdx].geo.y() / regionCounts.geo));
+  if (regionCounts.geo != 0) {
+    m_pinRegion.pin_region_top_left_y =
+        static_cast<uint16_t>(m_regionSizes[atlasIdx].frame.y() * regionCounts.attr +
+                              (m_regionSizes[atlasIdx].geo.y() / regionCounts.geo));
+  } else {
+    m_pinRegion.pin_region_top_left_y =
+        static_cast<uint16_t>(m_regionSizes[atlasIdx].frame.y() * regionCounts.attr);
+  }
   m_pinRegion.pin_region_width_minus1 = static_cast<uint16_t>(m_regionSizes[atlasIdx].occ.x() - 1);
   m_pinRegion.pin_region_height_minus1 =
       static_cast<uint16_t>((m_regionSizes[atlasIdx].occ.y() / regionCounts.occ) - 1);

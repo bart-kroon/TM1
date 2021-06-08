@@ -237,8 +237,62 @@ TEST_CASE("TMIV::Encoder::FramePacker, 1 Atlas with texture, geometry, and occup
     CHECK(outParams.vps.packing_information(atlasId).pin_region_height_minus1(2) == 63);
     CHECK(outParams.vps.packing_information(atlasId).pin_region_unpack_top_left_x(2) == 0);
     CHECK(outParams.vps.packing_information(atlasId).pin_region_unpack_top_left_y(2) == 0);
-    // unit.constructFramePack(frame); // TODO(Basel Salahieh): Add occupancy support
-    // CHECK(frame[0].framePack.getWidth() == 32);
-    // CHECK(frame[0].framePack.getHeight() == 13920);
+  }
+}
+
+TEST_CASE("TMIV::Encoder::FramePacker, 1 Atlas with attribute and occupancy only") {
+  auto params = TMIV::Encoder::EncoderParams{};
+  params.vps.vps_atlas_count_minus1(0);
+  TMIV::MivBitstream::AtlasId atlasId = params.vps.vps_atlas_id(0);
+  params.vps.vps_occupancy_video_present_flag(atlasId, true)
+      .vps_geometry_video_present_flag(atlasId, false)
+      .vps_attribute_video_present_flag(atlasId, true)
+      .vps_miv_extension_present_flag(true)
+      .vps_frame_width(atlasId, 32)
+      .vps_frame_height(atlasId, 64)
+      .attribute_information(atlasId)
+      .ai_attribute_count(1);
+
+  params.atlas.push_back(TMIV::Encoder::EncoderAtlasParams{});
+  auto &asmeAtlas = params.atlas[0].asps.asps_miv_extension();
+
+  auto frame = TMIV::Common::MVD10Frame{};
+  auto atlas = TMIV::Common::TextureDepth10Frame{};
+
+  SECTION("Downscaled Occupancy [2 2]") {
+    asmeAtlas.asme_occupancy_scale_factor_x_minus1(1).asme_occupancy_scale_factor_y_minus1(1);
+    atlas.texture.resize(32, 64);
+    atlas.occupancy.resize(16, 32);
+    frame.push_back(atlas);
+
+    TMIV::Encoder::FramePacker unit{};
+    const auto outParams = unit.setPackingInformation(params);
+    CHECK(outParams.vps.vps_attribute_video_present_flag(atlasId) == false);
+    CHECK(outParams.vps.vps_geometry_video_present_flag(atlasId) == false);
+    CHECK(outParams.vps.vps_occupancy_video_present_flag(atlasId) == false);
+    CHECK(outParams.vps.vps_packed_video_present_flag(atlasId) == true);
+    CHECK(outParams.vps.vps_packing_information_present_flag() == true);
+    CHECK(outParams.vps.packing_information(atlasId).pin_regions_count_minus1() == 2);
+    CHECK(outParams.vps.packing_information(atlasId).pin_region_type_id_minus2(0) == 2); // V3C_AVD
+    CHECK(outParams.vps.packing_information(atlasId).pin_region_top_left_x(0) == 0);
+    CHECK(outParams.vps.packing_information(atlasId).pin_region_top_left_y(0) == 0);
+    CHECK(outParams.vps.packing_information(atlasId).pin_region_width_minus1(0) == 31);
+    CHECK(outParams.vps.packing_information(atlasId).pin_region_height_minus1(0) == 63);
+    CHECK(outParams.vps.packing_information(atlasId).pin_region_unpack_top_left_x(0) == 0);
+    CHECK(outParams.vps.packing_information(atlasId).pin_region_unpack_top_left_y(0) == 0);
+    CHECK(outParams.vps.packing_information(atlasId).pin_region_type_id_minus2(1) == 0); // V3C_OVD
+    CHECK(outParams.vps.packing_information(atlasId).pin_region_top_left_x(1) == 0);
+    CHECK(outParams.vps.packing_information(atlasId).pin_region_top_left_y(1) == 64);
+    CHECK(outParams.vps.packing_information(atlasId).pin_region_width_minus1(1) == 15);
+    CHECK(outParams.vps.packing_information(atlasId).pin_region_height_minus1(1) == 15);
+    CHECK(outParams.vps.packing_information(atlasId).pin_region_unpack_top_left_x(1) == 0);
+    CHECK(outParams.vps.packing_information(atlasId).pin_region_unpack_top_left_y(1) == 0);
+    CHECK(outParams.vps.packing_information(atlasId).pin_region_type_id_minus2(2) == 0); // V3C_OVD
+    CHECK(outParams.vps.packing_information(atlasId).pin_region_top_left_x(2) == 16);
+    CHECK(outParams.vps.packing_information(atlasId).pin_region_top_left_y(2) == 64);
+    CHECK(outParams.vps.packing_information(atlasId).pin_region_width_minus1(2) == 15);
+    CHECK(outParams.vps.packing_information(atlasId).pin_region_height_minus1(2) == 15);
+    CHECK(outParams.vps.packing_information(atlasId).pin_region_unpack_top_left_x(2) == 0);
+    CHECK(outParams.vps.packing_information(atlasId).pin_region_unpack_top_left_y(2) == 16);
   }
 }

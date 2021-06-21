@@ -31,7 +31,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/Encoder/IEncoder.h>
+#include <TMIV/Encoder/Encoder.h>
 
 #include <TMIV/Common/Application.h>
 #include <TMIV/Common/Factory.h>
@@ -48,7 +48,7 @@ void registerComponents();
 
 class Application : public Common::Application {
 private:
-  std::unique_ptr<IEncoder> m_encoder;
+  Encoder m_encoder;
   const std::string &m_contentId;
   int32_t m_numberOfInputFrames;
   int32_t m_startFrame;
@@ -57,7 +57,7 @@ private:
   MivBitstream::SequenceConfig m_inputSequenceConfig;
   std::filesystem::path m_outputBitstreamPath;
   std::ofstream m_outputBitstream;
-  std::unique_ptr<Encoder::MivEncoder> m_mivEncoder;
+  MivEncoder m_mivEncoder;
 
   [[nodiscard]] auto placeholders() const {
     auto x = IO::Placeholders{};
@@ -74,14 +74,15 @@ public:
                                 {"-s", "Content ID (e.g. B for Museum)", false},
                                 {"-n", "Number of input frames (e.g. 97)", false},
                                 {"-f", "Input start frame (e.g. 23)", false}}}
-      , m_encoder{create<IEncoder>("Encoder")}
+      , m_encoder{json(), json().require("Encoder")}
       , m_contentId{optionValues("-s"sv).front()}
       , m_numberOfInputFrames{std::stoi(optionValues("-n"sv).front())}
       , m_startFrame{std::stoi(optionValues("-f"sv).front())}
       , m_intraPeriod{json().require("intraPeriod").as<int32_t>()}
       , m_inputSequenceConfig{IO::loadSequenceConfig(json(), placeholders(), 0)}
       , m_outputBitstreamPath{IO::outputBitstreamPath(json(), placeholders())}
-      , m_outputBitstream{m_outputBitstreamPath, std::ios::binary} {
+      , m_outputBitstream{m_outputBitstreamPath, std::ios::binary}
+      , m_mivEncoder{m_outputBitstream} {
     if (!m_outputBitstream.good()) {
       throw std::runtime_error(fmt::format("Failed to open {} for writing", m_outputBitstreamPath));
     }
@@ -93,12 +94,10 @@ public:
                    "e.g. to test with a subset of views.\n";
       m_inputSequenceConfig.sourceCameraNames = node.asVector<std::string>();
     }
-
-    m_mivEncoder = std::make_unique<MivEncoder>(m_outputBitstream);
   }
 
   void run() override {
-    m_encoder->prepareSequence(
+    m_encoder.prepareSequence(
         m_inputSequenceConfig,
         IO::loadMultiviewFrame(json(), placeholders(), m_inputSequenceConfig, 0));
 
@@ -113,27 +112,26 @@ public:
 private:
   void encodeAccessUnit(int32_t firstFrame, int32_t lastFrame) {
     std::cout << "Access unit: [" << firstFrame << ", " << lastFrame << ")\n";
-    m_encoder->prepareAccessUnit();
+    m_encoder.prepareAccessUnit();
     pushFrames(firstFrame, lastFrame);
-    m_mivEncoder->writeAccessUnit(m_encoder->completeAccessUnit());
+    m_mivEncoder.writeAccessUnit(m_encoder.completeAccessUnit());
     popAtlases(firstFrame, lastFrame);
   }
 
   void pushFrames(int32_t firstFrame, int32_t lastFrame) {
     for (int32_t i = firstFrame; i < lastFrame; ++i) {
-      m_encoder->pushFrame(
-          IO::loadMultiviewFrame(json(), placeholders(), m_inputSequenceConfig, i));
+      m_encoder.pushFrame(IO::loadMultiviewFrame(json(), placeholders(), m_inputSequenceConfig, i));
     }
   }
 
   void popAtlases(int firstFrame, int lastFrame) {
     for (int32_t i = firstFrame; i < lastFrame; ++i) {
-      IO::saveAtlasFrame(json(), placeholders(), i, m_encoder->popAtlas());
+      IO::saveAtlasFrame(json(), placeholders(), i, m_encoder.popAtlas());
     }
   }
 
   void reportSummary(std::streampos bytesWritten) const {
-    fmt::print("Maximum luma samples per frame is {}\n", m_encoder->maxLumaSamplesPerFrame());
+    fmt::print("Maximum luma samples per frame is {}\n", m_encoder.maxLumaSamplesPerFrame());
     fmt::print("Total size is {} B ({} kb)\n", bytesWritten,
                8e-3 * static_cast<double>(bytesWritten));
     fmt::print("Frame count is {}\n", m_numberOfInputFrames);

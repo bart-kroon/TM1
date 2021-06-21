@@ -40,7 +40,7 @@
 #include <TMIV/Encoder/FramePacker.h>
 #include <TMIV/Encoder/GeometryDownscaler.h>
 #include <TMIV/Encoder/GeometryQuantizer.h>
-#include <TMIV/Encoder/IEncoder.h>
+#include <TMIV/MivBitstream/SequenceConfig.h>
 #include <TMIV/Packer/IPacker.h>
 #include <TMIV/Pruner/IPruner.h>
 #include <TMIV/ViewOptimizer/IViewOptimizer.h>
@@ -53,22 +53,17 @@ namespace TMIV::Encoder {
 auto assessColorConsistency(Common::MVD16Frame views, MivBitstream::ViewParamsList params)
     -> std::vector<Common::Mat<Common::Vec3i>>;
 
-class Encoder : public IEncoder {
+class Encoder {
 public:
-  Encoder(const Common::Json & /*rootNode*/, const Common::Json & /*componentNode*/);
-  Encoder(const Encoder &) = delete;
-  Encoder(Encoder &&) = default;
-  auto operator=(const Encoder &) -> Encoder & = delete;
-  auto operator=(Encoder &&) -> Encoder & = default;
-  ~Encoder() override = default;
+  Encoder(const Common::Json &rootNode, const Common::Json &componentNode);
 
   void prepareSequence(const MivBitstream::SequenceConfig &sequenceConfig,
-                       const Common::MVD16Frame &firstFrame) override;
-  void prepareAccessUnit() override;
-  void pushFrame(Common::MVD16Frame sourceViews) override;
-  auto completeAccessUnit() -> const EncoderParams & override;
-  auto popAtlas() -> Common::MVD10Frame override;
-  [[nodiscard]] auto maxLumaSamplesPerFrame() const -> size_t override;
+                       const Common::MVD16Frame &firstFrame);
+  void prepareAccessUnit();
+  void pushFrame(Common::MVD16Frame sourceViews);
+  auto completeAccessUnit() -> const EncoderParams &;
+  auto popAtlas() -> Common::MVD10Frame;
+  [[nodiscard]] auto maxLumaSamplesPerFrame() const -> size_t;
 
 private: // Encoder_prepareSequence.cpp
   [[nodiscard]] auto

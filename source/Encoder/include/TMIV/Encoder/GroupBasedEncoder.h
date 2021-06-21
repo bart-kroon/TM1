@@ -37,7 +37,7 @@
 #include <TMIV/Encoder/Encoder.h>
 
 namespace TMIV::Encoder {
-class GroupBasedEncoder : public IEncoder {
+class GroupBasedEncoder {
 public:
   // Make an Encoder per group
   GroupBasedEncoder(const Common::Json &rootNode, const Common::Json &componentNode);
@@ -46,26 +46,26 @@ public:
   GroupBasedEncoder(GroupBasedEncoder &&) = default;
   auto operator=(const GroupBasedEncoder &) -> GroupBasedEncoder & = delete;
   auto operator=(GroupBasedEncoder &&) -> GroupBasedEncoder & = default;
-  ~GroupBasedEncoder() override = default;
+  ~GroupBasedEncoder() = default;
 
   // Let each per-group encoder prepare the sequence
   void prepareSequence(const MivBitstream::SequenceConfig &sequenceConfig,
-                       const Common::MVD16Frame &firstFrame) override;
+                       const Common::MVD16Frame &firstFrame);
 
   // Let each per-group encoder prepare the access unit
-  void prepareAccessUnit() override;
+  void prepareAccessUnit();
 
   // Push frame to each per-group encoder
-  void pushFrame(Common::MVD16Frame views) override;
+  void pushFrame(const Common::MVD16Frame &views);
 
   // Let each per-group encoer complete the access unit and merge the metadata
-  auto completeAccessUnit() -> const EncoderParams & override;
+  auto completeAccessUnit() -> const EncoderParams &;
 
   // Pop atlases from each group and merge them into a single array
-  auto popAtlas() -> Common::MVD10Frame override;
+  auto popAtlas() -> Common::MVD10Frame;
 
   // Maximum aggregated luma samples per frame all groups combined
-  [[nodiscard]] auto maxLumaSamplesPerFrame() const -> size_t override;
+  [[nodiscard]] auto maxLumaSamplesPerFrame() const -> size_t;
 
 private:
   // A grouping as an array of groupId-viewId pairs

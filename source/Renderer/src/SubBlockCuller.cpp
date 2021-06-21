@@ -76,6 +76,8 @@ auto choosePatch(const MivBitstream::PatchParams &patch,
     const auto delta_theta = h / static_cast<float>(camera.ci.projectionPlaneSize().y()) *
                              (camera.ci.ci_erp_theta_max() - camera.ci.ci_erp_theta_min());
     const auto modified_depth_x = patch_dep_far;
+    using std::cos;
+    using std::tan;
     const auto modified_depth_y = modified_depth_x * tan(delta_phi / 2);
     const auto modified_depth_z = modified_depth_x * tan(delta_theta / 2) / cos(delta_phi / 2);
 

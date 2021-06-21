@@ -488,46 +488,9 @@ auto SceneObjectInformation::operator==(const SceneObjectInformation &other) con
 }
 
 // NOLINTNEXTLINE(readability-function-cognitive-complexity)
-auto SceneObjectInformation::decodeFrom(Common::InputBitstream &bitstream)
-    -> SceneObjectInformation {
-  SceneObjectInformation result{};
-  result.soi_persistence_flag(bitstream.getFlag());
-  result.soi_reset_flag(bitstream.getFlag());
-
-  result.soi_num_object_updates(bitstream.getUExpGolomb<size_t>());
-  if (result.soi_num_object_updates() > 0) {
-    result.soi_simple_objects_flag(bitstream.getFlag());
-    if (!result.soi_simple_objects_flag()) {
-      result.soi_object_label_present_flag(bitstream.getFlag());
-      result.soi_priority_present_flag(bitstream.getFlag());
-      result.soi_object_hidden_present_flag(bitstream.getFlag());
-      result.soi_object_dependency_present_flag(bitstream.getFlag());
-      result.soi_visibility_cones_present_flag(bitstream.getFlag());
-      result.soi_3d_bounding_box_present_flag(bitstream.getFlag());
-      result.soi_collision_shape_present_flag(bitstream.getFlag());
-      result.soi_point_style_present_flag(bitstream.getFlag());
-      result.soi_material_id_present_flag(bitstream.getFlag());
-      result.soi_extension_present_flag(bitstream.getFlag());
-    } else {
-      result.soi_object_label_present_flag(false);
-      result.soi_priority_present_flag(false);
-      result.soi_object_hidden_present_flag(false);
-      result.soi_object_dependency_present_flag(false);
-      result.soi_visibility_cones_present_flag(false);
-      result.soi_3d_bounding_box_present_flag(false);
-      result.soi_collision_shape_present_flag(false);
-      result.soi_point_style_present_flag(false);
-      result.soi_material_id_present_flag(false);
-      result.soi_extension_present_flag(false);
-    }
-    if (result.soi_3d_bounding_box_present_flag()) {
-      result.soi_3d_bounding_box_scale_log2(bitstream.readBits<uint8_t>(5));
-    }
-    result.soi_log2_max_object_idx_updated_minus1(bitstream.readBits<uint8_t>(5));
-    if (result.soi_object_dependency_present_flag()) {
-      result.soi_log2_max_object_dependency_idx(bitstream.readBits<uint8_t>(5));
-    }
-  }
+auto decodeSceneObjectUpdates(Common::InputBitstream &bitstream,
+                              const SceneObjectInformation &result)
+    -> std::vector<SceneObjectUpdate> {
   std::vector<SceneObjectUpdate> updates(result.soi_num_object_updates());
   for (size_t i = 0; i < result.soi_num_object_updates(); ++i) {
     updates[i].soi_object_idx =
@@ -607,7 +570,50 @@ auto SceneObjectInformation::decodeFrom(Common::InputBitstream &bitstream)
       }
     }
   }
-  result.setSceneObjectUpdates(std::move(updates));
+  return updates;
+}
+
+auto SceneObjectInformation::decodeFrom(Common::InputBitstream &bitstream)
+    -> SceneObjectInformation {
+  SceneObjectInformation result{};
+  result.soi_persistence_flag(bitstream.getFlag());
+  result.soi_reset_flag(bitstream.getFlag());
+
+  result.soi_num_object_updates(bitstream.getUExpGolomb<size_t>());
+  if (result.soi_num_object_updates() > 0) {
+    result.soi_simple_objects_flag(bitstream.getFlag());
+    if (!result.soi_simple_objects_flag()) {
+      result.soi_object_label_present_flag(bitstream.getFlag());
+      result.soi_priority_present_flag(bitstream.getFlag());
+      result.soi_object_hidden_present_flag(bitstream.getFlag());
+      result.soi_object_dependency_present_flag(bitstream.getFlag());
+      result.soi_visibility_cones_present_flag(bitstream.getFlag());
+      result.soi_3d_bounding_box_present_flag(bitstream.getFlag());
+      result.soi_collision_shape_present_flag(bitstream.getFlag());
+      result.soi_point_style_present_flag(bitstream.getFlag());
+      result.soi_material_id_present_flag(bitstream.getFlag());
+      result.soi_extension_present_flag(bitstream.getFlag());
+    } else {
+      result.soi_object_label_present_flag(false);
+      result.soi_priority_present_flag(false);
+      result.soi_object_hidden_present_flag(false);
+      result.soi_object_dependency_present_flag(false);
+      result.soi_visibility_cones_present_flag(false);
+      result.soi_3d_bounding_box_present_flag(false);
+      result.soi_collision_shape_present_flag(false);
+      result.soi_point_style_present_flag(false);
+      result.soi_material_id_present_flag(false);
+      result.soi_extension_present_flag(false);
+    }
+    if (result.soi_3d_bounding_box_present_flag()) {
+      result.soi_3d_bounding_box_scale_log2(bitstream.readBits<uint8_t>(5));
+    }
+    result.soi_log2_max_object_idx_updated_minus1(bitstream.readBits<uint8_t>(5));
+    if (result.soi_object_dependency_present_flag()) {
+      result.soi_log2_max_object_dependency_idx(bitstream.readBits<uint8_t>(5));
+    }
+  }
+  result.setSceneObjectUpdates(decodeSceneObjectUpdates(bitstream, result));
   return result;
 }
 

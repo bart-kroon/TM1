@@ -14,7 +14,6 @@ create_tmiv_library(
         "src/Encoder_popFrame.cpp"
         "src/ExplicitOccupancy.cpp"
         "src/GeometryQuantizer.cpp"
-        "src/GroupBasedEncoder.cpp"
         "src/GeometryDownscaler.cpp"
         "src/MivEncoder.cpp"
         "src/MpiEncoder.cpp"

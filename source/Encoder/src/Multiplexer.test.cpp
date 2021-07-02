@@ -33,13 +33,14 @@
 
 #include <catch2/catch.hpp>
 
+#include <TMIV/Common/Json.h>
 #include <TMIV/Encoder/Multiplexer.h>
-
 #include <TMIV/MivBitstream/V3cParameterSet.h>
 
 #include <fmt/printf.h>
 #include <iostream>
 
+using TMIV::Common::Json;
 using TMIV::MivBitstream::AiAttributeTypeId;
 using TMIV::MivBitstream::AtlasId;
 using TMIV::MivBitstream::AtlasSubBitstream;
@@ -66,7 +67,8 @@ enum class VpsContent {
   two_maps,
   with_auxiliary_video,
   two_atlases_and_some_videos,
-  two_atlases_one_with_packed_video
+  two_atlases_one_with_packed_video,
+  one_atlas_three_videos
 };
 
 template <typename Payload> auto createTestV3cUnit(const V3cUnitHeader &vuh, Payload &&payload) {
@@ -101,7 +103,7 @@ auto createVps(VpsContent vpsContent) {
         .vps_geometry_video_present_flag(AtlasId{1}, true)
         .geometry_information(AtlasId{1}, GeometryInformation{});
   } break;
-  case VpsContent::two_atlases_and_some_videos:
+  case VpsContent::two_atlases_and_some_videos: {
     AttributeInformation ai{};
     vps.vps_atlas_count_minus1(1)
         .vps_atlas_id(1, AtlasId{1})
@@ -116,7 +118,19 @@ auto createVps(VpsContent vpsContent) {
                                    .ai_attribute_type_id(1, AiAttributeTypeId::ATTR_TEXTURE))
         .vps_occupancy_video_present_flag(AtlasId{1}, true)
         .occupancy_information(AtlasId{1}, OccupancyInformation{});
-    break;
+  } break;
+  case VpsContent::one_atlas_three_videos: {
+    AttributeInformation ai{};
+    vps.vps_atlas_count_minus1(0)
+        .vps_atlas_id(0, AtlasId{0})
+        .vps_geometry_video_present_flag(AtlasId{0}, true)
+        .geometry_information(AtlasId{0}, GeometryInformation{})
+        .vps_attribute_video_present_flag(AtlasId{0}, true)
+        .attribute_information(AtlasId{0}, ai.ai_attribute_count(1).ai_attribute_type_id(
+                                               0, AiAttributeTypeId::ATTR_TEXTURE))
+        .vps_occupancy_video_present_flag(AtlasId{0}, true)
+        .occupancy_information(AtlasId{0}, OccupancyInformation{});
+  } break;
   };
 
   return vps;
@@ -151,23 +165,101 @@ auto createTestBitstream(VpsContent vpsType = VpsContent::default_constructed) {
   return stream.str();
 }
 
-auto checkStreamBeginning(std::istream &stream, VpsContent expectedVpsContent)
-    -> SampleStreamV3cHeader {
+auto checkHeaderAndVerifyThatFirstUnitIsVps(std::istream &stream)
+    -> std::pair<V3cParameterSet, SampleStreamV3cHeader> {
   const auto ssvh = SampleStreamV3cHeader::decodeFrom(stream);
   REQUIRE(ssvh.ssvh_unit_size_precision_bytes_minus1() == 0U);
   const auto ssvu0 = SampleStreamV3cUnit::decodeFrom(stream, ssvh);
   std::istringstream substream{ssvu0.ssvu_v3c_unit()};
   const auto vuh = V3cUnitHeader::decodeFrom(substream);
   REQUIRE(vuh.vuh_unit_type() == VuhUnitType::V3C_VPS);
-  const auto vps = V3cParameterSet::decodeFrom(substream);
+  return {V3cParameterSet::decodeFrom(substream), ssvh};
+}
+
+auto checkStreamBeginning(std::istream &stream, VpsContent expectedVpsContent)
+    -> SampleStreamV3cHeader {
+  const auto [vps, ssvh] = checkHeaderAndVerifyThatFirstUnitIsVps(stream);
   REQUIRE(vps == createVps(expectedVpsContent));
+  const auto ssvu = SampleStreamV3cUnit::decodeFrom(stream, ssvh);
+  REQUIRE(ssvu.ssvu_v3c_unit_size() == 5U);
+  return ssvh;
+}
+auto checkModifiedVPSWithPackedInformation(std::istream &stream, const Json &packingInformationNode)
+    -> SampleStreamV3cHeader {
+  const auto [vps, ssvh] = checkHeaderAndVerifyThatFirstUnitIsVps(stream);
+
+  for (const auto &info : packingInformationNode.as<Json::Array>()) {
+    AtlasId atlasId(info.require("pin_atlas_id").as<uint8_t>());
+    const auto &vpi = vps.packing_information(atlasId);
+    REQUIRE(vpi.pin_codec_id() == info.require("pin_codec_id").as<uint8_t>());
+    REQUIRE(vpi.pin_occupancy_present_flag() ==
+            info.require("pin_occupancy_present_flag").as<bool>());
+    REQUIRE(vpi.pin_geometry_present_flag() ==
+            info.require("pin_geometry_present_flag").as<bool>());
+    REQUIRE(vpi.pin_attribute_present_flag() ==
+            info.require("pin_attributes_present_flag").as<bool>());
+
+    if (vpi.pin_occupancy_present_flag()) {
+      REQUIRE_FALSE(vps.vps_occupancy_video_present_flag(atlasId));
+    }
+
+    if (vpi.pin_geometry_present_flag()) {
+      REQUIRE_FALSE(vps.vps_geometry_video_present_flag(atlasId));
+    }
+
+    if (vpi.pin_attribute_present_flag()) {
+      REQUIRE_FALSE(vps.vps_attribute_video_present_flag(atlasId));
+    }
+
+    auto regionIdx = 0;
+    for (const auto &region : info.require("pin_regions").as<Json::Array>()) {
+      REQUIRE(vpi.pin_region_tile_id(regionIdx) ==
+              region.require("pin_region_tile_id").as<uint8_t>());
+      REQUIRE(vpi.pin_region_type_id_minus2(regionIdx) ==
+              region.require("pin_region_type_id_minus2").as<uint8_t>());
+      REQUIRE(vpi.pin_region_top_left_x(regionIdx) ==
+              region.require("pin_region_top_left_x").as<uint16_t>());
+      REQUIRE(vpi.pin_region_top_left_y(regionIdx) ==
+              region.require("pin_region_top_left_y").as<uint16_t>());
+      REQUIRE(vpi.pin_region_width_minus1(regionIdx) ==
+              region.require("pin_region_width_minus1").as<uint16_t>());
+      REQUIRE(vpi.pin_region_height_minus1(regionIdx) ==
+              region.require("pin_region_height_minus1").as<uint16_t>());
+      REQUIRE(vpi.pin_region_unpack_top_left_x(regionIdx) ==
+              region.require("pin_region_unpack_top_left_x").as<uint16_t>());
+      REQUIRE(vpi.pin_region_unpack_top_left_y(regionIdx) ==
+              region.require("pin_region_unpack_top_left_y").as<uint16_t>());
+      REQUIRE(vpi.pin_region_rotation_flag(regionIdx) ==
+              region.require("pin_region_rotation_flag").as<bool>());
+      if (vpi.pin_region_type_id_minus2(regionIdx) + 2 ==
+              TMIV::MivBitstream::VuhUnitType::V3C_AVD ||
+          vpi.pin_region_type_id_minus2(regionIdx) + 2 ==
+              TMIV::MivBitstream::VuhUnitType::V3C_GVD) {
+        REQUIRE(vpi.pin_region_map_index(regionIdx) ==
+                region.require("pin_region_map_index").as<uint8_t>());
+        REQUIRE(vpi.pin_region_auxiliary_data_flag(regionIdx) ==
+                region.require("pin_region_auxiliary_data_flag").as<bool>());
+      }
+
+      if (vpi.pin_region_type_id_minus2(regionIdx) + 2 ==
+          TMIV::MivBitstream::VuhUnitType::V3C_AVD) {
+        auto k = vpi.pin_region_attr_index(regionIdx);
+        REQUIRE(k == region.require("pin_region_attr_index").as<uint8_t>());
+        if (vpi.pin_attribute_dimension_minus1(k) > 0U) {
+          REQUIRE(vpi.pin_region_attr_partition_index(regionIdx) ==
+                  region.require("pin_region_attr_partition_index").as<uint8_t>());
+        }
+      }
+      regionIdx++;
+    }
+  }
   const auto ssvu = SampleStreamV3cUnit::decodeFrom(stream, ssvh);
   REQUIRE(ssvu.ssvu_v3c_unit_size() == 5U);
   return ssvh;
 }
 
 TEST_CASE("Only VPS and one atlas") {
-  TMIV::Encoder::Multiplexer unit{};
+  TMIV::Encoder::Multiplexer unit{Json::null};
   std::istringstream inStream{createTestBitstream()};
 
   unit.readInputBitstream(inStream);
@@ -195,7 +287,7 @@ auto createTestBitstreamWithWrongVpsOrder() {
 }
 
 TEST_CASE("Unsupported input") {
-  TMIV::Encoder::Multiplexer unit{};
+  TMIV::Encoder::Multiplexer unit{Json::null};
 
   SECTION("VPS with multiple maps") {
     std::istringstream inStream{createTestBitstream(VpsContent::two_maps)};
@@ -218,8 +310,9 @@ TEST_CASE("Unsupported input") {
   }
 }
 
-auto makeMultiplexerWithFakeVideoBitstreamServers() -> TMIV::Encoder::Multiplexer {
-  TMIV::Encoder::Multiplexer unit{};
+auto makeMultiplexerWithFakeVideoBitstreamServers(const Json &packingInformationNode = Json::null)
+    -> TMIV::Encoder::Multiplexer {
+  TMIV::Encoder::Multiplexer unit{packingInformationNode};
 
   unit.setAttributeVideoBitstreamServer(
       [](AiAttributeTypeId typeId, const AtlasId &atlasId, int attributeIdx) {
@@ -272,12 +365,12 @@ TEST_CASE("VPS with two atlases") {
   requireThatNextV3cUnitContains(result, ssvh, "test_occupancy atlasId=1");
 }
 
-TEST_CASE("VPS with two atlases, one with packed video") {
+TEST_CASE("VPS with two atlases, one with packed video (no calling add packing information from "
+          "Multiplexer)") {
   auto unit = makeMultiplexerWithFakeVideoBitstreamServers();
   std::istringstream inStream{createTestBitstream(VpsContent::two_atlases_one_with_packed_video)};
 
   unit.readInputBitstream(inStream);
-  unit.addPackingInformation();
   unit.appendVideoSubBitstreams();
   std::ostringstream outStream;
   unit.writeOutputBitstream(outStream);
@@ -286,4 +379,76 @@ TEST_CASE("VPS with two atlases, one with packed video") {
   const auto ssvh = checkStreamBeginning(result, VpsContent::two_atlases_one_with_packed_video);
   requireThatNextV3cUnitContains(result, ssvh, "test_packed atlasId=0");
   requireThatNextV3cUnitContains(result, ssvh, "test_geometry atlasId=1");
+}
+
+TEST_CASE("External Packing Information") {
+  const auto json = Json::parse(R"({
+  "packingInformation": [
+    {
+      "pin_atlas_id": 0,
+      "pin_attributes_present_flag": true,
+      "pin_codec_id": 17,
+      "pin_geometry_present_flag": true,
+      "pin_occupancy_present_flag": true,
+      "pin_regions": [
+        {
+          "pin_region_attr_index": 0,
+          "pin_region_attr_partition_index": 0,
+          "pin_region_auxiliary_data_flag": false,
+          "pin_region_height_minus1": 320,
+          "pin_region_map_index": 0,
+          "pin_region_rotation_flag": false,
+          "pin_region_tile_id": 0,
+          "pin_region_top_left_x": 0,
+          "pin_region_top_left_y": 0,
+          "pin_region_type_id_minus2": 2,
+          "pin_region_unpack_top_left_x": 0,
+          "pin_region_unpack_top_left_y": 0,
+          "pin_region_width_minus1": 640
+        },
+        {
+          "pin_region_auxiliary_data_flag": false,
+          "pin_region_height_minus1": 120,
+          "pin_region_map_index": 0,
+          "pin_region_rotation_flag": false,
+          "pin_region_tile_id": 0,
+          "pin_region_top_left_x": 0,
+          "pin_region_top_left_y": 320,
+          "pin_region_type_id_minus2": 1,
+          "pin_region_unpack_top_left_x": 0,
+          "pin_region_unpack_top_left_y": 0,
+          "pin_region_width_minus1": 320
+        },
+        {
+          "pin_region_auxiliary_data_flag": false,
+          "pin_region_height_minus1": 120,
+          "pin_region_map_index": 0,
+          "pin_region_rotation_flag": false,
+          "pin_region_tile_id": 0,
+          "pin_region_top_left_x": 320,
+          "pin_region_top_left_y": 320,
+          "pin_region_type_id_minus2": 0,
+          "pin_region_unpack_top_left_x": 0,
+          "pin_region_unpack_top_left_y": 0,
+          "pin_region_width_minus1": 320
+        }
+      ]
+    }
+  ]
+}
+)"sv);
+
+  auto unit = makeMultiplexerWithFakeVideoBitstreamServers(json.require("packingInformation"));
+  std::istringstream inStream{createTestBitstream(VpsContent::one_atlas_three_videos)};
+
+  unit.readInputBitstream(inStream);
+  unit.addPackingInformation();
+  unit.appendVideoSubBitstreams();
+  std::ostringstream outStream;
+  unit.writeOutputBitstream(outStream);
+
+  std::istringstream result{outStream.str()};
+  const auto ssvh =
+      checkModifiedVPSWithPackedInformation(result, json.require("packingInformation"));
+  requireThatNextV3cUnitContains(result, ssvh, "test_packed atlasId=0");
 }

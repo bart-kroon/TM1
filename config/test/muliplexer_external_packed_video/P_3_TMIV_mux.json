@@ -1,0 +1,46 @@
+{
+    "inputBitstreamPathFmt": "P{0}/{1}/TMIV_P{0}_{1}.bit",
+    "inputDirectory": ".",
+    "inputPackedVideoSubBitstreamPathFmt": "P{0}/{1}/{2}/TMIV_P{0}_{1}_{2}_pac_c{3:02}.bit",
+    "outputBitstreamPathFmt": "P{0}/{1}/{2}/TMIV_P{0}_{1}_{2}_pac.bit",
+    "outputDirectory": ".",
+    "packingInformation": [
+        {
+            "pin_atlas_id": 0,
+            "pin_attributes_present_flag": true,
+            "pin_codec_id": 17,
+            "pin_geometry_present_flag": true,
+            "pin_occupancy_present_flag": false,
+            "pin_regions": [
+                {
+                    "pin_region_attr_index": 0,
+                    "pin_region_attr_partition_index": 0,
+                    "pin_region_auxiliary_data_flag": false,
+                    "pin_region_height_minus1": 320,
+                    "pin_region_map_index": 0,
+                    "pin_region_rotation_flag": false,
+                    "pin_region_tile_id": 0,
+                    "pin_region_top_left_x": 0,
+                    "pin_region_top_left_y": 0,
+                    "pin_region_type_id_minus2": 2,
+                    "pin_region_unpack_top_left_x": 0,
+                    "pin_region_unpack_top_left_y": 0,
+                    "pin_region_width_minus1": 640
+                },
+                {
+                    "pin_region_auxiliary_data_flag": false,
+                    "pin_region_height_minus1": 120,
+                    "pin_region_map_index": 0,
+                    "pin_region_rotation_flag": false,
+                    "pin_region_tile_id": 0,
+                    "pin_region_top_left_x": 0,
+                    "pin_region_top_left_y": 320,
+                    "pin_region_type_id_minus2": 1,
+                    "pin_region_unpack_top_left_x": 0,
+                    "pin_region_unpack_top_left_y": 0,
+                    "pin_region_width_minus1": 320
+                }
+            ]
+        }
+    ]
+}

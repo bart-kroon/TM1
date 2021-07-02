@@ -31,12 +31,64 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <TMIV/Common/Bytestream.h>
+#include <TMIV/Common/verify.h>
+#include <TMIV/Encoder/AnnexB.h>
 #include <TMIV/Encoder/Multiplexer.h>
 
-#include <TMIV/Common/Bytestream.h>
-#include <TMIV/Encoder/AnnexB.h>
-
 namespace TMIV::Encoder {
+namespace {
+void setRegionInformation(MivBitstream::PackingInformation &packingInformation, int regionIdx,
+                          const Common::Json &region) {
+  packingInformation
+      .pin_region_tile_id(regionIdx, region.require("pin_region_tile_id").as<uint8_t>())
+      .pin_region_type_id_minus2(regionIdx,
+                                 region.require("pin_region_type_id_minus2").as<uint8_t>())
+      .pin_region_top_left_x(regionIdx, region.require("pin_region_top_left_x").as<uint16_t>())
+      .pin_region_top_left_y(regionIdx, region.require("pin_region_top_left_y").as<uint16_t>())
+      .pin_region_width_minus1(regionIdx, region.require("pin_region_width_minus1").as<uint16_t>())
+      .pin_region_height_minus1(regionIdx,
+                                region.require("pin_region_height_minus1").as<uint16_t>())
+      .pin_region_unpack_top_left_x(regionIdx,
+                                    region.require("pin_region_unpack_top_left_x").as<uint16_t>())
+      .pin_region_unpack_top_left_y(regionIdx,
+                                    region.require("pin_region_unpack_top_left_y").as<uint16_t>())
+      .pin_region_rotation_flag(regionIdx, region.require("pin_region_rotation_flag").as<bool>());
+  if (packingInformation.pin_region_type_id_minus2(regionIdx) + 2 ==
+          MivBitstream::VuhUnitType::V3C_AVD ||
+      packingInformation.pin_region_type_id_minus2(regionIdx) + 2 ==
+          MivBitstream::VuhUnitType::V3C_GVD) {
+    packingInformation
+        .pin_region_map_index(regionIdx, region.require("pin_region_map_index").as<uint8_t>())
+        .pin_region_auxiliary_data_flag(
+            regionIdx, region.require("pin_region_auxiliary_data_flag").as<bool>());
+  }
+
+  if (packingInformation.pin_region_type_id_minus2(regionIdx) + 2 ==
+      MivBitstream::VuhUnitType::V3C_AVD) {
+    auto k = region.require("pin_region_attr_index").as<uint8_t>();
+    packingInformation.pin_region_attr_index(regionIdx, k);
+    if (packingInformation.pin_attribute_dimension_minus1(k) > 0U) {
+      packingInformation.pin_region_attr_partition_index(
+          regionIdx, region.require("pin_region_attr_partition_index").as<uint8_t>());
+    }
+  }
+}
+} // namespace
+
+Multiplexer::Multiplexer(Common::Json packingInformationNode)
+    : m_packingInformationNode{std::move(packingInformationNode)} {
+  if (packingInformationNode) {
+    const auto &atlases_packing_info = m_packingInformationNode.as<Common::Json::Array>();
+    PRECONDITION(!atlases_packing_info.empty());
+    for (const auto &atlas_packing_info : atlases_packing_info) {
+      PRECONDITION(!atlas_packing_info.require("pin_regions").as<Common::Json::Array>().empty());
+      PRECONDITION(atlas_packing_info.require("pin_regions").as<Common::Json::Array>().size() <
+                   256U);
+    }
+  }
+}
+
 void Multiplexer::setAttributeVideoBitstreamServer(AttributeVideoBitstreamServer server) {
   m_openAttributeVideoBitstream = std::move(server);
 }
@@ -67,10 +119,6 @@ void Multiplexer::readInputBitstream(std::istream &stream) {
     throw std::runtime_error("the first V3C unit has to be the VPS");
   }
   m_vps = MivBitstream::V3cParameterSet::decodeFrom(substream);
-  std::cout << m_vps;
-
-  // Append the first V3C unit
-  m_units.push_back(ssvu0.ssvu_v3c_unit());
 
   // Append the remaining V3C units
   while (!stream.eof()) {
@@ -109,11 +157,19 @@ void Multiplexer::appendVideoSubBitstreams() {
 }
 
 void Multiplexer::writeOutputBitstream(std::ostream &stream) const {
+  std::ostringstream outVPSStream;
+  const auto vuh = TMIV::MivBitstream::V3cUnitHeader{TMIV::MivBitstream::VuhUnitType::V3C_VPS};
+  const auto vpsUnit = TMIV::MivBitstream::V3cUnit{vuh, m_vps};
+  vpsUnit.encodeTo(outVPSStream);
+  const auto vpsUnitSize = outVPSStream.str().size();
+
   // Find size of largest unit
-  const auto maxSize =
+  auto maxSize =
       max_element(std::cbegin(m_units), std::cend(m_units),
                   [](const std::string &a, const std::string &b) { return a.size() < b.size(); })
           ->size();
+
+  maxSize = std::max(maxSize, vpsUnitSize);
 
   // Calculate how many bytes are needed to store that size
   auto precisionBytesMinus1 = uint8_t{};
@@ -124,6 +180,9 @@ void Multiplexer::writeOutputBitstream(std::ostream &stream) const {
   // Write the sample stream header
   const auto ssvh = MivBitstream::SampleStreamV3cHeader{precisionBytesMinus1};
   ssvh.encodeTo(stream);
+
+  const auto ssvu0 = MivBitstream::SampleStreamV3cUnit{outVPSStream.str()};
+  ssvu0.encodeTo(stream, ssvh);
 
   // Write the units
   for (const auto &unit : m_units) {
@@ -173,17 +232,85 @@ void Multiplexer::appendPvd(MivBitstream::AtlasId atlasId) {
 }
 
 void Multiplexer::addPackingInformation() {
+  PRECONDITION(m_packingInformationNode);
+
   m_vps.vps_packing_information_present_flag(true);
 
-  for (size_t k = 0; k <= m_vps.vps_atlas_count_minus1(); ++k) {
-    const auto j = m_vps.vps_atlas_id(k);
+  for (const auto &info : m_packingInformationNode.as<Common::Json::Array>()) {
+    MivBitstream::PackingInformation packingInformation;
+    const auto atlasId = MivBitstream::AtlasId{info.require("pin_atlas_id").as<uint8_t>()};
 
-    // TODO (LK) Get the packing information from JSON
-    if (m_vps.vps_packed_video_present_flag(j)) {
-      m_vps.vps_occupancy_video_present_flag(j, false);
-      m_vps.vps_geometry_video_present_flag(j, false);
-      m_vps.vps_attribute_video_present_flag(j, false);
+    packingInformation.pin_codec_id(info.require("pin_codec_id").as<uint8_t>());
+
+    if (info.require("pin_occupancy_present_flag").as<bool>()) {
+      updateOccupancyInformation(packingInformation, atlasId);
     }
+
+    if (info.require("pin_geometry_present_flag").as<bool>()) {
+      updateGeometryInformation(packingInformation, atlasId);
+    }
+
+    if (info.require("pin_attributes_present_flag").as<bool>()) {
+      updateAttributeInformation(packingInformation, atlasId);
+    }
+
+    packingInformation.pin_regions_count_minus1(
+        static_cast<uint8_t>(info.require("pin_regions").as<Common::Json::Array>().size() - 1U));
+
+    auto regionIdx = 0;
+    for (const auto &region : info.require("pin_regions").as<Common::Json::Array>()) {
+      setRegionInformation(packingInformation, regionIdx, region);
+      ++regionIdx;
+    }
+
+    m_vps.vps_packed_video_present_flag(atlasId, true);
+    m_vps.packing_information(atlasId, packingInformation);
+  }
+}
+
+void Multiplexer::updateOccupancyInformation(MivBitstream::PackingInformation &packingInformation,
+                                             const MivBitstream::AtlasId &atlasId) {
+  m_vps.vps_occupancy_video_present_flag(atlasId, false);
+  packingInformation.pin_occupancy_present_flag(true)
+      .pin_occupancy_2d_bit_depth_minus1(
+          m_vps.occupancy_information(atlasId).oi_occupancy_2d_bit_depth_minus1())
+      .pin_occupancy_MSB_align_flag(
+          m_vps.occupancy_information(atlasId).oi_occupancy_MSB_align_flag())
+      .pin_lossy_occupancy_compression_threshold(
+          m_vps.occupancy_information(atlasId).oi_lossy_occupancy_compression_threshold());
+}
+
+void Multiplexer::updateGeometryInformation(MivBitstream::PackingInformation &packingInformation,
+                                            const MivBitstream::AtlasId &atlasId) {
+  m_vps.vps_geometry_video_present_flag(atlasId, false);
+  packingInformation.pin_geometry_present_flag(true)
+      .pin_geometry_2d_bit_depth_minus1(
+          m_vps.geometry_information(atlasId).gi_geometry_2d_bit_depth_minus1())
+      .pin_geometry_MSB_align_flag(m_vps.geometry_information(atlasId).gi_geometry_MSB_align_flag())
+      .pin_geometry_3d_coordinates_bit_depth_minus1(
+          m_vps.geometry_information(atlasId).gi_geometry_3d_coordinates_bit_depth_minus1());
+}
+
+void Multiplexer::updateAttributeInformation(MivBitstream::PackingInformation &packingInformation,
+                                             const MivBitstream::AtlasId &atlasId) {
+  m_vps.vps_attribute_video_present_flag(atlasId, false);
+  packingInformation.pin_attribute_present_flag(true).pin_attribute_count(
+      m_vps.attribute_information(atlasId).ai_attribute_count());
+  for (uint8_t i = 0U; i < packingInformation.pin_attribute_count(); i++) {
+    packingInformation
+        .pin_attribute_type_id(i, m_vps.attribute_information(atlasId).ai_attribute_type_id(i))
+        .pin_attribute_2d_bit_depth_minus1(
+            i, m_vps.attribute_information(atlasId).ai_attribute_2d_bit_depth_minus1(i))
+        .pin_attribute_MSB_align_flag(
+            i, m_vps.attribute_information(atlasId).ai_attribute_MSB_align_flag(i));
+
+    LIMITATION(m_vps.vps_map_count_minus1(atlasId) == 0);
+    packingInformation.pin_attribute_map_absolute_coding_persistence_flag(i, true);
+
+    packingInformation
+        .pin_attribute_dimension_minus1(
+            i, m_vps.attribute_information(atlasId).ai_attribute_dimension_minus1(i))
+        .pin_attribute_dimension_partitions_minus1(i, 0);
   }
 }
 

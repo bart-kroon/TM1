@@ -70,13 +70,15 @@ public:
       , m_contentId{optionValues("-s").front()}
       , m_numberOfInputFrames{std::stoi(optionValues("-n"sv).front())}
       , m_testId{optionValues("-r").front()}
-      , m_multiplexer{std::make_unique<Multiplexer>()} {
+      , m_multiplexer{std::make_unique<Multiplexer>(json().optional("packingInformation"))} {
     setBitstreamIstreamServers();
   }
 
   void run() override {
     readInputBitstream();
-    addPackingInformation();
+    if (json().optional("packingInformation")) {
+      addPackingInformation();
+    }
     appendVideoSubBitstreams();
     writeOutputBitstream();
   }
@@ -159,17 +161,7 @@ private:
               << " V3C units including the VPS\n";
   }
 
-  void addPackingInformation() {
-    bool packingInformationPresent = false;
-
-    if (json().optional("packingInformationPresent")) {
-      packingInformationPresent = json().optional("packingInformationPresent").as<bool>();
-    }
-
-    if (packingInformationPresent) {
-      m_multiplexer->addPackingInformation();
-    }
-  }
+  void addPackingInformation() { m_multiplexer->addPackingInformation(); }
 
   void appendVideoSubBitstreams() { m_multiplexer->appendVideoSubBitstreams(); }
 

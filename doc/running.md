@@ -469,6 +469,74 @@ will generate the `.pcs` file:
 /Experiment/M/mpi.pcs
 ```
 
+## Instructions for multiplexing externally packed video
+
+### General
+
+TMIV multiplexer provides functionality that allows (re)writing an existing V3C bitstream where each video component is provided separately to a new V3C bitstream that contains a packed video component.
+In such a case, the multiplexer re-writes a V3C parameter set and includes packing information based on the provided input and replaces separate video components by one packed video component that was created outside of the TMIV pipeline.
+
+One example of how this TMIV multiplexer can be utilized is when texture and geometry atlases were initially encoded by the Versatile Video Coding (VVC) codec, as independently decodable subpictures and packed by an external tool into one packed video component at a later stage.
+
+The following sections provide an example procedure on how the multiplexing of externally packed video can be performed.
+More details about the example with the test results can be found in document m55818.
+
+### TMIV encoding
+
+The atlases (un-encoded video components) are generated with the TMIV encoding procedure e.g. according to the [CTC conditions](http://mpegx.int-evry.fr/software/MPEG/MIV/RS/TM1/-/blob/main/doc/running.md#running-the-tmiv-encoder).
+
+### VVC encoding
+
+The un-encoded video components are then coded by a VVC codec, e.g. [VVC Test Model (VTM)](https://vcgit.hhi.fraunhofer.de/jvet/VVCSoftware_VTM), with additional constraints.
+The dimensions of a subpicture must be a multiple of the CTUs size.
+Therefore, the atlases should be padded along the width and height of the atlas, if required, before encoding.
+When padding the video components, the information about the original YUV dimensions, and the dimensions after padding should be stored, so they can later be used during the multiplexing process when packing information is created.
+
+In order to allow packing of subpictures, the video components should be encoded with the following VTM parameters:
+
+* ALF : 0
+* CCALF : 0
+* LMCSEnable : 0
+* JointCbCr : 0
+* IBC : 1
+* HashME : 1
+* BDPCM : 1
+
+Moreover, it is necessary to disable the override of partition constraints as this is a header flag and should be the same for all subpictures:
+
+* EnablePartitionConstraintsOverride : 0
+* AMaxBT : 0
+
+An example config files for VTM is provided in [config/test/muliplexer_external_packed_video](muliplexer_external_packed_video).
+
+### Merging texture and depth bitstreams
+
+The [VTM subpicture merger tool](https://vcgit.hhi.fraunhofer.de/jvet/VVCSoftware_VTM/-/tree/master/source/App/SubpicMergeApp) can be used to merge the subpicture bitstreams containing texture and geometry into a single bitstream.
+
+```
+$ SubpicMergeAppStatic -l settings.txt -o merged.266
+```
+
+An example of <settings.txt> would look like:
+
+```
+4096 2176 0 0 texture.266
+2048 1152 4096 0 geometry.266
+2048 1024 4096 1152 filler.266
+```
+
+where the first two columns indicate the dimension (width, height) of a subpicture.
+The next two columns indicate the position of top-left corner (col, row) of a subpicture in a packed video frame.
+The last column lists the name of a file containing the subpicture. 
+
+### Re-writing V3C bitstream with the multiplexer
+
+Once a packed video component is generated, the original V3C bitstream generated initially by [TMIV encoding step](http://mpegx.int-evry.fr/software/MPEG/MIV/RS/TM1/-/blob/main/doc/running.md#tmiv-encoding) can be re-written and the packed video component multiplexed in V3C bitstream.  
+In order for a Multiplexer to do the re-writing of VPS, a multiplexer config file must be appended with a packingInformation. An example is provided in [config/test/muliplexer_external_packed_video](muliplexer_external_packed_video).
+The information about codec and information related to occupancy, geometry and attribute is copied from the original V3C bitstream as the information shall not change during the packing process.
+
+When a config file with packingInformation is ready, multiplexer is executed with command line as described in clause ["Running the TMIV multiplexer"](http://mpegx.int-evry.fr/software/MPEG/MIV/RS/TM1/-/blob/main/doc/running.md#running-the-tmiv-multiplexer).
+
 ## MIV conformance testing [ISO/IEC 23090-23]
 
 Specifying *outputLogPath* either in a configuration file via `-c` or on the command-line using the `-p`, instructs the TMIV decoder to output a log-file for conformance testing. 

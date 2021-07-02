@@ -676,9 +676,7 @@ void ProfileToolsetConstraintsInformation::encodeTo(Common::OutputBitstream &bit
   bitstream.putUint8(ptc_num_reserved_constraint_bytes());
 }
 
-constexpr auto PackingInformation::pin_codec_id() const noexcept -> uint8_t {
-  return m_pin_codec_id;
-}
+auto PackingInformation::pin_codec_id() const noexcept -> uint8_t { return m_pin_codec_id; }
 
 auto PackingInformation::pin_regions_count_minus1() const -> uint8_t {
   VERIFY_MIVBITSTREAM(m_pin_attribute_count || m_pin_geometry_present_flag ||
@@ -1213,24 +1211,24 @@ auto V3cParameterSet::vps_auxiliary_video_present_flag(AtlasId j) const -> bool 
 
 auto V3cParameterSet::vps_occupancy_video_present_flag(AtlasId j) const -> bool {
   const auto result = atlas(j).vps_occupancy_video_present_flag;
-  if (result && vps_packing_information_present_flag()) {
-    VERIFY_V3CBITSTREAM(!vps_packed_video_present_flag(j));
+  if (result && vps_packing_information_present_flag() && vps_packed_video_present_flag(j)) {
+    VERIFY_V3CBITSTREAM(!packing_information(j).pin_occupancy_present_flag());
   }
   return result;
 }
 
 auto V3cParameterSet::vps_geometry_video_present_flag(AtlasId j) const -> bool {
   const auto result = atlas(j).vps_geometry_video_present_flag;
-  if (result && vps_packing_information_present_flag()) {
-    VERIFY_V3CBITSTREAM(!vps_packed_video_present_flag(j));
+  if (result && vps_packing_information_present_flag() && vps_packed_video_present_flag(j)) {
+    VERIFY_V3CBITSTREAM(!packing_information(j).pin_geometry_present_flag());
   }
   return result;
 }
 
 auto V3cParameterSet::vps_attribute_video_present_flag(AtlasId j) const -> bool {
   const auto result = atlas(j).vps_attribute_video_present_flag;
-  if (result && vps_packing_information_present_flag()) {
-    VERIFY_V3CBITSTREAM(!vps_packed_video_present_flag(j));
+  if (result && vps_packing_information_present_flag() && vps_packed_video_present_flag(j)) {
+    VERIFY_V3CBITSTREAM(!packing_information(j).pin_attribute_present_flag());
   }
   return result;
 }
@@ -1255,13 +1253,7 @@ auto V3cParameterSet::attribute_information(AtlasId j) const -> const AttributeI
 
 auto V3cParameterSet::vps_packed_video_present_flag(const AtlasId &j) const -> bool {
   VERIFY_V3CBITSTREAM(vps_packing_information_present_flag());
-  const auto result = atlas(j).vps_packed_video_present_flag;
-  if (result) {
-    VERIFY_V3CBITSTREAM(!vps_occupancy_video_present_flag(j));
-    VERIFY_V3CBITSTREAM(!vps_geometry_video_present_flag(j));
-    VERIFY_V3CBITSTREAM(!vps_attribute_video_present_flag(j));
-  }
-  return result;
+  return atlas(j).vps_packed_video_present_flag;
 }
 
 auto V3cParameterSet::packing_information(const AtlasId &j) const -> const PackingInformation & {
@@ -1389,6 +1381,22 @@ auto V3cParameterSet::vps_packed_video_present_flag(const AtlasId &j, bool value
 auto V3cParameterSet::packing_information(const AtlasId &j, PackingInformation value)
     -> V3cParameterSet & {
   VERIFY_V3CBITSTREAM(vps_packed_video_present_flag(j));
+
+  if (value.pin_occupancy_present_flag()) {
+    VERIFY_V3CBITSTREAM(!vps_occupancy_video_present_flag(j));
+  }
+
+  if (value.pin_geometry_present_flag()) {
+    VERIFY_V3CBITSTREAM(!vps_geometry_video_present_flag(j));
+  }
+
+  if (value.pin_attribute_present_flag()) {
+    VERIFY_V3CBITSTREAM(!vps_attribute_video_present_flag(j));
+  }
+
+  VERIFY_V3CBITSTREAM(value.pin_occupancy_present_flag() || value.pin_geometry_present_flag() ||
+                      value.pin_attribute_present_flag());
+
   atlas(j).packing_information.emplace(std::move(value));
   return *this;
 }

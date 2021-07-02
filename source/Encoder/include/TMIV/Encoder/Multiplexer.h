@@ -34,6 +34,7 @@
 #ifndef TMIV_ENCODER_MULTIPLEXER_H
 #define TMIV_ENCODER_MULTIPLEXER_H
 
+#include <TMIV/Common/Json.h>
 #include <TMIV/MivBitstream/V3cParameterSet.h>
 #include <TMIV/MivBitstream/V3cSampleStreamFormat.h>
 #include <TMIV/MivBitstream/V3cUnit.h>
@@ -50,6 +51,8 @@ public:
       std::function<std::unique_ptr<std::istream>(const MivBitstream::AtlasId &)>;
   using OccupancyVideoBitstreamServer = GeometryVideoBitstreamServer;
   using PackedVideoBitstreamServer = GeometryVideoBitstreamServer;
+
+  explicit Multiplexer(Common::Json packingInformationNode);
 
   void setAttributeVideoBitstreamServer(AttributeVideoBitstreamServer server);
   void setGeometryVideoBitstreamServer(GeometryVideoBitstreamServer server);
@@ -75,11 +78,18 @@ private:
 
   MivBitstream::V3cParameterSet m_vps{};
   std::vector<std::string> m_units{};
+  Common::Json m_packingInformationNode{};
 
   AttributeVideoBitstreamServer m_openAttributeVideoBitstream{};
   GeometryVideoBitstreamServer m_openGeometryVideoBitstream{};
   OccupancyVideoBitstreamServer m_openOccupancyVideoBitstream{};
   PackedVideoBitstreamServer m_openPackedVideoBitstream{};
+  void updateOccupancyInformation(MivBitstream::PackingInformation &packingInformation,
+                                  const MivBitstream::AtlasId &atlasId);
+  void updateGeometryInformation(MivBitstream::PackingInformation &packingInformation,
+                                 const MivBitstream::AtlasId &atlasId);
+  void updateAttributeInformation(MivBitstream::PackingInformation &packingInformation,
+                                  const MivBitstream::AtlasId &atlasId);
 };
 } // namespace TMIV::Encoder
 #endif // TMIV_ENCODER_MULTIPLEXER_H

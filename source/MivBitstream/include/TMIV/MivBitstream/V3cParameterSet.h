@@ -438,7 +438,7 @@ struct PinAttributeInformation {
 //   * TODO I didn't see any restrictions, as this was entirely moved from 23090-12 to 23090-5
 class PackingInformation {
 public:
-  [[nodiscard]] constexpr auto pin_codec_id() const noexcept -> uint8_t;
+  [[nodiscard]] auto pin_codec_id() const noexcept -> uint8_t;
   [[nodiscard]] auto pin_occupancy_present_flag() const -> bool;
   [[nodiscard]] auto pin_geometry_present_flag() const -> bool;
   [[nodiscard]] auto pin_attribute_present_flag() const -> bool;

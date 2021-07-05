@@ -1,6 +1,7 @@
 {
     "BoundingBox_center": [ -0.5, -0.5, 1.0 ],
     "Content_name": "Chess",
+    "Version": "4.0",
     "Fps": 30,
     "Frames_number": 300,
     "Informative": {

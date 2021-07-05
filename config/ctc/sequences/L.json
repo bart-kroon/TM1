@@ -417,7 +417,7 @@
         "New_units": "m", 
         "Converted_by": "VSRS_to_JSON.py"
     }, 
-    "Version": "2.0", 
+    "Version": "4.0", 
     "Fps": 25, 
     "BoundingBox_center": [
         0, 

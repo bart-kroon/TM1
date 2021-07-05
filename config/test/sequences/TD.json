@@ -12,7 +12,7 @@
         "New_units": "m",
         "Original_units": "m"
     },
-    "Version": "2.0",
+    "Version": "4.0",
     "cameras": [
         {
             "Background": 0,

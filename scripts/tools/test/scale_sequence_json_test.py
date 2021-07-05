@@ -42,7 +42,7 @@ sys.path.append(str(TOOLS_DIR))
 from scale_sequence_json import scale_json_file
 
 PERSPECTIVE_SOURCE_FILE_CONTENT = """{
-    "Version": "2.0",
+    "Version": "4.0",
     "Content_name": "Frog",
     "lengthsInMeters": true,
     "cameras": [

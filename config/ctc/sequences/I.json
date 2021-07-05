@@ -1,5 +1,6 @@
 {
     "Content_name": "Mirror",
+    "Version": "4.0",
     "BoundingBox_center": [-1.68, 0.27, 1.47],
     "Fps": 30,
     "Frames_number": 100,

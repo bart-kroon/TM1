@@ -121,7 +121,31 @@ auto CameraConfig::operator!=(const CameraConfig &other) const noexcept -> bool 
   return !operator==(other);
 }
 
+namespace {
+void checkVersion(const std::string &text) {
+  if (!std::regex_match(text, std::regex{"[1-9][0-9]*\\.[0-9]+"})) {
+    throw std::runtime_error(
+        "The Version field in the sequence configuration has to be of the form major.minor.");
+  }
+
+  const auto version = std::stof(text);
+
+  if (4.F <= version && version < 5.F) {
+    return; // Supported version
+  }
+  if (version < 4.F) {
+    throw std::runtime_error("There is no support for previous versions of the sequence "
+                             "configuration format due to inconsistent use of the Version key.");
+  }
+  throw std::runtime_error(
+      "Future major versions of the sequence configuration format do not have to be backwards "
+      "compatible. Refusing to read this configuration file.");
+}
+} // namespace
+
 SequenceConfig::SequenceConfig(const Common::Json &config) {
+  checkVersion(config.require("Version").as<std::string>());
+
   boundingBoxCenter = config.require("BoundingBox_center").asVec<double, 3>();
   contentName = config.require("Content_name").as<std::string>();
   frameRate = config.require("Fps").as<double>();
@@ -148,9 +172,7 @@ SequenceConfig::SequenceConfig(const Common::Json &config) {
       }
     }
   }
-  if (const auto &node = config.optional("lengthsInMeters")) {
-    lengthsInMeters = node.as<bool>();
-  }
+  lengthsInMeters = config.require("lengthsInMeters").as<bool>();
 }
 
 SequenceConfig::SequenceConfig(std::istream &stream)
@@ -162,6 +184,7 @@ SequenceConfig::operator Common::Json() const {
   using Array = Json::Array;
 
   Object root;
+  root["Version"] = "4.0"s;
   root["BoundingBox_center"s] =
       Array{Json{boundingBoxCenter.x()}, Json{boundingBoxCenter.y()}, Json{boundingBoxCenter.z()}};
   root["Content_name"s] = contentName;

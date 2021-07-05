@@ -1,5 +1,6 @@
 {
-    "Content_name": "Group", 
+    "Content_name": "Group",
+    "Version": "4.0",
     "BoundingBox_center": [0.0,0.0,2.50], 
     "Fps": 30,
     "Frames_number": 100,

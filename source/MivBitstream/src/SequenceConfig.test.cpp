@@ -36,6 +36,7 @@
 #include <TMIV/MivBitstream/SequenceConfig.h>
 
 using namespace std::string_literals;
+using Catch::Matchers::Contains;
 
 TEST_CASE("CameraConfig") {
   SECTION("Default construction with default values") {
@@ -148,6 +149,7 @@ TEST_CASE("SequenceConfig") {
   SECTION("Load from JSON") {
     const auto json = TMIV::Common::Json::parse(R"(
 {
+    "Version": "4.0",
     "BoundingBox_center": [ -0.5, -0.5, 1.0 ],
     "Content_name": "Chess",
     "Fps": 30,
@@ -239,11 +241,13 @@ TEST_CASE("SequenceConfig") {
   SECTION("Load from JSON, minimal") {
     const auto json = TMIV::Common::Json::parse(R"(
 {
+    "Version": "4.0",
     "BoundingBox_center": [ -0.5, -0.5, 1.0 ],
     "Content_name": "Example",
     "Fps": 25,
     "Frames_number": 97,
-    "cameras": [ ]
+    "cameras": [ ],
+    "lengthsInMeters": false
 }
 )");
     const auto unit = SequenceConfig{json};
@@ -259,15 +263,113 @@ TEST_CASE("SequenceConfig") {
     }
   }
 
+  SECTION("Load from JSON, version check") {
+    SECTION("Minor versions are compatible extensions") {
+      const auto json = TMIV::Common::Json::parse(R"(
+{
+    "BoundingBox_center": [ -0.5, -0.5, 1.0 ],
+    "Version": "4.1",
+    "Content_name": "Example",
+    "Fps": 25,
+    "Frames_number": 97,
+    "cameras": [ ],
+    "lengthsInMeters": true
+}
+)");
+      REQUIRE_NOTHROW(SequenceConfig{json});
+    }
+
+    SECTION("Minor versions have to be just a number") {
+      const auto json = TMIV::Common::Json::parse(R"(
+{
+    "BoundingBox_center": [ -0.5, -0.5, 1.0 ],
+    "Version": "4.1jadajada",
+    "Content_name": "Example",
+    "Fps": 25,
+    "Frames_number": 97,
+    "cameras": [ ]
+}
+)");
+      REQUIRE_THROWS_AS(SequenceConfig{json}, std::runtime_error);
+      REQUIRE_THROWS_WITH(SequenceConfig{json}, Contains("Version"));
+    }
+
+    SECTION("Minor versions cannot be written in scientific notation") {
+      const auto json = TMIV::Common::Json::parse(R"(
+{
+    "BoundingBox_center": [ -0.5, -0.5, 1.0 ],
+    "Version": "41E-1",
+    "Content_name": "Example",
+    "Fps": 25,
+    "Frames_number": 97,
+    "cameras": [ ],
+    "lengthsInMeters": true
+}
+)");
+      REQUIRE_THROWS_AS(SequenceConfig{json}, std::runtime_error);
+      REQUIRE_THROWS_WITH(SequenceConfig{json}, Contains("Version"));
+    }
+
+    SECTION("The minor version has to be specified, even when .0") {
+      const auto json = TMIV::Common::Json::parse(R"(
+{
+    "BoundingBox_center": [ -0.5, -0.5, 1.0 ],
+    "Version": "4",
+    "Content_name": "Example",
+    "Fps": 25,
+    "Frames_number": 97,
+    "cameras": [ ],
+    "lengthsInMeters": true
+}
+)");
+      REQUIRE_THROWS_AS(SequenceConfig{json}, std::runtime_error);
+      REQUIRE_THROWS_WITH(SequenceConfig{json}, Contains("Version"));
+    }
+
+    SECTION("No support for previous versions due to inconsistent use of the Version key") {
+      const auto json = TMIV::Common::Json::parse(R"(
+{
+    "BoundingBox_center": [ -0.5, -0.5, 1.0 ],
+    "Version": "3.0",
+    "Content_name": "Example",
+    "Fps": 25,
+    "Frames_number": 97,
+    "cameras": [ ],
+    "lengthsInMeters": true
+}
+)");
+      REQUIRE_THROWS_AS(SequenceConfig{json}, std::runtime_error);
+      REQUIRE_THROWS_WITH(SequenceConfig{json}, Contains("version"));
+    }
+
+    SECTION("Future major versions are not backwards-compatible") {
+      const auto json = TMIV::Common::Json::parse(R"(
+{
+    "BoundingBox_center": [ -0.5, -0.5, 1.0 ],
+    "Version": "5.0",
+    "Content_name": "Example",
+    "Fps": 25,
+    "Frames_number": 97,
+    "cameras": [ ],
+    "lengthsInMeters": true
+}
+)");
+      REQUIRE_THROWS_AS(SequenceConfig{json}, std::runtime_error);
+      REQUIRE_THROWS_WITH(SequenceConfig{json}, Contains("version"));
+    }
+  }
+
   SECTION("Load from JSON, set sourceCameraNames") {
     const auto json = TMIV::Common::Json::parse(R"(
 {
+    "Version": "4.3",
     "BoundingBox_center": [ -0.5, -0.5, 1.0 ],
     "Content_name": "Example",
     "Fps": 25,
     "Frames_number": 97,
     "sourceCameraNames": [ "some", "view", "names" ],
-    "cameras": [ ]
+    "cameras": [ ],
+    "lengthsInMeters": true
 }
 )");
     const auto unit = SequenceConfig{json};
@@ -288,23 +390,26 @@ TEST_CASE("SequenceConfig") {
   }
 
   SECTION("Load from JSON, lengthsInMeters key") {
-    SECTION("The key is otpional for backwards compatibility") {
-      const auto unit = SequenceConfig{TMIV::Common::Json::parse(R"(
+    SECTION("The key is required in version 4") {
+      const auto json = TMIV::Common::Json::parse(R"(
 {
+    "Version": "4.0",
     "BoundingBox_center": [ -0.5, -0.5, 1.0 ],
     "Content_name": "Example",
     "Fps": 25,
     "Frames_number": 97,
     "cameras": [ ]
 }
-)")};
+)");
 
-      REQUIRE(unit.lengthsInMeters);
+      REQUIRE_THROWS_AS(SequenceConfig{json}, std::runtime_error);
+      REQUIRE_THROWS_WITH(SequenceConfig{json}, Contains("lengthsInMeters"));
     }
 
-    SECTION("Specify lengths are in meters") {
+    SECTION("Specify arbitrary scene units") {
       const auto unit = SequenceConfig{TMIV::Common::Json::parse(R"(
 {
+    "Version": "4.0",
     "BoundingBox_center": [ -0.5, -0.5, 1.0 ],
     "Content_name": "Example",
     "lengthsInMeters": false,
@@ -317,9 +422,10 @@ TEST_CASE("SequenceConfig") {
       REQUIRE(!unit.lengthsInMeters);
     }
 
-    SECTION("Specify arbitrary scene units") {
+    SECTION("Specify lengths are in meters") {
       const auto unit = SequenceConfig{TMIV::Common::Json::parse(R"(
 {
+    "Version": "4.9",
     "BoundingBox_center": [ -0.5, -0.5, 1.0 ],
     "Content_name": "Example",
     "Fps": 25,

@@ -1,5 +1,6 @@
 {
     "Content_name": "Fan", 
+    "Version": "4.0",
     "BoundingBox_center": [1.65,2.50,1.45], 
     "Fps": 30,
     "Frames_number": 97,

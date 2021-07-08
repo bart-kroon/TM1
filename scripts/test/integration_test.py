@@ -68,11 +68,6 @@ def parseArguments():
     parser.add_argument(
         "--dry-run", action="store_true", help="Only print TMIV commands without executing them"
     )
-    parser.add_argument(
-        "--ci",
-        action="store_true",
-        help="Run only CI-compatible jobs that do not need too many resources.",
-    )
     return parser.parse_args()
 
 
@@ -102,7 +97,6 @@ class IntegrationTest:
             args.reference_md5_file.absolute().resolve() if args.reference_md5_file else None
         )
         self.dryRun = args.dry_run
-        self.ciOnly = args.ci
         self.md5sums = []
         self.md5sumsFile = self.testDir / "integration_test.md5"
 
@@ -125,10 +119,7 @@ class IntegrationTest:
             futures += self.testAdditiveSynthesizer(executor)
             futures += self.testMivMpi(executor)
             futures += self.testFramePacking(executor)
-
-            # if not self.ciOnly:
-            #    futures += self.testMyNonCiTest(executor)
-
+            futures += self.testEntityCoding(executor)
             self.sync(futures)
 
         if not self.dryRun:
@@ -185,7 +176,7 @@ class IntegrationTest:
             + ["-p", "configDirectory", "{1}/config", "-p", "inputDirectory", "{2}"]
             + ["-p", "outputDirectory", "{3}", "-n", "3", "-s", "E", "-p", "intraPeriod", "2"]
             + ["-p", "inputSequenceConfigPathFmt", "test/sequences/T{{1}}.json"]
-            + ["-p", "maxLumaPictureSize", "1048576", "-f", "135"],
+            + ["-p", "maxLumaPictureSize", "1048576", "-f", "0"],
             "{3}/A3/E/TMIV_A3_E.log",
             [
                 "A3/E/TMIV_A3_E.bit",
@@ -305,7 +296,7 @@ class IntegrationTest:
             + ["-p", "configDirectory", "{1}/config", "-p", "inputDirectory", "{2}", "-p"]
             + ["outputDirectory", "{3}", "-n", "3", "-s", "D", "-p", "intraPeriod", "2"]
             + ["-p", "inputSequenceConfigPathFmt", "test/sequences/T{{1}}.json"]
-            + ["-p", "maxLumaPictureSize", "2097152", "-f", "40"],
+            + ["-p", "maxLumaPictureSize", "2097152", "-f", "0"],
             "{3}/V3/D/TMIV_V3_D.log",
             [
                 "V3/D/TMIV_V3_D.bit",
@@ -380,7 +371,7 @@ class IntegrationTest:
             + ["-p", "configDirectory", "{1}/config", "-p", "inputDirectory", "{2}"]
             + ["-p", "outputDirectory", "{3}", "-n", "3", "-s", "N", "-p", "intraPeriod", "2"]
             + ["-p", "inputSequenceConfigPathFmt", "test/sequences/T{{1}}.json"]
-            + ["-p", "maxLumaPictureSize", "524288", "-f", "60"],
+            + ["-p", "maxLumaPictureSize", "524288", "-f", "0"],
             "{3}/G3/N/TMIV_G3_N.log",
             [
                 "G3/N/TMIV_G3_N.bit",
@@ -576,7 +567,7 @@ class IntegrationTest:
             + ["-p", "configDirectory", "{1}/config", "-p", "inputDirectory", "{2}"]
             + ["-p", "outputDirectory", "{3}", "-n", "3", "-s", "E", "-p", "intraPeriod", "2"]
             + ["-p", "inputSequenceConfigPathFmt", "test/sequences/T{{1}}.json"]
-            + ["-p", "maxLumaPictureSize", "1048576", "-f", "135"],
+            + ["-p", "maxLumaPictureSize", "1048576", "-f", "0"],
             "{3}/P3/E/TMIV_P3_E.log",
             [
                 "P3/E/TMIV_P3_E.bit",
@@ -640,6 +631,101 @@ class IntegrationTest:
         )
 
         return [f1]
+
+    def testEntityCoding(self, executor):
+        if not self.dryRun:
+            (self.testDir / "E3" / "B" / "QP3").mkdir(parents=True, exist_ok=True)
+
+        f1 = self.launchCommand(
+            executor,
+            [],
+            ["{0}/bin/Encoder", "-c", "{1}/config/test/entity_based_coding/E_1_TMIV_encode.json"]
+            + ["-p", "configDirectory", "{1}/config", "-p", "inputDirectory", "{2}"]
+            + ["-p", "outputDirectory", "{3}"]
+            + ["-n", "3", "-s", "B", "-f", "0"]
+            + ["-p", "intraPeriod", "2"]
+            + ["-p", "inputSequenceConfigPathFmt", "test/sequences/TB.json"]
+            + ["-p", "maxLumaPictureSize", "1048576"]
+            + ["-p", "maxAtlases", "1"]
+            + ["-p", "EntityEncodeRange", "[10, 13]"]
+            + ["-p", "inputCameraNames", '[ "v3", "v5", "v9"]'],
+            "{3}/E3/B/TMIV_E3_B.log",
+            [
+                "E3/B/TMIV_E3_B.bit",
+                "E3/B/TMIV_E3_B_geo_c00_256x1024_yuv420p10le.yuv",
+                "E3/B/TMIV_E3_B_tex_c00_512x2048_yuv420p10le.yuv",
+            ],
+        )
+
+        f2_1 = self.launchCommand(
+            executor,
+            [f1],
+            ["{0}/bin/TAppEncoder"]
+            + ["-c", "{1}/config/test/entity_based_coding/E_2_HM_encode_geo.cfg"]
+            + ["-i", "{3}/E3/B/TMIV_E3_B_geo_c00_256x1024_yuv420p10le.yuv"]
+            + ["-b", "{3}/E3/B/QP3/TMIV_E3_B_QP3_geo_c00.bit"]
+            + ["-wdt", "256", "-hgt", "1024", "-q", "12", "-f", "3", "-fr", "30"],
+            "{3}/E3/B/QP3/TMIV_E3_B_QP3_geo_c00.log",
+            ["E3/B/QP3/TMIV_E3_B_QP3_geo_c00.bit"],
+        )
+
+        f2_2 = self.launchCommand(
+            executor,
+            [f1],
+            ["{0}/bin/TAppEncoder"]
+            + ["-c", "{1}/config/test/entity_based_coding/E_2_HM_encode_tex.cfg"]
+            + ["-i", "{3}/E3/B/TMIV_E3_B_tex_c00_512x2048_yuv420p10le.yuv"]
+            + ["-b", "{3}/E3/B/QP3/TMIV_E3_B_QP3_tex_c00.bit"]
+            + ["-wdt", "512", "-hgt", "2048", "-q", "33", "-f", "3", "-fr", "30"],
+            "{3}/E3/B/QP3/TMIV_E3_B_QP3_tex_c00.log",
+            ["E3/B/QP3/TMIV_E3_B_QP3_tex_c00.bit"],
+        )
+
+        f3 = self.launchCommand(
+            executor,
+            [f2_1, f2_2],
+            ["{0}/bin/Multiplexer", "-c", "{1}/config/test/entity_based_coding/E_3_TMIV_mux.json"]
+            + ["-p", "configDirectory", "{1}/config"]
+            + ["-p", "inputDirectory", "{3}"]
+            + ["-p", "outputDirectory", "{3}"]
+            + ["-n", "3", "-s", "B", "-r", "QP3"],
+            "{3}/E3/B/QP3/TMIV_E3_B_QP3.log",
+            ["E3/B/QP3/TMIV_E3_B_QP3.bit"],
+        )
+
+        f4_1 = self.launchCommand(
+            executor,
+            [f3],
+            ["{0}/bin/Parser", "-b", "{3}/E3/B/QP3/TMIV_E3_B_QP3.bit"]
+            + ["-o", "{3}/E3/B/QP3/TMIV_E3_B_QP3.hls"],
+            "{3}/E3/B/QP3/TMIV_E3_B_QP3.hls",
+            [],
+        )
+
+        f4_2 = self.launchCommand(
+            executor,
+            [f3],
+            ["{0}/bin/BitrateReport", "-b", "{3}/E3/B/QP3/TMIV_E3_B_QP3.bit"],
+            "{3}/E3/B/QP3/TMIV_E3_B_QP3.csv",
+            [],
+        )
+
+        f4_3 = self.launchCommand(
+            executor,
+            [f3],
+            ["{0}/bin/Decoder"]
+            + ["-c", "{1}/config/test/entity_based_coding/E_4_TMIV_decode.json"]
+            + ["-p", "configDirectory", "{1}/config"]
+            + ["-p", "inputDirectory", "{3}"]
+            + ["-p", "outputDirectory", "{3}"]
+            + ["-p", "inputViewportParamsPathFmt", "test/sequences/T{{1}}.json"]
+            + ["-n", "3", "-N", "3", "-s", "B", "-r", "QP3", "-P", "p01"]
+            + ["-p", "EntityDecodeRange", "[10, 11]"],
+            "{3}/E3/B/QP3/E3_B_QP3_p01.log",
+            ["E3/B/QP3/E3_B_QP3_p01_tex_512x512_yuv420p10le.yuv"],
+        )
+
+        return [f4_1, f4_2, f4_3]
 
     def launchCommand(self, executor, futures, args, logFile, outputFiles):
         return executor.submit(self.syncAndRunCommand, futures, args, logFile, outputFiles)

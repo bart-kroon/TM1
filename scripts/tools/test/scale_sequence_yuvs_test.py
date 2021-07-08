@@ -58,9 +58,7 @@ def test_get_pixel_format(file_stem, expected_pixel_format):
     assert get_pixel_format(file_stem) == expected_pixel_format
 
 
-@pytest.mark.parametrize(
-    "file_stem", ["T_Q1_p02_2048x2048_yuv420p", "T_Q1_p02_2048x2048_yuv420p15le"]
-)
+@pytest.mark.parametrize("file_stem", ["T_Q1_p02_2048x2048_yuv420p15le"])
 def test_get_pixel_format_failure(file_stem):
     with pytest.raises(ValueError):
         get_pixel_format(file_stem)
@@ -94,7 +92,7 @@ def test_create_ffmpeg_scaling_command():
         create_ffmpeg_scaling_command(yuv_file, 0.5, output_folder)
         == "ffmpeg -s:v 2048x2048 -r 30 -pix_fmt yuv420p10le"
         + " -i home/some/folder/T_Q1_p02_2048x2048_yuv420p10le.yuv"
-        + " -pix_fmt yuv420p10le -c:v rawvideo"
+        + " -frames:v 3 -pix_fmt yuv420p10le -c:v rawvideo"
         + " -vf scale=1024:1024 home/output/T_Q1_p02_1024x1024_yuv420p10le.yuv"
     )
 

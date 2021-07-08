@@ -10,7 +10,6 @@ Integration Test:
       /tmiv_integration_test
       /builds/software/MPEG/MIV/RS/TM1/integration_test
       -r /builds/software/MPEG/MIV/RS/TM1/test/ci_integration_test.md5
-      --ci
   artifacts:
     when: always
     paths:

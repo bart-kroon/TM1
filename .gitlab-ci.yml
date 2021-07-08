@@ -26,6 +26,7 @@ include:
         - "**/*.cpp"
         - "**/*.h"
         - "**/*.hpp"
+        - "scripts/test/integration_test.py"
 
 clang-format:
   <<: *cpp_rules_definition

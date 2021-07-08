@@ -85,7 +85,6 @@ auto Cluster::align(const Cluster &c, int alignment) -> Cluster {
 }
 
 auto Cluster::merge(const Cluster &c1, const Cluster &c2) -> Cluster {
-  PRECONDITION(!c1.isBasicView() && !c2.isBasicView());
   Cluster c(c1.viewId_, false, c1.clusterId_, c1.entityId_);
 
   c.imin_ = std::min(c1.imin_, c2.imin_);

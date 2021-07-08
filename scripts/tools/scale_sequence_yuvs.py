@@ -66,13 +66,13 @@ def create_ffmpeg_scaling_command(
 
     return (
         f"ffmpeg -s:v {input_resolution} -r 30 -pix_fmt {pixel_format} -i {input_yuv_file}"
-        + f" -pix_fmt {pixel_format} -c:v rawvideo"
+        + f" -frames:v 3 -pix_fmt {pixel_format} -c:v rawvideo"
         + f" -vf scale={output_resolution.width}:{output_resolution.height} {output_yuv_file}"
     )
 
 
 def get_pixel_format(file_stem: str):
-    pattern = re.compile(r"yuv\d{3}p1[0,6]le")
+    pattern = re.compile(r"yuv\d{3}p(1[0,6]le)?$")
     matches = pattern.search(file_stem)
     if matches is None:
         raise ValueError(f"Couldn't find any pixel format in file name {file_stem}")
@@ -114,4 +114,5 @@ if __name__ == "__main__":
         args.output_folder.mkdir(parents=True)
 
     for command in create_commands_for_given_files(args):
+        print(command)
         run(command, shell=True)

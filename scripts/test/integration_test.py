@@ -567,7 +567,7 @@ class IntegrationTest:
             + ["-p", "configDirectory", "{1}/config", "-p", "inputDirectory", "{2}"]
             + ["-p", "outputDirectory", "{3}", "-n", "3", "-s", "E", "-p", "intraPeriod", "2"]
             + ["-p", "inputSequenceConfigPathFmt", "test/sequences/T{{1}}.json"]
-            + ["-p", "maxLumaPictureSize", "1048576", "-f", "0"],
+            + ["-p", "maxLumaPictureSize", "1048576", "-f", "0", "-p", "randomAccess", "true"],
             "{3}/P3/E/TMIV_P3_E.log",
             [
                 "P3/E/TMIV_P3_E.bit",

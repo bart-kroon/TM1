@@ -52,21 +52,34 @@ GeometryQuantizer::GeometryQuantizer(uint16_t depthOccThresholdIfSet)
   }
 }
 
-GeometryQuantizer::GeometryQuantizer(const Common::Json &nodeConfig)
-    : GeometryQuantizer{
-          static_cast<uint16_t>(nodeConfig.require("depthOccThresholdIfSet").as<int>())} {}
-
-auto GeometryQuantizer::setOccupancyParams(EncoderParams params) -> const EncoderParams & {
+auto GeometryQuantizer::setOccupancyParams(EncoderParams params, bool haveGeometryVideo,
+                                           bool haveOccupancyVideo) -> const EncoderParams & {
   m_inParams = std::move(params);
   m_outParams = m_inParams;
 
-  const auto isOccupancyEmbedded = m_outParams.vps.profile_tier_level().ptl_profile_toolset_idc() !=
-                                   MivBitstream::PtlProfilePccToolsetIdc::MIV_Geometry_Absent;
+  const auto haveEmbeddedOccupancy =
+      haveGeometryVideo && !haveOccupancyVideo &&
+      std::any_of(m_inParams.viewParamsList.cbegin(), m_inParams.viewParamsList.cend(),
+                  [](const auto &vp) { return vp.hasOccupancy; });
 
-  m_outParams.vps.vps_miv_extension().vme_embedded_occupancy_enabled_flag(isOccupancyEmbedded);
+  m_outParams.vps.vps_miv_extension().vme_embedded_occupancy_enabled_flag(haveEmbeddedOccupancy);
+
+  if (!haveEmbeddedOccupancy) {
+    m_outParams.vps.vps_miv_extension().vme_occupancy_scale_enabled_flag(haveOccupancyVideo);
+  }
 
   for (auto &atlas : m_outParams.atlas) {
-    atlas.asps.asps_miv_extension().asme_embedded_occupancy_enabled_flag(isOccupancyEmbedded);
+    atlas.asps.asps_miv_extension().asme_embedded_occupancy_enabled_flag(haveEmbeddedOccupancy);
+  }
+
+  if (haveOccupancyVideo) {
+    for (auto &atlas : m_outParams.atlas) {
+      const auto scaleFactorMinus1 =
+          Common::downCast<uint16_t>((1 << atlas.asps.asps_log2_patch_packing_block_size()) - 1);
+      atlas.asps.asps_miv_extension()
+          .asme_occupancy_scale_factor_x_minus1(scaleFactorMinus1)
+          .asme_occupancy_scale_factor_y_minus1(scaleFactorMinus1);
+    }
   }
 
   return m_outParams;
@@ -76,15 +89,17 @@ auto GeometryQuantizer::transformParams(EncoderParams params) -> const EncoderPa
   m_inParams = std::move(params);
   m_outParams = m_inParams;
 
-  for (auto &x : m_outParams.viewParamsList) {
-    if (x.hasOccupancy) {
-      x.dq.dq_depth_occ_threshold_default(m_depthOccThresholdIfSet); // =T
-      const auto nearLevel = 1023.F;
-      const auto farLevel = static_cast<float>(2 * m_depthOccThresholdIfSet);
-      // Mapping is [2T, 1023] --> [old far, near]. What is level 0? (the new far)
-      x.dq.dq_norm_disp_low(x.dq.dq_norm_disp_low() +
-                            (0.F - farLevel) / (nearLevel - farLevel) *
-                                (x.dq.dq_norm_disp_high() - x.dq.dq_norm_disp_low()));
+  if (m_outParams.vps.vps_miv_extension().vme_embedded_occupancy_enabled_flag()) {
+    for (auto &x : m_outParams.viewParamsList) {
+      if (x.hasOccupancy) {
+        x.dq.dq_depth_occ_threshold_default(m_depthOccThresholdIfSet); // =T
+        const auto nearLevel = 1023.F;
+        const auto farLevel = static_cast<float>(2 * m_depthOccThresholdIfSet);
+        // Mapping is [2T, 1023] --> [old far, near]. What is level 0? (the new far)
+        x.dq.dq_norm_disp_low(x.dq.dq_norm_disp_low() +
+                              (0.F - farLevel) / (nearLevel - farLevel) *
+                                  (x.dq.dq_norm_disp_high() - x.dq.dq_norm_disp_low()));
+      }
     }
   }
 
@@ -98,7 +113,8 @@ auto GeometryQuantizer::transformAtlases(const Common::MVD16Frame &inAtlases)
 
   for (const auto &inAtlas : inAtlases) {
     outAtlases.emplace_back(
-        inAtlas.texture, Common::Depth10Frame{inAtlas.depth.getWidth(), inAtlas.depth.getHeight()});
+        inAtlas.texture, Common::Depth10Frame{inAtlas.depth.getWidth(), inAtlas.depth.getHeight()},
+        inAtlas.occupancy);
   }
 
   for (const auto &patch : m_outParams.patchParamsList) {
@@ -131,6 +147,37 @@ auto GeometryQuantizer::transformAtlases(const Common::MVD16Frame &inAtlases)
     }
   }
 
+  if (!m_outParams.casps.casps_miv_extension().casme_depth_low_quality_flag()) {
+    padGeometryFromLeft(outAtlases);
+  }
   return outAtlases;
+}
+
+void GeometryQuantizer::padGeometryFromLeft(Common::MVD10Frame &atlases) const noexcept {
+  for (uint8_t i = 0; i <= m_outParams.vps.vps_atlas_count_minus1(); ++i) {
+    const auto j = m_outParams.vps.vps_atlas_id(i);
+    if (m_outParams.vps.vps_occupancy_video_present_flag(j)) {
+      auto &depthAtlasMap = atlases[i].depth;
+      auto depthScale =
+          std::array{m_outParams.atlas[i].asps.asps_frame_height() / depthAtlasMap.getHeight(),
+                     m_outParams.atlas[i].asps.asps_frame_width() / depthAtlasMap.getWidth()};
+      const auto &occupancyAtlasMap = atlases[i].occupancy;
+      auto occupancyScale =
+          std::array{m_outParams.atlas[i].asps.asps_frame_height() / occupancyAtlasMap.getHeight(),
+                     m_outParams.atlas[i].asps.asps_frame_width() / occupancyAtlasMap.getWidth()};
+      for (int y = 0; y < depthAtlasMap.getHeight(); y++) {
+        for (int x = 1; x < depthAtlasMap.getWidth(); x++) {
+          auto depth = depthAtlasMap.getPlane(0)(y, x);
+          const int yOcc = y * depthScale[0] / occupancyScale[0];
+          const int xOcc = x * depthScale[1] / occupancyScale[1];
+          if (occupancyAtlasMap.getPlane(0)(yOcc, xOcc) == 0 ||
+              (depth == 0 &&
+               atlases[i].texture.getPlane(0)(y * depthScale[0], x * depthScale[1]) == 512)) {
+            depthAtlasMap.getPlane(0)(y, x) = depthAtlasMap.getPlane(0)(y, x - 1);
+          }
+        }
+      }
+    }
+  }
 }
 } // namespace TMIV::Encoder

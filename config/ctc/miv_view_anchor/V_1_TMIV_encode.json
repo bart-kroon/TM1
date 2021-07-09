@@ -34,10 +34,7 @@
             "fieldOfViewMargin": 0.3
         },
         "dilate": 16,
-        "GeometryQuantizer": {
-            "depthOccThresholdIfSet": 64
-        },
-        "GeometryQuantizerMethod": "GeometryQuantizer",
+        "depthOccThresholdIfSet": 64,
         "NoPruner": {},
         "Packer": {
             "enableMerging": true,

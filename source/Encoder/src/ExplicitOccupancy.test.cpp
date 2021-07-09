@@ -33,12 +33,12 @@
 
 #include <catch2/catch.hpp>
 
-#include <TMIV/Encoder/ExplicitOccupancy.h>
+#include <TMIV/Encoder/GeometryQuantizer.h>
 
 #include <TMIV/Common/Common.h>
 
 SCENARIO("Explicit occupancy") {
-  TMIV::Encoder::ExplicitOccupancy explicitOccupancy{};
+  TMIV::Encoder::GeometryQuantizer explicitOccupancy{64};
 
   auto sourceParams = TMIV::Encoder::EncoderParams{};
   sourceParams.vps.vps_atlas_count_minus1(1)
@@ -69,7 +69,7 @@ SCENARIO("Explicit occupancy") {
     }
 
     WHEN("Calling setOccupancyParams") {
-      const auto codedParams = explicitOccupancy.setOccupancyParams(sourceParams);
+      const auto codedParams = explicitOccupancy.setOccupancyParams(sourceParams, true, true);
 
       THEN("Encoder ASPS params are modified to enable explicit occupancy") {
         REQUIRE(codedParams.vps.vps_miv_extension().vme_embedded_occupancy_enabled_flag() == false);

@@ -120,6 +120,7 @@ class IntegrationTest:
             futures += self.testMivMpi(executor)
             futures += self.testFramePacking(executor)
             futures += self.testEntityCoding(executor)
+            futures += self.testExplicitOccupancy(executor)
             self.sync(futures)
 
         if not self.dryRun:
@@ -726,6 +727,71 @@ class IntegrationTest:
         )
 
         return [f4_1, f4_2, f4_3]
+
+    def testExplicitOccupancy(self, executor):
+        if not self.dryRun:
+            (self.testDir / "O3" / "N" / "R0").mkdir(parents=True, exist_ok=True)
+
+        occupancyResolution = Resolution(32, 40)
+        geometryResolution = Resolution(512, 640)
+        textureResolution = Resolution(1024, 1280)
+        renderResolution = Resolution(512, 512)
+
+        f1 = self.launchCommand(
+            executor,
+            [],
+            ["{0}/bin/Encoder", "-c", "{1}/config/test/explicit_occupancy/O_1_TMIV_encode.json"]
+            + ["-p", "configDirectory", "{1}/config", "-p", "inputDirectory", "{2}"]
+            + ["-p", "outputDirectory", "{3}", "-n", "3", "-s", "N", "-p", "intraPeriod", "2"]
+            + ["-p", "inputSequenceConfigPathFmt", "test/sequences/T{{1}}.json"]
+            + ["-p", "maxLumaPictureSize", "1310720", "-f", "0"],
+            "{3}/O3/N/TMIV_O3_N.log",
+            [
+                "O3/N/TMIV_O3_N.bit",
+                f"O3/N/TMIV_O3_N_occ_c00_{occupancyResolution}_yuv420p10le.yuv",
+                f"O3/N/TMIV_O3_N_occ_c01_{occupancyResolution}_yuv420p10le.yuv",
+                f"O3/N/TMIV_O3_N_geo_c00_{geometryResolution}_yuv420p10le.yuv",
+                f"O3/N/TMIV_O3_N_geo_c01_{geometryResolution}_yuv420p10le.yuv",
+                f"O3/N/TMIV_O3_N_tex_c00_{textureResolution}_yuv420p10le.yuv",
+                f"O3/N/TMIV_O3_N_tex_c01_{textureResolution}_yuv420p10le.yuv",
+            ],
+        )
+
+        f2_1 = self.launchCommand(
+            executor,
+            [f1],
+            ["{0}/bin/Decoder", "-c", "{1}/config/test/explicit_occupancy/O_4_TMIV_decode.json"]
+            + ["-p", "configDirectory", "{1}/config", "-p", "inputDirectory", "{3}", "-p"]
+            + ["outputDirectory", "{3}", "-p", "inputOccupancyVideoFramePathFmt"]
+            + ["O{{0}}/{{1}}/TMIV_O{{0}}_{{1}}_occ_c{{3:02}}_{{4}}x{{5}}_yuv420p10le.yuv"]
+            + ["-p", "inputGeometryVideoFramePathFmt"]
+            + ["O{{0}}/{{1}}/TMIV_O{{0}}_{{1}}_geo_c{{3:02}}_{{4}}x{{5}}_yuv420p10le.yuv"]
+            + ["-p", "inputTextureVideoFramePathFmt"]
+            + ["O{{0}}/{{1}}/TMIV_O{{0}}_{{1}}_tex_c{{3:02}}_{{4}}x{{5}}_yuv420p10le.yuv"]
+            + ["-p", "inputBitstreamPathFmt", "O3/N/TMIV_O3_N.bit"]
+            + ["-p", "inputViewportParamsPathFmt", "test/sequences/T{{1}}.json"]
+            + ["-n", "3", "-N", "3", "-s", "N", "-r", "R0", "-P", "p01"],
+            "{3}/O3/N/R0/O3_N_R0_p01.log",
+            [f"O3/N/R0/O3_N_R0_p01_tex_{renderResolution}_yuv420p10le.yuv"],
+        )
+
+        f2_2 = self.launchCommand(
+            executor,
+            [f1],
+            ["{0}/bin/Parser", "-b", "{3}/O3/N/TMIV_O3_N.bit", "-o", "{3}/O3/N/TMIV_O3_N.hls"],
+            None,
+            ["O3/N/TMIV_O3_N.hls"],
+        )
+
+        f2_3 = self.launchCommand(
+            executor,
+            [f1],
+            ["{0}/bin/BitrateReport", "-b", "{3}/O3/N/TMIV_O3_N.bit"],
+            "{3}/O3/N/TMIV_O3_N.csv",
+            [],
+        )
+
+        return [f2_1, f2_2, f2_3]
 
     def launchCommand(self, executor, futures, args, logFile, outputFiles):
         return executor.submit(self.syncAndRunCommand, futures, args, logFile, outputFiles)

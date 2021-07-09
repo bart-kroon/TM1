@@ -48,9 +48,8 @@ public:
   // will have the specified depthOccThresholdIfSet value.
   explicit GeometryQuantizer(uint16_t depthOccThresholdIfSet);
 
-  GeometryQuantizer(const Common::Json &nodeConfig);
-
-  auto setOccupancyParams(EncoderParams params) -> const EncoderParams &;
+  auto setOccupancyParams(EncoderParams params, bool haveGeometryVideo, bool haveOccupancyVideo)
+      -> const EncoderParams &;
   // No change when useOccupancy() is false. Otherwise set the depth/occupancy map threshold
   // to depthOccThresholdIfSet and adjust the normalized disparity range.
   auto transformParams(EncoderParams params) -> const EncoderParams &;
@@ -59,6 +58,8 @@ public:
   auto transformAtlases(const Common::MVD16Frame &inAtlases) -> Common::MVD10Frame;
 
 private:
+  void padGeometryFromLeft(Common::MVD10Frame &atlases) const noexcept;
+
   uint16_t m_depthOccThresholdIfSet{};
   EncoderParams m_inParams;
   EncoderParams m_outParams;

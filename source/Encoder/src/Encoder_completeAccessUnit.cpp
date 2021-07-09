@@ -226,7 +226,8 @@ auto Encoder::completeAccessUnit() -> const EncoderParams & {
   m_params.patchParamsList = m_packer->pack(atlasSizes, aggregatedMask,
                                             m_transportParams.viewParamsList, m_config.blockSize);
 
-  m_params = m_geometryQuantizer.setOccupancyParams(m_params);
+  m_params = m_geometryQuantizer.setOccupancyParams(m_params, m_config.haveGeometry,
+                                                    m_config.haveOccupancy);
 
   if (m_config.colorCorrectionEnabledFlag) {
     correctColors();
@@ -400,7 +401,7 @@ auto Encoder::calculatePatchAttrOffsetValuesFullGOP(
 }
 
 auto computeOccUnoccupiedLevel(uint8_t occBitDepthMinus1) -> uint16_t {
-  return Common::assertDownCast<uint16_t>(1 << occBitDepthMinus1);
+  return Common::assertDownCast<uint16_t>(1 << (occBitDepthMinus1 - 1));
 }
 
 void Encoder::constructVideoFrames() {

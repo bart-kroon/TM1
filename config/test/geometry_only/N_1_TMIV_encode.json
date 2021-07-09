@@ -17,10 +17,7 @@
             "outputAdditionalViews": true
         },
         "dilate": 16,
-        "GeometryQuantizer": {
-            "depthOccThresholdIfSet": 64
-        },
-        "GeometryQuantizerMethod": "GeometryQuantizer",
+        "depthOccThresholdIfSet": 64,
         "HierarchicalPruner": {
             "depthParameter": 50,
             "dilate": 5,

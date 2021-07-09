@@ -34,9 +34,8 @@
             "inpaintThreshold": 100,
             "fieldOfViewMargin": 0.3
         },
+        "depthOccThresholdIfSet": 64,
         "dilate": 16,
-        "ExplicitOccupancy": {},
-        "GeometryQuantizerMethod": "ExplicitOccupancy",
         "HierarchicalPruner": {
             "depthParameter": 50,
             "dilate": 5,
@@ -63,7 +62,7 @@
         "ViewOptimizerMethod": "ServerSideInpainter"
     },
     "EncoderMethod": "Encoder",
-    "codecGroupIdc": "HEVC Main10",
+    "codecGroupIdc": "VVC Main10",
     "toolsetIdc": "MIV Extended",
     "geometryScaleEnabledFlag": true,
     "haveGeometryVideo": true,

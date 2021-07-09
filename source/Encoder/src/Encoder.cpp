@@ -52,7 +52,7 @@ Encoder::Encoder(const Common::Json &rootNode, const Common::Json &componentNode
     , m_pruner{Common::create<Pruner::IPruner>("Pruner", rootNode, componentNode)}
     , m_aggregator{Common::create<IAggregator>("Aggregator", rootNode, componentNode)}
     , m_packer{Common::create<IPacker>("Packer", rootNode, componentNode)}
-    , m_geometryQuantizer{componentNode.require("GeometryQuantizer")}
+    , m_geometryQuantizer{componentNode.require("depthOccThresholdIfSet").as<uint16_t>()}
     , m_geometryDownscaler{rootNode, componentNode}
     , m_config(rootNode, componentNode) {}
 

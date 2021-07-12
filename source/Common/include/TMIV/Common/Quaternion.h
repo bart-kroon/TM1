@@ -125,14 +125,20 @@ template <typename Float> auto quat2euler(Quaternion<Float> q) {
 
   const auto cYaw = sqr(q.x()) - sqr(q.y()) - sqr(q.z()) + sqr(q.w());
   const auto sYaw = 2.F * (q.w() * q.z() + q.x() * q.y());
-  const auto yaw = std::atan2(sYaw, cYaw);
+  auto yaw = std::atan2(sYaw, cYaw);
+  if (std::abs(sYaw) < 1e-6 && std::abs(cYaw) < 1e-6) {
+    yaw = std::atan2(q.w() + q.x() + q.y() + q.z(), 0.0);
+  }
 
   const auto sPitch = 2.F * (q.w() * q.y() - q.z() * q.x());
   const auto pitch = std::abs(sPitch) < 1.F ? std::asin(sPitch) : std::copysign(halfPi, sPitch);
 
   const auto cRoll = -sqr(q.x()) - sqr(q.y()) + sqr(q.z()) + sqr(q.w());
   const auto sRoll = 2.F * (q.w() * q.x() + q.y() * q.z());
-  const auto roll = std::atan2(sRoll, cRoll);
+  auto roll = std::atan2(sRoll, cRoll);
+  if (std::abs(sRoll) < 1e-6 && std::abs(cRoll) < 1e-6) {
+    roll = 0.0;
+  }
 
   return stack::Vec3<Float>{yaw, pitch, roll};
 }

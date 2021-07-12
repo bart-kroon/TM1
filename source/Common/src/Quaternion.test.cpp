@@ -129,7 +129,7 @@ TEST_CASE("Quanternion<T>", "[quaternion]") {
 
     const auto euler2 = quat2euler(QuatD{-0.5, 0.5, 0.5, 0.5});
 
-    CHECK(euler2.x() == Approx(0));                    // yaw [rad]
+    CHECK(euler2.x() == Approx(1.570796326794896558)); // yaw [rad]
     CHECK(euler2.y() == Approx(1.570796326794896558)); // pitch [rad]
     CHECK(euler2.z() == Approx(0));                    // roll [rad]
   }

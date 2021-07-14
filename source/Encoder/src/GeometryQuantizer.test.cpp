@@ -44,10 +44,10 @@ SCENARIO("Geometry quantization") {
   sourceViewParams.ci.ci_projection_plane_width_minus1(1919)
       .ci_projection_plane_height_minus1(1079)
       .ci_cam_type(TMIV::MivBitstream::CiCamType::equirectangular)
-      .ci_erp_phi_min(-TMIV::Common::halfCycle)
-      .ci_erp_phi_max(TMIV::Common::halfCycle)
-      .ci_erp_theta_min(-TMIV::Common::quarterCycle)
-      .ci_erp_theta_max(TMIV::Common::quarterCycle);
+      .ci_erp_phi_min(-180.F)
+      .ci_erp_phi_max(180.F)
+      .ci_erp_theta_min(-90.F)
+      .ci_erp_theta_max(90.F);
   sourceViewParams.dq.dq_norm_disp_low(0.2F).dq_norm_disp_high(2.2F);
 
   GIVEN("View parameters without invalid depth") {

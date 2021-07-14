@@ -34,7 +34,6 @@
 #include <TMIV/MivBitstream/ViewingSpace.h>
 
 #include <TMIV/Common/Bitstream.h>
-#include <TMIV/Common/Common.h>
 #include <TMIV/Common/Half.h>
 #include <TMIV/Common/verify.h>
 
@@ -604,7 +603,7 @@ auto PrimitiveShape::loadFromJson(const Common::Json &node, bool inferredView) -
     primitiveShape.guardBandSize = subnode.as<float>();
   }
   if (const auto &subnode = node.optional("Rotation")) {
-    primitiveShape.rotation = Common::euler2quat(Common::radperdeg * subnode.asVec<float, 3>());
+    primitiveShape.rotation = Common::eulerDeg2quat(subnode.asVec<float, 3>());
   }
   if (const auto &subnode = node.optional("ViewingDirectionConstraint")) {
     primitiveShape.viewingDirectionConstraint = PrimitiveShape::ViewingDirectionConstraint();
@@ -616,7 +615,7 @@ auto PrimitiveShape::loadFromJson(const Common::Json &node, bool inferredView) -
       const float directionYaw = subnode.require("YawCenter").as<float>();
       const float directionPitch = subnode.require("PitchCenter").as<float>();
       primitiveShape.viewingDirectionConstraint.value().directionRotation =
-          Common::euler2quat(Common::radperdeg * Common::Vec3f{directionYaw, directionPitch, 0.F});
+          Common::eulerDeg2quat(Common::Vec3f{directionYaw, directionPitch, 0.F});
     }
     primitiveShape.viewingDirectionConstraint.value().yawRange =
         subnode.require("YawRange").as<float>();

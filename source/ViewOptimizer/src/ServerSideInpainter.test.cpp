@@ -35,7 +35,6 @@
 
 #include <TMIV/ViewOptimizer/ServerSideInpainter.h>
 
-#include <TMIV/Common/Common.h>
 #include <TMIV/Common/Factory.h>
 #include <TMIV/Renderer/IInpainter.h>
 #include <TMIV/Renderer/ISynthesizer.h>
@@ -266,10 +265,10 @@ TEST_CASE("ServerSideInpainter") {
       THEN("The added view is full ERP") {
         REQUIRE(params.viewParamsList.back().ci.ci_cam_type() ==
                 TMIV::MivBitstream::CiCamType::equirectangular);
-        REQUIRE(params.viewParamsList.back().ci.ci_erp_phi_min() == -TMIV::Common::halfCycle);
-        REQUIRE(params.viewParamsList.back().ci.ci_erp_phi_max() == TMIV::Common::halfCycle);
-        REQUIRE(params.viewParamsList.back().ci.ci_erp_theta_min() == -TMIV::Common::quarterCycle);
-        REQUIRE(params.viewParamsList.back().ci.ci_erp_theta_max() == TMIV::Common::quarterCycle);
+        REQUIRE(params.viewParamsList.back().ci.ci_erp_phi_min() == -180.F);
+        REQUIRE(params.viewParamsList.back().ci.ci_erp_phi_max() == 180.F);
+        REQUIRE(params.viewParamsList.back().ci.ci_erp_theta_min() == -90.F);
+        REQUIRE(params.viewParamsList.back().ci.ci_erp_theta_max() == 90.F);
       }
 
       THEN("The transport views are forwarded") {
@@ -342,10 +341,10 @@ TEST_CASE("ServerSideInpainter") {
       THEN("The added view is partial ERP") {
         REQUIRE(params.viewParamsList.back().ci.ci_cam_type() ==
                 TMIV::MivBitstream::CiCamType::equirectangular);
-        REQUIRE(params.viewParamsList.back().ci.ci_erp_phi_min() == Approx(-2.01157F));
-        REQUIRE(params.viewParamsList.back().ci.ci_erp_phi_max() == Approx(2.01157F));
-        REQUIRE(params.viewParamsList.back().ci.ci_erp_theta_min() == -TMIV::Common::quarterCycle);
-        REQUIRE(params.viewParamsList.back().ci.ci_erp_theta_max() == TMIV::Common::quarterCycle);
+        REQUIRE(params.viewParamsList.back().ci.ci_erp_phi_min() == Approx(-115.25447F));
+        REQUIRE(params.viewParamsList.back().ci.ci_erp_phi_max() == Approx(115.25447F));
+        REQUIRE(params.viewParamsList.back().ci.ci_erp_theta_min() == -90.F);
+        REQUIRE(params.viewParamsList.back().ci.ci_erp_theta_max() == 90.F);
       }
     }
   }

@@ -92,9 +92,9 @@ TEST_CASE("Quanternion<T>", "[quaternion]") {
     REQUIRE(norm(euler2quat(Vec3d{2., 0., 0.}) - QuatD{0., 0., std::sin(1.), std::cos(1.)}) < eps);
     REQUIRE(norm(euler2quat(Vec3d{0., 2., 0.}) - QuatD{0., std::sin(1.), 0., std::cos(1.)}) < eps);
     REQUIRE(norm(euler2quat(Vec3d{0., 0., 2.}) - QuatD{std::sin(1.), 0., 0., std::cos(1.)}) < eps);
-    REQUIRE(norm(euler2quat(Vec3d{quarterCycle, quarterCycle, quarterCycle}) -
+    REQUIRE(norm(euler2quat(Vec3d{halfPi<double>, halfPi<double>, halfPi<double>}) -
                  QuatD{0., std::sqrt(0.5), 0., std::sqrt(0.5)}) < eps);
-    REQUIRE(norm(euler2quat(Vec3d{quarterCycle, -quarterCycle, quarterCycle}) -
+    REQUIRE(norm(euler2quat(Vec3d{halfPi<double>, -halfPi<double>, halfPi<double>}) -
                  QuatD{std::sqrt(0.5), 0., std::sqrt(0.5), 0.}) < eps);
   }
 

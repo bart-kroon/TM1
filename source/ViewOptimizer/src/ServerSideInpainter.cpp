@@ -75,28 +75,26 @@ public:
   [[nodiscard]] constexpr auto maxTheta() const noexcept { return m_maxTheta; }
 
   FieldOfView(float minPhi_, float maxPhi_, float minTheta_, float maxTheta_)
-      : m_minPhi{std::max(-Common::halfCycle, minPhi_)}
-      , m_maxPhi{std::min(Common::halfCycle, maxPhi_)}
-      , m_minTheta{std::max(-Common::quarterCycle, minTheta_)}
-      , m_maxTheta{std::min(Common::quarterCycle, maxTheta_)} {}
+      : m_minPhi{std::max(-180.F, minPhi_)}
+      , m_maxPhi{std::min(180.F, maxPhi_)}
+      , m_minTheta{std::max(-90.F, minTheta_)}
+      , m_maxTheta{std::min(90.F, maxTheta_)} {}
 
   // Null element of the combine operation: combine(zero, something) == something
-  [[nodiscard]] static auto zero() noexcept -> FieldOfView {
-    return {Common::halfCycle, -Common::halfCycle, Common::quarterCycle, -Common::quarterCycle};
-  }
+  [[nodiscard]] static auto zero() noexcept -> FieldOfView { return {180.F, -180.F, 90.F, -90.F}; }
 
-  [[nodiscard]] static auto full() noexcept -> FieldOfView {
-    return {-Common::halfCycle, Common::halfCycle, -Common::quarterCycle, Common::quarterCycle};
-  }
+  [[nodiscard]] static auto full() noexcept -> FieldOfView { return {-180.F, 180.F, -90.F, 90.F}; }
 
   [[nodiscard]] static auto computeFrom(const ViewParams &vp) noexcept -> FieldOfView {
     const auto focal = Vec2f{vp.ci.ci_perspective_focal_hor(), vp.ci.ci_perspective_focal_ver()};
 
     // half angle of the field of view of the perspective projection
-    const float halfFovX = std::atan(0.5F * vp.ci.projectionPlaneSizeF().x() / std::abs(focal.x()));
-    const float halfFovY = std::atan(0.5F * vp.ci.projectionPlaneSizeF().y() / std::abs(focal.y()));
+    const float halfFovX =
+        Common::rad2deg(std::atan(0.5F * vp.ci.projectionPlaneSizeF().x() / std::abs(focal.x())));
+    const float halfFovY =
+        Common::rad2deg(std::atan(0.5F * vp.ci.projectionPlaneSizeF().y() / std::abs(focal.y())));
 
-    const auto euler = Common::Vec3f{Common::quat2euler(vp.pose.orientation)};
+    const auto euler = Common::Vec3f{quat2eulerDeg(vp.pose.orientation)};
     const auto yaw = euler[0];
     const auto pitch = euler[1];
     const auto phi = yaw;

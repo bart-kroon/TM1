@@ -34,6 +34,7 @@
 #include <TMIV/MivBitstream/ViewParamsList.h>
 
 #include <TMIV/Common/Common.h>
+#include <TMIV/Common/Quaternion.h>
 #include <TMIV/Common/verify.h>
 
 #include <stdexcept>
@@ -127,7 +128,7 @@ ViewParams::ViewParams(const Common::Json &node) {
   ci.ci_projection_plane_height_minus1(resolution.y() - 1);
 
   pose.position = node.require("Position").asVec<float, 3>();
-  pose.orientation = euler2quat(Common::radperdeg * node.require("Rotation").asVec<float, 3>());
+  pose.orientation = eulerDeg2quat(node.require("Rotation").asVec<float, 3>());
 
   const auto depthRange = node.require("Depth_range").asVec<float, 2>();
   dq.dq_norm_disp_low(1.F / depthRange.y());
@@ -139,8 +140,8 @@ ViewParams::ViewParams(const Common::Json &node) {
 
   auto proj = node.require("Projection").as<std::string>();
   if (proj == "Equirectangular") {
-    const auto phiRange = Common::radperdeg * node.require("Hor_range").asVec<float, 2>();
-    const auto thetaRange = Common::radperdeg * node.require("Ver_range").asVec<float, 2>();
+    const auto phiRange = node.require("Hor_range").asVec<float, 2>();
+    const auto thetaRange = node.require("Ver_range").asVec<float, 2>();
 
     ci.ci_cam_type(CiCamType::equirectangular);
     ci.ci_erp_phi_min(phiRange.x());
@@ -194,10 +195,8 @@ ViewParams::operator Common::Json() const {
 
   if (ci.ci_cam_type() == CiCamType::equirectangular) {
     root["Projection"] = "Equirectangular";
-    root["Hor_range"] = Array{Json{Common::degperrad * ci.ci_erp_phi_min()},
-                              Json{Common::degperrad * ci.ci_erp_phi_max()}};
-    root["Ver_range"] = Array{Json{Common::degperrad * ci.ci_erp_theta_min()},
-                              Json{Common::degperrad * ci.ci_erp_theta_max()}};
+    root["Hor_range"] = Array{Json{ci.ci_erp_phi_min()}, Json{ci.ci_erp_phi_max()}};
+    root["Ver_range"] = Array{Json{ci.ci_erp_theta_min()}, Json{ci.ci_erp_theta_max()}};
   } else if (ci.ci_cam_type() == CiCamType::perspective) {
     root["Projection"] = "Perspective";
     root["Focal"] = Array{Json{ci.ci_perspective_focal_hor()}, Json{ci.ci_perspective_focal_ver()}};

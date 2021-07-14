@@ -280,7 +280,7 @@ TEST_CASE("Format a JSON") {
     REQUIRE(Json{0.0}.format() == "0"s);
     REQUIRE(Json{42E-002}.format() == "0.41999999999999998"s);
     REQUIRE(Json{2.4E+3}.format() == "2400"s);
-    REQUIRE(Json{M_PI}.format() == "3.1415926535897931"s);
+    REQUIRE(Json{pi<double>}.format() == "3.1415926535897931"s);
   }
 
   SECTION("array") {

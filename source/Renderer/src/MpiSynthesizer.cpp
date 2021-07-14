@@ -108,9 +108,8 @@ public:
 
   // Handling properly the seam for 360 degrees scenes
   static auto shouldRepeat(const MivBitstream::ViewParams &viewParams) -> bool {
-    return ((viewParams.ci.ci_cam_type() == MivBitstream::CiCamType::equirectangular) &&
-            ((0.99F * Common::fullCycle <
-              (viewParams.ci.ci_erp_phi_max() - viewParams.ci.ci_erp_phi_min()))));
+    return viewParams.ci.ci_cam_type() == MivBitstream::CiCamType::equirectangular &&
+           0.99F * 360.F < viewParams.ci.ci_erp_phi_max() - viewParams.ci.ci_erp_phi_min();
   }
 
   auto renderFrame(const MivBitstream::AccessUnit &frame,

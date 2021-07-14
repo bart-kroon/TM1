@@ -60,8 +60,8 @@ static auto viewingDirection(const Common::QuatF &rotation) -> ViewingDirection 
   const auto directionVector = rotate(forwardAxis, rotation);
 
   ViewingDirection d{};
-  d.yaw = Common::degperrad * std::atan2(directionVector.y(), directionVector.x());
-  d.pitch = Common::degperrad * std::acos(-directionVector.z());
+  d.yaw = Common::rad2deg(std::atan2(directionVector.y(), directionVector.x()));
+  d.pitch = Common::rad2deg(std::acos(-directionVector.z()));
   return d;
 }
 

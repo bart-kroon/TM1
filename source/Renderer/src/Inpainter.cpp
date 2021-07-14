@@ -375,7 +375,7 @@ void inplaceInpaint_impl(Common::Texture444Depth16Frame &yuvd,
 
   if (meta.ci.ci_cam_type() == MivBitstream::CiCamType::equirectangular) {
     const auto fullOmniRangePercentage =
-        (meta.ci.ci_erp_phi_max() - meta.ci.ci_erp_phi_min()) / Common::fullCycle;
+        (meta.ci.ci_erp_phi_max() - meta.ci.ci_erp_phi_min()) / 360.;
     inpaintOmnidirectionalView(yuvd, fullOmniRangePercentage);
   }
 

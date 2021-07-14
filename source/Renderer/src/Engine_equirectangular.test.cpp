@@ -48,10 +48,10 @@ TEST_CASE("Engine<equirectangular>") {
     ci.ci_cam_type(CiCamType::equirectangular)
         .ci_projection_plane_width_minus1(999)
         .ci_projection_plane_height_minus1(499)
-        .ci_erp_phi_min(-TMIV::Common::quarterCycle)   //   phi = -pi/2 --> u = 1000
-        .ci_erp_phi_max(TMIV::Common::halfCycle)       //   phi =  pi   --> u =    0
-        .ci_erp_theta_min(0.F)                         // theta =  0    --> v =  500
-        .ci_erp_theta_max(TMIV::Common::quarterCycle); // theta =  pi/2 --> v =    0
+        .ci_erp_phi_min(-90.F)   //   phi = -pi/2 --> u = 1000
+        .ci_erp_phi_max(180.F)   //   phi =  pi   --> u =    0
+        .ci_erp_theta_min(0.F)   // theta =  0    --> v =  500
+        .ci_erp_theta_max(90.F); // theta =  pi/2 --> v =    0
     return TMIV::Renderer::Engine<TMIV::MivBitstream::CiCamType::equirectangular>{ci};
   }();
 

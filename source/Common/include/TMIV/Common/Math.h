@@ -39,44 +39,27 @@
 #include <limits>
 
 namespace TMIV::Common {
-#ifndef M_PI
-constexpr double M_PI = 3.141592653589793238462643383279;
-#endif
-constexpr double M_PI2 = M_PI / 2.0;
+template <typename Float, typename = std::enable_if_t<std::is_floating_point_v<Float>>>
+constexpr Float pi = static_cast<Float>(3.1415926535897932384626433832795);
+template <typename Float> constexpr Float halfPi = Float{0.5} * pi<Float>;
+template <typename Float> constexpr Float twoPi = Float{2} * pi<Float>;
 
 template <typename T> constexpr auto deg2rad(T x) noexcept {
-  return x * static_cast<T>(M_PI / 180.);
+  return x * static_cast<T>(pi<double> / 180.);
 }
 
 template <typename T> constexpr auto rad2deg(T x) noexcept {
-  return x * static_cast<T>(180. / M_PI);
+  return x * static_cast<T>(180. / pi<double>);
 }
 
 template <typename T> constexpr auto sqr(T val) noexcept { return val * val; }
-
-template <typename T> constexpr auto cube(T val) noexcept { return val * val * val; }
-
-template <typename T> constexpr auto sgn(T val) noexcept { return int{T{} < val} - int{val < T{}}; }
 
 template <typename T> constexpr auto inRange(T val, T min, T max) noexcept {
   return min <= val && val <= max;
 }
 
-template <typename T> auto is_zero(T val) -> T {
-  using std::abs;
-  return abs(val) < std::numeric_limits<T>::epsilon();
-}
-template <typename T> constexpr auto pps2ppd(T pps) noexcept {
-  return std::sqrt(pps) * static_cast<T>(M_PI / 180.);
-}
+template <typename T> constexpr auto pps2ppd(T pps) noexcept { return deg2rad(std::sqrt(pps)); }
 
-template <typename T> auto conjugate(T v) -> T {
-  if constexpr (std::is_arithmetic_v<T>) {
-    return v;
-  } else {
-    return std::conj(v);
-  }
-}
 template <typename T> constexpr auto align(T value, T alignment) noexcept {
   T misalignment = value % alignment;
   return (misalignment != 0) ? (value + (alignment - misalignment)) : value;

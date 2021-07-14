@@ -134,8 +134,9 @@ auto ProjectionHelper::getAngularResolution() const -> float {
   switch (ci.ci_cam_type()) {
   case MivBitstream::CiCamType::equirectangular: {
     auto nbPixel = ci.projectionPlaneSizeF().x() * ci.projectionPlaneSizeF().y();
-    float DT = ci.ci_erp_phi_max() - ci.ci_erp_phi_min();
-    float DS = std::sin(ci.ci_erp_theta_max()) - std::sin(ci.ci_erp_theta_min());
+    float DT = Common::deg2rad(ci.ci_erp_phi_max() - ci.ci_erp_phi_min());
+    float DS = std::sin(Common::deg2rad(ci.ci_erp_theta_max())) -
+               std::sin(Common::deg2rad(ci.ci_erp_theta_min()));
 
     return nbPixel / (DS * DT);
   }
@@ -154,7 +155,7 @@ auto ProjectionHelper::getAngularResolution() const -> float {
   }
   case MivBitstream::CiCamType::orthographic: {
     auto nbPixel = ci.projectionPlaneSizeF().x() * ci.projectionPlaneSizeF().y();
-    return nbPixel / Common::hemiSphere;
+    return nbPixel / Common::twoPi<float>;
   }
   default:
     UNREACHABLE;

@@ -118,10 +118,10 @@ TEST_CASE("ViewParams") {
     auto unit = TMIV::MivBitstream::ViewParams(json);
 
     CHECK(unit.ci.ci_cam_type() == TMIV::MivBitstream::CiCamType::equirectangular);
-    CHECK(unit.ci.ci_erp_phi_min() == Approx(-TMIV::Common::M_PI2));
-    CHECK(unit.ci.ci_erp_phi_max() == Approx(TMIV::Common::M_PI2));
-    CHECK(unit.ci.ci_erp_theta_min() == Approx(-TMIV::Common::M_PI2));
-    CHECK(unit.ci.ci_erp_theta_max() == Approx(TMIV::Common::M_PI2));
+    CHECK(unit.ci.ci_erp_phi_min() == -90.F);
+    CHECK(unit.ci.ci_erp_phi_max() == 90.F);
+    CHECK(unit.ci.ci_erp_theta_min() == -90.F);
+    CHECK(unit.ci.ci_erp_theta_max() == 90.F);
     CHECK(unit.ci.ci_projection_plane_width_minus1() + 1 == 2048);
     CHECK(unit.ci.ci_projection_plane_height_minus1() + 1 == 1048);
 

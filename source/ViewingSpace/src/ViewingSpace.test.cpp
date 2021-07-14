@@ -49,12 +49,11 @@ TEST_CASE("Signed distance functions") {
   SECTION("Cuboid") {
     REQUIRE(signedDistance(cuboid, noRotation, *cuboid.center).isInside());
     REQUIRE(signedDistance(cuboid, noRotation, *cuboid.center + 0.49F * cuboid.size).isInside());
-    REQUIRE(signedDistance(cuboid, euler2quat(Common::radperdeg * Common::Vec3f({180.F, 0.F, 0.F})),
+    REQUIRE(signedDistance(cuboid, eulerDeg2quat(Common::Vec3f({180.F, 0.F, 0.F})),
                            *cuboid.center - 0.49F * cuboid.size)
                 .isInside());
     REQUIRE(signedDistance(cuboid, noRotation, *cuboid.center + 0.51F * cuboid.size).isOutside());
-    REQUIRE(signedDistance(cuboid,
-                           euler2quat(Common::radperdeg * Common::Vec3f({180.F, 180.F, 180.F})),
+    REQUIRE(signedDistance(cuboid, eulerDeg2quat(Common::Vec3f({180.F, 180.F, 180.F})),
                            *cuboid.center - 0.51F * cuboid.size)
                 .isOutside());
   }
@@ -65,11 +64,11 @@ TEST_CASE("Signed distance functions") {
                        *spheroid.center + Common::Vec3f({0.49F * spheroid.radius.x(), 0.F, 0.F}))
             .isInside());
     REQUIRE(
-        signedDistance(spheroid, euler2quat(Common::radperdeg * Common::Vec3f({0.F, 90.F, 0.F})),
+        signedDistance(spheroid, eulerDeg2quat(Common::Vec3f({0.F, 90.F, 0.F})),
                        *spheroid.center + Common::Vec3f({0.F, 0.99F * spheroid.radius.y(), 0.F}))
             .isInside());
     REQUIRE(
-        signedDistance(spheroid, euler2quat(Common::radperdeg * Common::Vec3f({0.F, 90.F, 0.F})),
+        signedDistance(spheroid, eulerDeg2quat(Common::Vec3f({0.F, 90.F, 0.F})),
                        *spheroid.center + Common::Vec3f({0.F, 1.01F * spheroid.radius.y(), 0.F}))
             .isOutside());
     REQUIRE(signedDistance(spheroid, noRotation, *spheroid.center + 1.01F * spheroid.radius)
@@ -129,21 +128,18 @@ TEST_CASE("Viewing space evaluation") {
       1.F,
       {},
       PrimitiveShape::ViewingDirectionConstraint{
-          30.F, euler2quat(Common::radperdeg * Common::Vec3f{90.F, -30.F, 0.F}), 90.F, 65.F}};
+          30.F, eulerDeg2quat(Common::Vec3f{90.F, -30.F, 0.F}), 90.F, 65.F}};
   SECTION("Guard band") {
     const MivBitstream::ViewingSpace vs1 = {
         {{ElementaryShapeOperation::add, ElementaryShape{{cuboid}}}}};
-    const auto vpi = ViewingParams{{0.F, 0.F, 0.F},
-                                   euler2quat(Common::radperdeg * Common::Vec3f{0.F, 0.F, 0.F})};
+    const auto vpi = ViewingParams{{0.F, 0.F, 0.F}, eulerDeg2quat(Common::Vec3f{0.F, 0.F, 0.F})};
     const float inside = computeInclusion(vs1, vpi);
-    const auto vp1 = ViewingParams{{1.F, 0.F, 0.F},
-                                   euler2quat(Common::radperdeg * Common::Vec3f{0.F, 0.F, 0.F})};
+    const auto vp1 = ViewingParams{{1.F, 0.F, 0.F}, eulerDeg2quat(Common::Vec3f{0.F, 0.F, 0.F})};
     const float guardband1 = computeInclusion(vs1, vp1);
-    const auto vp2 = ViewingParams{{1.F, 0.F, 0.F},
-                                   euler2quat(Common::radperdeg * Common::Vec3f{180.F, 90.F, 0.F})};
+    const auto vp2 = ViewingParams{{1.F, 0.F, 0.F}, eulerDeg2quat(Common::Vec3f{180.F, 90.F, 0.F})};
     const float guardband2 = computeInclusion(vs1, vp2);
-    const auto vpo = ViewingParams{
-        {2.F, 0.F, 0.F}, euler2quat(Common::radperdeg * Common::Vec3f{-90.F, -30.F, 0.F})};
+    const auto vpo =
+        ViewingParams{{2.F, 0.F, 0.F}, eulerDeg2quat(Common::Vec3f{-90.F, -30.F, 0.F})};
     const float outside = computeInclusion(vs1, vpo);
     REQUIRE(inside == 1.F);
     REQUIRE(guardband1 > 0.F);
@@ -155,14 +151,11 @@ TEST_CASE("Viewing space evaluation") {
     const MivBitstream::ViewingSpace vs2 = {
         {{ElementaryShapeOperation::add, ElementaryShape{{spheroid}}}}};
     const Common::Vec3f pos = {1.F, 1.F, 1.F};
-    const auto vpOutside =
-        ViewingParams{{pos}, euler2quat(Common::radperdeg * Common::Vec3f{40.F, 0.F, 0.F})};
+    const auto vpOutside = ViewingParams{{pos}, eulerDeg2quat(Common::Vec3f{40.F, 0.F, 0.F})};
     const float outside = computeInclusion(vs2, vpOutside);
-    const auto vpInside =
-        ViewingParams{{pos}, euler2quat(Common::radperdeg * Common::Vec3f{90.F, -30.F, 0.F})};
+    const auto vpInside = ViewingParams{{pos}, eulerDeg2quat(Common::Vec3f{90.F, -30.F, 0.F})};
     const float inside = computeInclusion(vs2, vpInside);
-    const auto vpGuardband =
-        ViewingParams{{pos}, euler2quat(Common::radperdeg * Common::Vec3f{50.F, -50.F, 0.F})};
+    const auto vpGuardband = ViewingParams{{pos}, eulerDeg2quat(Common::Vec3f{50.F, -50.F, 0.F})};
     const float guardband = computeInclusion(vs2, vpGuardband);
     REQUIRE(inside == 1.F);
     REQUIRE(guardband > 0.F);
@@ -173,10 +166,10 @@ TEST_CASE("Viewing space evaluation") {
     const MivBitstream::ViewingSpace vs3 = {
         {{ElementaryShapeOperation::add, ElementaryShape{{cuboid}}},
          {ElementaryShapeOperation::add, ElementaryShape{{spheroid}}}}};
-    const ViewingParams poseInside = {
-        {0.F, 0.F, 0.F}, euler2quat(Common::radperdeg * Common::Vec3f{90.F, -30.F, 0.F})};
-    const ViewingParams poseGuard = {
-        {0.F, 0.F, 0.F}, euler2quat(Common::radperdeg * Common::Vec3f{160.F, -60.F, 0.F})};
+    const ViewingParams poseInside = {{0.F, 0.F, 0.F},
+                                      eulerDeg2quat(Common::Vec3f{90.F, -30.F, 0.F})};
+    const ViewingParams poseGuard = {{0.F, 0.F, 0.F},
+                                     eulerDeg2quat(Common::Vec3f{160.F, -60.F, 0.F})};
     REQUIRE(computeInclusion(vs3, poseInside) == 1.F);
     REQUIRE(Common::inRange(computeInclusion(vs3, poseGuard), 0.1F, 0.9F));
   }
@@ -185,9 +178,8 @@ TEST_CASE("Viewing space evaluation") {
         {{ElementaryShapeOperation::add, ElementaryShape{{cuboid}}},
          {ElementaryShapeOperation::subtract, ElementaryShape{{spheroid}}}}};
     const Common::Vec3f posOutside = {0.F, 0.F, 0.F};
-    REQUIRE(computeInclusion(
-                vs4, {posOutside,
-                      euler2quat(Common::radperdeg * Common::Vec3f{90.F, -30.F, 0.F})}) == 0.F);
+    REQUIRE(computeInclusion(vs4, {posOutside, eulerDeg2quat(Common::Vec3f{90.F, -30.F, 0.F})}) ==
+            0.F);
   }
   SECTION("Direction constraint blending") {
     const PrimitiveShape cuboid2 = {
@@ -195,12 +187,12 @@ TEST_CASE("Viewing space evaluation") {
         1.F,
         {},
         PrimitiveShape::ViewingDirectionConstraint{
-            30.F, euler2quat(Common::radperdeg * Common::Vec3f{260.F, 0.F, 0.F}), 300.F, 160.F}};
+            30.F, eulerDeg2quat(Common::Vec3f{260.F, 0.F, 0.F}), 300.F, 160.F}};
     const MivBitstream::ViewingSpace vs5 = {
         {{ElementaryShapeOperation::add, ElementaryShape{{cuboid2}}},
          {ElementaryShapeOperation::add, ElementaryShape{{spheroid}}}}};
-    const ViewingParams poseInside = {
-        {0.F, 0.F, 0.F}, euler2quat(Common::radperdeg * Common::Vec3f{180.F, -30.F, 0.F})};
+    const ViewingParams poseInside = {{0.F, 0.F, 0.F},
+                                      eulerDeg2quat(Common::Vec3f{180.F, -30.F, 0.F})};
     REQUIRE(computeInclusion(vs5, poseInside) == 1.F);
   }
 }

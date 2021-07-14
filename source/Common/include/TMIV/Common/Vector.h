@@ -121,29 +121,6 @@ auto cross(const Vec3<T> &a, const Vec3<U> &b) -> Vec3<std::common_type_t<T, U>>
 
   return out;
 }
-
-// Returns the triple-product of a, b and c (a . (b x c))
-template <typename T, typename U, typename V>
-auto triple(const Vec3<T> &a, const Vec3<U> &b, const Vec3<V> &c) {
-  return dot(a, cross(b, c));
-}
-
-// Returns the solid angle captured by the 3 vertices given as parameters
-template <typename T, typename U, typename V>
-auto solid(const Vec3<T> &a, const Vec3<U> &b, const Vec3<V> &c) -> double {
-  using std::abs;
-  using std::atan;
-  double na = norm(a);
-  double nb = norm(b);
-  double nc = norm(c);
-  double out = 2. * atan(abs(triple(a, b, c)) /
-                         (na * nb * nc + na * dot(b, c) + nb * dot(a, c) + nc * dot(a, b)));
-
-  if (out < 0.) {
-    return (out + M_PI);
-  }
-  { return out; }
-}
 } // namespace stack
 
 namespace heap {

@@ -218,13 +218,13 @@ public:
     const auto &ci = viewParams.ci;
     return ci.dispatch(Common::overload(
         [&](MivBitstream::Equirectangular /*unused*/) {
-          return std::abs(ci.ci_erp_phi_max() - ci.ci_erp_phi_min());
+          return Common::deg2rad(std::abs(ci.ci_erp_phi_max() - ci.ci_erp_phi_min()));
         },
         [&](MivBitstream::Perspective /*unused*/) {
           return 2.F *
                  std::atan(ci.projectionPlaneSizeF().x() / (2 * ci.ci_perspective_focal_hor()));
         },
-        [&](MivBitstream::Orthographic /*unused*/) { return Common::halfCycle; }));
+        [&](MivBitstream::Orthographic /*unused*/) { return Common::pi<float>; }));
   }
 
   // Resolution in px^2/rad^2

@@ -34,6 +34,7 @@
 #ifndef TMIV_COMMON_QUATERNION_H
 #define TMIV_COMMON_QUATERNION_H
 
+#include <TMIV/Common/Math.h>
 #include <TMIV/Common/Matrix.h>
 #include <TMIV/Common/Vector.h>
 #include <TMIV/Common/verify.h>
@@ -121,8 +122,6 @@ template <typename Float> auto euler2quat(const stack::Vec3<Float> &eulerAngles)
 template <typename Float> auto quat2euler(Quaternion<Float> q) {
   q = normalize(q);
 
-  constexpr auto halfPi = static_cast<Float>(M_PI2);
-
   const auto cYaw = sqr(q.x()) - sqr(q.y()) - sqr(q.z()) + sqr(q.w());
   const auto sYaw = 2.F * (q.w() * q.z() + q.x() * q.y());
   auto yaw = std::atan2(sYaw, cYaw);
@@ -131,7 +130,8 @@ template <typename Float> auto quat2euler(Quaternion<Float> q) {
   }
 
   const auto sPitch = 2.F * (q.w() * q.y() - q.z() * q.x());
-  const auto pitch = std::abs(sPitch) < 1.F ? std::asin(sPitch) : std::copysign(halfPi, sPitch);
+  const auto pitch =
+      std::abs(sPitch) < 1.F ? std::asin(sPitch) : std::copysign(halfPi<Float>, sPitch);
 
   const auto cRoll = -sqr(q.x()) - sqr(q.y()) + sqr(q.z()) + sqr(q.w());
   const auto sRoll = 2.F * (q.w() * q.x() + q.y() * q.z());
@@ -141,6 +141,24 @@ template <typename Float> auto quat2euler(Quaternion<Float> q) {
   }
 
   return stack::Vec3<Float>{yaw, pitch, roll};
+}
+
+// Euler angles (yaw, pitch, roll) [deg] to quaternion conversion
+//
+// https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
+template <typename Float> auto eulerDeg2quat(stack::Vec3<Float> eulerAngles) {
+  for (auto &component : eulerAngles) {
+    component = deg2rad(component);
+  }
+  return euler2quat(eulerAngles);
+}
+
+template <typename Float> auto quat2eulerDeg(Quaternion<Float> q) {
+  auto eulerAngles = quat2euler(q);
+  for (auto &component : eulerAngles) {
+    component = rad2deg(component);
+  }
+  return eulerAngles;
 }
 
 // Unit quaternion (q) to rotation matrix (R) conversion

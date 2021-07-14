@@ -72,9 +72,10 @@ auto choosePatch(const MivBitstream::PatchParams &patch,
 
   if (camera.ci.ci_cam_type() == MivBitstream::CiCamType::equirectangular) {
     const auto delta_phi = w / static_cast<float>(camera.ci.projectionPlaneSize().x()) *
-                           (camera.ci.ci_erp_phi_max() - camera.ci.ci_erp_phi_min());
-    const auto delta_theta = h / static_cast<float>(camera.ci.projectionPlaneSize().y()) *
-                             (camera.ci.ci_erp_theta_max() - camera.ci.ci_erp_theta_min());
+                           Common::deg2rad(camera.ci.ci_erp_phi_max() - camera.ci.ci_erp_phi_min());
+    const auto delta_theta =
+        h / static_cast<float>(camera.ci.projectionPlaneSize().y()) *
+        Common::deg2rad(camera.ci.ci_erp_theta_max() - camera.ci.ci_erp_theta_min());
     const auto modified_depth_x = patch_dep_far;
     using std::cos;
     using std::tan;

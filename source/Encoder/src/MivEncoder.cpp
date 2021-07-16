@@ -161,10 +161,10 @@ auto MivEncoder::commonAtlasSubBitstream() -> MivBitstream::AtlasSubBitstream {
 
   if (m_irap) {
     writeNalUnit(asb, nuhCasps, m_params.casps);
-    writeNalUnit(asb, nuhIdrCaf, commonAtlasFrame(), m_params.vps, nuhIdrCaf,
-                 std::vector{m_params.casps}, maxFrmOrderCntLsb());
+    writeNalUnit(asb, nuhIdrCaf, commonAtlasFrame(), nuhIdrCaf, std::vector{m_params.casps},
+                 maxFrmOrderCntLsb());
   } else {
-    writeNalUnit(asb, nuhCaf, commonAtlasFrame(), m_params.vps, nuhCaf, std::vector{m_params.casps},
+    writeNalUnit(asb, nuhCaf, commonAtlasFrame(), nuhCaf, std::vector{m_params.casps},
                  maxFrmOrderCntLsb());
   }
 
@@ -241,12 +241,7 @@ auto MivEncoder::mivViewParamsList() const -> MivBitstream::MivViewParamsList {
   }
 
   mvpl.mvp_num_views_minus1(static_cast<uint16_t>(m_params.viewParamsList.size() - 1));
-  for (uint8_t a = 0; a <= m_params.vps.vps_atlas_count_minus1(); ++a) {
-    for (uint16_t v = 0; v <= mvpl.mvp_num_views_minus1(); ++v) {
-      mvpl.mvp_view_enabled_in_atlas_flag(a, v, true);
-      mvpl.mvp_view_complete_in_atlas_flag(a, v, m_params.viewParamsList[v].isBasicView);
-    }
-  }
+
   for (uint16_t v = 0; v <= mvpl.mvp_num_views_minus1(); ++v) {
     mvpl.mvp_view_id(v, v);
   }

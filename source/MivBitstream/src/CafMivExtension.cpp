@@ -356,25 +356,6 @@ auto MivViewParamsList::mvp_num_views_minus1() const -> uint16_t {
   return static_cast<uint16_t>(m_camera_extrinsics.size() - 1);
 }
 
-auto MivViewParamsList::mvp_view_enabled_present_flag() const noexcept -> bool {
-  return m_mvp_view_enabled_present_flag;
-}
-
-auto MivViewParamsList::mvp_view_enabled_in_atlas_flag(uint8_t atlasIdx, uint16_t viewIdx) const
-    -> bool {
-  VERIFY_MIVBITSTREAM(mvp_view_enabled_present_flag());
-  VERIFY_MIVBITSTREAM(atlasIdx < m_viewInAtlas.size());
-  VERIFY_MIVBITSTREAM(viewIdx <= mvp_num_views_minus1());
-  return m_viewInAtlas[atlasIdx][viewIdx].enabled;
-}
-
-auto MivViewParamsList::mvp_view_complete_in_atlas_flag(uint8_t atlasIdx, uint16_t viewIdx) const
-    -> bool {
-  VERIFY_MIVBITSTREAM(mvp_view_enabled_in_atlas_flag(atlasIdx, viewIdx));
-  VERIFY_MIVBITSTREAM(m_viewInAtlas[atlasIdx][viewIdx].complete.has_value());
-  return *m_viewInAtlas[atlasIdx][viewIdx].complete;
-}
-
 auto MivViewParamsList::mvp_view_id(uint16_t viewIdx) const -> uint16_t {
   VERIFY_MIVBITSTREAM(viewIdx <= mvp_num_views_minus1());
   return m_mvp_view_id[viewIdx];
@@ -414,34 +395,8 @@ auto MivViewParamsList::pruning_parent(uint16_t viewId) const -> const PruningPa
 }
 
 auto MivViewParamsList::mvp_num_views_minus1(uint16_t value) -> MivViewParamsList & {
-  for (auto &x : m_viewInAtlas) {
-    x.resize(value + size_t{1});
-  }
   m_camera_extrinsics.resize(value + size_t{1});
   m_mvpInpaintFlag.resize(value + size_t{1}, false);
-  return *this;
-}
-
-auto MivViewParamsList::mvp_view_enabled_present_flag(bool value) noexcept -> MivViewParamsList & {
-  m_mvp_view_enabled_present_flag = value;
-  return *this;
-}
-
-auto MivViewParamsList::mvp_view_enabled_in_atlas_flag(uint8_t atlasIdx, uint16_t viewIdx,
-                                                       bool value) -> MivViewParamsList & {
-  mvp_view_enabled_present_flag(true);
-  PRECONDITION(viewIdx <= mvp_num_views_minus1());
-  while (atlasIdx >= m_viewInAtlas.size()) {
-    m_viewInAtlas.emplace_back(mvp_num_views_minus1() + 1);
-  }
-  m_viewInAtlas[atlasIdx][viewIdx].enabled = value;
-  return *this;
-}
-
-auto MivViewParamsList::mvp_view_complete_in_atlas_flag(uint8_t atlasIdx, uint16_t viewIdx,
-                                                        bool value) -> MivViewParamsList & {
-  PRECONDITION(mvp_view_enabled_in_atlas_flag(atlasIdx, viewIdx));
-  m_viewInAtlas[atlasIdx][viewIdx].complete = value;
   return *this;
 }
 
@@ -525,24 +480,8 @@ auto MivViewParamsList::viewIdToIndex(uint16_t id) const -> uint16_t {
 
 auto operator<<(std::ostream &stream, const MivViewParamsList &x) -> std::ostream & {
   stream << "mvp_num_views_minus1=" << x.mvp_num_views_minus1() << '\n';
-  stream << "mvp_view_enabled_present_flag=" << std::boolalpha << x.mvp_view_enabled_present_flag()
-         << '\n';
-
-  if (x.mvp_view_enabled_present_flag()) {
-    for (size_t a = 0; a < x.m_viewInAtlas.size(); ++a) {
-      for (uint16_t v = 0; v <= x.mvp_num_views_minus1(); ++v) {
-        stream << "mvp_view_enabled_in_atlas_flag[ " << a << " ][ " << v << " ]=" << std::boolalpha
-               << x.mvp_view_enabled_in_atlas_flag(static_cast<uint8_t>(a), v) << '\n';
-        if (x.mvp_view_enabled_in_atlas_flag(static_cast<uint8_t>(a), v)) {
-          stream << "mvp_view_complete_in_atlas_flag[ " << a << " ][ " << v
-                 << " ]=" << std::boolalpha
-                 << x.mvp_view_complete_in_atlas_flag(static_cast<uint8_t>(a), v) << '\n';
-        }
-      }
-    }
-  }
-
   stream << "mvp_explicit_view_id_flag=" << std::boolalpha << x.mvp_explicit_view_id_flag() << '\n';
+
   if (x.mvp_explicit_view_id_flag()) {
     for (uint16_t v = 0; v <= x.mvp_num_views_minus1(); ++v) {
       stream << "mvp_view_id[ " << v << " ]=" << x.mvp_view_id(v) << '\n';
@@ -589,8 +528,7 @@ auto operator<<(std::ostream &stream, const MivViewParamsList &x) -> std::ostrea
 }
 
 auto MivViewParamsList::operator==(const MivViewParamsList &other) const noexcept -> bool {
-  return m_viewInAtlas == other.m_viewInAtlas &&
-         m_mvp_explicit_view_id_flag == other.m_mvp_explicit_view_id_flag &&
+  return m_mvp_explicit_view_id_flag == other.m_mvp_explicit_view_id_flag &&
          m_mvp_view_id == other.m_mvp_view_id && m_camera_extrinsics == other.m_camera_extrinsics &&
          m_mvpInpaintFlag == other.m_mvpInpaintFlag &&
          m_mvp_intrinsic_params_equal_flag == other.m_mvp_intrinsic_params_equal_flag &&
@@ -606,26 +544,14 @@ auto MivViewParamsList::operator!=(const MivViewParamsList &other) const noexcep
   return !operator==(other);
 }
 
-auto MivViewParamsList::decodeFrom(Common::InputBitstream &bitstream, const V3cParameterSet &vps,
+auto MivViewParamsList::decodeFrom(Common::InputBitstream &bitstream,
                                    const CommonAtlasSequenceParameterSetRBSP &casps)
     -> MivViewParamsList {
   auto x = MivViewParamsList{};
 
   x.mvp_num_views_minus1(bitstream.getUint16());
-  x.mvp_view_enabled_present_flag(bitstream.getFlag());
-
-  if (x.mvp_view_enabled_present_flag()) {
-    for (uint8_t a = 0; a <= vps.vps_atlas_count_minus1(); ++a) {
-      for (uint16_t v = 0; v <= x.mvp_num_views_minus1(); ++v) {
-        x.mvp_view_enabled_in_atlas_flag(a, v, bitstream.getFlag());
-        if (x.mvp_view_enabled_in_atlas_flag(a, v)) {
-          x.mvp_view_complete_in_atlas_flag(a, v, bitstream.getFlag());
-        }
-      }
-    }
-  }
-
   x.mvp_explicit_view_id_flag(bitstream.getFlag());
+
   if (x.mvp_explicit_view_id_flag()) {
     for (uint16_t v = 0; v <= x.mvp_num_views_minus1(); ++v) {
       x.mvp_view_id(v, bitstream.getUint16());
@@ -671,23 +597,11 @@ auto MivViewParamsList::decodeFrom(Common::InputBitstream &bitstream, const V3cP
   return x;
 }
 
-void MivViewParamsList::encodeTo(Common::OutputBitstream &bitstream, const V3cParameterSet &vps,
+void MivViewParamsList::encodeTo(Common::OutputBitstream &bitstream,
                                  const CommonAtlasSequenceParameterSetRBSP &casps) const {
   bitstream.putUint16(mvp_num_views_minus1());
-  bitstream.putFlag(mvp_view_enabled_present_flag());
-
-  if (mvp_view_enabled_present_flag()) {
-    for (uint8_t a = 0; a <= vps.vps_atlas_count_minus1(); ++a) {
-      for (uint16_t v = 0; v <= mvp_num_views_minus1(); ++v) {
-        bitstream.putFlag(mvp_view_enabled_in_atlas_flag(a, v));
-        if (mvp_view_enabled_in_atlas_flag(a, v)) {
-          bitstream.putFlag(mvp_view_complete_in_atlas_flag(a, v));
-        }
-      }
-    }
-  }
-
   bitstream.putFlag(mvp_explicit_view_id_flag());
+
   if (mvp_explicit_view_id_flag()) {
     for (uint16_t v = 0; v <= mvp_num_views_minus1(); ++v) {
       bitstream.putUint16(mvp_view_id(v));
@@ -879,14 +793,13 @@ auto CafMivExtension::operator!=(const CafMivExtension &other) const -> bool {
   return !operator==(other);
 }
 
-auto CafMivExtension::decodeFrom(Common::InputBitstream &bitstream, const V3cParameterSet &vps,
-                                 const NalUnitHeader &nuh,
+auto CafMivExtension::decodeFrom(Common::InputBitstream &bitstream, const NalUnitHeader &nuh,
                                  const CommonAtlasSequenceParameterSetRBSP &casps)
     -> CafMivExtension {
   auto x = CafMivExtension{};
 
   if (nuh.nal_unit_type() == NalUnitType::NAL_CAF_IDR) {
-    x.miv_view_params_list() = MivViewParamsList::decodeFrom(bitstream, vps, casps);
+    x.miv_view_params_list() = MivViewParamsList::decodeFrom(bitstream, casps);
   } else {
     x.came_update_extrinsics_flag(bitstream.getFlag());
     x.came_update_intrinsics_flag(bitstream.getFlag());
@@ -911,11 +824,10 @@ auto CafMivExtension::decodeFrom(Common::InputBitstream &bitstream, const V3cPar
   return x;
 }
 
-void CafMivExtension::encodeTo(Common::OutputBitstream &bitstream, const V3cParameterSet &vps,
-                               const NalUnitHeader &nuh,
+void CafMivExtension::encodeTo(Common::OutputBitstream &bitstream, const NalUnitHeader &nuh,
                                const CommonAtlasSequenceParameterSetRBSP &casps) const {
   if (nuh.nal_unit_type() == NalUnitType::NAL_CAF_IDR) {
-    miv_view_params_list().encodeTo(bitstream, vps, casps);
+    miv_view_params_list().encodeTo(bitstream, casps);
   } else {
     bitstream.putFlag(came_update_extrinsics_flag());
     bitstream.putFlag(came_update_intrinsics_flag());

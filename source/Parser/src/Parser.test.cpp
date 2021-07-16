@@ -123,11 +123,10 @@ auto createTestCaspsNalUnit() {
 
 auto createTestCafNalUnit(NalUnitType nut) {
   const auto caf = CommonAtlasFrameRBSP{};
-  const auto vps = createVps();
   const auto nuh = NalUnitHeader{nut, 0, 1};
   const auto caspsV = std::vector<CommonAtlasSequenceParameterSetRBSP>(1);
   static constexpr auto maxCommonAtlasFrmOrderCntLsb = 16U;
-  return createTestNalUnit(nuh, caf, vps, nuh, caspsV, maxCommonAtlasFrmOrderCntLsb);
+  return createTestNalUnit(nuh, caf, nuh, caspsV, maxCommonAtlasFrmOrderCntLsb);
 }
 
 auto createTestAtlasData(const SampleStreamNalHeader &ssnh) {

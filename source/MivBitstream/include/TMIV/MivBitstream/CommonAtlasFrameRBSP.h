@@ -71,11 +71,11 @@ public:
   auto operator==(const CommonAtlasFrameRBSP & /*other*/) const -> bool;
   auto operator!=(const CommonAtlasFrameRBSP & /*other*/) const -> bool;
 
-  static auto decodeFrom(std::istream &stream, const V3cParameterSet &vps, const NalUnitHeader &nuh,
+  static auto decodeFrom(std::istream &stream, const NalUnitHeader &nuh,
                          const std::vector<CommonAtlasSequenceParameterSetRBSP> &caspsV,
                          unsigned maxCommonAtlasFrmOrderCntLsb) -> CommonAtlasFrameRBSP;
 
-  void encodeTo(std::ostream &stream, const V3cParameterSet &vps, const NalUnitHeader &nuh,
+  void encodeTo(std::ostream &stream, const NalUnitHeader &nuh,
                 const std::vector<CommonAtlasSequenceParameterSetRBSP> &caspsV,
                 unsigned maxCommonAtlasFrmOrderCntLsb) const;
 

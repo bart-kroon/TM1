@@ -42,9 +42,6 @@ TEST_CASE("common_atlas_frame_rbsp", "[Common Atlas Frame RBSP]") {
   const auto nuhCaf = NalUnitHeader{NalUnitType::NAL_CAF_TRIAL, 0, 1};
   const auto maxCommonAtlasFrmOrderCntLsb = 32;
 
-  auto vps = V3cParameterSet{};
-  vps.vps_miv_extension() = {};
-
   const auto caspsV = [] {
     auto v = std::vector<CommonAtlasSequenceParameterSetRBSP>{};
     for (const auto id : {uint8_t{}, uint8_t{14}, uint8_t{15}}) {
@@ -62,7 +59,7 @@ caf_common_atlas_frm_order_cnt_lsb=0
 caf_extension_present_flag=false
 )");
 
-    REQUIRE(byteCodingTest(x, 2, vps, nuhIdrCaf, caspsV, maxCommonAtlasFrmOrderCntLsb));
+    REQUIRE(byteCodingTest(x, 2, nuhIdrCaf, caspsV, maxCommonAtlasFrmOrderCntLsb));
   }
 
   SECTION("Extension present, but no MIV extension") {
@@ -81,7 +78,7 @@ caf_extension_data_flag=true
 caf_extension_data_flag=false
 )");
 
-    REQUIRE(byteCodingTest(x, 3, vps, nuhIdrCaf, caspsV, maxCommonAtlasFrmOrderCntLsb));
+    REQUIRE(byteCodingTest(x, 3, nuhIdrCaf, caspsV, maxCommonAtlasFrmOrderCntLsb));
   }
 
   SECTION("MIV extension present") {
@@ -102,7 +99,7 @@ came_update_intrinsics_flag=false
 came_update_depth_quantization_flag=false
 )");
 
-    REQUIRE(byteCodingTest(x, 3, vps, nuhCaf, caspsV, maxCommonAtlasFrmOrderCntLsb));
+    REQUIRE(byteCodingTest(x, 3, nuhCaf, caspsV, maxCommonAtlasFrmOrderCntLsb));
   }
 }
 } // namespace TMIV::MivBitstream

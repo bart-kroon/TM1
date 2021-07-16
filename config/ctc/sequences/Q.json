@@ -21,10 +21,10 @@
         "Name": "viewport",
         "Projection": "Perspective",
         "Position": [ -0.5, -0.5, 1.0 ],
-        "Resolution": [2048, 2048],
+        "Resolution": [1920, 1080],
         "Rotation": [ 0.0, 0.0, 0.0 ],
-        "Focal": [1024, 1024],
-        "Principle_point": [1024, 1024]
+        "Focal": [960, 960],
+        "Principle_point": [960, 560]
     },
     {
         "BitDepthColor": 10,

@@ -39,6 +39,7 @@
 #include <TMIV/MivBitstream/AtlasObjectAssociation.h>
 #include <TMIV/MivBitstream/AtlasSequenceParameterSetRBSP.h>
 #include <TMIV/MivBitstream/AtlasTileLayerRBSP.h>
+#include <TMIV/MivBitstream/AtlasViewEnabled.h>
 #include <TMIV/MivBitstream/CommonAtlasFrameRBSP.h>
 #include <TMIV/MivBitstream/CommonAtlasSequenceParameterSetRBSP.h>
 #include <TMIV/MivBitstream/GeometryUpscalingParameters.h>
@@ -215,6 +216,8 @@ private:
     switch (message.payloadType()) {
     case TMIV::MivBitstream::PayloadType::atlas_object_association:
       return parseAtlasObjectAssociationSei(bitstream);
+    case TMIV::MivBitstream::PayloadType::atlas_view_enabled:
+      return parseAtlasViewEnabledSei(bitstream);
     case TMIV::MivBitstream::PayloadType::geometry_upscaling_parameters:
       return parseGeometryUpscalingParametersSei(bitstream);
     case TMIV::MivBitstream::PayloadType::packed_independent_regions:
@@ -239,6 +242,11 @@ private:
   void parseAtlasObjectAssociationSei(TMIV::Common::InputBitstream &bitstream) {
     const auto aoa = TMIV::MivBitstream::AtlasObjectAssociation::decodeFrom(bitstream);
     m_log << aoa;
+  }
+
+  void parseAtlasViewEnabledSei(TMIV::Common::InputBitstream &bitstream) {
+    const auto ave = TMIV::MivBitstream::AtlasViewEnabled::decodeFrom(bitstream);
+    m_log << ave;
   }
 
   void parseGeometryUpscalingParametersSei(TMIV::Common::InputBitstream &bitstream) {

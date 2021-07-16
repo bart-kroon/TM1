@@ -97,6 +97,8 @@ auto operator<<(std::ostream &stream, PayloadType pt) -> std::ostream & {
     return stream << "viewing_space_handling";
   case PayloadType::geometry_upscaling_parameters:
     return stream << "geometry_upscaling_parameters";
+  case PayloadType::atlas_view_enabled:
+    return stream << "atlas_view_enabled";
   default:
     return stream << "reserved_sei_message (" << static_cast<int>(pt) << ")";
   }

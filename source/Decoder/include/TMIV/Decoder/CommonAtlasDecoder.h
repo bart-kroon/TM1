@@ -36,6 +36,7 @@
 
 #include <TMIV/MivBitstream/AtlasAdaptationParameterSetRBSP.h>
 #include <TMIV/MivBitstream/AtlasSubBitstream.h>
+#include <TMIV/MivBitstream/AtlasViewEnabled.h>
 #include <TMIV/MivBitstream/CommonAtlasFrameRBSP.h>
 #include <TMIV/MivBitstream/CommonAtlasSequenceParameterSetRBSP.h>
 #include <TMIV/MivBitstream/GeometryUpscalingParameters.h>
@@ -68,6 +69,7 @@ public:
     std::optional<MivBitstream::ViewingSpace> vs{};
     std::optional<MivBitstream::ViewportCameraParameters> vcp{};
     std::optional<MivBitstream::ViewportPosition> vp{};
+    std::optional<MivBitstream::AtlasViewEnabled> ave{};
   };
 
   auto operator()() -> std::optional<AccessUnit>;

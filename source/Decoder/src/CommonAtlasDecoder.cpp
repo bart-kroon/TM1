@@ -203,6 +203,9 @@ void CommonAtlasDecoder::decodeSeiMessage(AccessUnit &au, const MivBitstream::Se
   case MivBitstream::PayloadType::viewport_position:
     au.vp = MivBitstream::ViewportPosition::decodeFrom(bitstream);
     return;
+  case MivBitstream::PayloadType::atlas_view_enabled:
+    au.ave = MivBitstream::AtlasViewEnabled::decodeFrom(bitstream);
+    return;
   default:
     return;
     // NOTE(BK): Ignore SEI messages that are not handled by TMIV. (You can still print them out

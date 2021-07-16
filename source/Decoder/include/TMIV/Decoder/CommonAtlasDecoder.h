@@ -90,6 +90,9 @@ private:
 
   std::vector<MivBitstream::CommonAtlasSequenceParameterSetRBSP> m_caspsV;
   int32_t m_maxCommonAtlasFrmOrderCntLsb{};
+
+  enum class State { initial, decoding, eof };
+  State m_state{State::initial};
 };
 } // namespace TMIV::Decoder
 

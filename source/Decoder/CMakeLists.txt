@@ -35,7 +35,8 @@ create_catch2_unit_test(
         DecoderTest
     SOURCES
         "src/OutputLog.test.cpp"
-       "src/FrameUnpacker.test.cpp"
+        "src/FrameUnpacker.test.cpp"
+        "src/CommonAtlasDecoder.test.cpp"
     PRIVATE
         TMIV::DecoderLib
     )

@@ -46,10 +46,17 @@ CommonAtlasDecoder::CommonAtlasDecoder(V3cUnitSource source, MivBitstream::V3cPa
     : m_source{std::move(source)}, m_vps{std::move(vps)}, m_foc{foc} {}
 
 auto CommonAtlasDecoder::operator()() -> std::optional<AccessUnit> {
+  VERIFY(m_state != State::eof);
+
   if (!m_buffer.empty() || decodeAsb()) {
+    m_state = State::decoding;
     return decodeAu();
   }
-  return {};
+  if (m_state == State::decoding) {
+    m_state = State::eof;
+    return {};
+  }
+  RUNTIME_ERROR("No access units in common atlas sub-bitstream");
 }
 
 auto CommonAtlasDecoder::decodeAsb() -> bool {

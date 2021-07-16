@@ -35,7 +35,7 @@
 
 #include <TMIV/Encoder/MivEncoder.h>
 
-TEST_CASE("Encoder::MivEncoder") {
+TEST_CASE("Encoder::MivEcoder") {
   using TMIV::Encoder::MivEncoder;
 
   std::ostringstream stream;
@@ -65,6 +65,6 @@ TEST_CASE("Encoder::MivEncoder") {
     unit->writeAccessUnit(au);
     unit.reset();
 
-    REQUIRE(stream.tellp() == 138);
+    REQUIRE(stream.tellp() == 139);
   }
 }

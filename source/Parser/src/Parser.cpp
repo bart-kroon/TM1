@@ -203,7 +203,7 @@ private:
 
   void parseCaf(std::istream &stream, const TMIV::MivBitstream::NalUnitHeader &nuh) {
     const auto caf = TMIV::MivBitstream::CommonAtlasFrameRBSP::decodeFrom(
-        stream, nuh, m_caspsV, m_maxCommonAtlasFrmOrderCntLsb);
+        stream, m_vps, nuh, m_caspsV, m_maxCommonAtlasFrmOrderCntLsb);
     m_log << caf;
   }
 

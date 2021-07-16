@@ -219,6 +219,11 @@ class MivViewParamsList {
 public:
   [[nodiscard]] auto mvp_num_views_minus1() const -> uint16_t;
 
+  [[nodiscard]] auto mvp_view_enabled_present_flag() const noexcept -> bool;
+  [[nodiscard]] auto mvp_view_enabled_in_atlas_flag(uint8_t atlasIdx, uint16_t viewIdx) const
+      -> bool;
+  [[nodiscard]] auto mvp_view_complete_in_atlas_flag(uint8_t atlasIdx, uint16_t viewIdx) const
+      -> bool;
   [[nodiscard]] constexpr auto mvp_explicit_view_id_flag() const noexcept;
   [[nodiscard]] auto mvp_view_id(uint16_t viewIdx) const -> uint16_t;
   [[nodiscard]] auto mvp_inpaint_flag(uint16_t viewId) const -> bool;
@@ -241,6 +246,15 @@ public:
   // Calling this function will allocate the camera extrinsics list
   auto mvp_num_views_minus1(uint16_t value) -> MivViewParamsList &;
 
+  auto mvp_view_enabled_present_flag(bool value) noexcept -> MivViewParamsList &;
+
+  // Sets mvp_view_enabled_in_atlas_flag[ a ][ i ] and also enables mvp_view_enabled_present_flag
+  // for convenience
+  auto mvp_view_enabled_in_atlas_flag(uint8_t atlasIdx, uint16_t viewIdx, bool value)
+      -> MivViewParamsList &;
+
+  auto mvp_view_complete_in_atlas_flag(uint8_t atlasIdx, uint16_t viewIdx, bool value)
+      -> MivViewParamsList &;
   auto mvp_explicit_view_id_flag(bool value) noexcept -> MivViewParamsList &;
   auto mvp_view_id(uint16_t viewIdx, uint16_t viewId) -> MivViewParamsList &;
   auto mvp_inpaint_flag(uint16_t viewId, bool value) -> MivViewParamsList &;
@@ -267,13 +281,22 @@ public:
   auto operator==(const MivViewParamsList & /*other*/) const noexcept -> bool;
   auto operator!=(const MivViewParamsList & /*other*/) const noexcept -> bool;
 
-  static auto decodeFrom(Common::InputBitstream &bitstream,
+  static auto decodeFrom(Common::InputBitstream &bitstream, const V3cParameterSet &vps,
                          const CommonAtlasSequenceParameterSetRBSP &casps) -> MivViewParamsList;
 
-  void encodeTo(Common::OutputBitstream &bitstream,
+  void encodeTo(Common::OutputBitstream &bitstream, const V3cParameterSet &vps,
                 const CommonAtlasSequenceParameterSetRBSP &casps) const;
 
 private:
+  struct ViewInAtlas {
+    bool enabled{};
+    std::optional<bool> complete{};
+
+    constexpr auto operator==(const ViewInAtlas &other) const noexcept;
+    constexpr auto operator!=(const ViewInAtlas &other) const noexcept;
+  };
+  bool m_mvp_view_enabled_present_flag{};
+  std::vector<std::vector<ViewInAtlas>> m_viewInAtlas;
   bool m_mvp_explicit_view_id_flag{};
   std::vector<uint16_t> m_mvp_view_id;
   std::vector<bool> m_mvpInpaintFlag{false};
@@ -401,11 +424,12 @@ public:
   auto operator==(const CafMivExtension & /*other*/) const -> bool;
   auto operator!=(const CafMivExtension & /*other*/) const -> bool;
 
-  static auto decodeFrom(Common::InputBitstream &bitstream, const NalUnitHeader &nuh,
-                         const CommonAtlasSequenceParameterSetRBSP &casps) -> CafMivExtension;
+  static auto decodeFrom(Common::InputBitstream &bitstream, const V3cParameterSet &vps,
+                         const NalUnitHeader &nuh, const CommonAtlasSequenceParameterSetRBSP &casps)
+      -> CafMivExtension;
 
-  void encodeTo(Common::OutputBitstream &bitstream, const NalUnitHeader &nuh,
-                const CommonAtlasSequenceParameterSetRBSP &casps) const;
+  void encodeTo(Common::OutputBitstream &bitstream, const V3cParameterSet &vps,
+                const NalUnitHeader &nuh, const CommonAtlasSequenceParameterSetRBSP &casps) const;
 
 private:
   std::optional<bool> m_came_update_extrinsics_flag{};

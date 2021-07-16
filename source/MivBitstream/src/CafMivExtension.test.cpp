@@ -198,11 +198,14 @@ pp_parent_id[ 5 ][ 3 ]=8
 
 TEST_CASE("miv_view_params_list", "[Common Atlas Frame MIV Extension]") {
   auto x = MivViewParamsList{};
+  auto vps = V3cParameterSet{};
+  vps.vps_miv_extension() = {};
   auto casps = CommonAtlasSequenceParameterSetRBSP{};
   casps.casps_miv_extension() = {};
 
   SECTION("Default constructor") {
     REQUIRE(toString(x) == R"(mvp_num_views_minus1=0
+mvp_view_enabled_present_flag=false
 mvp_explicit_view_id_flag=false
 ce_view_pos_x[ 0 ]=0.0
 ce_view_pos_y[ 0 ]=0.0
@@ -222,12 +225,14 @@ ci_erp_theta_max[ 0 ]=0
 mvp_pruning_graph_params_present_flag=false
 )");
 
-    REQUIRE(bitCodingTest(x, 380, casps));
+    REQUIRE(bitCodingTest(x, 381, vps, casps));
   }
 
   SECTION("Example 1") {
     casps.casps_miv_extension().casme_depth_quantization_params_present_flag(true);
     x.mvp_num_views_minus1(0)
+        .mvp_view_enabled_in_atlas_flag(0, 0, true)
+        .mvp_view_complete_in_atlas_flag(0, 0, true)
         .mvp_explicit_view_id_flag(false)
         .mvp_intrinsic_params_equal_flag(false)
         .mvp_depth_quantization_params_equal_flag(false)
@@ -238,6 +243,9 @@ mvp_pruning_graph_params_present_flag=false
         .ci_ortho_height(3.F);
 
     REQUIRE(toString(x) == R"(mvp_num_views_minus1=0
+mvp_view_enabled_present_flag=true
+mvp_view_enabled_in_atlas_flag[ 0 ][ 0 ]=true
+mvp_view_complete_in_atlas_flag[ 0 ][ 0 ]=true
 mvp_explicit_view_id_flag=false
 ce_view_pos_x[ 0 ]=0.0
 ce_view_pos_y[ 0 ]=0.0
@@ -260,12 +268,22 @@ dq_depth_occ_threshold_default[ 0 ]=0
 mvp_pruning_graph_params_present_flag=false
 )");
 
-    REQUIRE(bitCodingTest(x, 390, casps));
+    REQUIRE(bitCodingTest(x, 393, vps, casps));
   }
 
   SECTION("Example 2") {
+    vps.vps_atlas_count_minus1(1);
     casps.casps_miv_extension().casme_depth_quantization_params_present_flag(true);
     x.mvp_num_views_minus1(2)
+        .mvp_view_enabled_in_atlas_flag(0, 0, true)
+        .mvp_view_complete_in_atlas_flag(0, 0, true)
+        .mvp_view_enabled_in_atlas_flag(0, 1, true)
+        .mvp_view_complete_in_atlas_flag(0, 1, true)
+        .mvp_view_enabled_in_atlas_flag(0, 2, false)
+        .mvp_view_enabled_in_atlas_flag(1, 0, false)
+        .mvp_view_enabled_in_atlas_flag(1, 1, false)
+        .mvp_view_enabled_in_atlas_flag(1, 2, true)
+        .mvp_view_complete_in_atlas_flag(1, 2, false)
         .mvp_view_id(0, 0)
         .mvp_view_id(1, 2)
         .mvp_view_id(2, 1)
@@ -279,6 +297,16 @@ mvp_pruning_graph_params_present_flag=false
         .ci_ortho_height(3.F);
 
     REQUIRE(toString(x) == R"(mvp_num_views_minus1=2
+mvp_view_enabled_present_flag=true
+mvp_view_enabled_in_atlas_flag[ 0 ][ 0 ]=true
+mvp_view_complete_in_atlas_flag[ 0 ][ 0 ]=true
+mvp_view_enabled_in_atlas_flag[ 0 ][ 1 ]=true
+mvp_view_complete_in_atlas_flag[ 0 ][ 1 ]=true
+mvp_view_enabled_in_atlas_flag[ 0 ][ 2 ]=false
+mvp_view_enabled_in_atlas_flag[ 1 ][ 0 ]=false
+mvp_view_enabled_in_atlas_flag[ 1 ][ 1 ]=false
+mvp_view_enabled_in_atlas_flag[ 1 ][ 2 ]=true
+mvp_view_complete_in_atlas_flag[ 1 ][ 2 ]=false
 mvp_explicit_view_id_flag=true
 mvp_view_id[ 0 ]=0
 mvp_view_id[ 1 ]=2
@@ -321,13 +349,52 @@ pp_is_root_flag[ 2 ]=true
 pp_is_root_flag[ 1 ]=true
 )");
 
-    REQUIRE(bitCodingTest(x, 827, casps));
+    REQUIRE(bitCodingTest(x, 837, vps, casps));
+  }
+
+  SECTION("mvp_view_enabled_present_flag=0") {
+    casps.casps_miv_extension().casme_depth_quantization_params_present_flag(true);
+    x.mvp_num_views_minus1(0)
+        .mvp_intrinsic_params_equal_flag(false)
+        .mvp_depth_quantization_params_equal_flag(false)
+        .mvp_pruning_graph_params_present_flag(false)
+        .camera_intrinsics(0)
+        .ci_cam_type(CiCamType::orthographic)
+        .ci_ortho_width(4.F)
+        .ci_ortho_height(3.F);
+
+    REQUIRE(toString(x) == R"(mvp_num_views_minus1=0
+mvp_view_enabled_present_flag=false
+mvp_explicit_view_id_flag=false
+ce_view_pos_x[ 0 ]=0.0
+ce_view_pos_y[ 0 ]=0.0
+ce_view_pos_z[ 0 ]=0.0
+ce_view_quat_x[ 0 ]=0
+ce_view_quat_y[ 0 ]=0
+ce_view_quat_z[ 0 ]=0
+mvp_inpaint_flag[ 0 ]=false
+mvp_intrinsic_params_equal_flag=false
+ci_cam_type[ 0 ]=orthographic
+ci_projection_plane_width_minus1[ 0 ]=0
+ci_projection_plane_height_minus1[ 0 ]=0
+ci_ortho_width[ 0 ]=4
+ci_ortho_height[ 0 ]=3
+mvp_depth_quantization_params_equal_flag=false
+dq_quantization_law[ 0 ]=0
+dq_norm_disp_low[ 0 ]=0
+dq_norm_disp_high[ 0 ]=0
+dq_depth_occ_threshold_default[ 0 ]=0
+mvp_pruning_graph_params_present_flag=false
+)");
+
+    REQUIRE(bitCodingTest(x, 391, vps, casps));
   }
 
   SECTION("mvp when casme_depth_quantization_params_present_flag=0") {
     casps.casps_miv_extension().casme_depth_quantization_params_present_flag(false);
 
     REQUIRE(toString(x) == R"(mvp_num_views_minus1=0
+mvp_view_enabled_present_flag=false
 mvp_explicit_view_id_flag=false
 ce_view_pos_x[ 0 ]=0.0
 ce_view_pos_y[ 0 ]=0.0
@@ -347,12 +414,14 @@ ci_erp_theta_max[ 0 ]=0
 mvp_pruning_graph_params_present_flag=false
 )");
 
-    REQUIRE(bitCodingTest(x, 380, casps));
+    REQUIRE(bitCodingTest(x, 381, vps, casps));
   }
 }
 
 TEST_CASE("caf_miv_extension", "[Common Atlas Frame MIV Extension]") {
   auto x = CafMivExtension{};
+  auto vps = V3cParameterSet{};
+  vps.vps_miv_extension() = {};
   auto casps = CommonAtlasSequenceParameterSetRBSP{};
   casps.casps_miv_extension() = {};
   const auto nalCaf = NalUnitHeader{NalUnitType::NAL_CAF_TRIAL, 0, 1};
@@ -362,6 +431,9 @@ TEST_CASE("caf_miv_extension", "[Common Atlas Frame MIV Extension]") {
     casps.casps_miv_extension().casme_depth_quantization_params_present_flag(true);
     x.miv_view_params_list()
         .mvp_num_views_minus1(2)
+        .mvp_view_enabled_in_atlas_flag(0, 0, false)
+        .mvp_view_enabled_in_atlas_flag(0, 1, false)
+        .mvp_view_enabled_in_atlas_flag(0, 2, false)
         .mvp_explicit_view_id_flag(false)
         .mvp_intrinsic_params_equal_flag(true)
         .mvp_depth_quantization_params_equal_flag(true)
@@ -372,6 +444,10 @@ TEST_CASE("caf_miv_extension", "[Common Atlas Frame MIV Extension]") {
         .ci_ortho_height(3.F);
 
     REQUIRE(toString(x) == R"(miv_view_params_list=mvp_num_views_minus1=2
+mvp_view_enabled_present_flag=true
+mvp_view_enabled_in_atlas_flag[ 0 ][ 0 ]=false
+mvp_view_enabled_in_atlas_flag[ 0 ][ 1 ]=false
+mvp_view_enabled_in_atlas_flag[ 0 ][ 2 ]=false
 mvp_explicit_view_id_flag=false
 ce_view_pos_x[ 0 ]=0.0
 ce_view_pos_y[ 0 ]=0.0
@@ -411,7 +487,7 @@ pp_is_root_flag[ 1 ]=true
 pp_is_root_flag[ 2 ]=true
 )");
 
-    REQUIRE(bitCodingTest(x, 779, nalIdrCaf, casps));
+    REQUIRE(bitCodingTest(x, 783, vps, nalIdrCaf, casps));
   }
 
   SECTION("Update extrinsics") {
@@ -443,7 +519,7 @@ ce_view_quat_y[ 0 ]=-32768
 ce_view_quat_z[ 0 ]=1
 )");
 
-    REQUIRE(bitCodingTest(x, 227, nalCaf, casps));
+    REQUIRE(bitCodingTest(x, 227, vps, nalCaf, casps));
   }
 
   SECTION("Update camera intrinsics") {
@@ -475,7 +551,7 @@ ci_erp_theta_min[ 0 ]=-1
 ci_erp_theta_max[ 0 ]=1
 )");
 
-    REQUIRE(bitCodingTest(x, 203, nalCaf, casps));
+    REQUIRE(bitCodingTest(x, 203, vps, nalCaf, casps));
   }
 
   SECTION("Update depth quantization") {
@@ -502,7 +578,7 @@ dq_norm_disp_high[ 0 ]=100
 dq_depth_occ_threshold_default[ 0 ]=64
 )");
 
-    REQUIRE(bitCodingTest(x, 120, nalCaf, casps));
+    REQUIRE(bitCodingTest(x, 120, vps, nalCaf, casps));
   }
 
   SECTION("came when casme_depth_quantization_params_present_flag=0") {
@@ -513,7 +589,7 @@ dq_depth_occ_threshold_default[ 0 ]=64
 came_update_intrinsics_flag=false
 )");
 
-    REQUIRE(bitCodingTest(x, 2, nalCaf, casps));
+    REQUIRE(bitCodingTest(x, 2, vps, nalCaf, casps));
   }
 }
 

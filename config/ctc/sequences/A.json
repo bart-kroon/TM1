@@ -19,7 +19,7 @@
             "Resolution": [1920, 1080],
             "Projection": "Perspective",
             "Focal": [960, 960],
-            "Principle_point": [960, 560],
+            "Principle_point": [960, 540],
             "Depth_range": [0.8, "inf"],
             "BitDepthColor": 10,
             "BitDepthDepth": 16,

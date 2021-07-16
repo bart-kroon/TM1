@@ -25,7 +25,7 @@
         "Resolution": [1920, 1080],
         "Rotation": [ 0.0, 0.0, 0.0 ],
         "Focal": [960, 960],
-        "Principle_point": [960, 560]
+        "Principle_point": [960, 540]
     },
     {
         "BitDepthColor": 10,

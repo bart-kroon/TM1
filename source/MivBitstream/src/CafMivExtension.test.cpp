@@ -296,14 +296,14 @@ ce_view_pos_z[ 1 ]=0.0
 ce_view_quat_x[ 1 ]=0
 ce_view_quat_y[ 1 ]=0
 ce_view_quat_z[ 1 ]=0
-mvp_inpaint_flag[ 2 ]=false
+mvp_inpaint_flag[ 1 ]=true
 ce_view_pos_x[ 2 ]=0.0
 ce_view_pos_y[ 2 ]=0.0
 ce_view_pos_z[ 2 ]=0.0
 ce_view_quat_x[ 2 ]=0
 ce_view_quat_y[ 2 ]=0
 ce_view_quat_z[ 2 ]=0
-mvp_inpaint_flag[ 1 ]=true
+mvp_inpaint_flag[ 2 ]=false
 mvp_intrinsic_params_equal_flag=true
 ci_cam_type[ 0 ]=orthographic
 ci_projection_plane_width_minus1[ 0 ]=0
@@ -317,8 +317,8 @@ dq_norm_disp_high[ 0 ]=0
 dq_depth_occ_threshold_default[ 0 ]=0
 mvp_pruning_graph_params_present_flag=true
 pp_is_root_flag[ 0 ]=true
-pp_is_root_flag[ 2 ]=true
 pp_is_root_flag[ 1 ]=true
+pp_is_root_flag[ 2 ]=true
 )");
 
     REQUIRE(bitCodingTest(x, 827, casps));

@@ -361,8 +361,7 @@ auto MivViewParamsList::mvp_view_id(uint16_t viewIdx) const -> uint16_t {
   return m_mvp_view_id[viewIdx];
 }
 
-auto MivViewParamsList::mvp_inpaint_flag(uint16_t viewId) const -> bool {
-  const auto viewIndex = viewIdToIndex(viewId);
+auto MivViewParamsList::mvp_inpaint_flag(uint16_t viewIndex) const -> bool {
   return m_mvpInpaintFlag[viewIndex];
 }
 
@@ -387,11 +386,10 @@ auto MivViewParamsList::depth_quantization(uint16_t viewId) const -> const Depth
   return m_depth_quantization[viewId];
 }
 
-auto MivViewParamsList::pruning_parent(uint16_t viewId) const -> const PruningParents & {
+auto MivViewParamsList::pruning_parent(uint16_t viewIndex) const -> const PruningParents & {
   VERIFY_MIVBITSTREAM(mvp_pruning_graph_params_present_flag());
-  const auto viewIdx = viewIdToIndex(viewId);
-  VERIFY_MIVBITSTREAM(viewIdx < m_pruning_parent.size());
-  return m_pruning_parent[viewIdx];
+  VERIFY_MIVBITSTREAM(viewIndex < m_pruning_parent.size());
+  return m_pruning_parent[viewIndex];
 }
 
 auto MivViewParamsList::mvp_num_views_minus1(uint16_t value) -> MivViewParamsList & {
@@ -415,8 +413,7 @@ auto MivViewParamsList::mvp_view_id(uint16_t viewIdx, uint16_t viewId) -> MivVie
   return *this;
 }
 
-auto MivViewParamsList::mvp_inpaint_flag(uint16_t viewId, bool value) -> MivViewParamsList & {
-  const auto viewIndex = viewIdToIndex(viewId);
+auto MivViewParamsList::mvp_inpaint_flag(uint16_t viewIndex, bool value) -> MivViewParamsList & {
   m_mvpInpaintFlag[viewIndex] = value;
   return *this;
 }
@@ -455,27 +452,9 @@ auto MivViewParamsList::depth_quantization(uint16_t viewId) noexcept -> DepthQua
   return m_depth_quantization[viewId];
 }
 
-auto MivViewParamsList::pruning_parent(uint16_t viewId) -> PruningParents & {
-  const auto viewIdx = viewIdToIndex(viewId);
-  PRECONDITION(viewIdx < m_pruning_parent.size());
-  return m_pruning_parent[viewIdx];
-}
-
-auto MivViewParamsList::viewIndexToId(uint16_t index) const -> uint16_t {
-  VERIFY_MIVBITSTREAM(index <= mvp_num_views_minus1());
-  if (mvp_explicit_view_id_flag()) {
-    return mvp_view_id(index);
-  }
-  return index;
-}
-
-auto MivViewParamsList::viewIdToIndex(uint16_t id) const -> uint16_t {
-  if (mvp_explicit_view_id_flag()) {
-    const auto iter = std::find(m_mvp_view_id.cbegin(), m_mvp_view_id.cend(), id);
-    VERIFY_MIVBITSTREAM(iter != m_mvp_view_id.cend());
-    return static_cast<uint16_t>(std::distance(m_mvp_view_id.cbegin(), iter));
-  }
-  return id;
+auto MivViewParamsList::pruning_parent(uint16_t viewIndex) -> PruningParents & {
+  PRECONDITION(viewIndex < m_pruning_parent.size());
+  return m_pruning_parent[viewIndex];
 }
 
 auto operator<<(std::ostream &stream, const MivViewParamsList &x) -> std::ostream & {
@@ -489,9 +468,8 @@ auto operator<<(std::ostream &stream, const MivViewParamsList &x) -> std::ostrea
   }
 
   for (uint16_t v = 0; v <= x.mvp_num_views_minus1(); ++v) {
-    const auto viewId = x.viewIndexToId(v);
     x.camera_extrinsics(v).printTo(stream, v);
-    fmt::print(stream, "mvp_inpaint_flag[ {} ]={}\n", viewId, x.mvp_inpaint_flag(viewId));
+    fmt::print(stream, "mvp_inpaint_flag[ {} ]={}\n", v, x.mvp_inpaint_flag(v));
   }
 
   stream << "mvp_intrinsic_params_equal_flag=" << std::boolalpha
@@ -520,8 +498,7 @@ auto operator<<(std::ostream &stream, const MivViewParamsList &x) -> std::ostrea
          << x.mvp_pruning_graph_params_present_flag() << '\n';
   if (x.mvp_pruning_graph_params_present_flag()) {
     for (uint16_t v = 0; v <= x.mvp_num_views_minus1(); ++v) {
-      const auto viewId = x.viewIndexToId(v);
-      x.pruning_parent(viewId).printTo(stream, viewId);
+      x.pruning_parent(v).printTo(stream, v);
     }
   }
   return stream;
@@ -559,9 +536,8 @@ auto MivViewParamsList::decodeFrom(Common::InputBitstream &bitstream,
   }
 
   for (uint16_t v = 0; v <= x.mvp_num_views_minus1(); ++v) {
-    const auto viewId = x.viewIndexToId(v);
     x.camera_extrinsics(v) = CameraExtrinsics::decodeFrom(bitstream);
-    x.mvp_inpaint_flag(viewId, bitstream.getFlag());
+    x.mvp_inpaint_flag(v, bitstream.getFlag());
   }
 
   x.mvp_intrinsic_params_equal_flag(bitstream.getFlag());
@@ -590,8 +566,7 @@ auto MivViewParamsList::decodeFrom(Common::InputBitstream &bitstream,
 
   if (x.mvp_pruning_graph_params_present_flag()) {
     for (uint16_t v = 0; v <= x.mvp_num_views_minus1(); ++v) {
-      const auto viewId = x.viewIndexToId(v);
-      x.pruning_parent(viewId) = PruningParents::decodeFrom(bitstream, x.mvp_num_views_minus1());
+      x.pruning_parent(v) = PruningParents::decodeFrom(bitstream, x.mvp_num_views_minus1());
     }
   }
   return x;
@@ -609,9 +584,8 @@ void MivViewParamsList::encodeTo(Common::OutputBitstream &bitstream,
   }
 
   for (uint16_t v = 0; v <= mvp_num_views_minus1(); ++v) {
-    const auto viewId = viewIndexToId(v);
     camera_extrinsics(v).encodeTo(bitstream);
-    bitstream.putFlag(mvp_inpaint_flag(viewId));
+    bitstream.putFlag(mvp_inpaint_flag(v));
   }
 
   bitstream.putFlag(mvp_intrinsic_params_equal_flag());
@@ -639,8 +613,7 @@ void MivViewParamsList::encodeTo(Common::OutputBitstream &bitstream,
 
   if (mvp_pruning_graph_params_present_flag()) {
     for (uint16_t v = 0; v <= mvp_num_views_minus1(); ++v) {
-      const auto viewId = viewIndexToId(v);
-      pruning_parent(viewId).encodeTo(bitstream, mvp_num_views_minus1());
+      pruning_parent(v).encodeTo(bitstream, mvp_num_views_minus1());
     }
   }
 }

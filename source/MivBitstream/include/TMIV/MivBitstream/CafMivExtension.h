@@ -221,7 +221,7 @@ public:
 
   [[nodiscard]] constexpr auto mvp_explicit_view_id_flag() const noexcept;
   [[nodiscard]] auto mvp_view_id(uint16_t viewIdx) const -> uint16_t;
-  [[nodiscard]] auto mvp_inpaint_flag(uint16_t viewId) const -> bool;
+  [[nodiscard]] auto mvp_inpaint_flag(uint16_t viewIndex) const -> bool;
   [[nodiscard]] constexpr auto mvp_intrinsic_params_equal_flag() const noexcept;
   [[nodiscard]] auto mvp_depth_quantization_params_equal_flag() const -> bool;
   [[nodiscard]] constexpr auto mvp_pruning_graph_params_present_flag() const noexcept;
@@ -236,14 +236,14 @@ public:
   // mvp_depth_quantization_params_equal_flag() case is handled for convenience.
   [[nodiscard]] auto depth_quantization(uint16_t viewId = 0) const -> const DepthQuantization &;
 
-  [[nodiscard]] auto pruning_parent(uint16_t viewId) const -> const PruningParents &;
+  [[nodiscard]] auto pruning_parent(uint16_t viewIndex) const -> const PruningParents &;
 
   // Calling this function will allocate the camera extrinsics list
   auto mvp_num_views_minus1(uint16_t value) -> MivViewParamsList &;
 
   auto mvp_explicit_view_id_flag(bool value) noexcept -> MivViewParamsList &;
   auto mvp_view_id(uint16_t viewIdx, uint16_t viewId) -> MivViewParamsList &;
-  auto mvp_inpaint_flag(uint16_t viewId, bool value) -> MivViewParamsList &;
+  auto mvp_inpaint_flag(uint16_t viewIndex, bool value) -> MivViewParamsList &;
 
   // Calling this function will allocate the camera intrinsics list
   auto mvp_intrinsic_params_equal_flag(bool value) -> MivViewParamsList &;
@@ -257,10 +257,7 @@ public:
   [[nodiscard]] auto camera_extrinsics(uint16_t viewId) noexcept -> CameraExtrinsics &;
   [[nodiscard]] auto camera_intrinsics(uint16_t viewId = 0) noexcept -> CameraIntrinsics &;
   [[nodiscard]] auto depth_quantization(uint16_t viewId = 0) noexcept -> DepthQuantization &;
-  [[nodiscard]] auto pruning_parent(uint16_t viewId) -> PruningParents &;
-
-  [[nodiscard]] auto viewIndexToId(uint16_t index) const -> uint16_t;
-  [[nodiscard]] auto viewIdToIndex(uint16_t id) const -> uint16_t;
+  [[nodiscard]] auto pruning_parent(uint16_t viewIndex) -> PruningParents &;
 
   friend auto operator<<(std::ostream &stream, const MivViewParamsList &x) -> std::ostream &;
 

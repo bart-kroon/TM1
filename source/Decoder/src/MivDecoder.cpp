@@ -370,8 +370,7 @@ void MivDecoder::decodeMvpl(const MivBitstream::MivViewParamsList &mvpl, bool dq
       vp.dq = mvpl.depth_quantization(viewIdx);
     }
     if (mvpl.mvp_pruning_graph_params_present_flag()) {
-      const auto viewId = mvpl.viewIndexToId(viewIdx);
-      vp.pp = mvpl.pruning_parent(viewId);
+      vp.pp = mvpl.pruning_parent(viewIdx);
     }
 
     vp.name = fmt::format("pv{:02}", viewIdx);

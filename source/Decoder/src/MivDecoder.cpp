@@ -76,15 +76,21 @@ void MivDecoder::setTransparencyFrameServer(TransparencyFrameServer value) {
 void MivDecoder::setFramePackServer(FramePackServer value) { m_framePackServer = std::move(value); }
 
 auto MivDecoder::operator()() -> std::optional<MivBitstream::AccessUnit> {
+  VERIFY(m_state != State::eof);
   m_au.irap = expectIrap();
 
   if (m_au.irap) {
     if (auto vps = decodeVps()) {
       m_au.vps = *vps;
       resetDecoder();
-    } else {
+    } else if (m_state == State::decoding) {
+      m_state = State::eof;
       return std::nullopt;
+    } else {
+      RUNTIME_ERROR("No VPS in V3C sample stream");
     }
+  } else {
+    VERIFY(m_state == State::decoding);
   }
 
   ++m_au.foc;
@@ -107,8 +113,10 @@ auto MivDecoder::operator()() -> std::optional<MivBitstream::AccessUnit> {
 
   if (decodeVideoSubBitstreams()) {
     // TODO(BK): This copies the video frames.
+    m_state = State::decoding;
     return m_au;
   }
+  m_state = State::eof;
   return {};
 }
 

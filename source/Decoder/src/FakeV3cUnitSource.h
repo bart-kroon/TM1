@@ -31,44 +31,27 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef TMIV_MIVBITSTREAM_TYPES_H
-#define TMIV_MIVBITSTREAM_TYPES_H
+#include <catch2/catch.hpp>
 
-#include <cstdint>
-#include <ostream>
+#include <TMIV/MivBitstream/V3cUnit.h>
 
-namespace TMIV::MivBitstream {
-enum class VuhUnitType : uint8_t { V3C_VPS, V3C_AD, V3C_OVD, V3C_GVD, V3C_AVD, V3C_PVD, V3C_CAD };
+using TMIV::MivBitstream::V3cUnit;
 
-constexpr auto operator<<(std::ostream &stream, const VuhUnitType x) -> std::ostream & {
-  switch (x) {
-  case VuhUnitType::V3C_VPS:
-    return stream << "V3C_VPS";
-  case VuhUnitType::V3C_AD:
-    return stream << "V3C_AD";
-  case VuhUnitType::V3C_OVD:
-    return stream << "V3C_OVD";
-  case VuhUnitType::V3C_GVD:
-    return stream << "V3C_GVD";
-  case VuhUnitType::V3C_AVD:
-    return stream << "V3C_AVD";
-  case VuhUnitType::V3C_PVD:
-    return stream << "V3C_PVD";
-  case VuhUnitType::V3C_CAD:
-    return stream << "V3C_CAD";
-  default:
-    return stream << "[unknown:" << static_cast<int>(x) << "]";
+namespace test {
+struct FakeV3cUnitSource {
+  std::vector<std::shared_ptr<V3cUnit>> units;
+  bool eof{};
+
+  auto operator()() -> std::optional<V3cUnit> {
+    REQUIRE(!eof);
+
+    if (units.empty()) {
+      eof = true;
+      return std::nullopt;
+    }
+    auto result = std::move(*units.front());
+    units.erase(units.begin());
+    return result;
   }
-}
-
-constexpr auto operator==(VuhUnitType vuh_unit_type, uint8_t underlying_value) noexcept -> bool {
-  return static_cast<uint8_t>(vuh_unit_type) == underlying_value;
-}
-
-constexpr auto operator==(uint8_t underlying_value, VuhUnitType vuh_unit_type) noexcept -> bool {
-  return operator==(vuh_unit_type, underlying_value);
-}
-
-} // namespace TMIV::MivBitstream
-
-#endif
+};
+} // namespace test

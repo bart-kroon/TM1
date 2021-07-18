@@ -45,7 +45,7 @@ void FrameUnpacker::readRegionParams(const TMIV::MivBitstream::PackingInformatio
   m_numPartitions = PackingInfo.pin_attribute_dimension_partitions_minus1(0) + 1;
   LIMITATION(m_numMaps == 1 && m_numPartitions == 1 && m_numAttributes == 1);
 
-  m_regionParams.regionTypeId = std::vector<uint8_t>(m_numRegions);
+  m_regionParams.regionTypeId = std::vector<MivBitstream::VuhUnitType>(m_numRegions);
   m_regionParams.regionPackedOffsetX = std::vector<uint16_t>(m_numRegions);
   m_regionParams.regionPackedOffsetY = std::vector<uint16_t>(m_numRegions);
   m_regionParams.regionWidth = std::vector<uint16_t>(m_numRegions);
@@ -57,7 +57,7 @@ void FrameUnpacker::readRegionParams(const TMIV::MivBitstream::PackingInformatio
   m_regionParams.regionAttrTypeID = std::vector<uint8_t>(m_numRegions);
 
   for (auto i = 0; i < m_numRegions; i++) {
-    m_regionParams.regionTypeId[i] = PackingInfo.pin_region_type_id_minus2(i) + 2;
+    m_regionParams.regionTypeId[i] = PackingInfo.pinRegionTypeId(i);
     m_regionParams.regionPackedOffsetX[i] = PackingInfo.pin_region_top_left_x(i);
     m_regionParams.regionPackedOffsetY[i] = PackingInfo.pin_region_top_left_y(i);
     m_regionParams.regionWidth[i] = PackingInfo.pin_region_width_minus1(i) + 1;

@@ -200,12 +200,12 @@ void FramePacker::updatePinRegionInformation(size_t i) {
   m_packingInformation.pin_region_unpack_top_left_y(i, m_pinRegion.pin_region_unpack_top_left_y);
   m_packingInformation.pin_region_rotation_flag(i, false);
 
-  if (m_pinRegion.pin_region_type_id_minus2 + 2 == MivBitstream::VuhUnitType::V3C_AVD ||
-      m_pinRegion.pin_region_type_id_minus2 + 2 == MivBitstream::VuhUnitType::V3C_GVD) {
+  if (m_pinRegion.pinRegionTypeId() == MivBitstream::VuhUnitType::V3C_AVD ||
+      m_pinRegion.pinRegionTypeId() == MivBitstream::VuhUnitType::V3C_GVD) {
     m_packingInformation.pin_region_map_index(i, 0);
     m_packingInformation.pin_region_auxiliary_data_flag(i, false);
   }
-  if (m_pinRegion.pin_region_type_id_minus2 + 2 == MivBitstream::VuhUnitType::V3C_AVD) {
+  if (m_pinRegion.pinRegionTypeId() == MivBitstream::VuhUnitType::V3C_AVD) {
     m_packingInformation.pin_region_attr_index(i, 0);
   }
 }

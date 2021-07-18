@@ -142,6 +142,9 @@ private:
   double m_totalGeoVideoDecodingTime{};
   double m_totalAttrVideoDecodingTime{};
   double m_totalFramePackVideoDecodingTime{};
+
+  enum class State { initial, decoding, eof };
+  State m_state{State::initial};
 };
 } // namespace TMIV::Decoder
 

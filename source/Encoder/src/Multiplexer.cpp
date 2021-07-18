@@ -54,18 +54,15 @@ void setRegionInformation(MivBitstream::PackingInformation &packingInformation, 
       .pin_region_unpack_top_left_y(regionIdx,
                                     region.require("pin_region_unpack_top_left_y").as<uint16_t>())
       .pin_region_rotation_flag(regionIdx, region.require("pin_region_rotation_flag").as<bool>());
-  if (packingInformation.pin_region_type_id_minus2(regionIdx) + 2 ==
-          MivBitstream::VuhUnitType::V3C_AVD ||
-      packingInformation.pin_region_type_id_minus2(regionIdx) + 2 ==
-          MivBitstream::VuhUnitType::V3C_GVD) {
+  if (packingInformation.pinRegionTypeId(regionIdx) == MivBitstream::VuhUnitType::V3C_AVD ||
+      packingInformation.pinRegionTypeId(regionIdx) == MivBitstream::VuhUnitType::V3C_GVD) {
     packingInformation
         .pin_region_map_index(regionIdx, region.require("pin_region_map_index").as<uint8_t>())
         .pin_region_auxiliary_data_flag(
             regionIdx, region.require("pin_region_auxiliary_data_flag").as<bool>());
   }
 
-  if (packingInformation.pin_region_type_id_minus2(regionIdx) + 2 ==
-      MivBitstream::VuhUnitType::V3C_AVD) {
+  if (packingInformation.pinRegionTypeId(regionIdx) == MivBitstream::VuhUnitType::V3C_AVD) {
     auto k = region.require("pin_region_attr_index").as<uint8_t>();
     packingInformation.pin_region_attr_index(regionIdx, k);
     if (packingInformation.pin_attribute_dimension_minus1(k) > 0U) {

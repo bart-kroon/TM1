@@ -35,7 +35,6 @@
 #define TMIV_MIVBITSTREAM_V3CPARAMETERSET_H
 
 #include <TMIV/Common/Bitstream.h>
-#include <TMIV/MivBitstream/Types.h>
 
 #include <fmt/format.h>
 
@@ -94,6 +93,8 @@ enum class PtlLevelIdc : uint8_t {
   Level_4_5 = 135
 };
 
+enum class VuhUnitType : uint8_t { V3C_VPS, V3C_AD, V3C_OVD, V3C_GVD, V3C_AVD, V3C_PVD, V3C_CAD };
+
 enum class AiAttributeTypeId : uint8_t {
   ATTR_TEXTURE,
   ATTR_MATERIAL_ID,
@@ -140,12 +141,13 @@ template <> struct fmt::formatter<TMIV::MivBitstream::AtlasId> {
 };
 
 namespace TMIV::MivBitstream {
-auto operator<<(std::ostream &stream, const PtlProfileCodecGroupIdc &x) -> std::ostream &;
-auto operator<<(std::ostream &stream, const PtlProfilePccToolsetIdc &x) -> std::ostream &;
-auto operator<<(std::ostream &stream, const PtlProfileReconstructionIdc &x) -> std::ostream &;
-auto operator<<(std::ostream &stream, const PtlMaxDecodesIdc &x) -> std::ostream &;
-auto operator<<(std::ostream &stream, const PtlLevelIdc &x) -> std::ostream &;
-auto operator<<(std::ostream &stream, const AiAttributeTypeId &x) -> std::ostream &;
+auto operator<<(std::ostream &stream, PtlProfileCodecGroupIdc x) -> std::ostream &;
+auto operator<<(std::ostream &stream, PtlProfilePccToolsetIdc x) -> std::ostream &;
+auto operator<<(std::ostream &stream, PtlProfileReconstructionIdc x) -> std::ostream &;
+auto operator<<(std::ostream &stream, PtlMaxDecodesIdc x) -> std::ostream &;
+auto operator<<(std::ostream &stream, PtlLevelIdc x) -> std::ostream &;
+auto operator<<(std::ostream &stream, VuhUnitType x) -> std::ostream &;
+auto operator<<(std::ostream &stream, AiAttributeTypeId x) -> std::ostream &;
 
 // TMIV-internal filename convention
 auto codeOf(AiAttributeTypeId typeId) -> char;
@@ -407,6 +409,10 @@ struct PinRegion {
   std::optional<bool> pin_region_auxiliary_data_flag{};
   std::optional<uint8_t> pin_region_attr_index{};
   std::optional<uint8_t> pin_region_attr_partition_index{};
+
+  [[nodiscard]] constexpr auto pinRegionTypeId() const noexcept {
+    return static_cast<VuhUnitType>(pin_region_type_id_minus2 + 2);
+  }
 };
 
 struct PinAttributeInformation {

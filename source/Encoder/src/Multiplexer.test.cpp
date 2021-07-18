@@ -231,18 +231,15 @@ auto checkModifiedVPSWithPackedInformation(std::istream &stream, const Json &pac
               region.require("pin_region_unpack_top_left_y").as<uint16_t>());
       REQUIRE(vpi.pin_region_rotation_flag(regionIdx) ==
               region.require("pin_region_rotation_flag").as<bool>());
-      if (vpi.pin_region_type_id_minus2(regionIdx) + 2 ==
-              TMIV::MivBitstream::VuhUnitType::V3C_AVD ||
-          vpi.pin_region_type_id_minus2(regionIdx) + 2 ==
-              TMIV::MivBitstream::VuhUnitType::V3C_GVD) {
+      if (vpi.pinRegionTypeId(regionIdx) == TMIV::MivBitstream::VuhUnitType::V3C_AVD ||
+          vpi.pinRegionTypeId(regionIdx) == TMIV::MivBitstream::VuhUnitType::V3C_GVD) {
         REQUIRE(vpi.pin_region_map_index(regionIdx) ==
                 region.require("pin_region_map_index").as<uint8_t>());
         REQUIRE(vpi.pin_region_auxiliary_data_flag(regionIdx) ==
                 region.require("pin_region_auxiliary_data_flag").as<bool>());
       }
 
-      if (vpi.pin_region_type_id_minus2(regionIdx) + 2 ==
-          TMIV::MivBitstream::VuhUnitType::V3C_AVD) {
+      if (vpi.pinRegionTypeId(regionIdx) == TMIV::MivBitstream::VuhUnitType::V3C_AVD) {
         auto k = vpi.pin_region_attr_index(regionIdx);
         REQUIRE(k == region.require("pin_region_attr_index").as<uint8_t>());
         if (vpi.pin_attribute_dimension_minus1(k) > 0U) {

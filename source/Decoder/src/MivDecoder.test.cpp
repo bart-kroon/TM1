@@ -33,82 +33,77 @@
 
 #include <catch2/catch.hpp>
 
-#include <TMIV/Decoder/CommonAtlasDecoder.h>
+#include <TMIV/Decoder/MivDecoder.h>
 
 #include "FakeV3cUnitSource.h"
 
 using Catch::Contains;
 using TMIV::MivBitstream::AtlasSubBitstream;
-using TMIV::MivBitstream::CommonAtlasFrameRBSP;
-using TMIV::MivBitstream::CommonAtlasSequenceParameterSetRBSP;
-using TMIV::MivBitstream::NalUnit;
-using TMIV::MivBitstream::NalUnitHeader;
-using TMIV::MivBitstream::NalUnitType;
+using TMIV::MivBitstream::PtlProfilePccToolsetIdc;
+using TMIV::MivBitstream::PtlProfileReconstructionIdc;
 using TMIV::MivBitstream::SampleStreamNalHeader;
 using TMIV::MivBitstream::V3cParameterSet;
 using TMIV::MivBitstream::V3cUnit;
 using TMIV::MivBitstream::V3cUnitHeader;
 using TMIV::MivBitstream::VuhUnitType;
 
-namespace {
-auto minimalCasps() {
-  auto casps = CommonAtlasSequenceParameterSetRBSP{};
-
-  std::ostringstream buffer;
-  casps.encodeTo(buffer);
-  return std::tuple{casps, NalUnit{NalUnitHeader{NalUnitType::NAL_CASPS, 0, 1}, buffer.str()}};
-}
-
-auto minimalCafIdr(const std::vector<CommonAtlasSequenceParameterSetRBSP> &caspsV) {
-  auto caf = CommonAtlasFrameRBSP{};
-
-  const auto maxCommonAtlasFrmOrderCntLsb =
-      1U << (caspsV.front().casps_log2_max_common_atlas_frame_order_cnt_lsb_minus4() + 4);
-
-  std::ostringstream buffer;
-  const auto nuh = NalUnitHeader{NalUnitType::NAL_CAF_IDR, 0, 1};
-  caf.encodeTo(buffer, nuh, caspsV, maxCommonAtlasFrmOrderCntLsb);
-  return std::tuple{caf, NalUnit{nuh, buffer.str()}};
-}
-
-auto minimalV3cUnit() {
-  const auto vuh = V3cUnitHeader{VuhUnitType::V3C_CAD};
-  const auto ssnh = SampleStreamNalHeader{2};
-  auto asb = AtlasSubBitstream{ssnh};
-
-  auto [casps, nuCasps] = minimalCasps();
-  auto caspsV = std::vector{casps};
-  asb.nal_units().push_back(nuCasps);
-
-  auto [cafIdr, nuCafIdr] = minimalCafIdr(caspsV);
-  asb.nal_units().push_back(nuCafIdr);
-
-  return std::make_shared<V3cUnit>(vuh, asb);
-}
-} // namespace
-
-TEST_CASE("CommonAtlasDecoder") {
-  using TMIV::Decoder::CommonAtlasDecoder;
+TEST_CASE("MivDecoder") {
+  using TMIV::Decoder::MivDecoder;
 
   SECTION("Empty unit source") {
-    auto source = test::FakeV3cUnitSource{};
-    auto unit = CommonAtlasDecoder{source, {}, -1};
+    const auto source = test::FakeV3cUnitSource{};
+    auto unit = MivDecoder{source};
 
-    REQUIRE_THROWS_WITH(unit(), Contains("No access units"));
+    REQUIRE_THROWS_WITH(unit(), Contains("No VPS"));
   }
 
-  SECTION("Minimal functional example") {
+  SECTION("The first V3C unit has to be a VPS (for this decoder)") {
     auto source = test::FakeV3cUnitSource{};
+
+    const auto ssnh = SampleStreamNalHeader{2};
+    const auto asb = AtlasSubBitstream{ssnh};
+    source.units.push_back(std::make_shared<V3cUnit>(V3cUnitHeader(VuhUnitType::V3C_AD), asb));
+
+    auto unit = MivDecoder{source};
+
+    REQUIRE_THROWS_WITH(unit(), Contains("No VPS"));
+  }
+
+  SECTION("The VPS needs to have the MIV extension enabled") {
+    auto source = test::FakeV3cUnitSource{};
+
     const auto vps = V3cParameterSet{};
+    source.units.push_back(std::make_shared<V3cUnit>(V3cUnitHeader(VuhUnitType::V3C_VPS), vps));
 
-    source.units.push_back(minimalV3cUnit());
+    auto unit = MivDecoder{source};
 
-    auto unit = CommonAtlasDecoder{[&source]() { return source(); }, vps, -1};
+    REQUIRE_THROWS_WITH(unit(), Contains("vps_miv_extension_present_flag()"));
+  }
 
-    const auto au = unit();
-    REQUIRE(au.has_value());
-    REQUIRE(au->foc == 0);
-    REQUIRE_FALSE(unit().has_value());
-    REQUIRE_THROWS(unit());
+  SECTION("The VPS needs to have matching PTL information") {
+    auto source = test::FakeV3cUnitSource{};
+
+    auto vps = V3cParameterSet{};
+    vps.vps_miv_extension() = {};
+    source.units.push_back(std::make_shared<V3cUnit>(V3cUnitHeader(VuhUnitType::V3C_VPS), vps));
+
+    auto unit = MivDecoder{source};
+
+    REQUIRE_THROWS_WITH(unit(), Contains("outside of the profile-tier-level"));
+  }
+
+  SECTION("There needs to be at least one access unit following the VPS") {
+    auto source = test::FakeV3cUnitSource{};
+
+    auto vps = V3cParameterSet{};
+    vps.profile_tier_level()
+        .ptl_profile_toolset_idc(PtlProfilePccToolsetIdc::MIV_Main)
+        .ptl_profile_reconstruction_idc(PtlProfileReconstructionIdc::MIV_Main);
+    vps.vps_miv_extension() = {};
+    source.units.push_back(std::make_shared<V3cUnit>(V3cUnitHeader(VuhUnitType::V3C_VPS), vps));
+
+    auto unit = MivDecoder{source};
+
+    REQUIRE_THROWS_WITH(unit(), Contains("access unit"));
   }
 }

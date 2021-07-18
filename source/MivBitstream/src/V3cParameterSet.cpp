@@ -41,7 +41,7 @@
 #include <fmt/ostream.h>
 
 namespace TMIV::MivBitstream {
-auto operator<<(std::ostream &stream, const PtlProfileCodecGroupIdc &x) -> std::ostream & {
+auto operator<<(std::ostream &stream, PtlProfileCodecGroupIdc x) -> std::ostream & {
   switch (x) {
   case PtlProfileCodecGroupIdc::AVC_Progressive_High:
     return stream << "AVC Progressive High";
@@ -58,7 +58,7 @@ auto operator<<(std::ostream &stream, const PtlProfileCodecGroupIdc &x) -> std::
   }
 }
 
-auto operator<<(std::ostream &stream, const PtlProfilePccToolsetIdc &x) -> std::ostream & {
+auto operator<<(std::ostream &stream, PtlProfilePccToolsetIdc x) -> std::ostream & {
   switch (x) {
   case PtlProfilePccToolsetIdc::VPCC_Basic:
     return stream << "V-PCC Basic";
@@ -75,7 +75,7 @@ auto operator<<(std::ostream &stream, const PtlProfilePccToolsetIdc &x) -> std::
   }
 }
 
-auto operator<<(std::ostream &stream, const PtlProfileReconstructionIdc &x) -> std::ostream & {
+auto operator<<(std::ostream &stream, PtlProfileReconstructionIdc x) -> std::ostream & {
   switch (x) {
   case PtlProfileReconstructionIdc::Rec0:
     return stream << "Rec0 (V-PCC)";
@@ -92,7 +92,7 @@ auto operator<<(std::ostream &stream, const PtlProfileReconstructionIdc &x) -> s
   }
 }
 
-auto operator<<(std::ostream &stream, const PtlMaxDecodesIdc &x) -> std::ostream & {
+auto operator<<(std::ostream &stream, PtlMaxDecodesIdc x) -> std::ostream & {
   switch (x) {
   case PtlMaxDecodesIdc::max_1:
     return stream << "max_1";
@@ -119,7 +119,7 @@ auto operator<<(std::ostream &stream, const PtlMaxDecodesIdc &x) -> std::ostream
   }
 }
 
-auto operator<<(std::ostream &stream, const PtlLevelIdc &x) -> std::ostream & {
+auto operator<<(std::ostream &stream, PtlLevelIdc x) -> std::ostream & {
   switch (x) {
   case PtlLevelIdc::Level_1_0:
     return stream << "Level 1.0";
@@ -142,7 +142,28 @@ auto operator<<(std::ostream &stream, const PtlLevelIdc &x) -> std::ostream & {
   }
 }
 
-auto operator<<(std::ostream &stream, const AiAttributeTypeId &x) -> std::ostream & {
+auto operator<<(std::ostream &stream, VuhUnitType x) -> std::ostream & {
+  switch (x) {
+  case VuhUnitType::V3C_VPS:
+    return stream << "V3C_VPS";
+  case VuhUnitType::V3C_AD:
+    return stream << "V3C_AD";
+  case VuhUnitType::V3C_OVD:
+    return stream << "V3C_OVD";
+  case VuhUnitType::V3C_GVD:
+    return stream << "V3C_GVD";
+  case VuhUnitType::V3C_AVD:
+    return stream << "V3C_AVD";
+  case VuhUnitType::V3C_PVD:
+    return stream << "V3C_PVD";
+  case VuhUnitType::V3C_CAD:
+    return stream << "V3C_CAD";
+  default:
+    return stream << "[unknown:" << static_cast<int>(x) << "]";
+  }
+}
+
+auto operator<<(std::ostream &stream, AiAttributeTypeId x) -> std::ostream & {
   switch (x) {
   case AiAttributeTypeId::ATTR_TEXTURE:
     return stream << "ATTR_TEXTURE";

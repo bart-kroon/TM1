@@ -35,7 +35,6 @@
 #define TMIV_MIVBITSTREAM_V3CUNIT_H
 
 #include <TMIV/MivBitstream/AtlasSubBitstream.h>
-#include <TMIV/MivBitstream/Types.h>
 #include <TMIV/MivBitstream/V3cParameterSet.h>
 #include <TMIV/MivBitstream/VideoSubBitstream.h>
 

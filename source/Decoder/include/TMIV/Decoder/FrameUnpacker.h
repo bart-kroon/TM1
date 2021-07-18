@@ -45,7 +45,7 @@ public:
 
 private:
   struct RegionParams {
-    std::vector<uint8_t> regionTypeId;
+    std::vector<MivBitstream::VuhUnitType> regionTypeId;
     std::vector<uint16_t> regionPackedOffsetX;
     std::vector<uint16_t> regionPackedOffsetY;
     std::vector<uint16_t> regionWidth;

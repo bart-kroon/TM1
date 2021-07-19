@@ -38,29 +38,6 @@
 using namespace std::string_literals;
 
 namespace TMIV::MivBitstream {
-TEST_CASE("AtlasId", "[V3C Parameter Set]") {
-  SECTION("Default constructor") {
-    const auto j = AtlasId{};
-    REQUIRE(toString(j) == "0");
-    REQUIRE(j == j);
-    REQUIRE(bitCodingTest(j, 6));
-  }
-
-  SECTION("Explicit conversion constructor") {
-    const auto j = AtlasId{42};
-    REQUIRE(toString(j) == "42");
-    REQUIRE(j == j);
-    REQUIRE(j != AtlasId{});
-    REQUIRE(bitCodingTest(j, 6));
-  }
-
-  SECTION("Formatting") {
-    const auto j = AtlasId{3};
-    CHECK(fmt::format("{}", j) == "3"s);
-    CHECK(fmt::format("c{:02}", j) == "c03"s);
-  }
-}
-
 TEST_CASE("profile_tier_level", "[V3C Parameter Set]") {
   auto x = ProfileTierLevel{};
 

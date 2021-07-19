@@ -199,18 +199,6 @@ auto codeOf(AiAttributeTypeId typeId) -> char {
   }
 }
 
-auto operator<<(std::ostream &stream, AtlasId atlasId) -> std::ostream & {
-  return stream << int{atlasId.m_atlasId};
-}
-
-auto AtlasId::decodeFrom(Common::InputBitstream &bitstream) -> AtlasId {
-  return AtlasId(bitstream.readBits<uint8_t>(6));
-}
-
-void AtlasId::encodeTo(Common::OutputBitstream &bitstream) const {
-  bitstream.writeBits(m_atlasId, 6);
-}
-
 auto ProfileTierLevel::ptl_num_sub_profiles() const -> uint8_t {
   VERIFY_V3CBITSTREAM(m_subProfileIdcs.size() <= UINT8_MAX);
   return static_cast<uint8_t>(m_subProfileIdcs.size());

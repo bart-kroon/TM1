@@ -48,6 +48,7 @@ create_catch2_unit_test(
         "src/AccessUnitDelimiterRBSP.test.cpp"
         "src/AtlasAdaptationParameterSetRBSP.test.cpp"
         "src/AtlasFrameParameterSetRBSP.test.cpp"
+        "src/AtlasId.test.cpp"
         "src/AtlasObjectAssociation.test.cpp"
         "src/AtlasSequenceParameterSetRBSP.test.cpp"
         "src/AtlasTileLayerRBSP.test.cpp"

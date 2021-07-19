@@ -34,7 +34,7 @@
 #ifndef TMIV_MIVBITSTREAM_V3CPARAMETERSET_H
 #define TMIV_MIVBITSTREAM_V3CPARAMETERSET_H
 
-#include <TMIV/Common/Bitstream.h>
+#include <TMIV/MivBitstream/AtlasId.h>
 
 #include <fmt/format.h>
 
@@ -104,43 +104,6 @@ enum class AiAttributeTypeId : uint8_t {
   ATTR_UNSPECIFIED = 15
 };
 
-// Use a type to avoid confusing atlas index and ID
-//
-// NOTE(BK): The class interface deliberately disallows integer computations
-class AtlasId {
-public:
-  constexpr AtlasId() noexcept = default;
-  constexpr explicit AtlasId(uint8_t j) noexcept : m_atlasId{j} {}
-
-  friend auto operator<<(std::ostream &stream, AtlasId atlasId) -> std::ostream &;
-
-  constexpr auto operator==(AtlasId other) const noexcept { return m_atlasId == other.m_atlasId; }
-  constexpr auto operator!=(AtlasId other) const noexcept { return m_atlasId != other.m_atlasId; }
-  constexpr auto operator<(AtlasId other) const noexcept { return m_atlasId < other.m_atlasId; }
-
-  static auto decodeFrom(Common::InputBitstream &bitstream) -> AtlasId;
-
-  void encodeTo(Common::OutputBitstream &bitstream) const;
-
-private:
-  friend struct fmt::formatter<TMIV::MivBitstream::AtlasId>;
-
-  uint8_t m_atlasId{};
-};
-} // namespace TMIV::MivBitstream
-
-template <> struct fmt::formatter<TMIV::MivBitstream::AtlasId> {
-  fmt::formatter<int> base;
-
-  constexpr auto parse(format_parse_context &ctx) { return base.parse(ctx); }
-
-  template <typename FormatContext>
-  auto format(const TMIV::MivBitstream::AtlasId &id, FormatContext &ctx) {
-    return base.format(id.m_atlasId, ctx);
-  }
-};
-
-namespace TMIV::MivBitstream {
 auto operator<<(std::ostream &stream, PtlProfileCodecGroupIdc x) -> std::ostream &;
 auto operator<<(std::ostream &stream, PtlProfilePccToolsetIdc x) -> std::ostream &;
 auto operator<<(std::ostream &stream, PtlProfileReconstructionIdc x) -> std::ostream &;

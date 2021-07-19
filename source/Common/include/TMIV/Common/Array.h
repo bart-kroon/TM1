@@ -48,6 +48,9 @@
 #include <vector>
 
 namespace TMIV::Common {
+class FloatCast {};
+static constexpr auto floatCast = FloatCast{};
+
 namespace Array {
 template <typename Iter> class SteppedIterator : public std::iterator_traits<Iter> {
 private:
@@ -346,18 +349,6 @@ private:
     return true;
   }
 
-  struct Convert {
-    template <typename U> auto operator()(const U &x) noexcept {
-      static_assert(std::is_convertible_v<decltype(x), T>);
-
-      if constexpr (std::is_arithmetic_v<decltype(x)> && std::is_integral_v<T>) {
-        return Common::assertDownCast<T>(x);
-      } else {
-        return static_cast<T>(x);
-      }
-    }
-  };
-
 public:
   using value_type = typename InternalArray::value_type;
   using iterator = typename InternalArray::iterator;
@@ -378,11 +369,25 @@ public:
     cx::copy(init.begin(), init.end(), begin());
   }
 
+  // Array construction with implicit value promotion
   template <typename OtherArray, typename = typename OtherArray::dim_iterator,
-            typename = std::enable_if_t<!std::is_same_v<Array, OtherArray>>>
+            typename = std::enable_if_t<
+                !std::is_same_v<Array, OtherArray> &&
+                std::is_same_v<value_type,
+                               std::common_type_t<value_type, typename OtherArray::value_type>>>>
   explicit Array(const OtherArray &that) noexcept : Array{} {
     ASSERT(isEquallyShaped(that));
-    cx::transform(that.cbegin(), that.cend(), begin(), Convert{});
+    cx::transform(that.cbegin(), that.cend(), begin(), [](auto x) { return x; });
+  }
+
+  // Array construction casting arithmetic values to floats
+  template <typename OtherArray, typename = typename OtherArray::dim_iterator,
+            typename = std::enable_if_t<std::is_same_v<float, typename Array::value_type> &&
+                                        std::is_arithmetic_v<typename OtherArray::value_type>>>
+  explicit Array(FloatCast /* tag */, const OtherArray &that) noexcept : Array{} {
+    ASSERT(isEquallyShaped(that));
+    cx::transform(that.cbegin(), that.cend(), begin(),
+                  [](auto x) { return static_cast<float>(x); });
   }
 
   constexpr auto operator=(const T &t) noexcept -> auto & {
@@ -395,11 +400,15 @@ public:
     return *this;
   }
 
+  // Array assignment with implicit value promotion
   template <typename OtherArray, typename = typename OtherArray::dim_iterator,
-            typename = std::enable_if_t<!std::is_same_v<Array, OtherArray>>>
+            typename = std::enable_if_t<
+                !std::is_same_v<Array, OtherArray> &&
+                std::is_same_v<value_type,
+                               std::common_type_t<value_type, typename OtherArray::value_type>>>>
   constexpr auto operator=(const OtherArray &that) noexcept -> auto & {
     ASSERT(isEquallyShaped(that));
-    cx::transform(that.cbegin(), that.cend(), begin(), Convert{});
+    cx::copy(that.cbegin(), that.cend(), begin());
     return *this;
   }
 

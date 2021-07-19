@@ -341,7 +341,7 @@ private:
 
       // Populate the vertices/attributes
       for (auto p : {tl, tr, br, bl}) {
-        auto uv = Common::Vec2f{patch.atlasToView(p)};
+        auto uv = Common::Vec2f{Common::floatCast, patch.atlasToView(p)};
 
         // Handling correctly the seam for 360 degrees scenes
         if (shouldRepeat(viewParams)) {
@@ -361,7 +361,7 @@ private:
         vertices.push_back({q.first, 0.F, 0.F});
 
         // Attribute #0 -> Atlas position
-        std::get<0>(attributes).push_back(Common::Vec2f(p) + 0.5F);
+        std::get<0>(attributes).push_back(Common::Vec2f{Common::floatCast, p} + 0.5F);
 
         // Attribute #1 -> Viewport depth
         std::get<1>(attributes).push_back(q.second);

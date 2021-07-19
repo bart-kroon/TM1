@@ -44,7 +44,7 @@ auto computeIndex(const MivBitstream::ViewParams &metadata, const MivBitstream::
     -> float {
   TMIV::ViewingSpace::ViewingParams vp;
   vp.viewPosition = metadata.pose.position;
-  vp.viewRotation = metadata.pose.orientation;
+  vp.viewRotation = Common::QuatF{Common::floatCast, metadata.pose.orientation};
 
   auto index = TMIV::ViewingSpace::ViewingSpaceEvaluator::computeInclusion(vs, vp);
   std::cout << "viewing space inclusion index: " << index << std::endl;

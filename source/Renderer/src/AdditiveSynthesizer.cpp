@@ -101,7 +101,7 @@ public:
         const auto &viewParams = frame.viewParamsList[patch.atlasPatchProjectionId()];
 
         // Look up depth value and affine parameters
-        const auto uv = Common::Vec2f(patch.atlasToView({j_atlas, i_atlas}));
+        const auto uv = Common::Vec2f{Common::floatCast, patch.atlasToView({j_atlas, i_atlas})};
         auto level = atlas.geoFrame.getPlane(0)(i_atlas, j_atlas);
 
         const auto occupancyTransform = MivBitstream::OccupancyTransform{viewParams, patch};

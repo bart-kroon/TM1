@@ -94,7 +94,7 @@ public:
     const float halfFovY =
         Common::rad2deg(std::atan(0.5F * vp.ci.projectionPlaneSizeF().y() / std::abs(focal.y())));
 
-    const auto euler = Common::Vec3f{quat2eulerDeg(vp.pose.orientation)};
+    const auto euler = Common::Vec3f{Common::floatCast, quat2eulerDeg(vp.pose.orientation)};
     const auto yaw = euler[0];
     const auto pitch = euler[1];
     const auto phi = yaw;

@@ -46,8 +46,8 @@ AffineTransform::AffineTransform(const MivBitstream::Pose &source,
   const auto r = conj(r2) * r1;
   const auto t = rotate(t1 - t2, conj(r2));
 
-  m_R = Common::Mat3x3f(rotationMatrix(r));
-  m_t = Common::Vec3f(t);
+  m_R = Common::Mat3x3f{Common::floatCast, rotationMatrix(r)};
+  m_t = Common::Vec3f{Common::floatCast, t};
 }
 
 auto AffineTransform::operator()(Common::Vec3f x) const -> Common::Vec3f { return m_R * x + m_t; }
@@ -76,7 +76,7 @@ ProjectionHelper::List::List(const MivBitstream::ViewParamsList &viewParamsList)
 }
 
 ProjectionHelper::ProjectionHelper(const MivBitstream::ViewParams &viewParams)
-    : m_viewParams{viewParams}, m_rotation{viewParams.pose.orientation} {
+    : m_viewParams{viewParams}, m_rotation{Common::floatCast, viewParams.pose.orientation} {
   switch (viewParams.ci.ci_cam_type()) {
   case MivBitstream::CiCamType::equirectangular:
     m_engine = std::make_unique<MetaEngine::Equirectangular>(viewParams.ci);

@@ -250,14 +250,14 @@ auto interpolateShape(const MivBitstream::PrimitiveShape a, const MivBitstream::
   } else if (a.shapeType() == MivBitstream::PrimitiveShapeType::cuboid) {
     Common::Vec3f sa = std::get<MivBitstream::Cuboid>(a.primitive).size;
     Common::Vec3f sb = std::get<MivBitstream::Cuboid>(b.primitive).size;
-    std::get<MivBitstream::Cuboid>(output.primitive).size = (1. - w) * sa + w * sb;
+    std::get<MivBitstream::Cuboid>(output.primitive).size = (1.F - w) * sa + w * sb;
     std::get<MivBitstream::Spheroid>(output.primitive).center = center;
   }
 
   // rotation
   const auto rota = a.rotation.value_or(Common::neutralOrientationF);
   const auto rotb = b.rotation.value_or(Common::neutralOrientationF);
-  output.rotation = (1. - w) * rota + w * rotb;
+  output.rotation = (1.F - w) * rota + w * rotb;
 #ifdef VERBOSE
   std::cout << "  rotation = " << output.rotation.value() << std::endl;
 #endif

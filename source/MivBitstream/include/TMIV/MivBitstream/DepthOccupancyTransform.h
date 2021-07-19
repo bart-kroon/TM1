@@ -104,8 +104,6 @@ public:
   //
   // This value is a positive value (less than infinite depth) to simplify reprojection
   //
-  // TODO(BK): Improve reprojection to handle large and infnite depth properly
-  //
   // For a practical application this can be a fixed value (e.g. (1 km)^-1 but the test model does
   // not require lengths to be provided as meters and we cannot assume that 0.001 is low enough, nor
   // do we want the value to be much too low because that will reduce numerical accuracy of point

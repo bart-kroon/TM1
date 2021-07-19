@@ -50,7 +50,6 @@ auto getExtendedIndex(int32_t outputFrameIndex, int32_t numberOfInputFrames) -> 
 }
 } // namespace
 
-// TODO(BK): Lock behavior with unit tests
 auto mapInputToOutputFrames(int32_t numberOfInputFrames, int32_t numberOfOutputFrames)
     -> FrameMapping {
   auto x = FrameMapping{};

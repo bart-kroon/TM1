@@ -179,10 +179,7 @@ void savePrunedFrame(const Common::Json &config, const Placeholders &placeholder
                                         texture.getWidth(), texture.getHeight()),
                 yuv420p(texture), frameIndex);
     }
-    if (config.optional(outputMultiviewTransparencyPathFmt)) {
-      // TODO(BK): The pruned view reconstruction needs to be extended to support transparency
-      throw std::logic_error("Saving multiview (pruned) transparency maps is not yet implemented.");
-    }
+    LIMITATION(!config.optional(outputMultiviewTransparencyPathFmt));
     if (const auto &node = config.optional(outputMultiviewGeometryPathFmt)) {
       const auto &depth = prunedViewsAndMasks.first[v].second;
       saveFrame(outputDir / fmt::format(node.as<std::string>(), placeholders.numberOfInputFrames,

@@ -42,7 +42,6 @@
 namespace TMIV::Encoder {
 void Encoder::prepareSequence(const MivBitstream::SequenceConfig &sequenceConfig,
                               const Common::MVD16Frame &firstFrame) {
-  // TODO(#358): Clean up later (#301), extract a function
   const auto depthLowQualityFlag = [&]() {
     if (m_config.depthLowQualityFlag) {
       return *m_config.depthLowQualityFlag;
@@ -54,20 +53,15 @@ void Encoder::prepareSequence(const MivBitstream::SequenceConfig &sequenceConfig
     return false;
   }();
 
-  // TODO(#358): Clean up later (#302), m_config should not be written after construction
   m_config.blockSize = m_config.blockSizeDepthQualityDependent[depthLowQualityFlag ? 1 : 0];
   VERIFY(2 <= m_config.blockSize);
   VERIFY((m_config.blockSize & (m_config.blockSize - 1)) == 0);
 
-  // TODO(#358): Clean up later (#301), extract a function
-  // TODO(BK): To account for the occupancy maps, the scaling factor needs to be known before this
-  // point.
   const auto lumaSamplesPerAtlasSample =
       (m_config.haveTexture ? 1. : 0.) +
       (m_config.haveGeometry ? (m_config.geometryScaleEnabledFlag ? 0.25 : 1.) : 0.);
   const auto numGroups = std::max(1.F, static_cast<float>(m_config.numGroups));
 
-  // TODO(#358): Clean up later (#302), m_config should not be written after construction
   m_config.maxBlockRate = m_config.maxLumaSampleRate /
                           (numGroups * lumaSamplesPerAtlasSample * Common::sqr(m_config.blockSize));
   m_config.maxBlocksPerAtlas = m_config.maxLumaPictureSize / Common::sqr(m_config.blockSize);
@@ -76,7 +70,6 @@ void Encoder::prepareSequence(const MivBitstream::SequenceConfig &sequenceConfig
   m_transportParams =
       m_viewOptimizer->optimizeParams({sequenceConfig.sourceViewParams(), depthLowQualityFlag});
 
-  // TODO(#358): Clean up later (#301), extract a function
   // Calculate nominal atlas frame sizes
   const auto atlasFrameSizes =
       calculateNominalAtlasFrameSizes(m_transportParams.viewParamsList, sequenceConfig.frameRate);
@@ -86,7 +79,6 @@ void Encoder::prepareSequence(const MivBitstream::SequenceConfig &sequenceConfig
   }
   std::cout << " }\n";
 
-  // TODO(#358): Clean up later (#301), extract a function
   // Create IVS with VPS with right number of atlases but copy other parts from input IVS
   m_params = {};
 

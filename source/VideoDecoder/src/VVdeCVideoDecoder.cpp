@@ -140,7 +140,6 @@ private:
   }
 
   void outputFrame() {
-    // TODO(MPEG/MIV/Specs/23090-12#249): Interlaced video?
     LIMITATION(m_frame->frameFormat == VVDEC_FF_PROGRESSIVE);
 
     auto anyFrame = std::make_unique<Common::AnyFrame>();

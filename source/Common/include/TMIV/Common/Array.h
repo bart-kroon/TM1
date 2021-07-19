@@ -378,7 +378,6 @@ public:
     cx::copy(init.begin(), init.end(), begin());
   }
 
-  // TODO(#488): Make promotion implicit and create another function for casting
   template <typename OtherArray, typename = typename OtherArray::dim_iterator,
             typename = std::enable_if_t<!std::is_same_v<Array, OtherArray>>>
   explicit Array(const OtherArray &that) noexcept : Array{} {

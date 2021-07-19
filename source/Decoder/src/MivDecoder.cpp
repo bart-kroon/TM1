@@ -112,7 +112,6 @@ auto MivDecoder::operator()() -> std::optional<MivBitstream::AccessUnit> {
   }
 
   if (decodeVideoSubBitstreams()) {
-    // TODO(BK): This copies the video frames.
     m_state = State::decoding;
     return m_au;
   }
@@ -299,6 +298,7 @@ auto MivDecoder::startVideoDecoder(const MivBitstream::V3cUnitHeader &vuh, doubl
       return {};
     }
     // Decode the NAL unit size
+    //
     // NOTE(#494): For V3C, LengthSizeMinusOne is equal to 3.
     std::istringstream stream{buffer.substr(0, 4)};
     const auto size = Common::getUint32(stream);
@@ -476,7 +476,6 @@ auto MivDecoder::decodePatchParamsList(size_t k, MivBitstream::PatchParamsList &
   return ppl;
 }
 
-// TODO(m56532): Generalize to a decoding _any_ video sub-bitstream in a consistently
 auto MivDecoder::decodeOccVideo(size_t k) -> bool {
   fmt::print("Decode frame V3C_OVD {} FOC={}\n", m_au.vps.vps_atlas_id(k), m_au.foc);
   const auto t0 = clockInSeconds();

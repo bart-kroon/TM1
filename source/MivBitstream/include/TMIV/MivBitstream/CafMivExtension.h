@@ -210,7 +210,6 @@ public:
   void encodeTo(Common::OutputBitstream &bitstream, uint16_t mvp_num_views_minus1) const;
 
 private:
-  // NOTE(FT): m_pp_parent_id is a vector of view IDs, not view indices (see m56972)
   std::vector<uint16_t> m_pp_parent_id;
 };
 

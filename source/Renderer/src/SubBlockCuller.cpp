@@ -113,11 +113,9 @@ auto choosePatch(const MivBitstream::PatchParams &patch,
     at(xy_v, i + 4) = pix.position;
   }
 
-  // TODO(BK): Magic constant assumes meters
   float xy_v_xmax = -1000;
   float xy_v_xmin = 65536;
 
-  // TODO(BK): Magic constant assumes meters
   float xy_v_ymax = -1000;
   float xy_v_ymin = 65536;
 

@@ -39,8 +39,6 @@
 #include <TMIV/MivBitstream/SequenceConfig.h>
 
 namespace TMIV::Encoder {
-// TODO(BK): Study if IEncoder and IMpiEncoder can be fully or partially aligned to reduce code
-// duplication in Encoder.main.cpp and MpiEncoder.main.cpp
 class IMpiEncoder {
 public:
   using MpiPcsFrameReader = std::function<Common::MpiPcs::Frame(int)>;

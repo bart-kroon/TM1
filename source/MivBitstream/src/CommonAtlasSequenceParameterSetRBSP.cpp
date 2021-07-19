@@ -36,7 +36,6 @@
 
 #include <algorithm>
 
-// TODO (CB) extract this method to common
 template <typename T>
 auto putField(std::ostream &stream, const std::string &fieldName, T &&fieldValue) {
   stream << fieldName << "=";

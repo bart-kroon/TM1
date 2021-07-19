@@ -117,7 +117,6 @@ private: // Encoder_prepareSequence.cpp
   // Encoder_popFrame.cpp
   void incrementFoc();
 
-  // TODO(#358): This is a temporary solution, to be refactored in #301 or #302
   Common::Json m_rootNode;
 
   // Encoder sub-components

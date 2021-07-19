@@ -93,14 +93,14 @@ auto operator<<(std::ostream &stream, PayloadType pt) -> std::ostream & {
     return stream << "attribute_smoothing";
   case PayloadType::viewing_space:
     return stream << "viewing_space";
-  case PayloadType::rec_viewport:
-    return stream << "rec_viewport";
   case PayloadType::viewing_space_handling:
     return stream << "viewing_space_handling";
   case PayloadType::geometry_upscaling_parameters:
     return stream << "geometry_upscaling_parameters";
   case PayloadType::atlas_view_enabled:
     return stream << "atlas_view_enabled";
+  case PayloadType::omaf_v1_compatible:
+    return stream << "omaf_v1_compatible";
   default:
     return stream << "reserved_sei_message (" << static_cast<int>(pt) << ")";
   }

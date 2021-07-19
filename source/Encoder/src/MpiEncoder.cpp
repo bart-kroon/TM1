@@ -176,7 +176,6 @@ void MpiEncoder::prepareSequence(const MivBitstream::SequenceConfig &sequenceCon
       .ptl_profile_reconstruction_idc(MivBitstream::PtlProfileReconstructionIdc::MIV_Main)
       .ptl_profile_toolset_idc(MivBitstream::PtlProfilePccToolsetIdc::MIV_Extended)
       .ptl_profile_toolset_constraints_information([]() {
-        // TODO(#358): Add a mutable accessor for ptci to avoid needing to write a lambda
         auto ptci = MivBitstream::ProfileToolsetConstraintsInformation{};
         ptci.ptc_restricted_geometry_flag(true);
         return ptci;
@@ -246,8 +245,7 @@ void MpiEncoder::prepareSequence(const MivBitstream::SequenceConfig &sequenceCon
       .casme_depth_quantization_params_present_flag(true)
       .vui_parameters(vuiParameters());
 
-  // NOTE(FT)/m55089 implementation : need to have only non basic views to allow for splitting the
-  // patches
+  // NOTE(FT, m55089): need to have only non basic views to allow for splitting the patches
   for (auto &v : m_params.viewParamsList) {
     v.isBasicView = false;
   }

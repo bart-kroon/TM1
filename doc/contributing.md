@@ -120,7 +120,7 @@ NOTE: This section may be expanded by the software coordinators based on what co
 - The code should be readable when all comments are stripped.
 - Do not add meaningless comments.
 - Do not add `// m12345 Proposal something` lines. (Here m12345 is placeholder for the MPEG document number.)
-- use `// TODO(initials/m12345): Something` when there is something that needs improvement that is noted but out-of-scope of the work at hand.
+- Do not add `// TODO's` lines. Instead open new issues for aspects that need improvement but are outside of the scope of the current merge request.
 - Use `// NOTE(initials/m12345): Something` to make mention of something important (e.g. a property of the code) that may go unnoticed otherwise (and accidentall destroyed later):
     - `// NOTE(BK): The class interface deliberately disallows integer computations`
     - `// NOTE(BK): Stable ordering`
@@ -174,7 +174,7 @@ Syntax structures are in this context defined by the MIV and V-PCC/V3C specifica
   - Indicate if the limitation is due to MIV e.g. `asps_long_term_ref_atlas_frames_flag == 0` in `RefListStruct` (in TMIV 6.1)
   - or due to the implementation, e.g. `vui_hrd_parameters_present_flag = 0` in `VuiParameters` (in TMIV 6.1)
 - Although most current modules (=.cpp/.hpp/.h tuple) are at RBSP level, containing all syntax structures carried within, it is allowed to have a new module for a new syntax structure however small or big.
-- The public interface has to match exactly with the syntax structure. TODO(bartkroon) can we offer additional API?
+- The public interface has to match exactly with the syntax structure.
 - The implementation of the getters and setters shall check all semantics that can be checked in that context. For those checks, use
   - `VERIFY_V3CBITSTREAM()`and  `VERIFY_MIVBITSTREAM()`, which are almost the same but the messages are different. You can find examples where in the same code both are used: the first to check the parsing and the second to check if a MIV restriction was applied.
   - `LIMITATION()` for when TMIV does not implement everything it should do. Again, that is just a different message.

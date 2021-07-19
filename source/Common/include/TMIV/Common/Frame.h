@@ -100,6 +100,7 @@ public:
   void dump(std::ostream &stream) const;
 
   // Reset all samples to zero
+  //
   // NOTE(BK): samples are already set to zero on construction
   void fillZero();
 
@@ -130,8 +131,6 @@ auto yuv444p(const Frame<YUV420P10> &frame) -> Frame<YUV444P10>;
 auto yuv444p(const Frame<YUV420P16> &frame) -> Frame<YUV444P16>;
 
 // A type that can carry a large variation of possible frame types
-//
-// TODO(BK): Consider using AnyFrame for IO library
 struct AnyFrame {
   // Convert to any specific format
   template <typename FORMAT> auto as() const -> Frame<FORMAT>;

@@ -310,7 +310,6 @@ private:
       // Reference distance
       auto refDistance = 0.F;
 
-      // TODO(BK): Mixing of indices and ID's (multiple occurances in this source file)
       for (size_t id = 1; refDistance <= std::numeric_limits<float>::epsilon(); id++) {
         refDistance = norm(sourceHelperList[closestCamera[0]].getViewingPosition() -
                            sourceHelperList[closestCamera[id]].getViewingPosition()) *
@@ -451,8 +450,6 @@ private:
             const auto x = sourceViewPos.x();
             const auto y = sourceViewPos.y();
 
-            // temporary use only view dimensions
-            // TODO(BK): This should not be necessary
             if (y >= static_cast<int>(m_sourceDepth[viewId].height()) ||
                 x >= static_cast<int>(m_sourceDepth[viewId].width())) {
               return;
@@ -526,7 +523,6 @@ private:
 
           for (auto y = y0; y < y1; y++) {
             for (auto x = x0; x < x1; x++) {
-              // TODO(BK): Can this be removed?
               if (static_cast<uint32_t>(y) >= m_sourceReprojection[viewId].height() ||
                   static_cast<uint32_t>(x) >= m_sourceReprojection[viewId].width()) {
                 continue;
@@ -597,7 +593,7 @@ private:
 
   auto computeWeightAndMatrixM(unsigned int viewId, int x, int y)
       -> std::tuple<float, Common::Mat2x2f> {
-    const auto offsetList =
+    static constexpr auto offsetList =
         std::array{Common::Vec2i({1, 0}),  Common::Vec2i({1, 1}),  Common::Vec2i({0, 1}),
                    Common::Vec2i({-1, 1}), Common::Vec2i({-1, 0}), Common::Vec2i({-1, -1}),
                    Common::Vec2i({0, -1}), Common::Vec2i({1, -1})};
@@ -793,9 +789,7 @@ private:
       const auto p = prunedHelper.doProjection(m_viewportUnprojection[candidate.first](y, x));
 
       if (isValidDepth(p.second) && prunedHelper.isInsideViewport(p.first)) {
-        // TODO(BK): Make constexpr when Common::Vec2i is constexpr (multiple occurances in this
-        // source file)
-        static const auto offsetList =
+        static constexpr auto offsetList =
             std::array{Common::Vec2i({-1, -1}), Common::Vec2i({0, -1}), Common::Vec2i({1, -1}),
                        Common::Vec2i({-1, 0}),  Common::Vec2i({0, 0}),  Common::Vec2i({1, 0}),
                        Common::Vec2i({-1, 1}),  Common::Vec2i({0, 1}),  Common::Vec2i({1, 1})};
@@ -861,13 +855,11 @@ private:
   }
 
   void filterVisibilityMap() {
-    // TODO(BK): Code duplication: use a set of global constexpr offsetLists
-    static const auto offsetList =
+    static constexpr auto offsetList =
         std::array{Common::Vec2i({-1, -1}), Common::Vec2i({0, -1}), Common::Vec2i({1, -1}),
                    Common::Vec2i({-1, 0}),  Common::Vec2i({0, 0}),  Common::Vec2i({1, 0}),
                    Common::Vec2i({-1, 1}),  Common::Vec2i({0, 1}),  Common::Vec2i({1, 1})};
 
-    // TODO(BK): WARNING Mutable static variable is not thread-safe
     static Common::Mat<float> flipVisibility;
 
     auto firstWrapper = std::reference_wrapper<Common::Mat<float>>{
@@ -922,9 +914,8 @@ private:
   [[nodiscard]] auto isProneToGhosting(unsigned sourceId, const std::pair<Common::Vec2f, float> &p,
                                        const Common::Vec3f &OP,
                                        const ProjectionHelperList &sourceHelperList) const -> bool {
-    // TODO(BK): Make constexpr when Vec2i is
-    static const auto offsetList = std::array{Common::Vec2i({1, 0}), Common::Vec2i({-1, 0}),
-                                              Common::Vec2i({0, 1}), Common::Vec2i({0, -1})};
+    static constexpr auto offsetList = std::array{Common::Vec2i({1, 0}), Common::Vec2i({-1, 0}),
+                                                  Common::Vec2i({0, 1}), Common::Vec2i({0, -1})};
 
     const auto w_last = static_cast<int>(m_sourceDepth[sourceId].width()) - 1;
     const auto h_last = static_cast<int>(m_sourceDepth[sourceId].height()) - 1;
@@ -950,7 +941,6 @@ private:
   void computeShadingMapWithInpaintedPixels(size_t x, size_t y,
                                             const ProjectionHelperList &sourceHelperList,
                                             const ProjectionHelper &targetHelper) {
-    // TODO(BS): use all to enable multiple inpainted views
     const auto viewIdInpainted = *m_inpaintedViews.begin();
     const auto &backgroundDepth = m_viewportDepth[viewIdInpainted];
     const auto z = backgroundDepth(y, x);
@@ -978,7 +968,7 @@ private:
                                           const ProjectionHelperList &sourceHelperList,
                                           const ProjectionHelper &targetHelper,
                                           const Common::Mat<float> &viewportVisibility) {
-    static const auto offsetList =
+    static constexpr auto offsetList =
         std::array{Common::Vec2i({0, 0}),   Common::Vec2i({1, 0}),  Common::Vec2i({1, 1}),
                    Common::Vec2i({0, -1}),  Common::Vec2i({1, -1}), Common::Vec2i({0, 1}),
                    Common::Vec2i({-1, -1}), Common::Vec2i({-1, 0}), Common::Vec2i({-1, 1})};
@@ -1005,7 +995,6 @@ private:
     const auto [oColor, oWeight] =
         computeColorAndWeight(sourceHelperList, targetHelper, y, x, stack);
 
-    // TODO(BK): There are multiple magic constants in this source file
     static constexpr auto eps = 1e-3F;
 
     m_viewportColor(y, x) =

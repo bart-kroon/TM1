@@ -111,7 +111,6 @@ TEST_CASE("Json::as<T>() supports numeric conversion of integers") {
   REQUIRE(json.as<uint16_t>() == 40);
   REQUIRE(json.as<uint32_t>() == 40);
   REQUIRE(json.as<uint64_t>() == 40);
-  // NOTE(BK): Optional bounds checking to be added as part of #273
 
   SECTION("Converting an integer to a float is allowed because the user expects 40.0 and 40 to "
           "be the same number") {
@@ -130,7 +129,6 @@ TEST_CASE("Json::as<T>() supports numeric conversion of floats") {
   auto json = Json{30.4F};
   REQUIRE(json.as<float>() == Approx(30.4F));
   REQUIRE(json.as<double>() == Approx(30.4));
-  // NOTE(BK): Optional bounds checking to be added as part of #273
 
   SECTION("Converting a float to an integer is not allowed") {
     REQUIRE_THROWS(json.as<int>());

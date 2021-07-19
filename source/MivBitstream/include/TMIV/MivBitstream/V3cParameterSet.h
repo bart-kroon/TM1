@@ -402,9 +402,6 @@ struct PinAttributeInformation {
 };
 
 // 23090-5: packing_information( j )
-//
-// 23090-12 restrictions:
-//   * TODO I didn't see any restrictions, as this was entirely moved from 23090-12 to 23090-5
 class PackingInformation {
 public:
   [[nodiscard]] auto pin_codec_id() const noexcept -> uint8_t;

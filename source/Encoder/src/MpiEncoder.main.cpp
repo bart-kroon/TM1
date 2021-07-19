@@ -48,7 +48,6 @@ using Mat1w = TMIV::Common::heap::Matrix<uint16_t>;
 namespace TMIV::Encoder {
 void registerComponents();
 
-// TODO(BK): Code duplication with Encoder.main.cpp
 class Application : public Common::Application {
 private:
   std::unique_ptr<IMpiEncoder> m_encoder;

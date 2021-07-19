@@ -45,7 +45,6 @@
 #include <TMIV/MivBitstream/DecodedAtlasInformationHash.h>
 #include <TMIV/MivBitstream/GeometryUpscalingParameters.h>
 #include <TMIV/MivBitstream/PackedIndependentRegions.h>
-#include <TMIV/MivBitstream/RecViewport.h>
 #include <TMIV/MivBitstream/SceneObjectInformation.h>
 #include <TMIV/MivBitstream/SeiRBSP.h>
 #include <TMIV/MivBitstream/V3cSampleStreamFormat.h>
@@ -225,8 +224,6 @@ private:
       return parseDecodedAtlasInformationHashSei(bitstream);
     case TMIV::MivBitstream::PayloadType::packed_independent_regions:
       return parsePackedIndependentRegionSei(bitstream);
-    case TMIV::MivBitstream::PayloadType::rec_viewport:
-      return parseRecViewportSei(bitstream);
     case TMIV::MivBitstream::PayloadType::scene_object_information:
       return parseSceneObjectInformationSei(bitstream);
     case TMIV::MivBitstream::PayloadType::viewing_space:
@@ -265,11 +262,6 @@ private:
   void parsePackedIndependentRegionSei(TMIV::Common::InputBitstream &bitstream) {
     const auto pir = TMIV::MivBitstream::PackedIndependentRegions::decodeFrom(bitstream);
     m_log << pir;
-  }
-
-  void parseRecViewportSei(TMIV::Common::InputBitstream &bitstream) {
-    const auto rv = TMIV::MivBitstream::RecViewport::decodeFrom(bitstream);
-    m_log << rv;
   }
 
   void parseSceneObjectInformationSei(TMIV::Common::InputBitstream &bitstream) {

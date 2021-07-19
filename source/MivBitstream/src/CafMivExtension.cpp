@@ -190,7 +190,6 @@ auto CameraIntrinsics::decodeFrom(Common::InputBitstream &bitstream) -> CameraIn
 void CameraIntrinsics::encodeTo(Common::OutputBitstream &bitstream) const {
   bitstream.putUint8(static_cast<uint8_t>(ci_cam_type()));
 
-  // TODO(MPEG/MIV/Specs/23090-12#242): Use ue(v) for projection plane size?
   bitstream.putUint16(Common::downCast<uint16_t>(ci_projection_plane_width_minus1()));
   bitstream.putUint16(Common::downCast<uint16_t>(ci_projection_plane_height_minus1()));
 

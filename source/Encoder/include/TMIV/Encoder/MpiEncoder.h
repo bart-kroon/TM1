@@ -47,7 +47,6 @@ public:
   static constexpr auto maxIntraPeriod = 32;
 
 private:
-  // TODO(#358): This is a temporary solution. To be refactored in #301 or #302
   Common::Json m_rootNode;
 
   // Parameters

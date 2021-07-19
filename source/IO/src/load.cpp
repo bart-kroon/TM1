@@ -206,7 +206,6 @@ auto loadMpiTextureMpiLayer(const Common::Json &config, const Placeholders &plac
   const auto inputDir = config.require(inputDirectory).as<std::filesystem::path>();
   const auto &node = config.require(inputTexturePathFmt);
 
-  // NOTE(FT): one single source camera as MPI
   const auto name = sc.sourceCameraNames[0];
 
   const auto camera = sc.cameraByName(name);
@@ -229,7 +228,6 @@ auto loadMpiTransparencyMpiLayer(const Common::Json &config, const Placeholders 
   const auto inputDir = config.require(inputDirectory).as<std::filesystem::path>();
   const auto &node = config.require(inputTransparencyPathFmt);
 
-  // NOTE(FT): one single source camera as MPI
   const auto name = sc.sourceCameraNames[0];
 
   const auto camera = sc.cameraByName(name);

@@ -34,27 +34,21 @@
 #ifndef TMIV_DECODER_DECODER_H
 #define TMIV_DECODER_DECODER_H
 
-#include <TMIV/Decoder/IDecoder.h>
-
 #include <TMIV/Common/Json.h>
 #include <TMIV/Decoder/EntityBasedPatchMapFilter.h>
 #include <TMIV/Decoder/GeometryScaler.h>
+#include <TMIV/MivBitstream/AccessUnit.h>
 
 namespace TMIV::Decoder {
-class Decoder : public IDecoder {
+class Decoder {
+public:
+  Decoder(const Common::Json &rootNode, const Common::Json & /* componentNode */);
+
+  void recoverFrame(MivBitstream::AccessUnit &frame);
+
 private:
   GeometryScaler m_geometryScaler;
   EntityBasedPatchMapFilter m_entityBasedPatchMapFilter;
-
-public:
-  Decoder(const Common::Json &rootNode, const Common::Json & /* componentNode */);
-  Decoder(const Decoder &) = delete;
-  Decoder(Decoder &&) = default;
-  auto operator=(const Decoder &) -> Decoder & = delete;
-  auto operator=(Decoder &&) -> Decoder & = default;
-  ~Decoder() override = default;
-
-  void recoverFrame(MivBitstream::AccessUnit &frame) override;
 };
 } // namespace TMIV::Decoder
 

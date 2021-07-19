@@ -69,7 +69,7 @@ enum class PayloadType : uint16_t {
   viewing_space_handling,
   geometry_upscaling_parameters,
   atlas_view_enabled,
-  rec_viewport // TODO(christoph_bachhuber) remove once removed from part 12 specs
+  omaf_v1_compatible
 };
 
 auto operator<<(std::ostream &stream, PayloadType pt) -> std::ostream &;

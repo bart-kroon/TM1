@@ -85,7 +85,6 @@ TEST_CASE("CameraConfig") {
       auto newJson = TMIV::Common::Json{unit};
       auto y = TMIV::MivBitstream::CameraConfig{newJson};
 
-      // NOTE(BK): Cannot use x == y because of floating-point conversions
       CHECK(unit.bitDepthColor == y.bitDepthColor);
       CHECK(unit.bitDepthTransparency == y.bitDepthTransparency);
       CHECK(unit.bitDepthDepth == y.bitDepthDepth);
@@ -223,7 +222,6 @@ TEST_CASE("SequenceConfig") {
       REQUIRE(x.lengthsInMeters == y.lengthsInMeters);
       REQUIRE(x.numberOfFrames == y.numberOfFrames);
 
-      // NOTE(BK): Cannot use x == y because of floating-point conversions
       for (size_t i = 0; i < x.cameras.size(); ++i) {
         CHECK(x.cameras[i].bitDepthColor == y.cameras[i].bitDepthColor);
         CHECK(x.cameras[i].bitDepthDepth == y.cameras[i].bitDepthDepth);

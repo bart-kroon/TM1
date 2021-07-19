@@ -47,13 +47,13 @@ struct Configuration {
   Configuration(const Common::Json & /*rootNode*/, const Common::Json & /*componentNode*/);
 
   int intraPeriod;
-  int blockSize{}; // TODO(#358): This is not a configuration parameter
+  int blockSize{};
   Common::Vec2i blockSizeDepthQualityDependent;
   std::optional<bool> depthLowQualityFlag;
   double maxLumaSampleRate{};
   int maxLumaPictureSize{};
-  double maxBlockRate{};   // TODO(#358): This is not a configuration parameter
-  int maxBlocksPerAtlas{}; // TODO(#358): This is not a configuration parameter
+  double maxBlockRate{};
+  int maxBlocksPerAtlas{};
   int maxAtlases{};
   bool haveTexture;
   bool haveGeometry;

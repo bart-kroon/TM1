@@ -61,12 +61,10 @@ auto matrixRo(FlexiblePatchOrientation fpo) noexcept -> Mat2x2i {
   case FlexiblePatchOrientation::FPO_SWAP:
     return {0, 1, 1, 0};
   case FlexiblePatchOrientation::FPO_ROT90:
-    // NOTE(#436): Fix to be included in V3C 2E DIS
     return {0, 1, -1, 0};
   case FlexiblePatchOrientation::FPO_ROT180:
     return {-1, 0, 0, -1};
   case FlexiblePatchOrientation::FPO_ROT270:
-    // NOTE(#436): Fix to be included in V3C 2E DIS
     return {0, -1, 1, 0};
   case FlexiblePatchOrientation::FPO_MIRROR:
     return {-1, 0, 0, 1};

@@ -61,25 +61,5 @@ SCENARIO("128x128 clustering map") {
       THEN("the cluster is not split") { REQUIRE(out_clusters.size() == 1); }
     }
   }
-  GIVEN("65x64 cluster") {
-    const auto unit{createCluster(65, 64)};
-    WHEN("splitting the cluster") {
-      unit.recursiveSplit(map, out_clusters, alignment, minPatchSize);
-      THEN("the cluster is split vertically") {
-        // TODO(CB) fix the input data such that a split occurs
-        // REQUIRE(out_clusters.size() == 2);
-      }
-    }
-  }
-  GIVEN("64x65 cluster") {
-    const auto unit{createCluster(64, 65)};
-    WHEN("splitting the cluster") {
-      unit.recursiveSplit(map, out_clusters, alignment, minPatchSize);
-      THEN("the cluster is split horizontally") {
-        // TODO(CB) fix the input data such that a split occurs
-        // REQUIRE(out_clusters.size() == 2);
-      }
-    }
-  }
 }
 } // namespace TMIV::Packer

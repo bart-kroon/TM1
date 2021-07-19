@@ -81,7 +81,6 @@ Reader::Reader(const Common::Json &config, const IO::Placeholders &placeholders,
   const auto inputDir = config.require(IO::inputDirectory).as<std::filesystem::path>();
   const auto &node = config.require(inputMpiPcsPathFmt);
 
-  // NOTE(JF): one single source camera as MPI
   const auto cameraName = sc.sourceCameraNames[0];
 
   const auto cameraConfig = sc.cameraByName(cameraName);
@@ -193,7 +192,6 @@ Writer::Writer(const Common::Json &config, const IO::Placeholders &placeholders,
   const auto outputDir = config.require(IO::outputDirectory).as<std::filesystem::path>();
   const auto &node = config.require(outputMpiPcsPathFmt);
 
-  // NOTE(JF): one single source camera as MPI
   const auto cameraName = sc.sourceCameraNames[0];
 
   const auto cameraConfig = sc.cameraByName(cameraName);

@@ -52,9 +52,6 @@ void registerComponents() {
   cullers.registerAs<Renderer::NoCuller>("NoCuller");
   cullers.registerAs<Renderer::SubBlockCuller>("SubBlockCuller");
 
-  auto &decoders = Common::Factory<IDecoder>::getInstance();
-  decoders.registerAs<Decoder>("Decoder");
-
   auto &inpainters = Common::Factory<Renderer::IInpainter>::getInstance();
   inpainters.registerAs<Renderer::Inpainter>("Inpainter");
   inpainters.registerAs<Renderer::NoInpainter>("NoInpainter");

@@ -65,7 +65,6 @@ TEST_CASE("Convert AccessUnit to SequenceConfig") {
 
     SECTION("Video format fields need to be set") {
       for (const auto &camera : sc.cameras) {
-        // NOTE(BK): Hard-coded in TMIV with TextureDepth10Frame
         CHECK(camera.bitDepthColor == 10);
         CHECK(camera.bitDepthTransparency == 0);
         CHECK(camera.bitDepthDepth == 10);

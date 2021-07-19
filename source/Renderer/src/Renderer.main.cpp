@@ -112,7 +112,6 @@ private:
     }
   }
 
-  // TODO(BK): Add a IRenderer::renderFrame overload that takes a MVD16Frame
   [[nodiscard]] auto accessUnit(const Common::MVD16Frame &frame,
                                 const MivBitstream::ViewParamsList &vpl, int32_t foc) const
       -> MivBitstream::AccessUnit {

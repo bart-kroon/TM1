@@ -260,7 +260,6 @@ void Encoder::updateAggregationStatistics(const Common::MaskList &aggregatedMask
   m_maxLumaSamplesPerFrame = std::max(m_maxLumaSamplesPerFrame, lumaSamplesPerFrame);
 }
 
-// TODO(BK): Avoid functions like this one that are too long and/or poorly named
 void Encoder::calculateAttributeOffset(
     std::vector<std::array<std::array<int64_t, 4>, 3>> patchAttrOffsetValuesFullGOP) {
   for (uint8_t k = 0; k <= m_params.vps.vps_atlas_count_minus1(); ++k) {
@@ -294,7 +293,6 @@ void Encoder::calculateAttributeOffset(
         for (int x = 0; x < atlas.texture.getWidth(); ++x) {
           const auto patchIndex = btpm[k][y / m_config.blockSize][x / m_config.blockSize];
 
-          // TODO(BK): Avoid comparing depth with 0
           if (patchIndex == Common::unusedPatchId ||
               (atlas.depth.getPlane(0)(y, x) == 0 &&
                !m_params
@@ -526,11 +524,10 @@ auto Encoder::writePatchInAtlas(const MivBitstream::PatchParams &patchParams,
   const auto k = m_params.vps.indexOf(patchParams.atlasId());
   auto &atlas = frame[k];
 
-  // TODO(BK): It would be better if atlasPatch... functions are int32_t or int64_t
-  const auto sizeU = static_cast<int32_t>(patchParams.atlasPatch3dSizeU());
-  const auto sizeV = static_cast<int32_t>(patchParams.atlasPatch3dSizeV());
-  const auto posU = static_cast<int32_t>(patchParams.atlasPatch3dOffsetU());
-  const auto posV = static_cast<int32_t>(patchParams.atlasPatch3dOffsetV());
+  const auto sizeU = patchParams.atlasPatch3dSizeU();
+  const auto sizeV = patchParams.atlasPatch3dSizeV();
+  const auto posU = patchParams.atlasPatch3dOffsetU();
+  const auto posV = patchParams.atlasPatch3dOffsetV();
 
   const auto &inViewParams = m_transportParams.viewParamsList[patchParams.atlasPatchProjectionId()];
   const auto &outViewParams = m_params.viewParamsList[patchParams.atlasPatchProjectionId()];
@@ -589,7 +586,6 @@ auto Encoder::writePatchInAtlas(const MivBitstream::PatchParams &patchParams,
           if (m_config.haveGeometry) {
             auto depth = view.depth.getPlane(0)(pView.y(), pView.x());
             atlas.occupancy.getPlane(0)(yOcc, xOcc) = 1;
-            // TODO(BK): We need to stop using depth == 0 as a special value. This is bug-prone.
             if (depth == 0 && !inViewParams.hasOccupancy && outViewParams.hasOccupancy &&
                 asme.asme_max_entity_id() == 0) {
               depth = 1; // Avoid marking valid depth as invalid

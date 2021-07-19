@@ -121,6 +121,7 @@ public:
     }
 
     // 1 - Update block buffer when atlas is updated
+    //
     // NOTE(FT): this line should be called only when needed, since it increases artificially the
     // rendering time  ==> to be changed once the information of new intraPeriod coming from
     // MivDecoder reaches MpiSynthesizer

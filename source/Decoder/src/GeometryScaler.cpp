@@ -397,7 +397,7 @@ void GeometryScaler::inplaceScale(MivBitstream::AccessUnit &frame) const {
   for (size_t k = 0; k <= frame.vps.vps_atlas_count_minus1(); ++k) {
     const auto j = frame.vps.vps_atlas_id(k);
     auto &atlas = frame.atlas[k];
-    // only try to upscale the depth is the geometry present flag is true
+
     if (frame.vps.vps_geometry_video_present_flag(j) ||
         (frame.vps.vps_packing_information_present_flag() &&
          frame.vps.vps_packed_video_present_flag(j) &&
@@ -408,8 +408,6 @@ void GeometryScaler::inplaceScale(MivBitstream::AccessUnit &frame) const {
       } else {
         atlas.geoFrame = atlas.decGeoFrame;
       }
-    } else {
-      // TODO(BK): Add support for asme_patch_constant_depth_flag to the AdditiveSynthesizer
     }
   }
 }

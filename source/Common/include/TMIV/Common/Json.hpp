@@ -132,7 +132,7 @@ template <typename T> auto Json::as() const -> decltype(auto) {
     if constexpr (std::is_same_v<T, bool>) {
       return std::any_cast<bool>(m_node);
     } else if constexpr (std::is_integral_v<T>) {
-      return static_cast<T>(std::any_cast<Integer>(m_node)); // TODO(BK): check bounds (#273)
+      return Common::verifyDownCast<T>(std::any_cast<Integer>(m_node));
     } else if constexpr (std::is_floating_point_v<T>) {
       if (const auto *value = std::any_cast<Integer>(&m_node)) {
         return static_cast<T>(*value); // cast integer to float
@@ -146,7 +146,7 @@ template <typename T> auto Json::as() const -> decltype(auto) {
           return -std::numeric_limits<T>::infinity();
         }
       }
-      return static_cast<T>(std::any_cast<Number>(m_node)); // TODO(BK): check bounds (#273)
+      return static_cast<T>(std::any_cast<Number>(m_node));
     } else if constexpr (std::is_same_v<T, std::filesystem::path>) {
       return std::filesystem::path{std::any_cast<std::string>(m_node)};
     } else {

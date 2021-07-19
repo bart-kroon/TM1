@@ -170,7 +170,6 @@ auto viewParamsListHash(const MivBitstream::ViewParamsList &vpl) noexcept -> Has
     hash.consumeF(vp.pose.position[1]);
     hash.consumeF(vp.pose.position[2]);
 
-    // TODO(#465): This may be too brittle
     // orientation = w + i x + j y + k z
     hash.consumeF(static_cast<float>(vp.pose.orientation[3])); // w
     hash.consumeF(static_cast<float>(vp.pose.orientation[0])); // x

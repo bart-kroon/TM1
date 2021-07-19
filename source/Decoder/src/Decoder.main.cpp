@@ -31,10 +31,9 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/Decoder/IDecoder.h>
-
 #include <TMIV/Common/Application.h>
 #include <TMIV/Common/Factory.h>
+#include <TMIV/Decoder/Decoder.h>
 #include <TMIV/Decoder/MivDecoder.h>
 #include <TMIV/Decoder/OutputLog.h>
 #include <TMIV/Decoder/V3cSampleStreamDecoder.h>
@@ -49,20 +48,21 @@
 #include <memory>
 
 using namespace std::string_view_literals;
+using namespace std::string_literals;
 
 namespace TMIV::Decoder {
 void registerComponents();
 
 class Application : public Common::Application {
 private:
-  std::unique_ptr<IDecoder> m_decoder;
+  Decoder m_decoder;
   IO::Placeholders m_placeholders;
   Renderer::Front::MultipleFrameRenderer m_renderer;
   std::multimap<int, int> m_inputToOutputFrameIdMap;
   std::filesystem::path m_inputBitstreamPath;
   std::ifstream m_inputBitstream;
-  Decoder::V3cSampleStreamDecoder m_vssDecoder;
-  Decoder::MivDecoder m_mivDecoder;
+  V3cSampleStreamDecoder m_vssDecoder;
+  MivDecoder m_mivDecoder;
   MivBitstream::SequenceConfig m_outputSequenceConfig;
   std::ofstream m_outputLog;
 
@@ -76,7 +76,7 @@ public:
                                 {"-r", "Test point (e.g. QP3 or R0)", false},
                                 {"-v", "Source view to render (e.g. v11)", true},
                                 {"-P", "Pose trace to render (e.g. p02)", true}}}
-      , m_decoder{create<IDecoder>("Decoder")}
+      , m_decoder{json(), json().require("Decoder"s)}
       , m_placeholders{optionValues("-s").front(), optionValues("-r").front(),
                        std::stoi(optionValues("-n"sv).front()),
                        std::stoi(optionValues("-N"sv).front())}
@@ -104,7 +104,7 @@ public:
       }
 
       // Recover geometry, occupancy, and filter blockToPatchMap
-      m_decoder->recoverFrame(*frame);
+      m_decoder.recoverFrame(*frame);
 
       if (json().optional(IO::outputSequenceConfigPathFmt)) {
         outputSequenceConfig(frame->sequenceConfig(), frame->foc);

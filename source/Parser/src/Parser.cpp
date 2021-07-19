@@ -42,6 +42,7 @@
 #include <TMIV/MivBitstream/AtlasViewEnabled.h>
 #include <TMIV/MivBitstream/CommonAtlasFrameRBSP.h>
 #include <TMIV/MivBitstream/CommonAtlasSequenceParameterSetRBSP.h>
+#include <TMIV/MivBitstream/DecodedAtlasInformationHash.h>
 #include <TMIV/MivBitstream/GeometryUpscalingParameters.h>
 #include <TMIV/MivBitstream/PackedIndependentRegions.h>
 #include <TMIV/MivBitstream/RecViewport.h>
@@ -220,6 +221,8 @@ private:
       return parseAtlasViewEnabledSei(bitstream);
     case TMIV::MivBitstream::PayloadType::geometry_upscaling_parameters:
       return parseGeometryUpscalingParametersSei(bitstream);
+    case TMIV::MivBitstream::PayloadType::decoded_atlas_information_hash:
+      return parseDecodedAtlasInformationHashSei(bitstream);
     case TMIV::MivBitstream::PayloadType::packed_independent_regions:
       return parsePackedIndependentRegionSei(bitstream);
     case TMIV::MivBitstream::PayloadType::rec_viewport:
@@ -252,6 +255,11 @@ private:
   void parseGeometryUpscalingParametersSei(TMIV::Common::InputBitstream &bitstream) {
     const auto gup = TMIV::MivBitstream::GeometryUpscalingParameters::decodeFrom(bitstream);
     m_log << gup;
+  }
+
+  void parseDecodedAtlasInformationHashSei(TMIV::Common::InputBitstream &bitstream) {
+    const auto daih = TMIV::MivBitstream::DecodedAtlasInformationHash::decodeFrom(bitstream);
+    m_log << daih;
   }
 
   void parsePackedIndependentRegionSei(TMIV::Common::InputBitstream &bitstream) {

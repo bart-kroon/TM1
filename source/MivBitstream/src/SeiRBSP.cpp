@@ -79,6 +79,8 @@ auto operator<<(std::ostream &stream, PayloadType pt) -> std::ostream & {
     return stream << "viewport_camera_parameters";
   case PayloadType::viewport_position:
     return stream << "viewport_position";
+  case PayloadType::decoded_atlas_information_hash:
+    return stream << "decoded_atlas_information_hash";
   case PayloadType::packed_independent_regions:
     return stream << "packed_independent_regions";
   case PayloadType::attribute_transformation_params:

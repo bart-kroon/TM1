@@ -59,6 +59,7 @@ enum class PayloadType : uint16_t {
   atlas_object_association,
   viewport_camera_parameters,
   viewport_position,
+  decoded_atlas_information_hash,
   packed_independent_regions,
   attribute_transformation_params = 64, // V-PCC
   occupancy_synthesis,

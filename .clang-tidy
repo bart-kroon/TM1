@@ -14,7 +14,7 @@ readability-*,
 
 HeaderFilterRegex: 'source/.*/include/TMIV/.*'
 
-WarningsAsErrors: '*,-cppcoreguidelines-pro-bounds-pointer-arithmetic'
+WarningsAsErrors: '*'
 
 FormatStyle: file
 

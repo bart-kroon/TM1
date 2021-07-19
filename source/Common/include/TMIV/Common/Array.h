@@ -44,6 +44,7 @@
 #include <iterator>
 #include <numeric>
 #include <ostream>
+#include <type_traits>
 #include <vector>
 
 namespace TMIV::Common {
@@ -62,8 +63,6 @@ public:
       : m_begin{begin}, m_offset{offset}, m_step{step} {
     ASSERT(0 < step);
   }
-
-  [[deprecated]] [[nodiscard]] auto n() const noexcept { return m_step; }
 
   [[nodiscard]] constexpr auto operator==(const SteppedIterator &rhs) const noexcept {
     ASSERT(m_begin == rhs.m_begin);
@@ -122,7 +121,7 @@ public:
   }
 
   [[nodiscard]] constexpr auto operator+(ptrdiff_t a) const noexcept {
-    return SteppedIterator(m_begin, m_offset + a * m_step, this->m_step);
+    return SteppedIterator{m_begin, m_offset + a * m_step, this->m_step};
   }
 
   constexpr auto operator+=(ptrdiff_t a) noexcept -> decltype(auto) {
@@ -130,13 +129,13 @@ public:
     return *this;
   }
 
-  [[nodiscard]] constexpr auto operator-(const SteppedIterator &iter) const noexcept {
+  [[nodiscard]] constexpr auto operator-(const SteppedIterator &rhs) const noexcept {
     ASSERT(0 < m_step);
-    return (m_offset - iter.m_offset) / m_step;
+    return (m_offset - rhs.m_offset) / m_step;
   }
 
   [[nodiscard]] constexpr auto operator-(ptrdiff_t a) const noexcept -> decltype(auto) {
-    return SteppedIterator(m_begin, m_offset - a * m_step, this->m_step);
+    return SteppedIterator{m_begin, m_offset - a * m_step, this->m_step};
   }
 
   constexpr auto operator-=(ptrdiff_t a) noexcept -> decltype(auto) {
@@ -153,6 +152,113 @@ public:
 
 template <typename Iter>
 constexpr auto operator+(ptrdiff_t a, const SteppedIterator<Iter> &rhs) noexcept {
+  return rhs + a;
+}
+
+template <typename Array> class ArrayIterator {
+private:
+  Array *m_array;
+  ptrdiff_t m_offset;
+
+public:
+  using iterator_category = std::random_access_iterator_tag;
+  using value_type = typename Array::value_type;
+  using difference_type = typename Array::difference_type;
+  using pointer = std::conditional_t<std::is_const_v<Array>, const value_type *, value_type *>;
+  using reference = std::conditional_t<std::is_const_v<Array>, const value_type &, value_type &>;
+
+  template <typename Integer, typename = std::enable_if_t<std::is_integral_v<Integer>>>
+  constexpr explicit ArrayIterator(Array &array_, Integer offset) noexcept
+      : m_array{&array_}, m_offset{Common::assertDownCast<ptrdiff_t>(offset)} {}
+
+  [[nodiscard]] constexpr auto operator==(const ArrayIterator &rhs) const noexcept {
+    ASSERT(m_array == rhs.m_array);
+    return m_offset == rhs.m_offset;
+  }
+
+  [[nodiscard]] constexpr auto operator!=(const ArrayIterator &rhs) const noexcept {
+    return !this->operator==(rhs);
+  }
+
+  [[nodiscard]] constexpr auto operator<(const ArrayIterator &rhs) const noexcept {
+    ASSERT(m_array == rhs.m_array);
+    return m_offset < rhs.m_offset;
+  }
+
+  [[nodiscard]] constexpr auto operator>(const ArrayIterator &rhs) const noexcept {
+    return rhs < *this;
+  }
+
+  [[nodiscard]] constexpr auto operator<=(const ArrayIterator &rhs) const noexcept {
+    return !(*this > rhs);
+  }
+
+  [[nodiscard]] constexpr auto operator>=(const ArrayIterator &rhs) const noexcept {
+    return !(*this < rhs);
+  }
+
+  [[nodiscard]] constexpr auto operator*() const noexcept -> decltype(auto) {
+    return Common::at(*m_array, m_offset);
+  }
+
+  [[nodiscard]] constexpr auto operator->() const noexcept -> decltype(auto) {
+    return &Common::at(*m_array, m_offset);
+  }
+
+  constexpr auto operator++() noexcept -> decltype(auto) {
+    ++m_offset;
+    return *this;
+  }
+
+  constexpr auto operator++(int) noexcept {
+    ArrayIterator out(*this);
+    operator++();
+    return out;
+  }
+
+  constexpr auto operator--() noexcept -> decltype(auto) {
+    --m_offset;
+    return *this;
+  }
+
+  constexpr auto operator--(int) noexcept {
+    ArrayIterator out(*this);
+    operator--();
+    return out;
+  }
+
+  [[nodiscard]] constexpr auto operator+(ptrdiff_t a) const noexcept {
+    return ArrayIterator(*m_array, m_offset + a);
+  }
+
+  constexpr auto operator+=(ptrdiff_t a) noexcept -> decltype(auto) {
+    m_offset += a;
+    return *this;
+  }
+
+  [[nodiscard]] constexpr auto operator-(const ArrayIterator &rhs) const noexcept {
+    ASSERT(m_array == rhs.m_array);
+    return m_offset - rhs.m_offset;
+  }
+
+  [[nodiscard]] constexpr auto operator-(ptrdiff_t a) const noexcept -> decltype(auto) {
+    return ArrayIterator{*m_array, m_offset - a};
+  }
+
+  constexpr auto operator-=(ptrdiff_t a) noexcept -> decltype(auto) {
+    m_offset -= a;
+    return *this;
+  }
+
+  [[nodiscard]] constexpr auto operator[](ptrdiff_t a) const noexcept -> decltype(auto) {
+    return Common::at(*m_array, m_offset + a);
+  }
+
+  constexpr void swap(ArrayIterator &a, ArrayIterator &b) noexcept { std::swap(a, b); }
+};
+
+template <typename Iter>
+constexpr auto operator+(ptrdiff_t a, const ArrayIterator<Iter> &rhs) noexcept {
   return rhs + a;
 }
 } // namespace Array
@@ -341,12 +447,25 @@ public:
     return m_v[k];
   }
 
-  [[nodiscard]] constexpr auto begin() noexcept { return m_v.begin(); }
-  [[nodiscard]] constexpr auto begin() const noexcept { return m_v.begin(); }
-  [[nodiscard]] constexpr auto cbegin() const noexcept { return m_v.cbegin(); }
-  [[nodiscard]] constexpr auto end() noexcept { return m_v.end(); }
-  [[nodiscard]] constexpr auto end() const noexcept { return m_v.end(); }
-  [[nodiscard]] constexpr auto cend() const noexcept { return m_v.cend(); }
+  [[nodiscard]] constexpr auto begin() noexcept {
+    return TMIV::Common::Array::ArrayIterator<InternalArray>{m_v, 0};
+  }
+
+  [[nodiscard]] constexpr auto begin() const noexcept {
+    return TMIV::Common::Array::ArrayIterator<const InternalArray>{m_v, 0};
+  }
+
+  [[nodiscard]] constexpr auto cbegin() const noexcept { return begin(); }
+
+  [[nodiscard]] constexpr auto end() noexcept {
+    return TMIV::Common::Array::ArrayIterator<InternalArray>{m_v, m_v.size()};
+  }
+
+  [[nodiscard]] constexpr auto end() const noexcept {
+    return TMIV::Common::Array::ArrayIterator<const InternalArray>{m_v, m_v.size()};
+  }
+
+  [[nodiscard]] constexpr auto cend() const noexcept { return end(); }
 
   // Returns an iterator along the Kth dimension to the element of the hyperplane defined by i
   template <size_t K, typename... SizeT>

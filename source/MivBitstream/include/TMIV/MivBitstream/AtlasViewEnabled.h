@@ -65,8 +65,8 @@ public:
 
   friend auto operator<<(std::ostream &stream, const AtlasViewEnabled &x) -> std::ostream &;
 
-  auto operator==(const AtlasViewEnabled &other) const noexcept -> bool;
-  auto operator!=(const AtlasViewEnabled &other) const noexcept -> bool;
+  auto operator==(const AtlasViewEnabled &other) const -> bool;
+  auto operator!=(const AtlasViewEnabled &other) const -> bool;
 
   static auto decodeFrom(Common::InputBitstream &bitstream) -> AtlasViewEnabled;
 

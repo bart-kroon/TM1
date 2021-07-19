@@ -159,11 +159,20 @@ auto operator<<(std::ostream &stream, const AtlasViewEnabled &x) -> std::ostream
   return stream;
 }
 
-auto AtlasViewEnabled::operator==(const AtlasViewEnabled &other) const noexcept -> bool {
-  return ave_cancel_flag() == other.ave_cancel_flag();
+auto AtlasViewEnabled::operator==(const AtlasViewEnabled &other) const -> bool {
+  if (ave_cancel_flag()) {
+    return ave_cancel_flag() == other.ave_cancel_flag();
+  }
+  return ave_cancel_flag() == other.ave_cancel_flag() &&
+         ave_persistence_flag() == other.ave_persistence_flag() &&
+         ave_atlas_count_minus1() == other.ave_atlas_count_minus1() &&
+         ave_num_views_minus1() == other.ave_num_views_minus1() &&
+         ave_atlas_id(0) == other.ave_atlas_id(0) &&
+         ave_view_enabled_in_atlas_flag(ave_atlas_id(0), 0) ==
+             other.ave_view_enabled_in_atlas_flag(ave_atlas_id(0), 0);
 }
 
-auto AtlasViewEnabled::operator!=(const AtlasViewEnabled &other) const noexcept -> bool {
+auto AtlasViewEnabled::operator!=(const AtlasViewEnabled &other) const -> bool {
   return !operator==(other);
 }
 

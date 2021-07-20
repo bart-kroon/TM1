@@ -37,6 +37,7 @@
 #include <TMIV/Common/Quaternion.h>
 #include <TMIV/Common/verify.h>
 
+#include <regex>
 #include <stdexcept>
 
 using namespace std::string_literals;
@@ -97,6 +98,7 @@ auto Pose::encodeToCameraExtrinsics() const -> CameraExtrinsics {
 }
 
 auto ViewParams::printTo(std::ostream &stream, uint16_t viewIdx) const -> std::ostream & {
+  fmt::print(stream, "viewId[ {} ]={}\n", viewIdx, viewId);
   if (!name.empty()) {
     stream << "name[ " << viewIdx << " ]=\"" << name << "\"  # informative\n";
   }
@@ -211,50 +213,33 @@ ViewParams::operator Common::Json() const {
   return Json{root};
 }
 
-ViewParamsList::ViewParamsList(std::vector<ViewParams> viewParamsList)
-    : std::vector<ViewParams>{std::move(viewParamsList)} {}
+void ViewParamsList::constructViewIdIndex() {
+  // Test for duplicate ID's
+  auto usedSlot = std::vector<bool>(maxViewIdValue() + size_t{1}, false);
 
-auto ViewParamsList::viewSizes() const -> Common::SizeVector {
-  Common::SizeVector sizes;
-  sizes.reserve(size());
-  transform(begin(), end(), back_inserter(sizes),
-            [](const ViewParams &viewParams) { return viewParams.ci.projectionPlaneSize(); });
-  return sizes;
-}
+  m_viewIdIndex.assign(usedSlot.size(), UINT16_MAX);
+  auto viewIdx = uint16_t{};
 
-auto ViewParamsList::viewNames() const -> std::vector<std::string> {
-  auto names = std::vector<std::string>(size());
-  std::transform(cbegin(), cend(), names.begin(),
-                 [](const ViewParams &viewParams) { return viewParams.name; });
-  return names;
-}
+  for (const auto &vp : *this) {
+    VERIFY(!usedSlot[vp.viewId.m_value] && "Duplicate view ID");
+    usedSlot[vp.viewId.m_value] = true;
 
-auto operator<<(std::ostream &stream, const ViewParamsList &viewParamsList) -> std::ostream & {
-  for (size_t viewIdx = 0; viewIdx < viewParamsList.size(); ++viewIdx) {
-    viewParamsList[viewIdx].printTo(stream, static_cast<uint16_t>(viewIdx));
+    m_viewIdIndex[vp.viewId.m_value] = viewIdx++;
   }
-  return stream;
 }
 
-auto ViewParamsList::operator==(const ViewParamsList &other) const -> bool {
-  return equal(begin(), end(), other.begin(), other.end());
+void ViewParamsList::assignViewIds() {
+  auto viewIdx = uint16_t{};
+
+  for (auto &vp : *this) {
+    vp.viewId = ViewId{viewIdx++};
+  }
 }
 
-auto ViewParamsList::loadFromJson(const Common::Json &node, const std::vector<std::string> &names)
-    -> ViewParamsList {
-  ViewParamsList result;
-  const auto &a = node.as<Common::Json::Array>();
-  for (const auto &name : names) {
-    for (size_t i = 0; i != a.size(); ++i) {
-      if (name == a[i].require("Name").as<std::string>()) {
-        result.push_back(ViewParams{a[i]});
-        break;
-      }
-    }
-  }
-  if (result.size() != names.size()) {
-    throw std::runtime_error("Could not find all requested camera names in the metadata JSON file");
-  }
-  return result;
+auto ViewParamsList::maxViewIdValue() const noexcept -> uint16_t {
+  PRECONDITION(!empty());
+  return std::max_element(cbegin(), cend(),
+                          [](const auto &vp1, const auto &vp2) { return vp1.viewId < vp2.viewId; })
+      ->viewId.m_value;
 }
 } // namespace TMIV::MivBitstream

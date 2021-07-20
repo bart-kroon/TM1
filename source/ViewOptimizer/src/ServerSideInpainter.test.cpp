@@ -150,6 +150,7 @@ const auto sourceParams = []() {
       .ci_ortho_height(55.F);
   vp_1.pose.position = {1.F, 2.F, 3.F};
   vp_1.dq.dq_norm_disp_low(0.02F).dq_norm_disp_high(1.F);
+  vp_1.viewId = TMIV::MivBitstream::ViewId{0};
 
   auto &vp_2 = params.viewParamsList.emplace_back();
   vp_2.ci.ci_projection_plane_width_minus1(255)
@@ -161,6 +162,7 @@ const auto sourceParams = []() {
       .ci_perspective_focal_ver(4.F);
   vp_2.pose.position = {10.F, -5.F, 3.F};
   vp_2.dq.dq_norm_disp_low(-0.03F).dq_norm_disp_high(0.5F);
+  vp_2.viewId = TMIV::MivBitstream::ViewId{1};
 
   for (auto &vp : params.viewParamsList) {
     vp.name = "source";
@@ -168,6 +170,7 @@ const auto sourceParams = []() {
 
   params.depthLowQualityFlag = false;
 
+  params.viewParamsList.constructViewIdIndex();
   return params;
 };
 
@@ -391,7 +394,7 @@ TEST_CASE("ServerSideInpainter") {
         AND_THEN("The patch in the access unit corresponds to a full view") {
           for (size_t i = 0; i < renderFrame.atlas.size(); ++i) {
             const auto &pp = renderFrame.atlas[i].patchParamsList.front();
-            REQUIRE(i == pp.atlasPatchProjectionId());
+            REQUIRE(TMIV::MivBitstream::ViewId{i} == pp.atlasPatchProjectionId());
             REQUIRE(pp.atlasPatchOrientationIndex() ==
                     TMIV::MivBitstream::FlexiblePatchOrientation::FPO_NULL);
             REQUIRE(pp.atlasPatch2dPosX() == 0);

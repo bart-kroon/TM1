@@ -169,7 +169,7 @@ pdu_orientation_index[ 0 ][ 101 ]=FPO_NULL
         .pdu_3d_offset_v(21345)
         .pdu_3d_offset_d(623)
         .pdu_3d_range_d(789)
-        .pdu_projection_id(300)
+        .pdu_projection_id(ViewId{300})
         .pdu_orientation_index(FlexiblePatchOrientation::FPO_MROT180)
         .pdu_miv_extension()
         .pdu_entity_id(35)
@@ -220,7 +220,7 @@ pdu_inpaint_flag[ 12 ][ 102 ]=false
         .pdu_3d_offset_v(21345)
         .pdu_3d_offset_d(623)
         .pdu_3d_range_d(789)
-        .pdu_projection_id(300)
+        .pdu_projection_id(ViewId{300})
         .pdu_orientation_index(FlexiblePatchOrientation::FPO_MROT180)
         .pdu_miv_extension()
         .pdu_entity_id(35);

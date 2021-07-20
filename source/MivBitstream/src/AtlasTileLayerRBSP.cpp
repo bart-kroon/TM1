@@ -488,7 +488,7 @@ auto PatchDataUnit::decodeFrom(Common::InputBitstream &bitstream,
     x.pdu_3d_range_d(bitstream.readBits<uint32_t>(pdu3dRangeDNumBits));
   }
 
-  x.pdu_projection_id(bitstream.readBits<uint16_t>(pduProjectionIdNumBits));
+  x.pdu_projection_id(ViewId::decodeFrom(bitstream, pduProjectionIdNumBits));
   x.pdu_orientation_index(bitstream.readBits<FlexiblePatchOrientation>(pduOrientationIndexNumBits));
 
   if (afps.afps_lod_mode_enabled_flag()) {
@@ -539,7 +539,7 @@ void PatchDataUnit::encodeTo(Common::OutputBitstream &bitstream,
     bitstream.writeBits(pdu_3d_range_d(), pdu3dRangeDNumBits);
   }
 
-  bitstream.writeBits(pdu_projection_id(), pduProjectionIdNumBits);
+  pdu_projection_id().encodeTo(bitstream, pduProjectionIdNumBits);
   bitstream.writeBits(pdu_orientation_index(), pduOrientationIndexNumBits);
 
   if (afps.afps_lod_mode_enabled_flag()) {

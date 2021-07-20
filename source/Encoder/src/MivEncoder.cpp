@@ -241,8 +241,18 @@ auto MivEncoder::mivViewParamsList() const -> MivBitstream::MivViewParamsList {
 
   mvpl.mvp_num_views_minus1(static_cast<uint16_t>(m_params.viewParamsList.size() - 1));
 
-  for (uint16_t v = 0; v <= mvpl.mvp_num_views_minus1(); ++v) {
-    mvpl.mvp_view_id(v, v);
+  auto consecutiveViewIds = true;
+
+  for (size_t v = 0; v < vpl.size(); ++v) {
+    if (vpl[v].viewId != MivBitstream::ViewId{v}) {
+      consecutiveViewIds = false;
+    }
+  }
+
+  if (!consecutiveViewIds) {
+    for (size_t v = 0; v < vpl.size(); ++v) {
+      mvpl.mvp_view_id(Common::assertDownCast<uint16_t>(v), vpl[v].viewId);
+    }
   }
 
   return mvpl;

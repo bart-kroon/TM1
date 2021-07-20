@@ -128,7 +128,7 @@ constexpr auto PatchParams::atlasPatch3dRangeD(int32_t value) noexcept -> PatchP
   return *this;
 }
 
-constexpr auto PatchParams::atlasPatchProjectionId(uint16_t value) noexcept -> PatchParams & {
+constexpr auto PatchParams::atlasPatchProjectionId(ViewId value) noexcept -> PatchParams & {
   m_atlasPatchProjectionId = value;
   return *this;
 }

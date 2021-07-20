@@ -43,21 +43,23 @@ SCENARIO("Luma standard deviation in pruning") {
   const int numOfCams = 2;
   const int W = 10;
   const int H = 2;
-  auto viewParamsList =
-      MivBitstream::ViewParamsList{std::vector<MivBitstream::ViewParams>(numOfCams)};
+  auto viewParamsList = MivBitstream::ViewParamsList{};
   for (int c = 0; c < numOfCams; c++) {
-    viewParamsList[c].pose.position = Common::Vec3f{0.0F, 0.0F, 0.0F};
-    viewParamsList[c].pose.orientation = Common::neutralOrientationF;
-    viewParamsList[c].ci.ci_cam_type(MivBitstream::CiCamType::perspective);
-    viewParamsList[c].ci.ci_perspective_center_hor(static_cast<float>(W) / 2.0F);
-    viewParamsList[c].ci.ci_perspective_center_ver(static_cast<float>(H) / 2.0F);
-    viewParamsList[c].ci.ci_perspective_focal_hor(1.0F);
-    viewParamsList[c].ci.ci_perspective_focal_ver(1.0F);
-    viewParamsList[c].ci.ci_projection_plane_height_minus1(H - 1);
-    viewParamsList[c].ci.ci_projection_plane_width_minus1(W - 1);
-    viewParamsList[c].dq.dq_norm_disp_high(100.0F);
-    viewParamsList[c].dq.dq_norm_disp_low(1.0F);
+    auto &vp = viewParamsList.emplace_back();
+    vp.viewId = MivBitstream::ViewId{c};
+    vp.pose.position = Common::Vec3f{0.0F, 0.0F, 0.0F};
+    vp.pose.orientation = Common::neutralOrientationF;
+    vp.ci.ci_cam_type(MivBitstream::CiCamType::perspective);
+    vp.ci.ci_perspective_center_hor(static_cast<float>(W) / 2.0F);
+    vp.ci.ci_perspective_center_ver(static_cast<float>(H) / 2.0F);
+    vp.ci.ci_perspective_focal_hor(1.0F);
+    vp.ci.ci_perspective_focal_ver(1.0F);
+    vp.ci.ci_projection_plane_height_minus1(H - 1);
+    vp.ci.ci_projection_plane_width_minus1(W - 1);
+    vp.dq.dq_norm_disp_high(100.0F);
+    vp.dq.dq_norm_disp_low(1.0F);
   }
+  viewParamsList.constructViewIdIndex();
 
   auto views = Common::MVD16Frame(numOfCams);
 

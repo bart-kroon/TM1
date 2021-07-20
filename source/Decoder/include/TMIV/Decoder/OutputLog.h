@@ -40,6 +40,7 @@ namespace TMIV::Decoder {
 class HashFunction {
 public:
   constexpr auto consume(uint32_t value) noexcept -> HashFunction &;
+  constexpr auto consume(MivBitstream::ViewId value) noexcept -> HashFunction &;
   auto consumeF(float value) noexcept -> HashFunction &;
   [[nodiscard]] constexpr auto result() const noexcept;
   [[nodiscard]] static auto toString(uint32_t value) -> std::string;

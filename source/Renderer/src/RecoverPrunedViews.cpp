@@ -70,7 +70,7 @@ auto recoverPrunedViewAndMask(const MivBitstream::AccessUnit &frame)
 
         // Index patch and view parameters
         const auto &patchParams = atlas.patchParamsList[patchId];
-        const auto viewIdx = patchParams.atlasPatchProjectionId();
+        const auto viewIdx = frame.viewParamsList.indexOf(patchParams.atlasPatchProjectionId());
 
         // Test for occupancy
         if (!atlas.occFrame.empty() && atlas.occFrame.getPlane(0)(i, j) == 0) {

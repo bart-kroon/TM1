@@ -124,14 +124,16 @@ private:
     au.casps->casps_miv_extension().casme_depth_low_quality_flag(*m_depthLowQualityFlag);
 
     std::transform(frame.cbegin(), frame.cend(), std::back_inserter(au.atlas),
-                   [viewIdx = uint16_t{}](const Common::TextureDepth16Frame &frame) mutable {
-                     return atlasAccessUnit(frame, viewIdx++);
+                   [&vpl = au.viewParamsList,
+                    viewIdx = uint16_t{}](const Common::TextureDepth16Frame &frame) mutable {
+                     return atlasAccessUnit(frame, vpl[viewIdx++].viewId);
                    });
     return au;
   }
 
   [[nodiscard]] static auto atlasAccessUnit(const Common::TextureDepth16Frame &frame,
-                                            uint16_t viewIdx) -> MivBitstream::AtlasAccessUnit {
+                                            MivBitstream::ViewId viewId)
+      -> MivBitstream::AtlasAccessUnit {
     auto aau = MivBitstream::AtlasAccessUnit();
 
     const auto w = frame.texture.getWidth();
@@ -153,7 +155,7 @@ private:
     aau.occFrame.fillOne();
 
     auto &pp = aau.patchParamsList.emplace_back();
-    pp.atlasPatchProjectionId(viewIdx);
+    pp.atlasPatchProjectionId(viewId);
     pp.atlasPatchOrientationIndex(MivBitstream::FlexiblePatchOrientation::FPO_NULL);
     pp.atlasPatch2dSizeX(frame.texture.getWidth());
     pp.atlasPatch2dSizeY(frame.texture.getHeight());

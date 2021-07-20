@@ -296,8 +296,7 @@ void Encoder::prepareIvau() {
         .asps_use_eight_orientations_flag(true)
         .asps_extended_projection_enabled_flag(true)
         .asps_normal_axis_limits_quantization_enabled_flag(true)
-        .asps_max_number_projections_minus1(
-            static_cast<uint16_t>(m_params.viewParamsList.size() - 1))
+        .asps_max_number_projections_minus1(m_params.viewParamsList.maxViewIdValue())
         .asps_log2_patch_packing_block_size(Common::ceilLog2(m_config.blockSize))
         .asps_num_ref_atlas_frame_lists_in_asps(1);
 

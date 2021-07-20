@@ -58,6 +58,7 @@ struct Pose {
 };
 
 struct ViewParams {
+  ViewId viewId;
   CameraIntrinsics ci;
   Pose pose;
   DepthQuantization dq;
@@ -95,23 +96,28 @@ struct ViewParams {
   explicit operator Common::Json() const;
 };
 
-// Data type that corresponds to camera_params_list of specification
-struct ViewParamsList : public std::vector<ViewParams> {
-  ViewParamsList() = default;
-  explicit ViewParamsList(std::vector<ViewParams> viewParamsList);
+// Vector of ViewParams with indexing of view ID
+class ViewParamsList : public std::vector<ViewParams> {
+public:
+  void constructViewIdIndex();
+  void assignViewIds();
+  [[nodiscard]] auto maxViewIdValue() const noexcept -> uint16_t;
 
-  // Size or name of each view as a vector
-  [[nodiscard]] auto viewSizes() const -> Common::SizeVector;
-  [[nodiscard]] auto viewNames() const -> std::vector<std::string>;
+  [[nodiscard]] auto indexOf(ViewId viewId) const {
+    VERIFY(viewId.m_value < m_viewIdIndex.size());
+    const auto viewIdx = m_viewIdIndex[viewId.m_value];
+    VERIFY(viewIdx < size());
+    VERIFY(operator[](viewIdx).viewId == viewId);
+    return viewIdx;
+  }
 
-  friend auto operator<<(std::ostream &stream, const ViewParamsList &viewParamsList)
-      -> std::ostream &;
-  auto operator==(const ViewParamsList &other) const -> bool;
-  auto operator!=(const ViewParamsList &other) const -> bool { return !operator==(other); }
+  using std::vector<ViewParams>::operator[];
 
-  // Load (source) camera parameters from a JSON metadata file (RVS 3.x format)
-  static auto loadFromJson(const Common::Json &node, const std::vector<std::string> &names)
-      -> ViewParamsList;
+  auto operator[](ViewId viewId) const -> decltype(auto) { return operator[](indexOf(viewId)); }
+  auto operator[](ViewId viewId) -> decltype(auto) { return operator[](indexOf(viewId)); }
+
+private:
+  std::vector<uint16_t> m_viewIdIndex;
 };
 } // namespace TMIV::MivBitstream
 

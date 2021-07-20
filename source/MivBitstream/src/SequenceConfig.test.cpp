@@ -192,6 +192,24 @@ TEST_CASE("SequenceConfig") {
         "Resolution": [ 2048, 2048 ],
         "Rotation": [ -90.00000933466734, -90.0000161648565, 0.0 ],
         "Ver_range": [ -90.0, 90.0 ]
+    },  {
+        "BitDepthColor": 10,
+        "BitDepthDepth": 16,
+        "BitDepthTransparency": 13,
+        "BitDepthEntitities": 15,
+        "ColorSpace": "YUV420",
+        "DepthColorSpace": "YUV420",
+        "TransparencyColorSpace": "YUV420",
+        "EntitiesColorSpace": "YUV420",
+        "Depth_range": [ 0.1, 500.0 ],
+        "Hor_range": [ -90.0, 90.0 ],
+        "HasInvalidDepth": false,
+        "Name": "v5",
+        "Position": [ -0.5, -0.5, 1.2999999523162842 ],
+        "Projection": "Equirectangular",
+        "Resolution": [ 2048, 2048 ],
+        "Rotation": [ -90.00000933466734, -90.0000161648565, 0.0 ],
+        "Ver_range": [ -90.0, 90.0 ]
     } ]
 }
 )");
@@ -200,16 +218,16 @@ TEST_CASE("SequenceConfig") {
     CHECK(x.contentName == "Chess"s);
     CHECK(x.frameRate == 30.);
     CHECK(x.numberOfFrames == 300);
-    CHECK(x.cameras.size() == 2);
+    CHECK(x.cameras.size() == 3);
     CHECK(!x.cameras.back().viewParams.hasOccupancy);
 
     // Backwards compatible intelligent default is to recognize all v[0-9]+ as source cameras.
     // Otherwise existing sequence configuration files would have to be changed.
-    CHECK(x.sourceCameraNames == std::vector{"v0"s});
+    CHECK(x.sourceCameraNames == std::vector{"v0"s, "v5"s});
 
     SECTION("sourceViewParams() obtains a VPL with only the source views") {
       const auto y = x.sourceViewParams();
-      REQUIRE(y.size() == 1);
+      REQUIRE(y.size() == 2);
       REQUIRE(y.front() == x.cameras.back().viewParams);
     }
 

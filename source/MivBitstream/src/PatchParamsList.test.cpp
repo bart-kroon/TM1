@@ -50,6 +50,8 @@ using TMIV::MivBitstream::AtlasTileHeader;
 using TMIV::MivBitstream::FlexiblePatchOrientation;
 using TMIV::MivBitstream::PatchDataUnit;
 using TMIV::MivBitstream::PatchParams;
+using TMIV::MivBitstream::ViewId;
+
 // To compare against the efficient implementation, we directly implement V3C 2E
 // [ISO/IEC JTC 1/SC 29/WG 07 N 0003 clause 9.5.2.1]
 namespace direct {
@@ -126,7 +128,7 @@ TEST_CASE("TMIV::MivBitstream::PatchParams") {
       REQUIRE(unit.atlasPatch3dOffsetV() == 0);
       REQUIRE(unit.atlasPatch3dOffsetD() == 0);
       REQUIRE(unit.atlasPatch3dRangeD() == 1);
-      REQUIRE(unit.atlasPatchProjectionId() == 0);
+      REQUIRE(unit.atlasPatchProjectionId() == ViewId{});
       REQUIRE(unit.atlasPatchOrientationIndex() == FlexiblePatchOrientation::FPO_NULL);
       REQUIRE(unit.atlasPatchLoDScaleX() == 1);
       REQUIRE(unit.atlasPatchLoDScaleY() == 1);
@@ -144,7 +146,7 @@ TEST_CASE("TMIV::MivBitstream::PatchParams") {
           .pdu_2d_size_y_minus1(4)
           .pdu_3d_offset_u(5)
           .pdu_3d_offset_v(6)
-          .pdu_projection_id(7)
+          .pdu_projection_id(ViewId{7})
           .pdu_orientation_index(FlexiblePatchOrientation::FPO_ROT270)
           .pdu_lod_enabled_flag(true)
           .pdu_lod_scale_x_minus1(0)
@@ -165,7 +167,7 @@ TEST_CASE("TMIV::MivBitstream::PatchParams") {
       REQUIRE(unit.atlasPatch3dOffsetV() == 6);
       REQUIRE(unit.atlasPatch3dOffsetD() == 0);
       REQUIRE(unit.atlasPatch3dRangeD() == 31);
-      REQUIRE(unit.atlasPatchProjectionId() == 7);
+      REQUIRE(unit.atlasPatchProjectionId() == ViewId{7});
       REQUIRE(unit.atlasPatchOrientationIndex() == FlexiblePatchOrientation::FPO_ROT270);
       REQUIRE(unit.atlasPatchLoDScaleX() == 1);
       REQUIRE(unit.atlasPatchLoDScaleY() == 3);
@@ -184,7 +186,7 @@ TEST_CASE("TMIV::MivBitstream::PatchParams") {
           .pdu_3d_offset_u(5)
           .pdu_3d_offset_v(6)
           .pdu_3d_range_d(7)
-          .pdu_projection_id(8)
+          .pdu_projection_id(ViewId{8})
           .pdu_orientation_index(FlexiblePatchOrientation::FPO_ROT270)
           .pdu_lod_enabled_flag(true)
           .pdu_lod_scale_x_minus1(2)
@@ -221,7 +223,7 @@ TEST_CASE("TMIV::MivBitstream::PatchParams") {
       REQUIRE(unit.atlasPatch3dOffsetV() == 6);
       REQUIRE(unit.atlasPatch3dOffsetD() == 0);
       REQUIRE(unit.atlasPatch3dRangeD() == 895);
-      REQUIRE(unit.atlasPatchProjectionId() == 8);
+      REQUIRE(unit.atlasPatchProjectionId() == ViewId{8});
       REQUIRE(unit.atlasPatchOrientationIndex() == FlexiblePatchOrientation::FPO_ROT270);
       REQUIRE(unit.atlasPatchLoDScaleX() == 3);
       REQUIRE(unit.atlasPatchLoDScaleY() == 1);
@@ -265,7 +267,7 @@ TEST_CASE("TMIV::MivBitstream::PatchParams") {
       REQUIRE(pdu.pdu_3d_offset_v() == 0);
       REQUIRE(pdu.pdu_3d_offset_d() == 0);
       REQUIRE_THROWS(pdu.pdu_3d_range_d());
-      REQUIRE(pdu.pdu_projection_id() == 0);
+      REQUIRE(pdu.pdu_projection_id() == ViewId{});
       REQUIRE(pdu.pdu_orientation_index() == FlexiblePatchOrientation::FPO_NULL);
       REQUIRE(!pdu.pdu_lod_enabled_flag());
       REQUIRE(pdu.pdu_lod_scale_x_minus1() == 0);
@@ -292,7 +294,7 @@ TEST_CASE("TMIV::MivBitstream::PatchParams") {
           .atlasPatch3dOffsetU(5)
           .atlasPatch3dOffsetV(6)
           .atlasPatch3dRangeD(31)
-          .atlasPatchProjectionId(7)
+          .atlasPatchProjectionId(ViewId{7})
           .atlasPatchLoDScaleX(1)
           .atlasPatchLoDScaleY(3)
           .atlasPatchOrientationIndex(FlexiblePatchOrientation::FPO_ROT270);
@@ -305,7 +307,7 @@ TEST_CASE("TMIV::MivBitstream::PatchParams") {
       REQUIRE(pdu.pdu_2d_size_y_minus1() == 4);
       REQUIRE(pdu.pdu_3d_offset_u() == 5);
       REQUIRE(pdu.pdu_3d_offset_v() == 6);
-      REQUIRE(pdu.pdu_projection_id() == 7);
+      REQUIRE(pdu.pdu_projection_id() == ViewId{7});
       REQUIRE(pdu.pdu_orientation_index() == FlexiblePatchOrientation::FPO_ROT270);
       REQUIRE(pdu.pdu_lod_enabled_flag());
       REQUIRE(pdu.pdu_lod_scale_x_minus1() == 0);
@@ -322,7 +324,7 @@ TEST_CASE("TMIV::MivBitstream::PatchParams") {
           .atlasPatch3dOffsetV(6)
           .atlasPatch3dOffsetD(0)
           .atlasPatch3dRangeD(895)
-          .atlasPatchProjectionId(8)
+          .atlasPatchProjectionId(ViewId{8})
           .atlasPatchOrientationIndex(FlexiblePatchOrientation::FPO_ROT270)
           .atlasPatchLoDScaleX(3)
           .atlasPatchLoDScaleY(1)
@@ -360,7 +362,7 @@ TEST_CASE("TMIV::MivBitstream::PatchParams") {
       REQUIRE(pdu.pdu_3d_offset_u() == 5);
       REQUIRE(pdu.pdu_3d_offset_v() == 6);
       REQUIRE(pdu.pdu_3d_range_d() == 7);
-      REQUIRE(pdu.pdu_projection_id() == 8);
+      REQUIRE(pdu.pdu_projection_id() == ViewId{8});
       REQUIRE(pdu.pdu_orientation_index() == FlexiblePatchOrientation::FPO_ROT270);
       REQUIRE(pdu.pdu_lod_enabled_flag());
       REQUIRE(pdu.pdu_lod_scale_x_minus1() == 2);

@@ -323,7 +323,7 @@ private:
 
       const MivBitstream::AtlasAccessUnit &atlas = frame.atlas[atlas_id];
       const MivBitstream::PatchParams &patch = atlas.patchParamsList[patch_id];
-      const auto viewIdx = patch.atlasPatchProjectionId();
+      const auto viewIdx = frame.viewParamsList.indexOf(patch.atlasPatchProjectionId());
       const auto viewParams = frame.viewParamsList[viewIdx];
 
       // Block corners

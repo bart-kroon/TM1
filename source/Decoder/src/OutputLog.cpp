@@ -72,6 +72,10 @@ constexpr auto HashFunction::consume(uint32_t value) noexcept -> HashFunction & 
   return *this;
 }
 
+constexpr auto HashFunction::consume(MivBitstream::ViewId value) noexcept -> HashFunction & {
+  return consume(value.m_value);
+}
+
 auto HashFunction::consumeF(float value) noexcept -> HashFunction & {
   uint32_t intValue{};
   memcpy(&intValue, &value, 4);

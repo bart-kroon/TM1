@@ -39,6 +39,10 @@
 #include <cstdint>
 #include <ostream>
 
+namespace TMIV::Decoder {
+class HashFunction;
+}
+
 namespace TMIV::MivBitstream {
 // Use a type to avoid confusing view index and ID
 //
@@ -72,6 +76,8 @@ public:
 
 private:
   friend struct fmt::formatter<TMIV::MivBitstream::ViewId>;
+  friend class ViewParamsList;
+  friend class TMIV::Decoder::HashFunction;
 
   uint16_t m_value{};
 };

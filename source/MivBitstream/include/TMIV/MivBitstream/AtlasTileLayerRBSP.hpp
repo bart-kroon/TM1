@@ -209,7 +209,7 @@ constexpr auto PatchDataUnit::pdu_3d_offset_v() const noexcept { return m_pdu_3d
 
 constexpr auto PatchDataUnit::pdu_3d_offset_d() const noexcept { return m_pdu_3d_offset_d; }
 
-constexpr auto PatchDataUnit::pdu_projection_id() const noexcept { return m_pdu_view_id; }
+constexpr auto PatchDataUnit::pdu_projection_id() const noexcept { return m_pdu_projection_id; }
 
 constexpr auto PatchDataUnit::pdu_orientation_index() const noexcept {
   return m_pdu_orientation_index;
@@ -271,8 +271,8 @@ constexpr auto PatchDataUnit::pdu_3d_range_d(Common::SampleValue value) noexcept
   return *this;
 }
 
-constexpr auto PatchDataUnit::pdu_projection_id(uint16_t value) noexcept -> auto & {
-  m_pdu_view_id = value;
+constexpr auto PatchDataUnit::pdu_projection_id(ViewId value) noexcept -> auto & {
+  m_pdu_projection_id = value;
   return *this;
 }
 

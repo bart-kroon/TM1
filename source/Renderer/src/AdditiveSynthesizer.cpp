@@ -98,7 +98,8 @@ public:
 
         // Look up metadata
         const auto &patch = atlas.patchParamsList[patchId];
-        const auto &viewParams = frame.viewParamsList[patch.atlasPatchProjectionId()];
+        const auto viewIdx = frame.viewParamsList.indexOf(patch.atlasPatchProjectionId());
+        const auto &viewParams = frame.viewParamsList[viewIdx];
 
         // Look up depth value and affine parameters
         const auto uv = Common::Vec2f{Common::floatCast, patch.atlasToView({j_atlas, i_atlas})};
@@ -113,7 +114,7 @@ public:
         const auto d = depthTransform[patchId].expandDepth(level);
 
         // Reproject and calculate ray angle
-        const auto &R_t = transformList[patch.atlasPatchProjectionId()];
+        const auto &R_t = transformList[viewIdx];
         const auto xyz = R_t(unprojectVertex(uv + Common::Vec2f({0.5F, 0.5F}), d, viewParams.ci));
         const auto rayAngle = angle(xyz, xyz - R_t.translation());
         result.push_back({xyz, rayAngle});

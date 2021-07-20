@@ -168,9 +168,11 @@ void Encoder::correctColors() {
     const auto xM = patch.atlasPatch3dOffsetU();
     const auto yM = patch.atlasPatch3dOffsetV();
 
+    const auto viewIdx = m_params.viewParamsList.indexOf(patch.atlasPatchProjectionId());
+
     for (size_t frame = 0; frame < m_transportViews.size(); frame++) {
-      const auto &view = m_transportViews[frame][patch.atlasPatchProjectionId()];
-      const auto &colorCorrectionMap = m_colorCorrectionMaps[frame][patch.atlasPatchProjectionId()];
+      const auto &view = m_transportViews[frame][viewIdx];
+      const auto &colorCorrectionMap = m_colorCorrectionMaps[frame][viewIdx];
       const auto &textureViewMap = view.texture;
 
       for (int32_t y = 0; y < h; y++) {
@@ -185,7 +187,7 @@ void Encoder::correctColors() {
           cnt++;
 
           if (colorCorrectionMap(pView.y(), pView.x()).x() != 0 &&
-              m_nonAggregatedMask[patch.atlasPatchProjectionId()](pView.y(), pView.x())[frame]) {
+              m_nonAggregatedMask[viewIdx](pView.y(), pView.x())[frame]) {
             sumErrY += colorCorrectionMap(pView.y(), pView.x()).x();
             sumErrU += colorCorrectionMap(pView.y(), pView.x()).y();
             sumErrV += colorCorrectionMap(pView.y(), pView.x()).z();
@@ -477,7 +479,8 @@ void Encoder::constructVideoFrames() {
 
     for (size_t patchIdx = 0; patchIdx < m_params.patchParamsList.size(); patchIdx++) {
       const auto &patch = m_params.patchParamsList[patchIdx];
-      const auto &view = views[patch.atlasPatchProjectionId()];
+      const auto viewIdx = m_params.viewParamsList.indexOf(patch.atlasPatchProjectionId());
+      const auto &view = views[viewIdx];
 
       const auto k = m_params.vps.indexOf(patch.atlasId());
       if (0 < m_params.atlas[k].asps.asps_miv_extension().asme_max_entity_id()) {
@@ -544,7 +547,9 @@ auto Encoder::writePatchInAtlas(const MivBitstream::PatchParams &patchParams,
       bool isAggregatedMaskBlockNonEmpty = false;
       for (int v = vBlock; v < vBlock + m_config.blockSize && v < sizeV; v++) {
         for (int u = uBlock; u < uBlock + m_config.blockSize && u < sizeU; u++) {
-          const auto viewIdx = patchParams.atlasPatchProjectionId();
+          const auto viewIdx =
+              m_params.viewParamsList.indexOf(patchParams.atlasPatchProjectionId());
+
           if (m_nonAggregatedMask[viewIdx](v + posV, u + posU)[frameId]) {
             isAggregatedMaskBlockNonEmpty = true;
             break;

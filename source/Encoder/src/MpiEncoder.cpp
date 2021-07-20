@@ -257,6 +257,7 @@ void MpiEncoder::prepareSequence(const MivBitstream::SequenceConfig &sequenceCon
 }
 
 auto MpiEncoder::processAccessUnit(int firstFrameId, int lastFrameId) -> const EncoderParams & {
+  LIMITATION(m_params.viewParamsList.size() == 1);
   const auto &mpiViewParams = m_params.viewParamsList.front();
   Common::Vec2i mpiSize{static_cast<int>(mpiViewParams.ci.ci_projection_plane_width_minus1()) + 1,
                         static_cast<int>(mpiViewParams.ci.ci_projection_plane_height_minus1()) + 1};
@@ -304,9 +305,8 @@ auto MpiEncoder::processAccessUnit(int firstFrameId, int lastFrameId) -> const E
         std::count_if(aggregatedMask.getPlane(0).begin(), aggregatedMask.getPlane(0).end(),
                       [](auto x) { return (x > 0); });
 
-    auto patchParamsListLayer =
-        m_packer->pack(m_overrideAtlasFrameSizes, {aggregatedMask},
-                       MivBitstream::ViewParamsList{{mpiViewParams}}, m_blockSize);
+    auto patchParamsListLayer = m_packer->pack(m_overrideAtlasFrameSizes, {aggregatedMask},
+                                               m_params.viewParamsList, m_blockSize);
 
     for (auto &patchParams : patchParamsListLayer) {
       patchParams.atlasPatch3dOffsetD(layerId);

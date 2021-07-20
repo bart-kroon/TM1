@@ -39,10 +39,10 @@
 
 namespace TMIV::MivBitstream {
 TEST_CASE("camera_intrinsics", "[Common Atlas Frame MIV Extension]") {
-  auto x = CameraIntrinsics{};
+  auto unit = CameraIntrinsics{};
 
   SECTION("Default constructor: equirectangular") {
-    REQUIRE(toString(x, uint16_t{1}) == R"(ci_cam_type[ 1 ]=equirectangular
+    REQUIRE(toString(unit, uint16_t{1}) == R"(ci_cam_type[ 1 ]=equirectangular
 ci_projection_plane_width_minus1[ 1 ]=0
 ci_projection_plane_height_minus1[ 1 ]=0
 ci_erp_phi_min[ 1 ]=0
@@ -51,17 +51,17 @@ ci_erp_theta_min[ 1 ]=0
 ci_erp_theta_max[ 1 ]=0
 )");
 
-    REQUIRE(bitCodingTest(x, 168));
+    REQUIRE(bitCodingTest(unit, 168));
   }
 
   SECTION("equirectangular custom") {
-    x.ci_cam_type(CiCamType::equirectangular)
+    unit.ci_cam_type(CiCamType::equirectangular)
         .ci_erp_phi_min(-2.F)
         .ci_erp_phi_max(2.F)
         .ci_erp_theta_min(-1.F)
         .ci_erp_theta_max(1.F);
 
-    REQUIRE(toString(x, uint16_t{1}) == R"(ci_cam_type[ 1 ]=equirectangular
+    REQUIRE(toString(unit, uint16_t{1}) == R"(ci_cam_type[ 1 ]=equirectangular
 ci_projection_plane_width_minus1[ 1 ]=0
 ci_projection_plane_height_minus1[ 1 ]=0
 ci_erp_phi_min[ 1 ]=-2
@@ -70,11 +70,11 @@ ci_erp_theta_min[ 1 ]=-1
 ci_erp_theta_max[ 1 ]=1
 )");
 
-    REQUIRE(bitCodingTest(x, 168));
+    REQUIRE(bitCodingTest(unit, 168));
   }
 
   SECTION("perspective") {
-    x.ci_cam_type(CiCamType::perspective)
+    unit.ci_cam_type(CiCamType::perspective)
         .ci_projection_plane_width_minus1(19)
         .ci_projection_plane_height_minus1(9)
         .ci_perspective_focal_hor(50.F)
@@ -82,7 +82,7 @@ ci_erp_theta_max[ 1 ]=1
         .ci_perspective_center_hor(10.F)
         .ci_perspective_center_ver(5.F);
 
-    REQUIRE(toString(x, uint16_t{1}) == R"(ci_cam_type[ 1 ]=perspective
+    REQUIRE(toString(unit, uint16_t{1}) == R"(ci_cam_type[ 1 ]=perspective
 ci_projection_plane_width_minus1[ 1 ]=19
 ci_projection_plane_height_minus1[ 1 ]=9
 ci_perspective_focal_hor[ 1 ]=50
@@ -91,31 +91,31 @@ ci_perspective_center_hor[ 1 ]=10
 ci_perspective_center_ver[ 1 ]=5
 )");
 
-    REQUIRE(bitCodingTest(x, 168));
+    REQUIRE(bitCodingTest(unit, 168));
   }
 
   SECTION("orthographic") {
-    x.ci_cam_type(CiCamType::orthographic)
+    unit.ci_cam_type(CiCamType::orthographic)
         .ci_projection_plane_width_minus1(1023)
         .ci_projection_plane_height_minus1(767)
         .ci_ortho_width(100.F)
         .ci_ortho_height(50.F);
 
-    REQUIRE(toString(x, uint16_t{1}) == R"(ci_cam_type[ 1 ]=orthographic
+    REQUIRE(toString(unit, uint16_t{1}) == R"(ci_cam_type[ 1 ]=orthographic
 ci_projection_plane_width_minus1[ 1 ]=1023
 ci_projection_plane_height_minus1[ 1 ]=767
 ci_ortho_width[ 1 ]=100
 ci_ortho_height[ 1 ]=50
 )");
 
-    REQUIRE(bitCodingTest(x, 104));
+    REQUIRE(bitCodingTest(unit, 104));
   }
 }
 
 TEST_CASE("camera_extrinsics", "[Common Atlas Frame MIV Extension]") {
-  auto x = CameraExtrinsics{};
+  auto unit = CameraExtrinsics{};
 
-  REQUIRE(toString(x, uint16_t{1}) == R"(ce_view_pos_x[ 1 ]=0.0
+  REQUIRE(toString(unit, uint16_t{1}) == R"(ce_view_pos_x[ 1 ]=0.0
 ce_view_pos_y[ 1 ]=0.0
 ce_view_pos_z[ 1 ]=0.0
 ce_view_quat_x[ 1 ]=0
@@ -123,17 +123,17 @@ ce_view_quat_y[ 1 ]=0
 ce_view_quat_z[ 1 ]=0
 )");
 
-  REQUIRE(bitCodingTest(x, 192));
+  REQUIRE(bitCodingTest(unit, 192));
 
   SECTION("Example") {
-    x.ce_view_pos_x(3.F)
+    unit.ce_view_pos_x(3.F)
         .ce_view_pos_y(1.F)
         .ce_view_pos_z(4.F)
         .ce_view_quat_x(153)
         .ce_view_quat_y(-1239)
         .ce_view_quat_z(0);
 
-    REQUIRE(toString(x, uint16_t{1}) == R"(ce_view_pos_x[ 1 ]=3.0
+    REQUIRE(toString(unit, uint16_t{1}) == R"(ce_view_pos_x[ 1 ]=3.0
 ce_view_pos_y[ 1 ]=1.0
 ce_view_pos_z[ 1 ]=4.0
 ce_view_quat_x[ 1 ]=153
@@ -141,49 +141,49 @@ ce_view_quat_y[ 1 ]=-1239
 ce_view_quat_z[ 1 ]=0
 )");
 
-    REQUIRE(bitCodingTest(x, 192));
+    REQUIRE(bitCodingTest(unit, 192));
   }
 }
 
 TEST_CASE("depth_quantization", "[Common Atlas Frame MIV Extension]") {
-  auto x = DepthQuantization{};
+  auto unit = DepthQuantization{};
 
-  REQUIRE(toString(x, uint16_t{7}) == R"(dq_quantization_law[ 7 ]=0
+  REQUIRE(toString(unit, uint16_t{7}) == R"(dq_quantization_law[ 7 ]=0
 dq_norm_disp_low[ 7 ]=0
 dq_norm_disp_high[ 7 ]=0
 dq_depth_occ_threshold_default[ 7 ]=0
 )");
 
-  REQUIRE(bitCodingTest(x, 73));
+  REQUIRE(bitCodingTest(unit, 73));
 
   SECTION("Example 2") {
-    x.dq_norm_disp_low(0.02F);
-    x.dq_norm_disp_high(2.F);
-    x.dq_depth_occ_threshold_default(200);
+    unit.dq_norm_disp_low(0.02F);
+    unit.dq_norm_disp_high(2.F);
+    unit.dq_depth_occ_threshold_default(200);
 
-    REQUIRE(toString(x, uint16_t{2}) == R"(dq_quantization_law[ 2 ]=0
+    REQUIRE(toString(unit, uint16_t{2}) == R"(dq_quantization_law[ 2 ]=0
 dq_norm_disp_low[ 2 ]=0.02
 dq_norm_disp_high[ 2 ]=2
 dq_depth_occ_threshold_default[ 2 ]=200
 )");
 
-    REQUIRE(bitCodingTest(x, 87));
+    REQUIRE(bitCodingTest(unit, 87));
   }
 }
 
 TEST_CASE("pruning_parent", "[Common Atlas Frame MIV Extension]") {
   SECTION("Example 1") {
-    const auto x = PruningParents{};
-    REQUIRE(toString(x, uint16_t{3}) == R"(pp_is_root_flag[ 3 ]=true
+    const auto unit = PruningParents{};
+    REQUIRE(toString(unit, uint16_t{3}) == R"(pp_is_root_flag[ 3 ]=true
 )");
 
     const uint16_t mvp_num_views_minus1 = 10;
-    REQUIRE(bitCodingTest(x, 1, mvp_num_views_minus1));
+    REQUIRE(bitCodingTest(unit, 1, mvp_num_views_minus1));
   }
 
   SECTION("Example 2") {
-    const auto x = PruningParents{{2, 3, 5, 8}};
-    REQUIRE(toString(x, uint16_t{5}) == R"(pp_is_root_flag[ 5 ]=false
+    const auto unit = PruningParents{{2, 3, 5, 8}};
+    REQUIRE(toString(unit, uint16_t{5}) == R"(pp_is_root_flag[ 5 ]=false
 pp_num_parent_minus1[ 5 ]=3
 pp_parent_id[ 5 ][ 0 ]=2
 pp_parent_id[ 5 ][ 1 ]=3
@@ -192,17 +192,17 @@ pp_parent_id[ 5 ][ 3 ]=8
 )");
 
     const uint16_t mvp_num_views_minus1 = 10;
-    REQUIRE(bitCodingTest(x, 21, mvp_num_views_minus1));
+    REQUIRE(bitCodingTest(unit, 21, mvp_num_views_minus1));
   }
 }
 
 TEST_CASE("miv_view_params_list", "[Common Atlas Frame MIV Extension]") {
-  auto x = MivViewParamsList{};
+  auto unit = MivViewParamsList{};
   auto casps = CommonAtlasSequenceParameterSetRBSP{};
   casps.casps_miv_extension() = {};
 
   SECTION("Default constructor") {
-    REQUIRE(toString(x) == R"(mvp_num_views_minus1=0
+    REQUIRE(toString(unit) == R"(mvp_num_views_minus1=0
 mvp_explicit_view_id_flag=false
 ce_view_pos_x[ 0 ]=0.0
 ce_view_pos_y[ 0 ]=0.0
@@ -222,22 +222,23 @@ ci_erp_theta_max[ 0 ]=0
 mvp_pruning_graph_params_present_flag=false
 )");
 
-    REQUIRE(bitCodingTest(x, 380, casps));
+    REQUIRE(bitCodingTest(unit, 380, casps));
+    REQUIRE(unit.mvp_view_id(0) == ViewId{});
   }
 
   SECTION("Example 1") {
     casps.casps_miv_extension().casme_depth_quantization_params_present_flag(true);
-    x.mvp_num_views_minus1(0)
+    unit.mvp_num_views_minus1(0)
         .mvp_explicit_view_id_flag(false)
         .mvp_intrinsic_params_equal_flag(false)
         .mvp_depth_quantization_params_equal_flag(false)
         .mvp_pruning_graph_params_present_flag(false);
-    x.camera_intrinsics(0)
+    unit.camera_intrinsics(0)
         .ci_cam_type(CiCamType::orthographic)
         .ci_ortho_width(4.F)
         .ci_ortho_height(3.F);
 
-    REQUIRE(toString(x) == R"(mvp_num_views_minus1=0
+    REQUIRE(toString(unit) == R"(mvp_num_views_minus1=0
 mvp_explicit_view_id_flag=false
 ce_view_pos_x[ 0 ]=0.0
 ce_view_pos_y[ 0 ]=0.0
@@ -260,25 +261,25 @@ dq_depth_occ_threshold_default[ 0 ]=0
 mvp_pruning_graph_params_present_flag=false
 )");
 
-    REQUIRE(bitCodingTest(x, 390, casps));
+    REQUIRE(bitCodingTest(unit, 390, casps));
   }
 
   SECTION("Example 2") {
     casps.casps_miv_extension().casme_depth_quantization_params_present_flag(true);
-    x.mvp_num_views_minus1(2)
-        .mvp_view_id(0, 0)
-        .mvp_view_id(1, 2)
-        .mvp_view_id(2, 1)
+    unit.mvp_num_views_minus1(2)
+        .mvp_view_id(0, ViewId{})
+        .mvp_view_id(1, ViewId{2})
+        .mvp_view_id(2, ViewId{1})
         .mvp_inpaint_flag(1, true)
         .mvp_intrinsic_params_equal_flag(true)
         .mvp_depth_quantization_params_equal_flag(true)
         .mvp_pruning_graph_params_present_flag(true);
-    x.camera_intrinsics(0)
+    unit.camera_intrinsics(0)
         .ci_cam_type(CiCamType::orthographic)
         .ci_ortho_width(4.F)
         .ci_ortho_height(3.F);
 
-    REQUIRE(toString(x) == R"(mvp_num_views_minus1=2
+    REQUIRE(toString(unit) == R"(mvp_num_views_minus1=2
 mvp_explicit_view_id_flag=true
 mvp_view_id[ 0 ]=0
 mvp_view_id[ 1 ]=2
@@ -321,13 +322,16 @@ pp_is_root_flag[ 1 ]=true
 pp_is_root_flag[ 2 ]=true
 )");
 
-    REQUIRE(bitCodingTest(x, 827, casps));
+    REQUIRE(bitCodingTest(unit, 827, casps));
+    REQUIRE(unit.mvp_view_id(0) == ViewId{0});
+    REQUIRE(unit.mvp_view_id(2) == ViewId{1});
+    REQUIRE(unit.mvp_view_id(1) == ViewId{2});
   }
 
   SECTION("mvp when casme_depth_quantization_params_present_flag=0") {
     casps.casps_miv_extension().casme_depth_quantization_params_present_flag(false);
 
-    REQUIRE(toString(x) == R"(mvp_num_views_minus1=0
+    REQUIRE(toString(unit) == R"(mvp_num_views_minus1=0
 mvp_explicit_view_id_flag=false
 ce_view_pos_x[ 0 ]=0.0
 ce_view_pos_y[ 0 ]=0.0
@@ -347,12 +351,12 @@ ci_erp_theta_max[ 0 ]=0
 mvp_pruning_graph_params_present_flag=false
 )");
 
-    REQUIRE(bitCodingTest(x, 380, casps));
+    REQUIRE(bitCodingTest(unit, 380, casps));
   }
 }
 
 TEST_CASE("caf_miv_extension", "[Common Atlas Frame MIV Extension]") {
-  auto x = CafMivExtension{};
+  auto unit = CafMivExtension{};
   auto casps = CommonAtlasSequenceParameterSetRBSP{};
   casps.casps_miv_extension() = {};
   const auto nalCaf = NalUnitHeader{NalUnitType::NAL_CAF_TRIAL, 0, 1};
@@ -360,7 +364,7 @@ TEST_CASE("caf_miv_extension", "[Common Atlas Frame MIV Extension]") {
 
   SECTION("Initialize view parameters") {
     casps.casps_miv_extension().casme_depth_quantization_params_present_flag(true);
-    x.miv_view_params_list()
+    unit.miv_view_params_list()
         .mvp_num_views_minus1(2)
         .mvp_explicit_view_id_flag(false)
         .mvp_intrinsic_params_equal_flag(true)
@@ -371,7 +375,7 @@ TEST_CASE("caf_miv_extension", "[Common Atlas Frame MIV Extension]") {
         .ci_ortho_width(4.F)
         .ci_ortho_height(3.F);
 
-    REQUIRE(toString(x) == R"(miv_view_params_list=mvp_num_views_minus1=2
+    REQUIRE(toString(unit) == R"(miv_view_params_list=mvp_num_views_minus1=2
 mvp_explicit_view_id_flag=false
 ce_view_pos_x[ 0 ]=0.0
 ce_view_pos_y[ 0 ]=0.0
@@ -411,12 +415,12 @@ pp_is_root_flag[ 1 ]=true
 pp_is_root_flag[ 2 ]=true
 )");
 
-    REQUIRE(bitCodingTest(x, 779, nalIdrCaf, casps));
+    REQUIRE(bitCodingTest(unit, 779, nalIdrCaf, casps));
   }
 
   SECTION("Update extrinsics") {
     casps.casps_miv_extension().casme_depth_quantization_params_present_flag(true);
-    x.came_update_depth_quantization_flag(false)
+    unit.came_update_depth_quantization_flag(false)
         .came_update_intrinsics_flag(false)
         .came_update_extrinsics_flag(true)
         .miv_view_params_update_extrinsics()
@@ -430,7 +434,7 @@ pp_is_root_flag[ 2 ]=true
         .ce_view_quat_y(std::numeric_limits<int16_t>::min())
         .ce_view_quat_z(1);
 
-    REQUIRE(toString(x) == R"(came_update_extrinsics_flag=true
+    REQUIRE(toString(unit) == R"(came_update_extrinsics_flag=true
 came_update_intrinsics_flag=false
 came_update_depth_quantization_flag=false
 mvpue_num_view_updates_minus1=0
@@ -443,12 +447,12 @@ ce_view_quat_y[ 0 ]=-32768
 ce_view_quat_z[ 0 ]=1
 )");
 
-    REQUIRE(bitCodingTest(x, 227, nalCaf, casps));
+    REQUIRE(bitCodingTest(unit, 227, nalCaf, casps));
   }
 
   SECTION("Update camera intrinsics") {
     casps.casps_miv_extension().casme_depth_quantization_params_present_flag(true);
-    x.came_update_depth_quantization_flag(false)
+    unit.came_update_depth_quantization_flag(false)
         .came_update_intrinsics_flag(true)
         .came_update_extrinsics_flag(false)
         .miv_view_params_update_intrinsics()
@@ -461,7 +465,7 @@ ce_view_quat_z[ 0 ]=1
         .ci_erp_theta_min(-1.F)
         .ci_erp_theta_max(1.F);
 
-    REQUIRE(toString(x) == R"(came_update_extrinsics_flag=false
+    REQUIRE(toString(unit) == R"(came_update_extrinsics_flag=false
 came_update_intrinsics_flag=true
 came_update_depth_quantization_flag=false
 mvpui_num_view_updates_minus1=0
@@ -475,12 +479,12 @@ ci_erp_theta_min[ 0 ]=-1
 ci_erp_theta_max[ 0 ]=1
 )");
 
-    REQUIRE(bitCodingTest(x, 203, nalCaf, casps));
+    REQUIRE(bitCodingTest(unit, 203, nalCaf, casps));
   }
 
   SECTION("Update depth quantization") {
     casps.casps_miv_extension().casme_depth_quantization_params_present_flag(true);
-    x.came_update_depth_quantization_flag(true)
+    unit.came_update_depth_quantization_flag(true)
         .came_update_extrinsics_flag(false)
         .came_update_intrinsics_flag(false)
         .miv_view_params_update_depth_quantization()
@@ -491,7 +495,7 @@ ci_erp_theta_max[ 0 ]=1
         .dq_norm_disp_low(1.F)
         .dq_norm_disp_high(100.F);
 
-    REQUIRE(toString(x) == R"(came_update_extrinsics_flag=false
+    REQUIRE(toString(unit) == R"(came_update_extrinsics_flag=false
 came_update_intrinsics_flag=false
 came_update_depth_quantization_flag=true
 mvpudq_num_view_updates_minus1=0
@@ -502,27 +506,27 @@ dq_norm_disp_high[ 0 ]=100
 dq_depth_occ_threshold_default[ 0 ]=64
 )");
 
-    REQUIRE(bitCodingTest(x, 120, nalCaf, casps));
+    REQUIRE(bitCodingTest(unit, 120, nalCaf, casps));
   }
 
   SECTION("came when casme_depth_quantization_params_present_flag=0") {
     casps.casps_miv_extension().casme_depth_quantization_params_present_flag(false);
-    x.came_update_intrinsics_flag(false).came_update_extrinsics_flag(false);
+    unit.came_update_intrinsics_flag(false).came_update_extrinsics_flag(false);
 
-    REQUIRE(toString(x) == R"(came_update_extrinsics_flag=false
+    REQUIRE(toString(unit) == R"(came_update_extrinsics_flag=false
 came_update_intrinsics_flag=false
 )");
 
-    REQUIRE(bitCodingTest(x, 2, nalCaf, casps));
+    REQUIRE(bitCodingTest(unit, 2, nalCaf, casps));
   }
 }
 
 TEST_CASE("miv_view_params_update_extrinsics", "[Common Atlas Frame MIV Extension]") {
-  auto x = MivViewParamsUpdateExtrinsics{};
+  auto unit = MivViewParamsUpdateExtrinsics{};
 
   SECTION("Example 1: Test with 1 update.") {
-    x.mvpue_num_view_updates_minus1(0);
-    x.mvpue_view_idx(0, 6)
+    unit.mvpue_num_view_updates_minus1(0);
+    unit.mvpue_view_idx(0, 6)
         .camera_extrinsics(0)
         .ce_view_pos_x(3.F)
         .ce_view_pos_y(1.F)
@@ -531,7 +535,7 @@ TEST_CASE("miv_view_params_update_extrinsics", "[Common Atlas Frame MIV Extensio
         .ce_view_quat_y(-1)
         .ce_view_quat_z(0);
 
-    REQUIRE(toString(x) == R"(mvpue_num_view_updates_minus1=0
+    REQUIRE(toString(unit) == R"(mvpue_num_view_updates_minus1=0
 mvpue_view_idx[ 0 ]=6
 ce_view_pos_x[ 0 ]=3.0
 ce_view_pos_y[ 0 ]=1.0
@@ -541,11 +545,11 @@ ce_view_quat_y[ 0 ]=-1
 ce_view_quat_z[ 0 ]=0
 )");
 
-    REQUIRE(bitCodingTest(x, 224));
+    REQUIRE(bitCodingTest(unit, 224));
   }
   SECTION("Example 1: Test with 2 update.") {
-    x.mvpue_num_view_updates_minus1(1);
-    x.mvpue_view_idx(0, 6)
+    unit.mvpue_num_view_updates_minus1(1);
+    unit.mvpue_view_idx(0, 6)
         .camera_extrinsics(0)
         .ce_view_pos_x(3.F)
         .ce_view_pos_y(1.F)
@@ -553,7 +557,7 @@ ce_view_quat_z[ 0 ]=0
         .ce_view_quat_x(-1)
         .ce_view_quat_y(0)
         .ce_view_quat_z(-10);
-    x.mvpue_view_idx(1, 3)
+    unit.mvpue_view_idx(1, 3)
         .camera_extrinsics(1)
         .ce_view_pos_x(7.F)
         .ce_view_pos_y(8.F)
@@ -562,7 +566,7 @@ ce_view_quat_z[ 0 ]=0
         .ce_view_quat_y(6)
         .ce_view_quat_z(9);
 
-    REQUIRE(toString(x) == R"(mvpue_num_view_updates_minus1=1
+    REQUIRE(toString(unit) == R"(mvpue_num_view_updates_minus1=1
 mvpue_view_idx[ 0 ]=6
 ce_view_pos_x[ 0 ]=3.0
 ce_view_pos_y[ 0 ]=1.0
@@ -579,15 +583,15 @@ ce_view_quat_y[ 1 ]=6
 ce_view_quat_z[ 1 ]=9
 )");
 
-    REQUIRE(bitCodingTest(x, 432));
+    REQUIRE(bitCodingTest(unit, 432));
   }
 }
 
 TEST_CASE("miv_view_params_update_intrinsics", "[Common Atlas Frame MIV Extension]") {
-  auto x = MivViewParamsUpdateIntrinsics{};
+  auto unit = MivViewParamsUpdateIntrinsics{};
 
   SECTION("Default constructor") {
-    REQUIRE(toString(x) == R"(mvpui_num_view_updates_minus1=0
+    REQUIRE(toString(unit) == R"(mvpui_num_view_updates_minus1=0
 mvpui_view_idx[ 0 ]=0
 ci_cam_type[ 0 ]=equirectangular
 ci_projection_plane_width_minus1[ 0 ]=0
@@ -597,12 +601,12 @@ ci_erp_phi_max[ 0 ]=0
 ci_erp_theta_min[ 0 ]=0
 ci_erp_theta_max[ 0 ]=0
 )");
-    REQUIRE(bitCodingTest(x, 200));
+    REQUIRE(bitCodingTest(unit, 200));
   }
 
   SECTION("Example 1: Test with 1 update.") {
-    x.mvpui_num_view_updates_minus1(0);
-    x.mvpui_view_idx(0, 6)
+    unit.mvpui_num_view_updates_minus1(0);
+    unit.mvpui_view_idx(0, 6)
         .camera_intrinsics(0)
         .ci_cam_type(CiCamType::equirectangular)
         .ci_erp_phi_min(-2.F)
@@ -610,7 +614,7 @@ ci_erp_theta_max[ 0 ]=0
         .ci_erp_theta_min(-1.F)
         .ci_erp_theta_max(1.F);
 
-    REQUIRE(toString(x) == R"(mvpui_num_view_updates_minus1=0
+    REQUIRE(toString(unit) == R"(mvpui_num_view_updates_minus1=0
 mvpui_view_idx[ 0 ]=6
 ci_cam_type[ 0 ]=equirectangular
 ci_projection_plane_width_minus1[ 0 ]=0
@@ -620,19 +624,19 @@ ci_erp_phi_max[ 0 ]=2
 ci_erp_theta_min[ 0 ]=-1
 ci_erp_theta_max[ 0 ]=1
 )");
-    REQUIRE(bitCodingTest(x, 200));
+    REQUIRE(bitCodingTest(unit, 200));
   }
 
   SECTION("Example 1: Test with 2 updates.") {
-    x.mvpui_num_view_updates_minus1(1);
-    x.mvpui_view_idx(0, 3)
+    unit.mvpui_num_view_updates_minus1(1);
+    unit.mvpui_view_idx(0, 3)
         .camera_intrinsics(0)
         .ci_cam_type(CiCamType::equirectangular)
         .ci_erp_phi_min(-90.F)
         .ci_erp_phi_max(90.F)
         .ci_erp_theta_min(-180.F)
         .ci_erp_theta_max(90.F);
-    x.mvpui_view_idx(1, 12)
+    unit.mvpui_view_idx(1, 12)
         .camera_intrinsics(1)
         .ci_cam_type(CiCamType::orthographic)
         .ci_projection_plane_width_minus1(1023)
@@ -640,7 +644,7 @@ ci_erp_theta_max[ 0 ]=1
         .ci_ortho_width(100.F)
         .ci_ortho_height(50.F);
 
-    REQUIRE(toString(x) == R"(mvpui_num_view_updates_minus1=1
+    REQUIRE(toString(unit) == R"(mvpui_num_view_updates_minus1=1
 mvpui_view_idx[ 0 ]=3
 ci_cam_type[ 0 ]=equirectangular
 ci_projection_plane_width_minus1[ 0 ]=0
@@ -656,29 +660,29 @@ ci_projection_plane_height_minus1[ 1 ]=767
 ci_ortho_width[ 1 ]=100
 ci_ortho_height[ 1 ]=50
 )");
-    REQUIRE(bitCodingTest(x, 320));
+    REQUIRE(bitCodingTest(unit, 320));
   }
 }
 
 TEST_CASE("miv_view_params_update_depth_quantization", "[Common Atlas Frame MIV Extension]") {
-  auto x = MivViewParamsUpdateDepthQuantization{};
+  auto unit = MivViewParamsUpdateDepthQuantization{};
 
   SECTION("Example 1: Test with 1 update.") {
-    x.mvpudq_num_view_updates_minus1(0);
-    x.mvpudq_view_idx(0, 6)
+    unit.mvpudq_num_view_updates_minus1(0);
+    unit.mvpudq_view_idx(0, 6)
         .depth_quantization(0)
         .dq_depth_occ_threshold_default(64)
         .dq_norm_disp_low(1.F)
         .dq_norm_disp_high(100.F);
 
-    REQUIRE(toString(x) == R"(mvpudq_num_view_updates_minus1=0
+    REQUIRE(toString(unit) == R"(mvpudq_num_view_updates_minus1=0
 mvpudq_view_idx[ 0 ]=6
 dq_quantization_law[ 0 ]=0
 dq_norm_disp_low[ 0 ]=1
 dq_norm_disp_high[ 0 ]=100
 dq_depth_occ_threshold_default[ 0 ]=64
 )");
-    REQUIRE(bitCodingTest(x, 117));
+    REQUIRE(bitCodingTest(unit, 117));
   }
 }
 } // namespace TMIV::MivBitstream

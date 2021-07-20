@@ -54,6 +54,7 @@ using Common::TextureDepth16Frame;
 using MivBitstream::AccessUnit;
 using MivBitstream::AtlasAccessUnit;
 using MivBitstream::CommonAtlasSequenceParameterSetRBSP;
+using MivBitstream::ViewId;
 using MivBitstream::ViewParams;
 using MivBitstream::ViewParamsList;
 using Renderer::IInpainter;
@@ -148,6 +149,7 @@ public:
     m_sourceParams = params;
     m_transportParams = m_optimizer->optimizeParams(m_sourceParams);
     m_transportParams.viewParamsList.push_back(syntheticViewParams());
+    m_transportParams.viewParamsList.constructViewIdIndex();
     return m_transportParams;
   }
 
@@ -190,6 +192,16 @@ private:
     vp.name = "s0"s;
     vp.isInpainted = true;
     vp.isBasicView = false;
+
+    // Assign the first available view ID
+    for (uint16_t v = 0;; ++v) {
+      if (std::none_of(m_transportParams.viewParamsList.cbegin(),
+                       m_transportParams.viewParamsList.cend(),
+                       [v](const auto &viewParams) { return viewParams.viewId == ViewId{v}; })) {
+        vp.viewId = ViewId{v};
+        break;
+      }
+    }
 
     return vp;
   }
@@ -235,8 +247,9 @@ private:
     inFrame.viewParamsList = m_sourceParams.viewParamsList;
 
     std::transform(frame.cbegin(), frame.cend(), std::back_inserter(inFrame.atlas),
-                   [viewIdx = uint16_t{}](const TextureDepth16Frame &frame) mutable {
-                     return synthesizerInputAtlasAccessUnit(frame, viewIdx++);
+                   [&vpl = inFrame.viewParamsList,
+                    viewIdx = uint16_t{}](const TextureDepth16Frame &frame) mutable {
+                     return synthesizerInputAtlasAccessUnit(frame, vpl[viewIdx++].viewId);
                    });
 
     // Transfer depth low quality flag
@@ -247,7 +260,7 @@ private:
     return inFrame;
   }
 
-  static auto synthesizerInputAtlasAccessUnit(const TextureDepth16Frame &frame, uint16_t viewIdx)
+  static auto synthesizerInputAtlasAccessUnit(const TextureDepth16Frame &frame, ViewId viewId)
       -> AtlasAccessUnit {
     auto aau = AtlasAccessUnit();
 
@@ -269,7 +282,7 @@ private:
     aau.occFrame.fillOne();
 
     auto &pp = aau.patchParamsList.emplace_back();
-    pp.atlasPatchProjectionId(viewIdx);
+    pp.atlasPatchProjectionId(viewId);
     pp.atlasPatchOrientationIndex(MivBitstream::FlexiblePatchOrientation::FPO_NULL);
     pp.atlasPatch2dSizeX(frame.texture.getWidth());
     pp.atlasPatch2dSizeY(frame.texture.getHeight());

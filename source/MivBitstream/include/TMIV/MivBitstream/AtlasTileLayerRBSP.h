@@ -40,6 +40,7 @@
 #include <TMIV/MivBitstream/AtlasSequenceParameterSetRBSP.h>
 #include <TMIV/MivBitstream/V3cParameterSet.h>
 #include <TMIV/MivBitstream/V3cUnit.h>
+#include <TMIV/MivBitstream/ViewId.h>
 
 #include <TMIV/Common/Vector.h>
 
@@ -222,7 +223,7 @@ public:
   constexpr auto pdu_3d_offset_v(uint32_t value) noexcept -> auto &;
   constexpr auto pdu_3d_offset_d(Common::SampleValue value) noexcept -> auto &;
   constexpr auto pdu_3d_range_d(Common::SampleValue value) noexcept -> auto &;
-  constexpr auto pdu_projection_id(uint16_t value) noexcept -> auto &;
+  constexpr auto pdu_projection_id(ViewId value) noexcept -> auto &;
   constexpr auto pdu_orientation_index(FlexiblePatchOrientation value) noexcept -> auto &;
   constexpr auto pdu_lod_enabled_flag(bool value) noexcept -> auto &;
   constexpr auto pdu_lod_scale_x_minus1(unsigned value) noexcept -> auto &;
@@ -255,7 +256,7 @@ private:
   uint32_t m_pdu_3d_offset_v{};
   Common::SampleValue m_pdu_3d_offset_d{};
   std::optional<Common::SampleValue> m_pdu_3d_range_d{};
-  uint16_t m_pdu_view_id{};
+  ViewId m_pdu_projection_id{};
   FlexiblePatchOrientation m_pdu_orientation_index{};
   std::optional<bool> m_pdu_lod_enabled_flag{};
   std::optional<unsigned> m_pdu_lod_scale_x_minus1{};

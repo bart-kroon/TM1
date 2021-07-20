@@ -53,7 +53,7 @@ SCENARIO("Geometry quantization") {
   GIVEN("View parameters without invalid depth") {
     auto sourceParams = TMIV::Encoder::EncoderParams{};
     sourceParams.vps.vps_miv_extension().vme_embedded_occupancy_enabled_flag(true);
-    sourceParams.viewParamsList = TMIV::MivBitstream::ViewParamsList{{sourceViewParams}};
+    sourceParams.viewParamsList.push_back(sourceViewParams);
 
     WHEN("Modifying the depth range") {
       const auto codedParams = depthOccupancy.transformParams(sourceParams);
@@ -67,7 +67,7 @@ SCENARIO("Geometry quantization") {
   GIVEN("View parameters with invalid depth") {
     sourceViewParams.hasOccupancy = true;
     auto sourceSeqParams = TMIV::Encoder::EncoderParams{};
-    sourceSeqParams.viewParamsList = TMIV::MivBitstream::ViewParamsList{{sourceViewParams}};
+    sourceSeqParams.viewParamsList.push_back(sourceViewParams);
 
     WHEN("Modifying the depth range") {
       const auto codedSeqParams = depthOccupancy.transformParams(sourceSeqParams);

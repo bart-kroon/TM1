@@ -193,7 +193,7 @@ auto Packer::pack(const Common::SizeVector &atlasSizes, const Common::MaskList &
           MivBitstream::PatchParams p;
 
           p.atlasId(MivBitstream::AtlasId{static_cast<uint8_t>(atlasId)});
-          p.atlasPatchProjectionId(static_cast<uint16_t>(cluster.getViewIdx()));
+          p.atlasPatchProjectionId(viewParamsList[cluster.getViewIdx()].viewId);
           p.atlasPatch2dPosX(packerOutput.x());
           p.atlasPatch2dPosY(packerOutput.y());
           p.atlasPatch3dOffsetU(cluster.jmin());

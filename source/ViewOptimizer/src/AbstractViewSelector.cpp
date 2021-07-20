@@ -53,6 +53,7 @@ auto AbstractViewSelector::optimizeParams(const SourceParams &params) -> ViewOpt
   printSummary();
 
   inplaceEraseAdditionalViews(m_params.viewParamsList);
+  m_params.viewParamsList.constructViewIdIndex();
   return m_params;
 }
 

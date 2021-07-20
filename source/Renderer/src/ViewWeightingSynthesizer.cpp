@@ -439,7 +439,7 @@ private:
             }
 
             const auto &patchParams = atlas.patchParamsList[patchId];
-            const auto viewIdx = patchParams.atlasPatchProjectionId();
+            const auto viewIdx = frame.viewParamsList.indexOf(patchParams.atlasPatchProjectionId());
 
             if (!m_cameraVisibility[viewIdx]) {
               return;
@@ -507,11 +507,12 @@ private:
     auto visibleSourceId = getEnabledIdList(m_cameraVisibility);
 
     Common::parallel_for(visibleSourceId.size(), [&](size_t id) {
-      const auto viewIdx = static_cast<unsigned>(visibleSourceId[id]);
+      const auto viewIdx = Common::downCast<uint16_t>(visibleSourceId[id]);
+      const auto viewId = frame.viewParamsList[viewIdx].viewId;
 
       for (const auto &atlas : frame.atlas) {
         for (const auto &patchParams : atlas.patchParamsList) {
-          if (patchParams.atlasPatchProjectionId() != visibleSourceId[id]) {
+          if (patchParams.atlasPatchProjectionId() != viewId) {
             continue;
           }
 

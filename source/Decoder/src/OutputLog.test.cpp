@@ -39,6 +39,7 @@ TEST_CASE("Decoder::writeFrameToOutputLog") {
   using TMIV::Decoder::writeFrameToOutputLog;
   using TMIV::MivBitstream::AccessUnit;
   using TMIV::MivBitstream::AtlasId;
+  using TMIV::MivBitstream::ViewId;
 
   std::ostringstream stream;
 
@@ -150,7 +151,7 @@ TEST_CASE("Decoder::writeFrameToOutputLog") {
           .atlasPatchLoDScaleX(5)
           .atlasPatchLoDScaleY(4)
           .atlasPatchOrientationIndex(TMIV::MivBitstream::FlexiblePatchOrientation::FPO_MROT180)
-          .atlasPatchProjectionId(10);
+          .atlasPatchProjectionId(ViewId{10});
 
       reference += "-1 0 8 5 00000000 00000000 659eb2c7 00000000\n";
       writeFrameToOutputLog(frame, stream);

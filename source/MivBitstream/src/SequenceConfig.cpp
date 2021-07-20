@@ -221,9 +221,11 @@ SequenceConfig::operator Common::Json() const {
 }
 
 auto SequenceConfig::sourceViewParams() const -> ViewParamsList {
-  auto vpl = std::vector<ViewParams>(sourceCameraNames.size());
-  std::transform(sourceCameraNames.cbegin(), sourceCameraNames.cend(), vpl.begin(),
+  auto vpl = ViewParamsList{};
+  std::transform(sourceCameraNames.cbegin(), sourceCameraNames.cend(), std::back_inserter(vpl),
                  [this](const std::string &name) { return cameraByName(name).viewParams; });
+  vpl.assignViewIds();
+  vpl.constructViewIdIndex();
   return ViewParamsList{vpl};
 }
 

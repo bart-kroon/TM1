@@ -357,9 +357,13 @@ auto MivViewParamsList::mvp_num_views_minus1() const -> uint16_t {
   return static_cast<uint16_t>(m_camera_extrinsics.size() - 1);
 }
 
-auto MivViewParamsList::mvp_view_id(uint16_t viewIdx) const -> uint16_t {
+auto MivViewParamsList::mvp_view_id(uint16_t viewIdx) const -> ViewId {
   VERIFY_MIVBITSTREAM(viewIdx <= mvp_num_views_minus1());
-  return m_mvp_view_id[viewIdx];
+  if (mvp_explicit_view_id_flag()) {
+    PRECONDITION(m_mvp_view_id.size() == mvp_num_views_minus1() + size_t{1});
+    return m_mvp_view_id[viewIdx];
+  }
+  return ViewId{viewIdx};
 }
 
 auto MivViewParamsList::mvp_inpaint_flag(uint16_t viewIdx) const -> bool {
@@ -404,7 +408,7 @@ auto MivViewParamsList::mvp_explicit_view_id_flag(bool value) noexcept -> MivVie
   return *this;
 }
 
-auto MivViewParamsList::mvp_view_id(uint16_t viewIdx, uint16_t viewId) -> MivViewParamsList & {
+auto MivViewParamsList::mvp_view_id(uint16_t viewIdx, ViewId viewId) -> MivViewParamsList & {
   mvp_explicit_view_id_flag(true);
   if (m_mvp_view_id.size() < mvp_num_views_minus1() + size_t{1}) {
     m_mvp_view_id.resize(mvp_num_views_minus1() + size_t{1});
@@ -532,7 +536,7 @@ auto MivViewParamsList::decodeFrom(Common::InputBitstream &bitstream,
 
   if (x.mvp_explicit_view_id_flag()) {
     for (uint16_t v = 0; v <= x.mvp_num_views_minus1(); ++v) {
-      x.mvp_view_id(v, bitstream.getUint16());
+      x.mvp_view_id(v, ViewId::decodeFrom(bitstream, 16));
     }
   }
 
@@ -580,7 +584,7 @@ void MivViewParamsList::encodeTo(Common::OutputBitstream &bitstream,
 
   if (mvp_explicit_view_id_flag()) {
     for (uint16_t v = 0; v <= mvp_num_views_minus1(); ++v) {
-      bitstream.putUint16(mvp_view_id(v));
+      mvp_view_id(v).encodeTo(bitstream, 16);
     }
   }
 

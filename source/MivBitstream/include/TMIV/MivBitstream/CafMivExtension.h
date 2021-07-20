@@ -37,6 +37,7 @@
 #include <TMIV/MivBitstream/CommonAtlasSequenceParameterSetRBSP.h>
 #include <TMIV/MivBitstream/NalUnit.h>
 #include <TMIV/MivBitstream/V3cParameterSet.h>
+#include <TMIV/MivBitstream/ViewId.h>
 
 #include <TMIV/Common/Bitstream.h>
 #include <TMIV/Common/Common.h>
@@ -219,7 +220,7 @@ public:
   [[nodiscard]] auto mvp_num_views_minus1() const -> uint16_t;
 
   [[nodiscard]] constexpr auto mvp_explicit_view_id_flag() const noexcept;
-  [[nodiscard]] auto mvp_view_id(uint16_t viewIdx) const -> uint16_t;
+  [[nodiscard]] auto mvp_view_id(uint16_t viewIdx) const -> ViewId;
   [[nodiscard]] auto mvp_inpaint_flag(uint16_t viewIdx) const -> bool;
   [[nodiscard]] constexpr auto mvp_intrinsic_params_equal_flag() const noexcept;
   [[nodiscard]] auto mvp_depth_quantization_params_equal_flag() const -> bool;
@@ -241,7 +242,7 @@ public:
   auto mvp_num_views_minus1(uint16_t value) -> MivViewParamsList &;
 
   auto mvp_explicit_view_id_flag(bool value) noexcept -> MivViewParamsList &;
-  auto mvp_view_id(uint16_t viewIdx, uint16_t viewId) -> MivViewParamsList &;
+  auto mvp_view_id(uint16_t viewIdx, ViewId viewId) -> MivViewParamsList &;
   auto mvp_inpaint_flag(uint16_t viewIdx, bool value) -> MivViewParamsList &;
 
   // Calling this function will allocate the camera intrinsics list
@@ -271,7 +272,7 @@ public:
 
 private:
   bool m_mvp_explicit_view_id_flag{};
-  std::vector<uint16_t> m_mvp_view_id;
+  std::vector<ViewId> m_mvp_view_id;
   std::vector<bool> m_mvpInpaintFlag{false};
   std::vector<CameraExtrinsics> m_camera_extrinsics{{}};
   bool m_mvp_intrinsic_params_equal_flag{};

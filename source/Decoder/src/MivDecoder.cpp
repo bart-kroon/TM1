@@ -371,6 +371,7 @@ void MivDecoder::decodeMvpl(const MivBitstream::MivViewParamsList &mvpl, bool dq
 
   for (uint16_t viewIdx = 0; viewIdx <= mvpl.mvp_num_views_minus1(); ++viewIdx) {
     auto &vp = m_au.viewParamsList[viewIdx];
+    vp.viewId = mvpl.mvp_view_id(viewIdx);
     vp.pose = MivBitstream::Pose::decodeFrom(mvpl.camera_extrinsics(viewIdx));
     vp.isInpainted = mvpl.mvp_inpaint_flag(viewIdx);
     vp.ci = mvpl.camera_intrinsics(viewIdx);
@@ -383,6 +384,7 @@ void MivDecoder::decodeMvpl(const MivBitstream::MivViewParamsList &mvpl, bool dq
 
     vp.name = fmt::format("pv{:02}", viewIdx);
   }
+  m_au.viewParamsList.constructViewIdIndex();
 }
 
 void MivDecoder::decodeMvpue(const MivBitstream::MivViewParamsUpdateExtrinsics &mvpue) {

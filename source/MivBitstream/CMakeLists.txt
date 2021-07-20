@@ -67,6 +67,7 @@ create_catch2_unit_test(
         "src/SeiRBSP.test.cpp"
         "src/SceneObjectInformation.test.cpp"
         "src/SequenceConfig.test.cpp"
+        "src/ViewId.test.cpp"
         "src/ViewingSpace.test.cpp"
         "src/ViewingSpaceHandling.test.cpp"
         "src/ViewParamsList.test.cpp"

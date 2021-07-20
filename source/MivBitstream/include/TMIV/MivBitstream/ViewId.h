@@ -31,8 +31,8 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef TMIV_MIVBITSTREAM_ATLASID_H
-#define TMIV_MIVBITSTREAM_ATLASID_H
+#ifndef TMIV_MIVBITSTREAM_VIEWID_H
+#define TMIV_MIVBITSTREAM_VIEWID_H
 
 #include <TMIV/Common/Bitstream.h>
 
@@ -40,48 +40,50 @@
 #include <ostream>
 
 namespace TMIV::MivBitstream {
-// Use a type to avoid confusing atlas index and ID
+// Use a type to avoid confusing view index and ID
 //
 // NOTE(BK): The class interface deliberately disallows integer computations
-class AtlasId {
+class ViewId {
 public:
-  constexpr AtlasId() noexcept = default;
+  constexpr ViewId() noexcept = default;
 
   template <typename Integer, typename = std::enable_if_t<std::is_integral_v<Integer>>>
-  constexpr explicit AtlasId(Integer value) noexcept
-      : m_value{Common::verifyDownCast<uint8_t>(value)} {}
+  constexpr explicit ViewId(Integer value) noexcept
+      : m_value{Common::verifyDownCast<uint16_t>(value)} {}
 
-  friend auto operator<<(std::ostream &stream, AtlasId atlasId) -> std::ostream & {
-    return stream << int{atlasId.m_value};
+  friend auto operator<<(std::ostream &stream, ViewId viewId) -> std::ostream & {
+    return stream << int{viewId.m_value};
   }
 
-  constexpr auto operator==(AtlasId other) const noexcept { return m_value == other.m_value; }
-  constexpr auto operator!=(AtlasId other) const noexcept { return m_value != other.m_value; }
-  constexpr auto operator<(AtlasId other) const noexcept { return m_value < other.m_value; }
-  constexpr auto operator>(AtlasId other) const noexcept { return m_value > other.m_value; }
-  constexpr auto operator<=(AtlasId other) const noexcept { return m_value <= other.m_value; }
-  constexpr auto operator>=(AtlasId other) const noexcept { return m_value >= other.m_value; }
+  constexpr auto operator==(ViewId other) const noexcept { return m_value == other.m_value; }
+  constexpr auto operator!=(ViewId other) const noexcept { return m_value != other.m_value; }
+  constexpr auto operator<(ViewId other) const noexcept { return m_value < other.m_value; }
+  constexpr auto operator>(ViewId other) const noexcept { return m_value > other.m_value; }
+  constexpr auto operator<=(ViewId other) const noexcept { return m_value <= other.m_value; }
+  constexpr auto operator>=(ViewId other) const noexcept { return m_value >= other.m_value; }
 
-  static auto decodeFrom(Common::InputBitstream &bitstream) -> AtlasId {
-    return AtlasId(bitstream.readBits<uint8_t>(6));
+  static auto decodeFrom(Common::InputBitstream &bitstream, unsigned bitCount) -> ViewId {
+    return ViewId{bitstream.readBits<uint16_t>(bitCount)};
   }
 
-  void encodeTo(Common::OutputBitstream &bitstream) const { bitstream.writeBits(m_value, 6); }
+  void encodeTo(Common::OutputBitstream &bitstream, unsigned bitCount) const {
+    bitstream.writeBits(m_value, bitCount);
+  }
 
 private:
-  friend struct fmt::formatter<TMIV::MivBitstream::AtlasId>;
+  friend struct fmt::formatter<TMIV::MivBitstream::ViewId>;
 
-  uint8_t m_value{};
+  uint16_t m_value{};
 };
 } // namespace TMIV::MivBitstream
 
-template <> struct fmt::formatter<TMIV::MivBitstream::AtlasId> {
+template <> struct fmt::formatter<TMIV::MivBitstream::ViewId> {
   fmt::formatter<int> base;
 
   constexpr auto parse(format_parse_context &ctx) { return base.parse(ctx); }
 
   template <typename FormatContext>
-  auto format(const TMIV::MivBitstream::AtlasId &id, FormatContext &ctx) {
+  auto format(const TMIV::MivBitstream::ViewId &id, FormatContext &ctx) {
     return base.format(id.m_value, ctx);
   }
 };

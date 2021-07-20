@@ -84,7 +84,7 @@ auto assessColorConsistency(Common::MVD16Frame views, MivBitstream::ViewParamsLi
   float m_maxDepthError = 0.1F;
   float m_maxLumaError = 0.04F;
   const Renderer::AccumulatingPixel<Common::Vec3f> tmpConfig{10.0, -100.0, 3.0, 5.0};
-  const auto refViewId = findCentralBasicView(params);
+  const auto refViewIdx = findCentralBasicView(params);
 
   std::vector<std::unique_ptr<TMIV::Pruner::IncrementalSynthesizer>> synthesizers;
   synthesizers.clear();
@@ -117,10 +117,10 @@ auto assessColorConsistency(Common::MVD16Frame views, MivBitstream::ViewParamsLi
         return mask;
       });
 
-  auto refView = views[refViewId];
+  auto refView = views[refViewIdx];
 
   auto [ivertices, triangles, attributes] =
-      Pruner::unprojectPrunedView(refView, params[refViewId], masks[refViewId].getPlane(0));
+      Pruner::unprojectPrunedView(refView, params[refViewIdx], masks[refViewIdx].getPlane(0));
 
   int W = refView.texture.getWidth();
   int H = refView.texture.getHeight();
@@ -129,8 +129,8 @@ auto assessColorConsistency(Common::MVD16Frame views, MivBitstream::ViewParamsLi
     Common::Mat<Common::Vec3i> currentCCMap;
     currentCCMap.resize(H, W);
 
-    if (s->index != refViewId) {
-      auto overtices = Pruner::project(ivertices, params[refViewId], params[s->index]);
+    if (s->index != refViewIdx) {
+      auto overtices = Pruner::project(ivertices, params[refViewIdx], params[s->index]);
       Pruner::weightedSphere(params[s->index].ci, overtices, triangles);
       s->rasterizer.submit(overtices, attributes, triangles);
       s->rasterizer.run();

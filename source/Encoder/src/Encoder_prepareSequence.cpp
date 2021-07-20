@@ -275,9 +275,9 @@ void Encoder::setGiGeometry3dCoordinatesBitdepthMinus1() {
 }
 
 void Encoder::enableOccupancyPerView() {
-  for (size_t viewId = 0; viewId < m_params.viewParamsList.size(); ++viewId) {
-    if (!m_params.viewParamsList[viewId].isBasicView || 0 < m_params.maxEntityId) {
-      m_params.viewParamsList[viewId].hasOccupancy = true;
+  for (size_t viewIdx = 0; viewIdx < m_params.viewParamsList.size(); ++viewIdx) {
+    if (!m_params.viewParamsList[viewIdx].isBasicView || 0 < m_params.maxEntityId) {
+      m_params.viewParamsList[viewIdx].hasOccupancy = true;
     }
   }
 }

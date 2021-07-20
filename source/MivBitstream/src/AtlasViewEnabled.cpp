@@ -57,21 +57,21 @@ auto AtlasViewEnabled::ave_atlas_id(uint8_t atlasIndex) const -> uint8_t {
   return m_ave_atlas_id.value().at(atlasIndex);
 }
 
-auto AtlasViewEnabled::ave_view_enabled_in_atlas_flag(uint8_t atlasId, uint16_t viewIndex) const
+auto AtlasViewEnabled::ave_view_enabled_in_atlas_flag(uint8_t atlasId, uint16_t viewIdx) const
     -> bool {
-  PRECONDITION(viewIndex <= ave_num_views_minus1());
+  PRECONDITION(viewIdx <= ave_num_views_minus1());
   VERIFY_MIVBITSTREAM(m_ave_view_enabled_in_atlas_flag.has_value());
   VERIFY_MIVBITSTREAM(atlasId < m_ave_view_enabled_in_atlas_flag.value().size());
-  return m_ave_view_enabled_in_atlas_flag.value().at(atlasId).at(viewIndex);
+  return m_ave_view_enabled_in_atlas_flag.value().at(atlasId).at(viewIdx);
 }
 
-auto AtlasViewEnabled::ave_view_complete_in_atlas_flag(uint8_t atlasId, uint16_t viewIndex) const
+auto AtlasViewEnabled::ave_view_complete_in_atlas_flag(uint8_t atlasId, uint16_t viewIdx) const
     -> bool {
-  PRECONDITION(viewIndex <= ave_num_views_minus1());
-  VERIFY_MIVBITSTREAM(ave_view_enabled_in_atlas_flag(atlasId, viewIndex));
+  PRECONDITION(viewIdx <= ave_num_views_minus1());
+  VERIFY_MIVBITSTREAM(ave_view_enabled_in_atlas_flag(atlasId, viewIdx));
   VERIFY_MIVBITSTREAM(m_ave_view_complete_in_atlas_flag.has_value());
   VERIFY_MIVBITSTREAM(atlasId < m_ave_view_complete_in_atlas_flag.value().size());
-  return m_ave_view_complete_in_atlas_flag.value().at(atlasId).at(viewIndex);
+  return m_ave_view_complete_in_atlas_flag.value().at(atlasId).at(viewIdx);
 }
 
 auto AtlasViewEnabled::ave_cancel_flag(bool value) noexcept -> AtlasViewEnabled & {
@@ -105,9 +105,9 @@ auto AtlasViewEnabled::ave_atlas_id(uint8_t atlasIndex, uint8_t value) -> AtlasV
   return *this;
 }
 
-auto AtlasViewEnabled::ave_view_enabled_in_atlas_flag(uint8_t atlasId, uint16_t viewIndex,
-                                                      bool value) -> AtlasViewEnabled & {
-  PRECONDITION(viewIndex <= ave_num_views_minus1());
+auto AtlasViewEnabled::ave_view_enabled_in_atlas_flag(uint8_t atlasId, uint16_t viewIdx, bool value)
+    -> AtlasViewEnabled & {
+  PRECONDITION(viewIdx <= ave_num_views_minus1());
   if (!m_ave_view_enabled_in_atlas_flag.has_value()) {
     m_ave_view_enabled_in_atlas_flag.emplace(ave_atlas_count_minus1() + 1);
   }
@@ -115,13 +115,13 @@ auto AtlasViewEnabled::ave_view_enabled_in_atlas_flag(uint8_t atlasId, uint16_t 
          static_cast<unsigned>(ave_num_views_minus1() + static_cast<uint16_t>(1))) {
     m_ave_view_enabled_in_atlas_flag.value().at(atlasId).push_back(false);
   }
-  m_ave_view_enabled_in_atlas_flag.value().at(atlasId).at(viewIndex) = value;
+  m_ave_view_enabled_in_atlas_flag.value().at(atlasId).at(viewIdx) = value;
   return *this;
 }
 
-auto AtlasViewEnabled::ave_view_complete_in_atlas_flag(uint8_t atlasId, uint16_t viewIndex,
+auto AtlasViewEnabled::ave_view_complete_in_atlas_flag(uint8_t atlasId, uint16_t viewIdx,
                                                        bool value) -> AtlasViewEnabled & {
-  PRECONDITION(ave_view_enabled_in_atlas_flag(atlasId, viewIndex));
+  PRECONDITION(ave_view_enabled_in_atlas_flag(atlasId, viewIdx));
   if (!m_ave_view_complete_in_atlas_flag.has_value()) {
     m_ave_view_complete_in_atlas_flag.emplace(ave_atlas_count_minus1() + 1);
   }
@@ -129,7 +129,7 @@ auto AtlasViewEnabled::ave_view_complete_in_atlas_flag(uint8_t atlasId, uint16_t
          static_cast<unsigned>(ave_num_views_minus1() + static_cast<uint16_t>(1))) {
     m_ave_view_complete_in_atlas_flag.value().at(atlasId).push_back(false);
   }
-  m_ave_view_complete_in_atlas_flag.value().at(atlasId).at(viewIndex) = value;
+  m_ave_view_complete_in_atlas_flag.value().at(atlasId).at(viewIdx) = value;
   return *this;
 }
 

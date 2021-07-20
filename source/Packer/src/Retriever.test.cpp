@@ -49,7 +49,7 @@ void addRectangle(Common::Mask &mask, Common::Vec2i topLeft, Common::Vec2i botto
 } // namespace
 
 SCENARIO("Cluster retrieving") {
-  const int viewId = 0;
+  const int viewIdx = 0;
   const int firstClusterId = 0;
   bool isBasicView{};
   bool enableMerging{};
@@ -57,7 +57,7 @@ SCENARIO("Cluster retrieving") {
     const Common::Mask mask{};
     WHEN("retrieving clusters") {
       const auto [clusterList, clusteringMap] =
-          retrieveClusters(viewId, mask, firstClusterId, isBasicView, enableMerging, true);
+          retrieveClusters(viewIdx, mask, firstClusterId, isBasicView, enableMerging, true);
       THEN("return empty cluster list and map") {
         REQUIRE(clusterList.empty());
         REQUIRE(clusteringMap.getNumberOfPlanes() == 1);
@@ -72,7 +72,7 @@ SCENARIO("Cluster retrieving") {
     mask.resize(2, 2);
     WHEN("retrieving clusters") {
       const auto [clusterList, clusteringMap] =
-          retrieveClusters(viewId, mask, firstClusterId, isBasicView, enableMerging, false);
+          retrieveClusters(viewIdx, mask, firstClusterId, isBasicView, enableMerging, false);
       THEN("return empty cluster list and map with max value") {
         REQUIRE(clusterList.empty());
         REQUIRE(clusteringMap.getNumberOfPlanes() == 1);
@@ -92,7 +92,7 @@ SCENARIO("Cluster retrieving") {
     mask.getPlane(0)(1, 1) = 1;
     WHEN("retrieving clusters") {
       const auto [clusterList, clusteringMap] =
-          retrieveClusters(viewId, mask, firstClusterId, isBasicView, enableMerging, false);
+          retrieveClusters(viewIdx, mask, firstClusterId, isBasicView, enableMerging, false);
       THEN("return one cluster and map with zeroes on the diagonal") {
         REQUIRE(clusterList.size() == 1);
         REQUIRE(!clusterList[0].isBasicView());
@@ -119,7 +119,7 @@ SCENARIO("Cluster retrieving") {
     addRectangle(mask, {1, 1}, {3, 3});
     WHEN("retrieving clusters") {
       const auto [clusterList, clusteringMap] =
-          retrieveClusters(viewId, mask, firstClusterId, isBasicView, enableMerging, false);
+          retrieveClusters(viewIdx, mask, firstClusterId, isBasicView, enableMerging, false);
       THEN("return one cluster and map with zeroes on the diagonal") {
         REQUIRE(clusterList.size() == 1);
         REQUIRE(!clusterList[0].isBasicView());
@@ -145,7 +145,7 @@ SCENARIO("Cluster retrieving") {
     addRectangle(mask, {6, 6}, {7, 7});
     WHEN("retrieving clusters") {
       const auto [clusterList, clusteringMap] =
-          retrieveClusters(viewId, mask, firstClusterId, isBasicView, enableMerging, false);
+          retrieveClusters(viewIdx, mask, firstClusterId, isBasicView, enableMerging, false);
       THEN("return two clusters") {
         REQUIRE(clusterList.size() == 2);
         REQUIRE(!clusterList[0].isBasicView());
@@ -165,14 +165,14 @@ SCENARIO("Cluster retrieving") {
     addRectangle(mask, {6, 6}, {7, 7});
     WHEN("retrieving clusters") {
       const auto [clusterList, clusteringMap] =
-          retrieveClusters(viewId, mask, firstClusterId, isBasicView, enableMerging, false);
+          retrieveClusters(viewIdx, mask, firstClusterId, isBasicView, enableMerging, false);
       THEN("return one cluster") { REQUIRE(clusterList.size() == 1); }
     }
   }
 }
 
 SCENARIO("Cluster retrieving for basic view") {
-  const int viewId = 0;
+  const int viewIdx = 0;
   const int firstClusterId = 0;
   bool isBasicView{true};
   bool enableMerging{};
@@ -184,7 +184,7 @@ SCENARIO("Cluster retrieving for basic view") {
     addRectangle(mask, {0, 3}, {3, 3});
     WHEN("retrieving clusters") {
       const auto [clusterList, clusteringMap] =
-          retrieveClusters(viewId, mask, firstClusterId, isBasicView, enableMerging, false);
+          retrieveClusters(viewIdx, mask, firstClusterId, isBasicView, enableMerging, false);
       THEN("return one cluster") {
         REQUIRE(clusterList.size() == 1);
         REQUIRE(clusterList[0].isBasicView());

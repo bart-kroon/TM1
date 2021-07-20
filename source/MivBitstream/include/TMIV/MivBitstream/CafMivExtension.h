@@ -66,7 +66,7 @@ public:
   constexpr auto ce_view_quat_y(int32_t value) noexcept -> auto &;
   constexpr auto ce_view_quat_z(int32_t value) noexcept -> auto &;
 
-  auto printTo(std::ostream &stream, uint16_t viewId) const -> std::ostream &;
+  auto printTo(std::ostream &stream, uint16_t viewIdx) const -> std::ostream &;
 
   constexpr auto operator==(const CameraExtrinsics &other) const noexcept;
   constexpr auto operator!=(const CameraExtrinsics &other) const noexcept;
@@ -132,7 +132,7 @@ public:
   // function f. This allows to template on the camera projection type.
   template <typename F> auto dispatch(F f) const -> decltype(auto);
 
-  auto printTo(std::ostream &stream, uint16_t viewId) const -> std::ostream &;
+  auto printTo(std::ostream &stream, uint16_t viewIdx) const -> std::ostream &;
 
   constexpr auto operator==(const CameraIntrinsics &other) const noexcept;
   constexpr auto operator!=(const CameraIntrinsics &other) const noexcept;
@@ -169,7 +169,7 @@ public:
   constexpr auto dq_norm_disp_high(float value) noexcept -> auto &;
   constexpr auto dq_depth_occ_threshold_default(Common::SampleValue value) noexcept -> auto &;
 
-  auto printTo(std::ostream &stream, uint16_t viewId) const -> std::ostream &;
+  auto printTo(std::ostream &stream, uint16_t viewIdx) const -> std::ostream &;
 
   constexpr auto operator==(const DepthQuantization &other) const noexcept;
   constexpr auto operator!=(const DepthQuantization &other) const noexcept;
@@ -199,7 +199,7 @@ public:
   [[nodiscard]] auto begin() const noexcept { return m_pp_parent_id.begin(); }
   [[nodiscard]] auto end() const noexcept { return m_pp_parent_id.end(); }
 
-  auto printTo(std::ostream &stream, uint16_t viewId) const -> std::ostream &;
+  auto printTo(std::ostream &stream, uint16_t viewIdx) const -> std::ostream &;
 
   auto operator==(const PruningParents & /*other*/) const noexcept -> bool;
   auto operator!=(const PruningParents & /*other*/) const noexcept -> bool;
@@ -220,29 +220,29 @@ public:
 
   [[nodiscard]] constexpr auto mvp_explicit_view_id_flag() const noexcept;
   [[nodiscard]] auto mvp_view_id(uint16_t viewIdx) const -> uint16_t;
-  [[nodiscard]] auto mvp_inpaint_flag(uint16_t viewIndex) const -> bool;
+  [[nodiscard]] auto mvp_inpaint_flag(uint16_t viewIdx) const -> bool;
   [[nodiscard]] constexpr auto mvp_intrinsic_params_equal_flag() const noexcept;
   [[nodiscard]] auto mvp_depth_quantization_params_equal_flag() const -> bool;
   [[nodiscard]] constexpr auto mvp_pruning_graph_params_present_flag() const noexcept;
 
-  [[nodiscard]] auto camera_extrinsics(uint16_t viewId) const -> const CameraExtrinsics &;
+  [[nodiscard]] auto camera_extrinsics(uint16_t viewIdx) const -> const CameraExtrinsics &;
 
   // Return camera intrinsics for the specified view ID. The
   // mvp_intrinsic_params_equal_flag() case is handled for convenience.
-  [[nodiscard]] auto camera_intrinsics(uint16_t viewId = 0) const -> const CameraIntrinsics &;
+  [[nodiscard]] auto camera_intrinsics(uint16_t viewIdx = 0) const -> const CameraIntrinsics &;
 
   // Return depth quantization for the specified view ID. The
   // mvp_depth_quantization_params_equal_flag() case is handled for convenience.
-  [[nodiscard]] auto depth_quantization(uint16_t viewId = 0) const -> const DepthQuantization &;
+  [[nodiscard]] auto depth_quantization(uint16_t viewIdx = 0) const -> const DepthQuantization &;
 
-  [[nodiscard]] auto pruning_parent(uint16_t viewIndex) const -> const PruningParents &;
+  [[nodiscard]] auto pruning_parent(uint16_t viewIdx) const -> const PruningParents &;
 
   // Calling this function will allocate the camera extrinsics list
   auto mvp_num_views_minus1(uint16_t value) -> MivViewParamsList &;
 
   auto mvp_explicit_view_id_flag(bool value) noexcept -> MivViewParamsList &;
   auto mvp_view_id(uint16_t viewIdx, uint16_t viewId) -> MivViewParamsList &;
-  auto mvp_inpaint_flag(uint16_t viewIndex, bool value) -> MivViewParamsList &;
+  auto mvp_inpaint_flag(uint16_t viewIdx, bool value) -> MivViewParamsList &;
 
   // Calling this function will allocate the camera intrinsics list
   auto mvp_intrinsic_params_equal_flag(bool value) -> MivViewParamsList &;
@@ -253,10 +253,10 @@ public:
   // Calling this function will allocate the pruning graph list
   auto mvp_pruning_graph_params_present_flag(bool value) -> MivViewParamsList &;
 
-  [[nodiscard]] auto camera_extrinsics(uint16_t viewId) noexcept -> CameraExtrinsics &;
-  [[nodiscard]] auto camera_intrinsics(uint16_t viewId = 0) noexcept -> CameraIntrinsics &;
-  [[nodiscard]] auto depth_quantization(uint16_t viewId = 0) noexcept -> DepthQuantization &;
-  [[nodiscard]] auto pruning_parent(uint16_t viewIndex) -> PruningParents &;
+  [[nodiscard]] auto camera_extrinsics(uint16_t viewIdx) noexcept -> CameraExtrinsics &;
+  [[nodiscard]] auto camera_intrinsics(uint16_t viewIdx = 0) noexcept -> CameraIntrinsics &;
+  [[nodiscard]] auto depth_quantization(uint16_t viewIdx = 0) noexcept -> DepthQuantization &;
+  [[nodiscard]] auto pruning_parent(uint16_t viewIdx) -> PruningParents &;
 
   friend auto operator<<(std::ostream &stream, const MivViewParamsList &x) -> std::ostream &;
 

@@ -544,8 +544,8 @@ auto Encoder::writePatchInAtlas(const MivBitstream::PatchParams &patchParams,
       bool isAggregatedMaskBlockNonEmpty = false;
       for (int v = vBlock; v < vBlock + m_config.blockSize && v < sizeV; v++) {
         for (int u = uBlock; u < uBlock + m_config.blockSize && u < sizeU; u++) {
-          const auto viewId = patchParams.atlasPatchProjectionId();
-          if (m_nonAggregatedMask[viewId](v + posV, u + posU)[frameId]) {
+          const auto viewIdx = patchParams.atlasPatchProjectionId();
+          if (m_nonAggregatedMask[viewIdx](v + posV, u + posU)[frameId]) {
             isAggregatedMaskBlockNonEmpty = true;
             break;
           }

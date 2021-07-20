@@ -70,7 +70,7 @@ auto recoverPrunedViewAndMask(const MivBitstream::AccessUnit &frame)
 
         // Index patch and view parameters
         const auto &patchParams = atlas.patchParamsList[patchId];
-        const auto viewId = patchParams.atlasPatchProjectionId();
+        const auto viewIdx = patchParams.atlasPatchProjectionId();
 
         // Test for occupancy
         if (!atlas.occFrame.empty() && atlas.occFrame.getPlane(0)(i, j) == 0) {
@@ -83,8 +83,8 @@ auto recoverPrunedViewAndMask(const MivBitstream::AccessUnit &frame)
         const auto y = viewPos.y();
 
         // temporary use only view dimensions
-        if (y >= prunedView[viewId].first.getSize()[1] ||
-            x >= prunedView[viewId].first.getSize()[0]) {
+        if (y >= prunedView[viewIdx].first.getSize()[1] ||
+            x >= prunedView[viewIdx].first.getSize()[0]) {
           continue;
         }
 
@@ -92,20 +92,20 @@ auto recoverPrunedViewAndMask(const MivBitstream::AccessUnit &frame)
         if (!atlas.geoFrame.empty() &&
             (!atlas.asps.asps_miv_extension_present_flag() ||
              !atlas.asps.asps_miv_extension().asme_patch_constant_depth_flag())) {
-          prunedView[viewId].second.getPlane(0)(y, x) = atlas.geoFrame.getPlane(0)(i, j);
+          prunedView[viewIdx].second.getPlane(0)(y, x) = atlas.geoFrame.getPlane(0)(i, j);
         } else if (atlas.asps.asps_miv_extension_present_flag() &&
                    atlas.asps.asps_miv_extension().asme_patch_constant_depth_flag()) {
-          prunedView[viewId].second.getPlane(0)(y, x) =
+          prunedView[viewIdx].second.getPlane(0)(y, x) =
               Common::assertDownCast<uint16_t>(patchParams.atlasPatch3dOffsetD());
         }
 
         // Copy attributes
         for (int d = 0; d < 3; ++d) {
-          prunedView[viewId].first.getPlane(d)(y, x) = atlas.attrFrame.getPlane(d)(i, j);
+          prunedView[viewIdx].first.getPlane(d)(y, x) = atlas.attrFrame.getPlane(d)(i, j);
         }
 
         // Set mask
-        prunedMasks[viewId].getPlane(0)(y, x) = UINT8_MAX;
+        prunedMasks[viewIdx].getPlane(0)(y, x) = UINT8_MAX;
       }
     }
   }

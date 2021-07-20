@@ -52,7 +52,8 @@ public:
       , m_clusteringBuffer{clusteringBuffer} {}
 
   auto operator()(int ID) {
-    Cluster subCluster(m_cluster.getViewId(), m_cluster.isBasicView(), ID, m_cluster.getEntityId());
+    Cluster subCluster(m_cluster.getViewIdx(), m_cluster.isBasicView(), ID,
+                       m_cluster.getEntityId());
     while (!m_candidates.empty()) {
       const auto a = m_candidates.front().x();
       const auto b = m_candidates.front().y();
@@ -257,7 +258,7 @@ void updateOutput(const bool isBasicView, const Cluster &cluster, const int subC
 }
 } // namespace
 
-auto retrieveClusters(const int viewId, const Common::Mask &maskMap, const int firstClusterId,
+auto retrieveClusters(const int viewIdx, const Common::Mask &maskMap, const int firstClusterId,
                       const bool isBasicView, const bool enableMerging, const bool multiEntity)
     -> std::pair<ClusterList, ClusteringMap> {
   std::pair<ClusterList, ClusteringMap> out(ClusterList(),
@@ -277,7 +278,7 @@ auto retrieveClusters(const int viewId, const Common::Mask &maskMap, const int f
   // NOTE(FT): a basic view is packed as a single patch, hence no need for any clustering, except
   // when entities are present.
   if (isBasicView && !multiEntity) {
-    Cluster cluster(viewId, isBasicView, clusterId, 0);
+    Cluster cluster(viewIdx, isBasicView, clusterId, 0);
     for (size_t i = 0; i < maskBuffer.size(); i++) {
       if (0 < maskBuffer[i]) {
         div_t dv = div(static_cast<int>(i), B);
@@ -290,7 +291,7 @@ auto retrieveClusters(const int viewId, const Common::Mask &maskMap, const int f
   } else {
     while (iter_seed != activeList.end()) {
       div_t dv = div(*iter_seed, B);
-      Cluster cluster(viewId, isBasicView, clusterId, 0);
+      Cluster cluster(viewIdx, isBasicView, clusterId, 0);
 
       cluster.push(dv.quot, dv.rem);
       clusteringBuffer(dv.quot, dv.rem) = static_cast<uint16_t>(clusterId);

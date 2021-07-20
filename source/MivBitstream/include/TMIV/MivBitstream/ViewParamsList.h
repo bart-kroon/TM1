@@ -44,7 +44,7 @@ struct Pose {
   Common::Vec3f position;
   Common::QuatD orientation{Common::neutralOrientationD};
 
-  auto printTo(std::ostream &stream, uint16_t viewId) const -> std::ostream &;
+  auto printTo(std::ostream &stream, uint16_t viewIdx) const -> std::ostream &;
 
   [[nodiscard]] auto operator==(const Pose &other) const -> bool;
   [[nodiscard]] auto operator!=(const Pose &other) const -> bool { return !operator==(other); }
@@ -83,7 +83,7 @@ struct ViewParams {
   // Number of layers in MPI. Not in the specification, but needed to handle MPI.
   int nbMpiLayers{1};
 
-  auto printTo(std::ostream &stream, uint16_t viewId) const -> std::ostream &;
+  auto printTo(std::ostream &stream, uint16_t viewIdx) const -> std::ostream &;
   auto operator==(const ViewParams &other) const -> bool;
   auto operator!=(const ViewParams &other) const -> bool { return !operator==(other); }
 

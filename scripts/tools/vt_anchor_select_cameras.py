@@ -88,9 +88,9 @@ class VtAnchorSelectCameras:
             self.fullViewCount() - self.leaveNOut,
             int(self.fullViewCount() * self.maxLumaSampleRate / self.fullSequenceRate()),
         )
-        for outputViewIndex in range(targetViewCount):
-            inputViewIndex = int((outputViewIndex + 0.5) * self.fullViewCount() / targetViewCount)
-            result.append(self.sourceCameraNames[inputViewIndex])
+        for outputViewIdx in range(targetViewCount):
+            inputViewIdx = int((outputViewIdx + 0.5) * self.fullViewCount() / targetViewCount)
+            result.append(self.sourceCameraNames[inputViewIdx])
 
         return result
 

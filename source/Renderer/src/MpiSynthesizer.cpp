@@ -323,8 +323,8 @@ private:
 
       const MivBitstream::AtlasAccessUnit &atlas = frame.atlas[atlas_id];
       const MivBitstream::PatchParams &patch = atlas.patchParamsList[patch_id];
-      const auto viewId = patch.atlasPatchProjectionId();
-      const auto viewParams = frame.viewParamsList[viewId];
+      const auto viewIdx = patch.atlasPatchProjectionId();
+      const auto viewParams = frame.viewParamsList[viewIdx];
 
       // Block corners
       auto blockPerRow = getPatchPackingWidth(patch) / m_blockSize;
@@ -353,7 +353,7 @@ private:
         }
 
         // Reprojection in viewport
-        auto P = sourceHelperList[viewId].doUnprojection(
+        auto P = sourceHelperList[viewIdx].doUnprojection(
             {static_cast<float>(uv.x()) + 0.5F, static_cast<float>(uv.y()) + 0.5F}, d);
         auto q = targetHelper.doProjection(P);
 

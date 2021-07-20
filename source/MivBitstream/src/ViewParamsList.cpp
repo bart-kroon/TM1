@@ -42,10 +42,10 @@
 using namespace std::string_literals;
 
 namespace TMIV::MivBitstream {
-auto Pose::printTo(std::ostream &stream, uint16_t viewId) const -> std::ostream & {
-  fmt::print(stream, "position[ {} ]=({}, {}, {})\n", viewId, position.x(), position.y(),
+auto Pose::printTo(std::ostream &stream, uint16_t viewIdx) const -> std::ostream & {
+  fmt::print(stream, "position[ {} ]=({}, {}, {})\n", viewIdx, position.x(), position.y(),
              position.z());
-  fmt::print(stream, "orientation[ {} ]={} + i {} + j {} + k {}\n", viewId, orientation.w(),
+  fmt::print(stream, "orientation[ {} ]={} + i {} + j {} + k {}\n", viewIdx, orientation.w(),
              orientation.x(), orientation.y(), orientation.z());
   return stream;
 }
@@ -96,22 +96,22 @@ auto Pose::encodeToCameraExtrinsics() const -> CameraExtrinsics {
   return ce;
 }
 
-auto ViewParams::printTo(std::ostream &stream, uint16_t viewId) const -> std::ostream & {
+auto ViewParams::printTo(std::ostream &stream, uint16_t viewIdx) const -> std::ostream & {
   if (!name.empty()) {
-    stream << "name[ " << viewId << " ]=\"" << name << "\"  # informative\n";
+    stream << "name[ " << viewIdx << " ]=\"" << name << "\"  # informative\n";
   }
 
-  pose.printTo(stream, viewId);
-  ci.printTo(stream, viewId);
-  dq.printTo(stream, viewId);
+  pose.printTo(stream, viewIdx);
+  ci.printTo(stream, viewIdx);
+  dq.printTo(stream, viewIdx);
 
-  stream << "hasOccupancy[ " << viewId << "]=" << std::boolalpha << hasOccupancy
+  stream << "hasOccupancy[ " << viewIdx << "]=" << std::boolalpha << hasOccupancy
          << "  # encoder-internal\n";
 
-  stream << "nbMpiLayers[ " << viewId << " ]=\"" << nbMpiLayers << "\"  # encoder-internal\n";
+  stream << "nbMpiLayers[ " << viewIdx << " ]=\"" << nbMpiLayers << "\"  # encoder-internal\n";
 
   if (pp) {
-    pp->printTo(stream, viewId);
+    pp->printTo(stream, viewIdx);
   }
   return stream;
 }
@@ -230,8 +230,8 @@ auto ViewParamsList::viewNames() const -> std::vector<std::string> {
 }
 
 auto operator<<(std::ostream &stream, const ViewParamsList &viewParamsList) -> std::ostream & {
-  for (size_t viewId = 0; viewId < viewParamsList.size(); ++viewId) {
-    viewParamsList[viewId].printTo(stream, static_cast<uint16_t>(viewId));
+  for (size_t viewIdx = 0; viewIdx < viewParamsList.size(); ++viewIdx) {
+    viewParamsList[viewIdx].printTo(stream, static_cast<uint16_t>(viewIdx));
   }
   return stream;
 }

@@ -119,16 +119,16 @@ auto isLowDepthQuality(const MivBitstream::ViewParamsList &vpl,
   sourceDepthExpandedList.reserve(sourceHelperList.size());
   sourceUnprojectionList.reserve(sourceHelperList.size());
 
-  for (size_t viewId = 0; viewId < sourceHelperList.size(); viewId++) {
-    const auto &sourceHelper = sourceHelperList[viewId];
+  for (size_t viewIdx = 0; viewIdx < sourceHelperList.size(); viewIdx++) {
+    const auto &sourceHelper = sourceHelperList[viewIdx];
     const auto occupancyTransform = MivBitstream::OccupancyTransform{sourceHelper.getViewParams()};
 
     auto sourceDepthExpanded =
         MivBitstream::DepthTransform{sourceHelper.getViewParams().dq, 16}.expandDepth(
-            sourceViews[viewId].depth);
+            sourceViews[viewIdx].depth);
 
-    std::transform(sourceViews[viewId].depth.getPlane(0).begin(),
-                   sourceViews[viewId].depth.getPlane(0).end(), sourceDepthExpanded.begin(),
+    std::transform(sourceViews[viewIdx].depth.getPlane(0).begin(),
+                   sourceViews[viewIdx].depth.getPlane(0).end(), sourceDepthExpanded.begin(),
                    sourceDepthExpanded.begin(), [&](uint16_t normDisp, float depthValue) {
                      return occupancyTransform.occupant(normDisp) ? depthValue : NAN;
                    });

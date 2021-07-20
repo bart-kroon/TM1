@@ -104,21 +104,21 @@ void Encoder::updateNonAggregatedMask(const Common::MVD16Frame &transportViews,
 
   // Atlas dilation
   if (m_params.casps.casps_miv_extension().casme_depth_low_quality_flag()) {
-    for (size_t viewId = 0; viewId < masks.size(); ++viewId) {
+    for (size_t viewIdx = 0; viewIdx < masks.size(); ++viewIdx) {
       for (int n = 0; n < m_config.dilationIter; ++n) {
-        dilatedMasks[viewId].getPlane(0) = dilate(dilatedMasks[viewId].getPlane(0));
+        dilatedMasks[viewIdx].getPlane(0) = dilate(dilatedMasks[viewIdx].getPlane(0));
       }
     }
   }
 
-  for (size_t viewId = 0; viewId < masks.size(); ++viewId) {
-    const auto height = transportViews[viewId].texture.getHeight();
-    const auto width = transportViews[viewId].texture.getWidth();
+  for (size_t viewIdx = 0; viewIdx < masks.size(); ++viewIdx) {
+    const auto height = transportViews[viewIdx].texture.getHeight();
+    const auto width = transportViews[viewIdx].texture.getWidth();
 
     for (int i = 0; i < height; i++) {
       for (int j = 0; j < width; j++) {
-        if (dilatedMasks[viewId].getPlane(0)(i, j) != 0) {
-          m_nonAggregatedMask[viewId](i, j)[frameId] = true;
+        if (dilatedMasks[viewIdx].getPlane(0)(i, j) != 0) {
+          m_nonAggregatedMask[viewIdx](i, j)[frameId] = true;
         }
       }
     }
@@ -152,10 +152,10 @@ void Encoder::pushMultiEntityFrame(Common::MVD16Frame sourceViews) {
 auto Encoder::yuvSampler(const Common::EntityMapList &in)
     -> std::vector<Common::Frame<Common::YUV420P16>> {
   std::vector<Common::Frame<Common::YUV420P16>> outYuvAll;
-  for (const auto &viewId : in) {
-    Common::Frame<Common::YUV420P16> outYuv(int{viewId.getWidth()}, int{viewId.getHeight()});
-    const auto width = viewId.getWidth();
-    const auto height = viewId.getHeight();
+  for (const auto &viewIdx : in) {
+    Common::Frame<Common::YUV420P16> outYuv(int{viewIdx.getWidth()}, int{viewIdx.getHeight()});
+    const auto width = viewIdx.getWidth();
+    const auto height = viewIdx.getHeight();
     int step = 1;
     for (int k = 0; k < 3; ++k) {
       if (k != 0) {
@@ -165,7 +165,7 @@ auto Encoder::yuvSampler(const Common::EntityMapList &in)
       for (int i = 0; i != height; i = i + step) {
         int colIndex = 0;
         for (int j = 0; j != width; j = j + step) {
-          outYuv.getPlane(k)(rowIndex, colIndex) = viewId.getPlane(0)(i, j);
+          outYuv.getPlane(k)(rowIndex, colIndex) = viewIdx.getPlane(0)(i, j);
           colIndex++;
         }
         rowIndex++;
@@ -177,21 +177,21 @@ auto Encoder::yuvSampler(const Common::EntityMapList &in)
 }
 
 void Encoder::mergeMasks(Common::MaskList &mergedMasks, Common::MaskList masks) {
-  for (size_t viewId = 0; viewId < mergedMasks.size(); viewId++) {
-    for (size_t i = 0; i < mergedMasks[viewId].getPlane(0).size(); i++) {
-      if (masks[viewId].getPlane(0)[i] != uint8_t{}) {
-        mergedMasks[viewId].getPlane(0)[i] = masks[viewId].getPlane(0)[i];
+  for (size_t viewIdx = 0; viewIdx < mergedMasks.size(); viewIdx++) {
+    for (size_t i = 0; i < mergedMasks[viewIdx].getPlane(0).size(); i++) {
+      if (masks[viewIdx].getPlane(0)[i] != uint8_t{}) {
+        mergedMasks[viewIdx].getPlane(0)[i] = masks[viewIdx].getPlane(0)[i];
       }
     }
   }
 }
 
 void Encoder::updateMasks(const Common::MVD16Frame &views, Common::MaskList &masks) {
-  for (size_t viewId = 0; viewId < views.size(); viewId++) {
-    for (size_t i = 0; i < masks[viewId].getPlane(0).size(); i++) {
-      if ((views[viewId].texture.getPlane(0)[i] == neutralChroma) &&
-          (views[viewId].depth.getPlane(0)[i] == uint16_t{})) {
-        masks[viewId].getPlane(0)[i] = uint8_t{};
+  for (size_t viewIdx = 0; viewIdx < views.size(); viewIdx++) {
+    for (size_t i = 0; i < masks[viewIdx].getPlane(0).size(); i++) {
+      if ((views[viewIdx].texture.getPlane(0)[i] == neutralChroma) &&
+          (views[viewIdx].depth.getPlane(0)[i] == uint16_t{})) {
+        masks[viewIdx].getPlane(0)[i] = uint8_t{};
       }
     }
   }
@@ -227,18 +227,18 @@ auto Encoder::entitySeparator(const Common::MVD16Frame &transportViews,
 
   auto entityMapsYUV = yuvSampler(entityMaps);
 
-  for (size_t viewId = 0; viewId < transportViews.size(); viewId++) {
+  for (size_t viewIdx = 0; viewIdx < transportViews.size(); viewIdx++) {
     for (int planeId = 0; planeId < Common::TextureFrame::getNumberOfPlanes(); ++planeId) {
-      std::transform(transportViews[viewId].texture.getPlane(planeId).begin(),
-                     transportViews[viewId].texture.getPlane(planeId).end(),
-                     entityMapsYUV[viewId].getPlane(planeId).begin(),
-                     entityViews[viewId].texture.getPlane(planeId).begin(),
+      std::transform(transportViews[viewIdx].texture.getPlane(planeId).begin(),
+                     transportViews[viewIdx].texture.getPlane(planeId).end(),
+                     entityMapsYUV[viewIdx].getPlane(planeId).begin(),
+                     entityViews[viewIdx].texture.getPlane(planeId).begin(),
                      [=](auto i, auto j) { return (j == entityId) ? i : neutralChroma; });
     }
-    std::transform(transportViews[viewId].depth.getPlane(0).begin(),
-                   transportViews[viewId].depth.getPlane(0).end(),
-                   entityMaps[viewId].getPlane(0).begin(),
-                   entityViews[viewId].depth.getPlane(0).begin(),
+    std::transform(transportViews[viewIdx].depth.getPlane(0).begin(),
+                   transportViews[viewIdx].depth.getPlane(0).end(),
+                   entityMaps[viewIdx].getPlane(0).begin(),
+                   entityViews[viewIdx].depth.getPlane(0).begin(),
                    [=](auto i, auto j) { return (j == entityId) ? i : uint16_t{}; });
   }
 

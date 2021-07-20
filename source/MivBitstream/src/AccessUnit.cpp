@@ -133,14 +133,14 @@ void requireAllPatchesWithinProjectionPlaneBounds(const ViewParamsList &vpl,
   auto patchIndex = 0;
 
   for (const auto &pp : ppl) {
-    const auto viewId = pp.atlasPatchProjectionId();
+    const auto viewIdx = pp.atlasPatchProjectionId();
 
-    static_assert(std::is_unsigned_v<decltype(viewId)>);
+    static_assert(std::is_unsigned_v<decltype(viewIdx)>);
 
-    if (viewId >= vpl.size()) {
+    if (viewIdx >= vpl.size()) {
       throw std::runtime_error("Patch has invalid view ID");
     }
-    const auto &vp = vpl[viewId];
+    const auto &vp = vpl[viewIdx];
 
     const auto size_u = vp.ci.ci_projection_plane_width_minus1() + 1;
     const auto size_v = vp.ci.ci_projection_plane_height_minus1() + 1;
@@ -152,7 +152,7 @@ void requireAllPatchesWithinProjectionPlaneBounds(const ViewParamsList &vpl,
 
     if (u_1 < 0 || u_1 > u_2 || u_2 > size_u || v_1 < 0 || v_1 > v_2 || v_2 > size_v) {
       throw std::runtime_error(fmt::format(
-          "Patch with index {} and projection ID {} is out of bounds", patchIndex, viewId));
+          "Patch with index {} and projection ID {} is out of bounds", patchIndex, viewIdx));
     }
 
     ++patchIndex;

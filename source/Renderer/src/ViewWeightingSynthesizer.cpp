@@ -249,8 +249,8 @@ public:
   }
 
 private:
-  [[nodiscard]] auto isViewInpainted(size_t viewId) const -> bool {
-    return m_inpaintedViews.count(viewId) != 0;
+  [[nodiscard]] auto isViewInpainted(size_t viewIdx) const -> bool {
+    return m_inpaintedViews.count(viewIdx) != 0;
   }
 
   [[nodiscard]] auto hasInpaintedViews() const -> bool { return !m_inpaintedViews.empty(); }
@@ -285,14 +285,14 @@ private:
       const auto &viewportPosition = targetHelper.getViewingPosition();
       auto cameraDistance = std::vector<float>{};
 
-      for (size_t viewId = 0U; viewId != sourceHelperList.size(); ++viewId) {
+      for (size_t viewIdx = 0U; viewIdx != sourceHelperList.size(); ++viewIdx) {
         // inpainted view gets large distance to yield low weight
-        if (isViewInpainted(viewId)) {
+        if (isViewInpainted(viewIdx)) {
           cameraDistance.push_back(std::numeric_limits<float>::infinity());
           continue;
         }
 
-        const auto &helper = sourceHelperList[viewId];
+        const auto &helper = sourceHelperList[viewIdx];
         const auto &cameraPosition = helper.getViewingPosition();
         const auto cameraDirection = helper.getViewingDirection();
 
@@ -355,8 +355,8 @@ private:
 
     m_cameraVisibility.clear();
 
-    for (size_t viewId = 0; viewId < sourceHelperList.size(); viewId++) {
-      const auto &helper = sourceHelperList[viewId];
+    for (size_t viewIdx = 0; viewIdx < sourceHelperList.size(); viewIdx++) {
+      const auto &helper = sourceHelperList[viewIdx];
       auto K = 0U;
 
       for (const Common::Vec3f &P : pointCloud) {
@@ -374,12 +374,12 @@ private:
   void computeAngularDistortionPerSource(const ProjectionHelperList &sourceHelperList) {
     m_cameraDistortion.resize(sourceHelperList.size(), 0.F);
 
-    for (size_t viewId = 0; viewId < sourceHelperList.size(); viewId++) {
-      if (m_cameraVisibility[viewId]) {
-        m_cameraDistortion[viewId] =
+    for (size_t viewIdx = 0; viewIdx < sourceHelperList.size(); viewIdx++) {
+      if (m_cameraVisibility[viewIdx]) {
+        m_cameraDistortion[viewIdx] =
             m_angularScaling *
             static_cast<float>(Common::deg2rad(
-                2. / Common::pps2ppd(sourceHelperList[viewId].getAngularResolution())));
+                2. / Common::pps2ppd(sourceHelperList[viewIdx].getAngularResolution())));
       }
     }
   }
@@ -439,9 +439,9 @@ private:
             }
 
             const auto &patchParams = atlas.patchParamsList[patchId];
-            const auto viewId = patchParams.atlasPatchProjectionId();
+            const auto viewIdx = patchParams.atlasPatchProjectionId();
 
-            if (!m_cameraVisibility[viewId]) {
+            if (!m_cameraVisibility[viewIdx]) {
               return;
             }
 
@@ -450,25 +450,25 @@ private:
             const auto x = sourceViewPos.x();
             const auto y = sourceViewPos.y();
 
-            if (y >= static_cast<int>(m_sourceDepth[viewId].height()) ||
-                x >= static_cast<int>(m_sourceDepth[viewId].width())) {
+            if (y >= static_cast<int>(m_sourceDepth[viewIdx].height()) ||
+                x >= static_cast<int>(m_sourceDepth[viewIdx].width())) {
               return;
             }
 
-            const auto d = m_sourceDepth[viewId](y, x);
+            const auto d = m_sourceDepth[viewIdx](y, x);
 
-            if (!sourceHelperList[viewId].isValidDepth(d)) {
+            if (!sourceHelperList[viewIdx].isValidDepth(d)) {
               return;
             }
 
-            const auto P = sourceHelperList[viewId].doUnprojection(
+            const auto P = sourceHelperList[viewIdx].doUnprojection(
                 {static_cast<float>(x) + 0.5F, static_cast<float>(y) + 0.5F}, d);
             const auto p = targetHelper.doProjection(P);
 
             if (isValidDepth(p.second) && targetHelper.isInsideViewport(p.first)) {
-              m_sourceUnprojection[viewId](y, x) = P;
-              m_sourceReprojection[viewId](y, x) = p;
-              m_sourceRayDirection[viewId](y, x) =
+              m_sourceUnprojection[viewIdx](y, x) = P;
+              m_sourceReprojection[viewIdx](y, x) = p;
+              m_sourceRayDirection[viewIdx](y, x) =
                   unit(P - targetHelper.getViewParams().pose.position);
             }
           });
@@ -488,17 +488,17 @@ private:
     m_viewportUnprojection.resize(m_sourceDepth.size());
     m_viewportDepth.resize(m_sourceDepth.size());
 
-    for (size_t viewId = 0; viewId < m_sourceDepth.size(); viewId++) {
-      if (m_cameraVisibility[viewId]) {
-        m_viewportUnprojection[viewId].resize(
+    for (size_t viewIdx = 0; viewIdx < m_sourceDepth.size(); viewIdx++) {
+      if (m_cameraVisibility[viewIdx]) {
+        m_viewportUnprojection[viewIdx].resize(
             targetHelper.getViewParams().ci.projectionPlaneSize().y(),
             targetHelper.getViewParams().ci.projectionPlaneSize().x());
-        std::fill(m_viewportUnprojection[viewId].begin(), m_viewportUnprojection[viewId].end(),
+        std::fill(m_viewportUnprojection[viewIdx].begin(), m_viewportUnprojection[viewIdx].end(),
                   Common::Vec3f{NAN, NAN, NAN});
 
-        m_viewportDepth[viewId].resize(targetHelper.getViewParams().ci.projectionPlaneSize().y(),
-                                       targetHelper.getViewParams().ci.projectionPlaneSize().x());
-        std::fill(m_viewportDepth[viewId].begin(), m_viewportDepth[viewId].end(), NAN);
+        m_viewportDepth[viewIdx].resize(targetHelper.getViewParams().ci.projectionPlaneSize().y(),
+                                        targetHelper.getViewParams().ci.projectionPlaneSize().x());
+        std::fill(m_viewportDepth[viewIdx].begin(), m_viewportDepth[viewIdx].end(), NAN);
       }
     }
   }
@@ -507,7 +507,7 @@ private:
     auto visibleSourceId = getEnabledIdList(m_cameraVisibility);
 
     Common::parallel_for(visibleSourceId.size(), [&](size_t id) {
-      const auto viewId = static_cast<unsigned>(visibleSourceId[id]);
+      const auto viewIdx = static_cast<unsigned>(visibleSourceId[id]);
 
       for (const auto &atlas : frame.atlas) {
         for (const auto &patchParams : atlas.patchParamsList) {
@@ -523,22 +523,22 @@ private:
 
           for (auto y = y0; y < y1; y++) {
             for (auto x = x0; x < x1; x++) {
-              if (static_cast<uint32_t>(y) >= m_sourceReprojection[viewId].height() ||
-                  static_cast<uint32_t>(x) >= m_sourceReprojection[viewId].width()) {
+              if (static_cast<uint32_t>(y) >= m_sourceReprojection[viewIdx].height() ||
+                  static_cast<uint32_t>(x) >= m_sourceReprojection[viewIdx].width()) {
                 continue;
               }
 
-              const auto P = m_sourceReprojection[viewId](y, x);
+              const auto P = m_sourceReprojection[viewIdx](y, x);
 
               if (!isValidDepth(P.second)) {
                 continue;
               }
 
-              const auto splatParameters = getSplatParameters(viewId, x, y, P);
+              const auto splatParameters = getSplatParameters(viewIdx, x, y, P);
 
               if (0.F < splatParameters.pointSize) {
-                rasterizePoint(viewId, getSplatParameters(viewId, x, y, P),
-                               m_sourceUnprojection[viewId](y, x), P.second);
+                rasterizePoint(viewIdx, getSplatParameters(viewIdx, x, y, P),
+                               m_sourceUnprojection[viewIdx](y, x), P.second);
               }
             }
           }
@@ -547,9 +547,9 @@ private:
     });
   }
 
-  auto getSplatParameters(unsigned viewId, int x, int y, const std::pair<Common::Vec2f, float> &P)
+  auto getSplatParameters(unsigned viewIdx, int x, int y, const std::pair<Common::Vec2f, float> &P)
       -> Splat {
-    const auto [WT, M] = computeWeightAndMatrixM(viewId, x, y);
+    const auto [WT, M] = computeWeightAndMatrixM(viewIdx, x, y);
 
     if (WT < m_minimalWeight) {
       return {Common::Vec2f{0.F, 0.F}, Common::Vec2f{0.F, 0.F}, Common::Vec2f{0.F, 0.F}, 0.F};
@@ -591,7 +591,7 @@ private:
     return {P.first, Common::Vec2f{0.F, 0.F}, Common::Vec2f{0.F, 0.F}, 1.F};
   }
 
-  auto computeWeightAndMatrixM(unsigned int viewId, int x, int y)
+  auto computeWeightAndMatrixM(unsigned int viewIdx, int x, int y)
       -> std::tuple<float, Common::Mat2x2f> {
     static constexpr auto offsetList =
         std::array{Common::Vec2i({1, 0}),  Common::Vec2i({1, 1}),  Common::Vec2i({0, 1}),
@@ -604,20 +604,20 @@ private:
     // Center
     auto C = Common::Vec2f{0.F, 0.F};
 
-    const auto OP = m_sourceRayDirection[viewId](y, x);
-    const auto w_last = static_cast<int>(m_sourceReprojection[viewId].width()) - 1;
-    const auto h_last = static_cast<int>(m_sourceReprojection[viewId].height()) - 1;
+    const auto OP = m_sourceRayDirection[viewIdx](y, x);
+    const auto w_last = static_cast<int>(m_sourceReprojection[viewIdx].width()) - 1;
+    const auto h_last = static_cast<int>(m_sourceReprojection[viewIdx].height()) - 1;
 
     for (size_t i = 0U; i < offsetList.size(); i++) {
       const auto xo = std::clamp(x + Common::at(offsetList, i).x(), 0, w_last);
       const auto yo = std::clamp(y + Common::at(offsetList, i).y(), 0, h_last);
 
-      Common::at(Q, i) = m_sourceReprojection[viewId](yo, xo);
+      Common::at(Q, i) = m_sourceReprojection[viewIdx](yo, xo);
 
       if (isValidDepth(Common::at(Q, i).second)) {
-        const auto OQ = m_sourceRayDirection[viewId](yo, xo);
+        const auto OQ = m_sourceRayDirection[viewIdx](yo, xo);
 
-        const float a = std::acos(dot(OP, OQ)) / m_cameraDistortion[viewId];
+        const float a = std::acos(dot(OP, OQ)) / m_cameraDistortion[viewIdx];
         const float wi = std::exp(-a * a);
 
         Common::at(W, i) = wi;
@@ -634,11 +634,11 @@ private:
     return {WT, Common::Mat2x2f{0.F, 0.F, 0.F, 0.F}};
   }
 
-  void rasterizePoint(unsigned viewId, const Splat &splat, const Common::Vec3f &P,
+  void rasterizePoint(unsigned viewIdx, const Splat &splat, const Common::Vec3f &P,
                       float depthValue) {
     const auto R1 = dot(splat.firstAxis, splat.firstAxis);
     const auto R2 = dot(splat.secondAxis, splat.secondAxis);
-    const auto boundingBox = computeBoundingBox(viewId, splat);
+    const auto boundingBox = computeBoundingBox(viewIdx, splat);
 
     // Looping on all pixels within the bounding box
     for (int y = boundingBox.y0; y <= boundingBox.y1; y++) {
@@ -646,7 +646,7 @@ private:
 
       for (int x = boundingBox.x0; x <= boundingBox.x1; x++) {
         const auto dx = (static_cast<float>(x) + 0.5F) - splat.center.x();
-        const auto depthRef = m_viewportDepth[viewId](y, x);
+        const auto depthRef = m_viewportDepth[viewIdx](y, x);
 
         if (!isValidDepth(depthRef) || (depthValue < depthRef)) {
           if (0.F < R1) {
@@ -656,22 +656,22 @@ private:
             const auto f2 = std::abs(dot(splat.secondAxis, dp));
 
             if (f1 <= R1 && f2 <= R2) {
-              m_viewportUnprojection[viewId](y, x) = P;
-              m_viewportDepth[viewId](y, x) = depthValue;
+              m_viewportUnprojection[viewIdx](y, x) = P;
+              m_viewportDepth[viewIdx](y, x) = depthValue;
             }
           } else {
-            m_viewportUnprojection[viewId](y, x) = P;
-            m_viewportDepth[viewId](y, x) = depthValue;
+            m_viewportUnprojection[viewIdx](y, x) = P;
+            m_viewportDepth[viewIdx](y, x) = depthValue;
           }
         }
       }
     }
   }
 
-  auto computeBoundingBox(unsigned int viewId, const Splat &splat) -> BoundingBox {
+  auto computeBoundingBox(unsigned int viewIdx, const Splat &splat) -> BoundingBox {
     // Initialization
-    const auto w_last = static_cast<int>(m_viewportDepth[viewId].width()) - 1;
-    const auto h_last = static_cast<int>(m_viewportDepth[viewId].height()) - 1;
+    const auto w_last = static_cast<int>(m_viewportDepth[viewIdx].width()) - 1;
+    const auto h_last = static_cast<int>(m_viewportDepth[viewIdx].height()) - 1;
     const auto radius = 0.5F * splat.pointSize;
 
     // Bounding box
@@ -698,11 +698,11 @@ private:
     // Weight recovery
     m_viewportWeight.resize(sourceHelperList.size());
 
-    for (size_t viewId = 0; viewId < m_viewportWeight.size(); viewId++) {
-      m_viewportWeight[viewId].resize(m_viewportDepth[viewId].height(),
-                                      m_viewportDepth[viewId].width());
-      std::fill(m_viewportWeight[viewId].begin(), m_viewportWeight[viewId].end(),
-                hasPruningRelation ? 0.F : m_cameraWeight[viewId]);
+    for (size_t viewIdx = 0; viewIdx < m_viewportWeight.size(); viewIdx++) {
+      m_viewportWeight[viewIdx].resize(m_viewportDepth[viewIdx].height(),
+                                       m_viewportDepth[viewIdx].width());
+      std::fill(m_viewportWeight[viewIdx].begin(), m_viewportWeight[viewIdx].end(),
+                hasPruningRelation ? 0.F : m_cameraWeight[viewIdx]);
     }
 
     if (hasPruningRelation) {
@@ -825,12 +825,12 @@ private:
         m_viewportVisibility.width(), m_viewportVisibility.height(), [&](size_t y, size_t x) {
           auto stack = std::vector<Common::Vec2f>{};
 
-          for (size_t viewId = 0; viewId < m_viewportDepth.size(); viewId++) {
-            if (m_cameraVisibility[viewId] && !isViewInpainted(viewId)) {
-              const auto z = m_viewportDepth[viewId](y, x);
+          for (size_t viewIdx = 0; viewIdx < m_viewportDepth.size(); viewIdx++) {
+            if (m_cameraVisibility[viewIdx] && !isViewInpainted(viewIdx)) {
+              const auto z = m_viewportDepth[viewIdx](y, x);
 
               if (isValidDepth(z)) {
-                insertWeightedDepthInStack(stack, m_viewportWeight[viewId](y, x), z,
+                insertWeightedDepthInStack(stack, m_viewportWeight[viewIdx](y, x), z,
                                            m_blendingFactor);
               }
             }

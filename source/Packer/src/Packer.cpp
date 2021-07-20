@@ -107,8 +107,9 @@ auto Packer::computeClusterToPack(const MivBitstream::ViewParamsList &viewParams
                                   const int m_blockSize, ClusterList &clusterList,
                                   const ClusteringMapList &clusteringMap) const {
   auto comp = [this, &viewParamsList](const Cluster &p1, const Cluster &p2) -> bool {
-    if (viewParamsList[p1.getViewId()].isBasicView != viewParamsList[p2.getViewId()].isBasicView) {
-      return viewParamsList[p2.getViewId()].isBasicView;
+    if (viewParamsList[p1.getViewIdx()].isBasicView !=
+        viewParamsList[p2.getViewIdx()].isBasicView) {
+      return viewParamsList[p2.getViewIdx()].isBasicView;
     }
     // NOTE(FT): added for packing patches from MPI ==> reading in writePatchInAtlas is done in
     // increasing mpiLayerId order
@@ -117,8 +118,8 @@ auto Packer::computeClusterToPack(const MivBitstream::ViewParamsList &viewParams
         return p1.getArea() < p2.getArea();
       }
     } else if (m_sortingMethod == VIEW_ID_ASCENDING) {
-      if (p1.getViewId() != p2.getViewId()) {
-        return p1.getViewId() > p2.getViewId();
+      if (p1.getViewIdx() != p2.getViewIdx()) {
+        return p1.getViewIdx() > p2.getViewIdx();
       }
     }
     // NOTE(BK): Stable ordering
@@ -133,7 +134,7 @@ auto Packer::computeClusterToPack(const MivBitstream::ViewParamsList &viewParams
       out.push_back(cluster);
     } else {
       if (m_enableRecursiveSplit) {
-        cluster.recursiveSplit(clusteringMap[cluster.getViewId()], out, m_blockSize,
+        cluster.recursiveSplit(clusteringMap[cluster.getViewIdx()], out, m_blockSize,
                                m_minPatchSize);
       } else {
         out.push_back(cluster);
@@ -179,7 +180,7 @@ auto Packer::pack(const Common::SizeVector &atlasSizes, const Common::MaskList &
     if (m_maxEntityId > 0) {
       clusteringMap_viewId = clusteringMapIndex[cluster.getClusterId()];
     } else {
-      clusteringMap_viewId = cluster.getViewId();
+      clusteringMap_viewId = cluster.getViewIdx();
     }
 
     if (m_minPatchSize * m_minPatchSize <= cluster.getArea()) {
@@ -192,7 +193,7 @@ auto Packer::pack(const Common::SizeVector &atlasSizes, const Common::MaskList &
           MivBitstream::PatchParams p;
 
           p.atlasId(MivBitstream::AtlasId{static_cast<uint8_t>(atlasId)});
-          p.atlasPatchProjectionId(static_cast<uint16_t>(cluster.getViewId()));
+          p.atlasPatchProjectionId(static_cast<uint16_t>(cluster.getViewIdx()));
           p.atlasPatch2dPosX(packerOutput.x());
           p.atlasPatch2dPosY(packerOutput.y());
           p.atlasPatch3dOffsetU(cluster.jmin());
@@ -203,8 +204,8 @@ auto Packer::pack(const Common::SizeVector &atlasSizes, const Common::MaskList &
           p.atlasPatch3dSizeU(Common::align(cluster.width(), m_blockSize));
           p.atlasPatch3dSizeV(Common::align(cluster.height(), m_blockSize));
 
-          adaptPatchParamsToMask(p, masks[cluster.getViewId()].getWidth(),
-                                 masks[cluster.getViewId()].getHeight());
+          adaptPatchParamsToMask(p, masks[cluster.getViewIdx()].getWidth(),
+                                 masks[cluster.getViewIdx()].getHeight());
 
           if (m_maxEntityId > 0) {
             p.atlasPatchEntityId(cluster.getEntityId());
@@ -259,15 +260,15 @@ auto Packer::computeClusters(const Common::MaskList &masks,
   ClusteringMapList clusteringMap{};
   std::vector<int> clusteringMapIndex{};
   int index = 0;
-  for (auto viewId = 0; viewId < static_cast<int>(masks.size()); viewId++) {
+  for (auto viewIdx = 0; viewIdx < static_cast<int>(masks.size()); viewIdx++) {
     if (m_maxEntityId > 0) {
       for (int entityId = m_entityEncodeRange[0]; entityId < m_entityEncodeRange[1]; entityId++) {
         // Entity clustering
-        Common::Mask mask = m_aggregatedEntityMasks[entityId - m_entityEncodeRange[0]][viewId];
+        Common::Mask mask = m_aggregatedEntityMasks[entityId - m_entityEncodeRange[0]][viewIdx];
 
-        auto clusteringOutput = retrieveClusters(viewId, mask, static_cast<int>(clusterList.size()),
-                                                 viewParamsList[viewId].isBasicView,
-                                                 m_enableMerging, m_maxEntityId > 0);
+        auto clusteringOutput = retrieveClusters(
+            viewIdx, mask, static_cast<int>(clusterList.size()),
+            viewParamsList[viewIdx].isBasicView, m_enableMerging, m_maxEntityId > 0);
 
         for (auto &cluster : clusteringOutput.first) {
           cluster = Cluster::setEntityId(cluster, entityId);
@@ -282,15 +283,15 @@ auto Packer::computeClusters(const Common::MaskList &masks,
         }
 
         if (!clusteringOutput.first.empty()) {
-          std::cout << "entity " << entityId << " from view " << viewId << " results in "
+          std::cout << "entity " << entityId << " from view " << viewIdx << " results in "
                     << clusteringOutput.first.size() << " patches\n";
         }
         ++index;
       }
     } else {
       auto clusteringOutput =
-          retrieveClusters(viewId, masks[viewId], static_cast<int>(clusterList.size()),
-                           viewParamsList[viewId].isBasicView, m_enableMerging, m_maxEntityId > 0);
+          retrieveClusters(viewIdx, masks[viewIdx], static_cast<int>(clusterList.size()),
+                           viewParamsList[viewIdx].isBasicView, m_enableMerging, m_maxEntityId > 0);
 
       std::move(clusteringOutput.first.begin(), clusteringOutput.first.end(),
                 back_inserter(clusterList));

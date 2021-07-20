@@ -235,8 +235,8 @@ private:
     inFrame.viewParamsList = m_sourceParams.viewParamsList;
 
     std::transform(frame.cbegin(), frame.cend(), std::back_inserter(inFrame.atlas),
-                   [viewIndex = uint16_t{}](const TextureDepth16Frame &frame) mutable {
-                     return synthesizerInputAtlasAccessUnit(frame, viewIndex++);
+                   [viewIdx = uint16_t{}](const TextureDepth16Frame &frame) mutable {
+                     return synthesizerInputAtlasAccessUnit(frame, viewIdx++);
                    });
 
     // Transfer depth low quality flag
@@ -247,7 +247,7 @@ private:
     return inFrame;
   }
 
-  static auto synthesizerInputAtlasAccessUnit(const TextureDepth16Frame &frame, uint16_t viewIndex)
+  static auto synthesizerInputAtlasAccessUnit(const TextureDepth16Frame &frame, uint16_t viewIdx)
       -> AtlasAccessUnit {
     auto aau = AtlasAccessUnit();
 
@@ -269,7 +269,7 @@ private:
     aau.occFrame.fillOne();
 
     auto &pp = aau.patchParamsList.emplace_back();
-    pp.atlasPatchProjectionId(viewIndex);
+    pp.atlasPatchProjectionId(viewIdx);
     pp.atlasPatchOrientationIndex(MivBitstream::FlexiblePatchOrientation::FPO_NULL);
     pp.atlasPatch2dSizeX(frame.texture.getWidth());
     pp.atlasPatch2dSizeY(frame.texture.getHeight());

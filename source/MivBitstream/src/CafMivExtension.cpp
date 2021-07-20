@@ -121,33 +121,35 @@ auto CameraIntrinsics::ci_ortho_height() const -> float {
   return *m_ci_ortho_height;
 }
 
-auto CameraIntrinsics::printTo(std::ostream &stream, uint16_t viewId) const -> std::ostream & {
-  stream << "ci_cam_type[ " << viewId << " ]=" << ci_cam_type() << '\n';
-  stream << "ci_projection_plane_width_minus1[ " << viewId
+auto CameraIntrinsics::printTo(std::ostream &stream, uint16_t viewIdx) const -> std::ostream & {
+  stream << "ci_cam_type[ " << viewIdx << " ]=" << ci_cam_type() << '\n';
+  stream << "ci_projection_plane_width_minus1[ " << viewIdx
          << " ]=" << ci_projection_plane_width_minus1() << '\n';
-  stream << "ci_projection_plane_height_minus1[ " << viewId
+  stream << "ci_projection_plane_height_minus1[ " << viewIdx
          << " ]=" << ci_projection_plane_height_minus1() << '\n';
 
   switch (ci_cam_type()) {
   case CiCamType::equirectangular:
-    stream << "ci_erp_phi_min[ " << viewId << " ]=" << ci_erp_phi_min() << '\n';
-    stream << "ci_erp_phi_max[ " << viewId << " ]=" << ci_erp_phi_max() << '\n';
-    stream << "ci_erp_theta_min[ " << viewId << " ]=" << ci_erp_theta_min() << '\n';
-    stream << "ci_erp_theta_max[ " << viewId << " ]=" << ci_erp_theta_max() << '\n';
+    stream << "ci_erp_phi_min[ " << viewIdx << " ]=" << ci_erp_phi_min() << '\n';
+    stream << "ci_erp_phi_max[ " << viewIdx << " ]=" << ci_erp_phi_max() << '\n';
+    stream << "ci_erp_theta_min[ " << viewIdx << " ]=" << ci_erp_theta_min() << '\n';
+    stream << "ci_erp_theta_max[ " << viewIdx << " ]=" << ci_erp_theta_max() << '\n';
     return stream;
 
   case CiCamType::perspective:
-    stream << "ci_perspective_focal_hor[ " << viewId << " ]=" << ci_perspective_focal_hor() << '\n';
-    stream << "ci_perspective_focal_ver[ " << viewId << " ]=" << ci_perspective_focal_ver() << '\n';
-    stream << "ci_perspective_center_hor[ " << viewId << " ]=" << ci_perspective_center_hor()
+    stream << "ci_perspective_focal_hor[ " << viewIdx << " ]=" << ci_perspective_focal_hor()
            << '\n';
-    stream << "ci_perspective_center_ver[ " << viewId << " ]=" << ci_perspective_center_ver()
+    stream << "ci_perspective_focal_ver[ " << viewIdx << " ]=" << ci_perspective_focal_ver()
+           << '\n';
+    stream << "ci_perspective_center_hor[ " << viewIdx << " ]=" << ci_perspective_center_hor()
+           << '\n';
+    stream << "ci_perspective_center_ver[ " << viewIdx << " ]=" << ci_perspective_center_ver()
            << '\n';
     return stream;
 
   case CiCamType::orthographic:
-    stream << "ci_ortho_width[ " << viewId << " ]=" << ci_ortho_width() << '\n';
-    stream << "ci_ortho_height[ " << viewId << " ]=" << ci_ortho_height() << '\n';
+    stream << "ci_ortho_width[ " << viewIdx << " ]=" << ci_ortho_width() << '\n';
+    stream << "ci_ortho_height[ " << viewIdx << " ]=" << ci_ortho_height() << '\n';
     return stream;
 
   default:
@@ -218,13 +220,13 @@ void CameraIntrinsics::encodeTo(Common::OutputBitstream &bitstream) const {
   }
 }
 
-auto CameraExtrinsics::printTo(std::ostream &stream, uint16_t viewId) const -> std::ostream & {
-  fmt::print(stream, "ce_view_pos_x[ {} ]={}\n", viewId, ce_view_pos_x());
-  fmt::print(stream, "ce_view_pos_y[ {} ]={}\n", viewId, ce_view_pos_y());
-  fmt::print(stream, "ce_view_pos_z[ {} ]={}\n", viewId, ce_view_pos_z());
-  fmt::print(stream, "ce_view_quat_x[ {} ]={}\n", viewId, ce_view_quat_x());
-  fmt::print(stream, "ce_view_quat_y[ {} ]={}\n", viewId, ce_view_quat_y());
-  fmt::print(stream, "ce_view_quat_z[ {} ]={}\n", viewId, ce_view_quat_z());
+auto CameraExtrinsics::printTo(std::ostream &stream, uint16_t viewIdx) const -> std::ostream & {
+  fmt::print(stream, "ce_view_pos_x[ {} ]={}\n", viewIdx, ce_view_pos_x());
+  fmt::print(stream, "ce_view_pos_y[ {} ]={}\n", viewIdx, ce_view_pos_y());
+  fmt::print(stream, "ce_view_pos_z[ {} ]={}\n", viewIdx, ce_view_pos_z());
+  fmt::print(stream, "ce_view_quat_x[ {} ]={}\n", viewIdx, ce_view_quat_x());
+  fmt::print(stream, "ce_view_quat_y[ {} ]={}\n", viewIdx, ce_view_quat_y());
+  fmt::print(stream, "ce_view_quat_z[ {} ]={}\n", viewIdx, ce_view_quat_z());
   return stream;
 }
 
@@ -252,12 +254,12 @@ void CameraExtrinsics::encodeTo(Common::OutputBitstream &bitstream) const {
   bitstream.putInt32(ce_view_quat_z());
 }
 
-auto DepthQuantization::printTo(std::ostream &stream, uint16_t viewId) const -> std::ostream & {
+auto DepthQuantization::printTo(std::ostream &stream, uint16_t viewIdx) const -> std::ostream & {
   VERIFY_MIVBITSTREAM(dq_quantization_law() == 0);
-  stream << "dq_quantization_law[ " << viewId << " ]=" << int{dq_quantization_law()}
-         << "\ndq_norm_disp_low[ " << viewId << " ]=" << dq_norm_disp_low()
-         << "\ndq_norm_disp_high[ " << viewId << " ]=" << dq_norm_disp_high()
-         << "\ndq_depth_occ_threshold_default[ " << viewId
+  stream << "dq_quantization_law[ " << viewIdx << " ]=" << int{dq_quantization_law()}
+         << "\ndq_norm_disp_low[ " << viewIdx << " ]=" << dq_norm_disp_low()
+         << "\ndq_norm_disp_high[ " << viewIdx << " ]=" << dq_norm_disp_high()
+         << "\ndq_depth_occ_threshold_default[ " << viewIdx
          << " ]=" << dq_depth_occ_threshold_default() << '\n';
   return stream;
 }
@@ -303,12 +305,12 @@ auto PruningParents::pp_parent_id(uint16_t i, uint16_t value) noexcept -> Prunin
   return *this;
 }
 
-auto PruningParents::printTo(std::ostream &stream, uint16_t viewId) const -> std::ostream & {
-  stream << "pp_is_root_flag[ " << viewId << " ]=" << std::boolalpha << pp_is_root_flag() << '\n';
+auto PruningParents::printTo(std::ostream &stream, uint16_t viewIdx) const -> std::ostream & {
+  stream << "pp_is_root_flag[ " << viewIdx << " ]=" << std::boolalpha << pp_is_root_flag() << '\n';
   if (!pp_is_root_flag()) {
-    stream << "pp_num_parent_minus1[ " << viewId << " ]=" << pp_num_parent_minus1() << '\n';
+    stream << "pp_num_parent_minus1[ " << viewIdx << " ]=" << pp_num_parent_minus1() << '\n';
     for (uint16_t i = 0; i <= pp_num_parent_minus1(); ++i) {
-      stream << "pp_parent_id[ " << viewId << " ][ " << i << " ]=" << pp_parent_id(i) << '\n';
+      stream << "pp_parent_id[ " << viewIdx << " ][ " << i << " ]=" << pp_parent_id(i) << '\n';
     }
   }
   return stream;
@@ -360,35 +362,35 @@ auto MivViewParamsList::mvp_view_id(uint16_t viewIdx) const -> uint16_t {
   return m_mvp_view_id[viewIdx];
 }
 
-auto MivViewParamsList::mvp_inpaint_flag(uint16_t viewIndex) const -> bool {
-  return m_mvpInpaintFlag[viewIndex];
+auto MivViewParamsList::mvp_inpaint_flag(uint16_t viewIdx) const -> bool {
+  return m_mvpInpaintFlag[viewIdx];
 }
 
-auto MivViewParamsList::camera_extrinsics(uint16_t viewId) const -> const CameraExtrinsics & {
-  VERIFY_MIVBITSTREAM(viewId < m_camera_extrinsics.size());
-  return m_camera_extrinsics[viewId];
+auto MivViewParamsList::camera_extrinsics(uint16_t viewIdx) const -> const CameraExtrinsics & {
+  VERIFY_MIVBITSTREAM(viewIdx < m_camera_extrinsics.size());
+  return m_camera_extrinsics[viewIdx];
 }
 
-auto MivViewParamsList::camera_intrinsics(uint16_t viewId) const -> const CameraIntrinsics & {
+auto MivViewParamsList::camera_intrinsics(uint16_t viewIdx) const -> const CameraIntrinsics & {
   if (mvp_intrinsic_params_equal_flag()) {
-    viewId = 0; // Convenience
+    viewIdx = 0; // Convenience
   }
-  VERIFY_MIVBITSTREAM(viewId < m_camera_intrinsics.size());
-  return m_camera_intrinsics[viewId];
+  VERIFY_MIVBITSTREAM(viewIdx < m_camera_intrinsics.size());
+  return m_camera_intrinsics[viewIdx];
 }
 
-auto MivViewParamsList::depth_quantization(uint16_t viewId) const -> const DepthQuantization & {
+auto MivViewParamsList::depth_quantization(uint16_t viewIdx) const -> const DepthQuantization & {
   if (mvp_depth_quantization_params_equal_flag()) {
-    viewId = 0; // Convenience
+    viewIdx = 0; // Convenience
   }
-  VERIFY_MIVBITSTREAM(viewId < m_depth_quantization.size());
-  return m_depth_quantization[viewId];
+  VERIFY_MIVBITSTREAM(viewIdx < m_depth_quantization.size());
+  return m_depth_quantization[viewIdx];
 }
 
-auto MivViewParamsList::pruning_parent(uint16_t viewIndex) const -> const PruningParents & {
+auto MivViewParamsList::pruning_parent(uint16_t viewIdx) const -> const PruningParents & {
   VERIFY_MIVBITSTREAM(mvp_pruning_graph_params_present_flag());
-  VERIFY_MIVBITSTREAM(viewIndex < m_pruning_parent.size());
-  return m_pruning_parent[viewIndex];
+  VERIFY_MIVBITSTREAM(viewIdx < m_pruning_parent.size());
+  return m_pruning_parent[viewIdx];
 }
 
 auto MivViewParamsList::mvp_num_views_minus1(uint16_t value) -> MivViewParamsList & {
@@ -412,8 +414,8 @@ auto MivViewParamsList::mvp_view_id(uint16_t viewIdx, uint16_t viewId) -> MivVie
   return *this;
 }
 
-auto MivViewParamsList::mvp_inpaint_flag(uint16_t viewIndex, bool value) -> MivViewParamsList & {
-  m_mvpInpaintFlag[viewIndex] = value;
+auto MivViewParamsList::mvp_inpaint_flag(uint16_t viewIdx, bool value) -> MivViewParamsList & {
+  m_mvpInpaintFlag[viewIdx] = value;
   return *this;
 }
 
@@ -436,24 +438,24 @@ auto MivViewParamsList::mvp_pruning_graph_params_present_flag(bool value) -> Miv
   return *this;
 }
 
-auto MivViewParamsList::camera_extrinsics(uint16_t viewId) noexcept -> CameraExtrinsics & {
-  PRECONDITION(viewId < m_camera_extrinsics.size());
-  return m_camera_extrinsics[viewId];
+auto MivViewParamsList::camera_extrinsics(uint16_t viewIdx) noexcept -> CameraExtrinsics & {
+  PRECONDITION(viewIdx < m_camera_extrinsics.size());
+  return m_camera_extrinsics[viewIdx];
 }
 
-auto MivViewParamsList::camera_intrinsics(uint16_t viewId) noexcept -> CameraIntrinsics & {
-  PRECONDITION(viewId < m_camera_intrinsics.size());
-  return m_camera_intrinsics[viewId];
+auto MivViewParamsList::camera_intrinsics(uint16_t viewIdx) noexcept -> CameraIntrinsics & {
+  PRECONDITION(viewIdx < m_camera_intrinsics.size());
+  return m_camera_intrinsics[viewIdx];
 }
 
-auto MivViewParamsList::depth_quantization(uint16_t viewId) noexcept -> DepthQuantization & {
-  PRECONDITION(viewId < m_depth_quantization.size());
-  return m_depth_quantization[viewId];
+auto MivViewParamsList::depth_quantization(uint16_t viewIdx) noexcept -> DepthQuantization & {
+  PRECONDITION(viewIdx < m_depth_quantization.size());
+  return m_depth_quantization[viewIdx];
 }
 
-auto MivViewParamsList::pruning_parent(uint16_t viewIndex) -> PruningParents & {
-  PRECONDITION(viewIndex < m_pruning_parent.size());
-  return m_pruning_parent[viewIndex];
+auto MivViewParamsList::pruning_parent(uint16_t viewIdx) -> PruningParents & {
+  PRECONDITION(viewIdx < m_pruning_parent.size());
+  return m_pruning_parent[viewIdx];
 }
 
 auto operator<<(std::ostream &stream, const MivViewParamsList &x) -> std::ostream & {

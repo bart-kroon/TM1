@@ -49,7 +49,7 @@ using ClusterList = std::vector<Cluster>;
 class Cluster {
 public:
   Cluster() = default;
-  Cluster(int viewId, bool isBasicView, int clusterId, int entityId);
+  Cluster(int viewIdx, bool isBasicView, int clusterId, int entityId);
   Cluster(const Cluster &) = default;
   Cluster(Cluster &&) = default;
   auto operator=(const Cluster &) -> Cluster & = default;
@@ -57,7 +57,7 @@ public:
   ~Cluster() = default;
 
   void push(int i, int j);
-  [[nodiscard]] auto getViewId() const -> int { return viewId_; }
+  [[nodiscard]] auto getViewIdx() const -> int { return viewIdx_; }
   [[nodiscard]] auto getClusterId() const -> int { return clusterId_; }
   [[nodiscard]] auto getEntityId() const -> int { return entityId_; }
   [[nodiscard]] auto getNumActivePixels() const -> int { return numActivePixels_; }
@@ -109,7 +109,7 @@ private:
                                              bool aggregateHorizontally) const
       -> std::tuple<std::vector<int>, std::vector<int>>;
 
-  int viewId_ = 0;
+  int viewIdx_ = 0;
   bool m_isBasicView{};
   int clusterId_ = 0;
   int entityId_ = 0;

@@ -267,7 +267,7 @@ auto DepthQuantization::printTo(std::ostream &stream, uint16_t viewIdx) const ->
 auto DepthQuantization::decodeFrom(Common::InputBitstream &bitstream) -> DepthQuantization {
   auto x = DepthQuantization{};
 
-  const auto dq_quantization_law = bitstream.getUint8();
+  const auto dq_quantization_law = bitstream.getUExpGolomb<uint8_t>();
   VERIFY_MIVBITSTREAM(dq_quantization_law == 0);
 
   x.dq_norm_disp_low(bitstream.getFloat32());
@@ -278,7 +278,7 @@ auto DepthQuantization::decodeFrom(Common::InputBitstream &bitstream) -> DepthQu
 }
 
 void DepthQuantization::encodeTo(Common::OutputBitstream &bitstream) const {
-  bitstream.putUint8(dq_quantization_law());
+  bitstream.putUExpGolomb(dq_quantization_law());
   bitstream.putFloat32(dq_norm_disp_low());
   bitstream.putFloat32(dq_norm_disp_high());
   bitstream.putUExpGolomb(dq_depth_occ_threshold_default());

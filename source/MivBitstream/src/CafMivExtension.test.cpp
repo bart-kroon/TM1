@@ -154,7 +154,7 @@ dq_norm_disp_high[ 7 ]=0
 dq_depth_occ_threshold_default[ 7 ]=0
 )");
 
-  REQUIRE(bitCodingTest(unit, 73));
+  REQUIRE(bitCodingTest(unit, 66));
 
   SECTION("Example 2") {
     unit.dq_norm_disp_low(0.02F);
@@ -167,7 +167,7 @@ dq_norm_disp_high[ 2 ]=2
 dq_depth_occ_threshold_default[ 2 ]=200
 )");
 
-    REQUIRE(bitCodingTest(unit, 87));
+    REQUIRE(bitCodingTest(unit, 80));
   }
 }
 
@@ -261,7 +261,7 @@ dq_depth_occ_threshold_default[ 0 ]=0
 mvp_pruning_graph_params_present_flag=false
 )");
 
-    REQUIRE(bitCodingTest(unit, 390, casps));
+    REQUIRE(bitCodingTest(unit, 383, casps));
   }
 
   SECTION("Example 2") {
@@ -322,7 +322,7 @@ pp_is_root_flag[ 1 ]=true
 pp_is_root_flag[ 2 ]=true
 )");
 
-    REQUIRE(bitCodingTest(unit, 827, casps));
+    REQUIRE(bitCodingTest(unit, 820, casps));
     REQUIRE(unit.mvp_view_id(0) == ViewId{0});
     REQUIRE(unit.mvp_view_id(2) == ViewId{1});
     REQUIRE(unit.mvp_view_id(1) == ViewId{2});
@@ -415,7 +415,7 @@ pp_is_root_flag[ 1 ]=true
 pp_is_root_flag[ 2 ]=true
 )");
 
-    REQUIRE(bitCodingTest(unit, 779, nalIdrCaf, casps));
+    REQUIRE(bitCodingTest(unit, 772, nalIdrCaf, casps));
   }
 
   SECTION("Update extrinsics") {
@@ -506,7 +506,7 @@ dq_norm_disp_high[ 0 ]=100
 dq_depth_occ_threshold_default[ 0 ]=64
 )");
 
-    REQUIRE(bitCodingTest(unit, 120, nalCaf, casps));
+    REQUIRE(bitCodingTest(unit, 113, nalCaf, casps));
   }
 
   SECTION("came when casme_depth_quantization_params_present_flag=0") {
@@ -682,7 +682,7 @@ dq_norm_disp_low[ 0 ]=1
 dq_norm_disp_high[ 0 ]=100
 dq_depth_occ_threshold_default[ 0 ]=64
 )");
-    REQUIRE(bitCodingTest(unit, 117));
+    REQUIRE(bitCodingTest(unit, 110));
   }
 }
 } // namespace TMIV::MivBitstream

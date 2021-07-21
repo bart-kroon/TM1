@@ -31,8 +31,8 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef TMIV_DECODER_DECODER_H
-#define TMIV_DECODER_DECODER_H
+#ifndef TMIV_DECODER_PRERENDERER_H
+#define TMIV_DECODER_PRERENDERER_H
 
 #include <TMIV/Common/Json.h>
 #include <TMIV/Decoder/EntityBasedPatchMapFilter.h>
@@ -40,9 +40,9 @@
 #include <TMIV/MivBitstream/AccessUnit.h>
 
 namespace TMIV::Decoder {
-class Decoder {
+class PreRenderer {
 public:
-  Decoder(const Common::Json &rootNode, const Common::Json & /* componentNode */);
+  PreRenderer(const Common::Json &rootNode, const Common::Json & /* componentNode */);
 
   void recoverFrame(MivBitstream::AccessUnit &frame);
 

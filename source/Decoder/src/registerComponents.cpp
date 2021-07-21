@@ -32,7 +32,6 @@
  */
 
 #include <TMIV/Common/Factory.h>
-#include <TMIV/Decoder/Decoder.h>
 #include <TMIV/Renderer/AdditiveSynthesizer.h>
 #include <TMIV/Renderer/Inpainter.h>
 #include <TMIV/Renderer/MpiSynthesizer.h>

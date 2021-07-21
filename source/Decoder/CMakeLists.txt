@@ -6,15 +6,15 @@ create_tmiv_library(
     SOURCES
         "src/AtlasDecoder.cpp"
         "src/CommonAtlasDecoder.cpp"
-        "src/Decoder.cpp"
-        "src/GeometryScaler.cpp"
-        "src/OccupancyReconstructor.cpp"
         "src/EntityBasedPatchMapFilter.cpp"
+        "src/FrameUnpacker.cpp"
+        "src/GeometryScaler.cpp"
         "src/MivDecoder.cpp"
+        "src/OccupancyReconstructor.cpp"
+        "src/OutputLog.cpp"
+        "src/PreRenderer.cpp"
         "src/V3cSampleStreamDecoder.cpp"
         "src/V3cUnitBuffer.cpp"
-        "src/OutputLog.cpp"
-        "src/FrameUnpacker.cpp"
     PUBLIC
         TMIV::VideoDecoderLib
     )

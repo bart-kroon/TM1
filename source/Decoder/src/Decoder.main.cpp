@@ -33,9 +33,9 @@
 
 #include <TMIV/Common/Application.h>
 #include <TMIV/Common/Factory.h>
-#include <TMIV/Decoder/Decoder.h>
 #include <TMIV/Decoder/MivDecoder.h>
 #include <TMIV/Decoder/OutputLog.h>
+#include <TMIV/Decoder/PreRenderer.h>
 #include <TMIV/Decoder/V3cSampleStreamDecoder.h>
 #include <TMIV/IO/IO.h>
 #include <TMIV/MivBitstream/SequenceConfig.h>
@@ -55,7 +55,7 @@ void registerComponents();
 
 class Application : public Common::Application {
 private:
-  Decoder m_decoder;
+  PreRenderer m_preRenderer;
   IO::Placeholders m_placeholders;
   Renderer::Front::MultipleFrameRenderer m_renderer;
   std::multimap<int, int> m_inputToOutputFrameIdMap;
@@ -76,7 +76,7 @@ public:
                                 {"-r", "Test point (e.g. QP3 or R0)", false},
                                 {"-v", "Source view to render (e.g. v11)", true},
                                 {"-P", "Pose trace to render (e.g. p02)", true}}}
-      , m_decoder{json(), json().require("Decoder"s)}
+      , m_preRenderer{json(), json().require("Decoder"s)}
       , m_placeholders{optionValues("-s").front(), optionValues("-r").front(),
                        std::stoi(optionValues("-n"sv).front()),
                        std::stoi(optionValues("-N"sv).front())}
@@ -104,7 +104,7 @@ public:
       }
 
       // Recover geometry, occupancy, and filter blockToPatchMap
-      m_decoder.recoverFrame(*frame);
+      m_preRenderer.recoverFrame(*frame);
 
       if (json().optional(IO::outputSequenceConfigPathFmt)) {
         outputSequenceConfig(frame->sequenceConfig(), frame->foc);

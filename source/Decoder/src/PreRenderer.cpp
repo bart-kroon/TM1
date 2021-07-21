@@ -31,7 +31,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/Decoder/Decoder.h>
+#include <TMIV/Decoder/PreRenderer.h>
 
 #include <TMIV/Common/Factory.h>
 #include <TMIV/Decoder/FrameUnpacker.h>
@@ -40,7 +40,7 @@
 #include <TMIV/MivBitstream/AccessUnit.h>
 
 namespace TMIV::Decoder {
-Decoder::Decoder(const Common::Json &rootNode, const Common::Json &componentNode)
+PreRenderer::PreRenderer(const Common::Json &rootNode, const Common::Json &componentNode)
     : m_geometryScaler{rootNode, componentNode}
     , m_entityBasedPatchMapFilter{rootNode, componentNode} {}
 
@@ -125,7 +125,7 @@ void addAttributeOffset(MivBitstream::AccessUnit &frame) {
 }
 } // namespace
 
-void Decoder::recoverFrame(MivBitstream::AccessUnit &frame) {
+void PreRenderer::recoverFrame(MivBitstream::AccessUnit &frame) {
   checkRestrictions(frame);
   if (frame.vps.vps_packing_information_present_flag()) {
     FrameUnpacker frameUnpacker;

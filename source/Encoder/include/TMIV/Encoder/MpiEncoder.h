@@ -35,48 +35,28 @@
 #define TMIV_ENCODER_MPIENCODER_H
 
 #include <TMIV/Common/Json.h>
-#include <TMIV/Encoder/IMpiEncoder.h>
+#include <TMIV/Encoder/EncoderParams.h>
+#include <TMIV/MivBitstream/SequenceConfig.h>
+#include <TMIV/MpiPcs/Frame.h>
 #include <TMIV/Packer/IPacker.h>
 
 #include <deque>
 #include <memory>
 
 namespace TMIV::Encoder {
-class MpiEncoder : public IMpiEncoder {
-public:
-  static constexpr auto maxIntraPeriod = 32;
-
-private:
-  Common::Json m_rootNode;
-
-  // Parameters
-  int m_intraPeriod{};
-  Common::Vec2i m_blockSizeDepthQualityDependent;
-  std::vector<Common::Vec2i> m_overrideAtlasFrameSizes{};
-  unsigned m_textureDilation{};
-  unsigned m_transparencyDynamic{};
-
-  // Attributes
-  std::deque<Common::MpiPcs::Frame> m_mpiFrameBuffer;
-  std::vector<Common::BlockToPatchMap> m_blockToPatchMapPerAtlas;
-  std::unique_ptr<Packer::IPacker> m_packer;
-  int m_blockSize{};
-  size_t m_maxLumaSamplesPerFrame{};
-  EncoderParams m_params;
-
+class MpiEncoder {
 public:
   MpiEncoder(const Common::Json &rootNode, const Common::Json &componentNode);
-  MpiEncoder(const MpiEncoder &) = delete;
-  MpiEncoder(MpiEncoder &&) = default;
-  auto operator=(const MpiEncoder &) -> MpiEncoder & = delete;
-  auto operator=(MpiEncoder &&) -> MpiEncoder & = default;
-  ~MpiEncoder() override = default;
 
-  void prepareSequence(const MivBitstream::SequenceConfig &config) override;
-  auto processAccessUnit(int firstFrameId, int lastFrameId) -> const EncoderParams & override;
-  auto popAtlas() -> Common::MVD10Frame override;
-  [[nodiscard]] auto maxLumaSamplesPerFrame() const -> size_t override {
-    return m_maxLumaSamplesPerFrame;
+  void prepareSequence(const MivBitstream::SequenceConfig &config);
+  auto processAccessUnit(int firstFrameId, int lastFrameId) -> const EncoderParams &;
+  auto popAtlas() -> Common::MVD10Frame;
+  [[nodiscard]] auto maxLumaSamplesPerFrame() const -> size_t { return m_maxLumaSamplesPerFrame; }
+
+  using MpiPcsFrameReader = std::function<MpiPcs::Frame(int)>;
+
+  void setMpiPcsFrameReader(const MpiPcsFrameReader &mpiPcsFrameReader) {
+    m_mpiPcsFrameReader = mpiPcsFrameReader;
   }
 
 private:
@@ -85,8 +65,28 @@ private:
   void prepareIvau();
   [[nodiscard]] auto log2FocLsbMinus4() const -> uint8_t;
   void incrementFoc();
-};
 
+  auto readFrame(int frameIndex) -> MpiPcs::Frame { return m_mpiPcsFrameReader(frameIndex); }
+
+  Common::Json m_rootNode;
+  MpiPcsFrameReader m_mpiPcsFrameReader;
+
+  // Parameters
+  static constexpr auto maxIntraPeriod = 32;
+  int m_intraPeriod{};
+  Common::Vec2i m_blockSizeDepthQualityDependent;
+  std::vector<Common::Vec2i> m_overrideAtlasFrameSizes{};
+  unsigned m_textureDilation{};
+  unsigned m_transparencyDynamic{};
+
+  // Attributes
+  std::deque<MpiPcs::Frame> m_mpiFrameBuffer;
+  std::vector<Common::BlockToPatchMap> m_blockToPatchMapPerAtlas;
+  std::unique_ptr<Packer::IPacker> m_packer;
+  int m_blockSize{};
+  size_t m_maxLumaSamplesPerFrame{};
+  EncoderParams m_params;
+};
 } // namespace TMIV::Encoder
 
 #endif

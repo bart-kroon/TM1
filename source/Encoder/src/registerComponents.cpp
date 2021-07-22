@@ -34,7 +34,6 @@
 #include <TMIV/Aggregator/Aggregator.h>
 #include <TMIV/Common/Factory.h>
 #include <TMIV/DepthQualityAssessor/DepthQualityAssessor.h>
-#include <TMIV/Encoder/MpiEncoder.h>
 #include <TMIV/Packer/Packer.h>
 #include <TMIV/Pruner/HierarchicalPruner.h>
 #include <TMIV/Pruner/NoPruner.h>
@@ -54,9 +53,6 @@ void registerComponents() {
 
   auto &assessors = Common::Factory<DepthQualityAssessor::IDepthQualityAssessor>::getInstance();
   assessors.registerAs<DepthQualityAssessor::DepthQualityAssessor>("DepthQualityAssessor");
-
-  auto &mpiEncoders = Common::Factory<IMpiEncoder>::getInstance();
-  mpiEncoders.registerAs<MpiEncoder>("MpiEncoder");
 
   auto &packers = Common::Factory<Packer::IPacker>::getInstance();
   packers.registerAs<Packer::Packer>("Packer");

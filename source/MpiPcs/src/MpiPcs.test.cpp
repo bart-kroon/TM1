@@ -46,27 +46,27 @@ TEST_CASE("MpiPcs writer and reader") {
     std::string expected_header(header_items.begin(), header_items.end());
 
     std::stringstream ss;
-    MpiPcs::FileHeader::write(ss);
+    FileHeader::write(ss);
     REQUIRE(ss.str() == expected_header);
 
-    REQUIRE_NOTHROW(MpiPcs::FileHeader::read(ss));
+    REQUIRE_NOTHROW(FileHeader::read(ss));
 
     std::stringstream ss2;
     ss2.str("wrong_header");
-    REQUIRE_THROWS(MpiPcs::FileHeader::read(ss2));
+    REQUIRE_THROWS(FileHeader::read(ss2));
   }
 
   SECTION("Writer 1") {
     Common::Vec2i sz{2, 2};
-    Common::MpiPcs::Frame mpiPcsFrame(sz);
+    Frame mpiPcsFrame(sz);
 
-    auto mpiLayer = Common::TextureTransparency8Frame{Common::TextureFrame{2, 2},
-                                                      Common::Transparency8Frame{2, 2}};
+    auto mpiLayer =
+        TextureTransparency8Frame{Common::TextureFrame{2, 2}, Common::Transparency8Frame{2, 2}};
 
     mpiLayer.transparency.getPlane(0)[0] = 255;
     mpiPcsFrame.appendLayer(18, mpiLayer);
     std::stringstream ss;
-    MpiPcs::Writer writer{};
+    Writer writer{};
 
     REQUIRE(writer.getPath() == "");
 
@@ -118,27 +118,27 @@ TEST_CASE("MpiPcs writer and reader") {
   SECTION("Writer 2") {
     // 3 different layers, 5 active pixels in total
     Common::Vec2i size{4, 2};
-    Common::MpiPcs::Frame mpiPcsFrame(size);
+    Frame mpiPcsFrame(size);
 
-    auto mpiLayer1 = Common::TextureTransparency8Frame{Common::TextureFrame{4, 2},
-                                                       Common::Transparency8Frame{4, 2}};
+    auto mpiLayer1 =
+        TextureTransparency8Frame{Common::TextureFrame{4, 2}, Common::Transparency8Frame{4, 2}};
     mpiLayer1.transparency.getPlane(0)[1] = 11;
     mpiLayer1.transparency.getPlane(0)[5] = 15;
     mpiPcsFrame.appendLayer(1, mpiLayer1);
 
-    auto mpiLayer2 = Common::TextureTransparency8Frame{Common::TextureFrame{4, 2},
-                                                       Common::Transparency8Frame{4, 2}};
+    auto mpiLayer2 =
+        TextureTransparency8Frame{Common::TextureFrame{4, 2}, Common::Transparency8Frame{4, 2}};
     mpiLayer2.transparency.getPlane(0)[1] = 21;
     mpiLayer2.transparency.getPlane(0)[2] = 22;
     mpiPcsFrame.appendLayer(2, mpiLayer2);
 
-    auto mpiLayer3 = Common::TextureTransparency8Frame{Common::TextureFrame{4, 2},
-                                                       Common::Transparency8Frame{4, 2}};
+    auto mpiLayer3 =
+        TextureTransparency8Frame{Common::TextureFrame{4, 2}, Common::Transparency8Frame{4, 2}};
     mpiLayer3.transparency.getPlane(0)[7] = 37;
     mpiPcsFrame.appendLayer(57, mpiLayer3);
 
     std::stringstream ss;
-    MpiPcs::Writer writer{};
+    Writer writer{};
 
     writer.append(ss, mpiPcsFrame);
 
@@ -170,15 +170,15 @@ TEST_CASE("MpiPcs writer and reader") {
 
   SECTION("Reader") {
     Common::Vec2i size{2, 2};
-    Common::MpiPcs::Frame mpiPcsFrame(size);
+    Frame mpiPcsFrame(size);
 
-    auto mpiLayer = Common::TextureTransparency8Frame{Common::TextureFrame{2, 2},
-                                                      Common::Transparency8Frame{2, 2}};
+    auto mpiLayer =
+        TextureTransparency8Frame{Common::TextureFrame{2, 2}, Common::Transparency8Frame{2, 2}};
 
     mpiLayer.transparency.getPlane(0)[0] = 255;
     mpiPcsFrame.appendLayer(18, mpiLayer);
     std::stringstream ss;
-    MpiPcs::Writer writer{};
+    Writer writer{};
 
     // writing a frame
     writer.append(ss, mpiPcsFrame);
@@ -204,11 +204,11 @@ TEST_CASE("MpiPcs writer and reader") {
     sequenceConfig.cameras.push_back(cameraConfig);
     sequenceConfig.sourceCameraNames.push_back(viewParams.name);
 
-    MpiPcs::Reader reader{config, IO::Placeholders{}, sequenceConfig, false};
+    Reader reader{config, IO::Placeholders{}, sequenceConfig, false};
 
     REQUIRE(reader.getPath() == "C:/fakeDir/fake.pcs");
 
-    Common::MpiPcs::Frame rd_mpiPcsFrame{reader.read(ss, 0, Common::Vec2i({2, 2}))};
+    Frame rd_mpiPcsFrame{reader.read(ss, 0, Common::Vec2i({2, 2}))};
 
     REQUIRE(rd_mpiPcsFrame.getPixelList().size() == mpiPcsFrame.getPixelList().size());
     REQUIRE(rd_mpiPcsFrame.getPixelList() == mpiPcsFrame.getPixelList());

@@ -35,6 +35,7 @@
 #define TMIV_IO_MPIPCS_H
 
 #include <TMIV/IO/IO.h>
+#include <TMIV/MpiPcs/Frame.h>
 
 namespace TMIV::MpiPcs {
 class FileHeader {
@@ -52,9 +53,8 @@ public:
   Reader(const Common::Json &config, const IO::Placeholders &placeholders,
          const MivBitstream::SequenceConfig &sc, bool buildIndexOn = true);
   [[nodiscard]] auto getPath() const -> const std::filesystem::path & { return m_path; }
-  auto read(std::istream &stream, std::streampos posId, Common::Vec2i size)
-      -> Common::MpiPcs::Frame;
-  auto read(int32_t frameId) -> Common::MpiPcs::Frame;
+  auto read(std::istream &stream, std::streampos posId, Common::Vec2i size) -> Frame;
+  auto read(int32_t frameId) -> Frame;
 
 private:
   std::filesystem::path m_path{};
@@ -70,8 +70,8 @@ public:
   Writer(const Common::Json &config, const IO::Placeholders &placeholders,
          const MivBitstream::SequenceConfig &sc);
   [[nodiscard]] auto getPath() const -> const std::filesystem::path & { return m_path; }
-  void append(std::ostream &stream, const Common::MpiPcs::Frame &mpiPcsFrame);
-  void append(const Common::MpiPcs::Frame &mpiPcsFrame);
+  void append(std::ostream &stream, const Frame &mpiPcsFrame);
+  void append(const Frame &mpiPcsFrame);
 
 private:
   template <typename T> void writeToStream(std::ostream &stream, std::vector<T> &items) const;

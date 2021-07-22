@@ -95,36 +95,34 @@ Reader::Reader(const Common::Json &config, const IO::Placeholders &placeholders,
   }
 }
 
-auto Reader::read(std::istream &stream, std::streampos posId, Common::Vec2i size)
-    -> Common::MpiPcs::Frame {
+auto Reader::read(std::istream &stream, std::streampos posId, Common::Vec2i size) -> Frame {
   stream.seekg(posId);
   if (!stream.good()) {
     throw std::runtime_error(fmt::format("Failed to seek stream at position {}", posId));
   }
 
-  std::vector<Common::MpiPcs::Pixel> pixelList(size.x() * size.y());
+  std::vector<Pixel> pixelList(size.x() * size.y());
 
-  const auto countList = readFromStream<Common::MpiPcs::Attribute::Count>(stream, pixelList.size());
+  const auto countList = readFromStream<Attribute::Count>(stream, pixelList.size());
 
   const auto numberOfAttributes = std::accumulate(countList.begin(), countList.end(), 0ULL);
 
-  const auto bufferList =
-      readFromStream<Common::MpiPcs::Attribute::Buffer>(stream, numberOfAttributes);
+  const auto bufferList = readFromStream<Attribute::Buffer>(stream, numberOfAttributes);
 
   for (auto k = 0ULL, l = 0ULL; k < pixelList.size(); ++k) {
     auto &pixel = pixelList[k];
 
     pixel.reserve(countList[k]);
 
-    for (Common::MpiPcs::Attribute::Count i = 0; i < countList[k]; ++i, ++l) {
-      pixel.push_back(Common::MpiPcs::Attribute::fromBuffer(bufferList[l]));
+    for (Attribute::Count i = 0; i < countList[k]; ++i, ++l) {
+      pixel.push_back(Attribute::fromBuffer(bufferList[l]));
     }
   }
 
-  return Common::MpiPcs::Frame{m_size, std::move(pixelList)};
+  return Frame{m_size, std::move(pixelList)};
 }
 
-auto Reader::read(int32_t frameId) -> Common::MpiPcs::Frame {
+auto Reader::read(int32_t frameId) -> Frame {
   std::ifstream stream{m_path, std::ifstream::binary};
   if (!stream.good()) {
     throw std::runtime_error(fmt::format("Failed to open {} for reading", m_path));
@@ -156,7 +154,7 @@ void Reader::buildIndex() {
 
   FileHeader::read(stream);
 
-  std::vector<Common::MpiPcs::Attribute::Count> countList(m_size.x() * m_size.y());
+  std::vector<Attribute::Count> countList(m_size.x() * m_size.y());
 
   auto pos = stream.tellg();
 
@@ -168,8 +166,7 @@ void Reader::buildIndex() {
       throw std::runtime_error(fmt::format("Failed to seekg from {}", m_path));
     }
 
-    std::string attributeCountBuffer(countList.size() * sizeof(Common::MpiPcs::Attribute::Count),
-                                     '0');
+    std::string attributeCountBuffer(countList.size() * sizeof(Attribute::Count), '0');
 
     stream.read(attributeCountBuffer.data(),
                 Common::downCast<std::streamsize>(attributeCountBuffer.size()));
@@ -181,9 +178,8 @@ void Reader::buildIndex() {
 
     const auto nbAttribute = std::accumulate(countList.begin(), countList.end(), 0ULL);
 
-    pos += Common::downCast<std::streamoff>(countList.size() *
-                                                sizeof(Common::MpiPcs::Attribute::Count) +
-                                            nbAttribute * Common::MpiPcs::Attribute::attributeSize);
+    pos += Common::downCast<std::streamoff>(countList.size() * sizeof(Attribute::Count) +
+                                            nbAttribute * Attribute::attributeSize);
   }
 }
 
@@ -211,12 +207,12 @@ Writer::Writer(const Common::Json &config, const IO::Placeholders &placeholders,
   FileHeader::write(stream);
 }
 
-void Writer::append(std::ostream &stream, const Common::MpiPcs::Frame &mpiPcsFrame) {
-  std::vector<Common::MpiPcs::Attribute::Count> counts;
-  std::vector<Common::MpiPcs::Attribute::Buffer> buffers;
+void Writer::append(std::ostream &stream, const Frame &mpiPcsFrame) {
+  std::vector<Attribute::Count> counts;
+  std::vector<Attribute::Buffer> buffers;
 
   for (const auto &pixel : mpiPcsFrame.getPixelList()) {
-    counts.emplace_back(static_cast<Common::MpiPcs::Attribute::Count>(pixel.size()));
+    counts.emplace_back(static_cast<Attribute::Count>(pixel.size()));
 
     for (const auto &attribute : pixel) {
       buffers.emplace_back(attribute.toBuffer());
@@ -238,7 +234,7 @@ void Writer::writeToStream(std::ostream &stream, std::vector<T> &items) const {
   }
 }
 
-void Writer::append(const Common::MpiPcs::Frame &mpiPcsFrame) {
+void Writer::append(const Frame &mpiPcsFrame) {
   std::ofstream stream{m_path, std::ofstream::binary | std::ofstream::app};
   if (!stream.good()) {
     throw std::runtime_error(fmt::format("Failed to open {} for appending", m_path));

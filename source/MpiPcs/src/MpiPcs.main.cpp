@@ -109,11 +109,11 @@ private:
 
     fmt::print("MpiPcs output file: {}\n", mpiPcsWriter.getPath());
 
-    using geometryValue = Common::MpiPcs::Attribute::GeometryValue;
+    using geometryValue = MpiPcs::Attribute::GeometryValue;
     const auto layerCount = Common::verifyDownCast<geometryValue>(viewParams.nbMpiLayers);
 
     for (int frameId = 0; frameId < m_numberOfInputFrames; ++frameId) {
-      Common::MpiPcs::Frame mpiPcsFrame{viewSize};
+      MpiPcs::Frame mpiPcsFrame{viewSize};
 
       for (geometryValue layerId = 0; layerId < layerCount; ++layerId) {
         auto textureLayer = loadMpiTextureMpiLayer(json(), placeholders(), m_inputSequenceConfig,
@@ -175,7 +175,7 @@ private:
     fmt::print("Texture output file {}\n", texturePath);
     fmt::print("Transparency output file {}\n", transparencyPath);
 
-    using geometryValue = Common::MpiPcs::Attribute::GeometryValue;
+    using geometryValue = MpiPcs::Attribute::GeometryValue;
     const auto layerCount = Common::verifyDownCast<geometryValue>(viewParams.nbMpiLayers);
 
     for (int frameId = 0; frameId < m_numberOfInputFrames; ++frameId) {

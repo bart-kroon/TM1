@@ -15,7 +15,6 @@ create_tmiv_library(
         "src/GeometryQuantizer.cpp"
         "src/GeometryDownscaler.cpp"
         "src/MivEncoder.cpp"
-        "src/MpiEncoder.cpp"
         "src/FramePacker.cpp"
     PUBLIC
         TMIV::ViewOptimizerLib
@@ -40,6 +39,7 @@ create_tmiv_executable(
     TARGET
         MpiEncoder
     SOURCES
+        "src/MpiEncoder.cpp"
         "src/MpiEncoder.main.cpp"
         "src/registerComponents.cpp"
     PRIVATE

@@ -31,11 +31,10 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/Encoder/IMpiEncoder.h>
-
 #include <TMIV/Common/Application.h>
 #include <TMIV/Common/Factory.h>
 #include <TMIV/Encoder/MivEncoder.h>
+#include <TMIV/Encoder/MpiEncoder.h>
 #include <TMIV/MpiPcs/MpiPcs.h>
 
 #include <fstream>
@@ -50,7 +49,7 @@ void registerComponents();
 
 class Application : public Common::Application {
 private:
-  std::unique_ptr<IMpiEncoder> m_encoder;
+  MpiEncoder m_encoder;
   const std::string &m_contentId;
   int32_t m_numberOfInputFrames;
   int32_t m_intraPeriod;
@@ -74,7 +73,7 @@ public:
                             Common::Application::Options{
                                 {"-s", "Content ID (e.g. B for Museum)", false},
                                 {"-n", "Number of input frames (e.g. 97)", false}}}
-      , m_encoder{create<IMpiEncoder>("Encoder")}
+      , m_encoder{json(), json().require("MpiEncoder")}
       , m_contentId{optionValues("-s"sv).front()}
       , m_numberOfInputFrames{std::stoi(optionValues("-n"sv).front())}
       , m_intraPeriod{json().require("intraPeriod").as<int32_t>()}
@@ -103,10 +102,10 @@ public:
                                "encoder. Please change inputCameraNames field in json !!!");
     }
 
-    m_encoder->setMpiPcsFrameReader(
-        [&](int frameIndex) -> Common::MpiPcs::Frame { return m_mpiPcsReader.read(frameIndex); });
+    m_encoder.setMpiPcsFrameReader(
+        [&](int frameIndex) -> MpiPcs::Frame { return m_mpiPcsReader.read(frameIndex); });
 
-    m_encoder->prepareSequence(m_inputSequenceConfig);
+    m_encoder.prepareSequence(m_inputSequenceConfig);
 
     for (int i = 0; i < m_numberOfInputFrames; i += m_intraPeriod) {
       int lastFrame = std::min(m_numberOfInputFrames, i + m_intraPeriod);
@@ -119,18 +118,18 @@ public:
 private:
   void encodeAccessUnit(int firstFrame, int lastFrame) {
     std::cout << "Access unit: [" << firstFrame << ", " << lastFrame << ")\n";
-    m_mivEncoder->writeAccessUnit(m_encoder->processAccessUnit(firstFrame, lastFrame));
+    m_mivEncoder->writeAccessUnit(m_encoder.processAccessUnit(firstFrame, lastFrame));
     popAtlases(firstFrame, lastFrame);
   }
 
   void popAtlases(int firstFrame, int lastFrame) {
     for (int i = firstFrame; i < lastFrame; ++i) {
-      IO::saveAtlasFrame(json(), placeholders(), i, m_encoder->popAtlas());
+      IO::saveAtlasFrame(json(), placeholders(), i, m_encoder.popAtlas());
     }
   }
 
   void reportSummary(std::streampos bytesWritten) const {
-    fmt::print("Maximum luma samples per frame is {}\n", m_encoder->maxLumaSamplesPerFrame());
+    fmt::print("Maximum luma samples per frame is {}\n", m_encoder.maxLumaSamplesPerFrame());
     fmt::print("Total size is {} B ({} kb)\n", bytesWritten,
                8e-3 * static_cast<double>(bytesWritten));
     fmt::print("Frame count is {}\n", m_numberOfInputFrames);

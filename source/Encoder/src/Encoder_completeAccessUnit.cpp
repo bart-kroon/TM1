@@ -37,10 +37,6 @@
 
 namespace TMIV::Encoder {
 namespace {
-constexpr auto textureBitDepth = Common::TextureFrame::getBitDepth();
-constexpr auto textureMaxVal = (1 << textureBitDepth) - 1;
-constexpr auto textureMedVal = 1 << (textureBitDepth - 1);
-
 struct PatchStats {
   PatchStats() = default;
   PatchStats(int64_t _minVal) : minVal{_minVal} {}
@@ -307,6 +303,7 @@ void Encoder::calculateAttributeOffset(
           }
           const auto &pp = m_params.patchParamsList[patchIndex];
           const auto offset = pp.atlasPatchAttributeOffset();
+          const auto textureMedVal = Common::medLevel<uint16_t>(atlas.texture.getBitDepth());
           atlas.texture.getPlane(0)(y, x) -= ((offset.x() << bitShift) - textureMedVal);
           if (y % 2 == 0 && x % 2 == 0) {
             atlas.texture.getPlane(1)(y / 2, x / 2) -= ((offset.y() << bitShift) - textureMedVal);
@@ -379,7 +376,9 @@ auto Encoder::calculateBtpm() const -> std::vector<std::vector<std::vector<int>>
 
 auto Encoder::calculatePatchAttrOffsetValuesFullGOP(
     std::vector<std::array<std::array<int64_t, 4>, 3>> &patchAttrOffsetValuesFullGOP) -> int {
-  const auto bitShift = textureBitDepth - m_config.attributeOffsetBitCount;
+  const auto bitShift = m_config.textureBitDepth - m_config.attributeOffsetBitCount;
+  const auto textureMedVal = Common::medLevel<uint16_t>(m_config.textureBitDepth);
+  const auto textureMaxVal = Common::maxLevel<uint16_t>(m_config.textureBitDepth);
 
   for (size_t p = 0; p != m_params.patchParamsList.size(); ++p) {
     for (int c = 0; c < 3; c++) {
@@ -418,6 +417,7 @@ void Encoder::constructVideoFrames() {
   int frameId = 0;
 
   auto patchAttrOffsetValuesFullGOP = std::vector<std::array<std::array<int64_t, 4>, 3>>{};
+  const auto textureMaxVal = Common::maxLevel<uint16_t>(m_config.textureBitDepth);
 
   if (m_config.attributeOffsetFlag) {
     for (size_t p = 0; p < m_params.patchParamsList.size(); ++p) {
@@ -536,6 +536,7 @@ auto Encoder::writePatchInAtlas(const MivBitstream::PatchParams &patchParams,
   const auto &outViewParams = m_params.viewParamsList[patchParams.atlasPatchProjectionId()];
 
   std::array<PatchStats, 3> patchStats{};
+  const auto textureMaxVal = Common::maxLevel<uint16_t>(m_config.textureBitDepth);
   std::fill(patchStats.begin(), patchStats.end(), PatchStats{textureMaxVal});
 
   PRECONDITION(0 <= posU && posU + sizeU <= inViewParams.ci.ci_projection_plane_width_minus1() + 1);
@@ -634,6 +635,8 @@ void Encoder::adaptAtlas(const MivBitstream::PatchParams &patchParams,
     atlas.occupancy.getPlane(0)(yOcc, xOcc) = unoccupiedLevel;
   }
   if (m_config.haveTexture) {
+    const auto textureMedVal = Common::medLevel<uint16_t>(m_config.textureBitDepth);
+
     atlas.texture.getPlane(0)(pAtlas.y(), pAtlas.x()) = textureMedVal;
     if ((pView.x() % 2) == 0 && (pView.y() % 2) == 0) {
       atlas.texture.getPlane(1)(pAtlas.y() / 2, pAtlas.x() / 2) = textureMedVal;

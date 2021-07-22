@@ -46,7 +46,7 @@ SubBlockCuller::SubBlockCuller(const Common::Json & /*rootNode*/,
 
 auto choosePatch(const MivBitstream::PatchParams &patch,
                  const MivBitstream::ViewParamsList &cameras,
-                 const MivBitstream::ViewParams &target) -> bool {
+                 const MivBitstream::ViewParams &target, unsigned depthBitDepth) -> bool {
   const auto &camera = cameras[patch.atlasPatchProjectionId()];
   if (camera.isInpainted) {
     return true;
@@ -64,7 +64,6 @@ auto choosePatch(const MivBitstream::PatchParams &patch,
   uv[3] = uv[0] + Common::Vec2f{w, h};
 
   // Using Camera depth
-  constexpr auto depthBitDepth = Common::Depth10Frame::getBitDepth();
   const auto depthTransform = MivBitstream::DepthTransform{camera.dq, patch, depthBitDepth};
   const auto patch_dep_near = depthTransform.expandDepth(Common::maxLevel(depthBitDepth));
   const auto patch_dep_far = depthTransform.expandDepth(0);
@@ -184,12 +183,13 @@ auto SubBlockCuller::filterBlockToPatchMap(const MivBitstream::AccessUnit &frame
          patch.atlasPatch3dSizeV() == view.ci.ci_projection_plane_height_minus1() + 1) &&
         (patch.atlasPatchOrientationIndex() == MivBitstream::FlexiblePatchOrientation::FPO_NULL)) {
       for (const auto &block : divideInBlocks(patch)) {
-        if (!choosePatch(block, frame.viewParamsList, viewportParams)) {
+        if (!choosePatch(block, frame.viewParamsList, viewportParams,
+                         atlas.geoFrame.getBitDepth())) {
           inplaceErasePatch(result, block, static_cast<uint16_t>(patchIdx), atlas.asps);
         }
       }
     } else {
-      if (!choosePatch(patch, frame.viewParamsList, viewportParams)) {
+      if (!choosePatch(patch, frame.viewParamsList, viewportParams, atlas.geoFrame.getBitDepth())) {
         inplaceErasePatch(result, patch, static_cast<uint16_t>(patchIdx), atlas.asps);
       }
     }

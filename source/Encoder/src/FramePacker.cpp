@@ -53,7 +53,8 @@ void FramePacker::combinePlanes(size_t atlasIdx, Common::TextureFrame &atlasText
                                  sizeof(planeTexture[0])) /
                                 4);
       auto bufferPadding = std::vector<char>(m_depthPaddingBytes);
-      Common::padChroma<Common::YUV420P10>(bufferPadding, m_depthPaddingBytes);
+      Common::padChroma<Common::YUV420P10>(bufferPadding, m_depthPaddingBytes,
+                                           atlasTexture.getBitDepth());
       std::memcpy(&bufferTextureDepth[planeTextureSize], bufferPadding.data(),
                   bufferPadding.size());
     }

@@ -60,10 +60,6 @@ namespace detail {
 template <typename FORMAT> struct PixelFormatHelper {};
 } // namespace detail
 
-template <typename FORMAT> constexpr auto neutralColor() {
-  return detail::PixelFormatHelper<FORMAT>::neutralColor();
-}
-
 template <typename FORMAT> class Frame {
 public:
   using base_type = typename detail::PixelFormatHelper<FORMAT>::base_type;
@@ -71,7 +67,7 @@ public:
 
 private:
   static constexpr auto numberOfPlanes = detail::PixelFormatHelper<FORMAT>::numberOfPlanes;
-  static constexpr auto bitDepth = detail::PixelFormatHelper<FORMAT>::bitDepth;
+  unsigned m_bitDepth{detail::PixelFormatHelper<FORMAT>::defaultBitDepth};
   int32_t m_width{};
   int32_t m_height{};
   std::array<plane_type, numberOfPlanes> m_planes{};
@@ -79,10 +75,12 @@ private:
 public:
   Frame() = default;
   explicit Frame(int32_t w, int32_t h);
+  explicit Frame(int32_t w, int32_t h, unsigned bitDepth);
 
   [[nodiscard]] auto empty() const noexcept;
 
   void resize(int32_t w, int32_t h);
+  void recreate(int32_t w, int32_t h, unsigned bitDepth);
 
   [[nodiscard]] auto getPlanes() -> auto &;
   [[nodiscard]] auto getPlanes() const -> const auto &;
@@ -94,7 +92,7 @@ public:
   [[nodiscard]] auto getMemorySize() const;
   [[nodiscard]] auto getDiskSize() const;
   [[nodiscard]] static constexpr auto getNumberOfPlanes();
-  [[nodiscard]] static constexpr auto getBitDepth();
+  [[nodiscard]] auto getBitDepth() const noexcept;
 
   void read(std::istream &stream);
   void dump(std::ostream &stream) const;
@@ -117,10 +115,12 @@ public:
   template <typename OTHER_FORMAT, typename = std::enable_if<std::is_same_v<FORMAT, YUV444P10>>>
   void fillInvalidWithNeutral(const Frame<OTHER_FORMAT> &depth);
 
-  [[nodiscard]] static constexpr auto neutralColor();
+  [[nodiscard]] auto neutralColor() const noexcept;
 };
 
-template <typename FORMAT> void padChroma(std::ostream &stream, size_t bytes);
+template <typename FORMAT> void padChroma(std::ostream &stream, size_t bytes, unsigned bitDepth);
+template <typename FORMAT>
+void padChroma(std::vector<char> &buffer, size_t bytes, unsigned bitDepth);
 
 auto yuv420p(const Frame<YUV444P8> &frame) -> Frame<YUV420P8>;
 auto yuv420p(const Frame<YUV444P10> &frame) -> Frame<YUV420P10>;

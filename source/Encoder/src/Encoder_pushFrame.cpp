@@ -36,8 +36,6 @@
 #include <iostream>
 
 namespace TMIV::Encoder {
-constexpr auto neutralChroma = Common::TextureFrame::neutralColor();
-
 void Encoder::pushFrame(Common::MVD16Frame sourceViews) {
   if (m_params.maxEntityId == 0) {
     pushSingleEntityFrame(std::move(sourceViews));
@@ -189,7 +187,7 @@ void Encoder::mergeMasks(Common::MaskList &mergedMasks, Common::MaskList masks) 
 void Encoder::updateMasks(const Common::MVD16Frame &views, Common::MaskList &masks) {
   for (size_t viewIdx = 0; viewIdx < views.size(); viewIdx++) {
     for (size_t i = 0; i < masks[viewIdx].getPlane(0).size(); i++) {
-      if ((views[viewIdx].texture.getPlane(0)[i] == neutralChroma) &&
+      if ((views[viewIdx].texture.getPlane(0)[i] == views[viewIdx].texture.neutralColor()) &&
           (views[viewIdx].depth.getPlane(0)[i] == uint16_t{})) {
         masks[viewIdx].getPlane(0)[i] = uint8_t{};
       }
@@ -228,12 +226,14 @@ auto Encoder::entitySeparator(const Common::MVD16Frame &transportViews,
   auto entityMapsYUV = yuvSampler(entityMaps);
 
   for (size_t viewIdx = 0; viewIdx < transportViews.size(); viewIdx++) {
+    const auto neutralColor = entityViews[viewIdx].texture.neutralColor();
+
     for (int planeId = 0; planeId < Common::TextureFrame::getNumberOfPlanes(); ++planeId) {
       std::transform(transportViews[viewIdx].texture.getPlane(planeId).begin(),
                      transportViews[viewIdx].texture.getPlane(planeId).end(),
                      entityMapsYUV[viewIdx].getPlane(planeId).begin(),
                      entityViews[viewIdx].texture.getPlane(planeId).begin(),
-                     [=](auto i, auto j) { return (j == entityId) ? i : neutralChroma; });
+                     [=](auto i, auto j) { return (j == entityId) ? i : neutralColor; });
     }
     std::transform(transportViews[viewIdx].depth.getPlane(0).begin(),
                    transportViews[viewIdx].depth.getPlane(0).end(),

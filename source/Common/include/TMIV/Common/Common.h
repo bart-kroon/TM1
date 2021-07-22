@@ -61,11 +61,23 @@ using SampleValue = uint_fast32_t;
 // The maximum level for an unsigned integer of the specified number of bits
 //
 // The default return type is SampleValue. Override to avoid static_cast's at the call site.
-template <typename UnsignedResult = SampleValue>
-constexpr auto maxLevel(unsigned bits) noexcept -> UnsignedResult {
-  static_assert(std::is_unsigned_v<UnsignedResult>);
-  ASSERT(bits <= std::numeric_limits<UnsignedResult>::digits);
-  return static_cast<UnsignedResult>((UnsignedResult{1} << bits) - 1U);
+template <typename Integer = SampleValue>
+constexpr auto maxLevel(unsigned bits) noexcept -> Integer {
+  static_assert(std::is_integral_v<Integer>);
+  ASSERT(bits <= std::numeric_limits<Integer>::digits);
+  constexpr auto one = std::make_unsigned_t<Integer>{1};
+  return static_cast<Integer>((one << bits) - one);
+}
+
+// The medium level for an unsigned integer of the specified number of bits
+//
+// The default return type is SampleValue. Override to avoid static_cast's at the call site.
+template <typename Integer = SampleValue>
+constexpr auto medLevel(unsigned bits) noexcept -> Integer {
+  static_assert(std::is_integral_v<Integer>);
+  ASSERT(bits <= std::numeric_limits<Integer>::digits);
+  constexpr auto one = std::make_unsigned_t<Integer>{1};
+  return static_cast<Integer>(one << (bits - 1U));
 }
 
 // Expand an integral value to floating-point using a linear transfer function

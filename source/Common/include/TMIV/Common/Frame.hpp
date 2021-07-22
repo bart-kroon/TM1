@@ -43,103 +43,98 @@ namespace TMIV::Common {
 namespace detail {
 template <> struct PixelFormatHelper<YUV400P8> {
   static constexpr auto numberOfPlanes = 1;
-  static constexpr auto bitDepth = 8U;
+  static constexpr auto defaultBitDepth = 8U;
   using base_type = uint8_t;
   static constexpr auto getMemorySize(int W, int H) -> int { return (W * H); }
   static constexpr auto getDiskSize(int W, int H) -> int { return (W * H) * 3 / 2; }
   static constexpr auto getPlaneWidth(int /*unused*/, int W) -> int { return W; }
   static constexpr auto getPlaneHeight(int /*unused*/, int H) -> int { return H; }
-  static constexpr auto neutralColor() -> uint8_t { return 0x80; }
 };
 
 template <> struct PixelFormatHelper<YUV400P10> {
   static constexpr auto numberOfPlanes = 1;
-  static constexpr auto bitDepth = 10U;
+  static constexpr auto defaultBitDepth = 10U;
   using base_type = uint16_t;
   static constexpr auto getMemorySize(int W, int H) -> int { return 2 * (W * H); }
   static constexpr auto getDiskSize(int W, int H) -> int { return 3 * (W * H); }
   static constexpr auto getPlaneWidth(int /*unused*/, int W) -> int { return W; }
   static constexpr auto getPlaneHeight(int /*unused*/, int H) -> int { return H; }
-  static constexpr auto neutralColor() -> uint16_t { return 0x200; }
 };
 
 template <> struct PixelFormatHelper<YUV400P16> {
   static constexpr auto numberOfPlanes = 1;
-  static constexpr auto bitDepth = 16U;
+  static constexpr auto defaultBitDepth = 16U;
   using base_type = uint16_t;
   static constexpr auto getMemorySize(int W, int H) -> int { return 2 * (W * H); }
   static constexpr auto getDiskSize(int W, int H) -> int { return 3 * (W * H); }
   static constexpr auto getPlaneWidth(int /*unused*/, int W) -> int { return W; }
   static constexpr auto getPlaneHeight(int /*unused*/, int H) -> int { return H; }
-  static constexpr auto neutralColor() -> uint16_t { return 0x8000; }
 };
 
 template <> struct PixelFormatHelper<YUV420P8> {
   static constexpr auto numberOfPlanes = 3;
-  static constexpr auto bitDepth = 8U;
+  static constexpr auto defaultBitDepth = 8U;
   using base_type = uint8_t;
   static constexpr auto getMemorySize(int W, int H) -> int { return 3 * (W * H) / 2; }
   static constexpr auto getDiskSize(int W, int H) -> int { return 3 * (W * H) / 2; }
   static constexpr auto getPlaneWidth(int id, int W) -> int { return (id == 0) ? W : (W / 2); }
   static constexpr auto getPlaneHeight(int id, int H) -> int { return (id == 0) ? H : (H / 2); }
-  static constexpr auto neutralColor() -> uint8_t { return 0x80; }
 };
 
 template <> struct PixelFormatHelper<YUV420P10> {
   static constexpr auto numberOfPlanes = 3;
-  static constexpr auto bitDepth = 10U;
+  static constexpr auto defaultBitDepth = 10U;
   using base_type = uint16_t;
   static constexpr auto getMemorySize(int W, int H) -> int { return 3 * (W * H); }
   static constexpr auto getDiskSize(int W, int H) -> int { return 3 * (W * H); }
   static constexpr auto getPlaneWidth(int id, int W) -> int { return (id == 0) ? W : (W / 2); }
   static constexpr auto getPlaneHeight(int id, int H) -> int { return (id == 0) ? H : (H / 2); }
-  static constexpr auto neutralColor() -> uint16_t { return 0x200; }
 };
 
 template <> struct PixelFormatHelper<YUV420P16> {
   static constexpr auto numberOfPlanes = 3;
-  static constexpr auto bitDepth = 16U;
+  static constexpr auto defaultBitDepth = 16U;
   using base_type = uint16_t;
   static constexpr auto getMemorySize(int W, int H) -> int { return 3 * (W * H); }
   static constexpr auto getDiskSize(int W, int H) -> int { return 3 * (W * H); }
   static constexpr auto getPlaneWidth(int id, int W) -> int { return (id == 0) ? W : (W / 2); }
   static constexpr auto getPlaneHeight(int id, int H) -> int { return (id == 0) ? H : (H / 2); }
-  static constexpr auto neutralColor() -> uint16_t { return 0x8000; }
 };
 
 template <> struct PixelFormatHelper<YUV444P8> {
   static constexpr auto numberOfPlanes = 3;
-  static constexpr auto bitDepth = 8U;
+  static constexpr auto defaultBitDepth = 8U;
   using base_type = uint8_t;
   static constexpr auto getMemorySize(int W, int H) -> int { return 3 * (W * H); }
   static constexpr auto getDiskSize(int W, int H) -> int { return 3 * (W * H); }
   static constexpr auto getPlaneWidth(int /*id*/, int W) -> int { return W; }
   static constexpr auto getPlaneHeight(int /*id*/, int H) -> int { return H; }
-  static constexpr auto neutralColor() -> uint8_t { return 0x80; }
 };
 
 template <> struct PixelFormatHelper<YUV444P10> {
   static constexpr auto numberOfPlanes = 3;
-  static constexpr auto bitDepth = 10U;
+  static constexpr auto defaultBitDepth = 10U;
   using base_type = uint16_t;
   static constexpr auto getMemorySize(int W, int H) -> int { return 6 * (W * H); }
   static constexpr auto getDiskSize(int W, int H) -> int { return 6 * (W * H); }
   static constexpr auto getPlaneWidth(int /*id*/, int W) -> int { return W; }
   static constexpr auto getPlaneHeight(int /*id*/, int H) -> int { return H; }
-  static constexpr auto neutralColor() -> uint16_t { return 0x200; }
 };
 
 template <> struct PixelFormatHelper<YUV444P16> {
   static constexpr auto numberOfPlanes = 3;
-  static constexpr auto bitDepth = 16U;
+  static constexpr auto defaultBitDepth = 16U;
   using base_type = uint16_t;
   static constexpr auto getMemorySize(int W, int H) -> int { return 6 * (W * H); }
   static constexpr auto getDiskSize(int W, int H) -> int { return 6 * (W * H); }
   static constexpr auto getPlaneWidth(int /*id*/, int W) -> int { return W; }
   static constexpr auto getPlaneHeight(int /*id*/, int H) -> int { return H; }
-  static constexpr auto neutralColor() -> uint16_t { return 0x8000; }
 };
 } // namespace detail
+
+template <typename FORMAT> Frame<FORMAT>::Frame(int32_t w, int32_t h, unsigned bitDepth) {
+  recreate(w, h, bitDepth);
+}
 
 template <typename FORMAT> Frame<FORMAT>::Frame(int32_t w, int32_t h) { resize(w, h); }
 
@@ -156,6 +151,13 @@ template <typename FORMAT> void Frame<FORMAT>::resize(int32_t w, int32_t h) {
         .resize(detail::PixelFormatHelper<FORMAT>::getPlaneHeight(planeId, h),
                 detail::PixelFormatHelper<FORMAT>::getPlaneWidth(planeId, w));
   }
+}
+
+template <typename FORMAT> void Frame<FORMAT>::recreate(int32_t w, int32_t h, unsigned bitDepth) {
+  using base_type = typename detail::PixelFormatHelper<FORMAT>::base_type;
+  PRECONDITION(1 <= bitDepth && bitDepth <= std::numeric_limits<base_type>::digits);
+  resize(w, h);
+  m_bitDepth = bitDepth;
 }
 
 template <typename FORMAT> auto Frame<FORMAT>::getPlanes() -> auto & { return m_planes; }
@@ -190,7 +192,7 @@ template <typename FORMAT> constexpr auto Frame<FORMAT>::getNumberOfPlanes() {
   return numberOfPlanes;
 }
 
-template <typename FORMAT> constexpr auto Frame<FORMAT>::getBitDepth() { return bitDepth; }
+template <typename FORMAT> auto Frame<FORMAT>::getBitDepth() const noexcept { return m_bitDepth; }
 
 template <typename FORMAT> void Frame<FORMAT>::read(std::istream &stream) {
   for (auto &plane : m_planes) {
@@ -251,8 +253,8 @@ void Frame<FORMAT>::fillInvalidWithNeutral(const Frame<OTHER_FORMAT> &depth) {
   }
 }
 
-template <typename FORMAT> constexpr auto Frame<FORMAT>::neutralColor() {
-  return detail::PixelFormatHelper<FORMAT>::neutralColor();
+template <typename FORMAT> auto Frame<FORMAT>::neutralColor() const noexcept {
+  return Common::medLevel<base_type>(getBitDepth());
 }
 
 template <typename FORMAT> auto AnyFrame::as() const -> Frame<FORMAT> {
@@ -293,19 +295,18 @@ template <typename FORMAT> auto AnyFrame::as() const -> Frame<FORMAT> {
   return outputFrame;
 }
 
-template <typename FORMAT> void padChroma(std::ostream &stream, size_t bytes) {
-  static constexpr auto fillValue = Common::neutralColor<FORMAT>();
-  if (0 < bytes) {
-    const auto padding = std::vector(bytes / sizeof(fillValue), fillValue);
-    auto buffer = std::vector<char>(bytes);
-    std::memcpy(buffer.data(), padding.data(), buffer.size());
-    stream.write(buffer.data(), assertDownCast<std::streamsize>(buffer.size()));
-  }
+template <typename FORMAT> void padChroma(std::ostream &stream, size_t bytes, unsigned bitDepth) {
+  auto buffer = std::vector<char>(bytes);
+  padChroma<FORMAT>(buffer, bytes, bitDepth);
+  stream.write(buffer.data(), assertDownCast<std::streamsize>(bytes));
 }
 
-template <typename FORMAT> void padChroma(std::vector<char> &buf, size_t bytes) {
-  static constexpr auto fillValue = Common::neutralColor<FORMAT>();
+template <typename FORMAT> void padChroma(std::vector<char> &buf, size_t bytes, unsigned bitDepth) {
+  using base_type = typename detail::PixelFormatHelper<FORMAT>::base_type;
+  const auto fillValue = Common::medLevel<base_type>(bitDepth);
+
   if (0 < bytes) {
+    PRECONDITION(bytes % sizeof(fillValue) == 0);
     const auto padding = std::vector(bytes / sizeof(fillValue), fillValue);
     std::memcpy(buf.data(), padding.data(), bytes);
   }

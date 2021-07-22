@@ -126,11 +126,9 @@ auto dilateTextureAtlas(Common::Texture444Frame &textureAtlas,
 
 auto reshapeTransparencyAtlas(Common::Transparency8Frame &transparencyAtlas,
                               unsigned transparencyDynamic) -> Common::Transparency10Frame {
-  const auto maxInputValue =
-      static_cast<float>((uint64_t{1} << Common::Transparency8Frame::getBitDepth()) - 1);
+  const auto maxInputValue = static_cast<float>(Common::maxLevel(transparencyAtlas.getBitDepth()));
   const auto maxOutputValue = static_cast<float>((uint64_t{1} << transparencyDynamic) - 1);
-  const auto maxStorageValue =
-      static_cast<float>((uint64_t{1} << Common::Transparency10Frame::getBitDepth()) - 1);
+  const auto maxStorageValue = 1023.F;
 
   auto transparencyAtlasReshaped =
       Common::Transparency10Frame{transparencyAtlas.getWidth(), transparencyAtlas.getHeight()};

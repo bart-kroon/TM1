@@ -146,9 +146,12 @@ private:
     aau.attrFrame = Common::yuv444p(frame.texture);
 
     aau.geoFrame.resize(w, h);
+    const auto maxInValue = Common::maxLevel(frame.depth.getBitDepth());
+    const auto maxOutValue = Common::maxLevel(aau.geoFrame.getBitDepth());
     std::transform(frame.depth.getPlane(0).cbegin(), frame.depth.getPlane(0).cend(),
-                   aau.geoFrame.getPlane(0).begin(), [](uint16_t value) {
-                     return static_cast<uint16_t>((value * 0x3FF + 0x7FFF) / 0xFFFF);
+                   aau.geoFrame.getPlane(0).begin(), [=](uint16_t value) {
+                     return static_cast<uint16_t>((value * maxOutValue + maxInValue / 2) /
+                                                  maxInValue);
                    });
 
     aau.occFrame.resize(w, h);
@@ -159,7 +162,7 @@ private:
     pp.atlasPatchOrientationIndex(MivBitstream::FlexiblePatchOrientation::FPO_NULL);
     pp.atlasPatch2dSizeX(frame.texture.getWidth());
     pp.atlasPatch2dSizeY(frame.texture.getHeight());
-    pp.atlasPatch3dRangeD(Common::maxLevel(Common::Depth10Frame::getBitDepth()));
+    pp.atlasPatch3dRangeD(Common::maxLevel<int32_t>(aau.geoFrame.getBitDepth()));
 
     const auto ppbs = std::gcd(128, std::gcd(w, h));
     aau.asps.asps_log2_patch_packing_block_size(Common::ceilLog2(ppbs));

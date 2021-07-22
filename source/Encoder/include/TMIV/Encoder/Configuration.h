@@ -77,6 +77,7 @@ struct Configuration {
   std::optional<MivBitstream::ViewingSpace> viewingSpace;
   MivBitstream::PtlProfileCodecGroupIdc codecGroupIdc{};
   MivBitstream::PtlProfilePccToolsetIdc toolsetIdc{};
+  unsigned textureBitDepth{10U};
 };
 } // namespace TMIV::Encoder
 

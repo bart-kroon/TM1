@@ -72,7 +72,8 @@ void saveFrame(const std::filesystem::path &path, const Common::Frame<FORMAT> &f
   }
 
   frame.dump(stream);
-  Common::padChroma<FORMAT>(stream, frame.getDiskSize() - frame.getMemorySize());
+  Common::padChroma<FORMAT>(stream, frame.getDiskSize() - frame.getMemorySize(),
+                            frame.getBitDepth());
   if (!stream.good()) {
     throw std::runtime_error(fmt::format("Failed to write to {}", path));
   }

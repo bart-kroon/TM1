@@ -77,8 +77,8 @@ public:
   constexpr auto atlasPatch2dSizeY(int32_t value) noexcept -> PatchParams &;
   constexpr auto atlasPatch3dOffsetU(int32_t value) noexcept -> PatchParams &;
   constexpr auto atlasPatch3dOffsetV(int32_t value) noexcept -> PatchParams &;
-  constexpr auto atlasPatch3dOffsetD(int32_t value) noexcept -> PatchParams &;
-  constexpr auto atlasPatch3dRangeD(int32_t value) noexcept -> PatchParams &;
+  constexpr auto atlasPatch3dOffsetD(Common::SampleValue value) noexcept -> PatchParams &;
+  constexpr auto atlasPatch3dRangeD(Common::SampleValue value) noexcept -> PatchParams &;
   constexpr auto atlasPatchProjectionId(ViewId value) noexcept -> PatchParams &;
   constexpr auto atlasPatchOrientationIndex(FlexiblePatchOrientation value) noexcept
       -> PatchParams &;
@@ -134,8 +134,8 @@ private:
   int32_t m_atlasPatch2dSizeY{};
   int32_t m_atlasPatch3dOffsetU{};
   int32_t m_atlasPatch3dOffsetV{};
-  int32_t m_atlasPatch3dOffsetD{};
-  int32_t m_atlasPatch3dRangeD{};
+  Common::SampleValue m_atlasPatch3dOffsetD{};
+  Common::SampleValue m_atlasPatch3dRangeD{};
   ViewId m_atlasPatchProjectionId{};
   int32_t m_atlasPatchLoDScaleX{1};
   int32_t m_atlasPatchLoDScaleY{1};

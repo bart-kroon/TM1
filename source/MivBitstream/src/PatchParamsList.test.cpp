@@ -185,7 +185,7 @@ TEST_CASE("TMIV::MivBitstream::PatchParams") {
           .pdu_2d_size_y_minus1(4)
           .pdu_3d_offset_u(5)
           .pdu_3d_offset_v(6)
-          .pdu_3d_range_d(7)
+          .pdu_3d_range_d(8)
           .pdu_projection_id(ViewId{8})
           .pdu_orientation_index(FlexiblePatchOrientation::FPO_ROT270)
           .pdu_lod_enabled_flag(true)
@@ -209,7 +209,7 @@ TEST_CASE("TMIV::MivBitstream::PatchParams") {
 
       auto ath = AtlasTileHeader();
       ath.ath_pos_min_d_quantizer(6)
-          .ath_pos_delta_max_d_quantizer(7)
+          .ath_pos_delta_max_d_quantizer(3)
           .ath_patch_size_x_info_quantizer(2)
           .ath_patch_size_y_info_quantizer(1);
 
@@ -222,7 +222,7 @@ TEST_CASE("TMIV::MivBitstream::PatchParams") {
       REQUIRE(unit.atlasPatch3dOffsetU() == 5);
       REQUIRE(unit.atlasPatch3dOffsetV() == 6);
       REQUIRE(unit.atlasPatch3dOffsetD() == 0);
-      REQUIRE(unit.atlasPatch3dRangeD() == 895);
+      REQUIRE(unit.atlasPatch3dRangeD() == 64); // 8 << 3
       REQUIRE(unit.atlasPatchProjectionId() == ViewId{8});
       REQUIRE(unit.atlasPatchOrientationIndex() == FlexiblePatchOrientation::FPO_ROT270);
       REQUIRE(unit.atlasPatchLoDScaleX() == 3);
@@ -254,8 +254,10 @@ TEST_CASE("TMIV::MivBitstream::PatchParams") {
   SECTION("Encode patch data unit") {
     SECTION("Minimal example") {
       auto unit = PatchParams{};
-      unit.atlasPatch2dSizeX(1).atlasPatch2dSizeY(1).atlasPatchOrientationIndex(
-          FlexiblePatchOrientation::FPO_NULL);
+      unit.atlasPatch2dSizeX(1)
+          .atlasPatch2dSizeY(1)
+          .atlasPatchOrientationIndex(FlexiblePatchOrientation::FPO_NULL)
+          .atlasPatch3dRangeD(1);
 
       const auto pdu = unit.encodePdu({}, {}, {});
 
@@ -323,7 +325,7 @@ TEST_CASE("TMIV::MivBitstream::PatchParams") {
           .atlasPatch3dOffsetU(5)
           .atlasPatch3dOffsetV(6)
           .atlasPatch3dOffsetD(0)
-          .atlasPatch3dRangeD(895)
+          .atlasPatch3dRangeD(31)
           .atlasPatchProjectionId(ViewId{8})
           .atlasPatchOrientationIndex(FlexiblePatchOrientation::FPO_ROT270)
           .atlasPatchLoDScaleX(3)
@@ -338,7 +340,6 @@ TEST_CASE("TMIV::MivBitstream::PatchParams") {
           .asps_geometry_3d_bit_depth_minus1(5)
           .asps_normal_axis_max_delta_value_enabled_flag(true)
           .asps_patch_size_quantizer_present_flag(true)
-
           .asps_miv_extension()
           .asme_embedded_occupancy_enabled_flag(true)
           .asme_depth_occ_threshold_flag(true)
@@ -349,7 +350,7 @@ TEST_CASE("TMIV::MivBitstream::PatchParams") {
 
       auto ath = AtlasTileHeader();
       ath.ath_pos_min_d_quantizer(6)
-          .ath_pos_delta_max_d_quantizer(7)
+          .ath_pos_delta_max_d_quantizer(3)
           .ath_patch_size_x_info_quantizer(2)
           .ath_patch_size_y_info_quantizer(1);
 
@@ -361,7 +362,7 @@ TEST_CASE("TMIV::MivBitstream::PatchParams") {
       REQUIRE(pdu.pdu_2d_size_y_minus1() == 4);
       REQUIRE(pdu.pdu_3d_offset_u() == 5);
       REQUIRE(pdu.pdu_3d_offset_v() == 6);
-      REQUIRE(pdu.pdu_3d_range_d() == 7);
+      REQUIRE(pdu.pdu_3d_range_d() == 3);
       REQUIRE(pdu.pdu_projection_id() == ViewId{8});
       REQUIRE(pdu.pdu_orientation_index() == FlexiblePatchOrientation::FPO_ROT270);
       REQUIRE(pdu.pdu_lod_enabled_flag());
@@ -374,7 +375,10 @@ TEST_CASE("TMIV::MivBitstream::PatchParams") {
 
     SECTION("Inpaint patch") {
       auto unit = PatchParams{};
-      unit.atlasPatchLoDScaleX(4).atlasPatchLoDScaleY(4).atlasPatchInpaintFlag(true);
+      unit.atlasPatchLoDScaleX(4)
+          .atlasPatchLoDScaleY(4)
+          .atlasPatchInpaintFlag(true)
+          .atlasPatch3dRangeD(1);
 
       auto asps = AtlasSequenceParameterSetRBSP{};
       asps.asps_miv_extension().asme_inpaint_enabled_flag(true);

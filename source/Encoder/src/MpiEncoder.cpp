@@ -308,6 +308,12 @@ auto MpiEncoder::processAccessUnit(int firstFrameId, int lastFrameId) -> const E
 
     for (auto &patchParams : patchParamsListLayer) {
       patchParams.atlasPatch3dOffsetD(layerId);
+
+      // NOTE(BK): I do not understand why asps_2d_geometry_bit_depth_minus1 != 0, but in that case
+      // we need to calculate atlasPatch3drangeD.
+      const auto atlasIdx = m_params.vps.indexOf(patchParams.atlasId());
+      const auto bitDepth = m_params.atlas[atlasIdx].asps.asps_geometry_2d_bit_depth_minus1() + 1U;
+      patchParams.atlasPatch3dRangeD(Common::maxLevel(bitDepth));
     }
 
     std::move(patchParamsListLayer.begin(), patchParamsListLayer.end(),

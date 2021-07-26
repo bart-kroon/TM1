@@ -118,12 +118,14 @@ constexpr auto PatchParams::atlasPatch3dOffsetV(int32_t value) noexcept -> Patch
   return *this;
 }
 
-constexpr auto PatchParams::atlasPatch3dOffsetD(int32_t value) noexcept -> PatchParams & {
+constexpr auto PatchParams::atlasPatch3dOffsetD(Common::SampleValue value) noexcept
+    -> PatchParams & {
   m_atlasPatch3dOffsetD = value;
   return *this;
 }
 
-constexpr auto PatchParams::atlasPatch3dRangeD(int32_t value) noexcept -> PatchParams & {
+constexpr auto PatchParams::atlasPatch3dRangeD(Common::SampleValue value) noexcept
+    -> PatchParams & {
   m_atlasPatch3dRangeD = value;
   return *this;
 }

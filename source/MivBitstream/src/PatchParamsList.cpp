@@ -36,6 +36,57 @@
 #include <TMIV/Common/verify.h>
 
 namespace TMIV::MivBitstream {
+using Common::SampleValue;
+
+namespace {
+// The 3D range D code points are odd since MPEG/M56883 was adopted:
+//
+//  pdu_3d_range_d        0   1   2   3   4   5   6   7
+//  AtlasPatch3dRangeD    0  32  64  72 128 160 192 255 dec
+//                       00  20  40  60  80  A0  C0  FF hex
+//
+// The tweak ensures that the maximum possible value of AtlasPatch3dRangeD is representable.
+
+auto decodePdu3dRangeD(const PatchDataUnit &pdu, const AtlasSequenceParameterSetRBSP &asps,
+                       const AtlasTileHeader &ath) {
+  const auto rangeDBitDepth = std::min(asps.asps_geometry_2d_bit_depth_minus1() + 1U,
+                                       asps.asps_geometry_3d_bit_depth_minus1() + 1U);
+
+  if (!asps.asps_normal_axis_max_delta_value_enabled_flag()) {
+    return Common::maxLevel(rangeDBitDepth);
+  }
+  const auto q = ath.ath_pos_delta_max_d_quantizer();
+
+  if (pdu.pdu_3d_range_d() == 0) {
+    return SampleValue{};
+  }
+  if (pdu.pdu_3d_range_d() == Common::maxLevel(rangeDBitDepth - q)) {
+    return Common::maxLevel(rangeDBitDepth);
+  }
+  return pdu.pdu_3d_range_d() << q;
+}
+
+void encodePdu3dRangeDTo(SampleValue atlasPatch3dRangeD, const AtlasSequenceParameterSetRBSP &asps,
+                         const AtlasTileHeader &ath, PatchDataUnit &pdu) {
+  if (asps.asps_normal_axis_max_delta_value_enabled_flag()) {
+    const auto rangeDBitDepth = std::min(asps.asps_geometry_2d_bit_depth_minus1() + 1U,
+                                         asps.asps_geometry_3d_bit_depth_minus1() + 1U);
+    const auto q = ath.ath_pos_delta_max_d_quantizer();
+
+    if (atlasPatch3dRangeD == 0) {
+      pdu.pdu_3d_range_d(0);
+    }
+    if (atlasPatch3dRangeD == Common::maxLevel(rangeDBitDepth)) {
+      pdu.pdu_3d_range_d(Common::maxLevel(rangeDBitDepth - q));
+    }
+    pdu.pdu_3d_range_d(atlasPatch3dRangeD >> q);
+  }
+
+  // Check that the atlasPatch3dRangeD value has a code point (easy to get wrong)
+  PRECONDITION(decodePdu3dRangeD(pdu, asps, ath) == atlasPatch3dRangeD);
+}
+} // namespace
+
 auto PatchParams::decodePdu(const PatchDataUnit &pdu, const AtlasSequenceParameterSetRBSP &asps,
                             const AtlasFrameParameterSetRBSP &afps, const AtlasTileHeader &ath)
     -> PatchParams {
@@ -48,19 +99,9 @@ auto PatchParams::decodePdu(const PatchDataUnit &pdu, const AtlasSequenceParamet
   pp.atlasPatch3dOffsetU(Common::verifyDownCast<int32_t>(pdu.pdu_3d_offset_u()));
   pp.atlasPatch3dOffsetV(Common::verifyDownCast<int32_t>(pdu.pdu_3d_offset_v()));
 
-  const auto offsetDQuantizer = 1U << ath.ath_pos_min_d_quantizer();
-  pp.atlasPatch3dOffsetD(Common::verifyDownCast<int32_t>(pdu.pdu_3d_offset_d() * offsetDQuantizer));
-
-  if (asps.asps_normal_axis_max_delta_value_enabled_flag()) {
-    const auto rangeDQuantizer = 1U << ath.ath_pos_delta_max_d_quantizer();
-    pp.atlasPatch3dRangeD(Common::verifyDownCast<int32_t>(
-        pdu.pdu_3d_range_d() == 0 ? 0 : (pdu.pdu_3d_range_d() * rangeDQuantizer) - 1));
-  } else {
-    const auto rangeDBitDepth = std::min(asps.asps_geometry_2d_bit_depth_minus1() + 1U,
-                                         asps.asps_geometry_3d_bit_depth_minus1() + 1U);
-    const auto rangeD = 1U << rangeDBitDepth;
-    pp.atlasPatch3dRangeD(Common::verifyDownCast<int32_t>(rangeD - 1));
-  }
+  const auto offsetDQuantizer = SampleValue{1} << ath.ath_pos_min_d_quantizer();
+  pp.atlasPatch3dOffsetD(pdu.pdu_3d_offset_d() * offsetDQuantizer);
+  pp.atlasPatch3dRangeD(decodePdu3dRangeD(pdu, asps, ath));
 
   pp.atlasPatchProjectionId(pdu.pdu_projection_id());
   pp.atlasPatchOrientationIndex(pdu.pdu_orientation_index());
@@ -128,13 +169,7 @@ auto PatchParams::encodePdu(const AtlasSequenceParameterSetRBSP &asps,
   const auto offsetDQuantizer = 1U << ath.ath_pos_min_d_quantizer();
   VERIFY_MIVBITSTREAM(atlasPatch3dOffsetD() % offsetDQuantizer == 0);
   pdu.pdu_3d_offset_d(atlasPatch3dOffsetD() / offsetDQuantizer);
-
-  if (asps.asps_normal_axis_max_delta_value_enabled_flag()) {
-    const auto rangeDQuantizer = 1U << ath.ath_pos_delta_max_d_quantizer();
-    VERIFY_MIVBITSTREAM((atlasPatch3dRangeD() + 1) % rangeDQuantizer == 0);
-    pdu.pdu_3d_range_d(atlasPatch3dRangeD() / rangeDQuantizer + 1);
-  }
-
+  encodePdu3dRangeDTo(atlasPatch3dRangeD(), asps, ath, pdu);
   pdu.pdu_projection_id(atlasPatchProjectionId());
   pdu.pdu_orientation_index(atlasPatchOrientationIndex());
 

@@ -224,6 +224,14 @@ auto Encoder::completeAccessUnit() -> const EncoderParams & {
   m_params.patchParamsList = m_packer->pack(atlasSizes, aggregatedMask,
                                             m_transportParams.viewParamsList, m_config.blockSize);
 
+  // NOTE(BK): There is no encoder support for per-patch D range
+  for (auto &pp : m_params.patchParamsList) {
+    const auto atlasIdx = m_params.vps.indexOf(pp.atlasId());
+    const auto bitDepth = m_params.atlas[atlasIdx].asps.asps_geometry_2d_bit_depth_minus1() + 1U;
+    pp.atlasPatch3dOffsetD(0);
+    pp.atlasPatch3dRangeD(Common::maxLevel(bitDepth));
+  }
+
   m_params = m_geometryQuantizer.setOccupancyParams(m_params, m_config.haveGeometry,
                                                     m_config.haveOccupancy);
 

@@ -174,7 +174,9 @@ TEST_CASE("Decoder::writeFrameToOutputLog") {
 
         switch (v.ci.ci_cam_type()) {
         case CiCamType::equirectangular:
+          v.ci.ci_erp_phi_min(-1.);
           v.ci.ci_erp_phi_max(2.);
+          v.ci.ci_erp_theta_min(0.5);
           v.ci.ci_erp_theta_max(1.);
           break;
         case CiCamType::perspective:
@@ -197,9 +199,9 @@ TEST_CASE("Decoder::writeFrameToOutputLog") {
         v.dq.dq_depth_occ_threshold_default(40);
       }
 
-      reference += "-1 0 8 5 00000000 00000000 00000000 2285353c\n";
+      reference += "-1 0 8 5 00000000 00000000 00000000 f6b9ee21\n";
       writeFrameToOutputLog(frame, stream);
-      REQUIRE(TMIV::Decoder::viewParamsListHash(frame.viewParamsList) == 0x2285353C);
+      REQUIRE(TMIV::Decoder::viewParamsListHash(frame.viewParamsList) == 0xf6b9ee21);
       REQUIRE(stream.str() == reference);
     }
   }

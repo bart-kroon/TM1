@@ -155,7 +155,9 @@ auto viewParamsListHash(const MivBitstream::ViewParamsList &vpl) noexcept -> Has
 
     switch (vp.ci.ci_cam_type()) {
     case MivBitstream::CiCamType::equirectangular:
+      hash.consumeF(vp.ci.ci_erp_phi_min());
       hash.consumeF(vp.ci.ci_erp_phi_max());
+      hash.consumeF(vp.ci.ci_erp_theta_min());
       hash.consumeF(vp.ci.ci_erp_theta_max());
       break;
     case MivBitstream::CiCamType::perspective:

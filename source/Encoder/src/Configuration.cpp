@@ -56,6 +56,7 @@ Configuration::Configuration(const Common::Json &rootNode, const Common::Json &c
     , colorCorrectionEnabledFlag{haveTexture &&
                                  rootNode.require("colorCorrectionEnabledFlag").as<bool>()}
     , randomAccess{rootNode.require("randomAccess").as<bool>()}
+    , patchRedundancyRemoval{rootNode.require("patchRedundancyRemoval").as<bool>()}
     , numGroups{rootNode.require("numGroups").as<uint8_t>()}
     , maxEntityId{rootNode.require("maxEntityId").as<uint16_t>()} {
   if (const auto &node = componentNode.optional("overrideAtlasFrameSizes")) {

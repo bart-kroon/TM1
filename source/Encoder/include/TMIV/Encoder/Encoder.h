@@ -107,6 +107,8 @@ private: // Encoder_prepareSequence.cpp
       std::vector<std::array<std::array<int64_t, 4>, 3>> &patchAttrOffsetValuesFullGOP) -> int;
   [[nodiscard]] auto calculateBtpm() const -> std::vector<std::vector<std::vector<int>>>;
   void adaptBtpmToPatchCount(std::vector<std::vector<std::vector<int>>> &btpm) const;
+  [[nodiscard]] auto isRedundantBlock(Common::Vec2i topLeft, Common::Vec2i bottomRight,
+                                      uint16_t viewIdx, int32_t frameIdx) const -> bool;
   auto writePatchInAtlas(const MivBitstream::PatchParams &patchParams,
                          const Common::TextureDepth16Frame &view, Common::MVD16Frame &frame,
                          int frameId, size_t patchIdx) -> std::array<std::array<int64_t, 4>, 3>;

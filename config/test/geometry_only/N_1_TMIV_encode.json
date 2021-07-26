@@ -52,6 +52,7 @@
     "haveTextureVideo": false,
     "framePacking": false,
     "randomAccess": false,
+    "patchRedundancyRemoval": true,
     "viewportCameraParametersSei": false,
     "viewportPositionSei": false,
     "inputDirectory": ".",

@@ -27,6 +27,7 @@
   "haveTextureVideo": true,
   "framePacking": false,
   "randomAccess": false,
+  "patchRedundancyRemoval": true,
   "inputDirectory": ".",
   "inputMpiPcsPathFmt": "{1}/{3}.pcs",
   "inputSequenceConfigPathFmt": "ctc/sequences/{1}.json",

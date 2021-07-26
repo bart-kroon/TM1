@@ -276,7 +276,8 @@ void Encoder::setGiGeometry3dCoordinatesBitdepthMinus1() {
 
 void Encoder::enableOccupancyPerView() {
   for (size_t viewIdx = 0; viewIdx < m_params.viewParamsList.size(); ++viewIdx) {
-    if (!m_params.viewParamsList[viewIdx].isBasicView || 0 < m_params.maxEntityId) {
+    if ((!m_params.viewParamsList[viewIdx].isBasicView && m_config.patchRedundancyRemoval) ||
+        0 < m_params.maxEntityId) {
       m_params.viewParamsList[viewIdx].hasOccupancy = true;
     }
   }

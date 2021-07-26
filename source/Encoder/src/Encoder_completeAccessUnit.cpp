@@ -519,6 +519,24 @@ void Encoder::constructVideoFrames() {
   calculateAttributeOffset(patchAttrOffsetValuesFullGOP);
 }
 
+auto Encoder::isRedundantBlock(Common::Vec2i topLeft, Common::Vec2i bottomRight, uint16_t viewIdx,
+                               int32_t frameIdx) const -> bool {
+  if (!m_config.patchRedundancyRemoval) {
+    return false;
+  }
+  bottomRight.x() = std::min(topLeft.x() + m_config.blockSize, bottomRight.x());
+  bottomRight.y() = std::min(topLeft.y() + m_config.blockSize, bottomRight.y());
+
+  for (int y = topLeft.y(); y < bottomRight.y(); ++y) {
+    for (int x = topLeft.x(); x < bottomRight.x(); ++x) {
+      if (m_nonAggregatedMask[viewIdx](y, x)[frameIdx]) {
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
 // NOLINTNEXTLINE(readability-function-cognitive-complexity)
 auto Encoder::writePatchInAtlas(const MivBitstream::PatchParams &patchParams,
                                 const Common::TextureDepth16Frame &view, Common::MVD16Frame &frame,
@@ -545,21 +563,9 @@ auto Encoder::writePatchInAtlas(const MivBitstream::PatchParams &patchParams,
 
   for (int vBlock = 0; vBlock < sizeV; vBlock += m_config.blockSize) {
     for (int uBlock = 0; uBlock < sizeU; uBlock += m_config.blockSize) {
-      bool isAggregatedMaskBlockNonEmpty = false;
-      for (int v = vBlock; v < vBlock + m_config.blockSize && v < sizeV; v++) {
-        for (int u = uBlock; u < uBlock + m_config.blockSize && u < sizeU; u++) {
-          const auto viewIdx =
-              m_params.viewParamsList.indexOf(patchParams.atlasPatchProjectionId());
-
-          if (m_nonAggregatedMask[viewIdx](v + posV, u + posU)[frameId]) {
-            isAggregatedMaskBlockNonEmpty = true;
-            break;
-          }
-        }
-        if (isAggregatedMaskBlockNonEmpty) {
-          break;
-        }
-      }
+      const auto viewIdx = m_params.viewParamsList.indexOf(patchParams.atlasPatchProjectionId());
+      const auto redundant = isRedundantBlock({posU + uBlock, posV + vBlock},
+                                              {posU + sizeU, posV + sizeV}, viewIdx, frameId);
       int yOcc = 0;
       int xOcc = 0;
       for (int v = vBlock; v < vBlock + m_config.blockSize && v < sizeV; ++v) {
@@ -578,7 +584,7 @@ auto Encoder::writePatchInAtlas(const MivBitstream::PatchParams &patchParams,
             xOcc = pAtlas.x();
           }
 
-          if (!isAggregatedMaskBlockNonEmpty && m_config.haveGeometry) {
+          if (redundant && m_config.haveGeometry) {
             adaptAtlas(patchParams, atlas, yOcc, xOcc, pView, pAtlas);
             continue;
           }

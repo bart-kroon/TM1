@@ -72,6 +72,7 @@ struct Configuration {
   bool viewportPositionSei;
   bool colorCorrectionEnabledFlag;
   bool randomAccess;
+  bool patchRedundancyRemoval;
   uint8_t numGroups;
   uint16_t maxEntityId{};
   std::optional<MivBitstream::ViewingSpace> viewingSpace;

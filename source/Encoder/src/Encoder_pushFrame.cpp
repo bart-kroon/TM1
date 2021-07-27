@@ -187,8 +187,7 @@ void Encoder::mergeMasks(Common::MaskList &mergedMasks, Common::MaskList masks) 
 void Encoder::updateMasks(const Common::MVD16Frame &views, Common::MaskList &masks) {
   for (size_t viewIdx = 0; viewIdx < views.size(); viewIdx++) {
     for (size_t i = 0; i < masks[viewIdx].getPlane(0).size(); i++) {
-      if ((views[viewIdx].texture.getPlane(0)[i] == views[viewIdx].texture.neutralColor()) &&
-          (views[viewIdx].depth.getPlane(0)[i] == uint16_t{})) {
+      if (views[viewIdx].depth.getPlane(0)[i] == uint16_t{}) {
         masks[viewIdx].getPlane(0)[i] = uint8_t{};
       }
     }

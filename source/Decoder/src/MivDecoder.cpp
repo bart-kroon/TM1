@@ -95,7 +95,7 @@ auto MivDecoder::operator()() -> std::optional<MivBitstream::AccessUnit> {
 
   ++m_au.foc;
 
-  if (!m_commonAtlasAu || m_commonAtlasAu->foc < m_au.foc) {
+  if (m_state == State::initial || (m_commonAtlasAu && m_commonAtlasAu->foc < m_au.foc)) {
     m_commonAtlasAu = (*m_commonAtlasDecoder)();
   }
   if (m_commonAtlasAu && m_commonAtlasAu->foc == m_au.foc) {

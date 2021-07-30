@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
 
 project(
     TMIV
-    DESCRIPTION "Test Model for MPEG Immersive Video"
+    DESCRIPTION "Test Model for MPEG Immersive video"
     VERSION 10.1.0
     LANGUAGES C CXX)
 

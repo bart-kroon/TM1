@@ -362,7 +362,7 @@ auto PduMivExtension::decodeFrom(Common::InputBitstream &bitstream,
 
   const auto &asme = asps.asps_miv_extension();
   if (0 < asme.asme_max_entity_id()) {
-    x.pdu_entity_id(bitstream.getUVar<Common::SampleValue>(asme.asme_max_entity_id()));
+    x.pdu_entity_id(bitstream.getUVar<Common::SampleValue>(asme.asme_max_entity_id() + 1));
   }
   if (asme.asme_depth_occ_threshold_flag()) {
     x.pdu_depth_occ_threshold(
@@ -385,7 +385,7 @@ void PduMivExtension::encodeTo(Common::OutputBitstream &bitstream,
                                const AtlasSequenceParameterSetRBSP &asps) const {
   const auto &asme = asps.asps_miv_extension();
   if (0 < asme.asme_max_entity_id()) {
-    bitstream.putUVar(pdu_entity_id(), asme.asme_max_entity_id());
+    bitstream.putUVar(pdu_entity_id(), asme.asme_max_entity_id() + 1);
   } else {
     PRECONDITION(!m_pdu_entity_id.has_value());
   }

@@ -888,14 +888,21 @@ auto PackingInformation::printTo(std::ostream &stream, const AtlasId &j) const -
                  i, pin_attribute_map_absolute_coding_persistence_flag(i));
       fmt::print(stream, "pin_attribute_dimension_minus1[ {} ][ {} ]={}\n", j, i,
                  pin_attribute_dimension_minus1(i));
-      if (pin_attribute_dimension_minus1(i) > 0) {
+      auto d = pin_attribute_dimension_minus1(i);
+      uint8_t m = 0;
+      if (d != 0) {
         fmt::print(stream, "pin_attribute_dimension_partitions_minus1[ {} ][ {} ]={}\n", j, i,
                    pin_attribute_dimension_partitions_minus1(i));
-        auto l = pin_attribute_dimension_partitions_minus1(i);
-        for (uint8_t m = 0; m < l; m++) {
+        m = pin_attribute_dimension_partitions_minus1(i);
+      }
+      for (uint8_t k = 0; k < m; k++) {
+        uint8_t n = 0;
+        if (k + d != m) {
           fmt::print(stream, "pin_attribute_partition_channels_minus1[ {} ][ {} ] [ {} ]={}\n", j,
-                     i, l, pin_attribute_partition_channels_minus1(i, static_cast<uint8_t>(l)));
+                     i, k, pin_attribute_partition_channels_minus1(i, k));
+          n = pin_attribute_partition_channels_minus1(i, k);
         }
+        d -= n + 1;
       }
     }
   }
@@ -981,23 +988,25 @@ auto PackingInformation::decodeFrom(Common::InputBitstream &bitstream) -> Packin
       result.pin_attribute_MSB_align_flag(i, bitstream.getFlag());
       result.pin_attribute_map_absolute_coding_persistence_flag(i, bitstream.getFlag());
       result.pin_attribute_dimension_minus1(i, bitstream.readBits<uint8_t>(6));
-      if (result.pin_attribute_dimension_minus1(i) > 0) {
+      auto d = result.pin_attribute_dimension_minus1(i);
+      uint8_t m = 0;
+      if (d == 0) {
+        result.pin_attribute_dimension_partitions_minus1(i, 0);
+      } else {
         result.pin_attribute_dimension_partitions_minus1(i, bitstream.readBits<uint8_t>(6));
-        auto remainingDimensions = result.pin_attribute_dimension_minus1(i);
-        const auto m = result.pin_attribute_dimension_partitions_minus1(i);
-        for (uint8_t k = 0; k < m; k++) {
-          if (m - k == remainingDimensions) {
-            result.pin_attribute_partition_channels_minus1(i, static_cast<uint8_t>(k), 0);
-          } else {
-            result.pin_attribute_partition_channels_minus1(i, static_cast<uint8_t>(k),
-                                                           bitstream.getUExpGolomb<uint8_t>());
-          }
-          remainingDimensions -= static_cast<uint8_t>(
-              result.pin_attribute_partition_channels_minus1(i, static_cast<uint8_t>(k)) + 1);
-        }
-        result.pin_attribute_partition_channels_minus1(i, static_cast<uint8_t>(m),
-                                                       remainingDimensions);
+        m = result.pin_attribute_dimension_partitions_minus1(i);
       }
+      for (uint8_t k = 0; k < m; k++) {
+        uint8_t n = 0;
+        if (k + d == m) {
+          result.pin_attribute_partition_channels_minus1(i, k, 0);
+        } else {
+          result.pin_attribute_partition_channels_minus1(i, k, bitstream.getUExpGolomb<uint8_t>());
+          n = result.pin_attribute_partition_channels_minus1(i, k);
+        }
+        d -= n + 1;
+      }
+      result.pin_attribute_partition_channels_minus1(i, m, d);
     }
   }
 
@@ -1051,18 +1060,19 @@ void PackingInformation::encodeTo(Common::OutputBitstream &bitstream) const {
       bitstream.putFlag(pin_attribute_MSB_align_flag(i));
       bitstream.putFlag(pin_attribute_map_absolute_coding_persistence_flag(i));
       bitstream.writeBits(pin_attribute_dimension_minus1(i), 6);
-      if (pin_attribute_dimension_minus1(i) > 0) {
+      auto d = pin_attribute_dimension_minus1(i);
+      uint8_t m = 0;
+      if (d != 0) {
         bitstream.writeBits(pin_attribute_dimension_partitions_minus1(i), 6);
-        auto remainingDimensions = pin_attribute_dimension_minus1(i);
-        const auto m = pin_attribute_dimension_partitions_minus1(i);
-        for (uint8_t k = 0; k < m; k++) {
-          if (m - k != remainingDimensions) {
-            bitstream.putUExpGolomb(
-                pin_attribute_partition_channels_minus1(i, static_cast<uint8_t>(k)));
-          }
-          remainingDimensions -= static_cast<uint8_t>(
-              pin_attribute_partition_channels_minus1(i, static_cast<uint8_t>(k)) + 1);
+        m = pin_attribute_dimension_partitions_minus1(i);
+      }
+      for (uint8_t k = 0; k < m; k++) {
+        uint8_t n = 0;
+        if (k + d != m) {
+          bitstream.putUExpGolomb(pin_attribute_partition_channels_minus1(i, k));
+          n = pin_attribute_partition_channels_minus1(i, k);
         }
+        d -= n + 1;
       }
     }
   }

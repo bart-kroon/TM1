@@ -318,6 +318,7 @@ pin_region_rotation_flag[ 4 ][ 0 ]=false
         .pin_attribute_MSB_align_flag(0, true)
         .pin_attribute_map_absolute_coding_persistence_flag(0, false)
         .pin_attribute_dimension_minus1(0, 0)
+        .pin_attribute_dimension_partitions_minus1(0, 0)
         .pin_regions_count_minus1(1);
 
     for (size_t i = 0; i <= unit.pin_regions_count_minus1(); ++i) {
@@ -433,7 +434,6 @@ pin_attribute_MSB_align_flag[ 3 ][ 0 ]=true
 pin_attribute_map_absolute_coding_persistence_flag[ 3 ][ 0 ]=true
 pin_attribute_dimension_minus1[ 3 ][ 0 ]=1
 pin_attribute_dimension_partitions_minus1[ 3 ][ 0 ]=1
-pin_attribute_partition_channels_minus1[ 3 ][ 0 ] [ 1 ]=0
 pin_regions_count_minus1[ 3 ]=3
 pin_region_tile_id[ 3 ][ 0 ]=5
 pin_region_type_id_minus2[ 3 ][ 0 ]=2 (V3C_AVD)

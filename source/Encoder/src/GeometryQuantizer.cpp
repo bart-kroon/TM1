@@ -74,11 +74,14 @@ auto GeometryQuantizer::setOccupancyParams(EncoderParams params, bool haveGeomet
 
   if (haveOccupancyVideo) {
     for (auto &atlas : m_outParams.atlas) {
-      const auto scaleFactorMinus1 =
-          Common::downCast<uint16_t>((1 << atlas.asps.asps_log2_patch_packing_block_size()) - 1);
+      const auto k = atlas.asps.asps_log2_patch_packing_block_size();
+      const auto occFrameSizeX = std::lcm(2, atlas.asps.asps_frame_width() >> k);
+      const auto occFrameSizeY = std::lcm(2, atlas.asps.asps_frame_height() >> k);
+      const auto scaleFactorX = atlas.asps.asps_frame_width() / occFrameSizeX;
+      const auto scaleFactorY = atlas.asps.asps_frame_height() / occFrameSizeY;
       atlas.asps.asps_miv_extension()
-          .asme_occupancy_scale_factor_x_minus1(scaleFactorMinus1)
-          .asme_occupancy_scale_factor_y_minus1(scaleFactorMinus1);
+          .asme_occupancy_scale_factor_x_minus1(Common::downCast<uint16_t>(scaleFactorX - 1))
+          .asme_occupancy_scale_factor_y_minus1(Common::downCast<uint16_t>(scaleFactorY - 1));
     }
   }
 

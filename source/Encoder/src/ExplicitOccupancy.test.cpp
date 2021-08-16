@@ -83,7 +83,7 @@ SCENARIO("Explicit occupancy") {
             31);
         REQUIRE(
             codedParams.atlas[0].asps.asps_miv_extension().asme_occupancy_scale_factor_y_minus1() ==
-            31);
+            15);
         REQUIRE(codedParams.atlas[1].asps != sourceParams.atlas[1].asps);
         REQUIRE(
             codedParams.atlas[1].asps.asps_miv_extension().asme_occupancy_scale_enabled_flag() ==

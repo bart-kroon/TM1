@@ -2,6 +2,8 @@
 
 Contributions are expected to be in the form of merge requests to the [MPEG-internal repository](http://mpegx.int-evry.fr/software/MPEG/MIV/RS/TM1.git). The [public repository](https://gitlab.com/mpeg-i-visual/tmiv.git) is a mirror of the internal repository's `main` branch.
 
+Maintainers of this project are @bartkroon (Philips) and @franck.thudor (InterDigital).
+
 ## Testing
 
 The following levels of testing have been defined:
@@ -108,8 +110,6 @@ This repository has the following branch model:
 * When an existing release needs to be patched, a `vx.y-dev` branch (e.g. `v8.0-dev`) is created. These branches are protected in the same way as the main branch and can also be the target of merge requests. These branches are removed as soon as the new release is tagged (e.g. `v8.0.2`).
 * Branch `m12345` is the proponent branch to document m12345 and will be deleted after the MPEG meeting when integrated or rejected
 * Issue branches as created by gitlab, will be deleted after the merge request
-
-Maintainers are @franck.thudor, @bartkroon, and @christoph_bachhuber.
 
 ## Code guidelines
 

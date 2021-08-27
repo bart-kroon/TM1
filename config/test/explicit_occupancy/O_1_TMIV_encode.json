@@ -34,7 +34,6 @@
             "inpaintThreshold": 100,
             "fieldOfViewMargin": 0.3
         },
-        "depthOccThresholdIfSet": 64,
         "dilate": 16,
         "HierarchicalPruner": {
             "depthParameter": 50,

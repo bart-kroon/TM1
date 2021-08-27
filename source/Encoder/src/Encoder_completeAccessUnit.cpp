@@ -33,6 +33,8 @@
 
 #include <TMIV/Encoder/Encoder.h>
 
+#include <TMIV/Encoder/GeometryQuantizer.h>
+
 #include <iostream>
 
 namespace TMIV::Encoder {
@@ -99,7 +101,7 @@ void adaptPatchStatsToTexture(std::array<PatchStats, 3> &patchStats,
 
 void Encoder::scaleGeometryDynamicRange() {
   PRECONDITION(m_config.dynamicDepthRange);
-  const auto lowDepthQuality = m_params.casps.casps_miv_extension().casme_depth_low_quality_flag();
+  const auto lowDepthQuality = params().casps.casps_miv_extension().casme_depth_low_quality_flag();
   const auto numOfFrames = m_transportViews.size();
   const auto numOfViews = m_transportViews[0].size();
 
@@ -150,7 +152,7 @@ void Encoder::scaleGeometryDynamicRange() {
 }
 
 void Encoder::correctColors() {
-  for (auto &patch : m_params.patchParamsList) {
+  for (const auto &patch : params().patchParamsList) {
     int sumErrY = 0;
     int sumErrU = 0;
     int sumErrV = 0;
@@ -164,7 +166,7 @@ void Encoder::correctColors() {
     const auto xM = patch.atlasPatch3dOffsetU();
     const auto yM = patch.atlasPatch3dOffsetV();
 
-    const auto viewIdx = m_params.viewParamsList.indexOf(patch.atlasPatchProjectionId());
+    const auto viewIdx = params().viewParamsList.indexOf(patch.atlasPatchProjectionId());
 
     for (size_t frame = 0; frame < m_transportViews.size(); frame++) {
       const auto &view = m_transportViews[frame][viewIdx];
@@ -210,49 +212,44 @@ auto Encoder::completeAccessUnit() -> const EncoderParams & {
     scaleGeometryDynamicRange();
   }
 
-  if (0 < m_params.maxEntityId) {
+  if (0 < m_config.maxEntityId) {
     m_packer->updateAggregatedEntityMasks(m_aggregatedEntityMask);
   }
 
-  auto atlasSizes = Common::SizeVector(m_params.atlas.size());
+  auto atlasSizes = Common::SizeVector(params().atlas.size());
   std::transform(
-      m_params.atlas.cbegin(), m_params.atlas.cend(), atlasSizes.begin(), [](const auto &atlas) {
+      params().atlas.cbegin(), params().atlas.cend(), atlasSizes.begin(), [](const auto &atlas) {
         return Common::Vec2i{atlas.asps.asps_frame_width(), atlas.asps.asps_frame_height()};
       });
 
-  m_packer->initialize(atlasSizes, m_config.blockSize);
-  m_params.patchParamsList = m_packer->pack(atlasSizes, aggregatedMask,
-                                            m_transportParams.viewParamsList, m_config.blockSize);
+  m_packer->initialize(atlasSizes, m_blockSize);
+  m_params.patchParamsList =
+      m_packer->pack(atlasSizes, aggregatedMask, m_transportParams.viewParamsList, m_blockSize);
 
   // NOTE(BK): There is no encoder support for per-patch D range
   for (auto &pp : m_params.patchParamsList) {
-    const auto atlasIdx = m_params.vps.indexOf(pp.atlasId());
-    const auto bitDepth = m_params.atlas[atlasIdx].asps.asps_geometry_2d_bit_depth_minus1() + 1U;
+    const auto atlasIdx = params().vps.indexOf(pp.atlasId());
+    const auto bitDepth = params().atlas[atlasIdx].asps.asps_geometry_2d_bit_depth_minus1() + 1U;
     pp.atlasPatch3dOffsetD(0);
     pp.atlasPatch3dRangeD(Common::maxLevel(bitDepth));
   }
 
-  m_params = m_geometryQuantizer.setOccupancyParams(m_params, m_config.haveGeometry,
-                                                    m_config.haveOccupancy);
-
   if (m_config.colorCorrectionEnabledFlag) {
     correctColors();
   } else {
-    for (size_t p = 0; p < m_params.patchParamsList.size(); p++) {
+    for (size_t p = 0; p < params().patchParamsList.size(); p++) {
       m_patchColorCorrectionOffset.emplace_back();
     }
   }
 
   constructVideoFrames();
 
-  const auto &paramsQuantized = m_geometryQuantizer.transformParams(m_params);
-  const auto &paramsScaled = m_geometryDownscaler.transformParams(paramsQuantized);
+  m_paramsQuantized = GeometryQuantizer::transformParams(params(), m_config.depthOccThresholdIfSet);
 
   if (m_config.framePacking) {
-    const auto &paramsWithFramePackInfo = m_framePacker.setPackingInformation(paramsScaled);
-    return paramsWithFramePackInfo;
+    return m_framePacker.setPackingInformation(m_paramsQuantized);
   }
-  return paramsScaled;
+  return m_paramsQuantized;
 }
 
 void Encoder::updateAggregationStatistics(const Common::MaskList &aggregatedMask) {
@@ -268,16 +265,6 @@ void Encoder::updateAggregationStatistics(const Common::MaskList &aggregatedMask
 
 void Encoder::calculateAttributeOffset(
     std::vector<std::array<std::array<int64_t, 4>, 3>> patchAttrOffsetValuesFullGOP) {
-  for (uint8_t k = 0; k <= m_params.vps.vps_atlas_count_minus1(); ++k) {
-    auto &asme = m_params.atlas[k].asps.asps_miv_extension();
-    asme.asme_patch_attribute_offset_enabled_flag(m_config.attributeOffsetFlag);
-    if (!m_config.attributeOffsetFlag) {
-      return;
-    }
-    asme.asme_patch_attribute_offset_bit_depth_minus1(
-        Common::downCast<uint16_t>(m_config.attributeOffsetBitCount - 1));
-  }
-
   const auto bitShift = calculatePatchAttrOffsetValuesFullGOP(patchAttrOffsetValuesFullGOP);
 
   std::vector<std::vector<std::vector<int>>> btpm = calculateBtpm();
@@ -285,9 +272,9 @@ void Encoder::calculateAttributeOffset(
   adaptBtpmToPatchCount(btpm);
 
   for (auto &videoFrame : m_videoFrameBuffer) {
-    for (uint8_t k = 0; k <= m_params.vps.vps_atlas_count_minus1(); ++k) {
+    for (uint8_t k = 0; k <= params().vps.vps_atlas_count_minus1(); ++k) {
       auto &atlas = videoFrame[k];
-      const auto &asme = m_params.atlas[k].asps.asps_miv_extension();
+      const auto &asme = params().atlas[k].asps.asps_miv_extension();
       auto occScaleX = 1;
       auto occScaleY = 1;
       if (!asme.asme_embedded_occupancy_enabled_flag() &&
@@ -297,19 +284,19 @@ void Encoder::calculateAttributeOffset(
       }
       for (int y = 0; y < atlas.texture.getHeight(); ++y) {
         for (int x = 0; x < atlas.texture.getWidth(); ++x) {
-          const auto patchIndex = btpm[k][y / m_config.blockSize][x / m_config.blockSize];
+          const auto patchIndex = btpm[k][y / m_blockSize][x / m_blockSize];
 
           if (patchIndex == Common::unusedPatchId ||
               (atlas.depth.getPlane(0)(y, x) == 0 &&
-               !m_params
-                    .viewParamsList[m_params.patchParamsList[patchIndex].atlasPatchProjectionId()]
+               !params()
+                    .viewParamsList[params().patchParamsList[patchIndex].atlasPatchProjectionId()]
                     .isBasicView)) {
             continue;
           }
           if (atlas.occupancy.getPlane(0)(y / occScaleY, x / occScaleX) == 0) {
             continue;
           }
-          const auto &pp = m_params.patchParamsList[patchIndex];
+          const auto &pp = params().patchParamsList[patchIndex];
           const auto offset = pp.atlasPatchAttributeOffset();
           const auto textureMedVal = Common::medLevel<uint16_t>(atlas.texture.getBitDepth());
           atlas.texture.getPlane(0)(y, x) -= ((offset.x() << bitShift) - textureMedVal);
@@ -325,30 +312,30 @@ void Encoder::calculateAttributeOffset(
 
 void Encoder::adaptBtpmToPatchCount(std::vector<std::vector<std::vector<int>>> &btpm) const {
   int patchCnt = 0;
-  for (const auto &patch : m_params.patchParamsList) {
-    size_t atlasId = m_params.vps.indexOf(patch.atlasId());
+  for (const auto &patch : params().patchParamsList) {
+    size_t atlasId = params().vps.indexOf(patch.atlasId());
 
     const auto &currentAtlas = m_videoFrameBuffer[0][atlasId];
-    int AH = currentAtlas.texture.getHeight() / m_config.blockSize;
-    int AW = currentAtlas.texture.getWidth() / m_config.blockSize;
+    int AH = currentAtlas.texture.getHeight() / m_blockSize;
+    int AW = currentAtlas.texture.getWidth() / m_blockSize;
 
     int w = patch.atlasPatch3dSizeU();
     int h = patch.atlasPatch3dSizeV();
     int xM = patch.atlasPatch3dOffsetU();
     int yM = patch.atlasPatch3dOffsetV();
 
-    for (int dyAligned = 0; dyAligned < h; dyAligned += m_config.blockSize) {
-      for (int dxAligned = 0; dxAligned < w; dxAligned += m_config.blockSize) {
-        for (int dy = dyAligned; dy < dyAligned + m_config.blockSize; dy++) {
-          for (int dx = dxAligned; dx < dxAligned + m_config.blockSize; dx++) {
+    for (int dyAligned = 0; dyAligned < h; dyAligned += m_blockSize) {
+      for (int dxAligned = 0; dxAligned < w; dxAligned += m_blockSize) {
+        for (int dy = dyAligned; dy < dyAligned + m_blockSize; dy++) {
+          for (int dx = dxAligned; dx < dxAligned + m_blockSize; dx++) {
             Common::Vec2i pView = {xM + dx, yM + dy};
             Common::Vec2i pAtlas = patch.viewToAtlas(pView);
 
-            int ay = pAtlas.y() / m_config.blockSize;
-            int ax = pAtlas.x() / m_config.blockSize;
+            int ay = pAtlas.y() / m_blockSize;
+            int ax = pAtlas.x() / m_blockSize;
 
-            if (ay < 0 || ax < 0 || ay >= AH || ax >= AW || pAtlas.y() % m_config.blockSize != 0 ||
-                pAtlas.x() % m_config.blockSize != 0) {
+            if (ay < 0 || ax < 0 || ay >= AH || ax >= AW || pAtlas.y() % m_blockSize != 0 ||
+                pAtlas.x() % m_blockSize != 0) {
               continue;
             }
 
@@ -364,10 +351,10 @@ void Encoder::adaptBtpmToPatchCount(std::vector<std::vector<std::vector<int>>> &
 
 auto Encoder::calculateBtpm() const -> std::vector<std::vector<std::vector<int>>> {
   std::vector<std::vector<std::vector<int>>> btpm;
-  for (uint8_t k = 0; k <= m_params.vps.vps_atlas_count_minus1(); ++k) {
+  for (uint8_t k = 0; k <= params().vps.vps_atlas_count_minus1(); ++k) {
     const auto &currentAtlas = m_videoFrameBuffer[0][k];
-    int AH = currentAtlas.texture.getHeight() / m_config.blockSize;
-    int AW = currentAtlas.texture.getWidth() / m_config.blockSize;
+    int AH = currentAtlas.texture.getHeight() / m_blockSize;
+    int AW = currentAtlas.texture.getWidth() / m_blockSize;
     std::vector<std::vector<int>> tmphw;
     for (int h = 0; h < AH; h++) {
       std::vector<int> tmpw;
@@ -388,7 +375,7 @@ auto Encoder::calculatePatchAttrOffsetValuesFullGOP(
   const auto textureMedVal = Common::medLevel<uint16_t>(m_config.textureBitDepth);
   const auto textureMaxVal = Common::maxLevel<uint16_t>(m_config.textureBitDepth);
 
-  for (size_t p = 0; p != m_params.patchParamsList.size(); ++p) {
+  for (size_t p = 0; p != params().patchParamsList.size(); ++p) {
     for (int c = 0; c < 3; c++) {
       if (patchAttrOffsetValuesFullGOP[p][c][3] > 0) {
         patchAttrOffsetValuesFullGOP[p][c][2] /= patchAttrOffsetValuesFullGOP[p][c][3];
@@ -421,6 +408,7 @@ auto computeOccUnoccupiedLevel(uint8_t occBitDepthMinus1) -> uint16_t {
   return Common::assertDownCast<uint16_t>(1 << (occBitDepthMinus1 - 1));
 }
 
+// NOLINTNEXTLINE(readability-function-cognitive-complexity)
 void Encoder::constructVideoFrames() {
   int frameId = 0;
 
@@ -428,7 +416,7 @@ void Encoder::constructVideoFrames() {
   const auto textureMaxVal = Common::maxLevel<uint16_t>(m_config.textureBitDepth);
 
   if (m_config.attributeOffsetFlag) {
-    for (size_t p = 0; p < m_params.patchParamsList.size(); ++p) {
+    for (size_t p = 0; p < params().patchParamsList.size(); ++p) {
       std::array<std::array<int64_t, 4>, 3> tmp{};
       for (int c = 0; c < 3; c++) {
         Common::at(tmp, c)[0] = textureMaxVal;
@@ -440,7 +428,7 @@ void Encoder::constructVideoFrames() {
     }
   }
 
-  const auto &vps = m_params.vps;
+  const auto &vps = params().vps;
 
   for (const auto &views : m_transportViews) {
     Common::MVD16Frame atlasList;
@@ -465,7 +453,7 @@ void Encoder::constructVideoFrames() {
         int occFrameWidth = frameWidth;
         int occFrameHeight = frameHeight;
 
-        const auto &asme = m_params.atlas[k].asps.asps_miv_extension();
+        const auto &asme = params().atlas[k].asps.asps_miv_extension();
 
         if (!asme.asme_embedded_occupancy_enabled_flag() &&
             asme.asme_occupancy_scale_enabled_flag()) {
@@ -485,13 +473,13 @@ void Encoder::constructVideoFrames() {
     int patchCnt = 0;
     auto patchAttrOffsetValues1Frame = std::array<std::array<int64_t, 4>, 3>{};
 
-    for (size_t patchIdx = 0; patchIdx < m_params.patchParamsList.size(); patchIdx++) {
-      const auto &patch = m_params.patchParamsList[patchIdx];
-      const auto viewIdx = m_params.viewParamsList.indexOf(patch.atlasPatchProjectionId());
+    for (size_t patchIdx = 0; patchIdx < params().patchParamsList.size(); patchIdx++) {
+      const auto &patch = params().patchParamsList[patchIdx];
+      const auto viewIdx = params().viewParamsList.indexOf(patch.atlasPatchProjectionId());
       const auto &view = views[viewIdx];
 
-      const auto k = m_params.vps.indexOf(patch.atlasId());
-      if (0 < m_params.atlas[k].asps.asps_miv_extension().asme_max_entity_id()) {
+      const auto k = params().vps.indexOf(patch.atlasId());
+      if (0 < params().atlas[k].asps.asps_miv_extension().asme_max_entity_id()) {
         Common::MVD16Frame tempViews;
         tempViews.push_back(view);
         const auto &entityViews = entitySeparator(tempViews, *patch.atlasPatchEntityId());
@@ -524,7 +512,9 @@ void Encoder::constructVideoFrames() {
     m_videoFrameBuffer.push_back(std::move(atlasList));
     ++frameId;
   }
-  calculateAttributeOffset(patchAttrOffsetValuesFullGOP);
+  if (m_config.attributeOffsetFlag) {
+    calculateAttributeOffset(patchAttrOffsetValuesFullGOP);
+  }
 }
 
 auto Encoder::isRedundantBlock(Common::Vec2i topLeft, Common::Vec2i bottomRight, uint16_t viewIdx,
@@ -532,8 +522,8 @@ auto Encoder::isRedundantBlock(Common::Vec2i topLeft, Common::Vec2i bottomRight,
   if (!m_config.patchRedundancyRemoval) {
     return false;
   }
-  bottomRight.x() = std::min(topLeft.x() + m_config.blockSize, bottomRight.x());
-  bottomRight.y() = std::min(topLeft.y() + m_config.blockSize, bottomRight.y());
+  bottomRight.x() = std::min(topLeft.x() + m_blockSize, bottomRight.x());
+  bottomRight.y() = std::min(topLeft.y() + m_blockSize, bottomRight.y());
 
   for (int y = topLeft.y(); y < bottomRight.y(); ++y) {
     for (int x = topLeft.x(); x < bottomRight.x(); ++x) {
@@ -550,7 +540,7 @@ auto Encoder::writePatchInAtlas(const MivBitstream::PatchParams &patchParams,
                                 const Common::TextureDepth16Frame &view, Common::MVD16Frame &frame,
                                 int frameId, size_t patchIdx)
     -> std::array<std::array<int64_t, 4>, 3> {
-  const auto k = m_params.vps.indexOf(patchParams.atlasId());
+  const auto k = params().vps.indexOf(patchParams.atlasId());
   auto &atlas = frame[k];
 
   const auto sizeU = patchParams.atlasPatch3dSizeU();
@@ -559,7 +549,7 @@ auto Encoder::writePatchInAtlas(const MivBitstream::PatchParams &patchParams,
   const auto posV = patchParams.atlasPatch3dOffsetV();
 
   const auto &inViewParams = m_transportParams.viewParamsList[patchParams.atlasPatchProjectionId()];
-  const auto &outViewParams = m_params.viewParamsList[patchParams.atlasPatchProjectionId()];
+  const auto &outViewParams = params().viewParamsList[patchParams.atlasPatchProjectionId()];
 
   std::array<PatchStats, 3> patchStats{};
   const auto textureMaxVal = Common::maxLevel<uint16_t>(m_config.textureBitDepth);
@@ -569,19 +559,19 @@ auto Encoder::writePatchInAtlas(const MivBitstream::PatchParams &patchParams,
   PRECONDITION(0 <= posV &&
                posV + sizeV <= inViewParams.ci.ci_projection_plane_height_minus1() + 1);
 
-  for (int vBlock = 0; vBlock < sizeV; vBlock += m_config.blockSize) {
-    for (int uBlock = 0; uBlock < sizeU; uBlock += m_config.blockSize) {
-      const auto viewIdx = m_params.viewParamsList.indexOf(patchParams.atlasPatchProjectionId());
+  for (int vBlock = 0; vBlock < sizeV; vBlock += m_blockSize) {
+    for (int uBlock = 0; uBlock < sizeU; uBlock += m_blockSize) {
+      const auto viewIdx = params().viewParamsList.indexOf(patchParams.atlasPatchProjectionId());
       const auto redundant = isRedundantBlock({posU + uBlock, posV + vBlock},
                                               {posU + sizeU, posV + sizeV}, viewIdx, frameId);
       int yOcc = 0;
       int xOcc = 0;
-      for (int v = vBlock; v < vBlock + m_config.blockSize && v < sizeV; ++v) {
-        for (int u = uBlock; u < uBlock + m_config.blockSize && u < sizeU; ++u) {
+      for (int v = vBlock; v < vBlock + m_blockSize && v < sizeV; ++v) {
+        for (int u = uBlock; u < uBlock + m_blockSize && u < sizeU; ++u) {
           const auto pView = Common::Vec2i{posU + u, posV + v};
           const auto pAtlas = patchParams.viewToAtlas(pView);
 
-          const auto &asme = m_params.atlas[k].asps.asps_miv_extension();
+          const auto &asme = params().atlas[k].asps.asps_miv_extension();
 
           if (!asme.asme_embedded_occupancy_enabled_flag() &&
               asme.asme_occupancy_scale_enabled_flag()) {
@@ -614,11 +604,11 @@ auto Encoder::writePatchInAtlas(const MivBitstream::PatchParams &patchParams,
               atlas.occupancy.getPlane(0)(yOcc, xOcc) = 0;
             }
             atlas.depth.getPlane(0)(pAtlas.y(), pAtlas.x()) = depth;
-            if (depth > 0 && m_params.vps.vps_occupancy_video_present_flag(patchParams.atlasId())) {
+            if (depth > 0 && params().vps.vps_occupancy_video_present_flag(patchParams.atlasId())) {
               const auto occupiedLevel = Common::assertDownCast<uint16_t>(
-                  computeOccUnoccupiedLevel(
-                      m_params.vps.occupancy_information(patchParams.atlasId())
-                          .oi_occupancy_2d_bit_depth_minus1()) *
+                  computeOccUnoccupiedLevel(params()
+                                                .vps.occupancy_information(patchParams.atlasId())
+                                                .oi_occupancy_2d_bit_depth_minus1()) *
                   3);
               atlas.occupancy.getPlane(0)(yOcc, xOcc) = occupiedLevel;
             }
@@ -642,9 +632,10 @@ void Encoder::adaptAtlas(const MivBitstream::PatchParams &patchParams,
                          Common::TextureDepthFrame<Common::YUV400P16> &atlas, int yOcc, int xOcc,
                          const Common::Vec2i &pView, const Common::Vec2i &pAtlas) const {
   atlas.depth.getPlane(0)(pAtlas.y(), pAtlas.x()) = 0;
-  if (m_params.vps.vps_occupancy_video_present_flag(patchParams.atlasId())) {
+  if (params().vps.vps_occupancy_video_present_flag(patchParams.atlasId())) {
     const auto unoccupiedLevel =
-        computeOccUnoccupiedLevel(m_params.vps.occupancy_information(patchParams.atlasId())
+        computeOccUnoccupiedLevel(params()
+                                      .vps.occupancy_information(patchParams.atlasId())
                                       .oi_occupancy_2d_bit_depth_minus1());
     atlas.occupancy.getPlane(0)(yOcc, xOcc) = unoccupiedLevel;
   }

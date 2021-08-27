@@ -59,6 +59,11 @@ Configuration::Configuration(const Common::Json &rootNode, const Common::Json &c
     , patchRedundancyRemoval{rootNode.require("patchRedundancyRemoval").as<bool>()}
     , numGroups{rootNode.require("numGroups").as<uint8_t>()}
     , maxEntityId{rootNode.require("maxEntityId").as<uint16_t>()} {
+  for (const auto blockSize : blockSizeDepthQualityDependent) {
+    VERIFY(2 <= blockSize);
+    VERIFY((blockSize & (blockSize - 1)) == 0);
+  }
+
   if (const auto &node = componentNode.optional("overrideAtlasFrameSizes")) {
     std::cout
         << "WARNING: Overriding atlas frame sizes is meant for internal/preliminary experiments "
@@ -68,9 +73,24 @@ Configuration::Configuration(const Common::Json &rootNode, const Common::Json &c
     }
   } else if (!oneViewPerAtlasFlag) {
     maxLumaSampleRate = rootNode.require("maxLumaSampleRate").as<double>();
-    maxLumaPictureSize = rootNode.require("maxLumaPictureSize").as<int>();
+    maxLumaPictureSize = rootNode.require("maxLumaPictureSize").as<int32_t>();
     maxAtlases = rootNode.require("maxAtlases").as<int>();
     maxAtlases = maxAtlases / std::max(1, int{numGroups});
+  }
+
+  if (haveGeometry && !haveOccupancy) {
+    depthOccThresholdIfSet =
+        componentNode.require("depthOccThresholdIfSet").as<Common::SampleValue>();
+
+    if (depthOccThresholdIfSet < 1) {
+      throw std::runtime_error("The depthOccThresholdIfSet parameter is only used when the encoder "
+                               "needs to use occupancy. The value 0 is not allowed.");
+    }
+    if (depthOccThresholdIfSet >= 500) {
+      throw std::runtime_error(
+          "The encoder takes a margin equal to the threshold, so "
+          "setting the threshold this high will make it impossible to encode depth.");
+    }
   }
 
   if (!haveGeometry) {

@@ -344,18 +344,19 @@ public:
     }
   }
 
-  auto prepareSequence(PrunerParams params) -> MivBitstream::ViewParamsList {
-    auto &viewParamsList = params.viewParamsList;
-    Renderer::ProjectionHelperList cameraHelperList{viewParamsList};
+  auto prepareSequence(const PrunerParams &params) -> std::vector<MivBitstream::PruningParents> {
+    auto pruningParents = std::vector<MivBitstream::PruningParents>(params.viewParamsList.size());
+
+    Renderer::ProjectionHelperList cameraHelperList{params.viewParamsList};
 
     // Create clusters and pruning order
     auto overlappingMatrix = computeOverlappingMatrix(cameraHelperList);
-    clusterViews(overlappingMatrix, viewParamsList);
+    clusterViews(overlappingMatrix, params.viewParamsList);
     computePruningOrder(overlappingMatrix);
-    printClusters(viewParamsList);
+    printClusters(params.viewParamsList);
 
     // Pruning graph
-    Common::Graph::SparseDirectedAcyclicGraph<float> pruningGraph(viewParamsList.size());
+    Common::Graph::SparseDirectedAcyclicGraph<float> pruningGraph(params.viewParamsList.size());
 
     for (auto &cluster : m_clusters) {
       if (!cluster.pruningOrder.empty()) {
@@ -369,11 +370,11 @@ public:
     }
 
     // Pruning mask
-    for (size_t camId = 0; camId < viewParamsList.size(); camId++) {
-      const auto &neighbourhood = pruningGraph.getNeighbourhood(camId);
+    for (size_t viewIdx = 0; viewIdx < params.viewParamsList.size(); viewIdx++) {
+      const auto &neighbourhood = pruningGraph.getNeighbourhood(viewIdx);
 
       if (neighbourhood.empty()) {
-        viewParamsList[camId].pp = MivBitstream::PruningParents{};
+        pruningParents[viewIdx] = MivBitstream::PruningParents{};
       } else {
         std::vector<uint16_t> parentIdList;
 
@@ -383,12 +384,12 @@ public:
           parentIdList.emplace_back(static_cast<uint16_t>(link.id()));
         }
 
-        viewParamsList[camId].pp = MivBitstream::PruningParents{std::move(parentIdList)};
+        pruningParents[viewIdx] = MivBitstream::PruningParents{std::move(parentIdList)};
       }
     }
     m_params.depthLowQualityFlag = params.depthLowQualityFlag;
     m_params.sampleBudget = params.sampleBudget;
-    return std::move(params.viewParamsList);
+    return pruningParents;
   }
 
   auto prune(const MivBitstream::ViewParamsList &viewParamsList, const Common::MVD16Frame &views)
@@ -776,7 +777,8 @@ HierarchicalPruner::HierarchicalPruner(const Common::Json & /* unused */,
 
 HierarchicalPruner::~HierarchicalPruner() = default;
 
-auto HierarchicalPruner::prepareSequence(PrunerParams params) -> MivBitstream::ViewParamsList {
+auto HierarchicalPruner::prepareSequence(const PrunerParams &params)
+    -> std::vector<MivBitstream::PruningParents> {
   return m_impl->prepareSequence(params);
 }
 

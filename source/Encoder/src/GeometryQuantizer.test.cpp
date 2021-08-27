@@ -38,8 +38,6 @@
 #include <TMIV/Common/Common.h>
 
 SCENARIO("Geometry quantization") {
-  TMIV::Encoder::GeometryQuantizer depthOccupancy{37};
-
   auto sourceViewParams = TMIV::MivBitstream::ViewParams{};
   sourceViewParams.ci.ci_projection_plane_width_minus1(1919)
       .ci_projection_plane_height_minus1(1079)
@@ -56,7 +54,7 @@ SCENARIO("Geometry quantization") {
     sourceParams.viewParamsList.push_back(sourceViewParams);
 
     WHEN("Modifying the depth range") {
-      const auto codedParams = depthOccupancy.transformParams(sourceParams);
+      const auto codedParams = TMIV::Encoder::GeometryQuantizer::transformParams(sourceParams, 37);
 
       THEN("The camera parameters are unmodified") {
         REQUIRE(codedParams.viewParamsList == sourceParams.viewParamsList);
@@ -70,7 +68,8 @@ SCENARIO("Geometry quantization") {
     sourceSeqParams.viewParamsList.push_back(sourceViewParams);
 
     WHEN("Modifying the depth range") {
-      const auto codedSeqParams = depthOccupancy.transformParams(sourceSeqParams);
+      const auto codedSeqParams =
+          TMIV::Encoder::GeometryQuantizer::transformParams(sourceSeqParams, 37);
       const auto &codedViewParams = codedSeqParams.viewParamsList.front();
 
       THEN("dq_depth_occ_threshold_default (T) >> 0") {

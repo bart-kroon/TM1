@@ -35,69 +35,17 @@
 
 #include <TMIV/MivBitstream/DepthOccupancyTransform.h>
 
-#include <iostream>
-#include <stdexcept>
+namespace TMIV::Encoder::GeometryQuantizer {
+auto transformParams(const EncoderParams &inParams, Common::SampleValue depthOccThresholdIfSet)
+    -> EncoderParams {
+  auto outParams = inParams;
 
-namespace TMIV::Encoder {
-GeometryQuantizer::GeometryQuantizer(uint16_t depthOccThresholdIfSet)
-    : m_depthOccThresholdIfSet{depthOccThresholdIfSet} {
-  if (depthOccThresholdIfSet < 1) {
-    throw std::runtime_error("The depthOccThresholdIfSet parameter is only used when the encoder "
-                             "needs to use occupancy. The value 0 is not allowed.");
-  }
-  if (depthOccThresholdIfSet >= 500) {
-    throw std::runtime_error(
-        "The GeometryQuantizer component takes a margin equal to the threshold, so "
-        "setting the threshold this high will make it impossible to encode depth.");
-  }
-}
-
-auto GeometryQuantizer::setOccupancyParams(EncoderParams params, bool haveGeometryVideo,
-                                           bool haveOccupancyVideo) -> const EncoderParams & {
-  m_inParams = std::move(params);
-  m_outParams = m_inParams;
-
-  const auto haveEmbeddedOccupancy =
-      haveGeometryVideo && !haveOccupancyVideo &&
-      std::any_of(m_inParams.viewParamsList.cbegin(), m_inParams.viewParamsList.cend(),
-                  [](const auto &vp) { return vp.hasOccupancy; });
-
-  m_outParams.vps.vps_miv_extension().vme_embedded_occupancy_enabled_flag(haveEmbeddedOccupancy);
-
-  if (!haveEmbeddedOccupancy) {
-    m_outParams.vps.vps_miv_extension().vme_occupancy_scale_enabled_flag(haveOccupancyVideo);
-  }
-
-  for (auto &atlas : m_outParams.atlas) {
-    atlas.asps.asps_miv_extension().asme_embedded_occupancy_enabled_flag(haveEmbeddedOccupancy);
-  }
-
-  if (haveOccupancyVideo) {
-    for (auto &atlas : m_outParams.atlas) {
-      const auto k = atlas.asps.asps_log2_patch_packing_block_size();
-      const auto occFrameSizeX = std::lcm(2, atlas.asps.asps_frame_width() >> k);
-      const auto occFrameSizeY = std::lcm(2, atlas.asps.asps_frame_height() >> k);
-      const auto scaleFactorX = atlas.asps.asps_frame_width() / occFrameSizeX;
-      const auto scaleFactorY = atlas.asps.asps_frame_height() / occFrameSizeY;
-      atlas.asps.asps_miv_extension()
-          .asme_occupancy_scale_factor_x_minus1(Common::downCast<uint16_t>(scaleFactorX - 1))
-          .asme_occupancy_scale_factor_y_minus1(Common::downCast<uint16_t>(scaleFactorY - 1));
-    }
-  }
-
-  return m_outParams;
-}
-
-auto GeometryQuantizer::transformParams(EncoderParams params) -> const EncoderParams & {
-  m_inParams = std::move(params);
-  m_outParams = m_inParams;
-
-  if (m_outParams.vps.vps_miv_extension().vme_embedded_occupancy_enabled_flag()) {
-    for (auto &x : m_outParams.viewParamsList) {
+  if (outParams.vps.vps_miv_extension().vme_embedded_occupancy_enabled_flag()) {
+    for (auto &x : outParams.viewParamsList) {
       if (x.hasOccupancy) {
-        x.dq.dq_depth_occ_threshold_default(m_depthOccThresholdIfSet); // =T
+        x.dq.dq_depth_occ_threshold_default(depthOccThresholdIfSet); // =T
         const auto nearLevel = 1023.F;
-        const auto farLevel = static_cast<float>(2 * m_depthOccThresholdIfSet);
+        const auto farLevel = static_cast<float>(2 * depthOccThresholdIfSet);
         // Mapping is [2T, 1023] --> [old far, near]. What is level 0? (the new far)
         x.dq.dq_norm_disp_low(x.dq.dq_norm_disp_low() +
                               (0.F - farLevel) / (nearLevel - farLevel) *
@@ -106,11 +54,41 @@ auto GeometryQuantizer::transformParams(EncoderParams params) -> const EncoderPa
     }
   }
 
-  return m_outParams;
+  return outParams;
 }
 
-auto GeometryQuantizer::transformAtlases(const Common::MVD16Frame &inAtlases)
-    -> Common::MVD10Frame {
+namespace {
+void padGeometryFromLeft(const EncoderParams &outParams, Common::MVD10Frame &atlases) noexcept {
+  for (uint8_t i = 0; i <= outParams.vps.vps_atlas_count_minus1(); ++i) {
+    const auto j = outParams.vps.vps_atlas_id(i);
+    if (outParams.vps.vps_occupancy_video_present_flag(j)) {
+      auto &depthAtlasMap = atlases[i].depth;
+      auto depthScale =
+          std::array{outParams.atlas[i].asps.asps_frame_height() / depthAtlasMap.getHeight(),
+                     outParams.atlas[i].asps.asps_frame_width() / depthAtlasMap.getWidth()};
+      const auto &occupancyAtlasMap = atlases[i].occupancy;
+      auto occupancyScale =
+          std::array{outParams.atlas[i].asps.asps_frame_height() / occupancyAtlasMap.getHeight(),
+                     outParams.atlas[i].asps.asps_frame_width() / occupancyAtlasMap.getWidth()};
+      for (int y = 0; y < depthAtlasMap.getHeight(); y++) {
+        for (int x = 1; x < depthAtlasMap.getWidth(); x++) {
+          auto depth = depthAtlasMap.getPlane(0)(y, x);
+          const int yOcc = y * depthScale[0] / occupancyScale[0];
+          const int xOcc = x * depthScale[1] / occupancyScale[1];
+          if (occupancyAtlasMap.getPlane(0)(yOcc, xOcc) == 0 ||
+              (depth == 0 &&
+               atlases[i].texture.getPlane(0)(y * depthScale[0], x * depthScale[1]) == 512)) {
+            depthAtlasMap.getPlane(0)(y, x) = depthAtlasMap.getPlane(0)(y, x - 1);
+          }
+        }
+      }
+    }
+  }
+}
+} // namespace
+
+auto transformAtlases(const EncoderParams &inParams, const EncoderParams &outParams,
+                      const Common::MVD16Frame &inAtlases) -> Common::MVD10Frame {
   auto outAtlases = Common::MVD10Frame{};
   outAtlases.reserve(inAtlases.size());
 
@@ -120,14 +98,14 @@ auto GeometryQuantizer::transformAtlases(const Common::MVD16Frame &inAtlases)
         inAtlas.occupancy);
   }
 
-  for (const auto &patch : m_outParams.patchParamsList) {
-    const auto &inViewParams = m_inParams.viewParamsList[patch.atlasPatchProjectionId()];
-    const auto &outViewParams = m_outParams.viewParamsList[patch.atlasPatchProjectionId()];
+  for (const auto &patch : outParams.patchParamsList) {
+    const auto &inViewParams = inParams.viewParamsList[patch.atlasPatchProjectionId()];
+    const auto &outViewParams = outParams.viewParamsList[patch.atlasPatchProjectionId()];
     const auto inOccupancyTransform = MivBitstream::OccupancyTransform{inViewParams};
     const auto inDepthTransform = MivBitstream::DepthTransform{inViewParams.dq, 16};
     const auto outDepthTransform = MivBitstream::DepthTransform{outViewParams.dq, patch, 10};
-    const auto kIn = m_inParams.vps.indexOf(patch.atlasId());
-    const auto kOut = m_outParams.vps.indexOf(patch.atlasId());
+    const auto kIn = inParams.vps.indexOf(patch.atlasId());
+    const auto kOut = outParams.vps.indexOf(patch.atlasId());
 
     for (size_t i = 0; i < static_cast<size_t>(patch.atlasPatch2dSizeY()); ++i) {
       for (size_t j = 0; j < static_cast<size_t>(patch.atlasPatch2dSizeX()); ++j) {
@@ -150,37 +128,9 @@ auto GeometryQuantizer::transformAtlases(const Common::MVD16Frame &inAtlases)
     }
   }
 
-  if (!m_outParams.casps.casps_miv_extension().casme_depth_low_quality_flag()) {
-    padGeometryFromLeft(outAtlases);
+  if (!outParams.casps.casps_miv_extension().casme_depth_low_quality_flag()) {
+    padGeometryFromLeft(outParams, outAtlases);
   }
   return outAtlases;
 }
-
-void GeometryQuantizer::padGeometryFromLeft(Common::MVD10Frame &atlases) const noexcept {
-  for (uint8_t i = 0; i <= m_outParams.vps.vps_atlas_count_minus1(); ++i) {
-    const auto j = m_outParams.vps.vps_atlas_id(i);
-    if (m_outParams.vps.vps_occupancy_video_present_flag(j)) {
-      auto &depthAtlasMap = atlases[i].depth;
-      auto depthScale =
-          std::array{m_outParams.atlas[i].asps.asps_frame_height() / depthAtlasMap.getHeight(),
-                     m_outParams.atlas[i].asps.asps_frame_width() / depthAtlasMap.getWidth()};
-      const auto &occupancyAtlasMap = atlases[i].occupancy;
-      auto occupancyScale =
-          std::array{m_outParams.atlas[i].asps.asps_frame_height() / occupancyAtlasMap.getHeight(),
-                     m_outParams.atlas[i].asps.asps_frame_width() / occupancyAtlasMap.getWidth()};
-      for (int y = 0; y < depthAtlasMap.getHeight(); y++) {
-        for (int x = 1; x < depthAtlasMap.getWidth(); x++) {
-          auto depth = depthAtlasMap.getPlane(0)(y, x);
-          const int yOcc = y * depthScale[0] / occupancyScale[0];
-          const int xOcc = x * depthScale[1] / occupancyScale[1];
-          if (occupancyAtlasMap.getPlane(0)(yOcc, xOcc) == 0 ||
-              (depth == 0 &&
-               atlases[i].texture.getPlane(0)(y * depthScale[0], x * depthScale[1]) == 512)) {
-            depthAtlasMap.getPlane(0)(y, x) = depthAtlasMap.getPlane(0)(y, x - 1);
-          }
-        }
-      }
-    }
-  }
-}
-} // namespace TMIV::Encoder
+} // namespace TMIV::Encoder::GeometryQuantizer

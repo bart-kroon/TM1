@@ -31,10 +31,11 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <TMIV/Encoder/MpiEncoder.h>
+
 #include <TMIV/Common/Factory.h>
 #include <TMIV/Common/Thread.h>
 #include <TMIV/Common/verify.h>
-#include <TMIV/Encoder/MpiEncoder.h>
 
 #include <iostream>
 
@@ -206,7 +207,7 @@ void MpiEncoder::prepareSequence(const MivBitstream::SequenceConfig &sequenceCon
   }
 
   m_params.viewParamsList = sequenceConfig.sourceViewParams();
-  m_params.frameRate = sequenceConfig.frameRate;
+  m_frameRate = sequenceConfig.frameRate;
 
   auto depthLowQualityFlag = false;
 
@@ -392,8 +393,8 @@ auto MpiEncoder::popAtlas() -> Common::MVD10Frame {
 
 auto MpiEncoder::vuiParameters() const -> MivBitstream::VuiParameters {
   auto numUnitsInTick = 1;
-  auto timeScale = static_cast<int>(numUnitsInTick * m_params.frameRate);
-  LIMITATION(timeScale == numUnitsInTick * m_params.frameRate);
+  auto timeScale = static_cast<int>(numUnitsInTick * m_frameRate);
+  LIMITATION(timeScale == numUnitsInTick * m_frameRate);
 
   auto vui = MivBitstream::VuiParameters{};
   vui.vui_num_units_in_tick(numUnitsInTick)

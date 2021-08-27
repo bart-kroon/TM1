@@ -80,12 +80,13 @@ create_catch2_unit_test(
         EncoderTest
     SOURCES
         "src/AnnexB.test.cpp"
-        "src/Configuration.test.cpp"
-        "src/GeometryQuantizer.test.cpp"
-        "src/ExplicitOccupancy.test.cpp"
         "src/ColorConsistencyAssessor.test.cpp"
+        "src/Configuration.test.cpp"
+        "src/Encoder_prepareSequence.test.cpp"
+        "src/ExplicitOccupancy.test.cpp"
+        "src/FramePacker.test.cpp"
+        "src/GeometryQuantizer.test.cpp"
         "src/MivEncoder.test.cpp"
-	"src/FramePacker.test.cpp"
     PRIVATE
         TMIV::EncoderLib
     )

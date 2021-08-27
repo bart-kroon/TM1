@@ -45,7 +45,7 @@ class MivEncoder {
 public:
   MivEncoder(std::ostream &stream);
 
-  void writeAccessUnit(const EncoderParams & /*params*/);
+  void writeAccessUnit(const EncoderParams &params, bool randomAccess);
 
 private:
   struct PreviouslySentMessages {

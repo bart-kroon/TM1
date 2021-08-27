@@ -50,7 +50,8 @@ public:
   auto operator=(HierarchicalPruner &&) -> HierarchicalPruner & = delete;
   ~HierarchicalPruner() override;
 
-  [[nodiscard]] auto prepareSequence(PrunerParams params) -> MivBitstream::ViewParamsList override;
+  [[nodiscard]] auto prepareSequence(const PrunerParams &params)
+      -> std::vector<MivBitstream::PruningParents> override;
   auto prune(const MivBitstream::ViewParamsList &viewParamsList, const Common::MVD16Frame &views)
       -> Common::MaskList override;
 

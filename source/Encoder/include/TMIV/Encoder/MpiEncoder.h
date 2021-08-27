@@ -86,6 +86,7 @@ private:
   int m_blockSize{};
   size_t m_maxLumaSamplesPerFrame{};
   EncoderParams m_params;
+  double m_frameRate{};
 };
 } // namespace TMIV::Encoder
 

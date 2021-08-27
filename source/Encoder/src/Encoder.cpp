@@ -35,8 +35,6 @@
 
 #include <TMIV/Common/Factory.h>
 
-#include <iostream>
-
 // Encoder sub-component interfaces
 using TMIV::Aggregator::IAggregator;
 using TMIV::Packer::IPacker;
@@ -45,15 +43,12 @@ using TMIV::ViewOptimizer::IViewOptimizer;
 
 namespace TMIV::Encoder {
 Encoder::Encoder(const Common::Json &rootNode, const Common::Json &componentNode)
-    : m_rootNode{rootNode}
-    , m_depthQualityAssessor{Common::create<DepthQualityAssessor::IDepthQualityAssessor>(
+    : m_depthQualityAssessor{Common::create<DepthQualityAssessor::IDepthQualityAssessor>(
           "DepthQualityAssessor", rootNode, componentNode)}
     , m_viewOptimizer{Common::create<IViewOptimizer>("ViewOptimizer", rootNode, componentNode)}
     , m_pruner{Common::create<Pruner::IPruner>("Pruner", rootNode, componentNode)}
     , m_aggregator{Common::create<IAggregator>("Aggregator", rootNode, componentNode)}
     , m_packer{Common::create<IPacker>("Packer", rootNode, componentNode)}
-    , m_geometryQuantizer{componentNode.require("depthOccThresholdIfSet").as<uint16_t>()}
-    , m_geometryDownscaler{rootNode, componentNode}
     , m_config(rootNode, componentNode) {}
 
 auto Encoder::maxLumaSamplesPerFrame() const -> size_t { return m_maxLumaSamplesPerFrame; }

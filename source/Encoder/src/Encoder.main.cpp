@@ -114,7 +114,7 @@ private:
     std::cout << "Access unit: [" << firstFrame << ", " << lastFrame << ")\n";
     m_encoder.prepareAccessUnit();
     pushFrames(firstFrame, lastFrame);
-    m_mivEncoder.writeAccessUnit(m_encoder.completeAccessUnit());
+    m_mivEncoder.writeAccessUnit(m_encoder.completeAccessUnit(), m_encoder.config().randomAccess);
     popAtlases(firstFrame, lastFrame);
   }
 

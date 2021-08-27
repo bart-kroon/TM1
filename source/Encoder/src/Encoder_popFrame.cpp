@@ -33,18 +33,23 @@
 
 #include <TMIV/Encoder/Encoder.h>
 
+#include <TMIV/Encoder/GeometryDownscaler.h>
+#include <TMIV/Encoder/GeometryQuantizer.h>
+
 namespace TMIV::Encoder {
 auto Encoder::popAtlas() -> Common::MVD10Frame {
   incrementFoc();
 
   if (m_config.haveGeometry) {
-    auto frame = m_geometryDownscaler.transformFrame(
-        m_geometryQuantizer.transformAtlases(m_videoFrameBuffer.front()));
+    auto quantizedFrame = GeometryQuantizer::transformAtlases(params(), m_paramsQuantized,
+                                                              m_videoFrameBuffer.front());
+    auto scaledFrame =
+        GeometryDownscaler::transformFrame(params().atlas, std::move(quantizedFrame));
     m_videoFrameBuffer.pop_front();
     if (m_config.framePacking) {
-      m_framePacker.constructFramePack(frame);
+      m_framePacker.constructFramePack(scaledFrame);
     }
-    return frame;
+    return scaledFrame;
   }
 
   auto frame = Common::MVD10Frame(m_videoFrameBuffer.front().size());
@@ -59,7 +64,7 @@ auto Encoder::popAtlas() -> Common::MVD10Frame {
 }
 
 void Encoder::incrementFoc() {
-  const auto &atlas0 = m_params.atlas.front();
+  const auto &atlas0 = params().atlas.front();
   const auto log2FocLsb = atlas0.asps.asps_log2_max_atlas_frame_order_cnt_lsb_minus4() + 4U;
   auto focLsb = atlas0.ath.ath_atlas_frm_order_cnt_lsb();
   if (++focLsb >> log2FocLsb == 1U) {

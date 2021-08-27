@@ -69,6 +69,7 @@ TEST_CASE("TMIV::Encoder::Configuration") {
 })"sv);
 
     const auto component = Json::parse(R"({
+    "depthOccThresholdIfSet": 64,
     "dilate": 0
 })"sv);
 
@@ -194,6 +195,7 @@ TEST_CASE("TMIV::Encoder::Configuration") {
 })"sv);
 
     auto component = Json::parse(R"({
+    "depthOccThresholdIfSet": 64,
     "dilate": 5
 })"sv);
 
@@ -290,6 +292,7 @@ TEST_CASE("TMIV::Encoder::Configuration") {
 })"sv);
 
     const auto component = Json::parse(R"({
+    "depthOccThresholdIfSet": 64,
     "dilate": 5
 })"sv);
 

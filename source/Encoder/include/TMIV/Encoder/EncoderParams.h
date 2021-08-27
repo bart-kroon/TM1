@@ -54,19 +54,14 @@ struct EncoderAtlasParams {
 struct EncoderParams {
   MivBitstream::V3cParameterSet vps;
   MivBitstream::CommonAtlasSequenceParameterSetRBSP casps;
+
+  MivBitstream::ViewParamsList viewParamsList;
+  MivBitstream::PatchParamsList patchParamsList;
+  std::vector<EncoderAtlasParams> atlas;
+
   std::optional<MivBitstream::ViewingSpace> viewingSpace{};
   std::optional<MivBitstream::ViewportCameraParameters> viewportCameraParameters{};
   std::optional<MivBitstream::ViewportPosition> viewportPosition{};
-
-  double frameRate{};
-  MivBitstream::ViewParamsList viewParamsList;
-  MivBitstream::PatchParamsList patchParamsList;
-  bool lengthsInMeters{true};
-  bool dqParamsPresentFlag{true};
-  uint16_t maxEntityId{0};
-  bool randomAccess{};
-
-  std::vector<EncoderAtlasParams> atlas;
 };
 } // namespace TMIV::Encoder
 

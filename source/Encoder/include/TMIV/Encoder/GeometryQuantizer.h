@@ -37,33 +37,12 @@
 #include <TMIV/Common/Frame.h>
 #include <TMIV/Encoder/EncoderParams.h>
 
-#include <TMIV/Common/Json.h>
+namespace TMIV::Encoder::GeometryQuantizer {
+[[nodiscard]] auto transformParams(const EncoderParams &inParams,
+                                   Common::SampleValue depthOccThresholdIfSet) -> EncoderParams;
 
-namespace TMIV::Encoder {
-class GeometryQuantizer {
-public:
-  // Initialize with specified depthOccThresholdIfSet
-  //
-  // When incoming view parameters have useOccupancy() set, then the outgoing view parameters
-  // will have the specified depthOccThresholdIfSet value.
-  explicit GeometryQuantizer(uint16_t depthOccThresholdIfSet);
-
-  auto setOccupancyParams(EncoderParams params, bool haveGeometryVideo, bool haveOccupancyVideo)
-      -> const EncoderParams &;
-  // No change when useOccupancy() is false. Otherwise set the depth/occupancy map threshold
-  // to depthOccThresholdIfSet and adjust the normalized disparity range.
-  auto transformParams(EncoderParams params) -> const EncoderParams &;
-
-  // Transform depth bit depth and range
-  auto transformAtlases(const Common::MVD16Frame &inAtlases) -> Common::MVD10Frame;
-
-private:
-  void padGeometryFromLeft(Common::MVD10Frame &atlases) const noexcept;
-
-  uint16_t m_depthOccThresholdIfSet{};
-  EncoderParams m_inParams;
-  EncoderParams m_outParams;
-};
-} // namespace TMIV::Encoder
+[[nodiscard]] auto transformAtlases(const EncoderParams &inParams, const EncoderParams &outParams,
+                                    const Common::MVD16Frame &inAtlases) -> Common::MVD10Frame;
+} // namespace TMIV::Encoder::GeometryQuantizer
 
 #endif

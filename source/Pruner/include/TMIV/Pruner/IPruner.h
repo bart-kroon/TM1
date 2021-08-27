@@ -53,8 +53,8 @@ public:
   auto operator=(IPruner &&) -> IPruner & = default;
   virtual ~IPruner() = default;
 
-  [[nodiscard]] virtual auto prepareSequence(PrunerParams params)
-      -> MivBitstream::ViewParamsList = 0;
+  [[nodiscard]] virtual auto prepareSequence(const PrunerParams &params)
+      -> std::vector<MivBitstream::PruningParents> = 0;
   virtual auto prune(const MivBitstream::ViewParamsList &viewParamsList,
                      const Common::MVD16Frame &views) -> Common::MaskList = 0;
 };

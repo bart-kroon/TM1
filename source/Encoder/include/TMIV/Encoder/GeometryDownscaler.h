@@ -37,18 +37,9 @@
 #include <TMIV/Common/Frame.h>
 #include <TMIV/Encoder/EncoderParams.h>
 
-namespace TMIV::Encoder {
-class GeometryDownscaler {
-public:
-  GeometryDownscaler(const Common::Json & /*unused*/, const Common::Json & /*unused*/);
-
-  auto transformParams(EncoderParams /*params*/) -> const EncoderParams &;
-  auto transformFrame(Common::MVD10Frame frame) -> Common::MVD10Frame;
-
-private:
-  bool m_geometryScaleEnabledFlag{};
-  EncoderParams m_params;
-};
-} // namespace TMIV::Encoder
+namespace TMIV::Encoder::GeometryDownscaler {
+[[nodiscard]] auto transformFrame(const std::vector<EncoderAtlasParams> &atlas,
+                                  Common::MVD10Frame frame) -> Common::MVD10Frame;
+} // namespace TMIV::Encoder::GeometryDownscaler
 
 #endif

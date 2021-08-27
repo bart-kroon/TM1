@@ -36,8 +36,9 @@
 namespace TMIV::Pruner {
 NoPruner::NoPruner(const Common::Json & /* rootConfig */, const Common::Json & /* nodeConfig */) {}
 
-auto NoPruner::prepareSequence(PrunerParams params) -> MivBitstream::ViewParamsList {
-  return params.viewParamsList;
+auto NoPruner::prepareSequence(const PrunerParams & /* params */)
+    -> std::vector<MivBitstream::PruningParents> {
+  return {};
 }
 
 auto NoPruner::prune(const MivBitstream::ViewParamsList &viewParamsList,

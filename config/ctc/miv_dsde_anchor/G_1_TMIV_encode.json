@@ -18,7 +18,6 @@
             "outputAdditionalViews": false
         },
         "dilate": 16,
-        "depthOccThresholdIfSet": 64,
         "NoPruner": {},
         "Packer": {
             "enableMerging": true,

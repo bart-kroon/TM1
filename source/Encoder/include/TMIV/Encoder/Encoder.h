@@ -38,8 +38,6 @@
 #include <TMIV/DepthQualityAssessor/IDepthQualityAssessor.h>
 #include <TMIV/Encoder/Configuration.h>
 #include <TMIV/Encoder/FramePacker.h>
-#include <TMIV/Encoder/GeometryDownscaler.h>
-#include <TMIV/Encoder/GeometryQuantizer.h>
 #include <TMIV/MivBitstream/SequenceConfig.h>
 #include <TMIV/Packer/IPacker.h>
 #include <TMIV/Pruner/IPruner.h>
@@ -65,21 +63,9 @@ public:
   auto popAtlas() -> Common::MVD10Frame;
   [[nodiscard]] auto maxLumaSamplesPerFrame() const -> size_t;
 
-private: // Encoder_prepareSequence.cpp
-  [[nodiscard]] auto
-  calculateNominalAtlasFrameSizes(const MivBitstream::ViewParamsList &viewParamsList,
-                                  double frameRate) const -> Common::SizeVector;
-  [[nodiscard]] auto calculateViewGridSize(const MivBitstream::ViewParamsList &viewParamsList) const
-      -> Common::Vec2i;
-  [[nodiscard]] auto createVps(const std::vector<Common::Vec2i> &atlasFrameSizes) const
-      -> MivBitstream::V3cParameterSet;
-  [[nodiscard]] auto vuiParameters() const -> MivBitstream::VuiParameters;
-  void setGiGeometry3dCoordinatesBitdepthMinus1();
-  void enableOccupancyPerView();
-  void prepareIvau();
-  [[nodiscard]] auto log2FocLsbMinus4() const -> uint8_t;
-  [[nodiscard]] auto patchSizeQuantizers() const -> Common::Vec2i;
+  [[nodiscard]] auto config() const noexcept -> const Configuration & { return m_config; }
 
+private:
   // Encoder_prepareAccessUnit.cpp
   void resetNonAggregatedMask();
 
@@ -119,16 +105,12 @@ private: // Encoder_prepareSequence.cpp
   // Encoder_popFrame.cpp
   void incrementFoc();
 
-  Common::Json m_rootNode;
-
   // Encoder sub-components
   std::unique_ptr<DepthQualityAssessor::IDepthQualityAssessor> m_depthQualityAssessor;
   std::unique_ptr<ViewOptimizer::IViewOptimizer> m_viewOptimizer;
   std::unique_ptr<Pruner::IPruner> m_pruner;
   std::unique_ptr<Aggregator::IAggregator> m_aggregator;
   std::unique_ptr<Packer::IPacker> m_packer;
-  GeometryQuantizer m_geometryQuantizer;
-  GeometryDownscaler m_geometryDownscaler;
   FramePacker m_framePacker;
 
   Configuration m_config;
@@ -137,9 +119,13 @@ private: // Encoder_prepareSequence.cpp
   ViewOptimizer::ViewOptimizerParams m_transportParams;
   std::vector<Common::MVD16Frame> m_transportViews;
 
-  // Encoder output (ready for HM)
-  EncoderParams m_params;
+  int m_blockSize{};
+  EncoderParams m_params;          // Encoder output prior to geometry quantization and scaling
+  EncoderParams m_paramsQuantized; // Encoder output prior to geometry scaling
   std::deque<Common::MVD16Frame> m_videoFrameBuffer;
+
+  // Mark read-only access to encoder params to make mutable access more visible
+  [[nodiscard]] auto params() const noexcept -> const EncoderParams & { return m_params; }
 
   // Mask aggregation state
   using NonAggregatedMask = Common::Mat<std::bitset<maxIntraPeriod>>;

@@ -37,7 +37,7 @@
 
 namespace TMIV::Encoder {
 void Encoder::pushFrame(Common::MVD16Frame sourceViews) {
-  if (m_params.maxEntityId == 0) {
+  if (m_config.maxEntityId == 0) {
     pushSingleEntityFrame(std::move(sourceViews));
   } else {
     pushMultiEntityFrame(std::move(sourceViews));
@@ -101,7 +101,7 @@ void Encoder::updateNonAggregatedMask(const Common::MVD16Frame &transportViews,
   Common::MaskList dilatedMasks = masks; // Atlas dilation
 
   // Atlas dilation
-  if (m_params.casps.casps_miv_extension().casme_depth_low_quality_flag()) {
+  if (params().casps.casps_miv_extension().casme_depth_low_quality_flag()) {
     for (size_t viewIdx = 0; viewIdx < masks.size(); ++viewIdx) {
       for (int n = 0; n < m_config.dilationIter; ++n) {
         dilatedMasks[viewIdx].getPlane(0) = dilate(dilatedMasks[viewIdx].getPlane(0));

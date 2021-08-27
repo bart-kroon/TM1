@@ -38,8 +38,6 @@
 #include <TMIV/Common/Common.h>
 
 SCENARIO("Explicit occupancy") {
-  TMIV::Encoder::GeometryQuantizer explicitOccupancy{64};
-
   auto sourceParams = TMIV::Encoder::EncoderParams{};
   sourceParams.vps.vps_atlas_count_minus1(1)
       .vps_atlas_id(0, TMIV::MivBitstream::AtlasId(0))
@@ -60,40 +58,11 @@ SCENARIO("Explicit occupancy") {
 
   GIVEN("Signaling occupancy maps explicitly") {
     WHEN("Calling transformParams") {
-      const auto codedParams = explicitOccupancy.transformParams(sourceParams);
+      const auto codedParams = TMIV::Encoder::GeometryQuantizer::transformParams(sourceParams, 64);
 
       THEN("Encoder ASPS params are not modified") {
         REQUIRE(codedParams.atlas[0].asps == sourceParams.atlas[0].asps);
         REQUIRE(codedParams.atlas[1].asps == sourceParams.atlas[1].asps);
-      }
-    }
-
-    WHEN("Calling setOccupancyParams") {
-      const auto codedParams = explicitOccupancy.setOccupancyParams(sourceParams, true, true);
-
-      THEN("Encoder ASPS params are modified to enable explicit occupancy") {
-        REQUIRE(codedParams.vps.vps_miv_extension().vme_embedded_occupancy_enabled_flag() == false);
-        REQUIRE(codedParams.vps.vps_miv_extension().vme_occupancy_scale_enabled_flag() == true);
-        REQUIRE(codedParams.atlas[0].asps != sourceParams.atlas[0].asps);
-        REQUIRE(
-            codedParams.atlas[0].asps.asps_miv_extension().asme_occupancy_scale_enabled_flag() ==
-            true);
-        REQUIRE(
-            codedParams.atlas[0].asps.asps_miv_extension().asme_occupancy_scale_factor_x_minus1() ==
-            31);
-        REQUIRE(
-            codedParams.atlas[0].asps.asps_miv_extension().asme_occupancy_scale_factor_y_minus1() ==
-            15);
-        REQUIRE(codedParams.atlas[1].asps != sourceParams.atlas[1].asps);
-        REQUIRE(
-            codedParams.atlas[1].asps.asps_miv_extension().asme_occupancy_scale_enabled_flag() ==
-            true);
-        REQUIRE(
-            codedParams.atlas[1].asps.asps_miv_extension().asme_occupancy_scale_factor_x_minus1() ==
-            15);
-        REQUIRE(
-            codedParams.atlas[1].asps.asps_miv_extension().asme_occupancy_scale_factor_y_minus1() ==
-            15);
       }
     }
   }

@@ -47,13 +47,10 @@ struct Configuration {
   Configuration(const Common::Json & /*rootNode*/, const Common::Json & /*componentNode*/);
 
   int intraPeriod;
-  int blockSize{};
   Common::Vec2i blockSizeDepthQualityDependent;
   std::optional<bool> depthLowQualityFlag;
   double maxLumaSampleRate{};
-  int maxLumaPictureSize{};
-  double maxBlockRate{};
-  int maxBlocksPerAtlas{};
+  int32_t maxLumaPictureSize{};
   int maxAtlases{};
   bool haveTexture;
   bool haveGeometry;
@@ -61,6 +58,7 @@ struct Configuration {
   bool framePacking;
   bool oneViewPerAtlasFlag;
   std::vector<Common::Vec2i> overrideAtlasFrameSizes{};
+  Common::SampleValue depthOccThresholdIfSet{};
   bool geometryScaleEnabledFlag;
   int dilationIter;
   Common::stack::Vec2<Common::SampleValue> entityEncRange;
@@ -79,6 +77,10 @@ struct Configuration {
   MivBitstream::PtlProfileCodecGroupIdc codecGroupIdc{};
   MivBitstream::PtlProfilePccToolsetIdc toolsetIdc{};
   unsigned textureBitDepth{10U};
+
+  [[nodiscard]] auto blockSize(bool depthLowQualityFlag_) const noexcept {
+    return blockSizeDepthQualityDependent[static_cast<int>(depthLowQualityFlag_)];
+  }
 };
 } // namespace TMIV::Encoder
 

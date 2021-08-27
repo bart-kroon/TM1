@@ -33,33 +33,7 @@
 
 #include <TMIV/Encoder/GeometryDownscaler.h>
 
-#include <algorithm>
-
 namespace TMIV::Encoder {
-GeometryDownscaler::GeometryDownscaler(const Common::Json &rootNode,
-                                       const Common::Json & /* componentNode */) {
-  if (const auto &node = rootNode.optional("geometryScaleEnabledFlag")) {
-    m_geometryScaleEnabledFlag = node.as<bool>();
-  }
-}
-
-auto GeometryDownscaler::transformParams(EncoderParams params) -> const EncoderParams & {
-  m_params = std::move(params);
-
-  if (m_geometryScaleEnabledFlag && (m_params.vps.profile_tier_level().ptl_profile_toolset_idc() !=
-                                     MivBitstream::PtlProfilePccToolsetIdc::MIV_Geometry_Absent)) {
-    m_params.vps.vps_miv_extension().vme_geometry_scale_enabled_flag(true);
-
-    for (auto &atlas : m_params.atlas) {
-      atlas.asps.asps_miv_extension()
-          .asme_geometry_scale_factor_x_minus1(1)
-          .asme_geometry_scale_factor_y_minus1(1);
-    }
-  }
-
-  return m_params;
-}
-
 namespace {
 auto maxPool(const Common::Depth10Frame &frame, Common::Vec2i frameSize) -> Common::Depth10Frame {
   auto result = Common::Depth10Frame{frameSize.x(), frameSize.y()};
@@ -88,20 +62,20 @@ auto maxPool(const Common::Depth10Frame &frame, Common::Vec2i frameSize) -> Comm
 }
 } // namespace
 
-auto GeometryDownscaler::transformFrame(Common::MVD10Frame frame) -> Common::MVD10Frame {
-  if (m_params.vps.vps_miv_extension().vme_geometry_scale_enabled_flag()) {
-    for (size_t atlasId = 0; atlasId < frame.size(); ++atlasId) {
-      const auto &asps = m_params.atlas[atlasId].asps;
+auto GeometryDownscaler::transformFrame(const std::vector<EncoderAtlasParams> &atlas,
+                                        Common::MVD10Frame frame) -> Common::MVD10Frame {
+  for (size_t k = 0; k < atlas.size(); ++k) {
+    const auto &asps = atlas[k].asps;
 
-      auto frameSize = Common::Vec2i{asps.asps_frame_width(), asps.asps_frame_height()};
-      const auto &asme = asps.asps_miv_extension();
-      if (asme.asme_geometry_scale_enabled_flag()) {
-        frameSize.x() /= (asme.asme_geometry_scale_factor_x_minus1() + 1);
-        frameSize.y() /= (asme.asme_geometry_scale_factor_y_minus1() + 1);
-      }
+    auto frameSize = Common::Vec2i{asps.asps_frame_width(), asps.asps_frame_height()};
+    const auto &asme = asps.asps_miv_extension();
 
-      frame[atlasId].depth = maxPool(frame[atlasId].depth, frameSize);
+    if (asme.asme_geometry_scale_enabled_flag()) {
+      frameSize.x() /= asme.asme_geometry_scale_factor_x_minus1() + 1;
+      frameSize.y() /= asme.asme_geometry_scale_factor_y_minus1() + 1;
     }
+
+    frame[k].depth = maxPool(frame[k].depth, frameSize);
   }
   return frame;
 }

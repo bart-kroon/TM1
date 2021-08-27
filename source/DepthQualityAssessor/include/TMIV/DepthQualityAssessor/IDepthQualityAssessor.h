@@ -47,8 +47,9 @@ public:
   auto operator=(IDepthQualityAssessor &&) -> IDepthQualityAssessor & = default;
   virtual ~IDepthQualityAssessor() = default;
 
-  virtual auto isLowDepthQuality(const MivBitstream::ViewParamsList &vpl,
-                                 const Common::MVD16Frame &sourceViews) -> bool = 0;
+  [[nodiscard]] virtual auto isLowDepthQuality(const MivBitstream::ViewParamsList &vpl,
+                                               const Common::MVD16Frame &sourceViews) const
+      -> bool = 0;
 };
 } // namespace TMIV::DepthQualityAssessor
 

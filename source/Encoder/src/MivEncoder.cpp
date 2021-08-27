@@ -45,7 +45,7 @@ MivEncoder::MivEncoder(std::ostream &stream) : m_stream{stream} {
   m_stream.flush();
 }
 
-void MivEncoder::writeAccessUnit(const EncoderParams &params) {
+void MivEncoder::writeAccessUnit(const EncoderParams &params, bool randomAccess) {
   m_params = params;
 
   if (m_irap) {
@@ -61,7 +61,7 @@ void MivEncoder::writeAccessUnit(const EncoderParams &params) {
   // NOTE(#253): always write even for non-IRAP intra periods w/o view parameter updates
   //             to avoid frame order count ambiguity
   writeV3cUnit(MivBitstream::VuhUnitType::V3C_CAD, {}, commonAtlasSubBitstream());
-  m_previouslySentMessages.viewParamsList = params.viewParamsList;
+  m_previouslySentMessages.viewParamsList = m_params.viewParamsList;
 
   for (uint8_t k = 0; k <= m_params.vps.vps_atlas_count_minus1(); ++k) {
     // Clause 7.4.5.3.2 of V-PCC DIS d85 [N19329]: AXPS regardless of atlas ID (and temporal ID)
@@ -75,7 +75,7 @@ void MivEncoder::writeAccessUnit(const EncoderParams &params) {
     writeV3cUnit(MivBitstream::VuhUnitType::V3C_AD, m_params.vps.vps_atlas_id(k),
                  atlasSubBitstream(k));
   }
-  if (!m_params.randomAccess) {
+  if (!randomAccess) {
     m_irap = false;
   }
 }

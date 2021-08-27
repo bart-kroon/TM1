@@ -181,7 +181,7 @@ DepthQualityAssessor::DepthQualityAssessor(const Common::Json & /*unused*/,
 }
 
 auto DepthQualityAssessor::isLowDepthQuality(const MivBitstream::ViewParamsList &vpl,
-                                             const Common::MVD16Frame &sourceViews) -> bool {
+                                             const Common::MVD16Frame &sourceViews) const -> bool {
   return TMIV::DepthQualityAssessor::isLowDepthQuality(vpl, sourceViews, m_blendingFactor,
                                                        m_maxOutlierRatio);
 }

@@ -118,7 +118,7 @@ public:
 private:
   void encodeAccessUnit(int firstFrame, int lastFrame) {
     std::cout << "Access unit: [" << firstFrame << ", " << lastFrame << ")\n";
-    m_mivEncoder->writeAccessUnit(m_encoder.processAccessUnit(firstFrame, lastFrame));
+    m_mivEncoder->writeAccessUnit(m_encoder.processAccessUnit(firstFrame, lastFrame), false);
     popAtlases(firstFrame, lastFrame);
   }
 

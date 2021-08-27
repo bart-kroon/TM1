@@ -47,8 +47,9 @@ public:
   auto operator=(DepthQualityAssessor &&) -> DepthQualityAssessor & = default;
   ~DepthQualityAssessor() override = default;
 
-  auto isLowDepthQuality(const MivBitstream::ViewParamsList &vpl,
-                         const Common::MVD16Frame &sourceViews) -> bool override;
+  [[nodiscard]] auto isLowDepthQuality(const MivBitstream::ViewParamsList &vpl,
+                                       const Common::MVD16Frame &sourceViews) const
+      -> bool override;
 
 private:
   float m_blendingFactor{0.03F};

@@ -34,101 +34,66 @@
 #include <TMIV/Encoder/Encoder.h>
 
 #include <TMIV/Common/verify.h>
+#include <TMIV/Encoder/GeometryQuantizer.h>
 #include <TMIV/MivBitstream/SequenceConfig.h>
 
 #include <iostream>
 #include <numeric>
 
 namespace TMIV::Encoder {
-void Encoder::prepareSequence(const MivBitstream::SequenceConfig &sequenceConfig,
-                              const Common::MVD16Frame &firstFrame) {
-  const auto depthLowQualityFlag = [&]() {
-    if (m_config.depthLowQualityFlag) {
-      return *m_config.depthLowQualityFlag;
-    }
-    if (m_config.haveGeometry) {
-      return m_depthQualityAssessor->isLowDepthQuality(sequenceConfig.sourceViewParams(),
-                                                       firstFrame);
-    }
-    return false;
-  }();
-
-  m_config.blockSize = m_config.blockSizeDepthQualityDependent[depthLowQualityFlag ? 1 : 0];
-  VERIFY(2 <= m_config.blockSize);
-  VERIFY((m_config.blockSize & (m_config.blockSize - 1)) == 0);
-
-  const auto lumaSamplesPerAtlasSample =
-      (m_config.haveTexture ? 1. : 0.) +
-      (m_config.haveGeometry ? (m_config.geometryScaleEnabledFlag ? 0.25 : 1.) : 0.);
-  const auto numGroups = std::max(1.F, static_cast<float>(m_config.numGroups));
-
-  m_config.maxBlockRate = m_config.maxLumaSampleRate /
-                          (numGroups * lumaSamplesPerAtlasSample * Common::sqr(m_config.blockSize));
-  m_config.maxBlocksPerAtlas = m_config.maxLumaPictureSize / Common::sqr(m_config.blockSize);
-
-  // Transform source to transport view sequence parameters
-  m_transportParams =
-      m_viewOptimizer->optimizeParams({sequenceConfig.sourceViewParams(), depthLowQualityFlag});
-
-  // Calculate nominal atlas frame sizes
-  const auto atlasFrameSizes =
-      calculateNominalAtlasFrameSizes(m_transportParams.viewParamsList, sequenceConfig.frameRate);
-  std::cout << "Nominal atlas frame sizes: { ";
-  for (const auto &size : atlasFrameSizes) {
-    std::cout << ' ' << size;
+[[nodiscard]] auto
+assessDepthQuality(const Configuration &config,
+                   const DepthQualityAssessor::IDepthQualityAssessor &depthQualityAssessor,
+                   const MivBitstream::SequenceConfig &sequenceConfig,
+                   const Common::MVD16Frame &firstFrame) -> bool {
+  if (config.depthLowQualityFlag) {
+    return *config.depthLowQualityFlag;
   }
-  std::cout << " }\n";
-
-  // Create IVS with VPS with right number of atlases but copy other parts from input IVS
-  m_params = {};
-
-  m_params.vps = createVps(atlasFrameSizes);
-  m_params.viewParamsList = m_transportParams.viewParamsList;
-  m_params.frameRate = sequenceConfig.frameRate;
-  m_params.lengthsInMeters = sequenceConfig.lengthsInMeters;
-  m_params.maxEntityId = m_config.maxEntityId;
-  m_params.casps.casps_log2_max_common_atlas_frame_order_cnt_lsb_minus4(log2FocLsbMinus4())
-      .casps_miv_extension()
-      .casme_depth_low_quality_flag(depthLowQualityFlag)
-      .casme_depth_quantization_params_present_flag(m_config.dqParamsPresentFlag)
-      .vui_parameters(vuiParameters());
-
-  m_params.viewingSpace = m_config.viewingSpace;
-
-  if (m_config.viewportCameraParametersSei) {
-    m_params.viewportCameraParameters = MivBitstream::ViewportCameraParameters::fromViewParams(
-        sequenceConfig.cameraByName("viewport").viewParams);
+  if (config.haveGeometry) {
+    return depthQualityAssessor.isLowDepthQuality(sequenceConfig.sourceViewParams(), firstFrame);
   }
-  if (m_config.viewportPositionSei) {
-    m_params.viewportPosition = MivBitstream::ViewportPosition::fromViewParams(
-        sequenceConfig.cameraByName("viewport").viewParams);
+  return false;
+}
+
+namespace {
+[[nodiscard]] auto createProfileTierLevel(const Configuration &config) {
+  auto ptl = MivBitstream::ProfileTierLevel{};
+  ptl.ptl_level_idc(MivBitstream::PtlLevelIdc::Level_3_5)
+      .ptl_profile_codec_group_idc(config.codecGroupIdc)
+      .ptl_profile_reconstruction_idc(MivBitstream::PtlProfileReconstructionIdc::MIV_Main)
+      .ptl_profile_toolset_idc(config.toolsetIdc);
+  return ptl;
+}
+
+[[nodiscard]] auto adaptViewParamsList(const Configuration &config,
+                                       MivBitstream::ViewParamsList viewParamsList) {
+  for (auto &vp : viewParamsList) {
+    vp.hasOccupancy |= (!vp.isBasicView && config.patchRedundancyRemoval) || 0 < config.maxEntityId;
   }
-  m_params.randomAccess = m_config.randomAccess;
+  return viewParamsList;
+}
 
-  setGiGeometry3dCoordinatesBitdepthMinus1();
+[[nodiscard]] auto calculateViewGridSize(const Configuration &config,
+                                         const MivBitstream::ViewParamsList &viewParamsList,
+                                         bool depthLowQualityFlag) {
+  int x{};
+  int y{};
 
-  int32_t sampleBudget = 0;
-  for (size_t k = 0; k <= m_params.vps.vps_atlas_count_minus1(); ++k) {
-    const auto j = m_params.vps.vps_atlas_id(k);
-    sampleBudget += (m_params.vps.vps_frame_width(j) * m_params.vps.vps_frame_height(j));
+  const auto blockSize = config.blockSize(depthLowQualityFlag);
+
+  for (const auto &viewParams : viewParamsList) {
+    x = std::max(x, (viewParams.ci.ci_projection_plane_width_minus1() + blockSize) / blockSize);
+    y = std::max(y, (viewParams.ci.ci_projection_plane_height_minus1() + blockSize) / blockSize);
   }
-
-  // Register pruning relation
-  m_params.viewParamsList = m_pruner->prepareSequence(Pruner::PrunerParams{
-      std::move(m_params.viewParamsList),
-      m_params.casps.casps_miv_extension().casme_depth_low_quality_flag(), sampleBudget});
-
-  // Turn on occupancy coding per view
-  enableOccupancyPerView();
-
-  // Set-up ASPS and AFPS
-  prepareIvau();
+  return Common::Vec2i{x, y};
 }
 
 // Calculate atlas frame sizes [MPEG/M52994 v2]
-auto Encoder::calculateNominalAtlasFrameSizes(const MivBitstream::ViewParamsList &viewParamsList,
-                                              double frameRate) const -> Common::SizeVector {
-  if (m_config.oneViewPerAtlasFlag) {
+[[nodiscard]] auto
+calculateNominalAtlasFrameSizes(const Configuration &config,
+                                const MivBitstream::ViewParamsList &viewParamsList,
+                                double frameRate, bool depthLowQualityFlag) {
+  if (config.oneViewPerAtlasFlag) {
     // No constraints: one atlas per transport view
     auto result = Common::SizeVector(viewParamsList.size());
     std::transform(std::cbegin(viewParamsList), std::cend(viewParamsList), std::begin(result),
@@ -136,211 +101,343 @@ auto Encoder::calculateNominalAtlasFrameSizes(const MivBitstream::ViewParamsList
     return result;
   }
 
-  if (!m_config.overrideAtlasFrameSizes.empty()) {
+  if (!config.overrideAtlasFrameSizes.empty()) {
     std::cout
         << "WARNING: When overriding nominal atlas frame sizes, constraints are not checked.\n";
-    return m_config.overrideAtlasFrameSizes;
+    return config.overrideAtlasFrameSizes;
   }
 
+  const auto lumaSamplesPerAtlasSample =
+      (config.haveTexture ? 1. : 0.) +
+      (config.haveGeometry ? (config.geometryScaleEnabledFlag ? 0.25 : 1.) : 0.);
+  const auto numGroups = std::max(1.F, static_cast<float>(config.numGroups));
+
+  const auto blockSize = config.blockSize(depthLowQualityFlag);
+  const auto maxBlockRate =
+      config.maxLumaSampleRate / (numGroups * lumaSamplesPerAtlasSample * Common::sqr(blockSize));
+
   // Translate block rate into a maximum number of blocks
-  const auto maxBlocks = static_cast<int>(m_config.maxBlockRate / frameRate);
+  const auto maxBlocks = static_cast<int>(maxBlockRate / frameRate);
 
   // Calculate the number of atlases
-  auto numAtlases = (maxBlocks + m_config.maxBlocksPerAtlas - 1) / m_config.maxBlocksPerAtlas;
-  if (numAtlases > m_config.maxAtlases) {
+  const auto maxBlocksPerAtlas1 = config.maxLumaPictureSize / Common::sqr(blockSize);
+  auto numAtlases = (maxBlocks + maxBlocksPerAtlas1 - 1) / maxBlocksPerAtlas1;
+
+  if (numAtlases > config.maxAtlases) {
     std::cout << "The maxAtlases constraint is a limiting factor.\n";
-    numAtlases = m_config.maxAtlases;
+    numAtlases = config.maxAtlases;
   }
 
   // Calculate the number of blocks per atlas
-  auto maxBlocksPerAtlas = maxBlocks / numAtlases;
-  if (maxBlocksPerAtlas > m_config.maxBlocksPerAtlas) {
+  auto maxBlocksPerAtlas2 = maxBlocks / numAtlases;
+
+  if (maxBlocksPerAtlas2 > maxBlocksPerAtlas1) {
     std::cout << "The maxLumaPictureSize constraint is a limiting factor.\n";
-    maxBlocksPerAtlas = m_config.maxBlocksPerAtlas;
+    maxBlocksPerAtlas2 = maxBlocksPerAtlas1;
   }
 
   // Take the smallest reasonable width
-  const auto viewGridSize = calculateViewGridSize(viewParamsList);
+  const auto viewGridSize = calculateViewGridSize(config, viewParamsList, depthLowQualityFlag);
   const auto atlasGridWidth = viewGridSize.x();
-  const auto atlasGridHeight = maxBlocksPerAtlas / atlasGridWidth;
+  const auto atlasGridHeight = maxBlocksPerAtlas2 / atlasGridWidth;
 
   // Warn if the aspect ratio is outside of HEVC limits (unlikely)
   if (atlasGridWidth * 8 < atlasGridHeight || atlasGridHeight * 8 < atlasGridWidth) {
     std::cout << "WARNING: Atlas aspect ratio is outside of HEVC general tier and level limits\n";
   }
 
-  return Common::SizeVector(
-      numAtlases, {atlasGridWidth * m_config.blockSize, atlasGridHeight * m_config.blockSize});
+  return Common::SizeVector(numAtlases, {atlasGridWidth * blockSize, atlasGridHeight * blockSize});
 }
 
-auto Encoder::calculateViewGridSize(const MivBitstream::ViewParamsList &viewParamsList) const
-    -> Common::Vec2i {
-  int x{};
-  int y{};
+[[nodiscard]] auto createGeometryInformation(const MivBitstream::ViewParamsList &viewParamsList) {
+  auto gi = MivBitstream::GeometryInformation{};
+  gi.gi_geometry_2d_bit_depth_minus1(9).gi_geometry_3d_coordinates_bit_depth_minus1(std::accumulate(
+      viewParamsList.cbegin(), viewParamsList.cend(), uint8_t{9},
+      [](uint8_t init, const MivBitstream::ViewParams &vp) {
+        return std::max(
+            init, Common::downCast<uint8_t>(
+                      Common::ceilLog2(std::max(vp.ci.ci_projection_plane_width_minus1() + 1,
+                                                vp.ci.ci_projection_plane_height_minus1() + 1)) -
+                      1));
+      }));
+  return gi;
+}
 
-  for (const auto &viewParams : viewParamsList) {
-    x = std::max(x, (viewParams.ci.ci_projection_plane_width_minus1() + m_config.blockSize) /
-                        m_config.blockSize);
-    y = std::max(y, (viewParams.ci.ci_projection_plane_height_minus1() + m_config.blockSize) /
-                        m_config.blockSize);
+[[nodiscard]] auto createOccupancyInformation() {
+  auto oi = MivBitstream::OccupancyInformation{};
+  oi.oi_occupancy_codec_id(0)
+      .oi_lossy_occupancy_compression_threshold(128)
+      .oi_occupancy_2d_bit_depth_minus1(9)
+      .oi_occupancy_MSB_align_flag(false);
+  return oi;
+}
+
+[[nodiscard]] auto createAttributeInformation() {
+  auto ai = MivBitstream::AttributeInformation{};
+  ai.ai_attribute_count(1)
+      .ai_attribute_type_id(0, MivBitstream::AiAttributeTypeId::ATTR_TEXTURE)
+      .ai_attribute_dimension_minus1(0, 2)
+      .ai_attribute_2d_bit_depth_minus1(0, 9);
+  return ai;
+}
+
+[[nodiscard]] auto createGroupMapping(uint8_t numGroups,
+                                      const Common::SizeVector &atlasFrameSizes) {
+  auto gm = MivBitstream::GroupMapping{};
+  gm.gm_group_count(numGroups);
+
+  if (0 < numGroups) {
+    for (size_t i = 0; i < atlasFrameSizes.size(); ++i) {
+      gm.gm_group_id(i, 0);
+    }
   }
-
-  return {x, y};
+  return gm;
 }
 
-auto Encoder::createVps(const std::vector<Common::Vec2i> &atlasFrameSizes) const
-    -> MivBitstream::V3cParameterSet {
+[[nodiscard]] auto createVpsMivExtension(const Configuration &config,
+                                         const MivBitstream::ViewParamsList &viewParamsList,
+                                         const Common::SizeVector &atlasFrameSizes) {
+  auto vme = MivBitstream::VpsMivExtension{};
+  vme.vme_geometry_scale_enabled_flag(config.geometryScaleEnabledFlag)
+      .vme_embedded_occupancy_enabled_flag(
+          config.haveGeometry && !config.haveOccupancy &&
+          std::any_of(viewParamsList.cbegin(), viewParamsList.cend(),
+                      [](const auto &vp) { return vp.hasOccupancy; }))
+      .group_mapping() = createGroupMapping(config.numGroups, atlasFrameSizes);
+
+  if (!vme.vme_embedded_occupancy_enabled_flag()) {
+    vme.vme_occupancy_scale_enabled_flag(config.haveOccupancy);
+  }
+  return vme;
+}
+
+[[nodiscard]] auto createV3cParameterSet(const Configuration &config,
+                                         const MivBitstream::ViewParamsList &viewParamsList,
+                                         double frameRate, bool depthLowQualityFlag) {
+  const auto atlasFrameSizes =
+      calculateNominalAtlasFrameSizes(config, viewParamsList, frameRate, depthLowQualityFlag);
+
   auto vps = MivBitstream::V3cParameterSet{};
-
-  vps.profile_tier_level()
-      .ptl_level_idc(MivBitstream::PtlLevelIdc::Level_3_5)
-      .ptl_profile_codec_group_idc(m_config.codecGroupIdc)
-      .ptl_profile_reconstruction_idc(MivBitstream::PtlProfileReconstructionIdc::MIV_Main)
-      .ptl_profile_toolset_idc(m_config.toolsetIdc);
-
-  VERIFY_MIVBITSTREAM(!atlasFrameSizes.empty());
-  vps.vps_atlas_count_minus1(static_cast<uint8_t>(atlasFrameSizes.size() - 1));
+  vps.profile_tier_level(createProfileTierLevel(config))
+      .vps_atlas_count_minus1(static_cast<uint8_t>(atlasFrameSizes.size() - 1));
 
   for (uint8_t k = 0; k <= vps.vps_atlas_count_minus1(); ++k) {
     const auto j = MivBitstream::AtlasId{k};
     vps.vps_atlas_id(k, j)
         .vps_frame_width(j, atlasFrameSizes[k].x())
         .vps_frame_height(j, atlasFrameSizes[k].y())
-        .vps_geometry_video_present_flag(j, m_config.haveGeometry)
-        .vps_occupancy_video_present_flag(j, m_config.haveOccupancy)
-        .vps_attribute_video_present_flag(j, m_config.haveTexture);
+        .vps_geometry_video_present_flag(j, config.haveGeometry)
+        .vps_occupancy_video_present_flag(j, config.haveOccupancy)
+        .vps_attribute_video_present_flag(j, config.haveTexture)
+        .vps_miv_extension(createVpsMivExtension(config, viewParamsList, atlasFrameSizes));
 
-    if (m_config.haveGeometry) {
-      vps.geometry_information(j).gi_geometry_2d_bit_depth_minus1(9);
+    if (config.haveGeometry) {
+      vps.geometry_information(j, createGeometryInformation(viewParamsList));
     }
-
-    if (m_config.haveOccupancy) {
-      vps.occupancy_information(j)
-          .oi_occupancy_codec_id(0)
-          .oi_lossy_occupancy_compression_threshold(128)
-          .oi_occupancy_2d_bit_depth_minus1(9)
-          .oi_occupancy_MSB_align_flag(false);
+    if (config.haveOccupancy) {
+      vps.occupancy_information(j, createOccupancyInformation());
     }
-
-    if (m_config.haveTexture) {
-      vps.attribute_information(j)
-          .ai_attribute_count(1)
-          .ai_attribute_type_id(0, MivBitstream::AiAttributeTypeId::ATTR_TEXTURE)
-          .ai_attribute_dimension_minus1(0, 2)
-          .ai_attribute_2d_bit_depth_minus1(0, 9);
-    }
-  }
-
-  auto &vme = vps.vps_miv_extension();
-  vme.group_mapping().gm_group_count(m_config.numGroups);
-
-  if (0 < vme.group_mapping().gm_group_count()) {
-    // Group atlases together to restrict atlas-level sub-bitstream access
-    for (size_t i = 0; i < atlasFrameSizes.size(); ++i) {
-      vme.group_mapping().gm_group_id(i, 0);
+    if (config.haveTexture) {
+      vps.attribute_information(j, createAttributeInformation());
     }
   }
   return vps;
 }
 
-auto Encoder::vuiParameters() const -> MivBitstream::VuiParameters {
+[[nodiscard]] auto log2FocLsbMinus4(int intraPeriod) {
+  // Avoid confusion but test MSB/LSB logic in decoder
+  return Common::downCast<uint8_t>(std::max(4U, Common::ceilLog2(intraPeriod) + 1U) - 4U);
+}
+
+[[nodiscard]] auto vuiParameters(const MivBitstream::SequenceConfig &sequenceConfig) {
   auto numUnitsInTick = 1;
-  auto timeScale = static_cast<int>(numUnitsInTick * m_params.frameRate);
-  LIMITATION(timeScale == numUnitsInTick * m_params.frameRate);
+  auto timeScale = static_cast<int>(numUnitsInTick * sequenceConfig.frameRate);
+  LIMITATION(timeScale == numUnitsInTick * sequenceConfig.frameRate);
 
   auto vui = MivBitstream::VuiParameters{};
   vui.vui_num_units_in_tick(numUnitsInTick)
       .vui_time_scale(timeScale)
       .vui_poc_proportional_to_timing_flag(false)
       .vui_hrd_parameters_present_flag(false);
-  vui.vui_unit_in_metres_flag(m_params.lengthsInMeters);
+  vui.vui_unit_in_metres_flag(sequenceConfig.lengthsInMeters);
   vui.coordinate_system_parameters() = {};
   return vui;
 }
 
-void Encoder::setGiGeometry3dCoordinatesBitdepthMinus1() {
-  uint8_t numBitsMinus1 = 9; // Main 10
-  for (auto &vp : m_params.viewParamsList) {
-    const auto size = std::max(vp.ci.ci_projection_plane_width_minus1() + 1,
-                               vp.ci.ci_projection_plane_height_minus1() + 1);
-    numBitsMinus1 = std::max(numBitsMinus1, static_cast<uint8_t>(Common::ceilLog2(size) - 1));
-  }
-  for (size_t k = 0; k <= m_params.vps.vps_atlas_count_minus1(); ++k) {
-    const auto j = m_params.vps.vps_atlas_id(k);
-    if (m_params.vps.vps_geometry_video_present_flag(j)) {
-      m_params.vps.geometry_information(j).gi_geometry_3d_coordinates_bit_depth_minus1(
-          numBitsMinus1);
-    }
-  }
+[[nodiscard]] auto
+createCommonAtlasSequenceParameterSet(const Configuration &config,
+                                      const MivBitstream::SequenceConfig &sequenceConfig,
+                                      bool depthLowQualityFlag) {
+  auto casps = MivBitstream::CommonAtlasSequenceParameterSetRBSP{};
+  casps.casps_log2_max_common_atlas_frame_order_cnt_lsb_minus4(log2FocLsbMinus4(config.intraPeriod))
+      .casps_miv_extension()
+      .casme_depth_low_quality_flag(depthLowQualityFlag)
+      .casme_depth_quantization_params_present_flag(config.dqParamsPresentFlag)
+      .vui_parameters(vuiParameters(sequenceConfig));
+  return casps;
 }
 
-void Encoder::enableOccupancyPerView() {
-  for (size_t viewIdx = 0; viewIdx < m_params.viewParamsList.size(); ++viewIdx) {
-    if ((!m_params.viewParamsList[viewIdx].isBasicView && m_config.patchRedundancyRemoval) ||
-        0 < m_params.maxEntityId) {
-      m_params.viewParamsList[viewIdx].hasOccupancy = true;
-    }
-  }
-}
+[[nodiscard]] auto patchSizeQuantizers(const Configuration &config,
+                                       const MivBitstream::ViewParamsList &viewParamsList,
+                                       bool depthLowQualityFlag) {
+  auto quantizer = config.blockSize(depthLowQualityFlag);
 
-void Encoder::prepareIvau() {
-  m_params.atlas.resize(m_params.vps.vps_atlas_count_minus1() + size_t{1});
-
-  for (size_t k = 0; k <= m_params.vps.vps_atlas_count_minus1(); ++k) {
-    auto &atlas = m_params.atlas[k];
-    const auto j = m_params.vps.vps_atlas_id(k);
-
-    // Set ASPS parameters
-    atlas.asps.asps_frame_width(m_params.vps.vps_frame_width(j))
-        .asps_frame_height(m_params.vps.vps_frame_height(j))
-        .asps_log2_max_atlas_frame_order_cnt_lsb_minus4(log2FocLsbMinus4())
-        .asps_use_eight_orientations_flag(true)
-        .asps_extended_projection_enabled_flag(true)
-        .asps_normal_axis_limits_quantization_enabled_flag(true)
-        .asps_max_number_projections_minus1(m_params.viewParamsList.maxViewIdValue())
-        .asps_log2_patch_packing_block_size(Common::ceilLog2(m_config.blockSize))
-        .asps_num_ref_atlas_frame_lists_in_asps(1);
-
-    const auto psq = patchSizeQuantizers();
-    atlas.asps.asps_patch_size_quantizer_present_flag(psq.x() != m_config.blockSize ||
-                                                      psq.y() != m_config.blockSize);
-
-    if (m_params.vps.vps_geometry_video_present_flag(j)) {
-      const auto &gi = m_params.vps.geometry_information(j);
-      atlas.asps.asps_geometry_3d_bit_depth_minus1(gi.gi_geometry_3d_coordinates_bit_depth_minus1())
-          .asps_geometry_2d_bit_depth_minus1(gi.gi_geometry_2d_bit_depth_minus1());
-    }
-
-    if (0 < m_params.maxEntityId) {
-      atlas.asps.asps_miv_extension().asme_max_entity_id(m_params.maxEntityId);
-    }
-
-    // Set ATH parameters
-    atlas.ath.ath_type(MivBitstream::AthType::I_TILE).ath_ref_atlas_frame_list_asps_flag(true);
-
-    if (atlas.asps.asps_patch_size_quantizer_present_flag()) {
-      atlas.ath.ath_patch_size_x_info_quantizer(Common::ceilLog2(psq.x()));
-      atlas.ath.ath_patch_size_y_info_quantizer(Common::ceilLog2(psq.y()));
-    }
-    atlas.ath.ath_pos_min_d_quantizer( // make pdu_3d_offset_d u(0)
-        atlas.asps.asps_geometry_3d_bit_depth_minus1() + 1);
-  }
-}
-
-auto Encoder::log2FocLsbMinus4() const -> uint8_t {
-  // Avoid confusion but test MSB/LSB logic in decoder
-  return Common::downCast<uint8_t>(std::max(4U, Common::ceilLog2(m_config.intraPeriod) + 1U) - 4U);
-}
-
-auto Encoder::patchSizeQuantizers() const -> Common::Vec2i {
-  auto quantizer = m_config.blockSize;
-
-  for (const auto &vp : m_params.viewParamsList) {
+  for (const auto &vp : viewParamsList) {
     quantizer = std::gcd(quantizer, vp.ci.ci_projection_plane_width_minus1() + 1);
     quantizer = std::gcd(quantizer, vp.ci.ci_projection_plane_height_minus1() + 1);
   }
 
   // NOTE(BK): There may be rotated patches of full width or height: same quantizer for x and y
-  return {quantizer, quantizer};
+  return Common::Vec2i{quantizer, quantizer};
+}
+
+[[nodiscard]] auto createAspsMivExtension(const Configuration &config,
+                                          const MivBitstream::V3cParameterSet &vps, int blockSize,
+                                          MivBitstream::AtlasId j) {
+  auto asme = MivBitstream::AspsMivExtension{};
+  asme.asme_embedded_occupancy_enabled_flag(
+          vps.vps_miv_extension().vme_embedded_occupancy_enabled_flag())
+      .asme_patch_attribute_offset_enabled_flag(config.attributeOffsetFlag)
+      .asme_max_entity_id(config.maxEntityId);
+
+  if (config.geometryScaleEnabledFlag) {
+    asme.asme_geometry_scale_factor_x_minus1(1).asme_geometry_scale_factor_y_minus1(1);
+  }
+  if (config.haveOccupancy) {
+    const auto occFrameSizeX = std::lcm(2, vps.vps_frame_width(j) / blockSize);
+    const auto occFrameSizeY = std::lcm(2, vps.vps_frame_height(j) / blockSize);
+    const auto scaleFactorX = vps.vps_frame_width(j) / occFrameSizeX;
+    const auto scaleFactorY = vps.vps_frame_height(j) / occFrameSizeY;
+    asme.asme_occupancy_scale_factor_x_minus1(Common::downCast<uint16_t>(scaleFactorX - 1))
+        .asme_occupancy_scale_factor_y_minus1(Common::downCast<uint16_t>(scaleFactorY - 1));
+  }
+  if (config.attributeOffsetFlag) {
+    asme.asme_patch_attribute_offset_bit_depth_minus1(
+        Common::downCast<uint16_t>(config.attributeOffsetBitCount - 1));
+  }
+  return asme;
+}
+
+[[nodiscard]] auto
+createAtlasSequenceParameterSet(const Configuration &config,
+                                const MivBitstream::V3cParameterSet &vps,
+                                const MivBitstream::ViewParamsList &viewParamsList,
+                                bool depthLowQualityFlag, MivBitstream::AtlasId j) {
+  const auto blockSize = config.blockSize(depthLowQualityFlag);
+  const auto psq = patchSizeQuantizers(config, viewParamsList, depthLowQualityFlag);
+
+  auto asps = MivBitstream::AtlasSequenceParameterSetRBSP{};
+  asps.asps_frame_width(vps.vps_frame_width(j))
+      .asps_frame_height(vps.vps_frame_height(j))
+      .asps_log2_max_atlas_frame_order_cnt_lsb_minus4(log2FocLsbMinus4(config.intraPeriod))
+      .asps_use_eight_orientations_flag(true)
+      .asps_extended_projection_enabled_flag(true)
+      .asps_normal_axis_limits_quantization_enabled_flag(true)
+      .asps_max_number_projections_minus1(viewParamsList.maxViewIdValue())
+      .asps_log2_patch_packing_block_size(Common::ceilLog2(blockSize))
+      .asps_num_ref_atlas_frame_lists_in_asps(1)
+      .asps_patch_size_quantizer_present_flag(psq.x() != blockSize || psq.y() != blockSize)
+      .asps_miv_extension() = createAspsMivExtension(config, vps, blockSize, j);
+
+  if (vps.vps_geometry_video_present_flag(j)) {
+    const auto &gi = vps.geometry_information(j);
+    asps.asps_geometry_3d_bit_depth_minus1(gi.gi_geometry_3d_coordinates_bit_depth_minus1())
+        .asps_geometry_2d_bit_depth_minus1(gi.gi_geometry_2d_bit_depth_minus1());
+  }
+  return asps;
+}
+
+[[nodiscard]] auto createAtlasTileHeader(const Configuration &config,
+                                         const MivBitstream::AtlasSequenceParameterSetRBSP &asps,
+                                         const MivBitstream::ViewParamsList &viewParamsList,
+                                         bool depthLowQualityFlag) {
+  auto ath = MivBitstream::AtlasTileHeader{};
+  ath.ath_type(MivBitstream::AthType::I_TILE)
+      .ath_ref_atlas_frame_list_asps_flag(true)
+      .ath_pos_min_d_quantizer(asps.asps_geometry_3d_bit_depth_minus1() + 1);
+
+  if (asps.asps_patch_size_quantizer_present_flag()) {
+    const auto psq = patchSizeQuantizers(config, viewParamsList, depthLowQualityFlag);
+
+    ath.ath_patch_size_x_info_quantizer(Common::ceilLog2(psq.x()));
+    ath.ath_patch_size_y_info_quantizer(Common::ceilLog2(psq.y()));
+  }
+  return ath;
+}
+
+[[nodiscard]] auto createEncoderAtlasParams(const Configuration &config,
+                                            const MivBitstream::V3cParameterSet &vps,
+                                            const MivBitstream::ViewParamsList &viewParamsList,
+                                            bool depthLowQualityFlag, MivBitstream::AtlasId j) {
+  auto atlas = EncoderAtlasParams{};
+  atlas.asps = createAtlasSequenceParameterSet(config, vps, viewParamsList, depthLowQualityFlag, j);
+  atlas.ath = createAtlasTileHeader(config, atlas.asps, viewParamsList, depthLowQualityFlag);
+  return atlas;
+}
+} // namespace
+
+[[nodiscard]] auto createEncoderParams(const Configuration &config,
+                                       const MivBitstream::SequenceConfig &sequenceConfig,
+                                       const MivBitstream::ViewParamsList &viewParamsList,
+                                       bool depthLowQualityFlag) -> EncoderParams {
+  auto params = EncoderParams{};
+
+  params.viewParamsList = adaptViewParamsList(config, viewParamsList);
+
+  params.vps = createV3cParameterSet(config, params.viewParamsList, sequenceConfig.frameRate,
+                                     depthLowQualityFlag);
+
+  params.casps = createCommonAtlasSequenceParameterSet(config, sequenceConfig, depthLowQualityFlag);
+
+  params.viewingSpace = config.viewingSpace;
+
+  if (config.viewportCameraParametersSei) {
+    params.viewportCameraParameters = MivBitstream::ViewportCameraParameters::fromViewParams(
+        sequenceConfig.cameraByName("viewport").viewParams);
+  }
+  if (config.viewportPositionSei) {
+    params.viewportPosition = MivBitstream::ViewportPosition::fromViewParams(
+        sequenceConfig.cameraByName("viewport").viewParams);
+  }
+
+  // Create encoder atlas parameters for all atlases
+  params.atlas.resize(params.vps.vps_atlas_count_minus1() + size_t{1});
+
+  for (uint8_t k = 0; k <= params.vps.vps_atlas_count_minus1(); ++k) {
+    params.atlas[k] = createEncoderAtlasParams(config, params.vps, params.viewParamsList,
+                                               depthLowQualityFlag, params.vps.vps_atlas_id(k));
+  }
+  return params;
+}
+
+namespace {
+[[nodiscard]] auto sampleBudget(const MivBitstream::V3cParameterSet &vps) {
+  int32_t sampleBudget = 0;
+  for (size_t k = 0; k <= vps.vps_atlas_count_minus1(); ++k) {
+    const auto j = vps.vps_atlas_id(k);
+    sampleBudget += (vps.vps_frame_width(j) * vps.vps_frame_height(j));
+  }
+  return sampleBudget;
+}
+} // namespace
+
+void Encoder::prepareSequence(const MivBitstream::SequenceConfig &sequenceConfig,
+                              const Common::MVD16Frame &firstFrame) {
+  const auto depthLowQualityFlag =
+      assessDepthQuality(m_config, *m_depthQualityAssessor, sequenceConfig, firstFrame);
+  m_blockSize = m_config.blockSize(depthLowQualityFlag);
+
+  m_transportParams =
+      m_viewOptimizer->optimizeParams({sequenceConfig.sourceViewParams(), depthLowQualityFlag});
+
+  m_params = createEncoderParams(m_config, sequenceConfig, m_transportParams.viewParamsList,
+                                 depthLowQualityFlag);
+
+  const auto pruningParents = m_pruner->prepareSequence(
+      {params().viewParamsList, depthLowQualityFlag, sampleBudget(params().vps)});
+
+  for (size_t viewIdx = 0; viewIdx < pruningParents.size(); ++viewIdx) {
+    m_params.viewParamsList[viewIdx].pp = pruningParents[viewIdx];
+  }
 }
 } // namespace TMIV::Encoder

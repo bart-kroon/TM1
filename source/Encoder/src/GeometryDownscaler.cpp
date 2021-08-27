@@ -38,18 +38,18 @@ namespace {
 auto maxPool(const Common::Depth10Frame &frame, Common::Vec2i frameSize) -> Common::Depth10Frame {
   auto result = Common::Depth10Frame{frameSize.x(), frameSize.y()};
 
-  for (int y = 0; y < frameSize.y(); ++y) {
-    const int i1 = y * frame.getHeight() / frameSize.y();
-    const int i2 = (y + 1) * frame.getHeight() / frameSize.y();
+  for (int32_t y = 0; y < frameSize.y(); ++y) {
+    const int32_t i1 = y * frame.getHeight() / frameSize.y();
+    const int32_t i2 = (y + 1) * frame.getHeight() / frameSize.y();
 
-    for (int x = 0; x < frameSize.x(); ++x) {
-      const int j1 = x * frame.getWidth() / frameSize.x();
-      const int j2 = (x + 1) * frame.getWidth() / frameSize.x();
+    for (int32_t x = 0; x < frameSize.x(); ++x) {
+      const int32_t j1 = x * frame.getWidth() / frameSize.x();
+      const int32_t j2 = (x + 1) * frame.getWidth() / frameSize.x();
 
       auto maximum = uint16_t{};
 
-      for (int i = i1; i < i2; ++i) {
-        for (int j = j1; j < j2; ++j) {
+      for (int32_t i = i1; i < i2; ++i) {
+        for (int32_t j = j1; j < j2; ++j) {
           maximum = std::max(maximum, frame.getPlane(0)(i, j));
         }
       }

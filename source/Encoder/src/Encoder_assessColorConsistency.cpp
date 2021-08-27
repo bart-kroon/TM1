@@ -122,8 +122,8 @@ auto assessColorConsistency(Common::MVD16Frame views, MivBitstream::ViewParamsLi
   auto [ivertices, triangles, attributes] =
       Pruner::unprojectPrunedView(refView, params[refViewIdx], masks[refViewIdx].getPlane(0));
 
-  int W = refView.texture.getWidth();
-  int H = refView.texture.getHeight();
+  int32_t W = refView.texture.getWidth();
+  int32_t H = refView.texture.getHeight();
 
   for (auto &s : synthesizers) {
     Common::Mat<Common::Vec3i> currentCCMap;
@@ -139,7 +139,7 @@ auto assessColorConsistency(Common::MVD16Frame views, MivBitstream::ViewParamsLi
       auto jY = std::begin(s->referenceY);
       auto jYUV = std::begin(s->referenceYUV);
 
-      int pp = 0;
+      int32_t pp = 0;
 
       s->rasterizer.visit([&](const Renderer::PixelValue<Common::Vec3f> &x) {
         if (x.normDisp > 0) {

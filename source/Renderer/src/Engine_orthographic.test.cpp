@@ -55,10 +55,10 @@ TEST_CASE("Engine<orthographic>") {
 
   SECTION("Reprojection accuracy test") {
     const auto depth = GENERATE(0.1F, 10.F);
-    int count = 0;
+    int32_t count = 0;
 
-    for (int i = 0; i < 500; ++i) {
-      for (int j = 0; j < 1000; ++j) {
+    for (int32_t i = 0; i < 500; ++i) {
+      for (int32_t j = 0; j < 1000; ++j) {
         if (i * j % 1547 == 0) {
           const auto position =
               Vec2f{0.5F + static_cast<float>(j), 0.5F + static_cast<float>(i) + 0.5F};

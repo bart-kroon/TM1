@@ -103,12 +103,12 @@ public:
     }
 
     m_encoder.setMpiPcsFrameReader(
-        [&](int frameIndex) -> MpiPcs::Frame { return m_mpiPcsReader.read(frameIndex); });
+        [&](int32_t frameIndex) -> MpiPcs::Frame { return m_mpiPcsReader.read(frameIndex); });
 
     m_encoder.prepareSequence(m_inputSequenceConfig);
 
-    for (int i = 0; i < m_numberOfInputFrames; i += m_intraPeriod) {
-      int lastFrame = std::min(m_numberOfInputFrames, i + m_intraPeriod);
+    for (int32_t i = 0; i < m_numberOfInputFrames; i += m_intraPeriod) {
+      int32_t lastFrame = std::min(m_numberOfInputFrames, i + m_intraPeriod);
       encodeAccessUnit(i, lastFrame);
     }
 
@@ -116,14 +116,14 @@ public:
   }
 
 private:
-  void encodeAccessUnit(int firstFrame, int lastFrame) {
+  void encodeAccessUnit(int32_t firstFrame, int32_t lastFrame) {
     std::cout << "Access unit: [" << firstFrame << ", " << lastFrame << ")\n";
     m_mivEncoder->writeAccessUnit(m_encoder.processAccessUnit(firstFrame, lastFrame), false);
     popAtlases(firstFrame, lastFrame);
   }
 
-  void popAtlases(int firstFrame, int lastFrame) {
-    for (int i = firstFrame; i < lastFrame; ++i) {
+  void popAtlases(int32_t firstFrame, int32_t lastFrame) {
+    for (int32_t i = firstFrame; i < lastFrame; ++i) {
       IO::saveAtlasFrame(json(), placeholders(), i, m_encoder.popAtlas());
     }
   }
@@ -141,7 +141,7 @@ private:
 };
 } // namespace TMIV::Encoder
 
-auto main(int argc, char *argv[]) -> int {
+auto main(int argc, char *argv[]) -> int32_t {
   try {
     TMIV::Encoder::registerComponents();
     TMIV::Encoder::Application app{{argv, argv + argc}};

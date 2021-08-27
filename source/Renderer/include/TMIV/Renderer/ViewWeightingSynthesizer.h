@@ -45,7 +45,7 @@ private:
 public:
   ViewWeightingSynthesizer(const Common::Json & /*unused*/, const Common::Json & /*componentNode*/);
   ViewWeightingSynthesizer(float angularScaling, float minimalWeight, float stretchFactor,
-                           float blendingFactor, float overloadFactor, int filteringPass);
+                           float blendingFactor, float overloadFactor, int32_t filteringPass);
   ViewWeightingSynthesizer(const ViewWeightingSynthesizer &) = delete;
   ViewWeightingSynthesizer(ViewWeightingSynthesizer &&) = default;
   auto operator=(const ViewWeightingSynthesizer &) -> ViewWeightingSynthesizer & = delete;

@@ -68,7 +68,7 @@ void parseFixedCharacter(std::string_view &text, char expected) {
   if (actual != expected) {
     std::ostringstream what;
     what << "Expected '" << expected << "' but found '" << actual << "' (0x" << std::hex
-         << int{actual} << ")";
+         << int32_t{actual} << ")";
     throw std::runtime_error(what.str());
   }
 }
@@ -234,8 +234,8 @@ auto parseNumber(std::string_view &text) -> Json {
       return Json{std::stod(match[number])};
     }
 
-    static_assert(std::is_same_v<long long, Json::Integer>);
-    return Json{std::stoll(match[number])};
+    static_assert(std::is_same_v<int64_t, Json::Integer>);
+    return Json{Common::downCast<int64_t>(std::stoll(match[number]))};
   }
 
   throw std::runtime_error("JSON parser: failed to parse number");
@@ -276,18 +276,18 @@ auto Json::format() const -> std::string {
 }
 
 namespace {
-auto saveValue(std::tuple<bool> /* tag */, std::ostream &stream, bool value, int /* level */)
+auto saveValue(std::tuple<bool> /* tag */, std::ostream &stream, bool value, int32_t /* level */)
     -> std::ostream & {
   return stream << std::boolalpha << value;
 }
 
 auto saveValue(std::tuple<Json::Integer> /* tag */, std::ostream &stream, Json::Integer value,
-               int /* level */) -> std::ostream & {
+               int32_t /* level */) -> std::ostream & {
   return stream << value;
 }
 
 auto saveValue(std::tuple<Json::Number> /* tag */, std::ostream &stream, Json::Number value,
-               int /* level */) -> std::ostream & {
+               int32_t /* level */) -> std::ostream & {
   if (std::isinf(value)) {
     if (0 < value) {
       return stream << "\"inf\"";
@@ -298,7 +298,7 @@ auto saveValue(std::tuple<Json::Number> /* tag */, std::ostream &stream, Json::N
 }
 
 auto saveValue(const std::tuple<std::string> & /* tag */, std::ostream &stream,
-               const std::string &value, int /* level */) -> std::ostream & {
+               const std::string &value, int32_t /* level */) -> std::ostream & {
   stream << '"';
   for (const auto ch : value) {
     if (ch == '"') {
@@ -325,7 +325,7 @@ auto saveValue(const std::tuple<std::string> & /* tag */, std::ostream &stream,
 }
 
 auto saveValue(const std::tuple<Json::Object> & /* tag */, std::ostream &stream,
-               const Json::Object &object, int level) -> std::ostream & {
+               const Json::Object &object, int32_t level) -> std::ostream & {
   if (object.empty()) {
     return stream << "{ }";
   }
@@ -341,7 +341,7 @@ auto saveValue(const std::tuple<Json::Object> & /* tag */, std::ostream &stream,
 }
 
 auto saveValue(const std::tuple<Json::Array> & /* tag */, std::ostream &stream,
-               const Json::Array &array, int level) -> std::ostream & {
+               const Json::Array &array, int32_t level) -> std::ostream & {
   stream << '[';
   auto sep = " "sv;
   for (const auto &value : array) {
@@ -353,7 +353,7 @@ auto saveValue(const std::tuple<Json::Array> & /* tag */, std::ostream &stream,
 }
 
 template <typename Type>
-auto saveIf(const std::any &node, std::ostream &stream, int level) -> bool {
+auto saveIf(const std::any &node, std::ostream &stream, int32_t level) -> bool {
   if (const auto *value = std::any_cast<Type>(&node)) {
     return saveValue(std::tuple<Type>{}, stream, *value, level).good();
   }
@@ -361,7 +361,7 @@ auto saveIf(const std::any &node, std::ostream &stream, int level) -> bool {
 }
 
 template <typename... Type>
-auto saveAny(const std::any &node, std::ostream &stream, int level) -> std::ostream & {
+auto saveAny(const std::any &node, std::ostream &stream, int32_t level) -> std::ostream & {
   if ((saveIf<Type>(node, stream, level) || ...)) {
     return stream;
   }
@@ -369,7 +369,7 @@ auto saveAny(const std::any &node, std::ostream &stream, int level) -> std::ostr
 }
 } // namespace
 
-auto Json::saveTo(std::ostream &stream, int level) const -> std::ostream & {
+auto Json::saveTo(std::ostream &stream, int32_t level) const -> std::ostream & {
   if (m_node.has_value()) {
     return saveAny<bool, Json::Integer, Json::Number, std::string, Json::Object, Json::Array>(
         m_node, stream, level);

@@ -110,19 +110,19 @@ auto AtlasAdaptationParameterSetRBSP::aapsExtensionData(std::vector<bool> value)
 
 auto operator<<(std::ostream &stream, const AtlasAdaptationParameterSetRBSP &x) -> std::ostream & {
   stream << "aaps_atlas_adaptation_parameter_set_id="
-         << int{x.aaps_atlas_adaptation_parameter_set_id()} << '\n';
+         << int32_t{x.aaps_atlas_adaptation_parameter_set_id()} << '\n';
   stream << "aaps_log2_max_afoc_present_flag=" << std::boolalpha
          << x.aaps_log2_max_afoc_present_flag() << '\n';
   if (x.aaps_log2_max_afoc_present_flag()) {
     stream << "aaps_log2_max_atlas_frame_order_cnt_lsb_minus4="
-           << int{x.aaps_log2_max_atlas_frame_order_cnt_lsb_minus4()} << '\n';
+           << int32_t{x.aaps_log2_max_atlas_frame_order_cnt_lsb_minus4()} << '\n';
   }
   stream << "aaps_extension_present_flag=" << std::boolalpha << x.aaps_extension_present_flag()
          << '\n';
   if (x.aaps_extension_present_flag()) {
     stream << "aaps_vpcc_extension_present_flag=" << std::boolalpha
            << x.aaps_vpcc_extension_present_flag() << '\n';
-    stream << "aaps_extension_7bits=" << int{x.aaps_extension_7bits()} << '\n';
+    stream << "aaps_extension_7bits=" << int32_t{x.aaps_extension_7bits()} << '\n';
   }
   if (x.aaps_vpcc_extension_present_flag()) {
     stream << x.aaps_vpcc_extension();

@@ -216,7 +216,7 @@ public:
   auto ref_list_struct(uint8_t rlsIdx, RefListStruct value) -> AtlasSequenceParameterSetRBSP &;
   constexpr auto asps_use_eight_orientations_flag(bool value) noexcept -> auto &;
   constexpr auto asps_extended_projection_enabled_flag(bool value) noexcept -> auto &;
-  auto asps_max_number_projections_minus1(unsigned value) noexcept
+  auto asps_max_number_projections_minus1(uint32_t value) noexcept
       -> AtlasSequenceParameterSetRBSP &;
   constexpr auto asps_normal_axis_limits_quantization_enabled_flag(bool value) noexcept -> auto &;
   constexpr auto asps_normal_axis_max_delta_value_enabled_flag(bool value) noexcept -> auto &;
@@ -263,7 +263,7 @@ private:
   std::vector<RefListStruct> m_ref_list_structs;
   bool m_asps_use_eight_orientations_flag{};
   bool m_asps_extended_projection_enabled_flag{};
-  std::optional<unsigned> m_asps_max_number_projections_minus1{};
+  std::optional<uint32_t> m_asps_max_number_projections_minus1{};
   bool m_asps_normal_axis_limits_quantization_enabled_flag{};
   bool m_asps_normal_axis_max_delta_value_enabled_flag{};
   bool m_asps_pixel_deinterleaving_enabled_flag{};
@@ -283,7 +283,7 @@ private:
   std::optional<std::vector<bool>> m_aspsExtensionData;
 };
 
-auto aspsById(const std::vector<AtlasSequenceParameterSetRBSP> &aspsV, int id)
+auto aspsById(const std::vector<AtlasSequenceParameterSetRBSP> &aspsV, int32_t id)
     -> const AtlasSequenceParameterSetRBSP &;
 } // namespace TMIV::MivBitstream
 

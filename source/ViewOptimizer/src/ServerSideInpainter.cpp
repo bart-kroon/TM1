@@ -117,13 +117,13 @@ public:
 
 class ServerSideInpainter::Impl {
 private:
-  const int m_projectionPlaneWidth;
-  const int m_projectionPlaneHeight;
+  const int32_t m_projectionPlaneWidth;
+  const int32_t m_projectionPlaneHeight;
   std::unique_ptr<IViewOptimizer> m_optimizer;
   std::unique_ptr<ISynthesizer> m_synthesizer;
   std::unique_ptr<IInpainter> m_inpainter;
-  int m_blurKernel;
-  int m_inpaintThreshold;
+  int32_t m_blurKernel;
+  int32_t m_inpaintThreshold;
   float m_fieldOfViewMargin;
   SourceParams m_sourceParams;
   ViewOptimizerParams m_transportParams;
@@ -133,16 +133,16 @@ public:
       : m_projectionPlaneWidth{componentNode.require("resolution"s)
                                    .as<Json::Array>()
                                    .at(0)
-                                   .as<int>()}
+                                   .as<int32_t>()}
       , m_projectionPlaneHeight{componentNode.require("resolution"s)
                                     .as<Json::Array>()
                                     .at(1)
-                                    .as<int>()}
+                                    .as<int32_t>()}
       , m_optimizer{Common::create<IViewOptimizer>("Sub"s, rootNode, componentNode)}
       , m_synthesizer{Common::create<ISynthesizer>("Synthesizer"s, rootNode, componentNode)}
       , m_inpainter{Common::create<IInpainter>("Inpainter"s, rootNode, componentNode)}
-      , m_blurKernel{componentNode.require("blurRadius").as<int>()}
-      , m_inpaintThreshold{componentNode.require("inpaintThreshold").as<int>()}
+      , m_blurKernel{componentNode.require("blurRadius").as<int32_t>()}
+      , m_inpaintThreshold{componentNode.require("inpaintThreshold").as<int32_t>()}
       , m_fieldOfViewMargin{componentNode.require("fieldOfViewMargin").as<float>()} {}
 
   auto optimizeParams(const SourceParams &params) -> ViewOptimizerParams {

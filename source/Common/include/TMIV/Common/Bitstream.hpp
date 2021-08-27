@@ -39,9 +39,9 @@
 
 namespace TMIV::Common {
 using uchar = std::make_unsigned_t<std::istream::char_type>;
-constexpr unsigned charBits = std::numeric_limits<uchar>::digits;
+constexpr uint32_t charBits = std::numeric_limits<uchar>::digits;
 
-template <typename Integer> auto InputBitstream::readBits(unsigned bits) -> Integer {
+template <typename Integer> auto InputBitstream::readBits(uint32_t bits) -> Integer {
   while (m_size < bits) {
     VERIFY_BITSTREAM(m_size + charBits <= std::numeric_limits<uint64_t>::digits);
     VERIFY_BITSTREAM(m_stream.good());
@@ -84,7 +84,7 @@ template <typename Integer> auto InputBitstream::getSExpGolomb() -> Integer {
   return static_cast<Integer>(value);
 }
 
-template <typename Integer> void OutputBitstream::writeBits(const Integer &value, unsigned bits) {
+template <typename Integer> void OutputBitstream::writeBits(const Integer &value, uint32_t bits) {
   if constexpr (std::is_signed_v<Integer>) {
     VERIFY_BITSTREAM(value >= 0);
   }

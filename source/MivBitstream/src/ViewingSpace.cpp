@@ -152,67 +152,67 @@ auto ElementaryShape::es_camera_inferred_flag() const noexcept -> bool {
   return !inferringViews.empty();
 }
 
-auto ElementaryShape::es_view_idx(int s) const noexcept -> unsigned {
-  return static_cast<unsigned>(inferringViews[s]);
+auto ElementaryShape::es_view_idx(int32_t s) const noexcept -> uint32_t {
+  return static_cast<uint32_t>(inferringViews[s]);
 }
 
-auto ElementaryShape::es_primitive_shape_type(int s) const noexcept -> PrimitiveShapeType {
+auto ElementaryShape::es_primitive_shape_type(int32_t s) const noexcept -> PrimitiveShapeType {
   return primitives[s].shapeType();
 }
 
-auto ElementaryShape::es_guard_band_size(int s) const -> float {
+auto ElementaryShape::es_guard_band_size(int32_t s) const -> float {
   VERIFY_MIVBITSTREAM(es_guard_band_present_flag());
   return primitives[s].guardBandSize.value_or(0.F);
 }
 
-auto ElementaryShape::es_primitive_shape_quat_x(int s) const -> float {
+auto ElementaryShape::es_primitive_shape_quat_x(int32_t s) const -> float {
   VERIFY_MIVBITSTREAM(es_primitive_orientation_present_flag());
   return primitives[s].rotation->x();
 }
 
-auto ElementaryShape::es_primitive_shape_quat_y(int s) const -> float {
+auto ElementaryShape::es_primitive_shape_quat_y(int32_t s) const -> float {
   VERIFY_MIVBITSTREAM(es_primitive_orientation_present_flag());
   return primitives[s].rotation->y();
 }
 
-auto ElementaryShape::es_primitive_shape_quat_z(int s) const -> float {
+auto ElementaryShape::es_primitive_shape_quat_z(int32_t s) const -> float {
   VERIFY_MIVBITSTREAM(es_primitive_orientation_present_flag());
   return primitives[s].rotation->z();
 }
 
-auto ElementaryShape::es_guard_band_direction_size(int s) const -> float {
+auto ElementaryShape::es_guard_band_direction_size(int32_t s) const -> float {
   VERIFY_MIVBITSTREAM(es_guard_band_present_flag());
   const auto viewing_direction_constraint = primitives[s].viewingDirectionConstraint.value_or(
       PrimitiveShape::ViewingDirectionConstraint());
   return viewing_direction_constraint.guardBandDirectionSize.value_or(0.F);
 }
-auto ElementaryShape::es_primitive_shape_viewing_direction_quat_x_center(int s) const -> float {
+auto ElementaryShape::es_primitive_shape_viewing_direction_quat_x_center(int32_t s) const -> float {
   VERIFY_MIVBITSTREAM(es_viewing_direction_constraint_present_flag());
   const auto viewing_direction_constraint = primitives[s].viewingDirectionConstraint.value_or(
       PrimitiveShape::ViewingDirectionConstraint());
   return viewing_direction_constraint.directionRotation.x();
 }
-auto ElementaryShape::es_primitive_shape_viewing_direction_quat_y_center(int s) const -> float {
+auto ElementaryShape::es_primitive_shape_viewing_direction_quat_y_center(int32_t s) const -> float {
   VERIFY_MIVBITSTREAM(es_viewing_direction_constraint_present_flag());
   const auto viewing_direction_constraint = primitives[s].viewingDirectionConstraint.value_or(
       PrimitiveShape::ViewingDirectionConstraint());
   return viewing_direction_constraint.directionRotation.y();
 }
-auto ElementaryShape::es_primitive_shape_viewing_direction_quat_z_center(int s) const -> float {
+auto ElementaryShape::es_primitive_shape_viewing_direction_quat_z_center(int32_t s) const -> float {
   VERIFY_MIVBITSTREAM(es_viewing_direction_constraint_present_flag());
   const auto viewing_direction_constraint = primitives[s].viewingDirectionConstraint.value_or(
       PrimitiveShape::ViewingDirectionConstraint());
   return viewing_direction_constraint.directionRotation.z();
 }
 
-auto ElementaryShape::es_primitive_shape_viewing_direction_yaw_range(int s) const -> float {
+auto ElementaryShape::es_primitive_shape_viewing_direction_yaw_range(int32_t s) const -> float {
   VERIFY_MIVBITSTREAM(es_viewing_direction_constraint_present_flag());
   const auto viewing_direction_constraint = primitives[s].viewingDirectionConstraint.value_or(
       PrimitiveShape::ViewingDirectionConstraint());
   return viewing_direction_constraint.yawRange;
 }
 
-auto ElementaryShape::es_primitive_shape_viewing_direction_pitch_range(int s) const -> float {
+auto ElementaryShape::es_primitive_shape_viewing_direction_pitch_range(int32_t s) const -> float {
   VERIFY_MIVBITSTREAM(es_viewing_direction_constraint_present_flag());
   const auto viewing_direction_constraint = primitives[s].viewingDirectionConstraint.value_or(
       PrimitiveShape::ViewingDirectionConstraint());
@@ -234,7 +234,7 @@ auto ElementaryShape::decodeFrom(Common::InputBitstream &stream) -> ElementarySh
   elementaryShape.primitives.reserve(numPrimitives);
   for (size_t i = 0; i < numPrimitives; ++i) {
     if (cameraInferred) {
-      elementaryShape.inferringViews.push_back(static_cast<int>(stream.getUint16()));
+      elementaryShape.inferringViews.push_back(static_cast<int32_t>(stream.getUint16()));
     }
     PrimitiveShape primitiveShape;
     const auto shapeType = stream.readBits<PrimitiveShapeType>(2);
@@ -284,7 +284,7 @@ void ElementaryShape::encodeTo(Common::OutputBitstream &stream) const {
   stream.putFlag(es_primitive_orientation_present_flag());
   stream.putFlag(es_viewing_direction_constraint_present_flag());
   stream.putFlag(es_camera_inferred_flag());
-  for (int s = 0; s <= es_num_primitive_shapes_minus1(); s++) {
+  for (int32_t s = 0; s <= es_num_primitive_shapes_minus1(); s++) {
     const auto &p = primitives[static_cast<PrimitiveShapeVector::size_type>(s)];
     if (es_camera_inferred_flag()) {
       stream.putUint16(static_cast<uint16_t>(es_view_idx(s)));
@@ -556,7 +556,7 @@ auto ElementaryShape::loadFromJson(const Common::Json &node, const Common::Json 
       if (idx == sourceCameraNames.size()) {
         throw std::runtime_error("Invalid inferred view in the metadata JSON file");
       }
-      elementaryShape.inferringViews.push_back(static_cast<int>(idx));
+      elementaryShape.inferringViews.push_back(static_cast<int32_t>(idx));
     }
     inferredView = true;
   }

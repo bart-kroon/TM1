@@ -101,8 +101,8 @@ public:
         m_inputSequenceConfig,
         IO::loadMultiviewFrame(json(), placeholders(), m_inputSequenceConfig, 0));
 
-    for (int i = 0; i < m_numberOfInputFrames; i += m_intraPeriod) {
-      int lastFrame = std::min(m_numberOfInputFrames, i + m_intraPeriod);
+    for (int32_t i = 0; i < m_numberOfInputFrames; i += m_intraPeriod) {
+      int32_t lastFrame = std::min(m_numberOfInputFrames, i + m_intraPeriod);
       encodeAccessUnit(i, lastFrame);
     }
 
@@ -124,7 +124,7 @@ private:
     }
   }
 
-  void popAtlases(int firstFrame, int lastFrame) {
+  void popAtlases(int32_t firstFrame, int32_t lastFrame) {
     for (int32_t i = firstFrame; i < lastFrame; ++i) {
       IO::saveAtlasFrame(json(), placeholders(), i, m_encoder.popAtlas());
     }
@@ -143,7 +143,7 @@ private:
 };
 } // namespace TMIV::Encoder
 
-auto main(int argc, char *argv[]) -> int {
+auto main(int argc, char *argv[]) -> int32_t {
   try {
     TMIV::Encoder::registerComponents();
     TMIV::Encoder::Application app{{argv, argv + argc}};

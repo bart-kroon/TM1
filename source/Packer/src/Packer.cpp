@@ -42,7 +42,7 @@
 
 namespace TMIV::Packer {
 namespace {
-void checkAtlasSize(const Common::SizeVector &atlasSizes, const int blockSize) {
+void checkAtlasSize(const Common::SizeVector &atlasSizes, const int32_t blockSize) {
   for (const auto &sz : atlasSizes) {
     if (((sz.x() % blockSize) != 0) || ((sz.y() % blockSize) != 0)) {
       throw std::runtime_error("Atlas size should be a multiple of blocksize");
@@ -71,11 +71,11 @@ void adaptPatchParamsToMask(MivBitstream::PatchParams &p, int32_t maskWidth, int
 
 } // namespace
 Packer::Packer(const Common::Json &rootNode, const Common::Json &componentNode) {
-  m_minPatchSize = componentNode.require("MinPatchSize").as<int>();
-  m_overlap = componentNode.require("Overlap").as<int>();
-  m_pip = componentNode.require("PiP").as<int>() != 0;
+  m_minPatchSize = componentNode.require("MinPatchSize").as<int32_t>();
+  m_overlap = componentNode.require("Overlap").as<int32_t>();
+  m_pip = componentNode.require("PiP").as<int32_t>() != 0;
   m_enableMerging = componentNode.require("enableMerging").as<bool>();
-  switch (auto sortingMethod = componentNode.require("sortingMethod").as<int>()) {
+  switch (auto sortingMethod = componentNode.require("sortingMethod").as<int32_t>()) {
   case 0:
     m_sortingMethod = AREA_DESCENDING;
     break;
@@ -88,10 +88,10 @@ Packer::Packer(const Common::Json &rootNode, const Common::Json &componentNode) 
   m_enableRecursiveSplit = componentNode.require("enableRecursiveSplit").as<bool>();
 
   if (const auto node = rootNode.optional("maxEntityId")) {
-    m_maxEntityId = node.as<int>();
+    m_maxEntityId = node.as<int32_t>();
   }
   if (m_maxEntityId > 0) {
-    m_entityEncodeRange = rootNode.require("EntityEncodeRange").asVec<int, 2>();
+    m_entityEncodeRange = rootNode.require("EntityEncodeRange").asVec<int32_t, 2>();
   }
 }
 
@@ -104,7 +104,7 @@ void Packer::updateAggregatedEntityMasks(const std::vector<Common::MaskList> &en
 }
 
 auto Packer::computeClusterToPack(const MivBitstream::ViewParamsList &viewParamsList,
-                                  const int m_blockSize, ClusterList &clusterList,
+                                  const int32_t m_blockSize, ClusterList &clusterList,
                                   const ClusteringMapList &clusteringMap) const {
   auto comp = [this, &viewParamsList](const Cluster &p1, const Cluster &p2) -> bool {
     if (viewParamsList[p1.getViewIdx()].isBasicView !=
@@ -150,7 +150,7 @@ auto Packer::computeClusterToPack(const MivBitstream::ViewParamsList &viewParams
   return clusterToPack;
 }
 
-void Packer::initialize(const Common::SizeVector &atlasSizes, const int blockSize) {
+void Packer::initialize(const Common::SizeVector &atlasSizes, const int32_t blockSize) {
   m_packerList.clear();
   m_packerList.reserve(atlasSizes.size());
   for (const auto &sz : atlasSizes) {
@@ -159,7 +159,7 @@ void Packer::initialize(const Common::SizeVector &atlasSizes, const int blockSiz
 }
 
 auto Packer::pack(const Common::SizeVector &atlasSizes, const Common::MaskList &masks,
-                  const MivBitstream::ViewParamsList &viewParamsList, const int m_blockSize)
+                  const MivBitstream::ViewParamsList &viewParamsList, const int32_t m_blockSize)
     -> MivBitstream::PatchParamsList {
   checkAtlasSize(atlasSizes, m_blockSize);
 
@@ -172,8 +172,8 @@ auto Packer::pack(const Common::SizeVector &atlasSizes, const Common::MaskList &
   MivBitstream::PatchParamsList atlasParamsVector{};
   MaxRectPiP::Output packerOutput{};
 
-  int patchId = 0;
-  int clusteringMap_viewId = 0;
+  int32_t patchId = 0;
+  int32_t clusteringMap_viewId = 0;
   while (!clusterToPack.empty()) {
     const Cluster &cluster = clusterToPack.top();
 
@@ -255,19 +255,20 @@ auto Packer::pack(const Common::SizeVector &atlasSizes, const Common::MaskList &
 
 auto Packer::computeClusters(const Common::MaskList &masks,
                              const MivBitstream::ViewParamsList &viewParamsList)
-    -> std::tuple<ClusterList, ClusteringMapList, std::vector<int>> {
+    -> std::tuple<ClusterList, ClusteringMapList, std::vector<int32_t>> {
   ClusterList clusterList{};
   ClusteringMapList clusteringMap{};
-  std::vector<int> clusteringMapIndex{};
-  int index = 0;
-  for (auto viewIdx = 0; viewIdx < static_cast<int>(masks.size()); viewIdx++) {
+  std::vector<int32_t> clusteringMapIndex{};
+  int32_t index = 0;
+  for (auto viewIdx = 0; viewIdx < static_cast<int32_t>(masks.size()); viewIdx++) {
     if (m_maxEntityId > 0) {
-      for (int entityId = m_entityEncodeRange[0]; entityId < m_entityEncodeRange[1]; entityId++) {
+      for (int32_t entityId = m_entityEncodeRange[0]; entityId < m_entityEncodeRange[1];
+           entityId++) {
         // Entity clustering
         Common::Mask mask = m_aggregatedEntityMasks[entityId - m_entityEncodeRange[0]][viewIdx];
 
         auto clusteringOutput = retrieveClusters(
-            viewIdx, mask, static_cast<int>(clusterList.size()),
+            viewIdx, mask, static_cast<int32_t>(clusterList.size()),
             viewParamsList[viewIdx].isBasicView, m_enableMerging, m_maxEntityId > 0);
 
         for (auto &cluster : clusteringOutput.first) {
@@ -290,7 +291,7 @@ auto Packer::computeClusters(const Common::MaskList &masks,
       }
     } else {
       auto clusteringOutput =
-          retrieveClusters(viewIdx, masks[viewIdx], static_cast<int>(clusterList.size()),
+          retrieveClusters(viewIdx, masks[viewIdx], static_cast<int32_t>(clusterList.size()),
                            viewParamsList[viewIdx].isBasicView, m_enableMerging, m_maxEntityId > 0);
 
       std::move(clusteringOutput.first.begin(), clusteringOutput.first.end(),

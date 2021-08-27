@@ -143,13 +143,13 @@ TEST_CASE("Parsing the command-line", "[Application]") {
 
   SECTION("Right has preference over left") {
     Fake app{"Fake", {"command", "-p", "Color", "5", "-p", "Color", "7"}, {}};
-    REQUIRE(app.json().require("Color").as<int>() == 7);
+    REQUIRE(app.json().require("Color").as<int32_t>() == 7);
   }
 
   SECTION("Structured values") {
     Fake app{"Fake", {"command", "-p", "Size", "[20, 30]", "-p", "Params", "{ \"a\": 3 }"}, {}};
-    CHECK(app.json().require("Size").asVec<int, 2>() == Vec2i{20, 30});
-    CHECK(app.json().require("Params").require("a").as<int>() == 3);
+    CHECK(app.json().require("Size").asVec<int32_t, 2>() == Vec2i{20, 30});
+    CHECK(app.json().require("Params").require("a").as<int32_t>() == 3);
   }
 
   SECTION("A single-occurance application-specific option needs to be specified exactly once") {

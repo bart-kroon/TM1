@@ -38,9 +38,9 @@
 
 namespace TMIV::Encoder {
 Configuration::Configuration(const Common::Json &rootNode, const Common::Json &componentNode)
-    : intraPeriod{rootNode.require("intraPeriod").as<int>()}
+    : intraPeriod{rootNode.require("intraPeriod").as<int32_t>()}
     , blockSizeDepthQualityDependent{rootNode.require("blockSizeDepthQualityDependent")
-                                         .asVec<int, 2>()}
+                                         .asVec<int32_t, 2>()}
     , haveTexture{rootNode.require("haveTextureVideo").as<bool>()}
     , haveGeometry{rootNode.require("haveGeometryVideo").as<bool>()}
     , haveOccupancy{rootNode.require("haveOccupancyVideo").as<bool>()}
@@ -48,7 +48,7 @@ Configuration::Configuration(const Common::Json &rootNode, const Common::Json &c
     , oneViewPerAtlasFlag{rootNode.require("oneViewPerAtlasFlag").as<bool>()}
     , geometryScaleEnabledFlag{haveGeometry && haveTexture &&
                                rootNode.require("geometryScaleEnabledFlag").as<bool>()}
-    , dilationIter{componentNode.require("dilate").as<int>()}
+    , dilationIter{componentNode.require("dilate").as<int32_t>()}
     , dynamicDepthRange{rootNode.require("dynamicDepthRange").as<bool>()}
     , attributeOffsetFlag{haveTexture && rootNode.require("attributeOffsetEnabledFlag").as<bool>()}
     , viewportCameraParametersSei{rootNode.require("viewportCameraParametersSei").as<bool>()}
@@ -69,13 +69,13 @@ Configuration::Configuration(const Common::Json &rootNode, const Common::Json &c
         << "WARNING: Overriding atlas frame sizes is meant for internal/preliminary experiments "
            "only.\n";
     for (const auto &subnode : node.as<Common::Json::Array>()) {
-      overrideAtlasFrameSizes.push_back(subnode.asVec<int, 2>());
+      overrideAtlasFrameSizes.push_back(subnode.asVec<int32_t, 2>());
     }
   } else if (!oneViewPerAtlasFlag) {
     maxLumaSampleRate = rootNode.require("maxLumaSampleRate").as<double>();
     maxLumaPictureSize = rootNode.require("maxLumaPictureSize").as<int32_t>();
-    maxAtlases = rootNode.require("maxAtlases").as<int>();
-    maxAtlases = maxAtlases / std::max(1, int{numGroups});
+    maxAtlases = rootNode.require("maxAtlases").as<int32_t>();
+    maxAtlases = maxAtlases / std::max(1, int32_t{numGroups});
   }
 
   if (haveGeometry && !haveOccupancy) {
@@ -98,7 +98,7 @@ Configuration::Configuration(const Common::Json &rootNode, const Common::Json &c
   }
 
   if (attributeOffsetFlag) {
-    attributeOffsetBitCount = rootNode.require("attributeOffsetBitCount").as<int>();
+    attributeOffsetBitCount = rootNode.require("attributeOffsetBitCount").as<int32_t>();
   }
 
   // Read the entity encoding range if exists

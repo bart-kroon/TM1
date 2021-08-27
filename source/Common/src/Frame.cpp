@@ -47,12 +47,12 @@ template <class TO, class FROM> auto yuv420p_impl(const Frame<FROM> &frame) -> F
             std::begin(result.getPlane(0)));
 
   PRECONDITION(frame.getWidth() % 2 == 0 && frame.getHeight() % 2 == 0);
-  const int rows = result.getHeight() / 2;
-  const int cols = result.getWidth() / 2;
+  const int32_t rows = result.getHeight() / 2;
+  const int32_t cols = result.getWidth() / 2;
 
-  for (int k = 1; k < 3; ++k) {
-    for (int i = 0; i < rows; ++i) {
-      for (int j = 0; j < cols; ++j) {
+  for (int32_t k = 1; k < 3; ++k) {
+    for (int32_t i = 0; i < rows; ++i) {
+      for (int32_t j = 0; j < cols; ++j) {
         auto sum = frame.getPlane(k)(2 * i, 2 * j) + frame.getPlane(k)(2 * i + 1, 2 * j) +
                    frame.getPlane(k)(2 * i, 2 * j + 1) + frame.getPlane(k)(2 * i + 1, 2 * j + 1);
         using base_type = typename detail::PixelFormatHelper<TO>::base_type;
@@ -69,8 +69,8 @@ template <class TO, class FROM> auto yuv444p_impl(const Frame<FROM> &frame) -> F
 
   auto result = Frame<TO>{frame.getWidth(), frame.getHeight()};
 
-  for (int i = 0; i < frame.getHeight(); ++i) {
-    for (int j = 0; j < frame.getWidth(); ++j) {
+  for (int32_t i = 0; i < frame.getHeight(); ++i) {
+    for (int32_t j = 0; j < frame.getWidth(); ++j) {
       result.getPlane(0)(i, j) = frame.getPlane(0)(i, j);
       result.getPlane(1)(i, j) = frame.getPlane(1)(i / 2, j / 2);
       result.getPlane(2)(i, j) = frame.getPlane(2)(i / 2, j / 2);
@@ -114,8 +114,8 @@ auto expandTexture(const Frame<YUV444P10> &inYuv) -> Mat<Vec3f> {
   const auto height = Y.height();
   constexpr auto bitDepth = 10U;
 
-  for (unsigned i = 0; i != height; ++i) {
-    for (unsigned j = 0; j != width; ++j) {
+  for (uint32_t i = 0; i != height; ++i) {
+    for (uint32_t j = 0; j != width; ++j) {
       out(i, j) = Vec3f{expandValue(Y(i, j), bitDepth), expandValue(U(i, j), bitDepth),
                         expandValue(V(i, j), bitDepth)};
     }
@@ -133,13 +133,13 @@ auto expandLuma(const Frame<YUV420P10> &inYuv) -> Mat<float> {
 }
 
 auto quantizeTexture(const Mat<Vec3f> &in) -> Frame<YUV444P10> {
-  Frame<YUV444P10> outYuv(static_cast<int>(in.width()), static_cast<int>(in.height()));
+  Frame<YUV444P10> outYuv(static_cast<int32_t>(in.width()), static_cast<int32_t>(in.height()));
   const auto width = in.width();
   const auto height = in.height();
 
-  for (int k = 0; k < 3; ++k) {
-    for (unsigned i = 0; i != height; ++i) {
-      for (unsigned j = 0; j != width; ++j) {
+  for (int32_t k = 0; k < 3; ++k) {
+    for (uint32_t i = 0; i != height; ++i) {
+      for (uint32_t j = 0; j != width; ++j) {
         constexpr auto bitDepth = 10U;
         outYuv.getPlane(k)(i, j) = quantizeValue<uint16_t>(in(i, j)[k], bitDepth);
       }

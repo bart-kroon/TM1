@@ -307,12 +307,12 @@ template <typename MAT> auto transquare(const MAT &A) {
 
 namespace detail {
 template <typename MatrixA, typename MatrixLU>
-auto PLU(MatrixA &A, MatrixLU &LU, ::std::vector<int> &P) -> int {
+auto PLU(MatrixA &A, MatrixLU &LU, ::std::vector<int32_t> &P) -> int32_t {
   using T = typename MatrixLU::value_type;
   using size_type = size_t;
   using std::abs;
 
-  int nb_permutations = 0;
+  int32_t nb_permutations = 0;
   size_type n = A.m();
 
   P.resize(A.m());
@@ -350,20 +350,21 @@ auto PLU(MatrixA &A, MatrixLU &LU, ::std::vector<int> &P) -> int {
 } // namespace detail
 
 template <typename MAT1, typename MAT2>
-auto PLU(const MAT1 &A, MAT2 &LU, std::vector<int> &P) -> int {
+auto PLU(const MAT1 &A, MAT2 &LU, std::vector<int32_t> &P) -> int32_t {
   LU.resize(A.m(), A.n());
   return detail::PLU(A, LU, P);
 }
 
-template <typename MAT1, typename MAT2> auto PLU(const MAT1 &A, MAT2 &L, MAT2 &U, MAT2 &P) -> int {
+template <typename MAT1, typename MAT2>
+auto PLU(const MAT1 &A, MAT2 &L, MAT2 &U, MAT2 &P) -> int32_t {
   using size_type = size_t;
   using T1 = typename MAT2::value_type;
   using T2 = typename MAT2::value_type;
 
   heap::Matrix<T1> LU;
-  std::vector<int> p;
+  std::vector<int32_t> p;
 
-  int ret = PLU(A, LU, p);
+  int32_t ret = PLU(A, LU, p);
 
   L.resize(A.m(), A.n());
   U.resize(A.m(), A.n());
@@ -392,7 +393,7 @@ template <typename MAT1, typename MAT2> auto PLU(const MAT1 &A, MAT2 &L, MAT2 &U
 }
 
 namespace detail {
-template <typename MatrixA, typename MatrixOut> auto chol(MatrixA &A, MatrixOut &out) -> int {
+template <typename MatrixA, typename MatrixOut> auto chol(MatrixA &A, MatrixOut &out) -> int32_t {
   using size_type = size_t;
   using T = typename MatrixOut::value_type;
   using std::sqrt;
@@ -426,15 +427,15 @@ template <typename MatrixA, typename MatrixOut> auto chol(MatrixA &A, MatrixOut 
 }
 } // namespace detail
 
-template <typename MAT1, typename MAT2> auto chol(const MAT1 &A, MAT2 &out) -> int {
+template <typename MAT1, typename MAT2> auto chol(const MAT1 &A, MAT2 &out) -> int32_t {
   out.resize(A.m(), A.m());
   return detail::chol(A, out);
 }
 
-template <typename MAT> auto chol(const MAT &A, int *info) -> MAT {
+template <typename MAT> auto chol(const MAT &A, int32_t *info) -> MAT {
   MAT out;
 
-  int information = chol(A, out);
+  int32_t information = chol(A, out);
   if (info) {
     *info = information;
   }
@@ -443,11 +444,11 @@ template <typename MAT> auto chol(const MAT &A, int *info) -> MAT {
 }
 
 namespace detail {
-template <typename MatrixA> auto det(MatrixA &A, int *info) {
+template <typename MatrixA> auto det(MatrixA &A, int32_t *info) {
   using T = typename MatrixA::value_type;
   heap::Matrix<T> LU;
-  std::vector<int> P;
-  int n = PLU(A, LU, P);
+  std::vector<int32_t> P;
+  int32_t n = PLU(A, LU, P);
   T d = std::accumulate(LU.diag_begin(), LU.diag_end(), T{1}, [](T v1, T v2) { return (v1 * v2); });
 
   if (n % 2) {
@@ -462,8 +463,8 @@ template <typename MatrixA> auto det(MatrixA &A, int *info) {
 }
 } // namespace detail
 
-template <typename MAT> auto det(const MAT &A, int *info) -> typename MAT::value_type {
-  int information = 0;
+template <typename MAT> auto det(const MAT &A, int32_t *info) -> typename MAT::value_type {
+  int32_t information = 0;
   typename MAT::value_type out = 0;
 
   if (A.isPositive()) {
@@ -487,13 +488,13 @@ template <typename MAT> auto det(const MAT &A, int *info) -> typename MAT::value
 
 namespace detail {
 template <typename MatrixA, typename MatrixB, typename MatrixOut>
-auto mldivide(MatrixA &A, MatrixB &B, MatrixOut &out) -> int {
+auto mldivide(MatrixA &A, MatrixB &B, MatrixOut &out) -> int32_t {
   using T = typename MatrixOut::value_type;
   using size_type = size_t;
 
   // PLU decomposition
   heap::Matrix<T> LU;
-  std::vector<int> P;
+  std::vector<int32_t> P;
 
   PLU(A, LU, P);
 
@@ -532,16 +533,16 @@ auto mldivide(MatrixA &A, MatrixB &B, MatrixOut &out) -> int {
 } // namespace detail
 
 template <typename MAT1, typename MAT2, typename MAT3>
-auto mldivide(const MAT1 &A, const MAT2 &B, MAT3 &out) -> int {
+auto mldivide(const MAT1 &A, const MAT2 &B, MAT3 &out) -> int32_t {
   out.resize(B.m(), B.n());
   return detail::mldivide(A, B, out);
 }
 
 template <typename MAT1, typename MAT2>
-auto mldivide(const MAT1 &A, const MAT2 &B, int *info) -> MAT2 {
+auto mldivide(const MAT1 &A, const MAT2 &B, int32_t *info) -> MAT2 {
   MAT2 out;
 
-  int information = mldivide(A, B, out);
+  int32_t information = mldivide(A, B, out);
   if (info) {
     *info = information;
   }
@@ -551,13 +552,13 @@ auto mldivide(const MAT1 &A, const MAT2 &B, int *info) -> MAT2 {
 
 namespace detail {
 template <typename MatrixA, typename MatrixB, typename MatrixOut>
-auto mrdivide(MatrixA &A, MatrixB &B, MatrixOut &out) -> int {
+auto mrdivide(MatrixA &A, MatrixB &B, MatrixOut &out) -> int32_t {
   using T = typename MatrixOut::value_type;
   using size_type = size_t;
 
   // PLU decomposition
   heap::Matrix<T> LU;
-  std::vector<int> P;
+  std::vector<int32_t> P;
 
   PLU(B, LU, P);
 
@@ -596,16 +597,16 @@ auto mrdivide(MatrixA &A, MatrixB &B, MatrixOut &out) -> int {
 } // namespace detail
 
 template <typename MAT1, typename MAT2, typename MAT3>
-auto mrdivide(const MAT1 &A, const MAT2 &B, MAT3 &out) -> int {
+auto mrdivide(const MAT1 &A, const MAT2 &B, MAT3 &out) -> int32_t {
   out.resize(A.m(), A.n());
   return detail::mrdivide(A, B, out);
 }
 
 template <typename MAT1, typename MAT2>
-auto mrdivide(const MAT1 &A, const MAT2 &B, int *info) -> MAT1 {
+auto mrdivide(const MAT1 &A, const MAT2 &B, int32_t *info) -> MAT1 {
   MAT1 out;
 
-  int information = mrdivide(A, B, out);
+  int32_t information = mrdivide(A, B, out);
   if (info) {
     *info = information;
   }
@@ -614,7 +615,7 @@ auto mrdivide(const MAT1 &A, const MAT2 &B, int *info) -> MAT1 {
 }
 
 namespace detail {
-template <typename MatrixA, typename MatrixOut> auto inv(MatrixA &A, MatrixOut &out) -> int {
+template <typename MatrixA, typename MatrixOut> auto inv(MatrixA &A, MatrixOut &out) -> int32_t {
   using T = typename MatrixA::value_type;
 
   auto I = A;
@@ -624,14 +625,14 @@ template <typename MatrixA, typename MatrixOut> auto inv(MatrixA &A, MatrixOut &
 }
 } // namespace detail
 
-template <typename MAT1, typename MAT2> auto inv(const MAT1 &A, MAT2 &out) -> int {
+template <typename MAT1, typename MAT2> auto inv(const MAT1 &A, MAT2 &out) -> int32_t {
   out.resize(A.m(), A.n());
   return detail::inv(A, out);
 }
 
-template <typename MAT> auto inv(const MAT &A, int *info) -> MAT {
+template <typename MAT> auto inv(const MAT &A, int32_t *info) -> MAT {
   MAT out;
-  int information = inv(A, out);
+  int32_t information = inv(A, out);
 
   if (info) {
     *info = information;

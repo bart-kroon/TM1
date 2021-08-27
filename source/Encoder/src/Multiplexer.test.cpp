@@ -312,7 +312,7 @@ auto makeMultiplexerWithFakeVideoBitstreamServers(const Json &packingInformation
   TMIV::Encoder::Multiplexer unit{packingInformationNode};
 
   unit.setAttributeVideoBitstreamServer(
-      [](AiAttributeTypeId typeId, const AtlasId &atlasId, int attributeIdx) {
+      [](AiAttributeTypeId typeId, const AtlasId &atlasId, int32_t attributeIdx) {
         return std::make_unique<std::istringstream>(
             fmt::format("\0\0\0\1test_attribute typeId={} attributeIdx={} atlasId={}"sv, typeId,
                         attributeIdx, atlasId));

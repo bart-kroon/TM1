@@ -94,7 +94,7 @@ public:
   [[nodiscard]] auto vui_tiles_fixed_structure_for_atlas_flag() const -> bool;
   [[nodiscard]] auto vui_tiles_fixed_structure_for_video_substreams_flag() const -> bool;
   [[nodiscard]] auto vui_constrained_tiles_across_v3c_components_idc() const -> uint8_t;
-  [[nodiscard]] auto vui_max_num_tiles_per_atlas_minus1() const -> unsigned;
+  [[nodiscard]] auto vui_max_num_tiles_per_atlas_minus1() const -> uint32_t;
 
   [[nodiscard]] constexpr auto vui_coordinate_system_parameters_present_flag() const noexcept;
   [[nodiscard]] auto coordinate_system_parameters() const -> const CoordinateSystemParameters &;
@@ -102,11 +102,11 @@ public:
   [[nodiscard]] constexpr auto vui_unit_in_metres_flag() const noexcept;
 
   [[nodiscard]] constexpr auto vui_display_box_info_present_flag() const noexcept;
-  [[nodiscard]] auto vui_display_box_origin(int d) const -> uint32_t;
-  [[nodiscard]] auto vui_display_box_size(int d) const -> uint32_t;
+  [[nodiscard]] auto vui_display_box_origin(int32_t d) const -> uint32_t;
+  [[nodiscard]] auto vui_display_box_size(int32_t d) const -> uint32_t;
 
   [[nodiscard]] constexpr auto vui_anchor_point_present_flag() const noexcept;
-  [[nodiscard]] auto vui_anchor_point(int d) const -> uint32_t;
+  [[nodiscard]] auto vui_anchor_point(int32_t d) const -> uint32_t;
 
   constexpr auto vui_timing_info_present_flag(bool value) noexcept -> auto &;
   auto vui_num_units_in_tick(uint32_t value) noexcept -> VuiParameters &;
@@ -119,7 +119,7 @@ public:
   auto vui_tiles_fixed_structure_for_atlas_flag(bool value) noexcept -> VuiParameters &;
   auto vui_tiles_fixed_structure_for_video_substreams_flag(bool value) noexcept -> VuiParameters &;
   auto vui_constrained_tiles_across_v3c_components_idc(uint8_t value) noexcept -> VuiParameters &;
-  auto vui_max_num_tiles_per_atlas_minus1(unsigned value) noexcept -> VuiParameters &;
+  auto vui_max_num_tiles_per_atlas_minus1(uint32_t value) noexcept -> VuiParameters &;
 
   constexpr auto vui_coordinate_system_parameters_present_flag(bool value) noexcept -> auto &;
   [[nodiscard]] auto coordinate_system_parameters() noexcept -> CoordinateSystemParameters &;
@@ -127,11 +127,11 @@ public:
   constexpr auto vui_unit_in_metres_flag(bool value) noexcept -> auto &;
 
   constexpr auto vui_display_box_info_present_flag(bool value) noexcept -> auto &;
-  auto vui_display_box_origin(int d, uint32_t value) noexcept -> VuiParameters &;
-  auto vui_display_box_size(int d, uint32_t value) noexcept -> VuiParameters &;
+  auto vui_display_box_origin(int32_t d, uint32_t value) noexcept -> VuiParameters &;
+  auto vui_display_box_size(int32_t d, uint32_t value) noexcept -> VuiParameters &;
 
   constexpr auto vui_anchor_point_present_flag(bool value) noexcept -> auto &;
-  auto vui_anchor_point(int d, uint32_t value) noexcept -> VuiParameters &;
+  auto vui_anchor_point(int32_t d, uint32_t value) noexcept -> VuiParameters &;
 
   friend auto operator<<(std::ostream &stream, const VuiParameters &x) -> std::ostream &;
 
@@ -156,7 +156,7 @@ private:
   std::optional<bool> m_vui_tiles_fixed_structure_for_atlas_flag;
   std::optional<bool> m_vui_tiles_fixed_structure_for_video_substreams_flag;
   std::optional<uint8_t> m_vui_constrained_tiles_across_v3c_components_idc;
-  std::optional<unsigned> m_vui_max_num_tiles_per_atlas_minus1;
+  std::optional<uint32_t> m_vui_max_num_tiles_per_atlas_minus1;
 
   bool m_vui_coordinate_system_parameters_present_flag{};
   std::optional<CoordinateSystemParameters> m_coordinate_system_parameters;

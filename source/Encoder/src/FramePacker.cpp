@@ -38,7 +38,7 @@ void FramePacker::combinePlanes(size_t atlasIdx, Common::TextureFrame &atlasText
   auto bufferTextureDepth =
       std::vector<char>(m_regionSizes[atlasIdx].pac.x() * m_regionSizes[atlasIdx].pac.y() * 2);
 
-  for (int i = 0; i < 3; i++) {
+  for (int32_t i = 0; i < 3; i++) {
     const auto planeTexture = atlasTexture.getPlane(i);
     const auto planeTextureSize = planeTexture.size() * sizeof(planeTexture[0]);
     std::memcpy(&bufferTextureDepth[0], planeTexture.data(), planeTextureSize);

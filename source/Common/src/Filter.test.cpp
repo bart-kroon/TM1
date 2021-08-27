@@ -36,11 +36,11 @@
 #include <TMIV/Common/Filter.h>
 
 namespace {
-auto exampleInput(int rows, int cols) {
+auto exampleInput(int32_t rows, int32_t cols) {
   auto in = TMIV::Common::Mat<uint16_t>{{static_cast<size_t>(rows), static_cast<size_t>(cols)}};
 
-  for (int i = 0; i < rows; ++i) {
-    for (int j = 0; j < cols; ++j) {
+  for (int32_t i = 0; i < rows; ++i) {
+    for (int32_t j = 0; j < cols; ++j) {
       in(i, j) = static_cast<uint16_t>((i * j) ^ 13);
     }
   }
@@ -52,8 +52,8 @@ auto sumPixelsInRectangle(const TMIV::Common::Mat<uint16_t> &in, const TMIV::Com
                           const TMIV::Common::Vec2i &p_2) {
   auto sum = uintmax_t{};
 
-  for (int i = p_1.y(); i < p_2.y(); ++i) {
-    for (int j = p_1.x(); j < p_2.x(); ++j) {
+  for (int32_t i = p_1.y(); i < p_2.y(); ++i) {
+    for (int32_t j = p_1.x(); j < p_2.x(); ++j) {
       sum += in(i, j);
     }
   }
@@ -63,18 +63,18 @@ auto sumPixelsInRectangle(const TMIV::Common::Mat<uint16_t> &in, const TMIV::Com
 auto countPixelsInRectangle(const TMIV::Common::Vec2i &p_1, const TMIV::Common::Vec2i &p_2) {
   auto count = uintmax_t{};
 
-  for (int i = p_1.y(); i < p_2.y(); ++i) {
-    for (int j = p_1.x(); j < p_2.x(); ++j) {
+  for (int32_t i = p_1.y(); i < p_2.y(); ++i) {
+    for (int32_t j = p_1.x(); j < p_2.x(); ++j) {
       ++count;
     }
   }
   return count;
 }
 
-auto averagePixels(const TMIV::Common::Mat<uint16_t> &in, int i, int j, int k) {
+auto averagePixels(const TMIV::Common::Mat<uint16_t> &in, int32_t i, int32_t j, int32_t k) {
   using TMIV::Common::Vec2i;
-  const auto rows = static_cast<int>(in.height());
-  const auto cols = static_cast<int>(in.width());
+  const auto rows = static_cast<int32_t>(in.height());
+  const auto cols = static_cast<int32_t>(in.width());
   const auto p_1 = Vec2i{std::clamp(j - k, 0, cols), std::clamp(i - k, 0, rows)};
   const auto p_2 = Vec2i{std::clamp(j + k + 1, 0, cols), std::clamp(i + k + 1, 0, rows)};
 
@@ -94,8 +94,8 @@ TEST_CASE("integralImage") {
   REQUIRE(out.width() == cols + size_t{1});
   REQUIRE(out.height() == rows + size_t{1});
 
-  for (int i = 0; i < rows; ++i) {
-    for (int j = 0; j < cols; ++j) {
+  for (int32_t i = 0; i < rows; ++i) {
+    for (int32_t j = 0; j < cols; ++j) {
       REQUIRE(out(i, j) == sumPixelsInRectangle(in, {}, {j, i}));
     }
   }
@@ -137,8 +137,8 @@ TEST_CASE("boxBlur") {
   const auto k = GENERATE(0, 1, 2);
   const auto out = TMIV::Common::boxBlur<uint32_t>(in, k);
 
-  for (int i = 0; i < rows; ++i) {
-    for (int j = 0; j < cols; ++j) {
+  for (int32_t i = 0; i < rows; ++i) {
+    for (int32_t j = 0; j < cols; ++j) {
       REQUIRE(out(i, j) == averagePixels(in, i, j, k));
     }
   }

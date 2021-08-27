@@ -59,7 +59,7 @@ private:
 public:
   using Object = std::map<std::string, Json>;
   using Array = std::vector<Json>;
-  using Integer = long long;
+  using Integer = int64_t;
   using Number = double;
 
   // Default construction corresponds to JSON null
@@ -124,7 +124,7 @@ public:
   [[nodiscard]] auto format() const -> std::string;
 
   // Save a JSON to a stream
-  auto saveTo(std::ostream &stream, int level = 0) const -> std::ostream &;
+  auto saveTo(std::ostream &stream, int32_t level = 0) const -> std::ostream &;
 
   // Update a JSON with another one
   //  * merges objects

@@ -45,10 +45,10 @@ namespace TMIV::ViewOptimizer {
 BasicViewAllocator::BasicViewAllocator(const Common::Json &rootNode,
                                        const Common::Json &componentNode)
     : AbstractViewSelector{rootNode, componentNode}
-    , m_numGroups{rootNode.require("numGroups").as<int>()}
-    , m_maxLumaPictureSize{rootNode.require("maxLumaPictureSize").as<int>()}
-    , m_maxAtlases{rootNode.require("maxAtlases").as<int>()}
-    , m_minNonCodedViews{componentNode.require("minNonCodedViews").as<int>()}
+    , m_numGroups{rootNode.require("numGroups").as<int32_t>()}
+    , m_maxLumaPictureSize{rootNode.require("maxLumaPictureSize").as<int32_t>()}
+    , m_maxAtlases{rootNode.require("maxAtlases").as<int32_t>()}
+    , m_minNonCodedViews{componentNode.require("minNonCodedViews").as<int32_t>()}
     , m_maxBasicViewFraction{componentNode.require("maxBasicViewFraction").as<double>()} {
   VERIFY(m_numGroups <= m_maxAtlases);
   VERIFY(0 < m_maxLumaPictureSize);

@@ -70,11 +70,11 @@ void padGeometryFromLeft(const EncoderParams &outParams, Common::MVD10Frame &atl
       auto occupancyScale =
           std::array{outParams.atlas[i].asps.asps_frame_height() / occupancyAtlasMap.getHeight(),
                      outParams.atlas[i].asps.asps_frame_width() / occupancyAtlasMap.getWidth()};
-      for (int y = 0; y < depthAtlasMap.getHeight(); y++) {
-        for (int x = 1; x < depthAtlasMap.getWidth(); x++) {
+      for (int32_t y = 0; y < depthAtlasMap.getHeight(); y++) {
+        for (int32_t x = 1; x < depthAtlasMap.getWidth(); x++) {
           auto depth = depthAtlasMap.getPlane(0)(y, x);
-          const int yOcc = y * depthScale[0] / occupancyScale[0];
-          const int xOcc = x * depthScale[1] / occupancyScale[1];
+          const int32_t yOcc = y * depthScale[0] / occupancyScale[0];
+          const int32_t xOcc = x * depthScale[1] / occupancyScale[1];
           if (occupancyAtlasMap.getPlane(0)(yOcc, xOcc) == 0 ||
               (depth == 0 &&
                atlases[i].texture.getPlane(0)(y * depthScale[0], x * depthScale[1]) == 512)) {

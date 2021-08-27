@@ -67,14 +67,14 @@ auto CommonAtlasFrameRBSP::cafExtensionData(std::vector<bool> value) noexcept
 
 auto operator<<(std::ostream &stream, const CommonAtlasFrameRBSP &x) -> std::ostream & {
   stream << "caf_common_atlas_sequence_parameter_set_id="
-         << int{x.caf_common_atlas_sequence_parameter_set_id()} << '\n';
+         << int32_t{x.caf_common_atlas_sequence_parameter_set_id()} << '\n';
   stream << "caf_common_atlas_frm_order_cnt_lsb=" << x.caf_common_atlas_frm_order_cnt_lsb() << '\n';
   stream << "caf_extension_present_flag=" << std::boolalpha << x.caf_extension_present_flag()
          << '\n';
   if (x.caf_extension_present_flag()) {
     stream << "caf_miv_extension_present_flag=" << std::boolalpha
            << x.caf_miv_extension_present_flag() << '\n';
-    stream << "caf_extension_7bits=" << int{x.caf_extension_7bits()} << '\n';
+    stream << "caf_extension_7bits=" << int32_t{x.caf_extension_7bits()} << '\n';
   }
   if (x.caf_miv_extension_present_flag()) {
     stream << x.caf_miv_extension();
@@ -105,7 +105,7 @@ auto CommonAtlasFrameRBSP::operator!=(const CommonAtlasFrameRBSP &other) const -
 auto CommonAtlasFrameRBSP::decodeFrom(
     std::istream &stream, const NalUnitHeader &nuh,
     const std::vector<CommonAtlasSequenceParameterSetRBSP> &caspsV,
-    unsigned maxCommonAtlasFrmOrderCntLsb) -> CommonAtlasFrameRBSP {
+    uint32_t maxCommonAtlasFrmOrderCntLsb) -> CommonAtlasFrameRBSP {
   Common::InputBitstream bitstream{stream};
 
   auto x = CommonAtlasFrameRBSP{};
@@ -137,7 +137,7 @@ auto CommonAtlasFrameRBSP::decodeFrom(
 
 void CommonAtlasFrameRBSP::encodeTo(std::ostream &stream, const NalUnitHeader &nuh,
                                     const std::vector<CommonAtlasSequenceParameterSetRBSP> &caspsV,
-                                    unsigned maxCommonAtlasFrmOrderCntLsb) const {
+                                    uint32_t maxCommonAtlasFrmOrderCntLsb) const {
   PRECONDITION(0 < maxCommonAtlasFrmOrderCntLsb);
   Common::OutputBitstream bitstream{stream};
 

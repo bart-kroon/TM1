@@ -50,7 +50,7 @@ auto calculateCenterPosition(const MivBitstream::ViewParamsList &viewParamsList)
   for (size_t i = 1; i < viewParamsList.size(); ++i) {
     const Common::Vec3f currentPos{viewParamsList[i].pose.position};
 
-    for (int j = 0; j < 3; j++) {
+    for (int32_t j = 0; j < 3; j++) {
       minPos[j] = std::min(minPos[j], currentPos[j]);
       maxPos[j] = std::max(maxPos[j], currentPos[j]);
     }
@@ -124,14 +124,14 @@ auto initMasksForFrameAnalysis(const Common::MVD16Frame &views,
   return masks;
 }
 
-auto isAnyNeighboringPixelSimilar(const int H, const int W, int pixelIdx, const int numOfBins2,
-                                  float middleVal, TMIV::Common::Mat<float>::const_iterator &jY)
-    -> bool {
+auto isAnyNeighboringPixelSimilar(const int32_t H, const int32_t W, int32_t pixelIdx,
+                                  const int32_t numOfBins2, float middleVal,
+                                  TMIV::Common::Mat<float>::const_iterator &jY) -> bool {
   const auto h = pixelIdx / W;
   const auto w = pixelIdx % W;
 
-  for (int hh = -1; hh <= 1; hh++) {
-    for (int ww = -1; ww <= 1; ww++) {
+  for (int32_t hh = -1; hh <= 1; hh++) {
+    for (int32_t ww = -1; ww <= 1; ww++) {
       if (h + hh < 0 || h + hh >= H || w + ww < 0 || w + ww >= W) {
         continue;
       }
@@ -146,23 +146,23 @@ auto isAnyNeighboringPixelSimilar(const int H, const int W, int pixelIdx, const 
   return false;
 }
 
-auto calculateStdDev(const std::vector<int> &differenceHistogram) -> std::optional<float> {
+auto calculateStdDev(const std::vector<int32_t> &differenceHistogram) -> std::optional<float> {
   const int64_t numSamples =
       std::accumulate(std::cbegin(differenceHistogram), std::cend(differenceHistogram), 0);
   if (numSamples == 0) {
     return std::nullopt;
   }
 
-  const int numOfBins2 = static_cast<int>(differenceHistogram.size()) / 2;
+  const auto numOfBins2 = static_cast<int32_t>(differenceHistogram.size()) / 2;
   int64_t sum = 0;
-  for (int bin = 0; bin < static_cast<int>(differenceHistogram.size()); ++bin) {
+  for (int32_t bin = 0; bin < static_cast<int32_t>(differenceHistogram.size()); ++bin) {
     sum += (bin - numOfBins2) * differenceHistogram[bin];
   }
 
   const float average = static_cast<float>(sum) / static_cast<float>(numSamples);
   sum = 0;
 
-  for (int bin = 0; bin < static_cast<int>(differenceHistogram.size()); ++bin) {
+  for (int32_t bin = 0; bin < static_cast<int32_t>(differenceHistogram.size()); ++bin) {
     const float value = average - static_cast<float>(bin) + static_cast<float>(numOfBins2);
     sum += static_cast<int64_t>(static_cast<float>(differenceHistogram[bin]) * value * value);
   }
@@ -175,9 +175,9 @@ auto calculateLumaStdDev(const Common::MVD16Frame &views,
                          const MivBitstream::ViewParamsList &viewParamsList,
                          const Renderer::AccumulatingPixel<Common::Vec3f> &config,
                          float maxDepthError) -> std::optional<float> {
-  const int numBins = 512;
-  std::vector<int> differenceHistogram(numBins, 0);
-  const int numBins2 = numBins / 2U;
+  const int32_t numBins = 512;
+  std::vector<int32_t> differenceHistogram(numBins, 0);
+  const int32_t numBins2 = numBins / 2U;
 
   const auto synthesizers = initSynthesizersForFrameAnalysis(views, viewParamsList, config);
 
@@ -199,14 +199,14 @@ auto calculateLumaStdDev(const Common::MVD16Frame &views,
     s->rasterizer.submit(overtices, attributes, triangles);
     s->rasterizer.run();
 
-    const auto W = static_cast<int>(s->reference.width());
-    const auto H = static_cast<int>(s->reference.height());
+    const auto W = static_cast<int32_t>(s->reference.width());
+    const auto H = static_cast<int32_t>(s->reference.height());
 
     auto j = std::begin(s->reference);
     auto jY = std::begin(s->referenceY);
     auto jYUV = std::begin(s->referenceYUV);
 
-    int pixelIdx = 0;
+    int32_t pixelIdx = 0;
 
     s->rasterizer.visit([&](const Renderer::PixelValue<Common::Vec3f> &x) {
       if (x.normDisp > 0) {

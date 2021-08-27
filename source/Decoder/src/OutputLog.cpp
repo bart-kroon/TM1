@@ -48,7 +48,7 @@ static constexpr auto table = []() {
   for (uint32_t i = 0; i < 0x100; ++i) {
     auto entry = i;
 
-    for (int j = 0; j < 8; ++j) {
+    for (int32_t j = 0; j < 8; ++j) {
       entry = (entry & 1) == 0 ? entry >> 1 : (entry >> 1) ^ 0xEDB88320;
     }
     Common::at(result, i) = entry;
@@ -66,7 +66,7 @@ static_assert(table[0xFF] == 0x2D02EF8D);
 
 constexpr auto HashFunction::consume(uint32_t value) noexcept -> HashFunction & {
   // Hash bytes in network order (big endian)
-  for (int i = 24; 0 <= i; i -= 8) {
+  for (int32_t i = 24; 0 <= i; i -= 8) {
     m_hash = (m_hash >> 8) ^ Common::at(crc32::table, (m_hash ^ (value >> i)) & 0xFF);
   }
   return *this;

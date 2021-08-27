@@ -151,7 +151,7 @@ n4 -> n2[1.1])");
 }
 
 TEST_CASE("Graph ostream operator for integer") {
-  SparseDirectedAcyclicGraph<int> unit{6};
+  SparseDirectedAcyclicGraph<int32_t> unit{6};
   unit.connect(1, 0, 0);
   unit.connect(2, 0, 1);
   unit.connect(3, 2, 4);

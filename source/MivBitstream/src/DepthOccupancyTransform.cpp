@@ -36,7 +36,7 @@
 #include <cassert>
 
 namespace TMIV::MivBitstream {
-DepthTransform::DepthTransform(const DepthQuantization &dq, unsigned bits)
+DepthTransform::DepthTransform(const DepthQuantization &dq, uint32_t bits)
     : m_normDispLow{dq.dq_norm_disp_low()}, m_normDispHigh{dq.dq_norm_disp_high()}, m_bits{bits} {
   if (!std::isfinite(m_normDispLow) || !std::isfinite(m_normDispHigh) ||
       m_normDispLow == m_normDispHigh || std::max(m_normDispLow, m_normDispHigh) <= 0.F) {
@@ -45,14 +45,14 @@ DepthTransform::DepthTransform(const DepthQuantization &dq, unsigned bits)
   }
 
   const auto [far, near] = std::minmax(m_normDispLow, m_normDispHigh);
-  const auto maxLevel = std::ldexp(1.F, static_cast<int>(bits)) - 1.F;
+  const auto maxLevel = std::ldexp(1.F, static_cast<int32_t>(bits)) - 1.F;
   const auto lowestLevel = std::ceil(std::nextafter(-far / (near - far) * maxLevel, INFINITY));
   m_minNormDisp = far + (near - far) * (lowestLevel / maxLevel);
   ASSERT(0 < m_minNormDisp);
 }
 
 DepthTransform::DepthTransform(const DepthQuantization &dq, const PatchParams &patchParams,
-                               unsigned bits)
+                               uint32_t bits)
     : DepthTransform{dq, bits} {
   m_depthStart = patchParams.atlasPatch3dOffsetD();
   m_depthEnd = m_depthStart + patchParams.atlasPatch3dRangeD();

@@ -67,7 +67,7 @@ public:
 
 private:
   static constexpr auto numberOfPlanes = detail::PixelFormatHelper<FORMAT>::numberOfPlanes;
-  unsigned m_bitDepth{detail::PixelFormatHelper<FORMAT>::defaultBitDepth};
+  uint32_t m_bitDepth{detail::PixelFormatHelper<FORMAT>::defaultBitDepth};
   int32_t m_width{};
   int32_t m_height{};
   std::array<plane_type, numberOfPlanes> m_planes{};
@@ -75,17 +75,17 @@ private:
 public:
   Frame() = default;
   explicit Frame(int32_t w, int32_t h);
-  explicit Frame(int32_t w, int32_t h, unsigned bitDepth);
+  explicit Frame(int32_t w, int32_t h, uint32_t bitDepth);
 
   [[nodiscard]] auto empty() const noexcept;
 
   void resize(int32_t w, int32_t h);
-  void recreate(int32_t w, int32_t h, unsigned bitDepth);
+  void recreate(int32_t w, int32_t h, uint32_t bitDepth);
 
   [[nodiscard]] auto getPlanes() -> auto &;
   [[nodiscard]] auto getPlanes() const -> const auto &;
-  [[nodiscard]] auto getPlane(int index) const -> const auto &;
-  [[nodiscard]] auto getPlane(int index) -> auto &;
+  [[nodiscard]] auto getPlane(int32_t index) const -> const auto &;
+  [[nodiscard]] auto getPlane(int32_t index) -> auto &;
   [[nodiscard]] auto getWidth() const;
   [[nodiscard]] auto getHeight() const;
   [[nodiscard]] auto getSize() const;
@@ -118,9 +118,9 @@ public:
   [[nodiscard]] auto neutralColor() const noexcept;
 };
 
-template <typename FORMAT> void padChroma(std::ostream &stream, size_t bytes, unsigned bitDepth);
+template <typename FORMAT> void padChroma(std::ostream &stream, size_t bytes, uint32_t bitDepth);
 template <typename FORMAT>
-void padChroma(std::vector<char> &buffer, size_t bytes, unsigned bitDepth);
+void padChroma(std::vector<char> &buffer, size_t bytes, uint32_t bitDepth);
 
 auto yuv420p(const Frame<YUV444P8> &frame) -> Frame<YUV420P8>;
 auto yuv420p(const Frame<YUV444P10> &frame) -> Frame<YUV420P10>;

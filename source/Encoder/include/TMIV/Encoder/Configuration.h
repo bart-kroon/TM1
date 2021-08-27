@@ -46,12 +46,12 @@ static constexpr auto maxIntraPeriod = 32;
 struct Configuration {
   Configuration(const Common::Json & /*rootNode*/, const Common::Json & /*componentNode*/);
 
-  int intraPeriod;
+  int32_t intraPeriod;
   Common::Vec2i blockSizeDepthQualityDependent;
   std::optional<bool> depthLowQualityFlag;
   double maxLumaSampleRate{};
   int32_t maxLumaPictureSize{};
-  int maxAtlases{};
+  int32_t maxAtlases{};
   bool haveTexture;
   bool haveGeometry;
   bool haveOccupancy;
@@ -60,11 +60,11 @@ struct Configuration {
   std::vector<Common::Vec2i> overrideAtlasFrameSizes{};
   Common::SampleValue depthOccThresholdIfSet{};
   bool geometryScaleEnabledFlag;
-  int dilationIter;
+  int32_t dilationIter;
   Common::stack::Vec2<Common::SampleValue> entityEncRange;
   bool dynamicDepthRange;
   bool attributeOffsetFlag;
-  int attributeOffsetBitCount{};
+  int32_t attributeOffsetBitCount{};
   bool dqParamsPresentFlag{true};
   bool viewportCameraParametersSei;
   bool viewportPositionSei;
@@ -76,10 +76,10 @@ struct Configuration {
   std::optional<MivBitstream::ViewingSpace> viewingSpace;
   MivBitstream::PtlProfileCodecGroupIdc codecGroupIdc{};
   MivBitstream::PtlProfilePccToolsetIdc toolsetIdc{};
-  unsigned textureBitDepth{10U};
+  uint32_t textureBitDepth{10U};
 
   [[nodiscard]] auto blockSize(bool depthLowQualityFlag_) const noexcept {
-    return blockSizeDepthQualityDependent[static_cast<int>(depthLowQualityFlag_)];
+    return blockSizeDepthQualityDependent[static_cast<int32_t>(depthLowQualityFlag_)];
   }
 };
 } // namespace TMIV::Encoder

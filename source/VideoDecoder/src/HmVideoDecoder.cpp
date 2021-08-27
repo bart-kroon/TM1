@@ -142,13 +142,13 @@ public:
   }
 
 private:
-  void xWriteOutput(unsigned /*tId*/) {
+  void xWriteOutput(uint32_t /*tId*/) {
     if (m_pcListPic->empty()) {
       return;
     }
 
-    int numPicsNotYetDisplayed = 0;
-    int dpbFullness = 0;
+    int32_t numPicsNotYetDisplayed = 0;
+    int32_t dpbFullness = 0;
     const auto &activeSPS = m_pcListPic->front()->getPicSym()->getSPS();
     const auto maxNrSublayers = activeSPS.getMaxTLayers();
     const auto numReorderPicsHighestTid = activeSPS.getNumReorderPics(maxNrSublayers - 1);
@@ -203,7 +203,7 @@ private:
 
     for (const auto componentId : {COMPONENT_Y, COMPONENT_Cb, COMPONENT_Cr}) {
       if (componentId < comPicYuv.getNumberValidComponents()) {
-        const auto k = int{componentId};
+        const auto k = int32_t{componentId};
         const auto width = comPicYuv.getWidth(componentId);
         const auto height = comPicYuv.getHeight(componentId);
 
@@ -212,7 +212,7 @@ private:
 
         const auto *row = comPicYuv.getAddr(componentId);
 
-        for (int i = 0; i < height; ++i) {
+        for (int32_t i = 0; i < height; ++i) {
           // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
           std::copy(row, row + width, Common::at(x->planes, k).row_begin(i));
           // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
@@ -243,14 +243,14 @@ private:
     comPic.setOutputMark(false);
   }
 
-  int m_poc{};
+  int32_t m_poc{};
   TComList<TComPic *> *m_pcListPic{nullptr};
   TDecTop m_cTDecTop{};
-  int m_iPOCLastDisplay{-MAX_INT};
+  int32_t m_iPOCLastDisplay{-MAX_INT};
   bool m_loopFiltered{};
-  int m_iSkipFrame{};
+  int32_t m_iSkipFrame{};
   std::string m_inputBuffer;
-  std::array<int, MAX_NUM_CHANNEL_TYPE> m_outputBitDepth{};
+  std::array<int32_t, MAX_NUM_CHANNEL_TYPE> m_outputBitDepth{};
 };
 
 HmVideoDecoder::HmVideoDecoder(NalUnitSource source) : m_impl{new Impl{std::move(source)}} {}

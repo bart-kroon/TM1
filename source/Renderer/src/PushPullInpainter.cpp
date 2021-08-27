@@ -44,11 +44,11 @@ using YUVD = std::tuple<uint16_t, uint16_t, uint16_t, uint16_t>;
 
 constexpr auto occupant(const YUVD &x) -> bool { return 0 < std::get<3>(x); }
 
-auto weighedAverageWithMissingData(const std::array<YUVD, 4> &v, const std::array<int, 4> &weights)
-    -> YUVD {
-  auto sum = std::array<int, 4>{};
+auto weighedAverageWithMissingData(const std::array<YUVD, 4> &v,
+                                   const std::array<int32_t, 4> &weights) -> YUVD {
+  auto sum = std::array<int32_t, 4>{};
   auto count = 0;
-  for (int i = 0; i < 4; ++i) {
+  for (int32_t i = 0; i < 4; ++i) {
     if (occupant(Common::at(v, i))) {
       sum[0] += Common::at(weights, i) * std::get<0>(Common::at(v, i));
       sum[1] += Common::at(weights, i) * std::get<1>(Common::at(v, i));

@@ -78,7 +78,7 @@ auto createBlockToPatchMap(size_t k, EncoderParams &params) -> Common::BlockToPa
 
 auto dilateTextureAtlas(Common::Texture444Frame &textureAtlas,
                         const Common::Transparency8Frame &transparencyAtlas,
-                        unsigned textureDilation) -> Common::TextureFrame {
+                        uint32_t textureDilation) -> Common::TextureFrame {
   const auto w = textureAtlas.getWidth();
   const auto h = textureAtlas.getHeight();
 
@@ -98,12 +98,12 @@ auto dilateTextureAtlas(Common::Texture444Frame &textureAtlas,
     std::swap(texturePrev, textureNext);
 
     Common::parallel_for(w, h, [&](size_t row, size_t col) {
-      int cnt = 0;
+      int32_t cnt = 0;
       Common::Vec3f yuv{};
       if (transparencyPrev(row, col) == 0) {
         for (auto neighbour : offsetList) {
-          auto x = static_cast<int>(col) + neighbour.x();
-          auto y = static_cast<int>(row) + neighbour.y();
+          auto x = static_cast<int32_t>(col) + neighbour.x();
+          auto y = static_cast<int32_t>(row) + neighbour.y();
           if ((0 <= x) && (x < w) && (0 <= y) && (y < h)) {
             if (0 < transparencyPrev(y, x)) {
               cnt++;
@@ -126,7 +126,7 @@ auto dilateTextureAtlas(Common::Texture444Frame &textureAtlas,
 }
 
 auto reshapeTransparencyAtlas(Common::Transparency8Frame &transparencyAtlas,
-                              unsigned transparencyDynamic) -> Common::Transparency10Frame {
+                              uint32_t transparencyDynamic) -> Common::Transparency10Frame {
   const auto maxInputValue = static_cast<float>(Common::maxLevel(transparencyAtlas.getBitDepth()));
   const auto maxOutputValue = static_cast<float>((uint64_t{1} << transparencyDynamic) - 1);
   const auto maxStorageValue = 1023.F;
@@ -150,18 +150,18 @@ auto reshapeTransparencyAtlas(Common::Transparency8Frame &transparencyAtlas,
 
 MpiEncoder::MpiEncoder(const Common::Json &rootNode, const Common::Json &componentNode)
     : m_rootNode{rootNode}
-    , m_intraPeriod{rootNode.require("intraPeriod").as<int>()}
+    , m_intraPeriod{rootNode.require("intraPeriod").as<int32_t>()}
     , m_blockSizeDepthQualityDependent{rootNode.require("blockSizeDepthQualityDependent")
-                                           .asVec<int, 2>()}
-    , m_textureDilation{componentNode.require("TextureDilation").as<unsigned>()}
-    , m_transparencyDynamic{componentNode.require("TransparencyDynamic").as<unsigned>()}
+                                           .asVec<int32_t, 2>()}
+    , m_textureDilation{componentNode.require("TextureDilation").as<uint32_t>()}
+    , m_transparencyDynamic{componentNode.require("TransparencyDynamic").as<uint32_t>()}
     , m_packer{Common::create<Packer::IPacker>("Packer", rootNode, componentNode)} {
   VERIFY(m_intraPeriod <= maxIntraPeriod);
 
   // Enforce user-specified atlas size
   auto node = rootNode.require("overrideAtlasFrameSizes");
   for (const auto &subnode : node.as<Common::Json::Array>()) {
-    m_overrideAtlasFrameSizes.push_back(subnode.asVec<int, 2>());
+    m_overrideAtlasFrameSizes.push_back(subnode.asVec<int32_t, 2>());
   }
 }
 
@@ -255,15 +255,17 @@ void MpiEncoder::prepareSequence(const MivBitstream::SequenceConfig &sequenceCon
   prepareIvau();
 }
 
-auto MpiEncoder::processAccessUnit(int firstFrameId, int lastFrameId) -> const EncoderParams & {
+auto MpiEncoder::processAccessUnit(int32_t firstFrameId, int32_t lastFrameId)
+    -> const EncoderParams & {
   LIMITATION(m_params.viewParamsList.size() == 1);
   const auto &mpiViewParams = m_params.viewParamsList.front();
-  Common::Vec2i mpiSize{static_cast<int>(mpiViewParams.ci.ci_projection_plane_width_minus1()) + 1,
-                        static_cast<int>(mpiViewParams.ci.ci_projection_plane_height_minus1()) + 1};
+  Common::Vec2i mpiSize{
+      static_cast<int32_t>(mpiViewParams.ci.ci_projection_plane_width_minus1()) + 1,
+      static_cast<int32_t>(mpiViewParams.ci.ci_projection_plane_height_minus1()) + 1};
 
   m_mpiFrameBuffer.clear();
 
-  for (int frameIndex = firstFrameId; frameIndex < lastFrameId; frameIndex++) {
+  for (int32_t frameIndex = firstFrameId; frameIndex < lastFrameId; frameIndex++) {
     m_mpiFrameBuffer.emplace_back(readFrame(frameIndex));
   }
 
@@ -359,7 +361,7 @@ auto MpiEncoder::popAtlas() -> Common::MVD10Frame {
     Common::parallel_for(frameWidth, frameHeight, [&](size_t i, size_t j) {
       if (auto patchId = blockToPatchMap.getPlane(0)(i, j); patchId != Common::unusedPatchId) {
         const auto &patch = ppl[patchId];
-        auto posInView = patch.atlasToView({static_cast<int>(j), static_cast<int>(i)});
+        auto posInView = patch.atlasToView({static_cast<int32_t>(j), static_cast<int32_t>(i)});
 
         const auto &pixel = mpiFrame(posInView.y(), posInView.x());
         auto layerId = static_cast<uint16_t>(patch.atlasPatch3dOffsetD());
@@ -393,7 +395,7 @@ auto MpiEncoder::popAtlas() -> Common::MVD10Frame {
 
 auto MpiEncoder::vuiParameters() const -> MivBitstream::VuiParameters {
   auto numUnitsInTick = 1;
-  auto timeScale = static_cast<int>(numUnitsInTick * m_frameRate);
+  auto timeScale = static_cast<int32_t>(numUnitsInTick * m_frameRate);
   LIMITATION(timeScale == numUnitsInTick * m_frameRate);
 
   auto vui = MivBitstream::VuiParameters{};

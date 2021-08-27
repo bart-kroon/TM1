@@ -256,7 +256,7 @@ void CameraExtrinsics::encodeTo(Common::OutputBitstream &bitstream) const {
 
 auto DepthQuantization::printTo(std::ostream &stream, uint16_t viewIdx) const -> std::ostream & {
   VERIFY_MIVBITSTREAM(dq_quantization_law() == 0);
-  stream << "dq_quantization_law[ " << viewIdx << " ]=" << int{dq_quantization_law()}
+  stream << "dq_quantization_law[ " << viewIdx << " ]=" << int32_t{dq_quantization_law()}
          << "\ndq_norm_disp_low[ " << viewIdx << " ]=" << dq_norm_disp_low()
          << "\ndq_norm_disp_high[ " << viewIdx << " ]=" << dq_norm_disp_high()
          << "\ndq_depth_occ_threshold_default[ " << viewIdx

@@ -73,11 +73,11 @@ public:
 
   static auto decodeFrom(std::istream &stream, const NalUnitHeader &nuh,
                          const std::vector<CommonAtlasSequenceParameterSetRBSP> &caspsV,
-                         unsigned maxCommonAtlasFrmOrderCntLsb) -> CommonAtlasFrameRBSP;
+                         uint32_t maxCommonAtlasFrmOrderCntLsb) -> CommonAtlasFrameRBSP;
 
   void encodeTo(std::ostream &stream, const NalUnitHeader &nuh,
                 const std::vector<CommonAtlasSequenceParameterSetRBSP> &caspsV,
-                unsigned maxCommonAtlasFrmOrderCntLsb) const;
+                uint32_t maxCommonAtlasFrmOrderCntLsb) const;
 
 private:
   uint8_t m_caf_common_atlas_sequence_parameter_set_id{};

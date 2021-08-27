@@ -132,9 +132,9 @@ private:
   const float m_maxDepthError{};
   const float m_maxLumaError{};
   const float m_maxStretching{};
-  const int m_erode{};
-  const int m_dilate{};
-  const int m_maxBasicViewsPerGraph{};
+  const int32_t m_erode{};
+  const int32_t m_dilate{};
+  const int32_t m_maxBasicViewsPerGraph{};
   const bool m_enable2ndPassPruner{};
   const float m_maxColorError{};
   const Renderer::AccumulatingPixel<Common::Vec3f> m_config;
@@ -156,9 +156,9 @@ public:
       : m_maxDepthError{nodeConfig.require("maxDepthError").as<float>()}
       , m_maxLumaError{nodeConfig.require("maxLumaError").as<float>()}
       , m_maxStretching{nodeConfig.require("maxStretching").as<float>()}
-      , m_erode{nodeConfig.require("erode").as<int>()}
-      , m_dilate{nodeConfig.require("dilate").as<int>()}
-      , m_maxBasicViewsPerGraph{nodeConfig.require("maxBasicViewsPerGraph").as<int>()}
+      , m_erode{nodeConfig.require("erode").as<int32_t>()}
+      , m_dilate{nodeConfig.require("dilate").as<int32_t>()}
+      , m_maxBasicViewsPerGraph{nodeConfig.require("maxBasicViewsPerGraph").as<int32_t>()}
       , m_enable2ndPassPruner{nodeConfig.require("enable2ndPassPruner").as<bool>()}
       , m_maxColorError{nodeConfig.require("maxColorError").as<float>()}
       , m_config{nodeConfig.require("rayAngleParameter").as<float>(),
@@ -419,8 +419,8 @@ public:
   }
 
 private:
-  void analyzeFillAndPruneAgain(const Common::MVD16Frame &views, int nonPrunedArea,
-                                int percentageRatio) {
+  void analyzeFillAndPruneAgain(const Common::MVD16Frame &views, int32_t nonPrunedArea,
+                                int32_t percentageRatio) {
     std::cout << "Pruning luma threshold:   " << (m_lumaStdDev.value() * m_maxLumaError) << "\n";
 
     while (nonPrunedArea > (m_params.sampleBudget * percentageRatio / 100) &&
@@ -497,7 +497,7 @@ private:
     }
   }
 
-  auto pruneFrame(const Common::MVD16Frame &views) -> int {
+  auto pruneFrame(const Common::MVD16Frame &views) -> int32_t {
     for (auto &cluster : m_clusters) {
       for (auto i : cluster.pruningOrder) {
         auto it = find_if(std::begin(m_synthesizers), std::end(m_synthesizers),
@@ -515,7 +515,7 @@ private:
     const auto lumaSamplesPerFrame = 2. * sumValues / 255e6;
     std::cout << "Non-pruned luma samples per frame is " << lumaSamplesPerFrame << "M\n";
 
-    return static_cast<int>((lumaSamplesPerFrame * 1e6) / 2);
+    return static_cast<int32_t>((lumaSamplesPerFrame * 1e6) / 2);
   }
 
   // Synthesize the specified view to all remaining partial views.
@@ -562,8 +562,8 @@ private:
 
   // Visit all pixels
   template <typename F> static void forPixels(std::array<size_t, 2> sizes, F f) {
-    for (int i = 0; i < static_cast<int>(sizes[0]); ++i) {
-      for (int j = 0; j < static_cast<int>(sizes[1]); ++j) {
+    for (int32_t i = 0; i < static_cast<int32_t>(sizes[0]); ++i) {
+      for (int32_t j = 0; j < static_cast<int32_t>(sizes[1]); ++j) {
         f(i, j);
       }
     }
@@ -571,14 +571,14 @@ private:
 
   // Visit all pixel neighbors (in between 3 and 8)
   template <typename F>
-  static auto forNeighbors(int i, int j, std::array<size_t, 2> sizes, F f) -> bool {
-    const int n1 = std::max(0, i - 1);
-    const int n2 = std::min(static_cast<int>(sizes[0]), i + 2);
-    const int m1 = std::max(0, j - 1);
-    const int m2 = std::min(static_cast<int>(sizes[1]), j + 2);
+  static auto forNeighbors(int32_t i, int32_t j, std::array<size_t, 2> sizes, F f) -> bool {
+    const int32_t n1 = std::max(0, i - 1);
+    const int32_t n2 = std::min(static_cast<int32_t>(sizes[0]), i + 2);
+    const int32_t m1 = std::max(0, j - 1);
+    const int32_t m2 = std::min(static_cast<int32_t>(sizes[1]), j + 2);
 
-    for (int n = n1; n < n2; ++n) {
-      for (int m = m1; m < m2; ++m) {
+    for (int32_t n = n1; n < n2; ++n) {
+      for (int32_t m = m1; m < m2; ++m) {
         if (!f(n, m)) {
           return false;
         }
@@ -589,20 +589,22 @@ private:
 
   static auto erode(const Common::Mat<uint8_t> &mask) -> Common::Mat<uint8_t> {
     Common::Mat<uint8_t> result{mask.sizes()};
-    forPixels(mask.sizes(), [&](int i, int j) {
+    forPixels(mask.sizes(), [&](int32_t i, int32_t j) {
       result(i, j) =
-          forNeighbors(i, j, mask.sizes(), [&mask](int n, int m) { return mask(n, m) > 0; }) ? 255
-                                                                                             : 0;
+          forNeighbors(i, j, mask.sizes(), [&mask](int32_t n, int32_t m) { return mask(n, m) > 0; })
+              ? 255
+              : 0;
     });
     return result;
   }
 
   static auto dilate(const Common::Mat<uint8_t> &mask) -> Common::Mat<uint8_t> {
     Common::Mat<uint8_t> result{mask.sizes()};
-    forPixels(mask.sizes(), [&](int i, int j) {
-      result(i, j) =
-          forNeighbors(i, j, mask.sizes(), [&mask](int n, int m) { return mask(n, m) == 0; }) ? 0
-                                                                                              : 255;
+    forPixels(mask.sizes(), [&](int32_t i, int32_t j) {
+      result(i, j) = forNeighbors(i, j, mask.sizes(),
+                                  [&mask](int32_t n, int32_t m) { return mask(n, m) == 0; })
+                         ? 0
+                         : 255;
     });
     return result;
   }
@@ -616,7 +618,7 @@ private:
       double r{}, g{}, b{};
     };
 
-    const int maxIterNum = 10;
+    const int32_t maxIterNum = 10;
     const double eps = 1E-10;
     Common::Mat<uint8_t> result(prunedMask.sizes(), 0);
     const auto referenceRGB{createRgbImageFromYuvImage(referenceYUV)};
@@ -634,7 +636,7 @@ private:
     std::vector<float> weightB(numPixels, 1.F);
 
     double prevE = -1.0;
-    for (int iter = 0; iter < maxIterNum; ++iter) {
+    for (int32_t iter = 0; iter < maxIterNum; ++iter) {
       const auto x1{iterativeReweightedLeastSquaresOnNonPrunedPixels(
           nonPrunedPixIndices, referenceRGB, synthesizedRGB, weightR, 0, eps)};
       const auto x2{iterativeReweightedLeastSquaresOnNonPrunedPixels(
@@ -707,9 +709,9 @@ private:
     auto jY = std::begin(synthesizer.referenceY);
     auto k = std::begin(status);
 
-    int pp = 0;
-    const auto W = static_cast<int>(synthesizer.reference.width());
-    const auto H = static_cast<int>(synthesizer.reference.height());
+    int32_t pp = 0;
+    const auto W = static_cast<int32_t>(synthesizer.reference.width());
+    const auto H = static_cast<int32_t>(synthesizer.reference.height());
 
     auto modifiedMaxLumaError = m_maxLumaError * m_lumaStdDev.value();
 
@@ -721,8 +723,8 @@ private:
         const auto h = pp / W;
         const auto w = pp % W;
 
-        for (int hh = -1; hh <= 1; hh++) {
-          for (int ww = -1; ww <= 1; ww++) {
+        for (int32_t hh = -1; hh <= 1; hh++) {
+          for (int32_t ww = -1; ww <= 1; ww++) {
             if (h + hh < 0 || h + hh >= H || w + ww < 0 || w + ww >= W) {
               continue;
             }
@@ -759,10 +761,10 @@ private:
 
       return true;
     });
-    for (int n = 0; n < m_erode; ++n) {
+    for (int32_t n = 0; n < m_erode; ++n) {
       mask = erode(mask);
     }
-    for (int n = 0; n < m_dilate; ++n) {
+    for (int32_t n = 0; n < m_dilate; ++n) {
       mask = dilate(mask);
     }
     synthesizer.maskAverage =

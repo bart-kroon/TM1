@@ -45,14 +45,14 @@ const auto depthErrorEps = 1E-4F;
 namespace {
 auto getGatherCoordinates(const Common::Vec2f &p, const std::array<size_t, 2> &sz)
     -> std::array<Common::Vec2i, 4> {
-  int w_last = static_cast<int>(sz[0]) - 1;
-  int h_last = static_cast<int>(sz[1]) - 1;
+  int32_t w_last = static_cast<int32_t>(sz[0]) - 1;
+  int32_t h_last = static_cast<int32_t>(sz[1]) - 1;
 
-  int x0 = std::clamp(static_cast<int>(std::floor(p.x() - 0.5F)), 0, w_last);
-  int y0 = std::clamp(static_cast<int>(std::floor(p.y() - 0.5F)), 0, h_last);
+  int32_t x0 = std::clamp(static_cast<int32_t>(std::floor(p.x() - 0.5F)), 0, w_last);
+  int32_t y0 = std::clamp(static_cast<int32_t>(std::floor(p.y() - 0.5F)), 0, h_last);
 
-  int x1 = std::min(x0 + 1, w_last);
-  int y1 = std::min(y0 + 1, h_last);
+  int32_t x1 = std::min(x0 + 1, w_last);
+  int32_t y1 = std::min(y0 + 1, h_last);
 
   return {Common::Vec2i{y1, x0}, Common::Vec2i{y1, x1}, Common::Vec2i{y0, x1},
           Common::Vec2i{y0, x0}};
@@ -66,13 +66,13 @@ auto textureGather(const MAT &m, const std::array<Common::Vec2i, 4> &gc)
 }
 
 template <typename T>
-auto textureGather(const std::function<T(unsigned, unsigned)> &fun,
+auto textureGather(const std::function<T(uint32_t, uint32_t)> &fun,
                    const std::array<Common::Vec2i, 4> &gc) -> Common::stack::Vec4<T> {
   return {fun(gc[0].x(), gc[0].y()), fun(gc[1].x(), gc[1].y()), fun(gc[2].x(), gc[2].y()),
           fun(gc[3].x(), gc[3].y())};
 }
 
-auto getPatchPackingWidth(const MivBitstream::PatchParams &patch) -> int {
+auto getPatchPackingWidth(const MivBitstream::PatchParams &patch) -> int32_t {
   return patch.isRotated() ? patch.atlasPatch3dSizeV() : patch.atlasPatch3dSizeU();
 }
 
@@ -80,17 +80,17 @@ auto getPatchPackingWidth(const MivBitstream::PatchParams &patch) -> int {
 
 class MpiSynthesizer::Impl {
 public:
-  using PixelAttribute = Renderer::PixelAttributes<Common::Vec2f, float, unsigned, unsigned>;
-  using MpiRasterizer = Renderer::MpiRasterizer<Common::Vec2f, float, unsigned, unsigned>;
+  using PixelAttribute = Renderer::PixelAttributes<Common::Vec2f, float, uint32_t, uint32_t>;
+  using MpiRasterizer = Renderer::MpiRasterizer<Common::Vec2f, float, uint32_t, uint32_t>;
 
 private:
   float m_minAlpha = 0.20F;
   Common::Mat<Common::Vec3f> m_blendingColor;
   Common::Mat<float> m_blendingDepth;
   Common::Mat<float> m_blendingTransparency;
-  std::vector<std::tuple<int, int, int, float>>
+  std::vector<std::tuple<int32_t, int32_t, int32_t, float>>
       m_blockBuffer; //{atlasId, patchId(in atlas), blockId(in patch), depth}
-  int m_blockSize{};
+  int32_t m_blockSize{};
 
 public:
   explicit Impl(const Common::Json &componentNode) {
@@ -195,15 +195,15 @@ private:
   void allocateBlockBuffer(const MivBitstream::AccessUnit &frame) {
     // Get average depth for all patches of all atlases
     std::vector<float> patchAverageDepth;
-    std::vector<int> patchId;
-    std::vector<int> patchAtlasId;
-    int idx_atlas = 0;
+    std::vector<int32_t> patchId;
+    std::vector<int32_t> patchAtlasId;
+    int32_t idx_atlas = 0;
 
     for (const auto &atlas : frame.atlas) {
       const auto &patchList = atlas.patchParamsList;
-      int idx_patch = 0;
+      int32_t idx_patch = 0;
       for (const auto &p : patchList) {
-        auto bits = static_cast<unsigned>(atlas.asps.asps_geometry_2d_bit_depth_minus1()) + 1U;
+        auto bits = static_cast<uint32_t>(atlas.asps.asps_geometry_2d_bit_depth_minus1()) + 1U;
 
         const auto depthTransform = MivBitstream::DepthTransform{
             frame.viewParamsList[p.atlasPatchProjectionId()].dq, p, bits};
@@ -219,9 +219,9 @@ private:
     }
 
     // Sort patches by increasing depth
-    std::vector<int> patchOrderId(patchAverageDepth.size());
+    std::vector<int32_t> patchOrderId(patchAverageDepth.size());
     std::iota(patchOrderId.begin(), patchOrderId.end(), 0);
-    std::sort(patchOrderId.begin(), patchOrderId.end(), [&](unsigned id1, unsigned id2) {
+    std::sort(patchOrderId.begin(), patchOrderId.end(), [&](uint32_t id1, uint32_t id2) {
       if (std::abs(patchAverageDepth[id1] - patchAverageDepth[id2]) < depthErrorEps) {
         return id2 < id1;
       }
@@ -232,11 +232,11 @@ private:
     auto blockArea = Common::sqr(m_blockSize);
 
     m_blockBuffer.clear();
-    for (int idx : patchOrderId) {
+    for (int32_t idx : patchOrderId) {
       const auto &patch = frame.atlas[patchAtlasId[idx]].patchParamsList[patchId[idx]];
-      int patch_area =
-          static_cast<int>(patch.atlasPatch2dSizeX()) * static_cast<int>(patch.atlasPatch2dSizeY());
-      auto nbBlock = static_cast<int>(patch_area / blockArea);
+      int32_t patch_area = static_cast<int32_t>(patch.atlasPatch2dSizeX()) *
+                           static_cast<int32_t>(patch.atlasPatch2dSizeY());
+      auto nbBlock = static_cast<int32_t>(patch_area / blockArea);
       auto offsetId = m_blockBuffer.size();
 
       m_blockBuffer.resize(
@@ -257,7 +257,7 @@ private:
     m_blendingTransparency.resize(size.y(), size.x());
   }
 
-  static auto expandTransparency(const MivBitstream::AccessUnit &frame, int idx)
+  static auto expandTransparency(const MivBitstream::AccessUnit &frame, int32_t idx)
       -> Common::Mat<float> {
     auto atlasId = frame.vps.vps_atlas_id(idx);
     const auto &atlas = frame.atlas[idx];
@@ -270,7 +270,7 @@ private:
       if (frame.vps.attribute_information(atlasId).ai_attribute_type_id(attributeId) ==
           MivBitstream::AiAttributeTypeId::ATTR_TRANSPARENCY) {
         maxValue = static_cast<float>(
-            (1U << static_cast<unsigned>(frame.vps.attribute_information(atlasId)
+            (1U << static_cast<uint32_t>(frame.vps.attribute_information(atlasId)
                                              .ai_attribute_2d_bit_depth_minus1(attributeId) +
                                          1)) -
             1U);
@@ -294,7 +294,7 @@ private:
       -> std::tuple<std::vector<Common::Mat<Common::Vec3f>>, std::vector<Common::Mat<float>>> {
     std::vector<Common::Mat<Common::Vec3f>> atlasColor;
     std::vector<Common::Mat<float>> atlasTransparency;
-    int idx = 0;
+    int32_t idx = 0;
 
     for (const auto &atlas : frame.atlas) {
       atlasColor.emplace_back(expandTexture(atlas.attrFrame));
@@ -330,9 +330,9 @@ private:
       auto blockPerRow = getPatchPackingWidth(patch) / m_blockSize;
 
       auto x_atlas_0 =
-          static_cast<int>(patch.atlasPatch2dPosX()) + (block_id % blockPerRow) * m_blockSize;
+          static_cast<int32_t>(patch.atlasPatch2dPosX()) + (block_id % blockPerRow) * m_blockSize;
       auto y_atlas_0 =
-          static_cast<int>(patch.atlasPatch2dPosY()) + (block_id / blockPerRow) * m_blockSize;
+          static_cast<int32_t>(patch.atlasPatch2dPosY()) + (block_id / blockPerRow) * m_blockSize;
 
       const auto tl = Common::Vec2i{x_atlas_0, y_atlas_0};
       const auto tr = Common::Vec2i{x_atlas_0, y_atlas_0 + m_blockSize};
@@ -345,7 +345,7 @@ private:
 
         // Handling correctly the seam for 360 degrees scenes
         if (shouldRepeat(viewParams)) {
-          const int offset = 2;
+          const int32_t offset = 2;
 
           if (uv.x() < offset) {
             uv.x() -= offset;
@@ -374,7 +374,7 @@ private:
       }
 
       // Populate the triangles if not too big
-      auto N = static_cast<int>(vertices.size()) - 1;
+      auto N = static_cast<int32_t>(vertices.size()) - 1;
 
       if (isTriangleDimensionNotTooBig(vertices[N - 3].position.x(), vertices[N - 2].position.x(),
                                        vertices[N - 1].position.x(),
@@ -412,7 +412,7 @@ private:
                    weights[1] * std::get<1>(pixelAttributes[1]) +
                    weights[2] * std::get<1>(pixelAttributes[2]);
       auto patchIdGathered = textureGather<uint16_t>(
-          [&](unsigned row, unsigned col) { return frame.atlas[atlasId].patchId(row, col); },
+          [&](uint32_t row, uint32_t col) { return frame.atlas[atlasId].patchId(row, col); },
           gatherCoord);
       auto colorGathered = textureGather(atlasColor[atlasId], gatherCoord);
       auto transparencyGathered = textureGather(atlasTransparency[atlasId], gatherCoord);
@@ -426,7 +426,7 @@ private:
       Common::Vec3f oColor{};
       float oWeight = 0;
 
-      for (unsigned j = 0; j < 4U; j++) {
+      for (uint32_t j = 0; j < 4U; j++) {
         if (patchId == patchIdGathered[j]) {
           oColor += wInterp[j] * transparencyGathered[j] * colorGathered[j];
           oWeight += wInterp[j] * transparencyGathered[j];

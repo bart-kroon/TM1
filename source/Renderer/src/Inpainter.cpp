@@ -46,19 +46,19 @@ enum class InpaintingType { horizontal, vertical, omnidirectional };
 
 // NOLINTNEXTLINE(readability-function-cognitive-complexity)
 void perform2WayInpainting(Common::Texture444Depth16Frame &yuvd, InpaintingType inpaintingType,
-                           const Common::Mat<int> &nonEmptyNeighbor1,
-                           const Common::Mat<int> &nonEmptyNeighbor2,
-                           const Common::Mat<int> &mapERP2Cassini = Common::Mat<int>()) {
+                           const Common::Mat<int32_t> &nonEmptyNeighbor1,
+                           const Common::Mat<int32_t> &nonEmptyNeighbor2,
+                           const Common::Mat<int32_t> &mapERP2Cassini = Common::Mat<int32_t>()) {
   auto &Y = yuvd.first.getPlane(0);
   auto &U = yuvd.first.getPlane(1);
   auto &V = yuvd.first.getPlane(2);
   auto &D = yuvd.second.getPlane(0);
 
-  const int width = static_cast<int>(Y.width());
-  const int height = static_cast<int>(Y.height());
+  const auto width = static_cast<int32_t>(Y.width());
+  const auto height = static_cast<int32_t>(Y.height());
 
-  for (int h = 0, pp = 0; h < height; h++) {
-    for (int w = 0; w < width; w++, pp++) {
+  for (int32_t h = 0, pp = 0; h < height; h++) {
+    for (int32_t w = 0; w < width; w++, pp++) {
       if (D(h, w) != 0) {
         continue;
       }
@@ -66,12 +66,12 @@ void perform2WayInpainting(Common::Texture444Depth16Frame &yuvd, InpaintingType 
       bool use1 = false;
       bool use2 = false;
 
-      int w0 = 0;
-      int h0 = 0;
-      int w1 = 0;
-      int h1 = 0;
-      int w2 = 0;
-      int h2 = 0;
+      int32_t w0 = 0;
+      int32_t h0 = 0;
+      int32_t w1 = 0;
+      int32_t h1 = 0;
+      int32_t w2 = 0;
+      int32_t h2 = 0;
 
       if (inpaintingType == InpaintingType::omnidirectional) {
         bool pointExistsInCassini = mapERP2Cassini(h, w) != -1;
@@ -172,12 +172,12 @@ void fillVerticalCracks(Common::Texture444Depth16Frame &yuvd) {
   auto &V = yuvd.first.getPlane(2);
   auto &D = yuvd.second.getPlane(0);
 
-  const int width = static_cast<int>(Y.width());
-  const int height = static_cast<int>(Y.height());
+  const auto width = static_cast<int32_t>(Y.width());
+  const auto height = static_cast<int32_t>(Y.height());
 
   // fill vertical cracks
-  for (int h = 0; h < height; h++) {
-    for (int w = 1; w < width - 1; w++) {
+  for (int32_t h = 0; h < height; h++) {
+    for (int32_t w = 1; w < width - 1; w++) {
       if (D(h, w) == 0 && D(h, w - 1) != 0 && D(h, w + 1) != 0) {
         Y(h, w) = (Y(h, w - 1) + Y(h, w + 1)) / 2;
         U(h, w) = (U(h, w - 1) + U(h, w + 1)) / 2;
@@ -194,19 +194,19 @@ void inpaintOmnidirectionalView(Common::Texture444Depth16Frame &yuvd,
   auto &D = yuvd.second.getPlane(0);
 
   auto isHole = Common::Mat<uint8_t>{Y.sizes(), 1};
-  auto nonEmptyNeighborL = Common::Mat<int>{Y.sizes(), -1};
-  auto nonEmptyNeighborR = Common::Mat<int>{Y.sizes(), -1};
-  auto mapERP2Cassini = Common::Mat<int>{Y.sizes(), -1};
-  auto mapCassini2ERP = Common::Mat<int>{Y.sizes(), -1};
+  auto nonEmptyNeighborL = Common::Mat<int32_t>{Y.sizes(), -1};
+  auto nonEmptyNeighborR = Common::Mat<int32_t>{Y.sizes(), -1};
+  auto mapERP2Cassini = Common::Mat<int32_t>{Y.sizes(), -1};
+  auto mapCassini2ERP = Common::Mat<int32_t>{Y.sizes(), -1};
 
-  const auto width = static_cast<int>(Y.width());
-  const auto height = static_cast<int>(Y.height());
+  const auto width = static_cast<int32_t>(Y.width());
+  const auto height = static_cast<int32_t>(Y.height());
 
   const auto width2 = width / 2;
   const auto height2 = height / 2;
-  for (int h = 0; h < height; h++) {
+  for (int32_t h = 0; h < height; h++) {
     auto oldH = h - height2;
-    for (int w = 0; w < width; w++) {
+    for (int32_t w = 0; w < width; w++) {
       auto oldPP = h * width + w;
 
       auto oldW = w - width2;
@@ -230,7 +230,7 @@ void inpaintOmnidirectionalView(Common::Texture444Depth16Frame &yuvd,
 
       auto newPP = iNewH * width + iNewW;
 
-      mapERP2Cassini(h, w) = Common::assertDownCast<int>(newPP);
+      mapERP2Cassini(h, w) = Common::assertDownCast<int32_t>(newPP);
       if (isHole(iNewH, iNewW) == 1) {
         mapCassini2ERP(iNewH, iNewW) = oldPP;
       }
@@ -242,8 +242,8 @@ void inpaintOmnidirectionalView(Common::Texture444Depth16Frame &yuvd,
 
   // analysis from top-left
 
-  for (int h = 0; h < height; h++) {
-    for (int w = 0; w < width; w++) {
+  for (int32_t h = 0; h < height; h++) {
+    for (int32_t w = 0; w < width; w++) {
       nonEmptyNeighborL(h, w) = mapCassini2ERP(h, w);
       if (isHole(h, w) != 0) {
         if (w > 0) {
@@ -258,8 +258,8 @@ void inpaintOmnidirectionalView(Common::Texture444Depth16Frame &yuvd,
 
   // analysis from bottom-right
 
-  for (int h = height - 1; h >= 0; h--) {
-    for (int w = width - 1; w >= 0; w--) {
+  for (int32_t h = height - 1; h >= 0; h--) {
+    for (int32_t w = width - 1; w >= 0; w--) {
       nonEmptyNeighborR(h, w) = mapCassini2ERP(h, w);
       if (isHole(h, w) != 0) {
         if (w < width - 1) {
@@ -281,25 +281,25 @@ void inpaintOmnidirectionalView(Common::Texture444Depth16Frame &yuvd,
 void inpaintPerspectiveView(Common::Texture444Depth16Frame &yuvd) {
   auto &D = yuvd.second.getPlane(0);
 
-  const int width = static_cast<int>(D.width());
-  const int height = static_cast<int>(D.height());
+  const auto width = static_cast<int32_t>(D.width());
+  const auto height = static_cast<int32_t>(D.height());
 
-  Common::Mat<int> nonEmptyNeighborL;
+  Common::Mat<int32_t> nonEmptyNeighborL;
   nonEmptyNeighborL.resize(height, width);
 
-  Common::Mat<int> nonEmptyNeighborR;
+  Common::Mat<int32_t> nonEmptyNeighborR;
   nonEmptyNeighborR.resize(height, width);
 
-  Common::Mat<int> nonEmptyNeighborT;
+  Common::Mat<int32_t> nonEmptyNeighborT;
   nonEmptyNeighborT.resize(height, width);
 
-  Common::Mat<int> nonEmptyNeighborB;
+  Common::Mat<int32_t> nonEmptyNeighborB;
   nonEmptyNeighborB.resize(height, width);
 
   // analysis from top-left
 
-  for (int h = 0; h < height; h++) {
-    for (int w = 0; w < width; w++) {
+  for (int32_t h = 0; h < height; h++) {
+    for (int32_t w = 0; w < width; w++) {
       nonEmptyNeighborL(h, w) = w;
 
       if (D(h, w) == 0) {
@@ -314,8 +314,8 @@ void inpaintPerspectiveView(Common::Texture444Depth16Frame &yuvd) {
 
   // analysis from bottom-right
 
-  for (int h = height - 1; h >= 0; h--) {
-    for (int w = width - 1; w >= 0; w--) {
+  for (int32_t h = height - 1; h >= 0; h--) {
+    for (int32_t w = width - 1; w >= 0; w--) {
       nonEmptyNeighborR(h, w) = w;
 
       if (D(h, w) == 0) {
@@ -334,8 +334,8 @@ void inpaintPerspectiveView(Common::Texture444Depth16Frame &yuvd) {
 
   // analysis from top-left
 
-  for (int h = 0; h < height; h++) {
-    for (int w = 0; w < width; w++) {
+  for (int32_t h = 0; h < height; h++) {
+    for (int32_t w = 0; w < width; w++) {
       nonEmptyNeighborT(h, w) = h;
 
       if (D(h, w) == 0) {
@@ -350,8 +350,8 @@ void inpaintPerspectiveView(Common::Texture444Depth16Frame &yuvd) {
 
   // analysis from bottom-right
 
-  for (int h = height - 1; h >= 0; h--) {
-    for (int w = width - 1; w >= 0; w--) {
+  for (int32_t h = height - 1; h >= 0; h--) {
+    for (int32_t w = width - 1; w >= 0; w--) {
       nonEmptyNeighborB(h, w) = h;
 
       if (D(h, w) == 0) {

@@ -36,7 +36,7 @@
 namespace TMIV::MivBitstream {
 namespace {
 constexpr float inferredErodeThreshold = 1.F;
-constexpr unsigned inferredDeltaThreshold = 10;
+constexpr uint32_t inferredDeltaThreshold = 10;
 constexpr uint8_t inferredMaxCurvature = 5;
 } // namespace
 
@@ -44,7 +44,7 @@ auto operator<<(std::ostream &stream, GupType x) -> std::ostream & {
   if (x == GupType::HVR) {
     return stream << "HVR";
   }
-  return stream << "[unknown:" << static_cast<int>(x) << ']';
+  return stream << "[unknown:" << static_cast<int32_t>(x) << ']';
 }
 
 auto GeometryUpscalingParameters::gup_type() const noexcept -> GupType { return m_gup_type; }
@@ -53,7 +53,7 @@ auto GeometryUpscalingParameters::gup_erode_threshold() const noexcept -> Common
   return gup_type() == GupType::HVR ? m_gup_erode_threshold : Common::Half{inferredErodeThreshold};
 }
 
-auto GeometryUpscalingParameters::gup_delta_threshold() const noexcept -> unsigned {
+auto GeometryUpscalingParameters::gup_delta_threshold() const noexcept -> uint32_t {
   return gup_type() == GupType::HVR ? m_gup_delta_threshold : inferredDeltaThreshold;
 }
 
@@ -74,7 +74,7 @@ auto GeometryUpscalingParameters::gup_erode_threshold(Common::Half value) noexce
   return *this;
 }
 
-auto GeometryUpscalingParameters::gup_delta_threshold(unsigned value) noexcept
+auto GeometryUpscalingParameters::gup_delta_threshold(uint32_t value) noexcept
     -> GeometryUpscalingParameters & {
   PRECONDITION(gup_type() == GupType::HVR);
   m_gup_delta_threshold = value;
@@ -93,7 +93,7 @@ auto operator<<(std::ostream &stream, const GeometryUpscalingParameters &x) -> s
   if (x.gup_type() == GupType::HVR) {
     stream << "gup_erode_threshold=" << x.gup_erode_threshold() << '\n';
     stream << "gup_delta_threshold=" << x.gup_delta_threshold() << '\n';
-    stream << "gup_max_curvature=" << static_cast<unsigned>(x.gup_max_curvature()) << '\n';
+    stream << "gup_max_curvature=" << static_cast<uint32_t>(x.gup_max_curvature()) << '\n';
   }
   return stream;
 }
@@ -122,7 +122,7 @@ auto GeometryUpscalingParameters::decodeFrom(Common::InputBitstream &bitstream)
   x.gup_type(bitstream.getUExpGolomb<GupType>());
   if (x.gup_type() == GupType::HVR) {
     x.gup_erode_threshold(bitstream.getFloat16());
-    x.gup_delta_threshold(bitstream.getUExpGolomb<unsigned>());
+    x.gup_delta_threshold(bitstream.getUExpGolomb<uint32_t>());
     x.gup_max_curvature(bitstream.readBits<uint8_t>(3));
   }
   return x;

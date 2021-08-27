@@ -74,9 +74,9 @@ TEST_CASE("There are value constructors for each of JSON value types") {
 
   SECTION("Arithmetic types are promoted") {
     REQUIRE(Json{42.F}.as<double>() == 42.);
-    REQUIRE(Json{42}.as<int>() == 42);
+    REQUIRE(Json{42}.as<int32_t>() == 42);
     REQUIRE(Json{42.}.as<float>() == 42.F);
-    REQUIRE(Json{uint32_t{42}}.as<short>() == 42);
+    REQUIRE(Json{uint32_t{42}}.as<int16_t>() == 42);
   }
 
   SECTION("There is in-place value construction for JSON object") {
@@ -131,12 +131,12 @@ TEST_CASE("Json::as<T>() supports numeric conversion of floats") {
   REQUIRE(json.as<double>() == Approx(30.4));
 
   SECTION("Converting a float to an integer is not allowed") {
-    REQUIRE_THROWS(json.as<int>());
+    REQUIRE_THROWS(json.as<int32_t>());
     REQUIRE_THROWS(json.as<char>());
 
     // The exact message is implementation-defined, so the message is printed for visual inspection.
     try {
-      json.as<int>();
+      json.as<int32_t>();
     } catch (std::exception &e) {
       std::cout << e.what() << '\n';
     }
@@ -147,7 +147,7 @@ TEST_CASE("Converting assignment operator with numeric promotion") {
   auto json = Json{};
 
   json = 1;
-  REQUIRE(json.as<int>() == 1);
+  REQUIRE(json.as<int32_t>() == 1);
 
   json = 1.;
   REQUIRE(json.as<double>() == 1.);
@@ -224,25 +224,25 @@ TEST_CASE("Parse a JSON") {
   }
 
   SECTION("number") {
-    REQUIRE(Json::parse("0"sv).as<int>() == 0);
-    REQUIRE(Json::parse("-1234"sv).as<int>() == -1234);
-    REQUIRE(Json::parse("774"sv).as<int>() == 774);
+    REQUIRE(Json::parse("0"sv).as<int32_t>() == 0);
+    REQUIRE(Json::parse("-1234"sv).as<int32_t>() == -1234);
+    REQUIRE(Json::parse("774"sv).as<int32_t>() == 774);
     REQUIRE(Json::parse("-9223372036854775808"sv).as<int64_t>() == INT64_MIN);
     REQUIRE(Json::parse("9223372036854775807"sv).as<int64_t>() == INT64_MAX);
     REQUIRE(Json::parse("0.0"sv).as<double>() == 0.);
     REQUIRE(Json::parse("42E-002"sv).as<float>() == 0.42F);
     REQUIRE(Json::parse("2.4E+3"sv).as<double>() == 2400.);
-    REQUIRE_THROWS(Json::parse("2."sv).as<double>()); // not allowed in JSON
-    REQUIRE_THROWS(Json::parse("01"sv).as<int>());    // not allowed in JSON
+    REQUIRE_THROWS(Json::parse("2."sv).as<double>());  // not allowed in JSON
+    REQUIRE_THROWS(Json::parse("01"sv).as<int32_t>()); // not allowed in JSON
   }
 
   SECTION("array") {
     REQUIRE(Json::parse("[]"sv).as<Json::Array>().empty());
     REQUIRE(Json::parse("\r[\r]\r"sv).as<Json::Array>().empty());
     REQUIRE(Json::parse("[4]"sv).as<Json::Array>().size() == 1);
-    REQUIRE(Json::parse("[4]"sv).as<Json::Array>().front().as<int>() == 4);
+    REQUIRE(Json::parse("[4]"sv).as<Json::Array>().front().as<int32_t>() == 4);
     REQUIRE(Json::parse("[ 4, 2 ]"sv).as<Json::Array>().size() == 2);
-    REQUIRE(Json::parse("[ 4, 2 ]"sv).as<Json::Array>().front().as<int>() == 4);
+    REQUIRE(Json::parse("[ 4, 2 ]"sv).as<Json::Array>().front().as<int32_t>() == 4);
     REQUIRE(Json::parse("[ 4, 2.0 ]"sv).as<Json::Array>().back().as<double>() == 2.);
   }
 
@@ -364,7 +364,7 @@ TEST_CASE("Update a JSON") {
 
     a = 3;
     a.update(Json::null);
-    REQUIRE(a.as<int>() == 3);
+    REQUIRE(a.as<int32_t>() == 3);
   }
 
   SECTION("For JSON objects the strategy is to merge") {
@@ -373,9 +373,9 @@ TEST_CASE("Update a JSON") {
     const auto b = Json{std::in_place_type_t<Json::Object>(), std::pair{"z"s, Json{5}}};
     a.update(b);
 
-    REQUIRE(a.require("x"s).as<int>() == 3);
-    REQUIRE(a.require("y"s).as<int>() == 4);
-    REQUIRE(a.require("z"s).as<int>() == 5);
+    REQUIRE(a.require("x"s).as<int32_t>() == 3);
+    REQUIRE(a.require("y"s).as<int32_t>() == 4);
+    REQUIRE(a.require("z"s).as<int32_t>() == 5);
 
     SECTION("Updating an object with a non-object is not allowed (schema violation)") {
       REQUIRE_THROWS(a.update(Json{3}));
@@ -399,7 +399,7 @@ TEST_CASE("Json::optional()") {
   auto json = Json{std::in_place_type_t<Json::Object>(), std::pair{"x"s, Json{3}},
                    std::pair{"y"s, Json{4}}};
 
-  SECTION("Performs key-lookup") { REQUIRE(json.optional("x"s).as<int>() == 3); }
+  SECTION("Performs key-lookup") { REQUIRE(json.optional("x"s).as<int32_t>() == 3); }
 
   SECTION("Returns null when a key does not exist") { REQUIRE(!json.optional("w"s)); }
 
@@ -418,7 +418,7 @@ TEST_CASE("Json::require()") {
   auto json = Json{std::in_place_type_t<Json::Object>(), std::pair{"x"s, Json{3}},
                    std::pair{"y"s, Json{4}}};
 
-  SECTION("Performs key-lookup") { REQUIRE(json.require("x"s).as<int>() == 3); }
+  SECTION("Performs key-lookup") { REQUIRE(json.require("x"s).as<int32_t>() == 3); }
 
   SECTION("Throws when a key does not exist") { REQUIRE_THROWS(json.require("w"s)); }
 
@@ -430,7 +430,7 @@ TEST_CASE("Json::require()") {
 
 TEST_CASE("Json::asVector() converts a JSON array to a std::vector<T>") {
   auto json = Json{std::in_place_type_t<Json::Array>(), Json{1}, Json{2}, Json{3}};
-  REQUIRE(json.asVector<int>() == std::vector{1, 2, 3});
+  REQUIRE(json.asVector<int32_t>() == std::vector{1, 2, 3});
 }
 
 TEST_CASE("Json::asVec() converts a JSON array to a Common::stack::Vector<T, M>") {

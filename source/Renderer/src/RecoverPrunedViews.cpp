@@ -60,8 +60,8 @@ auto recoverPrunedViewAndMask(const MivBitstream::AccessUnit &frame)
 
   // For each pixel in each atlas
   for (const auto &atlas : frame.atlas) {
-    for (int i = 0; i < atlas.asps.asps_frame_height(); ++i) {
-      for (int j = 0; j < atlas.asps.asps_frame_width(); ++j) {
+    for (int32_t i = 0; i < atlas.asps.asps_frame_height(); ++i) {
+      for (int32_t j = 0; j < atlas.asps.asps_frame_width(); ++j) {
         // Fetch patch ID
         const auto patchId = atlas.patchId(i, j);
         if (patchId == Common::unusedPatchId) {
@@ -100,7 +100,7 @@ auto recoverPrunedViewAndMask(const MivBitstream::AccessUnit &frame)
         }
 
         // Copy attributes
-        for (int d = 0; d < 3; ++d) {
+        for (int32_t d = 0; d < 3; ++d) {
           prunedView[viewIdx].first.getPlane(d)(y, x) = atlas.attrFrame.getPlane(d)(i, j);
         }
 

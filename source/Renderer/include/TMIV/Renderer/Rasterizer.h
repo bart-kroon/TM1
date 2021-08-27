@@ -54,7 +54,7 @@ public:
 
   // Construct a rasterizer with specified blender and a frame buffer of
   // specified size, and specify the number of strips for concurrent processing.
-  Rasterizer(Pixel pixel, Common::Vec2i size, int numStrips);
+  Rasterizer(Pixel pixel, Common::Vec2i size, int32_t numStrips);
 
   // Submit a batch of triangles
   //
@@ -99,11 +99,11 @@ public:
 private:
   struct Strip {
     // Strip dimensions
-    const int i1{};
-    const int i2{};
-    const int cols{};
+    const int32_t i1{};
+    const int32_t i2{};
+    const int32_t cols{};
 
-    [[nodiscard]] constexpr auto rows() const -> int { return i2 - i1; }
+    [[nodiscard]] constexpr auto rows() const -> int32_t { return i2 - i1; }
 
     // Batches of triangles to be processed
     std::vector<TriangleDescriptorList> batches;

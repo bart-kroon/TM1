@@ -37,7 +37,8 @@
 
 namespace TMIV::Common {
 namespace {
-void checkLuminancePlaneContents(const Frame<YUV420P8> &unit, const int expectedPixelValue = 0) {
+void checkLuminancePlaneContents(const Frame<YUV420P8> &unit,
+                                 const int32_t expectedPixelValue = 0) {
   const auto &yPlane = unit.getPlane(0);
   REQUIRE(!yPlane.empty());
   REQUIRE(yPlane.width() == static_cast<size_t>(unit.getWidth()));
@@ -48,8 +49,8 @@ void checkLuminancePlaneContents(const Frame<YUV420P8> &unit, const int expected
   }
 }
 
-void checkChrominancePlaneContents(const Frame<YUV420P8> &unit, int planeId,
-                                   const int expectedPixelValue = 0) {
+void checkChrominancePlaneContents(const Frame<YUV420P8> &unit, int32_t planeId,
+                                   const int32_t expectedPixelValue = 0) {
   const auto &uPlane = unit.getPlane(planeId);
   REQUIRE(!uPlane.empty());
   REQUIRE(uPlane.width() == static_cast<size_t>(unit.getWidth() / 2));
@@ -59,7 +60,7 @@ void checkChrominancePlaneContents(const Frame<YUV420P8> &unit, int planeId,
     REQUIRE(pixel == expectedPixelValue);
   }
 }
-void checkIfPlanesContainColor(const Frame<YUV420P8> &unit, const int expectedColor) {
+void checkIfPlanesContainColor(const Frame<YUV420P8> &unit, const int32_t expectedColor) {
   checkLuminancePlaneContents(unit, expectedColor);
   checkChrominancePlaneContents(unit, 1, expectedColor);
   checkChrominancePlaneContents(unit, 2, expectedColor);
@@ -80,7 +81,7 @@ TEST_CASE("0x0 frame through default construction") {
 
   REQUIRE(unit.getNumberOfPlanes() == 3);
   REQUIRE(unit.getPlanes().size() == Frame<YUV420P8>::getNumberOfPlanes());
-  for (int plane_id = 0; plane_id < 3; ++plane_id) {
+  for (int32_t plane_id = 0; plane_id < 3; ++plane_id) {
     REQUIRE(unit.getPlane(plane_id).empty());
   }
 }
@@ -137,7 +138,7 @@ TEST_CASE("4x2 frame fillInvalidWithNeutral") {
   unit.fillInvalidWithNeutral(depthFrame);
 
   for (const auto &plane : unit.getPlanes()) {
-    for (unsigned pixel_index = 0; pixel_index < plane.size(); ++pixel_index) {
+    for (uint32_t pixel_index = 0; pixel_index < plane.size(); ++pixel_index) {
       if (pixel_index == 3) {
         REQUIRE(plane[pixel_index] == unit.neutralColor());
       } else {
@@ -251,8 +252,8 @@ TEST_CASE("Quantize texture") {
   Mat<Vec3f> flatFrame{};
   flatFrame.resize(2, 4);
   float offset = 0.F;
-  for (unsigned row_index = 0; row_index < flatFrame.height(); ++row_index) {
-    for (unsigned col_index = 0; col_index < flatFrame.width(); ++col_index) {
+  for (uint32_t row_index = 0; row_index < flatFrame.height(); ++row_index) {
+    for (uint32_t col_index = 0; col_index < flatFrame.width(); ++col_index) {
       offset += 0.1F;
       flatFrame(row_index, col_index) = Vec3f{offset, offset + 0.02F, offset + 0.04F};
     }

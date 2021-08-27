@@ -62,10 +62,10 @@ soi_num_object_updates=0
     REQUIRE(bitCodingTest(unit, expected_number_of_bits));
   }
 
-  int expected_number_of_bits = 1    // soi_persistence_flag
-                                + 1  // soi_reset_flag
-                                + 1  // soi_simple_objects_flag
-                                + 5; // soi_log2_max_object_idx_updated_minus1
+  int32_t expected_number_of_bits = 1    // soi_persistence_flag
+                                    + 1  // soi_reset_flag
+                                    + 1  // soi_simple_objects_flag
+                                    + 5; // soi_log2_max_object_idx_updated_minus1
 
   SECTION("Custom fields, simple objects") {
     const auto unit{makeSceneObjectInformation(false, true, true, true, 4, 2)};

@@ -47,7 +47,7 @@ auto operator<<(std::ostream &stream, VhDeviceClass x) -> std::ostream & {
   case VhDeviceClass::VHDC_ASD:
     return stream << "VHDC_ASD";
   default:
-    return stream << "Unknown device class (" << static_cast<int>(x) << ")";
+    return stream << "Unknown device class (" << static_cast<int32_t>(x) << ")";
   }
 }
 
@@ -64,7 +64,7 @@ auto operator<<(std::ostream &stream, VhApplicationClass x) -> std::ostream & {
   case VhApplicationClass::VHAC_SD:
     return stream << "VHAC_SD";
   default:
-    return stream << "Unknown application class (" << static_cast<int>(x) << ")";
+    return stream << "Unknown application class (" << static_cast<int32_t>(x) << ")";
   }
 }
 
@@ -85,7 +85,7 @@ auto operator<<(std::ostream &stream, VhMethod x) -> std::ostream & {
   case VhMethod::VHM_ROTATE:
     return stream << "VHM_ROTATE";
   default:
-    return stream << "Unknown method (" << static_cast<int>(x) << ")";
+    return stream << "Unknown method (" << static_cast<int32_t>(x) << ")";
   }
 }
 

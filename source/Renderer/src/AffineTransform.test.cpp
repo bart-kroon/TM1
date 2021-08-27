@@ -79,7 +79,7 @@ TEST_CASE("AffineTransform") {
           const auto nr_x_ref = rotate(x, conj(rotated.orientation));
           const auto rn_x_ref = rotate(x, rotated.orientation);
 
-          for (int d = 0; d < 3; ++d) {
+          for (int32_t d = 0; d < 3; ++d) {
             REQUIRE(nr(x)[d] == Approx(nr_x_ref[d]));
             REQUIRE(rn(x)[d] == Approx(rn_x_ref[d]));
           }

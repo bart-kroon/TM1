@@ -379,7 +379,7 @@ auto operator<<(std::ostream &stream, const SceneObjectInformation &x) -> std::o
                   x.soi_log2_max_object_dependency_idx());
     }
     for (size_t i = 0; i < x.soi_num_object_updates(); ++i) {
-      const auto k = static_cast<unsigned>(x.soi_object_idx(i));
+      const auto k = static_cast<uint32_t>(x.soi_object_idx(i));
       putUnsigned(stream, "soi_object_idx", k);
       putIndexedFlag(stream, "soi_object_cancel_flag", k, x.soi_object_cancel_flag(k));
       if (!x.soi_object_cancel_flag(k)) {
@@ -407,7 +407,7 @@ auto operator<<(std::ostream &stream, const SceneObjectInformation &x) -> std::o
                                x.soi_object_num_dependencies(k));
             for (size_t j = 0; j < x.soi_object_num_dependencies(k); ++j) {
               stream << "soi_object_dependency_idx(" << k
-                     << ")=" << static_cast<unsigned>(x.soi_object_dependency_idx(k, j)) << "\n";
+                     << ")=" << static_cast<uint32_t>(x.soi_object_dependency_idx(k, j)) << "\n";
             }
           }
         }

@@ -210,7 +210,7 @@ TEST_CASE("DepthTransform") {
 
     const auto actual = unit.expandDepth(frame);
 
-    for (int i = 0; i < 12; ++i) {
+    for (int32_t i = 0; i < 12; ++i) {
       REQUIRE(actual[i] == unit.expandDepth(i));
     }
   }
@@ -230,7 +230,7 @@ TEST_CASE("DepthTransform") {
 
     const auto actual = unit.expandDepth(frame);
 
-    for (int i = 0; i < 12; ++i) {
+    for (int32_t i = 0; i < 12; ++i) {
       REQUIRE(actual[i] == unit.expandDepth(0xE000 + i));
     }
   }
@@ -280,7 +280,7 @@ TEST_CASE("DepthTransform") {
       dq.dq_norm_disp_low(normDispLow);
       dq.dq_norm_disp_high(normDispHigh);
 
-      const unsigned bits = GENERATE(1, 4, 13, 16);
+      const uint32_t bits = GENERATE(1, 4, 13, 16);
       const auto maxLevel = TMIV::Common::maxLevel(bits);
 
       const auto unit = DepthTransform{dq, bits};
@@ -295,7 +295,7 @@ TEST_CASE("DepthTransform") {
       SECTION(
           "The minimum normalized disparity is less or equal than the lowest positive normalized "
           "disparity that can be formed") {
-        for (unsigned i = 0; i <= maxLevel; ++i) {
+        for (uint32_t i = 0; i <= maxLevel; ++i) {
           const auto far = std::min(normDispLow, normDispHigh);
           const auto near = std::max(normDispLow, normDispHigh);
           const auto normDisp = far + (near - far) * TMIV::Common::expandValue(i, bits);

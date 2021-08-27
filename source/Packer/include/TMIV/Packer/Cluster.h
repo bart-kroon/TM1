@@ -49,33 +49,33 @@ using ClusterList = std::vector<Cluster>;
 class Cluster {
 public:
   Cluster() = default;
-  Cluster(int viewIdx, bool isBasicView, int clusterId, int entityId);
+  Cluster(int32_t viewIdx, bool isBasicView, int32_t clusterId, int32_t entityId);
   Cluster(const Cluster &) = default;
   Cluster(Cluster &&) = default;
   auto operator=(const Cluster &) -> Cluster & = default;
   auto operator=(Cluster &&) -> Cluster & = default;
   ~Cluster() = default;
 
-  void push(int i, int j);
-  [[nodiscard]] auto getViewIdx() const -> int { return viewIdx_; }
-  [[nodiscard]] auto getClusterId() const -> int { return clusterId_; }
-  [[nodiscard]] auto getEntityId() const -> int { return entityId_; }
-  [[nodiscard]] auto getNumActivePixels() const -> int { return numActivePixels_; }
-  [[nodiscard]] auto imin() const -> int { return imin_; }
-  [[nodiscard]] auto jmin() const -> int { return jmin_; }
-  [[nodiscard]] auto imax() const -> int { return imax_; }
-  [[nodiscard]] auto jmax() const -> int { return jmax_; }
-  [[nodiscard]] auto width() const -> int { return (jmax_ - jmin_ + 1); }
-  [[nodiscard]] auto height() const -> int { return (imax_ - imin_ + 1); }
-  [[nodiscard]] auto getArea() const -> int { return width() * height(); }
-  [[nodiscard]] auto getMinSize() const -> int { return std::min(width(), height()); }
-  [[nodiscard]] auto split(const ClusteringMap &clusteringMap, int overlap) const
+  void push(int32_t i, int32_t j);
+  [[nodiscard]] auto getViewIdx() const -> int32_t { return viewIdx_; }
+  [[nodiscard]] auto getClusterId() const -> int32_t { return clusterId_; }
+  [[nodiscard]] auto getEntityId() const -> int32_t { return entityId_; }
+  [[nodiscard]] auto getNumActivePixels() const -> int32_t { return numActivePixels_; }
+  [[nodiscard]] auto imin() const -> int32_t { return imin_; }
+  [[nodiscard]] auto jmin() const -> int32_t { return jmin_; }
+  [[nodiscard]] auto imax() const -> int32_t { return imax_; }
+  [[nodiscard]] auto jmax() const -> int32_t { return jmax_; }
+  [[nodiscard]] auto width() const -> int32_t { return (jmax_ - jmin_ + 1); }
+  [[nodiscard]] auto height() const -> int32_t { return (imax_ - imin_ + 1); }
+  [[nodiscard]] auto getArea() const -> int32_t { return width() * height(); }
+  [[nodiscard]] auto getMinSize() const -> int32_t { return std::min(width(), height()); }
+  [[nodiscard]] auto split(const ClusteringMap &clusteringMap, int32_t overlap) const
       -> std::pair<Cluster, Cluster>;
   [[nodiscard]] constexpr auto isBasicView() const noexcept { return m_isBasicView; }
-  auto numActivePixels() -> int & { return numActivePixels_; }
+  auto numActivePixels() -> int32_t & { return numActivePixels_; }
 
-  void recursiveSplit(const ClusteringMap &clusteringMap, std::vector<Cluster> &out, int alignment,
-                      int minPatchSize) const;
+  void recursiveSplit(const ClusteringMap &clusteringMap, std::vector<Cluster> &out,
+                      int32_t alignment, int32_t minPatchSize) const;
 
   static auto Empty() -> Cluster {
     Cluster out;
@@ -85,39 +85,39 @@ public:
     out.jmax_ = 0;
     return out;
   }
-  static auto setEntityId(Cluster &c, int entityId) -> Cluster;
-  static auto align(const Cluster &c, int alignment) -> Cluster;
+  static auto setEntityId(Cluster &c, int32_t entityId) -> Cluster;
+  static auto align(const Cluster &c, int32_t alignment) -> Cluster;
   static auto merge(const Cluster &c1, const Cluster &c2) -> Cluster;
 
 private:
   auto splitLPatchVertically(const ClusteringMap &clusteringMap, std::vector<Cluster> &out,
-                             int alignment, int minPatchSize,
-                             const std::array<std::deque<int>, 2> &min_h_agg,
-                             const std::array<std::deque<int>, 2> &max_h_agg) const -> bool;
+                             int32_t alignment, int32_t minPatchSize,
+                             const std::array<std::deque<int32_t>, 2> &min_h_agg,
+                             const std::array<std::deque<int32_t>, 2> &max_h_agg) const -> bool;
   auto splitLPatchHorizontally(const ClusteringMap &clusteringMap, std::vector<Cluster> &out,
-                               int alignment, int minPatchSize,
-                               const std::array<std::deque<int>, 2> &min_w_agg,
-                               const std::array<std::deque<int>, 2> &max_w_agg) const -> bool;
+                               int32_t alignment, int32_t minPatchSize,
+                               const std::array<std::deque<int32_t>, 2> &min_w_agg,
+                               const std::array<std::deque<int32_t>, 2> &max_w_agg) const -> bool;
   auto splitCPatchVertically(const ClusteringMap &clusteringMap, std::vector<Cluster> &out,
-                             int alignment, int minPatchSize) const -> bool;
+                             int32_t alignment, int32_t minPatchSize) const -> bool;
   auto splitCPatchHorizontally(const ClusteringMap &clusteringMap, std::vector<Cluster> &out,
-                               int alignment, int minPatchSize) const -> bool;
+                               int32_t alignment, int32_t minPatchSize) const -> bool;
   [[nodiscard]] auto createAggregatedQueues(const ClusteringMap &clusteringMap,
                                             bool aggregateHorizontally) const
-      -> std::tuple<std::array<std::deque<int>, 2>, std::array<std::deque<int>, 2>>;
+      -> std::tuple<std::array<std::deque<int32_t>, 2>, std::array<std::deque<int32_t>, 2>>;
   [[nodiscard]] auto computeMinAndMaxVectors(const ClusteringMap &clusteringMap,
                                              bool aggregateHorizontally) const
-      -> std::tuple<std::vector<int>, std::vector<int>>;
+      -> std::tuple<std::vector<int32_t>, std::vector<int32_t>>;
 
-  int viewIdx_ = 0;
+  int32_t viewIdx_ = 0;
   bool m_isBasicView{};
-  int clusterId_ = 0;
-  int entityId_ = 0;
-  int numActivePixels_ = 0;
-  int imin_ = std::numeric_limits<int>::max();
-  int jmin_ = std::numeric_limits<int>::max();
-  int imax_ = std::numeric_limits<int>::min();
-  int jmax_ = std::numeric_limits<int>::min();
+  int32_t clusterId_ = 0;
+  int32_t entityId_ = 0;
+  int32_t numActivePixels_ = 0;
+  int32_t imin_ = std::numeric_limits<int32_t>::max();
+  int32_t jmin_ = std::numeric_limits<int32_t>::max();
+  int32_t imax_ = std::numeric_limits<int32_t>::min();
+  int32_t jmax_ = std::numeric_limits<int32_t>::min();
 };
 } // namespace TMIV::Packer
 

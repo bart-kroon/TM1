@@ -176,7 +176,7 @@ public:
   auto pdu_attribute_offset(Common::Vec3w value) noexcept -> auto &;
   constexpr auto pdu_inpaint_flag(bool value) noexcept -> auto &;
 
-  auto printTo(std::ostream &stream, unsigned tileId, size_t patchIdx) const -> std::ostream &;
+  auto printTo(std::ostream &stream, uint32_t tileId, size_t patchIdx) const -> std::ostream &;
 
   auto operator==(const PduMivExtension &other) const -> bool;
   auto operator!=(const PduMivExtension &other) const -> bool;
@@ -226,13 +226,13 @@ public:
   constexpr auto pdu_projection_id(ViewId value) noexcept -> auto &;
   constexpr auto pdu_orientation_index(FlexiblePatchOrientation value) noexcept -> auto &;
   constexpr auto pdu_lod_enabled_flag(bool value) noexcept -> auto &;
-  constexpr auto pdu_lod_scale_x_minus1(unsigned value) noexcept -> auto &;
-  constexpr auto pdu_lod_scale_y_idc(unsigned value) noexcept -> auto &;
+  constexpr auto pdu_lod_scale_x_minus1(uint32_t value) noexcept -> auto &;
+  constexpr auto pdu_lod_scale_y_idc(uint32_t value) noexcept -> auto &;
   auto pdu_miv_extension(const PduMivExtension &value) noexcept -> PatchDataUnit &;
 
   [[nodiscard]] constexpr auto pdu_miv_extension() noexcept -> auto &;
 
-  auto printTo(std::ostream &stream, unsigned tileId, size_t patchIdx) const -> std::ostream &;
+  auto printTo(std::ostream &stream, uint32_t tileId, size_t patchIdx) const -> std::ostream &;
 
   constexpr auto operator==(const PatchDataUnit &other) const noexcept;
   constexpr auto operator!=(const PatchDataUnit &other) const noexcept;
@@ -259,8 +259,8 @@ private:
   ViewId m_pdu_projection_id{};
   FlexiblePatchOrientation m_pdu_orientation_index{};
   std::optional<bool> m_pdu_lod_enabled_flag{};
-  std::optional<unsigned> m_pdu_lod_scale_x_minus1{};
-  std::optional<unsigned> m_pdu_lod_scale_y_idc{};
+  std::optional<uint32_t> m_pdu_lod_scale_x_minus1{};
+  std::optional<uint32_t> m_pdu_lod_scale_y_idc{};
   std::optional<PduMivExtension> m_pdu_miv_extension;
 };
 
@@ -285,7 +285,7 @@ public:
   [[nodiscard]] auto skip_patch_data_unit() const noexcept -> const SkipPatchDataUnit &;
   [[nodiscard]] auto patch_data_unit() const noexcept -> const PatchDataUnit &;
 
-  auto printTo(std::ostream &stream, unsigned tileId, size_t patchIdx) const -> std::ostream &;
+  auto printTo(std::ostream &stream, uint32_t tileId, size_t patchIdx) const -> std::ostream &;
 
   auto operator==(const PatchInformationData &other) const noexcept -> bool;
   auto operator!=(const PatchInformationData &other) const noexcept -> bool;

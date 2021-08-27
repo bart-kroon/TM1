@@ -48,18 +48,18 @@ namespace detail {
 // avoids having too many triangles in multiple strips
 //
 // Example: 8 hyper cores, 2048 rows ==> 128 strips of 16 rows each
-inline auto MpiNumStrips(int rows) -> int {
+inline auto MpiNumStrips(int32_t rows) -> int32_t {
   const double hw = Common::threadCount();
-  const int maximum = (rows + 3) / 4;
+  const int32_t maximum = (rows + 3) / 4;
   if (maximum <= hw) {
     return maximum;
   }
   using std::sqrt;
-  return static_cast<int>(std::lround(sqrt(hw * maximum)));
+  return static_cast<int32_t>(std::lround(sqrt(hw * maximum)));
 }
 
 template <typename M0, typename... M>
-auto MpiFetchAttributes(int index, const std::tuple<M0, M...> &attributes) {
+auto MpiFetchAttributes(int32_t index, const std::tuple<M0, M...> &attributes) {
   std::tuple<typename M0::value_type, typename M::value_type...> result;
   std::get<0>(result) = std::get<0>(attributes)[index];
   if constexpr (sizeof...(M) >= 1) {
@@ -75,7 +75,7 @@ auto MpiFetchAttributes(int index, const std::tuple<M0, M...> &attributes) {
   return result;
 }
 
-inline auto MpiFetchAttributes(int /* index */, const std::tuple<> &
+inline auto MpiFetchAttributes(int32_t /* index */, const std::tuple<> &
                                /* attributes */) -> std::tuple<> {
   return {};
 }
@@ -86,14 +86,14 @@ MpiRasterizer<T...>::MpiRasterizer(Common::Vec2i size)
     : MpiRasterizer{size, detail::MpiNumStrips(size.y())} {}
 
 template <typename... T>
-MpiRasterizer<T...>::MpiRasterizer(Common::Vec2i size, int numStrips)
+MpiRasterizer<T...>::MpiRasterizer(Common::Vec2i size, int32_t numStrips)
     : m_size{static_cast<size_t>(size.y()), static_cast<size_t>(size.x())} {
   PRECONDITION(size.x() >= 0 && size.y() >= 0);
   PRECONDITION(numStrips > 0);
   m_strips.reserve(numStrips);
-  for (int n = 0; n < numStrips; ++n) {
-    const int i1 = size.y() * n / numStrips;
-    const int i2 = size.y() * (n + 1) / numStrips;
+  for (int32_t n = 0; n < numStrips; ++n) {
+    const int32_t i1 = size.y() * n / numStrips;
+    const int32_t i2 = size.y() * (n + 1) / numStrips;
     m_strips.push_back({i1, i2, size.x(), {}});
   }
   m_dk_di = static_cast<float>(numStrips) / static_cast<float>(size.y());
@@ -139,7 +139,7 @@ template <typename... T> void MpiRasterizer<T...>::run(const FragmentShader &fra
 
 template <typename... T>
 void MpiRasterizer<T...>::submitTriangle(TriangleDescriptor descriptor, const Batch &batch) {
-  const auto K = static_cast<int>(m_strips.size());
+  const auto K = static_cast<int32_t>(m_strips.size());
   auto k1 = K;
   auto k2 = 0;
 
@@ -149,15 +149,15 @@ void MpiRasterizer<T...>::submitTriangle(TriangleDescriptor descriptor, const Ba
       return;
     }
     const auto k = y * m_dk_di;
-    k1 = std::min(k1, static_cast<int>(std::floor(k)));
-    k2 = std::max(k2, static_cast<int>(std::ceil(k)) + 1);
+    k1 = std::min(k1, static_cast<int32_t>(std::floor(k)));
+    k2 = std::max(k2, static_cast<int32_t>(std::ceil(k)) + 1);
   }
 
   // Cull
   k1 = std::max(0, k1);
   k2 = std::min(K, k2);
 
-  for (int k = k1; k < k2; ++k) {
+  for (int32_t k = k1; k < k2; ++k) {
     m_strips[k].batches.back().push_back(descriptor);
   }
 }
@@ -174,12 +174,12 @@ constexpr const auto half = one / intfp{2};
 
 inline auto fixed(float x) -> intfp {
   using std::ldexp;
-  return static_cast<intfp>(static_cast<int>(std::floor(0.5F + ldexp(x, bits))));
+  return static_cast<intfp>(static_cast<int32_t>(std::floor(0.5F + ldexp(x, bits))));
 }
 inline auto fixed(Common::Vec2f v) -> Vec2fp { return {fixed(v.x()), fixed(v.y())}; }
-inline auto fixed(int x) -> intfp { return static_cast<intfp>(x) << bits; }
-inline auto fpfloor(intfp x) -> int { return static_cast<int>(x >> bits); }
-inline auto fpceil(intfp x) -> int { return fpfloor(x + one - eps); }
+inline auto fixed(int32_t x) -> intfp { return static_cast<intfp>(x) << bits; }
+inline auto fpfloor(intfp x) -> int32_t { return static_cast<int32_t>(x >> bits); }
+inline auto fpceil(intfp x) -> int32_t { return fpfloor(x + one - eps); }
 inline void swap_vec2fp(Vec2fp &p1, Vec2fp &p2) {
   auto p3 = p1;
   p1 = p2;
@@ -242,8 +242,8 @@ void MpiRasterizer<T...>::rasterTriangle(TriangleDescriptor descriptor, const Ba
   const auto inv_area = 1.F / static_cast<float>(area);
 
   // For each pixel in the bounding box
-  for (int v = v1; v < v2; ++v) {
-    for (int u = u1; u < u2; ++u) {
+  for (int32_t v = v1; v < v2; ++v) {
+    for (int32_t u = u1; u < u2; ++u) {
       // Calculate the Barycentric coordinate of the pixel center (x +
       // 1/2, y + 1/2)
       using mpi_fixed_point::half;

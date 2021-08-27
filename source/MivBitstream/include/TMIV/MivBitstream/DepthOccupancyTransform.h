@@ -60,10 +60,10 @@ private:
 class DepthTransform {
 public:
   // Constructor for per-view depth transform signalling (source)
-  explicit DepthTransform(const DepthQuantization &dq, unsigned bits);
+  explicit DepthTransform(const DepthQuantization &dq, uint32_t bits);
 
   // Constructor for per-patch depth transform signalling (codec)
-  DepthTransform(const DepthQuantization &dq, const PatchParams &patch, unsigned bits);
+  DepthTransform(const DepthQuantization &dq, const PatchParams &patch, uint32_t bits);
 
   // Expand a level to normalized disparity [m^-1]
   //
@@ -114,7 +114,7 @@ private:
   const float m_normDispLow{};
   const float m_normDispHigh{};
   float m_minNormDisp{};
-  const unsigned m_bits{};
+  const uint32_t m_bits{};
   Common::SampleValue m_depthStart{};
   Common::SampleValue m_depthEnd{std::numeric_limits<Common::SampleValue>::max()};
 };

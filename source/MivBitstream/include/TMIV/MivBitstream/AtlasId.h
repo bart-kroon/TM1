@@ -52,7 +52,7 @@ public:
       : m_value{Common::verifyDownCast<uint8_t>(value)} {}
 
   friend auto operator<<(std::ostream &stream, AtlasId atlasId) -> std::ostream & {
-    return stream << int{atlasId.m_value};
+    return stream << int32_t{atlasId.m_value};
   }
 
   constexpr auto operator==(AtlasId other) const noexcept { return m_value == other.m_value; }
@@ -76,7 +76,7 @@ private:
 } // namespace TMIV::MivBitstream
 
 template <> struct fmt::formatter<TMIV::MivBitstream::AtlasId> {
-  fmt::formatter<int> base;
+  fmt::formatter<int32_t> base;
 
   constexpr auto parse(format_parse_context &ctx) { return base.parse(ctx); }
 

@@ -66,7 +66,7 @@ inline auto PushPull::layer(size_t i) const noexcept -> const Common::Texture444
 inline auto PushPull::yuvd(const Common::Texture444Depth16Frame &frame) {
   return [plane = std::array<std::reference_wrapper<const Common::Mat<uint16_t>>, 4>{
               frame.first.getPlane(0), frame.first.getPlane(1), frame.first.getPlane(2),
-              frame.second.getPlane(0)}](int i, int j) {
+              frame.second.getPlane(0)}](int32_t i, int32_t j) {
     return std::tuple{plane[0](i, j), plane[1](i, j), plane[2](i, j), plane[3](i, j)};
   };
 }
@@ -74,7 +74,7 @@ inline auto PushPull::yuvd(const Common::Texture444Depth16Frame &frame) {
 inline auto PushPull::yuvd(Common::Texture444Depth16Frame &frame) {
   return [plane = std::array<std::reference_wrapper<Common::Mat<uint16_t>>, 4>{
               frame.first.getPlane(0), frame.first.getPlane(1), frame.first.getPlane(2),
-              frame.second.getPlane(0)}](int i, int j) {
+              frame.second.getPlane(0)}](int32_t i, int32_t j) {
     return std::tie(plane[0](i, j), plane[1](i, j), plane[2](i, j), plane[3](i, j));
   };
 }
@@ -109,11 +109,11 @@ void PushPull::inplacePush(const InMatrixProxy &&in, OutMatrixProxy &&out,
   PRECONDITION(out.width == (in.width + 1) / 2);
   PRECONDITION(out.height == (in.height + 1) / 2);
 
-  for (int y = 0; y < out.height; ++y) {
+  for (int32_t y = 0; y < out.height; ++y) {
     const auto y_1 = 2 * y;
     const auto y_2 = std::min(2 * y + 1, in.height - 1); // repeat bottom border
 
-    for (int x = 0; x < out.width; ++x) {
+    for (int32_t x = 0; x < out.width; ++x) {
       const auto x_1 = 2 * x;
       const auto x_2 = std::min(2 * x + 1, in.width - 1); // repeat right border
 
@@ -129,14 +129,14 @@ void PushPull::inplacePull(const InMatrixProxy &&in, OutMatrixProxy &&out,
   PRECONDITION(in.width == (out.width + 1) / 2);
   PRECONDITION(in.height == (out.height + 1) / 2);
 
-  for (int y = 0; y < out.height; ++y) {
+  for (int32_t y = 0; y < out.height; ++y) {
     auto y_1 = std::max(0, (y - 1) / 2);
     auto y_2 = std::min(in.height - 1, (y + 1) / 2);
     if (y % 2 == 0) {
       std::swap(y_1, y_2);
     }
 
-    for (int x = 0; x < out.width; ++x) {
+    for (int32_t x = 0; x < out.width; ++x) {
       auto x_1 = std::max(0, (x - 1) / 2);
       auto x_2 = std::min(in.width - 1, (x + 1) / 2);
       if (x % 2 == 0) {

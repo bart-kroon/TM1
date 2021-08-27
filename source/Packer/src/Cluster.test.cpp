@@ -38,7 +38,7 @@
 
 namespace TMIV::Packer {
 namespace {
-auto createCluster(int width, int height) -> Cluster {
+auto createCluster(int32_t width, int32_t height) -> Cluster {
   Cluster cluster{};
   cluster.push(1, 1);
   cluster.push(height, width);
@@ -51,8 +51,8 @@ SCENARIO("128x128 clustering map") {
   map.fillNeutral();
 
   std::vector<Cluster> out_clusters{};
-  const int alignment = 2;
-  const int minPatchSize = 4;
+  const int32_t alignment = 2;
+  const int32_t minPatchSize = 4;
 
   GIVEN("64x64 cluster not greater than the maxNonSplitTableSize") {
     const auto unit{createCluster(64, 64)};

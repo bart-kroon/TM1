@@ -78,7 +78,7 @@ struct AtlasAccessUnit {
   [[nodiscard]] auto decPacFrameSize(const V3cParameterSet &vps) const noexcept -> Common::Vec2i;
 
   // Index into the block to patch map using nominal atlas coordinates
-  [[nodiscard]] auto patchId(unsigned row, unsigned column) const -> uint16_t;
+  [[nodiscard]] auto patchId(uint32_t row, uint32_t column) const -> uint16_t;
 };
 
 struct AccessUnit {

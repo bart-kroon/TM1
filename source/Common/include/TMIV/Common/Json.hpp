@@ -190,7 +190,7 @@ template <typename T, size_t M> auto Json::asVec() const -> stack::Vector<T, M> 
   stack::Vector<T, M> result;
   const auto &a = as<Array>();
   if (a.size() != M) {
-    throw std::runtime_error("JSON int vector has wrong length");
+    throw std::runtime_error("JSON vector has wrong length");
   }
   for (size_t i = 0; i != M; ++i) {
     result[i] = a[i].as<T>();

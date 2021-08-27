@@ -68,7 +68,7 @@ TEST_CASE("Asymmetric, non-positive 3x3 matrix") {
 }
 
 TEST_CASE("Non-quadratic matrix is not symmetric") {
-  const stack::Matrix<int, 2, 3> unit{0, 1, 2, 3, 4, 5};
+  const stack::Matrix<int32_t, 2, 3> unit{0, 1, 2, 3, 4, 5};
   REQUIRE(!unit.isPositive());
 }
 
@@ -93,7 +93,7 @@ TEST_CASE("Stack Matrix 3x3 with custom elements") {
 }
 
 TEST_CASE("Transpose 2x2 Heap Matrix") {
-  Mat<int> input_matrix{};
+  Mat<int32_t> input_matrix{};
   input_matrix.resize(2, 2);
   input_matrix(0, 0) = 0;
   input_matrix(0, 1) = 1;
@@ -109,7 +109,7 @@ TEST_CASE("Transpose 2x2 Heap Matrix") {
 }
 
 TEST_CASE("Transpose 2x1 Heap Matrix") {
-  Mat<int> input_matrix{};
+  Mat<int32_t> input_matrix{};
   input_matrix.resize(2, 1);
   input_matrix(0, 0) = 0;
   input_matrix(1, 0) = 1;
@@ -136,14 +136,14 @@ TEST_CASE("Matrix arithmetics") {
 
 #ifdef CATCH_CONFIG_ENABLE_BENCHMARKING
 TEST_CASE("Benchmark: transpose") {
-  stack::Matrix<int, 200, 200> asymmetric_matrix{};
+  stack::Matrix<int32_t, 200, 200> asymmetric_matrix{};
   asymmetric_matrix(100, 150) = 1;
   BENCHMARK("200x200 asymmetric stack matrix") {
     const auto result = transpose(asymmetric_matrix);
     REQUIRE(result(150, 100) == 1);
   };
 
-  stack::Matrix<int, 200, 200> symmetric_matrix{};
+  stack::Matrix<int32_t, 200, 200> symmetric_matrix{};
   BENCHMARK("200x200 symmetric stack matrix") {
     const auto result = transpose(symmetric_matrix);
     REQUIRE(result(150, 100) == 0);

@@ -39,27 +39,27 @@
 namespace TMIV::Encoder {
 auto calculateAvgColorDifference(Common::Mat<Common::Vec3i> colorCorrectionMap) -> Common::Vec3i {
   Common::Vec3i avg({0, 0, 0});
-  int cnt = 0;
+  int32_t cnt = 0;
   for (size_t h = 0; h < colorCorrectionMap.height(); h++) {
     for (size_t w = 0; w < colorCorrectionMap.width(); w++) {
-      for (int i = 0; i < 3; i++) {
+      for (int32_t i = 0; i < 3; i++) {
         avg[i] += colorCorrectionMap(h, w)[i];
       }
       cnt++;
     }
   }
-  for (int i = 0; i < 3; i++) {
+  for (int32_t i = 0; i < 3; i++) {
     avg[i] /= cnt;
   }
   return avg;
 }
 
 SCENARIO("Color consistency assessment") {
-  const int numOfCams = 2;
-  const int W = 10;
-  const int H = 2;
+  const int32_t numOfCams = 2;
+  const int32_t W = 10;
+  const int32_t H = 2;
   auto viewParamsList = MivBitstream::ViewParamsList{};
-  for (int c = 0; c < numOfCams; c++) {
+  for (int32_t c = 0; c < numOfCams; c++) {
     auto &vp = viewParamsList.emplace_back();
     vp.viewId = MivBitstream::ViewId{c};
     vp.pose.position = Common::Vec3f{0.0F, 0.0F, 0.0F};
@@ -79,7 +79,7 @@ SCENARIO("Color consistency assessment") {
   auto views = Common::MVD16Frame(numOfCams);
 
   GIVEN("Equal colors") {
-    for (int c = 0; c < numOfCams; c++) {
+    for (int32_t c = 0; c < numOfCams; c++) {
       views[c].texture.resize(W, H);
       views[c].depth.resize(W, H);
       views[c].texture.fillNeutral();
@@ -87,10 +87,10 @@ SCENARIO("Color consistency assessment") {
     }
     WHEN("Assessing color consistency") {
       auto colorCorrectionMaps = assessColorConsistency(views, viewParamsList);
-      int maxDiff = 0;
-      for (int c = 0; c < numOfCams; c++) {
+      int32_t maxDiff = 0;
+      for (int32_t c = 0; c < numOfCams; c++) {
         Common::Vec3i avg = calculateAvgColorDifference(colorCorrectionMaps[c]);
-        for (int i = 0; i < 3; i++) {
+        for (int32_t i = 0; i < 3; i++) {
           maxDiff = std::max(maxDiff, std::abs(avg[i]));
         }
       }
@@ -98,23 +98,23 @@ SCENARIO("Color consistency assessment") {
     }
   }
   GIVEN("Color difference") {
-    for (int c = 0; c < numOfCams; c++) {
+    for (int32_t c = 0; c < numOfCams; c++) {
       views[c].texture.resize(W, H);
       views[c].depth.resize(W, H);
       views[c].texture.fillNeutral();
       views[c].depth.fillOne();
     }
-    for (int h = 0; h < H; h++) {
-      for (int w = 0; w < W; w++) {
+    for (int32_t h = 0; h < H; h++) {
+      for (int32_t w = 0; w < W; w++) {
         views[0].texture.getPlane(0)(h, w) += static_cast<uint16_t>(w * 10);
       }
     }
     WHEN("Assessing color consistency") {
       auto colorCorrectionMaps = assessColorConsistency(views, viewParamsList);
-      int maxDiff = 0;
-      for (int c = 0; c < numOfCams; c++) {
+      int32_t maxDiff = 0;
+      for (int32_t c = 0; c < numOfCams; c++) {
         Common::Vec3i avg = calculateAvgColorDifference(colorCorrectionMaps[c]);
-        for (int i = 0; i < 3; i++) {
+        for (int32_t i = 0; i < 3; i++) {
           maxDiff = std::max(maxDiff, std::abs(avg[i]));
         }
       }

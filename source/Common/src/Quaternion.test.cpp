@@ -140,11 +140,11 @@ TEST_CASE("Quanternion<T>", "[quaternion]") {
     const auto R = rotationMatrix(r);
 
     SECTION("Check matrix cells using another method") {
-      for (int i = 0; i < 3; ++i) {
+      for (int32_t i = 0; i < 3; ++i) {
         const auto p2 = Vec3d{static_cast<double>(i == 0), static_cast<double>(i == 1),
                               static_cast<double>(i == 2)};
         const auto rotate_p_by_r = rotate(p2, conj(r));
-        for (int j = 0; j < 3; ++j) {
+        for (int32_t j = 0; j < 3; ++j) {
           REQUIRE(R(i, j) == Approx(rotate_p_by_r[j]));
         }
       }

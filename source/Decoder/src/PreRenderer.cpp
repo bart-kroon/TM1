@@ -90,23 +90,23 @@ void addAttributeOffset(MivBitstream::AccessUnit &frame) {
     const auto inputMaxVal = (1 << inputBitCount) - 1;
     const auto inputMedVal = 1 << (inputBitCount - 1);
 
-    const int scaledBitCount =
+    const int32_t scaledBitCount =
         atlas.asps.asps_miv_extension().asme_patch_attribute_offset_bit_depth_minus1() + 1;
-    const int bitShift = inputBitCount - scaledBitCount;
+    const int32_t bitShift = inputBitCount - scaledBitCount;
 
-    const int btpmScale = static_cast<int>(YUV[0].width() / btpm.width());
+    const auto btpmScale = static_cast<int32_t>(YUV[0].width() / btpm.width());
 
-    for (int y = 0; y < H; y++) {
-      const int ys = y / btpmScale;
-      for (int x = 0; x < W; x++) {
-        const int xs = x / btpmScale;
+    for (int32_t y = 0; y < H; y++) {
+      const int32_t ys = y / btpmScale;
+      for (int32_t x = 0; x < W; x++) {
+        const int32_t xs = x / btpmScale;
         const auto patchIndex = btpm(ys, xs);
         if (patchIndex == Common::unusedPatchId) {
           continue;
         }
         const auto &pp = atlas.patchParamsList[patchIndex];
 
-        for (int c = 0; c < 3; c++) {
+        for (int32_t c = 0; c < 3; c++) {
           const auto pduAttributeOffset = Common::assertDownCast<int16_t>(
               (pp.atlasPatchAttributeOffset()[c] << bitShift) - inputMedVal);
           auto &value = at(YUV, c)(y, x);

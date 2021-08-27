@@ -46,7 +46,7 @@ SubBlockCuller::SubBlockCuller(const Common::Json & /*rootNode*/,
 
 auto choosePatch(const MivBitstream::PatchParams &patch,
                  const MivBitstream::ViewParamsList &cameras,
-                 const MivBitstream::ViewParams &target, unsigned depthBitDepth) -> bool {
+                 const MivBitstream::ViewParams &target, uint32_t depthBitDepth) -> bool {
   const auto &camera = cameras[patch.atlasPatchProjectionId()];
   if (camera.isInpainted) {
     return true;
@@ -86,7 +86,7 @@ auto choosePatch(const MivBitstream::PatchParams &patch,
                                                      modified_depth_z * modified_depth_z));
   }
 
-  for (int i = 0; i < 4; i++) {
+  for (int32_t i = 0; i < 4; i++) {
     const auto xyz = R_t(unprojectVertex(Common::at(uv, i), patch_dep_near, camera.ci));
     const auto rayAngle = Common::angle(xyz, xyz - R_t.translation());
     SceneVertexDescriptor v;
@@ -99,7 +99,7 @@ auto choosePatch(const MivBitstream::PatchParams &patch,
     Common::at(xy_v, i) = pix.position;
   }
 
-  for (int i = 0; i < 4; i++) {
+  for (int32_t i = 0; i < 4; i++) {
     const auto xyz = R_t(unprojectVertex(Common::at(uv, i), patch_dep_far_mod, camera.ci));
     const auto rayAngle = Common::angle(xyz, xyz - R_t.translation());
     SceneVertexDescriptor v;

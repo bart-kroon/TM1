@@ -171,7 +171,7 @@ ViewParams::ViewParams(const Common::Json &node) {
   }
 
   if (auto subnode = node.optional("nbMpiLayers")) {
-    nbMpiLayers = subnode.as<int>();
+    nbMpiLayers = subnode.as<int32_t>();
   }
 }
 

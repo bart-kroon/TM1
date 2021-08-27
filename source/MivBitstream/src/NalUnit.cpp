@@ -122,11 +122,12 @@ auto operator<<(std::ostream &stream, NalUnitType x) -> std::ostream & {
   case NalUnitType::NAL_CAF_TRIAL:
     return stream << "NAL_CAF_TRIAL";
   default:
-    return stream << "[unknown:" << static_cast<int>(x) << "]";
+    return stream << "[unknown:" << static_cast<int32_t>(x) << "]";
   }
 }
 
-NalUnitHeader::NalUnitHeader(NalUnitType nal_unit_type, int nal_layer_id, int nal_temporal_id_plus1)
+NalUnitHeader::NalUnitHeader(NalUnitType nal_unit_type, int32_t nal_layer_id,
+                             int32_t nal_temporal_id_plus1)
     : m_nal_unit_type{nal_unit_type}
     , m_nal_layer_id{static_cast<uint8_t>(nal_layer_id)}
     , m_nal_temporal_id_plus1{static_cast<uint8_t>(nal_temporal_id_plus1)} {
@@ -136,8 +137,8 @@ NalUnitHeader::NalUnitHeader(NalUnitType nal_unit_type, int nal_layer_id, int na
 
 auto operator<<(std::ostream &stream, const NalUnitHeader &x) -> std::ostream & {
   return stream << "nal_unit_type=" << x.m_nal_unit_type
-                << "\nnal_layer_id=" << int{x.m_nal_layer_id}
-                << "\nnal_temporal_id_plus1=" << int{x.m_nal_temporal_id_plus1} << '\n';
+                << "\nnal_layer_id=" << int32_t{x.m_nal_layer_id}
+                << "\nnal_temporal_id_plus1=" << int32_t{x.m_nal_temporal_id_plus1} << '\n';
 }
 
 auto NalUnitHeader::decodeFrom(std::istream &stream) -> NalUnitHeader {
@@ -145,8 +146,8 @@ auto NalUnitHeader::decodeFrom(std::istream &stream) -> NalUnitHeader {
   const auto nal_forbidden_zero_bit = bitstream.getFlag();
   VERIFY_V3CBITSTREAM(!nal_forbidden_zero_bit);
   const auto nal_unit_type = bitstream.readBits<NalUnitType>(6);
-  const auto nal_layer_id = bitstream.readBits<int>(6);
-  const auto nal_temporal_id_plus1 = bitstream.readBits<int>(3);
+  const auto nal_layer_id = bitstream.readBits<int32_t>(6);
+  const auto nal_temporal_id_plus1 = bitstream.readBits<int32_t>(3);
   VERIFY_V3CBITSTREAM(nal_temporal_id_plus1 > 0);
   return NalUnitHeader{nal_unit_type, nal_layer_id, nal_temporal_id_plus1};
 }

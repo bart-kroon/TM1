@@ -45,36 +45,36 @@ TEST_CASE("PayloadType", "[Supplemental Enhancement Information RBSP]") {
   }
 
   SECTION("Integer conversion - as specified in V3C/V-PCC FDIS d224") {
-    REQUIRE(0U == static_cast<unsigned int>(PayloadType::buffering_period));
-    REQUIRE(1U == static_cast<unsigned int>(PayloadType::atlas_frame_timing));
-    REQUIRE(2U == static_cast<unsigned int>(PayloadType::filler_payload));
-    REQUIRE(3U == static_cast<unsigned int>(PayloadType::user_data_registered_itu_t_t35));
-    REQUIRE(4U == static_cast<unsigned int>(PayloadType::user_data_unregistered));
-    REQUIRE(5U == static_cast<unsigned int>(PayloadType::recovery_point));
-    REQUIRE(6U == static_cast<unsigned int>(PayloadType::no_display));
-    REQUIRE(7U == static_cast<unsigned int>(PayloadType::time_code));
-    REQUIRE(8U == static_cast<unsigned int>(PayloadType::sei_manifest));
-    REQUIRE(9U == static_cast<unsigned int>(PayloadType::sei_prefix_indication));
-    REQUIRE(10U == static_cast<unsigned int>(PayloadType::active_sub_bitstreams));
-    REQUIRE(11U == static_cast<unsigned int>(PayloadType::component_codec_mapping));
-    REQUIRE(12U == static_cast<unsigned int>(PayloadType::scene_object_information));
-    REQUIRE(13U == static_cast<unsigned int>(PayloadType::object_label_information));
-    REQUIRE(14U == static_cast<unsigned int>(PayloadType::patch_information));
-    REQUIRE(15U == static_cast<unsigned int>(PayloadType::volumetric_rectangle_information));
-    REQUIRE(16U == static_cast<unsigned int>(PayloadType::atlas_object_association));
-    REQUIRE(17U == static_cast<unsigned int>(PayloadType::viewport_camera_parameters));
-    REQUIRE(18U == static_cast<unsigned int>(PayloadType::viewport_position));
-    REQUIRE(19U == static_cast<unsigned int>(PayloadType::decoded_atlas_information_hash));
-    REQUIRE(20U == static_cast<unsigned int>(PayloadType::packed_independent_regions));
-    REQUIRE(64U == static_cast<unsigned int>(PayloadType::attribute_transformation_params));
-    REQUIRE(65U == static_cast<unsigned int>(PayloadType::occupancy_synthesis));
-    REQUIRE(66U == static_cast<unsigned int>(PayloadType::geometry_smoothing));
-    REQUIRE(67U == static_cast<unsigned int>(PayloadType::attribute_smoothing));
-    REQUIRE(128U == static_cast<unsigned int>(PayloadType::viewing_space));
-    REQUIRE(129U == static_cast<unsigned int>(PayloadType::viewing_space_handling));
-    REQUIRE(130U == static_cast<unsigned int>(PayloadType::geometry_upscaling_parameters));
-    REQUIRE(131U == static_cast<unsigned int>(PayloadType::atlas_view_enabled));
-    REQUIRE(132U == static_cast<unsigned int>(PayloadType::omaf_v1_compatible));
+    REQUIRE(0U == static_cast<uint32_t>(PayloadType::buffering_period));
+    REQUIRE(1U == static_cast<uint32_t>(PayloadType::atlas_frame_timing));
+    REQUIRE(2U == static_cast<uint32_t>(PayloadType::filler_payload));
+    REQUIRE(3U == static_cast<uint32_t>(PayloadType::user_data_registered_itu_t_t35));
+    REQUIRE(4U == static_cast<uint32_t>(PayloadType::user_data_unregistered));
+    REQUIRE(5U == static_cast<uint32_t>(PayloadType::recovery_point));
+    REQUIRE(6U == static_cast<uint32_t>(PayloadType::no_display));
+    REQUIRE(7U == static_cast<uint32_t>(PayloadType::time_code));
+    REQUIRE(8U == static_cast<uint32_t>(PayloadType::sei_manifest));
+    REQUIRE(9U == static_cast<uint32_t>(PayloadType::sei_prefix_indication));
+    REQUIRE(10U == static_cast<uint32_t>(PayloadType::active_sub_bitstreams));
+    REQUIRE(11U == static_cast<uint32_t>(PayloadType::component_codec_mapping));
+    REQUIRE(12U == static_cast<uint32_t>(PayloadType::scene_object_information));
+    REQUIRE(13U == static_cast<uint32_t>(PayloadType::object_label_information));
+    REQUIRE(14U == static_cast<uint32_t>(PayloadType::patch_information));
+    REQUIRE(15U == static_cast<uint32_t>(PayloadType::volumetric_rectangle_information));
+    REQUIRE(16U == static_cast<uint32_t>(PayloadType::atlas_object_association));
+    REQUIRE(17U == static_cast<uint32_t>(PayloadType::viewport_camera_parameters));
+    REQUIRE(18U == static_cast<uint32_t>(PayloadType::viewport_position));
+    REQUIRE(19U == static_cast<uint32_t>(PayloadType::decoded_atlas_information_hash));
+    REQUIRE(20U == static_cast<uint32_t>(PayloadType::packed_independent_regions));
+    REQUIRE(64U == static_cast<uint32_t>(PayloadType::attribute_transformation_params));
+    REQUIRE(65U == static_cast<uint32_t>(PayloadType::occupancy_synthesis));
+    REQUIRE(66U == static_cast<uint32_t>(PayloadType::geometry_smoothing));
+    REQUIRE(67U == static_cast<uint32_t>(PayloadType::attribute_smoothing));
+    REQUIRE(128U == static_cast<uint32_t>(PayloadType::viewing_space));
+    REQUIRE(129U == static_cast<uint32_t>(PayloadType::viewing_space_handling));
+    REQUIRE(130U == static_cast<uint32_t>(PayloadType::geometry_upscaling_parameters));
+    REQUIRE(131U == static_cast<uint32_t>(PayloadType::atlas_view_enabled));
+    REQUIRE(132U == static_cast<uint32_t>(PayloadType::omaf_v1_compatible));
   }
 }
 

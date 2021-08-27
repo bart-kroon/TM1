@@ -43,22 +43,22 @@ using namespace std::string_literals;
 namespace TMIV::MivBitstream {
 CameraConfig::CameraConfig(const Common::Json &config) {
   if (const auto &node = config.optional("BitDepthColor")) {
-    bitDepthColor = node.as<int>();
+    bitDepthColor = node.as<int32_t>();
   }
   if (const auto &node = config.optional("BitDepthTransparency")) {
-    bitDepthTransparency = node.as<int>();
+    bitDepthTransparency = node.as<int32_t>();
   }
   if (const auto &node = config.optional("BitDepthDepth")) {
-    bitDepthDepth = node.as<int>();
+    bitDepthDepth = node.as<int32_t>();
   }
   if (const auto &node = config.optional("BitDepthEntities")) {
-    bitDepthEntities = node.as<int>();
+    bitDepthEntities = node.as<int32_t>();
   }
   viewParams = ViewParams{config};
 }
 
 namespace {
-auto yuv420pFormat(int bitDepth) {
+auto yuv420pFormat(int32_t bitDepth) {
   if (bitDepth < 8) {
     return fmt::format("yuv420p{}", bitDepth);
   }
@@ -149,7 +149,7 @@ SequenceConfig::SequenceConfig(const Common::Json &config) {
   boundingBoxCenter = config.require("BoundingBox_center").asVec<double, 3>();
   contentName = config.require("Content_name").as<std::string>();
   frameRate = config.require("Fps").as<double>();
-  numberOfFrames = config.require("Frames_number").as<int>();
+  numberOfFrames = config.require("Frames_number").as<int32_t>();
 
   if (const auto &node = config.optional("sourceCameraNames")) {
     sourceCameraNames = node.asVector<std::string>();

@@ -56,7 +56,7 @@ public:
       : m_value{Common::verifyDownCast<uint16_t>(value)} {}
 
   friend auto operator<<(std::ostream &stream, ViewId viewId) -> std::ostream & {
-    return stream << int{viewId.m_value};
+    return stream << int32_t{viewId.m_value};
   }
 
   constexpr auto operator==(ViewId other) const noexcept { return m_value == other.m_value; }
@@ -66,11 +66,11 @@ public:
   constexpr auto operator<=(ViewId other) const noexcept { return m_value <= other.m_value; }
   constexpr auto operator>=(ViewId other) const noexcept { return m_value >= other.m_value; }
 
-  static auto decodeFrom(Common::InputBitstream &bitstream, unsigned bitCount) -> ViewId {
+  static auto decodeFrom(Common::InputBitstream &bitstream, uint32_t bitCount) -> ViewId {
     return ViewId{bitstream.readBits<uint16_t>(bitCount)};
   }
 
-  void encodeTo(Common::OutputBitstream &bitstream, unsigned bitCount) const {
+  void encodeTo(Common::OutputBitstream &bitstream, uint32_t bitCount) const {
     bitstream.writeBits(m_value, bitCount);
   }
 
@@ -84,7 +84,7 @@ private:
 } // namespace TMIV::MivBitstream
 
 template <> struct fmt::formatter<TMIV::MivBitstream::ViewId> {
-  fmt::formatter<int> base;
+  fmt::formatter<int32_t> base;
 
   constexpr auto parse(format_parse_context &ctx) { return base.parse(ctx); }
 

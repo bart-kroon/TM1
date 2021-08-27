@@ -47,7 +47,7 @@ inline Half::operator float() const {
     return sign * 0.F;
   }
 
-  const auto exponent = static_cast<int>((m_code & 0x7C00U) >> 10U);
+  const auto exponent = static_cast<int32_t>((m_code & 0x7C00U) >> 10U);
   const auto mantissa = (m_code & 0x03FFU) | 0x400U;
   return sign * std::ldexp(static_cast<float>(mantissa), exponent - 25);
 }
@@ -62,11 +62,11 @@ inline Half::Half(float value) {
   if (x < 0x1.p-14F) {
     m_code = 0; // the WD excludes subnormal numbers
   } else {
-    int exponent{};
+    int32_t exponent{};
     const auto mantissa_f = std::frexp(x, &exponent);
-    const auto mantissa = static_cast<unsigned>(std::lround(std::ldexp(mantissa_f, 11)));
+    const auto mantissa = static_cast<uint32_t>(std::lround(std::ldexp(mantissa_f, 11)));
     m_code =
-        static_cast<uint16_t>((static_cast<unsigned>(exponent + 14) << 10) | (mantissa & 0x3FF));
+        static_cast<uint16_t>((static_cast<uint32_t>(exponent + 14) << 10) | (mantissa & 0x3FF));
   }
 
   if (std::signbit(value)) {

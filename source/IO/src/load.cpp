@@ -93,14 +93,14 @@ template auto loadFrame(const std::filesystem::path &path, int32_t frameIndex,
 
 namespace {
 template <typename FORMAT>
-auto loadSourceDepth_(int bits, const std::filesystem::path &path, int32_t frameIndex,
+auto loadSourceDepth_(int32_t bits, const std::filesystem::path &path, int32_t frameIndex,
                       const Common::Vec2i &frameSize) {
   auto depth16 = Common::Depth16Frame{frameSize.x(), frameSize.y()};
 
   const auto depth = loadFrame<FORMAT>(path, frameIndex, frameSize);
 
   std::transform(std::begin(depth.getPlane(0)), std::end(depth.getPlane(0)),
-                 std::begin(depth16.getPlane(0)), [bits](unsigned x) {
+                 std::begin(depth16.getPlane(0)), [bits](uint32_t x) {
                    const auto x_max = Common::maxLevel(bits);
                    const auto y = (0xFFFF * x + x_max / 2) / x_max;
                    return static_cast<uint16_t>(y);
@@ -109,7 +109,7 @@ auto loadSourceDepth_(int bits, const std::filesystem::path &path, int32_t frame
   return depth16;
 }
 
-auto loadSourceDepth(int bits, const std::filesystem::path &path, int32_t frameIndex,
+auto loadSourceDepth(int32_t bits, const std::filesystem::path &path, int32_t frameIndex,
                      const Common::Vec2i &frameSize) {
   if (0 < bits && bits <= 8) {
     return loadSourceDepth_<Common::YUV400P8>(bits, path, frameIndex, frameSize);
@@ -133,7 +133,7 @@ auto loadSourceEntities_(const std::filesystem::path &path, int32_t frameIndex,
   return entities16;
 }
 
-auto loadSourceEntities(int bits, const std::filesystem::path &path, int32_t frameIndex,
+auto loadSourceEntities(int32_t bits, const std::filesystem::path &path, int32_t frameIndex,
                         const Common::Vec2i frameSize) {
   if (0 < bits && bits <= 8) {
     return loadSourceEntities_<Common::YUV400P8>(path, frameIndex, frameSize);
@@ -202,7 +202,7 @@ auto loadMultiviewFrame(const Common::Json &config, const Placeholders &placehol
 
 auto loadMpiTextureMpiLayer(const Common::Json &config, const Placeholders &placeholders,
                             const MivBitstream::SequenceConfig &sc, int32_t frameIndex,
-                            int mpiLayerIndex, int nbMpiLayers) -> Common::TextureFrame {
+                            int32_t mpiLayerIndex, int32_t nbMpiLayers) -> Common::TextureFrame {
   const auto inputDir = config.require(inputDirectory).as<std::filesystem::path>();
   const auto &node = config.require(inputTexturePathFmt);
 
@@ -224,7 +224,8 @@ auto loadMpiTextureMpiLayer(const Common::Json &config, const Placeholders &plac
 
 auto loadMpiTransparencyMpiLayer(const Common::Json &config, const Placeholders &placeholders,
                                  const MivBitstream::SequenceConfig &sc, int32_t frameIndex,
-                                 int mpiLayerIndex, int nbMpiLayers) -> Common::Transparency8Frame {
+                                 int32_t mpiLayerIndex, int32_t nbMpiLayers)
+    -> Common::Transparency8Frame {
   const auto inputDir = config.require(inputDirectory).as<std::filesystem::path>();
   const auto &node = config.require(inputTransparencyPathFmt);
 
@@ -256,7 +257,7 @@ auto loadPoseFromCSV(std::istream &stream, int32_t frameIndex) -> Pose {
     throw std::runtime_error("Format error in the pose trace header");
   }
 
-  int currentFrameIndex = 0;
+  int32_t currentFrameIndex = 0;
   std::regex re_row("([^,]+),([^,]+),([^,]+),([^,]+),([^,]+),([^,]+)");
   std::regex re_empty("\\s*");
   bool trailing_empty_lines = false;
@@ -415,7 +416,7 @@ auto inputBitstreamPath(const Common::Json &config, const Placeholders &placehol
 
 auto inputSubBitstreamPath(const std::string &key, const Common::Json &config,
                            const Placeholders &placeholders, MivBitstream::AtlasId atlasId,
-                           int attributeIdx) -> std::filesystem::path {
+                           int32_t attributeIdx) -> std::filesystem::path {
   return config.require(IO::inputDirectory).as<std::filesystem::path>() /
          fmt::format(config.require(key).as<std::string>(), placeholders.numberOfInputFrames,
                      placeholders.contentId, placeholders.testId, atlasId, attributeIdx);

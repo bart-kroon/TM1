@@ -40,11 +40,11 @@ SCENARIO("Luma standard deviation in pruning") {
   const float maxDepthError = 0.1F;
   const Renderer::AccumulatingPixel<Common::Vec3f> &config{10.0F, 50.0F, 3.0F, 5};
 
-  const int numOfCams = 2;
-  const int W = 10;
-  const int H = 2;
+  const int32_t numOfCams = 2;
+  const int32_t W = 10;
+  const int32_t H = 2;
   auto viewParamsList = MivBitstream::ViewParamsList{};
-  for (int c = 0; c < numOfCams; c++) {
+  for (int32_t c = 0; c < numOfCams; c++) {
     auto &vp = viewParamsList.emplace_back();
     vp.viewId = MivBitstream::ViewId{c};
     vp.pose.position = Common::Vec3f{0.0F, 0.0F, 0.0F};
@@ -64,7 +64,7 @@ SCENARIO("Luma standard deviation in pruning") {
   auto views = Common::MVD16Frame(numOfCams);
 
   GIVEN("Equal colors") {
-    for (int c = 0; c < numOfCams; c++) {
+    for (int32_t c = 0; c < numOfCams; c++) {
       views[c].texture.resize(W, H);
       views[c].depth.resize(W, H);
       views[c].texture.fillNeutral();
@@ -76,14 +76,14 @@ SCENARIO("Luma standard deviation in pruning") {
     }
   }
   GIVEN("Small color difference") {
-    for (int c = 0; c < numOfCams; c++) {
+    for (int32_t c = 0; c < numOfCams; c++) {
       views[c].texture.resize(W, H);
       views[c].depth.resize(W, H);
       views[c].texture.fillNeutral();
       views[c].depth.fillOne();
     }
-    for (int h = 0; h < H; h++) {
-      for (int w = 0; w < W; w++) {
+    for (int32_t h = 0; h < H; h++) {
+      for (int32_t w = 0; w < W; w++) {
         views[0].texture.getPlane(0)(h, w) += static_cast<uint16_t>(w * 10);
       }
     }
@@ -93,7 +93,7 @@ SCENARIO("Luma standard deviation in pruning") {
     }
   }
   GIVEN("Big color difference") {
-    for (int c = 0; c < numOfCams; c++) {
+    for (int32_t c = 0; c < numOfCams; c++) {
       views[c].texture.resize(W, H);
       views[c].depth.resize(W, H);
       views[c].texture.fillNeutral();
@@ -106,7 +106,7 @@ SCENARIO("Luma standard deviation in pruning") {
     }
   }
   GIVEN("Equal colors but different depth") {
-    for (int c = 0; c < numOfCams; c++) {
+    for (int32_t c = 0; c < numOfCams; c++) {
       views[c].texture.resize(W, H);
       views[c].depth.resize(W, H);
       views[c].texture.fillNeutral();

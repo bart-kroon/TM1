@@ -60,22 +60,23 @@ namespace {
 // Atlas dilation
 // Visit all pixels
 template <typename F> void forPixels(std::array<size_t, 2> sizes, F f) {
-  for (int i = 0; i < static_cast<int>(sizes[0]); ++i) {
-    for (int j = 0; j < static_cast<int>(sizes[1]); ++j) {
+  for (int32_t i = 0; i < static_cast<int32_t>(sizes[0]); ++i) {
+    for (int32_t j = 0; j < static_cast<int32_t>(sizes[1]); ++j) {
       f(i, j);
     }
   }
 }
 
 // Visit all pixel neighbors (in between 3 and 8)
-template <typename F> auto forNeighbors(int i, int j, std::array<size_t, 2> sizes, F f) -> bool {
-  const int n1 = std::max(0, i - 1);
-  const int n2 = std::min(static_cast<int>(sizes[0]), i + 2);
-  const int m1 = std::max(0, j - 1);
-  const int m2 = std::min(static_cast<int>(sizes[1]), j + 2);
+template <typename F>
+auto forNeighbors(int32_t i, int32_t j, std::array<size_t, 2> sizes, F f) -> bool {
+  const int32_t n1 = std::max(0, i - 1);
+  const int32_t n2 = std::min(static_cast<int32_t>(sizes[0]), i + 2);
+  const int32_t m1 = std::max(0, j - 1);
+  const int32_t m2 = std::min(static_cast<int32_t>(sizes[1]), j + 2);
 
-  for (int n = n1; n < n2; ++n) {
-    for (int m = m1; m < m2; ++m) {
+  for (int32_t n = n1; n < n2; ++n) {
+    for (int32_t m = m1; m < m2; ++m) {
       if (!f(n, m)) {
         return false;
       }
@@ -86,10 +87,11 @@ template <typename F> auto forNeighbors(int i, int j, std::array<size_t, 2> size
 
 auto dilate(const Common::Mat<uint8_t> &mask) -> Common::Mat<uint8_t> {
   Common::Mat<uint8_t> result{mask.sizes()};
-  forPixels(mask.sizes(), [&](int i, int j) {
+  forPixels(mask.sizes(), [&](int32_t i, int32_t j) {
     result(i, j) =
-        forNeighbors(i, j, mask.sizes(), [&mask](int n, int m) { return mask(n, m) == 0; }) ? 0
-                                                                                            : 255;
+        forNeighbors(i, j, mask.sizes(), [&mask](int32_t n, int32_t m) { return mask(n, m) == 0; })
+            ? 0
+            : 255;
   });
   return result;
 }
@@ -103,7 +105,7 @@ void Encoder::updateNonAggregatedMask(const Common::MVD16Frame &transportViews,
   // Atlas dilation
   if (params().casps.casps_miv_extension().casme_depth_low_quality_flag()) {
     for (size_t viewIdx = 0; viewIdx < masks.size(); ++viewIdx) {
-      for (int n = 0; n < m_config.dilationIter; ++n) {
+      for (int32_t n = 0; n < m_config.dilationIter; ++n) {
         dilatedMasks[viewIdx].getPlane(0) = dilate(dilatedMasks[viewIdx].getPlane(0));
       }
     }
@@ -113,8 +115,8 @@ void Encoder::updateNonAggregatedMask(const Common::MVD16Frame &transportViews,
     const auto height = transportViews[viewIdx].texture.getHeight();
     const auto width = transportViews[viewIdx].texture.getWidth();
 
-    for (int i = 0; i < height; i++) {
-      for (int j = 0; j < width; j++) {
+    for (int32_t i = 0; i < height; i++) {
+      for (int32_t j = 0; j < width; j++) {
         if (dilatedMasks[viewIdx].getPlane(0)(i, j) != 0) {
           m_nonAggregatedMask[viewIdx](i, j)[frameId] = true;
         }
@@ -151,18 +153,19 @@ auto Encoder::yuvSampler(const Common::EntityMapList &in)
     -> std::vector<Common::Frame<Common::YUV420P16>> {
   std::vector<Common::Frame<Common::YUV420P16>> outYuvAll;
   for (const auto &viewIdx : in) {
-    Common::Frame<Common::YUV420P16> outYuv(int{viewIdx.getWidth()}, int{viewIdx.getHeight()});
+    Common::Frame<Common::YUV420P16> outYuv(int32_t{viewIdx.getWidth()},
+                                            int32_t{viewIdx.getHeight()});
     const auto width = viewIdx.getWidth();
     const auto height = viewIdx.getHeight();
-    int step = 1;
-    for (int k = 0; k < 3; ++k) {
+    int32_t step = 1;
+    for (int32_t k = 0; k < 3; ++k) {
       if (k != 0) {
         step = 2;
       }
-      int rowIndex = 0;
-      for (int i = 0; i != height; i = i + step) {
-        int colIndex = 0;
-        for (int j = 0; j != width; j = j + step) {
+      int32_t rowIndex = 0;
+      for (int32_t i = 0; i != height; i = i + step) {
+        int32_t colIndex = 0;
+        for (int32_t j = 0; j != width; j = j + step) {
           outYuv.getPlane(k)(rowIndex, colIndex) = viewIdx.getPlane(0)(i, j);
           colIndex++;
         }
@@ -227,7 +230,7 @@ auto Encoder::entitySeparator(const Common::MVD16Frame &transportViews,
   for (size_t viewIdx = 0; viewIdx < transportViews.size(); viewIdx++) {
     const auto neutralColor = entityViews[viewIdx].texture.neutralColor();
 
-    for (int planeId = 0; planeId < Common::TextureFrame::getNumberOfPlanes(); ++planeId) {
+    for (int32_t planeId = 0; planeId < Common::TextureFrame::getNumberOfPlanes(); ++planeId) {
       std::transform(transportViews[viewIdx].texture.getPlane(planeId).begin(),
                      transportViews[viewIdx].texture.getPlane(planeId).end(),
                      entityMapsYUV[viewIdx].getPlane(planeId).begin(),

@@ -44,24 +44,24 @@ auto textureNeighbourhood(const MAT &m, const Common::Vec2f &p)
     -> std::vector<typename MAT::value_type> {
   std::vector<typename MAT::value_type> fetchedValues;
 
-  const int N = 1;
+  const int32_t N = 1;
 
-  int w_last = static_cast<int>(m.width()) - 1;
-  int h_last = static_cast<int>(m.height()) - 1;
+  int32_t w_last = static_cast<int32_t>(m.width()) - 1;
+  int32_t h_last = static_cast<int32_t>(m.height()) - 1;
 
-  int xc = std::clamp(static_cast<int>(std::floor(p.x() + 0.5F)), 0, w_last);
-  int yc = std::clamp(static_cast<int>(std::floor(p.y() + 0.5F)), 0, h_last);
+  int32_t xc = std::clamp(static_cast<int32_t>(std::floor(p.x() + 0.5F)), 0, w_last);
+  int32_t yc = std::clamp(static_cast<int32_t>(std::floor(p.y() + 0.5F)), 0, h_last);
 
-  int x0 = std::max(0, xc - N);
-  int y0 = std::max(0, yc - N);
+  int32_t x0 = std::max(0, xc - N);
+  int32_t y0 = std::max(0, yc - N);
 
-  int x1 = std::min(xc + N, w_last);
-  int y1 = std::min(yc + N, h_last);
+  int32_t x1 = std::min(xc + N, w_last);
+  int32_t y1 = std::min(yc + N, h_last);
 
   fetchedValues.reserve((x1 - x0 + 1) * (y1 - y0 + 1));
 
-  for (int y = y0; y <= y1; y++) {
-    for (int x = x0; x <= x1; x++) {
+  for (int32_t y = y0; y <= y1; y++) {
+    for (int32_t x = x0; x <= x1; x++) {
       fetchedValues.emplace_back(m(y, x));
     }
   }

@@ -48,7 +48,7 @@ auto operator<<(std::ostream &stream, AthType x) -> std::ostream & {
   case AthType::SKIP_TILE:
     return stream << "SKIP_TILE";
   default:
-    return stream << "[unknown:" << static_cast<int>(x) << "]";
+    return stream << "[unknown:" << static_cast<int32_t>(x) << "]";
   }
 }
 
@@ -71,7 +71,7 @@ auto operator<<(std::ostream &stream, FlexiblePatchOrientation x) -> std::ostrea
   case FlexiblePatchOrientation::FPO_MROT180:
     return stream << "FPO_MROT180";
   default:
-    return stream << "[unknown:" << static_cast<int>(x) << "]";
+    return stream << "[unknown:" << static_cast<int32_t>(x) << "]";
   }
 }
 
@@ -88,7 +88,7 @@ auto printTo(std::ostream &stream, AtduPatchMode x, AthType ath_type) -> std::os
     case AtduPatchMode::I_END:
       return stream << "I_END";
     default:
-      return stream << "[unknown:" << static_cast<int>(x) << "]";
+      return stream << "[unknown:" << static_cast<int32_t>(x) << "]";
     }
   case AthType::P_TILE:
     switch (x) {
@@ -107,17 +107,17 @@ auto printTo(std::ostream &stream, AtduPatchMode x, AthType ath_type) -> std::os
     case AtduPatchMode::P_END:
       return stream << "P_END";
     default:
-      return stream << "[unknown:" << static_cast<int>(x) << "]";
+      return stream << "[unknown:" << static_cast<int32_t>(x) << "]";
     }
   case AthType::SKIP_TILE:
     switch (x) {
     case AtduPatchMode::P_SKIP:
       return stream << "P_SKIP";
     default:
-      return stream << "[unknown:" << static_cast<int>(x) << "]";
+      return stream << "[unknown:" << static_cast<int32_t>(x) << "]";
     }
   default:
-    return stream << "[unknown:" << static_cast<int>(x) << "]";
+    return stream << "[unknown:" << static_cast<int32_t>(x) << "]";
   }
 }
 
@@ -157,32 +157,32 @@ auto operator<<(std::ostream &stream, const AtlasTileHeader &x) -> std::ostream 
     stream << "ath_no_output_of_prior_atlas_frames_flag=" << std::boolalpha
            << x.ath_no_output_of_prior_atlas_frames_flag() << '\n';
   }
-  stream << "ath_atlas_frame_parameter_set_id=" << int{x.ath_atlas_frame_parameter_set_id()}
+  stream << "ath_atlas_frame_parameter_set_id=" << int32_t{x.ath_atlas_frame_parameter_set_id()}
          << '\n';
-  stream << "ath_atlas_adaptation_parameter_set_id=" << int{x.m_ath_adaptation_parameter_set_id}
+  stream << "ath_atlas_adaptation_parameter_set_id=" << int32_t{x.m_ath_adaptation_parameter_set_id}
          << '\n';
-  stream << "ath_id=" << int{x.ath_id()} << '\n';
+  stream << "ath_id=" << int32_t{x.ath_id()} << '\n';
   stream << "ath_type=" << x.ath_type() << '\n';
   if (x.m_ath_atlas_output_flag) {
     stream << "ath_atlas_output_flag=" << std::boolalpha << *x.m_ath_atlas_output_flag << '\n';
   }
-  stream << "ath_atlas_frm_order_cnt_lsb=" << int{x.ath_atlas_frm_order_cnt_lsb()} << '\n';
+  stream << "ath_atlas_frm_order_cnt_lsb=" << int32_t{x.ath_atlas_frm_order_cnt_lsb()} << '\n';
   if (x.m_ath_ref_atlas_frame_list_asps_flag) {
     stream << "ath_ref_atlas_frame_list_asps_flag=" << std::boolalpha
            << *x.m_ath_ref_atlas_frame_list_asps_flag << '\n';
   }
   if (x.ath_type() != AthType::SKIP_TILE) {
     if (x.m_ath_pos_min_d_quantizer) {
-      stream << "ath_pos_min_d_quantizer=" << int{*x.m_ath_pos_min_d_quantizer} << '\n';
+      stream << "ath_pos_min_d_quantizer=" << int32_t{*x.m_ath_pos_min_d_quantizer} << '\n';
       if (x.m_ath_pos_delta_max_d_quantizer) {
-        stream << "ath_pos_delta_max_d_quantizer=" << int{*x.m_ath_pos_delta_max_d_quantizer}
+        stream << "ath_pos_delta_max_d_quantizer=" << int32_t{*x.m_ath_pos_delta_max_d_quantizer}
                << '\n';
       }
     }
     if (x.m_ath_patch_size_x_info_quantizer || x.m_ath_patch_size_y_info_quantizer) {
-      stream << "ath_patch_size_x_info_quantizer=" << int{x.ath_patch_size_x_info_quantizer()}
+      stream << "ath_patch_size_x_info_quantizer=" << int32_t{x.ath_patch_size_x_info_quantizer()}
              << '\n';
-      stream << "ath_patch_size_y_info_quantizer=" << int{x.ath_patch_size_y_info_quantizer()}
+      stream << "ath_patch_size_y_info_quantizer=" << int32_t{x.ath_patch_size_y_info_quantizer()}
              << '\n';
     }
   }
@@ -324,7 +324,7 @@ auto PduMivExtension::pdu_attribute_offset() const -> Common::Vec3w {
   return m_pdu_attribute_offset.value_or(Common::Vec3w{});
 }
 
-auto PduMivExtension::printTo(std::ostream &stream, unsigned tileId, size_t patchIdx) const
+auto PduMivExtension::printTo(std::ostream &stream, uint32_t tileId, size_t patchIdx) const
     -> std::ostream & {
   if (m_pdu_entity_id) {
     fmt::print(stream, "pdu_entity_id[ {} ][ {} ]={}\n", tileId, patchIdx, pdu_entity_id());
@@ -334,7 +334,7 @@ auto PduMivExtension::printTo(std::ostream &stream, unsigned tileId, size_t patc
                pdu_depth_occ_threshold());
   }
   if (m_pdu_attribute_offset) {
-    for (int c = 0; c < 3; ++c) {
+    for (int32_t c = 0; c < 3; ++c) {
       fmt::print(stream, "pdu_attribute_offset[ {} ][ {} ][ {} ]={}\n", tileId, patchIdx, c,
                  pdu_attribute_offset()[c]);
     }
@@ -369,7 +369,7 @@ auto PduMivExtension::decodeFrom(Common::InputBitstream &bitstream,
         bitstream.readBits<Common::SampleValue>(asps.asps_geometry_2d_bit_depth_minus1() + 1));
   }
   if (asme.asme_patch_attribute_offset_enabled_flag()) {
-    int bits = asps.asps_miv_extension().asme_patch_attribute_offset_bit_depth_minus1() + 1;
+    int32_t bits = asps.asps_miv_extension().asme_patch_attribute_offset_bit_depth_minus1() + 1;
     const auto offset0 = bitstream.readBits<uint16_t>(bits);
     const auto offset1 = bitstream.readBits<uint16_t>(bits);
     const auto offset2 = bitstream.readBits<uint16_t>(bits);
@@ -417,7 +417,7 @@ auto PatchDataUnit::pdu_miv_extension(const PduMivExtension &value) noexcept -> 
   return *this;
 }
 
-auto PatchDataUnit::printTo(std::ostream &stream, unsigned tileId, size_t patchIdx) const
+auto PatchDataUnit::printTo(std::ostream &stream, uint32_t tileId, size_t patchIdx) const
     -> std::ostream & {
   fmt::print(stream, "pdu_2d_pos_x[ {} ][ {} ]={}\n", tileId, patchIdx, pdu_2d_pos_x());
   fmt::print(stream, "pdu_2d_pos_y[ {} ][ {} ]={}\n", tileId, patchIdx, pdu_2d_pos_y());
@@ -494,8 +494,8 @@ auto PatchDataUnit::decodeFrom(Common::InputBitstream &bitstream,
   if (afps.afps_lod_mode_enabled_flag()) {
     x.pdu_lod_enabled_flag(bitstream.getFlag());
     if (x.pdu_lod_enabled_flag()) {
-      x.pdu_lod_scale_x_minus1(bitstream.getUExpGolomb<unsigned>());
-      x.pdu_lod_scale_y_idc(bitstream.getUExpGolomb<unsigned>());
+      x.pdu_lod_scale_x_minus1(bitstream.getUExpGolomb<uint32_t>());
+      x.pdu_lod_scale_y_idc(bitstream.getUExpGolomb<uint32_t>());
     }
   }
 
@@ -569,7 +569,7 @@ auto PatchInformationData::patch_data_unit() const noexcept -> const PatchDataUn
   return *std::get_if<PatchDataUnit>(&m_data);
 }
 
-auto PatchInformationData::printTo(std::ostream &stream, unsigned tileId, size_t patchIdx) const
+auto PatchInformationData::printTo(std::ostream &stream, uint32_t tileId, size_t patchIdx) const
     -> std::ostream & {
   visit(Common::overload([&](const std::monostate & /* unused */) { stream << "[unknown]\n"; },
                          [&](const SkipPatchDataUnit &x) { stream << x; },

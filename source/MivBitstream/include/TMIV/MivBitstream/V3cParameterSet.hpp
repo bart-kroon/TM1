@@ -364,7 +364,8 @@ inline auto PackingInformation::pin_region_type_id_minus2(size_t i, uint8_t valu
 
 inline auto PackingInformation::pinRegionTypeId(size_t i, VuhUnitType value) -> auto & {
   VERIFY_V3CBITSTREAM(value != VuhUnitType::V3C_VPS && value != VuhUnitType::V3C_AD);
-  return pin_region_type_id_minus2(i, Common::assertDownCast<uint8_t>(static_cast<int>(value) - 2));
+  const auto typeIdMinus2 = static_cast<int32_t>(value) - 2;
+  return pin_region_type_id_minus2(i, Common::assertDownCast<uint8_t>(typeIdMinus2));
 }
 
 inline auto PackingInformation::pin_region_top_left_x(size_t i, uint16_t value) -> auto & {

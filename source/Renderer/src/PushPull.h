@@ -39,11 +39,11 @@
 namespace TMIV::Renderer {
 template <typename Matrix> struct MatrixProxy {
   Matrix matrix;
-  int width;
-  int height;
+  int32_t width;
+  int32_t height;
 };
 
-template <typename Matrix> MatrixProxy(Matrix &&, int, int) -> MatrixProxy<Matrix>;
+template <typename Matrix> MatrixProxy(Matrix &&, int32_t, int32_t) -> MatrixProxy<Matrix>;
 
 class PushPull {
 public:

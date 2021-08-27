@@ -57,7 +57,7 @@ void writeString(std::ostream &stream, const std::string &buffer);
 void rbspTrailingBits(std::ostream &stream);
 
 constexpr auto swapEndianness(uint16_t x) noexcept {
-  return static_cast<uint16_t>((unsigned{x} >> 8) | (x & 0xFFU) << 8);
+  return static_cast<uint16_t>((uint32_t{x} >> 8) | (x & 0xFFU) << 8);
 }
 } // namespace TMIV::Common
 

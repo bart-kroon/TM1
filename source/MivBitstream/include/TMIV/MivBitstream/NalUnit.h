@@ -99,7 +99,7 @@ auto operator<<(std::ostream &stream, NalUnitType x) -> std::ostream &;
 // 23090-5: nal_unit_header()
 class NalUnitHeader {
 public:
-  NalUnitHeader(NalUnitType nal_unit_type, int nal_layer_id, int nal_temporal_id_plus1);
+  NalUnitHeader(NalUnitType nal_unit_type, int32_t nal_layer_id, int32_t nal_temporal_id_plus1);
 
   [[nodiscard]] constexpr auto nal_unit_type() const noexcept { return m_nal_unit_type; }
   [[nodiscard]] constexpr auto nal_layer_id() const noexcept { return m_nal_layer_id; }

@@ -102,7 +102,7 @@ auto operator<<(std::ostream &stream, PayloadType pt) -> std::ostream & {
   case PayloadType::omaf_v1_compatible:
     return stream << "omaf_v1_compatible";
   default:
-    return stream << "reserved_sei_message (" << static_cast<int>(pt) << ")";
+    return stream << "reserved_sei_message (" << static_cast<int32_t>(pt) << ")";
   }
 }
 
@@ -161,7 +161,7 @@ void encodeSeiHeaderValue(std::ostream &stream, size_t value) {
 } // namespace
 
 void SeiMessage::encodeTo(std::ostream &stream) const {
-  encodeSeiHeaderValue(stream, static_cast<unsigned>(payloadType()));
+  encodeSeiHeaderValue(stream, static_cast<uint32_t>(payloadType()));
   encodeSeiHeaderValue(stream, payloadSize());
   stream.write(payload().data(), Common::downCast<std::streamsize>(payload().size()));
 }

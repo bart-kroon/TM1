@@ -41,14 +41,14 @@ using namespace std::string_view_literals;
 using namespace std::string_literals;
 
 namespace {
-void writeStartCode(std::ostream &stream, int zeroCount) {
-  for (int i = 0; i < zeroCount; ++i) {
+void writeStartCode(std::ostream &stream, int32_t zeroCount) {
+  for (int32_t i = 0; i < zeroCount; ++i) {
     stream.put('\0');
   }
   stream.put('\1');
 }
 
-auto exampleBitstream(int zeroCount, bool nextNalUnit, std::string_view payload) {
+auto exampleBitstream(int32_t zeroCount, bool nextNalUnit, std::string_view payload) {
   std::ostringstream stream;
 
   writeStartCode(stream, zeroCount);

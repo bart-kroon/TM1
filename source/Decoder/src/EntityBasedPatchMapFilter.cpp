@@ -40,7 +40,7 @@ EntityBasedPatchMapFilter::EntityBasedPatchMapFilter(const Common::Json & /*root
                                                      const Common::Json &componentNode) {
   m_entityFiltering = false;
   if (const auto &subnode = componentNode.optional("EntityDecodeRange")) {
-    m_entityDecodeRange = subnode.asVec<int, 2>();
+    m_entityDecodeRange = subnode.asVec<int32_t, 2>();
     m_entityFiltering = true;
   }
 }
@@ -60,11 +60,11 @@ void EntityBasedPatchMapFilter::inplaceFilterBlockToPatchMaps(
 
 void EntityBasedPatchMapFilter::filterBlockToPatchMaps(MivBitstream::AtlasAccessUnit &atlas) const {
   Common::Vec2i sz = atlas.blockToPatchMap.getSize();
-  for (int y = 0; y < sz[1]; y++) {
-    for (int x = 0; x < sz[0]; x++) {
+  for (int32_t y = 0; y < sz[1]; y++) {
+    for (int32_t x = 0; x < sz[0]; x++) {
       uint16_t patchId = atlas.blockToPatchMap.getPlane(0)(y, x);
       if (patchId != Common::unusedPatchId) {
-        auto entityId = static_cast<int>(*atlas.patchParamsList[patchId].atlasPatchEntityId());
+        auto entityId = static_cast<int32_t>(*atlas.patchParamsList[patchId].atlasPatchEntityId());
         if (entityId < m_entityDecodeRange[0] || m_entityDecodeRange[1] <= entityId) {
           atlas.blockToPatchMap.getPlane(0)(y, x) = Common::unusedPatchId;
         }

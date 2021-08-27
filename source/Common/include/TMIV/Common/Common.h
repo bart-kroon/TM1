@@ -58,22 +58,22 @@ auto overload(Ts &&...values) -> Overload<std::remove_reference_t<Ts>...> {
 // ISO/IEC 23090-5 supports upto 32-bit video data (depending on video codec support)
 using SampleValue = uint_fast32_t;
 
-// The maximum level for an unsigned integer of the specified number of bits
+// The maximum level for an uint32_t integer of the specified number of bits
 //
 // The default return type is SampleValue. Override to avoid static_cast's at the call site.
 template <typename Integer = SampleValue>
-constexpr auto maxLevel(unsigned bits) noexcept -> Integer {
+constexpr auto maxLevel(uint32_t bits) noexcept -> Integer {
   static_assert(std::is_integral_v<Integer>);
   ASSERT(bits <= std::numeric_limits<Integer>::digits);
   constexpr auto one = std::make_unsigned_t<Integer>{1};
   return static_cast<Integer>((one << bits) - one);
 }
 
-// The medium level for an unsigned integer of the specified number of bits
+// The medium level for an uint32_t integer of the specified number of bits
 //
 // The default return type is SampleValue. Override to avoid static_cast's at the call site.
 template <typename Integer = SampleValue>
-constexpr auto medLevel(unsigned bits) noexcept -> Integer {
+constexpr auto medLevel(uint32_t bits) noexcept -> Integer {
   static_assert(std::is_integral_v<Integer>);
   ASSERT(bits <= std::numeric_limits<Integer>::digits);
   constexpr auto one = std::make_unsigned_t<Integer>{1};
@@ -81,7 +81,7 @@ constexpr auto medLevel(unsigned bits) noexcept -> Integer {
 }
 
 // Expand an integral value to floating-point using a linear transfer function
-constexpr auto expandValue(SampleValue x, unsigned bits) -> float {
+constexpr auto expandValue(SampleValue x, uint32_t bits) -> float {
   ASSERT(x <= maxLevel(bits));
   ASSERT(0 < bits);
   return static_cast<float>(x) / static_cast<float>(maxLevel(bits));
@@ -89,7 +89,7 @@ constexpr auto expandValue(SampleValue x, unsigned bits) -> float {
 
 // Quantize a value using a linear transfer function
 template <typename UnsignedResult = SampleValue>
-constexpr auto quantizeValue(float x, unsigned bits) -> UnsignedResult {
+constexpr auto quantizeValue(float x, uint32_t bits) -> UnsignedResult {
   const auto maxLevel_ = maxLevel<UnsignedResult>(bits);
   if (x >= 0.F && x < 1.F) {
     return static_cast<UnsignedResult>(std::llround(x * static_cast<float>(maxLevel_)));

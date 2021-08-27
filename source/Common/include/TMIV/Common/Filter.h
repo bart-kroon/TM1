@@ -64,8 +64,8 @@ auto sumRect(const Mat<ElementSum> &ii, const Vec2i &p_1, const Vec2i &p_2) noex
   ASSERT(p_1.x() <= p_2.x() && p_1.y() <= p_2.y());
   const auto i_1 = std::max(0, p_1.y());
   const auto j_1 = std::max(0, p_1.x());
-  const auto i_2 = std::min(static_cast<int>(ii.height() - 1), p_2.y());
-  const auto j_2 = std::min(static_cast<int>(ii.width() - 1), p_2.x());
+  const auto i_2 = std::min(static_cast<int32_t>(ii.height() - 1), p_2.y());
+  const auto j_2 = std::min(static_cast<int32_t>(ii.width() - 1), p_2.x());
 
   if (i_1 < i_2 && j_1 < j_2) {
     return ii(i_1, j_1) - ii(i_1, j_2) - ii(i_2, j_1) + ii(i_2, j_2);
@@ -74,12 +74,12 @@ auto sumRect(const Mat<ElementSum> &ii, const Vec2i &p_1, const Vec2i &p_2) noex
 }
 
 template <typename ElementSum>
-auto countRect(const Mat<ElementSum> &ii, const Vec2i &p_1, const Vec2i &p_2) noexcept -> int {
+auto countRect(const Mat<ElementSum> &ii, const Vec2i &p_1, const Vec2i &p_2) noexcept -> int32_t {
   ASSERT(p_1.x() <= p_2.x() && p_1.y() <= p_2.y());
   const auto i_1 = std::max(0, p_1.y());
   const auto j_1 = std::max(0, p_1.x());
-  const auto i_2 = std::min(static_cast<int>(ii.height() - 1), p_2.y());
-  const auto j_2 = std::min(static_cast<int>(ii.width() - 1), p_2.x());
+  const auto i_2 = std::min(static_cast<int32_t>(ii.height() - 1), p_2.y());
+  const auto j_2 = std::min(static_cast<int32_t>(ii.width() - 1), p_2.x());
 
   if (i_1 < i_2 && j_1 < j_2) {
     return (i_2 - i_1) * (j_2 - j_1);
@@ -88,14 +88,14 @@ auto countRect(const Mat<ElementSum> &ii, const Vec2i &p_1, const Vec2i &p_2) no
 }
 
 template <typename ElementSum, typename Element>
-auto boxBlur(const Mat<Element> &in, int k) -> Mat<Element> {
+auto boxBlur(const Mat<Element> &in, int32_t k) -> Mat<Element> {
   const auto ii = integralImage<ElementSum>(in);
   auto out = Mat<Element>{{in.height(), in.width()}};
-  const auto rows = static_cast<int>(in.height());
-  const auto cols = static_cast<int>(in.width());
+  const auto rows = static_cast<int32_t>(in.height());
+  const auto cols = static_cast<int32_t>(in.width());
 
-  for (int i = 0; i < rows; ++i) {
-    for (int j = 0; j < cols; ++j) {
+  for (int32_t i = 0; i < rows; ++i) {
+    for (int32_t j = 0; j < cols; ++j) {
       const auto p_1 = Vec2i{j - k, i - k};
       const auto p_2 = Vec2i{j + k + 1, i + k + 1};
       const auto sum = sumRect(ii, p_1, p_2);

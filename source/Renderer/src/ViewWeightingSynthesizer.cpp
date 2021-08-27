@@ -52,11 +52,11 @@ namespace {
 template <typename MAT>
 auto textureGather(const MAT &m, const Common::Vec2f &p)
     -> Common::stack::Vec4<typename MAT::value_type> {
-  const auto w_last = static_cast<int>(m.width()) - 1;
-  const auto h_last = static_cast<int>(m.height()) - 1;
+  const auto w_last = static_cast<int32_t>(m.width()) - 1;
+  const auto h_last = static_cast<int32_t>(m.height()) - 1;
 
-  const auto x0 = std::clamp(static_cast<int>(std::floor(p.x() - 0.5F)), 0, w_last);
-  const auto y0 = std::clamp(static_cast<int>(std::floor(p.y() - 0.5F)), 0, h_last);
+  const auto x0 = std::clamp(static_cast<int32_t>(std::floor(p.x() - 0.5F)), 0, w_last);
+  const auto y0 = std::clamp(static_cast<int32_t>(std::floor(p.y() - 0.5F)), 0, h_last);
 
   const auto x1 = std::min(x0 + 1, w_last);
   const auto y1 = std::min(y0 + 1, h_last);
@@ -117,7 +117,7 @@ auto getEnabledIdList(const std::vector<bool> &inputList) -> std::vector<size_t>
   return outputList;
 }
 
-template <int N>
+template <int32_t N>
 auto computeMatrixM(const std::array<Common::Vec2i, N> &offsetList,
                     const std::array<std::pair<Common::Vec2f, float>, N> &Q,
                     const std::array<float, N> &W, const Common::Vec2f &C) -> Common::Mat2x2f {
@@ -143,10 +143,10 @@ private:
     float pointSize{};
   };
   struct BoundingBox {
-    int x0;
-    int x1;
-    int y0;
-    int y1;
+    int32_t x0;
+    int32_t x1;
+    int32_t y0;
+    int32_t y1;
   };
 
   std::vector<float> m_cameraWeight;
@@ -169,7 +169,7 @@ private:
   float m_stretchFactor{100.F};
   float m_blendingFactor{0.03F};
   float m_overloadFactor{2.F};
-  int m_filteringPass{1};
+  int32_t m_filteringPass{1};
 
 public:
   explicit Impl(const Common::Json &componentNode) {
@@ -178,11 +178,11 @@ public:
     m_stretchFactor = componentNode.require("stretchFactor").as<float>();
     m_blendingFactor = componentNode.require("blendingFactor").as<float>();
     m_overloadFactor = componentNode.require("overloadFactor").as<float>();
-    m_filteringPass = componentNode.require("filteringPass").as<int>();
+    m_filteringPass = componentNode.require("filteringPass").as<int32_t>();
   }
 
   Impl(float angularScaling, float minimalWeight, float stretchFactor, float blendingFactor,
-       float overloadFactor, int filteringPass) {
+       float overloadFactor, int32_t filteringPass) {
     m_angularScaling = angularScaling;
     m_minimalWeight = minimalWeight;
     m_stretchFactor = stretchFactor;
@@ -302,10 +302,10 @@ private:
       }
 
       // Camera sorting
-      auto closestCamera = std::vector<unsigned>(cameraDistance.size());
+      auto closestCamera = std::vector<uint32_t>(cameraDistance.size());
       iota(closestCamera.begin(), closestCamera.end(), 0);
       std::sort(closestCamera.begin(), closestCamera.end(),
-                [&](unsigned i1, unsigned i2) { return cameraDistance[i1] < cameraDistance[i2]; });
+                [&](uint32_t i1, uint32_t i2) { return cameraDistance[i1] < cameraDistance[i2]; });
 
       // Reference distance
       auto refDistance = 0.F;
@@ -433,7 +433,7 @@ private:
     for (const auto &atlas : frame.atlas) {
       Common::parallel_for(
           atlas.asps.asps_frame_width(), atlas.asps.asps_frame_height(), [&](size_t Y, size_t X) {
-            const auto patchId = atlas.patchId(static_cast<int>(Y), static_cast<int>(X));
+            const auto patchId = atlas.patchId(static_cast<int32_t>(Y), static_cast<int32_t>(X));
             if (patchId == Common::unusedPatchId) {
               return;
             }
@@ -446,12 +446,12 @@ private:
             }
 
             const auto sourceViewPos =
-                patchParams.atlasToView({static_cast<int>(X), static_cast<int>(Y)});
+                patchParams.atlasToView({static_cast<int32_t>(X), static_cast<int32_t>(Y)});
             const auto x = sourceViewPos.x();
             const auto y = sourceViewPos.y();
 
-            if (y >= static_cast<int>(m_sourceDepth[viewIdx].height()) ||
-                x >= static_cast<int>(m_sourceDepth[viewIdx].width())) {
+            if (y >= static_cast<int32_t>(m_sourceDepth[viewIdx].height()) ||
+                x >= static_cast<int32_t>(m_sourceDepth[viewIdx].width())) {
               return;
             }
 
@@ -548,8 +548,8 @@ private:
     });
   }
 
-  auto getSplatParameters(unsigned viewIdx, int x, int y, const std::pair<Common::Vec2f, float> &P)
-      -> Splat {
+  auto getSplatParameters(uint32_t viewIdx, int32_t x, int32_t y,
+                          const std::pair<Common::Vec2f, float> &P) -> Splat {
     const auto [WT, M] = computeWeightAndMatrixM(viewIdx, x, y);
 
     if (WT < m_minimalWeight) {
@@ -592,7 +592,7 @@ private:
     return {P.first, Common::Vec2f{0.F, 0.F}, Common::Vec2f{0.F, 0.F}, 1.F};
   }
 
-  auto computeWeightAndMatrixM(unsigned int viewIdx, int x, int y)
+  auto computeWeightAndMatrixM(uint32_t viewIdx, int32_t x, int32_t y)
       -> std::tuple<float, Common::Mat2x2f> {
     static constexpr auto offsetList =
         std::array{Common::Vec2i({1, 0}),  Common::Vec2i({1, 1}),  Common::Vec2i({0, 1}),
@@ -606,8 +606,8 @@ private:
     auto C = Common::Vec2f{0.F, 0.F};
 
     const auto OP = m_sourceRayDirection[viewIdx](y, x);
-    const auto w_last = static_cast<int>(m_sourceReprojection[viewIdx].width()) - 1;
-    const auto h_last = static_cast<int>(m_sourceReprojection[viewIdx].height()) - 1;
+    const auto w_last = static_cast<int32_t>(m_sourceReprojection[viewIdx].width()) - 1;
+    const auto h_last = static_cast<int32_t>(m_sourceReprojection[viewIdx].height()) - 1;
 
     for (size_t i = 0U; i < offsetList.size(); i++) {
       const auto xo = std::clamp(x + Common::at(offsetList, i).x(), 0, w_last);
@@ -635,17 +635,17 @@ private:
     return {WT, Common::Mat2x2f{0.F, 0.F, 0.F, 0.F}};
   }
 
-  void rasterizePoint(unsigned viewIdx, const Splat &splat, const Common::Vec3f &P,
+  void rasterizePoint(uint32_t viewIdx, const Splat &splat, const Common::Vec3f &P,
                       float depthValue) {
     const auto R1 = dot(splat.firstAxis, splat.firstAxis);
     const auto R2 = dot(splat.secondAxis, splat.secondAxis);
     const auto boundingBox = computeBoundingBox(viewIdx, splat);
 
     // Looping on all pixels within the bounding box
-    for (int y = boundingBox.y0; y <= boundingBox.y1; y++) {
+    for (int32_t y = boundingBox.y0; y <= boundingBox.y1; y++) {
       const auto dy = (static_cast<float>(y) + 0.5F) - splat.center.y();
 
-      for (int x = boundingBox.x0; x <= boundingBox.x1; x++) {
+      for (int32_t x = boundingBox.x0; x <= boundingBox.x1; x++) {
         const auto dx = (static_cast<float>(x) + 0.5F) - splat.center.x();
         const auto depthRef = m_viewportDepth[viewIdx](y, x);
 
@@ -669,10 +669,10 @@ private:
     }
   }
 
-  auto computeBoundingBox(unsigned int viewIdx, const Splat &splat) -> BoundingBox {
+  auto computeBoundingBox(uint32_t viewIdx, const Splat &splat) -> BoundingBox {
     // Initialization
-    const auto w_last = static_cast<int>(m_viewportDepth[viewIdx].width()) - 1;
-    const auto h_last = static_cast<int>(m_viewportDepth[viewIdx].height()) - 1;
+    const auto w_last = static_cast<int32_t>(m_viewportDepth[viewIdx].width()) - 1;
+    const auto h_last = static_cast<int32_t>(m_viewportDepth[viewIdx].height()) - 1;
     const auto radius = 0.5F * splat.pointSize;
 
     // Bounding box
@@ -680,10 +680,10 @@ private:
     const auto xHigh = splat.center.x() + radius;
     const auto yLow = std::max(0.F, splat.center.y() - radius);
     const auto yHigh = splat.center.y() + radius;
-    const auto x0 = std::max(0, static_cast<int>(std::floor(xLow)));
-    const auto x1 = std::min(w_last, static_cast<int>(std::ceil(xHigh)));
-    const auto y0 = std::max(0, static_cast<int>(std::floor(yLow)));
-    const auto y1 = std::min(h_last, static_cast<int>(std::ceil(yHigh)));
+    const auto x0 = std::max(0, static_cast<int32_t>(std::floor(xLow)));
+    const auto x1 = std::min(w_last, static_cast<int32_t>(std::ceil(xHigh)));
+    const auto y0 = std::max(0, static_cast<int32_t>(std::floor(yLow)));
+    const auto y1 = std::min(h_last, static_cast<int32_t>(std::ceil(yHigh)));
     return {x0, x1, y0, y1};
   }
 
@@ -782,8 +782,8 @@ private:
       size_t prunedNodeId,
       const std::vector<std::pair<Common::Graph::NodeId, float>> &candidateList) -> size_t {
     const auto &prunedHelper = sourceHelperList[prunedNodeId];
-    const auto w_last = static_cast<int>(m_sourceDepth[prunedNodeId].width()) - 1;
-    const auto h_last = static_cast<int>(m_sourceDepth[prunedNodeId].height()) - 1;
+    const auto w_last = static_cast<int32_t>(m_sourceDepth[prunedNodeId].width()) - 1;
+    const auto h_last = static_cast<int32_t>(m_sourceDepth[prunedNodeId].height()) - 1;
     auto representativeNodeId = prunedNodeId;
 
     for (const auto &candidate : candidateList) {
@@ -795,8 +795,8 @@ private:
                        Common::Vec2i({-1, 0}),  Common::Vec2i({0, 0}),  Common::Vec2i({1, 0}),
                        Common::Vec2i({-1, 1}),  Common::Vec2i({0, 1}),  Common::Vec2i({1, 1})};
 
-        const auto X = static_cast<int>(std::floor(p.first.x()));
-        const auto Y = static_cast<int>(std::floor(p.first.y()));
+        const auto X = static_cast<int32_t>(std::floor(p.first.x()));
+        const auto Y = static_cast<int32_t>(std::floor(p.first.y()));
 
         for (const auto &offset : offsetList) {
           const auto xo = std::clamp(X + offset.x(), 0, w_last);
@@ -871,8 +871,8 @@ private:
     const auto w = m_viewportVisibility.width();
     const auto h = m_viewportVisibility.height();
 
-    const auto w_last = static_cast<int>(w) - 1;
-    const auto h_last = static_cast<int>(h) - 1;
+    const auto w_last = static_cast<int32_t>(w) - 1;
+    const auto h_last = static_cast<int32_t>(h) - 1;
 
     flipVisibility.resize(m_viewportVisibility.sizes());
 
@@ -888,8 +888,8 @@ private:
         auto depthBuffer = std::array<float, 9>{};
 
         for (size_t i = 0; i < depthBuffer.size(); i++) {
-          const auto xo = std::clamp(static_cast<int>(x) + at(offsetList, i).x(), 0, w_last);
-          const auto yo = std::clamp(static_cast<int>(y) + at(offsetList, i).y(), 0, h_last);
+          const auto xo = std::clamp(static_cast<int32_t>(x) + at(offsetList, i).x(), 0, w_last);
+          const auto yo = std::clamp(static_cast<int32_t>(y) + at(offsetList, i).y(), 0, h_last);
 
           const auto z = firstDepth(yo, xo);
 
@@ -912,17 +912,17 @@ private:
     }
   }
 
-  [[nodiscard]] auto isProneToGhosting(unsigned sourceId, const std::pair<Common::Vec2f, float> &p,
+  [[nodiscard]] auto isProneToGhosting(uint32_t sourceId, const std::pair<Common::Vec2f, float> &p,
                                        const Common::Vec3f &OP,
                                        const ProjectionHelperList &sourceHelperList) const -> bool {
     static constexpr auto offsetList = std::array{Common::Vec2i({1, 0}), Common::Vec2i({-1, 0}),
                                                   Common::Vec2i({0, 1}), Common::Vec2i({0, -1})};
 
-    const auto w_last = static_cast<int>(m_sourceDepth[sourceId].width()) - 1;
-    const auto h_last = static_cast<int>(m_sourceDepth[sourceId].height()) - 1;
+    const auto w_last = static_cast<int32_t>(m_sourceDepth[sourceId].width()) - 1;
+    const auto h_last = static_cast<int32_t>(m_sourceDepth[sourceId].height()) - 1;
 
-    const auto x = static_cast<int>(std::floor(p.first.x()));
-    const auto y = static_cast<int>(std::floor(p.first.y()));
+    const auto x = static_cast<int32_t>(std::floor(p.first.x()));
+    const auto y = static_cast<int32_t>(std::floor(p.first.y()));
 
     return std::any_of(offsetList.cbegin(), offsetList.cend(), [&](const auto &offset) {
       const auto xo = std::clamp(x + offset.x(), 0, w_last);
@@ -956,10 +956,10 @@ private:
       // nearest neighbour fetching of low-res inpainted image
       PRECONDITION(viewIdInpainted < m_sourceColor.size());
       auto &sourceColor = m_sourceColor[viewIdInpainted];
-      const auto W = static_cast<int>(sourceColor.width());
-      const auto H = static_cast<int>(sourceColor.height());
-      const auto j = std::clamp(static_cast<int>(std::round(uvBg.x())), 0, W - 1);
-      const auto i = std::clamp(static_cast<int>(std::round(uvBg.y())), 0, H - 1);
+      const auto W = static_cast<int32_t>(sourceColor.width());
+      const auto H = static_cast<int32_t>(sourceColor.height());
+      const auto j = std::clamp(static_cast<int32_t>(std::round(uvBg.x())), 0, W - 1);
+      const auto i = std::clamp(static_cast<int32_t>(std::round(uvBg.y())), 0, H - 1);
       m_viewportColor(y, x) = sourceColor(i, j);
     }
     m_viewportVisibility(y, x) = z;
@@ -976,14 +976,16 @@ private:
 
     static const auto d2 = std::array{0.F, 1.F, 2.F, 1.F, 2.F, 1.F, 2.F, 1.F, 2.F};
 
-    const auto w_last = static_cast<int>(viewportVisibility.width()) - 1;
-    const auto h_last = static_cast<int>(viewportVisibility.height()) - 1;
+    const auto w_last = static_cast<int32_t>(viewportVisibility.width()) - 1;
+    const auto h_last = static_cast<int32_t>(viewportVisibility.height()) - 1;
 
     auto stack = std::vector<Common::Vec2f>{};
 
     for (size_t i = 0U; i < offsetList.size(); i++) {
-      const auto xo = std::clamp(static_cast<int>(x) + Common::at(offsetList, i).x(), 0, w_last);
-      const auto yo = std::clamp(static_cast<int>(y) + Common::at(offsetList, i).y(), 0, h_last);
+      const auto xo =
+          std::clamp(static_cast<int32_t>(x) + Common::at(offsetList, i).x(), 0, w_last);
+      const auto yo =
+          std::clamp(static_cast<int32_t>(y) + Common::at(offsetList, i).y(), 0, h_last);
 
       const auto z = viewportVisibility(yo, xo);
 
@@ -1045,7 +1047,7 @@ private:
 
           if (isValidDepth(pn2.second) && sourceHelperList[sourceId].isInsideViewport(pn2.first)) {
             if (isOnViewportContour ||
-                !isProneToGhosting(static_cast<unsigned>(sourceId), pn2, OP, sourceHelperList)) {
+                !isProneToGhosting(static_cast<uint32_t>(sourceId), pn2, OP, sourceHelperList)) {
               incrementColorAndWeight(element, sourceId, pn2, sourceHelperList, oColor, oWeight);
             }
           }
@@ -1089,7 +1091,7 @@ ViewWeightingSynthesizer::ViewWeightingSynthesizer(const Common::Json & /*rootNo
 
 ViewWeightingSynthesizer::ViewWeightingSynthesizer(float angularScaling, float minimalWeight,
                                                    float stretchFactor, float blendingFactor,
-                                                   float overloadFactor, int filteringPass)
+                                                   float overloadFactor, int32_t filteringPass)
     : m_impl(new Impl(angularScaling, minimalWeight, stretchFactor, blendingFactor, overloadFactor,
                       filteringPass)) {}
 

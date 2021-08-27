@@ -126,7 +126,7 @@ TEST_CASE("Bitstream primitives") {
     }
     obitstream.zeroAlign();
     for (auto [reference, range] : referenceSequence) {
-      auto actual = ibitstream.getUVar<int>(range);
+      auto actual = ibitstream.getUVar<int32_t>(range);
       REQUIRE(actual == reference);
     }
   }
@@ -156,13 +156,13 @@ TEST_CASE("Bitstream primitives") {
   }
 
   SECTION("rbsp_trailing_bits") {
-    for (int prefix = 0; prefix < 8; ++prefix) {
-      for (int i = 0; i < prefix; ++i) {
+    for (int32_t prefix = 0; prefix < 8; ++prefix) {
+      for (int32_t i = 0; i < prefix; ++i) {
         obitstream.putFlag(i % 2 == 0);
       }
       obitstream.rbspTrailingBits();
 
-      for (int i = 0; i < prefix; ++i) {
+      for (int32_t i = 0; i < prefix; ++i) {
         REQUIRE(ibitstream.getFlag() == (i % 2 == 0));
       }
       ibitstream.rbspTrailingBits();
@@ -171,13 +171,13 @@ TEST_CASE("Bitstream primitives") {
 }
 
 TEST_CASE("ceilLog2") {
-  using ValuePair = std::pair<uint64_t, int>;
+  using ValuePair = std::pair<uint64_t, int32_t>;
   auto values = GENERATE(
-      table<uint64_t, int>({ValuePair{0, 0}, ValuePair{1, 0}, ValuePair{2, 1}, ValuePair{10, 4},
-                            ValuePair{21, 5}, ValuePair{64, 6}, ValuePair{100, 7}}));
+      table<uint64_t, int32_t>({ValuePair{0, 0}, ValuePair{1, 0}, ValuePair{2, 1}, ValuePair{10, 4},
+                                ValuePair{21, 5}, ValuePair{64, 6}, ValuePair{100, 7}}));
 
   const auto input = std::get<0>(values);
-  const unsigned expected_result = std::get<1>(values);
+  const uint32_t expected_result = std::get<1>(values);
 
   REQUIRE(TMIV::Common::ceilLog2(input) == expected_result);
 }

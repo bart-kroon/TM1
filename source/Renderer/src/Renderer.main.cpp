@@ -52,7 +52,7 @@ class RenderApplication : public Common::Application {
 private:
   IO::Placeholders m_placeholders;
   Renderer::Front::MultipleFrameRenderer m_renderer;
-  std::multimap<int, int> m_inputToOutputFrameIdMap;
+  std::multimap<int32_t, int32_t> m_inputToOutputFrameIdMap;
   std::optional<bool> m_depthLowQualityFlag;
   MivBitstream::SequenceConfig m_inputSequenceConfig;
 
@@ -182,7 +182,7 @@ private:
 };
 } // namespace TMIV::Renderer
 
-auto main(int argc, char *argv[]) -> int {
+auto main(int argc, char *argv[]) -> int32_t {
   try {
     TMIV::Renderer::registerComponents();
     TMIV::Renderer::RenderApplication app{{argv, argv + argc}};

@@ -211,22 +211,22 @@ struct ElementaryShape {
   [[nodiscard]] auto es_primitive_orientation_present_flag() const noexcept -> bool;
   [[nodiscard]] auto es_viewing_direction_constraint_present_flag() const noexcept -> bool;
   [[nodiscard]] auto es_camera_inferred_flag() const noexcept -> bool;
-  [[nodiscard]] auto es_view_idx(int s) const noexcept -> unsigned;
-  [[nodiscard]] auto es_primitive_shape_type(int s) const noexcept -> PrimitiveShapeType;
-  [[nodiscard]] auto es_guard_band_size(int s) const -> float;
-  [[nodiscard]] auto es_primitive_shape_quat_x(int s) const -> float;
-  [[nodiscard]] auto es_primitive_shape_quat_y(int s) const -> float;
-  [[nodiscard]] auto es_primitive_shape_quat_z(int s) const -> float;
-  [[nodiscard]] auto es_guard_band_direction_size(int s) const -> float;
-  [[nodiscard]] auto es_primitive_shape_viewing_direction_quat_x_center(int s) const -> float;
-  [[nodiscard]] auto es_primitive_shape_viewing_direction_quat_y_center(int s) const -> float;
-  [[nodiscard]] auto es_primitive_shape_viewing_direction_quat_z_center(int s) const -> float;
-  [[nodiscard]] auto es_primitive_shape_viewing_direction_yaw_range(int s) const -> float;
-  [[nodiscard]] auto es_primitive_shape_viewing_direction_pitch_range(int s) const -> float;
+  [[nodiscard]] auto es_view_idx(int32_t s) const noexcept -> uint32_t;
+  [[nodiscard]] auto es_primitive_shape_type(int32_t s) const noexcept -> PrimitiveShapeType;
+  [[nodiscard]] auto es_guard_band_size(int32_t s) const -> float;
+  [[nodiscard]] auto es_primitive_shape_quat_x(int32_t s) const -> float;
+  [[nodiscard]] auto es_primitive_shape_quat_y(int32_t s) const -> float;
+  [[nodiscard]] auto es_primitive_shape_quat_z(int32_t s) const -> float;
+  [[nodiscard]] auto es_guard_band_direction_size(int32_t s) const -> float;
+  [[nodiscard]] auto es_primitive_shape_viewing_direction_quat_x_center(int32_t s) const -> float;
+  [[nodiscard]] auto es_primitive_shape_viewing_direction_quat_y_center(int32_t s) const -> float;
+  [[nodiscard]] auto es_primitive_shape_viewing_direction_quat_z_center(int32_t s) const -> float;
+  [[nodiscard]] auto es_primitive_shape_viewing_direction_yaw_range(int32_t s) const -> float;
+  [[nodiscard]] auto es_primitive_shape_viewing_direction_pitch_range(int32_t s) const -> float;
 
   PrimitiveShapeVector primitives{};
   PrimitiveShapeOperation primitiveOperation{};
-  std::vector<int> inferringViews{};
+  std::vector<int32_t> inferringViews{};
 
   friend auto operator<<(std::ostream &stream, const ElementaryShape &shape) -> std::ostream &;
   auto operator==(const ElementaryShape &other) const -> bool;

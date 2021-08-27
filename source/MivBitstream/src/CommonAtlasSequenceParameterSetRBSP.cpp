@@ -40,7 +40,7 @@ template <typename T>
 auto putField(std::ostream &stream, const std::string &fieldName, T &&fieldValue) {
   stream << fieldName << "=";
   if constexpr (std::is_same_v<uint8_t, std::decay_t<T>>) {
-    stream << static_cast<unsigned>(fieldValue) << "\n";
+    stream << static_cast<uint32_t>(fieldValue) << "\n";
   } else if (std::is_same_v<bool, std::decay_t<T>>) {
     stream << std::boolalpha << fieldValue << "\n";
   } else {
@@ -248,7 +248,7 @@ void CommonAtlasSequenceParameterSetRBSP::encodeTo(std::ostream &stream) const {
   bitstream.rbspTrailingBits();
 }
 
-auto caspsById(const std::vector<CommonAtlasSequenceParameterSetRBSP> &caspsV, int id)
+auto caspsById(const std::vector<CommonAtlasSequenceParameterSetRBSP> &caspsV, int32_t id)
     -> const CommonAtlasSequenceParameterSetRBSP & {
   const auto result = std::find_if(std::cbegin(caspsV), std::cend(caspsV), [id](const auto &casps) {
     return id == casps.casps_common_atlas_sequence_parameter_set_id();

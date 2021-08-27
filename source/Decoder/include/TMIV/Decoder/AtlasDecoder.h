@@ -81,7 +81,7 @@ private:
 
   std::vector<MivBitstream::AtlasSequenceParameterSetRBSP> m_aspsV;
   std::vector<MivBitstream::AtlasFrameParameterSetRBSP> m_afpsV;
-  unsigned m_maxAtlasFrmOrderCntLsb{};
+  uint32_t m_maxAtlasFrmOrderCntLsb{};
 };
 } // namespace TMIV::Decoder
 

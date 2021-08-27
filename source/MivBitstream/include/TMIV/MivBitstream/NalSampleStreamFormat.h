@@ -42,7 +42,7 @@ namespace TMIV::MivBitstream {
 // 23090-5: sample_stream_nal_header()
 class SampleStreamNalHeader {
 public:
-  explicit SampleStreamNalHeader(int ssnh_unit_size_precision_bytes_minus1);
+  explicit SampleStreamNalHeader(int32_t ssnh_unit_size_precision_bytes_minus1);
 
   [[nodiscard]] constexpr auto ssnh_unit_size_precision_bytes_minus1() const noexcept {
     return m_ssnh_unit_size_precision_bytes_minus1;

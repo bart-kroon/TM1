@@ -112,7 +112,7 @@ private:
   std::optional<std::vector<bool>> m_caspsExtensionData{};
 };
 
-auto caspsById(const std::vector<CommonAtlasSequenceParameterSetRBSP> &caspsV, int id)
+auto caspsById(const std::vector<CommonAtlasSequenceParameterSetRBSP> &caspsV, int32_t id)
     -> const CommonAtlasSequenceParameterSetRBSP &;
 } // namespace TMIV::MivBitstream
 

@@ -45,10 +45,10 @@ struct CameraConfig {
   enum class Colorspace { yuv420 };
 
   ViewParams viewParams;
-  int bitDepthColor{};
-  int bitDepthTransparency{};
-  int bitDepthDepth{};
-  int bitDepthEntities{};
+  int32_t bitDepthColor{};
+  int32_t bitDepthTransparency{};
+  int32_t bitDepthDepth{};
+  int32_t bitDepthEntities{};
   Colorspace colorspace{Colorspace::yuv420};
   Colorspace transparencyColorspace{Colorspace::yuv420};
   Colorspace depthColorspace{Colorspace::yuv420};
@@ -72,7 +72,7 @@ struct SequenceConfig {
   Common::Vec3d boundingBoxCenter;
   std::string contentName;
   double frameRate{};
-  int numberOfFrames{};
+  int32_t numberOfFrames{};
   std::vector<CameraConfig> cameras;
   std::vector<std::string> sourceCameraNames;
   bool lengthsInMeters{true};

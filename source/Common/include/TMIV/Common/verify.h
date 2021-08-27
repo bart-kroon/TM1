@@ -221,37 +221,37 @@ class PtlError : public std::runtime_error {
 
 // NOTE(BK): All inline to let the clang-tidy bugprone-exception-escape observe the throws
 
-inline auto message(char const *introduction, char const *condition, char const *file, int line)
+inline auto message(char const *introduction, char const *condition, char const *file, int32_t line)
     -> std::string {
   return fmt::format("{}:\n\t{}\n\t[{}@{}]\n", introduction, condition, file, line);
 }
 
-[[noreturn]] inline void runtimeError(char const *condition, char const *file, int line) {
+[[noreturn]] inline void runtimeError(char const *condition, char const *file, int32_t line) {
   throw std::runtime_error{message("Runtime error", condition, file, line)};
 }
 
-[[noreturn]] inline void v3cBitstreamError(char const *condition, char const *file, int line) {
+[[noreturn]] inline void v3cBitstreamError(char const *condition, char const *file, int32_t line) {
   throw V3cBitstreamError{
       message("Failed to parse/decode ISO/IEC 23090-5 V3C bitstream", condition, file, line)};
 }
 
-[[noreturn]] inline void mivBitstreamError(char const *condition, char const *file, int line) {
+[[noreturn]] inline void mivBitstreamError(char const *condition, char const *file, int32_t line) {
   throw MivBitstreamError{
       message("Failed to parse/decode ISO/IEC 23090-12 MIV bitstream", condition, file, line)};
 }
 
-[[noreturn]] inline void bitstreamError(char const *condition, char const *file, int line) {
+[[noreturn]] inline void bitstreamError(char const *condition, char const *file, int32_t line) {
   throw BitstreamError{message("Failed to parse/decode bitstream", condition, file, line)};
 }
 
-[[noreturn]] inline void ptlError(char const *condition, char const *file, int line) {
+[[noreturn]] inline void ptlError(char const *condition, char const *file, int32_t line) {
   throw PtlError(
       message("The bitstream is outside of the profile-tier-level (PTL) limits of this decoder",
               condition, file, line));
 }
 
 [[noreturn]] inline void assertionFailed(char const *condition, char const *file,
-                                         int line) noexcept {
+                                         int32_t line) noexcept {
   try {
     std::cerr << message("Assertion failed", condition, file, line);
   } catch (...) {

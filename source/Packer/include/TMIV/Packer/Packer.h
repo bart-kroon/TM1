@@ -55,27 +55,27 @@ public:
   auto operator=(Packer &&) -> Packer & = default;
   ~Packer() override;
 
-  void initialize(const Common::SizeVector &atlasSizes, int blockSize) override;
+  void initialize(const Common::SizeVector &atlasSizes, int32_t blockSize) override;
   auto pack(const Common::SizeVector &atlasSize, const Common::MaskList &masks,
-            const MivBitstream::ViewParamsList &viewParamsList, int blockSize)
+            const MivBitstream::ViewParamsList &viewParamsList, int32_t blockSize)
       -> MivBitstream::PatchParamsList override;
   void updateAggregatedEntityMasks(const std::vector<Common::MaskList> &entityMasks) override;
 
 private:
-  int m_minPatchSize{};
-  int m_overlap{};
+  int32_t m_minPatchSize{};
+  int32_t m_overlap{};
   bool m_pip{};
   bool m_enableMerging{};
   SORTING_METHOD m_sortingMethod{};
   bool m_enableRecursiveSplit{true};
-  int m_maxEntityId{0};
+  int32_t m_maxEntityId{0};
   std::vector<Common::MaskList> m_aggregatedEntityMasks{};
   Common::Vec2i m_entityEncodeRange;
   std::vector<MaxRectPiP> m_packerList;
   auto computeClusters(const Common::MaskList &masks,
                        const MivBitstream::ViewParamsList &viewParamsList)
-      -> std::tuple<ClusterList, ClusteringMapList, std::vector<int>>;
-  auto computeClusterToPack(const MivBitstream::ViewParamsList &viewParamsList, int m_blockSize,
+      -> std::tuple<ClusterList, ClusteringMapList, std::vector<int32_t>>;
+  auto computeClusterToPack(const MivBitstream::ViewParamsList &viewParamsList, int32_t m_blockSize,
                             ClusterList &clusterList, const ClusteringMapList &clusteringMap) const;
 };
 

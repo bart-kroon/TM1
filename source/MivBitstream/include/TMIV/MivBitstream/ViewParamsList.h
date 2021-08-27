@@ -82,7 +82,7 @@ struct ViewParams {
   bool isInpainted{};
 
   // Number of layers in MPI. Not in the specification, but needed to handle MPI.
-  int nbMpiLayers{1};
+  int32_t nbMpiLayers{1};
 
   auto printTo(std::ostream &stream, uint16_t viewIdx) const -> std::ostream &;
   auto operator==(const ViewParams &other) const -> bool;

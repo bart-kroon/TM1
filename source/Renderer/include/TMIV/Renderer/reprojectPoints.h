@@ -148,12 +148,12 @@ public:
   [[nodiscard]] auto getAngularResolution() const -> float;
   [[nodiscard]] auto getDepthRange() const -> Common::Vec2f;
   [[nodiscard]] auto getRadialRange() const -> Common::Vec2f;
-  [[nodiscard]] auto getPointCloud(unsigned N = 8) const -> PointCloud;
+  [[nodiscard]] auto getPointCloud(uint32_t N = 8) const -> PointCloud;
 };
 
 using ProjectionHelperList = typename ProjectionHelper::List;
 
-auto getPointCloudList(const ProjectionHelperList &sourceHelperList, unsigned N = 16)
+auto getPointCloudList(const ProjectionHelperList &sourceHelperList, uint32_t N = 16)
     -> PointCloudList;
 
 auto getOverlapping(const ProjectionHelperList &sourceHelperList,

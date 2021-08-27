@@ -36,7 +36,8 @@
 namespace TMIV::Decoder {
 void sampleOccupancyReconstruction(MivBitstream::AtlasAccessUnit &atlas,
                                    MivBitstream::V3cParameterSet &vps,
-                                   MivBitstream::ViewParamsList &viewParamsList, int y, int x) {
+                                   MivBitstream::ViewParamsList &viewParamsList, int32_t y,
+                                   int32_t x) {
   atlas.occFrame.getPlane(0)(y, x) = 0;
   auto patchId = atlas.patchId(y, x);
   if (patchId != Common::unusedPatchId) {
@@ -76,8 +77,8 @@ void OccupancyReconstructor::reconstruct(MivBitstream::AccessUnit &frame) {
           sampleOccupancyReconstruction(atlas, frame.vps, frame.viewParamsList, y, x);
         } else {
           // occupancy is signaled explicitly
-          int asmeOccupancyFrameScaleFactorX = 1;
-          int asmeOccupancyFrameScaleFactorY = 1;
+          int32_t asmeOccupancyFrameScaleFactorX = 1;
+          int32_t asmeOccupancyFrameScaleFactorY = 1;
           const auto occThreshold = frame.vps.occupancy_information(frame.vps.vps_atlas_id(k))
                                         .oi_lossy_occupancy_compression_threshold()
                                     << (frame.vps.occupancy_information(frame.vps.vps_atlas_id(k))

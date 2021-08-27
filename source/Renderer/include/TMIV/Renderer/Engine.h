@@ -46,8 +46,8 @@ struct SceneVertexDescriptor {
 using SceneVertexDescriptorList = std::vector<SceneVertexDescriptor>;
 
 struct TriangleDescriptor {
-  std::array<int, 3> indices; // indices into vertex lists
-  float area;                 // px�, area before unprojection
+  std::array<int32_t, 3> indices; // indices into vertex lists
+  float area;                     // px�, area before unprojection
 };
 
 using TriangleDescriptorList = std::vector<TriangleDescriptor>;
@@ -63,8 +63,8 @@ using ImageVertexDescriptorList = std::vector<ImageVertexDescriptor>;
 // The rendering engine is the part that is specalized per projection type
 template <MivBitstream::CiCamType camType> struct Engine {};
 struct ViewportPosition2D {
-  ViewportPosition2D(int _x, int _y) : x{_x}, y{_y} {}
-  int x{}, y{};
+  ViewportPosition2D(int32_t _x, int32_t _y) : x{_x}, y{_y} {}
+  int32_t x{}, y{};
 };
 } // namespace TMIV::Renderer
 

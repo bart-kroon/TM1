@@ -45,7 +45,7 @@ using TMIV::VideoDecoder::VideoDecoderBase;
 struct FakeVideoDecoder : public VideoDecoderBase {
   FakeVideoDecoder(NalUnitSource source) : VideoDecoderBase{std::move(source)} {}
 
-  int decodeSomeCallCount{};
+  int32_t decodeSomeCallCount{};
 
   auto decodeSome() -> bool final {
     switch (decodeSomeCallCount++) {

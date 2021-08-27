@@ -58,7 +58,7 @@ private:
   PreRenderer m_preRenderer;
   IO::Placeholders m_placeholders;
   Renderer::Front::MultipleFrameRenderer m_renderer;
-  std::multimap<int, int> m_inputToOutputFrameIdMap;
+  std::multimap<int32_t, int32_t> m_inputToOutputFrameIdMap;
   std::filesystem::path m_inputBitstreamPath;
   std::ifstream m_inputBitstream;
   V3cSampleStreamDecoder m_vssDecoder;
@@ -198,7 +198,7 @@ private:
 };
 } // namespace TMIV::Decoder
 
-auto main(int argc, char *argv[]) -> int {
+auto main(int argc, char *argv[]) -> int32_t {
   try {
     TMIV::Decoder::registerComponents();
     TMIV::Decoder::Application app{{argv, argv + argc}};

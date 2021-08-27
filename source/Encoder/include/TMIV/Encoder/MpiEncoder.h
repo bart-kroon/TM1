@@ -49,11 +49,11 @@ public:
   MpiEncoder(const Common::Json &rootNode, const Common::Json &componentNode);
 
   void prepareSequence(const MivBitstream::SequenceConfig &config);
-  auto processAccessUnit(int firstFrameId, int lastFrameId) -> const EncoderParams &;
+  auto processAccessUnit(int32_t firstFrameId, int32_t lastFrameId) -> const EncoderParams &;
   auto popAtlas() -> Common::MVD10Frame;
   [[nodiscard]] auto maxLumaSamplesPerFrame() const -> size_t { return m_maxLumaSamplesPerFrame; }
 
-  using MpiPcsFrameReader = std::function<MpiPcs::Frame(int)>;
+  using MpiPcsFrameReader = std::function<MpiPcs::Frame(int32_t)>;
 
   void setMpiPcsFrameReader(const MpiPcsFrameReader &mpiPcsFrameReader) {
     m_mpiPcsFrameReader = mpiPcsFrameReader;
@@ -66,24 +66,24 @@ private:
   [[nodiscard]] auto log2FocLsbMinus4() const -> uint8_t;
   void incrementFoc();
 
-  auto readFrame(int frameIndex) -> MpiPcs::Frame { return m_mpiPcsFrameReader(frameIndex); }
+  auto readFrame(int32_t frameIndex) -> MpiPcs::Frame { return m_mpiPcsFrameReader(frameIndex); }
 
   Common::Json m_rootNode;
   MpiPcsFrameReader m_mpiPcsFrameReader;
 
   // Parameters
   static constexpr auto maxIntraPeriod = 32;
-  int m_intraPeriod{};
+  int32_t m_intraPeriod{};
   Common::Vec2i m_blockSizeDepthQualityDependent;
   std::vector<Common::Vec2i> m_overrideAtlasFrameSizes{};
-  unsigned m_textureDilation{};
-  unsigned m_transparencyDynamic{};
+  uint32_t m_textureDilation{};
+  uint32_t m_transparencyDynamic{};
 
   // Attributes
   std::deque<MpiPcs::Frame> m_mpiFrameBuffer;
   std::vector<Common::BlockToPatchMap> m_blockToPatchMapPerAtlas;
   std::unique_ptr<Packer::IPacker> m_packer;
-  int m_blockSize{};
+  int32_t m_blockSize{};
   size_t m_maxLumaSamplesPerFrame{};
   EncoderParams m_params;
   double m_frameRate{};

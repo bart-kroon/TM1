@@ -59,8 +59,8 @@ void inplaceFading_impl(YUVD &yuvd, const MivBitstream::ViewParams & /* unused *
   auto &U = yuvd.first.getPlane(1);
   auto &V = yuvd.first.getPlane(2);
 
-  const int width_Y = static_cast<int>(Y.width());
-  const int height_Y = static_cast<int>(Y.height());
+  const auto width_Y = static_cast<int32_t>(Y.width());
+  const auto height_Y = static_cast<int32_t>(Y.height());
 
   float weight = index; // for test:just a recopy of the index ==> mapping might be changed
   float R = 0.F;
@@ -82,8 +82,8 @@ void inplaceFading_impl(YUVD &yuvd, const MivBitstream::ViewParams & /* unused *
   // https://stackoverflow.com/questions/25804565/accurate-yuv-10-bits-to-8-bits-conversion
 
   // 1) get RGB from YUV, 2) then greyish it, 3) then back to YUV
-  for (int h = 0; h < height_Y; h++) {
-    for (int w = 0; w < width_Y; w++) {
+  for (int32_t h = 0; h < height_Y; h++) {
+    for (int32_t w = 0; w < width_Y; w++) {
       R = std::min(std::max((Y(h, w) - Cte[0]) * YUVtoR[0] + (U(h, w) - Cte[1]) * YUVtoR[1] +
                                 (V(h, w) - Cte[2]) * YUVtoR[2],
                             0.F),

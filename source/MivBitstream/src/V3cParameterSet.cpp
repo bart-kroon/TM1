@@ -54,7 +54,7 @@ auto operator<<(std::ostream &stream, PtlProfileCodecGroupIdc x) -> std::ostream
   case PtlProfileCodecGroupIdc::MP4RA:
     return stream << "MP4RA";
   default:
-    return stream << "[unknown:" << static_cast<int>(x) << "]";
+    return stream << "[unknown:" << static_cast<int32_t>(x) << "]";
   }
 }
 
@@ -71,7 +71,7 @@ auto operator<<(std::ostream &stream, PtlProfilePccToolsetIdc x) -> std::ostream
   case PtlProfilePccToolsetIdc::MIV_Geometry_Absent:
     return stream << "MIV Geometry Absent";
   default:
-    return stream << "[unknown:" << static_cast<int>(x) << "]";
+    return stream << "[unknown:" << static_cast<int32_t>(x) << "]";
   }
 }
 
@@ -88,7 +88,7 @@ auto operator<<(std::ostream &stream, PtlProfileReconstructionIdc x) -> std::ost
   case PtlProfileReconstructionIdc::Rec_Unconstrained:
     return stream << "Rec Unconstrained";
   default:
-    return stream << "[unknown:" << static_cast<int>(x) << "]";
+    return stream << "[unknown:" << static_cast<int32_t>(x) << "]";
   }
 }
 
@@ -115,7 +115,7 @@ auto operator<<(std::ostream &stream, PtlMaxDecodesIdc x) -> std::ostream & {
   case PtlMaxDecodesIdc::unconstrained:
     return stream << "unconstrained";
   default:
-    return stream << "[reserved:" << static_cast<int>(x) << "]";
+    return stream << "[reserved:" << static_cast<int32_t>(x) << "]";
   }
 }
 
@@ -138,7 +138,7 @@ auto operator<<(std::ostream &stream, PtlLevelIdc x) -> std::ostream & {
   case PtlLevelIdc::Level_4_5:
     return stream << "Level 4.5";
   default:
-    return stream << "[unknown:" << static_cast<int>(x) << "]";
+    return stream << "[unknown:" << static_cast<int32_t>(x) << "]";
   }
 }
 
@@ -159,7 +159,7 @@ auto operator<<(std::ostream &stream, VuhUnitType x) -> std::ostream & {
   case VuhUnitType::V3C_CAD:
     return stream << "V3C_CAD";
   default:
-    return stream << "[unknown:" << static_cast<int>(x) << "]";
+    return stream << "[unknown:" << static_cast<int32_t>(x) << "]";
   }
 }
 
@@ -178,7 +178,7 @@ auto operator<<(std::ostream &stream, AiAttributeTypeId x) -> std::ostream & {
   case AiAttributeTypeId::ATTR_UNSPECIFIED:
     return stream << "ATTR_UNSPECIFIED";
   default:
-    return stream << "[unknown:" << static_cast<int>(x) << "]";
+    return stream << "[unknown:" << static_cast<int32_t>(x) << "]";
   }
 }
 

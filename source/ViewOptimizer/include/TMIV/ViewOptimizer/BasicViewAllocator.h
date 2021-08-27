@@ -63,10 +63,10 @@ private:
   static auto updateCentroids(const KMedoidsCost &cost, Centroids centroids)
       -> std::optional<Centroids>;
 
-  int m_numGroups{};
-  int m_maxLumaPictureSize{};
-  int m_maxAtlases{};
-  int m_minNonCodedViews{}; // for evaluation purposes
+  int32_t m_numGroups{};
+  int32_t m_maxLumaPictureSize{};
+  int32_t m_maxAtlases{};
+  int32_t m_minNonCodedViews{}; // for evaluation purposes
   double m_maxBasicViewFraction{};
 };
 } // namespace TMIV::ViewOptimizer

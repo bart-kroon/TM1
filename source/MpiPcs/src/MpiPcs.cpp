@@ -38,8 +38,7 @@
 namespace TMIV::MpiPcs {
 namespace {
 template <typename T>
-auto readFromStream(std::istream &stream, const unsigned long long int numberOfItems)
-    -> std::vector<T> {
+auto readFromStream(std::istream &stream, uint64_t numberOfItems) -> std::vector<T> {
   std::string itemBuffer(numberOfItems * sizeof(T), '0');
   stream.read(itemBuffer.data(), Common::downCast<std::streamsize>(itemBuffer.size()));
   if (!stream.good()) {

@@ -46,7 +46,7 @@ namespace TMIV::Encoder {
 class Multiplexer {
 public:
   using AttributeVideoBitstreamServer = std::function<std::unique_ptr<std::istream>(
-      MivBitstream::AiAttributeTypeId, const MivBitstream::AtlasId &, int)>;
+      MivBitstream::AiAttributeTypeId, const MivBitstream::AtlasId &, int32_t)>;
   using GeometryVideoBitstreamServer =
       std::function<std::unique_ptr<std::istream>(const MivBitstream::AtlasId &)>;
   using OccupancyVideoBitstreamServer = GeometryVideoBitstreamServer;

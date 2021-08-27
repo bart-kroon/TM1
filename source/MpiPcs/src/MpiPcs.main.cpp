@@ -112,7 +112,7 @@ private:
     using geometryValue = MpiPcs::Attribute::GeometryValue;
     const auto layerCount = Common::verifyDownCast<geometryValue>(viewParams.nbMpiLayers);
 
-    for (int frameId = 0; frameId < m_numberOfInputFrames; ++frameId) {
+    for (int32_t frameId = 0; frameId < m_numberOfInputFrames; ++frameId) {
       MpiPcs::Frame mpiPcsFrame{viewSize};
 
       for (geometryValue layerId = 0; layerId < layerCount; ++layerId) {
@@ -178,7 +178,7 @@ private:
     using geometryValue = MpiPcs::Attribute::GeometryValue;
     const auto layerCount = Common::verifyDownCast<geometryValue>(viewParams.nbMpiLayers);
 
-    for (int frameId = 0; frameId < m_numberOfInputFrames; ++frameId) {
+    for (int32_t frameId = 0; frameId < m_numberOfInputFrames; ++frameId) {
       const auto mpiPcsFrame = mpiPcsReader.read(frameId);
 
       for (geometryValue layerId = 0; layerId < layerCount; ++layerId) {
@@ -207,7 +207,7 @@ private:
 
 } // namespace TMIV::MpiPcs
 
-auto main(int argc, char *argv[]) -> int {
+auto main(int argc, char *argv[]) -> int32_t {
   try {
     TMIV::MpiPcs::Application app{{argv, argv + argc}};
     app.startTime();

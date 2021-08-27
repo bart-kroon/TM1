@@ -90,16 +90,16 @@ private:
   void calculateAttributeOffset(
       std::vector<std::array<std::array<int64_t, 4>, 3>> patchAttrOffsetValuesFullGOP);
   auto calculatePatchAttrOffsetValuesFullGOP(
-      std::vector<std::array<std::array<int64_t, 4>, 3>> &patchAttrOffsetValuesFullGOP) -> int;
-  [[nodiscard]] auto calculateBtpm() const -> std::vector<std::vector<std::vector<int>>>;
-  void adaptBtpmToPatchCount(std::vector<std::vector<std::vector<int>>> &btpm) const;
+      std::vector<std::array<std::array<int64_t, 4>, 3>> &patchAttrOffsetValuesFullGOP) -> int32_t;
+  [[nodiscard]] auto calculateBtpm() const -> std::vector<std::vector<std::vector<int32_t>>>;
+  void adaptBtpmToPatchCount(std::vector<std::vector<std::vector<int32_t>>> &btpm) const;
   [[nodiscard]] auto isRedundantBlock(Common::Vec2i topLeft, Common::Vec2i bottomRight,
                                       uint16_t viewIdx, int32_t frameIdx) const -> bool;
   auto writePatchInAtlas(const MivBitstream::PatchParams &patchParams,
                          const Common::TextureDepth16Frame &view, Common::MVD16Frame &frame,
-                         int frameId, size_t patchIdx) -> std::array<std::array<int64_t, 4>, 3>;
+                         int32_t frameId, size_t patchIdx) -> std::array<std::array<int64_t, 4>, 3>;
   void adaptAtlas(const MivBitstream::PatchParams &patchParams,
-                  Common::TextureDepthFrame<Common::YUV400P16> &atlas, int yOcc, int xOcc,
+                  Common::TextureDepthFrame<Common::YUV400P16> &atlas, int32_t yOcc, int32_t xOcc,
                   const Common::Vec2i &pView, const Common::Vec2i &pAtlas) const;
 
   // Encoder_popFrame.cpp
@@ -119,7 +119,7 @@ private:
   ViewOptimizer::ViewOptimizerParams m_transportParams;
   std::vector<Common::MVD16Frame> m_transportViews;
 
-  int m_blockSize{};
+  int32_t m_blockSize{};
   EncoderParams m_params;          // Encoder output prior to geometry quantization and scaling
   EncoderParams m_paramsQuantized; // Encoder output prior to geometry scaling
   std::deque<Common::MVD16Frame> m_videoFrameBuffer;

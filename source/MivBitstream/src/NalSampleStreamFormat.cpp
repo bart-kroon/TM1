@@ -38,7 +38,7 @@
 #include <TMIV/Common/verify.h>
 
 namespace TMIV::MivBitstream {
-SampleStreamNalHeader::SampleStreamNalHeader(int ssnh_unit_size_precision_bytes_minus1)
+SampleStreamNalHeader::SampleStreamNalHeader(int32_t ssnh_unit_size_precision_bytes_minus1)
     : m_ssnh_unit_size_precision_bytes_minus1{
           static_cast<uint8_t>(ssnh_unit_size_precision_bytes_minus1)} {
   VERIFY_V3CBITSTREAM(ssnh_unit_size_precision_bytes_minus1 < 8);
@@ -46,12 +46,12 @@ SampleStreamNalHeader::SampleStreamNalHeader(int ssnh_unit_size_precision_bytes_
 
 auto operator<<(std::ostream &stream, const SampleStreamNalHeader &x) -> std::ostream & {
   return stream << "ssnh_unit_size_precision_bytes_minus1="
-                << int{x.ssnh_unit_size_precision_bytes_minus1()} << '\n';
+                << int32_t{x.ssnh_unit_size_precision_bytes_minus1()} << '\n';
 }
 
 auto SampleStreamNalHeader::decodeFrom(std::istream &stream) -> SampleStreamNalHeader {
   Common::InputBitstream bitstream{stream};
-  const auto ssnh_unit_size_precision_bytes_minus1 = bitstream.readBits<int>(3);
+  const auto ssnh_unit_size_precision_bytes_minus1 = bitstream.readBits<int32_t>(3);
   return SampleStreamNalHeader{ssnh_unit_size_precision_bytes_minus1};
 }
 

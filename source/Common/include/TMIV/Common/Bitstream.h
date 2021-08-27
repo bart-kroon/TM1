@@ -51,7 +51,7 @@ public:
   // Input bit position indicator
   [[nodiscard]] auto tellg() const -> std::streampos;
 
-  template <typename Integer> auto readBits(unsigned bits) -> Integer;
+  template <typename Integer> auto readBits(uint32_t bits) -> Integer;
 
   auto getFlag() -> bool { return readBits<uint8_t>(1) > 0; }
   auto getUint8() { return readBits<uint8_t>(8); }
@@ -79,7 +79,7 @@ public:
 
   std::istream &m_stream;
   uint64_t m_buffer{};
-  unsigned m_size{};
+  uint32_t m_size{};
 };
 
 class OutputBitstream {
@@ -89,9 +89,9 @@ public:
   // Output bit position indicator
   [[nodiscard]] auto tellp() const -> std::streampos;
 
-  template <typename Integer> void writeBits(const Integer &value, unsigned bits);
+  template <typename Integer> void writeBits(const Integer &value, uint32_t bits);
 
-  void putFlag(bool value) { writeBits(int{static_cast<int>(value)}, 1); }
+  void putFlag(bool value) { writeBits(static_cast<int32_t>(value), 1); }
   void putUint8(uint8_t value) { writeBits(value, 8); }
   void putUint16(uint16_t value) { writeBits(value, 16); }
   void putUint32(uint32_t value) { writeBits(value, 32); }
@@ -113,13 +113,13 @@ public:
   void rbspTrailingBits();
 
 private:
-  void writeBits_(uint64_t value, unsigned bits);
+  void writeBits_(uint64_t value, uint32_t bits);
   void putUVar_(uint64_t value, uint64_t range);
   void putUExpGolomb_(uint64_t value);
 
   std::ostream &m_stream;
   uint64_t m_buffer{};
-  unsigned m_size{};
+  uint32_t m_size{};
 };
 } // namespace TMIV::Common
 

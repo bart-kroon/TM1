@@ -49,18 +49,18 @@ namespace detail {
 // avoids having too many triangles in multiple strips
 //
 // Example: 8 hyper cores, 2048 rows ==> 128 strips of 16 rows each
-inline auto numStrips(int rows) -> int {
+inline auto numStrips(int32_t rows) -> int32_t {
   const double hw = Common::threadCount();
-  const int maximum = (rows + 3) / 4;
+  const int32_t maximum = (rows + 3) / 4;
   if (maximum <= hw) {
     return maximum;
   }
   using std::sqrt;
-  return static_cast<int>(std::lround(sqrt(hw * maximum)));
+  return static_cast<int32_t>(std::lround(sqrt(hw * maximum)));
 }
 
 template <typename M0, typename... M>
-auto fetchAttributes(int index, const std::tuple<M0, M...> &attributes) {
+auto fetchAttributes(int32_t index, const std::tuple<M0, M...> &attributes) {
   std::tuple<typename M0::value_type, typename M::value_type...> result;
   std::get<0>(result) = std::get<0>(attributes)[index];
   if constexpr (sizeof...(M) >= 1) {
@@ -76,7 +76,7 @@ auto fetchAttributes(int index, const std::tuple<M0, M...> &attributes) {
   return result;
 }
 
-inline auto fetchAttributes(int /* index */, const std::tuple<> &
+inline auto fetchAttributes(int32_t /* index */, const std::tuple<> &
                             /* attributes */) -> std::tuple<> {
   return {};
 }
@@ -87,12 +87,12 @@ Rasterizer<T...>::Rasterizer(Pixel pixel, Common::Vec2i size)
     : Rasterizer{pixel, size, detail::numStrips(size.y())} {}
 
 template <typename... T>
-Rasterizer<T...>::Rasterizer(Pixel pixel, Common::Vec2i size, int numStrips)
+Rasterizer<T...>::Rasterizer(Pixel pixel, Common::Vec2i size, int32_t numStrips)
     : m_pixel{pixel}, m_size{static_cast<size_t>(size.y()), static_cast<size_t>(size.x())} {
   PRECONDITION(size.x() >= 0 && size.y() >= 0);
   PRECONDITION(numStrips > 0);
   m_strips.reserve(numStrips);
-  for (int n = 0; n < numStrips; ++n) {
+  for (int32_t n = 0; n < numStrips; ++n) {
     const auto i1 = size.y() * n / numStrips;
     const auto i2 = size.y() * (n + 1) / numStrips;
     auto accumulator =
@@ -204,7 +204,7 @@ void Rasterizer<T...>::visit(Visitor visitor) const {
 
 template <typename... T>
 void Rasterizer<T...>::submitTriangle(TriangleDescriptor descriptor, const Batch &batch) {
-  const auto K = static_cast<int>(m_strips.size());
+  const auto K = static_cast<int32_t>(m_strips.size());
   auto k1 = K;
   auto k2 = 0;
 
@@ -214,15 +214,15 @@ void Rasterizer<T...>::submitTriangle(TriangleDescriptor descriptor, const Batch
       return;
     }
     const auto k = y * m_dk_di;
-    k1 = std::min(k1, static_cast<int>(std::floor(k)));
-    k2 = std::max(k2, static_cast<int>(std::ceil(k)) + 1);
+    k1 = std::min(k1, static_cast<int32_t>(std::floor(k)));
+    k2 = std::max(k2, static_cast<int32_t>(std::ceil(k)) + 1);
   }
 
   // Cull
   k1 = std::max(0, k1);
   k2 = std::min(K, k2);
 
-  for (int k = k1; k < k2; ++k) {
+  for (int32_t k = k1; k < k2; ++k) {
     m_strips[k].batches.back().push_back(descriptor);
   }
 }
@@ -243,28 +243,28 @@ inline auto fixed(float x) noexcept -> intfp {
 }
 
 inline auto fixed(Common::Vec2f v) noexcept { return Vec2fp{fixed(v.x()), fixed(v.y())}; }
-constexpr auto fixed(int x) noexcept { return static_cast<intfp>(x) << bits; }
-constexpr auto fpfloor(intfp x) noexcept { return static_cast<int>(x >> bits); }
+constexpr auto fixed(int32_t x) noexcept { return static_cast<intfp>(x) << bits; }
+constexpr auto fpfloor(intfp x) noexcept { return static_cast<int32_t>(x >> bits); }
 constexpr auto fpceil(intfp x) noexcept { return fpfloor(x + one - eps); }
 } // namespace fixed_point
 
 namespace detail {
 struct TriangleInfo {
-  int u1;
-  int u2;
-  int v1;
-  int v2;
+  int32_t u1;
+  int32_t u2;
+  int32_t v1;
+  int32_t v2;
   fixed_point::intfp area;
   float invArea;
 };
 
-auto determineTriangleBoundingBoxAndArea(int rows, int cols,
+auto determineTriangleBoundingBoxAndArea(int32_t rows, int32_t cols,
                                          const std::array<fixed_point::Vec2fp, 3> &uv) noexcept
     -> std::optional<TriangleInfo>;
 
 // Calculate the Barycentric coordinate of the pixel center
 // (u + 1/2, v + 1/2)
-auto calculateBarycentricCoordinate(int u, int v, const TriangleInfo &info,
+auto calculateBarycentricCoordinate(int32_t u, int32_t v, const TriangleInfo &info,
                                     const std::array<fixed_point::Vec2fp, 3> &uv)
     -> std::optional<std::array<float, 3>>;
 } // namespace detail
@@ -307,8 +307,8 @@ void Rasterizer<T...>::rasterTriangle(TriangleDescriptor descriptor, const Batch
     const auto a2 = detail::fetchAttributes(n2, batch.attributes);
 
     // For each pixel in the bounding box
-    for (int v = triangleInfo->v1; v < triangleInfo->v2; ++v) {
-      for (int u = triangleInfo->u1; u < triangleInfo->u2; ++u) {
+    for (int32_t v = triangleInfo->v1; v < triangleInfo->v2; ++v) {
+      for (int32_t u = triangleInfo->u1; u < triangleInfo->u2; ++u) {
         if (const auto coord = detail::calculateBarycentricCoordinate(u, v, *triangleInfo, uv)) {
           const auto [w0, w1, w2] = *coord;
 
@@ -318,7 +318,7 @@ void Rasterizer<T...>::rasterTriangle(TriangleDescriptor descriptor, const Batch
           const auto a = blendAttributes(w0, a0, w1, a1, w2, a2);
 
           // Blend pixel
-          ASSERT(v * strip.cols + u < static_cast<int>(strip.matrix.size()));
+          ASSERT(v * strip.cols + u < static_cast<int32_t>(strip.matrix.size()));
           auto &P = strip.matrix[v * strip.cols + u];
 
           auto p = m_pixel.construct(a, d, rayAngle, stretching);

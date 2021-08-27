@@ -154,7 +154,7 @@ auto OutputBitstream::tellp() const -> std::streampos {
   return charBits * m_stream.tellp() + m_size;
 }
 
-void OutputBitstream::writeBits_(uint64_t value, unsigned bits) {
+void OutputBitstream::writeBits_(uint64_t value, uint32_t bits) {
   VERIFY_BITSTREAM((value >> bits) == 0);
   VERIFY_BITSTREAM(m_size + bits <= std::numeric_limits<uint64_t>::digits);
 

@@ -295,7 +295,7 @@ private:
   std::vector<TMIV::MivBitstream::AtlasFrameParameterSetRBSP> m_afpsV;
   std::optional<TMIV::MivBitstream::V3cUnitHeader> m_vuh;
   TMIV::MivBitstream::V3cParameterSet m_vps;
-  unsigned m_maxCommonAtlasFrmOrderCntLsb{};
+  uint32_t m_maxCommonAtlasFrmOrderCntLsb{};
 };
 
 Parser::Parser(std::ostream &log) : m_impl{new Impl{log}} {}

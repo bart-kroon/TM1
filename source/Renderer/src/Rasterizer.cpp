@@ -34,7 +34,7 @@
 #include <TMIV/Renderer/Rasterizer.h>
 
 namespace TMIV::Renderer::detail {
-auto determineTriangleBoundingBoxAndArea(int rows, int cols,
+auto determineTriangleBoundingBoxAndArea(int32_t rows, int32_t cols,
                                          const std::array<fixed_point::Vec2fp, 3> &uv) noexcept
     -> std::optional<TriangleInfo> {
   auto info = TriangleInfo{};
@@ -64,7 +64,7 @@ auto determineTriangleBoundingBoxAndArea(int rows, int cols,
   return info;
 }
 
-auto calculateBarycentricCoordinate(int u, int v, const TriangleInfo &info,
+auto calculateBarycentricCoordinate(int32_t u, int32_t v, const TriangleInfo &info,
                                     const std::array<fixed_point::Vec2fp, 3> &uv)
     -> std::optional<std::array<float, 3>> {
   using fixed_point::fixed;

@@ -76,8 +76,8 @@ namespace {
 [[nodiscard]] auto calculateViewGridSize(const Configuration &config,
                                          const MivBitstream::ViewParamsList &viewParamsList,
                                          bool depthLowQualityFlag) {
-  int x{};
-  int y{};
+  int32_t x{};
+  int32_t y{};
 
   const auto blockSize = config.blockSize(depthLowQualityFlag);
 
@@ -117,7 +117,7 @@ calculateNominalAtlasFrameSizes(const Configuration &config,
       config.maxLumaSampleRate / (numGroups * lumaSamplesPerAtlasSample * Common::sqr(blockSize));
 
   // Translate block rate into a maximum number of blocks
-  const auto maxBlocks = static_cast<int>(maxBlockRate / frameRate);
+  const auto maxBlocks = static_cast<int32_t>(maxBlockRate / frameRate);
 
   // Calculate the number of atlases
   const auto maxBlocksPerAtlas1 = config.maxLumaPictureSize / Common::sqr(blockSize);
@@ -244,14 +244,14 @@ calculateNominalAtlasFrameSizes(const Configuration &config,
   return vps;
 }
 
-[[nodiscard]] auto log2FocLsbMinus4(int intraPeriod) {
+[[nodiscard]] auto log2FocLsbMinus4(int32_t intraPeriod) {
   // Avoid confusion but test MSB/LSB logic in decoder
   return Common::downCast<uint8_t>(std::max(4U, Common::ceilLog2(intraPeriod) + 1U) - 4U);
 }
 
 [[nodiscard]] auto vuiParameters(const MivBitstream::SequenceConfig &sequenceConfig) {
   auto numUnitsInTick = 1;
-  auto timeScale = static_cast<int>(numUnitsInTick * sequenceConfig.frameRate);
+  auto timeScale = static_cast<int32_t>(numUnitsInTick * sequenceConfig.frameRate);
   LIMITATION(timeScale == numUnitsInTick * sequenceConfig.frameRate);
 
   auto vui = MivBitstream::VuiParameters{};
@@ -292,8 +292,8 @@ createCommonAtlasSequenceParameterSet(const Configuration &config,
 }
 
 [[nodiscard]] auto createAspsMivExtension(const Configuration &config,
-                                          const MivBitstream::V3cParameterSet &vps, int blockSize,
-                                          MivBitstream::AtlasId j) {
+                                          const MivBitstream::V3cParameterSet &vps,
+                                          int32_t blockSize, MivBitstream::AtlasId j) {
   auto asme = MivBitstream::AspsMivExtension{};
   asme.asme_embedded_occupancy_enabled_flag(
           vps.vps_miv_extension().vme_embedded_occupancy_enabled_flag())

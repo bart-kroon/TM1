@@ -46,7 +46,7 @@ using TMIV::Renderer::ViewportPosition2D;
 
 SCENARIO("MPI rastering meshes with Common::Vec2f as attribute", "[Rasterizer]") {
   GIVEN("A new MPI rasterizer") {
-    MpiRasterizer<Vec2f, float, unsigned, unsigned> rasterizer(Vec2i{8, 4});
+    MpiRasterizer<Vec2f, float, uint32_t, uint32_t> rasterizer(Vec2i{8, 4});
     Mat<float> atlasColor({2, 2});
     std::fill(atlasColor.begin(), atlasColor.end(), 0.F);
     atlasColor(0, 0) = 10.F;
@@ -70,11 +70,11 @@ SCENARIO("MPI rastering meshes with Common::Vec2f as attribute", "[Rasterizer]")
       // Attribute #1 -> Viewport depth
       std::vector<float> as1{10.0F, 20.0F, 30.0F, 40.0F};
       // Attribute #2 -> Patch ID
-      std::vector<unsigned> as2{0U, 0U, 0U, 0U};
+      std::vector<uint32_t> as2{0U, 0U, 0U, 0U};
       // Attribute #3 -> Atlas ID
-      std::vector<unsigned> as3{0U, 0U, 0U, 0U};
+      std::vector<uint32_t> as3{0U, 0U, 0U, 0U};
       auto as = std::tuple{as0, as1, as2, as3};
-      using PixelAttribute = PixelAttributes<Vec2f, float, unsigned, unsigned>;
+      using PixelAttribute = PixelAttributes<Vec2f, float, uint32_t, uint32_t>;
 
       rasterizer.submit(vs, as, ts);
       rasterizer.run([&](const ViewportPosition2D &viewport, const std::array<float, 3> &weights,
@@ -85,8 +85,8 @@ SCENARIO("MPI rastering meshes with Common::Vec2f as attribute", "[Rasterizer]")
         auto z = weights[0] * std::get<1>(pixelAttributes[0]) +
                  weights[1] * std::get<1>(pixelAttributes[1]) +
                  weights[2] * std::get<1>(pixelAttributes[2]);
-        int x0 = std::clamp(static_cast<int>(std::llround(texCoord.x())), 0, 1);
-        int y0 = std::clamp(static_cast<int>(std::llround(texCoord.y())), 0, 1);
+        int32_t x0 = std::clamp(static_cast<int32_t>(std::llround(texCoord.x())), 0, 1);
+        int32_t y0 = std::clamp(static_cast<int32_t>(std::llround(texCoord.y())), 0, 1);
         blendedOutput(viewport.y, viewport.x) = atlasColor(y0, x0);
         blendedDepth(viewport.y, viewport.x) = z;
         return 0;

@@ -165,7 +165,7 @@ TEST_CASE("Decoder::writeFrameToOutputLog") {
 
       REQUIRE(TMIV::Decoder::viewParamsListHash(frame.viewParamsList) == 0);
 
-      for (int i = 0; i < 3; ++i) {
+      for (int32_t i = 0; i < 3; ++i) {
         auto &v = frame.viewParamsList.emplace_back();
 
         v.ci.ci_cam_type(static_cast<TMIV::MivBitstream::CiCamType>(i));

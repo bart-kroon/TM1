@@ -135,16 +135,16 @@ void AtlasObjectAssociation::prepareAoaParameters(size_t aoa_num_updates) {
 auto operator<<(std::ostream &stream, const AtlasObjectAssociation &x) -> std::ostream & {
   stream << "aoa_persistence_flag=" << std::boolalpha << x.aoa_persistence_flag() << "\n";
   stream << "aoa_reset_flag=" << std::boolalpha << x.aoa_reset_flag() << "\n";
-  stream << "aoa_num_atlases_minus1=" << static_cast<unsigned>(x.aoa_num_atlases_minus1()) << "\n";
-  stream << "aoa_num_updates=" << static_cast<unsigned>(x.aoa_num_updates()) << "\n";
+  stream << "aoa_num_atlases_minus1=" << static_cast<uint32_t>(x.aoa_num_atlases_minus1()) << "\n";
+  stream << "aoa_num_updates=" << static_cast<uint32_t>(x.aoa_num_updates()) << "\n";
   if (x.aoa_num_updates() > 0) {
     stream << "aoa_log2_max_object_idx_tracked_minus1="
-           << static_cast<unsigned>(x.aoa_log2_max_object_idx_tracked_minus1()) << "\n";
+           << static_cast<uint32_t>(x.aoa_log2_max_object_idx_tracked_minus1()) << "\n";
     for (size_t j = 0; j <= x.aoa_num_atlases_minus1(); ++j) {
-      stream << "aoa_atlas_id(" << j << ")=" << static_cast<unsigned>(x.aoa_atlas_id(j)) << "\n";
+      stream << "aoa_atlas_id(" << j << ")=" << static_cast<uint32_t>(x.aoa_atlas_id(j)) << "\n";
     }
     for (size_t i = 0; i < x.aoa_num_updates(); ++i) {
-      stream << "aoa_object_idx(" << i << ")=" << static_cast<unsigned>(x.aoa_object_idx(i))
+      stream << "aoa_object_idx(" << i << ")=" << static_cast<uint32_t>(x.aoa_object_idx(i))
              << "\n";
       for (size_t j = 0; j <= x.aoa_num_atlases_minus1(); ++j) {
         stream << "aoa_object_in_atlas(" << i << ", " << j << ")=" << std::boolalpha

@@ -119,17 +119,18 @@ auto tryLoadSequenceConfig(const Common::Json &config, const Placeholders &place
 
 auto loadMpiTextureMpiLayer(const Common::Json &config, const Placeholders &placeholders,
                             const MivBitstream::SequenceConfig &sc, int32_t frameIndex,
-                            int mpiLayerIndex, int nbMpiLayers) -> Common::TextureFrame;
+                            int32_t mpiLayerIndex, int32_t nbMpiLayers) -> Common::TextureFrame;
 
 auto loadMpiTransparencyMpiLayer(const Common::Json &config, const Placeholders &placeholders,
                                  const MivBitstream::SequenceConfig &sc, int32_t frameIndex,
-                                 int mpiLayerIndex, int nbMpiLayers) -> Common::Transparency8Frame;
+                                 int32_t mpiLayerIndex, int32_t nbMpiLayers)
+    -> Common::Transparency8Frame;
 
 auto inputBitstreamPath(const Common::Json &config, const Placeholders &placeholders)
     -> std::filesystem::path;
 auto inputSubBitstreamPath(const std::string &key, const Common::Json &config,
                            const Placeholders &placeholders, MivBitstream::AtlasId atlasId,
-                           int attributeIdx) -> std::filesystem::path;
+                           int32_t attributeIdx) -> std::filesystem::path;
 
 template <typename FORMAT>
 void saveFrame(const std::filesystem::path &path, const Common::Frame<FORMAT> &frame,

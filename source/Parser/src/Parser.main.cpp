@@ -41,7 +41,7 @@
 
 using namespace std::string_view_literals;
 
-auto main(int argc, const char *argv[]) -> int {
+auto main(int argc, const char *argv[]) -> int32_t {
   try {
     const auto args = std::vector(argv, argv + argc);
 

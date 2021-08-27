@@ -132,8 +132,9 @@ template <typename MAT> auto transquare(const MAT &A);
 // \param[out] P Pivots indices.
 // \return Error code. EC = 0: Successfull exit.
 template <typename MAT1, typename MAT2>
-auto PLU(const MAT1 &A, MAT2 &LU, std::vector<int> &P) -> int;
-template <typename MAT1, typename MAT2> auto PLU(const MAT1 &A, MAT2 &L, MAT2 &U, MAT2 &P) -> int;
+auto PLU(const MAT1 &A, MAT2 &LU, std::vector<int32_t> &P) -> int32_t;
+template <typename MAT1, typename MAT2>
+auto PLU(const MAT1 &A, MAT2 &L, MAT2 &U, MAT2 &P) -> int32_t;
 
 // Computes the Cholesky factorization of a real symmetric or complex
 // hermitian positive definite matrix A. \param[in] A Real symmetric or complex
@@ -141,11 +142,11 @@ template <typename MAT1, typename MAT2> auto PLU(const MAT1 &A, MAT2 &L, MAT2 &U
 // an error code. EC = 0: Successfull exit. EC < 0: Bad parameter. EC > 0: The
 // given matrix is not positive definite. \return New matrix containing the
 // Cholesky factorization of A.
-template <typename MAT1, typename MAT2> auto chol(const MAT1 &A, MAT2 &out) -> int;
-template <typename MAT> auto chol(const MAT &A, int *info = nullptr) -> MAT;
+template <typename MAT1, typename MAT2> auto chol(const MAT1 &A, MAT2 &out) -> int32_t;
+template <typename MAT> auto chol(const MAT &A, int32_t *info = nullptr) -> MAT;
 
 // Computes and returns the determinant of a square matrix A.
-template <typename MAT> auto det(const MAT &A, int *info = nullptr) -> typename MAT::value_type;
+template <typename MAT> auto det(const MAT &A, int32_t *info = nullptr) -> typename MAT::value_type;
 
 // Solves the system AX = B (ie X = inv(A) * B) and return the solution
 // matrix. \param[in] A Square matrix A. \param[in] B Rectangular matrix B.
@@ -153,9 +154,9 @@ template <typename MAT> auto det(const MAT &A, int *info = nullptr) -> typename 
 // nullptr). EC = 0: Successfull exit. EC < 0: Bad parameter. \return New
 // matrix containing the solution of the system AX = B.
 template <typename MAT1, typename MAT2, typename MAT3>
-auto mldivide(const MAT1 &A, const MAT2 &B, MAT3 &out) -> int;
+auto mldivide(const MAT1 &A, const MAT2 &B, MAT3 &out) -> int32_t;
 template <typename MAT1, typename MAT2>
-auto mldivide(const MAT1 &A, const MAT2 &B, int *info = nullptr) -> MAT2;
+auto mldivide(const MAT1 &A, const MAT2 &B, int32_t *info = nullptr) -> MAT2;
 
 // Solves the system XB = A (ie X = A * inv(B)) and returns the solution
 // matrix. \param[in] A Rectangular matrix A. \param[in] B Square matrix B.
@@ -163,17 +164,17 @@ auto mldivide(const MAT1 &A, const MAT2 &B, int *info = nullptr) -> MAT2;
 // nullptr). EC = 0: Successfull exit. EC < 0: Bad parameter. \return New
 // matrix containing the solution of the system XB = A.
 template <typename MAT1, typename MAT2, typename MAT3>
-auto mrdivide(const MAT1 &A, const MAT2 &B, MAT3 &out) -> int;
+auto mrdivide(const MAT1 &A, const MAT2 &B, MAT3 &out) -> int32_t;
 template <typename MAT1, typename MAT2>
-auto mrdivide(const MAT1 &A, const MAT2 &B, int *info = nullptr) -> MAT1;
+auto mrdivide(const MAT1 &A, const MAT2 &B, int32_t *info = nullptr) -> MAT1;
 
 // Computes and return the inverse of A.
 // \param[in] A Square matrix A.
 // \param[out] info Optional pointer to an error code (default equal to
 // nullptr). EC = 0: Successfull exit. EC < 0: Bad parameter. EC > 0: The
 // matrix is singular. \return New matrix containing the inverse of A.
-template <typename MAT1, typename MAT2> auto inv(const MAT1 &A, MAT2 &out) -> int;
-template <typename MAT> auto inv(const MAT &A, int *info = nullptr) -> MAT;
+template <typename MAT1, typename MAT2> auto inv(const MAT1 &A, MAT2 &out) -> int32_t;
+template <typename MAT> auto inv(const MAT &A, int32_t *info = nullptr) -> MAT;
 } // namespace TMIV::Common
 
 #include "LinAlg.hpp"

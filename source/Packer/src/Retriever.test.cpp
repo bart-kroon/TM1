@@ -40,8 +40,8 @@ namespace {
 const uint16_t INVALID = (1 << 16) - 1;
 
 void addRectangle(Common::Mask &mask, Common::Vec2i topLeft, Common::Vec2i bottomRight) {
-  for (int x = topLeft.x(); x <= bottomRight.x(); ++x) {
-    for (int y = topLeft.y(); y <= bottomRight.y(); ++y) {
+  for (int32_t x = topLeft.x(); x <= bottomRight.x(); ++x) {
+    for (int32_t y = topLeft.y(); y <= bottomRight.y(); ++y) {
       mask.getPlane(0)(y, x) = 1;
     }
   }
@@ -49,8 +49,8 @@ void addRectangle(Common::Mask &mask, Common::Vec2i topLeft, Common::Vec2i botto
 } // namespace
 
 SCENARIO("Cluster retrieving") {
-  const int viewIdx = 0;
-  const int firstClusterId = 0;
+  const int32_t viewIdx = 0;
+  const int32_t firstClusterId = 0;
   bool isBasicView{};
   bool enableMerging{};
   GIVEN("a 0x0 mask") {
@@ -172,8 +172,8 @@ SCENARIO("Cluster retrieving") {
 }
 
 SCENARIO("Cluster retrieving for basic view") {
-  const int viewIdx = 0;
-  const int firstClusterId = 0;
+  const int32_t viewIdx = 0;
+  const int32_t firstClusterId = 0;
   bool isBasicView{true};
   bool enableMerging{};
 

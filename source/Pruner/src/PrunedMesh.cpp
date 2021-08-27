@@ -64,14 +64,14 @@ auto unprojectPrunedView(const Common::TextureDepth16Frame &view,
     PRECONDITION(attributes.empty());
     attributes.reserve(numPixels);
 
-    std::vector<int> key;
+    std::vector<int32_t> key;
     key.reserve(vertices.size());
 
     const auto depthTransform = MivBitstream::DepthTransform{viewParams.dq, 16};
 
-    for (int y = 0; y < size.y(); ++y) {
-      for (int x = 0; x < size.x(); ++x) {
-        key.push_back(static_cast<int>(vertices.size()));
+    for (int32_t y = 0; y < size.y(); ++y) {
+      for (int32_t x = 0; x < size.x(); ++x) {
+        key.push_back(static_cast<int32_t>(vertices.size()));
         const auto D_yx = D(y, x);
 
         if (mask(y, x) > 0) {
@@ -105,8 +105,8 @@ auto unprojectPrunedView(const Common::TextureDepth16Frame &view,
       triangles.push_back({{ia, ib, ic}, 0.5F});
     };
 
-    for (int y = 1; y < size.y(); ++y) {
-      for (int x = 1; x < size.x(); ++x) {
+    for (int32_t y = 1; y < size.y(); ++y) {
+      for (int32_t x = 1; x < size.x(); ++x) {
         considerTriangle({x - 1, y - 1}, {x, y - 1}, {x, y});
         considerTriangle({x - 1, y - 1}, {x, y}, {x - 1, y});
       }

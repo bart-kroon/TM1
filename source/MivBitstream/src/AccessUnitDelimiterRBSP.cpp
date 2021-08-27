@@ -47,7 +47,7 @@ auto operator<<(std::ostream &stream, AframeType x) -> std::ostream & {
   case AframeType::SKIP:
     return stream << "SKIP_TILE";
   default:
-    return stream << "[unknown:" << static_cast<int>(x) << "]";
+    return stream << "[unknown:" << static_cast<int32_t>(x) << "]";
   }
 }
 

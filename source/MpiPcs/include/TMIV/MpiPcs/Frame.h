@@ -133,8 +133,8 @@ public:
       : m_size{size}, m_pixelList{std::move(pixelList)} {}
   auto operator==(const Frame &other) const noexcept -> bool;
   [[nodiscard]] auto getPixelList() const -> const std::vector<Pixel> & { return m_pixelList; }
-  auto operator()(int i, int j) const -> const Pixel & {
-    ASSERT(i * m_size.x() + j < static_cast<int>(m_pixelList.size()));
+  auto operator()(int32_t i, int32_t j) const -> const Pixel & {
+    ASSERT(i * m_size.x() + j < static_cast<int32_t>(m_pixelList.size()));
     return m_pixelList[i * m_size.x() + j];
   }
   void appendLayer(Attribute::GeometryValue layerId, const TextureTransparency8Frame &layer);

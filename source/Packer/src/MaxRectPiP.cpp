@@ -38,7 +38,8 @@ namespace TMIV::Packer {
 constexpr auto occupied = uint8_t{128};
 
 ////////////////////////////////////////////////////////////////////////////////
-auto MaxRectPiP::Rectangle::split(int w, int h) const -> std::vector<MaxRectPiP::Rectangle> {
+auto MaxRectPiP::Rectangle::split(int32_t w, int32_t h) const
+    -> std::vector<MaxRectPiP::Rectangle> {
   std::vector<Rectangle> out;
 
   if (h < height()) {
@@ -85,9 +86,9 @@ auto MaxRectPiP::Rectangle::isInside(const Rectangle &r) const -> bool {
           (r.m_y0 <= m_y0) && (m_y0 <= r.m_y1) && (r.m_y0 <= m_y1) && (m_y1 <= r.m_y1));
 }
 
-auto MaxRectPiP::Rectangle::getShortSideFitScore(int w, int h) const -> float {
-  int dw = width() - w;
-  int dh = height() - h;
+auto MaxRectPiP::Rectangle::getShortSideFitScore(int32_t w, int32_t h) const -> float {
+  int32_t dw = width() - w;
+  int32_t dh = height() - h;
 
   if ((0 <= dw) && (0 <= dh)) {
     return static_cast<float>(std::min(dw, dh));
@@ -96,11 +97,11 @@ auto MaxRectPiP::Rectangle::getShortSideFitScore(int w, int h) const -> float {
 }
 
 //////////////////////////////////////////////////////////////
-MaxRectPiP::MaxRectPiP(int w, int h, int a, bool pip)
+MaxRectPiP::MaxRectPiP(int32_t w, int32_t h, int32_t a, bool pip)
     : m_width(w), m_height(h), m_alignment(a), m_pip(pip) {
   // Maps
-  auto wa = static_cast<unsigned>(w / a);
-  auto ha = static_cast<unsigned>(h / a);
+  auto wa = static_cast<uint32_t>(w / a);
+  auto ha = static_cast<uint32_t>(h / a);
 
   m_occupancyMap.resize({ha, wa});
   std::fill(m_occupancyMap.begin(), m_occupancyMap.end(), uint8_t{});
@@ -111,8 +112,8 @@ MaxRectPiP::MaxRectPiP(int w, int h, int a, bool pip)
 
 auto MaxRectPiP::push(const Cluster &c, const ClusteringMap &clusteringMap, Output &packerOutput)
     -> bool {
-  int w = Common::align(c.width(), m_alignment);
-  int h = Common::align(c.height(), m_alignment);
+  int32_t w = Common::align(c.width(), m_alignment);
+  int32_t h = Common::align(c.height(), m_alignment);
 
   if ((m_pip && pushInUsedSpace(w, h, c.isBasicView(), packerOutput)) ||
       pushInFreeSpace(w, h, c.isBasicView(), packerOutput)) {
@@ -130,20 +131,20 @@ void MaxRectPiP::updateOccupancyMap(const Cluster &c, const ClusteringMap &clust
                                     const MaxRectPiP::Output &packerOutput) {
   const auto &clusteringBuffer = clusteringMap.getPlane(0);
   bool isRotated = packerOutput.isRotated();
-  int w = c.width();
-  int h = c.height();
-  int w_align = Common::align(c.width(), m_alignment);
-  int h_align = Common::align(c.height(), m_alignment);
+  int32_t w = c.width();
+  int32_t h = c.height();
+  int32_t w_align = Common::align(c.width(), m_alignment);
+  int32_t h_align = Common::align(c.height(), m_alignment);
   // overflow
   Common::Vec2i patchOverflow = Common::Vec2i({c.jmin(), c.imin()}) +
                                 Common::Vec2i({w_align, h_align}) - clusteringMap.getSize();
 
   // Step #0 (in atlas)
   Common::Vec2i q0 = {packerOutput.x(), packerOutput.y()};
-  int XMin = q0.x() / m_alignment;
-  int XLast = (q0.x() + (isRotated ? h : w) - 1) / m_alignment + 1;
-  int YMin = q0.y() / m_alignment;
-  int YLast = (q0.y() + (isRotated ? w : h) - 1) / m_alignment + 1;
+  int32_t XMin = q0.x() / m_alignment;
+  int32_t XLast = (q0.x() + (isRotated ? h : w) - 1) / m_alignment + 1;
+  int32_t YMin = q0.y() / m_alignment;
+  int32_t YLast = (q0.y() + (isRotated ? w : h) - 1) / m_alignment + 1;
 
   for (auto Y = YMin; Y < YLast; Y++) {
     std::fill(m_occupancyMap.row_begin(Y) + XMin, m_occupancyMap.row_begin(Y) + XLast, occupied);
@@ -157,10 +158,10 @@ void MaxRectPiP::updateOccupancyMap(const Cluster &c, const ClusteringMap &clust
   if (patchOverflow.y() > 0) {
     p0.y() -= patchOverflow.y();
   }
-  int xMin = std::max(0, p0.x());
-  int xMax = p0.x() + w - 1;
-  int yMin = std::max(0, p0.y());
-  int yMax = p0.y() + h - 1;
+  int32_t xMin = std::max(0, p0.x());
+  int32_t xMax = p0.x() + w - 1;
+  int32_t yMin = std::max(0, p0.y());
+  int32_t yMax = p0.y() + h - 1;
 
   auto p2q = [isRotated, w_align, p0, q0](const Common::Vec2i p) {
     return isRotated ? (q0 + Common::Vec2i({p.y() - p0.y(), (w_align - 1) - (p.x() - p0.x())}))
@@ -171,23 +172,23 @@ void MaxRectPiP::updateOccupancyMap(const Cluster &c, const ClusteringMap &clust
     for (auto x = xMin; x <= xMax; x++) {
       if (clusteringBuffer(y, x) == c.getClusterId()) {
         Common::Vec2i q =
-            p2q(Common::Vec2i({static_cast<int>(x), static_cast<int>(y)})) / m_alignment;
+            p2q(Common::Vec2i({static_cast<int32_t>(x), static_cast<int32_t>(y)})) / m_alignment;
         m_occupancyMap(q.y(), q.x()) = 0;
       }
     }
   }
 }
 
-auto MaxRectPiP::pushInUsedSpace(int w, int h, bool isBasicView, MaxRectPiP::Output &packerOutput)
-    -> bool {
-  int W = w / m_alignment;
-  int H = h / m_alignment;
+auto MaxRectPiP::pushInUsedSpace(int32_t w, int32_t h, bool isBasicView,
+                                 MaxRectPiP::Output &packerOutput) -> bool {
+  int32_t W = w / m_alignment;
+  int32_t H = h / m_alignment;
 
-  auto isGoodCandidate = [this](int xmin, int xmax, int ymin, int ymax) -> bool {
-    if ((xmax < static_cast<int>(m_occupancyMap.width())) &&
-        (ymax < static_cast<int>(m_occupancyMap.height()))) {
-      for (int y = ymin; y <= ymax; y++) {
-        for (int x = xmin; x <= xmax; x++) {
+  auto isGoodCandidate = [this](int32_t xmin, int32_t xmax, int32_t ymin, int32_t ymax) -> bool {
+    if ((xmax < static_cast<int32_t>(m_occupancyMap.width())) &&
+        (ymax < static_cast<int32_t>(m_occupancyMap.height()))) {
+      for (int32_t y = ymin; y <= ymax; y++) {
+        for (int32_t x = xmin; x <= xmax; x++) {
           if (m_occupancyMap(y, x) != occupied) {
             return false;
           }
@@ -199,8 +200,8 @@ auto MaxRectPiP::pushInUsedSpace(int w, int h, bool isBasicView, MaxRectPiP::Out
     { return false; }
   };
 
-  for (auto Y = 0; Y < static_cast<int>(m_occupancyMap.height()); ++Y) {
-    for (auto X = 0; X < static_cast<int>(m_occupancyMap.width()); ++X) {
+  for (auto Y = 0; Y < static_cast<int32_t>(m_occupancyMap.height()); ++Y) {
+    for (auto X = 0; X < static_cast<int32_t>(m_occupancyMap.width()); ++X) {
       // Without Rotation
       if (isGoodCandidate(X, X + W - 1, Y, Y + H - 1)) {
         packerOutput.set(X * m_alignment, Y * m_alignment, false);
@@ -218,8 +219,8 @@ auto MaxRectPiP::pushInUsedSpace(int w, int h, bool isBasicView, MaxRectPiP::Out
   return false;
 }
 
-auto MaxRectPiP::pushInFreeSpace(int w, int h, bool isBasicView, MaxRectPiP::Output &packerOutput)
-    -> bool {
+auto MaxRectPiP::pushInFreeSpace(int32_t w, int32_t h, bool isBasicView,
+                                 MaxRectPiP::Output &packerOutput) -> bool {
   // Select best free rectangles that fit current patch (BSSF criterion)
   auto best_iter = m_F.cend();
   float best_score = std::numeric_limits<float>::max();

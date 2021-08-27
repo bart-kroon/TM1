@@ -49,7 +49,7 @@ template <typename T> static auto blendValues(float w_a, T a, float w_b, T b) ->
   } else {
     T result;
     static_assert(result.size() == a.size()); // req. constexpr size()
-    for (unsigned i = 0; i < result.size(); ++i) {
+    for (uint32_t i = 0; i < result.size(); ++i) {
       result[i] = blendValues(w_a, a[i], w_b, b[i]);
     }
     return result;
@@ -66,7 +66,7 @@ template <typename T> auto blendValues(float w_a, T a, float w_b, T b, float w_c
   } else {
     T result;
     static_assert(result.size() == a.size()); // req. constexpr size()
-    for (unsigned i = 0; i < result.size(); ++i) {
+    for (uint32_t i = 0; i < result.size(); ++i) {
       result[i] = blendValues(w_a, a[i], w_b, b[i], w_c, c[i]);
     }
     return result;

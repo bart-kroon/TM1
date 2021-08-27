@@ -73,8 +73,8 @@ public:
   [[nodiscard]] constexpr auto afme_inpaint_lod_scale_y_idc() const noexcept;
 
   constexpr auto afme_inpaint_lod_enabled_flag(bool value) noexcept -> auto &;
-  auto afme_inpaint_lod_scale_x_minus1(unsigned value) noexcept -> AfpsMivExtension &;
-  auto afme_inpaint_lod_scale_y_idc(unsigned value) noexcept -> AfpsMivExtension &;
+  auto afme_inpaint_lod_scale_x_minus1(uint32_t value) noexcept -> AfpsMivExtension &;
+  auto afme_inpaint_lod_scale_y_idc(uint32_t value) noexcept -> AfpsMivExtension &;
 
   friend auto operator<<(std::ostream &stream, const AfpsMivExtension &x) -> std::ostream &;
 
@@ -88,8 +88,8 @@ public:
 
 private:
   std::optional<bool> m_afme_inpaint_lod_enabled_flag;
-  std::optional<unsigned> m_afme_inpaint_lod_scale_x_minus1;
-  std::optional<unsigned> m_afme_inpaint_lod_scale_y_idc;
+  std::optional<uint32_t> m_afme_inpaint_lod_scale_x_minus1;
+  std::optional<uint32_t> m_afme_inpaint_lod_scale_y_idc;
 };
 
 // 23090-5: atlas_frame_parameter_set_rbsp( )
@@ -153,7 +153,7 @@ private:
   std::optional<std::vector<bool>> m_afpsExtensionData;
 };
 
-auto afpsById(const std::vector<AtlasFrameParameterSetRBSP> &afpsV, int id)
+auto afpsById(const std::vector<AtlasFrameParameterSetRBSP> &afpsV, int32_t id)
     -> const AtlasFrameParameterSetRBSP &;
 } // namespace TMIV::MivBitstream
 

@@ -86,8 +86,8 @@ public:
     }
 
     // For each used pixel in the atlas...
-    for (int i_atlas = 0; i_atlas < rows; ++i_atlas) {
-      for (int j_atlas = 0; j_atlas < cols; ++j_atlas) {
+    for (int32_t i_atlas = 0; i_atlas < rows; ++i_atlas) {
+      for (int32_t j_atlas = 0; j_atlas < cols; ++j_atlas) {
         const auto patchId = atlas.patchId(i_atlas, j_atlas);
 
         // Push dummy vertices to keep indexing simple
@@ -128,11 +128,11 @@ public:
     TriangleDescriptorList result;
     const auto rows = atlas.frameSize().y();
     const auto cols = atlas.frameSize().x();
-    const int size = 2 * (rows - 1) * (cols - 1);
+    const int32_t size = 2 * (rows - 1) * (cols - 1);
     result.reserve(size);
 
     auto addTriangle = [&](Common::Vec2i v0, Common::Vec2i v1, Common::Vec2i v2) {
-      const int patchId = atlas.patchId(v0.y(), v0.x());
+      const int32_t patchId = atlas.patchId(v0.y(), v0.x());
       if (patchId == Common::unusedPatchId || patchId != atlas.patchId(v1.y(), v1.x()) ||
           patchId != atlas.patchId(v2.y(), v2.x())) {
         return;
@@ -144,8 +144,8 @@ public:
       result.push_back({{vertexId0, vertexId1, vertexId2}, triangleArea});
     };
 
-    for (int i = 1; i < rows; ++i) {
-      for (int j = 1; j < cols; ++j) {
+    for (int32_t i = 1; i < rows; ++i) {
+      for (int32_t j = 1; j < cols; ++j) {
         const auto tl = Common::Vec2i{j - 1, i - 1};
         const auto tr = Common::Vec2i{j, i - 1};
         const auto bl = Common::Vec2i{j - 1, i};
@@ -155,7 +155,7 @@ public:
       }
     }
 
-    POSTCONDITION(static_cast<int>(result.size()) <= size);
+    POSTCONDITION(static_cast<int32_t>(result.size()) <= size);
     return result;
   }
 

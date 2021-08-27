@@ -106,7 +106,7 @@ private:
     }
 
     blob = "\0\0\1"s + blob; // Prefix a start code
-    const auto payloadUsedSize = Common::downCast<int>(blob.size());
+    const auto payloadUsedSize = Common::downCast<int32_t>(blob.size());
 
     if (m_accessUnit->payloadSize < blob.size()) {
       vvdec_accessUnit_free_payload(m_accessUnit);
@@ -180,7 +180,7 @@ private:
     }
   }
 
-  static void loggingCallback(void * /* context */, int /* level */, const char *fmt,
+  static void loggingCallback(void * /* context */, int32_t /* level */, const char *fmt,
                               va_list args) {
     vfprintf(stdout, fmt, args);
   }

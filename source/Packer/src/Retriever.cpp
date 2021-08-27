@@ -42,7 +42,7 @@ using Common::Vec2i;
 namespace {
 template <typename ClusterBufferType> class SubRegionGrower {
 public:
-  SubRegionGrower(ClusterList &clusterList, int A, int B, const Cluster &cluster,
+  SubRegionGrower(ClusterList &clusterList, int32_t A, int32_t B, const Cluster &cluster,
                   std::queue<Vec2i> &candidates, ClusterBufferType &clusteringBuffer)
       : m_clusterList{clusterList}
       , m_A{A}
@@ -51,7 +51,7 @@ public:
       , m_candidates{candidates}
       , m_clusteringBuffer{clusteringBuffer} {}
 
-  auto operator()(int ID) {
+  auto operator()(int32_t ID) {
     Cluster subCluster(m_cluster.getViewIdx(), m_cluster.isBasicView(), ID,
                        m_cluster.getEntityId());
     while (!m_candidates.empty()) {
@@ -91,7 +91,7 @@ public:
   }
 
 private:
-  void addCandidate(int a, int b, int ID, Cluster &subCluster) {
+  void addCandidate(int32_t a, int32_t b, int32_t ID, Cluster &subCluster) {
     if (m_clusteringBuffer(a, b) == ACTIVE) {
       m_candidates.push({a, b});
       subCluster.push(a, b);
@@ -100,16 +100,16 @@ private:
   }
 
   ClusterList &m_clusterList;
-  int m_A;
-  int m_B;
+  int32_t m_A;
+  int32_t m_B;
   const Cluster &m_cluster;
   std::queue<Vec2i> &m_candidates;
   ClusterBufferType &m_clusteringBuffer;
 };
 
 template <typename ClusterBufferType>
-auto mergePatches(ClusterList &clusterList, int A, int B, const Cluster &cluster,
-                  std::queue<Vec2i> candidates, ClusterBufferType &clusteringBuffer) -> int {
+auto mergePatches(ClusterList &clusterList, int32_t A, int32_t B, const Cluster &cluster,
+                  std::queue<Vec2i> candidates, ClusterBufferType &clusteringBuffer) -> int32_t {
   SubRegionGrower<ClusterBufferType> growSubRegion{clusterList, A,          B,
                                                    cluster,     candidates, clusteringBuffer};
 
@@ -121,7 +121,7 @@ auto mergePatches(ClusterList &clusterList, int A, int B, const Cluster &cluster
   auto subClusterId = cluster.getClusterId();
   // left side
   if (j_left != 0) {
-    for (int i_unit = i_top; i_unit <= i_bottom; i_unit++) {
+    for (int32_t i_unit = i_top; i_unit <= i_bottom; i_unit++) {
       if (clusteringBuffer(i_unit, j_left - 1) == ACTIVE) {
         candidates.push({i_unit, j_left - 1});
         growSubRegion(++subClusterId);
@@ -130,7 +130,7 @@ auto mergePatches(ClusterList &clusterList, int A, int B, const Cluster &cluster
   }
   // right side
   if (j_right != B - 1) {
-    for (int i_unit = i_top; i_unit <= i_bottom; i_unit++) {
+    for (int32_t i_unit = i_top; i_unit <= i_bottom; i_unit++) {
       if (clusteringBuffer(i_unit, j_right + 1) == ACTIVE) {
         candidates.push({i_unit, j_right + 1});
         growSubRegion(++subClusterId);
@@ -139,7 +139,7 @@ auto mergePatches(ClusterList &clusterList, int A, int B, const Cluster &cluster
   }
   // bottom side
   if (i_bottom != A - 1) {
-    for (int j_unit = j_left; j_unit <= j_right; j_unit++) {
+    for (int32_t j_unit = j_left; j_unit <= j_right; j_unit++) {
       if (clusteringBuffer(i_bottom + 1, j_unit) == ACTIVE) {
         candidates.push({i_bottom + 1, j_unit});
         growSubRegion(++subClusterId);
@@ -148,8 +148,8 @@ auto mergePatches(ClusterList &clusterList, int A, int B, const Cluster &cluster
   }
   if (!cluster.isBasicView()) {
     const auto clusterId = static_cast<uint16_t>(cluster.getClusterId());
-    for (int i_inter = i_top; i_inter <= i_bottom; i_inter++) {
-      for (int j_inter = j_left; j_inter <= j_right; j_inter++) {
+    for (int32_t i_inter = i_top; i_inter <= i_bottom; i_inter++) {
+      for (int32_t j_inter = j_left; j_inter <= j_right; j_inter++) {
         if (clusteringBuffer(i_inter, j_inter) == ACTIVE) {
           clusteringBuffer(i_inter, j_inter) = clusterId;
         }
@@ -161,8 +161,9 @@ auto mergePatches(ClusterList &clusterList, int A, int B, const Cluster &cluster
 }
 
 template <typename ClusterBufferType>
-auto getInitialCandidates(ClusterBufferType &clusteringBuffer, const int A, const int B,
-                          int clusterId, Cluster &cluster, const div_t &dv) -> std::queue<Vec2i> {
+auto getInitialCandidates(ClusterBufferType &clusteringBuffer, const int32_t A, const int32_t B,
+                          int32_t clusterId, Cluster &cluster, const div_t &dv)
+    -> std::queue<Vec2i> {
   std::queue<Vec2i> candidates;
   candidates.push({dv.quot, dv.rem});
   auto tryAddCandidate = [&clusteringBuffer, &cluster, clusterId, &candidates](const Vec2i &p) {
@@ -216,12 +217,12 @@ auto getInitialCandidates(ClusterBufferType &clusteringBuffer, const int A, cons
 
 template <typename ClusterBufferType, typename MaskBufferType>
 auto buildActiveList(const MaskBufferType &maskBuffer, ClusterBufferType &clusteringBuffer)
-    -> std::vector<int> {
-  std::vector<int> activeList{};
+    -> std::vector<int32_t> {
+  std::vector<int32_t> activeList{};
 
   for (size_t i = 0; i < maskBuffer.size(); i++) {
     if (0 < maskBuffer[i]) {
-      activeList.push_back(static_cast<int>(i));
+      activeList.push_back(static_cast<int32_t>(i));
       clusteringBuffer[i] = ACTIVE;
     } else {
       clusteringBuffer[i] = INVALID;
@@ -231,19 +232,19 @@ auto buildActiveList(const MaskBufferType &maskBuffer, ClusterBufferType &cluste
 }
 
 template <typename ClusterBufferType>
-void updateSeedAndNumberOfActivePixels(const std::vector<int> &activeList, Cluster &cluster,
+void updateSeedAndNumberOfActivePixels(const std::vector<int32_t> &activeList, Cluster &cluster,
                                        const ClusterBufferType &clusteringBuffer,
-                                       std::vector<int>::const_iterator &iter_seed) {
+                                       std::vector<int32_t>::const_iterator &iter_seed) {
   const auto prevIter = iter_seed;
   iter_seed = find_if(iter_seed + 1, activeList.end(),
-                      [&clusteringBuffer](int i) { return (clusteringBuffer[i] == ACTIVE); });
+                      [&clusteringBuffer](int32_t i) { return (clusteringBuffer[i] == ACTIVE); });
   const auto currentIter = iter_seed;
-  const auto counter = static_cast<int>(distance(prevIter, currentIter));
+  const auto counter = static_cast<int32_t>(distance(prevIter, currentIter));
   cluster.numActivePixels() = counter;
 }
 
-void updateOutput(const bool isBasicView, const Cluster &cluster, const int subClusterId,
-                  ClusterList &clusterList, int &clusterId) {
+void updateOutput(const bool isBasicView, const Cluster &cluster, const int32_t subClusterId,
+                  ClusterList &clusterList, int32_t &clusterId) {
   if (isBasicView) {
     if (!clusterList.empty()) {
       clusterList[0] = Cluster::merge(clusterList[0], cluster);
@@ -258,8 +259,9 @@ void updateOutput(const bool isBasicView, const Cluster &cluster, const int subC
 }
 } // namespace
 
-auto retrieveClusters(const int viewIdx, const Common::Mask &maskMap, const int firstClusterId,
-                      const bool isBasicView, const bool enableMerging, const bool multiEntity)
+auto retrieveClusters(const int32_t viewIdx, const Common::Mask &maskMap,
+                      const int32_t firstClusterId, const bool isBasicView,
+                      const bool enableMerging, const bool multiEntity)
     -> std::pair<ClusterList, ClusteringMap> {
   std::pair<ClusterList, ClusteringMap> out(ClusterList(),
                                             ClusteringMap(maskMap.getWidth(), maskMap.getHeight()));
@@ -267,13 +269,13 @@ auto retrieveClusters(const int viewIdx, const Common::Mask &maskMap, const int 
   auto &clusteringBuffer = out.second.getPlane(0);
 
   const auto &maskBuffer = maskMap.getPlane(0);
-  const auto A = static_cast<int>(maskBuffer.m());
-  const auto B = static_cast<int>(maskBuffer.n());
+  const auto A = static_cast<int32_t>(maskBuffer.m());
+  const auto B = static_cast<int32_t>(maskBuffer.n());
 
   const auto activeList = buildActiveList(maskBuffer, clusteringBuffer);
 
   // Region growing
-  int clusterId = firstClusterId;
+  int32_t clusterId = firstClusterId;
   auto iter_seed = activeList.begin();
   // NOTE(FT): a basic view is packed as a single patch, hence no need for any clustering, except
   // when entities are present.
@@ -281,7 +283,7 @@ auto retrieveClusters(const int viewIdx, const Common::Mask &maskMap, const int 
     Cluster cluster(viewIdx, isBasicView, clusterId, 0);
     for (size_t i = 0; i < maskBuffer.size(); i++) {
       if (0 < maskBuffer[i]) {
-        div_t dv = div(static_cast<int>(i), B);
+        div_t dv = div(static_cast<int32_t>(i), B);
         cluster.push(dv.quot, dv.rem);
         clusteringBuffer[i] = static_cast<uint16_t>(clusterId);
       }

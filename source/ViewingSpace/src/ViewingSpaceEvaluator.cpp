@@ -297,7 +297,7 @@ static auto evaluateInterpolation(const MivBitstream::PrimitiveShapeVector &prim
   static auto bisect = MiscInterpolation::computeBisectPlanes(primitives);
 
   // interpolate primitive shape and evaluate distance
-  int nvb = static_cast<int>(primitives.size());
+  const auto nvb = static_cast<int32_t>(primitives.size());
   if (nvb > 1) {
     Common::Vec2i segment;
     Common::Vec3f pos = viewingParams.viewPosition;
@@ -320,7 +320,7 @@ static auto evaluateInterpolation(const MivBitstream::PrimitiveShapeVector &prim
     // find closest shape
     std::vector<float>::iterator it;
     it = std::min_element(dist.begin(), dist.end());
-    int closest = static_cast<int>(std::distance(dist.begin(), it));
+    const auto closest = static_cast<int32_t>(std::distance(dist.begin(), it));
 
     // find segment of attachment
     if (closest == 0) {
@@ -341,8 +341,8 @@ static auto evaluateInterpolation(const MivBitstream::PrimitiveShapeVector &prim
     }
 
     // compute position of interpolated shape within segment of attachment
-    int start(segment[0]);
-    int end(segment[1]);
+    int32_t start(segment[0]);
+    int32_t end(segment[1]);
     float w = (start != end) ? dist[start] / (dist[start] + dist[end]) : 0;
     Common::Vec3f n_start({bisect[start][0], bisect[start][1], bisect[start][2]});
     Common::Vec3f n_end({bisect[end][0], bisect[end][1], bisect[end][2]});

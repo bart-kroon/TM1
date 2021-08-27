@@ -167,8 +167,8 @@ TEST_CASE("inplacePull") {
     //  in     0       1       2
     // out   |   |   |   |   |   |
     // pos  0,0 0,1 1,0 1,2 2,1 2,2
-    auto countX = std::array<std::array<int, 3>, 3>{};
-    auto countY = std::array<std::array<int, 3>, 3>{};
+    auto countX = std::array<std::array<int32_t, 3>, 3>{};
+    auto countY = std::array<std::array<int32_t, 3>, 3>{};
 
     const auto in = encodeCoordinates(3, 3);
     auto out = std::pair{TMIV::Common::Texture444Frame{6, 6}, TMIV::Common::Depth16Frame{6, 6}};
@@ -179,8 +179,8 @@ TEST_CASE("inplacePull") {
           return YUVD{};
         });
 
-    for (int i : {0, 1, 2}) {
-      for (int j : {0, 1, 2}) {
+    for (int32_t i : {0, 1, 2}) {
+      for (int32_t j : {0, 1, 2}) {
         if (std::abs(i - j) == 1) {
           REQUIRE(TMIV::Common::at(countX, i, j) == 6);
           REQUIRE(TMIV::Common::at(countY, i, j) == 6);
@@ -223,8 +223,8 @@ TEST_CASE("PushPull") {
       }
 
       THEN("Each filtered layer is accessible") {
-        int ww = w;
-        int hh = h;
+        int32_t ww = w;
+        int32_t hh = h;
 
         for (size_t i = 0; i < pushPull.numLayers(); ++i) {
           REQUIRE(pushPull.layer(i).first.getWidth() == ww);

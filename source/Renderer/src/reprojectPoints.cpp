@@ -192,7 +192,7 @@ auto ProjectionHelper::getRadialRange() const -> Common::Vec2f {
   }
 }
 
-auto ProjectionHelper::getPointCloud(unsigned N) const -> PointCloud {
+auto ProjectionHelper::getPointCloud(uint32_t N) const -> PointCloud {
   PointCloud pointCloud;
 
   float step = 1.F / static_cast<float>(N - 1U);
@@ -200,17 +200,17 @@ auto ProjectionHelper::getPointCloud(unsigned N) const -> PointCloud {
 
   float x = 0.F;
 
-  for (unsigned i = 0U; i < N; i++) {
+  for (uint32_t i = 0U; i < N; i++) {
     float y = 0.F;
 
     float px = x * m_viewParams.get().ci.projectionPlaneSizeF().x();
 
-    for (unsigned j = 0U; j < N; j++) {
+    for (uint32_t j = 0U; j < N; j++) {
       float d = depthRange.x();
 
       float py = y * m_viewParams.get().ci.projectionPlaneSizeF().y();
 
-      for (unsigned k = 0U; k < N; k++) {
+      for (uint32_t k = 0U; k < N; k++) {
         pointCloud.emplace_back(doUnprojection({px, py}, d));
 
         d += step * (depthRange.y() - depthRange.x());
@@ -225,7 +225,7 @@ auto ProjectionHelper::getPointCloud(unsigned N) const -> PointCloud {
   return pointCloud;
 }
 
-auto getPointCloudList(const ProjectionHelperList &sourceHelperList, unsigned N) -> PointCloudList {
+auto getPointCloudList(const ProjectionHelperList &sourceHelperList, uint32_t N) -> PointCloudList {
   PointCloudList pointCloudList;
 
   for (const auto &helper : sourceHelperList) {

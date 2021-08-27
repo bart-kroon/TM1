@@ -85,7 +85,7 @@ public:
 
   [[nodiscard]] auto openInputBitstream(const std::string &key,
                                         const MivBitstream::AtlasId &atlasId,
-                                        int attributeIdx = 0) const {
+                                        int32_t attributeIdx = 0) const {
     const auto path = IO::inputSubBitstreamPath(key, json(), placeholders(), atlasId, attributeIdx);
     auto stream = std::make_unique<std::ifstream>(path, std::ios::binary);
     if (stream->fail()) {
@@ -112,7 +112,7 @@ public:
 
   [[nodiscard]] auto openAttributeBitstream(MivBitstream::AiAttributeTypeId typeId,
                                             const MivBitstream::AtlasId &atlasId,
-                                            int attributeIdx) const
+                                            int32_t attributeIdx) const
       -> std::unique_ptr<std::istream> {
     const auto key = [typeId]() {
       switch (typeId) {
@@ -135,9 +135,11 @@ public:
   }
 
   void setBitstreamIstreamServers() {
-    m_multiplexer->setAttributeVideoBitstreamServer(
-        [this](MivBitstream::AiAttributeTypeId typeId, const MivBitstream::AtlasId &atlasId,
-               int attributeIdx) { return openAttributeBitstream(typeId, atlasId, attributeIdx); });
+    m_multiplexer->setAttributeVideoBitstreamServer([this](MivBitstream::AiAttributeTypeId typeId,
+                                                           const MivBitstream::AtlasId &atlasId,
+                                                           int32_t attributeIdx) {
+      return openAttributeBitstream(typeId, atlasId, attributeIdx);
+    });
 
     m_multiplexer->setGeometryVideoBitstreamServer(
         [this](const MivBitstream::AtlasId &atlasId) { return openGeometryBitstream(atlasId); });
@@ -176,7 +178,7 @@ private:
 };
 } // namespace TMIV::Encoder
 
-auto main(int argc, char *argv[]) -> int {
+auto main(int argc, char *argv[]) -> int32_t {
   try {
     TMIV::Encoder::MultiplexerApplication app{{argv, argv + argc}};
     app.startTime();

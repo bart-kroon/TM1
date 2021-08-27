@@ -38,7 +38,7 @@
 
 namespace TMIV::Encoder {
 namespace {
-void setRegionInformation(MivBitstream::PackingInformation &packingInformation, int regionIdx,
+void setRegionInformation(MivBitstream::PackingInformation &packingInformation, int32_t regionIdx,
                           const Common::Json &region) {
   packingInformation
       .pin_region_tile_id(regionIdx, region.require("pin_region_tile_id").as<uint8_t>())

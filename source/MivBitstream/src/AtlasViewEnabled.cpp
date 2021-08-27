@@ -112,7 +112,7 @@ auto AtlasViewEnabled::ave_view_enabled_in_atlas_flag(uint8_t atlasId, uint16_t 
     m_ave_view_enabled_in_atlas_flag.emplace(ave_atlas_count_minus1() + 1);
   }
   while (m_ave_view_enabled_in_atlas_flag.value().at(atlasId).size() <
-         static_cast<unsigned>(ave_num_views_minus1() + static_cast<uint16_t>(1))) {
+         static_cast<uint32_t>(ave_num_views_minus1() + static_cast<uint16_t>(1))) {
     m_ave_view_enabled_in_atlas_flag.value().at(atlasId).push_back(false);
   }
   m_ave_view_enabled_in_atlas_flag.value().at(atlasId).at(viewIdx) = value;
@@ -126,7 +126,7 @@ auto AtlasViewEnabled::ave_view_complete_in_atlas_flag(uint8_t atlasId, uint16_t
     m_ave_view_complete_in_atlas_flag.emplace(ave_atlas_count_minus1() + 1);
   }
   while (m_ave_view_complete_in_atlas_flag.value().at(atlasId).size() <
-         static_cast<unsigned>(ave_num_views_minus1() + static_cast<uint16_t>(1))) {
+         static_cast<uint32_t>(ave_num_views_minus1() + static_cast<uint16_t>(1))) {
     m_ave_view_complete_in_atlas_flag.value().at(atlasId).push_back(false);
   }
   m_ave_view_complete_in_atlas_flag.value().at(atlasId).at(viewIdx) = value;
@@ -137,20 +137,20 @@ auto operator<<(std::ostream &stream, const AtlasViewEnabled &x) -> std::ostream
   stream << "ave_cancel_flag=" << std::boolalpha << x.ave_cancel_flag() << '\n';
   if (!x.ave_cancel_flag()) {
     stream << "ave_persistence_flag=" << std::boolalpha << x.ave_persistence_flag() << '\n';
-    stream << "ave_atlas_count_minus1=" << static_cast<unsigned>(x.ave_atlas_count_minus1())
+    stream << "ave_atlas_count_minus1=" << static_cast<uint32_t>(x.ave_atlas_count_minus1())
            << '\n';
-    stream << "ave_num_views_minus1=" << static_cast<unsigned>(x.ave_num_views_minus1()) << '\n';
+    stream << "ave_num_views_minus1=" << static_cast<uint32_t>(x.ave_num_views_minus1()) << '\n';
     for (uint8_t a = 0; a <= x.ave_atlas_count_minus1(); a++) {
-      stream << "ave_atlas_id[ " << static_cast<unsigned>(a)
-             << " ]=" << static_cast<unsigned>(x.ave_atlas_id(a)) << '\n';
+      stream << "ave_atlas_id[ " << static_cast<uint32_t>(a)
+             << " ]=" << static_cast<uint32_t>(x.ave_atlas_id(a)) << '\n';
       const auto atlasId = x.ave_atlas_id(a);
       for (uint16_t v = 0; v <= x.ave_num_views_minus1(); v++) {
-        stream << "ave_view_enabled_in_atlas_flag[ " << static_cast<unsigned>(a) << " ][ "
-               << static_cast<unsigned>(v) << " ]=" << std::boolalpha
+        stream << "ave_view_enabled_in_atlas_flag[ " << static_cast<uint32_t>(a) << " ][ "
+               << static_cast<uint32_t>(v) << " ]=" << std::boolalpha
                << x.ave_view_enabled_in_atlas_flag(atlasId, v) << '\n';
         if (x.ave_view_enabled_in_atlas_flag(atlasId, v)) {
-          stream << "ave_view_complete_in_atlas_flag[ " << static_cast<unsigned>(a) << " ][ "
-                 << static_cast<unsigned>(v) << " ]=" << std::boolalpha
+          stream << "ave_view_complete_in_atlas_flag[ " << static_cast<uint32_t>(a) << " ][ "
+                 << static_cast<uint32_t>(v) << " ]=" << std::boolalpha
                  << x.ave_view_complete_in_atlas_flag(atlasId, v) << '\n';
         }
       }

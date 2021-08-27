@@ -287,12 +287,12 @@ constexpr auto PatchDataUnit::pdu_lod_enabled_flag(bool value) noexcept -> auto 
   return *this;
 }
 
-constexpr auto PatchDataUnit::pdu_lod_scale_x_minus1(unsigned value) noexcept -> auto & {
+constexpr auto PatchDataUnit::pdu_lod_scale_x_minus1(uint32_t value) noexcept -> auto & {
   m_pdu_lod_scale_x_minus1 = value;
   return *this;
 }
 
-constexpr auto PatchDataUnit::pdu_lod_scale_y_idc(unsigned value) noexcept -> auto & {
+constexpr auto PatchDataUnit::pdu_lod_scale_y_idc(uint32_t value) noexcept -> auto & {
   m_pdu_lod_scale_y_idc = value;
   return *this;
 }

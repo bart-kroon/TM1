@@ -86,14 +86,14 @@ void AtlasFrameTileInformation::encodeTo(Common::OutputBitstream &bitstream) {
   bitstream.putFlag(afti_signalled_tile_id_flag);
 }
 
-auto AfpsMivExtension::afme_inpaint_lod_scale_x_minus1(unsigned value) noexcept
+auto AfpsMivExtension::afme_inpaint_lod_scale_x_minus1(uint32_t value) noexcept
     -> AfpsMivExtension & {
   afme_inpaint_lod_enabled_flag(true);
   m_afme_inpaint_lod_scale_x_minus1 = value;
   return *this;
 }
 
-auto AfpsMivExtension::afme_inpaint_lod_scale_y_idc(unsigned value) noexcept -> AfpsMivExtension & {
+auto AfpsMivExtension::afme_inpaint_lod_scale_y_idc(uint32_t value) noexcept -> AfpsMivExtension & {
   afme_inpaint_lod_enabled_flag(true);
   m_afme_inpaint_lod_scale_y_idc = value;
   return *this;
@@ -179,16 +179,17 @@ auto AtlasFrameParameterSetRBSP::afpsExtensionData(std::vector<bool> value) noex
 }
 
 auto operator<<(std::ostream &stream, const AtlasFrameParameterSetRBSP &x) -> std::ostream & {
-  stream << "afps_atlas_frame_parameter_set_id=" << int{x.afps_atlas_frame_parameter_set_id()}
+  stream << "afps_atlas_frame_parameter_set_id=" << int32_t{x.afps_atlas_frame_parameter_set_id()}
          << '\n';
-  stream << "afps_atlas_sequence_parameter_set_id=" << int{x.afps_atlas_sequence_parameter_set_id()}
-         << '\n';
+  stream << "afps_atlas_sequence_parameter_set_id="
+         << int32_t{x.afps_atlas_sequence_parameter_set_id()} << '\n';
   stream << x.atlas_frame_tile_information();
   stream << "afps_output_flag_present_flag=" << std::boolalpha << x.afps_output_flag_present_flag()
          << '\n';
   stream << "afps_num_ref_idx_default_active_minus1="
-         << int{x.afps_num_ref_idx_default_active_minus1()} << '\n';
-  stream << "afps_additional_lt_afoc_lsb_len=" << int{x.afps_additional_lt_afoc_lsb_len()} << '\n';
+         << int32_t{x.afps_num_ref_idx_default_active_minus1()} << '\n';
+  stream << "afps_additional_lt_afoc_lsb_len=" << int32_t{x.afps_additional_lt_afoc_lsb_len()}
+         << '\n';
   stream << "afps_lod_mode_enabled_flag=" << std::boolalpha << x.afps_lod_mode_enabled_flag()
          << '\n';
   stream << "afps_raw_3d_offset_bit_count_explicit_mode_flag=" << std::boolalpha
@@ -198,7 +199,7 @@ auto operator<<(std::ostream &stream, const AtlasFrameParameterSetRBSP &x) -> st
   if (x.afps_extension_present_flag()) {
     stream << "afps_miv_extension_present_flag=" << std::boolalpha
            << x.afps_miv_extension_present_flag() << '\n';
-    stream << "afps_extension_7bits=" << int{x.afps_extension_7bits()} << '\n';
+    stream << "afps_extension_7bits=" << int32_t{x.afps_extension_7bits()} << '\n';
   }
   if (x.afps_miv_extension_present_flag()) {
     stream << x.afps_miv_extension();
@@ -329,7 +330,7 @@ void AtlasFrameParameterSetRBSP::encodeTo(
   bitstream.rbspTrailingBits();
 }
 
-auto afpsById(const std::vector<AtlasFrameParameterSetRBSP> &afpsV, int id)
+auto afpsById(const std::vector<AtlasFrameParameterSetRBSP> &afpsV, int32_t id)
     -> const AtlasFrameParameterSetRBSP & {
   for (const auto &x : afpsV) {
     if (id == x.afps_atlas_frame_parameter_set_id()) {

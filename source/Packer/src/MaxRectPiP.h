@@ -42,18 +42,18 @@ class MaxRectPiP {
 public:
   class Output {
   protected:
-    int m_x = 0;
-    int m_y = 0;
+    int32_t m_x = 0;
+    int32_t m_y = 0;
     bool m_isRotated = false;
 
   public:
-    void set(int x, int y, bool isRotated) {
+    void set(int32_t x, int32_t y, bool isRotated) {
       m_x = x;
       m_y = y;
       m_isRotated = isRotated;
     }
-    [[nodiscard]] auto x() const -> int { return m_x; }
-    [[nodiscard]] auto y() const -> int { return m_y; }
+    [[nodiscard]] auto x() const -> int32_t { return m_x; }
+    [[nodiscard]] auto y() const -> int32_t { return m_y; }
     [[nodiscard]] auto isRotated() const -> bool { return m_isRotated; }
   };
   using OccupancyMap = TMIV::Common::Mat<uint8_t>;
@@ -61,42 +61,43 @@ public:
 private:
   class Rectangle {
   protected:
-    int m_x0 = 0;
-    int m_y0 = 0;
-    int m_x1 = 0;
-    int m_y1 = 0;
+    int32_t m_x0 = 0;
+    int32_t m_y0 = 0;
+    int32_t m_x1 = 0;
+    int32_t m_y1 = 0;
 
   public:
     Rectangle() = default;
-    Rectangle(int x0, int y0, int x1, int y1) : m_x0(x0), m_y0(y0), m_x1(x1), m_y1(y1) {}
-    [[nodiscard]] auto left() const -> int { return m_x0; }
-    [[nodiscard]] auto right() const -> int { return m_x1; }
-    [[nodiscard]] auto bottom() const -> int { return m_y0; }
-    [[nodiscard]] auto top() const -> int { return m_y1; }
-    [[nodiscard]] auto width() const -> int { return (m_x1 - m_x0 + 1); }
-    [[nodiscard]] auto height() const -> int { return (m_y1 - m_y0 + 1); }
-    [[nodiscard]] auto split(int w, int h) const -> std::vector<Rectangle>;
+    Rectangle(int32_t x0, int32_t y0, int32_t x1, int32_t y1)
+        : m_x0(x0), m_y0(y0), m_x1(x1), m_y1(y1) {}
+    [[nodiscard]] auto left() const -> int32_t { return m_x0; }
+    [[nodiscard]] auto right() const -> int32_t { return m_x1; }
+    [[nodiscard]] auto bottom() const -> int32_t { return m_y0; }
+    [[nodiscard]] auto top() const -> int32_t { return m_y1; }
+    [[nodiscard]] auto width() const -> int32_t { return (m_x1 - m_x0 + 1); }
+    [[nodiscard]] auto height() const -> int32_t { return (m_y1 - m_y0 + 1); }
+    [[nodiscard]] auto split(int32_t w, int32_t h) const -> std::vector<Rectangle>;
     [[nodiscard]] auto remove(const Rectangle &r) const -> std::vector<Rectangle>;
     [[nodiscard]] auto isInside(const Rectangle &r) const -> bool;
-    [[nodiscard]] auto getShortSideFitScore(int w, int h) const -> float;
-    [[nodiscard]] auto getArea() const -> int { return (width() * height()); }
+    [[nodiscard]] auto getShortSideFitScore(int32_t w, int32_t h) const -> float;
+    [[nodiscard]] auto getArea() const -> int32_t { return (width() * height()); }
   };
 
 protected:
-  int m_width = 0, m_height = 0, m_alignment = 0;
+  int32_t m_width = 0, m_height = 0, m_alignment = 0;
   std::list<Rectangle> m_F;
   bool m_pip = true;
   OccupancyMap m_occupancyMap;
 
 public:
-  MaxRectPiP(int w, int h, int a, bool pip);
+  MaxRectPiP(int32_t w, int32_t h, int32_t a, bool pip);
   auto push(const Cluster &c, const ClusteringMap &clusteringMap, Output &packerOutput) -> bool;
 
 protected:
   void updateOccupancyMap(const Cluster &c, const ClusteringMap &clusteringMap,
                           const Output &packerOutput);
-  auto pushInUsedSpace(int w, int h, bool isBasicView, Output &packerOutput) -> bool;
-  auto pushInFreeSpace(int w, int h, bool isBasicView, Output &packerOutput) -> bool;
+  auto pushInUsedSpace(int32_t w, int32_t h, bool isBasicView, Output &packerOutput) -> bool;
+  auto pushInFreeSpace(int32_t w, int32_t h, bool isBasicView, Output &packerOutput) -> bool;
 };
 } // namespace TMIV::Packer
 

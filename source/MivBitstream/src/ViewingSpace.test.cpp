@@ -49,7 +49,7 @@ inline auto deg2HalfQuat(const float yawDeg, const float pitchDeg, const float r
   return q;
 }
 
-const std::vector<int> myInferringViews{1};
+const std::vector<int32_t> myInferringViews{1};
 
 const auto viewingSpace = std::array{
     ViewingSpace{

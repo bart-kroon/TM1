@@ -861,7 +861,7 @@ private:
                    Common::Vec2i({-1, 0}),  Common::Vec2i({0, 0}),  Common::Vec2i({1, 0}),
                    Common::Vec2i({-1, 1}),  Common::Vec2i({0, 1}),  Common::Vec2i({1, 1})};
 
-    static Common::Mat<float> flipVisibility;
+    Common::Mat<float> flipVisibility;
 
     auto firstWrapper = std::reference_wrapper<Common::Mat<float>>{
         (m_filteringPass % 2) != 0 ? flipVisibility : m_viewportVisibility};

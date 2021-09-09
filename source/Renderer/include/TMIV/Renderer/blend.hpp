@@ -36,6 +36,7 @@
 #endif
 
 #include <cmath>
+#include <cstdint>
 #include <tuple>
 #include <type_traits>
 

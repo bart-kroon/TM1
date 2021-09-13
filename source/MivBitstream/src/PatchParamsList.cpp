@@ -139,7 +139,7 @@ auto PatchParams::decodePdu(const PatchDataUnit &pdu, const AtlasSequenceParamet
     pp.atlasPatchEntityId(pdu.pdu_miv_extension().pdu_entity_id());
 
     if (asme.asme_depth_occ_threshold_flag()) {
-      pp.atlasPatchDepthOccMapThreshold(pdu.pdu_miv_extension().pdu_depth_occ_threshold());
+      pp.atlasPatchDepthOccThreshold(pdu.pdu_miv_extension().pdu_depth_occ_threshold());
     }
     if (asme.asme_patch_attribute_offset_enabled_flag()) {
       pp.atlasPatchAttributeOffset(pdu.pdu_miv_extension().pdu_attribute_offset());
@@ -203,11 +203,10 @@ auto PatchParams::encodePdu(const AtlasSequenceParameterSetRBSP &asps,
   VERIFY_MIVBITSTREAM(atlasPatch2dSizeY() % patchSizeYQuantizer == 0);
   pdu.pdu_2d_size_y_minus1(atlasPatch2dSizeY() / patchSizeYQuantizer - 1);
 
-  if (atlasPatchEntityId()) {
-    pdu.pdu_miv_extension().pdu_entity_id(*atlasPatchEntityId());
-  }
-  if (atlasPatchDepthOccMapThreshold()) {
-    pdu.pdu_miv_extension().pdu_depth_occ_threshold(*atlasPatchDepthOccMapThreshold());
+  pdu.pdu_miv_extension().pdu_entity_id(atlasPatchEntityId());
+
+  if (asme_depth_occ_threshold_flag()) {
+    pdu.pdu_miv_extension().pdu_depth_occ_threshold(atlasPatchDepthOccThreshold());
   }
   if (asps.asps_miv_extension_present_flag() &&
       asps.asps_miv_extension().asme_patch_attribute_offset_enabled_flag()) {

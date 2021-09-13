@@ -64,7 +64,8 @@ void EntityBasedPatchMapFilter::filterBlockToPatchMaps(MivBitstream::AtlasAccess
     for (int32_t x = 0; x < sz[0]; x++) {
       uint16_t patchId = atlas.blockToPatchMap.getPlane(0)(y, x);
       if (patchId != Common::unusedPatchId) {
-        auto entityId = static_cast<int32_t>(*atlas.patchParamsList[patchId].atlasPatchEntityId());
+        const auto entityId =
+            static_cast<int32_t>(atlas.patchParamsList[patchId].atlasPatchEntityId());
         if (entityId < m_entityDecodeRange[0] || m_entityDecodeRange[1] <= entityId) {
           atlas.blockToPatchMap.getPlane(0)(y, x) = Common::unusedPatchId;
         }

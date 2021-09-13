@@ -407,7 +407,8 @@ TEST_CASE("ServerSideInpainter") {
             REQUIRE(pp.atlasPatch3dOffsetV() == 0);
             REQUIRE(pp.atlasPatch3dOffsetD() == 0);
             REQUIRE(pp.atlasPatch3dRangeD() == 1023);
-            REQUIRE(pp.atlasPatchDepthOccMapThreshold() == std::nullopt);
+            REQUIRE_FALSE(pp.asme_depth_occ_threshold_flag());
+            REQUIRE(pp.atlasPatchDepthOccThreshold() == 0);
           }
         }
 

@@ -47,8 +47,8 @@ inline OccupancyTransform::OccupancyTransform(const ViewParams &viewParams) {
 
 inline OccupancyTransform::OccupancyTransform(const ViewParams &viewParams,
                                               const PatchParams &patchParams) {
-  m_threshold = patchParams.atlasPatchDepthOccMapThreshold()
-                    ? *patchParams.atlasPatchDepthOccMapThreshold()
+  m_threshold = patchParams.asme_depth_occ_threshold_flag()
+                    ? patchParams.atlasPatchDepthOccThreshold()
                     : viewParams.dq.dq_depth_occ_threshold_default();
   if (m_threshold == 0 && viewParams.hasOccupancy) {
     m_threshold = 1; // Handle invalid depth for source views, transport views and viewports

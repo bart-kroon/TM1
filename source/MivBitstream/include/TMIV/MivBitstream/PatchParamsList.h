@@ -67,7 +67,8 @@ public:
   [[nodiscard]] constexpr auto atlasPatchLoDScaleX() const noexcept;
   [[nodiscard]] constexpr auto atlasPatchLoDScaleY() const noexcept;
   [[nodiscard]] constexpr auto atlasPatchEntityId() const noexcept;
-  [[nodiscard]] constexpr auto atlasPatchDepthOccMapThreshold() const noexcept;
+  [[nodiscard]] constexpr auto atlasPatchDepthOccThreshold() const noexcept;
+  [[nodiscard]] constexpr auto asme_depth_occ_threshold_flag() const noexcept;
   [[nodiscard]] auto atlasPatchAttributeOffset() const;
   [[nodiscard]] constexpr auto atlasPatchInpaintFlag() const noexcept;
 
@@ -85,7 +86,7 @@ public:
   constexpr auto atlasPatchLoDScaleX(int32_t value) noexcept -> PatchParams &;
   constexpr auto atlasPatchLoDScaleY(int32_t value) noexcept -> PatchParams &;
   constexpr auto atlasPatchEntityId(Common::SampleValue value) noexcept -> PatchParams &;
-  constexpr auto atlasPatchDepthOccMapThreshold(uint32_t value) noexcept -> PatchParams &;
+  constexpr auto atlasPatchDepthOccThreshold(uint32_t value) noexcept -> PatchParams &;
   auto atlasPatchAttributeOffset(Common::Vec3w value) noexcept -> PatchParams &;
   constexpr auto atlasPatchInpaintFlag(bool value) noexcept -> PatchParams &;
 
@@ -140,9 +141,9 @@ private:
   int32_t m_atlasPatchLoDScaleX{1};
   int32_t m_atlasPatchLoDScaleY{1};
   FlexiblePatchOrientation m_atlasPatchOrientationIndex{FlexiblePatchOrientation::FPO_INVALID};
-  std::optional<Common::SampleValue> m_atlasPatchEntityId;
-  std::optional<uint32_t> m_atlasPatchDepthOccMapThreshold;
-  std::optional<Common::Vec3w> m_atlasPatchAttributeOffset{};
+  Common::SampleValue m_atlasPatchEntityId{};
+  std::optional<uint32_t> m_atlasPatchDepthOccThreshold;
+  Common::Vec3w m_atlasPatchAttributeOffset{};
   bool m_atlasPatchInpaintFlag{};
 };
 

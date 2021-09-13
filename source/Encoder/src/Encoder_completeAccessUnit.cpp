@@ -482,7 +482,7 @@ void Encoder::constructVideoFrames() {
       if (0 < params().atlas[k].asps.asps_miv_extension().asme_max_entity_id()) {
         Common::MVD16Frame tempViews;
         tempViews.push_back(view);
-        const auto &entityViews = entitySeparator(tempViews, *patch.atlasPatchEntityId());
+        const auto &entityViews = entitySeparator(tempViews, patch.atlasPatchEntityId());
         patchAttrOffsetValues1Frame =
             writePatchInAtlas(patch, entityViews[0], atlasList, frameId, patchIdx);
       } else {

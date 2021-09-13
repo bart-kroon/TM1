@@ -135,8 +135,8 @@ auto patchParamsListHash(const MivBitstream::PatchParamsList &ppl) noexcept
     hash.consume(static_cast<uint32_t>(pp.atlasPatchOrientationIndex()));
     hash.consume(pp.atlasPatchLoDScaleX());
     hash.consume(pp.atlasPatchLoDScaleY());
-    hash.consume(pp.atlasPatchEntityId().value_or(0));
-    hash.consume(pp.atlasPatchDepthOccMapThreshold().value_or(0));
+    hash.consume(pp.atlasPatchEntityId());
+    hash.consume(pp.atlasPatchDepthOccThreshold());
     hash.consume(pp.atlasPatchAttributeOffset()[0]);
     hash.consume(pp.atlasPatchAttributeOffset()[1]);
     hash.consume(pp.atlasPatchAttributeOffset()[2]);

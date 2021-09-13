@@ -209,7 +209,7 @@ auto Packer::pack(const Common::SizeVector &atlasSizes, const Common::MaskList &
 
           if (m_maxEntityId > 0) {
             p.atlasPatchEntityId(cluster.getEntityId());
-            std::cout << "Packing patch " << patchId << " of entity " << *p.atlasPatchEntityId()
+            std::cout << "Packing patch " << patchId << " of entity " << p.atlasPatchEntityId()
                       << " from view " << p.atlasPatchProjectionId() << " with #active pixels "
                       << cluster.getNumActivePixels() << " in atlas " << p.atlasId() << std::endl;
           }

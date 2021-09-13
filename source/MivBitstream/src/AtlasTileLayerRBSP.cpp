@@ -387,7 +387,7 @@ void PduMivExtension::encodeTo(Common::OutputBitstream &bitstream,
   if (0 < asme.asme_max_entity_id()) {
     bitstream.putUVar(pdu_entity_id(), asme.asme_max_entity_id() + 1);
   } else {
-    PRECONDITION(!m_pdu_entity_id.has_value());
+    PRECONDITION(pdu_entity_id() == 0);
   }
   if (asme.asme_depth_occ_threshold_flag()) {
     bitstream.writeBits(pdu_depth_occ_threshold(), asps.asps_geometry_2d_bit_depth_minus1() + 1);

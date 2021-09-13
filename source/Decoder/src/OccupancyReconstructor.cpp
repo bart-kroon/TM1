@@ -50,8 +50,7 @@ void sampleOccupancyReconstruction(MivBitstream::AtlasAccessUnit &atlas,
         uint32_t depthOccupancyThreshold = 0;
         if (atlas.asps.asps_miv_extension_present_flag() &&
             atlas.asps.asps_miv_extension().asme_depth_occ_threshold_flag()) {
-          depthOccupancyThreshold =
-              *atlas.patchParamsList[patchId].atlasPatchDepthOccMapThreshold();
+          depthOccupancyThreshold = atlas.patchParamsList[patchId].atlasPatchDepthOccThreshold();
         } else {
           const auto viewId = atlas.patchParamsList[patchId].atlasPatchProjectionId();
           depthOccupancyThreshold = viewParamsList[viewId].dq.dq_depth_occ_threshold_default();

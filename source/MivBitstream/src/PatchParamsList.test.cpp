@@ -132,9 +132,10 @@ TEST_CASE("TMIV::MivBitstream::PatchParams") {
       REQUIRE(unit.atlasPatchOrientationIndex() == FlexiblePatchOrientation::FPO_NULL);
       REQUIRE(unit.atlasPatchLoDScaleX() == 1);
       REQUIRE(unit.atlasPatchLoDScaleY() == 1);
-      REQUIRE(unit.atlasPatchEntityId() == std::nullopt);
-      REQUIRE(unit.atlasPatchDepthOccMapThreshold() == std::nullopt);
-      REQUIRE_THROWS(unit.atlasPatchAttributeOffset());
+      REQUIRE(unit.atlasPatchEntityId() == 0);
+      REQUIRE_FALSE(unit.asme_depth_occ_threshold_flag());
+      REQUIRE(unit.atlasPatchDepthOccThreshold() == 0);
+      REQUIRE(unit.atlasPatchAttributeOffset() == Vec3w({}));
       REQUIRE(!unit.atlasPatchInpaintFlag());
     }
 
@@ -171,9 +172,10 @@ TEST_CASE("TMIV::MivBitstream::PatchParams") {
       REQUIRE(unit.atlasPatchOrientationIndex() == FlexiblePatchOrientation::FPO_ROT270);
       REQUIRE(unit.atlasPatchLoDScaleX() == 1);
       REQUIRE(unit.atlasPatchLoDScaleY() == 3);
-      REQUIRE(unit.atlasPatchEntityId() == std::nullopt);
-      REQUIRE(unit.atlasPatchDepthOccMapThreshold() == std::nullopt);
-      REQUIRE_THROWS(unit.atlasPatchAttributeOffset());
+      REQUIRE(unit.atlasPatchEntityId() == 0);
+      REQUIRE_FALSE(unit.asme_depth_occ_threshold_flag());
+      REQUIRE(unit.atlasPatchDepthOccThreshold() == 0);
+      REQUIRE(unit.atlasPatchAttributeOffset() == Vec3w({}));
       REQUIRE(!unit.atlasPatchInpaintFlag());
     }
 
@@ -228,7 +230,8 @@ TEST_CASE("TMIV::MivBitstream::PatchParams") {
       REQUIRE(unit.atlasPatchLoDScaleX() == 3);
       REQUIRE(unit.atlasPatchLoDScaleY() == 1);
       REQUIRE(unit.atlasPatchEntityId() == 13);
-      REQUIRE(unit.atlasPatchDepthOccMapThreshold() == 9);
+      REQUIRE(unit.asme_depth_occ_threshold_flag());
+      REQUIRE(unit.atlasPatchDepthOccThreshold() == 9);
       REQUIRE(unit.atlasPatchAttributeOffset() == Vec3w{10, 11, 12});
       REQUIRE(!unit.atlasPatchInpaintFlag());
     }
@@ -331,7 +334,7 @@ TEST_CASE("TMIV::MivBitstream::PatchParams") {
           .atlasPatchLoDScaleX(3)
           .atlasPatchLoDScaleY(1)
           .atlasPatchEntityId(13)
-          .atlasPatchDepthOccMapThreshold(9)
+          .atlasPatchDepthOccThreshold(9)
           .atlasPatchAttributeOffset(Vec3w{10, 11, 12});
 
       auto asps = AtlasSequenceParameterSetRBSP{};

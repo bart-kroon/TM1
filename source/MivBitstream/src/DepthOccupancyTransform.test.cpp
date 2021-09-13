@@ -87,7 +87,7 @@ TEST_CASE("OccupancyTransform") {
     vp.dq.dq_depth_occ_threshold_default(4000);
 
     auto pp = PatchParams{};
-    pp.atlasPatchDepthOccMapThreshold(1000);
+    pp.atlasPatchDepthOccThreshold(1000);
 
     const auto unit = OccupancyTransform{vp, pp};
 

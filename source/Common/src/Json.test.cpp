@@ -437,4 +437,12 @@ TEST_CASE("Json::asVec() converts a JSON array to a Common::stack::Vector<T, M>"
   auto json = Json{std::in_place_type_t<Json::Array>(), Json{1}, Json{2}, Json{3}};
   REQUIRE(json.asVec<uint16_t, 3>() == Vec3w{1, 2, 3});
 }
+
+TEST_CASE("Throw when the type mismatches") {
+  auto o = Json{Json::Object{}};
+  auto a = Json{Json::Array{}};
+  REQUIRE_THROWS(o.as<Json::Array>());
+  REQUIRE_THROWS(a.as<Json::Object>());
+  REQUIRE_THROWS(a.require("evidence"));
+}
 } // namespace TMIV::Common

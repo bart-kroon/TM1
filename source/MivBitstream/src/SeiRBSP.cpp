@@ -101,6 +101,8 @@ auto operator<<(std::ostream &stream, PayloadType pt) -> std::ostream & {
     return stream << "atlas_view_enabled";
   case PayloadType::omaf_v1_compatible:
     return stream << "omaf_v1_compatible";
+  case PayloadType::geometry_assistance:
+    return stream << "geometry_assistance";
   default:
     return stream << "reserved_sei_message (" << static_cast<int32_t>(pt) << ")";
   }

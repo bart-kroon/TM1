@@ -152,6 +152,8 @@ const auto nuhIdr = MivBitstream::NalUnitHeader{MivBitstream::NalUnitType::NAL_I
 const auto nuhIdrCaf = MivBitstream::NalUnitHeader{MivBitstream::NalUnitType::NAL_CAF_IDR, 0, 1};
 const auto nuhPrefixNsei =
     MivBitstream::NalUnitHeader{MivBitstream::NalUnitType::NAL_PREFIX_NSEI, 0, 1};
+const auto nuhSuffixNsei =
+    MivBitstream::NalUnitHeader{MivBitstream::NalUnitType::NAL_SUFFIX_NSEI, 0, 1};
 } // namespace
 
 auto MivEncoder::commonAtlasSubBitstream() -> MivBitstream::AtlasSubBitstream {
@@ -167,6 +169,7 @@ auto MivEncoder::commonAtlasSubBitstream() -> MivBitstream::AtlasSubBitstream {
     writeNalUnit(asb, nuhCaf, commonAtlasFrame(), nuhCaf, std::vector{m_params.casps},
                  maxFrmOrderCntLsb());
   }
+  encodeSuffixSeiMessages(asb);
 
   return asb;
 }
@@ -408,6 +411,13 @@ void MivEncoder::encodePrefixSeiMessages(MivBitstream::AtlasSubBitstream &asb) {
   if (!seiMessages.empty()) {
     MivBitstream::SeiRBSP seiRbsp{std::move(seiMessages)};
     encodeSeiRbspToAsb(asb, seiRbsp, nuhPrefixNsei);
+  }
+}
+void MivEncoder::encodeSuffixSeiMessages(MivBitstream::AtlasSubBitstream &asb) {
+  std::vector<MivBitstream::SeiMessage> seiMessages{};
+  if (!seiMessages.empty()) {
+    MivBitstream::SeiRBSP seiRbsp{std::move(seiMessages)};
+    encodeSeiRbspToAsb(asb, seiRbsp, nuhSuffixNsei);
   }
 }
 } // namespace TMIV::Encoder

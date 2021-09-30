@@ -49,6 +49,7 @@ foreach(subdir
         Encoder
         Decoder
         Parser
+        GaInserter
         DepthQualityAssessor
         MpiPcs)
     add_subdirectory(source/${subdir})

@@ -203,6 +203,10 @@ void CommonAtlasDecoder::decodeSeiMessage(AccessUnit &au, const MivBitstream::Se
   case MivBitstream::PayloadType::viewport_position:
     au.vp = MivBitstream::ViewportPosition::decodeFrom(bitstream);
     return;
+  case MivBitstream::PayloadType::geometry_assistance:
+    au.ga.emplace_back(MivBitstream::GeometryAssistance::decodeFrom(
+        bitstream, au.caf.caf_miv_extension().miv_view_params_list()));
+    return;
   case MivBitstream::PayloadType::atlas_view_enabled:
     au.ave = MivBitstream::AtlasViewEnabled::decodeFrom(bitstream);
     return;

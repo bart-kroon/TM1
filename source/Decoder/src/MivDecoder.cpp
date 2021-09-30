@@ -326,6 +326,7 @@ void MivDecoder::decodeCommonAtlas() {
   m_au.vcp = m_commonAtlasAu->vcp;
   m_au.vp = m_commonAtlasAu->vp;
   m_au.casps = m_commonAtlasAu->casps;
+  m_au.ga = m_commonAtlasAu->ga;
 }
 
 void MivDecoder::decodeViewParamsList() {

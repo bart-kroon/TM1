@@ -31,8 +31,9 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/Parser/Parser.h>
+#include <TMIV/GaInserter/GaInserter.h>
 
+#include <TMIV/Common/Bytestream.h>
 #include <TMIV/MivBitstream/AccessUnitDelimiterRBSP.h>
 #include <TMIV/MivBitstream/AtlasAdaptationParameterSetRBSP.h>
 #include <TMIV/MivBitstream/AtlasFrameParameterSetRBSP.h>
@@ -55,15 +56,22 @@
 #include <TMIV/MivBitstream/ViewportCameraParameters.h>
 #include <TMIV/MivBitstream/ViewportPosition.h>
 
+#include <fstream>
+
 using namespace std::string_view_literals;
 
-namespace TMIV::Parser {
-class Parser::Impl {
+namespace TMIV::GaInserter {
+class GaInserter::Impl {
 public:
-  explicit Impl(std::ostream &log) : m_log{log} {}
+  // explicit Impl(std::ostream &log) : m_log{log} {}
+  explicit Impl(std::ostream &log, std::ostream *recoded, std::vector<Common::Json> &seiJsons)
+      : m_log{log}, m_recoded{recoded}, m_seiJsons{seiJsons} {}
 
   void parseV3cSampleStream(std::istream &stream) {
     const auto ssvh = TMIV::MivBitstream::SampleStreamV3cHeader::decodeFrom(stream);
+    if (m_recoded != nullptr) {
+      ssvh.encodeTo(*m_recoded);
+    }
     m_log << ssvh;
 
     while (stream.peek(), !stream.eof()) {
@@ -81,7 +89,16 @@ private:
     auto vu = TMIV::MivBitstream::V3cUnit::decodeFrom(stream, numBytesInV3CUnit);
     m_log << vu.v3c_unit_header();
     m_vuh = vu.v3c_unit_header();
-    std::visit([this](const auto &x) { parseV3cUnitPayload(x); }, vu.v3c_unit_payload().payload());
+
+    m_substream.str("");
+    std::visit([this](auto &x) { parseV3cUnitPayload(x); }, vu.v3c_unit_payload().payload());
+
+    // just use 2!
+    MivBitstream::SampleStreamV3cHeader ssvh{2};
+    const auto ssvu = MivBitstream::SampleStreamV3cUnit{m_substream.str()};
+    if (m_recoded != nullptr) {
+      ssvu.encodeTo(*m_recoded, ssvh);
+    }
   }
 
   void parseV3cUnitPayload(const std::monostate & /* unused */) {}
@@ -89,17 +106,46 @@ private:
   void parseV3cUnitPayload(const TMIV::MivBitstream::V3cParameterSet &vps) {
     m_log << vps;
     m_vps = vps;
+    // vps.encodeTo(m_substream);
+    const auto vu = MivBitstream::V3cUnit{*m_vuh, vps};
+    vu.encodeTo(m_substream);
   }
 
   void parseV3cUnitPayload(const TMIV::MivBitstream::AtlasSubBitstream &asb) {
+    m_log << "atlassubbitstream...\n";
     m_log << asb.sample_stream_nal_header();
 
     for (const auto &nu : asb.nal_units()) {
+      m_log << "nal in atlassubbitstream...\n";
       parseNalUnit(nu);
+    }
+    if (!m_seiJsons.empty() &&
+        m_vuh.value().vuh_unit_type() == TMIV::MivBitstream::VuhUnitType::V3C_CAD) {
+      m_log << "*** inserting " << m_seiJsons.size() << " SEI messages\n";
+      std::vector<TMIV::MivBitstream::SeiMessage> seiMessages;
+      for (auto &j : m_seiJsons) {
+        TMIV::MivBitstream::SeiMessage gaSei = readGeometryAssistanceSEI(j);
+        seiMessages.emplace_back(gaSei);
+      }
+      MivBitstream::SeiRBSP seiRbsp{std::move(seiMessages)};
+      std::ostringstream subStream;
+      seiRbsp.encodeTo(subStream);
+      auto asb_copy = asb;
+      asb_copy.nal_units().emplace_back(
+          MivBitstream::NalUnitHeader{MivBitstream::NalUnitType::NAL_SUFFIX_NSEI, 0, 1},
+          subStream.str());
+
+      const auto vu = MivBitstream::V3cUnit{*m_vuh, asb_copy};
+      vu.encodeTo(m_substream);
+    } else {
+      const auto vu = MivBitstream::V3cUnit{*m_vuh, asb};
+      vu.encodeTo(m_substream);
     }
   }
 
-  void parseV3cUnitPayload(const TMIV::MivBitstream::VideoSubBitstream & /* unused */) {}
+  void parseV3cUnitPayload(const TMIV::MivBitstream::VideoSubBitstream & /* unused */) {
+    m_log << "videosubstream\n";
+  }
 
   void parseNalUnit(const TMIV::MivBitstream::NalUnit &nu) {
     m_log << '\n' << std::string(100, '-') << '\n' << nu;
@@ -299,7 +345,20 @@ private:
     ga.writeTo(m_log, m_caf.caf_miv_extension().miv_view_params_list());
   }
 
+  auto readGeometryAssistanceSEI(Common::Json const &seiJson) -> TMIV::MivBitstream::SeiMessage {
+    TMIV::MivBitstream::GeometryAssistance ga = TMIV::MivBitstream::GeometryAssistance::readFrom(
+        seiJson, m_caf.caf_miv_extension().miv_view_params_list());
+    std::stringstream ostream;
+    TMIV::Common::OutputBitstream obitstream{ostream};
+    ga.encodeTo(obitstream, m_caf.caf_miv_extension().miv_view_params_list());
+    return MivBitstream::SeiMessage{TMIV::MivBitstream::PayloadType::geometry_assistance,
+                                    ostream.str()};
+  }
+
   std::ostream &m_log;
+  std::ostream *m_recoded;
+  std::vector<TMIV::Common::Json> m_seiJsons;
+  std::stringstream m_substream; // used for recoding
   std::vector<TMIV::MivBitstream::CommonAtlasSequenceParameterSetRBSP> m_caspsV;
   std::vector<TMIV::MivBitstream::AtlasSequenceParameterSetRBSP> m_aspsV;
   std::vector<TMIV::MivBitstream::AtlasFrameParameterSetRBSP> m_afpsV;
@@ -309,11 +368,13 @@ private:
   uint32_t m_maxCommonAtlasFrmOrderCntLsb{};
 };
 
-Parser::Parser(std::ostream &log) : m_impl{new Impl{log}} {}
+GaInserter::GaInserter(std::ostream &log, std::ostream *recoded,
+                       std::vector<TMIV::Common::Json> &seiJsons)
+    : m_impl{new Impl{log, recoded, seiJsons}} {}
 
-Parser::~Parser() = default;
+GaInserter::~GaInserter() = default;
 
-void Parser::parseV3cSampleStream(std::istream &stream) {
+void GaInserter::parseV3cSampleStream(std::istream &stream) {
   return m_impl->parseV3cSampleStream(stream);
 }
-} // namespace TMIV::Parser
+} // namespace TMIV::GaInserter

@@ -78,6 +78,7 @@ private:
   void writeNalUnit(MivBitstream::AtlasSubBitstream &asb, MivBitstream::NalUnitHeader nuh,
                     Payload &&payload, Args &&...args);
   void encodePrefixSeiMessages(MivBitstream::AtlasSubBitstream &asb);
+  static void encodeSuffixSeiMessages(MivBitstream::AtlasSubBitstream &asb);
 
   std::ostream &m_stream;
   MivBitstream::SampleStreamV3cHeader m_ssvh{2};

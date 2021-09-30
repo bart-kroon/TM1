@@ -64,7 +64,7 @@ public:
   void writeOutputBitstream(std::ostream &stream) const;
   void addPackingInformation();
 
-  [[nodiscard]] auto numberOfV3cUnits() const { return m_units.size(); }
+  [[nodiscard]] auto numberOfV3cUnits() const { return 1 /* VPS */ + m_units.size(); }
 
 private:
   void checkRestrictions(MivBitstream::AtlasId atlasId) const;

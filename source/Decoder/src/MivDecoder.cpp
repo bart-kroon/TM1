@@ -172,10 +172,10 @@ void MivDecoder::resetDecoder() {
 
     if (m_au.vps.vps_packing_information_present_flag() &&
         m_au.vps.vps_packed_video_present_flag(j)) {
-      auto vuhGvd = MivBitstream::V3cUnitHeader{MivBitstream::VuhUnitType::V3C_GVD};
-      vuhGvd.vuh_v3c_parameter_set_id(m_au.vps.vps_v3c_parameter_set_id()).vuh_atlas_id(j);
+      auto vuhPvd = MivBitstream::V3cUnitHeader{MivBitstream::VuhUnitType::V3C_PVD};
+      vuhPvd.vuh_v3c_parameter_set_id(m_au.vps.vps_v3c_parameter_set_id()).vuh_atlas_id(j);
       m_framePackVideoDecoder.push_back(
-          startVideoDecoder(vuhGvd, m_totalFramePackVideoDecodingTime));
+          startVideoDecoder(vuhPvd, m_totalFramePackVideoDecodingTime));
     } else {
       m_framePackVideoDecoder.push_back(nullptr);
     }

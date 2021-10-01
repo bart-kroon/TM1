@@ -310,7 +310,7 @@ auto V3cUnitPayload::decodeFrom(std::istream &stream, const V3cUnitHeader &vuh) 
     return V3cUnitPayload{AtlasSubBitstream::decodeFrom(stream)};
   }
   if (vuh.vuh_unit_type() == VuhUnitType::V3C_OVD || vuh.vuh_unit_type() == VuhUnitType::V3C_GVD ||
-      vuh.vuh_unit_type() == VuhUnitType::V3C_AVD) {
+      vuh.vuh_unit_type() == VuhUnitType::V3C_AVD || vuh.vuh_unit_type() == VuhUnitType::V3C_PVD) {
     return V3cUnitPayload{VideoSubBitstream::decodeFrom(stream)};
   }
   return V3cUnitPayload{std::monostate{}};

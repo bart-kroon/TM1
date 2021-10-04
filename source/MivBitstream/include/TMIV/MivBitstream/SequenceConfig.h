@@ -75,6 +75,7 @@ struct SequenceConfig {
   int32_t numberOfFrames{};
   std::vector<CameraConfig> cameras;
   std::vector<std::string> sourceCameraNames;
+  std::vector<uint16_t> sourceCameraIds;
   bool lengthsInMeters{true};
 
   SequenceConfig() = default;

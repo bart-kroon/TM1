@@ -254,6 +254,95 @@ TEST_CASE("SequenceConfig") {
     }
   }
 
+  SECTION("Load from JSON with explicit viewIds") {
+    const auto json = TMIV::Common::Json::parse(R"(
+{
+    "Version": "4.0",
+    "BoundingBox_center": [ 0.0, 0.0, 0.0 ],
+    "Content_name": "Frog",
+    "Fps": 30,
+    "Frames_number": 300,
+    "lengthsInMeters": false,
+    "Informative": {},
+    "sourceCameraNames": [ "v4", "v7", "v10" ],
+    "sourceCameraIds": [ 4, 7, 10 ],
+    "cameras": [{
+        "Background": 0,
+        "BitDepthColor": 10,
+        "BitDepthDepth": 16,
+        "ColorSpace": "YUV420",
+        "Depth_range": [ 0.3, 1.62],
+        "HasInvalidDepth": false,
+        "DepthColorSpace": "YUV420",
+        "Depthmap": 1,
+        "Focal": [ 1546.74, 1547.76],
+        "Name": "v4",
+        "Position": [ 0.000149956, 0.109087, -4.69686e-05 ],
+        "Principle_point": [ 980.168, 534.722],
+        "Projection": "Perspective",
+        "Resolution": [ 1920, 1080 ],
+        "Rotation": [ 0.0445037, 0.00211475, 0.00515123 ]
+    },  {
+        "Background": 0,
+        "BitDepthColor": 10,
+        "BitDepthDepth": 16,
+        "ColorSpace": "YUV420",
+        "Depth_range": [ 0.3, 1.62],
+        "HasInvalidDepth": false,
+        "DepthColorSpace": "YUV420",
+        "Depthmap": 1,
+        "Focal": [ 1546.74, 1547.76],
+        "Name": "v7",
+        "Position": [ 0.0, 0.0, 0.0 ],
+        "Principle_point": [ 980.168, 534.722],
+        "Projection": "Perspective",
+        "Resolution": [ 1920, 1080 ],
+        "Rotation": [ 0.0, 0.0, 0.0 ]
+    },{
+        "Background": 0,
+        "BitDepthColor": 10,
+        "BitDepthDepth": 16,
+        "ColorSpace": "YUV420",
+        "Depth_range": [ 0.3, 1.62],
+        "HasInvalidDepth": false,
+        "DepthColorSpace": "YUV420",
+        "Depthmap": 1,
+        "Focal": [ 1546.74, 1547.76],
+        "Name": "v10",
+        "Position": [ 6.61544e-05, -0.108973, -1.67059e-05 ],
+        "Principle_point": [ 980.168, 534.722],
+        "Projection": "Perspective",
+        "Resolution": [ 1920, 1080 ],
+        "Rotation": [ -0.0569247, -0.00343453, 0.00867209 ]
+    } ]
+}
+)");
+    const auto x = SequenceConfig{json};
+
+    CHECK(x.cameras.size() == 3);
+    CHECK(x.sourceCameraNames == std::vector{"v4"s, "v7"s, "v10"s});
+    CHECK(x.sourceCameraIds[0] == 4);
+    CHECK(x.sourceCameraIds[1] == 7);
+    CHECK(x.sourceCameraIds[2] == 10);
+
+    SECTION("ViewParamsList() obtains a VPL and assignViewIds()") {
+      auto vpl = x.sourceViewParams();
+      vpl.assignViewIds(x.sourceCameraIds);
+      REQUIRE(vpl[0].viewId == TMIV::MivBitstream::ViewId(x.sourceCameraIds[0]));
+      REQUIRE(vpl[1].viewId == TMIV::MivBitstream::ViewId(x.sourceCameraIds[1]));
+      REQUIRE(vpl[2].viewId == TMIV::MivBitstream::ViewId(x.sourceCameraIds[2]));
+    }
+
+    SECTION("Save and load back") {
+      const auto newJson = TMIV::Common::Json{x};
+      const auto y = TMIV::MivBitstream::SequenceConfig{newJson};
+
+      REQUIRE(x.cameras.size() == y.cameras.size());
+      REQUIRE(x.sourceCameraNames == y.sourceCameraNames);
+      REQUIRE(x.sourceCameraIds == y.sourceCameraIds);
+    }
+  }
+
   SECTION("Load from JSON, minimal") {
     const auto json = TMIV::Common::Json::parse(R"(
 {

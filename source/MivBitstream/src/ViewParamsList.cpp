@@ -228,11 +228,16 @@ void ViewParamsList::constructViewIdIndex() {
   }
 }
 
-void ViewParamsList::assignViewIds() {
+void ViewParamsList::assignViewIds(vector<uint16_t> sourceCameraIds) {
   auto viewIdx = uint16_t{};
 
   for (auto &vp : *this) {
-    vp.viewId = ViewId{viewIdx++};
+    if (sourceCameraIds.empty()) {
+      vp.viewId = ViewId{viewIdx++};
+    } else {
+      VERIFY(viewIdx < sourceCameraIds.size());
+      vp.viewId = ViewId{sourceCameraIds[viewIdx++]};
+    }
   }
 }
 

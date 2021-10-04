@@ -100,7 +100,7 @@ struct ViewParams {
 class ViewParamsList : public std::vector<ViewParams> {
 public:
   void constructViewIdIndex();
-  void assignViewIds();
+  void assignViewIds(std::vector<uint16_t> sourceCameraIDs);
   [[nodiscard]] auto maxViewIdValue() const noexcept -> uint16_t;
 
   [[nodiscard]] auto indexOf(ViewId viewId) const {

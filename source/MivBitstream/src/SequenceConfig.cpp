@@ -155,6 +155,10 @@ SequenceConfig::SequenceConfig(const Common::Json &config) {
     sourceCameraNames = node.asVector<std::string>();
   }
 
+  if (const auto &node = config.optional("sourceCameraIds")) {
+    sourceCameraIds = node.asVector<uint16_t>();
+  }
+
   {
     const auto &node = config.require("cameras").as<Common::Json::Array>();
 
@@ -200,6 +204,14 @@ SequenceConfig::operator Common::Json() const {
     root["sourceCameraNames"] = std::move(a);
   }
 
+  if (!sourceCameraIds.empty()) {
+    auto a = Array{};
+    for (const auto &cameraId : sourceCameraIds) {
+      a.emplace_back(Json{cameraId});
+    }
+    root["sourceCameraIds"] = std::move(a);
+  }
+
   auto a = Array{};
   for (const auto &camera : cameras) {
     a.push_back(Json{camera});
@@ -224,7 +236,7 @@ auto SequenceConfig::sourceViewParams() const -> ViewParamsList {
   auto vpl = ViewParamsList{};
   std::transform(sourceCameraNames.cbegin(), sourceCameraNames.cend(), std::back_inserter(vpl),
                  [this](const std::string &name) { return cameraByName(name).viewParams; });
-  vpl.assignViewIds();
+  vpl.assignViewIds(sourceCameraIds);
   vpl.constructViewIdIndex();
   return ViewParamsList{vpl};
 }
@@ -232,7 +244,8 @@ auto SequenceConfig::sourceViewParams() const -> ViewParamsList {
 auto SequenceConfig::operator==(const SequenceConfig &other) const noexcept -> bool {
   return boundingBoxCenter == other.boundingBoxCenter && contentName == other.contentName &&
          frameRate == other.frameRate && numberOfFrames == other.numberOfFrames &&
-         cameras == other.cameras && sourceCameraNames == other.sourceCameraNames;
+         cameras == other.cameras && sourceCameraNames == other.sourceCameraNames &&
+         sourceCameraIds == other.sourceCameraIds;
 }
 
 auto SequenceConfig::operator!=(const SequenceConfig &other) const noexcept -> bool {

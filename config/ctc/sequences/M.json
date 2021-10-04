@@ -13,6 +13,7 @@
   },
   "lengthsInMeters": true,
   "sourceCameraNames": [ "mpi" ],
+  "sourceCameraIds": [ 0 ],
   "cameras": [
     {
       "Background": 1,

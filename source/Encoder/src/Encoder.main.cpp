@@ -94,6 +94,9 @@ public:
                    "e.g. to test with a subset of views.\n";
       m_inputSequenceConfig.sourceCameraNames = node.asVector<std::string>();
     }
+    if (const auto &node = json().optional("sourceCameraIds")) {
+      m_inputSequenceConfig.sourceCameraIds = node.asVector<uint16_t>();
+    }
   }
 
   void run() override {

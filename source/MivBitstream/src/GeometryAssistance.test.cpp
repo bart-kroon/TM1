@@ -42,7 +42,6 @@ TEST_CASE("geometry_assistance", "[Geometry assistance SEI payload syntax]") {
     auto mvpl = MivViewParamsList{};
     mvpl.mvp_num_views_minus1(0)
         .mvp_explicit_view_id_flag(false)
-        .mvp_inpaint_flag(1, true)
         .mvp_intrinsic_params_equal_flag(true)
         .mvp_depth_quantization_params_equal_flag(true)
         .mvp_pruning_graph_params_present_flag(true);

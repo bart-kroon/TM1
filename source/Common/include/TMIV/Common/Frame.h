@@ -46,6 +46,7 @@
 #include <variant>
 
 namespace TMIV::Common {
+class YUV400P1 {};
 class YUV400P8 {};
 class YUV400P10 {};
 class YUV400P16 {};
@@ -103,7 +104,8 @@ public:
   void fillZero();
 
   // Set all samples to a specific value
-  void fillValue(uint16_t value);
+  template <typename Integer, typename = std::enable_if_t<std::is_integral_v<Integer>>>
+  void fillValue(Integer value);
 
   // Set all samples to the neutral color
   void fillNeutral();
@@ -148,6 +150,7 @@ using TextureFrame = Frame<YUV420P10>;
 using Texture444Frame = Frame<YUV444P10>; // The renderer uses 4:4:4 internally
 using Depth10Frame = Frame<YUV400P10>;    // Decoder side
 using Depth16Frame = Frame<YUV400P16>;    // Encoder side
+using Occupancy1Frame = Frame<YUV400P1>;
 using Occupancy10Frame = Frame<YUV400P10>;
 using Transparency8Frame = Frame<YUV400P8>;
 using Transparency10Frame = Frame<YUV400P10>;
@@ -162,16 +165,20 @@ template <typename FORMAT> struct TextureDepthFrame {
   TextureFrame texture;
   Frame<FORMAT> depth;
   EntityMap entities{};
-  Occupancy10Frame occupancy{};
+
+  using OccupancyFrame =
+      std::conditional_t<std::is_same_v<FORMAT, YUV400P16>, Occupancy1Frame, Occupancy10Frame>;
+
+  OccupancyFrame occupancy{};
   Transparency10Frame transparency{};
   FramePack10Frame framePack{};
 
   TextureDepthFrame() = default;
   TextureDepthFrame(TextureFrame texture_, Frame<FORMAT> depth_)
       : texture{std::move(texture_)}, depth{std::move(depth_)} {}
-  TextureDepthFrame(TextureFrame texture_, Frame<FORMAT> depth_, Occupancy10Frame occupancy_)
+  TextureDepthFrame(TextureFrame texture_, Frame<FORMAT> depth_, OccupancyFrame occupancy_)
       : texture{std::move(texture_)}, depth{std::move(depth_)}, occupancy{std::move(occupancy_)} {}
-  TextureDepthFrame(TextureFrame texture_, Frame<FORMAT> depth_, Occupancy10Frame occupancy_,
+  TextureDepthFrame(TextureFrame texture_, Frame<FORMAT> depth_, OccupancyFrame occupancy_,
                     Transparency10Frame transparency_)
       : texture{std::move(texture_)}
       , depth{std::move(depth_)}

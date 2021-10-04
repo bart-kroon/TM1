@@ -41,6 +41,16 @@
 
 namespace TMIV::Common {
 namespace detail {
+template <> struct PixelFormatHelper<YUV400P1> {
+  static constexpr auto numberOfPlanes = 1;
+  static constexpr auto defaultBitDepth = 1U;
+  using base_type = bool;
+  static constexpr auto getMemorySize(int32_t W, int32_t H) -> int32_t { return W * H; }
+  static constexpr auto getDiskSize(int32_t W, int32_t H) -> int32_t { return (W * H) * 3 / 2; }
+  static constexpr auto getPlaneWidth(int32_t /*unused*/, int32_t W) -> int32_t { return W; }
+  static constexpr auto getPlaneHeight(int32_t /*unused*/, int32_t H) -> int32_t { return H; }
+};
+
 template <> struct PixelFormatHelper<YUV400P8> {
   static constexpr auto numberOfPlanes = 1;
   static constexpr auto defaultBitDepth = 8U;
@@ -229,10 +239,12 @@ template <typename FORMAT> void Frame<FORMAT>::fillZero() {
   }
 }
 
-template <typename FORMAT> void Frame<FORMAT>::fillValue(uint16_t value) {
+template <typename FORMAT>
+template <typename Integer, typename>
+void Frame<FORMAT>::fillValue(Integer value) {
   using base_type = typename detail::PixelFormatHelper<FORMAT>::base_type;
   for (int32_t k = 0; k < getNumberOfPlanes(); ++k) {
-    std::fill(std::begin(getPlane(k)), std::end(getPlane(k)), base_type{value});
+    std::fill(std::begin(getPlane(k)), std::end(getPlane(k)), Common::downCast<base_type>(value));
   }
 }
 

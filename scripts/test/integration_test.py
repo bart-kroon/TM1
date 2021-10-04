@@ -744,7 +744,8 @@ class IntegrationTest:
             + ["-p", "configDirectory", "{1}/config", "-p", "inputDirectory", "{2}"]
             + ["-p", "outputDirectory", "{3}", "-n", "3", "-s", "N", "-p", "intraPeriod", "2"]
             + ["-p", "inputSequenceConfigPathFmt", "test/sequences/T{{1}}.json"]
-            + ["-p", "maxLumaPictureSize", "1310720", "-f", "0"],
+            + ["-p", "maxLumaPictureSize", "1310720", "-f", "0"]
+            + ["-p", "inputBitstreamPathFmt", "O{0}/{1}/TMIV_O{0}_{1}.bit"],
             "{3}/O3/N/TMIV_O3_N.log",
             [
                 "O3/N/TMIV_O3_N.bit",
@@ -797,13 +798,20 @@ class IntegrationTest:
         return executor.submit(self.syncAndRunCommand, futures, args, logFile, outputFiles)
 
     def syncAndRunCommand(self, futures, args, logFile, outputFiles):
-        for future in concurrent.futures.as_completed(futures):
-            future.result()
+        try:
+            for future in concurrent.futures.as_completed(futures):
+                future.result()
 
-        self.runCommand(args, logFile)
+            self.runCommand(args, logFile)
 
-        if not self.dryRun:
-            self.computeMd5Sums(outputFiles)
+            if not self.dryRun:
+                self.computeMd5Sums(outputFiles)
+        except Exception as e:
+            self.stop = True
+            print(
+                f"EXCEPTION of type {type(e).__name__}, {e}, with args = {args}, and logFile = {logFile}."
+            )
+            sys.exit(1)
 
     def sync(self, futures):
         for future in concurrent.futures.as_completed(futures):
@@ -828,7 +836,7 @@ class IntegrationTest:
 
         if self.dryRun:
             print(" ".join(args))
-        else:
+        elif not self.stop:
             # Execute the command in an interruptable way
             popen = subprocess.Popen(
                 args,

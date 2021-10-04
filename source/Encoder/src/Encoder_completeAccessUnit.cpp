@@ -293,7 +293,7 @@ void Encoder::calculateAttributeOffset(
                     .isBasicView)) {
             continue;
           }
-          if (atlas.occupancy.getPlane(0)(y / occScaleY, x / occScaleX) == 0) {
+          if (!atlas.occupancy.getPlane(0)(y / occScaleY, x / occScaleX)) {
             continue;
           }
           const auto &pp = params().patchParamsList[patchIndex];
@@ -404,10 +404,6 @@ auto Encoder::calculatePatchAttrOffsetValuesFullGOP(
   return Common::verifyDownCast<int32_t>(bitShift);
 }
 
-auto computeOccUnoccupiedLevel(uint8_t occBitDepthMinus1) -> uint16_t {
-  return Common::assertDownCast<uint16_t>(1 << (occBitDepthMinus1 - 1));
-}
-
 // NOLINTNEXTLINE(readability-function-cognitive-complexity)
 void Encoder::constructVideoFrames() {
   int32_t frameId = 0;
@@ -461,13 +457,11 @@ void Encoder::constructVideoFrames() {
           occFrameHeight /= asme.asme_occupancy_scale_factor_y_minus1() + 1;
         }
         frame.occupancy.resize(Common::align(occFrameWidth, 2), Common::align(occFrameHeight, 2));
-        const auto unoccupiedLevel = computeOccUnoccupiedLevel(
-            vps.occupancy_information(j).oi_occupancy_2d_bit_depth_minus1());
-        frame.occupancy.fillValue(unoccupiedLevel);
       } else {
         frame.occupancy.resize(frameWidth, frameHeight);
-        frame.occupancy.fillZero();
       }
+
+      frame.occupancy.fillZero();
     }
 
     int32_t patchCnt = 0;
@@ -592,25 +586,24 @@ auto Encoder::writePatchInAtlas(const MivBitstream::PatchParams &patchParams,
                                      m_patchColorCorrectionOffset[patchIdx]);
           }
 
-          // Depth
           if (m_config.haveGeometry) {
             auto depth = view.depth.getPlane(0)(pView.y(), pView.x());
-            atlas.occupancy.getPlane(0)(yOcc, xOcc) = 1;
+
+            atlas.occupancy.getPlane(0)(yOcc, xOcc) = true;
+
             if (depth == 0 && !inViewParams.hasOccupancy && outViewParams.hasOccupancy &&
                 asme.asme_max_entity_id() == 0) {
               depth = 1; // Avoid marking valid depth as invalid
             }
+
             if (depth == 0 && inViewParams.hasOccupancy) {
-              atlas.occupancy.getPlane(0)(yOcc, xOcc) = 0;
+              atlas.occupancy.getPlane(0)(yOcc, xOcc) = false;
             }
+
             atlas.depth.getPlane(0)(pAtlas.y(), pAtlas.x()) = depth;
+
             if (depth > 0 && params().vps.vps_occupancy_video_present_flag(patchParams.atlasId())) {
-              const auto occupiedLevel = Common::assertDownCast<uint16_t>(
-                  computeOccUnoccupiedLevel(params()
-                                                .vps.occupancy_information(patchParams.atlasId())
-                                                .oi_occupancy_2d_bit_depth_minus1()) *
-                  3);
-              atlas.occupancy.getPlane(0)(yOcc, xOcc) = occupiedLevel;
+              atlas.occupancy.getPlane(0)(yOcc, xOcc) = true;
             }
           }
         }
@@ -633,12 +626,9 @@ void Encoder::adaptAtlas(const MivBitstream::PatchParams &patchParams,
                          int32_t xOcc, const Common::Vec2i &pView,
                          const Common::Vec2i &pAtlas) const {
   atlas.depth.getPlane(0)(pAtlas.y(), pAtlas.x()) = 0;
+
   if (params().vps.vps_occupancy_video_present_flag(patchParams.atlasId())) {
-    const auto unoccupiedLevel =
-        computeOccUnoccupiedLevel(params()
-                                      .vps.occupancy_information(patchParams.atlasId())
-                                      .oi_occupancy_2d_bit_depth_minus1());
-    atlas.occupancy.getPlane(0)(yOcc, xOcc) = unoccupiedLevel;
+    atlas.occupancy.getPlane(0)(yOcc, xOcc) = false;
   }
   if (m_config.haveTexture) {
     const auto textureMedVal = Common::medLevel<uint16_t>(m_config.textureBitDepth);

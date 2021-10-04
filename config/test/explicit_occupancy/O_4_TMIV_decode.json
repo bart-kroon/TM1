@@ -6,7 +6,7 @@
         "minForegroundConfidence": 0.5
     },
     "DecoderMethod": "Decoder",
-    "inputBitstreamPathFmt": "O{0}/{1}/TMIV_O{0}_{1}.bit",
+    "inputBitstreamPathFmt": "O{0}/{1}/{2}/TMIV_O{0}_{1}_{2}.bit",
     "inputDirectory": ".",
     "inputOccupancyVideoFramePathFmt": "O{0}/{1}/{2}/TMIV_O{0}_{1}_{2}_occ_c{3:02}_{4}x{5}_yuv420p10le.yuv",
     "inputGeometryVideoFramePathFmt": "O{0}/{1}/{2}/TMIV_O{0}_{1}_{2}_geo_c{3:02}_{4}x{5}_yuv420p10le.yuv",

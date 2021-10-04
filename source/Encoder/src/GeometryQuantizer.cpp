@@ -85,17 +85,36 @@ void padGeometryFromLeft(const EncoderParams &outParams, Common::MVD10Frame &atl
     }
   }
 }
+
+auto transformOccupancyFrame(const Common::Occupancy1Frame &in, unsigned bitDepth)
+    -> Common::Occupancy10Frame {
+  auto result = Common::Occupancy10Frame{in.getWidth(), in.getHeight(), bitDepth};
+
+  const auto low = Common::assertDownCast<uint16_t>(1U << (bitDepth - 2));
+  const auto high = Common::assertDownCast<uint16_t>(3U << (bitDepth - 2));
+
+  std::transform(in.getPlane(0).cbegin(), in.getPlane(0).cend(), result.getPlane(0).begin(),
+                 [=](auto x) { return x ? high : low; });
+  return result;
+}
 } // namespace
 
 auto transformAtlases(const EncoderParams &inParams, const EncoderParams &outParams,
                       const Common::MVD16Frame &inAtlases) -> Common::MVD10Frame {
-  auto outAtlases = Common::MVD10Frame{};
-  outAtlases.reserve(inAtlases.size());
+  auto outAtlases = Common::MVD10Frame(inAtlases.size());
 
-  for (const auto &inAtlas : inAtlases) {
-    outAtlases.emplace_back(
-        inAtlas.texture, Common::Depth10Frame{inAtlas.depth.getWidth(), inAtlas.depth.getHeight()},
-        inAtlas.occupancy);
+  for (uint8_t k = 0; k <= outParams.vps.vps_atlas_count_minus1(); ++k) {
+    outAtlases[k].texture = inAtlases[k].texture;
+
+    outAtlases[k].depth.resize(inAtlases[k].depth.getWidth(), inAtlases[k].depth.getHeight());
+
+    const auto atlasId = outParams.vps.vps_atlas_id(k);
+
+    if (outParams.vps.vps_occupancy_video_present_flag(atlasId)) {
+      const auto &oi = outParams.vps.occupancy_information(atlasId);
+      const auto occBitDepth = oi.oi_occupancy_2d_bit_depth_minus1() + 1U;
+      outAtlases[k].occupancy = transformOccupancyFrame(inAtlases[k].occupancy, occBitDepth);
+    }
   }
 
   for (const auto &patch : outParams.patchParamsList) {

@@ -344,6 +344,20 @@ auto GeometryAssistance::gas_bw() const noexcept -> uint32_t {
   return result;
 }
 
+auto GeometryAssistance::gas_num_views() const noexcept -> uint16_t {
+  return m_gas_num_views_minus1 + 1;
+}
+
+auto GeometryAssistance::gas_projection_plane_height_minus1() const noexcept
+    -> const std::vector<uint16_t> & {
+  return m_gas_projection_plane_height_minus1;
+}
+
+auto GeometryAssistance::gas_projection_plane_width_minus1() const noexcept
+    -> const std::vector<uint16_t> & {
+  return m_gas_projection_plane_width_minus1;
+}
+
 auto GeometryAssistance::blocks() const noexcept
     -> const std::vector<std::vector<std::vector<GaBlock>>> & {
   return m_gas_blocks;
@@ -351,6 +365,11 @@ auto GeometryAssistance::blocks() const noexcept
 
 auto GeometryAssistance::gas_qs(uint32_t value) noexcept -> GeometryAssistance & {
   m_gas_qs = value;
+  return *this;
+}
+
+auto GeometryAssistance::gas_num_views_minus1(uint16_t value) noexcept -> GeometryAssistance & {
+  m_gas_num_views_minus1 = value;
   return *this;
 }
 
@@ -371,24 +390,32 @@ auto GeometryAssistance::blocks(std::vector<std::vector<std::vector<GaBlock>>> &
 }
 
 auto GeometryAssistance::operator==(const GeometryAssistance &other) const noexcept -> bool {
-  return gas_qs() == other.gas_qs() && gas_bw() == other.gas_bw() && blocks() == other.blocks();
+  return gas_qs() == other.gas_qs() && gas_num_views() == other.gas_num_views() &&
+         gas_bw() == other.gas_bw() &&
+         gas_projection_plane_height_minus1() == other.gas_projection_plane_height_minus1() &&
+         gas_projection_plane_width_minus1() == other.gas_projection_plane_width_minus1() &&
+         blocks() == other.blocks();
 }
 
 auto GeometryAssistance::operator!=(const GeometryAssistance &other) const noexcept -> bool {
   return !operator==(other);
 }
 
-void GeometryAssistance::writeTo(std::ostream &stream,
-                                 MivBitstream::MivViewParamsList const &mvp) const {
+void GeometryAssistance::writeTo(std::ostream &stream) const {
   stream << "gas_qs=" << m_gas_qs << "\n";
+  stream << "gas_num_views_minus1=" << m_gas_num_views_minus1 << "\n";
   stream << "gas_log2_bw_minus2=" << (int)m_gas_log2_bw_minus2 << "\n";
-  uint16_t num_views = mvp.mvp_num_views_minus1() + 1;
+  uint16_t num_views = m_gas_num_views_minus1 + 1;
   for (uint16_t v_idx = 0; v_idx < num_views; v_idx++) {
-    auto v_h = mvp.camera_intrinsics(v_idx).ci_projection_plane_height_minus1() + 1;
-    auto v_h_in_blocks = (v_h + gas_bw() - 1) / gas_bw();
-    auto v_w = mvp.camera_intrinsics(v_idx).ci_projection_plane_width_minus1() + 1;
-    auto v_w_in_blocks = (v_w + gas_bw() - 1) / gas_bw();
     stream << "# VIEWIDX " << v_idx << "\n";
+    stream << "gas_projection_plane_height_minus1[" << v_idx
+           << "]=" << m_gas_projection_plane_height_minus1[v_idx] << "\n";
+    stream << "gas_projection_plane_width_minus1[" << v_idx
+           << "]=" << m_gas_projection_plane_width_minus1[v_idx] << "\n";
+    auto v_h = m_gas_projection_plane_height_minus1[v_idx];
+    auto v_h_in_blocks = (v_h + gas_bw() - 1) / gas_bw();
+    auto v_w = m_gas_projection_plane_width_minus1[v_idx];
+    auto v_w_in_blocks = (v_w + gas_bw() - 1) / gas_bw();
     for (decltype(v_h_in_blocks) blk_y = 0; blk_y < v_h_in_blocks; blk_y++) {
       for (decltype(v_w_in_blocks) blk_x = 0; blk_x < v_w_in_blocks; blk_x++) {
         stream << "block y=" << blk_y << " x=" << blk_x;
@@ -399,27 +426,30 @@ void GeometryAssistance::writeTo(std::ostream &stream,
   }
 }
 
-auto GeometryAssistance::readFrom(TMIV::Common::Json const &jin,
-                                  MivBitstream::MivViewParamsList const &mvp)
-    -> GeometryAssistance {
+auto GeometryAssistance::readFrom(TMIV::Common::Json const &jin) -> GeometryAssistance {
   auto ga = GeometryAssistance{};
 
   ga.m_gas_qs = jin.require("gas_qs").as<int>();
+  ga.m_gas_num_views_minus1 = jin.require("gas_num_views_minus1").as<uint16_t>();
   ga.m_gas_log2_bw_minus2 = jin.require("gas_log2_bw_minus2").as<uint8_t>();
 
-  uint16_t num_views_text = mvp.mvp_num_views_minus1() + 1;
+  uint16_t num_views_text = ga.m_gas_num_views_minus1 + 1;
+  ga.m_gas_blocks.resize(num_views_text);
+  ga.m_gas_projection_plane_height_minus1.resize(num_views_text);
+  ga.m_gas_projection_plane_width_minus1.resize(num_views_text);
 
   for (uint16_t v_idx = 0; v_idx < num_views_text; v_idx++) {
-    if (v_idx >= ga.m_gas_blocks.size()) {
-      ga.m_gas_blocks.resize(v_idx + 1);
-    }
-    auto v_h = mvp.camera_intrinsics(v_idx).ci_projection_plane_height_minus1() + 1;
+    Common::Json const view_info = jin.require("view_idx_" + std::to_string(v_idx));
+    ga.m_gas_projection_plane_height_minus1[v_idx] =
+        view_info.require("gas_projection_plane_height_minus1").as<uint16_t>();
+    ga.m_gas_projection_plane_width_minus1[v_idx] =
+        view_info.require("gas_projection_plane_width_minus1").as<uint16_t>();
+    auto v_h = ga.m_gas_projection_plane_height_minus1[v_idx] + 1;
+    auto v_w = ga.m_gas_projection_plane_width_minus1[v_idx] + 1;
     auto v_h_in_blocks = (v_h + ga.gas_bw() - 1) / ga.gas_bw();
-    auto v_w = mvp.camera_intrinsics(v_idx).ci_projection_plane_width_minus1() + 1;
     auto v_w_in_blocks = (v_w + ga.gas_bw() - 1) / ga.gas_bw();
     ga.m_gas_blocks[v_idx].resize(v_h_in_blocks);
-    Common::Json const view_info = jin.require("view_idx_" + std::to_string(v_idx));
-    auto yvec = view_info.as<Common::Json::Array>();
+    auto yvec = view_info.require("blocks").as<Common::Json::Array>();
     if (yvec.size() != v_h_in_blocks) {
       throw std::runtime_error("GA: badly sized input y-vector");
     }
@@ -438,16 +468,18 @@ auto GeometryAssistance::readFrom(TMIV::Common::Json const &jin,
   return ga;
 }
 
-void GeometryAssistance::encodeTo(Common::OutputBitstream &bitstream,
-                                  MivBitstream::MivViewParamsList const &mvp) const {
-  uint16_t num_views = mvp.mvp_num_views_minus1() + 1;
+void GeometryAssistance::encodeTo(Common::OutputBitstream &bitstream) const {
+  uint16_t num_views = m_gas_num_views_minus1 + 1;
 
   bitstream.putUExpGolomb(m_gas_qs);
+  bitstream.putUExpGolomb(m_gas_num_views_minus1);
   bitstream.putUExpGolomb(m_gas_log2_bw_minus2);
   for (uint16_t v_idx = 0; v_idx < num_views; v_idx++) {
-    auto v_h = mvp.camera_intrinsics(v_idx).ci_projection_plane_height_minus1() + 1;
+    bitstream.putUExpGolomb(m_gas_projection_plane_height_minus1[v_idx]);
+    bitstream.putUExpGolomb(m_gas_projection_plane_width_minus1[v_idx]);
+    auto v_h = m_gas_projection_plane_height_minus1[v_idx] + 1;
     auto v_h_in_blocks = (v_h + gas_bw() - 1) / gas_bw();
-    auto v_w = mvp.camera_intrinsics(v_idx).ci_projection_plane_width_minus1() + 1;
+    auto v_w = m_gas_projection_plane_width_minus1[v_idx] + 1;
     auto v_w_in_blocks = (v_w + gas_bw() - 1) / gas_bw();
     for (decltype(v_h_in_blocks) blk_y = 0; blk_y < v_h_in_blocks; blk_y++) {
       for (decltype(v_h_in_blocks) blk_x = 0; blk_x < v_w_in_blocks; blk_x++) {
@@ -458,21 +490,24 @@ void GeometryAssistance::encodeTo(Common::OutputBitstream &bitstream,
   bitstream.zeroAlign();
 }
 
-auto GeometryAssistance::decodeFrom(Common::InputBitstream &bitstream,
-                                    MivBitstream::MivViewParamsList const &mvp)
-    -> GeometryAssistance {
+auto GeometryAssistance::decodeFrom(Common::InputBitstream &bitstream) -> GeometryAssistance {
   auto x = GeometryAssistance{};
 
   x.m_gas_qs = bitstream.getUExpGolomb<uint8_t>();
+  x.m_gas_num_views_minus1 = bitstream.getUExpGolomb<uint16_t>();
   x.m_gas_log2_bw_minus2 = bitstream.getUExpGolomb<uint8_t>();
 
-  for (uint16_t v_idx = 0; v_idx < mvp.mvp_num_views_minus1() + 1; v_idx++) {
-    if (v_idx >= x.m_gas_blocks.size()) {
-      x.m_gas_blocks.resize(v_idx + 1);
-    }
-    auto v_w = mvp.camera_intrinsics(v_idx).ci_projection_plane_width_minus1() + 1;
+  uint16_t num_views = x.m_gas_num_views_minus1 + 1;
+  x.m_gas_blocks.resize(num_views);
+  x.m_gas_projection_plane_height_minus1.resize(num_views);
+  x.m_gas_projection_plane_width_minus1.resize(num_views);
+
+  for (uint16_t v_idx = 0; v_idx < num_views; v_idx++) {
+    x.m_gas_projection_plane_height_minus1[v_idx] = bitstream.getUExpGolomb<uint16_t>();
+    x.m_gas_projection_plane_width_minus1[v_idx] = bitstream.getUExpGolomb<uint16_t>();
+    auto v_w = x.m_gas_projection_plane_width_minus1[v_idx] + 1;
     auto v_w_in_blocks = (v_w + x.gas_bw() - 1) / x.gas_bw();
-    auto v_h = mvp.camera_intrinsics(v_idx).ci_projection_plane_height_minus1() + 1;
+    auto v_h = x.m_gas_projection_plane_height_minus1[v_idx] + 1;
     auto v_h_in_blocks = (v_h + x.gas_bw() - 1) / x.gas_bw();
     x.m_gas_blocks[v_idx].resize(v_h_in_blocks);
     for (decltype(v_h_in_blocks) blk_y = 0; blk_y < v_h_in_blocks; blk_y++) {

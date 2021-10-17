@@ -39,20 +39,13 @@
 namespace TMIV::MivBitstream {
 TEST_CASE("geometry_assistance", "[Geometry assistance SEI payload syntax]") {
   SECTION("SINGLEVIEW") {
-    auto mvpl = MivViewParamsList{};
-    mvpl.mvp_num_views_minus1(0)
-        .mvp_explicit_view_id_flag(false)
-        .mvp_intrinsic_params_equal_flag(true)
-        .mvp_depth_quantization_params_equal_flag(true)
-        .mvp_pruning_graph_params_present_flag(true);
-    mvpl.camera_intrinsics(0)
-        .ci_cam_type(CiCamType::equirectangular)
-        .ci_projection_plane_width_minus1(1920 - 1)
-        .ci_projection_plane_height_minus1(1080 - 1);
-
     const auto json_ga = TMIV::Common::Json::parse(R"(
     {"gas_qs":1,"gas_log2_bw_minus2":8
-    ,"view_idx_0":[[
+    ,"gas_num_views_minus1":0
+    ,"view_idx_0":{
+    "gas_projection_plane_height_minus1":1079
+    ,"gas_projection_plane_width_minus1":1919
+    ,"blocks":[[
      {"gas_split_flag":1 ,"gas_quad_split_flag":1, "subblks": [{ "gas_skip_flag": 0 ,"gas_zmin_delta":88 ,"gas_zmax_delta":297},{ "gas_skip_flag": 0 ,"gas_zmin_delta":0 ,"gas_zmax_delta":-145},{ "gas_skip_flag": 0 ,"gas_zmin_delta":-20 ,"gas_zmax_delta":393},{ "gas_skip_flag": 0 ,"gas_ltmin_flag":0 ,"gas_zmin_delta":0 ,"gas_ltmax_flag":0 ,"gas_zmax_delta":24}]}
      , {"gas_split_flag":1 ,"gas_quad_split_flag":1, "subblks": [{ "gas_skip_flag": 0 ,"gas_zmin_delta":-76 ,"gas_zmax_delta":4},{ "gas_skip_flag": 0 ,"gas_zmin_delta":76 ,"gas_zmax_delta":165},{ "gas_skip_flag": 0 ,"gas_ltmin_flag":1 ,"gas_zmin_delta":-12 ,"gas_ltmax_flag":0 ,"gas_zmax_delta":-28},{ "gas_skip_flag": 0 ,"gas_ltmin_flag":1 ,"gas_zmin_delta":-20 ,"gas_ltmax_flag":1 ,"gas_zmax_delta":-4}]}
      ]
@@ -60,30 +53,33 @@ TEST_CASE("geometry_assistance", "[Geometry assistance SEI payload syntax]") {
       {"gas_split_flag":0 ,"subblks": [{ "gas_skip_flag": 0 ,"gas_zmin_delta":88 ,"gas_zmax_delta":213}]}
       , {"gas_split_flag":0 ,"subblks": [{ "gas_skip_flag": 0 ,"gas_ltmin_flag":0 ,"gas_zmin_delta":-4 ,"gas_ltmax_flag":0 ,"gas_zmax_delta":-221}]}
       ]
-      ]
+      ]}
       })");
-    auto ga = TMIV::MivBitstream::GeometryAssistance::readFrom(json_ga, mvpl);
+    auto ga = TMIV::MivBitstream::GeometryAssistance::readFrom(json_ga);
     std::ostringstream text;
-    ga.writeTo(text, mvpl);
+    ga.writeTo(text);
     REQUIRE(text.str() ==
             R"(gas_qs=1
+gas_num_views_minus1=0
 gas_log2_bw_minus2=8
 # VIEWIDX 0
+gas_projection_plane_height_minus1[0]=1079
+gas_projection_plane_width_minus1[0]=1919
 block y=0 x=0 gas_split_flag=1 gas_quad_split_flag=1 [gas_skip_flag=0,gas_zmin_delta=88,gas_zmax_delta=297] [gas_skip_flag=0,gas_zmin_delta=0,gas_zmax_delta=-145] [gas_skip_flag=0,gas_zmin_delta=-20,gas_zmax_delta=393] [gas_skip_flag=0,gas_ltmin_flag=0,gas_ltmax_flag=0,gas_zmin_delta=0,gas_zmax_delta=24]
 block y=0 x=1 gas_split_flag=1 gas_quad_split_flag=1 [gas_skip_flag=0,gas_zmin_delta=-76,gas_zmax_delta=4] [gas_skip_flag=0,gas_zmin_delta=76,gas_zmax_delta=165] [gas_skip_flag=0,gas_ltmin_flag=1,gas_ltmax_flag=0,gas_zmin_delta=-12,gas_zmax_delta=-28] [gas_skip_flag=0,gas_ltmin_flag=1,gas_ltmax_flag=1,gas_zmin_delta=-20,gas_zmax_delta=-4]
 block y=1 x=0 gas_split_flag=0 [gas_skip_flag=0,gas_zmin_delta=88,gas_zmax_delta=213]
 block y=1 x=1 gas_split_flag=0 [gas_skip_flag=0,gas_ltmin_flag=0,gas_ltmax_flag=0,gas_zmin_delta=-4,gas_zmax_delta=-221]
 )");
-    REQUIRE(bitCodingTest(ga, 280, mvpl));
+    REQUIRE(bitCodingTest(ga, 320));
 
     std::ostringstream bitstream;
     TMIV::Common::OutputBitstream miv_obitstream(bitstream);
-    ga.encodeTo(miv_obitstream, mvpl);
+    ga.encodeTo(miv_obitstream);
     // check bitstream length.
     std::istringstream ibitstream(bitstream.str());
     TMIV::Common::InputBitstream miv_ibitstream(ibitstream);
-    auto decoded_ga = MivBitstream::GeometryAssistance::decodeFrom(miv_ibitstream, mvpl);
-    decoded_ga.writeTo(std::cout, mvpl);
+    auto decoded_ga = MivBitstream::GeometryAssistance::decodeFrom(miv_ibitstream);
+    decoded_ga.writeTo(std::cout);
   }
 }
 } // namespace TMIV::MivBitstream

@@ -294,9 +294,8 @@ private:
   }
 
   void parseGeometryAssistanceSei(TMIV::Common::InputBitstream &bitstream) {
-    const auto ga = TMIV::MivBitstream::GeometryAssistance::decodeFrom(
-        bitstream, m_caf.caf_miv_extension().miv_view_params_list());
-    ga.writeTo(m_log, m_caf.caf_miv_extension().miv_view_params_list());
+    const auto ga = TMIV::MivBitstream::GeometryAssistance::decodeFrom(bitstream);
+    ga.writeTo(m_log);
   }
 
   std::ostream &m_log;

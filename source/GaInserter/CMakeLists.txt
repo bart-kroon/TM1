@@ -17,3 +17,12 @@ create_tmiv_executable(
     PRIVATE
         TMIV::GaInserterLib
     )
+
+create_catch2_unit_test(
+    TARGET
+        GaInserterTest
+    SOURCES
+        "src/GaInserter.test.cpp"
+    PRIVATE
+        TMIV::GaInserterLib
+)

@@ -118,26 +118,32 @@ public:
   auto operator!=(const GeometryAssistance &other) const noexcept -> bool;
 
   [[nodiscard]] auto gas_qs() const noexcept -> uint32_t;
+  [[nodiscard]] auto gas_num_views() const noexcept -> uint16_t;
   [[nodiscard]] auto gas_bw() const noexcept -> uint32_t;
+  [[nodiscard]] auto gas_projection_plane_height_minus1() const noexcept
+      -> const std::vector<uint16_t> &;
+  [[nodiscard]] auto gas_projection_plane_width_minus1() const noexcept
+      -> const std::vector<uint16_t> &;
   [[nodiscard]] auto blocks() const noexcept
       -> const std::vector<std::vector<std::vector<GaBlock>>> &;
 
   auto gas_qs(uint32_t value) noexcept -> GeometryAssistance &;
   auto gas_bw(uint32_t value) noexcept -> GeometryAssistance &;
+  auto gas_num_views_minus1(uint16_t value) noexcept -> GeometryAssistance &;
   auto gas_log2_bw_minus2(uint8_t value) noexcept -> GeometryAssistance &;
   auto blocks(std::vector<std::vector<std::vector<GaBlock>>> &value) -> GeometryAssistance &;
 
-  void writeTo(std::ostream &stream, MivBitstream::MivViewParamsList const &mvp) const;
-  static auto readFrom(Common::Json const &jin, MivBitstream::MivViewParamsList const &mvp)
-      -> GeometryAssistance;
-  void encodeTo(Common::OutputBitstream &bitstream,
-                MivBitstream::MivViewParamsList const &mvp) const;
-  static auto decodeFrom(Common::InputBitstream &bitstream,
-                         MivBitstream::MivViewParamsList const &mvp) -> GeometryAssistance;
+  void writeTo(std::ostream &stream) const;
+  static auto readFrom(Common::Json const &jin) -> GeometryAssistance;
+  void encodeTo(Common::OutputBitstream &bitstream) const;
+  static auto decodeFrom(Common::InputBitstream &bitstream) -> GeometryAssistance;
 
 private:
   uint32_t m_gas_qs{};
+  uint16_t m_gas_num_views_minus1{};
   uint8_t m_gas_log2_bw_minus2{};
+  std::vector<uint16_t> m_gas_projection_plane_height_minus1;
+  std::vector<uint16_t> m_gas_projection_plane_width_minus1;
   std::vector<std::vector<std::vector<GaBlock>>> m_gas_blocks; // index: view, y, x.
 };
 } // namespace TMIV::MivBitstream

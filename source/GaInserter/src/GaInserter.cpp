@@ -112,21 +112,20 @@ private:
   }
 
   void parseV3cUnitPayload(const TMIV::MivBitstream::AtlasSubBitstream &asb) {
-    m_log << "atlassubbitstream...\n";
     m_log << asb.sample_stream_nal_header();
 
     for (const auto &nu : asb.nal_units()) {
-      m_log << "nal in atlassubbitstream...\n";
       parseNalUnit(nu);
     }
     if (!m_seiJsons.empty() &&
-        m_vuh.value().vuh_unit_type() == TMIV::MivBitstream::VuhUnitType::V3C_CAD) {
+        m_vuh.value().vuh_unit_type() == TMIV::MivBitstream::VuhUnitType::V3C_AD) {
       m_log << "*** inserting " << m_seiJsons.size() << " SEI messages\n";
       std::vector<TMIV::MivBitstream::SeiMessage> seiMessages;
       for (auto &j : m_seiJsons) {
         TMIV::MivBitstream::SeiMessage gaSei = readGeometryAssistanceSEI(j);
         seiMessages.emplace_back(gaSei);
       }
+      m_seiJsons.clear(); // only insert frames into first atlas for testing.
       MivBitstream::SeiRBSP seiRbsp{std::move(seiMessages)};
       std::ostringstream subStream;
       seiRbsp.encodeTo(subStream);
@@ -340,17 +339,17 @@ private:
   }
 
   void parseGeometryAssistanceSei(TMIV::Common::InputBitstream &bitstream) {
-    const auto ga = TMIV::MivBitstream::GeometryAssistance::decodeFrom(
-        bitstream, m_caf.caf_miv_extension().miv_view_params_list());
-    ga.writeTo(m_log, m_caf.caf_miv_extension().miv_view_params_list());
+    const auto ga = TMIV::MivBitstream::GeometryAssistance::decodeFrom(bitstream);
+    ga.writeTo(m_log);
   }
 
-  auto readGeometryAssistanceSEI(Common::Json const &seiJson) -> TMIV::MivBitstream::SeiMessage {
-    TMIV::MivBitstream::GeometryAssistance ga = TMIV::MivBitstream::GeometryAssistance::readFrom(
-        seiJson, m_caf.caf_miv_extension().miv_view_params_list());
+  static auto readGeometryAssistanceSEI(Common::Json const &seiJson)
+      -> TMIV::MivBitstream::SeiMessage {
+    TMIV::MivBitstream::GeometryAssistance ga =
+        TMIV::MivBitstream::GeometryAssistance::readFrom(seiJson);
     std::stringstream ostream;
     TMIV::Common::OutputBitstream obitstream{ostream};
-    ga.encodeTo(obitstream, m_caf.caf_miv_extension().miv_view_params_list());
+    ga.encodeTo(obitstream);
     return MivBitstream::SeiMessage{TMIV::MivBitstream::PayloadType::geometry_assistance,
                                     ostream.str()};
   }

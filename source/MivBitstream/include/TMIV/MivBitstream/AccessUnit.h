@@ -38,7 +38,6 @@
 #include <TMIV/MivBitstream/AtlasFrameParameterSetRBSP.h>
 #include <TMIV/MivBitstream/AtlasSequenceParameterSetRBSP.h>
 #include <TMIV/MivBitstream/AtlasTileLayerRBSP.h>
-#include <TMIV/MivBitstream/GeometryAssistance.h>
 #include <TMIV/MivBitstream/GeometryUpscalingParameters.h>
 #include <TMIV/MivBitstream/PatchParamsList.h>
 #include <TMIV/MivBitstream/SequenceConfig.h>
@@ -94,7 +93,6 @@ struct AccessUnit {
   std::optional<ViewportPosition> vp;
   std::optional<VuiParameters> vui;
   std::optional<GeometryUpscalingParameters> gup;
-  std::vector<GeometryAssistance> ga;
 
   [[nodiscard]] auto sequenceConfig() const -> SequenceConfig;
 };

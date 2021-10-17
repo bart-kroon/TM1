@@ -181,8 +181,16 @@ void AtlasDecoder::decodeSei(AccessUnit &au, std::istream &stream) {
   }
 }
 
-void AtlasDecoder::decodeSeiMessage(AccessUnit & /* au */,
-                                    const MivBitstream::SeiMessage & /* message */) {
-  // Currently all SEI messages are ignored
+void AtlasDecoder::decodeSeiMessage(AccessUnit &au, const MivBitstream::SeiMessage &message) {
+  std::istringstream messageStream{message.payload()};
+  Common::InputBitstream bitstream{messageStream};
+
+  switch (message.payloadType()) {
+  case MivBitstream::PayloadType::geometry_assistance:
+    au.ga.emplace_back(MivBitstream::GeometryAssistance::decodeFrom(bitstream));
+    return;
+  default:
+    return;
+  }
 }
 } // namespace TMIV::Decoder

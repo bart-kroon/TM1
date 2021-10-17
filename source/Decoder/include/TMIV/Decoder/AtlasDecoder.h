@@ -37,6 +37,7 @@
 #include <TMIV/MivBitstream/AtlasFrameParameterSetRBSP.h>
 #include <TMIV/MivBitstream/AtlasSequenceParameterSetRBSP.h>
 #include <TMIV/MivBitstream/AtlasTileLayerRBSP.h>
+#include <TMIV/MivBitstream/GeometryAssistance.h>
 #include <TMIV/MivBitstream/SeiRBSP.h>
 #include <TMIV/MivBitstream/V3cUnit.h>
 
@@ -57,6 +58,7 @@ public:
     MivBitstream::AtlasSequenceParameterSetRBSP asps;
     MivBitstream::AtlasFrameParameterSetRBSP afps;
     MivBitstream::AtlasTileLayerRBSP atl;
+    std::vector<MivBitstream::GeometryAssistance> ga;
   };
 
   auto operator()() -> std::optional<AccessUnit>;

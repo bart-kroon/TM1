@@ -90,6 +90,9 @@ auto transformOccupancyFrame(const Common::Occupancy1Frame &in, unsigned bitDept
     -> Common::Occupancy10Frame {
   auto result = Common::Occupancy10Frame{in.getWidth(), in.getHeight(), bitDepth};
 
+  // The occupancy threshold is set to the mid value (512 for 10b), and the non-occupant (low) and
+  // occupant (high) levels are set to quarter (256 for 10b) and three quarter (768 for 10b) values
+  // respectively.
   const auto low = Common::assertDownCast<uint16_t>(1U << (bitDepth - 2));
   const auto high = Common::assertDownCast<uint16_t>(3U << (bitDepth - 2));
 

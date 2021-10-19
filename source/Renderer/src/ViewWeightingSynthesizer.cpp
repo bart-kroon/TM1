@@ -431,6 +431,11 @@ private:
     }
 
     for (const auto &atlas : frame.atlas) {
+      if (atlas.asps.asps_miv_extension_present_flag() &&
+          atlas.asps.asps_miv_extension().asme_ancillary_atlas_flag()) {
+        continue;
+      }
+
       Common::parallel_for(
           atlas.asps.asps_frame_width(), atlas.asps.asps_frame_height(), [&](size_t Y, size_t X) {
             const auto patchId = atlas.patchId(static_cast<int32_t>(Y), static_cast<int32_t>(X));
@@ -511,6 +516,11 @@ private:
       const auto viewId = frame.viewParamsList[viewIdx].viewId;
 
       for (const auto &atlas : frame.atlas) {
+        if (atlas.asps.asps_miv_extension_present_flag() &&
+            atlas.asps.asps_miv_extension().asme_ancillary_atlas_flag()) {
+          continue;
+        }
+
         for (const auto &patchParams : atlas.patchParamsList) {
           if (patchParams.atlasPatchProjectionId() != viewId) {
             continue;

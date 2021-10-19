@@ -204,6 +204,11 @@ private:
     int32_t idx_atlas = 0;
 
     for (const auto &atlas : frame.atlas) {
+      if (atlas.asps.asps_miv_extension_present_flag() &&
+          atlas.asps.asps_miv_extension().asme_ancillary_atlas_flag()) {
+        continue;
+      }
+
       const auto &patchList = atlas.patchParamsList;
       int32_t idx_patch = 0;
       for (const auto &p : patchList) {

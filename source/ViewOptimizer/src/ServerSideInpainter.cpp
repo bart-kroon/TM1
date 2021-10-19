@@ -155,12 +155,18 @@ public:
 
   [[nodiscard]] auto optimizeFrame(MVD16Frame frame) const -> MVD16Frame {
     PRECONDITION(!m_transportParams.viewParamsList.empty());
-    const auto &viewportParams = m_transportParams.viewParamsList.back();
+
+    auto viewportParams = MivBitstream::CameraConfig{};
+    viewportParams.viewParams = m_transportParams.viewParamsList.back();
+    viewportParams.bitDepthColor = 10; // TODO(#397): Magic bit depth
+    viewportParams.bitDepthDepth = 16; // TODO(#397): Magic bit depth
+
     auto synthFrame = m_synthesizer->renderFrame(synthesizerInputFrame(frame), viewportParams);
     filterDepthFrame(synthFrame.second);
-    m_inpainter->inplaceInpaint(synthFrame, viewportParams);
+    m_inpainter->inplaceInpaint(synthFrame, viewportParams.viewParams);
     frame = m_optimizer->optimizeFrame(std::move(frame));
-    frame.emplace_back(Common::yuv420p(synthFrame.first), synthFrame.second);
+    frame.emplace_back().texture = Common::yuv420(synthFrame.first);
+    frame.back().depth = synthFrame.second;
     return frame;
   }
 
@@ -270,9 +276,10 @@ private:
     aau.asps.asps_frame_width(static_cast<uint16_t>(w));
     aau.asps.asps_frame_height(static_cast<uint16_t>(h));
 
-    aau.attrFrame = Common::yuv444p(frame.texture);
+    aau.attrFrame = Common::yuv444(frame.texture);
 
-    aau.geoFrame.resize(w, h);
+    // TODO(#397): Improve performance by increasing bit depth to Common::sampleBitDepth
+    aau.geoFrame.createY({w, h}, 10);
     const auto maxInValue = Common::maxLevel(frame.depth.getBitDepth());
     const auto maxOutValue = Common::maxLevel(aau.geoFrame.getBitDepth());
     std::transform(frame.depth.getPlane(0).cbegin(), frame.depth.getPlane(0).cend(),
@@ -281,7 +288,8 @@ private:
                                                   maxInValue);
                    });
 
-    aau.occFrame.resize(w, h);
+    // TODO(#397): The bit depth can be set to 1
+    aau.occFrame.createY({w, h}, 10);
     aau.occFrame.fillOne();
 
     auto &pp = aau.patchParamsList.emplace_back();
@@ -293,7 +301,7 @@ private:
 
     const auto ppbs = std::gcd(128, std::gcd(w, h));
     aau.asps.asps_log2_patch_packing_block_size(Common::ceilLog2(ppbs));
-    aau.blockToPatchMap.resize(w / ppbs, h / ppbs);
+    aau.blockToPatchMap.createY({w / ppbs, h / ppbs});
     std::fill(aau.blockToPatchMap.getPlane(0).begin(), aau.blockToPatchMap.getPlane(0).end(),
               uint16_t{});
 

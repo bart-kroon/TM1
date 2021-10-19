@@ -84,7 +84,6 @@ public:
   //
   // See also expandDepth(uint16_t)
   [[nodiscard]] auto expandDepth(const Common::Depth16Frame &frame) const -> Common::Mat<float>;
-  [[nodiscard]] auto expandDepth(const Common::Depth10Frame &frame) const -> Common::Mat<float>;
 
   // Quantize normalized disparity [m^-1] to a level
   //
@@ -114,7 +113,7 @@ private:
   const float m_normDispLow{};
   const float m_normDispHigh{};
   float m_minNormDisp{};
-  const uint32_t m_bits{};
+  const uint32_t m_bitDepth{};
   Common::SampleValue m_depthStart{};
   Common::SampleValue m_depthEnd{std::numeric_limits<Common::SampleValue>::max()};
 };

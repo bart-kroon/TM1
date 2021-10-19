@@ -130,7 +130,7 @@ void Encoder::pushMultiEntityFrame(Common::MVD16Frame sourceViews) {
 
   Common::MaskList mergedMasks;
   for (const auto &transportView : transportViews) {
-    mergedMasks.emplace_back(transportView.texture.getWidth(), transportView.texture.getHeight());
+    mergedMasks.emplace_back().createY(transportView.texture.getSize());
   }
 
   for (auto entityId = m_config.entityEncRange[0]; entityId < m_config.entityEncRange[1];
@@ -149,14 +149,13 @@ void Encoder::pushMultiEntityFrame(Common::MVD16Frame sourceViews) {
   m_aggregator->pushMask(mergedMasks);
 }
 
-auto Encoder::yuvSampler(const Common::EntityMapList &in)
-    -> std::vector<Common::Frame<Common::YUV420P16>> {
-  std::vector<Common::Frame<Common::YUV420P16>> outYuvAll;
-  for (const auto &viewIdx : in) {
-    Common::Frame<Common::YUV420P16> outYuv(int32_t{viewIdx.getWidth()},
-                                            int32_t{viewIdx.getHeight()});
-    const auto width = viewIdx.getWidth();
-    const auto height = viewIdx.getHeight();
+auto Encoder::yuvSampler(const Common::EntityMapList &in) -> std::vector<Common::Frame<>> {
+  std::vector<Common::Frame<>> outYuvAll;
+
+  for (const auto &entityMap : in) {
+    auto outYuv = Common::Frame<>::yuv420(entityMap.getSize(), entityMap.getBitDepth());
+    const auto width = entityMap.getWidth();
+    const auto height = entityMap.getHeight();
     int32_t step = 1;
     for (int32_t k = 0; k < 3; ++k) {
       if (k != 0) {
@@ -166,7 +165,7 @@ auto Encoder::yuvSampler(const Common::EntityMapList &in)
       for (int32_t i = 0; i != height; i = i + step) {
         int32_t colIndex = 0;
         for (int32_t j = 0; j != width; j = j + step) {
-          outYuv.getPlane(k)(rowIndex, colIndex) = viewIdx.getPlane(0)(i, j);
+          outYuv.getPlane(k)(rowIndex, colIndex) = entityMap.getPlane(0)(i, j);
           colIndex++;
         }
         rowIndex++;
@@ -216,8 +215,10 @@ auto Encoder::entitySeparator(const Common::MVD16Frame &transportViews,
   Common::MVD16Frame entityViews;
   for (const auto &transportView : transportViews) {
     Common::TextureDepth16Frame entityView = {
-        Common::TextureFrame(transportView.texture.getWidth(), transportView.texture.getHeight()),
-        Common::Depth16Frame(transportView.depth.getWidth(), transportView.depth.getHeight())};
+        Common::TextureFrame::yuv420(transportView.texture.getSize(),
+                                     transportView.texture.getBitDepth()),
+        Common::Depth16Frame::lumaOnly(transportView.depth.getSize(),
+                                       transportView.depth.getBitDepth())};
     entityViews.push_back(std::move(entityView));
   }
   Common::EntityMapList entityMaps;
@@ -228,9 +229,9 @@ auto Encoder::entitySeparator(const Common::MVD16Frame &transportViews,
   auto entityMapsYUV = yuvSampler(entityMaps);
 
   for (size_t viewIdx = 0; viewIdx < transportViews.size(); viewIdx++) {
-    const auto neutralColor = entityViews[viewIdx].texture.neutralColor();
+    const auto neutralColor = entityViews[viewIdx].texture.neutralValue();
 
-    for (int32_t planeId = 0; planeId < Common::TextureFrame::getNumberOfPlanes(); ++planeId) {
+    for (int32_t planeId = 0; planeId < 3; ++planeId) {
       std::transform(transportViews[viewIdx].texture.getPlane(planeId).begin(),
                      transportViews[viewIdx].texture.getPlane(planeId).end(),
                      entityMapsYUV[viewIdx].getPlane(planeId).begin(),

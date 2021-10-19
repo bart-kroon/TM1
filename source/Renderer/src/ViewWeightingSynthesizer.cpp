@@ -192,11 +192,11 @@ public:
   }
 
   auto renderFrame(const MivBitstream::AccessUnit &frame,
-                   const MivBitstream::ViewParams &viewportParams)
+                   const MivBitstream::CameraConfig &cameraConfig)
       -> Common::Texture444Depth16Frame {
     const auto &viewParamsList = frame.viewParamsList;
     const auto sourceHelperList = ProjectionHelperList{viewParamsList};
-    const auto targetHelper = ProjectionHelper{viewportParams};
+    const auto targetHelper = ProjectionHelper{cameraConfig.viewParams};
 
     // 0) Initialization
     findInpaintedView(frame);
@@ -233,17 +233,17 @@ public:
           m_viewportVisibility[i] = NAN;
           m_viewportColor[i] = Common::Vec3f{};
         } else {
-          m_viewportVisibility[i] =
-              std::clamp(1.F / m_viewportVisibility[i], viewportParams.dq.dq_norm_disp_low(),
-                         viewportParams.dq.dq_norm_disp_high());
+          m_viewportVisibility[i] = std::clamp(1.F / m_viewportVisibility[i],
+                                               cameraConfig.viewParams.dq.dq_norm_disp_low(),
+                                               cameraConfig.viewParams.dq.dq_norm_disp_high());
         }
       }
     }
 
     auto viewport = Common::Texture444Depth16Frame{
-        quantizeTexture(m_viewportColor),
-        MivBitstream::DepthTransform{viewportParams.dq, 16}.quantizeNormDisp(m_viewportVisibility,
-                                                                             1)};
+        quantizeTexture(m_viewportColor, cameraConfig.bitDepthColor),
+        MivBitstream::DepthTransform{cameraConfig.viewParams.dq, cameraConfig.bitDepthDepth}
+            .quantizeNormDisp(m_viewportVisibility, 1)};
     viewport.first.fillInvalidWithNeutral(viewport.second);
     return viewport;
   }
@@ -1098,8 +1098,8 @@ ViewWeightingSynthesizer::ViewWeightingSynthesizer(float angularScaling, float m
 ViewWeightingSynthesizer::~ViewWeightingSynthesizer() = default;
 
 auto ViewWeightingSynthesizer::renderFrame(const MivBitstream::AccessUnit &frame,
-                                           const MivBitstream::ViewParams &viewportParams) const
+                                           const MivBitstream::CameraConfig &cameraConfig) const
     -> Common::Texture444Depth16Frame {
-  return m_impl->renderFrame(frame, viewportParams);
+  return m_impl->renderFrame(frame, cameraConfig);
 }
 } // namespace TMIV::Renderer

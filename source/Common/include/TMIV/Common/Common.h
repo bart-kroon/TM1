@@ -55,8 +55,24 @@ auto overload(Ts &&...values) -> Overload<std::remove_reference_t<Ts>...> {
   return {std::forward<Ts>(values)...};
 }
 
-// ISO/IEC 23090-5 supports upto 32-bit video data (depending on video codec support)
-using SampleValue = uint_fast32_t;
+// ISO/IEC 23090-5 supports upto 32-bit video data (depending on video codec support) but to save on
+// memory, while preserving efficiency, the maximum bit depth is a build option.
+#ifdef TMIV_BIT_DEPTH
+static constexpr auto sampleBitDepth = (TMIV_BIT_DEPTH);
+#else
+static constexpr auto sampleBitDepth = 16;
+#endif
+
+static_assert(sampleBitDepth == 8 || sampleBitDepth == 16 || sampleBitDepth == 32);
+
+// The unsigned integer for performing calculations on sample values
+using SampleValue = unsigned;
+static_assert(sampleBitDepth <= std::numeric_limits<SampleValue>::digits);
+
+// The unsigned integer for storing sample values in memory
+using DefaultElement =
+    std::conditional_t<sampleBitDepth == 8, uint8_t,
+                       std::conditional_t<sampleBitDepth == 16, uint16_t, uint32_t>>;
 
 // The maximum level for an uint32_t integer of the specified number of bits
 //
@@ -98,6 +114,32 @@ constexpr auto quantizeValue(float x, uint32_t bits) -> UnsignedResult {
     return maxLevel_;
   }
   return {};
+}
+
+// Specialize on element type: uint8_t, uint16_t or uint32_t (not exceeding SampleValue)
+//
+// The signature of the lambda is `f(auto zero)` with decltype(zero) the element type
+template <typename F> constexpr auto withElement(uint32_t bitDepth, F f) -> decltype(auto) {
+  PRECONDITION(0 < bitDepth);
+  LIMITATION(bitDepth <= sampleBitDepth);
+
+  if constexpr (16 < sampleBitDepth) {
+    if (16 < bitDepth) {
+      return f(uint32_t{});
+    }
+  }
+
+  if (8 < bitDepth) {
+    return f(uint16_t{});
+  }
+
+  return f(uint8_t{});
+}
+
+// Return the number of bytes used to represent a sample value of given bit depth in uncompressed
+// video format, e.g. yuv420p -> 1, yuv420p10le -> 2
+constexpr auto elementSize(uint32_t bitDepth) -> size_t {
+  return withElement(bitDepth, [](auto zero) { return sizeof(zero); });
 }
 
 // Does a collection contain a specified value?

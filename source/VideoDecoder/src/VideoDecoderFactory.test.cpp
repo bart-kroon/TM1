@@ -47,8 +47,8 @@ using namespace std::string_literals;
 
 TEST_CASE("VideoDecoder::VideoDecoderFactory") {
   using Catch::Contains;
-  using TMIV::MivBitstream::PtlProfileCodecGroupIdc;
   using TMIV::VideoDecoder::create;
+  using TMIV::VideoDecoder::DecoderId;
 
   const auto nalUnitSource = []() { return ""s; };
 
@@ -58,7 +58,7 @@ TEST_CASE("VideoDecoder::VideoDecoderFactory") {
 
   SECTION("HEVC Main10 has optional built-in support based on the HEVC Test Model (HM)") {
 #if HAVE_HM
-    const auto decoder = create(nalUnitSource, PtlProfileCodecGroupIdc::HEVC_Main10);
+    const auto decoder = create(nalUnitSource, DecoderId::HEVC_Main10);
     REQUIRE(dynamic_cast<TMIV::VideoDecoder::HmVideoDecoder *>(decoder.get()) != nullptr);
 #else
     checkNoSupport(PtlProfileCodecGroupIdc::HEVC_Main10);
@@ -67,23 +67,22 @@ TEST_CASE("VideoDecoder::VideoDecoderFactory") {
 
   SECTION("VVC Main10 has optional built-in support based on the VVdeC decoder") {
 #if HAVE_VVDEC
-    const auto decoder = create(nalUnitSource, PtlProfileCodecGroupIdc::VVC_Main10);
+    const auto decoder = create(nalUnitSource, DecoderId::VVC_Main10);
     REQUIRE(dynamic_cast<TMIV::VideoDecoder::VVdeCVideoDecoder *>(decoder.get()) != nullptr);
 #else
     checkNoSupport(PtlProfileCodecGroupIdc::VVC_Main10);
 #endif
   }
 
-  SECTION("All other codec group IDC's (incl. MP4RA) are not (yet) supported") {
-    const auto codecGroupIdc =
-        GENERATE(PtlProfileCodecGroupIdc::AVC_Progressive_High, PtlProfileCodecGroupIdc::HEVC444,
-                 PtlProfileCodecGroupIdc::MP4RA, PtlProfileCodecGroupIdc{33});
-    checkNoSupport(codecGroupIdc);
+  SECTION("All other codec group IDC's are not (yet) supported") {
+    const auto decoderId =
+        GENERATE(DecoderId::AVC_Progressive_High, DecoderId::HEVC444, DecoderId{33});
+
+    checkNoSupport(decoderId);
 
     SECTION("Check the full error message because there has been a formatting problem") {
-      REQUIRE_THROWS_WITH(
-          create(nalUnitSource, PtlProfileCodecGroupIdc::AVC_Progressive_High),
-          "There is no built-in support for the AVC Progressive High codec group IDC");
+      REQUIRE_THROWS_WITH(create(nalUnitSource, DecoderId::AVC_Progressive_High),
+                          "There is no built-in support for the AVC Progressive High codec");
     }
   }
 }

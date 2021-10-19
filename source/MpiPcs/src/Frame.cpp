@@ -167,7 +167,7 @@ auto Frame::operator==(const Frame &other) const noexcept -> bool {
 }
 
 void Frame::appendLayer(Attribute::GeometryValue layerId, const TextureTransparency8Frame &layer) {
-  auto textureLayer = yuv444p(layer.texture);
+  auto textureLayer = yuv444(layer.texture);
   const auto &transparencyLayer = layer.transparency;
 
   const auto &y_plane = textureLayer.getPlane(0);
@@ -185,8 +185,9 @@ void Frame::appendLayer(Attribute::GeometryValue layerId, const TextureTranspare
 }
 
 auto Frame::getLayer(Attribute::GeometryValue layerId) const -> TextureTransparency8Frame {
-  Common::Texture444Frame textureFrame{m_size.x(), m_size.y()};
-  Common::Transparency8Frame transparencyFrame{m_size.x(), m_size.y()};
+  // TODO(#397): Magic bit depth
+  auto textureFrame = Common::Texture444Frame::yuv444(m_size, 10);
+  auto transparencyFrame = Common::Transparency8Frame::lumaOnly(m_size);
 
   textureFrame.fillNeutral();
 
@@ -205,6 +206,6 @@ auto Frame::getLayer(Attribute::GeometryValue layerId) const -> TextureTranspare
     }
   });
 
-  return {yuv420p(textureFrame), std::move(transparencyFrame)};
+  return {yuv420(textureFrame), std::move(transparencyFrame)};
 }
 } // namespace TMIV::MpiPcs

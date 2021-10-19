@@ -45,10 +45,10 @@ struct CameraConfig {
   enum class Colorspace { yuv420 };
 
   ViewParams viewParams;
-  int32_t bitDepthColor{};
-  int32_t bitDepthTransparency{};
-  int32_t bitDepthDepth{};
-  int32_t bitDepthEntities{};
+  uint32_t bitDepthColor{};
+  uint32_t bitDepthTransparency{};
+  uint32_t bitDepthDepth{};
+  uint32_t bitDepthEntities{};
   Colorspace colorspace{Colorspace::yuv420};
   Colorspace transparencyColorspace{Colorspace::yuv420};
   Colorspace depthColorspace{Colorspace::yuv420};

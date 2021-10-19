@@ -69,7 +69,8 @@ void sampleOccupancyReconstruction(MivBitstream::AtlasAccessUnit &atlas,
 void OccupancyReconstructor::reconstruct(MivBitstream::AccessUnit &frame) {
   for (size_t k = 0; k <= frame.vps.vps_atlas_count_minus1(); ++k) {
     auto &atlas = frame.atlas[k];
-    atlas.occFrame = Common::Occupancy10Frame{atlas.frameSize().x(), atlas.frameSize().y()};
+    atlas.occFrame =
+        Common::Occupancy10Frame::lumaOnly(atlas.frameSize(), 10); // TODO(#397): Magic bit depth
     for (auto y = 0; y < atlas.frameSize().y(); y++) {
       for (auto x = 0; x < atlas.frameSize().x(); x++) {
         if (!frame.vps.vps_occupancy_video_present_flag(frame.vps.vps_atlas_id(k))) {

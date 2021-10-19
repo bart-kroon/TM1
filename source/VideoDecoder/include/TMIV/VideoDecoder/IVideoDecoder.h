@@ -57,7 +57,7 @@ public:
 
   // Get the next frame in picture order. If there are no more frames then the result will be empty.
   // Side-effects may be that NAL units may be taken from the source and there may be screen output.
-  virtual auto getFrame() -> std::unique_ptr<Common::AnyFrame> = 0;
+  virtual auto getFrame() -> std::unique_ptr<Common::Frame<>> = 0;
 };
 } // namespace TMIV::VideoDecoder
 

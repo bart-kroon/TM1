@@ -83,22 +83,25 @@ public:
   static inline bool constructed = false;
 
   static inline std::function<void(const TMIV::MivBitstream::AccessUnit &frame,
-                                   const TMIV::MivBitstream::ViewParams &viewportParams)>
+                                   const TMIV::MivBitstream::CameraConfig &viewportParams)>
       inspect_renderFrame_input; // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
 
   [[nodiscard]] auto renderFrame(const TMIV::MivBitstream::AccessUnit &frame,
-                                 const TMIV::MivBitstream::ViewParams &viewportParams) const
+                                 const TMIV::MivBitstream::CameraConfig &viewportParams) const
       -> TMIV::Common::Texture444Depth16Frame override {
     if (inspect_renderFrame_input) {
       inspect_renderFrame_input(frame, viewportParams);
     }
 
     auto output = TMIV::Common::Texture444Depth16Frame{};
-    output.first.resize(viewportParams.ci.ci_projection_plane_width_minus1() + 1,
-                        viewportParams.ci.ci_projection_plane_height_minus1() + 1);
+    output.first.createYuv444(
+        {viewportParams.viewParams.ci.ci_projection_plane_width_minus1() + 1,
+         viewportParams.viewParams.ci.ci_projection_plane_height_minus1() + 1},
+        viewportParams.bitDepthColor);
     output.first.getPlane(0)[0] = 456;
-    output.second.resize(viewportParams.ci.ci_projection_plane_width_minus1() + 1,
-                         viewportParams.ci.ci_projection_plane_height_minus1() + 1);
+    output.second.createY({viewportParams.viewParams.ci.ci_projection_plane_width_minus1() + 1,
+                           viewportParams.viewParams.ci.ci_projection_plane_height_minus1() + 1},
+                          viewportParams.bitDepthDepth);
     return output;
   }
 };
@@ -181,10 +184,12 @@ const auto inputFrame = [](const TMIV::ViewOptimizer::SourceParams &params) {
   std::transform(params.viewParamsList.cbegin(), params.viewParamsList.cend(),
                  std::back_inserter(frame), [](const TMIV::MivBitstream::ViewParams &vp) {
                    auto frame = TMIV::Common::TextureDepth16Frame{};
-                   frame.texture.resize(vp.ci.ci_projection_plane_width_minus1() + 1,
-                                        vp.ci.ci_projection_plane_height_minus1() + 1);
-                   frame.depth.resize(vp.ci.ci_projection_plane_width_minus1() + 1,
-                                      vp.ci.ci_projection_plane_height_minus1() + 1);
+                   frame.texture.createYuv420({vp.ci.ci_projection_plane_width_minus1() + 1,
+                                               vp.ci.ci_projection_plane_height_minus1() + 1},
+                                              10);
+                   frame.depth.createY({vp.ci.ci_projection_plane_width_minus1() + 1,
+                                        vp.ci.ci_projection_plane_height_minus1() + 1},
+                                       16);
                    return frame;
                  });
   return frame;
@@ -353,12 +358,12 @@ TEST_CASE("ServerSideInpainter") {
   }
 
   GIVEN("An interceptable renderFrame call") {
-    auto renderParameters =
-        std::optional<std::tuple<TMIV::MivBitstream::AccessUnit, TMIV::MivBitstream::ViewParams>>{};
+    auto renderParameters = std::optional<
+        std::tuple<TMIV::MivBitstream::AccessUnit, TMIV::MivBitstream::CameraConfig>>{};
 
     FakeSynthesizer::inspect_renderFrame_input =
         [&renderParameters](const TMIV::MivBitstream::AccessUnit &frame,
-                            const TMIV::MivBitstream::ViewParams &viewportParams) {
+                            const TMIV::MivBitstream::CameraConfig &viewportParams) {
           renderParameters = std::tuple{frame, viewportParams};
         };
 
@@ -454,7 +459,7 @@ TEST_CASE("ServerSideInpainter") {
 
     FakeSynthesizer::inspect_renderFrame_input =
         [](const TMIV::MivBitstream::AccessUnit &frame,
-           const TMIV::MivBitstream::ViewParams & /* viewportParams */) {
+           const TMIV::MivBitstream::CameraConfig & /* viewportParams */) {
           REQUIRE(frame.atlas.front().geoFrame.getPlane(0)[0] == 0x3FF);
           REQUIRE(frame.atlas.front().geoFrame.getPlane(0)[1] == 0x40);
           REQUIRE(frame.atlas.front().geoFrame.getPlane(0)[2] == 0x4);
@@ -474,7 +479,7 @@ TEST_CASE("ServerSideInpainter") {
 
     FakeSynthesizer::inspect_renderFrame_input =
         [dlqf](const TMIV::MivBitstream::AccessUnit &frame,
-               const TMIV::MivBitstream::ViewParams & /* viewportParams */) {
+               const TMIV::MivBitstream::CameraConfig & /* viewportParams */) {
           REQUIRE(frame.casps.has_value());
           REQUIRE(frame.casps->casps_miv_extension_present_flag());
           REQUIRE(frame.casps->casps_miv_extension().casme_depth_low_quality_flag() == dlqf);

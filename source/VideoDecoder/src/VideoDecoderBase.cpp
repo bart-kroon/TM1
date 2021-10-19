@@ -14,7 +14,7 @@
  *  * Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- *  * Neither the name of the ITU/ISO/IEC nor the names of its contributors may
+ *  * Neither the name of the ISO/IEC nor the names of its contributors may
  *    be used to endorse or promote products derived from this software without
  *    specific prior written permission.
  *
@@ -36,15 +36,17 @@
 namespace TMIV::VideoDecoder {
 VideoDecoderBase::VideoDecoderBase(NalUnitSource source) : m_source{std::move(source)} {}
 
-auto VideoDecoderBase::getFrame() -> std::unique_ptr<Common::AnyFrame> {
+auto VideoDecoderBase::getFrame() -> Common::Frame<> {
   while (m_frameBuffer.empty() && !m_eos) {
     if (!decodeSome()) {
       m_eos = true;
     }
   }
+
   if (m_frameBuffer.empty()) {
     return {};
   }
+
   auto frame = std::move(m_frameBuffer.front());
   m_frameBuffer.erase(m_frameBuffer.begin());
   return frame;
@@ -52,7 +54,7 @@ auto VideoDecoderBase::getFrame() -> std::unique_ptr<Common::AnyFrame> {
 
 auto VideoDecoderBase::takeNalUnit() -> std::string { return m_source(); }
 
-void VideoDecoderBase::outputFrame(std::unique_ptr<Common::AnyFrame> frame) {
+void VideoDecoderBase::outputFrame(Common::Frame<> frame) {
   m_frameBuffer.push_back(std::move(frame));
 }
 } // namespace TMIV::VideoDecoder

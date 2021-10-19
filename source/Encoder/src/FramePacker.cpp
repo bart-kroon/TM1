@@ -34,88 +34,73 @@
 #include <TMIV/Encoder/FramePacker.h>
 
 namespace TMIV::Encoder {
-void FramePacker::combinePlanes(size_t atlasIdx, Common::TextureFrame &atlasTexture) {
-  auto bufferTextureDepth =
-      std::vector<char>(m_regionSizes[atlasIdx].pac.x() * m_regionSizes[atlasIdx].pac.y() * 2);
-
-  for (int32_t i = 0; i < 3; i++) {
-    const auto planeTexture = atlasTexture.getPlane(i);
-    const auto planeTextureSize = planeTexture.size() * sizeof(planeTexture[0]);
-    std::memcpy(&bufferTextureDepth[0], planeTexture.data(), planeTextureSize);
-    Common::heap::Matrix<uint16_t> buf{};
-    if (i == 0) { // plane Y
-      buf.resize(m_regionSizes[atlasIdx].pac.x(), m_regionSizes[atlasIdx].pac.y());
-      std::memcpy(&bufferTextureDepth[planeTextureSize], m_bufferDepth.data(),
-                  m_bufferDepth.size());
-    } else { // plane - U, V
-      buf.resize(m_regionSizes[atlasIdx].pac.x() / 2, m_regionSizes[atlasIdx].pac.y() / 2);
-      bufferTextureDepth.resize((m_regionSizes[atlasIdx].pac.x() * m_regionSizes[atlasIdx].pac.y() *
-                                 sizeof(planeTexture[0])) /
-                                4);
-      auto bufferPadding = std::vector<char>(m_depthPaddingBytes);
-      Common::padChroma<Common::YUV420P10>(bufferPadding, m_depthPaddingBytes,
-                                           atlasTexture.getBitDepth());
-      std::memcpy(&bufferTextureDepth[planeTextureSize], bufferPadding.data(),
-                  bufferPadding.size());
-    }
-    std::memcpy(buf.data(), bufferTextureDepth.data(), bufferTextureDepth.size());
-    m_framePacker.getPlane(i) = buf;
-  }
-}
-
-void FramePacker::extractScaledGeometry(size_t atlasIdx,
-                                        Common::heap::Matrix<uint16_t> &planeDepth) {
-  auto bufferDepthWxH = std::vector<char>(
-      (m_regionSizes[atlasIdx].geo.x() * m_regionSizes[atlasIdx].geo.y()) * sizeof(planeDepth[0]));
-  m_bufferDepth.resize((m_regionSizes[atlasIdx].frame.x() *
-                        (m_regionSizes[atlasIdx].pac.y() - m_regionSizes[atlasIdx].frame.y())) *
-                       sizeof(planeDepth[0]));
-  m_depthPaddingBytes = m_bufferDepth.size() / 4;
-  std::memcpy(bufferDepthWxH.data(), planeDepth.data(), bufferDepthWxH.size());
-
-  size_t idx = 0;
-  size_t idx1 = 0;
-  auto numberOfGeoRegions = m_regionSizes[atlasIdx].frame.x() / m_regionSizes[atlasIdx].geo.x();
-  for (size_t i = 1; i <= (m_regionSizes[atlasIdx].pac.y() - m_regionSizes[atlasIdx].frame.y());
-       i++) {
-    for (size_t j = 0; j < numberOfGeoRegions; j++) {
-      std::memcpy(&m_bufferDepth[idx], &bufferDepthWxH[idx1],
-                  m_regionSizes[atlasIdx].geo.x() * sizeof(planeDepth[0]));
-      idx = idx + (m_regionSizes[atlasIdx].geo.x() * sizeof(planeDepth[0]));
-      idx1 = idx1 + (m_regionSizes[atlasIdx].geo.x() *
-                     (m_regionSizes[atlasIdx].pac.y() - m_regionSizes[atlasIdx].frame.y()) *
-                     sizeof(planeDepth[0]));
-    }
-    idx1 = i * m_regionSizes[atlasIdx].geo.x() * sizeof(planeDepth[0]);
-  }
-}
-
 void FramePacker::constructFramePack(Common::MVD10Frame &frame) {
-  // Current implementation is limited to texture attribute and geometry
-  auto atlasIdx = 0;
-  for (auto &atlas : frame) {
-    if (m_regionSizes[atlasIdx].pac.x() == 0 || m_regionSizes[atlasIdx].pac.x() == 0) {
-      throw std::runtime_error("Packed frame size is not set, please make sure to call "
-                               "FramePacker::setPackingInformation "
-                               "to set it properly before FramePacker::constructFramePack");
-    }
-    m_bufferDepth =
-        std::vector<char>((m_regionSizes[atlasIdx].frame.x() * m_regionSizes[atlasIdx].geo.y()) *
-                          sizeof(atlas.depth.getPlane(0)[0]));
-    m_depthPaddingBytes = m_bufferDepth.size() / 4; // depth - U, V
-    if (m_regionSizes[atlasIdx].frame.x() / m_regionSizes[atlasIdx].geo.x() != 1 ||
-        m_regionSizes[atlasIdx].frame.y() / m_regionSizes[atlasIdx].geo.y() != 1) {
-      extractScaledGeometry(atlasIdx, atlas.depth.getPlane(0));
-    } else {
-      std::memcpy(m_bufferDepth.data(), atlas.depth.getPlane(0).data(), m_bufferDepth.size());
-    }
+  uint8_t atlasIdx{};
 
-    combinePlanes(atlasIdx, atlas.texture);
-    m_framePacker.resize(static_cast<int32_t>(m_regionSizes[atlasIdx].pac.x()),
-                         static_cast<int32_t>(m_regionSizes[atlasIdx].pac.y()));
-    atlas.framePack = m_framePacker;
+  for (auto &atlas : frame) {
+    atlas.framePack = constructPackedAtlasFrame(frame[atlasIdx], atlasIdx);
     atlasIdx++;
   }
+}
+
+auto FramePacker::constructPackedAtlasFrame(const Common::TextureDepth10Frame &frame,
+                                            uint8_t atlasIdx) const -> Common::FramePack10Frame {
+  // TODO(#397): Use a configuration parameter to determine the packed frame bit depth
+  auto result =
+      Common::FramePack10Frame::yuv420(m_regionSizes[atlasIdx].pac, frame.texture.getBitDepth());
+  result.fillNeutral();
+
+  for (uint8_t regionIdx = 0; regionIdx <= m_packingInformation.pin_regions_count_minus1();
+       ++regionIdx) {
+    const auto topLeftX = m_packingInformation.pin_region_top_left_x(regionIdx);
+    const auto topLeftY = m_packingInformation.pin_region_top_left_y(regionIdx);
+    const auto width = m_packingInformation.pin_region_width_minus1(regionIdx) + 1;
+    const auto height = m_packingInformation.pin_region_height_minus1(regionIdx) + 1;
+    const auto unpackTopLeftX = m_packingInformation.pin_region_unpack_top_left_x(regionIdx);
+    const auto unpackTopLeftY = m_packingInformation.pin_region_unpack_top_left_y(regionIdx);
+    const auto rotation = m_packingInformation.pin_region_rotation_flag(regionIdx);
+
+    for (int32_t i = 0; i < height; ++i) {
+      for (int32_t j = 0; j < width; ++j) {
+        const auto px = topLeftX + j;
+        const auto py = topLeftY + i;
+
+        const auto ux = unpackTopLeftX + (rotation ? i : j);
+        const auto uy = unpackTopLeftY + (rotation ? j : i);
+
+        switch (m_packingInformation.pinRegionTypeId(regionIdx)) {
+        case MivBitstream::VuhUnitType::V3C_OVD:
+          result.getPlane(0)(py, px) = frame.occupancy.getPlane(0)(uy, ux);
+          break;
+        case MivBitstream::VuhUnitType::V3C_GVD:
+          result.getPlane(0)(py, px) = frame.depth.getPlane(0)(uy, ux);
+          break;
+        case MivBitstream::VuhUnitType::V3C_AVD: {
+          const auto attrIdx = m_packingInformation.pin_region_attr_index(regionIdx);
+          const auto attrTypeId = m_packingInformation.pin_attribute_type_id(attrIdx);
+
+          switch (attrTypeId) {
+          case MivBitstream::AiAttributeTypeId::ATTR_TEXTURE:
+            result.getPlane(0)(py, px) = frame.texture.getPlane(0)(uy, ux);
+            result.getPlane(1)(py / 2, px / 2) = frame.texture.getPlane(1)(uy / 2, ux / 2);
+            result.getPlane(2)(py / 2, px / 2) = frame.texture.getPlane(2)(uy / 2, ux / 2);
+            break;
+          case MivBitstream::AiAttributeTypeId::ATTR_TRANSPARENCY:
+            result.getPlane(0)(py, px) = frame.transparency.getPlane(0)(uy, ux);
+            break;
+          default:
+            UNREACHABLE;
+          }
+          break;
+        }
+        default:
+          UNREACHABLE;
+        }
+      }
+    }
+  }
+
+  return result;
 }
 
 void FramePacker::updateVideoPresentFlags(MivBitstream::AtlasId atlasId) {
@@ -142,12 +127,10 @@ auto FramePacker::computeOccupancySizeAndRegionCount(size_t atlasIdx) -> uint8_t
   const auto &asmeAtlas = m_params.atlas[atlasIdx].asps.asps_miv_extension();
   const bool occScaled = asmeAtlas.asme_occupancy_scale_enabled_flag();
   if (occScaled) {
-    m_regionSizes[atlasIdx].occ.x() = Common::align(
-        m_regionSizes[atlasIdx].frame.x() / (asmeAtlas.asme_occupancy_scale_factor_x_minus1() + 1),
-        2U);
-    m_regionSizes[atlasIdx].occ.y() = Common::align(
-        m_regionSizes[atlasIdx].frame.y() / (asmeAtlas.asme_occupancy_scale_factor_y_minus1() + 1),
-        2U);
+    m_regionSizes[atlasIdx].occ.x() =
+        m_regionSizes[atlasIdx].frame.x() / (asmeAtlas.asme_occupancy_scale_factor_x_minus1() + 1);
+    m_regionSizes[atlasIdx].occ.y() =
+        m_regionSizes[atlasIdx].frame.y() / (asmeAtlas.asme_occupancy_scale_factor_y_minus1() + 1);
   }
   return static_cast<uint8_t>(m_regionSizes[atlasIdx].frame.x() / m_regionSizes[atlasIdx].occ.x());
 }
@@ -157,12 +140,10 @@ auto FramePacker::computeGeometrySizeAndRegionCount(size_t atlasIdx) -> uint8_t 
   const auto &asmeAtlas = m_params.atlas[atlasIdx].asps.asps_miv_extension();
   const bool geoScaled = asmeAtlas.asme_geometry_scale_enabled_flag();
   if (geoScaled) {
-    m_regionSizes[atlasIdx].geo.x() = Common::align(
-        m_regionSizes[atlasIdx].frame.x() / (asmeAtlas.asme_geometry_scale_factor_x_minus1() + 1),
-        2U);
-    m_regionSizes[atlasIdx].geo.y() = Common::align(
-        m_regionSizes[atlasIdx].frame.y() / (asmeAtlas.asme_geometry_scale_factor_y_minus1() + 1),
-        2U);
+    m_regionSizes[atlasIdx].geo.x() =
+        m_regionSizes[atlasIdx].frame.x() / (asmeAtlas.asme_geometry_scale_factor_x_minus1() + 1);
+    m_regionSizes[atlasIdx].geo.y() =
+        m_regionSizes[atlasIdx].frame.y() / (asmeAtlas.asme_geometry_scale_factor_y_minus1() + 1);
   }
   return static_cast<uint8_t>(m_regionSizes[atlasIdx].frame.x() / m_regionSizes[atlasIdx].geo.x());
 }
@@ -211,7 +192,7 @@ void FramePacker::updatePinRegionInformation(size_t i) {
   }
 }
 
-void FramePacker::setAttributePinRegion(size_t i, const Common::Vec2u &frameSize) {
+void FramePacker::setAttributePinRegion(size_t i, const Common::Vec2i &frameSize) {
   m_pinRegion.pin_region_type_id_minus2 = static_cast<uint16_t>(2);
   m_pinRegion.pin_region_top_left_x = 0;
   m_pinRegion.pin_region_top_left_y = static_cast<uint16_t>(frameSize.y() * i);
@@ -270,9 +251,8 @@ auto FramePacker::setPackingInformation(EncoderParams params) -> const EncoderPa
 
     RegionCounts regionCounts{};
     m_regionSizes.push_back(RegionSizes{});
-    m_regionSizes[atlasIdx].frame = {
-        static_cast<Common::Vec2u::value_type>(m_params.vps.vps_frame_width(atlasId)),
-        static_cast<Common::Vec2u::value_type>(m_params.vps.vps_frame_height(atlasId))};
+    m_regionSizes[atlasIdx].frame = {m_params.vps.vps_frame_width(atlasId),
+                                     m_params.vps.vps_frame_height(atlasId)};
     m_regionSizes[atlasIdx].pac.x() = m_regionSizes[atlasIdx].frame.x();
     if (m_packingInformation.pin_occupancy_present_flag()) {
       updatePinOccupancyInformation(atlasId);

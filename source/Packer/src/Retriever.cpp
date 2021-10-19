@@ -263,8 +263,8 @@ auto retrieveClusters(const int32_t viewIdx, const Common::Mask &maskMap,
                       const int32_t firstClusterId, const bool isBasicView,
                       const bool enableMerging, const bool multiEntity)
     -> std::pair<ClusterList, ClusteringMap> {
-  std::pair<ClusterList, ClusteringMap> out(ClusterList(),
-                                            ClusteringMap(maskMap.getWidth(), maskMap.getHeight()));
+  std::pair<ClusterList, ClusteringMap> out(
+      ClusterList(), ClusteringMap::lumaOnly({maskMap.getWidth(), maskMap.getHeight()}));
   ClusterList &clusterList = out.first;
   auto &clusteringBuffer = out.second.getPlane(0);
 

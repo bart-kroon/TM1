@@ -88,7 +88,7 @@ void padGeometryFromLeft(const EncoderParams &outParams, Common::MVD10Frame &atl
 
 auto transformOccupancyFrame(const Common::Occupancy1Frame &in, unsigned bitDepth)
     -> Common::Occupancy10Frame {
-  auto result = Common::Occupancy10Frame{in.getWidth(), in.getHeight(), bitDepth};
+  auto result = Common::Occupancy10Frame::lumaOnly(in.getSize(), bitDepth);
 
   const auto low = Common::assertDownCast<uint16_t>(1U << (bitDepth - 2));
   const auto high = Common::assertDownCast<uint16_t>(3U << (bitDepth - 2));
@@ -104,11 +104,14 @@ auto transformAtlases(const EncoderParams &inParams, const EncoderParams &outPar
   auto outAtlases = Common::MVD10Frame(inAtlases.size());
 
   for (uint8_t k = 0; k <= outParams.vps.vps_atlas_count_minus1(); ++k) {
+    const auto atlasId = outParams.vps.vps_atlas_id(k);
+
+    // TODO(#397): Convert bit depth
     outAtlases[k].texture = inAtlases[k].texture;
 
-    outAtlases[k].depth.resize(inAtlases[k].depth.getWidth(), inAtlases[k].depth.getHeight());
-
-    const auto atlasId = outParams.vps.vps_atlas_id(k);
+    const auto &gi = outParams.vps.geometry_information(atlasId);
+    const auto geoBitDepth = gi.gi_geometry_2d_bit_depth_minus1() + 1U;
+    outAtlases[k].depth.createY(inAtlases[k].depth.getSize(), geoBitDepth);
 
     if (outParams.vps.vps_occupancy_video_present_flag(atlasId)) {
       const auto &oi = outParams.vps.occupancy_information(atlasId);

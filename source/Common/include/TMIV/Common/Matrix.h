@@ -34,7 +34,8 @@
 #ifndef TMIV_COMMON_MATRIX_H
 #define TMIV_COMMON_MATRIX_H
 
-#include "Array.h"
+#include <TMIV/Common/Array.h>
+#include <TMIV/Common/Common.h>
 
 namespace TMIV::Common {
 template <typename A> class MatrixInterface : public A {
@@ -100,7 +101,7 @@ using Mat2x2i = stack::Mat2x2<int32_t>;
 using Mat3x3i = stack::Mat3x3<int32_t>;
 using Mat2x2f = stack::Mat2x2<float>;
 using Mat3x3f = stack::Mat3x3<float>;
-template <typename T> using Mat = heap::Matrix<T>;
+template <typename T = DefaultElement> using Mat = heap::Matrix<T>;
 
 // Returns the type of the transpose of the matrix given as input
 template <typename T, size_t M, size_t N>

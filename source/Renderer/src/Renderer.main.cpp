@@ -143,9 +143,10 @@ private:
     aau.asps.asps_frame_height(static_cast<uint16_t>(h));
     aau.asps.asps_miv_extension().asme_max_entity_id(0);
 
-    aau.attrFrame = Common::yuv444p(frame.texture);
+    aau.attrFrame = Common::yuv444(frame.texture);
 
-    aau.geoFrame.resize(w, h);
+    // TODO(#397): Code duplication with SSI, switch to Common::sampleBitDepth
+    aau.geoFrame.createY({w, h}, 10);
     const auto maxInValue = Common::maxLevel(frame.depth.getBitDepth());
     const auto maxOutValue = Common::maxLevel(aau.geoFrame.getBitDepth());
     std::transform(frame.depth.getPlane(0).cbegin(), frame.depth.getPlane(0).cend(),
@@ -154,7 +155,8 @@ private:
                                                   maxInValue);
                    });
 
-    aau.occFrame.resize(w, h);
+    // TODO(#397): Switch to bit depth 1
+    aau.occFrame.createY({w, h}, 10);
     aau.occFrame.fillOne();
 
     auto &pp = aau.patchParamsList.emplace_back();
@@ -166,7 +168,7 @@ private:
 
     const auto ppbs = std::gcd(128, std::gcd(w, h));
     aau.asps.asps_log2_patch_packing_block_size(Common::ceilLog2(ppbs));
-    aau.blockToPatchMap.resize(w / ppbs, h / ppbs);
+    aau.blockToPatchMap.createY({w / ppbs, h / ppbs}, 16);
     std::fill(aau.blockToPatchMap.getPlane(0).begin(), aau.blockToPatchMap.getPlane(0).end(),
               uint16_t{});
 

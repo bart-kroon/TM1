@@ -16,6 +16,7 @@ create_tmiv_library(
         "src/V3cSampleStreamDecoder.cpp"
         "src/V3cUnitBuffer.cpp"
     PUBLIC
+        TMIV::MivBitstreamLib
         TMIV::VideoDecoderLib
     )
 

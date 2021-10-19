@@ -110,12 +110,20 @@ void FrameUnpacker::calculateUnpackSizes() {
 }
 
 void FrameUnpacker::initializeUnpackComponents(MivBitstream::AtlasAccessUnit &atlas) const {
-  atlas.attrFrame.resize(static_cast<int32_t>(m_unpackSizes.unpckAttrSize.x()),
-                         static_cast<int32_t>(m_unpackSizes.unpckAttrSize.y()));
-  atlas.decGeoFrame.resize(static_cast<int32_t>(m_unpackSizes.unpckGeoSize.x()),
-                           static_cast<int32_t>(m_unpackSizes.unpckGeoSize.y()));
-  atlas.decOccFrame.resize(static_cast<int32_t>(m_unpackSizes.unpckOccSize.x()),
-                           static_cast<int32_t>(m_unpackSizes.unpckOccSize.y()));
+  // TODO(#397): Magic bit depth
+  atlas.attrFrame.createYuv444({static_cast<int32_t>(m_unpackSizes.unpckAttrSize.x()),
+                                static_cast<int32_t>(m_unpackSizes.unpckAttrSize.y())},
+                               10);
+
+  // TODO(#397): Magic bit depth
+  atlas.decGeoFrame.createY({static_cast<int32_t>(m_unpackSizes.unpckGeoSize.x()),
+                             static_cast<int32_t>(m_unpackSizes.unpckGeoSize.y())},
+                            10);
+
+  // TODO(#397): Magic bit depth
+  atlas.decOccFrame.createY({static_cast<int32_t>(m_unpackSizes.unpckOccSize.x()),
+                             static_cast<int32_t>(m_unpackSizes.unpckOccSize.y())},
+                            10);
 }
 
 void FrameUnpacker::extractUnpackedComponents(MivBitstream::AtlasAccessUnit &atlas) {

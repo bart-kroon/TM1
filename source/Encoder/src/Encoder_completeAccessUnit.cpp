@@ -47,9 +47,8 @@ struct PatchStats {
 
 void adaptPatchStatsToTexture(std::array<PatchStats, 3> &patchStats,
                               const Common::TextureDepth16Frame &view,
-                              Common::TextureDepthFrame<Common::YUV400P16> &atlas,
-                              const Common::Vec2i &pView, const Common::Vec2i &pAtlas,
-                              Common::Vec3i &colorCorrectionOffset) {
+                              Common::TextureDepth16Frame &atlas, const Common::Vec2i &pView,
+                              const Common::Vec2i &pAtlas, Common::Vec3i &colorCorrectionOffset) {
   // Y
   atlas.texture.getPlane(0)(pAtlas.y(), pAtlas.x()) =
       view.texture.getPlane(0)(pView.y(), pView.x());
@@ -436,12 +435,20 @@ void Encoder::constructVideoFrames() {
       const auto frameHeight = vps.vps_frame_height(j);
 
       if (m_config.haveTexture) {
-        frame.texture.resize(frameWidth, frameHeight);
+        const auto &ai = vps.attribute_information(j);
+        PRECONDITION(1 <= ai.ai_attribute_count() &&
+                     ai.ai_attribute_type_id(0) == MivBitstream::AiAttributeTypeId::ATTR_TEXTURE);
+        const auto texBitDepth = ai.ai_attribute_2d_bit_depth_minus1(0) + 1U;
+
+        frame.texture.createYuv420({frameWidth, frameHeight}, texBitDepth);
         frame.texture.fillNeutral();
       }
 
       if (m_config.haveGeometry) {
-        frame.depth.resize(frameWidth, frameHeight);
+        const auto &gi = vps.geometry_information(j);
+        const auto geoBitDepth = gi.gi_geometry_2d_bit_depth_minus1() + 1U;
+
+        frame.depth.createY({frameWidth, frameHeight}, geoBitDepth);
         frame.depth.fillZero();
       }
 
@@ -456,9 +463,11 @@ void Encoder::constructVideoFrames() {
           occFrameWidth /= asme.asme_occupancy_scale_factor_x_minus1() + 1;
           occFrameHeight /= asme.asme_occupancy_scale_factor_y_minus1() + 1;
         }
-        frame.occupancy.resize(Common::align(occFrameWidth, 2), Common::align(occFrameHeight, 2));
+        // TODO(#397): The alignment is wrong
+        frame.occupancy.createY(
+            {Common::align(occFrameWidth, 2), Common::align(occFrameHeight, 2)});
       } else {
-        frame.occupancy.resize(frameWidth, frameHeight);
+        frame.occupancy.createY({frameWidth, frameHeight});
       }
 
       frame.occupancy.fillZero();
@@ -622,9 +631,8 @@ auto Encoder::writePatchInAtlas(const MivBitstream::PatchParams &patchParams,
 }
 
 void Encoder::adaptAtlas(const MivBitstream::PatchParams &patchParams,
-                         Common::TextureDepthFrame<Common::YUV400P16> &atlas, int32_t yOcc,
-                         int32_t xOcc, const Common::Vec2i &pView,
-                         const Common::Vec2i &pAtlas) const {
+                         Common::TextureDepth16Frame &atlas, int32_t yOcc, int32_t xOcc,
+                         const Common::Vec2i &pView, const Common::Vec2i &pAtlas) const {
   atlas.depth.getPlane(0)(pAtlas.y(), pAtlas.x()) = 0;
 
   if (params().vps.vps_occupancy_video_present_flag(patchParams.atlasId())) {

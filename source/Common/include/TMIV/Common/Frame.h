@@ -46,166 +46,225 @@
 #include <variant>
 
 namespace TMIV::Common {
-class YUV400P1 {};
-class YUV400P8 {};
-class YUV400P10 {};
-class YUV400P16 {};
-class YUV420P8 {};
-class YUV420P10 {};
-class YUV420P16 {};
-class YUV444P8 {};
-class YUV444P10 {};
-class YUV444P16 {};
+enum class ColorFormat { YUV400, YUV420, YUV444 };
 
-namespace detail {
-template <typename FORMAT> struct PixelFormatHelper {};
-} // namespace detail
-
-template <typename FORMAT> class Frame {
-public:
-  using base_type = typename detail::PixelFormatHelper<FORMAT>::base_type;
-  using plane_type = heap::Matrix<base_type>;
-
+template <typename Element = DefaultElement> class Frame {
 private:
-  static constexpr auto numberOfPlanes = detail::PixelFormatHelper<FORMAT>::numberOfPlanes;
-  uint32_t m_bitDepth{detail::PixelFormatHelper<FORMAT>::defaultBitDepth};
-  int32_t m_width{};
-  int32_t m_height{};
-  std::array<plane_type, numberOfPlanes> m_planes{};
+  static_assert(std::is_unsigned_v<Element>);
+
+  static constexpr uint32_t maxBitDepth = std::numeric_limits<Element>::digits;
+  static_assert(1 <= maxBitDepth && maxBitDepth <= 32);
+  uint32_t m_bitDepth{UINT32_MAX};
+
+  using Plane = Mat<Element>;
+  using Planes = std::vector<Plane>;
+  Planes m_planes{};
 
 public:
+  // Constuct an empty frame of unspecified bit depth
   Frame() = default;
-  explicit Frame(int32_t w, int32_t h);
-  explicit Frame(int32_t w, int32_t h, uint32_t bitDepth);
 
-  [[nodiscard]] auto empty() const noexcept;
+  // Construct a frame of given size and bit depth with all elements set to zero
+  explicit Frame(Common::Vec2i frameSize, uint32_t bitDepth, ColorFormat colorFormat) {
+    create(frameSize, bitDepth, colorFormat);
+  }
 
-  void resize(int32_t w, int32_t h);
-  void recreate(int32_t w, int32_t h, uint32_t bitDepth);
+  // Construct a luma-only frame of given size and bit depth, all zero
+  static auto lumaOnly(Common::Vec2i frameSize, uint32_t bitDepth = maxBitDepth) {
+    return Frame{frameSize, bitDepth, ColorFormat::YUV400};
+  }
 
-  [[nodiscard]] auto getPlanes() -> auto &;
-  [[nodiscard]] auto getPlanes() const -> const auto &;
-  [[nodiscard]] auto getPlane(int32_t index) const -> const auto &;
-  [[nodiscard]] auto getPlane(int32_t index) -> auto &;
-  [[nodiscard]] auto getWidth() const;
-  [[nodiscard]] auto getHeight() const;
-  [[nodiscard]] auto getSize() const;
-  [[nodiscard]] auto getMemorySize() const;
-  [[nodiscard]] auto getDiskSize() const;
-  [[nodiscard]] static constexpr auto getNumberOfPlanes();
-  [[nodiscard]] auto getBitDepth() const noexcept;
+  // Construct a 4:2:0 frame of given size and bit depth, all zero
+  static auto yuv420(Common::Vec2i frameSize, uint32_t bitDepth = maxBitDepth) {
+    return Frame{frameSize, bitDepth, ColorFormat::YUV420};
+  }
+
+  // Construct a 4:4:4 frame of given size and bit depth, all zero
+  static auto yuv444(Common::Vec2i frameSize, uint32_t bitDepth = maxBitDepth) {
+    return Frame{frameSize, bitDepth, ColorFormat::YUV444};
+  }
+
+  // Create a frame of given size, bit depth and color format, all zero
+  void create(Common::Vec2i frameSize, uint32_t bitDepth, ColorFormat colorFormat);
+
+  // Create a luma-only frame of given size and bit depth, all zero
+  void createY(Common::Vec2i frameSize, uint32_t bitDepth = maxBitDepth) {
+    create(frameSize, bitDepth, ColorFormat::YUV400);
+  }
+
+  // Create a 4:2:0 frame of given size and bit depth, all zero
+  void createYuv420(Common::Vec2i frameSize, uint32_t bitDepth = maxBitDepth) {
+    create(frameSize, bitDepth, ColorFormat::YUV420);
+  }
+
+  // Create a 4:4:4 frame of given size and bit depth, all zero
+  void createYuv444(Common::Vec2i frameSize, uint32_t bitDepth = maxBitDepth) {
+    create(frameSize, bitDepth, ColorFormat::YUV444);
+  }
+
+  void clear() { m_planes.clear(); }
+
+  [[nodiscard]] auto empty() const noexcept { return m_planes.empty(); }
+
+  [[nodiscard]] auto getPlanes() noexcept -> auto & { return m_planes; }
+
+  [[nodiscard]] auto getPlanes() const noexcept -> const auto & { return m_planes; }
+
+  // Mutable access to a plane. The caller shall not resize the plane
+  [[nodiscard]] auto getPlane(size_t index) -> auto & { return at(m_planes, index); }
+
+  [[nodiscard]] auto getPlane(size_t index) const -> const auto & { return at(m_planes, index); }
+
+  [[nodiscard]] auto getWidth() const noexcept {
+    PRECONDITION(!empty());
+    return static_cast<int32_t>(m_planes.front().size(1));
+  }
+
+  [[nodiscard]] auto getHeight() const noexcept {
+    PRECONDITION(!empty());
+    return static_cast<int32_t>(m_planes.front().size(0));
+  }
+
+  [[nodiscard]] auto getSize() const noexcept { return Vec2i{getWidth(), getHeight()}; }
+
+  [[nodiscard]] auto getNumberOfPlanes() const noexcept { return m_planes.size(); }
+
+  // Derive the color format of a non-empty plane from the plane count and sizes, assuming it is one
+  // of the known color formats.
+  [[nodiscard]] auto getColorFormat() const noexcept -> ColorFormat;
+
+  // Query the bit depth of a non-empty frame
+  [[nodiscard]] auto getBitDepth() const noexcept {
+    PRECONDITION(m_bitDepth <= maxBitDepth);
+    return m_bitDepth;
+  }
+
+  [[nodiscard]] static constexpr auto getMaxBitDepth() noexcept { return maxBitDepth; }
+
+  [[nodiscard]] auto getMemorySize() const noexcept;
+  [[nodiscard]] auto getDiskSize() const noexcept;
 
   void read(std::istream &stream);
   void dump(std::ostream &stream) const;
 
+  // Return the minimum value (assuming full range)
+  [[nodiscard]] static constexpr auto minValue() noexcept { return Element{}; }
+
+  // Return the neutral value at the current bit depth
+  [[nodiscard]] auto neutralValue() const noexcept -> Element {
+    return Common::medLevel<Element>(getBitDepth());
+  }
+
+  // Return the maximum value at the current bit depth (assuming full range)
+  [[nodiscard]] auto maxValue() const noexcept -> Element {
+    return Common::maxLevel<Element>(getBitDepth());
+  }
+
   // Reset all samples to zero
-  //
-  // NOTE(BK): samples are already set to zero on construction
-  void fillZero();
-
-  // Set all samples to a specific value
-  template <typename Integer, typename = std::enable_if_t<std::is_integral_v<Integer>>>
-  void fillValue(Integer value);
-
-  // Set all samples to the neutral color
-  void fillNeutral();
+  void fillZero() noexcept { fillValue(minValue()); }
 
   // Set all samples to one
-  void fillOne();
+  void fillOne() noexcept { fillValue(static_cast<Element>(1)); }
 
-  // Set invalid samples to the neutral color
-  template <typename OTHER_FORMAT, typename = std::enable_if<std::is_same_v<FORMAT, YUV444P10>>>
-  void fillInvalidWithNeutral(const Frame<OTHER_FORMAT> &depth);
+  // Set all samples to the neutral (halfway) value
+  void fillNeutral() noexcept { fillValue(neutralValue()); }
 
-  [[nodiscard]] auto neutralColor() const noexcept;
+  // Reset all samples to the maximum value
+  void fillMax() noexcept { fillValue(maxValue()); }
+
+  // Set all samples to a specific value
+  void fillValue(Element value) noexcept;
+
+  // Fill the values that are marked as invalid (0) in the mask with the specified value
+  //
+  //   * Only the first plane of the mask is considered.
+  //   * All planes of the frame must have the same size as the mask.
+  template <typename OtherElement>
+  void fillInvalid(const Frame<OtherElement> &mask, Element value) noexcept;
+
+  // Fill the values that are marked as invalid (0) in the mask with the neutral value
+  //
+  //   * Only the first plane of the mask is considered.
+  //   * All planes of the frame must have the same size as the mask.
+  template <typename OtherElement>
+  void fillInvalidWithNeutral(const Frame<OtherElement> &mask) noexcept;
+
+  void padChroma(std::ostream &stream) const;
+
+  // Change the color format
+  [[nodiscard]] auto changeColorFormat(ColorFormat newColorFormat) const -> Frame<Element>;
+
+  // Change (or set) the bit depth without changing the data, color format or frame size
+  auto setBitDepth(uint32_t value) noexcept;
 };
 
-template <typename FORMAT> void padChroma(std::ostream &stream, size_t bytes, uint32_t bitDepth);
-template <typename FORMAT>
-void padChroma(std::vector<char> &buffer, size_t bytes, uint32_t bitDepth);
+using TextureFrame = Frame<>;
+using Texture444Frame = Frame<>;
+using Depth10Frame = Frame<>;
+using Depth16Frame = Frame<>;
+using Occupancy1Frame = Frame<bool>;
+using Occupancy10Frame = Frame<>;
+using Transparency8Frame = Frame<uint8_t>;
+using Transparency10Frame = Frame<>;
+using FramePack10Frame = Frame<>;
+using FramePack444Frame = Frame<>;
 
-auto yuv420p(const Frame<YUV444P8> &frame) -> Frame<YUV420P8>;
-auto yuv420p(const Frame<YUV444P10> &frame) -> Frame<YUV420P10>;
-auto yuv420p(const Frame<YUV444P16> &frame) -> Frame<YUV420P16>;
+using Mask = Frame<uint8_t>;
+using MaskList = std::vector<Mask>;
 
-auto yuv444p(const Frame<YUV420P8> &frame) -> Frame<YUV444P8>;
-auto yuv444p(const Frame<YUV420P10> &frame) -> Frame<YUV444P10>;
-auto yuv444p(const Frame<YUV420P16> &frame) -> Frame<YUV444P16>;
+using BlockToPatchMap = Frame<uint16_t>;
+static constexpr auto unusedPatchId = UINT16_MAX;
 
-// A type that can carry a large variation of possible frame types
-struct AnyFrame {
-  // Convert to any specific format
-  template <typename FORMAT> auto as() const -> Frame<FORMAT>;
+using EntityMap = Frame<>;
+using EntityMapList = std::vector<EntityMap>;
 
-  static constexpr auto maxPlanes = 4;
-  std::array<Mat<SampleValue>, maxPlanes> planes{};
-  std::array<uint8_t, maxPlanes> bitdepth{};
-};
-} // namespace TMIV::Common
-
-#include "Frame.hpp"
-
-namespace TMIV::Common {
-using TextureFrame = Frame<YUV420P10>;
-using Texture444Frame = Frame<YUV444P10>; // The renderer uses 4:4:4 internally
-using Depth10Frame = Frame<YUV400P10>;    // Decoder side
-using Depth16Frame = Frame<YUV400P16>;    // Encoder side
-using Occupancy1Frame = Frame<YUV400P1>;
-using Occupancy10Frame = Frame<YUV400P10>;
-using Transparency8Frame = Frame<YUV400P8>;
-using Transparency10Frame = Frame<YUV400P10>;
-using FramePack10Frame = Frame<YUV420P10>;
-using FramePack444Frame = Frame<YUV444P10>;
-using Mask = Frame<YUV400P8>;
-using BlockToPatchMap = Frame<YUV400P16>;
-const auto unusedPatchId = UINT16_MAX;
-using EntityMap = Frame<YUV400P16>;
-
-template <typename FORMAT> struct TextureDepthFrame {
+struct TextureDepth10Frame {
   TextureFrame texture;
-  Frame<FORMAT> depth;
+  Depth10Frame depth;
   EntityMap entities{};
-
-  using OccupancyFrame =
-      std::conditional_t<std::is_same_v<FORMAT, YUV400P16>, Occupancy1Frame, Occupancy10Frame>;
-
-  OccupancyFrame occupancy{};
+  Occupancy10Frame occupancy{};
   Transparency10Frame transparency{};
   FramePack10Frame framePack{};
-
-  TextureDepthFrame() = default;
-  TextureDepthFrame(TextureFrame texture_, Frame<FORMAT> depth_)
-      : texture{std::move(texture_)}, depth{std::move(depth_)} {}
-  TextureDepthFrame(TextureFrame texture_, Frame<FORMAT> depth_, OccupancyFrame occupancy_)
-      : texture{std::move(texture_)}, depth{std::move(depth_)}, occupancy{std::move(occupancy_)} {}
-  TextureDepthFrame(TextureFrame texture_, Frame<FORMAT> depth_, OccupancyFrame occupancy_,
-                    Transparency10Frame transparency_)
-      : texture{std::move(texture_)}
-      , depth{std::move(depth_)}
-      , occupancy{std::move(occupancy_)}
-      , transparency{std::move(transparency_)} {}
 };
-using TextureDepth10Frame = TextureDepthFrame<YUV400P10>;
-using TextureDepth16Frame = TextureDepthFrame<YUV400P16>;
+using MVD10Frame = std::vector<TextureDepth10Frame>;
+
+struct TextureDepth16Frame {
+  TextureFrame texture;
+  Depth16Frame depth;
+  EntityMap entities{};
+  Occupancy1Frame occupancy{};
+  Transparency10Frame transparency{};
+  FramePack10Frame framePack{};
+};
+using MVD16Frame = std::vector<TextureDepth16Frame>;
+
 using Texture444Depth10Frame = std::pair<Texture444Frame, Depth10Frame>;
 using Texture444Depth16Frame = std::pair<Texture444Frame, Depth16Frame>;
 
-using EntityMapList = std::vector<EntityMap>;
-template <typename FORMAT> using MVDFrame = std::vector<TextureDepthFrame<FORMAT>>;
-using MVD10Frame = MVDFrame<YUV400P10>;
-using MVD16Frame = MVDFrame<YUV400P16>;
-using MaskList = std::vector<Mask>;
+// Expand a YUV 4:4:4 texture to packed 4:4:4 32-bit float texture with linear transfer and nearest
+// interpolation for chroma
+auto expandTexture(const Texture444Frame &inYuv) -> Mat<Vec3f>;
 
-// Expand a YUV 4:4:4 10-bit texture to packed 4:4:4 32-bit float texture with
-// linear transfer and nearest interpolation for chroma
-auto expandTexture(const Frame<YUV444P10> &inYuv) -> Mat<Vec3f>;
+// Expand a YUV 4:2:0 texture to 32-bit float luma map with linear transfer
+auto expandLuma(const TextureFrame &inYuv) -> Mat<float>;
 
-// Expand a YUV 4:2:0 10-bit texture to 32-bit float luma map with linear transfer
-auto expandLuma(const Frame<YUV420P10> &inYuv) -> Mat<float>;
+// Quantize a packed 4:4:4 32-bit float texture as YUV 4:4:4 texture with linear transfer and area
+// interpolation for chroma
+auto quantizeTexture(const Mat<Vec3f> &in, uint32_t bitDepth) -> Texture444Frame;
 
-// Quantize a packed 4:4:4 32-bit float texture as YUV 4:4:4 10-bit texture with
-// linear transfer and area interpolation for chroma
-auto quantizeTexture(const Mat<Vec3f> &in) -> Frame<YUV444P10>;
+template <typename Element> auto yuv400(const Frame<Element> &frame) {
+  return frame.changeColorFormat(ColorFormat::YUV400);
+}
+
+template <typename Element> auto yuv420(const Frame<Element> &frame) {
+  return frame.changeColorFormat(ColorFormat::YUV420);
+}
+
+template <typename Element> auto yuv444(const Frame<Element> &frame) {
+  return frame.changeColorFormat(ColorFormat::YUV444);
+}
 } // namespace TMIV::Common
+
+#include "Frame.hpp"
 
 #endif

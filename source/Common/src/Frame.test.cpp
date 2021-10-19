@@ -37,8 +37,8 @@
 
 namespace TMIV::Common {
 namespace {
-void checkLuminancePlaneContents(const Frame<YUV420P8> &unit,
-                                 const int32_t expectedPixelValue = 0) {
+template <typename Element>
+void checkLuminancePlaneContents(const Frame<Element> &unit, uint32_t expectedPixelValue = 0) {
   const auto &yPlane = unit.getPlane(0);
   REQUIRE(!yPlane.empty());
   REQUIRE(yPlane.width() == static_cast<size_t>(unit.getWidth()));
@@ -49,8 +49,9 @@ void checkLuminancePlaneContents(const Frame<YUV420P8> &unit,
   }
 }
 
-void checkChrominancePlaneContents(const Frame<YUV420P8> &unit, int32_t planeId,
-                                   const int32_t expectedPixelValue = 0) {
+template <typename Element>
+void checkChrominancePlaneContents(const Frame<Element> &unit, int32_t planeId,
+                                   uint32_t expectedPixelValue = 0) {
   const auto &uPlane = unit.getPlane(planeId);
   REQUIRE(!uPlane.empty());
   REQUIRE(uPlane.width() == static_cast<size_t>(unit.getWidth() / 2));
@@ -60,160 +61,192 @@ void checkChrominancePlaneContents(const Frame<YUV420P8> &unit, int32_t planeId,
     REQUIRE(pixel == expectedPixelValue);
   }
 }
-void checkIfPlanesContainColor(const Frame<YUV420P8> &unit, const int32_t expectedColor) {
+
+template <typename Element>
+void checkIfPlanesContainColor(const Frame<Element> &unit, uint32_t expectedColor) {
   checkLuminancePlaneContents(unit, expectedColor);
   checkChrominancePlaneContents(unit, 1, expectedColor);
   checkChrominancePlaneContents(unit, 2, expectedColor);
 }
+
+// NOTE(#397): Cannot use TEMPLATE_TEST_CASE because of clang-tidy warnings. At the time of writing
+// this is an open issue on Catch2: https://github.com/catchorg/Catch2/issues/2095
+
+template <typename F> void forEachElement(F &&f) {
+  f(uint8_t{});
+  f(uint16_t{});
+  f(uint32_t{});
+}
 } // namespace
 
 TEST_CASE("0x0 frame through default construction") {
-  const Frame<YUV420P8> unit{};
+  forEachElement([](auto zero) {
+    using TestType = decltype(zero);
 
-  REQUIRE(unit.empty());
-  REQUIRE(unit.getHeight() == 0);
-  REQUIRE(unit.getWidth() == 0);
-  REQUIRE(unit.getSize() == Vec2i{0, 0});
-  REQUIRE(unit.getMemorySize() == 0);
-  REQUIRE(unit.getDiskSize() == 0);
-  REQUIRE(unit.getBitDepth() == 8);
-  REQUIRE(unit.neutralColor() == 0x80);
+    const Frame<TestType> unit{};
 
-  REQUIRE(unit.getNumberOfPlanes() == 3);
-  REQUIRE(unit.getPlanes().size() == Frame<YUV420P8>::getNumberOfPlanes());
-  for (int32_t plane_id = 0; plane_id < 3; ++plane_id) {
-    REQUIRE(unit.getPlane(plane_id).empty());
-  }
+    REQUIRE(unit.empty());
+
+    REQUIRE(unit.getNumberOfPlanes() == 0);
+    REQUIRE(unit.getPlanes().empty());
+  });
 }
 
 TEST_CASE("4x2 frame") {
-  const Frame<YUV420P8> unit{4, 2};
+  forEachElement([](auto zero) {
+    using TestType = decltype(zero);
 
-  REQUIRE(!unit.empty());
-  REQUIRE(unit.getHeight() == 2);
-  REQUIRE(unit.getWidth() == 4);
-  REQUIRE(unit.getSize() == Vec2i{4, 2});
-  REQUIRE(unit.getMemorySize() == 12);
-  REQUIRE(unit.getDiskSize() == 12);
-  REQUIRE(unit.getBitDepth() == 8);
-  REQUIRE(unit.neutralColor() == 0x80);
+    const Frame<TestType> unit{{4, 2}, 8, ColorFormat::YUV420};
 
-  REQUIRE(unit.getNumberOfPlanes() == 3);
-  REQUIRE(unit.getPlanes().size() == Frame<YUV420P8>::getNumberOfPlanes());
+    REQUIRE(!unit.empty());
+    REQUIRE(unit.getHeight() == 2);
+    REQUIRE(unit.getWidth() == 4);
+    REQUIRE(unit.getSize() == Vec2i{4, 2});
+    REQUIRE(unit.getMemorySize() == 12 * sizeof(TestType));
+    REQUIRE(unit.getDiskSize() == 12 * sizeof(TestType));
+    REQUIRE(unit.getBitDepth() == 8);
+    REQUIRE(unit.neutralValue() == 0x80);
 
-  checkLuminancePlaneContents(unit);
-  checkChrominancePlaneContents(unit, 1);
-  checkChrominancePlaneContents(unit, 2);
+    REQUIRE(unit.getNumberOfPlanes() == 3);
+
+    checkLuminancePlaneContents(unit);
+    checkChrominancePlaneContents(unit, 1);
+    checkChrominancePlaneContents(unit, 2);
+  });
 }
 
 TEST_CASE("4x2 frame with neutral color value") {
-  Frame<YUV420P8> unit{4, 2};
-  unit.fillNeutral();
-  checkIfPlanesContainColor(unit, 0x80);
+  forEachElement([](auto zero) {
+    using TestType = decltype(zero);
+
+    Frame<TestType> unit{{4, 2}, 8, ColorFormat::YUV420};
+    unit.fillNeutral();
+    checkIfPlanesContainColor(unit, unit.neutralValue());
+  });
 }
 
-TEST_CASE("4x2 frame with color value one") {
-  Frame<YUV420P8> unit{4, 2};
-  unit.fillOne();
+TEST_CASE("4x2 frame with max color value") {
+  forEachElement([](auto zero) {
+    using TestType = decltype(zero);
 
-  checkIfPlanesContainColor(unit, 1);
+    Frame<TestType> unit{{4, 2}, 8, ColorFormat::YUV420};
+    unit.fillMax();
+
+    checkIfPlanesContainColor(unit, 0xFF);
+  });
 }
 
 TEST_CASE("4x2 frame reset to zero") {
-  Frame<YUV420P8> unit{4, 2};
-  unit.fillOne();
-  unit.fillZero();
+  forEachElement([](auto zero) {
+    using TestType = decltype(zero);
 
-  checkIfPlanesContainColor(unit, 0);
+    Frame<TestType> unit{{4, 2}, 8, ColorFormat::YUV420};
+    unit.fillNeutral();
+    unit.fillZero();
+
+    checkIfPlanesContainColor(unit, 0);
+  });
 }
 
 TEST_CASE("4x2 frame fillInvalidWithNeutral") {
-  Frame<YUV444P10> unit{4, 2};
+  forEachElement([](auto zero) {
+    using TestType = decltype(zero);
 
-  Frame<YUV420P8> depthFrame{4, 2};
-  depthFrame.fillOne();
-  auto &yPlane = depthFrame.getPlane(0);
-  yPlane[3] = 0;
+    Frame<TestType> unit{{4, 2}, 6, ColorFormat::YUV444};
 
-  unit.fillInvalidWithNeutral(depthFrame);
+    Frame<uint8_t> depthFrame{{4, 2}, 8, ColorFormat::YUV420};
+    depthFrame.fillOne();
+    auto &yPlane = depthFrame.getPlane(0);
+    yPlane[3] = 0;
 
-  for (const auto &plane : unit.getPlanes()) {
-    for (uint32_t pixel_index = 0; pixel_index < plane.size(); ++pixel_index) {
-      if (pixel_index == 3) {
-        REQUIRE(plane[pixel_index] == unit.neutralColor());
-      } else {
-        REQUIRE(plane[pixel_index] == 0);
+    unit.fillInvalidWithNeutral(depthFrame);
+
+    for (const auto &plane : unit.getPlanes()) {
+      for (uint32_t pixel_index = 0; pixel_index < plane.size(); ++pixel_index) {
+        if (pixel_index == 3) {
+          REQUIRE(plane[pixel_index] == unit.neutralValue());
+        } else {
+          REQUIRE(plane[pixel_index] == 0);
+        }
       }
     }
-  }
+  });
 }
 
 TEST_CASE("Resizing 0x0 frame to 4x2") {
-  Frame<YUV420P8> unit{};
-  REQUIRE(unit.getWidth() == 0);
-  REQUIRE(unit.getHeight() == 0);
+  forEachElement([](auto zero) {
+    using TestType = decltype(zero);
 
-  unit.resize(4, 2);
-  REQUIRE(unit.getWidth() == 4);
-  REQUIRE(unit.getHeight() == 2);
+    Frame<TestType> unit{};
+    REQUIRE(unit.empty());
+
+    unit.createYuv420({4, 2});
+    REQUIRE(unit.getWidth() == 4);
+    REQUIRE(unit.getHeight() == 2);
+    REQUIRE(unit.getNumberOfPlanes() == 3);
+    REQUIRE(unit.getBitDepth() == std::numeric_limits<TestType>::digits);
+    REQUIRE(unit.getColorFormat() == ColorFormat::YUV420);
+  });
 }
 
 TEST_CASE("Convert Yuv444P10 to YUV420P10") {
-  Frame<YUV444P10> sourceFrame{2, 2};
-  sourceFrame.fillNeutral();
-  auto offset = uint16_t{};
-  for (auto &plane : sourceFrame.getPlanes()) {
-    for (auto &pixel : plane) {
-      pixel += offset++;
+  forEachElement([](auto zero) {
+    using TestType = decltype(zero);
+
+    Frame<TestType> sourceFrame{{2, 2}, 6, ColorFormat::YUV444};
+    sourceFrame.fillNeutral();
+    auto offset = TestType{};
+    for (auto &plane : sourceFrame.getPlanes()) {
+      for (auto &pixel : plane) {
+        pixel += offset++;
+      }
     }
-  }
 
-  const Frame<YUV420P10> destinationFrame{yuv420p(sourceFrame)};
+    const auto destinationFrame = sourceFrame.changeColorFormat(ColorFormat::YUV420);
 
-  const auto &yPlane = destinationFrame.getPlane(0);
-  REQUIRE(yPlane[0] == 512);
-  REQUIRE(yPlane[1] == 513);
-  REQUIRE(yPlane[2] == 514);
-  REQUIRE(yPlane[3] == 515);
-  const auto &uPlane = destinationFrame.getPlane(1);
-  REQUIRE(uPlane[0] == 518);
-  const auto &vPlane = destinationFrame.getPlane(2);
-  REQUIRE(vPlane[0] == 522);
+    const auto &yPlane = destinationFrame.getPlane(0);
+    REQUIRE(yPlane[0] == 32);
+    REQUIRE(yPlane[1] == 33);
+    REQUIRE(yPlane[2] == 34);
+    REQUIRE(yPlane[3] == 35);
+    const auto &uPlane = destinationFrame.getPlane(1);
+    REQUIRE(uPlane[0] == 38);
+    const auto &vPlane = destinationFrame.getPlane(2);
+    REQUIRE(vPlane[0] == 42);
+  });
 }
 
 TEST_CASE("Convert YUV420P10 to Yuv444P10 ") {
-  Frame<YUV420P10> sourceFrame{2, 2};
-  sourceFrame.fillNeutral();
-  auto offset = uint16_t{};
-  for (auto &plane : sourceFrame.getPlanes()) {
-    for (auto &pixel : plane) {
-      pixel += offset++;
+  forEachElement([](auto zero) {
+    using TestType = decltype(zero);
+
+    Frame<TestType> sourceFrame{{2, 2}, 6, ColorFormat::YUV420};
+    sourceFrame.fillNeutral();
+    auto offset = TestType{};
+    for (auto &plane : sourceFrame.getPlanes()) {
+      for (auto &pixel : plane) {
+        pixel += offset++;
+      }
     }
-  }
 
-  const Frame<YUV444P10> destinationFrame{yuv444p(sourceFrame)};
+    const auto destinationFrame = sourceFrame.changeColorFormat(ColorFormat::YUV444);
 
-  const auto &yPlane = destinationFrame.getPlane(0);
-  REQUIRE(yPlane[0] == 512);
-  REQUIRE(yPlane[1] == 513);
-  REQUIRE(yPlane[2] == 514);
-  REQUIRE(yPlane[3] == 515);
-  for (const auto pixel : destinationFrame.getPlane(1)) {
-    REQUIRE(pixel == 516);
-  }
-  for (const auto pixel : destinationFrame.getPlane(2)) {
-    REQUIRE(pixel == 517);
-  }
-}
-
-TEST_CASE("AnyFrame to YUV444P16") {
-  const AnyFrame unit{};
-  const auto destinationFrame{unit.as<YUV420P8>()};
-  REQUIRE(destinationFrame.getSize() == Vec2i{0, 0});
+    const auto &yPlane = destinationFrame.getPlane(0);
+    REQUIRE(yPlane[0] == 32);
+    REQUIRE(yPlane[1] == 33);
+    REQUIRE(yPlane[2] == 34);
+    REQUIRE(yPlane[3] == 35);
+    for (const auto pixel : destinationFrame.getPlane(1)) {
+      REQUIRE(pixel == 36);
+    }
+    for (const auto pixel : destinationFrame.getPlane(2)) {
+      REQUIRE(pixel == 37);
+    }
+  });
 }
 
 TEST_CASE("Expand texture with zeroes") {
-  const auto result = expandTexture(Frame<YUV444P10>{4, 2});
+  const auto result = expandTexture(Frame<uint16_t>{{4, 2}, 10, ColorFormat::YUV444});
 
   REQUIRE(result.height() == 2);
   REQUIRE(result.width() == 4);
@@ -223,7 +256,7 @@ TEST_CASE("Expand texture with zeroes") {
 }
 
 TEST_CASE("Expand texture with ones") {
-  Frame<YUV444P10> frame{4, 2};
+  Frame<uint16_t> frame{{4, 2}, 10, ColorFormat::YUV444};
   frame.fillOne();
 
   const auto result = expandTexture(frame);
@@ -236,7 +269,7 @@ TEST_CASE("Expand texture with ones") {
 }
 
 TEST_CASE("Expand luma with ones") {
-  Frame<YUV420P10> frame{4, 2};
+  Frame<uint16_t> frame{{4, 2}, 10, ColorFormat::YUV420};
   frame.fillOne();
 
   const auto result = expandLuma(frame);
@@ -259,7 +292,7 @@ TEST_CASE("Quantize texture") {
     }
   }
 
-  const auto result = quantizeTexture(flatFrame);
+  const auto result = quantizeTexture(flatFrame, 10);
 
   REQUIRE(result.getPlane(0)(0, 0) == 102);
   REQUIRE(result.getPlane(1)(0, 0) == 123);

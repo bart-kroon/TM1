@@ -34,11 +34,13 @@
 #ifndef TMIV_VIDEODECODER_VIDEODECODERFACTORY_H
 #define TMIV_VIDEODECODER_VIDEODECODERFACTORY_H
 
-#include <TMIV/VideoDecoder/IVideoDecoder.h>
+#include <TMIV/VideoDecoder/VideoDecoderBase.h>
 
 namespace TMIV::VideoDecoder {
-auto create(NalUnitSource source, MivBitstream::PtlProfileCodecGroupIdc codecGroupIdc)
-    -> std::unique_ptr<IVideoDecoder>;
+// Do not depend on MivBitstreamLib
+enum class DecoderId { HEVC_Main10, VVC_Main10, AVC_Progressive_High, HEVC444 };
+
+auto create(NalUnitSource source, DecoderId decoderId) -> std::unique_ptr<VideoDecoderBase>;
 } // namespace TMIV::VideoDecoder
 
 #endif

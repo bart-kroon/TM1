@@ -38,23 +38,33 @@
 #error VVDeC is disabled
 #endif
 
-#include <TMIV/VideoDecoder/IVideoDecoder.h>
+#include <TMIV/VideoDecoder/VideoDecoderBase.h>
+
+#include <memory>
 
 namespace TMIV::VideoDecoder {
-class VVdeCVideoDecoder : public IVideoDecoder {
+class VVdeCVideoDecoder final : public VideoDecoderBase {
 public:
   explicit VVdeCVideoDecoder(NalUnitSource source);
-  VVdeCVideoDecoder(const VVdeCVideoDecoder &) = delete;
-  VVdeCVideoDecoder(VVdeCVideoDecoder &&) = delete;
-  auto operator=(const VVdeCVideoDecoder &) -> VVdeCVideoDecoder & = delete;
-  auto operator=(VVdeCVideoDecoder &&) -> VVdeCVideoDecoder & = delete;
-  ~VVdeCVideoDecoder() override;
 
-  auto getFrame() -> std::unique_ptr<Common::AnyFrame> override;
+  VVdeCVideoDecoder(const VVdeCVideoDecoder &) = delete;
+  VVdeCVideoDecoder(VVdeCVideoDecoder &&) = default;
+  auto operator=(const VVdeCVideoDecoder &) -> VVdeCVideoDecoder & = delete;
+  auto operator=(VVdeCVideoDecoder &&) -> VVdeCVideoDecoder & = default;
+  ~VVdeCVideoDecoder() final;
+
+protected:
+  auto decodeSome() -> bool final;
 
 private:
-  class Impl;
-  std::unique_ptr<Impl> m_impl;
+  auto takeAccessUnit() -> bool;
+  auto decodeFrame() -> bool;
+  auto flushFrame() -> bool;
+  void outputFrame();
+  void releaseFrame();
+
+  struct VVdeCContext;
+  std::unique_ptr<VVdeCContext> m_context;
 };
 } // namespace TMIV::VideoDecoder
 

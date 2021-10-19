@@ -61,7 +61,8 @@ TEST_CASE("Push-pull inpainter") {
     const auto w = 8;
     const auto h = 5;
 
-    auto frame = std::pair{TMIV::Common::Texture444Frame{w, h}, TMIV::Common::Depth16Frame{w, h}};
+    auto frame = std::pair{TMIV::Common::Texture444Frame::yuv444({w, h}, 10),
+                           TMIV::Common::Depth16Frame::lumaOnly({w, h}, 16)};
 
     frame.first.getPlane(0)(h - 1, 0) = 100;
     frame.first.getPlane(1)(h - 1, 0) = 300;

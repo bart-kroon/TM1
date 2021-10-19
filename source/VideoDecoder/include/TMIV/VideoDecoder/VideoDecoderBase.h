@@ -34,14 +34,28 @@
 #ifndef TMIV_VIDEODECODER_VIDEODECODERBASE_H
 #define TMIV_VIDEODECODER_VIDEODECODERBASE_H
 
-#include <TMIV/VideoDecoder/IVideoDecoder.h>
+#include <TMIV/Common/Frame.h>
+
+#include <functional>
 
 namespace TMIV::VideoDecoder {
-class VideoDecoderBase : public IVideoDecoder {
+// A NAL unit source is a function that returns NAL units as a string (blob of bytes). An empty
+// string indicates that there are no more NAL units.
+using NalUnitSource = std::function<std::string()>;
+
+class VideoDecoderBase {
 public:
   explicit VideoDecoderBase(NalUnitSource source);
 
-  auto getFrame() -> std::unique_ptr<Common::AnyFrame> override;
+  VideoDecoderBase(const VideoDecoderBase &) = delete;
+  VideoDecoderBase(VideoDecoderBase &&) = default;
+  auto operator=(const VideoDecoderBase &) -> VideoDecoderBase & = delete;
+  auto operator=(VideoDecoderBase &&) -> VideoDecoderBase & = default;
+  virtual ~VideoDecoderBase() = default;
+
+  // Get the next frame in picture order. If there are no more frames then the result will be empty.
+  // Side-effects may be that NAL units are taken from the source, and there may be screen output.
+  auto getFrame() -> Common::Frame<>;
 
 protected:
   // Do some decoding. Return true iff there is more to decode.
@@ -50,12 +64,12 @@ protected:
   // Take a NAL unit from the source
   auto takeNalUnit() -> std::string;
 
-  // Add a frame to the buffer (in picture order)
-  void outputFrame(std::unique_ptr<Common::AnyFrame> frame);
+  // Add a frame to the frame buffer
+  void outputFrame(Common::Frame<> frame);
 
 private:
   NalUnitSource m_source;
-  std::vector<std::unique_ptr<Common::AnyFrame>> m_frameBuffer;
+  std::vector<Common::Frame<>> m_frameBuffer;
   bool m_eos{};
 };
 } // namespace TMIV::VideoDecoder

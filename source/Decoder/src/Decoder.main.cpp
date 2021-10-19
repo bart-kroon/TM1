@@ -137,21 +137,27 @@ private:
     mivDecoder.setOccFrameServer([this](MivBitstream::AtlasId atlasId, int32_t frameIndex,
                                         Common::Vec2i frameSize) -> Common::Occupancy10Frame {
       if (frameIndex < m_placeholders.numberOfInputFrames) {
-        return IO::loadOccupancyVideoFrame(json(), m_placeholders, atlasId, frameIndex, frameSize);
+        // TODO(#397): Magic bit depth
+        return IO::loadOccupancyVideoFrame(json(), m_placeholders, atlasId, frameIndex, frameSize,
+                                           10);
       }
       return Common::Depth10Frame{};
     });
     mivDecoder.setGeoFrameServer([this](MivBitstream::AtlasId atlasId, int32_t frameIndex,
                                         Common::Vec2i frameSize) -> Common::Depth10Frame {
       if (frameIndex < m_placeholders.numberOfInputFrames) {
-        return IO::loadGeometryVideoFrame(json(), m_placeholders, atlasId, frameIndex, frameSize);
+        // TODO(#397): Magic bit depth
+        return IO::loadGeometryVideoFrame(json(), m_placeholders, atlasId, frameIndex, frameSize,
+                                          10);
       }
       return Common::Depth10Frame{};
     });
     mivDecoder.setTextureFrameServer([this](MivBitstream::AtlasId atlasId, int32_t frameIndex,
                                             Common::Vec2i frameSize) -> Common::Texture444Frame {
       if (frameIndex < m_placeholders.numberOfInputFrames) {
-        return IO::loadTextureVideoFrame(json(), m_placeholders, atlasId, frameIndex, frameSize);
+        // TODO(#397): Magic bit depth
+        return IO::loadTextureVideoFrame(json(), m_placeholders, atlasId, frameIndex, frameSize,
+                                         10);
       }
       return Common::Texture444Frame{};
     });
@@ -159,15 +165,18 @@ private:
         [this](MivBitstream::AtlasId atlasId, int32_t frameIndex,
                Common::Vec2i frameSize) -> Common::Transparency10Frame {
           if (frameIndex < m_placeholders.numberOfInputFrames) {
+            // TODO(#397): Magic bit depth
             return IO::loadTransparencyVideoFrame(json(), m_placeholders, atlasId, frameIndex,
-                                                  frameSize);
+                                                  frameSize, 10);
           }
           return Common::Transparency10Frame{};
         });
     mivDecoder.setFramePackServer([this](MivBitstream::AtlasId atlasId, int32_t frameIndex,
                                          Common::Vec2i frameSize) -> Common::FramePack444Frame {
       if (frameIndex < m_placeholders.numberOfInputFrames) {
-        return IO::loadFramePackVideoFrame(json(), m_placeholders, atlasId, frameIndex, frameSize);
+        // TODO(#397): Magic bit depth
+        return IO::loadFramePackVideoFrame(json(), m_placeholders, atlasId, frameIndex, frameSize,
+                                           10);
       }
       return Common::FramePack444Frame{};
     });

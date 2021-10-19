@@ -190,9 +190,8 @@ private:
         }
 
         transparencyLayer.dump(transparencyStream);
-        Common::padChroma<Common::YUV400P8>(
-            transparencyStream, transparencyLayer.getDiskSize() - transparencyLayer.getMemorySize(),
-            transparencyLayer.getBitDepth());
+        transparencyLayer.padChroma(transparencyStream);
+
         if (!transparencyStream.good()) {
           throw std::runtime_error(fmt::format("Failed to write to {}", transparencyPath));
         }

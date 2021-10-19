@@ -65,8 +65,8 @@ SCENARIO("Luma standard deviation in pruning") {
 
   GIVEN("Equal colors") {
     for (int32_t c = 0; c < numOfCams; c++) {
-      views[c].texture.resize(W, H);
-      views[c].depth.resize(W, H);
+      views[c].texture.createYuv420({W, H}, 10);
+      views[c].depth.createY({W, H}, 16);
       views[c].texture.fillNeutral();
       views[c].depth.fillOne();
     }
@@ -77,8 +77,8 @@ SCENARIO("Luma standard deviation in pruning") {
   }
   GIVEN("Small color difference") {
     for (int32_t c = 0; c < numOfCams; c++) {
-      views[c].texture.resize(W, H);
-      views[c].depth.resize(W, H);
+      views[c].texture.createYuv420({W, H}, 10);
+      views[c].depth.createY({W, H}, 16);
       views[c].texture.fillNeutral();
       views[c].depth.fillOne();
     }
@@ -94,8 +94,8 @@ SCENARIO("Luma standard deviation in pruning") {
   }
   GIVEN("Big color difference") {
     for (int32_t c = 0; c < numOfCams; c++) {
-      views[c].texture.resize(W, H);
-      views[c].depth.resize(W, H);
+      views[c].texture.createYuv420({W, H}, 10);
+      views[c].depth.createY({W, H}, 16);
       views[c].texture.fillNeutral();
       views[c].depth.fillOne();
     }
@@ -107,8 +107,8 @@ SCENARIO("Luma standard deviation in pruning") {
   }
   GIVEN("Equal colors but different depth") {
     for (int32_t c = 0; c < numOfCams; c++) {
-      views[c].texture.resize(W, H);
-      views[c].depth.resize(W, H);
+      views[c].texture.createYuv420({W, H}, 10);
+      views[c].depth.createY({W, H}, 16);
       views[c].texture.fillNeutral();
       views[c].depth.fillOne();
     }

@@ -91,23 +91,31 @@ auto HashFunction::toString(uint32_t value) -> std::string {
 auto videoDataHash(const MivBitstream::AtlasAccessUnit &frame) noexcept -> HashFunction::Result {
   auto hash = HashFunction{};
 
-  for (auto x : frame.decGeoFrame.getPlane(0)) {
-    hash.consume(x);
+  if (!frame.decGeoFrame.empty()) {
+    for (auto x : frame.decGeoFrame.getPlane(0)) {
+      hash.consume(x);
+    }
   }
-  for (auto x : frame.decOccFrame.getPlane(0)) {
-    hash.consume(x);
+  if (!frame.decOccFrame.empty()) {
+    for (auto x : frame.decOccFrame.getPlane(0)) {
+      hash.consume(x);
+    }
   }
-  for (auto x : frame.attrFrame.getPlane(0)) {
-    hash.consume(x);
+  if (!frame.attrFrame.empty()) {
+    for (auto x : frame.attrFrame.getPlane(0)) {
+      hash.consume(x);
+    }
+    for (auto x : frame.attrFrame.getPlane(1)) {
+      hash.consume(x);
+    }
+    for (auto x : frame.attrFrame.getPlane(2)) {
+      hash.consume(x);
+    }
   }
-  for (auto x : frame.attrFrame.getPlane(1)) {
-    hash.consume(x);
-  }
-  for (auto x : frame.attrFrame.getPlane(2)) {
-    hash.consume(x);
-  }
-  for (auto x : frame.transparencyFrame.getPlane(0)) {
-    hash.consume(x);
+  if (!frame.transparencyFrame.empty()) {
+    for (auto x : frame.transparencyFrame.getPlane(0)) {
+      hash.consume(x);
+    }
   }
   return hash.result();
 }

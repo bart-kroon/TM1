@@ -64,86 +64,46 @@ const std::string inputPackedVideoFramePathFmt = "inputPackedVideoFramePathFmt";
 const std::string inputViewportParamsPathFmt = "inputViewportParamsPathFmt"s;
 const std::string inputPackedVsbPathFmt = "inputPackedVideoSubBitstreamPathFmt";
 
-template <typename FORMAT>
-auto loadFrame(const std::filesystem::path &path, int32_t frameIndex, Common::Vec2i frameSize)
-    -> Common::Frame<FORMAT> {
-  auto result = Common::Frame<FORMAT>(frameSize.x(), frameSize.y());
+template <typename Element>
+auto loadFrame(const std::filesystem::path &path, int32_t frameIndex, Common::Vec2i frameSize,
+               uint32_t bitDepth, Common::ColorFormat colorFormat) -> Common::Frame<Element> {
+  return Common::withElement(bitDepth, [&](auto zero) -> Common::Frame<Element> {
+    using FileElement = decltype(zero);
 
-  std::ifstream stream{path, std::ios::binary};
-  if (!stream.good()) {
-    throw std::runtime_error(fmt::format("Failed to open {} for reading", path));
-  }
+    auto frame = Common::Frame<FileElement>{frameSize, bitDepth, colorFormat};
 
-  stream.seekg(std::streampos(frameIndex) * result.getDiskSize());
-  if (!stream.good()) {
-    throw std::runtime_error(
-        fmt::format("Failed to seek for reading to frame {} from {}", frameIndex, path));
-  }
+    std::ifstream stream{path, std::ios::binary};
+    if (!stream.good()) {
+      throw std::runtime_error(fmt::format("Failed to open {} for reading", path));
+    }
 
-  result.read(stream);
-  if (!stream.good()) {
-    throw std::runtime_error(fmt::format("Failed to read frame {} from {}", frameIndex, path));
-  }
+    stream.seekg(std::streampos(frameIndex) * frame.getDiskSize());
+    if (!stream.good()) {
+      throw std::runtime_error(
+          fmt::format("Failed to seek for reading to frame {} from {}", frameIndex, path));
+    }
 
-  return result;
+    frame.read(stream);
+    if (!stream.good()) {
+      throw std::runtime_error(fmt::format("Failed to read frame {} from {}", frameIndex, path));
+    }
+
+    if constexpr (std::is_same_v<FileElement, Element>) {
+      return frame;
+    } else {
+      auto result =
+          Common::Frame<Element>{frame.getSize(), frame.getBitDepth(), frame.getColorFormat()};
+
+      for (size_t i = 0; i < result.getNumberOfPlanes(); ++i) {
+        std::transform(frame.getPlane(i).cbegin(), frame.getPlane(i).cend(),
+                       result.getPlane(i).begin(),
+                       [](FileElement value) { return Common::assertDownCast<Element>(value); });
+      }
+
+      return result;
+    }
+  });
 }
-
-template auto loadFrame(const std::filesystem::path &path, int32_t frameIndex,
-                        Common::Vec2i frameSize) -> Common::Frame<Common::YUV400P10>;
-
-namespace {
-template <typename FORMAT>
-auto loadSourceDepth_(int32_t bits, const std::filesystem::path &path, int32_t frameIndex,
-                      const Common::Vec2i &frameSize) {
-  auto depth16 = Common::Depth16Frame{frameSize.x(), frameSize.y()};
-
-  const auto depth = loadFrame<FORMAT>(path, frameIndex, frameSize);
-
-  std::transform(std::begin(depth.getPlane(0)), std::end(depth.getPlane(0)),
-                 std::begin(depth16.getPlane(0)), [bits](uint32_t x) {
-                   const auto x_max = Common::maxLevel(bits);
-                   const auto y = (0xFFFF * x + x_max / 2) / x_max;
-                   return static_cast<uint16_t>(y);
-                 });
-
-  return depth16;
-}
-
-auto loadSourceDepth(int32_t bits, const std::filesystem::path &path, int32_t frameIndex,
-                     const Common::Vec2i &frameSize) {
-  if (0 < bits && bits <= 8) {
-    return loadSourceDepth_<Common::YUV400P8>(bits, path, frameIndex, frameSize);
-  }
-  if (8 < bits && bits <= 16) {
-    return loadSourceDepth_<Common::YUV400P16>(bits, path, frameIndex, frameSize);
-  }
-  throw std::runtime_error("Invalid source geoemetry bit depth");
-}
-
-template <typename FORMAT>
-auto loadSourceEntities_(const std::filesystem::path &path, int32_t frameIndex,
-                         const Common::Vec2i &frameSize) {
-  auto entities16 = Common::EntityMap{frameSize.x(), frameSize.y()};
-
-  const auto entities = loadFrame<FORMAT>(path, frameIndex, frameSize);
-
-  std::copy(entities.getPlane(0).begin(), entities.getPlane(0).end(),
-            entities16.getPlane(0).begin());
-
-  return entities16;
-}
-
-auto loadSourceEntities(int32_t bits, const std::filesystem::path &path, int32_t frameIndex,
-                        const Common::Vec2i frameSize) {
-  if (0 < bits && bits <= 8) {
-    return loadSourceEntities_<Common::YUV400P8>(path, frameIndex, frameSize);
-  }
-  if (8 < bits && bits <= 16) {
-    return loadSourceEntities_<Common::YUV400P16>(path, frameIndex, frameSize);
-  }
-  throw std::runtime_error("Invalid source entity bit depth");
-}
-} // namespace
 
 auto loadMultiviewFrame(const Common::Json &config, const Placeholders &placeholders,
                         const MivBitstream::SequenceConfig &sc, int32_t frameIndex)
@@ -166,7 +126,8 @@ auto loadMultiviewFrame(const Common::Json &config, const Placeholders &placehol
           inputDir / fmt::format(node.as<std::string>(), placeholders.numberOfInputFrames,
                                  placeholders.contentId, placeholders.testId, name, frameSize.x(),
                                  frameSize.y(), camera.textureVideoFormat());
-      frame[v].texture = loadFrame<Common::YUV420P10>(path, startFrame + frameIndex, frameSize);
+      frame[v].texture = loadFrame<>(path, startFrame + frameIndex, frameSize, camera.bitDepthColor,
+                                     Common::ColorFormat::YUV420);
     }
 
     if (const auto &node = config.optional(inputTransparencyPathFmt)) {
@@ -174,8 +135,8 @@ auto loadMultiviewFrame(const Common::Json &config, const Placeholders &placehol
           inputDir / fmt::format(node.as<std::string>(), placeholders.numberOfInputFrames,
                                  placeholders.contentId, placeholders.testId, name, frameSize.x(),
                                  frameSize.y(), camera.transparencyVideoFormat());
-      frame[v].transparency =
-          loadFrame<Common::YUV400P10>(path, startFrame + frameIndex, frameSize);
+      frame[v].transparency = loadFrame<>(path, startFrame + frameIndex, frameSize,
+                                          camera.bitDepthTransparency, Common::ColorFormat::YUV400);
     }
 
     if (const auto &node = config.optional(inputGeometryPathFmt)) {
@@ -183,8 +144,8 @@ auto loadMultiviewFrame(const Common::Json &config, const Placeholders &placehol
           inputDir / fmt::format(node.as<std::string>(), placeholders.numberOfInputFrames,
                                  placeholders.contentId, placeholders.testId, name, frameSize.x(),
                                  frameSize.y(), camera.geometryVideoFormat());
-      frame[v].depth =
-          loadSourceDepth(camera.bitDepthDepth, path, startFrame + frameIndex, frameSize);
+      frame[v].depth = loadFrame<>(path, startFrame + frameIndex, frameSize, camera.bitDepthDepth,
+                                   Common::ColorFormat::YUV400);
     }
 
     if (const auto &node = config.optional(inputEntityPathFmt)) {
@@ -192,8 +153,8 @@ auto loadMultiviewFrame(const Common::Json &config, const Placeholders &placehol
           inputDir / fmt::format(node.as<std::string>(), placeholders.numberOfInputFrames,
                                  placeholders.contentId, placeholders.testId, name, frameSize.x(),
                                  frameSize.y(), camera.entitiesVideoFormat());
-      frame[v].entities =
-          loadSourceEntities(camera.bitDepthEntities, path, startFrame + frameIndex, frameSize);
+      frame[v].entities = loadFrame<>(path, startFrame + frameIndex, frameSize,
+                                      camera.bitDepthEntities, Common::ColorFormat::YUV400);
     }
   }
 
@@ -216,8 +177,8 @@ auto loadMpiTextureMpiLayer(const Common::Json &config, const Placeholders &plac
                                            placeholders.contentId, placeholders.testId, name,
                                            frameSize.x(), frameSize.y(), "yuv420p10le");
 
-  auto texture =
-      loadFrame<Common::YUV420P10>(path, frameIndex * nbMpiLayers + mpiLayerIndex, frameSize);
+  auto texture = loadFrame<>(path, frameIndex * nbMpiLayers + mpiLayerIndex, frameSize,
+                             camera.bitDepthColor, Common::ColorFormat::YUV420);
 
   return texture;
 }
@@ -239,7 +200,8 @@ auto loadMpiTransparencyMpiLayer(const Common::Json &config, const Placeholders 
                                            placeholders.contentId, placeholders.testId, name,
                                            frameSize.x(), frameSize.y(), "yuv420p");
 
-  return loadFrame<Common::YUV400P8>(path, frameIndex * nbMpiLayers + mpiLayerIndex, frameSize);
+  return loadFrame<uint8_t>(path, frameIndex * nbMpiLayers + mpiLayerIndex, frameSize,
+                            camera.bitDepthTransparency, Common::ColorFormat::YUV400);
 }
 
 namespace {
@@ -283,7 +245,7 @@ auto loadPoseFromCSV(std::istream &stream, int32_t frameIndex) -> Pose {
 
 auto loadViewportMetadata(const Common::Json &config, const Placeholders &placeholders,
                           int32_t frameIndex, const std::string &cameraName, bool isPoseTrace)
-    -> MivBitstream::ViewParams {
+    -> MivBitstream::CameraConfig {
   const auto viewportParamsPath =
       config.require(configDirectory).as<std::filesystem::path>() /
       fmt::format(config.require(inputViewportParamsPathFmt).as<std::string>(),
@@ -295,10 +257,10 @@ auto loadViewportMetadata(const Common::Json &config, const Placeholders &placeh
   }
 
   const auto sequenceConfig = MivBitstream::SequenceConfig{stream};
-  auto result = sequenceConfig.cameraByName(isPoseTrace ? "viewport"s : cameraName).viewParams;
+  auto result = sequenceConfig.cameraByName(isPoseTrace ? "viewport"s : cameraName);
 
   // The result may have invalid depth values
-  result.hasOccupancy = true;
+  result.viewParams.hasOccupancy = true;
 
   if (isPoseTrace) {
     const auto poseTracePath = config.require(configDirectory).as<std::filesystem::path>() /
@@ -313,66 +275,77 @@ auto loadViewportMetadata(const Common::Json &config, const Placeholders &placeh
 
     const auto pose = loadPoseFromCSV(stream2, frameIndex);
 
-    result.pose.position += pose.position;
-    result.pose.orientation = eulerDeg2quat(pose.rotation);
+    result.viewParams.pose.position += pose.position;
+    result.viewParams.pose.orientation = eulerDeg2quat(pose.rotation);
   }
 
   return result;
-} // namespace TMIV::IO
+}
 
 namespace {
-template <typename FORMAT>
+struct VideoFormat {
+  Common::Vec2i frameSize;
+  uint32_t bitDepth{};
+  Common::ColorFormat colorFormat{};
+};
+
+template <typename Element = Common::DefaultElement>
 auto loadVideoFrame(const std::string &key, const Common::Json &config,
                     const Placeholders &placeholders, MivBitstream::AtlasId atlasId,
-                    uint32_t frameId, Common::Vec2i frameSize) -> Common::Frame<FORMAT> {
-  return IO::loadFrame<FORMAT>(config.require(IO::outputDirectory).as<std::filesystem::path>() /
-                                   fmt::format(config.require(key).as<std::string>(),
-                                               placeholders.numberOfInputFrames,
-                                               placeholders.contentId, placeholders.testId, atlasId,
-                                               frameSize.x(), frameSize.y()),
-                               frameId, frameSize);
+                    int32_t frameIdx, const VideoFormat &videoFormat) -> Common::Frame<Element> {
+  const auto path =
+      config.require(IO::outputDirectory).as<std::filesystem::path>() /
+      fmt::format(config.require(key).as<std::string>(), placeholders.numberOfInputFrames,
+                  placeholders.contentId, placeholders.testId, atlasId, videoFormat.frameSize.x(),
+                  videoFormat.frameSize.y());
+
+  return IO::loadFrame<Element>(path, frameIdx, videoFormat.frameSize, videoFormat.bitDepth,
+                                videoFormat.colorFormat);
 }
 } // namespace
 
 auto loadOccupancyVideoFrame(const Common::Json &config, const Placeholders &placeholders,
-                             MivBitstream::AtlasId atlasId, uint32_t frameId,
-                             Common::Vec2i frameSize) -> Common::Occupancy10Frame {
-  return loadVideoFrame<Common::YUV400P10>(IO::inputOccupancyVideoFramePathFmt, config,
-                                           placeholders, atlasId, frameId, frameSize);
+                             MivBitstream::AtlasId atlasId, int32_t frameIdx,
+                             Common::Vec2i frameSize, uint32_t bitDepth)
+    -> Common::Occupancy10Frame {
+  return loadVideoFrame<>(IO::inputOccupancyVideoFramePathFmt, config, placeholders, atlasId,
+                          frameIdx, {frameSize, bitDepth, Common::ColorFormat::YUV400});
 }
 
 auto loadGeometryVideoFrame(const Common::Json &config, const Placeholders &placeholders,
-                            MivBitstream::AtlasId atlasId, uint32_t frameId,
-                            Common::Vec2i frameSize) -> Common::Depth10Frame {
-  return loadVideoFrame<Common::YUV400P10>(IO::inputGeometryVideoFramePathFmt, config, placeholders,
-                                           atlasId, frameId, frameSize);
+                            MivBitstream::AtlasId atlasId, int32_t frameIdx,
+                            Common::Vec2i frameSize, uint32_t bitDepth) -> Common::Depth10Frame {
+  return loadVideoFrame<>(IO::inputGeometryVideoFramePathFmt, config, placeholders, atlasId,
+                          frameIdx, {frameSize, bitDepth, Common::ColorFormat::YUV400});
 }
 
 auto loadTextureVideoFrame(const Common::Json &config, const Placeholders &placeholders,
-                           MivBitstream::AtlasId atlasId, uint32_t frameId, Common::Vec2i frameSize)
-    -> Common::Texture444Frame {
-  return Common::yuv444p(loadVideoFrame<Common::YUV420P10>(
-      IO::inputTextureVideoFramePathFmt, config, placeholders, atlasId, frameId, frameSize));
+                           MivBitstream::AtlasId atlasId, int32_t frameIdx, Common::Vec2i frameSize,
+                           uint32_t bitDepth) -> Common::Texture444Frame {
+  return loadVideoFrame<>(IO::inputTextureVideoFramePathFmt, config, placeholders, atlasId,
+                          frameIdx, {frameSize, bitDepth, Common::ColorFormat::YUV420});
 }
 
 auto loadTransparencyVideoFrame(const Common::Json &config, const Placeholders &placeholders,
-                                MivBitstream::AtlasId atlasId, uint32_t frameId,
-                                Common::Vec2i frameSize) -> Common::Transparency10Frame {
-  return loadVideoFrame<Common::YUV400P10>(IO::inputTransparencyVideoFramePathFmt, config,
-                                           placeholders, atlasId, frameId, frameSize);
+                                MivBitstream::AtlasId atlasId, int32_t frameIdx,
+                                Common::Vec2i frameSize, uint32_t bitDepth)
+    -> Common::Transparency10Frame {
+  return loadVideoFrame<>(IO::inputTransparencyVideoFramePathFmt, config, placeholders, atlasId,
+                          frameIdx, {frameSize, bitDepth, Common::ColorFormat::YUV400});
 }
 
 auto loadFramePackVideoFrame(const Common::Json &config, const Placeholders &placeholders,
-                             MivBitstream::AtlasId atlasId, uint32_t frameId,
-                             Common::Vec2i frameSize) -> Common::FramePack444Frame {
-  return Common::yuv444p(loadVideoFrame<Common::YUV420P10>(
-      IO::inputPackedVideoFramePathFmt, config, placeholders, atlasId, frameId, frameSize));
+                             MivBitstream::AtlasId atlasId, int32_t frameIdx,
+                             Common::Vec2i frameSize, uint32_t bitDepth)
+    -> Common::FramePack444Frame {
+  return loadVideoFrame<>(IO::inputPackedVideoFramePathFmt, config, placeholders, atlasId, frameIdx,
+                          {frameSize, bitDepth, Common::ColorFormat::YUV420});
 }
 
-namespace detail {
+namespace {
 template <bool allowNullopt>
-auto tryLoadSequenceConfig(const Common::Json &config, const Placeholders &placeholders,
-                           int32_t frameIndex)
+auto tryLoadSequenceConfig_(const Common::Json &config, const Placeholders &placeholders,
+                            int32_t frameIndex)
     -> std::conditional_t<allowNullopt, std::optional<MivBitstream::SequenceConfig>,
                           MivBitstream::SequenceConfig> {
   const auto relPath = fmt::format(config.require(IO::inputSequenceConfigPathFmt).as<std::string>(),
@@ -395,16 +368,16 @@ auto tryLoadSequenceConfig(const Common::Json &config, const Placeholders &place
   }
   return MivBitstream::SequenceConfig{stream};
 }
-} // namespace detail
+} // namespace
 
 auto loadSequenceConfig(const Common::Json &config, const Placeholders &placeholders,
                         int32_t frameIndex) -> MivBitstream::SequenceConfig {
-  return detail::tryLoadSequenceConfig<false>(config, placeholders, frameIndex);
+  return tryLoadSequenceConfig_<false>(config, placeholders, frameIndex);
 }
 
 auto tryLoadSequenceConfig(const Common::Json &config, const Placeholders &placeholders,
                            int32_t frameIndex) -> std::optional<MivBitstream::SequenceConfig> {
-  return detail::tryLoadSequenceConfig<true>(config, placeholders, frameIndex);
+  return tryLoadSequenceConfig_<true>(config, placeholders, frameIndex);
 }
 
 auto inputBitstreamPath(const Common::Json &config, const Placeholders &placeholders)

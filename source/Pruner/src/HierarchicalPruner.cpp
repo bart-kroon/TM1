@@ -132,10 +132,12 @@ private:
   const float m_maxDepthError{};
   const float m_maxLumaError{};
   const float m_maxStretching{};
-  const int32_t m_erode{};
-  const int32_t m_dilate{};
-  const int32_t m_maxBasicViewsPerGraph{};
+  const int m_erode{};
+  const int m_dilate{};
+  const int m_maxBasicViewsPerGraph{};
   const bool m_enable2ndPassPruner{};
+  const int m_sampleSize{};
+  int m_reviveRatio{100};
   const float m_maxColorError{};
   const Renderer::AccumulatingPixel<Common::Vec3f> m_config;
   std::optional<float> m_lumaStdDev{};
@@ -156,10 +158,11 @@ public:
       : m_maxDepthError{nodeConfig.require("maxDepthError").as<float>()}
       , m_maxLumaError{nodeConfig.require("maxLumaError").as<float>()}
       , m_maxStretching{nodeConfig.require("maxStretching").as<float>()}
-      , m_erode{nodeConfig.require("erode").as<int32_t>()}
-      , m_dilate{nodeConfig.require("dilate").as<int32_t>()}
-      , m_maxBasicViewsPerGraph{nodeConfig.require("maxBasicViewsPerGraph").as<int32_t>()}
+      , m_erode{nodeConfig.require("erode").as<int>()}
+      , m_dilate{nodeConfig.require("dilate").as<int>()}
+      , m_maxBasicViewsPerGraph{nodeConfig.require("maxBasicViewsPerGraph").as<int>()}
       , m_enable2ndPassPruner{nodeConfig.require("enable2ndPassPruner").as<bool>()}
+      , m_sampleSize{nodeConfig.require("sampleSize").as<int>()}
       , m_maxColorError{nodeConfig.require("maxColorError").as<float>()}
       , m_config{nodeConfig.require("rayAngleParameter").as<float>(),
                  nodeConfig.require("depthParameter").as<float>(),
@@ -344,19 +347,18 @@ public:
     }
   }
 
-  auto prepareSequence(const PrunerParams &params) -> std::vector<MivBitstream::PruningParents> {
-    auto pruningParents = std::vector<MivBitstream::PruningParents>(params.viewParamsList.size());
-
-    Renderer::ProjectionHelperList cameraHelperList{params.viewParamsList};
+  auto prepareSequence(PrunerParams params) -> MivBitstream::ViewParamsList {
+    auto &viewParamsList = params.viewParamsList;
+    Renderer::ProjectionHelperList cameraHelperList{viewParamsList};
 
     // Create clusters and pruning order
     auto overlappingMatrix = computeOverlappingMatrix(cameraHelperList);
-    clusterViews(overlappingMatrix, params.viewParamsList);
+    clusterViews(overlappingMatrix, viewParamsList);
     computePruningOrder(overlappingMatrix);
-    printClusters(params.viewParamsList);
+    printClusters(viewParamsList);
 
     // Pruning graph
-    Common::Graph::SparseDirectedAcyclicGraph<float> pruningGraph(params.viewParamsList.size());
+    Common::Graph::SparseDirectedAcyclicGraph<float> pruningGraph(viewParamsList.size());
 
     for (auto &cluster : m_clusters) {
       if (!cluster.pruningOrder.empty()) {
@@ -370,11 +372,11 @@ public:
     }
 
     // Pruning mask
-    for (size_t viewIdx = 0; viewIdx < params.viewParamsList.size(); viewIdx++) {
-      const auto &neighbourhood = pruningGraph.getNeighbourhood(viewIdx);
+    for (size_t camId = 0; camId < viewParamsList.size(); camId++) {
+      const auto &neighbourhood = pruningGraph.getNeighbourhood(camId);
 
       if (neighbourhood.empty()) {
-        pruningParents[viewIdx] = MivBitstream::PruningParents{};
+        viewParamsList[camId].pp = MivBitstream::PruningParents{};
       } else {
         std::vector<uint16_t> parentIdList;
 
@@ -384,12 +386,12 @@ public:
           parentIdList.emplace_back(static_cast<uint16_t>(link.id()));
         }
 
-        pruningParents[viewIdx] = MivBitstream::PruningParents{std::move(parentIdList)};
+        viewParamsList[camId].pp = MivBitstream::PruningParents{std::move(parentIdList)};
       }
     }
     m_params.depthLowQualityFlag = params.depthLowQualityFlag;
     m_params.sampleBudget = params.sampleBudget;
-    return pruningParents;
+    return std::move(params.viewParamsList);
   }
 
   auto prune(const MivBitstream::ViewParamsList &viewParamsList, const Common::MVD16Frame &views)
@@ -407,36 +409,42 @@ public:
         m_lumaStdDev.emplace(1.0F); // to preserve initial maxLumaError value set in config .json
       }
     }
-
     prepareFrame(views);
     auto nonPrunedArea = pruneFrame(views);
+    std::cout << "Total sample budget ("
+              << (100.0 * nonPrunedArea / static_cast<double>(m_params.sampleBudget)) << "%)\n";
 
     if (isItFirstFrame) {
-      analyzeFillAndPruneAgain(views, nonPrunedArea, 80);
+      analyzeFillAndPruneAgain(views, nonPrunedArea, 80); // change maxLumaError, reviveRatio and prune again
     }
 
     return std::move(m_masks);
   }
 
 private:
-  void analyzeFillAndPruneAgain(const Common::MVD16Frame &views, int32_t nonPrunedArea,
-                                int32_t percentageRatio) {
+    void analyzeFillAndPruneAgain(const Common::MVD16Frame &views, int nonPrunedArea,
+                                int percentageRatioHigh) {
+    const float A = 0.5F/(1.F-m_lumaStdDev.value());
     std::cout << "Pruning luma threshold:   " << (m_lumaStdDev.value() * m_maxLumaError) << "\n";
 
-    while (nonPrunedArea > (m_params.sampleBudget * percentageRatio / 100) &&
+    while (nonPrunedArea > (m_params.sampleBudget * percentageRatioHigh / 100) &&
            m_lumaStdDev.value() < 1.0F) {
-      std::cout << "Non-pruned exceeds " << percentageRatio << "% of total sample budget ("
+      std::cout << "Non-pruned exceeds " << percentageRatioHigh << "% of total sample budget ("
                 << (100.0 * nonPrunedArea / static_cast<double>(m_params.sampleBudget)) << "%)\n";
       std::cout << "Pruning luma threshold changed\n";
 
       *m_lumaStdDev *= 1.5F;
+
       if (m_lumaStdDev.value() > 1.0F) {
         m_lumaStdDev.emplace(1.0F);
       }
+
+      m_reviveRatio = 100*((1.F - m_lumaStdDev.value())*A + 0.5F);
       prepareFrame(views);
       nonPrunedArea = pruneFrame(views);
 
       std::cout << "Pruning luma threshold:   " << (m_lumaStdDev.value() * m_maxLumaError) << "\n";
+      std::cout << "reviveRatio: " << m_reviveRatio << "\n";
     }
   }
 
@@ -497,7 +505,7 @@ private:
     }
   }
 
-  auto pruneFrame(const Common::MVD16Frame &views) -> int32_t {
+  auto pruneFrame(const Common::MVD16Frame &views) -> int {
     for (auto &cluster : m_clusters) {
       for (auto i : cluster.pruningOrder) {
         auto it = find_if(std::begin(m_synthesizers), std::end(m_synthesizers),
@@ -515,7 +523,7 @@ private:
     const auto lumaSamplesPerFrame = 2. * sumValues / 255e6;
     std::cout << "Non-pruned luma samples per frame is " << lumaSamplesPerFrame << "M\n";
 
-    return static_cast<int32_t>((lumaSamplesPerFrame * 1e6) / 2);
+    return static_cast<int>((lumaSamplesPerFrame * 1e6) / 2);
   }
 
   // Synthesize the specified view to all remaining partial views.
@@ -562,8 +570,8 @@ private:
 
   // Visit all pixels
   template <typename F> static void forPixels(std::array<size_t, 2> sizes, F f) {
-    for (int32_t i = 0; i < static_cast<int32_t>(sizes[0]); ++i) {
-      for (int32_t j = 0; j < static_cast<int32_t>(sizes[1]); ++j) {
+    for (int i = 0; i < static_cast<int>(sizes[0]); ++i) {
+      for (int j = 0; j < static_cast<int>(sizes[1]); ++j) {
         f(i, j);
       }
     }
@@ -571,14 +579,14 @@ private:
 
   // Visit all pixel neighbors (in between 3 and 8)
   template <typename F>
-  static auto forNeighbors(int32_t i, int32_t j, std::array<size_t, 2> sizes, F f) -> bool {
-    const int32_t n1 = std::max(0, i - 1);
-    const int32_t n2 = std::min(static_cast<int32_t>(sizes[0]), i + 2);
-    const int32_t m1 = std::max(0, j - 1);
-    const int32_t m2 = std::min(static_cast<int32_t>(sizes[1]), j + 2);
+  static auto forNeighbors(int i, int j, std::array<size_t, 2> sizes, F f) -> bool {
+    const int n1 = std::max(0, i - 1);
+    const int n2 = std::min(static_cast<int>(sizes[0]), i + 2);
+    const int m1 = std::max(0, j - 1);
+    const int m2 = std::min(static_cast<int>(sizes[1]), j + 2);
 
-    for (int32_t n = n1; n < n2; ++n) {
-      for (int32_t m = m1; m < m2; ++m) {
+    for (int n = n1; n < n2; ++n) {
+      for (int m = m1; m < m2; ++m) {
         if (!f(n, m)) {
           return false;
         }
@@ -589,23 +597,176 @@ private:
 
   static auto erode(const Common::Mat<uint8_t> &mask) -> Common::Mat<uint8_t> {
     Common::Mat<uint8_t> result{mask.sizes()};
-    forPixels(mask.sizes(), [&](int32_t i, int32_t j) {
+    forPixels(mask.sizes(), [&](int i, int j) {
       result(i, j) =
-          forNeighbors(i, j, mask.sizes(), [&mask](int32_t n, int32_t m) { return mask(n, m) > 0; })
-              ? 255
-              : 0;
+          forNeighbors(i, j, mask.sizes(), [&mask](int n, int m) { return mask(n, m) > 0; }) ? 255
+                                                                                             : 0;
     });
     return result;
   }
 
   static auto dilate(const Common::Mat<uint8_t> &mask) -> Common::Mat<uint8_t> {
     Common::Mat<uint8_t> result{mask.sizes()};
-    forPixels(mask.sizes(), [&](int32_t i, int32_t j) {
-      result(i, j) = forNeighbors(i, j, mask.sizes(),
-                                  [&mask](int32_t n, int32_t m) { return mask(n, m) == 0; })
-                         ? 0
-                         : 255;
+    forPixels(mask.sizes(), [&](int i, int j) {
+      result(i, j) =
+          forNeighbors(i, j, mask.sizes(), [&mask](int n, int m) { return mask(n, m) == 0; }) ? 0
+                                                                                              : 255;
     });
+    return result;
+  }
+
+[[nodiscard]] auto getColorInconsistencyMaskSampled(
+    const Common::Mat<Common::Vec3f> &referenceYUV,
+    const Common::Mat<Common::Vec3f> &synthesizedYUV,
+    const Common::Mat<uint8_t> &prunedMask) const -> Common::Mat<uint8_t> {
+
+    struct VecRgb {
+      VecRgb(double _r, double _g, double _b) : r{_r}, g{_g}, b{_b} {}
+      double r{}, g{}, b{};
+    };
+    
+    int stepSize = 256/m_sampleSize;
+    const double eps = 1E-10;
+    Common::Mat<uint8_t> result(prunedMask.sizes(), 0);
+    const auto referenceRGB{createRgbImageFromYuvImage(referenceYUV)};
+    const auto synthesizedRGB{createRgbImageFromYuvImage(synthesizedYUV)};
+    const auto nonPrunedPixIndices{computeNonPrunedPixelIndices(synthesizedYUV, prunedMask)};
+    if (nonPrunedPixIndices.empty()) {
+      return result;
+    }
+
+    std::vector<uint64_t> sampledIndices;
+    std::vector<float> wR;
+    std::vector<float> wG;
+    std::vector<float> wB;
+    std::vector<std::vector<uint64_t>> sampledPixIndices(m_sampleSize*m_sampleSize*m_sampleSize);
+    std::vector<float> meanR(m_sampleSize*m_sampleSize*m_sampleSize, 0);
+    std::vector<float> meanG(m_sampleSize*m_sampleSize*m_sampleSize, 0);
+    std::vector<float> meanB(m_sampleSize*m_sampleSize*m_sampleSize, 0);
+    std::vector<float> cntR(m_sampleSize*m_sampleSize*m_sampleSize, 0);
+    std::vector<float> cntG(m_sampleSize*m_sampleSize*m_sampleSize, 0);
+    std::vector<float> cntB(m_sampleSize*m_sampleSize*m_sampleSize, 0);
+    for(int i = 0; i<nonPrunedPixIndices.size(); i++){
+      int idx = nonPrunedPixIndices[i];
+
+      int r_ref = std::min(255.F, std::max(0.F, referenceRGB[idx][0])*255.F);
+      int g_ref = std::min(255.F, std::max(0.F, referenceRGB[idx][1])*255.F);
+      int b_ref = std::min(255.F, std::max(0.F, referenceRGB[idx][2])*255.F);
+
+      int r_synth = synthesizedRGB[idx][0]*255.F;
+      int g_synth = synthesizedRGB[idx][1]*255.F;
+      int b_synth = synthesizedRGB[idx][2]*255.F;
+      int idxBinR = std::min(m_sampleSize - 1, r_ref/stepSize);
+      int idxBinG = std::min(m_sampleSize - 1, g_ref/stepSize);
+      int idxBinB = std::min(m_sampleSize - 1, b_ref/stepSize);
+      int idxBin = m_sampleSize*m_sampleSize*idxBinR + m_sampleSize*idxBinG + idxBinB;
+
+      sampledPixIndices[idxBin].push_back(idx);
+      meanR[idxBin] += r_synth;
+      meanG[idxBin] += g_synth;
+      meanB[idxBin] += b_synth;
+      cntR[idxBin] += 1.f;
+      cntG[idxBin] += 1.f;
+      cntB[idxBin] += 1.f;
+    }
+    for(int i = 0; i<m_sampleSize*m_sampleSize*m_sampleSize; i++){
+      float minv = 3.F*255.F*255.F;
+      int minIdx = -1;
+      meanR[i] /= cntR[i];
+      meanG[i] /= cntG[i];
+      meanB[i] /= cntB[i];
+
+
+      for(int j = 0; j<sampledPixIndices[i].size(); j++){
+        int idx = sampledPixIndices[i][j];
+        float dR = meanR[i] - synthesizedRGB[idx][0]*255.F;
+        float dG = meanG[i] - synthesizedRGB[idx][1]*255.F;
+        float dB = meanB[i] - synthesizedRGB[idx][2]*255.F;
+        float d = dR*dR + dG*dG + dB*dB;
+        if(minv > d){
+          minv = d;
+          minIdx = j;
+        }
+      }
+
+      if(minIdx >= 0){
+        float w = static_cast<float>(sampledPixIndices[i].size())
+                  /static_cast<float>(nonPrunedPixIndices.size());
+        sampledIndices.push_back(sampledPixIndices[i][minIdx]);
+        wR.push_back(w);
+        wG.push_back(w);
+        wB.push_back(w);
+      }
+    }
+    
+    const auto x1{iterativeReweightedLeastSquaresOnNonPrunedPixels(
+        sampledIndices, referenceRGB, synthesizedRGB, wR, 0, eps)};
+    const auto x2{iterativeReweightedLeastSquaresOnNonPrunedPixels(
+        sampledIndices, referenceRGB, synthesizedRGB, wG, 1, eps)};
+    const auto x3{iterativeReweightedLeastSquaresOnNonPrunedPixels(
+        sampledIndices, referenceRGB, synthesizedRGB, wB, 2, eps)};
+
+    std::vector<int> nonPrunedPixErrBinIdx(nonPrunedPixIndices.size());
+    
+    int numBinErrHistogram = 100;
+    double errHistMaxSampleNum = 0.f;
+    double errHistThreshExeedSampleNum = 0.f;
+    std::vector<double> errHistogram(numBinErrHistogram, 0.f);
+    for (size_t i = 0; i < nonPrunedPixIndices.size(); ++i) {
+        size_t pixIdx = nonPrunedPixIndices[i];
+        int idxBinR = synthesizedRGB[pixIdx][0]*255.F/stepSize;
+        int idxBinG = synthesizedRGB[pixIdx][1]*255.F/stepSize;
+        int idxBinB = synthesizedRGB[pixIdx][2]*255.F/stepSize;
+        idxBinR = std::max(0, std::min(m_sampleSize - 1, idxBinR));
+        idxBinG = std::max(0, std::min(m_sampleSize - 1, idxBinG));
+        idxBinB = std::max(0, std::min(m_sampleSize - 1, idxBinB));
+        const VecRgb s{static_cast<double>(synthesizedRGB[pixIdx][0]),
+                       static_cast<double>(synthesizedRGB[pixIdx][1]),
+                       static_cast<double>(synthesizedRGB[pixIdx][2])};
+
+        const VecRgb c{computeWeightedRgbSum(referenceRGB[pixIdx], x1),
+                       computeWeightedRgbSum(referenceRGB[pixIdx], x2),
+                       computeWeightedRgbSum(referenceRGB[pixIdx], x3)};
+
+        VecRgb d{std::abs(c.r - s.r), std::abs(c.g - s.g), std::abs(c.b - s.b)};
+        float err = std::max(d.r, std::max(d.g, d.b));
+
+        int errHistBinIdx = std::min(numBinErrHistogram - 1, static_cast<int>(err*numBinErrHistogram));
+        nonPrunedPixErrBinIdx[i] = errHistBinIdx;
+        errHistogram[errHistBinIdx] += 1.f;
+        errHistMaxSampleNum += 1.f;
+
+        bool flag = (err > m_maxColorError);
+        errHistThreshExeedSampleNum += 1.f*static_cast<int>(flag);
+        result[pixIdx] = static_cast<int>(flag && m_reviveRatio == 100)*255;
+    }
+
+    if(m_reviveRatio == 100){
+      return result;
+    }
+
+    int cutBinIdx = numBinErrHistogram;
+    float accumHist = 0.f;
+    float minimumErr = 1.f/numBinErrHistogram;
+    float revivedRatio;
+    for(int i = numBinErrHistogram - 1; i >= 0; i--){
+      accumHist += errHistogram[i]/errHistThreshExeedSampleNum;
+      double curErr = minimumErr*i;
+      if(accumHist < m_reviveRatio/100.f && curErr >= m_maxColorError){
+        revivedRatio = accumHist;
+        cutBinIdx = i;
+      }
+      else {
+        break;
+      }
+    }
+  
+    for (size_t i = 0; i < nonPrunedPixIndices.size(); i++){
+      size_t pixIdx = nonPrunedPixIndices[i];
+      bool flag = nonPrunedPixErrBinIdx[i] >= cutBinIdx;
+      result[pixIdx] = static_cast<int>(flag)*255;
+    }
+
     return result;
   }
 
@@ -618,7 +779,7 @@ private:
       double r{}, g{}, b{};
     };
 
-    const int32_t maxIterNum = 10;
+    const int maxIterNum = 10;
     const double eps = 1E-10;
     Common::Mat<uint8_t> result(prunedMask.sizes(), 0);
     const auto referenceRGB{createRgbImageFromYuvImage(referenceYUV)};
@@ -634,9 +795,13 @@ private:
     std::vector<float> weightR(numPixels, 1.F);
     std::vector<float> weightG(numPixels, 1.F);
     std::vector<float> weightB(numPixels, 1.F);
-
+    double tempPrunerTotalErr;
+    double tempPrunerTotalErrCnt;
+    double tempPrunerInlierErr;
+    double tempPrunerInlierErrCnt;
+    
     double prevE = -1.0;
-    for (int32_t iter = 0; iter < maxIterNum; ++iter) {
+    for (int iter = 0; iter < maxIterNum; ++iter) {
       const auto x1{iterativeReweightedLeastSquaresOnNonPrunedPixels(
           nonPrunedPixIndices, referenceRGB, synthesizedRGB, weightR, 0, eps)};
       const auto x2{iterativeReweightedLeastSquaresOnNonPrunedPixels(
@@ -646,6 +811,12 @@ private:
 
       double curE = 0;
       double weightSum = 0;
+
+      tempPrunerTotalErr = 0;
+      tempPrunerTotalErrCnt = 0;
+      tempPrunerInlierErr = 0;
+      tempPrunerInlierErrCnt = 0;
+
       for (size_t i = 0; i < numPixels; ++i) {
         size_t pixIdx = nonPrunedPixIndices[i];
         const VecRgb s{static_cast<double>(synthesizedRGB[pixIdx][0]),
@@ -658,8 +829,14 @@ private:
 
         VecRgb d{std::abs(c.r - s.r), std::abs(c.g - s.g), std::abs(c.b - s.b)};
 
+        double err = std::max(d.r, std::max(d.g, d.b));
+        tempPrunerTotalErr += err;
+        tempPrunerTotalErrCnt += 1.0;
+
         result[pixIdx] = 0;
         if (d.r > m_maxColorError || d.g > m_maxColorError || d.b > m_maxColorError) {
+          tempPrunerInlierErr += err;
+          tempPrunerInlierErrCnt += 1.0;
           result[pixIdx] = 255;
         }
 
@@ -690,6 +867,8 @@ private:
       }
       prevE = curE;
     }
+
+
     return result;
   }
 
@@ -699,8 +878,15 @@ private:
     Common::Mat<uint8_t> colorInconsistencyMask;
     Common::Mat<uint8_t>::iterator iColor;
     if (m_enable2ndPassPruner) {
-      colorInconsistencyMask = getColorInconsistencyMask(
+      if(m_sampleSize == 0){
+        colorInconsistencyMask = getColorInconsistencyMask(
           synthesizer.referenceYUV, synthesizer.rasterizer.attribute<0>(), mask);
+      }
+      else{
+        colorInconsistencyMask = getColorInconsistencyMaskSampled(
+          synthesizer.referenceYUV, synthesizer.rasterizer.attribute<0>(), mask);
+      }
+      
       iColor = std::begin(colorInconsistencyMask);
     }
 
@@ -709,9 +895,9 @@ private:
     auto jY = std::begin(synthesizer.referenceY);
     auto k = std::begin(status);
 
-    int32_t pp = 0;
-    const auto W = static_cast<int32_t>(synthesizer.reference.width());
-    const auto H = static_cast<int32_t>(synthesizer.reference.height());
+    int pp = 0;
+    const auto W = static_cast<int>(synthesizer.reference.width());
+    const auto H = static_cast<int>(synthesizer.reference.height());
 
     auto modifiedMaxLumaError = m_maxLumaError * m_lumaStdDev.value();
 
@@ -723,8 +909,8 @@ private:
         const auto h = pp / W;
         const auto w = pp % W;
 
-        for (int32_t hh = -1; hh <= 1; hh++) {
-          for (int32_t ww = -1; ww <= 1; ww++) {
+        for (int hh = -1; hh <= 1; hh++) {
+          for (int ww = -1; ww <= 1; ww++) {
             if (h + hh < 0 || h + hh >= H || w + ww < 0 || w + ww >= W) {
               continue;
             }
@@ -761,10 +947,10 @@ private:
 
       return true;
     });
-    for (int32_t n = 0; n < m_erode; ++n) {
+    for (int n = 0; n < m_erode; ++n) {
       mask = erode(mask);
     }
-    for (int32_t n = 0; n < m_dilate; ++n) {
+    for (int n = 0; n < m_dilate; ++n) {
       mask = dilate(mask);
     }
     synthesizer.maskAverage =
@@ -779,8 +965,7 @@ HierarchicalPruner::HierarchicalPruner(const Common::Json & /* unused */,
 
 HierarchicalPruner::~HierarchicalPruner() = default;
 
-auto HierarchicalPruner::prepareSequence(const PrunerParams &params)
-    -> std::vector<MivBitstream::PruningParents> {
+auto HierarchicalPruner::prepareSequence(PrunerParams params) -> MivBitstream::ViewParamsList {
   return m_impl->prepareSequence(params);
 }
 
@@ -788,4 +973,5 @@ auto HierarchicalPruner::prune(const MivBitstream::ViewParamsList &viewParamsLis
                                const Common::MVD16Frame &views) -> Common::MaskList {
   return m_impl->prune(viewParamsList, views);
 }
+
 } // namespace TMIV::Pruner

@@ -22,6 +22,7 @@
             "depthParameter": 50,
             "dilate": 5,
             "enable2ndPassPruner": true,
+            "sampleSize": 32,
             "erode": 2,
             "maxBasicViewsPerGraph": 3,
             "maxColorError": 0.1,

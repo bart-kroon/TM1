@@ -136,6 +136,8 @@ private:
   const int32_t m_dilate{};
   const int32_t m_maxBasicViewsPerGraph{};
   const bool m_enable2ndPassPruner{};
+  const int32_t m_sampleSize{};
+  int32_t m_reviveRatio{100};
   const float m_maxColorError{};
   const Renderer::AccumulatingPixel<Common::Vec3f> m_config;
   std::optional<float> m_lumaStdDev{};
@@ -160,6 +162,7 @@ public:
       , m_dilate{nodeConfig.require("dilate").as<int32_t>()}
       , m_maxBasicViewsPerGraph{nodeConfig.require("maxBasicViewsPerGraph").as<int32_t>()}
       , m_enable2ndPassPruner{nodeConfig.require("enable2ndPassPruner").as<bool>()}
+      , m_sampleSize{nodeConfig.require("sampleSize").as<int32_t>()}
       , m_maxColorError{nodeConfig.require("maxColorError").as<float>()}
       , m_config{nodeConfig.require("rayAngleParameter").as<float>(),
                  nodeConfig.require("depthParameter").as<float>(),
@@ -421,6 +424,7 @@ public:
 private:
   void analyzeFillAndPruneAgain(const Common::MVD16Frame &views, int32_t nonPrunedArea,
                                 int32_t percentageRatio) {
+    const float A = 0.5F / (1.F - m_lumaStdDev.value());
     std::cout << "Pruning luma threshold:   " << (m_lumaStdDev.value() * m_maxLumaError) << "\n";
 
     while (nonPrunedArea > (m_params.sampleBudget * percentageRatio / 100) &&
@@ -433,10 +437,13 @@ private:
       if (m_lumaStdDev.value() > 1.0F) {
         m_lumaStdDev.emplace(1.0F);
       }
+
+      m_reviveRatio = static_cast<int>(100.F * ((1.F - m_lumaStdDev.value()) * A + 0.5F));
       prepareFrame(views);
       nonPrunedArea = pruneFrame(views);
 
       std::cout << "Pruning luma threshold:   " << (m_lumaStdDev.value() * m_maxLumaError) << "\n";
+      std::cout << "reviveRatio: " << m_reviveRatio << "\n";
     }
   }
 
@@ -609,6 +616,144 @@ private:
     return result;
   }
 
+  static void calcSamples(const int32_t sampleSize, const std::vector<size_t> &nonPrunedPixIndices,
+                          const TMIV::Common::Mat<TMIV::Common::Vec3f> &referenceRGB,
+                          const TMIV::Common::Mat<TMIV::Common::Vec3f> &synthesizedRGB,
+                          std::vector<uint64_t> &sampledIndices, std::vector<float> &weights) {
+    struct VecRgb {
+      VecRgb(float _r, float _g, float _b) : r{_r}, g{_g}, b{_b} {}
+      float r{}, g{}, b{};
+    };
+    std::vector<std::vector<uint64_t>> sampledPixIndices(sampleSize * sampleSize * sampleSize);
+    std::vector<VecRgb> meanColors(sampleSize * sampleSize * sampleSize, {0.F, 0.F, 0.F});
+    for (size_t idx : nonPrunedPixIndices) {
+      VecRgb ref{std::min(255.F, std::max(0.F, referenceRGB[idx][0]) * 255.F),
+                 std::min(255.F, std::max(0.F, referenceRGB[idx][1]) * 255.F),
+                 std::min(255.F, std::max(0.F, referenceRGB[idx][2]) * 255.F)};
+      VecRgb synth{synthesizedRGB[idx][0] * 255.F, synthesizedRGB[idx][1] * 255.F,
+                   synthesizedRGB[idx][2] * 255.F};
+      int32_t idxBin =
+          std::min(sampleSize - 1, static_cast<int32_t>(ref.r) * sampleSize / 256) * sampleSize *
+              sampleSize +
+          std::min(sampleSize - 1, static_cast<int32_t>(ref.g) * sampleSize / 256) * sampleSize +
+          std::min(sampleSize - 1, static_cast<int32_t>(ref.b) * sampleSize / 256);
+      sampledPixIndices[idxBin].push_back(idx);
+      meanColors[idxBin].r += static_cast<float>(static_cast<int32_t>(synth.r));
+      meanColors[idxBin].g += static_cast<float>(static_cast<int32_t>(synth.g));
+      meanColors[idxBin].b += static_cast<float>(static_cast<int32_t>(synth.b));
+    }
+    for (int32_t i = 0; i < sampleSize * sampleSize * sampleSize; i++) {
+      float minv = 3.F * 255.F * 255.F;
+      size_t minIdx = sampledPixIndices[i].size();
+      meanColors[i].r /= static_cast<float>(sampledPixIndices[i].size());
+      meanColors[i].g /= static_cast<float>(sampledPixIndices[i].size());
+      meanColors[i].b /= static_cast<float>(sampledPixIndices[i].size());
+
+      for (size_t j = 0; j < sampledPixIndices[i].size(); j++) {
+        size_t idx = sampledPixIndices[i][j];
+        VecRgb d{meanColors[i].r - synthesizedRGB[idx][0] * 255.F,
+                 meanColors[i].g - synthesizedRGB[idx][1] * 255.F,
+                 meanColors[i].b - synthesizedRGB[idx][2] * 255.F};
+        auto err = d.r * d.r + d.g * d.g + d.b * d.b;
+        if (minv > err) {
+          minv = err;
+          minIdx = j;
+        }
+      }
+
+      if (minIdx < sampledPixIndices[i].size()) {
+        sampledIndices.push_back(sampledPixIndices[i][minIdx]);
+        weights.push_back(static_cast<float>(sampledPixIndices[i].size()) /
+                          static_cast<float>(nonPrunedPixIndices.size()));
+      }
+    }
+  }
+
+  [[nodiscard]] auto
+  getColorInconsistencyMaskSampled(const Common::Mat<Common::Vec3f> &referenceYUV,
+                                   const Common::Mat<Common::Vec3f> &synthesizedYUV,
+                                   const Common::Mat<uint8_t> &prunedMask) const
+      -> Common::Mat<uint8_t> {
+    struct VecRgb {
+      VecRgb(float _r, float _g, float _b) : r{_r}, g{_g}, b{_b} {}
+      float r{}, g{}, b{};
+    };
+
+    const double eps = 1E-10;
+    Common::Mat<uint8_t> result(prunedMask.sizes(), 0);
+    const auto referenceRGB{createRgbImageFromYuvImage(referenceYUV)};
+    const auto synthesizedRGB{createRgbImageFromYuvImage(synthesizedYUV)};
+    const auto nonPrunedPixIndices{computeNonPrunedPixelIndices(synthesizedYUV, prunedMask)};
+    if (nonPrunedPixIndices.empty()) {
+      return result;
+    }
+
+    std::vector<uint64_t> sampledIndices;
+    std::vector<float> weights;
+
+    calcSamples(m_sampleSize, nonPrunedPixIndices, referenceRGB, synthesizedRGB, sampledIndices,
+                weights);
+    const auto x1{iterativeReweightedLeastSquaresOnNonPrunedPixels(
+        sampledIndices, referenceRGB, synthesizedRGB, weights, 0, eps)};
+    const auto x2{iterativeReweightedLeastSquaresOnNonPrunedPixels(
+        sampledIndices, referenceRGB, synthesizedRGB, weights, 1, eps)};
+    const auto x3{iterativeReweightedLeastSquaresOnNonPrunedPixels(
+        sampledIndices, referenceRGB, synthesizedRGB, weights, 2, eps)};
+
+    std::vector<int> nonPrunedPixErrBinIdx(nonPrunedPixIndices.size());
+    const int32_t numBinErrHistogram = 100;
+    double errHistThreshExeedSampleNum = 0.F;
+    std::vector<double> errHistogram(numBinErrHistogram, 0.F);
+    for (size_t i = 0; i < nonPrunedPixIndices.size(); ++i) {
+      size_t pixIdx = nonPrunedPixIndices[i];
+      const VecRgb s{synthesizedRGB[pixIdx][0], synthesizedRGB[pixIdx][1],
+                     synthesizedRGB[pixIdx][2]};
+      const VecRgb c{static_cast<float>(computeWeightedRgbSum(referenceRGB[pixIdx], x1)),
+                     static_cast<float>(computeWeightedRgbSum(referenceRGB[pixIdx], x2)),
+                     static_cast<float>(computeWeightedRgbSum(referenceRGB[pixIdx], x3))};
+      VecRgb d{std::abs(c.r - s.r), std::abs(c.g - s.g), std::abs(c.b - s.b)};
+      auto err = std::max(d.r, std::max(d.g, d.b));
+
+      int32_t errHistBinIdx = std::min(
+          numBinErrHistogram - 1, static_cast<int>(err * static_cast<float>(numBinErrHistogram)));
+      nonPrunedPixErrBinIdx[i] = errHistBinIdx;
+      errHistogram[errHistBinIdx] += 1.F;
+
+      if (err > m_maxColorError) {
+        errHistThreshExeedSampleNum += 1.F;
+        if (m_reviveRatio == 100) {
+          result[pixIdx] = 255;
+        }
+      }
+    }
+
+    if (m_reviveRatio == 100) {
+      return result;
+    }
+
+    int32_t cutBinIdx = numBinErrHistogram;
+    float accumHist = 0.F;
+    float minimumErr = 1.F / static_cast<float>(numBinErrHistogram);
+    for (int32_t i = numBinErrHistogram - 1; i >= 0; i--) {
+      accumHist += static_cast<float>(errHistogram[i] / errHistThreshExeedSampleNum);
+      double curErr = minimumErr * static_cast<float>(i);
+      if (accumHist < static_cast<float>(m_reviveRatio) / 100.F && curErr >= m_maxColorError) {
+        cutBinIdx = i;
+      } else {
+        break;
+      }
+    }
+
+    for (size_t i = 0; i < nonPrunedPixIndices.size(); i++) {
+      size_t pixIdx = nonPrunedPixIndices[i];
+      if (nonPrunedPixErrBinIdx[i] >= cutBinIdx) {
+        result[pixIdx] = 255;
+      }
+    }
+
+    return result;
+  }
+
   [[nodiscard]] auto getColorInconsistencyMask(const Common::Mat<Common::Vec3f> &referenceYUV,
                                                const Common::Mat<Common::Vec3f> &synthesizedYUV,
                                                const Common::Mat<uint8_t> &prunedMask) const
@@ -699,8 +844,13 @@ private:
     Common::Mat<uint8_t> colorInconsistencyMask;
     Common::Mat<uint8_t>::iterator iColor;
     if (m_enable2ndPassPruner) {
-      colorInconsistencyMask = getColorInconsistencyMask(
-          synthesizer.referenceYUV, synthesizer.rasterizer.attribute<0>(), mask);
+      if (m_sampleSize == 0) {
+        colorInconsistencyMask = getColorInconsistencyMask(
+            synthesizer.referenceYUV, synthesizer.rasterizer.attribute<0>(), mask);
+      } else {
+        colorInconsistencyMask = getColorInconsistencyMaskSampled(
+            synthesizer.referenceYUV, synthesizer.rasterizer.attribute<0>(), mask);
+      }
       iColor = std::begin(colorInconsistencyMask);
     }
 

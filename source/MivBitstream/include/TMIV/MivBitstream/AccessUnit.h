@@ -53,41 +53,46 @@ namespace TMIV::MivBitstream {
 struct AtlasAccessUnit {
   AtlasSequenceParameterSetRBSP asps;
   AtlasFrameParameterSetRBSP afps;
-
-  Common::Depth10Frame decGeoFrame;
-  Common::Depth10Frame geoFrame;
-  Common::Texture444Frame attrFrame;
-  Common::Occupancy10Frame decOccFrame;
-  Common::Occupancy10Frame occFrame;
-  Common::Transparency10Frame transparencyFrame;
-  Common::FramePack444Frame decPacFrame;
-
   Common::BlockToPatchMap blockToPatchMap;
   PatchParamsList patchParamsList;
 
-  // Nominal atlas frame size
-  [[nodiscard]] auto frameSize() const noexcept -> Common::Vec2i;
+  // ISO/IEC 23090-12 Annex 9
+  Common::Frame<> decOccFrame;
+  Common::Frame<> decGeoFrame;
+  std::vector<Common::Frame<>> decAttrFrame;
+  Common::Frame<> decPckFrame;
 
-  // Geometry frame size
-  [[nodiscard]] auto decGeoFrameSize(const V3cParameterSet &vps) const noexcept -> Common::Vec2i;
+  // ISO/IEC 23090-12 Annex B
+  Common::Frame<> unpckOccFrame;
+  Common::Frame<> unpckGeoFrame;
+  std::vector<Common::Frame<>> unpckAttrFrame;
+  Common::Frame<bool> occFrameNF;
+  Common::Frame<> geoFrameNF;
+  std::vector<Common::Frame<>> attrFrameNF;
 
-  // Occupancy frame size
-  [[nodiscard]] auto decOccFrameSize(const V3cParameterSet &vps) const noexcept -> Common::Vec2i;
-
-  // FramePack frame size
-  [[nodiscard]] auto decPacFrameSize(const V3cParameterSet &vps) const noexcept -> Common::Vec2i;
+  // Application of hypothetical reference render processes (Annex H)
+  Common::Occupancy1Frame occFrame;
+  Common::Depth10Frame geoFrame;
+  Common::Depth10Frame texFrame;
 
   // Index into the block to patch map using nominal atlas coordinates
-  [[nodiscard]] auto patchId(uint32_t row, uint32_t column) const -> uint16_t;
+  //
+  // TODO(#397): Rename to patchIdx
+  [[nodiscard]] auto patchId(uint32_t row, uint32_t column) const -> uint16_t {
+    const auto k = asps.asps_log2_patch_packing_block_size();
+    return blockToPatchMap.getPlane(0)(row >> k, column >> k);
+  }
 };
 
 struct AccessUnit {
   bool irap{};
   int32_t foc{-1};
+
   V3cParameterSet vps;
   std::optional<CommonAtlasSequenceParameterSetRBSP> casps;
   ViewParamsList viewParamsList;
   std::vector<AtlasAccessUnit> atlas;
+
   std::optional<ViewingSpace> vs;
   std::optional<ViewportCameraParameters> vcp;
   std::optional<ViewportPosition> vp;

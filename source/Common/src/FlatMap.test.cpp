@@ -31,47 +31,35 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/Decoder/EntityBasedPatchMapFilter.h>
+#include <catch2/catch.hpp>
 
-#include <iostream>
+#include <TMIV/Common/FlatMap.h>
 
-namespace TMIV::Decoder {
-EntityBasedPatchMapFilter::EntityBasedPatchMapFilter(const Common::Json & /*rootNode*/,
-                                                     const Common::Json &componentNode) {
-  m_entityFiltering = false;
-  if (const auto &subnode = componentNode.optional("EntityDecodeRange")) {
-    m_entityDecodeRange = subnode.asVec<int32_t, 2>();
-    m_entityFiltering = true;
-  }
-}
+using namespace std::string_literals;
 
-void EntityBasedPatchMapFilter::inplaceFilterBlockToPatchMaps(
-    MivBitstream::AccessUnit &frame) const {
-  if (m_entityFiltering) {
-    for (auto &atlas : frame.atlas) {
-      if (atlas.asps.asps_extension_present_flag() &&
-          atlas.asps.asps_miv_extension_present_flag() &&
-          0 < atlas.asps.asps_miv_extension().asme_max_entity_id()) {
-        filterBlockToPatchMaps(atlas);
-      }
+TEST_CASE("Common::FlatMap") {
+  SECTION("Mutable indexing") {
+    auto unit = TMIV::Common::FlatMap<std::string, int32_t>{};
+    REQUIRE(unit.empty());
+
+    unit["meaning"s] = 42;
+    REQUIRE(unit.size() == 1);
+
+    unit["1 + 1"s] = 2;
+    REQUIRE(unit.size() == 2);
+
+    SECTION("The flat map is unsorted. New items are pushed onto the back.") {
+      unit["alphabet"s] = 0;
+      REQUIRE(unit.size() == 3);
+      REQUIRE(unit.back().key == "alphabet"s);
+      REQUIRE(unit.back().value == 0);
     }
   }
-}
 
-void EntityBasedPatchMapFilter::filterBlockToPatchMaps(MivBitstream::AtlasAccessUnit &atlas) const {
-  Common::Vec2i sz = atlas.blockToPatchMap.getSize();
-  for (int32_t y = 0; y < sz[1]; y++) {
-    for (int32_t x = 0; x < sz[0]; x++) {
-      uint16_t patchId = atlas.blockToPatchMap.getPlane(0)(y, x);
-      if (patchId != Common::unusedPatchId) {
-        const auto entityId =
-            static_cast<int32_t>(atlas.patchParamsList[patchId].atlasPatchEntityId());
-        if (entityId < m_entityDecodeRange[0] || m_entityDecodeRange[1] <= entityId) {
-          atlas.blockToPatchMap.getPlane(0)(y, x) = Common::unusedPatchId;
-        }
-      }
-    }
+  SECTION("Const indexing") {
+    const auto unit = TMIV::Common::FlatMap<std::string, int32_t>{{{"four"s, 4}, {"five"s, 5}}};
+
+    REQUIRE(unit["four"s] == 4);
+    REQUIRE(unit["five"s] == 5);
   }
 }
-
-} // namespace TMIV::Decoder

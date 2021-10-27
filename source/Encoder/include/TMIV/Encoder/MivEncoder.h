@@ -71,9 +71,7 @@ private:
     return 1U << (m_log2MaxFrmOrderCntLsbMinus4 + 4U);
   }
 
-  template <typename Payload>
-  void writeV3cUnit(MivBitstream::VuhUnitType vut, MivBitstream::AtlasId atlasId,
-                    Payload &&payload);
+  template <typename Payload> void writeV3cUnit(MivBitstream::V3cUnitHeader vuh, Payload &&payload);
   template <typename Payload, typename... Args>
   void writeNalUnit(MivBitstream::AtlasSubBitstream &asb, MivBitstream::NalUnitHeader nuh,
                     Payload &&payload, Args &&...args);

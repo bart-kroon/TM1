@@ -6,11 +6,8 @@ create_tmiv_library(
     SOURCES
         "src/AtlasDecoder.cpp"
         "src/CommonAtlasDecoder.cpp"
-        "src/EntityBasedPatchMapFilter.cpp"
-        "src/FrameUnpacker.cpp"
         "src/GeometryScaler.cpp"
         "src/MivDecoder.cpp"
-        "src/OccupancyReconstructor.cpp"
         "src/OutputLog.cpp"
         "src/PreRenderer.cpp"
         "src/V3cSampleStreamDecoder.cpp"
@@ -35,10 +32,10 @@ create_catch2_unit_test(
     TARGET
         DecoderTest
     SOURCES
-        "src/OutputLog.test.cpp"
-        "src/FrameUnpacker.test.cpp"
         "src/CommonAtlasDecoder.test.cpp"
         "src/MivDecoder.test.cpp"
+        "src/PreRenderer.test.cpp"
+        "src/OutputLog.test.cpp"
     PRIVATE
         TMIV::DecoderLib
     )

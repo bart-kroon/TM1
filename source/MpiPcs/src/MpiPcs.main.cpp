@@ -142,7 +142,7 @@ private:
 
     MpiPcs::Reader mpiPcsReader{json(), placeholders(), m_inputSequenceConfig};
 
-    const auto outputDir = json().require(IO::outputDirectory).as<std::filesystem::path>();
+    const auto outputDir = json().require("outputDirectory").as<std::filesystem::path>();
 
     auto texturePath =
         outputDir / fmt::format(json().require(outputTexturePathFmt).as<std::string>(),

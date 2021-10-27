@@ -370,9 +370,9 @@ auto Encoder::calculateBtpm() const -> std::vector<std::vector<std::vector<int32
 
 auto Encoder::calculatePatchAttrOffsetValuesFullGOP(
     std::vector<std::array<std::array<int64_t, 4>, 3>> &patchAttrOffsetValuesFullGOP) -> int32_t {
-  const auto bitShift = m_config.textureBitDepth - m_config.attributeOffsetBitCount;
-  const auto textureMedVal = Common::medLevel<uint16_t>(m_config.textureBitDepth);
-  const auto textureMaxVal = Common::maxLevel<uint16_t>(m_config.textureBitDepth);
+  const auto bitShift = m_config.texBitDepth - m_config.attributeOffsetBitCount;
+  const auto textureMedVal = Common::medLevel<uint16_t>(m_config.texBitDepth);
+  const auto textureMaxVal = Common::maxLevel<uint16_t>(m_config.texBitDepth);
 
   for (size_t p = 0; p != params().patchParamsList.size(); ++p) {
     for (int32_t c = 0; c < 3; c++) {
@@ -408,7 +408,7 @@ void Encoder::constructVideoFrames() {
   int32_t frameId = 0;
 
   auto patchAttrOffsetValuesFullGOP = std::vector<std::array<std::array<int64_t, 4>, 3>>{};
-  const auto textureMaxVal = Common::maxLevel<uint16_t>(m_config.textureBitDepth);
+  const auto textureMaxVal = Common::maxLevel<uint16_t>(m_config.texBitDepth);
 
   if (m_config.attributeOffsetFlag) {
     for (size_t p = 0; p < params().patchParamsList.size(); ++p) {
@@ -435,20 +435,12 @@ void Encoder::constructVideoFrames() {
       const auto frameHeight = vps.vps_frame_height(j);
 
       if (m_config.haveTexture) {
-        const auto &ai = vps.attribute_information(j);
-        PRECONDITION(1 <= ai.ai_attribute_count() &&
-                     ai.ai_attribute_type_id(0) == MivBitstream::AiAttributeTypeId::ATTR_TEXTURE);
-        const auto texBitDepth = ai.ai_attribute_2d_bit_depth_minus1(0) + 1U;
-
-        frame.texture.createYuv420({frameWidth, frameHeight}, texBitDepth);
+        frame.texture.createYuv420({frameWidth, frameHeight}, m_config.texBitDepth);
         frame.texture.fillNeutral();
       }
 
       if (m_config.haveGeometry) {
-        const auto &gi = vps.geometry_information(j);
-        const auto geoBitDepth = gi.gi_geometry_2d_bit_depth_minus1() + 1U;
-
-        frame.depth.createY({frameWidth, frameHeight}, geoBitDepth);
+        frame.depth.createY({frameWidth, frameHeight}, m_config.geoBitDepth);
         frame.depth.fillZero();
       }
 
@@ -555,7 +547,7 @@ auto Encoder::writePatchInAtlas(const MivBitstream::PatchParams &patchParams,
   const auto &outViewParams = params().viewParamsList[patchParams.atlasPatchProjectionId()];
 
   std::array<PatchStats, 3> patchStats{};
-  const auto textureMaxVal = Common::maxLevel<uint16_t>(m_config.textureBitDepth);
+  const auto textureMaxVal = Common::maxLevel<uint16_t>(m_config.texBitDepth);
   std::fill(patchStats.begin(), patchStats.end(), PatchStats{textureMaxVal});
 
   PRECONDITION(0 <= posU && posU + sizeU <= inViewParams.ci.ci_projection_plane_width_minus1() + 1);
@@ -639,7 +631,7 @@ void Encoder::adaptAtlas(const MivBitstream::PatchParams &patchParams,
     atlas.occupancy.getPlane(0)(yOcc, xOcc) = false;
   }
   if (m_config.haveTexture) {
-    const auto textureMedVal = Common::medLevel<uint16_t>(m_config.textureBitDepth);
+    const auto textureMedVal = Common::medLevel<uint16_t>(m_config.texBitDepth);
 
     atlas.texture.getPlane(0)(pAtlas.y(), pAtlas.x()) = textureMedVal;
     if ((pView.x() % 2) == 0 && (pView.y() % 2) == 0) {

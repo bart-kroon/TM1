@@ -76,7 +76,10 @@ struct Configuration {
   std::optional<MivBitstream::ViewingSpace> viewingSpace;
   MivBitstream::PtlProfileCodecGroupIdc codecGroupIdc{};
   MivBitstream::PtlProfilePccToolsetIdc toolsetIdc{};
-  uint32_t textureBitDepth{10U};
+  uint32_t occBitDepth{10};
+  uint32_t geoBitDepth{10};
+  uint32_t texBitDepth{10};
+  uint32_t pacBitDepth{10};
 
   [[nodiscard]] auto blockSize(bool depthLowQualityFlag_) const noexcept {
     return blockSizeDepthQualityDependent[static_cast<int32_t>(depthLowQualityFlag_)];

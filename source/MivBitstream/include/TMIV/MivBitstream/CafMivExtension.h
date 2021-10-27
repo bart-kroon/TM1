@@ -168,7 +168,7 @@ public:
 
   constexpr auto dq_norm_disp_low(float value) noexcept -> auto &;
   constexpr auto dq_norm_disp_high(float value) noexcept -> auto &;
-  constexpr auto dq_depth_occ_threshold_default(Common::SampleValue value) noexcept -> auto &;
+  constexpr auto dq_depth_occ_threshold_default(uint32_t value) noexcept -> auto &;
 
   auto printTo(std::ostream &stream, uint16_t viewIdx) const -> std::ostream &;
 
@@ -182,7 +182,7 @@ public:
 private:
   float m_dq_norm_disp_low{};
   float m_dq_norm_disp_high{};
-  Common::SampleValue m_dq_depth_occ_threshold_default{};
+  uint32_t m_dq_depth_occ_threshold_default{};
 };
 
 // 23090-12: pruning_parents()

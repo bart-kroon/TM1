@@ -198,6 +198,7 @@ public:
   auto setBitDepth(uint32_t value) noexcept;
 };
 
+// TODO(#397): Remove these using declarations
 using TextureFrame = Frame<>;
 using Texture444Frame = Frame<>;
 using Depth10Frame = Frame<>;
@@ -218,23 +219,23 @@ static constexpr auto unusedPatchId = UINT16_MAX;
 using EntityMap = Frame<>;
 using EntityMapList = std::vector<EntityMap>;
 
+// TODO(#397): Generalize to enable support for all attribute types
 struct TextureDepth10Frame {
-  TextureFrame texture;
-  Depth10Frame depth;
-  EntityMap entities{};
-  Occupancy10Frame occupancy{};
-  Transparency10Frame transparency{};
-  FramePack10Frame framePack{};
+  Frame<> texture;
+  Frame<> depth;
+  Frame<> occupancy;
+  Frame<> transparency;
+  Frame<> packed;
 };
 using MVD10Frame = std::vector<TextureDepth10Frame>;
 
+// TODO(#397): Generalize to enable support for all attribute types
 struct TextureDepth16Frame {
-  TextureFrame texture;
-  Depth16Frame depth;
-  EntityMap entities{};
-  Occupancy1Frame occupancy{};
-  Transparency10Frame transparency{};
-  FramePack10Frame framePack{};
+  Frame<> texture;
+  Frame<> depth;
+  Frame<> entities{};
+  Frame<bool> occupancy{};
+  Frame<> transparency{};
 };
 using MVD16Frame = std::vector<TextureDepth16Frame>;
 

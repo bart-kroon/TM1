@@ -46,7 +46,7 @@ TEST_CASE("Decoder::writeFrameToOutputLog") {
   SECTION("Minimal example") {
     auto frame = AccessUnit{};
     frame.atlas.emplace_back().asps.asps_frame_width(8).asps_frame_height(5);
-    frame.atlas.back().blockToPatchMap.createY({});
+    frame.atlas.back().blockToPatchMap.getPlanes().emplace_back();
     writeFrameToOutputLog(frame, stream);
     std::string reference = "-1 0 8 5 00000000 00000000 00000000 00000000\n";
     REQUIRE(stream.str() == reference);
@@ -88,15 +88,15 @@ TEST_CASE("Decoder::writeFrameToOutputLog") {
       REQUIRE(TMIV::Decoder::videoDataHash(frame.atlas.front()) == 0x14C31F8E);
       REQUIRE(stream.str() == reference);
 
-      frame.atlas.front().attrFrame.createYuv444({12, 26}, 10);
-      frame.atlas.front().attrFrame.fillValue(100);
+      frame.atlas.front().decAttrFrame.emplace_back().createYuv444({12, 26}, 10);
+      frame.atlas.front().decAttrFrame.back().fillValue(100);
       reference += "-1 0 8 5 7afd08cd 00000000 00000000 00000000\n";
       writeFrameToOutputLog(frame, stream);
       REQUIRE(TMIV::Decoder::videoDataHash(frame.atlas.front()) == 0x7AFD08CD);
       REQUIRE(stream.str() == reference);
 
-      frame.atlas.front().transparencyFrame.createY({10, 8}, 10);
-      frame.atlas.front().transparencyFrame.fillValue(88);
+      frame.atlas.front().decAttrFrame.emplace_back().createY({10, 8});
+      frame.atlas.front().decAttrFrame.back().fillValue(88);
       reference += "-1 0 8 5 4033b1a2 00000000 00000000 00000000\n";
       writeFrameToOutputLog(frame, stream);
       REQUIRE(TMIV::Decoder::videoDataHash(frame.atlas.front()) == 0x4033B1A2);
@@ -211,9 +211,9 @@ TEST_CASE("Decoder::writeFrameToOutputLog") {
     auto frame = AccessUnit{};
     frame.vps.vps_atlas_count_minus1(1).vps_atlas_id(1, AtlasId{3});
     frame.atlas.emplace_back().asps.asps_frame_width(8).asps_frame_height(5);
-    frame.atlas.back().blockToPatchMap.createY({});
+    frame.atlas.back().blockToPatchMap.getPlanes().emplace_back();
     frame.atlas.emplace_back().asps.asps_frame_width(13).asps_frame_height(6);
-    frame.atlas.back().blockToPatchMap.createY({});
+    frame.atlas.back().blockToPatchMap.getPlanes().emplace_back();
     writeFrameToOutputLog(frame, stream);
     std::string reference = R"(-1 0 8 5 00000000 00000000 00000000 00000000
 -1 3 13 6 00000000 00000000 00000000 00000000

@@ -116,6 +116,19 @@ constexpr auto quantizeValue(float x, uint32_t bits) -> UnsignedResult {
   return {};
 }
 
+// Shift x by |n| bits to the left (0 <= n) or right (n <= 0)
+template <typename Integer, typename = std::enable_if_t<std::is_integral_v<Integer>>>
+constexpr auto shift(Integer x, int32_t n) noexcept {
+  if (n >= 0) {
+    return x << n;
+  }
+  return x >> (-n);
+}
+
+static_assert(shift(5, 2) == 20);
+static_assert(shift(5, 0) == 5);
+static_assert(shift(20, -2) == 5);
+
 // Specialize on element type: uint8_t, uint16_t or uint32_t (not exceeding SampleValue)
 //
 // The signature of the lambda is `f(auto zero)` with decltype(zero) the element type

@@ -41,6 +41,7 @@ create_catch2_unit_test(
         "src/Bitstream.test.cpp"
         "src/Common.test.cpp"
         "src/Filter.test.cpp"
+        "src/FlatMap.test.cpp"
         "src/Frame.test.cpp"
         "src/Graph.test.cpp"
         "src/Json.test.cpp"

@@ -36,10 +36,10 @@
 #include <cassert>
 
 namespace TMIV::MivBitstream {
-DepthTransform::DepthTransform(const DepthQuantization &dq, uint32_t bits)
+DepthTransform::DepthTransform(const DepthQuantization &dq, uint32_t bitDepth)
     : m_normDispLow{dq.dq_norm_disp_low()}
     , m_normDispHigh{dq.dq_norm_disp_high()}
-    , m_bitDepth{bits} {
+    , m_bitDepth{bitDepth} {
   if (!std::isfinite(m_normDispLow) || !std::isfinite(m_normDispHigh) ||
       m_normDispLow == m_normDispHigh || std::max(m_normDispLow, m_normDispHigh) <= 0.F) {
     throw std::runtime_error(
@@ -47,15 +47,15 @@ DepthTransform::DepthTransform(const DepthQuantization &dq, uint32_t bits)
   }
 
   const auto [far, near] = std::minmax(m_normDispLow, m_normDispHigh);
-  const auto maxLevel = std::ldexp(1.F, static_cast<int32_t>(bits)) - 1.F;
+  const auto maxLevel = std::ldexp(1.F, static_cast<int32_t>(bitDepth)) - 1.F;
   const auto lowestLevel = std::ceil(std::nextafter(-far / (near - far) * maxLevel, INFINITY));
   m_minNormDisp = far + (near - far) * (lowestLevel / maxLevel);
   ASSERT(0 < m_minNormDisp);
 }
 
 DepthTransform::DepthTransform(const DepthQuantization &dq, const PatchParams &patchParams,
-                               uint32_t bits)
-    : DepthTransform{dq, bits} {
+                               uint32_t bitDepth)
+    : DepthTransform{dq, bitDepth} {
   m_depthStart = patchParams.atlasPatch3dOffsetD();
   m_depthEnd = m_depthStart + patchParams.atlasPatch3dRangeD();
 }
@@ -69,14 +69,16 @@ auto DepthTransform::expandDepth(Common::SampleValue x) const -> float {
   return 1.F / expandNormDisp(x);
 }
 
-auto DepthTransform::expandDepth(const Common::Mat<uint16_t> &matrix) const -> Common::Mat<float> {
+auto DepthTransform::expandDepth(const Common::Mat<> &matrix) const -> Common::Mat<float> {
   auto depth = Common::Mat<float>(matrix.sizes());
   std::transform(std::begin(matrix), std::end(matrix), std::begin(depth),
-                 [this](uint16_t x) { return expandDepth(x); });
+                 [this](auto x) { return expandDepth(x); });
   return depth;
 }
 
 auto DepthTransform::expandDepth(const Common::Depth16Frame &frame) const -> Common::Mat<float> {
+  PRECONDITION(frame.getBitDepth() == m_bitDepth);
+
   return expandDepth(frame.getPlane(0));
 }
 

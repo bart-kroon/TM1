@@ -87,7 +87,7 @@ public:
       , m_inputBitstream{m_inputBitstreamPath, std::ios::binary}
       , m_vssDecoder{createVssDecoder()}
       , m_mivDecoder{[this]() { return m_vssDecoder(); }} {
-    setFrameServers(m_mivDecoder);
+    setFrameServer(m_mivDecoder);
     tryOpenOutputLog();
   }
 
@@ -104,22 +104,12 @@ public:
       }
 
       // Recover geometry, occupancy, and filter blockToPatchMap
-      m_preRenderer.recoverFrame(*frame);
+      m_preRenderer.preRenderFrame(*frame);
 
-      if (json().optional(IO::outputSequenceConfigPathFmt)) {
-        outputSequenceConfig(frame->sequenceConfig(), frame->foc);
-      }
-
-      if (json().optional(IO::outputBlockToPatchMapPathFmt)) {
-        IO::saveBlockToPatchMaps(json(), m_placeholders, frame->foc, *frame);
-      }
-
-      if (json().optional(IO::outputMultiviewTexturePathFmt) ||
-          json().optional(IO::outputMultiviewGeometryPathFmt) ||
-          json().optional(IO::outputMultiviewOccupancyPathFmt)) {
-        IO::savePrunedFrame(json(), m_placeholders, frame->foc,
-                            Renderer::recoverPrunedViewAndMask(*frame));
-      }
+      outputSequenceConfig(frame->sequenceConfig(), frame->foc);
+      IO::optionalSaveBlockToPatchMaps(json(), m_placeholders, frame->foc, *frame);
+      IO::optionalSavePrunedFrame(json(), m_placeholders, frame->foc,
+                                  Renderer::recoverPrunedViewAndMask(*frame));
 
       m_renderer.renderMultipleFrames(*frame, range.first, range.second);
     }
@@ -133,52 +123,14 @@ private:
     return V3cSampleStreamDecoder{m_inputBitstream};
   }
 
-  void setFrameServers(MivDecoder &mivDecoder) const {
-    mivDecoder.setOccFrameServer([this](MivBitstream::AtlasId atlasId, int32_t frameIndex,
-                                        Common::Vec2i frameSize) -> Common::Occupancy10Frame {
-      if (frameIndex < m_placeholders.numberOfInputFrames) {
-        // TODO(#397): Magic bit depth
-        return IO::loadOccupancyVideoFrame(json(), m_placeholders, atlasId, frameIndex, frameSize,
-                                           10);
+  void setFrameServer(MivDecoder &mivDecoder) const {
+    mivDecoder.setFrameServer([this](MivBitstream::V3cUnitHeader vuh, int32_t frameIdx,
+                                     const MivBitstream::V3cParameterSet &vps,
+                                     const MivBitstream::AtlasSequenceParameterSetRBSP &asps) {
+      if (frameIdx < m_placeholders.numberOfInputFrames) {
+        return IO::loadOutOfBandVideoFrame(json(), m_placeholders, vuh, frameIdx, vps, asps);
       }
-      return Common::Depth10Frame{};
-    });
-    mivDecoder.setGeoFrameServer([this](MivBitstream::AtlasId atlasId, int32_t frameIndex,
-                                        Common::Vec2i frameSize) -> Common::Depth10Frame {
-      if (frameIndex < m_placeholders.numberOfInputFrames) {
-        // TODO(#397): Magic bit depth
-        return IO::loadGeometryVideoFrame(json(), m_placeholders, atlasId, frameIndex, frameSize,
-                                          10);
-      }
-      return Common::Depth10Frame{};
-    });
-    mivDecoder.setTextureFrameServer([this](MivBitstream::AtlasId atlasId, int32_t frameIndex,
-                                            Common::Vec2i frameSize) -> Common::Texture444Frame {
-      if (frameIndex < m_placeholders.numberOfInputFrames) {
-        // TODO(#397): Magic bit depth
-        return IO::loadTextureVideoFrame(json(), m_placeholders, atlasId, frameIndex, frameSize,
-                                         10);
-      }
-      return Common::Texture444Frame{};
-    });
-    mivDecoder.setTransparencyFrameServer(
-        [this](MivBitstream::AtlasId atlasId, int32_t frameIndex,
-               Common::Vec2i frameSize) -> Common::Transparency10Frame {
-          if (frameIndex < m_placeholders.numberOfInputFrames) {
-            // TODO(#397): Magic bit depth
-            return IO::loadTransparencyVideoFrame(json(), m_placeholders, atlasId, frameIndex,
-                                                  frameSize, 10);
-          }
-          return Common::Transparency10Frame{};
-        });
-    mivDecoder.setFramePackServer([this](MivBitstream::AtlasId atlasId, int32_t frameIndex,
-                                         Common::Vec2i frameSize) -> Common::FramePack444Frame {
-      if (frameIndex < m_placeholders.numberOfInputFrames) {
-        // TODO(#397): Magic bit depth
-        return IO::loadFramePackVideoFrame(json(), m_placeholders, atlasId, frameIndex, frameSize,
-                                           10);
-      }
-      return Common::FramePack444Frame{};
+      return Common::Frame<>{};
     });
   }
 
@@ -201,7 +153,7 @@ private:
 
     if (m_outputSequenceConfig != sc) {
       m_outputSequenceConfig = std::move(sc);
-      IO::saveSequenceConfig(json(), m_placeholders, foc, m_outputSequenceConfig);
+      IO::optionalSaveSequenceConfig(json(), m_placeholders, foc, m_outputSequenceConfig);
     }
   }
 };

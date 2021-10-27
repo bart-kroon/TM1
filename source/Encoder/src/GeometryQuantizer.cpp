@@ -109,12 +109,14 @@ auto transformAtlases(const EncoderParams &inParams, const EncoderParams &outPar
   for (uint8_t k = 0; k <= outParams.vps.vps_atlas_count_minus1(); ++k) {
     const auto atlasId = outParams.vps.vps_atlas_id(k);
 
-    // TODO(#397): Convert bit depth
+    // TODO(#397): Scale texture bit depth
     outAtlases[k].texture = inAtlases[k].texture;
 
-    const auto &gi = outParams.vps.geometry_information(atlasId);
-    const auto geoBitDepth = gi.gi_geometry_2d_bit_depth_minus1() + 1U;
-    outAtlases[k].depth.createY(inAtlases[k].depth.getSize(), geoBitDepth);
+    if (outParams.vps.vps_geometry_video_present_flag(atlasId)) {
+      const auto &gi = outParams.vps.geometry_information(atlasId);
+      const auto geoBitDepth = gi.gi_geometry_2d_bit_depth_minus1() + 1U;
+      outAtlases[k].depth.createY(inAtlases[k].depth.getSize(), geoBitDepth);
+    }
 
     if (outParams.vps.vps_occupancy_video_present_flag(atlasId)) {
       const auto &oi = outParams.vps.occupancy_information(atlasId);

@@ -31,48 +31,47 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef TMIV_DECODER_FRAMEPACK_H
-#define TMIV_DECODER_FRAMEPACK_H
+#ifndef TMIV_COMMON_FLAT_MAP_H
+#define TMIV_COMMON_FLAT_MAP_H
 
-#include <TMIV/Common/Frame.h>
-#include <TMIV/Common/Json.h>
-#include <TMIV/MivBitstream/AccessUnit.h>
+#include <TMIV/Common/verify.h>
 
-namespace TMIV::Decoder {
-class FrameUnpacker {
-public:
-  void inplaceUnpack(MivBitstream::AccessUnit &frame);
+#include <vector>
 
-private:
-  struct RegionParams {
-    std::vector<MivBitstream::VuhUnitType> regionTypeId;
-    std::vector<uint16_t> regionPackedOffsetX;
-    std::vector<uint16_t> regionPackedOffsetY;
-    std::vector<uint16_t> regionWidth;
-    std::vector<uint16_t> regionHeight;
-    std::vector<uint16_t> regionUnpackedOffsetX;
-    std::vector<uint16_t> regionUnpackedOffsetY;
-    std::vector<bool> regionRotationFlag;
-    std::vector<bool> regionAuxilaryDataFlag;
-    std::vector<uint8_t> regionAttrTypeID;
-  };
-  struct UnpackSizes {
-    Common::Vec2u unpckOccSize{0, 0};
-    Common::Vec2u unpckGeoSize{0, 0};
-    Common::Vec2u unpckAttrSize{0, 0};
-  };
-  RegionParams m_regionParams;
-  UnpackSizes m_unpackSizes;
-  uint8_t m_numRegions{1};
-  uint8_t m_numAttributes{1};
-  uint8_t m_numPartitions{1};
-  uint8_t m_numMaps{1};
+namespace TMIV::Common {
+template <typename Key, typename Value> struct KeyValuePair {
+  explicit KeyValuePair(Key key_) : key{std::move(key_)} {}
+  KeyValuePair(Key key_, Value value_) : key{std::move(key_)}, value{std::move(value_)} {}
 
-  void readRegionParams(const TMIV::MivBitstream::PackingInformation &PackingInfo);
-  void calculateUnpackSizes();
-  void initializeUnpackComponents(TMIV::MivBitstream::AtlasAccessUnit &atlas) const;
-  void extractUnpackedComponents(TMIV::MivBitstream::AtlasAccessUnit &atlas);
+  Key key;
+  Value value{};
 };
-} // namespace TMIV::Decoder
+
+template <typename Key, typename Value>
+class FlatMap : public std::vector<KeyValuePair<Key, Value>> {
+public:
+  using std::vector<KeyValuePair<Key, Value>>::operator[];
+
+  // Return the value of the first occurrence of the specified key.
+  [[nodiscard]] auto operator[](const Key &target) const noexcept -> const auto & {
+    for (auto &kvp : *this) {
+      if (target == kvp.key) {
+        return kvp.value;
+      }
+    }
+    UNREACHABLE;
+  }
+
+  // Find the first occurrence of the specified key. When missing, a key-value pair is added.
+  auto operator[](const Key &target) -> auto & {
+    for (auto &kvp : *this) {
+      if (target == kvp.key) {
+        return kvp.value;
+      }
+    }
+    return this->emplace_back(target, Value{}).value;
+  }
+};
+} // namespace TMIV::Common
 
 #endif

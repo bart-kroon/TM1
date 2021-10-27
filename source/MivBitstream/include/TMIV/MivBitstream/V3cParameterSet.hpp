@@ -454,20 +454,20 @@ inline auto PackingInformation::pin_lossy_occupancy_compression_threshold(uint8_
 }
 
 inline auto PackingInformation::pin_geometry_2d_bit_depth_minus1(uint8_t value) -> auto & {
-  pin_attribute_present_flag(true);
+  pin_geometry_present_flag(true);
   m_pin_geometry_2d_bit_depth_minus1 = value;
   return *this;
 }
 
 inline auto PackingInformation::pin_geometry_MSB_align_flag(bool value) -> auto & {
-  pin_attribute_present_flag(true);
+  pin_geometry_present_flag(true);
   m_pin_geometry_MSB_align_flag = value;
   return *this;
 }
 
 inline auto PackingInformation::pin_geometry_3d_coordinates_bit_depth_minus1(uint8_t value)
     -> auto & {
-  pin_attribute_present_flag(true);
+  pin_geometry_present_flag(true);
   m_pin_geometry_3d_coordinates_bit_depth_minus1 = value;
   return *this;
 }

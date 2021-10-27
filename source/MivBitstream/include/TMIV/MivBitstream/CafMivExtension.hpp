@@ -216,7 +216,7 @@ constexpr auto DepthQuantization::dq_norm_disp_high(const float value) noexcept 
   return *this;
 }
 
-constexpr auto DepthQuantization::dq_depth_occ_threshold_default(Common::SampleValue value) noexcept
+constexpr auto DepthQuantization::dq_depth_occ_threshold_default(uint32_t value) noexcept
     -> auto & {
   m_dq_depth_occ_threshold_default = value;
   return *this;

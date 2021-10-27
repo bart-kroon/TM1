@@ -143,7 +143,7 @@ private:
     aau.asps.asps_frame_height(static_cast<uint16_t>(h));
     aau.asps.asps_miv_extension().asme_max_entity_id(0);
 
-    aau.attrFrame = Common::yuv444(frame.texture);
+    aau.texFrame = Common::yuv444(frame.texture);
 
     // TODO(#397): Code duplication with SSI, switch to Common::sampleBitDepth
     aau.geoFrame.createY({w, h}, 10);
@@ -155,8 +155,7 @@ private:
                                                   maxInValue);
                    });
 
-    // TODO(#397): Switch to bit depth 1
-    aau.occFrame.createY({w, h}, 10);
+    aau.occFrame.createY({w, h});
     aau.occFrame.fillOne();
 
     auto &pp = aau.patchParamsList.emplace_back();

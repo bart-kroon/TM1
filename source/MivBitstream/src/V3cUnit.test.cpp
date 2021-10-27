@@ -52,7 +52,7 @@ auto vps() {
 
 TEST_CASE("v3c_unit_header", "[V3C Unit]") {
   SECTION("VPS") {
-    const auto x = V3cUnitHeader{VuhUnitType::V3C_VPS};
+    const auto x = V3cUnitHeader::vps();
 
     REQUIRE(toString(x) == R"(vuh_unit_type=V3C_VPS
 )");
@@ -62,7 +62,7 @@ TEST_CASE("v3c_unit_header", "[V3C Unit]") {
   }
 
   SECTION("AD") {
-    auto x = V3cUnitHeader{VuhUnitType::V3C_AD};
+    auto x = V3cUnitHeader::ad(0, {});
 
     REQUIRE(toString(x) == R"(vuh_unit_type=V3C_AD
 vuh_v3c_parameter_set_id=0
@@ -73,7 +73,7 @@ vuh_atlas_id=0
     REQUIRE(x.summary() == "V3C_AD vps:0 atlas:0");
 
     SECTION("Example") {
-      x.vuh_v3c_parameter_set_id(1).vuh_atlas_id(AtlasId{2});
+      x = V3cUnitHeader::ad(1, AtlasId{2});
 
       REQUIRE(toString(x) == R"(vuh_unit_type=V3C_AD
 vuh_v3c_parameter_set_id=1
@@ -86,7 +86,7 @@ vuh_atlas_id=2
   }
 
   SECTION("OVD") {
-    auto x = V3cUnitHeader{VuhUnitType::V3C_OVD};
+    auto x = V3cUnitHeader::ovd(0, {});
 
     REQUIRE(toString(x) == R"(vuh_unit_type=V3C_OVD
 vuh_v3c_parameter_set_id=0
@@ -96,7 +96,7 @@ vuh_atlas_id=0
     REQUIRE(byteCodingTest(x, 4));
 
     SECTION("Example") {
-      x.vuh_v3c_parameter_set_id(2).vuh_atlas_id(AtlasId{1});
+      x = V3cUnitHeader::ovd(2, AtlasId{1});
 
       REQUIRE(toString(x) == R"(vuh_unit_type=V3C_OVD
 vuh_v3c_parameter_set_id=2
@@ -109,7 +109,7 @@ vuh_atlas_id=1
   }
 
   SECTION("GVD") {
-    auto x = V3cUnitHeader{VuhUnitType::V3C_GVD};
+    auto x = V3cUnitHeader::gvd(0, {});
 
     REQUIRE(toString(x) == R"(vuh_unit_type=V3C_GVD
 vuh_v3c_parameter_set_id=0
@@ -121,8 +121,7 @@ vuh_auxiliary_video_flag=false
     REQUIRE(byteCodingTest(x, 4));
 
     SECTION("Example") {
-      x.vuh_v3c_parameter_set_id(2).vuh_atlas_id({}).vuh_map_index(0).vuh_auxiliary_video_flag(
-          false);
+      x = V3cUnitHeader::gvd(2, {}, 0, false);
 
       REQUIRE(toString(x) == R"(vuh_unit_type=V3C_GVD
 vuh_v3c_parameter_set_id=2
@@ -137,7 +136,7 @@ vuh_auxiliary_video_flag=false
   }
 
   SECTION("AVD") {
-    auto x = V3cUnitHeader{VuhUnitType::V3C_AVD};
+    auto x = V3cUnitHeader::avd(0, {}, 0);
 
     REQUIRE(toString(x) == R"(vuh_unit_type=V3C_AVD
 vuh_v3c_parameter_set_id=0
@@ -152,12 +151,7 @@ vuh_auxiliary_video_flag=false
     REQUIRE(x.summary() == "V3C_AVD vps:0 atlas:0 attr:0 part:0 map:0 aux:false");
 
     SECTION("Example") {
-      x.vuh_v3c_parameter_set_id(2)
-          .vuh_atlas_id(AtlasId{2})
-          .vuh_attribute_index(3)
-          .vuh_attribute_partition_index(0)
-          .vuh_map_index(0)
-          .vuh_auxiliary_video_flag(false);
+      x = V3cUnitHeader::avd(2, AtlasId{2}, 3, 0, 0, false);
 
       REQUIRE(toString(x) == R"(vuh_unit_type=V3C_AVD
 vuh_v3c_parameter_set_id=2
@@ -174,7 +168,7 @@ vuh_auxiliary_video_flag=false
   }
 
   SECTION("CAD") {
-    auto unit = V3cUnitHeader{VuhUnitType::V3C_CAD};
+    auto unit = V3cUnitHeader::cad(0);
     REQUIRE(toString(unit) == R"(vuh_unit_type=V3C_CAD
 vuh_v3c_parameter_set_id=0
 )");
@@ -183,7 +177,7 @@ vuh_v3c_parameter_set_id=0
     REQUIRE(unit.summary() == "V3C_CAD vps:0");
 
     SECTION("Example") {
-      unit.vuh_v3c_parameter_set_id(2);
+      unit = V3cUnitHeader::cad(2);
 
       REQUIRE(toString(unit) == R"(vuh_unit_type=V3C_CAD
 vuh_v3c_parameter_set_id=2
@@ -195,7 +189,7 @@ vuh_v3c_parameter_set_id=2
   }
 
   SECTION("PVD") {
-    auto unit = V3cUnitHeader{VuhUnitType::V3C_PVD};
+    auto unit = V3cUnitHeader::pvd(0, {});
     REQUIRE(toString(unit) == R"(vuh_unit_type=V3C_PVD
 vuh_v3c_parameter_set_id=0
 vuh_atlas_id=0
@@ -205,7 +199,7 @@ vuh_atlas_id=0
     REQUIRE(unit.summary() == "V3C_PVD vps:0 atlas:0");
 
     SECTION("Example") {
-      unit.vuh_v3c_parameter_set_id(2).vuh_atlas_id({});
+      unit = V3cUnitHeader::pvd(2, {});
 
       REQUIRE(toString(unit) == R"(vuh_unit_type=V3C_PVD
 vuh_v3c_parameter_set_id=2
@@ -220,7 +214,7 @@ vuh_atlas_id=0
 
 TEST_CASE("v3c_unit_payload", "[V3C Unit]") {
   SECTION("VPS") {
-    const auto vuh = V3cUnitHeader{VuhUnitType::V3C_VPS};
+    const auto vuh = V3cUnitHeader::vps();
     const auto x = V3cUnitPayload{examples::vps()};
 
     REQUIRE(toString(x) == R"(ptl_tier_flag=false
@@ -256,7 +250,7 @@ vps_extension_6bits=0
   }
 
   SECTION("AD") {
-    const auto vuh = V3cUnitHeader{VuhUnitType::V3C_AD};
+    const auto vuh = V3cUnitHeader::ad(0, {});
     const auto x = V3cUnitPayload{AtlasSubBitstream{SampleStreamNalHeader{4}}};
 
     REQUIRE(toString(x) == R"(ssnh_unit_size_precision_bytes_minus1=4
@@ -266,7 +260,7 @@ vps_extension_6bits=0
   }
 
   SECTION("OVD") {
-    const auto vuh = V3cUnitHeader{VuhUnitType::V3C_OVD};
+    const auto vuh = V3cUnitHeader::ovd(0, {});
     const auto x = V3cUnitPayload{VideoSubBitstream{}};
 
     REQUIRE(toString(x).empty());
@@ -275,7 +269,7 @@ vps_extension_6bits=0
   }
 
   SECTION("GVD") {
-    const auto vuh = V3cUnitHeader{VuhUnitType::V3C_GVD};
+    const auto vuh = V3cUnitHeader::gvd(0, {});
     const auto x = V3cUnitPayload{VideoSubBitstream{}};
 
     REQUIRE(toString(x).empty());
@@ -284,7 +278,7 @@ vps_extension_6bits=0
   }
 
   SECTION("AVD") {
-    const auto vuh = V3cUnitHeader{VuhUnitType::V3C_AVD};
+    const auto vuh = V3cUnitHeader::avd(0, {}, 0);
     const auto x = V3cUnitPayload{VideoSubBitstream{}};
 
     REQUIRE(toString(x).empty());
@@ -296,7 +290,7 @@ vps_extension_6bits=0
 TEST_CASE("v3c_unit", "[V3C Unit]") {
   SECTION("Example 1") {
     const auto vps = examples::vps();
-    const auto x = V3cUnit{V3cUnitHeader{VuhUnitType::V3C_VPS}, vps};
+    const auto x = V3cUnit{V3cUnitHeader::vps(), vps};
 
     REQUIRE(toString(x) == R"(vuh_unit_type=V3C_VPS
 ptl_tier_flag=false
@@ -332,13 +326,7 @@ vps_extension_6bits=0
   }
 
   SECTION("Example 2") {
-    auto vuh = V3cUnitHeader{VuhUnitType::V3C_AVD};
-    vuh.vuh_v3c_parameter_set_id(2)
-        .vuh_atlas_id(AtlasId{1})
-        .vuh_attribute_index(2)
-        .vuh_attribute_partition_index(0)
-        .vuh_map_index(0)
-        .vuh_auxiliary_video_flag(false);
+    auto vuh = V3cUnitHeader::avd(2, AtlasId{1}, 2, 0, 0, false);
 
     const auto x = V3cUnit{vuh, VideoSubBitstream{}};
 

@@ -47,7 +47,7 @@ auto Encoder::popAtlas() -> Common::MVD10Frame {
         GeometryDownscaler::transformFrame(params().atlas, std::move(quantizedFrame));
     m_videoFrameBuffer.pop_front();
     if (m_config.framePacking) {
-      m_framePacker.constructFramePack(scaledFrame);
+      m_framePacker.packFrame(scaledFrame, m_config.pacBitDepth);
     }
     return scaledFrame;
   }
@@ -58,7 +58,7 @@ auto Encoder::popAtlas() -> Common::MVD10Frame {
   }
   m_videoFrameBuffer.pop_front();
   if (m_config.framePacking) {
-    m_framePacker.constructFramePack(frame);
+    m_framePacker.packFrame(frame, m_config.pacBitDepth);
   }
   return frame;
 }

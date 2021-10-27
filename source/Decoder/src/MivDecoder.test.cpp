@@ -62,7 +62,7 @@ TEST_CASE("MivDecoder") {
 
     const auto ssnh = SampleStreamNalHeader{2};
     const auto asb = AtlasSubBitstream{ssnh};
-    source.units.push_back(std::make_shared<V3cUnit>(V3cUnitHeader(VuhUnitType::V3C_AD), asb));
+    source.units.push_back(std::make_shared<V3cUnit>(V3cUnitHeader::ad(0, {}), asb));
 
     auto unit = MivDecoder{source};
 
@@ -73,7 +73,7 @@ TEST_CASE("MivDecoder") {
     auto source = test::FakeV3cUnitSource{};
 
     const auto vps = V3cParameterSet{};
-    source.units.push_back(std::make_shared<V3cUnit>(V3cUnitHeader(VuhUnitType::V3C_VPS), vps));
+    source.units.push_back(std::make_shared<V3cUnit>(V3cUnitHeader::vps(), vps));
 
     auto unit = MivDecoder{source};
 
@@ -85,7 +85,7 @@ TEST_CASE("MivDecoder") {
 
     auto vps = V3cParameterSet{};
     vps.vps_miv_extension() = {};
-    source.units.push_back(std::make_shared<V3cUnit>(V3cUnitHeader(VuhUnitType::V3C_VPS), vps));
+    source.units.push_back(std::make_shared<V3cUnit>(V3cUnitHeader::vps(), vps));
 
     auto unit = MivDecoder{source};
 
@@ -100,7 +100,7 @@ TEST_CASE("MivDecoder") {
         .ptl_profile_toolset_idc(PtlProfilePccToolsetIdc::MIV_Main)
         .ptl_profile_reconstruction_idc(PtlProfileReconstructionIdc::MIV_Main);
     vps.vps_miv_extension() = {};
-    source.units.push_back(std::make_shared<V3cUnit>(V3cUnitHeader(VuhUnitType::V3C_VPS), vps));
+    source.units.push_back(std::make_shared<V3cUnit>(V3cUnitHeader::vps(), vps));
 
     auto unit = MivDecoder{source};
 

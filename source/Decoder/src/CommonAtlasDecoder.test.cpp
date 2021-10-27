@@ -72,7 +72,7 @@ auto minimalCafIdr(const std::vector<CommonAtlasSequenceParameterSetRBSP> &casps
 }
 
 auto minimalV3cUnit() {
-  const auto vuh = V3cUnitHeader{VuhUnitType::V3C_CAD};
+  const auto vuh = V3cUnitHeader::cad(0);
   const auto ssnh = SampleStreamNalHeader{2};
   auto asb = AtlasSubBitstream{ssnh};
 

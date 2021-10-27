@@ -86,20 +86,8 @@ Multiplexer::Multiplexer(Common::Json packingInformationNode)
   }
 }
 
-void Multiplexer::setAttributeVideoBitstreamServer(AttributeVideoBitstreamServer server) {
-  m_openAttributeVideoBitstream = std::move(server);
-}
-
-void Multiplexer::setGeometryVideoBitstreamServer(GeometryVideoBitstreamServer server) {
-  m_openGeometryVideoBitstream = std::move(server);
-}
-
-void Multiplexer::setOccupancyVideoBitstreamServer(OccupancyVideoBitstreamServer server) {
-  m_openOccupancyVideoBitstream = std::move(server);
-}
-
-void Multiplexer::setPackedVideoBitstreamServer(PackedVideoBitstreamServer server) {
-  m_openPackedVideoBitstream = std::move(server);
+void Multiplexer::setVideoBitstreamServer(VideoBitstreamServer server) {
+  m_videoBitstreamServer = std::move(server);
 }
 
 void Multiplexer::readInputBitstream(std::istream &stream) {
@@ -126,36 +114,38 @@ void Multiplexer::readInputBitstream(std::istream &stream) {
 }
 
 void Multiplexer::appendVideoSubBitstreams() {
-  for (size_t k = 0; k <= m_vps.vps_atlas_count_minus1(); ++k) {
-    const auto j = m_vps.vps_atlas_id(k);
-    checkRestrictions(j);
+  const auto vpsId = m_vps.vps_v3c_parameter_set_id();
 
-    if (m_vps.vps_packing_information_present_flag()) {
-      if (m_vps.vps_packed_video_present_flag(j)) {
-        appendPvd(j);
-        continue;
+  // TODO(#397): Explore if a V3cUnitHeader visitor pattern can be applied multiple times
+  for (size_t atlasIdx = 0; atlasIdx <= m_vps.vps_atlas_count_minus1(); ++atlasIdx) {
+    const auto atlasId = m_vps.vps_atlas_id(atlasIdx);
+    checkRestrictions(atlasId);
+
+    if (m_vps.vps_geometry_video_present_flag(atlasId)) {
+      appendVideoSubBitstream(MivBitstream::V3cUnitHeader::gvd(vpsId, atlasId));
+    }
+
+    if (m_vps.vps_occupancy_video_present_flag(atlasId)) {
+      appendVideoSubBitstream(MivBitstream::V3cUnitHeader::ovd(vpsId, atlasId));
+    }
+
+    if (m_vps.vps_attribute_video_present_flag(atlasId)) {
+      const auto &ai = m_vps.attribute_information(atlasId);
+      for (uint8_t attrIdx = 0; attrIdx < ai.ai_attribute_count(); ++attrIdx) {
+        appendVideoSubBitstream(MivBitstream::V3cUnitHeader::avd(vpsId, atlasId, attrIdx),
+                                ai.ai_attribute_type_id(attrIdx));
       }
     }
 
-    if (m_vps.vps_geometry_video_present_flag(j)) {
-      appendGvd(j);
-    }
-    if (m_vps.vps_occupancy_video_present_flag(j)) {
-      appendOvd(j);
-    }
-    if (m_vps.vps_attribute_video_present_flag(j)) {
-      const auto &ai = m_vps.attribute_information(j);
-      for (uint8_t i = 0; i < ai.ai_attribute_count(); ++i) {
-        const auto type = ai.ai_attribute_type_id(i);
-        appendAvd(j, i, type);
-      }
+    if (m_vps.vps_packed_video_present_flag(atlasId)) {
+      appendVideoSubBitstream(MivBitstream::V3cUnitHeader::pvd(vpsId, atlasId));
     }
   }
 }
 
 void Multiplexer::writeOutputBitstream(std::ostream &stream) const {
   std::ostringstream outVPSStream;
-  const auto vuh = TMIV::MivBitstream::V3cUnitHeader{TMIV::MivBitstream::VuhUnitType::V3C_VPS};
+  const auto vuh = TMIV::MivBitstream::V3cUnitHeader::vps();
   const auto vpsUnit = TMIV::MivBitstream::V3cUnit{vuh, m_vps};
   vpsUnit.encodeTo(outVPSStream);
   const auto vpsUnitSize = outVPSStream.str().size();
@@ -195,37 +185,6 @@ void Multiplexer::checkRestrictions(MivBitstream::AtlasId atlasId) const {
   if (m_vps.vps_auxiliary_video_present_flag(atlasId)) {
     throw std::runtime_error("Auxiliary video is not supported.");
   }
-}
-
-void Multiplexer::appendGvd(MivBitstream::AtlasId atlasId) {
-  auto vuh = MivBitstream::V3cUnitHeader{MivBitstream::VuhUnitType::V3C_GVD};
-  vuh.vuh_v3c_parameter_set_id(m_vps.vps_v3c_parameter_set_id());
-  vuh.vuh_atlas_id(atlasId);
-  appendVideoSubBitstream(vuh, m_openGeometryVideoBitstream(atlasId));
-}
-
-void Multiplexer::appendOvd(MivBitstream::AtlasId atlasId) {
-  auto vuh = MivBitstream::V3cUnitHeader{MivBitstream::VuhUnitType::V3C_OVD};
-  vuh.vuh_v3c_parameter_set_id(m_vps.vps_v3c_parameter_set_id());
-  vuh.vuh_atlas_id(atlasId);
-  appendVideoSubBitstream(vuh, m_openOccupancyVideoBitstream(atlasId));
-}
-
-void Multiplexer::appendAvd(MivBitstream::AtlasId atlasId, uint8_t attributeIdx,
-                            MivBitstream::AiAttributeTypeId typeId) {
-  auto vuh = MivBitstream::V3cUnitHeader{MivBitstream::VuhUnitType::V3C_AVD};
-  vuh.vuh_v3c_parameter_set_id(m_vps.vps_v3c_parameter_set_id());
-  vuh.vuh_atlas_id(atlasId);
-  vuh.vuh_attribute_index(attributeIdx);
-
-  appendVideoSubBitstream(vuh, m_openAttributeVideoBitstream(typeId, atlasId, attributeIdx));
-}
-
-void Multiplexer::appendPvd(MivBitstream::AtlasId atlasId) {
-  auto vuh = MivBitstream::V3cUnitHeader{MivBitstream::VuhUnitType::V3C_PVD};
-  vuh.vuh_v3c_parameter_set_id(m_vps.vps_v3c_parameter_set_id());
-  vuh.vuh_atlas_id(atlasId);
-  appendVideoSubBitstream(vuh, m_openPackedVideoBitstream(atlasId));
 }
 
 void Multiplexer::addPackingInformation() {
@@ -311,8 +270,10 @@ void Multiplexer::updateAttributeInformation(MivBitstream::PackingInformation &p
   }
 }
 
-void Multiplexer::appendVideoSubBitstream(const MivBitstream::V3cUnitHeader &vuh,
-                                          std::unique_ptr<std::istream> stream) {
+void Multiplexer::appendVideoSubBitstream(MivBitstream::V3cUnitHeader vuh,
+                                          MivBitstream::AiAttributeTypeId attrTypeId) {
+  auto stream = m_videoBitstreamServer(vuh, attrTypeId);
+
   std::ostringstream substream;
   vuh.encodeTo(substream);
 

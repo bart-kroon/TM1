@@ -40,7 +40,7 @@
 namespace TMIV::Encoder {
 class FramePacker {
 public:
-  void constructFramePack(Common::MVD10Frame &frame);
+  void packFrame(Common::MVD10Frame &frame, uint32_t bitDepth);
   auto setPackingInformation(EncoderParams params) -> const EncoderParams &;
 
 private:
@@ -57,8 +57,8 @@ private:
     Common::Vec2i pac{0, 0};
   };
 
-  [[nodiscard]] auto constructPackedAtlasFrame(const Common::TextureDepth10Frame &frame,
-                                               uint8_t atlasIdx) const -> Common::FramePack10Frame;
+  [[nodiscard]] auto packAtlasFrame(const Common::TextureDepth10Frame &frame, uint8_t atlasIdx,
+                                    uint32_t bitDepth) const -> Common::TextureDepth10Frame;
 
   void combinePlanes(size_t atlasIdx, const Common::TextureFrame &atlasTexture);
   void extractScaledGeometry(size_t atlasIdx, const Common::heap::Matrix<uint16_t> &planeDepth);

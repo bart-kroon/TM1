@@ -80,7 +80,7 @@ auto recoverPrunedViewAndMask(const MivBitstream::AccessUnit &frame)
         const auto viewIdx = frame.viewParamsList.indexOf(patchParams.atlasPatchProjectionId());
 
         // Test for occupancy
-        if (!atlas.occFrame.empty() && atlas.occFrame.getPlane(0)(i, j) == 0) {
+        if (!atlas.occFrame.empty() && !atlas.occFrame.getPlane(0)(i, j)) {
           continue;
         }
 
@@ -108,7 +108,7 @@ auto recoverPrunedViewAndMask(const MivBitstream::AccessUnit &frame)
 
         // Copy attributes
         for (int32_t d = 0; d < 3; ++d) {
-          prunedView[viewIdx].first.getPlane(d)(y, x) = atlas.attrFrame.getPlane(d)(i, j);
+          prunedView[viewIdx].first.getPlane(d)(y, x) = atlas.texFrame.getPlane(d)(i, j);
         }
 
         // Set mask

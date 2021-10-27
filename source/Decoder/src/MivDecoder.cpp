@@ -47,37 +47,18 @@ namespace TMIV::Decoder {
 MivDecoder::MivDecoder(V3cUnitSource source) : m_inputBuffer{std::move(source)} {}
 
 MivDecoder::~MivDecoder() {
-  if (m_totalOccVideoDecodingTime > 0.) {
-    fmt::print("Total ocupancy video sub bitstream decoding time: {} s\n",
-               m_totalOccVideoDecodingTime);
-  }
-  if (m_totalGeoVideoDecodingTime > 0.) {
-    fmt::print("Total geometry video sub bitstream decoding time: {} s\n",
-               m_totalGeoVideoDecodingTime);
-  }
-  if (m_totalAttrVideoDecodingTime > 0.) {
-    fmt::print("Total attribute video sub bitstream decoding time: {} s\n",
-               m_totalAttrVideoDecodingTime);
+  for (const auto [vuh, totalTime] : m_totalVideoDecodingTime) {
+    if (0. < totalTime) {
+      fmt::print("Total {} decoding time: {} s\n", vuh.summary(), totalTime);
+    }
   }
 }
 
-void MivDecoder::setOccFrameServer(OccFrameServer value) { m_occFrameServer = std::move(value); }
-
-void MivDecoder::setGeoFrameServer(GeoFrameServer value) { m_geoFrameServer = std::move(value); }
-
-void MivDecoder::setTextureFrameServer(TextureFrameServer value) {
-  m_textureFrameServer = std::move(value);
-}
-
-void MivDecoder::setTransparencyFrameServer(TransparencyFrameServer value) {
-  m_transparencyFrameServer = std::move(value);
-}
-
-void MivDecoder::setFramePackServer(FramePackServer value) { m_framePackServer = std::move(value); }
+void MivDecoder::setFrameServer(FrameServer value) { m_frameServer = std::move(value); }
 
 auto MivDecoder::operator()() -> std::optional<MivBitstream::AccessUnit> {
   VERIFY(m_state != State::eof);
-  m_au.irap = expectIrap();
+  m_au.irap = !m_commonAtlasDecoder;
 
   if (m_au.irap) {
     if (auto vps = decodeVps()) {
@@ -119,130 +100,75 @@ auto MivDecoder::operator()() -> std::optional<MivBitstream::AccessUnit> {
   return {};
 }
 
-auto MivDecoder::expectIrap() const -> bool { return !m_commonAtlasDecoder; }
-
 auto MivDecoder::decodeVps() -> std::optional<MivBitstream::V3cParameterSet> {
-  if (const auto &vu =
-          m_inputBuffer(MivBitstream::V3cUnitHeader{MivBitstream::VuhUnitType::V3C_VPS})) {
+  if (const auto &vu = m_inputBuffer(MivBitstream::V3cUnitHeader::vps())) {
     return vu->v3c_unit_payload().v3c_parameter_set();
   }
   return std::nullopt;
 }
 
 void MivDecoder::resetDecoder() {
-  summarizeVps();
+  std::cout << m_au.vps.summary();
   checkCapabilities();
 
-  auto vuh = MivBitstream::V3cUnitHeader{MivBitstream::VuhUnitType::V3C_CAD};
+  const auto vpsId = m_au.vps.vps_v3c_parameter_set_id();
+
   m_commonAtlasDecoder = std::make_unique<CommonAtlasDecoder>(
-      [this, vuh]() { return m_inputBuffer(vuh); }, m_au.vps, m_au.foc);
+      [this, vuh = MivBitstream::V3cUnitHeader::cad(vpsId)]() { return m_inputBuffer(vuh); },
+      m_au.vps, m_au.foc);
 
   m_atlasDecoder.clear();
   m_atlasAu.assign(m_au.vps.vps_atlas_count_minus1() + size_t{1}, {});
-  m_au.atlas.clear();
-  m_occVideoDecoder.clear();
-  m_geoVideoDecoder.clear();
-  m_textureVideoDecoder.clear();
-  m_transparencyVideoDecoder.clear();
-  m_framePackVideoDecoder.clear();
+  m_au.atlas.assign(m_au.vps.vps_atlas_count_minus1() + size_t{1}, {});
 
-  for (size_t k = 0; k <= m_au.vps.vps_atlas_count_minus1(); ++k) {
-    const auto j = m_au.vps.vps_atlas_id(k);
-    auto vuhCad = MivBitstream::V3cUnitHeader{MivBitstream::VuhUnitType::V3C_AD};
-    vuhCad.vuh_atlas_id(j);
+  for (auto &[vuh, decoder] : m_videoDecoders) {
+    decoder.reset();
+  }
+
+  for (uint8_t atlasIdx = 0; atlasIdx <= m_au.vps.vps_atlas_count_minus1(); ++atlasIdx) {
+    const auto atlasId = m_au.vps.vps_atlas_id(atlasIdx);
+
+    const auto vuhAd = MivBitstream::V3cUnitHeader::ad(vpsId, atlasId);
     m_atlasDecoder.push_back(std::make_unique<AtlasDecoder>(
-        [this, vuhCad]() { return m_inputBuffer(vuhCad); }, vuhCad, m_au.vps, m_au.foc));
-    m_au.atlas.emplace_back();
+        [this, vuhAd]() { return m_inputBuffer(vuhAd); }, vuhAd, m_au.vps, m_au.foc));
 
-    if (m_au.vps.vps_occupancy_video_present_flag(j)) {
-      auto vuhOvd = MivBitstream::V3cUnitHeader{MivBitstream::VuhUnitType::V3C_OVD};
-      vuhOvd.vuh_v3c_parameter_set_id(m_au.vps.vps_v3c_parameter_set_id()).vuh_atlas_id(j);
-      m_occVideoDecoder.push_back(startVideoDecoder(vuhOvd, m_totalOccVideoDecodingTime));
-    } else {
-      m_occVideoDecoder.push_back(nullptr);
+    if (m_au.vps.vps_occupancy_video_present_flag(atlasId)) {
+      tryStartVideoDecoder(MivBitstream::V3cUnitHeader::ovd(vpsId, atlasId));
     }
 
-    if (m_au.vps.vps_geometry_video_present_flag(j)) {
-      auto vuhGvd = MivBitstream::V3cUnitHeader{MivBitstream::VuhUnitType::V3C_GVD};
-      vuhGvd.vuh_v3c_parameter_set_id(m_au.vps.vps_v3c_parameter_set_id()).vuh_atlas_id(j);
-      m_geoVideoDecoder.push_back(startVideoDecoder(vuhGvd, m_totalGeoVideoDecodingTime));
-    } else {
-      m_geoVideoDecoder.push_back(nullptr);
+    if (m_au.vps.vps_geometry_video_present_flag(atlasId)) {
+      tryStartVideoDecoder(MivBitstream::V3cUnitHeader::gvd(vpsId, atlasId));
     }
 
-    if (m_au.vps.vps_packing_information_present_flag() &&
-        m_au.vps.vps_packed_video_present_flag(j)) {
-      auto vuhPvd = MivBitstream::V3cUnitHeader{MivBitstream::VuhUnitType::V3C_PVD};
-      vuhPvd.vuh_v3c_parameter_set_id(m_au.vps.vps_v3c_parameter_set_id()).vuh_atlas_id(j);
-      m_framePackVideoDecoder.push_back(
-          startVideoDecoder(vuhPvd, m_totalFramePackVideoDecodingTime));
-    } else {
-      m_framePackVideoDecoder.push_back(nullptr);
-    }
-    bool attrTextureAbsent = true;
-    bool attrTransparencyAbsent = true;
-    if (m_au.vps.vps_attribute_video_present_flag(j)) {
-      const auto &ai = m_au.vps.attribute_information(j);
-      for (uint8_t i = 0; i < ai.ai_attribute_count(); ++i) {
-        const auto type = ai.ai_attribute_type_id(i);
-        auto vuhAvd = MivBitstream::V3cUnitHeader{MivBitstream::VuhUnitType::V3C_AVD};
-        vuhAvd.vuh_v3c_parameter_set_id(m_au.vps.vps_v3c_parameter_set_id()).vuh_atlas_id(j);
-        vuhAvd.vuh_attribute_index(i);
-        if (type == MivBitstream::AiAttributeTypeId::ATTR_TEXTURE) {
-          attrTextureAbsent = false;
-          m_textureVideoDecoder.push_back(startVideoDecoder(vuhAvd, m_totalAttrVideoDecodingTime));
-        } else if (type == MivBitstream::AiAttributeTypeId::ATTR_TRANSPARENCY) {
-          attrTransparencyAbsent = false;
-          m_transparencyVideoDecoder.push_back(
-              startVideoDecoder(vuhAvd, m_totalAttrVideoDecodingTime));
-        }
+    if (m_au.vps.vps_attribute_video_present_flag(atlasId)) {
+      const auto &ai = m_au.vps.attribute_information(atlasId);
+      m_au.atlas[atlasIdx].decAttrFrame.resize(ai.ai_attribute_count());
+
+      for (uint8_t attrIdx = 0; attrIdx < ai.ai_attribute_count(); ++attrIdx) {
+        tryStartVideoDecoder(MivBitstream::V3cUnitHeader::avd(vpsId, atlasId, attrIdx));
       }
     }
-    if (attrTextureAbsent) {
-      m_textureVideoDecoder.push_back(nullptr);
-    }
-    if (attrTransparencyAbsent) {
-      m_transparencyVideoDecoder.push_back(nullptr);
+
+    if (m_au.vps.vps_packed_video_present_flag(atlasId)) {
+      tryStartVideoDecoder(MivBitstream::V3cUnitHeader::pvd(vpsId, atlasId));
     }
   }
 }
 
 auto MivDecoder::decodeVideoSubBitstreams() -> bool {
-  auto result = std::array{false, false};
+  for (auto &atlas : m_au.atlas) {
+    atlas.decOccFrame.clear();
+    atlas.decGeoFrame.clear();
 
-  for (size_t k = 0; k <= m_au.vps.vps_atlas_count_minus1(); ++k) {
-    const auto j = m_au.vps.vps_atlas_id(k);
-
-    if (m_au.vps.vps_packing_information_present_flag() &&
-        m_au.vps.vps_packed_video_present_flag(j)) {
-      Common::at(result, static_cast<size_t>(decodeFramePackVideo(k))) = true;
-    }
-    if (m_au.vps.vps_occupancy_video_present_flag(j)) {
-      Common::at(result, static_cast<size_t>(decodeOccVideo(k))) = true;
-    }
-    if (m_au.vps.vps_geometry_video_present_flag(j)) {
-      Common::at(result, static_cast<size_t>(decodeGeoVideo(k))) = true;
+    for (auto &attr : atlas.decAttrFrame) {
+      attr.clear();
     }
 
-    // Note(FT): test the type of attribute to decode : texture AND/OR transparency
-    for (uint8_t attributeIndex = 0;
-         attributeIndex < m_au.vps.attribute_information(j).ai_attribute_count();
-         attributeIndex++) {
-      if (m_au.vps.attribute_information(j).ai_attribute_type_id(attributeIndex) ==
-          MivBitstream::AiAttributeTypeId::ATTR_TEXTURE) {
-        Common::at(result, static_cast<size_t>(decodeAttrTextureVideo(k))) = true;
-      }
-      if (m_au.vps.attribute_information(j).ai_attribute_type_id(attributeIndex) ==
-          MivBitstream::AiAttributeTypeId::ATTR_TRANSPARENCY) {
-        Common::at(result, static_cast<size_t>(decodeAttrTransparencyVideo(k))) = true;
-      }
-    }
+    atlas.decPckFrame.clear();
   }
 
-  if (result[0U] && result[1U]) {
-    throw std::runtime_error("One of the video streams is truncated");
-  }
-  return result[1U];
+  return std::all_of(m_videoDecoders.begin(), m_videoDecoders.end(),
+                     [this](auto &kvp) { return decodeVideoFrame(kvp.key); });
 }
 
 void MivDecoder::checkCapabilities() const {
@@ -269,9 +195,11 @@ namespace {
 auto clockInSeconds() {
   return static_cast<double>(std::clock()) / static_cast<double>(CLOCKS_PER_SEC);
 }
+} // namespace
 
-auto decoderId(MivBitstream::PtlProfileCodecGroupIdc codecId) {
-  switch (codecId) {
+auto MivDecoder::decoderId(MivBitstream::V3cUnitHeader /* vuh */) const noexcept
+    -> VideoDecoder::DecoderId {
+  switch (m_au.vps.profile_tier_level().ptl_profile_codec_group_idc()) {
   case MivBitstream::PtlProfileCodecGroupIdc::AVC_Progressive_High:
     return VideoDecoder::DecoderId::AVC_Progressive_High;
   case MivBitstream::PtlProfileCodecGroupIdc::HEVC_Main10:
@@ -280,14 +208,17 @@ auto decoderId(MivBitstream::PtlProfileCodecGroupIdc codecId) {
     return VideoDecoder::DecoderId::HEVC444;
   case MivBitstream::PtlProfileCodecGroupIdc::VVC_Main10:
     return VideoDecoder::DecoderId::VVC_Main10;
+  case MivBitstream::PtlProfileCodecGroupIdc::MP4RA:
+    NOT_IMPLEMENTED;
   default:
-    throw std::runtime_error(fmt::format("Unknown codec group IDC {}", codecId));
+    UNREACHABLE;
   }
 }
-} // namespace
 
-auto MivDecoder::startVideoDecoder(const MivBitstream::V3cUnitHeader &vuh, double &totalTime)
-    -> std::unique_ptr<VideoDecoder::VideoDecoderBase> {
+auto MivDecoder::tryStartVideoDecoder(MivBitstream::V3cUnitHeader vuh) -> bool {
+  auto &decoder = m_videoDecoders[vuh];
+  auto &totalTime = m_totalVideoDecodingTime[vuh];
+
   // Adapt the V3C unit buffer to a video sub-bitstream source
   const auto videoSubBitstreamSource = [this, vuh]() -> std::string {
     if (auto v3cUnit = m_inputBuffer(vuh)) {
@@ -299,7 +230,7 @@ auto MivDecoder::startVideoDecoder(const MivBitstream::V3cUnitHeader &vuh, doubl
   // Test if the first unit can be read
   auto blob = videoSubBitstreamSource();
   if (blob.empty()) {
-    return {}; // The fall-back is to require out-of-band video
+    return false; // The fall-back is to require out-of-band video
   }
 
   // Adapt the video sub-bitstream source to an ISOBMFF NAL unit source.
@@ -328,10 +259,62 @@ auto MivDecoder::startVideoDecoder(const MivBitstream::V3cUnitHeader &vuh, doubl
   };
 
   const auto t0 = clockInSeconds();
-  auto videoDecoder = VideoDecoder::create(
-      nalUnitSource, decoderId(m_au.vps.profile_tier_level().ptl_profile_codec_group_idc()));
+
+  decoder = VideoDecoder::create(nalUnitSource, decoderId(vuh));
+
   totalTime += clockInSeconds() - t0;
-  return videoDecoder;
+  return true;
+}
+
+namespace {
+auto decFrame(MivBitstream::V3cUnitHeader vuh, MivBitstream::AtlasAccessUnit &aau)
+    -> Common::Frame<> & {
+  switch (vuh.vuh_unit_type()) {
+  case MivBitstream::VuhUnitType::V3C_OVD:
+    return aau.decOccFrame;
+  case MivBitstream::VuhUnitType::V3C_GVD:
+    return aau.decGeoFrame;
+  case MivBitstream::VuhUnitType::V3C_AVD:
+    return aau.decAttrFrame[vuh.vuh_attribute_index()];
+  case MivBitstream::VuhUnitType::V3C_PVD:
+    return aau.decPckFrame;
+  default:
+    UNREACHABLE;
+  }
+}
+} // namespace
+
+auto MivDecoder::decodeVideoFrame(MivBitstream::V3cUnitHeader vuh) -> bool {
+  auto &decoder = m_videoDecoders[vuh];
+
+  if (!decoder) {
+    return pullOutOfBandVideoFrame(vuh);
+  }
+
+  fmt::print("Decode video frame: {}, foc=:{}\n", vuh.summary(), m_au.foc);
+  const auto t0 = clockInSeconds();
+
+  const auto atlasIdx = m_au.vps.indexOf(vuh.vuh_atlas_id());
+  auto &frame = decFrame(vuh, m_au.atlas[atlasIdx]);
+  frame = decoder->getFrame();
+
+  if (frame.empty()) {
+    return false;
+  }
+
+  m_totalVideoDecodingTime[vuh] += clockInSeconds() - t0;
+  return true;
+}
+
+auto MivDecoder::pullOutOfBandVideoFrame(MivBitstream::V3cUnitHeader vuh) -> bool {
+  fmt::print("Pull out-of-band video frame: {}, foc={}\n", vuh.summary(), m_au.foc);
+
+  const auto atlasIdx = m_au.vps.indexOf(vuh.vuh_atlas_id());
+  const auto &asps = m_au.atlas[m_au.vps.indexOf(vuh.vuh_atlas_id())].asps;
+  auto &frame = decFrame(vuh, m_au.atlas[atlasIdx]);
+  frame = m_frameServer(vuh, m_au.foc, m_au.vps, asps);
+
+  return !frame.empty();
 }
 
 void MivDecoder::decodeCommonAtlas() {
@@ -492,180 +475,5 @@ auto MivDecoder::decodePatchParamsList(size_t k, MivBitstream::PatchParamsList &
   });
 
   return ppl;
-}
-
-auto MivDecoder::decodeOccVideo(size_t k) -> bool {
-  fmt::print("Decode frame V3C_OVD {} FOC={}\n", m_au.vps.vps_atlas_id(k), m_au.foc);
-  const auto t0 = clockInSeconds();
-
-  auto frame = Common::Frame<>{};
-
-  if (m_occVideoDecoder[k]) {
-    frame = m_occVideoDecoder[k]->getFrame();
-  } else if (m_occFrameServer) {
-    frame = m_occFrameServer(m_au.vps.vps_atlas_id(k), m_au.foc,
-                             m_au.atlas[k].decOccFrameSize(m_au.vps));
-  } else {
-    MIVBITSTREAM_ERROR("Out-of-band occupancy video data but no frame server provided");
-  }
-
-  if (frame.empty()) {
-    return false;
-  }
-
-  m_au.atlas[k].decOccFrame = yuv400(frame);
-
-  m_totalOccVideoDecodingTime += clockInSeconds() - t0;
-  return true;
-}
-
-auto MivDecoder::decodeGeoVideo(size_t k) -> bool {
-  fmt::print("Decode frame V3C_GVD {} FOC={}\n", m_au.vps.vps_atlas_id(k), m_au.foc);
-  const auto t0 = clockInSeconds();
-
-  auto frame = Common::Frame<>{};
-
-  if (m_geoVideoDecoder[k]) {
-    frame = m_geoVideoDecoder[k]->getFrame();
-  } else if (m_geoFrameServer) {
-    frame = m_geoFrameServer(m_au.vps.vps_atlas_id(k), m_au.foc,
-                             m_au.atlas[k].decGeoFrameSize(m_au.vps));
-  } else {
-    MIVBITSTREAM_ERROR("Out-of-band geometry video data but no frame server provided");
-  }
-
-  if (frame.empty()) {
-    return false;
-  }
-
-  m_au.atlas[k].decGeoFrame = yuv400(frame);
-
-  m_totalGeoVideoDecodingTime += clockInSeconds() - t0;
-  return true;
-}
-
-auto MivDecoder::decodeAttrTextureVideo(size_t k) -> bool {
-  fmt::print("Decode frame V3C_AVD {} {} FOC={}\n", m_au.vps.vps_atlas_id(k),
-             MivBitstream::AiAttributeTypeId::ATTR_TEXTURE, m_au.foc);
-  const auto t0 = clockInSeconds();
-
-  auto frame = Common::Frame<>{};
-
-  if (m_textureVideoDecoder[k]) {
-    frame = m_textureVideoDecoder[k]->getFrame();
-  } else if (m_textureFrameServer) {
-    frame = m_textureFrameServer(m_au.vps.vps_atlas_id(k), m_au.foc, m_au.atlas[k].frameSize());
-  } else {
-    MIVBITSTREAM_ERROR("Out-of-band texture video data but no frame server provided");
-  }
-
-  if (frame.empty()) {
-    return false;
-  }
-
-  m_au.atlas[k].attrFrame = yuv444(frame);
-
-  m_totalAttrVideoDecodingTime += clockInSeconds() - t0;
-  return true;
-}
-
-auto MivDecoder::decodeAttrTransparencyVideo(size_t k) -> bool {
-  fmt::print("Decode frame V3C_AVD {} {} FOC={}\n", m_au.vps.vps_atlas_id(k),
-             MivBitstream::AiAttributeTypeId::ATTR_TRANSPARENCY, m_au.foc);
-  const auto t0 = clockInSeconds();
-
-  auto frame = Common::Frame<>{};
-
-  if (m_transparencyVideoDecoder[k]) {
-    frame = m_transparencyVideoDecoder[k]->getFrame();
-  } else if (m_transparencyFrameServer) {
-    frame =
-        m_transparencyFrameServer(m_au.vps.vps_atlas_id(k), m_au.foc, m_au.atlas[k].frameSize());
-  } else {
-    MIVBITSTREAM_ERROR("Out-of-band transparency video data but no frame server provided");
-  }
-
-  if (frame.empty()) {
-    return false;
-  }
-
-  m_au.atlas[k].transparencyFrame = yuv400(frame);
-
-  m_totalAttrVideoDecodingTime += clockInSeconds() - t0;
-  return true;
-}
-
-auto MivDecoder::decodeFramePackVideo(size_t k) -> bool {
-  const auto t0 = clockInSeconds();
-
-  auto frame = Common::Frame<>{};
-
-  if (m_framePackVideoDecoder[k]) {
-    frame = m_framePackVideoDecoder[k]->getFrame();
-  } else if (m_framePackServer) {
-    frame = m_framePackServer(m_au.vps.vps_atlas_id(k), m_au.foc,
-                              m_au.atlas[k].decPacFrameSize(m_au.vps));
-  } else {
-    MIVBITSTREAM_ERROR("Out-of-band framepack video data but no frame server provided");
-  }
-
-  if (frame.empty()) {
-    return false;
-  }
-
-  m_au.atlas[k].decPacFrame = yuv444(frame);
-
-  m_totalFramePackVideoDecodingTime += clockInSeconds() - t0;
-  return true;
-}
-
-void MivDecoder::summarizeVps() const {
-  const auto &vps = m_au.vps;
-  const auto &ptl = vps.profile_tier_level();
-
-  fmt::print("V3C parameter set {}:\n", vps.vps_v3c_parameter_set_id());
-  fmt::print("  Tier {}, {}, codec group {}, toolset {}, recon {}, decodes {}\n",
-             ptl.ptl_tier_flag(), ptl.ptl_level_idc(), ptl.ptl_profile_codec_group_idc(),
-             ptl.ptl_profile_toolset_idc(), ptl.ptl_profile_reconstruction_idc(),
-             ptl.ptl_max_decodes_idc());
-  for (size_t k = 0; k <= vps.vps_atlas_count_minus1(); ++k) {
-    const auto j = vps.vps_atlas_id(k);
-    fmt::print("  Atlas {}: {} x {}", j, vps.vps_frame_width(j), vps.vps_frame_height(j));
-    if (vps.vps_occupancy_video_present_flag(j)) {
-      const auto &oi = vps.occupancy_information(j);
-      fmt::print("; [OI: codec {}, {}, 2D {}, align {}]", oi.oi_occupancy_codec_id(),
-                 oi.oi_lossy_occupancy_compression_threshold(),
-                 oi.oi_occupancy_2d_bit_depth_minus1() + 1, oi.oi_occupancy_MSB_align_flag());
-    }
-    if (vps.vps_geometry_video_present_flag(j)) {
-      const auto &gi = vps.geometry_information(j);
-      fmt::print("; [GI: codec {}, 2D {}, algin {}, 3D {}]", gi.gi_geometry_codec_id(),
-                 gi.gi_geometry_2d_bit_depth_minus1() + 1, gi.gi_geometry_MSB_align_flag(),
-                 gi.gi_geometry_3d_coordinates_bit_depth_minus1() + 1);
-    }
-    if (vps.vps_attribute_video_present_flag(j)) {
-      const auto &ai = vps.attribute_information(j);
-      fmt::print("; [AI: {}", ai.ai_attribute_count());
-      for (uint8_t i = 0; i < ai.ai_attribute_count(); ++i) {
-        fmt::print(", {}, codec {}, dims {}, 2D {}, align {}", ai.ai_attribute_type_id(i),
-                   ai.ai_attribute_codec_id(i), ai.ai_attribute_dimension_minus1(i) + 1,
-                   ai.ai_attribute_2d_bit_depth_minus1(i) + 1, ai.ai_attribute_MSB_align_flag(i));
-        if (i + 1 == ai.ai_attribute_count()) {
-          fmt::print("]");
-        }
-      }
-    }
-    if (vps.vps_packing_information_present_flag()) {
-      if (vps.vps_packed_video_present_flag(j)) {
-        const auto &pin = vps.packing_information(j);
-        fmt::print("; [PIN: numRegions {}]", pin.pin_regions_count_minus1() + 1);
-      }
-    }
-    fmt::print("\n");
-  }
-  const auto &vme = vps.vps_miv_extension();
-  fmt::print(", geometry scaling {}, groups {}, embedded occupancy {}, occupancy scaling {}\n",
-             vme.vme_geometry_scale_enabled_flag(), vme.group_mapping().gm_group_count(),
-             vme.vme_embedded_occupancy_enabled_flag(), vme.vme_occupancy_scale_enabled_flag());
 }
 } // namespace TMIV::Decoder

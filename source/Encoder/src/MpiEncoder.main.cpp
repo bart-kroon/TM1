@@ -42,8 +42,6 @@
 
 using namespace std::string_view_literals;
 
-using Mat1w = TMIV::Common::heap::Matrix<uint16_t>;
-
 namespace TMIV::Encoder {
 void registerComponents();
 
@@ -59,6 +57,7 @@ private:
   std::filesystem::path m_outputBitstreamPath;
   std::ofstream m_outputBitstream;
   std::unique_ptr<Encoder::MivEncoder> m_mivEncoder;
+  static constexpr uint8_t m_vpsId = 0;
 
   [[nodiscard]] auto placeholders() const {
     auto x = IO::Placeholders{};
@@ -86,7 +85,7 @@ public:
     }
 
     // Support experiments that use a subset of the source cameras
-    if (const auto &node = json().optional(IO::inputCameraNames)) {
+    if (const auto &node = json().optional("inputCameraNames")) {
       std::cout << "WARNING: Source camera names are derived from the sequence configuration. This "
                    "functionality to override source camera names is only for internal testing, "
                    "e.g. to test with a subset of views.\n";
@@ -123,8 +122,20 @@ private:
   }
 
   void popAtlases(int32_t firstFrame, int32_t lastFrame) {
-    for (int32_t i = firstFrame; i < lastFrame; ++i) {
-      IO::saveAtlasFrame(json(), placeholders(), i, m_encoder.popAtlas());
+    for (int32_t frameIdx = firstFrame; frameIdx < lastFrame; ++frameIdx) {
+      const auto frame = m_encoder.popAtlas();
+
+      for (size_t atlasIdx = 0; atlasIdx < frame.size(); ++atlasIdx) {
+        const auto atlasId = MivBitstream::AtlasId{atlasIdx};
+
+        IO::saveOutOfBandVideoFrame(json(), placeholders(), frame[atlasIdx].texture,
+                                    MivBitstream::V3cUnitHeader::avd(m_vpsId, atlasId, 0), frameIdx,
+                                    MivBitstream::AiAttributeTypeId::ATTR_TEXTURE);
+
+        IO::saveOutOfBandVideoFrame(json(), placeholders(), frame[atlasIdx].transparency,
+                                    MivBitstream::V3cUnitHeader::avd(m_vpsId, atlasId, 1), frameIdx,
+                                    MivBitstream::AiAttributeTypeId::ATTR_TRANSPARENCY);
+      }
     }
   }
 

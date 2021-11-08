@@ -52,12 +52,13 @@ auto computeIndex(const MivBitstream::ViewParams &metadata, const MivBitstream::
   return index;
 }
 
-template <typename YUVD>
-void inplaceFading_impl(YUVD &yuvd, const MivBitstream::ViewParams & /* unused */, float index) {
+void inplaceFading_impl(Common::RendererFrame &yuvd, const MivBitstream::ViewParams & /* unused */,
+                        float index) {
   // TO DO
-  auto &Y = yuvd.first.getPlane(0);
-  auto &U = yuvd.first.getPlane(1);
-  auto &V = yuvd.first.getPlane(2);
+  auto &Y = yuvd.texture.getPlane(0);
+  auto &U = yuvd.texture.getPlane(1);
+  auto &V = yuvd.texture.getPlane(2);
+  const auto maxValueF = static_cast<float>(yuvd.texture.maxValue());
 
   const auto width_Y = static_cast<int32_t>(Y.width());
   const auto height_Y = static_cast<int32_t>(Y.height());
@@ -84,20 +85,24 @@ void inplaceFading_impl(YUVD &yuvd, const MivBitstream::ViewParams & /* unused *
   // 1) get RGB from YUV, 2) then greyish it, 3) then back to YUV
   for (int32_t h = 0; h < height_Y; h++) {
     for (int32_t w = 0; w < width_Y; w++) {
-      R = std::min(std::max((Y(h, w) - Cte[0]) * YUVtoR[0] + (U(h, w) - Cte[1]) * YUVtoR[1] +
-                                (V(h, w) - Cte[2]) * YUVtoR[2],
+      const auto Y_h_w = static_cast<float>(Y(h, w));
+      const auto U_h_w = static_cast<float>(U(h, w));
+      const auto V_h_w = static_cast<float>(V(h, w));
+
+      R = std::min(std::max((Y_h_w - Cte[0]) * YUVtoR[0] + (U_h_w - Cte[1]) * YUVtoR[1] +
+                                (V_h_w - Cte[2]) * YUVtoR[2],
                             0.F),
-                   1023.F) *
+                   maxValueF) *
           weight;
-      G = std::min(std::max((Y(h, w) - Cte[0]) * YUVtoG[0] + (U(h, w) - Cte[1]) * YUVtoG[1] +
-                                (V(h, w) - Cte[2]) * YUVtoG[2],
+      G = std::min(std::max((Y_h_w - Cte[0]) * YUVtoG[0] + (U_h_w - Cte[1]) * YUVtoG[1] +
+                                (V_h_w - Cte[2]) * YUVtoG[2],
                             0.F),
-                   1023.F) *
+                   maxValueF) *
           weight;
-      B = std::min(std::max((Y(h, w) - Cte[0]) * YUVtoB[0] + (U(h, w) - Cte[1]) * YUVtoB[1] +
-                                (V(h, w) - Cte[2]) * YUVtoB[2],
+      B = std::min(std::max((Y_h_w - Cte[0]) * YUVtoB[0] + (U_h_w - Cte[1]) * YUVtoB[1] +
+                                (V_h_w - Cte[2]) * YUVtoB[2],
                             0.F),
-                   1023.F) *
+                   maxValueF) *
           weight;
 
       Y(h, w) = Common::assertDownCast<uint16_t>(
@@ -115,7 +120,7 @@ void inplaceFading_impl(YUVD &yuvd, const MivBitstream::ViewParams & /* unused *
 ViewingSpaceController::ViewingSpaceController(const Common::Json & /*rootNode*/,
                                                const Common::Json & /*componentNode*/) {}
 
-void ViewingSpaceController::inplaceFading(Common::Texture444Depth16Frame &viewport,
+void ViewingSpaceController::inplaceFading(Common::RendererFrame &viewport,
                                            const MivBitstream::ViewParams &viewportParams,
                                            const MivBitstream::ViewingSpace &viewingSpace) const {
   inplaceFading_impl(viewport, viewportParams, computeIndex(viewportParams, viewingSpace));

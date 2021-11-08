@@ -76,14 +76,14 @@ SCENARIO("Color consistency assessment") {
   }
   viewParamsList.constructViewIdIndex();
 
-  auto views = Common::MVD16Frame(numOfCams);
+  auto views = Common::DeepFrameList(numOfCams);
 
   GIVEN("Equal colors") {
     for (int32_t c = 0; c < numOfCams; c++) {
       views[c].texture.createYuv420({W, H}, 10);
-      views[c].depth.createY({W, H}, 16);
+      views[c].geometry.createY({W, H}, 16);
       views[c].texture.fillNeutral();
-      views[c].depth.fillOne();
+      views[c].geometry.fillOne();
     }
     WHEN("Assessing color consistency") {
       auto colorCorrectionMaps = assessColorConsistency(views, viewParamsList);
@@ -100,9 +100,9 @@ SCENARIO("Color consistency assessment") {
   GIVEN("Color difference") {
     for (int32_t c = 0; c < numOfCams; c++) {
       views[c].texture.createYuv420({W, H}, 10);
-      views[c].depth.createY({W, H}, 16);
+      views[c].geometry.createY({W, H}, 16);
       views[c].texture.fillNeutral();
-      views[c].depth.fillOne();
+      views[c].geometry.fillOne();
     }
     for (int32_t h = 0; h < H; h++) {
       for (int32_t w = 0; w < W; w++) {

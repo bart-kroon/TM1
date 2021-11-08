@@ -50,7 +50,7 @@ public:
   // Render from a texture atlas to a viewport
   [[nodiscard]] virtual auto renderFrame(const MivBitstream::AccessUnit &frame,
                                          const MivBitstream::CameraConfig &cameraConfig) const
-      -> Common::Texture444Depth16Frame = 0;
+      -> Common::RendererFrame = 0;
 
   [[nodiscard]] virtual auto isOptimizedForRestrictedGeometry() const -> bool { return false; }
 };

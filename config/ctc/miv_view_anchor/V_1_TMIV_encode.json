@@ -1,5 +1,7 @@
 {
     "attributeOffsetEnabledFlag": false,
+    "bitDepthGeometryVideo": 10,
+    "bitDepthTextureVideo": 10,
     "blockSizeDepthQualityDependent": [ 16, 32 ],
     "configDirectory": "config",
     "colorCorrectionEnabledFlag": false,
@@ -34,7 +36,7 @@
             "fieldOfViewMargin": 0.3
         },
         "dilate": 16,
-        "depthOccThresholdIfSet": 64,
+        "depthOccThresholdIfSet": 0.0625,
         "NoPruner": {},
         "Packer": {
             "enableMerging": true,
@@ -72,7 +74,7 @@
     "numGroups": 0,
     "oneViewPerAtlasFlag": false,
     "outputBitstreamPathFmt": "V{0}/{1}/TMIV_V{0}_{1}.bit",
-    "outputGeometryVideoDataPathFmt": "V{0}/{1}/TMIV_V{0}_{1}_geo_c{3:02}_{4}x{5}_yuv420p10le.yuv",
-    "outputTextureVideoDataPathFmt": "V{0}/{1}/TMIV_V{0}_{1}_tex_c{3:02}_{4}x{5}_yuv420p10le.yuv",
+    "outputGeometryVideoDataPathFmt": "V{0}/{1}/TMIV_V{0}_{1}_geo_c{3:02}_{4}x{5}_{6}.yuv",
+    "outputTextureVideoDataPathFmt": "V{0}/{1}/TMIV_V{0}_{1}_tex_c{3:02}_{4}x{5}_{6}.yuv",
     "outputDirectory": "."
 }

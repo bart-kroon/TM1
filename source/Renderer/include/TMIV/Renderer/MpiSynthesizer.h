@@ -56,7 +56,7 @@ public:
   // Render from a texture atlas to a viewport
   auto renderFrame(const MivBitstream::AccessUnit &frame,
                    const MivBitstream::CameraConfig &cameraConfig) const
-      -> Common::Texture444Depth16Frame override;
+      -> Common::RendererFrame override;
 
   auto isOptimizedForRestrictedGeometry() const -> bool override { return true; }
 };

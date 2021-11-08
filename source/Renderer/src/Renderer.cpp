@@ -43,7 +43,7 @@ Renderer::Renderer(const Common::Json &rootNode, const Common::Json &componentNo
 
 auto Renderer::renderFrame(const MivBitstream::AccessUnit &frame,
                            const MivBitstream::CameraConfig &cameraConfig) const
-    -> Common::Texture444Depth16Frame {
+    -> Common::RendererFrame {
   auto viewport = m_synthesizer->renderFrame(frame, cameraConfig);
 
   m_inpainter->inplaceInpaint(viewport, cameraConfig.viewParams);

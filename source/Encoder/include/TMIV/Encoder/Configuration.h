@@ -58,7 +58,7 @@ struct Configuration {
   bool framePacking;
   bool oneViewPerAtlasFlag;
   std::vector<Common::Vec2i> overrideAtlasFrameSizes{};
-  Common::SampleValue depthOccThresholdIfSet{};
+  double depthOccThresholdIfSet{};
   bool geometryScaleEnabledFlag;
   int32_t dilationIter;
   Common::stack::Vec2<Common::SampleValue> entityEncRange;
@@ -76,10 +76,10 @@ struct Configuration {
   std::optional<MivBitstream::ViewingSpace> viewingSpace;
   MivBitstream::PtlProfileCodecGroupIdc codecGroupIdc{};
   MivBitstream::PtlProfilePccToolsetIdc toolsetIdc{};
-  uint32_t occBitDepth{10};
-  uint32_t geoBitDepth{10};
-  uint32_t texBitDepth{10};
-  uint32_t pacBitDepth{10};
+  uint32_t occBitDepth{};
+  uint32_t geoBitDepth{};
+  uint32_t texBitDepth{};
+  uint32_t pacBitDepth{};
 
   [[nodiscard]] auto blockSize(bool depthLowQualityFlag_) const noexcept {
     return blockSizeDepthQualityDependent[static_cast<int32_t>(depthLowQualityFlag_)];

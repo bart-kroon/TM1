@@ -54,7 +54,8 @@ SCENARIO("Geometry quantization") {
     sourceParams.viewParamsList.push_back(sourceViewParams);
 
     WHEN("Modifying the depth range") {
-      const auto codedParams = TMIV::Encoder::GeometryQuantizer::transformParams(sourceParams, 37);
+      const auto codedParams =
+          TMIV::Encoder::GeometryQuantizer::transformParams(sourceParams, 37, 10);
 
       THEN("The camera parameters are unmodified") {
         REQUIRE(codedParams.viewParamsList == sourceParams.viewParamsList);
@@ -69,7 +70,7 @@ SCENARIO("Geometry quantization") {
 
     WHEN("Modifying the depth range") {
       const auto codedSeqParams =
-          TMIV::Encoder::GeometryQuantizer::transformParams(sourceSeqParams, 37);
+          TMIV::Encoder::GeometryQuantizer::transformParams(sourceSeqParams, 37, 10);
       const auto &codedViewParams = codedSeqParams.viewParamsList.front();
 
       THEN("dq_depth_occ_threshold_default (T) >> 0") {
@@ -77,7 +78,8 @@ SCENARIO("Geometry quantization") {
         REQUIRE(T >= 8);
 
         THEN("Coded level 2T matches with source level 0") {
-          // Output level 2T .. 1023 --> [0.2, 2.2] => rate = 2/(1023 - 2T), move 2T levels down
+          // Output level 2T .. 1023 --> [0.2, 2.2] => rate = 2/(1023 - 2T), move 2T levels
+          // down
           const auto twoT = static_cast<float>(2 * T);
 
           auto refViewParams = sourceViewParams;

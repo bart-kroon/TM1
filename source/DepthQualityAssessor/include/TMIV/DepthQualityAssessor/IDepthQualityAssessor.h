@@ -48,7 +48,7 @@ public:
   virtual ~IDepthQualityAssessor() = default;
 
   [[nodiscard]] virtual auto isLowDepthQuality(const MivBitstream::ViewParamsList &vpl,
-                                               const Common::MVD16Frame &sourceViews) const
+                                               const Common::DeepFrameList &sourceViews) const
       -> bool = 0;
 };
 } // namespace TMIV::DepthQualityAssessor

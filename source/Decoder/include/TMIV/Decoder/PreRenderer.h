@@ -78,7 +78,7 @@ private:
   static void convertAttributeNominalFormat(const MivBitstream::V3cParameterSet &vps,
                                             MivBitstream::AtlasId atlasId,
                                             MivBitstream::AtlasAccessUnit &atlas,
-                                            const std::vector<Common::Frame<>> &inFrame);
+                                            const Common::FrameList<> &inFrame);
 
   // ISO/IEC 23090-12 Annex B.3.2
   [[nodiscard]] static auto convertBitDepth(Common::Frame<> frame, uint32_t nominalBitDepth,

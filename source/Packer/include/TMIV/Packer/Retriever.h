@@ -37,8 +37,8 @@
 #include "Cluster.h"
 
 namespace TMIV::Packer {
-auto retrieveClusters(int32_t viewIdx, const Common::Mask &maskMap, int32_t firstClusterId,
-                      bool isBasicView, bool enableMerging, bool multiEntity)
-    -> std::pair<ClusterList, ClusteringMap>;
+auto retrieveClusters(int32_t viewIdx, const Common::Frame<uint8_t> &maskMap,
+                      int32_t firstClusterId, bool isBasicView, bool enableMerging,
+                      bool multiEntity) -> std::pair<ClusterList, ClusteringMap>;
 } // namespace TMIV::Packer
 #endif // TMIV_PACKER_RETRIEVER_H

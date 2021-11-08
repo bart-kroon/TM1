@@ -48,7 +48,7 @@ struct Placeholders {
 
 auto loadMultiviewFrame(const Common::Json &config, const Placeholders &placeholders,
                         const MivBitstream::SequenceConfig &sc, int32_t frameIdx)
-    -> Common::MVD16Frame;
+    -> Common::DeepFrameList;
 
 auto loadViewportMetadata(const Common::Json &config, const Placeholders &placeholders,
                           int32_t frameIdx, const std::string &cameraName, bool isPoseTrace)
@@ -68,12 +68,12 @@ auto tryLoadSequenceConfig(const Common::Json &config, const Placeholders &place
 
 auto loadMpiTextureMpiLayer(const Common::Json &config, const Placeholders &placeholders,
                             const MivBitstream::SequenceConfig &sc, int32_t frameIdx,
-                            int32_t mpiLayerIndex, int32_t nbMpiLayers) -> Common::TextureFrame;
+                            int32_t mpiLayerIndex, int32_t nbMpiLayers) -> Common::Frame<>;
 
 auto loadMpiTransparencyMpiLayer(const Common::Json &config, const Placeholders &placeholders,
                                  const MivBitstream::SequenceConfig &sc, int32_t frameIdx,
                                  int32_t mpiLayerIndex, int32_t nbMpiLayers)
-    -> Common::Transparency8Frame;
+    -> Common::Frame<uint8_t>;
 
 [[nodiscard]] auto inputBitstreamPath(const Common::Json &config, const Placeholders &placeholders)
     -> std::filesystem::path;
@@ -90,15 +90,15 @@ void saveOutOfBandVideoFrame(
     MivBitstream::AiAttributeTypeId attrTypeId = MivBitstream::AiAttributeTypeId::ATTR_UNSPECIFIED);
 
 void saveViewport(const Common::Json &config, const Placeholders &placeholders, int32_t frameIdx,
-                  const std::string &name, const Common::TextureDepth16Frame &frame);
+                  const std::string &name, const Common::DeepFrame &frame);
 
 void optionalSaveBlockToPatchMaps(const Common::Json &config, const Placeholders &placeholders,
                                   int32_t frameIdx, const MivBitstream::AccessUnit &frame);
 
-void optionalSavePrunedFrame(const Common::Json &config, const Placeholders &placeholders,
-                             int32_t frameIdx,
-                             const std::pair<std::vector<Common::Texture444Depth10Frame>,
-                                             Common::MaskList> &prunedViewsAndMasks);
+void optionalSavePrunedFrame(
+    const Common::Json &config, const Placeholders &placeholders, const Common::Frame<> &frame,
+    MivBitstream::VuhUnitType vut, std::pair<int32_t, uint16_t> frameViewIdx,
+    MivBitstream::AiAttributeTypeId attrTypeId = MivBitstream::AiAttributeTypeId::ATTR_UNSPECIFIED);
 
 void optionalSaveSequenceConfig(const Common::Json &config, const Placeholders &placeholders,
                                 int32_t foc, const MivBitstream::SequenceConfig &seqConfig);
@@ -106,6 +106,16 @@ void optionalSaveSequenceConfig(const Common::Json &config, const Placeholders &
 // Construct the output bitstream path and create the parent directories
 auto outputBitstreamPath(const Common::Json &config, const Placeholders &placeholders)
     -> std::filesystem::path;
+
+auto videoComponentName(MivBitstream::VuhUnitType vuhUnitType,
+                        MivBitstream::AiAttributeTypeId attrTypeId) -> char const *;
+
+auto videoFormatString(Common::ColorFormat colorFormat, uint32_t bitDepth) -> std::string;
+
+template <typename Element>
+auto videoFormatString(const Common::Frame<Element> &frame) -> std::string {
+  return videoFormatString(frame.getColorFormat(), frame.getBitDepth());
+}
 } // namespace TMIV::IO
 
 #endif

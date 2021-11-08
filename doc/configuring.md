@@ -92,7 +92,7 @@ Unless specified otherwise, the base directory for these path formats is `inputD
     * 1: content ID,
     * 2: test ID,
     * 3: atlas ID,
-    * 4, 5: frame width and height.
+    * 4, 5, 6: frame width, frame height and video format.
 * **inputOccupancyVideoFramePathFmt**: the path format of the uncompresed occupancy video data (OVD), consumed by the Decoder for out-of-band video decoding, e.g. for testing alternative video codecs, with the same placeholders as `inputGeometryVideoFramePathFmt`.
 * **inputTextureVideoFramePathFmt**: the path format of the uncompresed attribute video data (AVD) with attribute ID `ATTR_TEXTURE`, consumed by the Decoder for out-of-band video decoding, e.g. for testing alternative video codecs, with the same placeholders as `inputGeometryVideoFramePathFmt`.
 * **inputPackedVideoFramePathFmt**: the path format of the uncompresed packed video data (PVD), consumed by the Decoder for out-of-band video decoding, with the same placeholders as `inputGeometryVideoFramePathFmt`.
@@ -140,7 +140,7 @@ Unless specified otherwise, the base directory for these path formats is `output
     * 1: content ID,
     * 2: test ID,
     * 3: atlas index,
-    * 4, 5: frame width and height.
+    * 4, 5, 6: frame width, frame height, and video format.
 * **outputGeometryVideoDataPathFmt**: the path format of the uncompressed geometry video data (GVD), produced by the Encoder, with the same placeholders as `outputBlockToPatchMapPathFmt`.
 * **outputOccupancyVideoDataPathFmt**: the path format of the uncompressed occupancy video data (OVD), produced by the Encoder, with the same placeholders as `outputBlockToPatchMapPathFmt`.
 * **outputTextureVideoDataPathFmt**: the path format of the uncompressed attribute video data (AVD) with attribute ID `ATTR_TEXTURE`, produced by the Encoder, with the same placeholders as `outputBlockToPatchMapPathFmt`.
@@ -151,7 +151,7 @@ Unless specified otherwise, the base directory for these path formats is `output
     * 1: content ID,
     * 2: test ID,
     * 3: view index,
-    * 4, 5: frame width and height.
+    * 4, 5, 6: frame width, frame height, and video format.
 * **outputMultiviewOccupancyPathFmt**: the path format of the reconstructed (pruned) multiview occupancy data, produced by the Decoder, with the same placeholders as `outputMultiviewGeometryPathFmt`.
 * **outputMultiviewTexturePathFmt**: the path format of the reconstructed (pruned) multiview texture (color) data, produced by the Decoder, with the same placeholders as `outputMultiviewGeometryPathFmt`.
 * **outputMultiviewTransparencyPathFmt**: the path format of the reconstructed (pruned) multiview transparency (alpha) data, produced by the Decoder, with the same placeholders as `outputMultiviewGeometryPathFmt`.
@@ -162,7 +162,7 @@ Unless specified otherwise, the base directory for these path formats is `output
     * 2: test ID,
     * 3: number of output frames,
     * 4: view or pose trace name,
-    * 5, 6, 7: frame width and height, and video format.
+    * 5, 6, 7: frame width, frame height, and video format.
 * **outputViewportTexturePathFmt**: the path format of the texture (color) video data of the rendered viewport, produced by the Decoder or Renderer, with the same placeholders as `outputViewportGeometryPathFmt`.
 * **outputTexturePathFmt**: the path format of the uncompressed texture (color) video data of an MPI sequence, produced by the MPI converter, with the same placeholders as `inputGeometryPathFmt`.
 * **outputTransparencyPathFmt**: the path format of the uncompressed transparency (alpha) video data of an MPI sequence, produced by the MPI converter, with the same placeholders as `inputGeometryPathFmt`.
@@ -182,10 +182,13 @@ These parameters are in the root of the configuration file and may be accessed b
   By default, the encoder will select a start frame based on the sequence configuration.
 * Output video sub-bitstreams:
     * **haveOccupancyVideo:** bool; output occupancy video data (OVD) instead of  depth/occupancy coding within geometry video data (GVD). Make sure to use ExplicitOccupancy as the geometry quantizer.
-    * **haveTextureVideo:** bool; output attribute video data (AVD) to encode the texture attribute. When false texture data is still needed as input of the test model.
-    * **framePacking:** bool; output packed video data (PVD) to encode the packed components together in a single video frame.
-    * **haveTransparencyVideo:** bool; output attribute video data (AVD) to encode the transparency attribute. :construction:
     * **haveGeometryVideo:** bool; output geometry video data (GVD) to encode depth and optionally also occuapncy information. Without geometry, depth estimation is shifted from a pre-encoding to a post-decoding process.
+    * **haveTextureVideo:** bool; output attribute video data (AVD) to encode the texture attribute. When false texture data is still needed as input of the test model.
+    * **haveTransparencyVideo:** bool; output attribute video data (AVD) to encode the transparency attribute.
+    * **bitDepthOccupancyVideo:** int; the bit depth of the occupancy video (if present).
+    * **bitDepthGeometryVideo:** int; the bit depth of the geometry video (if present).
+    * **bitDepthTextureVideo:** int; the bit depth of the texture video (if present).
+    * **framePacking:** bool; output packed video data (PVD) to encode the packed components together in a single video frame. The bit depth is derived from the component bit depths.
     * **geometryScaleEnabledFlag:** bool; when true geometry is downscaled by a factor of two in respect to the atlas frame size. Otherwise geometry is at full resolution.
 * Atlas frame size calculation and packing:
     * **intraPeriod:** int; the intra patch frame period. This is the step in frame order count between consecutive frames that have an atlas tile layer of type I_TILE. The test model is not aware of the intra period of the video codec. This other intra period is configured independently.
@@ -218,8 +221,8 @@ Most of the parameters are defined in the root. The exception is:
 
 ### Geometry quantizer
 
-* **depthOccThresholdIfSet:** int; the value of the depth-occupancy map
-  threshold when occupancy information is encoded in the geometry video data of
+* **depthOccThresholdIfSet:** float; the value of the depth-occupancy map
+  threshold times 2<sup>-geoBitDepth</sup>, in case occupancy information is encoded in the geometry video data of
   a specific view.
 
 ### Explicit occupancy

@@ -49,15 +49,15 @@ public:
   ~Aggregator() override = default;
 
   void prepareAccessUnit() override;
-  void pushMask(const Common::MaskList &mask) override;
+  void pushMask(const Common::FrameList<uint8_t> &mask) override;
   void completeAccessUnit() override {}
-  [[nodiscard]] auto getAggregatedMask() const -> const Common::MaskList & override;
+  [[nodiscard]] auto getAggregatedMask() const -> const Common::FrameList<uint8_t> & override;
 
 private:
-  Common::MaskList m_aggregatedMask;
+  Common::FrameList<uint8_t> m_aggregatedMask;
 };
 
-inline auto Aggregator::getAggregatedMask() const -> const Common::MaskList & {
+inline auto Aggregator::getAggregatedMask() const -> const Common::FrameList<uint8_t> & {
   return m_aggregatedMask;
 }
 } // namespace TMIV::Aggregator

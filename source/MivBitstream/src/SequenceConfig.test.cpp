@@ -42,14 +42,14 @@ TEST_CASE("CameraConfig") {
   SECTION("Default construction with default values") {
     auto unit = TMIV::MivBitstream::CameraConfig{};
     CHECK(unit.viewParams == TMIV::MivBitstream::ViewParams{});
-    CHECK(unit.bitDepthColor == 0);
+    CHECK(unit.bitDepthTexture == 0);
     CHECK(unit.bitDepthTransparency == 0);
-    CHECK(unit.bitDepthDepth == 0);
+    CHECK(unit.bitDepthGeometry == 0);
     CHECK(unit.bitDepthEntities == 0);
-    CHECK(unit.colorspace == TMIV::MivBitstream::CameraConfig::Colorspace::yuv420);
-    CHECK(unit.transparencyColorspace == TMIV::MivBitstream::CameraConfig::Colorspace::yuv420);
-    CHECK(unit.depthColorspace == TMIV::MivBitstream::CameraConfig::Colorspace::yuv420);
-    CHECK(unit.entitiesColorspace == TMIV::MivBitstream::CameraConfig::Colorspace::yuv420);
+    CHECK(unit.colorFormatTexture == TMIV::Common::ColorFormat::YUV420);
+    CHECK(unit.colorFormatTransparency == TMIV::Common::ColorFormat::YUV420);
+    CHECK(unit.colorFormatGeometry == TMIV::Common::ColorFormat::YUV420);
+    CHECK(unit.colorFormatEntities == TMIV::Common::ColorFormat::YUV420);
   }
 
   SECTION("Load from JSON, Equirectangular") {
@@ -71,27 +71,32 @@ TEST_CASE("CameraConfig") {
 
     auto unit = TMIV::MivBitstream::CameraConfig(json);
 
-    CHECK(unit.bitDepthColor == 10);
+    CHECK(unit.bitDepthTexture == 10);
     CHECK(unit.bitDepthTransparency == 0);
-    CHECK(unit.bitDepthDepth == 16);
+    CHECK(unit.bitDepthGeometry == 16);
     CHECK(unit.bitDepthEntities == 0);
-    CHECK(unit.colorspace == TMIV::MivBitstream::CameraConfig::Colorspace::yuv420);
-    CHECK(unit.transparencyColorspace == TMIV::MivBitstream::CameraConfig::Colorspace::yuv420);
-    CHECK(unit.depthColorspace == TMIV::MivBitstream::CameraConfig::Colorspace::yuv420);
-    CHECK(unit.entitiesColorspace == TMIV::MivBitstream::CameraConfig::Colorspace::yuv420);
+
+    CHECK(unit.colorFormatTexture == TMIV::Common::ColorFormat::YUV420);
+    CHECK(unit.colorFormatTransparency == TMIV::Common::ColorFormat::YUV420);
+    CHECK(unit.colorFormatGeometry == TMIV::Common::ColorFormat::YUV420);
+    CHECK(unit.colorFormatEntities == TMIV::Common::ColorFormat::YUV420);
+
     CHECK(unit.viewParams.name == "v2");
 
     SECTION("Save and load back") {
       auto newJson = TMIV::Common::Json{unit};
       auto y = TMIV::MivBitstream::CameraConfig{newJson};
 
-      CHECK(unit.bitDepthColor == y.bitDepthColor);
+      CHECK(unit.bitDepthTexture == y.bitDepthTexture);
       CHECK(unit.bitDepthTransparency == y.bitDepthTransparency);
-      CHECK(unit.bitDepthDepth == y.bitDepthDepth);
+      CHECK(unit.bitDepthGeometry == y.bitDepthGeometry);
       CHECK(unit.bitDepthEntities == y.bitDepthEntities);
-      CHECK(unit.colorspace == y.colorspace);
-      CHECK(unit.depthColorspace == y.depthColorspace);
-      CHECK(unit.entitiesColorspace == y.entitiesColorspace);
+
+      CHECK(unit.colorFormatTexture == y.colorFormatTexture);
+      CHECK(unit.colorFormatTransparency == y.colorFormatTransparency);
+      CHECK(unit.colorFormatGeometry == y.colorFormatGeometry);
+      CHECK(unit.colorFormatEntities == y.colorFormatEntities);
+
       CHECK(unit.viewParams.name == y.viewParams.name);
     }
   }
@@ -121,12 +126,15 @@ TEST_CASE("CameraConfig") {
     const auto unit = TMIV::MivBitstream::CameraConfig(json);
     CHECK(unit.viewParams.nbMpiLayers == 423);
 
-    CHECK(unit.bitDepthColor == 10);
+    CHECK(unit.bitDepthTexture == 10);
     CHECK(unit.bitDepthTransparency == 8);
-    CHECK(unit.bitDepthDepth == 0);
-    CHECK(unit.colorspace == TMIV::MivBitstream::CameraConfig::Colorspace::yuv420);
-    CHECK(unit.transparencyColorspace == TMIV::MivBitstream::CameraConfig::Colorspace::yuv420);
-    CHECK(unit.depthColorspace == TMIV::MivBitstream::CameraConfig::Colorspace::yuv420);
+    CHECK(unit.bitDepthGeometry == 0);
+    CHECK(unit.bitDepthEntities == 0);
+
+    CHECK(unit.colorFormatTexture == TMIV::Common::ColorFormat::YUV420);
+    CHECK(unit.colorFormatTransparency == TMIV::Common::ColorFormat::YUV420);
+    CHECK(unit.colorFormatGeometry == TMIV::Common::ColorFormat::YUV420);
+    CHECK(unit.colorFormatEntities == TMIV::Common::ColorFormat::YUV420);
   }
 }
 
@@ -241,14 +249,16 @@ TEST_CASE("SequenceConfig") {
       REQUIRE(x.numberOfFrames == y.numberOfFrames);
 
       for (size_t i = 0; i < x.cameras.size(); ++i) {
-        CHECK(x.cameras[i].bitDepthColor == y.cameras[i].bitDepthColor);
-        CHECK(x.cameras[i].bitDepthDepth == y.cameras[i].bitDepthDepth);
+        CHECK(x.cameras[i].bitDepthTexture == y.cameras[i].bitDepthTexture);
+        CHECK(x.cameras[i].bitDepthGeometry == y.cameras[i].bitDepthGeometry);
         CHECK(x.cameras[i].bitDepthTransparency == y.cameras[i].bitDepthTransparency);
         CHECK(x.cameras[i].bitDepthEntities == y.cameras[i].bitDepthEntities);
-        CHECK(x.cameras[i].colorspace == y.cameras[i].colorspace);
-        CHECK(x.cameras[i].depthColorspace == y.cameras[i].depthColorspace);
-        CHECK(x.cameras[i].transparencyColorspace == y.cameras[i].transparencyColorspace);
-        CHECK(x.cameras[i].entitiesColorspace == y.cameras[i].entitiesColorspace);
+
+        CHECK(x.cameras[i].colorFormatTexture == y.cameras[i].colorFormatTexture);
+        CHECK(x.cameras[i].colorFormatGeometry == y.cameras[i].colorFormatGeometry);
+        CHECK(x.cameras[i].colorFormatTransparency == y.cameras[i].colorFormatTransparency);
+        CHECK(x.cameras[i].colorFormatEntities == y.cameras[i].colorFormatEntities);
+
         CHECK(x.cameras[i].viewParams.name == y.cameras[i].viewParams.name);
       }
     }

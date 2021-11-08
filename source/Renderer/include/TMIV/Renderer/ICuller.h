@@ -51,7 +51,7 @@ public:
   // Do culling and update the block to patch map for a single atlas
   [[nodiscard]] virtual auto filterBlockToPatchMap(
       const MivBitstream::AccessUnit &frame, const MivBitstream::AtlasAccessUnit &atlas,
-      const MivBitstream::ViewParams &viewportParams) const -> Common::BlockToPatchMap = 0;
+      const MivBitstream::ViewParams &viewportParams) const -> Common::Frame<Common::PatchIdx> = 0;
 
   // Do culling and update the block to patch maps for all atlases
   auto inplaceFilterBlockToPatchMaps(MivBitstream::AccessUnit &frame,

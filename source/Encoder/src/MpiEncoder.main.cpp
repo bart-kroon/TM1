@@ -132,7 +132,7 @@ private:
                                     MivBitstream::V3cUnitHeader::avd(m_vpsId, atlasId, 0), frameIdx,
                                     MivBitstream::AiAttributeTypeId::ATTR_TEXTURE);
 
-        IO::saveOutOfBandVideoFrame(json(), placeholders(), frame[atlasIdx].transparency,
+        IO::saveOutOfBandVideoFrame(json(), placeholders(), yuv420(frame[atlasIdx].transparency),
                                     MivBitstream::V3cUnitHeader::avd(m_vpsId, atlasId, 1), frameIdx,
                                     MivBitstream::AiAttributeTypeId::ATTR_TRANSPARENCY);
       }

@@ -36,17 +36,21 @@
 #include <TMIV/MivBitstream/DepthOccupancyTransform.h>
 
 namespace TMIV::Encoder::GeometryQuantizer {
-auto transformParams(const EncoderParams &inParams, Common::SampleValue depthOccThresholdIfSet)
-    -> EncoderParams {
+auto transformParams(const EncoderParams &inParams, double depthOccThresholdIfSet,
+                     uint32_t bitDepth) -> EncoderParams {
   auto outParams = inParams;
 
   if (outParams.vps.vps_miv_extension().vme_embedded_occupancy_enabled_flag()) {
     for (auto &x : outParams.viewParamsList) {
       if (x.hasOccupancy) {
-        x.dq.dq_depth_occ_threshold_default(depthOccThresholdIfSet); // =T
-        const auto nearLevel = 1023.F;
-        const auto farLevel = static_cast<float>(2 * depthOccThresholdIfSet);
-        // Mapping is [2T, 1023] --> [old far, near]. What is level 0? (the new far)
+        const auto depthOccThreshold = Common::downCast<uint32_t>(
+            std::llround(std::ldexp(depthOccThresholdIfSet, Common::downCast<int>(bitDepth))));
+
+        x.dq.dq_depth_occ_threshold_default(depthOccThreshold); // =T
+        const auto nearLevel = static_cast<float>(Common::maxLevel(bitDepth));
+        const auto farLevel = static_cast<float>(2 * depthOccThreshold);
+
+        // Mapping is [2T, maxValue] --> [old far, near]. What is level 0? (the new far)
         x.dq.dq_norm_disp_low(x.dq.dq_norm_disp_low() +
                               (0.F - farLevel) / (nearLevel - farLevel) *
                                   (x.dq.dq_norm_disp_high() - x.dq.dq_norm_disp_low()));
@@ -58,11 +62,11 @@ auto transformParams(const EncoderParams &inParams, Common::SampleValue depthOcc
 }
 
 namespace {
-void padGeometryFromLeft(const EncoderParams &outParams, Common::MVD10Frame &atlases) noexcept {
+void padGeometryFromLeft(const EncoderParams &outParams, Common::V3cFrameList &atlases) noexcept {
   for (uint8_t i = 0; i <= outParams.vps.vps_atlas_count_minus1(); ++i) {
     const auto j = outParams.vps.vps_atlas_id(i);
     if (outParams.vps.vps_occupancy_video_present_flag(j)) {
-      auto &depthAtlasMap = atlases[i].depth;
+      auto &depthAtlasMap = atlases[i].geometry;
       auto depthScale =
           std::array{outParams.atlas[i].asps.asps_frame_height() / depthAtlasMap.getHeight(),
                      outParams.atlas[i].asps.asps_frame_width() / depthAtlasMap.getWidth()};
@@ -86,9 +90,8 @@ void padGeometryFromLeft(const EncoderParams &outParams, Common::MVD10Frame &atl
   }
 }
 
-auto transformOccupancyFrame(const Common::Occupancy1Frame &in, unsigned bitDepth)
-    -> Common::Occupancy10Frame {
-  auto result = Common::Occupancy10Frame::lumaOnly(in.getSize(), bitDepth);
+auto transformOccupancyFrame(const Common::Frame<bool> &in, unsigned bitDepth) -> Common::Frame<> {
+  auto result = Common::Frame<>::lumaOnly(in.getSize(), bitDepth);
 
   // The occupancy threshold is set to the mid value (512 for 10b), and the non-occupant (low) and
   // occupant (high) levels are set to quarter (256 for 10b) and three quarter (768 for 10b) values
@@ -100,28 +103,55 @@ auto transformOccupancyFrame(const Common::Occupancy1Frame &in, unsigned bitDept
                  [=](auto x) { return x ? high : low; });
   return result;
 }
+
+auto transformAttributeFrame(const Common::Frame<> &inFrame, uint32_t bitDepth) -> Common::Frame<> {
+  auto outFrame = Common::Frame<>{inFrame.getSize(), bitDepth, inFrame.getColorFormat()};
+  auto outPlane = outFrame.getPlanes().begin();
+
+  const auto bitDepthDifference =
+      Common::downCast<int32_t>(bitDepth) - Common::downCast<int32_t>(inFrame.getBitDepth());
+
+  for (const auto &inPlane : inFrame.getPlanes()) {
+    std::transform(inPlane.cbegin(), inPlane.cend(), outPlane->begin(),
+                   [bitDepthDifference](auto sample) {
+                     return Common::assertDownCast<Common::DefaultElement>(
+                         Common::shift(sample, bitDepthDifference));
+                   });
+
+    ++outPlane;
+  }
+
+  return outFrame;
+}
 } // namespace
 
 auto transformAtlases(const EncoderParams &inParams, const EncoderParams &outParams,
-                      const Common::MVD16Frame &inAtlases) -> Common::MVD10Frame {
-  auto outAtlases = Common::MVD10Frame(inAtlases.size());
+                      const Common::DeepFrameList &inAtlases) -> Common::V3cFrameList {
+  auto outAtlases = Common::V3cFrameList(inAtlases.size());
 
   for (uint8_t k = 0; k <= outParams.vps.vps_atlas_count_minus1(); ++k) {
     const auto atlasId = outParams.vps.vps_atlas_id(k);
-
-    // TODO(#397): Scale texture bit depth
-    outAtlases[k].texture = inAtlases[k].texture;
-
-    if (outParams.vps.vps_geometry_video_present_flag(atlasId)) {
-      const auto &gi = outParams.vps.geometry_information(atlasId);
-      const auto geoBitDepth = gi.gi_geometry_2d_bit_depth_minus1() + 1U;
-      outAtlases[k].depth.createY(inAtlases[k].depth.getSize(), geoBitDepth);
-    }
 
     if (outParams.vps.vps_occupancy_video_present_flag(atlasId)) {
       const auto &oi = outParams.vps.occupancy_information(atlasId);
       const auto occBitDepth = oi.oi_occupancy_2d_bit_depth_minus1() + 1U;
       outAtlases[k].occupancy = transformOccupancyFrame(inAtlases[k].occupancy, occBitDepth);
+    }
+
+    if (outParams.vps.vps_geometry_video_present_flag(atlasId)) {
+      const auto &gi = outParams.vps.geometry_information(atlasId);
+      const auto geoBitDepth = gi.gi_geometry_2d_bit_depth_minus1() + 1U;
+      outAtlases[k].geometry.createY(inAtlases[k].geometry.getSize(), geoBitDepth);
+    }
+
+    if (outParams.vps.vps_attribute_video_present_flag(atlasId)) {
+      const auto &ai = outParams.vps.attribute_information(atlasId);
+
+      if (const auto attrIdx =
+              outParams.vps.attrIdxOf(atlasId, MivBitstream::AiAttributeTypeId::ATTR_TEXTURE)) {
+        const auto texBitDepth = ai.ai_attribute_2d_bit_depth_minus1(*attrIdx) + 1U;
+        outAtlases[k].texture = transformAttributeFrame(inAtlases[k].texture, texBitDepth);
+      }
     }
   }
 
@@ -129,17 +159,22 @@ auto transformAtlases(const EncoderParams &inParams, const EncoderParams &outPar
     const auto &inViewParams = inParams.viewParamsList[patch.atlasPatchProjectionId()];
     const auto &outViewParams = outParams.viewParamsList[patch.atlasPatchProjectionId()];
     const auto inOccupancyTransform = MivBitstream::OccupancyTransform{inViewParams};
-    const auto inDepthTransform = MivBitstream::DepthTransform{inViewParams.dq, 16};
-    const auto outDepthTransform = MivBitstream::DepthTransform{outViewParams.dq, patch, 10};
     const auto kIn = inParams.vps.indexOf(patch.atlasId());
     const auto kOut = outParams.vps.indexOf(patch.atlasId());
+
+    const auto inBitDepth = inAtlases[kIn].geometry.getBitDepth();
+    const auto outBitDepth = outAtlases[kOut].geometry.getBitDepth();
+
+    const auto inDepthTransform = MivBitstream::DepthTransform{inViewParams.dq, inBitDepth};
+    const auto outDepthTransform =
+        MivBitstream::DepthTransform{outViewParams.dq, patch, outBitDepth};
 
     for (size_t i = 0; i < static_cast<size_t>(patch.atlasPatch2dSizeY()); ++i) {
       for (size_t j = 0; j < static_cast<size_t>(patch.atlasPatch2dSizeX()); ++j) {
         const auto n = i + patch.atlasPatch2dPosY();
         const auto m = j + patch.atlasPatch2dPosX();
 
-        const auto &plane = inAtlases[kIn].depth.getPlane(0);
+        const auto &plane = inAtlases[kIn].geometry.getPlane(0);
 
         PRECONDITION(n < plane.height() && m < plane.width());
 
@@ -149,7 +184,8 @@ auto transformAtlases(const EncoderParams &inParams, const EncoderParams &outPar
           const auto normDisp = inDepthTransform.expandNormDisp(inLevel);
           const auto outLevel = outDepthTransform.quantizeNormDisp(normDisp, 0);
 
-          outAtlases[kOut].depth.getPlane(0)(n, m) = Common::downCast<uint16_t>(outLevel);
+          outAtlases[kOut].geometry.getPlane(0)(n, m) =
+              Common::downCast<Common::DefaultElement>(outLevel);
         }
       }
     }

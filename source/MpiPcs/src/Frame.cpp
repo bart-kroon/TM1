@@ -185,9 +185,8 @@ void Frame::appendLayer(Attribute::GeometryValue layerId, const TextureTranspare
 }
 
 auto Frame::getLayer(Attribute::GeometryValue layerId) const -> TextureTransparency8Frame {
-  // TODO(#397): Magic bit depth
-  auto textureFrame = Common::Texture444Frame::yuv444(m_size, 10);
-  auto transparencyFrame = Common::Transparency8Frame::lumaOnly(m_size);
+  auto textureFrame = Common::Frame<>::yuv444(m_size, 10);
+  auto transparencyFrame = Common::Frame<uint8_t>::lumaOnly(m_size);
 
   textureFrame.fillNeutral();
 

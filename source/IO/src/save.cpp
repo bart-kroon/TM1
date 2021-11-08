@@ -35,34 +35,39 @@
 
 #include <fstream>
 
-#include "impl.hpp"
-
 using namespace std::string_literals;
 
 namespace TMIV::IO {
 template <typename Element>
 void saveFrame(const std::filesystem::path &path, const Common::Frame<Element> &frame,
                int32_t frameIdx) {
-  create_directories(path.parent_path());
+  Common::withElement(frame.getBitDepth(), [&](auto zero) {
+    using NativeElement = decltype(zero);
 
-  std::fstream stream(path, frameIdx == 0 ? std::ios::out | std::ios::binary
-                                          : std::ios::in | std::ios::out | std::ios::binary);
-  if (!stream.good()) {
-    throw std::runtime_error(fmt::format("Failed to open {} for writing", path));
-  }
+    if constexpr (std::is_same_v<NativeElement, Element>) {
+      create_directories(path.parent_path());
 
-  stream.seekp(int64_t{frameIdx} * frame.getDiskSize());
-  if (!stream.good()) {
-    throw std::runtime_error(
-        fmt::format("Failed to seek for writing to frame {} of {}", frameIdx, path));
-  }
+      std::fstream stream(path, frameIdx == 0 ? std::ios::out | std::ios::binary
+                                              : std::ios::in | std::ios::out | std::ios::binary);
+      if (!stream.good()) {
+        throw std::runtime_error(fmt::format("Failed to open {} for writing", path));
+      }
 
-  frame.dump(stream);
-  frame.padChroma(stream);
+      stream.seekp(int64_t{frameIdx} * frame.getByteCount());
+      if (!stream.good()) {
+        throw std::runtime_error(
+            fmt::format("Failed to seek for writing to frame {} of {}", frameIdx, path));
+      }
 
-  if (!stream.good()) {
-    throw std::runtime_error(fmt::format("Failed to write to {}", path));
-  }
+      frame.writeTo(stream);
+
+      if (!stream.good()) {
+        throw std::runtime_error(fmt::format("Failed to write to {}", path));
+      }
+    } else {
+      saveFrame(path, Common::elementCast<NativeElement>(frame), frameIdx);
+    }
+  });
 }
 
 void saveOutOfBandVideoFrame(const Common::Json &config, const Placeholders &placeholders,
@@ -72,39 +77,41 @@ void saveOutOfBandVideoFrame(const Common::Json &config, const Placeholders &pla
 
   const auto outputDir = config.require("outputDirectory").as<std::filesystem::path>();
 
-  const auto configKey = fmt::format("output{}VideoDataPathFmt",
-                                     detail::videoComponentName(vuh.vuh_unit_type(), attrTypeId));
+  const auto configKey =
+      fmt::format("output{}VideoDataPathFmt", videoComponentName(vuh.vuh_unit_type(), attrTypeId));
 
   const auto path =
       outputDir / fmt::format(config.require(configKey).as<std::string>(),
                               placeholders.numberOfInputFrames, placeholders.contentId,
                               placeholders.testId, vuh.vuh_atlas_id(), frame.getWidth(),
-                              frame.getHeight());
+                              frame.getHeight(), videoFormatString(frame));
 
   saveFrame(path, frame, frameIdx);
 }
 
 void saveViewport(const Common::Json &config, const Placeholders &placeholders, int32_t frameIdx,
-                  const std::string &name, const Common::TextureDepth16Frame &frame) {
+                  const std::string &name, const Common::DeepFrame &frame) {
   const auto outputDir = config.require("outputDirectory").as<std::filesystem::path>();
   auto saved = false;
 
   if (const auto &node = config.optional("outputViewportTexturePathFmt")) {
+    const auto frame_ = yuv420(frame.texture);
     saveFrame(outputDir / fmt::format(node.as<std::string>(), placeholders.numberOfInputFrames,
                                       placeholders.contentId, placeholders.testId,
                                       placeholders.numberOfOutputFrames, name,
                                       frame.texture.getWidth(), frame.texture.getHeight(),
-                                      "yuv420p10le"),
-              frame.texture, frameIdx);
+                                      videoFormatString(frame_)),
+              frame_, frameIdx);
     saved = true;
   }
   if (const auto &node = config.optional("outputViewportGeometryPathFmt")) {
+    const auto frame_ = yuv420(frame.geometry);
     saveFrame(outputDir / fmt::format(node.as<std::string>(), placeholders.numberOfInputFrames,
                                       placeholders.contentId, placeholders.testId,
                                       placeholders.numberOfOutputFrames, name,
-                                      frame.depth.getWidth(), frame.depth.getHeight(),
-                                      "yuv420p16le"),
-              frame.depth, frameIdx);
+                                      frame.geometry.getWidth(), frame.geometry.getHeight(),
+                                      videoFormatString(frame_)),
+              frame_, frameIdx);
     saved = true;
   }
 
@@ -124,55 +131,30 @@ void optionalSaveBlockToPatchMaps(const Common::Json &config, const Placeholders
       const auto &btpm = frame.atlas[k].blockToPatchMap;
       saveFrame(outputDir / fmt::format(node.as<std::string>(), placeholders.numberOfInputFrames,
                                         placeholders.contentId, placeholders.testId, k,
-                                        btpm.getWidth(), btpm.getHeight()),
+                                        btpm.getWidth(), btpm.getHeight(), videoFormatString(btpm)),
                 btpm, frameIdx);
     }
   }
 }
 
 void optionalSavePrunedFrame(const Common::Json &config, const Placeholders &placeholders,
-                             int32_t frameIdx,
-                             const std::pair<std::vector<Common::Texture444Depth10Frame>,
-                                             Common::MaskList> &prunedViewsAndMasks) {
-  const auto outputDir = config.require("outputDirectory").as<std::filesystem::path>();
+                             const Common::Frame<> &frame, MivBitstream::VuhUnitType vut,
+                             std::pair<int32_t, uint16_t> frameViewIdx,
+                             MivBitstream::AiAttributeTypeId attrTypeId) {
+  if (frame.empty()) {
+    return;
+  }
 
-  // TODO(#397): Generalize pruned view reconstruction to handle all attribute types in any order
+  const auto configKey =
+      fmt::format("outputMultiview{}PathFmt", videoComponentName(vut, attrTypeId));
 
-  for (size_t v = 0; v < prunedViewsAndMasks.first.size(); ++v) {
-    if (const auto &node = config.optional("outputMultiviewOccupancyPathFmt")) {
-      const auto &occupancy = prunedViewsAndMasks.second[v];
-
-      if (!occupancy.empty()) {
-        saveFrame(outputDir / fmt::format(node.as<std::string>(), placeholders.numberOfInputFrames,
-                                          placeholders.contentId, placeholders.testId, v,
-                                          occupancy.getWidth(), occupancy.getHeight()),
-                  occupancy, frameIdx);
-      }
-    }
-
-    if (const auto &node = config.optional("outputMultiviewGeometryPathFmt")) {
-      const auto &geometry = prunedViewsAndMasks.first[v].second;
-
-      if (!geometry.empty()) {
-        saveFrame(outputDir / fmt::format(node.as<std::string>(), placeholders.numberOfInputFrames,
-                                          placeholders.contentId, placeholders.testId, v,
-                                          geometry.getWidth(), geometry.getHeight()),
-                  geometry, frameIdx);
-      }
-    }
-
-    if (const auto &node = config.optional("outputMultiviewTexturePathFmt")) {
-      const auto &texture = prunedViewsAndMasks.first[v].first;
-
-      if (!texture.empty()) {
-        saveFrame(outputDir / fmt::format(node.as<std::string>(), placeholders.numberOfInputFrames,
-                                          placeholders.contentId, placeholders.testId, v,
-                                          texture.getWidth(), texture.getHeight()),
-                  texture.changeColorFormat(Common::ColorFormat::YUV420), frameIdx);
-      }
-    }
-
-    LIMITATION(!config.optional("outputMultiviewTransparencyPathFmt"));
+  if (const auto &node = config.optional(configKey)) {
+    const auto outputDir = config.require("outputDirectory").as<std::filesystem::path>();
+    saveFrame(outputDir / fmt::format(node.as<std::string>(), placeholders.numberOfInputFrames,
+                                      placeholders.contentId, placeholders.testId,
+                                      frameViewIdx.second, frame.getWidth(), frame.getHeight(),
+                                      videoFormatString(frame)),
+              frame, frameViewIdx.first);
   }
 }
 

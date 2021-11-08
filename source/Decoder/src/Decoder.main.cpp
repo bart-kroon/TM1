@@ -108,8 +108,7 @@ public:
 
       outputSequenceConfig(frame->sequenceConfig(), frame->foc);
       IO::optionalSaveBlockToPatchMaps(json(), m_placeholders, frame->foc, *frame);
-      IO::optionalSavePrunedFrame(json(), m_placeholders, frame->foc,
-                                  Renderer::recoverPrunedViewAndMask(*frame));
+      optionalSavePrunedFrame(frame->foc, Renderer::recoverPrunedViews(*frame));
 
       m_renderer.renderMultipleFrames(*frame, range.first, range.second);
     }
@@ -154,6 +153,28 @@ private:
     if (m_outputSequenceConfig != sc) {
       m_outputSequenceConfig = std::move(sc);
       IO::optionalSaveSequenceConfig(json(), m_placeholders, foc, m_outputSequenceConfig);
+    }
+  }
+
+  void optionalSavePrunedFrame(int32_t frameIdx, const Common::V3cFrameList &frame) const {
+    uint16_t viewIdx{};
+
+    for (const auto &view : frame) {
+      IO::optionalSavePrunedFrame(json(), m_placeholders, view.occupancy,
+                                  MivBitstream::VuhUnitType::V3C_OVD, {frameIdx, viewIdx});
+
+      IO::optionalSavePrunedFrame(json(), m_placeholders, view.geometry,
+                                  MivBitstream::VuhUnitType::V3C_GVD, {frameIdx, viewIdx});
+
+      IO::optionalSavePrunedFrame(json(), m_placeholders, yuv420(view.texture),
+                                  MivBitstream::VuhUnitType::V3C_AVD, {frameIdx, viewIdx},
+                                  MivBitstream::AiAttributeTypeId::ATTR_TEXTURE);
+
+      IO::optionalSavePrunedFrame(json(), m_placeholders, view.transparency,
+                                  MivBitstream::VuhUnitType::V3C_AVD, {frameIdx, viewIdx},
+                                  MivBitstream::AiAttributeTypeId::ATTR_TRANSPARENCY);
+
+      ++viewIdx;
     }
   }
 };

@@ -38,10 +38,10 @@
 namespace TMIV::MpiPcs {
 TEST_CASE("MpiPcs : Frame") {
   MpiPcs::Frame unit({6, 6});
-  auto mpiLayer1 = TextureTransparency8Frame{Common::TextureFrame::yuv420({6, 6}, 10),
-                                             Common::Transparency8Frame::lumaOnly({6, 6})};
-  auto mpiLayer2 = TextureTransparency8Frame{Common::TextureFrame::yuv420({6, 6}, 10),
-                                             Common::Transparency8Frame::lumaOnly({6, 6})};
+  auto mpiLayer1 = TextureTransparency8Frame{Common::Frame<>::yuv420({6, 6}, 10),
+                                             Common::Frame<uint8_t>::lumaOnly({6, 6})};
+  auto mpiLayer2 = TextureTransparency8Frame{Common::Frame<>::yuv420({6, 6}, 10),
+                                             Common::Frame<uint8_t>::lumaOnly({6, 6})};
 
   mpiLayer1.transparency.getPlane(0)(0, 2) = 255;
   mpiLayer2.transparency.getPlane(0)(0, 2) = 255;

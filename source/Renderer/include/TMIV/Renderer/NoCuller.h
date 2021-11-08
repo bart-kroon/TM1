@@ -45,7 +45,7 @@ public:
   filterBlockToPatchMap(const MivBitstream::AccessUnit & /* frame */,
                         const MivBitstream::AtlasAccessUnit &atlas,
                         const MivBitstream::ViewParams & /* viewportParams */) const
-      -> Common::BlockToPatchMap override {
+      -> Common::Frame<Common::PatchIdx> override {
     return atlas.blockToPatchMap;
   }
 };

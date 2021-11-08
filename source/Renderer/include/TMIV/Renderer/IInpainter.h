@@ -48,7 +48,7 @@ public:
   virtual ~IInpainter() = default;
 
   // Inpainting after encoder-side synthesis
-  virtual void inplaceInpaint(Common::Texture444Depth16Frame &viewport,
+  virtual void inplaceInpaint(Common::RendererFrame &viewport,
                               const MivBitstream::ViewParams &metadata) const = 0;
 };
 } // namespace TMIV::Renderer

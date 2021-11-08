@@ -116,17 +116,16 @@ void Multiplexer::readInputBitstream(std::istream &stream) {
 void Multiplexer::appendVideoSubBitstreams() {
   const auto vpsId = m_vps.vps_v3c_parameter_set_id();
 
-  // TODO(#397): Explore if a V3cUnitHeader visitor pattern can be applied multiple times
   for (size_t atlasIdx = 0; atlasIdx <= m_vps.vps_atlas_count_minus1(); ++atlasIdx) {
     const auto atlasId = m_vps.vps_atlas_id(atlasIdx);
     checkRestrictions(atlasId);
 
-    if (m_vps.vps_geometry_video_present_flag(atlasId)) {
-      appendVideoSubBitstream(MivBitstream::V3cUnitHeader::gvd(vpsId, atlasId));
-    }
-
     if (m_vps.vps_occupancy_video_present_flag(atlasId)) {
       appendVideoSubBitstream(MivBitstream::V3cUnitHeader::ovd(vpsId, atlasId));
+    }
+
+    if (m_vps.vps_geometry_video_present_flag(atlasId)) {
+      appendVideoSubBitstream(MivBitstream::V3cUnitHeader::gvd(vpsId, atlasId));
     }
 
     if (m_vps.vps_attribute_video_present_flag(atlasId)) {

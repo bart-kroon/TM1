@@ -45,7 +45,7 @@ namespace TMIV::Encoder {
 assessDepthQuality(const Configuration &config,
                    const DepthQualityAssessor::IDepthQualityAssessor &depthQualityAssessor,
                    const MivBitstream::SequenceConfig &sequenceConfig,
-                   const Common::MVD16Frame &firstFrame) -> bool {
+                   const Common::DeepFrameList &firstFrame) -> bool {
   if (config.depthLowQualityFlag) {
     return *config.depthLowQualityFlag;
   }
@@ -426,7 +426,7 @@ namespace {
 } // namespace
 
 void Encoder::prepareSequence(const MivBitstream::SequenceConfig &sequenceConfig,
-                              const Common::MVD16Frame &firstFrame) {
+                              const Common::DeepFrameList &firstFrame) {
   const auto depthLowQualityFlag =
       assessDepthQuality(m_config, *m_depthQualityAssessor, sequenceConfig, firstFrame);
   m_blockSize = m_config.blockSize(depthLowQualityFlag);

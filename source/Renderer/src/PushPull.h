@@ -48,26 +48,26 @@ template <typename Matrix> MatrixProxy(Matrix &&, int32_t, int32_t) -> MatrixPro
 class PushPull {
 public:
   template <typename PushFilter, typename PullFilter>
-  auto filter(const Common::Texture444Depth16Frame &frame, PushFilter &&pushFilter,
-              PullFilter &&pullFilter) -> const Common::Texture444Depth16Frame &;
+  auto filter(const Common::RendererFrame &frame, PushFilter &&pushFilter, PullFilter &&pullFilter)
+      -> const Common::RendererFrame &;
 
   auto numLayers() const noexcept;
 
-  auto layer(size_t i) const noexcept -> const Common::Texture444Depth16Frame &;
+  auto layer(size_t i) const noexcept -> const Common::RendererFrame &;
 
   // View a texture+depth frame as a matrix of tuple values
-  static auto yuvd(const Common::Texture444Depth16Frame &frame);
+  static auto yuvd(const Common::RendererFrame &frame);
 
   // View a texture+depth frame as a matrix of tuple references
-  static auto yuvd(Common::Texture444Depth16Frame &frame);
+  static auto yuvd(Common::RendererFrame &frame);
 
   template <typename PushFilter>
-  static void inplacePushFrame(const Common::Texture444Depth16Frame &in,
-                               Common::Texture444Depth16Frame &out, PushFilter &&filter);
+  static void inplacePushFrame(const Common::RendererFrame &in, Common::RendererFrame &out,
+                               PushFilter &&filter);
 
   template <typename PullFilter>
-  static void inplacePullFrame(const Common::Texture444Depth16Frame &in,
-                               Common::Texture444Depth16Frame &out, PullFilter &&filter) noexcept;
+  static void inplacePullFrame(const Common::RendererFrame &in, Common::RendererFrame &out,
+                               PullFilter &&filter) noexcept;
 
   template <typename InMatrixProxy, typename OutMatrixProxy, typename PushFilter>
   static void inplacePush(const InMatrixProxy &&in, OutMatrixProxy &&out,
@@ -78,7 +78,7 @@ public:
                           PullFilter &&filter) noexcept;
 
 private:
-  std::vector<Common::Texture444Depth16Frame> m_pyramid;
+  std::vector<Common::RendererFrame> m_pyramid;
 };
 } // namespace TMIV::Renderer
 

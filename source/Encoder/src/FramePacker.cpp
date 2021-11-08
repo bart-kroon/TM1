@@ -34,7 +34,7 @@
 #include <TMIV/Encoder/FramePacker.h>
 
 namespace TMIV::Encoder {
-void FramePacker::packFrame(Common::MVD10Frame &frame, uint32_t bitDepth) {
+void FramePacker::packFrame(Common::V3cFrameList &frame, uint32_t bitDepth) {
   uint8_t atlasIdx{};
 
   for (auto &atlas : frame) {
@@ -43,10 +43,10 @@ void FramePacker::packFrame(Common::MVD10Frame &frame, uint32_t bitDepth) {
   }
 }
 
-auto FramePacker::packAtlasFrame(const Common::TextureDepth10Frame &frame, uint8_t atlasIdx,
-                                 uint32_t bitDepth) const -> Common::TextureDepth10Frame {
-  auto result = Common::TextureDepth10Frame{};
-  result.packed = Common::FramePack10Frame::yuv420(m_regionSizes[atlasIdx].pac, bitDepth);
+auto FramePacker::packAtlasFrame(const Common::V3cFrame &frame, uint8_t atlasIdx,
+                                 uint32_t bitDepth) const -> Common::V3cFrame {
+  auto result = Common::V3cFrame{};
+  result.packed = Common::Frame<>::yuv420(m_regionSizes[atlasIdx].pac, bitDepth);
   result.packed.fillNeutral();
 
   for (uint8_t regionIdx = 0; regionIdx <= m_packingInformation.pin_regions_count_minus1();
@@ -72,7 +72,7 @@ auto FramePacker::packAtlasFrame(const Common::TextureDepth10Frame &frame, uint8
           result.packed.getPlane(0)(py, px) = frame.occupancy.getPlane(0)(uy, ux);
           break;
         case MivBitstream::VuhUnitType::V3C_GVD:
-          result.packed.getPlane(0)(py, px) = frame.depth.getPlane(0)(uy, ux);
+          result.packed.getPlane(0)(py, px) = frame.geometry.getPlane(0)(uy, ux);
           break;
         case MivBitstream::VuhUnitType::V3C_AVD: {
           const auto attrIdx = m_packingInformation.pin_region_attr_index(regionIdx);

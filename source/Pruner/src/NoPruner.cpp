@@ -42,12 +42,13 @@ auto NoPruner::prepareSequence(const PrunerParams & /* params */)
 }
 
 auto NoPruner::prune(const MivBitstream::ViewParamsList &viewParamsList,
-                     const Common::MVD16Frame & /* views */) -> Common::MaskList {
-  auto mask = Common::MaskList(viewParamsList.size());
+                     const Common::DeepFrameList & /* views */) -> Common::FrameList<uint8_t> {
+  auto mask = Common::FrameList<uint8_t>(viewParamsList.size());
   transform(viewParamsList.cbegin(), viewParamsList.cend(), mask.begin(),
             [](const MivBitstream::ViewParams &vp) {
-              auto mask = Common::Mask::lumaOnly({vp.ci.ci_projection_plane_width_minus1() + 1,
-                                                  vp.ci.ci_projection_plane_height_minus1() + 1});
+              auto mask =
+                  Common::Frame<uint8_t>::lumaOnly({vp.ci.ci_projection_plane_width_minus1() + 1,
+                                                    vp.ci.ci_projection_plane_height_minus1() + 1});
               mask.fillOne();
               return mask;
             });

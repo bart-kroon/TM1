@@ -85,42 +85,44 @@ auto findCentralBasicView(const MivBitstream::ViewParamsList &viewParamsList) ->
       std::abs(std::distance(std::cbegin(viewParamsList), viewClosestToCenter)));
 }
 
-auto initSynthesizersForFrameAnalysis(const Common::MVD16Frame &views,
+auto initSynthesizersForFrameAnalysis(const Common::DeepFrameList &views,
                                       const MivBitstream::ViewParamsList &viewParamsList,
                                       Renderer::AccumulatingPixel<Common::Vec3f> config)
     -> std::vector<std::unique_ptr<IncrementalSynthesizer>> {
   std::vector<std::unique_ptr<IncrementalSynthesizer>> synthesizers{};
   for (size_t i = 0; i < viewParamsList.size(); ++i) {
-    const auto depthTransform = MivBitstream::DepthTransform{viewParamsList[i].dq, 16};
+    const auto geoBitDepth = views[i].geometry.getBitDepth();
+    const auto depthTransform = MivBitstream::DepthTransform{viewParamsList[i].dq, geoBitDepth};
+
     synthesizers.emplace_back(std::make_unique<IncrementalSynthesizer>(
         config, viewParamsList[i].ci.projectionPlaneSize(), i,
-        depthTransform.expandDepth(views[i].depth), expandLuma(views[i].texture),
+        depthTransform.expandDepth(views[i].geometry), expandLuma(views[i].texture),
         expandTexture(yuv444(views[i].texture))));
   }
   return synthesizers;
 }
 
-auto initMasksForFrameAnalysis(const Common::MVD16Frame &views,
+auto initMasksForFrameAnalysis(const Common::DeepFrameList &views,
                                const MivBitstream::ViewParamsList &viewParamsList)
-    -> std::vector<Common::Frame<uint8_t>> {
-  std::vector<Common::Frame<uint8_t>> masks{};
-  std::transform(
-      std::cbegin(viewParamsList), std::cend(viewParamsList), std::cbegin(views),
-      back_inserter(masks),
-      [](const MivBitstream::ViewParams &viewParams, const Common::TextureDepth16Frame &view) {
-        auto mask = Common::Frame<uint8_t>::lumaOnly(
-            {viewParams.ci.ci_projection_plane_width_minus1() + 1,
-             viewParams.ci.ci_projection_plane_height_minus1() + 1});
+    -> Common::FrameList<uint8_t> {
+  Common::FrameList<uint8_t> masks{};
+  std::transform(std::cbegin(viewParamsList), std::cend(viewParamsList), std::cbegin(views),
+                 back_inserter(masks),
+                 [](const MivBitstream::ViewParams &viewParams, const Common::DeepFrame &view) {
+                   auto mask = Common::Frame<uint8_t>::lumaOnly(
+                       {viewParams.ci.ci_projection_plane_width_minus1() + 1,
+                        viewParams.ci.ci_projection_plane_height_minus1() + 1});
 
-        std::transform(std::cbegin(view.depth.getPlane(0)), std::cend(view.depth.getPlane(0)),
-                       std::begin(mask.getPlane(0)),
-                       [ot = MivBitstream::OccupancyTransform{viewParams}](auto x) {
-                         // #94: When there are invalid pixels in a basic view, these
-                         // should be excluded from the pruning mask
-                         return ot.occupant(x) ? uint8_t{255} : uint8_t{};
-                       });
-        return mask;
-      });
+                   std::transform(std::cbegin(view.geometry.getPlane(0)),
+                                  std::cend(view.geometry.getPlane(0)),
+                                  std::begin(mask.getPlane(0)),
+                                  [ot = MivBitstream::OccupancyTransform{viewParams}](auto x) {
+                                    // #94: When there are invalid pixels in a basic view, these
+                                    // should be excluded from the pruning mask
+                                    return ot.occupant(x) ? uint8_t{255} : uint8_t{};
+                                  });
+                   return mask;
+                 });
   return masks;
 }
 
@@ -171,7 +173,7 @@ auto calculateStdDev(const std::vector<int32_t> &differenceHistogram) -> std::op
 }
 } // namespace
 
-auto calculateLumaStdDev(const Common::MVD16Frame &views,
+auto calculateLumaStdDev(const Common::DeepFrameList &views,
                          const MivBitstream::ViewParamsList &viewParamsList,
                          const Renderer::AccumulatingPixel<Common::Vec3f> &config,
                          float maxDepthError) -> std::optional<float> {

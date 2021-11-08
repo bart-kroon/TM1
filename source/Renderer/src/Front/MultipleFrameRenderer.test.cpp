@@ -52,7 +52,7 @@ struct FakeCuller : public TMIV::Renderer::ICuller {
   filterBlockToPatchMap(const TMIV::MivBitstream::AccessUnit & /* frame */,
                         const TMIV::MivBitstream::AtlasAccessUnit & /* atlas */,
                         const TMIV::MivBitstream::ViewParams & /* viewportParams */) const
-      -> TMIV::Common::BlockToPatchMap override {
+      -> TMIV::Common::Frame<TMIV::Common::PatchIdx> override {
     throw std::logic_error("Unexpected call to filterBlockToPatchMap");
   }
 };
@@ -64,7 +64,7 @@ struct FakeRenderer : public TMIV::Renderer::IRenderer {
   [[nodiscard]] auto
   renderFrame(const TMIV::MivBitstream::AccessUnit & /* frame */,
               const TMIV::MivBitstream::CameraConfig & /* viewportParams */) const
-      -> TMIV::Common::Texture444Depth16Frame override {
+      -> TMIV::Common::RendererFrame override {
     throw std::logic_error("Unexpected call to renderFrame");
   }
 };

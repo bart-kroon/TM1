@@ -45,7 +45,7 @@
 #include <vector>
 
 namespace TMIV::Pruner {
-auto calculateLumaStdDev(const Common::MVD16Frame &views,
+auto calculateLumaStdDev(const Common::DeepFrameList &views,
                          const MivBitstream::ViewParamsList &viewParamsList,
                          const Renderer::AccumulatingPixel<Common::Vec3f> &config,
                          float maxDepthError) -> std::optional<float>;

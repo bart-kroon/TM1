@@ -36,7 +36,7 @@
 #include <iostream>
 
 namespace TMIV::Encoder {
-void Encoder::pushFrame(Common::MVD16Frame sourceViews) {
+void Encoder::pushFrame(Common::DeepFrameList sourceViews) {
   if (m_config.maxEntityId == 0) {
     pushSingleEntityFrame(std::move(sourceViews));
   } else {
@@ -44,7 +44,7 @@ void Encoder::pushFrame(Common::MVD16Frame sourceViews) {
   }
 }
 
-void Encoder::pushSingleEntityFrame(Common::MVD16Frame sourceViews) {
+void Encoder::pushSingleEntityFrame(Common::DeepFrameList sourceViews) {
   auto transportViews = m_viewOptimizer->optimizeFrame(std::move(sourceViews));
   if (m_config.colorCorrectionEnabledFlag) {
     m_colorCorrectionMaps.push_back(
@@ -97,10 +97,10 @@ auto dilate(const Common::Mat<uint8_t> &mask) -> Common::Mat<uint8_t> {
 }
 } // namespace
 
-void Encoder::updateNonAggregatedMask(const Common::MVD16Frame &transportViews,
-                                      const Common::MaskList &masks) {
+void Encoder::updateNonAggregatedMask(const Common::DeepFrameList &transportViews,
+                                      const Common::FrameList<uint8_t> &masks) {
   const auto frameId = m_transportViews.size();
-  Common::MaskList dilatedMasks = masks; // Atlas dilation
+  Common::FrameList<uint8_t> dilatedMasks = masks; // Atlas dilation
 
   // Atlas dilation
   if (params().casps.casps_miv_extension().casme_depth_low_quality_flag()) {
@@ -125,10 +125,10 @@ void Encoder::updateNonAggregatedMask(const Common::MVD16Frame &transportViews,
   }
 }
 
-void Encoder::pushMultiEntityFrame(Common::MVD16Frame sourceViews) {
+void Encoder::pushMultiEntityFrame(Common::DeepFrameList sourceViews) {
   auto transportViews = m_viewOptimizer->optimizeFrame(std::move(sourceViews));
 
-  Common::MaskList mergedMasks;
+  Common::FrameList<uint8_t> mergedMasks;
   for (const auto &transportView : transportViews) {
     mergedMasks.emplace_back().createY(transportView.texture.getSize());
   }
@@ -149,8 +149,8 @@ void Encoder::pushMultiEntityFrame(Common::MVD16Frame sourceViews) {
   m_aggregator->pushMask(mergedMasks);
 }
 
-auto Encoder::yuvSampler(const Common::EntityMapList &in) -> std::vector<Common::Frame<>> {
-  std::vector<Common::Frame<>> outYuvAll;
+auto Encoder::yuvSampler(const Common::FrameList<> &in) -> Common::FrameList<> {
+  Common::FrameList<> outYuvAll;
 
   for (const auto &entityMap : in) {
     auto outYuv = Common::Frame<>::yuv420(entityMap.getSize(), entityMap.getBitDepth());
@@ -176,7 +176,8 @@ auto Encoder::yuvSampler(const Common::EntityMapList &in) -> std::vector<Common:
   return outYuvAll;
 }
 
-void Encoder::mergeMasks(Common::MaskList &mergedMasks, Common::MaskList masks) {
+void Encoder::mergeMasks(Common::FrameList<uint8_t> &mergedMasks,
+                         Common::FrameList<uint8_t> masks) {
   for (size_t viewIdx = 0; viewIdx < mergedMasks.size(); viewIdx++) {
     for (size_t i = 0; i < mergedMasks[viewIdx].getPlane(0).size(); i++) {
       if (masks[viewIdx].getPlane(0)[i] != uint8_t{}) {
@@ -186,17 +187,18 @@ void Encoder::mergeMasks(Common::MaskList &mergedMasks, Common::MaskList masks) 
   }
 }
 
-void Encoder::updateMasks(const Common::MVD16Frame &views, Common::MaskList &masks) {
+void Encoder::updateMasks(const Common::DeepFrameList &views, Common::FrameList<uint8_t> &masks) {
   for (size_t viewIdx = 0; viewIdx < views.size(); viewIdx++) {
     for (size_t i = 0; i < masks[viewIdx].getPlane(0).size(); i++) {
-      if (views[viewIdx].depth.getPlane(0)[i] == uint16_t{}) {
+      if (views[viewIdx].geometry.getPlane(0)[i] == uint16_t{}) {
         masks[viewIdx].getPlane(0)[i] = uint8_t{};
       }
     }
   }
 }
 
-void Encoder::aggregateEntityMasks(Common::MaskList &masks, Common::SampleValue entityId) {
+void Encoder::aggregateEntityMasks(Common::FrameList<uint8_t> &masks,
+                                   Common::SampleValue entityId) {
   if (m_aggregatedEntityMask.size() < m_config.entityEncRange[1] - m_config.entityEncRange[0]) {
     m_aggregatedEntityMask.push_back(masks);
   } else {
@@ -209,19 +211,19 @@ void Encoder::aggregateEntityMasks(Common::MaskList &masks, Common::SampleValue 
   }
 }
 
-auto Encoder::entitySeparator(const Common::MVD16Frame &transportViews,
-                              Common::SampleValue entityId) -> Common::MVD16Frame {
+auto Encoder::entitySeparator(const Common::DeepFrameList &transportViews,
+                              Common::SampleValue entityId) -> Common::DeepFrameList {
   // Initalize entityViews
-  Common::MVD16Frame entityViews;
+  Common::DeepFrameList entityViews;
   for (const auto &transportView : transportViews) {
-    Common::TextureDepth16Frame entityView = {
-        Common::TextureFrame::yuv420(transportView.texture.getSize(),
-                                     transportView.texture.getBitDepth()),
-        Common::Depth16Frame::lumaOnly(transportView.depth.getSize(),
-                                       transportView.depth.getBitDepth())};
+    Common::DeepFrame entityView = {
+        Common::Frame<>::yuv420(transportView.texture.getSize(),
+                                transportView.texture.getBitDepth()),
+        Common::Frame<>::lumaOnly(transportView.geometry.getSize(),
+                                  transportView.geometry.getBitDepth())};
     entityViews.push_back(std::move(entityView));
   }
-  Common::EntityMapList entityMaps;
+  Common::FrameList<> entityMaps;
   for (const auto &transportView : transportViews) {
     entityMaps.push_back(transportView.entities);
   }
@@ -238,10 +240,10 @@ auto Encoder::entitySeparator(const Common::MVD16Frame &transportViews,
                      entityViews[viewIdx].texture.getPlane(planeId).begin(),
                      [=](auto i, auto j) { return (j == entityId) ? i : neutralColor; });
     }
-    std::transform(transportViews[viewIdx].depth.getPlane(0).begin(),
-                   transportViews[viewIdx].depth.getPlane(0).end(),
+    std::transform(transportViews[viewIdx].geometry.getPlane(0).begin(),
+                   transportViews[viewIdx].geometry.getPlane(0).end(),
                    entityMaps[viewIdx].getPlane(0).begin(),
-                   entityViews[viewIdx].depth.getPlane(0).begin(),
+                   entityViews[viewIdx].geometry.getPlane(0).begin(),
                    [=](auto i, auto j) { return (j == entityId) ? i : uint16_t{}; });
   }
 

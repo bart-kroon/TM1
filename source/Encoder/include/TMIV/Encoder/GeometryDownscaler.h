@@ -39,7 +39,7 @@
 
 namespace TMIV::Encoder::GeometryDownscaler {
 [[nodiscard]] auto transformFrame(const std::vector<EncoderAtlasParams> &atlas,
-                                  Common::MVD10Frame frame) -> Common::MVD10Frame;
+                                  Common::V3cFrameList frame) -> Common::V3cFrameList;
 } // namespace TMIV::Encoder::GeometryDownscaler
 
 #endif

@@ -43,13 +43,13 @@ using namespace std::string_literals;
 namespace TMIV::MivBitstream {
 CameraConfig::CameraConfig(const Common::Json &config) {
   if (const auto &node = config.optional("BitDepthColor")) {
-    bitDepthColor = node.as<uint32_t>();
+    bitDepthTexture = node.as<uint32_t>();
   }
   if (const auto &node = config.optional("BitDepthTransparency")) {
     bitDepthTransparency = node.as<uint32_t>();
   }
   if (const auto &node = config.optional("BitDepthDepth")) {
-    bitDepthDepth = node.as<uint32_t>();
+    bitDepthGeometry = node.as<uint32_t>();
   }
   if (const auto &node = config.optional("BitDepthEntities")) {
     bitDepthEntities = node.as<uint32_t>();
@@ -57,45 +57,13 @@ CameraConfig::CameraConfig(const Common::Json &config) {
   viewParams = ViewParams{config};
 }
 
-namespace {
-auto yuv420pFormat(uint32_t bitDepth) {
-  if (bitDepth < 8) {
-    return fmt::format("yuv420p{}", bitDepth);
-  }
-  if (bitDepth == 8) {
-    return "yuv420p"s;
-  }
-  return fmt::format("yuv420p{}le", bitDepth);
-}
-} // namespace
-
-auto CameraConfig::textureVideoFormat() const -> std::string {
-  PRECONDITION(colorspace == Colorspace::yuv420);
-  return yuv420pFormat(bitDepthColor);
-}
-
-auto CameraConfig::transparencyVideoFormat() const -> std::string {
-  PRECONDITION(colorspace == Colorspace::yuv420);
-  return yuv420pFormat(bitDepthTransparency);
-}
-
-auto CameraConfig::geometryVideoFormat() const -> std::string {
-  PRECONDITION(depthColorspace == Colorspace::yuv420);
-  return yuv420pFormat(bitDepthDepth);
-}
-
-auto CameraConfig::entitiesVideoFormat() const -> std::string {
-  PRECONDITION(entitiesColorspace == Colorspace::yuv420);
-  return yuv420pFormat(bitDepthEntities);
-}
-
 CameraConfig::operator Common::Json() const {
   using Common::Json;
   using Object = Json::Object;
 
   auto root = Json{viewParams}.as<Object>();
-  root["BitDepthColor"s] = bitDepthColor;
-  root["BitDepthDepth"s] = bitDepthDepth;
+  root["BitDepthColor"s] = bitDepthTexture;
+  root["BitDepthDepth"s] = bitDepthGeometry;
   root["ColorSpace"] = "YUV420";
   root["DepthColorSpace"] = "YUV420";
   if (0 < bitDepthTransparency) {
@@ -110,11 +78,13 @@ CameraConfig::operator Common::Json() const {
 }
 
 auto CameraConfig::operator==(const CameraConfig &other) const noexcept -> bool {
-  return viewParams == other.viewParams && bitDepthColor == other.bitDepthColor &&
+  return viewParams == other.viewParams && bitDepthTexture == other.bitDepthTexture &&
          bitDepthTransparency == other.bitDepthTransparency &&
-         bitDepthDepth == other.bitDepthDepth && bitDepthEntities == other.bitDepthEntities &&
-         colorspace == other.colorspace && depthColorspace == other.depthColorspace &&
-         entitiesColorspace == other.entitiesColorspace;
+         bitDepthGeometry == other.bitDepthGeometry && bitDepthEntities == other.bitDepthEntities &&
+         colorFormatTexture == other.colorFormatTexture &&
+         colorFormatGeometry == other.colorFormatGeometry &&
+         colorFormatTransparency == other.colorFormatTransparency &&
+         colorFormatEntities == other.colorFormatEntities;
 }
 
 auto CameraConfig::operator!=(const CameraConfig &other) const noexcept -> bool {

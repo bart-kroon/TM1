@@ -47,7 +47,7 @@ public:
   auto operator=(ViewingSpaceController &&) -> ViewingSpaceController & = default;
   ~ViewingSpaceController() override = default;
 
-  void inplaceFading(Common::Texture444Depth16Frame &viewport,
+  void inplaceFading(Common::RendererFrame &viewport,
                      const MivBitstream::ViewParams &viewportParams,
                      const MivBitstream::ViewingSpace &viewingSpace) const override;
 };

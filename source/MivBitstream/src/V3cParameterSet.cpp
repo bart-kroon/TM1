@@ -1386,12 +1386,7 @@ auto V3cParameterSet::vps_packed_video_present_flag(const AtlasId &j, bool value
 
 auto V3cParameterSet::packing_information(const AtlasId &j, PackingInformation value)
     -> V3cParameterSet & {
-  // TODO(#397): Cannot do this becaue of the frame unpacker
-  // vps_packed_video_present_flag(j, true);
-
   if (value.pin_occupancy_present_flag()) {
-    // TODO(#397): It would be better if all constraints are checked in the encodeTo function,
-    // because at this stage the VPS is being filled in.
     VERIFY_V3CBITSTREAM(!vps_occupancy_video_present_flag(j));
   }
 
@@ -1424,9 +1419,6 @@ auto V3cParameterSet::vpsExtensionData(std::vector<uint8_t> value) noexcept -> V
 }
 
 auto V3cParameterSet::occupancy_information(AtlasId j) -> OccupancyInformation & {
-  // TODO(#397): Cannot do this because of the frame unpacker
-  // vps_occupancy_video_present_flag(j, true);
-
   auto &oi = atlas(j).occupancy_information;
   if (!oi) {
     oi = OccupancyInformation{};
@@ -1435,9 +1427,6 @@ auto V3cParameterSet::occupancy_information(AtlasId j) -> OccupancyInformation &
 }
 
 auto V3cParameterSet::geometry_information(AtlasId j) -> GeometryInformation & {
-  // TODO(#397): Cannot do this because of the frame unpacker
-  // vps_geometry_video_present_flag(j, true);
-
   auto &gi = atlas(j).geometry_information;
   if (!gi) {
     gi = GeometryInformation{};
@@ -1446,9 +1435,6 @@ auto V3cParameterSet::geometry_information(AtlasId j) -> GeometryInformation & {
 }
 
 auto V3cParameterSet::attribute_information(AtlasId j) -> AttributeInformation & {
-  // TODO(#397): Cannot do this because of the frame unpacker
-  // vps_attribute_video_present_flag(j, true);
-
   auto &ai = atlas(j).attribute_information;
   if (!ai) {
     ai = AttributeInformation{};

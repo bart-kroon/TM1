@@ -60,8 +60,8 @@ public:
   virtual auto optimizeParams(const SourceParams &params) -> ViewOptimizerParams = 0;
 
   // Optimize a frame in the intra period
-  [[nodiscard]] virtual auto optimizeFrame(Common::MVD16Frame views) const
-      -> Common::MVD16Frame = 0;
+  [[nodiscard]] virtual auto optimizeFrame(Common::DeepFrameList views) const
+      -> Common::DeepFrameList = 0;
 };
 } // namespace TMIV::ViewOptimizer
 

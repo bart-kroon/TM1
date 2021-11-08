@@ -108,7 +108,7 @@ auto isLowQuality(float blendingFactor, float maxOutlierRatio,
 }
 
 auto isLowDepthQuality(const MivBitstream::ViewParamsList &vpl,
-                       const Common::MVD16Frame &sourceViews, float blendingFactor,
+                       const Common::DeepFrameList &sourceViews, float blendingFactor,
                        float maxOutlierRatio) -> bool {
   const auto sourceHelperList = Renderer::ProjectionHelperList{vpl};
 
@@ -123,12 +123,13 @@ auto isLowDepthQuality(const MivBitstream::ViewParamsList &vpl,
     const auto &sourceHelper = sourceHelperList[viewIdx];
     const auto occupancyTransform = MivBitstream::OccupancyTransform{sourceHelper.getViewParams()};
 
+    const auto geoBitDepth = sourceViews[viewIdx].geometry.getBitDepth();
     auto sourceDepthExpanded =
-        MivBitstream::DepthTransform{sourceHelper.getViewParams().dq, 16}.expandDepth(
-            sourceViews[viewIdx].depth);
+        MivBitstream::DepthTransform{sourceHelper.getViewParams().dq, geoBitDepth}.expandDepth(
+            sourceViews[viewIdx].geometry);
 
-    std::transform(sourceViews[viewIdx].depth.getPlane(0).begin(),
-                   sourceViews[viewIdx].depth.getPlane(0).end(), sourceDepthExpanded.begin(),
+    std::transform(sourceViews[viewIdx].geometry.getPlane(0).begin(),
+                   sourceViews[viewIdx].geometry.getPlane(0).end(), sourceDepthExpanded.begin(),
                    sourceDepthExpanded.begin(), [&](uint16_t normDisp, float depthValue) {
                      return occupancyTransform.occupant(normDisp) ? depthValue : NAN;
                    });
@@ -181,7 +182,8 @@ DepthQualityAssessor::DepthQualityAssessor(const Common::Json & /*unused*/,
 }
 
 auto DepthQualityAssessor::isLowDepthQuality(const MivBitstream::ViewParamsList &vpl,
-                                             const Common::MVD16Frame &sourceViews) const -> bool {
+                                             const Common::DeepFrameList &sourceViews) const
+    -> bool {
   return TMIV::DepthQualityAssessor::isLowDepthQuality(vpl, sourceViews, m_blendingFactor,
                                                        m_maxOutlierRatio);
 }

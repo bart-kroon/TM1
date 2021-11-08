@@ -104,7 +104,7 @@ private:
   auto decodePatchParamsList(size_t k, MivBitstream::PatchParamsList &ppl) const
       -> const MivBitstream::PatchParamsList &;
   [[nodiscard]] auto decodeBlockToPatchMap(size_t k, const MivBitstream::PatchParamsList &ppl) const
-      -> Common::BlockToPatchMap;
+      -> Common::Frame<Common::PatchIdx>;
 
   V3cUnitBuffer m_inputBuffer;
   FrameServer m_frameServer;

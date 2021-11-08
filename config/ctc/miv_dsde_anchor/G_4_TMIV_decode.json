@@ -7,9 +7,9 @@
     "DecoderMethod": "Decoder",
     "inputBitstreamPathFmt": "G{0}/{1}/{2}/TMIV_G{0}_{1}_{2}.bit",
     "inputDirectory": ".",
-    "inputGeometryVideoFramePathFmt": "G{0}/{1}/{2}/TMIV_G{0}_{1}_{2}_geo_c{3:02}_{4}x{5}_yuv420p10le.yuv",
-    "inputTextureVideoFramePathFmt": "G{0}/{1}/{2}/TMIV_G{0}_{1}_{2}_tex_c{3:02}_{4}x{5}_yuv420p10le.yuv",
+    "inputGeometryVideoFramePathFmt": "G{0}/{1}/{2}/TMIV_G{0}_{1}_{2}_geo_c{3:02}_{4}x{5}_{6}.yuv",
+    "inputTextureVideoFramePathFmt": "G{0}/{1}/{2}/TMIV_G{0}_{1}_{2}_tex_c{3:02}_{4}x{5}_{6}.yuv",
     "outputDirectory": ".",
-    "outputMultiviewTexturePathFmt": "G{0}/{1}/{2}/TMIV_G{0}_{1}_{2}_tex_pv{3:02}_{4}x{5}_yuv420p10le.yuv",
+    "outputMultiviewTexturePathFmt": "G{0}/{1}/{2}/TMIV_G{0}_{1}_{2}_tex_pv{3:02}_{4}x{5}_{6}.yuv",
     "outputSequenceConfigPathFmt": "G{0}/{1}/{2}/TMIV_G{0}_{1}_{2}_{3:04}.json"
 }

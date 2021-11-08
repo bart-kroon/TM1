@@ -35,9 +35,9 @@
 
 using namespace std::string_literals;
 
-namespace TMIV::IO::detail {
-constexpr auto videoComponentName(MivBitstream::VuhUnitType vuhUnitType,
-                                  MivBitstream::AiAttributeTypeId attrTypeId) {
+namespace TMIV::IO {
+auto videoComponentName(MivBitstream::VuhUnitType vuhUnitType,
+                        MivBitstream::AiAttributeTypeId attrTypeId) -> char const * {
   switch (vuhUnitType) {
   case MivBitstream::VuhUnitType::V3C_OVD:
     return "Occupancy";
@@ -64,4 +64,30 @@ constexpr auto videoComponentName(MivBitstream::VuhUnitType vuhUnitType,
     UNREACHABLE;
   }
 }
-} // namespace TMIV::IO::detail
+
+auto videoFormatString(Common::ColorFormat colorFormat, uint32_t bitDepth) -> std::string {
+  std::string colorFormatString;
+
+  switch (colorFormat) {
+  case Common::ColorFormat::YUV400:
+    colorFormatString = "gray"s;
+    break;
+  case Common::ColorFormat::YUV420:
+    colorFormatString = "yuv420p"s;
+    break;
+  case Common::ColorFormat::YUV444:
+    colorFormatString = "yuv444p"s;
+    break;
+  default:
+    UNREACHABLE;
+  }
+
+  if (bitDepth == 8) {
+    return colorFormatString;
+  }
+  if (bitDepth < 8) {
+    return fmt::format("{}{}", colorFormatString, bitDepth);
+  }
+  return fmt::format("{}{}le", colorFormatString, bitDepth);
+}
+} // namespace TMIV::IO

@@ -39,13 +39,13 @@
 
 namespace {
 const auto encodeCoordinates = [](uint16_t w, uint16_t h) {
-  auto frame = std::pair{TMIV::Common::Texture444Frame::yuv444({w, h}, 10),
-                         TMIV::Common::Depth16Frame::lumaOnly({w, h}, 16)};
+  auto frame = TMIV::Common::RendererFrame{TMIV::Common::Frame<>::yuv444({w, h}, 10),
+                                           TMIV::Common::Frame<>::lumaOnly({w, h}, 16)};
 
   for (uint16_t y = 0; y < h; ++y) {
     for (uint16_t x = 0; x < w; ++x) {
-      frame.first.getPlane(0)(y, x) = x;
-      frame.first.getPlane(1)(y, x) = y;
+      frame.texture.getPlane(0)(y, x) = x;
+      frame.texture.getPlane(1)(y, x) = y;
     }
   }
   return frame;
@@ -60,37 +60,37 @@ TEST_CASE("inplacePush") {
     const auto hi = GENERATE(0, 1, 2, 32);
 
     auto count = 0;
-    auto in = std::pair{TMIV::Common::Texture444Frame::yuv444({wi, hi}, 10),
-                        TMIV::Common::Depth16Frame::lumaOnly({wi, hi}, 16)};
-    auto out = TMIV::Common::Texture444Depth16Frame{};
+    auto in = TMIV::Common::RendererFrame{TMIV::Common::Frame<>::yuv444({wi, hi}, 10),
+                                          TMIV::Common::Frame<>::lumaOnly({wi, hi}, 16)};
+    auto out = TMIV::Common::RendererFrame{};
 
     TMIV::Renderer::PushPull::inplacePushFrame(in, out, [&count](const auto & /* unused */) {
       ++count;
       return YUVD{};
     });
 
-    REQUIRE(count == out.first.getWidth() * out.first.getHeight());
+    REQUIRE(count == out.texture.getWidth() * out.texture.getHeight());
   }
 
   SECTION("inplacePush resizes the output frame") {
     const auto wi = GENERATE(0, 1, 2, 13);
     const auto hi = GENERATE(0, 1, 2, 32);
 
-    auto in = std::pair{TMIV::Common::Texture444Frame::yuv444({wi, hi}, 10),
-                        TMIV::Common::Depth16Frame::lumaOnly({wi, hi}, 16)};
-    auto out = TMIV::Common::Texture444Depth16Frame{};
+    auto in = TMIV::Common::RendererFrame{TMIV::Common::Frame<>::yuv444({wi, hi}, 10),
+                                          TMIV::Common::Frame<>::lumaOnly({wi, hi}, 16)};
+    auto out = TMIV::Common::RendererFrame{};
 
     TMIV::Renderer::PushPull::inplacePushFrame(in, out,
                                                [](const auto & /* unused */) { return YUVD{}; });
 
     const auto wo = (wi + 1) / 2;
     const auto ho = (hi + 1) / 2;
-    REQUIRE(out.first.getWidth() == wo);
-    REQUIRE(out.first.getHeight() == ho);
+    REQUIRE(out.texture.getWidth() == wo);
+    REQUIRE(out.texture.getHeight() == ho);
   }
 
   SECTION("inplacePush filters blocks of 2 x 2 pixels down to 1 x 1 pixel") {
-    auto out = TMIV::Common::Texture444Depth16Frame{};
+    auto out = TMIV::Common::RendererFrame{};
     TMIV::Renderer::PushPull::inplacePushFrame(
         encodeCoordinates(4, 6), out, [](const std::array<YUVD, 4> &pixelValues) {
           // In this test case, pixel positions are encoded in the pixel values, and the checks test
@@ -114,7 +114,7 @@ TEST_CASE("inplacePush") {
   }
 
   SECTION("inplacePush repeats the right border when the input has odd width") {
-    auto out = TMIV::Common::Texture444Depth16Frame{};
+    auto out = TMIV::Common::RendererFrame{};
     TMIV::Renderer::PushPull::inplacePushFrame(
         encodeCoordinates(5, 4), out, [](const std::array<YUVD, 4> &pixelValues) {
           REQUIRE((std::get<0>(pixelValues[0]) < 4 || std::get<0>(pixelValues[1]) == 4));
@@ -123,7 +123,7 @@ TEST_CASE("inplacePush") {
   }
 
   SECTION("inplacePush repeats the bottom border when the input has odd height") {
-    auto out = TMIV::Common::Texture444Depth16Frame{};
+    auto out = TMIV::Common::RendererFrame{};
     TMIV::Renderer::PushPull::inplacePushFrame(
         encodeCoordinates(4, 5), out, [](const std::array<YUVD, 4> &pixelValues) {
           REQUIRE((std::get<1>(pixelValues[0]) < 4 || std::get<1>(pixelValues[2]) == 4));
@@ -132,20 +132,20 @@ TEST_CASE("inplacePush") {
   }
 
   SECTION("inplacePush writes the output of the filter into the output frame") {
-    auto out = TMIV::Common::Texture444Depth16Frame{};
+    auto out = TMIV::Common::RendererFrame{};
     TMIV::Renderer::PushPull::inplacePushFrame(
         encodeCoordinates(4, 4), out,
         [](const std::array<YUVD, 4> &pixelValues) { return pixelValues[3]; });
 
-    REQUIRE(out.first.getPlane(0)(0, 0) == 1);
-    REQUIRE(out.first.getPlane(0)(0, 1) == 3);
-    REQUIRE(out.first.getPlane(0)(1, 0) == 1);
-    REQUIRE(out.first.getPlane(0)(1, 1) == 3);
+    REQUIRE(out.texture.getPlane(0)(0, 0) == 1);
+    REQUIRE(out.texture.getPlane(0)(0, 1) == 3);
+    REQUIRE(out.texture.getPlane(0)(1, 0) == 1);
+    REQUIRE(out.texture.getPlane(0)(1, 1) == 3);
 
-    REQUIRE(out.first.getPlane(1)(0, 0) == 1);
-    REQUIRE(out.first.getPlane(1)(0, 1) == 1);
-    REQUIRE(out.first.getPlane(1)(1, 0) == 3);
-    REQUIRE(out.first.getPlane(1)(1, 1) == 3);
+    REQUIRE(out.texture.getPlane(1)(0, 0) == 1);
+    REQUIRE(out.texture.getPlane(1)(0, 1) == 1);
+    REQUIRE(out.texture.getPlane(1)(1, 0) == 3);
+    REQUIRE(out.texture.getPlane(1)(1, 1) == 3);
   }
 }
 
@@ -155,16 +155,17 @@ TEST_CASE("inplacePull") {
     const auto h = GENERATE(0, 1, 2, 32);
 
     auto count = 0;
-    auto in = std::pair{TMIV::Common::Texture444Frame::yuv444({(w + 1) / 2, (h + 1) / 2}, 10),
-                        TMIV::Common::Depth16Frame::lumaOnly({(w + 1) / 2, (h + 1) / 2}, 10)};
-    auto out = std::pair{TMIV::Common::Texture444Frame::yuv444({w, h}, 10),
-                         TMIV::Common::Depth16Frame::lumaOnly({w, h}, 10)};
+    auto in = TMIV::Common::RendererFrame{
+        TMIV::Common::Frame<>::yuv444({(w + 1) / 2, (h + 1) / 2}, 10),
+        TMIV::Common::Frame<>::lumaOnly({(w + 1) / 2, (h + 1) / 2}, 10)};
+    auto out = TMIV::Common::RendererFrame{TMIV::Common::Frame<>::yuv444({w, h}, 10),
+                                           TMIV::Common::Frame<>::lumaOnly({w, h}, 10)};
     TMIV::Renderer::PushPull::inplacePullFrame(in, out, [&count](const auto &.../* unused */) {
       ++count;
       return YUVD{};
     });
 
-    REQUIRE(count == out.first.getWidth() * out.first.getHeight());
+    REQUIRE(count == out.texture.getWidth() * out.texture.getHeight());
   }
 
   SECTION("inplacePull allows for bilinear interpolation and border repeat") {
@@ -175,8 +176,8 @@ TEST_CASE("inplacePull") {
     auto countY = std::array<std::array<int32_t, 3>, 3>{};
 
     const auto in = encodeCoordinates(3, 3);
-    auto out = std::pair{TMIV::Common::Texture444Frame::yuv444({6, 6}, 10),
-                         TMIV::Common::Depth16Frame::lumaOnly({6, 6}, 16)};
+    auto out = TMIV::Common::RendererFrame{TMIV::Common::Frame<>::yuv444({6, 6}, 10),
+                                           TMIV::Common::Frame<>::lumaOnly({6, 6}, 16)};
     TMIV::Renderer::PushPull::inplacePullFrame(
         in, out, [&](const std::array<YUVD, 4> &pixelValues, const auto & /* unused */) {
           ++TMIV::Common::at(countX, std::get<0>(pixelValues[0]), std::get<0>(pixelValues[1]));
@@ -217,10 +218,10 @@ TEST_CASE("PushPull") {
           [](const auto & /*unused */, const auto & /*unused */) { return YUVD{}; });
 
       THEN("The filtered image has the same size as the input") {
-        REQUIRE(in.first.getWidth() == out.first.getWidth());
-        REQUIRE(in.first.getHeight() == out.first.getHeight());
-        REQUIRE(in.second.getWidth() == out.second.getWidth());
-        REQUIRE(in.second.getHeight() == out.second.getHeight());
+        REQUIRE(in.texture.getWidth() == out.texture.getWidth());
+        REQUIRE(in.texture.getHeight() == out.texture.getHeight());
+        REQUIRE(in.geometry.getWidth() == out.geometry.getWidth());
+        REQUIRE(in.geometry.getHeight() == out.geometry.getHeight());
       }
 
       THEN("The number of layers in the pyramid is accessible") {
@@ -232,8 +233,8 @@ TEST_CASE("PushPull") {
         int32_t hh = h;
 
         for (size_t i = 0; i < pushPull.numLayers(); ++i) {
-          REQUIRE(pushPull.layer(i).first.getWidth() == ww);
-          REQUIRE(pushPull.layer(i).first.getHeight() == hh);
+          REQUIRE(pushPull.layer(i).texture.getWidth() == ww);
+          REQUIRE(pushPull.layer(i).texture.getHeight() == hh);
           ww = (ww + 1) / 2;
           hh = (hh + 1) / 2;
         }

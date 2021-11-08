@@ -51,11 +51,11 @@ public:
   [[nodiscard]] auto filterBlockToPatchMap(const MivBitstream::AccessUnit &frame,
                                            const MivBitstream::AtlasAccessUnit &atlas,
                                            const MivBitstream::ViewParams &viewportParams) const
-      -> Common::BlockToPatchMap override;
+      -> Common::Frame<Common::PatchIdx> override;
 
 private:
-  static void inplaceErasePatch(Common::BlockToPatchMap &patchMap,
-                                const MivBitstream::PatchParams &patch, uint16_t patchId,
+  static void inplaceErasePatch(Common::Frame<Common::PatchIdx> &patchMap,
+                                const MivBitstream::PatchParams &patch, Common::PatchIdx patchId,
                                 const MivBitstream::AtlasSequenceParameterSetRBSP &asps);
 };
 } // namespace TMIV::Renderer

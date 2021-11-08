@@ -1,4 +1,6 @@
 {
+    "bitDepthGeometryVideo": 10,
+    "bitDepthTextureVideo": 10,
     "blockSizeDepthQualityDependent": [ 16, 32 ],
     "configDirectory": "config",
     "colorCorrectionEnabledFlag": false,
@@ -17,7 +19,7 @@
             "outputAdditionalViews": true
         },
         "dilate": 16,
-        "depthOccThresholdIfSet": 64,
+        "depthOccThresholdIfSet": 0.0625,
         "HierarchicalPruner": {
             "depthParameter": 50,
             "dilate": 5,
@@ -68,7 +70,7 @@
     "numGroups": 1,
     "oneViewPerAtlasFlag": false,
     "outputBitstreamPathFmt": "N{0}/{1}/TMIV_N{0}_{1}.bit",
-    "outputGeometryVideoDataPathFmt": "N{0}/{1}/TMIV_N{0}_{1}_geo_c{3:02}_{4}x{5}_yuv420p10le.yuv",
-    "outputTextureVideoDataPathFmt": "N{0}/{1}/TMIV_N{0}_{1}_tex_c{3:02}_{4}x{5}_yuv420p10le.yuv",
+    "outputGeometryVideoDataPathFmt": "N{0}/{1}/TMIV_N{0}_{1}_geo_c{3:02}_{4}x{5}_{6}.yuv",
+    "outputTextureVideoDataPathFmt": "N{0}/{1}/TMIV_N{0}_{1}_tex_c{3:02}_{4}x{5}_{6}.yuv",
     "outputDirectory": "."
 }

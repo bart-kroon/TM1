@@ -333,7 +333,7 @@ TEST_CASE("Decoder::PreRenderer") {
 
     CHECK(atlas.attrFrameNF[0].getWidth() == 20);
     CHECK(atlas.attrFrameNF[0].getHeight() == 10);
-    CHECK(atlas.attrFrameNF[0].getBitDepth() == 6);
+    CHECK(atlas.attrFrameNF[0].getBitDepth() == 7);
     CHECK(atlas.attrFrameNF[0].getColorFormat() == TMIV::Common::ColorFormat::YUV444);
 
     CHECK(std::accumulate(atlas.attrFrameNF[0].getPlane(0).cbegin(),
@@ -345,7 +345,108 @@ TEST_CASE("Decoder::PreRenderer") {
 
     CHECK(atlas.texFrame.getWidth() == 20);
     CHECK(atlas.texFrame.getHeight() == 10);
-    CHECK(atlas.texFrame.getBitDepth() == 6);
+    CHECK(atlas.texFrame.getBitDepth() == 7);
+    CHECK(atlas.texFrame.getColorFormat() == TMIV::Common::ColorFormat::YUV444);
+
+    CHECK(std::accumulate(atlas.texFrame.getPlane(0).cbegin(), atlas.texFrame.getPlane(0).cend(),
+                          uint32_t{}) == 5119);
+    CHECK(std::accumulate(atlas.texFrame.getPlane(1).cbegin(), atlas.texFrame.getPlane(1).cend(),
+                          uint32_t{}) == 7080);
+    CHECK(std::accumulate(atlas.texFrame.getPlane(2).cbegin(), atlas.texFrame.getPlane(2).cend(),
+                          uint32_t{}) == 7280);
+  }
+
+  SECTION("Texture and 4 x 2 downscaled geometry") {
+    const auto unit = test::createUnit();
+
+    frame.vps.vps_frame_width({}, 20)
+        .vps_frame_height({}, 10)
+        .vps_geometry_video_present_flag({}, true)
+        .geometry_information({})
+        .gi_geometry_2d_bit_depth_minus1(6);
+    frame.vps.vps_attribute_video_present_flag({}, true)
+        .attribute_information({})
+        .ai_attribute_count(1)
+        .ai_attribute_2d_bit_depth_minus1(0, 6)
+        .ai_attribute_dimension_minus1(0, 2)
+        .ai_attribute_type_id(0, TMIV::MivBitstream::AiAttributeTypeId::ATTR_TEXTURE);
+    frame.vps.vps_miv_extension().vme_geometry_scale_enabled_flag(true);
+
+    auto &atlas = frame.atlas.back();
+
+    atlas.asps.asps_frame_width(20)
+        .asps_frame_height(10)
+        .asps_log2_patch_packing_block_size(1)
+        .asps_miv_extension()
+        .asme_geometry_scale_enabled_flag(true)
+        .asme_geometry_scale_factor_x_minus1(3)
+        .asme_geometry_scale_factor_y_minus1(1);
+
+    atlas.blockToPatchMap.createY({10, 5});
+
+    atlas.decGeoFrame.createY({5, 5}, 7);
+
+    for (int32_t i = 0; i < 5; ++i) {
+      for (int32_t j = 0; j < 5; ++j) {
+        atlas.decGeoFrame.getPlane(0)(i, j) = static_cast<uint8_t>(i + 4 * j);
+      }
+    }
+
+    CHECK(std::accumulate(atlas.decGeoFrame.getPlane(0).cbegin(),
+                          atlas.decGeoFrame.getPlane(0).cend(), uint32_t{}) == 250);
+
+    atlas.decAttrFrame.emplace_back().createYuv420({16, 8}, 6);
+
+    for (int32_t i = 0; i < 7; ++i) {
+      for (int32_t j = 0; j < 15; ++j) {
+        atlas.decAttrFrame.back().getPlane(0)(i, j) = static_cast<uint8_t>(i + 4 * j);
+        atlas.decAttrFrame.back().getPlane(1)(i / 2, j / 2) = static_cast<uint8_t>(i + 4 * j + 1);
+        atlas.decAttrFrame.back().getPlane(2)(i / 2, j / 2) = static_cast<uint8_t>(i + 4 * j + 2);
+      }
+    }
+
+    CHECK(std::accumulate(atlas.decAttrFrame.back().getPlane(0).cbegin(),
+                          atlas.decAttrFrame.back().getPlane(0).cend(), uint32_t{}) == 3255);
+    CHECK(std::accumulate(atlas.decAttrFrame.back().getPlane(1).cbegin(),
+                          atlas.decAttrFrame.back().getPlane(1).cend(), uint32_t{}) == 1160);
+    CHECK(std::accumulate(atlas.decAttrFrame.back().getPlane(2).cbegin(),
+                          atlas.decAttrFrame.back().getPlane(2).cend(), uint32_t{}) == 1192);
+
+    unit.preRenderFrame(frame);
+
+    REQUIRE(atlas.geoFrameNF.getWidth() == 5);
+    REQUIRE(atlas.geoFrameNF.getHeight() == 5);
+    REQUIRE(atlas.geoFrameNF.getBitDepth() == 7);
+    REQUIRE(atlas.geoFrameNF.getColorFormat() == TMIV::Common::ColorFormat::YUV400);
+
+    CHECK(std::accumulate(atlas.geoFrameNF.getPlane(0).cbegin(),
+                          atlas.geoFrameNF.getPlane(0).cend(), uint32_t{}) == 250);
+
+    REQUIRE(atlas.geoFrame.getWidth() == 20);
+    REQUIRE(atlas.geoFrame.getHeight() == 10);
+    REQUIRE(atlas.geoFrame.getBitDepth() == 7);
+    REQUIRE(atlas.geoFrame.getColorFormat() == TMIV::Common::ColorFormat::YUV400);
+
+    CHECK(std::accumulate(atlas.geoFrame.getPlane(0).cbegin(), atlas.geoFrame.getPlane(0).cend(),
+                          uint32_t{}) == 1960);
+
+    REQUIRE(atlas.attrFrameNF.size() == 1);
+
+    CHECK(atlas.attrFrameNF[0].getWidth() == 20);
+    CHECK(atlas.attrFrameNF[0].getHeight() == 10);
+    CHECK(atlas.attrFrameNF[0].getBitDepth() == 7);
+    CHECK(atlas.attrFrameNF[0].getColorFormat() == TMIV::Common::ColorFormat::YUV444);
+
+    CHECK(std::accumulate(atlas.attrFrameNF[0].getPlane(0).cbegin(),
+                          atlas.attrFrameNF[0].getPlane(0).cend(), uint32_t{}) == 5119);
+    CHECK(std::accumulate(atlas.attrFrameNF[0].getPlane(1).cbegin(),
+                          atlas.attrFrameNF[0].getPlane(1).cend(), uint32_t{}) == 7080);
+    CHECK(std::accumulate(atlas.attrFrameNF[0].getPlane(2).cbegin(),
+                          atlas.attrFrameNF[0].getPlane(2).cend(), uint32_t{}) == 7280);
+
+    CHECK(atlas.texFrame.getWidth() == 20);
+    CHECK(atlas.texFrame.getHeight() == 10);
+    CHECK(atlas.texFrame.getBitDepth() == 7);
     CHECK(atlas.texFrame.getColorFormat() == TMIV::Common::ColorFormat::YUV444);
 
     CHECK(std::accumulate(atlas.texFrame.getPlane(0).cbegin(), atlas.texFrame.getPlane(0).cend(),

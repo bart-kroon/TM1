@@ -79,14 +79,13 @@ Configuration::Configuration(const Common::Json &rootNode, const Common::Json &c
   }
 
   if (haveGeometry && !haveOccupancy) {
-    depthOccThresholdIfSet =
-        componentNode.require("depthOccThresholdIfSet").as<Common::SampleValue>();
+    depthOccThresholdIfSet = componentNode.require("depthOccThresholdIfSet").as<double>();
 
-    if (depthOccThresholdIfSet < 1) {
+    if (!(0.0 < depthOccThresholdIfSet)) {
       throw std::runtime_error("The depthOccThresholdIfSet parameter is only used when the encoder "
                                "needs to use occupancy. The value 0 is not allowed.");
     }
-    if (depthOccThresholdIfSet >= 500) {
+    if (0.5 <= depthOccThresholdIfSet) {
       throw std::runtime_error(
           "The encoder takes a margin equal to the threshold, so "
           "setting the threshold this high will make it impossible to encode depth.");
@@ -151,6 +150,22 @@ Configuration::Configuration(const Common::Json &rootNode, const Common::Json &c
     break;
   default:
     throw std::runtime_error(fmt::format("The {} toolset IDC is not supported", toolsetIdc));
+  }
+
+  if (haveOccupancy) {
+    occBitDepth = rootNode.require("bitDepthOccupancyVideo").as<uint32_t>();
+  }
+
+  if (haveGeometry) {
+    geoBitDepth = rootNode.require("bitDepthGeometryVideo").as<uint32_t>();
+  }
+
+  if (haveTexture) {
+    texBitDepth = rootNode.require("bitDepthTextureVideo").as<uint32_t>();
+  }
+
+  if (framePacking) {
+    pacBitDepth = std::max({occBitDepth, geoBitDepth, texBitDepth});
   }
 }
 } // namespace TMIV::Encoder

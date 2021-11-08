@@ -342,8 +342,8 @@ TEST_CASE("VPS with two atlases") {
                                  "V3C_AVD vps:0 atlas:0 attr:0 part:0 map:0 aux:false");
   requireThatNextV3cUnitContains(result, ssvh,
                                  "V3C_AVD vps:0 atlas:0 attr:1 part:0 map:0 aux:false");
-  requireThatNextV3cUnitContains(result, ssvh, "V3C_GVD vps:0 atlas:1 map:0 aux:false");
   requireThatNextV3cUnitContains(result, ssvh, "V3C_OVD vps:0 atlas:1");
+  requireThatNextV3cUnitContains(result, ssvh, "V3C_GVD vps:0 atlas:1 map:0 aux:false");
 }
 
 TEST_CASE("VPS with two atlases, one with packed video (no calling add packing information from "

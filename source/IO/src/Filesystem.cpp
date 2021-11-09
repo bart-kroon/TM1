@@ -31,66 +31,24 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/IO/IO.h>
-
-#include "DependencyInjector.h"
 #include "Filesystem.h"
 
-using namespace std::string_literals;
-
 namespace TMIV::IO {
-auto videoComponentName(MivBitstream::VuhUnitType vuhUnitType,
-                        MivBitstream::AiAttributeTypeId attrTypeId) -> std::string {
-  switch (vuhUnitType) {
-  case MivBitstream::VuhUnitType::V3C_OVD:
-    return "Occupancy"s;
-  case MivBitstream::VuhUnitType::V3C_GVD:
-    return "Geometry"s;
-  case MivBitstream::VuhUnitType::V3C_PVD:
-    return "Packed"s;
-  case MivBitstream::VuhUnitType::V3C_AVD:
-    switch (attrTypeId) {
-    case MivBitstream::AiAttributeTypeId::ATTR_TEXTURE:
-      return "Texture"s;
-    case MivBitstream::AiAttributeTypeId::ATTR_MATERIAL_ID:
-      return "MaterialId"s;
-    case MivBitstream::AiAttributeTypeId::ATTR_TRANSPARENCY:
-      return "Transparency"s;
-    case MivBitstream::AiAttributeTypeId::ATTR_REFLECTANCE:
-      return "Reflectance"s;
-    case MivBitstream::AiAttributeTypeId::ATTR_NORMAL:
-      return "Normal"s;
-    default:
-      UNREACHABLE;
-    }
-  default:
-    UNREACHABLE;
-  }
+auto Filesystem::ifstream(const std::filesystem::path &path, std::ios_base::openmode mode)
+    -> std::shared_ptr<std::istream> {
+  return std::make_unique<std::ifstream>(path, mode);
 }
 
-auto videoFormatString(Common::ColorFormat colorFormat, uint32_t bitDepth) -> std::string {
-  std::string colorFormatString;
+auto Filesystem::ofstream(const std::filesystem::path &path, std::ios_base::openmode mode)
+    -> std::shared_ptr<std::ostream> {
+  return std::make_unique<std::ofstream>(path, mode);
+}
 
-  switch (colorFormat) {
-  case Common::ColorFormat::YUV400:
-    colorFormatString = "gray"s;
-    break;
-  case Common::ColorFormat::YUV420:
-    colorFormatString = "yuv420p"s;
-    break;
-  case Common::ColorFormat::YUV444:
-    colorFormatString = "yuv444p"s;
-    break;
-  default:
-    UNREACHABLE;
-  }
+void Filesystem::create_directories(const std::filesystem::path &p) {
+  std::filesystem::create_directories(p);
+}
 
-  if (bitDepth == 8) {
-    return colorFormatString;
-  }
-  if (bitDepth < 8) {
-    return fmt::format("{}{}", colorFormatString, bitDepth);
-  }
-  return fmt::format("{}{}le", colorFormatString, bitDepth);
+auto Filesystem::exists(const std::filesystem::path &p) -> bool {
+  return std::filesystem::exists(p);
 }
 } // namespace TMIV::IO

@@ -72,16 +72,14 @@ auto loadMpiTextureMpiLayer(const Common::Json &config, const Placeholders &plac
 
 auto loadMpiTransparencyMpiLayer(const Common::Json &config, const Placeholders &placeholders,
                                  const MivBitstream::SequenceConfig &sc, int32_t frameIdx,
-                                 int32_t mpiLayerIndex, int32_t nbMpiLayers)
-    -> Common::Frame<uint8_t>;
+                                 int32_t mpiLayerIndex, int32_t nbMpiLayers) -> Common::Frame<>;
 
 [[nodiscard]] auto inputBitstreamPath(const Common::Json &config, const Placeholders &placeholders)
     -> std::filesystem::path;
 
-[[nodiscard]] auto inputVideoSubBitstreamPath(const Common::Json &config,
-                                              const Placeholders &placeholders,
-                                              MivBitstream::V3cUnitHeader vuh,
-                                              MivBitstream::AiAttributeTypeId attrTypeId)
+[[nodiscard]] auto inputVideoSubBitstreamPath(
+    const Common::Json &config, const Placeholders &placeholders, MivBitstream::V3cUnitHeader vuh,
+    MivBitstream::AiAttributeTypeId attrTypeId = MivBitstream::AiAttributeTypeId::ATTR_UNSPECIFIED)
     -> std::filesystem::path;
 
 void saveOutOfBandVideoFrame(
@@ -108,7 +106,8 @@ auto outputBitstreamPath(const Common::Json &config, const Placeholders &placeho
     -> std::filesystem::path;
 
 auto videoComponentName(MivBitstream::VuhUnitType vuhUnitType,
-                        MivBitstream::AiAttributeTypeId attrTypeId) -> char const *;
+                        MivBitstream::AiAttributeTypeId attrTypeId =
+                            MivBitstream::AiAttributeTypeId::ATTR_UNSPECIFIED) -> std::string;
 
 auto videoFormatString(Common::ColorFormat colorFormat, uint32_t bitDepth) -> std::string;
 

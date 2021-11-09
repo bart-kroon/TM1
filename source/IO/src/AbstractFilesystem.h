@@ -31,66 +31,35 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/IO/IO.h>
+#ifndef TMIV_IO_ABSTRACT_FILESYSTEM_H
+#define TMIV_IO_ABSTRACT_FILESYSTEM_H
 
-#include "DependencyInjector.h"
-#include "Filesystem.h"
-
-using namespace std::string_literals;
+#include <filesystem>
+#include <iosfwd>
 
 namespace TMIV::IO {
-auto videoComponentName(MivBitstream::VuhUnitType vuhUnitType,
-                        MivBitstream::AiAttributeTypeId attrTypeId) -> std::string {
-  switch (vuhUnitType) {
-  case MivBitstream::VuhUnitType::V3C_OVD:
-    return "Occupancy"s;
-  case MivBitstream::VuhUnitType::V3C_GVD:
-    return "Geometry"s;
-  case MivBitstream::VuhUnitType::V3C_PVD:
-    return "Packed"s;
-  case MivBitstream::VuhUnitType::V3C_AVD:
-    switch (attrTypeId) {
-    case MivBitstream::AiAttributeTypeId::ATTR_TEXTURE:
-      return "Texture"s;
-    case MivBitstream::AiAttributeTypeId::ATTR_MATERIAL_ID:
-      return "MaterialId"s;
-    case MivBitstream::AiAttributeTypeId::ATTR_TRANSPARENCY:
-      return "Transparency"s;
-    case MivBitstream::AiAttributeTypeId::ATTR_REFLECTANCE:
-      return "Reflectance"s;
-    case MivBitstream::AiAttributeTypeId::ATTR_NORMAL:
-      return "Normal"s;
-    default:
-      UNREACHABLE;
-    }
-  default:
-    UNREACHABLE;
-  }
-}
+class AbstractFilesystem {
+public:
+  AbstractFilesystem() = default;
 
-auto videoFormatString(Common::ColorFormat colorFormat, uint32_t bitDepth) -> std::string {
-  std::string colorFormatString;
+  AbstractFilesystem(const AbstractFilesystem &other) = delete;
+  AbstractFilesystem(AbstractFilesystem &&other) = default;
+  auto operator=(const AbstractFilesystem &other) -> AbstractFilesystem & = delete;
+  auto operator=(AbstractFilesystem &&other) -> AbstractFilesystem & = default;
+  virtual ~AbstractFilesystem() = default;
 
-  switch (colorFormat) {
-  case Common::ColorFormat::YUV400:
-    colorFormatString = "gray"s;
-    break;
-  case Common::ColorFormat::YUV420:
-    colorFormatString = "yuv420p"s;
-    break;
-  case Common::ColorFormat::YUV444:
-    colorFormatString = "yuv444p"s;
-    break;
-  default:
-    UNREACHABLE;
-  }
+  virtual auto ifstream(const std::filesystem::path &path,
+                        std::ios_base::openmode mode = std::ios_base::in)
+      -> std::shared_ptr<std::istream> = 0;
 
-  if (bitDepth == 8) {
-    return colorFormatString;
-  }
-  if (bitDepth < 8) {
-    return fmt::format("{}{}", colorFormatString, bitDepth);
-  }
-  return fmt::format("{}{}le", colorFormatString, bitDepth);
-}
+  virtual auto ofstream(const std::filesystem::path &path,
+                        std::ios_base::openmode mode = std::ios_base::out)
+      -> std::shared_ptr<std::ostream> = 0;
+
+  virtual void create_directories(const std::filesystem::path &p) = 0;
+
+  virtual auto exists(const std::filesystem::path &p) -> bool = 0;
+};
 } // namespace TMIV::IO
+
+#endif

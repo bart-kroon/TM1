@@ -23,7 +23,21 @@ create_tmiv_library(
         "src/IO.cpp"
         "src/load.cpp"
         "src/save.cpp"
+        "src/DependencyInjector.cpp"
+        "src/Filesystem.cpp"
     PUBLIC
         TMIV::MivBitstreamLib
         ${CppFilesystemLib}
+    )
+
+create_catch2_unit_test(
+    TARGET
+        IOTest
+    SOURCES
+        "src/IO.test.cpp"
+        "src/load.test.cpp"
+        "src/save.test.cpp"
+        "src/FakeFilesystem.cpp"
+    PRIVATE
+        TMIV::IOLib
     )

@@ -82,6 +82,6 @@ void MultipleFrameRenderer::renderFrame(MivBitstream::AccessUnit frame, int32_t 
 
   const auto viewport = m_renderer->renderFrame(frame, viewportParams);
   IO::saveViewport(m_config, m_placeholders, outputFrameIndex, cameraName,
-                   {yuv420(viewport.texture), viewport.geometry});
+                   {yuv420(viewport.texture), yuv420(viewport.geometry)});
 }
 } // namespace TMIV::Renderer::Front

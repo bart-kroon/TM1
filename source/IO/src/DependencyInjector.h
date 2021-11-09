@@ -31,66 +31,24 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/IO/IO.h>
+#ifndef TMIV_IO_DEPENDENCY_INJECTOR_H
+#define TMIV_IO_DEPENDENCY_INJECTOR_H
 
-#include "DependencyInjector.h"
-#include "Filesystem.h"
-
-using namespace std::string_literals;
+#include "AbstractFilesystem.h"
 
 namespace TMIV::IO {
-auto videoComponentName(MivBitstream::VuhUnitType vuhUnitType,
-                        MivBitstream::AiAttributeTypeId attrTypeId) -> std::string {
-  switch (vuhUnitType) {
-  case MivBitstream::VuhUnitType::V3C_OVD:
-    return "Occupancy"s;
-  case MivBitstream::VuhUnitType::V3C_GVD:
-    return "Geometry"s;
-  case MivBitstream::VuhUnitType::V3C_PVD:
-    return "Packed"s;
-  case MivBitstream::VuhUnitType::V3C_AVD:
-    switch (attrTypeId) {
-    case MivBitstream::AiAttributeTypeId::ATTR_TEXTURE:
-      return "Texture"s;
-    case MivBitstream::AiAttributeTypeId::ATTR_MATERIAL_ID:
-      return "MaterialId"s;
-    case MivBitstream::AiAttributeTypeId::ATTR_TRANSPARENCY:
-      return "Transparency"s;
-    case MivBitstream::AiAttributeTypeId::ATTR_REFLECTANCE:
-      return "Reflectance"s;
-    case MivBitstream::AiAttributeTypeId::ATTR_NORMAL:
-      return "Normal"s;
-    default:
-      UNREACHABLE;
-    }
-  default:
-    UNREACHABLE;
-  }
-}
+class DependencyInjector {
+public:
+  DependencyInjector();
 
-auto videoFormatString(Common::ColorFormat colorFormat, uint32_t bitDepth) -> std::string {
-  std::string colorFormatString;
+  static auto getInstance() -> DependencyInjector &;
 
-  switch (colorFormat) {
-  case Common::ColorFormat::YUV400:
-    colorFormatString = "gray"s;
-    break;
-  case Common::ColorFormat::YUV420:
-    colorFormatString = "yuv420p"s;
-    break;
-  case Common::ColorFormat::YUV444:
-    colorFormatString = "yuv444p"s;
-    break;
-  default:
-    UNREACHABLE;
-  }
+  void filesystem(std::shared_ptr<AbstractFilesystem> value);
+  [[nodiscard]] auto filesystem() -> AbstractFilesystem &;
 
-  if (bitDepth == 8) {
-    return colorFormatString;
-  }
-  if (bitDepth < 8) {
-    return fmt::format("{}{}", colorFormatString, bitDepth);
-  }
-  return fmt::format("{}{}le", colorFormatString, bitDepth);
-}
+private:
+  std::shared_ptr<AbstractFilesystem> m_filesystem;
+};
 } // namespace TMIV::IO
+
+#endif

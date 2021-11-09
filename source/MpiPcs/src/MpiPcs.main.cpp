@@ -116,14 +116,12 @@ private:
       MpiPcs::Frame mpiPcsFrame{viewSize};
 
       for (geometryValue layerId = 0; layerId < layerCount; ++layerId) {
-        auto textureLayer = loadMpiTextureMpiLayer(json(), placeholders(), m_inputSequenceConfig,
-                                                   frameId, layerId, viewParams.nbMpiLayers);
-
-        auto transparencyLayer =
-            loadMpiTransparencyMpiLayer(json(), placeholders(), m_inputSequenceConfig, frameId,
-                                        layerId, viewParams.nbMpiLayers);
-
-        mpiPcsFrame.appendLayer(layerId, {std::move(textureLayer), std::move(transparencyLayer)});
+        mpiPcsFrame.appendLayer(
+            layerId, {yuv420(loadMpiTextureMpiLayer(json(), placeholders(), m_inputSequenceConfig,
+                                                    frameId, layerId, viewParams.nbMpiLayers)),
+                      Common::elementCast<uint8_t>(yuv400(
+                          loadMpiTransparencyMpiLayer(json(), placeholders(), m_inputSequenceConfig,
+                                                      frameId, layerId, viewParams.nbMpiLayers)))});
       }
 
       mpiPcsWriter.append(mpiPcsFrame);

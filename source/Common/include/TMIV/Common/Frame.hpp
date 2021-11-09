@@ -181,7 +181,7 @@ template <typename Element> void octaveUpNearest(const Mat<Element> &from, Mat<E
 } // namespace detail
 
 template <typename Element> auto yuv400(const Frame<Element> &frame) {
-  if (frame.getColorFormat() == ColorFormat::YUV400) {
+  if (frame.empty() || frame.getColorFormat() == ColorFormat::YUV400) {
     return frame;
   }
 
@@ -193,7 +193,7 @@ template <typename Element> auto yuv400(const Frame<Element> &frame) {
 }
 
 template <typename Element> auto yuv420(const Frame<Element> &frame) {
-  if (frame.getColorFormat() == ColorFormat::YUV420) {
+  if (frame.empty() || frame.getColorFormat() == ColorFormat::YUV420) {
     return frame;
   }
 
@@ -222,7 +222,7 @@ template <typename Element> auto yuv420(const Frame<Element> &frame) {
 }
 
 template <typename Element> auto yuv444(const Frame<Element> &frame) {
-  if (frame.getColorFormat() == ColorFormat::YUV444) {
+  if (frame.empty() || frame.getColorFormat() == ColorFormat::YUV444) {
     return frame;
   }
 

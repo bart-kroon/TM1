@@ -57,7 +57,7 @@ ptl_toolset_constraints_present_flag=false
   SECTION("Example 1") {
     x.ptl_tier_flag(true)
         .ptl_profile_codec_group_idc(PtlProfileCodecGroupIdc::HEVC_Main10)
-        .ptl_profile_toolset_idc(PtlProfilePccToolsetIdc::VPCC_Extended)
+        .ptl_profile_toolset_idc(PtlProfileToolsetIdc::VPCC_Extended)
         .ptl_profile_reconstruction_idc(PtlProfileReconstructionIdc::Rec_Unconstrained)
         .ptl_max_decodes_idc(PtlMaxDecodesIdc::max_4)
         .ptl_level_idc(PtlLevelIdc::Level_2_0)
@@ -72,7 +72,7 @@ ptl_profile_codec_group_idc=HEVC Main10
 ptl_profile_toolset_idc=V-PCC Extended
 ptl_profile_reconstruction_idc=Rec Unconstrained
 ptl_max_decodes_idc=max_4
-ptl_level_idc=Level 2.0
+ptl_level_idc=2.0
 ptl_num_sub_profiles=2
 ptl_extended_sub_profile_flag=true
 ptl_sub_profile_idc[ 0 ]=3
@@ -88,7 +88,7 @@ ptl_toolset_constraints_present_flag=false
 
     x.ptl_tier_flag(true)
         .ptl_profile_codec_group_idc(PtlProfileCodecGroupIdc::HEVC_Main10)
-        .ptl_profile_toolset_idc(PtlProfilePccToolsetIdc::VPCC_Extended)
+        .ptl_profile_toolset_idc(PtlProfileToolsetIdc::VPCC_Extended)
         .ptl_profile_reconstruction_idc(PtlProfileReconstructionIdc::Rec_Unconstrained)
         .ptl_max_decodes_idc(PtlMaxDecodesIdc::max_4)
         .ptl_level_idc(PtlLevelIdc::Level_2_0)
@@ -103,7 +103,7 @@ ptl_profile_codec_group_idc=HEVC Main10
 ptl_profile_toolset_idc=V-PCC Extended
 ptl_profile_reconstruction_idc=Rec Unconstrained
 ptl_max_decodes_idc=max_4
-ptl_level_idc=Level 2.0
+ptl_level_idc=2.0
 ptl_num_sub_profiles=2
 ptl_extended_sub_profile_flag=true
 ptl_sub_profile_idc[ 0 ]=3

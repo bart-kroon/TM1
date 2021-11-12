@@ -46,6 +46,7 @@ static constexpr auto maxIntraPeriod = 32;
 struct Configuration {
   Configuration(const Common::Json & /*rootNode*/, const Common::Json & /*componentNode*/);
 
+  // Main parameters
   int32_t intraPeriod;
   Common::Vec2i blockSizeDepthQualityDependent;
   std::optional<bool> depthLowQualityFlag;
@@ -66,16 +67,24 @@ struct Configuration {
   bool attributeOffsetFlag;
   int32_t attributeOffsetBitCount{};
   bool dqParamsPresentFlag{true};
-  bool viewportCameraParametersSei;
-  bool viewportPositionSei;
   bool colorCorrectionEnabledFlag;
   bool randomAccess;
   bool patchRedundancyRemoval;
   uint8_t numGroups;
   uint16_t maxEntityId{};
+
+  // SEI-related parameters
+  bool viewportCameraParametersSei;
+  bool viewportPositionSei;
   std::optional<MivBitstream::ViewingSpace> viewingSpace;
+
+  // Profile-tier-level parameters
   MivBitstream::PtlProfileCodecGroupIdc codecGroupIdc{};
-  MivBitstream::PtlProfilePccToolsetIdc toolsetIdc{};
+  MivBitstream::PtlProfileToolsetIdc toolsetIdc{};
+  MivBitstream::PtlProfileReconstructionIdc reconstructionIdc{};
+  MivBitstream::PtlLevelIdc levelIdc{};
+
+  // Bit-depth parameters
   uint32_t occBitDepth{};
   uint32_t geoBitDepth{};
   uint32_t texBitDepth{};
@@ -84,6 +93,13 @@ struct Configuration {
   [[nodiscard]] auto blockSize(bool depthLowQualityFlag_) const noexcept {
     return blockSizeDepthQualityDependent[static_cast<int32_t>(depthLowQualityFlag_)];
   }
+
+private:
+  void queryMainParameters(const Common::Json &rootNode, const Common::Json &componentNode);
+  void queryProfileTierLevelParameters(const Common::Json &rootNode);
+  void queryBitDepthParameters(const Common::Json &rootNode);
+  void querySeiParameters(const Common::Json &rootNode);
+  void verifyValid() const;
 };
 } // namespace TMIV::Encoder
 

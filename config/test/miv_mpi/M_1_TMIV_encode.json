@@ -21,6 +21,8 @@
   "EncoderMethod": "MpiEncoder",
   "codecGroupIdc": "VVC Main10",
   "toolsetIdc": "MIV Main",
+  "reconstructionIdc": "Rec Unconstrained",
+  "levelIdc": "3.5",
   "geometryScaleEnabledFlag": false,
   "haveGeometryVideo": false,
   "haveOccupancyVideo": false,

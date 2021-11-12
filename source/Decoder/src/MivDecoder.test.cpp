@@ -39,8 +39,8 @@
 
 using Catch::Contains;
 using TMIV::MivBitstream::AtlasSubBitstream;
-using TMIV::MivBitstream::PtlProfilePccToolsetIdc;
 using TMIV::MivBitstream::PtlProfileReconstructionIdc;
+using TMIV::MivBitstream::PtlProfileToolsetIdc;
 using TMIV::MivBitstream::SampleStreamNalHeader;
 using TMIV::MivBitstream::V3cParameterSet;
 using TMIV::MivBitstream::V3cUnit;
@@ -97,8 +97,8 @@ TEST_CASE("MivDecoder") {
 
     auto vps = V3cParameterSet{};
     vps.profile_tier_level()
-        .ptl_profile_toolset_idc(PtlProfilePccToolsetIdc::MIV_Main)
-        .ptl_profile_reconstruction_idc(PtlProfileReconstructionIdc::MIV_Main);
+        .ptl_profile_toolset_idc(PtlProfileToolsetIdc::MIV_Main)
+        .ptl_profile_reconstruction_idc(PtlProfileReconstructionIdc::Rec_Unconstrained);
     vps.vps_miv_extension() = {};
     source.units.push_back(std::make_shared<V3cUnit>(V3cUnitHeader::vps(), vps));
 

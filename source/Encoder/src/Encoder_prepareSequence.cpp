@@ -58,9 +58,9 @@ assessDepthQuality(const Configuration &config,
 namespace {
 [[nodiscard]] auto createProfileTierLevel(const Configuration &config) {
   auto ptl = MivBitstream::ProfileTierLevel{};
-  ptl.ptl_level_idc(MivBitstream::PtlLevelIdc::Level_3_5)
+  ptl.ptl_level_idc(config.levelIdc)
       .ptl_profile_codec_group_idc(config.codecGroupIdc)
-      .ptl_profile_reconstruction_idc(MivBitstream::PtlProfileReconstructionIdc::MIV_Main)
+      .ptl_profile_reconstruction_idc(config.reconstructionIdc)
       .ptl_profile_toolset_idc(config.toolsetIdc);
   return ptl;
 }

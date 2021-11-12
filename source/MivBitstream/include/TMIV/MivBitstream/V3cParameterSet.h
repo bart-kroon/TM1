@@ -38,6 +38,7 @@
 
 #include <fmt/format.h>
 
+#include <array>
 #include <cstdint>
 #include <cstdlib>
 #include <functional>
@@ -55,20 +56,34 @@ enum class PtlProfileCodecGroupIdc : uint8_t {
   MP4RA = 127
 };
 
-enum class PtlProfilePccToolsetIdc : uint8_t {
+static constexpr auto knownCodecGroupIdcs =
+    std::array{PtlProfileCodecGroupIdc::AVC_Progressive_High, PtlProfileCodecGroupIdc::HEVC_Main10,
+               PtlProfileCodecGroupIdc::HEVC444, PtlProfileCodecGroupIdc::VVC_Main10,
+               PtlProfileCodecGroupIdc::MP4RA};
+
+enum class PtlProfileToolsetIdc : uint8_t {
   VPCC_Basic,
   VPCC_Extended,
   MIV_Main = 64,
   MIV_Extended,
   MIV_Geometry_Absent
 };
+
+static constexpr auto knownToolsetIdcs =
+    std::array{PtlProfileToolsetIdc::VPCC_Basic, PtlProfileToolsetIdc::VPCC_Extended,
+               PtlProfileToolsetIdc::MIV_Main, PtlProfileToolsetIdc::MIV_Extended,
+               PtlProfileToolsetIdc::MIV_Geometry_Absent};
+
 enum class PtlProfileReconstructionIdc : uint8_t {
-  Rec0, // (V-PCC)
-  Rec1, // (V-PCC)
-  Rec2, // (V-PCC)
-  MIV_Main = 64,
-  Rec_Unconstrained = 255
+  VPCC_Rec0,              // ISO/IEC DIS 23090-5(2E):2021 Table H-4 (V-PCC)
+  VPCC_Rec1,              // ISO/IEC DIS 23090-5(2E):2021 Table H-4 (V-PCC)
+  VPCC_Rec2,              // ISO/IEC DIS 23090-5(2E):2021 Table H-4 (V-PCC)
+  Rec_Unconstrained = 255 // ISO/IEC DIS 23090-5(2E):2021 Table A-4 (V3C)
 };
+
+static constexpr auto knownReconstructionIdcs = std::array{
+    PtlProfileReconstructionIdc::VPCC_Rec0, PtlProfileReconstructionIdc::VPCC_Rec1,
+    PtlProfileReconstructionIdc::VPCC_Rec2, PtlProfileReconstructionIdc::Rec_Unconstrained};
 
 enum class PtlMaxDecodesIdc : uint8_t {
   max_1,
@@ -82,6 +97,7 @@ enum class PtlMaxDecodesIdc : uint8_t {
   max_32,
   unconstrained = 15
 };
+
 enum class PtlLevelIdc : uint8_t {
   Level_1_0 = 30,
   Level_1_5 = 45,
@@ -92,6 +108,10 @@ enum class PtlLevelIdc : uint8_t {
   Level_4_0 = 120,
   Level_4_5 = 135
 };
+
+static constexpr auto knownLevelIdcs = std::array{
+    PtlLevelIdc::Level_1_0, PtlLevelIdc::Level_1_5, PtlLevelIdc::Level_2_0, PtlLevelIdc::Level_2_5,
+    PtlLevelIdc::Level_3_0, PtlLevelIdc::Level_3_5, PtlLevelIdc::Level_4_0, PtlLevelIdc::Level_4_5};
 
 enum class VuhUnitType : uint8_t { V3C_VPS, V3C_AD, V3C_OVD, V3C_GVD, V3C_AVD, V3C_PVD, V3C_CAD };
 
@@ -105,7 +125,7 @@ enum class AiAttributeTypeId : uint8_t {
 };
 
 auto operator<<(std::ostream &stream, PtlProfileCodecGroupIdc x) -> std::ostream &;
-auto operator<<(std::ostream &stream, PtlProfilePccToolsetIdc x) -> std::ostream &;
+auto operator<<(std::ostream &stream, PtlProfileToolsetIdc x) -> std::ostream &;
 auto operator<<(std::ostream &stream, PtlProfileReconstructionIdc x) -> std::ostream &;
 auto operator<<(std::ostream &stream, PtlMaxDecodesIdc x) -> std::ostream &;
 auto operator<<(std::ostream &stream, PtlLevelIdc x) -> std::ostream &;
@@ -191,7 +211,7 @@ public:
 
   constexpr auto ptl_tier_flag(bool value) noexcept -> auto &;
   constexpr auto ptl_profile_codec_group_idc(PtlProfileCodecGroupIdc value) noexcept -> auto &;
-  constexpr auto ptl_profile_toolset_idc(PtlProfilePccToolsetIdc value) noexcept -> auto &;
+  constexpr auto ptl_profile_toolset_idc(PtlProfileToolsetIdc value) noexcept -> auto &;
   constexpr auto ptl_profile_reconstruction_idc(PtlProfileReconstructionIdc value) noexcept
       -> auto &;
   constexpr auto ptl_max_decodes_idc(PtlMaxDecodesIdc value) noexcept -> auto &;
@@ -216,7 +236,7 @@ public:
 private:
   bool m_ptl_tier_flag{};
   PtlProfileCodecGroupIdc m_ptl_profile_codec_group_idc{};
-  PtlProfilePccToolsetIdc m_ptl_profile_toolset_idc{};
+  PtlProfileToolsetIdc m_ptl_profile_toolset_idc{};
   PtlProfileReconstructionIdc m_ptl_profile_reconstruction_idc{};
   PtlMaxDecodesIdc m_ptl_max_decodes_idc{PtlMaxDecodesIdc::unconstrained};
   PtlLevelIdc m_ptl_level_idc{};

@@ -67,6 +67,8 @@
     "EncoderMethod": "Encoder",
     "codecGroupIdc": "VVC Main10",
     "toolsetIdc": "MIV Extended",
+    "reconstructionIdc": "Rec Unconstrained",
+    "levelIdc": "3.5",
     "geometryScaleEnabledFlag": true,
     "haveGeometryVideo": true,
     "haveOccupancyVideo": true,

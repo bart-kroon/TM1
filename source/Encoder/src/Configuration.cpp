@@ -37,6 +37,11 @@
 #include <TMIV/Common/verify.h>
 
 namespace TMIV::Encoder {
+using MivBitstream::PtlLevelIdc;
+using MivBitstream::PtlProfileCodecGroupIdc;
+using MivBitstream::PtlProfileReconstructionIdc;
+using MivBitstream::PtlProfileToolsetIdc;
+
 Configuration::Configuration(const Common::Json &rootNode, const Common::Json &componentNode)
     : intraPeriod{rootNode.require("intraPeriod").as<int32_t>()}
     , blockSizeDepthQualityDependent{rootNode.require("blockSizeDepthQualityDependent")
@@ -51,19 +56,23 @@ Configuration::Configuration(const Common::Json &rootNode, const Common::Json &c
     , dilationIter{componentNode.require("dilate").as<int32_t>()}
     , dynamicDepthRange{rootNode.require("dynamicDepthRange").as<bool>()}
     , attributeOffsetFlag{haveTexture && rootNode.require("attributeOffsetEnabledFlag").as<bool>()}
-    , viewportCameraParametersSei{rootNode.require("viewportCameraParametersSei").as<bool>()}
-    , viewportPositionSei{rootNode.require("viewportPositionSei").as<bool>()}
     , colorCorrectionEnabledFlag{haveTexture &&
                                  rootNode.require("colorCorrectionEnabledFlag").as<bool>()}
     , randomAccess{rootNode.require("randomAccess").as<bool>()}
     , patchRedundancyRemoval{rootNode.require("patchRedundancyRemoval").as<bool>()}
     , numGroups{rootNode.require("numGroups").as<uint8_t>()}
-    , maxEntityId{rootNode.require("maxEntityId").as<uint16_t>()} {
-  for (const auto blockSize : blockSizeDepthQualityDependent) {
-    VERIFY(2 <= blockSize);
-    VERIFY((blockSize & (blockSize - 1)) == 0);
-  }
+    , maxEntityId{rootNode.require("maxEntityId").as<uint16_t>()}
+    , viewportCameraParametersSei{rootNode.require("viewportCameraParametersSei").as<bool>()}
+    , viewportPositionSei{rootNode.require("viewportPositionSei").as<bool>()} {
+  queryMainParameters(rootNode, componentNode);
+  queryProfileTierLevelParameters(rootNode);
+  queryBitDepthParameters(rootNode);
+  querySeiParameters(rootNode);
+  verifyValid();
+}
 
+void Configuration::queryMainParameters(const Common::Json &rootNode,
+                                        const Common::Json &componentNode) {
   if (const auto &node = componentNode.optional("overrideAtlasFrameSizes")) {
     std::cout
         << "WARNING: Overriding atlas frame sizes is meant for internal/preliminary experiments "
@@ -108,50 +117,33 @@ Configuration::Configuration(const Common::Json &rootNode, const Common::Json &c
   if (const auto &node = rootNode.optional("depthLowQualityFlag")) {
     depthLowQualityFlag = node.as<bool>();
   }
+}
 
-  if (const auto &node = rootNode.optional("ViewingSpace")) {
-    viewingSpace = MivBitstream::ViewingSpace::loadFromJson(node, rootNode);
-  }
+namespace {
+template <typename Idc, size_t N>
+auto queryIdc(const Common::Json &node, const std::string &key, const std::string &name,
+              const std::array<Idc, N> &known) {
+  const auto text = node.require(key).as<std::string>();
 
-  VERIFY(intraPeriod <= maxIntraPeriod);
-
-  using CodecGroupIdc = MivBitstream::PtlProfileCodecGroupIdc;
-  codecGroupIdc = [&rootNode]() {
-    const auto text = rootNode.require("codecGroupIdc").as<std::string>();
-    for (auto i : {CodecGroupIdc::AVC_Progressive_High, CodecGroupIdc::HEVC_Main10,
-                   CodecGroupIdc::HEVC444, CodecGroupIdc::VVC_Main10, CodecGroupIdc::MP4RA}) {
-      if (fmt::format("{}", i) == text) {
-        return i;
-      }
+  for (auto i : known) {
+    if (fmt::format("{}", i) == text) {
+      return i;
     }
-    throw std::runtime_error(fmt::format("The configured codec group IDC {} is unknown", text));
-  }();
-
-  using ToolsetIdc = MivBitstream::PtlProfilePccToolsetIdc;
-  toolsetIdc = [&rootNode]() {
-    const auto text = rootNode.require("toolsetIdc").as<std::string>();
-    for (auto i : {ToolsetIdc::VPCC_Basic, ToolsetIdc::VPCC_Extended, ToolsetIdc::MIV_Main,
-                   ToolsetIdc::MIV_Extended, ToolsetIdc::MIV_Geometry_Absent}) {
-      if (fmt::format("{}", i) == text) {
-        return i;
-      }
-    }
-    throw std::runtime_error(fmt::format("The configured toolset IDC {} is unknown", text));
-  }();
-
-  switch (toolsetIdc) {
-  case ToolsetIdc::MIV_Main:
-    VERIFY(haveGeometry && !haveOccupancy);
-    break;
-  case ToolsetIdc::MIV_Extended:
-    break;
-  case ToolsetIdc::MIV_Geometry_Absent:
-    VERIFY(!haveGeometry && !haveOccupancy);
-    break;
-  default:
-    throw std::runtime_error(fmt::format("The {} toolset IDC is not supported", toolsetIdc));
   }
+  throw std::runtime_error(fmt::format("The configured {} IDC {} is unknown", name, text));
+}
+} // namespace
 
+void Configuration::queryProfileTierLevelParameters(const Common::Json &rootNode) {
+  codecGroupIdc =
+      queryIdc(rootNode, "codecGroupIdc", "codec group", MivBitstream::knownCodecGroupIdcs);
+  toolsetIdc = queryIdc(rootNode, "toolsetIdc", "toolset", MivBitstream::knownToolsetIdcs);
+  reconstructionIdc = queryIdc(rootNode, "reconstructionIdc", "reconstruction",
+                               MivBitstream::knownReconstructionIdcs);
+  levelIdc = queryIdc(rootNode, "levelIdc", "level", MivBitstream::knownLevelIdcs);
+}
+
+void Configuration::queryBitDepthParameters(const Common::Json &rootNode) {
   if (haveOccupancy) {
     occBitDepth = rootNode.require("bitDepthOccupancyVideo").as<uint32_t>();
   }
@@ -166,6 +158,56 @@ Configuration::Configuration(const Common::Json &rootNode, const Common::Json &c
 
   if (framePacking) {
     pacBitDepth = std::max({occBitDepth, geoBitDepth, texBitDepth});
+  }
+}
+
+void Configuration::querySeiParameters(const Common::Json &rootNode) {
+  if (const auto &node = rootNode.optional("ViewingSpace")) {
+    viewingSpace = MivBitstream::ViewingSpace::loadFromJson(node, rootNode);
+  }
+}
+
+void Configuration::verifyValid() const {
+  for (const auto blockSize : blockSizeDepthQualityDependent) {
+    VERIFY(2 <= blockSize);
+    VERIFY((blockSize & (blockSize - 1)) == 0);
+  }
+
+  VERIFY(intraPeriod <= maxIntraPeriod);
+
+  switch (codecGroupIdc) {
+  case PtlProfileCodecGroupIdc::AVC_Progressive_High:
+  case PtlProfileCodecGroupIdc::HEVC_Main10:
+  case PtlProfileCodecGroupIdc::HEVC444:
+  case PtlProfileCodecGroupIdc::VVC_Main10:
+    break;
+  default:
+    throw std::runtime_error(fmt::format("The {} codec group IDC is not supported "
+                                         "in this version of this test model",
+                                         codecGroupIdc));
+  }
+
+  switch (toolsetIdc) {
+  case PtlProfileToolsetIdc::MIV_Main:
+    VERIFY(haveGeometry && !haveOccupancy);
+    break;
+  case PtlProfileToolsetIdc::MIV_Extended:
+    break;
+  case PtlProfileToolsetIdc::MIV_Geometry_Absent:
+    VERIFY(!haveGeometry && !haveOccupancy);
+    break;
+  default:
+    throw std::runtime_error(fmt::format(
+        "The {} toolset IDC is not supported in this version of this test model", toolsetIdc));
+  }
+
+  switch (reconstructionIdc) {
+  case PtlProfileReconstructionIdc::Rec_Unconstrained:
+    break;
+  default:
+    throw std::runtime_error(
+        fmt::format("The {} reconstruction IDC is not supported in this version of this test model",
+                    reconstructionIdc));
   }
 }
 } // namespace TMIV::Encoder

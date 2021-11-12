@@ -173,13 +173,13 @@ auto MivDecoder::decodeVideoSubBitstreams() -> bool {
 
 void MivDecoder::checkCapabilities() const {
   CONSTRAIN_PTL(m_au.vps.profile_tier_level().ptl_profile_toolset_idc() ==
-                    MivBitstream::PtlProfilePccToolsetIdc::MIV_Main ||
+                    MivBitstream::PtlProfileToolsetIdc::MIV_Main ||
                 m_au.vps.profile_tier_level().ptl_profile_toolset_idc() ==
-                    MivBitstream::PtlProfilePccToolsetIdc::MIV_Extended ||
+                    MivBitstream::PtlProfileToolsetIdc::MIV_Extended ||
                 m_au.vps.profile_tier_level().ptl_profile_toolset_idc() ==
-                    MivBitstream::PtlProfilePccToolsetIdc::MIV_Geometry_Absent);
+                    MivBitstream::PtlProfileToolsetIdc::MIV_Geometry_Absent);
   CONSTRAIN_PTL(m_au.vps.profile_tier_level().ptl_profile_reconstruction_idc() ==
-                MivBitstream::PtlProfileReconstructionIdc::MIV_Main);
+                MivBitstream::PtlProfileReconstructionIdc::Rec_Unconstrained);
 
   VERIFY_MIVBITSTREAM(m_au.vps.vps_miv_extension_present_flag());
   VERIFY_V3CBITSTREAM(m_au.vps.vps_extension_6bits() == 0);
@@ -252,7 +252,7 @@ auto MivDecoder::tryStartVideoDecoder(MivBitstream::V3cUnitHeader vuh) -> bool {
     // Decode the payload bytes
     auto payload = buffer.substr(4, size);
     VERIFY_V3CBITSTREAM(payload.size() == size);
-    buffer = buffer.substr(4 + size);
+    buffer = buffer.substr(size_t{4} + size);
 
     // Return the NAL unit of the video sub-bitstream
     return payload;

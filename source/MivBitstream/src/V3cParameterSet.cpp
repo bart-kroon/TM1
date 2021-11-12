@@ -59,17 +59,17 @@ auto operator<<(std::ostream &stream, PtlProfileCodecGroupIdc x) -> std::ostream
   }
 }
 
-auto operator<<(std::ostream &stream, PtlProfilePccToolsetIdc x) -> std::ostream & {
+auto operator<<(std::ostream &stream, PtlProfileToolsetIdc x) -> std::ostream & {
   switch (x) {
-  case PtlProfilePccToolsetIdc::VPCC_Basic:
+  case PtlProfileToolsetIdc::VPCC_Basic:
     return stream << "V-PCC Basic";
-  case PtlProfilePccToolsetIdc::VPCC_Extended:
+  case PtlProfileToolsetIdc::VPCC_Extended:
     return stream << "V-PCC Extended";
-  case PtlProfilePccToolsetIdc::MIV_Main:
+  case PtlProfileToolsetIdc::MIV_Main:
     return stream << "MIV Main";
-  case PtlProfilePccToolsetIdc::MIV_Extended:
+  case PtlProfileToolsetIdc::MIV_Extended:
     return stream << "MIV Extended";
-  case PtlProfilePccToolsetIdc::MIV_Geometry_Absent:
+  case PtlProfileToolsetIdc::MIV_Geometry_Absent:
     return stream << "MIV Geometry Absent";
   default:
     return stream << "[unknown:" << static_cast<int32_t>(x) << "]";
@@ -78,14 +78,12 @@ auto operator<<(std::ostream &stream, PtlProfilePccToolsetIdc x) -> std::ostream
 
 auto operator<<(std::ostream &stream, PtlProfileReconstructionIdc x) -> std::ostream & {
   switch (x) {
-  case PtlProfileReconstructionIdc::Rec0:
+  case PtlProfileReconstructionIdc::VPCC_Rec0:
     return stream << "Rec0 (V-PCC)";
-  case PtlProfileReconstructionIdc::Rec1:
+  case PtlProfileReconstructionIdc::VPCC_Rec1:
     return stream << "Rec1 (V-PCC)";
-  case PtlProfileReconstructionIdc::Rec2:
+  case PtlProfileReconstructionIdc::VPCC_Rec2:
     return stream << "Rec2 (V-PCC)";
-  case PtlProfileReconstructionIdc::MIV_Main:
-    return stream << "MIV Main";
   case PtlProfileReconstructionIdc::Rec_Unconstrained:
     return stream << "Rec Unconstrained";
   default:
@@ -123,21 +121,21 @@ auto operator<<(std::ostream &stream, PtlMaxDecodesIdc x) -> std::ostream & {
 auto operator<<(std::ostream &stream, PtlLevelIdc x) -> std::ostream & {
   switch (x) {
   case PtlLevelIdc::Level_1_0:
-    return stream << "Level 1.0";
+    return stream << "1.0";
   case PtlLevelIdc::Level_1_5:
-    return stream << "Level 1.5";
+    return stream << "1.5";
   case PtlLevelIdc::Level_2_0:
-    return stream << "Level 2.0";
+    return stream << "2.0";
   case PtlLevelIdc::Level_2_5:
-    return stream << "Level 2.5";
+    return stream << "2.5";
   case PtlLevelIdc::Level_3_0:
-    return stream << "Level 3.0";
+    return stream << "3.0";
   case PtlLevelIdc::Level_3_5:
-    return stream << "Level 3.5";
+    return stream << "3.5";
   case PtlLevelIdc::Level_4_0:
-    return stream << "Level 4.0";
+    return stream << "4.0";
   case PtlLevelIdc::Level_4_5:
-    return stream << "Level 4.5";
+    return stream << "4.5";
   default:
     return stream << "[unknown:" << static_cast<int32_t>(x) << "]";
   }
@@ -289,7 +287,7 @@ auto ProfileTierLevel::decodeFrom(Common::InputBitstream &bitstream) -> ProfileT
   auto x = ProfileTierLevel{};
   x.ptl_tier_flag(bitstream.getFlag());
   x.ptl_profile_codec_group_idc(bitstream.readBits<PtlProfileCodecGroupIdc>(7));
-  x.ptl_profile_toolset_idc(bitstream.readBits<PtlProfilePccToolsetIdc>(8));
+  x.ptl_profile_toolset_idc(bitstream.readBits<PtlProfileToolsetIdc>(8));
   x.ptl_profile_reconstruction_idc(bitstream.readBits<PtlProfileReconstructionIdc>(8));
   bitstream.getUint16();
   x.ptl_max_decodes_idc(bitstream.readBits<PtlMaxDecodesIdc>(4));

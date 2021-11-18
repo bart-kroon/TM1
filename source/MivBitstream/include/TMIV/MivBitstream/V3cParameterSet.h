@@ -106,12 +106,14 @@ enum class PtlLevelIdc : uint8_t {
   Level_3_0 = 90,
   Level_3_5 = 105,
   Level_4_0 = 120,
-  Level_4_5 = 135
+  Level_4_5 = 135,
+  Level_8_5 = 255
 };
 
-static constexpr auto knownLevelIdcs = std::array{
-    PtlLevelIdc::Level_1_0, PtlLevelIdc::Level_1_5, PtlLevelIdc::Level_2_0, PtlLevelIdc::Level_2_5,
-    PtlLevelIdc::Level_3_0, PtlLevelIdc::Level_3_5, PtlLevelIdc::Level_4_0, PtlLevelIdc::Level_4_5};
+static constexpr auto knownLevelIdcs =
+    std::array{PtlLevelIdc::Level_1_0, PtlLevelIdc::Level_1_5, PtlLevelIdc::Level_2_0,
+               PtlLevelIdc::Level_2_5, PtlLevelIdc::Level_3_0, PtlLevelIdc::Level_3_5,
+               PtlLevelIdc::Level_4_0, PtlLevelIdc::Level_4_5, PtlLevelIdc::Level_8_5};
 
 enum class VuhUnitType : uint8_t { V3C_VPS, V3C_AD, V3C_OVD, V3C_GVD, V3C_AVD, V3C_PVD, V3C_CAD };
 
@@ -232,6 +234,9 @@ public:
   static auto decodeFrom(Common::InputBitstream &bitstream) -> ProfileTierLevel;
 
   void encodeTo(Common::OutputBitstream &bitstream) const;
+
+  // The profile name as specified in ISO/IEC DIS 23090-5(2E):2021 A.2
+  [[nodiscard]] auto profile() const -> std::string;
 
 private:
   bool m_ptl_tier_flag{};

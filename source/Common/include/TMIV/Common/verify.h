@@ -125,17 +125,6 @@
 // NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define BITSTREAM_ERROR(what) ::TMIV::Common::bitstreamError(what, __FILE__, __LINE__)
 
-// Use profile-tier-level (PTL) information to check if the test model supports the bitstream
-//
-//  * The bitstream is an external error source and thus an exception of type TMIV::Common::PtlError
-//    will be thrown.
-//  * Use VERIFY_...BITSTREAM to check if the bitstream is within the reported PTL constraints.
-//
-// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
-#define CONSTRAIN_PTL(condition)                                                                   \
-  static_cast<void>(                                                                               \
-      (LIKELY(condition) || (::TMIV::Common::ptlError(#condition, __FILE__, __LINE__), false)))
-
 // Known limitation of the current implementation (not in line with ISO/IEC 23090-12)
 //
 // * When this triggers, this is always a bug in the test model.
@@ -242,12 +231,6 @@ inline auto message(char const *introduction, char const *condition, char const 
 
 [[noreturn]] inline void bitstreamError(char const *condition, char const *file, int32_t line) {
   throw BitstreamError{message("Failed to parse/decode bitstream", condition, file, line)};
-}
-
-[[noreturn]] inline void ptlError(char const *condition, char const *file, int32_t line) {
-  throw PtlError(
-      message("The bitstream is outside of the profile-tier-level (PTL) limits of this decoder",
-              condition, file, line));
 }
 
 [[noreturn]] inline void assertionFailed(char const *condition, char const *file,

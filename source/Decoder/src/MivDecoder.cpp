@@ -172,15 +172,6 @@ auto MivDecoder::decodeVideoSubBitstreams() -> bool {
 }
 
 void MivDecoder::checkCapabilities() const {
-  CONSTRAIN_PTL(m_au.vps.profile_tier_level().ptl_profile_toolset_idc() ==
-                    MivBitstream::PtlProfileToolsetIdc::MIV_Main ||
-                m_au.vps.profile_tier_level().ptl_profile_toolset_idc() ==
-                    MivBitstream::PtlProfileToolsetIdc::MIV_Extended ||
-                m_au.vps.profile_tier_level().ptl_profile_toolset_idc() ==
-                    MivBitstream::PtlProfileToolsetIdc::MIV_Geometry_Absent);
-  CONSTRAIN_PTL(m_au.vps.profile_tier_level().ptl_profile_reconstruction_idc() ==
-                MivBitstream::PtlProfileReconstructionIdc::Rec_Unconstrained);
-
   VERIFY_MIVBITSTREAM(m_au.vps.vps_miv_extension_present_flag());
   VERIFY_V3CBITSTREAM(m_au.vps.vps_extension_6bits() == 0);
 

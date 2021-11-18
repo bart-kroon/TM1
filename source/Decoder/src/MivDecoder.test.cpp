@@ -80,18 +80,6 @@ TEST_CASE("MivDecoder") {
     REQUIRE_THROWS_WITH(unit(), Contains("vps_miv_extension_present_flag()"));
   }
 
-  SECTION("The VPS needs to have matching PTL information") {
-    auto source = test::FakeV3cUnitSource{};
-
-    auto vps = V3cParameterSet{};
-    vps.vps_miv_extension() = {};
-    source.units.push_back(std::make_shared<V3cUnit>(V3cUnitHeader::vps(), vps));
-
-    auto unit = MivDecoder{source};
-
-    REQUIRE_THROWS_WITH(unit(), Contains("outside of the profile-tier-level"));
-  }
-
   SECTION("There needs to be at least one access unit following the VPS") {
     auto source = test::FakeV3cUnitSource{};
 

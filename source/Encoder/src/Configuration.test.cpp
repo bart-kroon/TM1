@@ -139,20 +139,6 @@ TEST_CASE("TMIV::Encoder::Configuration") {
       CHECK(unit2.codecGroupIdc == PtlProfileCodecGroupIdc::AVC_Progressive_High);
     }
 
-    SECTION("V-PCC Basic is not supported") {
-      root.update(Json::parse(R"({ "toolsetIdc": "V-PCC Basic" })"));
-      REQUIRE_THROWS_WITH(
-          (Configuration{root, component}),
-          "The V-PCC Basic toolset IDC is not supported in this version of this test model");
-    }
-
-    SECTION("V-PCC Extended is not supported") {
-      root.update(Json::parse(R"({ "toolsetIdc": "V-PCC Extended" })"));
-      REQUIRE_THROWS_WITH(
-          (Configuration{root, component}),
-          "The V-PCC Extended toolset IDC is not supported in this version of this test model");
-    }
-
     SECTION("Unknown codec group IDC") {
       root.update(Json::parse(R"({ "codecGroupIdc": "Fantasy" })"));
       REQUIRE_THROWS_AS((Configuration{root, component}), std::runtime_error);
@@ -161,22 +147,6 @@ TEST_CASE("TMIV::Encoder::Configuration") {
     SECTION("Unknown toolset IDC") {
       root.update(Json::parse(R"({ "toolsetIdc": "Hammer" })"));
       REQUIRE_THROWS_AS((Configuration{root, component}), std::runtime_error);
-    }
-
-    SECTION("MIV Main requires geometry") {
-      root.update(Json::parse(R"({
-    "haveGeometryVideo": false,
-    "dqParamsPresentFlag": false
-})"));
-      REQUIRE_THROWS_WITH((Configuration{root, component}), Contains("haveGeometry"));
-    }
-
-    SECTION("MIV Main does not support occupancy") {
-      root.update(Json::parse(R"({
-    "haveOccupancyVideo": true,
-    "bitDepthOccupancyVideo": 8
-})"));
-      REQUIRE_THROWS_WITH((Configuration{root, component}), Contains("!haveOccupancy"));
     }
   }
 
@@ -263,23 +233,6 @@ TEST_CASE("TMIV::Encoder::Configuration") {
 
       REQUIRE(unit2.depthLowQualityFlag.has_value());
       CHECK(*unit2.depthLowQualityFlag);
-    }
-
-    SECTION("Geometry absent does not support geometry") {
-      root.update(Json::parse(R"({
-    "haveGeometryVideo": true,
-    "geometryScaleEnabledFlag": false,
-    "bitDepthGeometryVideo": 10
-})"));
-      REQUIRE_THROWS_WITH((Configuration{root, component}), Contains("!haveGeometry"));
-    }
-
-    SECTION("Geometry absent does not support occupancy") {
-      root.update(Json::parse(R"({
-    "haveOccupancyVideo": true,
-    "bitDepthOccupancyVideo": 8
-})"));
-      REQUIRE_THROWS_WITH((Configuration{root, component}), Contains("!haveOccupancy"));
     }
   }
 

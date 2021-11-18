@@ -42,7 +42,6 @@ using TMIV::Common::bitstreamError;
 using TMIV::Common::MivBitstreamError;
 using TMIV::Common::mivBitstreamError;
 using TMIV::Common::PtlError;
-using TMIV::Common::ptlError;
 using TMIV::Common::runtimeError;
 using TMIV::Common::V3cBitstreamError;
 using TMIV::Common::v3cBitstreamError;
@@ -60,7 +59,6 @@ TEST_CASE("Verify Macros") {
     REQUIRE_NOTHROW(VERIFY_V3CBITSTREAM(true));
     REQUIRE_NOTHROW(VERIFY_MIVBITSTREAM(true));
     REQUIRE_NOTHROW(VERIFY_BITSTREAM(true));
-    REQUIRE_NOTHROW(CONSTRAIN_PTL(true));
 
     REQUIRE_NOTHROW(LIMITATION(true));
     REQUIRE_NOTHROW(PRECONDITION(true));
@@ -97,11 +95,6 @@ TEST_CASE("Verify Macros") {
       REQUIRE_THROWS_AS(bitstreamError("", "", 0), BitstreamError);
       REQUIRE_THROWS_AS(VERIFY_BITSTREAM(false), BitstreamError);
       REQUIRE_THROWS_AS(BITSTREAM_ERROR(""), BitstreamError);
-    }
-
-    SECTION("Profile-tier-level (PTL) constraint error") {
-      REQUIRE_THROWS_AS(ptlError("", "", 0), PtlError);
-      REQUIRE_THROWS_AS(CONSTRAIN_PTL(false), PtlError);
     }
 
     // NOTE(BK): Because Catch2 does not support dead testing, LIMITATION, PRECONDITION and

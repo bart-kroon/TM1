@@ -174,40 +174,5 @@ void Configuration::verifyValid() const {
   }
 
   VERIFY(intraPeriod <= maxIntraPeriod);
-
-  switch (codecGroupIdc) {
-  case PtlProfileCodecGroupIdc::AVC_Progressive_High:
-  case PtlProfileCodecGroupIdc::HEVC_Main10:
-  case PtlProfileCodecGroupIdc::HEVC444:
-  case PtlProfileCodecGroupIdc::VVC_Main10:
-    break;
-  default:
-    throw std::runtime_error(fmt::format("The {} codec group IDC is not supported "
-                                         "in this version of this test model",
-                                         codecGroupIdc));
-  }
-
-  switch (toolsetIdc) {
-  case PtlProfileToolsetIdc::MIV_Main:
-    VERIFY(haveGeometry && !haveOccupancy);
-    break;
-  case PtlProfileToolsetIdc::MIV_Extended:
-    break;
-  case PtlProfileToolsetIdc::MIV_Geometry_Absent:
-    VERIFY(!haveGeometry && !haveOccupancy);
-    break;
-  default:
-    throw std::runtime_error(fmt::format(
-        "The {} toolset IDC is not supported in this version of this test model", toolsetIdc));
-  }
-
-  switch (reconstructionIdc) {
-  case PtlProfileReconstructionIdc::Rec_Unconstrained:
-    break;
-  default:
-    throw std::runtime_error(
-        fmt::format("The {} reconstruction IDC is not supported in this version of this test model",
-                    reconstructionIdc));
-  }
 }
 } // namespace TMIV::Encoder

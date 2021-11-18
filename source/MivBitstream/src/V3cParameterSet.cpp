@@ -79,11 +79,11 @@ auto operator<<(std::ostream &stream, PtlProfileToolsetIdc x) -> std::ostream & 
 auto operator<<(std::ostream &stream, PtlProfileReconstructionIdc x) -> std::ostream & {
   switch (x) {
   case PtlProfileReconstructionIdc::VPCC_Rec0:
-    return stream << "Rec0 (V-PCC)";
+    return stream << "Rec0";
   case PtlProfileReconstructionIdc::VPCC_Rec1:
-    return stream << "Rec1 (V-PCC)";
+    return stream << "Rec1";
   case PtlProfileReconstructionIdc::VPCC_Rec2:
-    return stream << "Rec2 (V-PCC)";
+    return stream << "Rec2";
   case PtlProfileReconstructionIdc::Rec_Unconstrained:
     return stream << "Rec Unconstrained";
   default:
@@ -136,6 +136,8 @@ auto operator<<(std::ostream &stream, PtlLevelIdc x) -> std::ostream & {
     return stream << "4.0";
   case PtlLevelIdc::Level_4_5:
     return stream << "4.5";
+  case PtlLevelIdc::Level_8_5:
+    return stream << "8.5";
   default:
     return stream << "[unknown:" << static_cast<int32_t>(x) << "]";
   }
@@ -335,6 +337,14 @@ void ProfileTierLevel::encodeTo(Common::OutputBitstream &bitstream) const {
   if (ptl_toolset_constraints_present_flag()) {
     ptl_profile_toolset_constraints_information().encodeTo(bitstream);
   }
+}
+
+auto ProfileTierLevel::profile() const -> std::string {
+  if (ptl_profile_reconstruction_idc() == PtlProfileReconstructionIdc::Rec_Unconstrained) {
+    return fmt::format("{} {}", ptl_profile_codec_group_idc(), ptl_profile_toolset_idc());
+  }
+  return fmt::format("{} {} {}", ptl_profile_codec_group_idc(), ptl_profile_toolset_idc(),
+                     ptl_profile_reconstruction_idc());
 }
 
 auto OccupancyInformation::printTo(std::ostream &stream, AtlasId atlasId) const -> std::ostream & {
@@ -1543,10 +1553,8 @@ auto V3cParameterSet::summary() const -> std::string {
   fmt::print(stream, "V3C parameter set {}:\n", vps_v3c_parameter_set_id());
 
   const auto &ptl = profile_tier_level();
-  fmt::print(stream, "  Tier {}, {}, codec group {}, toolset {}, recon {}, decodes {}\n",
-             ptl.ptl_tier_flag(), ptl.ptl_level_idc(), ptl.ptl_profile_codec_group_idc(),
-             ptl.ptl_profile_toolset_idc(), ptl.ptl_profile_reconstruction_idc(),
-             ptl.ptl_max_decodes_idc());
+  fmt::print(stream, "  {}, tier {}, level {}, decodes {}\n", ptl.profile(), ptl.ptl_tier_flag(),
+             ptl.ptl_level_idc(), ptl.ptl_max_decodes_idc());
 
   for (size_t k = 0; k <= vps_atlas_count_minus1(); ++k) {
     const auto j = vps_atlas_id(k);

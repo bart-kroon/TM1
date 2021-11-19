@@ -34,6 +34,7 @@
 #ifndef TMIV_DECODER_COMMONATLASDECODER_H
 #define TMIV_DECODER_COMMONATLASDECODER_H
 
+#include <TMIV/Common/Frame.h>
 #include <TMIV/MivBitstream/AtlasAdaptationParameterSetRBSP.h>
 #include <TMIV/MivBitstream/AtlasSubBitstream.h>
 #include <TMIV/MivBitstream/AtlasViewEnabled.h>
@@ -45,8 +46,7 @@
 #include <TMIV/MivBitstream/ViewingSpace.h>
 #include <TMIV/MivBitstream/ViewportCameraParameters.h>
 #include <TMIV/MivBitstream/ViewportPosition.h>
-
-#include <TMIV/Common/Frame.h>
+#include <TMIV/PtlChecker/AbstractChecker.h>
 
 #include <functional>
 #include <list>
@@ -54,11 +54,13 @@
 
 namespace TMIV::Decoder {
 using V3cUnitSource = std::function<std::optional<MivBitstream::V3cUnit>()>;
+using SharedChecker = PtlChecker::SharedChecker;
 
 class CommonAtlasDecoder {
 public:
   CommonAtlasDecoder() = default;
-  explicit CommonAtlasDecoder(V3cUnitSource source, MivBitstream::V3cParameterSet vps, int32_t foc);
+  explicit CommonAtlasDecoder(V3cUnitSource source, MivBitstream::V3cParameterSet vps, int32_t foc,
+                              SharedChecker checker);
 
   struct AccessUnit {
     bool irap{};
@@ -85,6 +87,7 @@ private:
   static void decodeSeiMessage(AccessUnit &au, const MivBitstream::SeiMessage &message);
 
   V3cUnitSource m_source;
+  SharedChecker m_checker;
   MivBitstream::V3cParameterSet m_vps;
 
   std::list<MivBitstream::NalUnit> m_buffer;

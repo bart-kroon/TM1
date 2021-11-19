@@ -15,6 +15,7 @@ create_tmiv_library(
     PUBLIC
         TMIV::MivBitstreamLib
         TMIV::VideoDecoderLib
+        TMIV::PtlCheckerLib
     )
 
 create_tmiv_executable(
@@ -32,6 +33,7 @@ create_catch2_unit_test(
     TARGET
         DecoderTest
     SOURCES
+        "src/AtlasDecoder.test.cpp"
         "src/CommonAtlasDecoder.test.cpp"
         "src/MivDecoder.test.cpp"
         "src/PreRenderer.test.cpp"

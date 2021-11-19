@@ -34,27 +34,26 @@
 #ifndef TMIV_PTLCHECKER_PTLCHECKER_H
 #define TMIV_PTLCHECKER_PTLCHECKER_H
 
-#include <TMIV/MivBitstream/AccessUnit.h>
-#include <TMIV/MivBitstream/CommonAtlasFrameRBSP.h>
+#include <TMIV/PtlChecker/AbstractChecker.h>
 
 namespace TMIV::PtlChecker {
-class PtlChecker {
+class PtlChecker : public AbstractChecker {
 public:
   using Logger = std::function<void(const std::string &failure)>;
 
   // To support experimentation, the PTL checker only logs a warning. This behaviour can be changed
   // by replacing the log function.
-  void replaceLogger(Logger value);
+  void replaceLogger(Logger value) override;
 
-  void checkVuh(const MivBitstream::V3cUnitHeader &vuh) const;
-  void checkAndActivateNuh(const MivBitstream::NalUnitHeader &nuh);
-  void checkAndActivateVps(const MivBitstream::V3cParameterSet &vps);
+  void checkVuh(const MivBitstream::V3cUnitHeader &vuh) override;
+  void checkAndActivateNuh(const MivBitstream::NalUnitHeader &nuh) override;
+  void checkAndActivateVps(const MivBitstream::V3cParameterSet &vps) override;
   void checkAndActivateAsps(MivBitstream::AtlasId atlasId,
-                            const MivBitstream::AtlasSequenceParameterSetRBSP &asps);
-  void checkAfps(const MivBitstream::AtlasFrameParameterSetRBSP &afps) const;
-  void checkAtl(const MivBitstream::AtlasTileLayerRBSP &atl) const;
-  void checkCaf(const MivBitstream::CommonAtlasFrameRBSP &caf) const;
-  void checkVideoFrame(MivBitstream::VuhUnitType vut, const Common::Frame<> &frame) const;
+                            const MivBitstream::AtlasSequenceParameterSetRBSP &asps) override;
+  void checkAfps(const MivBitstream::AtlasFrameParameterSetRBSP &afps) override;
+  void checkAtl(const MivBitstream::AtlasTileLayerRBSP &atl) override;
+  void checkCaf(const MivBitstream::CommonAtlasFrameRBSP &caf) override;
+  void checkVideoFrame(MivBitstream::VuhUnitType vut, const Common::Frame<> &frame) override;
 
 private:
   static void defaultLogger(const std::string &failure);

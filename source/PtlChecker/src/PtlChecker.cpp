@@ -71,33 +71,26 @@ void PtlChecker::defaultLogger(const std::string &failure) {
 }
 
 auto PtlChecker::ptl_profile_codec_group_idc() const noexcept {
-  PRECONDITION(m_vps);
   return m_vps->profile_tier_level().ptl_profile_codec_group_idc();
 }
 
 auto PtlChecker::ptl_profile_toolset_idc() const noexcept {
-  PRECONDITION(m_vps);
   return m_vps->profile_tier_level().ptl_profile_toolset_idc();
 }
 
 auto PtlChecker::ptl_profile_reconstruction_idc() const noexcept {
-  PRECONDITION(m_vps);
   return m_vps->profile_tier_level().ptl_profile_reconstruction_idc();
 }
 
 auto PtlChecker::ptl_tier_flag() const noexcept {
-  PRECONDITION(m_vps);
   return m_vps->profile_tier_level().ptl_tier_flag();
 }
 
 auto PtlChecker::ptl_level_idc() const noexcept {
-  PRECONDITION(m_vps);
   return m_vps->profile_tier_level().ptl_level_idc();
 }
 
 auto PtlChecker::ptc_restricted_geometry_flag() const noexcept {
-  PRECONDITION(m_vps);
-
   const auto &ptl = m_vps->profile_tier_level();
 
   if (ptl.ptl_toolset_constraints_present_flag()) {
@@ -174,41 +167,41 @@ auto PtlChecker::maxNumAttributeCount() const noexcept {
   return 63;
 }
 
-void PtlChecker::checkVuh(const MivBitstream::V3cUnitHeader &vuh) const {
-  PRECONDITION(m_vps.has_value());
+void PtlChecker::checkVuh(const MivBitstream::V3cUnitHeader &vuh) {
+  PRECONDITION(vuh.vuh_unit_type() == VUT::V3C_VPS || m_vps.has_value());
+
+  if (vuh.vuh_unit_type() == VUT::V3C_VPS) {
+    return;
+  }
 
   switch (ptl_profile_toolset_idc()) {
   case TS::VPCC_Basic:
   case TS::VPCC_Extended:
-    PTL_CHECK(
-        v3c2dis, "Table H-3",
-        contains(std::array{VUT::V3C_VPS, VUT::V3C_AD, VUT::V3C_OVD, VUT::V3C_GVD, VUT::V3C_AVD},
-                 vuh.vuh_unit_type()));
+    PTL_CHECK(v3c2dis, "Table H-3",
+              contains(std::array{VUT::V3C_AD, VUT::V3C_OVD, VUT::V3C_GVD, VUT::V3C_AVD},
+                       vuh.vuh_unit_type()));
     break;
   case TS::MIV_Main:
-    PTL_CHECK(
-        miv1, "Table A-1",
-        contains(std::array{VUT::V3C_VPS, VUT::V3C_AD, VUT::V3C_GVD, VUT::V3C_AVD, VUT::V3C_CAD},
-                 vuh.vuh_unit_type()));
+    PTL_CHECK(miv1, "Table A-1",
+              contains(std::array{VUT::V3C_AD, VUT::V3C_GVD, VUT::V3C_AVD, VUT::V3C_CAD},
+                       vuh.vuh_unit_type()));
     break;
   case TS::MIV_Extended:
     if (ptc_restricted_geometry_flag()) {
-      PTL_CHECK(
-          miv1, "Table A-1",
-          contains(std::array{VUT::V3C_VPS, VUT::V3C_AD, VUT::V3C_AVD, VUT::V3C_PVD, VUT::V3C_CAD},
-                   vuh.vuh_unit_type()));
+      PTL_CHECK(miv1, "Table A-1",
+                contains(std::array{VUT::V3C_AD, VUT::V3C_AVD, VUT::V3C_PVD, VUT::V3C_CAD},
+                         vuh.vuh_unit_type()));
     } else {
       PTL_CHECK(miv1, "Table A-1",
-                contains(std::array{VUT::V3C_VPS, VUT::V3C_AD, VUT::V3C_OVD, VUT::V3C_GVD,
-                                    VUT::V3C_AVD, VUT::V3C_PVD, VUT::V3C_CAD},
+                contains(std::array{VUT::V3C_AD, VUT::V3C_OVD, VUT::V3C_GVD, VUT::V3C_AVD,
+                                    VUT::V3C_PVD, VUT::V3C_CAD},
                          vuh.vuh_unit_type()));
     }
     break;
   case TS::MIV_Geometry_Absent:
-    PTL_CHECK(
-        miv1, "Table A-1",
-        contains(std::array{VUT::V3C_VPS, VUT::V3C_AD, VUT::V3C_AVD, VUT::V3C_PVD, VUT::V3C_CAD},
-                 vuh.vuh_unit_type()));
+    PTL_CHECK(miv1, "Table A-1",
+              contains(std::array{VUT::V3C_AD, VUT::V3C_AVD, VUT::V3C_PVD, VUT::V3C_CAD},
+                       vuh.vuh_unit_type()));
     break;
   }
 }
@@ -470,13 +463,20 @@ void PtlChecker::checkAsme(MivBitstream::AtlasId atlasId,
                            const MivBitstream::AspsMivExtension &asme) const {
   const auto vps_geometry_video_present_flag = m_vps->vps_geometry_video_present_flag(atlasId);
   const auto asme_patch_constant_depth_flag = asme.asme_patch_constant_depth_flag();
+  const auto pin_geometry_present_flag =
+      m_vps->vps_packed_video_present_flag(atlasId)
+          ? m_vps->packing_information(atlasId).pin_geometry_present_flag()
+          : false;
 
   switch (ptl_profile_toolset_idc()) {
   case TS::MIV_Main:
     PTL_CHECK(miv1, "Table A-1", !asme_patch_constant_depth_flag);
     break;
   case TS::MIV_Extended:
-    PTL_CHECK(miv1, "Table A-1", vps_geometry_video_present_flag || asme_patch_constant_depth_flag);
+    // Circumvent spec issue http://mpegx.int-evry.fr/software/MPEG/MIV/Specs/23090-12/-/issues/436
+    PTL_CHECK(miv1, "Table A-1",
+              vps_geometry_video_present_flag || pin_geometry_present_flag ||
+                  asme_patch_constant_depth_flag);
     break;
   case TS::VPCC_Basic:
   case TS::VPCC_Extended:
@@ -485,12 +485,12 @@ void PtlChecker::checkAsme(MivBitstream::AtlasId atlasId,
   }
 }
 
-void PtlChecker::checkAfps(const MivBitstream::AtlasFrameParameterSetRBSP &afps) const {
+void PtlChecker::checkAfps(const MivBitstream::AtlasFrameParameterSetRBSP &afps) {
   PTL_CHECK(miv1, "Table A-1", !afps.afps_lod_mode_enabled_flag());
   PTL_CHECK(miv1, "Table A-1", !afps.afps_raw_3d_offset_bit_count_explicit_mode_flag());
 }
 
-void PtlChecker::checkAtl(const MivBitstream::AtlasTileLayerRBSP &atl) const {
+void PtlChecker::checkAtl(const MivBitstream::AtlasTileLayerRBSP &atl) {
   PRECONDITION(m_nuh.has_value());
 
   const auto &ath = atl.atlas_tile_header();
@@ -518,7 +518,7 @@ void PtlChecker::checkAtl(const MivBitstream::AtlasTileLayerRBSP &atl) const {
   PTL_CHECK(v3c2dis, "A.6.1", !idrCodedAtlas || ath.ath_atlas_frm_order_cnt_lsb() == 0);
 }
 
-void PtlChecker::checkCaf(const MivBitstream::CommonAtlasFrameRBSP &caf) const {
+void PtlChecker::checkCaf(const MivBitstream::CommonAtlasFrameRBSP &caf) {
   PRECONDITION(m_nuh.has_value());
 
   const auto irapCodedCommonAtlas = m_nuh->nal_unit_type() == NUT::NAL_CAF_IDR;
@@ -526,7 +526,7 @@ void PtlChecker::checkCaf(const MivBitstream::CommonAtlasFrameRBSP &caf) const {
             !irapCodedCommonAtlas || caf.caf_common_atlas_frm_order_cnt_lsb() == 0);
 }
 
-void PtlChecker::checkVideoFrame(VUT vut, const Common::Frame<> &frame) const {
+void PtlChecker::checkVideoFrame(VUT vut, const Common::Frame<> &frame) {
   PRECONDITION(!frame.empty());
   PRECONDITION(m_vps.has_value());
   PRECONDITION(m_asps.has_value());
@@ -560,6 +560,9 @@ void PtlChecker::checkVideoFrame(VUT vut, const Common::Frame<> &frame) const {
     return checkGeometryVideoFrame(frame);
   case VUT::V3C_AVD:
     return checkAttributeVideoFrame(frame);
+  case VUT::V3C_PVD:
+    // Specification issue http://mpegx.int-evry.fr/software/MPEG/PCC/Specs/23090-5/-/issues/496
+    break;
   default:
     UNREACHABLE;
   }

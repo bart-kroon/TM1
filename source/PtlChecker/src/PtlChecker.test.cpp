@@ -59,6 +59,7 @@ using TMIV::MivBitstream::AttributeInformation;
 using TMIV::MivBitstream::CommonAtlasFrameRBSP;
 using TMIV::MivBitstream::NalUnitHeader;
 using TMIV::MivBitstream::NalUnitType;
+using TMIV::MivBitstream::PackingInformation;
 using TMIV::MivBitstream::PatchInformationData;
 using TMIV::MivBitstream::ProfileTierLevel;
 using TMIV::MivBitstream::ProfileToolsetConstraintsInformation;
@@ -801,10 +802,21 @@ TEST_CASE("PtlChecker ISO/IEC 23090-12:2021 Table A-1") {
     }
 
     const auto constantDepth = GENERATE(false, true);
-    CAPTURE(constantDepth);
+    const auto packedGeometry = GENERATE(false, true);
+    CAPTURE(constantDepth, packedGeometry);
+
+    if (constantDepth && packedGeometry) {
+      return;
+    }
 
     for (uint8_t k = 0; k <= vps.vps_atlas_count_minus1(); ++k) {
       const auto j = vps.vps_atlas_id(k);
+
+      if (packedGeometry && !vps.vps_geometry_video_present_flag(j)) {
+        vps.packing_information(j, PackingInformation{}.pin_geometry_present_flag(true));
+        vps.vps_packed_video_present_flag(j, true);
+        unit.checkAndActivateVps(vps);
+      }
 
       auto asps = test::asps(vps, j);
       auto &asme = asps.asps_miv_extension();
@@ -815,9 +827,16 @@ TEST_CASE("PtlChecker ISO/IEC 23090-12:2021 Table A-1") {
       if (constantDepth) {
         CHECK_THROWS_IFF(unit.checkAndActivateAsps(j, asps), toolsetIdc == TS::MIV_Main);
       } else {
-        CAPTURE(vps.vps_geometry_video_present_flag(j));
+        const auto pin_geometry_present_flag =
+            vps.vps_packed_video_present_flag(j)
+                ? vps.packing_information(j).pin_geometry_present_flag()
+                : false;
+
+        CAPTURE(vps.vps_geometry_video_present_flag(j), pin_geometry_present_flag);
+
         CHECK_THROWS_IFF(unit.checkAndActivateAsps(j, asps),
-                         !vps.vps_geometry_video_present_flag(j) && toolsetIdc == TS::MIV_Extended);
+                         !vps.vps_geometry_video_present_flag(j) && !pin_geometry_present_flag &&
+                             toolsetIdc == TS::MIV_Extended);
       }
 
       asme.asme_patch_constant_depth_flag(prevConstantDepth);

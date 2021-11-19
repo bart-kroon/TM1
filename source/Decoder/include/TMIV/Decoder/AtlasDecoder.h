@@ -40,6 +40,7 @@
 #include <TMIV/MivBitstream/GeometryAssistance.h>
 #include <TMIV/MivBitstream/SeiRBSP.h>
 #include <TMIV/MivBitstream/V3cUnit.h>
+#include <TMIV/PtlChecker/AbstractChecker.h>
 
 #include <functional>
 #include <list>
@@ -47,11 +48,13 @@
 namespace TMIV::Decoder {
 using V3cUnitSource = std::function<std::optional<MivBitstream::V3cUnit>()>;
 
+using SharedChecker = PtlChecker::SharedChecker;
+
 class AtlasDecoder {
 public:
   AtlasDecoder() = default;
   explicit AtlasDecoder(V3cUnitSource source, const MivBitstream::V3cUnitHeader &vuh,
-                        MivBitstream::V3cParameterSet vps, int32_t foc);
+                        MivBitstream::V3cParameterSet vps, int32_t foc, SharedChecker checker);
 
   struct AccessUnit {
     int32_t foc{};
@@ -75,6 +78,7 @@ private:
   static void decodeSeiMessage(AccessUnit &au, const MivBitstream::SeiMessage &message);
 
   V3cUnitSource m_source;
+  SharedChecker m_checker;
   MivBitstream::V3cUnitHeader m_vuh;
   MivBitstream::V3cParameterSet m_vps;
 
@@ -84,6 +88,9 @@ private:
   std::vector<MivBitstream::AtlasSequenceParameterSetRBSP> m_aspsV;
   std::vector<MivBitstream::AtlasFrameParameterSetRBSP> m_afpsV;
   uint32_t m_maxAtlasFrmOrderCntLsb{};
+
+  enum class State { initial, decoding, eof };
+  State m_state{State::initial};
 };
 } // namespace TMIV::Decoder
 

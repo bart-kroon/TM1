@@ -35,6 +35,7 @@
 
 #include <TMIV/Common/Bytestream.h>
 #include <TMIV/Common/verify.h>
+#include <TMIV/PtlChecker/PtlChecker.h>
 #include <TMIV/VideoDecoder/VideoDecoderFactory.h>
 
 #include <fmt/format.h>
@@ -44,7 +45,8 @@
 #include <utility>
 
 namespace TMIV::Decoder {
-MivDecoder::MivDecoder(V3cUnitSource source) : m_inputBuffer{std::move(source)} {}
+MivDecoder::MivDecoder(V3cUnitSource source)
+    : m_inputBuffer{std::move(source)}, m_checker{std::make_shared<PtlChecker::PtlChecker>()} {}
 
 MivDecoder::~MivDecoder() {
   for (const auto [vuh, totalTime] : m_totalVideoDecodingTime) {
@@ -56,6 +58,11 @@ MivDecoder::~MivDecoder() {
 
 void MivDecoder::setFrameServer(FrameServer value) { m_frameServer = std::move(value); }
 
+void MivDecoder::replaceChecker(SharedChecker value) {
+  PRECONDITION(value);
+  m_checker = std::move(value);
+}
+
 auto MivDecoder::operator()() -> std::optional<MivBitstream::AccessUnit> {
   VERIFY(m_state != State::eof);
   m_au.irap = !m_commonAtlasDecoder;
@@ -63,6 +70,7 @@ auto MivDecoder::operator()() -> std::optional<MivBitstream::AccessUnit> {
   if (m_au.irap) {
     if (auto vps = decodeVps()) {
       m_au.vps = *vps;
+      m_checker->checkAndActivateVps(m_au.vps);
       resetDecoder();
     } else if (m_state == State::decoding) {
       m_state = State::eof;
@@ -102,6 +110,7 @@ auto MivDecoder::operator()() -> std::optional<MivBitstream::AccessUnit> {
 
 auto MivDecoder::decodeVps() -> std::optional<MivBitstream::V3cParameterSet> {
   if (const auto &vu = m_inputBuffer(MivBitstream::V3cUnitHeader::vps())) {
+    m_checker->checkVuh(vu->v3c_unit_header());
     return vu->v3c_unit_payload().v3c_parameter_set();
   }
   return std::nullopt;
@@ -115,7 +124,7 @@ void MivDecoder::resetDecoder() {
 
   m_commonAtlasDecoder = std::make_unique<CommonAtlasDecoder>(
       [this, vuh = MivBitstream::V3cUnitHeader::cad(vpsId)]() { return m_inputBuffer(vuh); },
-      m_au.vps, m_au.foc);
+      m_au.vps, m_au.foc, m_checker);
 
   m_atlasDecoder.clear();
   m_atlasAu.assign(m_au.vps.vps_atlas_count_minus1() + size_t{1}, {});
@@ -130,7 +139,7 @@ void MivDecoder::resetDecoder() {
 
     const auto vuhAd = MivBitstream::V3cUnitHeader::ad(vpsId, atlasId);
     m_atlasDecoder.push_back(std::make_unique<AtlasDecoder>(
-        [this, vuhAd]() { return m_inputBuffer(vuhAd); }, vuhAd, m_au.vps, m_au.foc));
+        [this, vuhAd]() { return m_inputBuffer(vuhAd); }, vuhAd, m_au.vps, m_au.foc, m_checker));
 
     if (m_au.vps.vps_occupancy_video_present_flag(atlasId)) {
       tryStartVideoDecoder(MivBitstream::V3cUnitHeader::ovd(vpsId, atlasId));
@@ -213,6 +222,7 @@ auto MivDecoder::tryStartVideoDecoder(MivBitstream::V3cUnitHeader vuh) -> bool {
   // Adapt the V3C unit buffer to a video sub-bitstream source
   const auto videoSubBitstreamSource = [this, vuh]() -> std::string {
     if (auto v3cUnit = m_inputBuffer(vuh)) {
+      m_checker->checkVuh(vuh);
       return v3cUnit->v3c_unit_payload().video_sub_bitstream().data();
     }
     return {};
@@ -293,11 +303,15 @@ auto MivDecoder::decodeVideoFrame(MivBitstream::V3cUnitHeader vuh) -> bool {
     return false;
   }
 
+  m_checker->checkVideoFrame(vuh.vuh_unit_type(), frame);
+
   m_totalVideoDecodingTime[vuh] += clockInSeconds() - t0;
   return true;
 }
 
 auto MivDecoder::pullOutOfBandVideoFrame(MivBitstream::V3cUnitHeader vuh) -> bool {
+  PRECONDITION(m_frameServer);
+
   fmt::print("Pull out-of-band video frame: {}, foc={}\n", vuh.summary(), m_au.foc);
 
   const auto atlasIdx = m_au.vps.indexOf(vuh.vuh_atlas_id());
@@ -305,7 +319,12 @@ auto MivDecoder::pullOutOfBandVideoFrame(MivBitstream::V3cUnitHeader vuh) -> boo
   auto &frame = decFrame(vuh, m_au.atlas[atlasIdx]);
   frame = m_frameServer(vuh, m_au.foc, m_au.vps, asps);
 
-  return !frame.empty();
+  if (frame.empty()) {
+    return false;
+  }
+
+  m_checker->checkVideoFrame(vuh.vuh_unit_type(), frame);
+  return true;
 }
 
 void MivDecoder::decodeCommonAtlas() {

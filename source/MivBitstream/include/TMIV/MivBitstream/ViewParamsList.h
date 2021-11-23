@@ -79,7 +79,7 @@ struct ViewParams {
   bool isBasicView{true};
 
   // Is this view a regular view (e.g. captured by a camera) or the result of an inpainting process?
-  bool isInpainted{};
+  bool viewInpaintFlag{};
 
   // Number of layers in MPI. Not in the specification, but needed to handle MPI.
   int32_t nbMpiLayers{1};
@@ -94,6 +94,10 @@ struct ViewParams {
   explicit ViewParams(const Common::Json &node);
 
   explicit operator Common::Json() const;
+
+  [[nodiscard]] auto viewRoot() const -> bool;
+  [[nodiscard]] auto viewNumParents() const -> uint16_t;
+  [[nodiscard]] auto viewParentIdx(uint16_t i) const -> uint16_t;
 };
 
 // Vector of ViewParams with indexing of view ID

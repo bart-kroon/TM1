@@ -213,6 +213,22 @@ ViewParams::operator Common::Json() const {
   return Json{root};
 }
 
+auto ViewParams::viewRoot() const -> bool { return pp && pp->pp_is_root_flag(); }
+
+auto ViewParams::viewNumParents() const -> uint16_t {
+  if (pp && !pp->pp_is_root_flag()) {
+    return Common::assertDownCast<uint16_t>(pp->pp_num_parent_minus1() + 1);
+  }
+  return {};
+}
+
+auto ViewParams::viewParentIdx(uint16_t i) const -> uint16_t {
+  if (pp && !pp->pp_is_root_flag()) {
+    return pp->pp_parent_idx(i);
+  }
+  return {};
+}
+
 void ViewParamsList::constructViewIdIndex() {
   // Test for duplicate ID's
   auto usedSlot = std::vector<bool>(maxViewIdValue() + size_t{1}, false);

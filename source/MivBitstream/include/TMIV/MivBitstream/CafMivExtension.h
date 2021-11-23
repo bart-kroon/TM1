@@ -189,13 +189,13 @@ private:
 class PruningParents {
 public:
   PruningParents() = default;
-  explicit PruningParents(std::vector<uint16_t> pp_parent_id);
+  explicit PruningParents(std::vector<uint16_t> pp_parent_idx);
 
   [[nodiscard]] auto pp_is_root_flag() const noexcept -> bool;
   [[nodiscard]] auto pp_num_parent_minus1() const -> uint16_t;
-  [[nodiscard]] auto pp_parent_id(uint16_t i) const -> uint16_t;
+  [[nodiscard]] auto pp_parent_idx(uint16_t i) const -> uint16_t;
 
-  auto pp_parent_id(uint16_t i, uint16_t value) noexcept -> PruningParents &;
+  auto pp_parent_idx(uint16_t i, uint16_t value) noexcept -> PruningParents &;
 
   [[nodiscard]] auto begin() const noexcept { return m_pp_parent_id.begin(); }
   [[nodiscard]] auto end() const noexcept { return m_pp_parent_id.end(); }

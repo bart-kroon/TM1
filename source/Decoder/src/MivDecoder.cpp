@@ -381,7 +381,7 @@ void MivDecoder::decodeMvpl(const MivBitstream::MivViewParamsList &mvpl, bool dq
     auto &vp = m_au.viewParamsList[viewIdx];
     vp.viewId = mvpl.mvp_view_id(viewIdx);
     vp.pose = MivBitstream::Pose::decodeFrom(mvpl.camera_extrinsics(viewIdx));
-    vp.isInpainted = mvpl.mvp_inpaint_flag(viewIdx);
+    vp.viewInpaintFlag = mvpl.mvp_inpaint_flag(viewIdx);
     vp.ci = mvpl.camera_intrinsics(viewIdx);
     if (dqParamsPresentFlag) {
       vp.dq = mvpl.depth_quantization(viewIdx);

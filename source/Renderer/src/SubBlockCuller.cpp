@@ -48,7 +48,7 @@ auto choosePatch(const MivBitstream::PatchParams &patch,
                  const MivBitstream::ViewParamsList &cameras,
                  const MivBitstream::ViewParams &target, uint32_t depthBitDepth) -> bool {
   const auto &camera = cameras[patch.atlasPatchProjectionId()];
-  if (camera.isInpainted) {
+  if (camera.viewInpaintFlag) {
     return true;
   }
   const auto R_t = AffineTransform(cameras[patch.atlasPatchProjectionId()].pose, target.pose);

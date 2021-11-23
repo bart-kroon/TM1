@@ -230,7 +230,7 @@ auto MivEncoder::mivViewParamsList() const -> MivBitstream::MivViewParamsList {
   for (uint16_t i = 0; i <= mvpl.mvp_num_views_minus1(); ++i) {
     const auto &vp = vpl[i];
     mvpl.camera_extrinsics(i) = vp.pose.encodeToCameraExtrinsics();
-    mvpl.mvp_inpaint_flag(i, vp.isInpainted);
+    mvpl.mvp_inpaint_flag(i, vp.viewInpaintFlag);
 
     if (i == 0 || !mvpl.mvp_intrinsic_params_equal_flag()) {
       mvpl.camera_intrinsics(i) = vp.ci;

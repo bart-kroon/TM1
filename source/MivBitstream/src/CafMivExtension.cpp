@@ -284,8 +284,8 @@ void DepthQuantization::encodeTo(Common::OutputBitstream &bitstream) const {
   bitstream.putUExpGolomb(dq_depth_occ_threshold_default());
 }
 
-PruningParents::PruningParents(std::vector<uint16_t> pp_parent_id)
-    : m_pp_parent_id{std::move(pp_parent_id)} {}
+PruningParents::PruningParents(std::vector<uint16_t> pp_parent_idx)
+    : m_pp_parent_id{std::move(pp_parent_idx)} {}
 
 auto PruningParents::pp_is_root_flag() const noexcept -> bool { return m_pp_parent_id.empty(); }
 
@@ -294,12 +294,12 @@ auto PruningParents::pp_num_parent_minus1() const -> uint16_t {
   return static_cast<uint16_t>(m_pp_parent_id.size() - 1);
 }
 
-auto PruningParents::pp_parent_id(uint16_t i) const -> uint16_t {
+auto PruningParents::pp_parent_idx(uint16_t i) const -> uint16_t {
   VERIFY_MIVBITSTREAM(i < m_pp_parent_id.size());
   return m_pp_parent_id[i];
 }
 
-auto PruningParents::pp_parent_id(uint16_t i, uint16_t value) noexcept -> PruningParents & {
+auto PruningParents::pp_parent_idx(uint16_t i, uint16_t value) noexcept -> PruningParents & {
   PRECONDITION(i < m_pp_parent_id.size());
   m_pp_parent_id[i] = value;
   return *this;
@@ -310,7 +310,7 @@ auto PruningParents::printTo(std::ostream &stream, uint16_t viewIdx) const -> st
   if (!pp_is_root_flag()) {
     stream << "pp_num_parent_minus1[ " << viewIdx << " ]=" << pp_num_parent_minus1() << '\n';
     for (uint16_t i = 0; i <= pp_num_parent_minus1(); ++i) {
-      stream << "pp_parent_id[ " << viewIdx << " ][ " << i << " ]=" << pp_parent_id(i) << '\n';
+      stream << "pp_parent_idx[ " << viewIdx << " ][ " << i << " ]=" << pp_parent_idx(i) << '\n';
     }
   }
   return stream;
@@ -347,7 +347,7 @@ void PruningParents::encodeTo(Common::OutputBitstream &bitstream,
   if (!pp_is_root_flag()) {
     bitstream.putUVar(pp_num_parent_minus1(), mvp_num_views_minus1);
     for (uint16_t i = 0; i <= pp_num_parent_minus1(); ++i) {
-      bitstream.putUVar(pp_parent_id(i), mvp_num_views_minus1 + uint64_t{1});
+      bitstream.putUVar(pp_parent_idx(i), mvp_num_views_minus1 + uint64_t{1});
     }
   }
 }

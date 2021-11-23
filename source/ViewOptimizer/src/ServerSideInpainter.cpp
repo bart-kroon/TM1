@@ -201,7 +201,7 @@ private:
     }
 
     vp.name = "s0"s;
-    vp.isInpainted = true;
+    vp.viewInpaintFlag = true;
     vp.isBasicView = false;
 
     // Assign the first available view ID

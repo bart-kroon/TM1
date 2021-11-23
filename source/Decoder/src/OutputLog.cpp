@@ -64,10 +64,14 @@ static_assert(table[0xFF] == 0x2D02EF8D);
 } // namespace crc32
 } // namespace
 
-constexpr auto HashFunction::consume(uint32_t value) noexcept -> HashFunction & {
+template <typename ConvertibleToUint32, typename>
+constexpr auto HashFunction::consume(ConvertibleToUint32 value) noexcept -> HashFunction & {
+  static_assert(std::numeric_limits<ConvertibleToUint32>::digits <= 32);
+  const auto value_ = static_cast<uint32_t>(value);
+
   // Hash bytes in network order (big endian)
   for (int32_t i = 24; 0 <= i; i -= 8) {
-    m_hash = (m_hash >> 8) ^ Common::at(crc32::table, (m_hash ^ (value >> i)) & 0xFF);
+    m_hash = (m_hash >> 8) ^ Common::at(crc32::table, (m_hash ^ (value_ >> i)) & 0xFF);
   }
   return *this;
 }
@@ -88,26 +92,12 @@ auto HashFunction::toString(uint32_t value) -> std::string {
   return fmt::format(FMT_STRING("{:08x}"), value);
 }
 
-auto videoDataHash(const MivBitstream::AtlasAccessUnit &frame) noexcept -> HashFunction::Result {
+auto videoDataHash(const Common::Frame<> &frame) noexcept -> HashFunction::Result {
   auto hash = HashFunction{};
 
-  if (!frame.decGeoFrame.empty()) {
-    for (auto x : frame.decGeoFrame.getPlane(0)) {
-      hash.consume(x);
-    }
-  }
-
-  if (!frame.decOccFrame.empty()) {
-    for (auto x : frame.decOccFrame.getPlane(0)) {
-      hash.consume(x);
-    }
-  }
-
-  for (const auto &x : frame.decAttrFrame) {
-    for (const auto &y : x.getPlanes()) {
-      for (auto z : y) {
-        hash.consume(z);
-      }
+  for (const auto &plane : frame.getPlanes()) {
+    for (auto sample : plane) {
+      hash.consume(sample);
     }
   }
 
@@ -134,7 +124,7 @@ auto patchParamsListHash(const MivBitstream::PatchParamsList &ppl) noexcept
     hash.consume(pp.atlasPatch3dOffsetD());
     hash.consume(pp.atlasPatch3dRangeD());
     hash.consume(pp.atlasPatchProjectionId());
-    hash.consume(static_cast<uint32_t>(pp.atlasPatchOrientationIndex()));
+    hash.consume(pp.atlasPatchOrientationIndex());
     hash.consume(pp.atlasPatchLoDScaleX());
     hash.consume(pp.atlasPatchLoDScaleY());
     hash.consume(pp.atlasPatchEntityId());
@@ -142,7 +132,7 @@ auto patchParamsListHash(const MivBitstream::PatchParamsList &ppl) noexcept
     hash.consume(pp.atlasPatchAttributeOffset()[0]);
     hash.consume(pp.atlasPatchAttributeOffset()[1]);
     hash.consume(pp.atlasPatchAttributeOffset()[2]);
-    hash.consume(static_cast<uint32_t>(pp.atlasPatchInpaintFlag()));
+    hash.consume(pp.atlasPatchInpaintFlag());
   }
   return hash.result();
 }
@@ -151,7 +141,7 @@ auto viewParamsListHash(const MivBitstream::ViewParamsList &vpl) noexcept -> Has
   auto hash = HashFunction{};
 
   for (const auto &vp : vpl) {
-    hash.consume(static_cast<uint32_t>(vp.ci.ci_cam_type()));
+    hash.consume(vp.ci.ci_cam_type());
     hash.consume(vp.ci.ci_projection_plane_width_minus1());
     hash.consume(vp.ci.ci_projection_plane_height_minus1());
 
@@ -187,6 +177,67 @@ auto viewParamsListHash(const MivBitstream::ViewParamsList &vpl) noexcept -> Has
     hash.consumeF(vp.dq.dq_norm_disp_low());
     hash.consumeF(vp.dq.dq_norm_disp_high());
     hash.consume(vp.dq.dq_depth_occ_threshold_default());
+
+    hash.consume(vp.viewInpaintFlag);
+
+    hash.consume(vp.viewRoot());
+    hash.consume(vp.viewNumParents());
+
+    for (uint16_t i = 0; i < vp.viewNumParents(); ++i) {
+      hash.consume(vp.viewParentIdx(i));
+    }
+  }
+
+  return hash.result();
+}
+
+auto asmeHash(const MivBitstream::AtlasAccessUnit &frame) noexcept -> HashFunction::Result {
+  auto hash = HashFunction{};
+
+  if (frame.asps.asps_miv_extension_present_flag()) {
+    const auto &asme = frame.asps.asps_miv_extension();
+
+    hash.consume(asme.asme_ancillary_atlas_flag());
+    hash.consume(asme.asme_embedded_occupancy_enabled_flag());
+    hash.consume(asme.asme_depth_occ_threshold_flag());
+    hash.consume(asme.asme_geometry_scale_enabled_flag());
+    hash.consume(asme.asme_geometry_scale_factor_x_minus1());
+    hash.consume(asme.asme_geometry_scale_factor_y_minus1());
+    hash.consume(asme.asme_occupancy_scale_enabled_flag());
+    hash.consume(asme.asme_occupancy_scale_factor_x_minus1());
+    hash.consume(asme.asme_occupancy_scale_factor_y_minus1());
+    hash.consume(asme.asme_patch_constant_depth_flag());
+    hash.consume(asme.asme_patch_attribute_offset_enabled_flag());
+    hash.consume(asme.asme_patch_attribute_offset_enabled_flag()
+                     ? asme.asme_patch_attribute_offset_bit_depth_minus1()
+                     : uint32_t{});
+    hash.consume(asme.asme_max_entity_id());
+    hash.consume(asme.asme_inpaint_enabled_flag());
+  }
+  return hash.result();
+}
+
+auto afmeHash(const MivBitstream::AtlasAccessUnit &frame) noexcept -> HashFunction::Result {
+  auto hash = HashFunction{};
+
+  if (frame.afps.afps_miv_extension_present_flag()) {
+    const auto &afme = frame.afps.afps_miv_extension();
+    hash.consume(afme.afme_inpaint_lod_enabled_flag());
+    hash.consume(afme.afme_inpaint_lod_scale_x_minus1());
+    hash.consume(afme.afme_inpaint_lod_scale_y_idc());
+  }
+
+  return hash.result();
+}
+
+auto casmeHash(const MivBitstream::AccessUnit &frame) noexcept -> HashFunction::Result {
+  auto hash = HashFunction{};
+
+  if (frame.casps && frame.casps->casps_miv_extension_present_flag()) {
+    const auto &casme = frame.casps->casps_miv_extension();
+    hash.consume(casme.casme_depth_low_quality_flag());
+    hash.consume(casme.casme_depth_quantization_params_present_flag());
+    hash.consume(casme.casme_vui_params_present_flag());
   }
 
   return hash.result();
@@ -196,12 +247,41 @@ void writeFrameToOutputLog(const MivBitstream::AccessUnit &frame, std::ostream &
   const auto vplHashString = HashFunction::toString(viewParamsListHash(frame.viewParamsList));
 
   for (uint8_t k = 0; k <= frame.vps.vps_atlas_count_minus1(); ++k) {
-    fmt::print(
-        stream, FMT_STRING("{} {} {} {} {} {} {} {}\n"), frame.foc, frame.vps.vps_atlas_id(k),
-        frame.atlas[k].asps.asps_frame_width(), frame.atlas[k].asps.asps_frame_height(),
-        HashFunction::toString(videoDataHash(frame.atlas[k])),
-        HashFunction::toString(blockToPatchMapHash(frame.atlas[k])),
-        HashFunction::toString(patchParamsListHash(frame.atlas[k].patchParamsList)), vplHashString);
+    const auto &atlas = frame.atlas[k];
+
+    fmt::print(stream, FMT_STRING("{} {} {} {}"), frame.foc, frame.vps.vps_atlas_id(k),
+               atlas.asps.asps_frame_width(), atlas.asps.asps_frame_height());
+
+    if (!atlas.decOccFrame.empty()) {
+      fmt::print(stream, FMT_STRING(" O {}"),
+                 HashFunction::toString(videoDataHash(yuv400(atlas.decOccFrame))));
+    }
+
+    if (!atlas.decGeoFrame.empty()) {
+      fmt::print(stream, FMT_STRING(" G {}"),
+                 HashFunction::toString(videoDataHash(yuv400(atlas.decGeoFrame))));
+    }
+
+    if (!atlas.decAttrFrame.empty()) {
+      fmt::print(stream, FMT_STRING(" A"));
+
+      for (size_t attrIdx = 0; attrIdx < atlas.decAttrFrame.size(); ++attrIdx) {
+        fmt::print(stream, FMT_STRING(" {} {}"), attrIdx,
+                   HashFunction::toString(videoDataHash(atlas.decAttrFrame[attrIdx])));
+      }
+    }
+
+    if (!atlas.decPckFrame.empty()) {
+      fmt::print(stream, FMT_STRING(" P {}"),
+                 HashFunction::toString(videoDataHash(atlas.decPckFrame)));
+    }
+
+    fmt::print(stream, FMT_STRING(" {} {} {} {} {} {}\n"),
+               HashFunction::toString(blockToPatchMapHash(atlas)),
+               HashFunction::toString(patchParamsListHash(atlas.patchParamsList)), vplHashString,
+               HashFunction::toString(asmeHash(frame.atlas[k])),
+               HashFunction::toString(afmeHash(frame.atlas[k])),
+               HashFunction::toString(casmeHash(frame)));
   }
 }
 } // namespace TMIV::Decoder

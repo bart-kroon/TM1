@@ -258,7 +258,7 @@ private:
     m_inpaintedViews.clear();
 
     for (size_t viewIdx = 0; viewIdx < frame.viewParamsList.size(); ++viewIdx) {
-      if (frame.viewParamsList[viewIdx].isInpainted) {
+      if (frame.viewParamsList[viewIdx].viewInpaintFlag) {
         m_inpaintedViews.insert(viewIdx);
       }
     }

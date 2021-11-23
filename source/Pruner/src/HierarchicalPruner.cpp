@@ -535,7 +535,7 @@ private:
   void synthesizeViews(size_t index, const Common::DeepFrame &view,
                        const std::vector<size_t> &viewIds) {
     const auto &vp = m_params.viewParamsList[index];
-    if (vp.isInpainted) {
+    if (vp.viewInpaintFlag) {
       std::cout << "Skipping inpainted view " << vp.name << '\n';
       return;
     }

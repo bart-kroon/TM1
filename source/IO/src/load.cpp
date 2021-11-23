@@ -174,12 +174,12 @@ auto loadMultiviewFrame(const Common::Json &config, const Placeholders &placehol
 
 auto loadMpiTextureMpiLayer(const Common::Json &config, const Placeholders &placeholders,
                             const MivBitstream::SequenceConfig &sc, int32_t frameIdx,
-                            int32_t mpiLayerIndex, int32_t nbMpiLayers) -> Common::Frame<> {
+                            int32_t mpiLayerIdx, int32_t nbMpiLayers) -> Common::Frame<> {
   const auto name = sc.sourceCameraNames[0];
   const auto camera = sc.cameraByName(name);
 
   return loadInputFrame(
-      LoadInputFrameParams{false, config, placeholders, frameIdx * nbMpiLayers + mpiLayerIndex,
+      LoadInputFrameParams{false, config, placeholders, frameIdx * nbMpiLayers + mpiLayerIdx,
                            camera.viewParams.ci.projectionPlaneSize(), name},
       camera.colorFormatTexture, camera.bitDepthTexture, MivBitstream::VuhUnitType::V3C_AVD,
       MivBitstream::AiAttributeTypeId::ATTR_TEXTURE);
@@ -187,12 +187,12 @@ auto loadMpiTextureMpiLayer(const Common::Json &config, const Placeholders &plac
 
 auto loadMpiTransparencyMpiLayer(const Common::Json &config, const Placeholders &placeholders,
                                  const MivBitstream::SequenceConfig &sc, int32_t frameIdx,
-                                 int32_t mpiLayerIndex, int32_t nbMpiLayers) -> Common::Frame<> {
+                                 int32_t mpiLayerIdx, int32_t nbMpiLayers) -> Common::Frame<> {
   const auto name = sc.sourceCameraNames[0];
   const auto camera = sc.cameraByName(name);
 
   return loadInputFrame(
-      LoadInputFrameParams{false, config, placeholders, frameIdx * nbMpiLayers + mpiLayerIndex,
+      LoadInputFrameParams{false, config, placeholders, frameIdx * nbMpiLayers + mpiLayerIdx,
                            camera.viewParams.ci.projectionPlaneSize(), name},
       camera.colorFormatTransparency, camera.bitDepthTransparency,
       MivBitstream::VuhUnitType::V3C_AVD, MivBitstream::AiAttributeTypeId::ATTR_TRANSPARENCY);

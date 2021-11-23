@@ -108,7 +108,7 @@ TEST_CASE("Decoder::writeFrameToOutputLog") {
 
       frame.atlas.front().blockToPatchMap.createY({8, 10});
       frame.atlas.front().blockToPatchMap.fillValue(23);
-      frame.atlas.front().blockToPatchMap.getPlane(0)(3, 4) = TMIV::Common::unusedPatchId;
+      frame.atlas.front().blockToPatchMap.getPlane(0)(3, 4) = TMIV::Common::unusedPatchIdx;
       reference += "-1 0 8 5 00000000 59fe0999 00000000 00000000\n";
       writeFrameToOutputLog(frame, stream);
       REQUIRE(TMIV::Decoder::blockToPatchMapHash(frame.atlas.front()) == 0x59FE0999);
@@ -117,7 +117,7 @@ TEST_CASE("Decoder::writeFrameToOutputLog") {
 
     SECTION("Unused patch ID translates to 0xFFFFFFFF") {
       const auto value =
-          GENERATE(uint16_t{}, uint16_t{1}, uint16_t{1000}, uint16_t{TMIV::Common::unusedPatchId});
+          GENERATE(uint16_t{}, uint16_t{1}, uint16_t{1000}, uint16_t{TMIV::Common::unusedPatchIdx});
       CAPTURE(value);
 
       // Video frames use the same hash function but do not have this logic
@@ -129,7 +129,7 @@ TEST_CASE("Decoder::writeFrameToOutputLog") {
       frame.atlas.front().blockToPatchMap.fillValue(value);
       const auto actual = TMIV::Decoder::blockToPatchMapHash(frame.atlas.front());
 
-      if (value == TMIV::Common::unusedPatchId) {
+      if (value == TMIV::Common::unusedPatchIdx) {
         REQUIRE(actual != reference2);
       } else {
         REQUIRE(actual == reference2);

@@ -66,7 +66,7 @@ private:
   [[nodiscard]] auto log2FocLsbMinus4() const -> uint8_t;
   void incrementFoc();
 
-  auto readFrame(int32_t frameIndex) -> MpiPcs::Frame { return m_mpiPcsFrameReader(frameIndex); }
+  auto readFrame(int32_t frameIdx) -> MpiPcs::Frame { return m_mpiPcsFrameReader(frameIdx); }
 
   Common::Json m_rootNode;
   MpiPcsFrameReader m_mpiPcsFrameReader;

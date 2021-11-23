@@ -483,10 +483,10 @@ void PreRenderer::reconstructOccupancy(const MivBitstream::ViewParamsList &vpl,
 
   for (int32_t i = 0; i < atlas.occFrame.getHeight(); ++i) {
     for (int32_t j = 0; j < atlas.occFrame.getWidth(); ++j) {
-      const auto patchIdx = atlas.patchId(i, j);
+      const auto patchIdx = atlas.patchIdx(i, j);
       bool sampleOccFlag{};
 
-      if (patchIdx == Common::unusedPatchId) {
+      if (patchIdx == Common::unusedPatchIdx) {
         sampleOccFlag = false;
       } else if (!atlas.occFrameNF.empty()) {
         sampleOccFlag = atlas.occFrameNF.getPlane(0)(i, j);
@@ -513,12 +513,12 @@ void PreRenderer::filterEntities(MivBitstream::AtlasAccessUnit &atlas) const {
 
   const auto entityDecodeRange = *m_entityDecodeRange;
 
-  for (auto &patchId : atlas.blockToPatchMap.getPlane(0)) {
-    if (patchId != Common::unusedPatchId) {
-      const auto entityId = atlas.patchParamsList[patchId].atlasPatchEntityId();
+  for (auto &patchIdx : atlas.blockToPatchMap.getPlane(0)) {
+    if (patchIdx != Common::unusedPatchIdx) {
+      const auto entityId = atlas.patchParamsList[patchIdx].atlasPatchEntityId();
 
       if (entityId < entityDecodeRange[0] || entityDecodeRange[1] <= entityId) {
-        patchId = Common::unusedPatchId;
+        patchIdx = Common::unusedPatchIdx;
       }
     }
   }
@@ -559,9 +559,9 @@ void PreRenderer::offsetTexture(const MivBitstream::V3cParameterSet &vps,
 
   for (int32_t i = 0; i < frame.getHeight(); ++i) {
     for (int32_t j = 0; j < frame.getWidth(); ++j) {
-      const auto patchIdx = atlas.patchId(i, j);
+      const auto patchIdx = atlas.patchIdx(i, j);
 
-      if (patchIdx == Common::unusedPatchId) {
+      if (patchIdx == Common::unusedPatchIdx) {
         continue;
       }
 

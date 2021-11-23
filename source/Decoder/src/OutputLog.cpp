@@ -119,7 +119,7 @@ auto blockToPatchMapHash(const MivBitstream::AtlasAccessUnit &frame) noexcept
   auto hash = HashFunction{};
 
   for (auto x : frame.blockToPatchMap.getPlane(0)) {
-    hash.consume(x == Common::unusedPatchId ? 0xFFFF'FFFF : x);
+    hash.consume(x == Common::unusedPatchIdx ? 0xFFFF'FFFF : x);
   }
   return hash.result();
 }

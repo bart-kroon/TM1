@@ -96,7 +96,8 @@ private:
                                       uint16_t viewIdx, int32_t frameIdx) const -> bool;
   auto writePatchInAtlas(const MivBitstream::PatchParams &patchParams,
                          const Common::DeepFrame &view, Common::DeepFrameList &frame,
-                         int32_t frameId, size_t patchIdx) -> std::array<std::array<int64_t, 4>, 3>;
+                         int32_t frameIdx, size_t patchIdx)
+      -> std::array<std::array<int64_t, 4>, 3>;
   void adaptAtlas(const MivBitstream::PatchParams &patchParams, Common::DeepFrame &atlas,
                   int32_t yOcc, int32_t xOcc, const Common::Vec2i &pView,
                   const Common::Vec2i &pAtlas) const;

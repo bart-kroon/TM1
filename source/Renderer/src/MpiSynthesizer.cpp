@@ -89,7 +89,7 @@ private:
   Common::Mat<float> m_blendingDepth;
   Common::Mat<float> m_blendingTransparency;
   std::vector<std::tuple<int32_t, int32_t, int32_t, float>>
-      m_blockBuffer; //{atlasId, patchId(in atlas), blockId(in patch), depth}
+      m_blockBuffer; //{atlasId, patchIdx(in atlas), blockId(in patch), depth}
   int32_t m_blockSize{};
 
 public:
@@ -198,7 +198,7 @@ private:
   void allocateBlockBuffer(const MivBitstream::AccessUnit &frame) {
     // Get average depth for all patches of all atlases
     std::vector<float> patchAverageDepth;
-    std::vector<int32_t> patchId;
+    std::vector<int32_t> patchIdx;
     std::vector<int32_t> patchAtlasId;
     int32_t idx_atlas = 0;
 
@@ -220,7 +220,7 @@ private:
 
         patchAverageDepth.push_back(d);
         patchAtlasId.push_back(idx_atlas);
-        patchId.push_back(idx_patch);
+        patchIdx.push_back(idx_patch);
         idx_patch++;
       }
       idx_atlas++;
@@ -241,7 +241,7 @@ private:
 
     m_blockBuffer.clear();
     for (int32_t idx : patchOrderId) {
-      const auto &patch = frame.atlas[patchAtlasId[idx]].patchParamsList[patchId[idx]];
+      const auto &patch = frame.atlas[patchAtlasId[idx]].patchParamsList[patchIdx[idx]];
       int32_t patch_area = static_cast<int32_t>(patch.atlasPatch2dSizeX()) *
                            static_cast<int32_t>(patch.atlasPatch2dSizeY());
       auto nbBlock = static_cast<int32_t>(patch_area / blockArea);
@@ -249,7 +249,7 @@ private:
 
       m_blockBuffer.resize(
           offsetId + static_cast<size_t>(nbBlock),
-          std::make_tuple(patchAtlasId[idx], patchId[idx], 0, patchAverageDepth[idx]));
+          std::make_tuple(patchAtlasId[idx], patchIdx[idx], 0, patchAverageDepth[idx]));
 
       for (auto blockId = 0; blockId < nbBlock; blockId++, offsetId++) {
         std::get<2>(m_blockBuffer[offsetId]) = blockId;
@@ -272,14 +272,13 @@ private:
 
     auto maxValue = 0.F;
 
-    for (uint8_t attributeId = 0;
-         attributeId <= frame.vps.attribute_information(atlasId).ai_attribute_count();
-         attributeId++) {
-      if (frame.vps.attribute_information(atlasId).ai_attribute_type_id(attributeId) ==
+    for (uint8_t attrIdx = 0;
+         attrIdx <= frame.vps.attribute_information(atlasId).ai_attribute_count(); attrIdx++) {
+      if (frame.vps.attribute_information(atlasId).ai_attribute_type_id(attrIdx) ==
           MivBitstream::AiAttributeTypeId::ATTR_TRANSPARENCY) {
         maxValue = static_cast<float>(
             (1U << static_cast<uint32_t>(frame.vps.attribute_information(atlasId)
-                                             .ai_attribute_2d_bit_depth_minus1(attributeId) +
+                                             .ai_attribute_2d_bit_depth_minus1(attrIdx) +
                                          1)) -
             1U);
         break;
@@ -413,7 +412,7 @@ private:
     auto &pixelAlpha = m_blendingTransparency(InViewport.y, InViewport.x);
 
     if (pixelAlpha < 1.F) {
-      auto patchId = static_cast<uint16_t>(std::get<2>(pixelAttributes[0]));
+      auto patchIdx = static_cast<uint16_t>(std::get<2>(pixelAttributes[0]));
       auto atlasId = std::get<3>(pixelAttributes[0]);
 
       auto texCoord = weights[0] * std::get<0>(pixelAttributes[0]) +
@@ -425,7 +424,7 @@ private:
                    weights[1] * std::get<1>(pixelAttributes[1]) +
                    weights[2] * std::get<1>(pixelAttributes[2]);
       auto patchIdGathered = textureGather<uint16_t>(
-          [&](uint32_t row, uint32_t col) { return frame.atlas[atlasId].patchId(row, col); },
+          [&](uint32_t row, uint32_t col) { return frame.atlas[atlasId].patchIdx(row, col); },
           gatherCoord);
       auto colorGathered = textureGather(atlasColor[atlasId], gatherCoord);
       auto transparencyGathered = textureGather(atlasTransparency[atlasId], gatherCoord);
@@ -440,7 +439,7 @@ private:
       float oWeight = 0;
 
       for (uint32_t j = 0; j < 4U; j++) {
-        if (patchId == patchIdGathered[j]) {
+        if (patchIdx == patchIdGathered[j]) {
           oColor += wInterp[j] * transparencyGathered[j] * colorGathered[j];
           oWeight += wInterp[j] * transparencyGathered[j];
         }

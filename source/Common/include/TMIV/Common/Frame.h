@@ -194,7 +194,7 @@ public:
 };
 
 using PatchIdx = uint16_t;
-static constexpr auto unusedPatchId = UINT16_MAX;
+static constexpr auto unusedPatchIdx = UINT16_MAX;
 
 struct V3cFrame {
   Frame<> texture;

@@ -173,7 +173,7 @@ auto Packer::pack(const Common::SizeVector &atlasSizes, const Common::FrameList<
   MivBitstream::PatchParamsList atlasParamsVector{};
   MaxRectPiP::Output packerOutput{};
 
-  int32_t patchId = 0;
+  int32_t patchIdx = 0;
   int32_t clusteringMap_viewId = 0;
   while (!clusterToPack.empty()) {
     const Cluster &cluster = clusterToPack.top();
@@ -210,13 +210,13 @@ auto Packer::pack(const Common::SizeVector &atlasSizes, const Common::FrameList<
 
           if (m_maxEntityId > 0) {
             p.atlasPatchEntityId(cluster.getEntityId());
-            std::cout << "Packing patch " << patchId << " of entity " << p.atlasPatchEntityId()
+            std::cout << "Packing patch " << patchIdx << " of entity " << p.atlasPatchEntityId()
                       << " from view " << p.atlasPatchProjectionId() << " with #active pixels "
                       << cluster.getNumActivePixels() << " in atlas " << p.atlasId() << std::endl;
           }
 
           atlasParamsVector.push_back(p);
-          patchId++;
+          patchIdx++;
 
           packed = true;
           break;

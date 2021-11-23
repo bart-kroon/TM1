@@ -123,16 +123,16 @@ auto Reader::read(std::istream &stream, std::streampos posId, Common::Vec2i size
   return Frame{m_size, std::move(pixelList)};
 }
 
-auto Reader::read(int32_t frameId) -> Frame {
+auto Reader::read(int32_t frameIdx) -> Frame {
   std::ifstream stream{m_path, std::ifstream::binary};
   if (!stream.good()) {
     throw std::runtime_error(fmt::format("Failed to open {} for reading", m_path));
   }
 
-  fmt::print("Loading MPI pcs frame {0} with start frame offset {1} (= {2}).\n", frameId,
-             m_startFrame, frameId + m_startFrame);
+  fmt::print("Loading MPI pcs frame {0} with start frame offset {1} (= {2}).\n", frameIdx,
+             m_startFrame, frameIdx + m_startFrame);
 
-  return read(stream, m_index[frameId + m_startFrame], m_size);
+  return read(stream, m_index[frameIdx + m_startFrame], m_size);
 }
 
 void Reader::buildIndex() {

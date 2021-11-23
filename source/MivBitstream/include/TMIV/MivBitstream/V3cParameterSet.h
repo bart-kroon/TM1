@@ -325,23 +325,22 @@ private:
 class AttributeInformation {
 public:
   [[nodiscard]] auto ai_attribute_count() const noexcept -> uint8_t;
-  [[nodiscard]] auto ai_attribute_type_id(uint8_t attributeId) const -> AiAttributeTypeId;
-  [[nodiscard]] auto ai_attribute_codec_id(uint8_t attributeId) const -> uint8_t;
-  [[nodiscard]] auto ai_attribute_map_absolute_coding_persistence_flag(uint8_t attributeId) const
+  [[nodiscard]] auto ai_attribute_type_id(uint8_t attrIdx) const -> AiAttributeTypeId;
+  [[nodiscard]] auto ai_attribute_codec_id(uint8_t attrIdx) const -> uint8_t;
+  [[nodiscard]] auto ai_attribute_map_absolute_coding_persistence_flag(uint8_t attrIdx) const
       -> bool;
-  [[nodiscard]] auto ai_attribute_dimension_minus1(uint8_t attributeId) const -> uint8_t;
-  [[nodiscard]] auto ai_attribute_2d_bit_depth_minus1(uint8_t attributeId) const -> uint8_t;
-  [[nodiscard]] auto ai_attribute_MSB_align_flag(uint8_t attributeId) const -> bool;
+  [[nodiscard]] auto ai_attribute_dimension_minus1(uint8_t attrIdx) const -> uint8_t;
+  [[nodiscard]] auto ai_attribute_2d_bit_depth_minus1(uint8_t attrIdx) const -> uint8_t;
+  [[nodiscard]] auto ai_attribute_MSB_align_flag(uint8_t attrIdx) const -> bool;
 
   auto ai_attribute_count(uint8_t value) -> AttributeInformation &;
-  auto ai_attribute_type_id(uint8_t attributeId, AiAttributeTypeId value) -> AttributeInformation &;
-  auto ai_attribute_codec_id(uint8_t attributeId, uint8_t value) -> AttributeInformation &;
-  auto ai_attribute_map_absolute_coding_persistence_flag(uint8_t attributeId, bool value)
+  auto ai_attribute_type_id(uint8_t attrIdx, AiAttributeTypeId value) -> AttributeInformation &;
+  auto ai_attribute_codec_id(uint8_t attrIdx, uint8_t value) -> AttributeInformation &;
+  auto ai_attribute_map_absolute_coding_persistence_flag(uint8_t attrIdx, bool value)
       -> AttributeInformation &;
-  auto ai_attribute_dimension_minus1(uint8_t attributeId, uint8_t value) -> AttributeInformation &;
-  auto ai_attribute_2d_bit_depth_minus1(uint8_t attributeId, uint8_t value)
-      -> AttributeInformation &;
-  auto ai_attribute_MSB_align_flag(uint8_t attributeId, bool value) -> AttributeInformation &;
+  auto ai_attribute_dimension_minus1(uint8_t attrIdx, uint8_t value) -> AttributeInformation &;
+  auto ai_attribute_2d_bit_depth_minus1(uint8_t attrIdx, uint8_t value) -> AttributeInformation &;
+  auto ai_attribute_MSB_align_flag(uint8_t attrIdx, bool value) -> AttributeInformation &;
 
   auto printTo(std::ostream &stream, AtlasId atlasId) const -> std::ostream &;
 

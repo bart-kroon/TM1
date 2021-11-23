@@ -442,7 +442,7 @@ auto MivDecoder::decodeBlockToPatchMap(size_t k, const MivBitstream::PatchParams
   // All elements of TileBlockToPatchMap are first initialized to -1 as follows [9.2.6]
   auto btpm = Common::Frame<Common::PatchIdx>::lumaOnly(
       {atlasBlockToPatchMapWidth, atlasBlockToPatchMapHeight});
-  btpm.fillValue(Common::unusedPatchId);
+  btpm.fillValue(Common::unusedPatchIdx);
 
   // Then the AtlasBlockToPatchMap array is updated as follows:
   for (size_t p = 0; p < ppl.size(); ++p) {
@@ -455,7 +455,7 @@ auto MivDecoder::decodeBlockToPatchMap(size_t k, const MivBitstream::PatchParams
     for (size_t y = 0; y < atlasPatchHeightBlk; ++y) {
       for (size_t x = 0; x < atlasPatchWidthBlk; ++x) {
         if (!asps.asps_patch_precedence_order_flag() ||
-            btpm.getPlane(0)(yOrg + y, xOrg + x) == Common::unusedPatchId) {
+            btpm.getPlane(0)(yOrg + y, xOrg + x) == Common::unusedPatchIdx) {
           btpm.getPlane(0)(yOrg + y, xOrg + x) = static_cast<uint16_t>(p);
         }
       }

@@ -84,7 +84,7 @@ auto AccessUnit::sequenceConfig() const -> SequenceConfig {
 
 void requireAllPatchesWithinProjectionPlaneBounds(const ViewParamsList &vpl,
                                                   const PatchParamsList &ppl) {
-  auto patchIndex = 0;
+  auto patchIdx = 0;
 
   for (const auto &pp : ppl) {
     const auto &vp = vpl[pp.atlasPatchProjectionId()];
@@ -99,11 +99,11 @@ void requireAllPatchesWithinProjectionPlaneBounds(const ViewParamsList &vpl,
 
     if (u_1 < 0 || u_1 > u_2 || u_2 > size_u || v_1 < 0 || v_1 > v_2 || v_2 > size_v) {
       throw std::runtime_error(
-          fmt::format("Patch with index {} and projection ID {} is out of bounds", patchIndex,
+          fmt::format("Patch with index {} and projection ID {} is out of bounds", patchIdx,
                       pp.atlasPatchProjectionId()));
     }
 
-    ++patchIndex;
+    ++patchIdx;
   }
 }
 } // namespace TMIV::MivBitstream

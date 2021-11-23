@@ -112,21 +112,21 @@ private:
     using geometryValue = MpiPcs::Attribute::GeometryValue;
     const auto layerCount = Common::verifyDownCast<geometryValue>(viewParams.nbMpiLayers);
 
-    for (int32_t frameId = 0; frameId < m_numberOfInputFrames; ++frameId) {
+    for (int32_t frameIdx = 0; frameIdx < m_numberOfInputFrames; ++frameIdx) {
       MpiPcs::Frame mpiPcsFrame{viewSize};
 
       for (geometryValue layerId = 0; layerId < layerCount; ++layerId) {
         mpiPcsFrame.appendLayer(
             layerId, {yuv420(loadMpiTextureMpiLayer(json(), placeholders(), m_inputSequenceConfig,
-                                                    frameId, layerId, viewParams.nbMpiLayers)),
-                      Common::elementCast<uint8_t>(yuv400(
-                          loadMpiTransparencyMpiLayer(json(), placeholders(), m_inputSequenceConfig,
-                                                      frameId, layerId, viewParams.nbMpiLayers)))});
+                                                    frameIdx, layerId, viewParams.nbMpiLayers)),
+                      Common::elementCast<uint8_t>(yuv400(loadMpiTransparencyMpiLayer(
+                          json(), placeholders(), m_inputSequenceConfig, frameIdx, layerId,
+                          viewParams.nbMpiLayers)))});
       }
 
       mpiPcsWriter.append(mpiPcsFrame);
 
-      fmt::print("Frame #{} transcoded\n", frameId);
+      fmt::print("Frame #{} transcoded\n", frameIdx);
     }
 
     fmt::print("RAW to PCS conversion completed\n");
@@ -182,8 +182,8 @@ private:
     using geometryValue = MpiPcs::Attribute::GeometryValue;
     const auto layerCount = Common::verifyDownCast<geometryValue>(viewParams.nbMpiLayers);
 
-    for (int32_t frameId = 0; frameId < m_numberOfInputFrames; ++frameId) {
-      const auto mpiPcsFrame = mpiPcsReader.read(frameId);
+    for (int32_t frameIdx = 0; frameIdx < m_numberOfInputFrames; ++frameIdx) {
+      const auto mpiPcsFrame = mpiPcsReader.read(frameIdx);
 
       for (geometryValue layerId = 0; layerId < layerCount; ++layerId) {
         const auto [textureLayer, transparencyLayer] = mpiPcsFrame.getLayer(layerId);
@@ -200,7 +200,7 @@ private:
         }
       }
 
-      fmt::print("Frame #{} transcoded\n", frameId);
+      fmt::print("Frame #{} transcoded\n", frameIdx);
     }
 
     fmt::print("PCS to RAW conversion completed\n");

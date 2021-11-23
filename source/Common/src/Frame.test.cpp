@@ -50,9 +50,9 @@ void checkLuminancePlaneContents(const Frame<Element> &unit, uint32_t expectedPi
 }
 
 template <typename Element>
-void checkChrominancePlaneContents(const Frame<Element> &unit, int32_t planeId,
+void checkChrominancePlaneContents(const Frame<Element> &unit, int32_t planeIdx,
                                    uint32_t expectedPixelValue = 0) {
-  const auto &uPlane = unit.getPlane(planeId);
+  const auto &uPlane = unit.getPlane(planeIdx);
   REQUIRE(!uPlane.empty());
   REQUIRE(uPlane.width() == static_cast<size_t>(unit.getWidth() / 2));
   REQUIRE(uPlane.height() == static_cast<size_t>(unit.getHeight() / 2));

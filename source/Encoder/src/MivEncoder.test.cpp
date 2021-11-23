@@ -65,6 +65,6 @@ TEST_CASE("Encoder::MivEncoder") {
     unit->writeAccessUnit(au, false);
     unit.reset();
 
-    REQUIRE(stream.tellp() == 136);
+    REQUIRE(stream.tellp() == 145);
   }
 }

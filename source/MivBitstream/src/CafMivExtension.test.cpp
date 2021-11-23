@@ -199,7 +199,7 @@ pp_parent_idx[ 5 ][ 3 ]=8
 TEST_CASE("miv_view_params_list", "[Common Atlas Frame MIV Extension]") {
   auto unit = MivViewParamsList{};
   auto casps = CommonAtlasSequenceParameterSetRBSP{};
-  casps.casps_miv_extension() = {};
+  casps.casps_miv_extension().casme_depth_quantization_params_present_flag(false);
 
   SECTION("Default constructor") {
     REQUIRE(toString(unit) == R"(mvp_num_views_minus1=0

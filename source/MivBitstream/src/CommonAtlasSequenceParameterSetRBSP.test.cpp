@@ -39,7 +39,7 @@ TEST_CASE("casps_miv_extension", "[Common Atlas Sequence Parameter Set RBSP]") {
   SECTION("Default constructor") {
     const CaspsMivExtension unit{};
     REQUIRE(toString(unit) == R"(casme_depth_low_quality_flag=false
-casme_depth_quantization_params_present_flag=false
+casme_depth_quantization_params_present_flag=true
 casme_vui_params_present_flag=false
 )");
 
@@ -99,7 +99,7 @@ casps_extension_present_flag=true
 casps_miv_extension_present_flag=true
 casps_extension_7bits=0
 casme_depth_low_quality_flag=false
-casme_depth_quantization_params_present_flag=false
+casme_depth_quantization_params_present_flag=true
 casme_vui_params_present_flag=false
 )");
     REQUIRE(byteCodingTest(unit, 3));

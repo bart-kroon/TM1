@@ -310,9 +310,9 @@ TEST_CASE("Decoder::writeFrameToOutputLog") {
 
       frame.casps = TMIV::MivBitstream::CommonAtlasSequenceParameterSetRBSP{};
       auto &casme = frame.casps->casps_miv_extension();
-      reference += "-1 0 8 5 00000000 00000000 00000000 00000000 00000000 7bd5c66f\n";
+      reference += "-1 0 8 5 00000000 00000000 00000000 00000000 00000000 46b5efdf\n";
       writeFrameToOutputLog(frame, stream);
-      CHECK(TMIV::Decoder::casmeHash(frame) == 0x7bd5c66f);
+      CHECK(TMIV::Decoder::casmeHash(frame) == 0x46b5efdf);
       CHECK(stream.str() == reference);
 
       casme.casme_depth_low_quality_flag(true);

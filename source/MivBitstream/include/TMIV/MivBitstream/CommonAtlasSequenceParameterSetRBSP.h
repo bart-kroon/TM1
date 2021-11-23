@@ -65,7 +65,7 @@ public:
 
 private:
   bool m_casme_depth_low_quality_flag{};
-  bool m_casme_depth_quantization_params_present_flag{};
+  bool m_casme_depth_quantization_params_present_flag{true};
   bool m_casme_vui_params_present_flag{};
   std::optional<VuiParameters> m_vui_parameters;
 };

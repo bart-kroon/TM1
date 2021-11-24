@@ -68,6 +68,12 @@ auto getDistanceToPosition(const MivBitstream::ViewParams &viewParams,
 }
 
 auto findCentralBasicView(const MivBitstream::ViewParamsList &viewParamsList) -> size_t {
+  PRECONDITION(!viewParamsList.empty());
+
+  if (viewParamsList.size() == 1) {
+    return 0;
+  }
+
   const auto centerPos = calculateCenterPosition(viewParamsList);
 
   const auto viewClosestToCenter =

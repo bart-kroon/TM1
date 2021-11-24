@@ -96,8 +96,9 @@ void Configuration::queryMainParameters(const Common::Json &rootNode,
     }
     if (0.5 <= depthOccThresholdIfSet) {
       throw std::runtime_error(
-          "The encoder takes a margin equal to the threshold, so "
-          "setting the threshold this high will make it impossible to encode depth.");
+          "The encoder takes a margin equal to the depth occupancy threshold, so "
+          "setting the threshold this high will make it impossible to encode depth. Note that "
+          "depthOccThresholdIfSet is normalized on the max. geometry sample value.");
     }
   }
 
@@ -106,7 +107,7 @@ void Configuration::queryMainParameters(const Common::Json &rootNode,
   }
 
   if (attributeOffsetFlag) {
-    attributeOffsetBitCount = rootNode.require("attributeOffsetBitCount").as<int32_t>();
+    attributeOffsetBitCount = rootNode.require("attributeOffsetBitCount").as<uint32_t>();
   }
 
   // Read the entity encoding range if exists

@@ -373,6 +373,8 @@ auto Encoder::calculateBtpm() const -> std::vector<std::vector<std::vector<int32
 
 auto Encoder::calculatePatchAttrOffsetValuesFullGOP(
     std::vector<std::array<std::array<int64_t, 4>, 3>> &patchAttrOffsetValuesFullGOP) -> int32_t {
+  PRECONDITION(m_config.texBitDepth >= m_config.attributeOffsetBitCount);
+
   const auto bitShift = m_config.texBitDepth - m_config.attributeOffsetBitCount;
   const auto textureMedVal = Common::medLevel<uint16_t>(m_config.texBitDepth);
   const auto textureMaxVal = Common::maxLevel<uint16_t>(m_config.texBitDepth);

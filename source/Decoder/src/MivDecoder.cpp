@@ -92,7 +92,7 @@ auto MivDecoder::operator()() -> std::optional<MivBitstream::AccessUnit> {
   }
 
   for (size_t k = 0; k <= m_au.vps.vps_atlas_count_minus1(); ++k) {
-    if (!m_atlasAu[k] || m_atlasAu[k]->foc < m_au.foc) {
+    if (m_state == State::initial || (m_atlasAu[k] && m_atlasAu[k]->foc < m_au.foc)) {
       m_atlasAu[k] = (*m_atlasDecoder[k])();
     }
     if (m_atlasAu[k] && m_atlasAu[k]->foc == m_au.foc) {

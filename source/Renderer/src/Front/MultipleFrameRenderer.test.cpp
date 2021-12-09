@@ -61,8 +61,9 @@ struct FakeRenderer : public TMIV::Renderer::IRenderer {
   FakeRenderer(const TMIV::Common::Json & /* rootNode */,
                const TMIV::Common::Json & /* componentNode */) {}
 
-  [[nodiscard]] auto renderFrame(const TMIV::MivBitstream::AccessUnit & /* frame */,
-                                 const TMIV::MivBitstream::ViewParams & /* viewportParams */) const
+  [[nodiscard]] auto
+  renderFrame(const TMIV::MivBitstream::AccessUnit & /* frame */,
+              const TMIV::MivBitstream::CameraConfig & /* viewportParams */) const
       -> TMIV::Common::Texture444Depth16Frame override {
     throw std::logic_error("Unexpected call to renderFrame");
   }

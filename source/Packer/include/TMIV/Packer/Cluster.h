@@ -40,7 +40,7 @@
 #include <tuple>
 
 namespace TMIV::Packer {
-using ClusteringMap = Common::Frame<Common::YUV400P16>;
+using ClusteringMap = Common::Frame<>;
 using ClusteringMapList = std::vector<ClusteringMap>;
 
 class Cluster;

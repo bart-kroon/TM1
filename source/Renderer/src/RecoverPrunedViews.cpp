@@ -51,11 +51,13 @@ auto recoverPrunedViewAndMask(const MivBitstream::AccessUnit &frame)
 
   for (const auto &viewParams : viewParamsList) {
     const auto size = viewParams.ci.projectionPlaneSize();
-    prunedView.emplace_back(Common::Texture444Frame{size.x(), size.y()},
-                            Common::Depth10Frame{size.x(), size.y()});
+
+    // TODO(#397): What should be the bit depth of reconstructed pruned views?
+    prunedView.emplace_back(Common::Texture444Frame::yuv444({size.x(), size.y()}, 10),
+                            Common::Depth10Frame::lumaOnly({size.x(), size.y()}, 10));
+
     prunedView.back().first.fillNeutral();
-    prunedMasks.emplace_back(size.x(), size.y());
-    prunedMasks.back().fillZero();
+    prunedMasks.emplace_back().createY(size);
   }
 
   // For each pixel in each atlas

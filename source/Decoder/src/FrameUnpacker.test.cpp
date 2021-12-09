@@ -63,7 +63,7 @@ TEST_CASE("TMIV::Decoder::FrameUnpacker: 1 Atlas with texture and geometry") {
       .pin_attribute_dimension_partitions_minus1(0, 0);
 
   SECTION("Full-Scale Geoemtry") {
-    frame.atlas[0].decPacFrame = TMIV::Common::FramePack444Frame{32, 16};
+    frame.atlas[0].decPacFrame = TMIV::Common::FramePack444Frame::yuv444({32, 16}, 10);
     packingInformation.pin_regions_count_minus1(1)
         .pin_region_tile_id(0, static_cast<uint8_t>(0))
         .pin_region_type_id_minus2(0, 2)
@@ -98,7 +98,7 @@ TEST_CASE("TMIV::Decoder::FrameUnpacker: 1 Atlas with texture and geometry") {
   }
 
   SECTION("Downscaled Geometry [2, 2]") {
-    frame.atlas[0].decPacFrame = TMIV::Common::FramePack444Frame{8, 30};
+    frame.atlas[0].decPacFrame = TMIV::Common::FramePack444Frame::yuv444({8, 30}, 10);
     packingInformation.pin_regions_count_minus1(2)
         .pin_region_tile_id(0, static_cast<uint8_t>(0))
         .pin_region_type_id_minus2(0, 2)

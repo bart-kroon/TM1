@@ -91,26 +91,27 @@ auto initSynthesizersForFrameAnalysis(const Common::MVD16Frame &views,
     -> std::vector<std::unique_ptr<IncrementalSynthesizer>> {
   std::vector<std::unique_ptr<IncrementalSynthesizer>> synthesizers{};
   for (size_t i = 0; i < viewParamsList.size(); ++i) {
-    const auto depthTransform = MivBitstream::DepthTransform{viewParamsList[i].dq, 16};
+    const auto geoBitDepth = views[i].depth.getBitDepth();
+    const auto depthTransform = MivBitstream::DepthTransform{viewParamsList[i].dq, geoBitDepth};
     synthesizers.emplace_back(std::make_unique<IncrementalSynthesizer>(
         config, viewParamsList[i].ci.projectionPlaneSize(), i,
         depthTransform.expandDepth(views[i].depth), expandLuma(views[i].texture),
-        expandTexture(yuv444p(views[i].texture))));
+        expandTexture(yuv444(views[i].texture))));
   }
   return synthesizers;
 }
 
 auto initMasksForFrameAnalysis(const Common::MVD16Frame &views,
                                const MivBitstream::ViewParamsList &viewParamsList)
-    -> std::vector<Common::Frame<Common::YUV400P8>> {
-  std::vector<Common::Frame<Common::YUV400P8>> masks{};
+    -> std::vector<Common::Frame<uint8_t>> {
+  std::vector<Common::Frame<uint8_t>> masks{};
   std::transform(
       std::cbegin(viewParamsList), std::cend(viewParamsList), std::cbegin(views),
       back_inserter(masks),
       [](const MivBitstream::ViewParams &viewParams, const Common::TextureDepth16Frame &view) {
-        auto mask =
-            Common::Frame<Common::YUV400P8>{viewParams.ci.ci_projection_plane_width_minus1() + 1,
-                                            viewParams.ci.ci_projection_plane_height_minus1() + 1};
+        auto mask = Common::Frame<uint8_t>::lumaOnly(
+            {viewParams.ci.ci_projection_plane_width_minus1() + 1,
+             viewParams.ci.ci_projection_plane_height_minus1() + 1});
 
         std::transform(std::cbegin(view.depth.getPlane(0)), std::cend(view.depth.getPlane(0)),
                        std::begin(mask.getPlane(0)),

@@ -123,9 +123,9 @@ auto isLowDepthQuality(const MivBitstream::ViewParamsList &vpl,
     const auto &sourceHelper = sourceHelperList[viewIdx];
     const auto occupancyTransform = MivBitstream::OccupancyTransform{sourceHelper.getViewParams()};
 
-    auto sourceDepthExpanded =
-        MivBitstream::DepthTransform{sourceHelper.getViewParams().dq, 16}.expandDepth(
-            sourceViews[viewIdx].depth);
+    const auto geoBitDepth = sourceViews[viewIdx].depth.getBitDepth();
+    const auto dt = MivBitstream::DepthTransform{sourceHelper.getViewParams().dq, geoBitDepth};
+    auto sourceDepthExpanded = dt.expandDepth(sourceViews[viewIdx].depth);
 
     std::transform(sourceViews[viewIdx].depth.getPlane(0).begin(),
                    sourceViews[viewIdx].depth.getPlane(0).end(), sourceDepthExpanded.begin(),

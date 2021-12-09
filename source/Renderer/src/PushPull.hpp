@@ -45,7 +45,8 @@ auto PushPull::filter(const Common::Texture444Depth16Frame &frame, PushFilter &&
   while (1 < m_pyramid.back().first.getWidth() || 1 < m_pyramid.back().first.getHeight()) {
     const auto w = (m_pyramid.back().first.getWidth() + 1) / 2;
     const auto h = (m_pyramid.back().first.getHeight() + 1) / 2;
-    m_pyramid.emplace_back(Common::Texture444Frame{w, h}, Common::Depth16Frame{w, h});
+    m_pyramid.emplace_back(Common::Texture444Frame::yuv444({w, h}, frame.first.getBitDepth()),
+                           Common::Depth16Frame::lumaOnly({w, h}, frame.second.getBitDepth()));
     auto i = m_pyramid.rbegin();
     inplacePushFrame(*(i + 1), *i, pushFilter);
   }
@@ -86,8 +87,8 @@ void PushPull::inplacePushFrame(const Common::Texture444Depth16Frame &in,
   const auto hi = in.first.getHeight();
   const auto wo = (wi + 1) / 2;
   const auto ho = (hi + 1) / 2;
-  out.first.resize(wo, ho);
-  out.second.resize(wo, ho);
+  out.first.createYuv444({wo, ho}, in.first.getBitDepth());
+  out.second.createY({wo, ho}, in.second.getBitDepth());
   return inplacePush(MatrixProxy{yuvd(in), wi, hi}, MatrixProxy{yuvd(out), wo, ho},
                      std::forward<PushFilter>(filter));
 }

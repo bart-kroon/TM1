@@ -36,7 +36,7 @@
 namespace TMIV::Encoder {
 namespace {
 auto maxPool(const Common::Depth10Frame &frame, Common::Vec2i frameSize) -> Common::Depth10Frame {
-  auto result = Common::Depth10Frame{frameSize.x(), frameSize.y()};
+  auto result = Common::Depth10Frame::lumaOnly(frameSize, frame.getBitDepth());
 
   for (int32_t y = 0; y < frameSize.y(); ++y) {
     const int32_t i1 = y * frame.getHeight() / frameSize.y();

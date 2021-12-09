@@ -46,6 +46,7 @@ TEST_CASE("Decoder::writeFrameToOutputLog") {
   SECTION("Minimal example") {
     auto frame = AccessUnit{};
     frame.atlas.emplace_back().asps.asps_frame_width(8).asps_frame_height(5);
+    frame.atlas.back().blockToPatchMap.createY({});
     writeFrameToOutputLog(frame, stream);
     std::string reference = "-1 0 8 5 00000000 00000000 00000000 00000000\n";
     REQUIRE(stream.str() == reference);
@@ -73,28 +74,28 @@ TEST_CASE("Decoder::writeFrameToOutputLog") {
     SECTION("Video frame hash") {
       REQUIRE(TMIV::Decoder::videoDataHash(frame.atlas.front()) == 0);
 
-      frame.atlas.front().decOccFrame.resize(8, 10);
+      frame.atlas.front().decOccFrame.createY({8, 10}, 10);
       frame.atlas.front().decOccFrame.fillValue(23);
       reference += "-1 0 8 5 e9bf42e6 00000000 00000000 00000000\n";
       writeFrameToOutputLog(frame, stream);
       REQUIRE(TMIV::Decoder::videoDataHash(frame.atlas.front()) == 0xE9BF42E6);
       REQUIRE(stream.str() == reference);
 
-      frame.atlas.front().decGeoFrame.resize(10, 4);
+      frame.atlas.front().decGeoFrame.createY({10, 4}, 10);
       frame.atlas.front().decGeoFrame.fillValue(25);
       reference += "-1 0 8 5 14c31f8e 00000000 00000000 00000000\n";
       writeFrameToOutputLog(frame, stream);
       REQUIRE(TMIV::Decoder::videoDataHash(frame.atlas.front()) == 0x14C31F8E);
       REQUIRE(stream.str() == reference);
 
-      frame.atlas.front().attrFrame.resize(12, 26);
+      frame.atlas.front().attrFrame.createYuv444({12, 26}, 10);
       frame.atlas.front().attrFrame.fillValue(100);
       reference += "-1 0 8 5 7afd08cd 00000000 00000000 00000000\n";
       writeFrameToOutputLog(frame, stream);
       REQUIRE(TMIV::Decoder::videoDataHash(frame.atlas.front()) == 0x7AFD08CD);
       REQUIRE(stream.str() == reference);
 
-      frame.atlas.front().transparencyFrame.resize(10, 8);
+      frame.atlas.front().transparencyFrame.createY({10, 8}, 10);
       frame.atlas.front().transparencyFrame.fillValue(88);
       reference += "-1 0 8 5 4033b1a2 00000000 00000000 00000000\n";
       writeFrameToOutputLog(frame, stream);
@@ -105,7 +106,7 @@ TEST_CASE("Decoder::writeFrameToOutputLog") {
     SECTION("Block to patch map") {
       REQUIRE(TMIV::Decoder::blockToPatchMapHash(frame.atlas.front()) == 0);
 
-      frame.atlas.front().blockToPatchMap.resize(8, 10);
+      frame.atlas.front().blockToPatchMap.createY({8, 10});
       frame.atlas.front().blockToPatchMap.fillValue(23);
       frame.atlas.front().blockToPatchMap.getPlane(0)(3, 4) = TMIV::Common::unusedPatchId;
       reference += "-1 0 8 5 00000000 59fe0999 00000000 00000000\n";
@@ -120,11 +121,11 @@ TEST_CASE("Decoder::writeFrameToOutputLog") {
       CAPTURE(value);
 
       // Video frames use the same hash function but do not have this logic
-      frame.atlas.front().decOccFrame.resize(2, 2);
+      frame.atlas.front().decOccFrame.createY({2, 2}, 10);
       frame.atlas.front().decOccFrame.fillValue(value);
       const auto reference2 = TMIV::Decoder::videoDataHash(frame.atlas.front());
 
-      frame.atlas.front().blockToPatchMap.resize(2, 2);
+      frame.atlas.front().blockToPatchMap.createY({2, 2});
       frame.atlas.front().blockToPatchMap.fillValue(value);
       const auto actual = TMIV::Decoder::blockToPatchMapHash(frame.atlas.front());
 
@@ -210,7 +211,9 @@ TEST_CASE("Decoder::writeFrameToOutputLog") {
     auto frame = AccessUnit{};
     frame.vps.vps_atlas_count_minus1(1).vps_atlas_id(1, AtlasId{3});
     frame.atlas.emplace_back().asps.asps_frame_width(8).asps_frame_height(5);
+    frame.atlas.back().blockToPatchMap.createY({});
     frame.atlas.emplace_back().asps.asps_frame_width(13).asps_frame_height(6);
+    frame.atlas.back().blockToPatchMap.createY({});
     writeFrameToOutputLog(frame, stream);
     std::string reference = R"(-1 0 8 5 00000000 00000000 00000000 00000000
 -1 3 13 6 00000000 00000000 00000000 00000000

@@ -38,9 +38,12 @@
 using namespace std::string_literals;
 
 namespace {
-using TMIV::Common::AnyFrame;
 using TMIV::VideoDecoder::NalUnitSource;
 using TMIV::VideoDecoder::VideoDecoderBase;
+
+auto decodedFrame() {
+  return TMIV::Common::Frame<>{{20, 10}, 7, TMIV::Common::ColorFormat::YUV444};
+}
 
 struct FakeVideoDecoder : public VideoDecoderBase {
   FakeVideoDecoder(NalUnitSource source) : VideoDecoderBase{std::move(source)} {}
@@ -54,17 +57,17 @@ struct FakeVideoDecoder : public VideoDecoderBase {
       return true;
     case 1:
       takeNalUnit();
-      outputFrame(std::make_unique<AnyFrame>());
-      outputFrame(std::make_unique<AnyFrame>());
+      outputFrame(decodedFrame());
+      outputFrame(decodedFrame());
       return true;
     case 2:
-      outputFrame(std::make_unique<AnyFrame>());
+      outputFrame(decodedFrame());
       return true;
     case 3:
       takeNalUnit();
       return true;
     case 4:
-      outputFrame(std::make_unique<AnyFrame>());
+      outputFrame(decodedFrame());
       return false;
     default:
       FAIL("It is not allowed to call decodeSome() after it returned false");
@@ -93,18 +96,18 @@ TEST_CASE("VideoDecoder::VideoDecoderBase") {
 
   REQUIRE(unit.decodeSomeCallCount == 0);
 
-  REQUIRE(unit.getFrame());
+  REQUIRE_FALSE(unit.getFrame().empty());
   REQUIRE(unit.decodeSomeCallCount == 2);
 
-  REQUIRE(unit.getFrame());
+  REQUIRE_FALSE(unit.getFrame().empty());
   REQUIRE(unit.decodeSomeCallCount == 2);
 
-  REQUIRE(unit.getFrame());
+  REQUIRE_FALSE(unit.getFrame().empty());
   REQUIRE(unit.decodeSomeCallCount == 3);
 
-  REQUIRE(unit.getFrame());
+  REQUIRE_FALSE(unit.getFrame().empty());
   REQUIRE(unit.decodeSomeCallCount == 5);
 
-  REQUIRE_FALSE(unit.getFrame());
+  REQUIRE(unit.getFrame().empty());
   REQUIRE(unit.decodeSomeCallCount == 5);
 }

@@ -353,7 +353,8 @@ public:
       , m_alignerCurvature(geometryEdgeMagnitudeTh, maxCurvature) {}
 
   auto operator()(const MivBitstream::AtlasAccessUnit &atlas) -> Common::Depth10Frame {
-    auto geoFrame = Common::Depth10Frame{atlas.frameSize().x(), atlas.frameSize().y()};
+    auto geoFrame =
+        Common::Depth10Frame::lumaOnly(atlas.frameSize(), atlas.decGeoFrame.getBitDepth());
 
     // Upscale with nearest neighbor interpolation to nominal atlas resolution
     const auto depthUpscaled = upscaleNearest(atlas.decGeoFrame.getPlane(0), atlas.frameSize());

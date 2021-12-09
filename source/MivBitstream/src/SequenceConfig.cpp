@@ -43,22 +43,22 @@ using namespace std::string_literals;
 namespace TMIV::MivBitstream {
 CameraConfig::CameraConfig(const Common::Json &config) {
   if (const auto &node = config.optional("BitDepthColor")) {
-    bitDepthColor = node.as<int32_t>();
+    bitDepthColor = node.as<uint32_t>();
   }
   if (const auto &node = config.optional("BitDepthTransparency")) {
-    bitDepthTransparency = node.as<int32_t>();
+    bitDepthTransparency = node.as<uint32_t>();
   }
   if (const auto &node = config.optional("BitDepthDepth")) {
-    bitDepthDepth = node.as<int32_t>();
+    bitDepthDepth = node.as<uint32_t>();
   }
   if (const auto &node = config.optional("BitDepthEntities")) {
-    bitDepthEntities = node.as<int32_t>();
+    bitDepthEntities = node.as<uint32_t>();
   }
   viewParams = ViewParams{config};
 }
 
 namespace {
-auto yuv420pFormat(int32_t bitDepth) {
+auto yuv420pFormat(uint32_t bitDepth) {
   if (bitDepth < 8) {
     return fmt::format("yuv420p{}", bitDepth);
   }

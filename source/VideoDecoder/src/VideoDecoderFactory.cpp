@@ -44,19 +44,32 @@
 #include <fmt/ostream.h>
 
 namespace TMIV::VideoDecoder {
-auto create(NalUnitSource source, MivBitstream::PtlProfileCodecGroupIdc codecGroupIdc)
-    -> std::unique_ptr<IVideoDecoder> {
+auto operator<<(std::ostream &stream, DecoderId x) -> std::ostream & {
+  switch (x) {
+  case DecoderId::AVC_Progressive_High:
+    return stream << "AVC Progressive High";
+  case DecoderId::HEVC_Main10:
+    return stream << "HEVC Main10";
+  case DecoderId::HEVC444:
+    return stream << "HEVC444";
+  case DecoderId::VVC_Main10:
+    return stream << "VVC Main10";
+  default:
+    return stream << "[unknown:" << static_cast<int32_t>(x) << "]";
+  }
+}
+
+auto create(NalUnitSource source, DecoderId decoderId) -> std::unique_ptr<VideoDecoderBase> {
 #if HAVE_HM
-  if (codecGroupIdc == MivBitstream::PtlProfileCodecGroupIdc::HEVC_Main10) {
+  if (decoderId == DecoderId::HEVC_Main10) {
     return std::make_unique<HmVideoDecoder>(std::move(source));
   }
 #endif
 #if HAVE_VVDEC
-  if (codecGroupIdc == MivBitstream::PtlProfileCodecGroupIdc::VVC_Main10) {
+  if (decoderId == DecoderId::VVC_Main10) {
     return std::make_unique<VVdeCVideoDecoder>(std::move(source));
   }
 #endif
-  throw std::runtime_error(
-      fmt::format("There is no built-in support for the {} codec group IDC", codecGroupIdc));
+  throw std::runtime_error(fmt::format("There is no built-in support for the {} codec", decoderId));
 }
 } // namespace TMIV::VideoDecoder

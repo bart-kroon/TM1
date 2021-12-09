@@ -40,299 +40,209 @@
 #include <cstring>
 
 namespace TMIV::Common {
-namespace detail {
-template <> struct PixelFormatHelper<YUV400P1> {
-  static constexpr auto numberOfPlanes = 1;
-  static constexpr auto defaultBitDepth = 1U;
-  using base_type = bool;
-  static constexpr auto getMemorySize(int32_t W, int32_t H) -> int32_t { return W * H; }
-  static constexpr auto getDiskSize(int32_t W, int32_t H) -> int32_t { return (W * H) * 3 / 2; }
-  static constexpr auto getPlaneWidth(int32_t /*unused*/, int32_t W) -> int32_t { return W; }
-  static constexpr auto getPlaneHeight(int32_t /*unused*/, int32_t H) -> int32_t { return H; }
-};
-
-template <> struct PixelFormatHelper<YUV400P8> {
-  static constexpr auto numberOfPlanes = 1;
-  static constexpr auto defaultBitDepth = 8U;
-  using base_type = uint8_t;
-  static constexpr auto getMemorySize(int32_t W, int32_t H) -> int32_t { return (W * H); }
-  static constexpr auto getDiskSize(int32_t W, int32_t H) -> int32_t { return (W * H) * 3 / 2; }
-  static constexpr auto getPlaneWidth(int32_t /*unused*/, int32_t W) -> int32_t { return W; }
-  static constexpr auto getPlaneHeight(int32_t /*unused*/, int32_t H) -> int32_t { return H; }
-};
-
-template <> struct PixelFormatHelper<YUV400P10> {
-  static constexpr auto numberOfPlanes = 1;
-  static constexpr auto defaultBitDepth = 10U;
-  using base_type = uint16_t;
-  static constexpr auto getMemorySize(int32_t W, int32_t H) -> int32_t { return 2 * (W * H); }
-  static constexpr auto getDiskSize(int32_t W, int32_t H) -> int32_t { return 3 * (W * H); }
-  static constexpr auto getPlaneWidth(int32_t /*unused*/, int32_t W) -> int32_t { return W; }
-  static constexpr auto getPlaneHeight(int32_t /*unused*/, int32_t H) -> int32_t { return H; }
-};
-
-template <> struct PixelFormatHelper<YUV400P16> {
-  static constexpr auto numberOfPlanes = 1;
-  static constexpr auto defaultBitDepth = 16U;
-  using base_type = uint16_t;
-  static constexpr auto getMemorySize(int32_t W, int32_t H) -> int32_t { return 2 * (W * H); }
-  static constexpr auto getDiskSize(int32_t W, int32_t H) -> int32_t { return 3 * (W * H); }
-  static constexpr auto getPlaneWidth(int32_t /*unused*/, int32_t W) -> int32_t { return W; }
-  static constexpr auto getPlaneHeight(int32_t /*unused*/, int32_t H) -> int32_t { return H; }
-};
-
-template <> struct PixelFormatHelper<YUV420P8> {
-  static constexpr auto numberOfPlanes = 3;
-  static constexpr auto defaultBitDepth = 8U;
-  using base_type = uint8_t;
-  static constexpr auto getMemorySize(int32_t W, int32_t H) -> int32_t { return 3 * (W * H) / 2; }
-  static constexpr auto getDiskSize(int32_t W, int32_t H) -> int32_t { return 3 * (W * H) / 2; }
-  static constexpr auto getPlaneWidth(int32_t id, int32_t W) -> int32_t {
-    return (id == 0) ? W : (W / 2);
-  }
-  static constexpr auto getPlaneHeight(int32_t id, int32_t H) -> int32_t {
-    return (id == 0) ? H : (H / 2);
-  }
-};
-
-template <> struct PixelFormatHelper<YUV420P10> {
-  static constexpr auto numberOfPlanes = 3;
-  static constexpr auto defaultBitDepth = 10U;
-  using base_type = uint16_t;
-  static constexpr auto getMemorySize(int32_t W, int32_t H) -> int32_t { return 3 * (W * H); }
-  static constexpr auto getDiskSize(int32_t W, int32_t H) -> int32_t { return 3 * (W * H); }
-  static constexpr auto getPlaneWidth(int32_t id, int32_t W) -> int32_t {
-    return (id == 0) ? W : (W / 2);
-  }
-  static constexpr auto getPlaneHeight(int32_t id, int32_t H) -> int32_t {
-    return (id == 0) ? H : (H / 2);
-  }
-};
-
-template <> struct PixelFormatHelper<YUV420P16> {
-  static constexpr auto numberOfPlanes = 3;
-  static constexpr auto defaultBitDepth = 16U;
-  using base_type = uint16_t;
-  static constexpr auto getMemorySize(int32_t W, int32_t H) -> int32_t { return 3 * (W * H); }
-  static constexpr auto getDiskSize(int32_t W, int32_t H) -> int32_t { return 3 * (W * H); }
-  static constexpr auto getPlaneWidth(int32_t id, int32_t W) -> int32_t {
-    return (id == 0) ? W : (W / 2);
-  }
-  static constexpr auto getPlaneHeight(int32_t id, int32_t H) -> int32_t {
-    return (id == 0) ? H : (H / 2);
-  }
-};
-
-template <> struct PixelFormatHelper<YUV444P8> {
-  static constexpr auto numberOfPlanes = 3;
-  static constexpr auto defaultBitDepth = 8U;
-  using base_type = uint8_t;
-  static constexpr auto getMemorySize(int32_t W, int32_t H) -> int32_t { return 3 * (W * H); }
-  static constexpr auto getDiskSize(int32_t W, int32_t H) -> int32_t { return 3 * (W * H); }
-  static constexpr auto getPlaneWidth(int32_t /*id*/, int32_t W) -> int32_t { return W; }
-  static constexpr auto getPlaneHeight(int32_t /*id*/, int32_t H) -> int32_t { return H; }
-};
-
-template <> struct PixelFormatHelper<YUV444P10> {
-  static constexpr auto numberOfPlanes = 3;
-  static constexpr auto defaultBitDepth = 10U;
-  using base_type = uint16_t;
-  static constexpr auto getMemorySize(int32_t W, int32_t H) -> int32_t { return 6 * (W * H); }
-  static constexpr auto getDiskSize(int32_t W, int32_t H) -> int32_t { return 6 * (W * H); }
-  static constexpr auto getPlaneWidth(int32_t /*id*/, int32_t W) -> int32_t { return W; }
-  static constexpr auto getPlaneHeight(int32_t /*id*/, int32_t H) -> int32_t { return H; }
-};
-
-template <> struct PixelFormatHelper<YUV444P16> {
-  static constexpr auto numberOfPlanes = 3;
-  static constexpr auto defaultBitDepth = 16U;
-  using base_type = uint16_t;
-  static constexpr auto getMemorySize(int32_t W, int32_t H) -> int32_t { return 6 * (W * H); }
-  static constexpr auto getDiskSize(int32_t W, int32_t H) -> int32_t { return 6 * (W * H); }
-  static constexpr auto getPlaneWidth(int32_t /*id*/, int32_t W) -> int32_t { return W; }
-  static constexpr auto getPlaneHeight(int32_t /*id*/, int32_t H) -> int32_t { return H; }
-};
-} // namespace detail
-
-template <typename FORMAT> Frame<FORMAT>::Frame(int32_t w, int32_t h, uint32_t bitDepth) {
-  recreate(w, h, bitDepth);
-}
-
-template <typename FORMAT> Frame<FORMAT>::Frame(int32_t w, int32_t h) { resize(w, h); }
-
-template <typename FORMAT> auto Frame<FORMAT>::empty() const noexcept {
-  return getWidth() == 0 && getHeight() == 0;
-}
-
-template <typename FORMAT> void Frame<FORMAT>::resize(int32_t w, int32_t h) {
-  m_width = w;
-  m_height = h;
-
-  for (int32_t planeId = 0; planeId < numberOfPlanes; planeId++) {
-    at(m_planes, planeId)
-        .resize(detail::PixelFormatHelper<FORMAT>::getPlaneHeight(planeId, h),
-                detail::PixelFormatHelper<FORMAT>::getPlaneWidth(planeId, w));
-  }
-}
-
-template <typename FORMAT> void Frame<FORMAT>::recreate(int32_t w, int32_t h, uint32_t bitDepth) {
-  using base_type = typename detail::PixelFormatHelper<FORMAT>::base_type;
-  PRECONDITION(1 <= bitDepth && bitDepth <= std::numeric_limits<base_type>::digits);
-  resize(w, h);
+template <typename Element>
+void Frame<Element>::create(Vec2i size, uint32_t bitDepth, ColorFormat colorFormat) {
+  PRECONDITION(bitDepth <= maxBitDepth);
   m_bitDepth = bitDepth;
+
+  if (!empty() && size == getSize()) {
+    fillZero();
+  } else {
+    const auto rows = static_cast<size_t>(size.y());
+    const auto columns = static_cast<size_t>(size.x());
+
+    if (colorFormat == ColorFormat::YUV400) {
+      m_planes.resize(1);
+      m_planes[0].resize(rows, columns);
+    }
+    if (colorFormat == ColorFormat::YUV420) {
+      PRECONDITION(rows % 2 == 0 && columns % 2 == 0);
+      m_planes.resize(3);
+      m_planes[0].resize(rows, columns);
+      m_planes[1].resize(rows / 2, columns / 2);
+      m_planes[2].resize(rows / 2, columns / 2);
+    }
+    if (colorFormat == ColorFormat::YUV444) {
+      m_planes.resize(3);
+      m_planes[0].resize(rows, columns);
+      m_planes[1].resize(rows, columns);
+      m_planes[2].resize(rows, columns);
+    }
+  }
 }
 
-template <typename FORMAT> auto Frame<FORMAT>::getPlanes() -> auto & { return m_planes; }
+template <typename Element> auto Frame<Element>::getColorFormat() const noexcept -> ColorFormat {
+  PRECONDITION(!empty());
 
-template <typename FORMAT> auto Frame<FORMAT>::getPlanes() const -> const auto & {
-  return m_planes;
+  if (m_planes.size() == 1) {
+    return ColorFormat::YUV400;
+  }
+  if (m_planes[1].size(0) < m_planes[0].size(0)) {
+    return ColorFormat::YUV420;
+  }
+  return ColorFormat::YUV444;
 }
 
-template <typename FORMAT> auto Frame<FORMAT>::getPlane(int32_t index) const -> const auto & {
-  return at(m_planes, index);
+template <typename Element> auto Frame<Element>::getMemorySize() const noexcept {
+  switch (getColorFormat()) {
+  case ColorFormat::YUV400:
+    return m_planes.front().size() * sizeof(Element);
+  case ColorFormat::YUV420:
+    return (m_planes.front().size() * sizeof(Element) * 3) / 2;
+  case ColorFormat::YUV444:
+    return m_planes.front().size() * sizeof(Element) * 3;
+  default:
+    UNREACHABLE;
+  }
 }
 
-template <typename FORMAT> auto Frame<FORMAT>::getPlane(int32_t index) -> auto & {
-  return at(m_planes, index);
+template <typename Element> auto Frame<Element>::getDiskSize() const noexcept {
+  switch (getColorFormat()) {
+  case ColorFormat::YUV400: // with padding
+  case ColorFormat::YUV420:
+    return (m_planes.front().size() * sizeof(Element) * 3) / 2;
+  case ColorFormat::YUV444:
+    return m_planes.front().size() * sizeof(Element) * 3;
+  default:
+    UNREACHABLE;
+  }
 }
 
-template <typename FORMAT> auto Frame<FORMAT>::getWidth() const { return m_width; }
-
-template <typename FORMAT> auto Frame<FORMAT>::getHeight() const { return m_height; }
-
-template <typename FORMAT> auto Frame<FORMAT>::getSize() const { return Vec2i{m_width, m_height}; }
-
-template <typename FORMAT> auto Frame<FORMAT>::getMemorySize() const {
-  return detail::PixelFormatHelper<FORMAT>::getMemorySize(m_width, m_height);
-}
-
-template <typename FORMAT> auto Frame<FORMAT>::getDiskSize() const {
-  return detail::PixelFormatHelper<FORMAT>::getDiskSize(m_width, m_height);
-}
-
-template <typename FORMAT> constexpr auto Frame<FORMAT>::getNumberOfPlanes() {
-  return numberOfPlanes;
-}
-
-template <typename FORMAT> auto Frame<FORMAT>::getBitDepth() const noexcept { return m_bitDepth; }
-
-template <typename FORMAT> void Frame<FORMAT>::read(std::istream &stream) {
+template <typename Element> void Frame<Element>::read(std::istream &stream) {
   for (auto &plane : m_planes) {
-    auto buffer = std::vector<char>(plane.size() * sizeof(plane[0]));
+    auto buffer = std::vector<char>(plane.size() * sizeof(Element));
     stream.read(buffer.data(), assertDownCast<std::streamsize>(buffer.size()));
     std::memcpy(plane.data(), buffer.data(), buffer.size());
   }
 }
 
-template <typename FORMAT> void Frame<FORMAT>::dump(std::ostream &stream) const {
+template <typename Element> void Frame<Element>::dump(std::ostream &stream) const {
   for (const auto &plane : m_planes) {
-    auto buffer = std::vector<char>(plane.size() * sizeof(plane[0]));
+    auto buffer = std::vector<char>(plane.size() * sizeof(Element));
     std::memcpy(buffer.data(), plane.data(), buffer.size());
     stream.write(buffer.data(), assertDownCast<std::streamsize>(buffer.size()));
   }
 }
 
-template <typename FORMAT> void Frame<FORMAT>::fillZero() {
-  using base_type = typename detail::PixelFormatHelper<FORMAT>::base_type;
-  for (int32_t k = 0; k < getNumberOfPlanes(); ++k) {
-    std::fill(std::begin(getPlane(k)), std::end(getPlane(k)), base_type{0});
+template <typename Element> void Frame<Element>::fillValue(Element value) noexcept {
+  for (auto &plane : m_planes) {
+    std::fill(plane.begin(), plane.end(), value);
   }
 }
 
-template <typename FORMAT>
-template <typename Integer, typename>
-void Frame<FORMAT>::fillValue(Integer value) {
-  using base_type = typename detail::PixelFormatHelper<FORMAT>::base_type;
-  for (int32_t k = 0; k < getNumberOfPlanes(); ++k) {
-    std::fill(std::begin(getPlane(k)), std::end(getPlane(k)), Common::downCast<base_type>(value));
-  }
-}
+template <typename Element>
+template <typename OtherElement>
+void Frame<Element>::fillInvalid(const Frame<OtherElement> &mask, Element value) noexcept {
+  PRECONDITION(!mask.empty());
 
-template <typename FORMAT> void Frame<FORMAT>::fillNeutral() {
-  for (int32_t k = 0; k < getNumberOfPlanes(); ++k) {
-    std::fill(std::begin(getPlane(k)), std::end(getPlane(k)), neutralColor());
-  }
-}
+  for (auto &plane : m_planes) {
+    PRECONDITION(plane.sizes() == mask.getPlane(0).sizes());
 
-template <typename FORMAT> void Frame<FORMAT>::fillOne() {
-  for (int32_t k = 0; k < getNumberOfPlanes(); ++k) {
-    using base_type = typename detail::PixelFormatHelper<FORMAT>::base_type;
-    std::fill(std::begin(getPlane(k)), std::end(getPlane(k)), base_type{1});
-  }
-}
+    auto i_mask = mask.getPlane(0).cbegin();
 
-template <typename FORMAT>
-template <typename OTHER_FORMAT, typename>
-void Frame<FORMAT>::fillInvalidWithNeutral(const Frame<OTHER_FORMAT> &depth) {
-  PRECONDITION(depth.getSize() == getSize());
-
-  for (int32_t i = 0; i < getHeight(); ++i) {
-    for (int32_t j = 0; j < getWidth(); ++j) {
-      if (depth.getPlane(0)(i, j) == 0) {
-        for (int32_t k = 0; k < getNumberOfPlanes(); ++k) {
-          getPlane(k)(i, j) = neutralColor();
-        }
+    for (auto &sample : plane) {
+      if (*i_mask++ == 0) {
+        sample = value;
       }
     }
   }
 }
 
-template <typename FORMAT> auto Frame<FORMAT>::neutralColor() const noexcept {
-  return Common::medLevel<base_type>(getBitDepth());
+template <typename Element>
+template <typename OtherElement>
+void Frame<Element>::fillInvalidWithNeutral(const Frame<OtherElement> &mask) noexcept {
+  fillInvalid(mask, neutralValue());
 }
 
-template <typename FORMAT> auto AnyFrame::as() const -> Frame<FORMAT> {
-  auto outputFrame = Frame<FORMAT>{static_cast<int32_t>(planes.front().width()),
-                                   static_cast<int32_t>(planes.front().height())};
-  auto &outputPlanes = outputFrame.getPlanes();
-  auto maxOutputValue = (uint64_t{1} << outputFrame.getBitDepth()) - 1;
-
-  for (size_t k = 0; k < outputPlanes.size(); ++k) {
-    if (at(planes, k).empty()) {
-      // Fill neutral when a plane is missing
-      std::fill(std::begin(at(outputPlanes, k)), std::end(at(outputPlanes, k)),
-                outputFrame.neutralColor());
-    } else {
-      const auto maxInputValue = (uint64_t{1} << at(bitdepth, k)) - 1;
-
-      if (at(planes, k).size() == at(outputPlanes, k).size() && maxInputValue == maxOutputValue) {
-        // Plane with same format: direct copy (optimization)
-        using base_type = typename detail::PixelFormatHelper<FORMAT>::base_type;
-        std::transform(std::cbegin(at(planes, k)), std::cend(at(planes, k)),
-                       std::begin(at(outputPlanes, k)),
-                       [](const auto x) { return static_cast<base_type>(x); });
-      } else {
-        // Plane with different format: spatial and range scaling
-        for (size_t i = 0; i < at(outputPlanes, k).height(); ++i) {
-          const size_t n = i * at(planes, k).height() / at(outputPlanes, k).height();
-          for (size_t j = 0; j < at(outputPlanes, k).width(); ++j) {
-            const size_t m = j * at(planes, k).width() / at(outputPlanes, k).width();
-            using base_type = typename Frame<FORMAT>::base_type;
-            at(outputPlanes, k)(i, j) = static_cast<base_type>(
-                (at(planes, k)(n, m) * maxOutputValue + maxInputValue / 2) / maxInputValue);
-          }
-        }
-      }
-    }
-  }
-
-  return outputFrame;
-}
-
-template <typename FORMAT> void padChroma(std::ostream &stream, size_t bytes, uint32_t bitDepth) {
-  auto buffer = std::vector<char>(bytes);
-  padChroma<FORMAT>(buffer, bytes, bitDepth);
-  stream.write(buffer.data(), assertDownCast<std::streamsize>(bytes));
-}
-
-template <typename FORMAT> void padChroma(std::vector<char> &buf, size_t bytes, uint32_t bitDepth) {
-  using base_type = typename detail::PixelFormatHelper<FORMAT>::base_type;
-  const auto fillValue = Common::medLevel<base_type>(bitDepth);
+template <typename Element> void Frame<Element>::padChroma(std::ostream &stream) const {
+  const auto bytes = getDiskSize() - getMemorySize();
 
   if (0 < bytes) {
-    PRECONDITION(bytes % sizeof(fillValue) == 0);
-    const auto padding = std::vector(bytes / sizeof(fillValue), fillValue);
-    std::memcpy(buf.data(), padding.data(), bytes);
+    const auto padding = std::vector(bytes / sizeof(Element), neutralValue());
+
+    auto buffer = std::vector<char>(bytes);
+    std::memcpy(buffer.data(), padding.data(), bytes);
+    stream.write(buffer.data(), assertDownCast<std::streamsize>(bytes));
   }
+}
+
+template <typename Element> auto Frame<Element>::setBitDepth(uint32_t value) noexcept {
+  PRECONDITION(value <= maxBitDepth);
+  m_bitDepth = value;
+}
+
+namespace detail {
+template <typename Element> auto octaveDownArea(const Mat<Element> &from, Mat<Element> &to) {
+  using UInt = std::conditional_t<std::numeric_limits<Element>::digits <= 16, uint32_t, uint64_t>;
+
+  const auto rows = from.size(0) / 2;
+  const auto cols = from.size(1) / 2;
+  to.resize(std::array{rows, cols});
+
+  for (size_t i = 0; i < rows; ++i) {
+    for (size_t j = 0; j < cols; ++j) {
+      to(i, j) = static_cast<Element>((UInt{from(2 * i, 2 * j)} +         //
+                                       UInt{from(2 * i + 1, 2 * j)} +     //
+                                       UInt{from(2 * i, 2 * j + 1)} +     //
+                                       UInt{from(2 * i + 1, 2 * j + 1)} + //
+                                       UInt{2}) /
+                                      UInt{4});
+    }
+  }
+}
+
+template <typename Element> auto octaveUpNearest(const Mat<Element> &from, Mat<Element> &to) {
+  const auto rows = from.size(0) * 2;
+  const auto cols = from.size(1) * 2;
+  to.resize(std::array{rows, cols});
+
+  for (size_t i = 0; i < rows; ++i) {
+    for (size_t j = 0; j < cols; ++j) {
+      to(i, j) = from(i / 2, j / 2);
+    }
+  }
+}
+} // namespace detail
+
+template <typename Element>
+auto Frame<Element>::changeColorFormat(ColorFormat newColorFormat) const -> Frame<Element> {
+  const auto colorFormat = getColorFormat();
+
+  if (colorFormat == newColorFormat) {
+    return *this;
+  }
+
+  auto result = Frame<Element>{};
+  result.setBitDepth(getBitDepth());
+  result.getPlanes().resize(newColorFormat == ColorFormat::YUV400 ? 1 : 3);
+  result.getPlane(0) = m_planes.front();
+
+  if (newColorFormat == ColorFormat::YUV420) {
+    if (colorFormat == ColorFormat::YUV400) {
+      const auto rows = m_planes.front().size(0);
+      const auto cols = m_planes.front().size(1);
+      PRECONDITION(rows % 2 == 0 && cols % 2 == 0);
+
+      result.getPlane(1) = Plane{std::array{rows / 2, cols / 2}, neutralValue()};
+      result.getPlane(2) = Plane{std::array{rows / 2, cols / 2}, neutralValue()};
+    }
+    if (colorFormat == ColorFormat::YUV444) {
+      detail::octaveDownArea(m_planes[1], result.getPlane(1));
+      detail::octaveDownArea(m_planes[2], result.getPlane(2));
+    }
+  }
+  if (newColorFormat == ColorFormat::YUV444) {
+    if (colorFormat == ColorFormat::YUV400) {
+      result.getPlane(1) = Plane{m_planes.front().sizes(), neutralValue()};
+      result.getPlane(2) = Plane{m_planes.front().sizes(), neutralValue()};
+    }
+
+    if (colorFormat == ColorFormat::YUV420) {
+      detail::octaveUpNearest(m_planes[1], result.getPlane(1));
+      detail::octaveUpNearest(m_planes[2], result.getPlane(2));
+    }
+  }
+
+  return result;
 }
 } // namespace TMIV::Common

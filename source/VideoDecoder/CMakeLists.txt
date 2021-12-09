@@ -15,12 +15,12 @@ create_tmiv_library(
     TARGET
         VideoDecoderLib
     SOURCES
-        "src/VideoDecoderFactory.cpp"
         "src/VideoDecoderBase.cpp"
+        "src/VideoDecoderFactory.cpp"
         ${hmSources}
         ${vvdecSources}
     PUBLIC
-        TMIV::MivBitstreamLib
+        TMIV::CommonLib
     )
 
 if (HAVE_HM)

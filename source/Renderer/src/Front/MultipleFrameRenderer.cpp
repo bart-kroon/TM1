@@ -76,10 +76,10 @@ void MultipleFrameRenderer::renderFrame(MivBitstream::AccessUnit frame, int32_t 
   const auto viewportParams =
       IO::loadViewportMetadata(m_config, m_placeholders, outputFrameIndex, cameraName, isPoseTrace);
 
-  m_culler->inplaceFilterBlockToPatchMaps(frame, viewportParams);
+  m_culler->inplaceFilterBlockToPatchMaps(frame, viewportParams.viewParams);
 
   const auto viewport = m_renderer->renderFrame(frame, viewportParams);
   IO::saveViewport(m_config, m_placeholders, outputFrameIndex, cameraName,
-                   {yuv420p(viewport.first), viewport.second});
+                   {yuv420(viewport.first), viewport.second});
 }
 } // namespace TMIV::Renderer::Front

@@ -38,23 +38,32 @@
 #error HM is disabled
 #endif
 
-#include <TMIV/VideoDecoder/IVideoDecoder.h>
+#include <TMIV/VideoDecoder/VideoDecoderBase.h>
+
+#include <memory>
 
 namespace TMIV::VideoDecoder {
-class HmVideoDecoder : public IVideoDecoder {
+class HmVideoDecoder final : public VideoDecoderBase {
 public:
   explicit HmVideoDecoder(NalUnitSource source);
-  HmVideoDecoder(const HmVideoDecoder &) = delete;
-  HmVideoDecoder(HmVideoDecoder &&) = delete;
-  auto operator=(const HmVideoDecoder &) -> HmVideoDecoder & = delete;
-  auto operator=(HmVideoDecoder &&) -> HmVideoDecoder & = delete;
-  ~HmVideoDecoder() override;
 
-  auto getFrame() -> std::unique_ptr<Common::AnyFrame> override;
+  HmVideoDecoder(const HmVideoDecoder &) = delete;
+  HmVideoDecoder(HmVideoDecoder &&) = default;
+  auto operator=(const HmVideoDecoder &) -> HmVideoDecoder & = delete;
+  auto operator=(HmVideoDecoder &&) -> HmVideoDecoder & = default;
+  ~HmVideoDecoder() final;
+
+protected:
+  auto decodeSome() -> bool final;
 
 private:
-  class Impl;
-  std::unique_ptr<Impl> m_impl;
+  void xWriteOutput();
+  void xFlushOutput();
+  void xWritePicture();
+  void xOutputPicture();
+
+  struct HmContext;
+  std::unique_ptr<HmContext> m_context;
 };
 } // namespace TMIV::VideoDecoder
 

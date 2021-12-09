@@ -419,6 +419,8 @@ auto MivViewParamsList::mvp_view_id(uint16_t viewIdx, ViewId viewId) -> MivViewP
 }
 
 auto MivViewParamsList::mvp_inpaint_flag(uint16_t viewIdx, bool value) -> MivViewParamsList & {
+  PRECONDITION(viewIdx <= mvp_num_views_minus1());
+
   m_mvpInpaintFlag[viewIdx] = value;
   return *this;
 }

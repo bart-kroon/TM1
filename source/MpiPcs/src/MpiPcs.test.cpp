@@ -60,8 +60,8 @@ TEST_CASE("MpiPcs writer and reader") {
     Common::Vec2i sz{2, 2};
     Frame mpiPcsFrame(sz);
 
-    auto mpiLayer =
-        TextureTransparency8Frame{Common::TextureFrame{2, 2}, Common::Transparency8Frame{2, 2}};
+    auto mpiLayer = TextureTransparency8Frame{Common::TextureFrame::yuv420({2, 2}, 10),
+                                              Common::Transparency8Frame::lumaOnly({2, 2})};
 
     mpiLayer.transparency.getPlane(0)[0] = 255;
     mpiPcsFrame.appendLayer(18, mpiLayer);
@@ -120,20 +120,20 @@ TEST_CASE("MpiPcs writer and reader") {
     Common::Vec2i size{4, 2};
     Frame mpiPcsFrame(size);
 
-    auto mpiLayer1 =
-        TextureTransparency8Frame{Common::TextureFrame{4, 2}, Common::Transparency8Frame{4, 2}};
+    auto mpiLayer1 = TextureTransparency8Frame{Common::TextureFrame::yuv420({4, 2}, 10),
+                                               Common::Transparency8Frame::lumaOnly({4, 2})};
     mpiLayer1.transparency.getPlane(0)[1] = 11;
     mpiLayer1.transparency.getPlane(0)[5] = 15;
     mpiPcsFrame.appendLayer(1, mpiLayer1);
 
-    auto mpiLayer2 =
-        TextureTransparency8Frame{Common::TextureFrame{4, 2}, Common::Transparency8Frame{4, 2}};
+    auto mpiLayer2 = TextureTransparency8Frame{Common::TextureFrame::yuv420({4, 2}, 10),
+                                               Common::Transparency8Frame::lumaOnly({4, 2})};
     mpiLayer2.transparency.getPlane(0)[1] = 21;
     mpiLayer2.transparency.getPlane(0)[2] = 22;
     mpiPcsFrame.appendLayer(2, mpiLayer2);
 
-    auto mpiLayer3 =
-        TextureTransparency8Frame{Common::TextureFrame{4, 2}, Common::Transparency8Frame{4, 2}};
+    auto mpiLayer3 = TextureTransparency8Frame{Common::TextureFrame::yuv420({4, 2}, 10),
+                                               Common::Transparency8Frame::lumaOnly({4, 2})};
     mpiLayer3.transparency.getPlane(0)[7] = 37;
     mpiPcsFrame.appendLayer(57, mpiLayer3);
 
@@ -172,8 +172,8 @@ TEST_CASE("MpiPcs writer and reader") {
     Common::Vec2i size{2, 2};
     Frame mpiPcsFrame(size);
 
-    auto mpiLayer =
-        TextureTransparency8Frame{Common::TextureFrame{2, 2}, Common::Transparency8Frame{2, 2}};
+    auto mpiLayer = TextureTransparency8Frame{Common::TextureFrame::yuv420({2, 2}, 10),
+                                              Common::Transparency8Frame::lumaOnly({2, 2})};
 
     mpiLayer.transparency.getPlane(0)[0] = 255;
     mpiPcsFrame.appendLayer(18, mpiLayer);

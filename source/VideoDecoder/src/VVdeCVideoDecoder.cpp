@@ -44,159 +44,146 @@
 using namespace std::string_literals;
 
 namespace TMIV::VideoDecoder {
-class VVdeCVideoDecoder::Impl : public VideoDecoderBase {
-public:
-  Impl(NalUnitSource source) : VideoDecoderBase{std::move(source)} {
-    m_accessUnit = vvdec_accessUnit_alloc();
-    VERIFY(m_accessUnit);
+struct VVdeCVideoDecoder::VVdeCContext {
+  vvdecParams params{};
+  vvdecAccessUnit *accessUnit{};
+  vvdecDecoder *decoder{};
+  vvdecFrame *frame{};
+  bool flushing{};
+};
 
-    vvdec_params_default(&m_params);
-    m_params.logLevel = VVDEC_INFO;
-    m_params.verifyPictureHash = true;
-    m_params.parseThreads = 1;
-    m_params.threads = 1;
+namespace {
+void loggingCallback(void * /* context */, int32_t /* level */, const char *fmt, va_list args) {
+  vfprintf(stdout, fmt, args);
+}
+} // namespace
 
-    m_decoder = vvdec_decoder_open(&m_params);
-    VERIFY(m_decoder);
-    vvdec_set_logging_callback(m_decoder, &loggingCallback);
-    fmt::print("{}\n", vvdec_get_dec_information(m_decoder));
-  }
+VVdeCVideoDecoder::VVdeCVideoDecoder(NalUnitSource source)
+    : VideoDecoderBase{std::move(source)}, m_context{new VVdeCContext} {
+  m_context->accessUnit = vvdec_accessUnit_alloc();
+  VERIFY(m_context->accessUnit);
 
-  Impl(const Impl &) = delete;
-  Impl(Impl &&) = delete;
-  auto operator=(const Impl &) -> Impl & = delete;
-  auto operator=(Impl &&) -> Impl & = delete;
+  vvdec_params_default(&m_context->params);
+  m_context->params.logLevel = VVDEC_INFO;
+  m_context->params.verifyPictureHash = true;
+  m_context->params.parseThreads = 1;
+  m_context->params.threads = 1;
 
-  ~Impl() final {
-    if (m_decoder != nullptr) {
-      if (m_frame != nullptr) {
-        const auto err = vvdec_frame_unref(m_decoder, m_frame);
-        if (err != VVDEC_OK) {
-          Common::assertionFailed(vvdec_get_error_msg(err), __FILE__, __LINE__);
-        }
-      }
-      const auto err = vvdec_decoder_close(m_decoder);
+  m_context->decoder = vvdec_decoder_open(&m_context->params);
+  VERIFY(m_context->decoder);
+  vvdec_set_logging_callback(m_context->decoder, loggingCallback);
+  fmt::print("{}\n", vvdec_get_dec_information(m_context->decoder));
+}
+
+VVdeCVideoDecoder::~VVdeCVideoDecoder() {
+  if (m_context->decoder != nullptr) {
+    if (m_context->frame != nullptr) {
+      const auto err = vvdec_frame_unref(m_context->decoder, m_context->frame);
       if (err != VVDEC_OK) {
         Common::assertionFailed(vvdec_get_error_msg(err), __FILE__, __LINE__);
       }
     }
-    vvdec_accessUnit_free(m_accessUnit);
-  }
-
-  auto decodeSome() -> bool final {
-    if (!m_flushing && (!takeAccessUnit() || !decodeFrame())) {
-      m_flushing = true;
-    }
-    if (m_flushing && !flushFrame()) {
-      return false;
-    }
-    if (m_frame != nullptr) {
-      outputFrame();
-      releaseFrame();
-    }
-    return true;
-  }
-
-private:
-  auto takeAccessUnit() -> bool {
-    auto blob = takeNalUnit();
-
-    if (blob.empty()) {
-      return false;
-    }
-
-    blob = "\0\0\1"s + blob; // Prefix a start code
-    const auto payloadUsedSize = Common::downCast<int32_t>(blob.size());
-
-    if (m_accessUnit->payloadSize < blob.size()) {
-      vvdec_accessUnit_free_payload(m_accessUnit);
-      vvdec_accessUnit_alloc_payload(m_accessUnit, payloadUsedSize);
-    }
-    memcpy(m_accessUnit->payload, blob.data(), blob.size());
-    m_accessUnit->payloadUsedSize = payloadUsedSize;
-    return true;
-  }
-
-  auto decodeFrame() -> bool {
-    const auto err = vvdec_decode(m_decoder, m_accessUnit, &m_frame);
-
-    if (err == VVDEC_EOF) {
-      return false;
-    }
-    if (err == VVDEC_TRY_AGAIN || err == VVDEC_OK) {
-      return true;
-    }
-    throw std::runtime_error(
-        fmt::format("Failed to decode VVC frame: {}", vvdec_get_error_msg(err)));
-  }
-
-  auto flushFrame() -> bool {
-    const auto err = vvdec_flush(m_decoder, &m_frame);
-
-    if (err != VVDEC_OK && err != VVDEC_EOF) {
-      throw std::runtime_error(vvdec_get_error_msg(err));
-    }
-    return m_frame != nullptr;
-  }
-
-  void outputFrame() {
-    LIMITATION(m_frame->frameFormat == VVDEC_FF_PROGRESSIVE);
-
-    auto anyFrame = std::make_unique<Common::AnyFrame>();
-
-    for (uint32_t i = 0; i < m_frame->numPlanes; ++i) {
-      Common::at(anyFrame->bitdepth, i) = m_frame->bitDepth;
-
-      const auto &inPlane = Common::at(m_frame->planes, i);
-      auto &outPlane = Common::at(anyFrame->planes, i);
-      outPlane.resize(inPlane.height, inPlane.width);
-
-      for (uint32_t j = 0; j < inPlane.height; ++j) {
-        // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-        const auto *inRowU8 = inPlane.ptr + j * inPlane.stride;
-
-        if (m_frame->bitDepth <= 8) {
-          std::copy_n(inRowU8, inPlane.width, outPlane.row_begin(j));
-        } else if (m_frame->bitDepth <= 16) {
-          // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-          const auto *inRowU16 = reinterpret_cast<const uint16_t *>(inRowU8);
-          std::copy_n(inRowU16, inPlane.width, outPlane.row_begin(j));
-        } else {
-          UNREACHABLE;
-        }
-      }
-    }
-    VideoDecoderBase::outputFrame(std::move(anyFrame));
-  }
-
-  void releaseFrame() {
-    auto *frame = m_frame;
-    m_frame = nullptr;
-
-    const auto err = vvdec_frame_unref(m_decoder, frame);
-
+    const auto err = vvdec_decoder_close(m_context->decoder);
     if (err != VVDEC_OK) {
-      throw std::runtime_error(vvdec_get_error_msg(err));
+      Common::assertionFailed(vvdec_get_error_msg(err), __FILE__, __LINE__);
     }
   }
+  vvdec_accessUnit_free(m_context->accessUnit);
+}
 
-  static void loggingCallback(void * /* context */, int32_t /* level */, const char *fmt,
-                              va_list args) {
-    vfprintf(stdout, fmt, args);
+auto VVdeCVideoDecoder::decodeSome() -> bool {
+  if (!m_context->flushing && (!takeAccessUnit() || !decodeFrame())) {
+    m_context->flushing = true;
+  }
+  if (m_context->flushing && !flushFrame()) {
+    return false;
+  }
+  if (m_context->frame != nullptr) {
+    outputFrame();
+    releaseFrame();
+  }
+  return true;
+}
+
+auto VVdeCVideoDecoder::takeAccessUnit() -> bool {
+  auto blob = takeNalUnit();
+
+  if (blob.empty()) {
+    return false;
   }
 
-  vvdecParams m_params{};
-  vvdecAccessUnit *m_accessUnit{nullptr};
-  vvdecDecoder *m_decoder{nullptr};
-  vvdecFrame *m_frame{nullptr};
-  bool m_flushing{};
-};
+  blob = "\0\0\1"s + blob; // Prefix a start code
+  const auto payloadUsedSize = Common::downCast<int32_t>(blob.size());
 
-VVdeCVideoDecoder::VVdeCVideoDecoder(NalUnitSource source) : m_impl{new Impl{std::move(source)}} {}
+  if (m_context->accessUnit->payloadSize < blob.size()) {
+    vvdec_accessUnit_free_payload(m_context->accessUnit);
+    vvdec_accessUnit_alloc_payload(m_context->accessUnit, payloadUsedSize);
+  }
+  memcpy(m_context->accessUnit->payload, blob.data(), blob.size());
+  m_context->accessUnit->payloadUsedSize = payloadUsedSize;
+  return true;
+}
 
-VVdeCVideoDecoder::~VVdeCVideoDecoder() = default;
+auto VVdeCVideoDecoder::decodeFrame() -> bool {
+  const auto err = vvdec_decode(m_context->decoder, m_context->accessUnit, &m_context->frame);
 
-auto VVdeCVideoDecoder::getFrame() -> std::unique_ptr<Common::AnyFrame> {
-  return m_impl->getFrame();
+  if (err == VVDEC_EOF) {
+    return false;
+  }
+  if (err == VVDEC_TRY_AGAIN || err == VVDEC_OK) {
+    return true;
+  }
+  throw std::runtime_error(fmt::format("Failed to decode VVC frame: {}", vvdec_get_error_msg(err)));
+}
+
+auto VVdeCVideoDecoder::flushFrame() -> bool {
+  const auto err = vvdec_flush(m_context->decoder, &m_context->frame);
+
+  if (err != VVDEC_OK && err != VVDEC_EOF) {
+    throw std::runtime_error(vvdec_get_error_msg(err));
+  }
+  return m_context->frame != nullptr;
+}
+
+void VVdeCVideoDecoder::outputFrame() {
+  LIMITATION(m_context->frame->frameFormat == VVDEC_FF_PROGRESSIVE);
+
+  auto outFrame = Common::Frame<>{};
+  outFrame.setBitDepth(m_context->frame->bitDepth);
+  outFrame.getPlanes().resize(m_context->frame->numPlanes);
+
+  for (uint32_t d = 0; d < m_context->frame->numPlanes; ++d) {
+    const auto &inPlane = Common::at(m_context->frame->planes, d);
+    auto &outPlane = outFrame.getPlane(d);
+
+    outPlane.resize({inPlane.height, inPlane.width});
+
+    Common::withElement(m_context->frame->bitDepth, [&](auto zero) {
+      using Element = decltype(zero);
+
+      for (uint32_t i = 0; i < inPlane.height; ++i) {
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+        const auto *rowU8 = inPlane.ptr + ptrdiff_t{inPlane.stride} * ptrdiff_t{i};
+
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
+        const auto *row = reinterpret_cast<const Element *>(rowU8);
+
+        std::copy_n(row, inPlane.width, outPlane.row_begin(i));
+      }
+    });
+  }
+
+  return VideoDecoderBase::outputFrame(outFrame);
+}
+
+void VVdeCVideoDecoder::releaseFrame() {
+  auto *frame = m_context->frame;
+  m_context->frame = nullptr;
+
+  const auto err = vvdec_frame_unref(m_context->decoder, frame);
+
+  if (err != VVDEC_OK) {
+    throw std::runtime_error(vvdec_get_error_msg(err));
+  }
 }
 } // namespace TMIV::VideoDecoder

@@ -113,7 +113,7 @@ public:
   }
 
   auto renderFrame(const MivBitstream::AccessUnit &frame,
-                   const MivBitstream::ViewParams &viewportParams)
+                   const MivBitstream::CameraConfig &cameraConfig)
       -> Common::Texture444Depth16Frame {
     // 0 - Check for block size consistency
     if (frame.irap) {
@@ -128,9 +128,11 @@ public:
     allocateBlockBuffer(frame);
 
     // 2- Update viewport buffer in case of viewport size change
-    if (m_blendingColor.m() != viewportParams.ci.ci_projection_plane_height_minus1() + size_t{1} ||
-        m_blendingColor.n() != viewportParams.ci.ci_projection_plane_width_minus1() + size_t{1}) {
-      allocateViewportBuffer(viewportParams);
+    if (m_blendingColor.m() !=
+            cameraConfig.viewParams.ci.ci_projection_plane_height_minus1() + size_t{1} ||
+        m_blendingColor.n() !=
+            cameraConfig.viewParams.ci.ci_projection_plane_width_minus1() + size_t{1}) {
+      allocateViewportBuffer(cameraConfig.viewParams);
     }
 
     // 3- Expand atlas in float format (texture and transparency)
@@ -139,9 +141,9 @@ public:
     std::tie(atlasColor, atlasTransparency) = expandAtlas(frame);
 
     // 4 - Blending
-    MpiRasterizer rasterizer{viewportParams.ci.projectionPlaneSize()};
+    MpiRasterizer rasterizer{cameraConfig.viewParams.ci.projectionPlaneSize()};
 
-    auto [vertices, attributes, triangles] = createMesh(frame, viewportParams);
+    auto [vertices, attributes, triangles] = createMesh(frame, cameraConfig.viewParams);
 
     std::fill(m_blendingColor.begin(), m_blendingColor.end(), Common::Vec3f({0.F, 0.F, 0.F}));
     std::fill(m_blendingDepth.begin(), m_blendingDepth.end(), -1.F);
@@ -169,15 +171,17 @@ public:
                    m_blendingDepth.begin(), [&](auto blendedDepth, auto blendedTransparency) {
                      return ((m_minAlpha < blendedTransparency) && isValidDepth(blendedDepth))
                                 ? std::clamp(1.F / blendedDepth,
-                                             viewportParams.dq.dq_norm_disp_low(),
-                                             viewportParams.dq.dq_norm_disp_high())
+                                             cameraConfig.viewParams.dq.dq_norm_disp_low(),
+                                             cameraConfig.viewParams.dq.dq_norm_disp_high())
                                 : NAN;
                    });
 
     // 7 - Quantization
-    const auto depthTransform = MivBitstream::DepthTransform{viewportParams.dq, 16};
-    auto viewport = Common::Texture444Depth16Frame{
-        quantizeTexture(m_blendingColor), depthTransform.quantizeNormDisp(m_blendingDepth, 1)};
+    const auto depthTransform =
+        MivBitstream::DepthTransform{cameraConfig.viewParams.dq, cameraConfig.bitDepthDepth};
+    auto viewport =
+        Common::Texture444Depth16Frame{quantizeTexture(m_blendingColor, cameraConfig.bitDepthColor),
+                                       depthTransform.quantizeNormDisp(m_blendingDepth, 1)};
     viewport.first.fillInvalidWithNeutral(viewport.second);
 
     return viewport;
@@ -464,8 +468,8 @@ MpiSynthesizer::MpiSynthesizer(float minAlpha) : m_impl(new Impl(minAlpha)) {}
 MpiSynthesizer::~MpiSynthesizer() = default;
 
 auto MpiSynthesizer::renderFrame(const MivBitstream::AccessUnit &frame,
-                                 const MivBitstream::ViewParams &viewportParams) const
+                                 const MivBitstream::CameraConfig &cameraConfig) const
     -> Common::Texture444Depth16Frame {
-  return m_impl->renderFrame(frame, viewportParams);
+  return m_impl->renderFrame(frame, cameraConfig);
 }
 } // namespace TMIV::Renderer

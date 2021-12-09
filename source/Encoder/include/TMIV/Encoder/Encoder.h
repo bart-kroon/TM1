@@ -76,8 +76,7 @@ private:
   void pushMultiEntityFrame(Common::MVD16Frame sourceViews);
   static auto entitySeparator(const Common::MVD16Frame &transportViews,
                               Common::SampleValue entityId) -> Common::MVD16Frame;
-  static auto yuvSampler(const Common::EntityMapList &in)
-      -> std::vector<Common::Frame<Common::YUV420P16>>;
+  static auto yuvSampler(const Common::EntityMapList &in) -> std::vector<Common::Frame<>>;
   static void mergeMasks(Common::MaskList &mergedMasks, Common::MaskList masks);
   static void updateMasks(const Common::MVD16Frame &views, Common::MaskList &masks);
   void aggregateEntityMasks(Common::MaskList &masks, Common::SampleValue entityId);
@@ -98,9 +97,9 @@ private:
   auto writePatchInAtlas(const MivBitstream::PatchParams &patchParams,
                          const Common::TextureDepth16Frame &view, Common::MVD16Frame &frame,
                          int32_t frameId, size_t patchIdx) -> std::array<std::array<int64_t, 4>, 3>;
-  void adaptAtlas(const MivBitstream::PatchParams &patchParams,
-                  Common::TextureDepthFrame<Common::YUV400P16> &atlas, int32_t yOcc, int32_t xOcc,
-                  const Common::Vec2i &pView, const Common::Vec2i &pAtlas) const;
+  void adaptAtlas(const MivBitstream::PatchParams &patchParams, Common::TextureDepth16Frame &atlas,
+                  int32_t yOcc, int32_t xOcc, const Common::Vec2i &pView,
+                  const Common::Vec2i &pAtlas) const;
 
   // Encoder_popFrame.cpp
   void incrementFoc();

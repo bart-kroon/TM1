@@ -94,18 +94,18 @@ auto assessColorConsistency(Common::MVD16Frame views, MivBitstream::ViewParamsLi
     synthesizers.emplace_back(std::make_unique<TMIV::Pruner::IncrementalSynthesizer>(
         tmpConfig, params[i].ci.projectionPlaneSize(), i,
         depthTransform.expandDepth(views[i].depth), expandLuma(views[i].texture),
-        expandTexture(yuv444p(views[i].texture))));
+        expandTexture(yuv444(views[i].texture))));
   }
 
-  std::vector<Common::Frame<Common::YUV400P8>> masks;
+  std::vector<Common::Frame<uint8_t>> masks;
   masks.clear();
   masks.reserve(views.size());
   std::transform(
       std::cbegin(params), std::cend(params), std::cbegin(views), back_inserter(masks),
       [](const MivBitstream::ViewParams &viewParams, const Common::TextureDepth16Frame &view) {
-        auto mask =
-            Common::Frame<Common::YUV400P8>{viewParams.ci.ci_projection_plane_width_minus1() + 1,
-                                            viewParams.ci.ci_projection_plane_height_minus1() + 1};
+        auto mask = Common::Frame<uint8_t>::lumaOnly(
+            {viewParams.ci.ci_projection_plane_width_minus1() + 1,
+             viewParams.ci.ci_projection_plane_height_minus1() + 1});
 
         std::transform(std::cbegin(view.depth.getPlane(0)), std::cend(view.depth.getPlane(0)),
                        std::begin(mask.getPlane(0)),

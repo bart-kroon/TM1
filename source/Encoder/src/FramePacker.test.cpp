@@ -59,8 +59,8 @@ TEST_CASE("TMIV::Encoder::FramePacker, 1 Atlas with texture and geometry") {
 
   SECTION("Full-Scale Geoemtry") {
     asmeAtlas.asme_geometry_scale_enabled_flag(false);
-    atlas.texture.resize(32, 64);
-    atlas.depth.resize(32, 64);
+    atlas.texture.createYuv420({32, 64}, 10);
+    atlas.depth.createY({32, 64}, 10);
     frame.push_back(atlas);
 
     TMIV::Encoder::FramePacker unit{};
@@ -91,8 +91,8 @@ TEST_CASE("TMIV::Encoder::FramePacker, 1 Atlas with texture and geometry") {
 
   SECTION("Downscaled Geometry [2, 2]") {
     asmeAtlas.asme_geometry_scale_factor_x_minus1(1).asme_geometry_scale_factor_y_minus1(1);
-    atlas.texture.resize(32, 64);
-    atlas.depth.resize(16, 32);
+    atlas.texture.createYuv420({32, 64}, 10);
+    atlas.depth.createY({16, 32}, 10);
     frame.push_back(atlas);
 
     TMIV::Encoder::FramePacker unit{};
@@ -130,8 +130,8 @@ TEST_CASE("TMIV::Encoder::FramePacker, 1 Atlas with texture and geometry") {
 
   SECTION("Downscaled Geometry [4, 1]") {
     asmeAtlas.asme_geometry_scale_factor_x_minus1(3).asme_geometry_scale_factor_y_minus1(0);
-    atlas.texture.resize(32, 64);
-    atlas.depth.resize(8, 64);
+    atlas.texture.createYuv420({32, 64}, 10);
+    atlas.depth.createY({8, 64}, 10);
     frame.push_back(atlas);
 
     TMIV::Encoder::FramePacker unit{};
@@ -203,9 +203,9 @@ TEST_CASE("TMIV::Encoder::FramePacker, 1 Atlas with texture, geometry, and occup
 
   SECTION("Full-Scale Geoemtry & Full-Scale Occupancy") {
     asmeAtlas.asme_geometry_scale_enabled_flag(false).asme_occupancy_scale_enabled_flag(false);
-    atlas.texture.resize(32, 64);
-    atlas.depth.resize(32, 64);
-    atlas.occupancy.resize(32, 64);
+    atlas.texture.createYuv420({32, 64}, 10);
+    atlas.depth.createY({32, 64}, 10);
+    atlas.occupancy.createY({32, 64}, 10);
     frame.push_back(atlas);
 
     TMIV::Encoder::FramePacker unit{};
@@ -261,8 +261,8 @@ TEST_CASE("TMIV::Encoder::FramePacker, 1 Atlas with attribute and occupancy only
 
   SECTION("Downscaled Occupancy [2 2]") {
     asmeAtlas.asme_occupancy_scale_factor_x_minus1(1).asme_occupancy_scale_factor_y_minus1(1);
-    atlas.texture.resize(32, 64);
-    atlas.occupancy.resize(16, 32);
+    atlas.texture.createYuv420({32, 64}, 10);
+    atlas.depth.createY({16, 32}, 10);
     frame.push_back(atlas);
 
     TMIV::Encoder::FramePacker unit{};

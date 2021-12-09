@@ -67,7 +67,8 @@ auto unprojectPrunedView(const Common::TextureDepth16Frame &view,
     std::vector<int32_t> key;
     key.reserve(vertices.size());
 
-    const auto depthTransform = MivBitstream::DepthTransform{viewParams.dq, 16};
+    const auto geoBitDepth = view.depth.getBitDepth();
+    const auto depthTransform = MivBitstream::DepthTransform{viewParams.dq, geoBitDepth};
 
     for (int32_t y = 0; y < size.y(); ++y) {
       for (int32_t x = 0; x < size.x(); ++x) {

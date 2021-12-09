@@ -246,14 +246,16 @@ public:
   }
 
   [[nodiscard]] auto renderFrame(const MivBitstream::AccessUnit &frame,
-                                 const MivBitstream::ViewParams &viewportParams) const
+                                 const MivBitstream::CameraConfig &cameraConfig) const
       -> Common::Texture444Depth16Frame {
-    auto rasterizer = rasterFrame(frame, viewportParams, resolutionRatio(frame, viewportParams));
+    auto rasterizer = rasterFrame(frame, cameraConfig.viewParams,
+                                  resolutionRatio(frame, cameraConfig.viewParams));
 
-    const auto depthTransform = MivBitstream::DepthTransform{viewportParams.dq, 16};
-    auto viewport =
-        Common::Texture444Depth16Frame{Common::quantizeTexture(rasterizer.attribute<0>()),
-                                       depthTransform.quantizeNormDisp(rasterizer.normDisp(), 1)};
+    const auto depthTransform =
+        MivBitstream::DepthTransform{cameraConfig.viewParams.dq, cameraConfig.bitDepthDepth};
+    auto viewport = Common::Texture444Depth16Frame{
+        Common::quantizeTexture(rasterizer.attribute<0>(), cameraConfig.bitDepthColor),
+        depthTransform.quantizeNormDisp(rasterizer.normDisp(), 1)};
     viewport.first.fillInvalidWithNeutral(viewport.second);
 
     return viewport;
@@ -280,8 +282,8 @@ AdditiveSynthesizer::AdditiveSynthesizer(float rayAngleParam, float depthParam,
 AdditiveSynthesizer::~AdditiveSynthesizer() = default;
 
 auto AdditiveSynthesizer::renderFrame(const MivBitstream::AccessUnit &frame,
-                                      const MivBitstream::ViewParams &viewportParams) const
+                                      const MivBitstream::CameraConfig &cameraConfig) const
     -> Common::Texture444Depth16Frame {
-  return m_impl->renderFrame(frame, viewportParams);
+  return m_impl->renderFrame(frame, cameraConfig);
 }
 } // namespace TMIV::Renderer

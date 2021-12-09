@@ -42,14 +42,14 @@ Renderer::Renderer(const Common::Json &rootNode, const Common::Json &componentNo
                                                                        rootNode, componentNode)} {}
 
 auto Renderer::renderFrame(const MivBitstream::AccessUnit &frame,
-                           const MivBitstream::ViewParams &viewportParams) const
+                           const MivBitstream::CameraConfig &cameraConfig) const
     -> Common::Texture444Depth16Frame {
-  auto viewport = m_synthesizer->renderFrame(frame, viewportParams);
+  auto viewport = m_synthesizer->renderFrame(frame, cameraConfig);
 
-  m_inpainter->inplaceInpaint(viewport, viewportParams);
+  m_inpainter->inplaceInpaint(viewport, cameraConfig.viewParams);
 
   if (frame.vs) {
-    m_viewingSpaceController->inplaceFading(viewport, viewportParams, *frame.vs);
+    m_viewingSpaceController->inplaceFading(viewport, cameraConfig.viewParams, *frame.vs);
   }
 
   return viewport;

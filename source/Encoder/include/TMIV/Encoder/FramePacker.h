@@ -51,21 +51,24 @@ private:
   };
 
   struct RegionSizes {
-    Common::Vec2u frame{0, 0};
-    Common::Vec2u geo{0, 0};
-    Common::Vec2u occ{0, 0};
-    Common::Vec2u pac{0, 0};
+    Common::Vec2i frame{0, 0};
+    Common::Vec2i geo{0, 0};
+    Common::Vec2i occ{0, 0};
+    Common::Vec2i pac{0, 0};
   };
 
-  void combinePlanes(size_t atlasIdx, Common::TextureFrame &atlasTexture);
-  void extractScaledGeometry(size_t atlasIdx, Common::heap::Matrix<uint16_t> &planeDepth);
+  [[nodiscard]] auto constructPackedAtlasFrame(const Common::TextureDepth10Frame &frame,
+                                               uint8_t atlasIdx) const -> Common::FramePack10Frame;
+
+  void combinePlanes(size_t atlasIdx, const Common::TextureFrame &atlasTexture);
+  void extractScaledGeometry(size_t atlasIdx, const Common::heap::Matrix<uint16_t> &planeDepth);
   void updateVideoPresentFlags(MivBitstream::AtlasId atlasId);
   void updatePinOccupancyInformation(MivBitstream::AtlasId atlasId);
   auto computeOccupancySizeAndRegionCount(size_t atlasIdx) -> uint8_t;
   void updatePinGeometryInformation(MivBitstream::AtlasId atlasId);
   auto computeGeometrySizeAndRegionCount(size_t atlasIdx) -> uint8_t;
   void updatePinAttributeInformation(MivBitstream::AtlasId atlasId);
-  void setAttributePinRegion(size_t i, const Common::Vec2u &frameSize);
+  void setAttributePinRegion(size_t i, const Common::Vec2i &frameSize);
   void setGeometryPinRegion(size_t i, size_t atlasIdx, const RegionCounts &regionCounts);
   void setOccupancyPinRegion(size_t i, size_t atlasIdx, const RegionCounts &regionCounts);
   void updatePinRegionInformation(size_t i);
@@ -74,10 +77,6 @@ private:
   EncoderParams m_params;
   MivBitstream::PackingInformation m_packingInformation{};
   MivBitstream::PinRegion m_pinRegion{};
-
-  Common::FramePack10Frame m_framePacker{};
-  std::vector<char> m_bufferDepth{};
-  size_t m_depthPaddingBytes{};
 };
 } // namespace TMIV::Encoder
 

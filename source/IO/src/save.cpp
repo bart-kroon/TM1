@@ -54,8 +54,8 @@ const std::string outputViewportGeometryPathFmt = "outputViewportGeometryPathFmt
 const std::string outputViewportTexturePathFmt = "outputViewportTexturePathFmt";
 const std::string outputPackedVideoDataPathFmt = "outputPackedVideoDataPathFmt";
 
-template <typename FORMAT>
-void saveFrame(const std::filesystem::path &path, const Common::Frame<FORMAT> &frame,
+template <typename Element>
+void saveFrame(const std::filesystem::path &path, const Common::Frame<Element> &frame,
                int32_t frameIndex) {
   create_directories(path.parent_path());
 
@@ -72,8 +72,8 @@ void saveFrame(const std::filesystem::path &path, const Common::Frame<FORMAT> &f
   }
 
   frame.dump(stream);
-  Common::padChroma<FORMAT>(stream, frame.getDiskSize() - frame.getMemorySize(),
-                            frame.getBitDepth());
+  frame.padChroma(stream);
+
   if (!stream.good()) {
     throw std::runtime_error(fmt::format("Failed to write to {}", path));
   }
@@ -178,7 +178,7 @@ void savePrunedFrame(const Common::Json &config, const Placeholders &placeholder
       saveFrame(outputDir / fmt::format(node.as<std::string>(), placeholders.numberOfInputFrames,
                                         placeholders.contentId, placeholders.testId, v,
                                         texture.getWidth(), texture.getHeight()),
-                yuv420p(texture), frameIndex);
+                yuv420(texture), frameIndex);
     }
     LIMITATION(!config.optional(outputMultiviewTransparencyPathFmt));
     if (const auto &node = config.optional(outputMultiviewGeometryPathFmt)) {

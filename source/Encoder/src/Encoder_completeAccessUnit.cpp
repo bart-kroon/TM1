@@ -47,9 +47,8 @@ struct PatchStats {
 
 void adaptPatchStatsToTexture(std::array<PatchStats, 3> &patchStats,
                               const Common::TextureDepth16Frame &view,
-                              Common::TextureDepthFrame<Common::YUV400P16> &atlas,
-                              const Common::Vec2i &pView, const Common::Vec2i &pAtlas,
-                              Common::Vec3i &colorCorrectionOffset) {
+                              Common::TextureDepth16Frame &atlas, const Common::Vec2i &pView,
+                              const Common::Vec2i &pAtlas, Common::Vec3i &colorCorrectionOffset) {
   // Y
   atlas.texture.getPlane(0)(pAtlas.y(), pAtlas.x()) =
       view.texture.getPlane(0)(pView.y(), pView.x());
@@ -105,8 +104,17 @@ void Encoder::scaleGeometryDynamicRange() {
   const auto numOfFrames = m_transportViews.size();
   const auto numOfViews = m_transportViews[0].size();
 
+  LIMITATION(std::all_of(m_transportViews.cbegin(), m_transportViews.cend(), [](const auto &frame) {
+    return std::all_of(frame.cbegin(), frame.cend(), [](const auto &view) {
+      return view.depth.getBitDepth() == Common::sampleBitDepth;
+    });
+  }));
+
+  static constexpr int32_t maxValue = Common::maxLevel(Common::sampleBitDepth);
+  static constexpr auto maxValD = static_cast<double>(maxValue);
+
   for (size_t v = 0; v < numOfViews; v++) {
-    int32_t minDepthMapValWithinGOP = 65535;
+    int32_t minDepthMapValWithinGOP = maxValue;
     int32_t maxDepthMapValWithinGOP = 0;
 
     for (size_t f = 0; f < numOfFrames; f++) {
@@ -128,7 +136,7 @@ void Encoder::scaleGeometryDynamicRange() {
       for (auto &geometry : m_transportViews[f][v].depth.getPlane(0)) {
         geometry = static_cast<uint16_t>(
             (static_cast<double>(geometry) - minDepthMapValWithinGOP) /
-            (static_cast<double>(maxDepthMapValWithinGOP) - minDepthMapValWithinGOP) * 65535.0);
+            (static_cast<double>(maxDepthMapValWithinGOP) - minDepthMapValWithinGOP) * maxValD);
         if (lowDepthQuality) {
           geometry /= 2;
         }
@@ -138,9 +146,9 @@ void Encoder::scaleGeometryDynamicRange() {
     const double normDispLowOrig = m_transportParams.viewParamsList[v].dq.dq_norm_disp_low();
 
     double normDispHigh =
-        maxDepthMapValWithinGOP / 65535.0 * (normDispHighOrig - normDispLowOrig) + normDispLowOrig;
+        maxDepthMapValWithinGOP / maxValD * (normDispHighOrig - normDispLowOrig) + normDispLowOrig;
     const double normDispLow =
-        minDepthMapValWithinGOP / 65535.0 * (normDispHighOrig - normDispLowOrig) + normDispLowOrig;
+        minDepthMapValWithinGOP / maxValD * (normDispHighOrig - normDispLowOrig) + normDispLowOrig;
 
     if (lowDepthQuality) {
       normDispHigh = 2 * normDispHigh - normDispLow;
@@ -436,12 +444,17 @@ void Encoder::constructVideoFrames() {
       const auto frameHeight = vps.vps_frame_height(j);
 
       if (m_config.haveTexture) {
-        frame.texture.resize(frameWidth, frameHeight);
+        const auto &ai = vps.attribute_information(j);
+        PRECONDITION(1 <= ai.ai_attribute_count() &&
+                     ai.ai_attribute_type_id(0) == MivBitstream::AiAttributeTypeId::ATTR_TEXTURE);
+        const auto texBitDepth = ai.ai_attribute_2d_bit_depth_minus1(0) + 1U;
+
+        frame.texture.createYuv420({frameWidth, frameHeight}, texBitDepth);
         frame.texture.fillNeutral();
       }
 
       if (m_config.haveGeometry) {
-        frame.depth.resize(frameWidth, frameHeight);
+        frame.depth.createY({frameWidth, frameHeight});
         frame.depth.fillZero();
       }
 
@@ -456,9 +469,11 @@ void Encoder::constructVideoFrames() {
           occFrameWidth /= asme.asme_occupancy_scale_factor_x_minus1() + 1;
           occFrameHeight /= asme.asme_occupancy_scale_factor_y_minus1() + 1;
         }
-        frame.occupancy.resize(Common::align(occFrameWidth, 2), Common::align(occFrameHeight, 2));
+        // TODO(#397): The alignment is wrong
+        frame.occupancy.createY(
+            {Common::align(occFrameWidth, 2), Common::align(occFrameHeight, 2)});
       } else {
-        frame.occupancy.resize(frameWidth, frameHeight);
+        frame.occupancy.createY({frameWidth, frameHeight});
       }
 
       frame.occupancy.fillZero();
@@ -622,9 +637,8 @@ auto Encoder::writePatchInAtlas(const MivBitstream::PatchParams &patchParams,
 }
 
 void Encoder::adaptAtlas(const MivBitstream::PatchParams &patchParams,
-                         Common::TextureDepthFrame<Common::YUV400P16> &atlas, int32_t yOcc,
-                         int32_t xOcc, const Common::Vec2i &pView,
-                         const Common::Vec2i &pAtlas) const {
+                         Common::TextureDepth16Frame &atlas, int32_t yOcc, int32_t xOcc,
+                         const Common::Vec2i &pView, const Common::Vec2i &pAtlas) const {
   atlas.depth.getPlane(0)(pAtlas.y(), pAtlas.x()) = 0;
 
   if (params().vps.vps_occupancy_video_present_flag(patchParams.atlasId())) {

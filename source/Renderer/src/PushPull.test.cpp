@@ -39,7 +39,8 @@
 
 namespace {
 const auto encodeCoordinates = [](uint16_t w, uint16_t h) {
-  auto frame = std::pair{TMIV::Common::Texture444Frame{w, h}, TMIV::Common::Depth16Frame{w, h}};
+  auto frame = std::pair{TMIV::Common::Texture444Frame::yuv444({w, h}, 10),
+                         TMIV::Common::Depth16Frame::lumaOnly({w, h}, 16)};
 
   for (uint16_t y = 0; y < h; ++y) {
     for (uint16_t x = 0; x < w; ++x) {
@@ -59,7 +60,8 @@ TEST_CASE("inplacePush") {
     const auto hi = GENERATE(0, 1, 2, 32);
 
     auto count = 0;
-    auto in = std::pair{TMIV::Common::Texture444Frame{wi, hi}, TMIV::Common::Depth16Frame{wi, hi}};
+    auto in = std::pair{TMIV::Common::Texture444Frame::yuv444({wi, hi}, 10),
+                        TMIV::Common::Depth16Frame::lumaOnly({wi, hi}, 16)};
     auto out = TMIV::Common::Texture444Depth16Frame{};
 
     TMIV::Renderer::PushPull::inplacePushFrame(in, out, [&count](const auto & /* unused */) {
@@ -74,7 +76,8 @@ TEST_CASE("inplacePush") {
     const auto wi = GENERATE(0, 1, 2, 13);
     const auto hi = GENERATE(0, 1, 2, 32);
 
-    auto in = std::pair{TMIV::Common::Texture444Frame{wi, hi}, TMIV::Common::Depth16Frame{wi, hi}};
+    auto in = std::pair{TMIV::Common::Texture444Frame::yuv444({wi, hi}, 10),
+                        TMIV::Common::Depth16Frame::lumaOnly({wi, hi}, 16)};
     auto out = TMIV::Common::Texture444Depth16Frame{};
 
     TMIV::Renderer::PushPull::inplacePushFrame(in, out,
@@ -152,9 +155,10 @@ TEST_CASE("inplacePull") {
     const auto h = GENERATE(0, 1, 2, 32);
 
     auto count = 0;
-    auto in = std::pair{TMIV::Common::Texture444Frame{(w + 1) / 2, (h + 1) / 2},
-                        TMIV::Common::Depth16Frame{(w + 1) / 2, (h + 1) / 2}};
-    auto out = std::pair{TMIV::Common::Texture444Frame{w, h}, TMIV::Common::Depth16Frame{w, h}};
+    auto in = std::pair{TMIV::Common::Texture444Frame::yuv444({(w + 1) / 2, (h + 1) / 2}, 10),
+                        TMIV::Common::Depth16Frame::lumaOnly({(w + 1) / 2, (h + 1) / 2}, 10)};
+    auto out = std::pair{TMIV::Common::Texture444Frame::yuv444({w, h}, 10),
+                         TMIV::Common::Depth16Frame::lumaOnly({w, h}, 10)};
     TMIV::Renderer::PushPull::inplacePullFrame(in, out, [&count](const auto &.../* unused */) {
       ++count;
       return YUVD{};
@@ -171,7 +175,8 @@ TEST_CASE("inplacePull") {
     auto countY = std::array<std::array<int32_t, 3>, 3>{};
 
     const auto in = encodeCoordinates(3, 3);
-    auto out = std::pair{TMIV::Common::Texture444Frame{6, 6}, TMIV::Common::Depth16Frame{6, 6}};
+    auto out = std::pair{TMIV::Common::Texture444Frame::yuv444({6, 6}, 10),
+                         TMIV::Common::Depth16Frame::lumaOnly({6, 6}, 16)};
     TMIV::Renderer::PushPull::inplacePullFrame(
         in, out, [&](const std::array<YUVD, 4> &pixelValues, const auto & /* unused */) {
           ++TMIV::Common::at(countX, std::get<0>(pixelValues[0]), std::get<0>(pixelValues[1]));

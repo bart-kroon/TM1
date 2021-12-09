@@ -50,7 +50,7 @@ public:
 
   // Render from a texture atlas to a viewport
   [[nodiscard]] auto renderFrame(const MivBitstream::AccessUnit &frame,
-                                 const MivBitstream::ViewParams &viewportParams) const
+                                 const MivBitstream::CameraConfig &cameraConfig) const
       -> Common::Texture444Depth16Frame override;
 
 private:

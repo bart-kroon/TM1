@@ -47,7 +47,7 @@ auto createCluster(int32_t width, int32_t height) -> Cluster {
 } // namespace
 
 SCENARIO("128x128 clustering map") {
-  ClusteringMap map{128, 128}; // Has to be at least the size of the cluster
+  auto map = ClusteringMap::lumaOnly({128, 128}); // Has to be at least the size of the cluster
   map.fillNeutral();
 
   std::vector<Cluster> out_clusters{};

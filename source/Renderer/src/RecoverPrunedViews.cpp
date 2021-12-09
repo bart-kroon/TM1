@@ -62,6 +62,11 @@ auto recoverPrunedViewAndMask(const MivBitstream::AccessUnit &frame)
 
   // For each pixel in each atlas
   for (const auto &atlas : frame.atlas) {
+    if (atlas.asps.asps_miv_extension_present_flag() &&
+        atlas.asps.asps_miv_extension().asme_ancillary_atlas_flag()) {
+      continue;
+    }
+
     for (int32_t i = 0; i < atlas.asps.asps_frame_height(); ++i) {
       for (int32_t j = 0; j < atlas.asps.asps_frame_width(); ++j) {
         // Fetch patch ID

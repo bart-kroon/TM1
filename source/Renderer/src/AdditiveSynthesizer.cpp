@@ -186,6 +186,11 @@ public:
     std::future<void> runner = std::async(std::launch::deferred, []() {});
 
     for (const auto &atlas : frame.atlas) {
+      if (atlas.asps.asps_miv_extension_present_flag() &&
+          atlas.asps.asps_miv_extension().asme_ancillary_atlas_flag()) {
+        continue;
+      }
+
       // Generate a reprojected mesh
       auto [vertices, triangles, attributes] = unprojectAtlas(frame, atlas, viewportParams);
       auto mesh = project(std::move(vertices), std::move(triangles), std::move(attributes),

@@ -53,6 +53,7 @@ private:
   int32_t m_numberOfInputFrames;
   int32_t m_startFrame;
   int32_t m_intraPeriod;
+  static constexpr uint8_t m_vpsId = 0;
 
   MivBitstream::SequenceConfig m_inputSequenceConfig;
   std::filesystem::path m_outputBitstreamPath;
@@ -88,7 +89,7 @@ public:
     }
 
     // Support experiments that use a subset of the source cameras
-    if (const auto &node = json().optional(IO::inputCameraNames)) {
+    if (const auto &node = json().optional("inputCameraNames")) {
       std::cout << "WARNING: Source camera names are derived from the sequence configuration. This "
                    "functionality to override source camera names is only for internal testing, "
                    "e.g. to test with a subset of views.\n";
@@ -128,8 +129,44 @@ private:
   }
 
   void popAtlases(int32_t firstFrame, int32_t lastFrame) {
-    for (int32_t i = firstFrame; i < lastFrame; ++i) {
-      IO::saveAtlasFrame(json(), placeholders(), i, m_encoder.popAtlas());
+    for (int32_t frameIdx = firstFrame; frameIdx < lastFrame; ++frameIdx) {
+      const auto frame = m_encoder.popAtlas();
+
+      for (size_t atlasIdx = 0; atlasIdx < frame.size(); ++atlasIdx) {
+        saveAtlasFrame(MivBitstream::AtlasId{atlasIdx}, frameIdx, frame[atlasIdx]);
+      }
+    }
+  }
+
+  void saveAtlasFrame(MivBitstream::AtlasId atlasId, int32_t frameIdx,
+                      const Common::TextureDepth10Frame &frame) {
+    if (!frame.occupancy.empty()) {
+      IO::saveOutOfBandVideoFrame(json(), placeholders(), frame.occupancy,
+                                  MivBitstream::V3cUnitHeader::ovd(m_vpsId, atlasId), frameIdx);
+    }
+
+    if (!frame.depth.empty()) {
+      IO::saveOutOfBandVideoFrame(json(), placeholders(), frame.depth,
+                                  MivBitstream::V3cUnitHeader::gvd(m_vpsId, atlasId), frameIdx);
+    }
+
+    uint8_t attrIdx{};
+
+    if (!frame.texture.empty()) {
+      IO::saveOutOfBandVideoFrame(json(), placeholders(), frame.texture,
+                                  MivBitstream::V3cUnitHeader::avd(m_vpsId, atlasId, attrIdx++),
+                                  frameIdx, MivBitstream::AiAttributeTypeId::ATTR_TEXTURE);
+    }
+
+    if (!frame.transparency.empty()) {
+      IO::saveOutOfBandVideoFrame(json(), placeholders(), frame.transparency,
+                                  MivBitstream::V3cUnitHeader::avd(m_vpsId, atlasId, attrIdx++),
+                                  frameIdx, MivBitstream::AiAttributeTypeId::ATTR_TRANSPARENCY);
+    }
+
+    if (!frame.packed.empty()) {
+      IO::saveOutOfBandVideoFrame(json(), placeholders(), frame.packed,
+                                  MivBitstream::V3cUnitHeader::pvd(m_vpsId, atlasId), frameIdx);
     }
   }
 

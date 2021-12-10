@@ -276,7 +276,7 @@ private:
     aau.asps.asps_frame_width(static_cast<uint16_t>(w));
     aau.asps.asps_frame_height(static_cast<uint16_t>(h));
 
-    aau.attrFrame = Common::yuv444(frame.texture);
+    aau.texFrame = Common::yuv444(frame.texture);
 
     // TODO(#397): Improve performance by increasing bit depth to Common::sampleBitDepth
     aau.geoFrame.createY({w, h}, 10);
@@ -288,8 +288,7 @@ private:
                                                   maxInValue);
                    });
 
-    // TODO(#397): The bit depth can be set to 1
-    aau.occFrame.createY({w, h}, 10);
+    aau.occFrame.createY({w, h});
     aau.occFrame.fillOne();
 
     auto &pp = aau.patchParamsList.emplace_back();

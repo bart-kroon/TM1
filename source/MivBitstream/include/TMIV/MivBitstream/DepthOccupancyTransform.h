@@ -60,10 +60,10 @@ private:
 class DepthTransform {
 public:
   // Constructor for per-view depth transform signalling (source)
-  explicit DepthTransform(const DepthQuantization &dq, uint32_t bits);
+  explicit DepthTransform(const DepthQuantization &dq, uint32_t bitDepth);
 
   // Constructor for per-patch depth transform signalling (codec)
-  DepthTransform(const DepthQuantization &dq, const PatchParams &patch, uint32_t bits);
+  DepthTransform(const DepthQuantization &dq, const PatchParams &patch, uint32_t bitDepth);
 
   // Expand a level to normalized disparity [m^-1]
   //
@@ -78,12 +78,12 @@ public:
   // Expand a matrix of levels to depth [m]
   //
   // See also expandDepth(uint16_t)
-  [[nodiscard]] auto expandDepth(const Common::Mat<uint16_t> &matrix) const -> Common::Mat<float>;
+  [[nodiscard]] auto expandDepth(const Common::Mat<> &matrix) const -> Common::Mat<float>;
 
   // Expand a frame of levels to depth [m]
   //
   // See also expandDepth(uint16_t)
-  [[nodiscard]] auto expandDepth(const Common::Depth16Frame &frame) const -> Common::Mat<float>;
+  [[nodiscard]] auto expandDepth(const Common::Frame<> &frame) const -> Common::Mat<float>;
 
   // Quantize normalized disparity [m^-1] to a level
   //
@@ -92,12 +92,11 @@ public:
   [[nodiscard]] auto quantizeNormDisp(float x, Common::SampleValue minLevel) const
       -> Common::SampleValue;
 
-  // Quantize a matrix of normalized disparities [m^-1] to a Depth16Frame
+  // Quantize a matrix of normalized disparities [m^-1] to a frame
   //
   // See also quantizeNormDisp(float, uint16_t)
-  template <typename DepthFrame = Common::Depth16Frame>
   [[nodiscard]] auto quantizeNormDisp(const Common::Mat<float> &matrix,
-                                      Common::SampleValue minLevel) const -> DepthFrame;
+                                      Common::SampleValue minLevel) const -> Common::Frame<>;
 
   // Implementation-defined minimum normalized disparity [m^-1]
   //

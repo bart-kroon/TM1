@@ -137,7 +137,7 @@ auto createVps(VpsContent vpsContent) {
 }
 
 auto createTestVpsBitstream(VpsContent vpsType = VpsContent::default_constructed) {
-  const auto vuh = V3cUnitHeader{VuhUnitType::V3C_VPS};
+  const auto vuh = V3cUnitHeader::vps();
   const auto vps = createVps(vpsType);
   return createTestV3cUnit(vuh, vps);
 }
@@ -145,7 +145,7 @@ auto createTestVpsBitstream(VpsContent vpsType = VpsContent::default_constructed
 auto createTestAtlasData(const SampleStreamNalHeader &ssnh) { return AtlasSubBitstream{ssnh}; }
 
 auto createTestAdBitstream() {
-  const auto vuh = V3cUnitHeader{VuhUnitType::V3C_AD};
+  const auto vuh = V3cUnitHeader::ad(0, {});
   const auto ssnh = SampleStreamNalHeader{0};
   const auto ad = createTestAtlasData(ssnh);
   return createTestV3cUnit(vuh, ad);
@@ -311,27 +311,11 @@ auto makeMultiplexerWithFakeVideoBitstreamServers(const Json &packingInformation
     -> TMIV::Encoder::Multiplexer {
   TMIV::Encoder::Multiplexer unit{packingInformationNode};
 
-  unit.setAttributeVideoBitstreamServer(
-      [](AiAttributeTypeId typeId, const AtlasId &atlasId, int32_t attributeIdx) {
+  unit.setVideoBitstreamServer(
+      [](TMIV::MivBitstream::V3cUnitHeader vuh, TMIV::MivBitstream::AiAttributeTypeId attrTypeId) {
         return std::make_unique<std::istringstream>(
-            fmt::format("\0\0\0\1test_attribute typeId={} attributeIdx={} atlasId={}"sv, typeId,
-                        attributeIdx, atlasId));
+            fmt::format("\0\0\0\1test {}"sv, vuh.summary(), attrTypeId));
       });
-
-  unit.setGeometryVideoBitstreamServer([](const AtlasId &atlasId) {
-    return std::make_unique<std::istringstream>(
-        fmt::format("\0\0\0\1test_geometry atlasId={}"sv, atlasId));
-  });
-
-  unit.setOccupancyVideoBitstreamServer([](const AtlasId &atlasId) {
-    return std::make_unique<std::istringstream>(
-        fmt::format("\0\0\0\1test_occupancy atlasId={}"sv, atlasId));
-  });
-
-  unit.setPackedVideoBitstreamServer([](const AtlasId &atlasId) {
-    return std::make_unique<std::istringstream>(
-        fmt::format("\0\0\0\1test_packed atlasId={}"sv, atlasId));
-  });
 
   return unit;
 }
@@ -339,7 +323,7 @@ auto makeMultiplexerWithFakeVideoBitstreamServers(const Json &packingInformation
 void requireThatNextV3cUnitContains(std::istream &stream, const SampleStreamV3cHeader &ssvh,
                                     const std::string &&message) {
   const auto ssvu = SampleStreamV3cUnit::decodeFrom(stream, ssvh);
-  REQUIRE(ssvu.ssvu_v3c_unit().find(message) != std::string::npos);
+  REQUIRE_THAT(ssvu.ssvu_v3c_unit(), Catch::Matchers::Contains(message));
 }
 
 TEST_CASE("VPS with two atlases") {
@@ -353,13 +337,13 @@ TEST_CASE("VPS with two atlases") {
 
   std::istringstream result{outStream.str()};
   const auto ssvh = checkStreamBeginning(result, VpsContent::two_atlases_and_some_videos);
-  requireThatNextV3cUnitContains(result, ssvh, "test_geometry atlasId=0");
+  requireThatNextV3cUnitContains(result, ssvh, "V3C_GVD vps:0 atlas:0 map:0 aux:false");
   requireThatNextV3cUnitContains(result, ssvh,
-                                 "test_attribute typeId=ATTR_NORMAL attributeIdx=0 atlasId=0");
+                                 "V3C_AVD vps:0 atlas:0 attr:0 part:0 map:0 aux:false");
   requireThatNextV3cUnitContains(result, ssvh,
-                                 "test_attribute typeId=ATTR_TEXTURE attributeIdx=1 atlasId=0");
-  requireThatNextV3cUnitContains(result, ssvh, "test_geometry atlasId=1");
-  requireThatNextV3cUnitContains(result, ssvh, "test_occupancy atlasId=1");
+                                 "V3C_AVD vps:0 atlas:0 attr:1 part:0 map:0 aux:false");
+  requireThatNextV3cUnitContains(result, ssvh, "V3C_GVD vps:0 atlas:1 map:0 aux:false");
+  requireThatNextV3cUnitContains(result, ssvh, "V3C_OVD vps:0 atlas:1");
 }
 
 TEST_CASE("VPS with two atlases, one with packed video (no calling add packing information from "
@@ -374,8 +358,8 @@ TEST_CASE("VPS with two atlases, one with packed video (no calling add packing i
 
   std::istringstream result{outStream.str()};
   const auto ssvh = checkStreamBeginning(result, VpsContent::two_atlases_one_with_packed_video);
-  requireThatNextV3cUnitContains(result, ssvh, "test_packed atlasId=0");
-  requireThatNextV3cUnitContains(result, ssvh, "test_geometry atlasId=1");
+  requireThatNextV3cUnitContains(result, ssvh, "V3C_PVD vps:0 atlas:0");
+  requireThatNextV3cUnitContains(result, ssvh, "V3C_GVD vps:0 atlas:1 map:0 aux:false");
 }
 
 TEST_CASE("External Packing Information") {
@@ -447,5 +431,5 @@ TEST_CASE("External Packing Information") {
   std::istringstream result{outStream.str()};
   const auto ssvh =
       checkModifiedVPSWithPackedInformation(result, json.require("packingInformation"));
-  requireThatNextV3cUnitContains(result, ssvh, "test_packed atlasId=0");
+  requireThatNextV3cUnitContains(result, ssvh, "test V3C_PVD vps:0 atlas:0");
 }

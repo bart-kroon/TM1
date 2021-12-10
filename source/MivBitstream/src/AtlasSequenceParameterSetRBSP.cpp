@@ -257,7 +257,7 @@ auto AtlasSequenceParameterSetRBSP::asps_vpcc_extension() const -> const AspsVpc
 }
 
 auto AtlasSequenceParameterSetRBSP::asps_miv_extension() const -> const AspsMivExtension & {
-  VERIFY_V3CBITSTREAM(asps_miv_extension_present_flag());
+  VERIFY_MIVBITSTREAM(asps_miv_extension_present_flag());
   VERIFY_V3CBITSTREAM(m_asme.has_value());
   return *m_asme;
 }

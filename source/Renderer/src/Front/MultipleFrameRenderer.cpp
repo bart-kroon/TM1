@@ -35,6 +35,8 @@
 
 #include <TMIV/Common/Factory.h>
 
+using namespace std::string_literals;
+
 namespace TMIV::Renderer::Front {
 MultipleFrameRenderer::MultipleFrameRenderer(const Common::Json &rootNode,
                                              const std::vector<std::string> &outputCameraNames,

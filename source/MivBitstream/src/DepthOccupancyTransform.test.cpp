@@ -206,7 +206,7 @@ TEST_CASE("DepthTransform") {
     dq.dq_norm_disp_low(3.F);
     dq.dq_norm_disp_high(7.F);
 
-    const auto unit = DepthTransform{dq, 4};
+    const auto unit = DepthTransform{dq, frame.getBitDepth()};
 
     const auto actual = unit.expandDepth(frame);
 

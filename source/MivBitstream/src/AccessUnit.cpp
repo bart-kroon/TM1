@@ -34,57 +34,6 @@
 #include <TMIV/MivBitstream/AccessUnit.h>
 
 namespace TMIV::MivBitstream {
-auto AtlasAccessUnit::frameSize() const noexcept -> Common::Vec2i {
-  return Common::Vec2i{asps.asps_frame_width(), asps.asps_frame_height()};
-}
-
-auto AtlasAccessUnit::decGeoFrameSize(const V3cParameterSet &vps) const noexcept -> Common::Vec2i {
-  if (vps.vps_miv_extension_present_flag()) {
-    const auto &vme = vps.vps_miv_extension();
-    if (vme.vme_geometry_scale_enabled_flag()) {
-      const auto &asme = asps.asps_miv_extension();
-      return Common::Vec2i{
-          asps.asps_frame_width() / (asme.asme_geometry_scale_factor_x_minus1() + 1),
-          asps.asps_frame_height() / (asme.asme_geometry_scale_factor_y_minus1() + 1)};
-    }
-  }
-  return frameSize();
-}
-
-auto AtlasAccessUnit::decPacFrameSize(const V3cParameterSet &vps) const noexcept -> Common::Vec2i {
-  const auto &asme = asps.asps_miv_extension();
-  const auto &vme = vps.vps_miv_extension();
-  auto depthW = asps.asps_frame_width();
-  auto depthH = asps.asps_frame_height();
-  if (vme.vme_geometry_scale_enabled_flag()) {
-    depthW = asps.asps_frame_width() / (asme.asme_geometry_scale_factor_x_minus1() + 1);
-    depthH = asps.asps_frame_height() / (asme.asme_geometry_scale_factor_y_minus1() + 1);
-  }
-  auto numberOfRegions = asps.asps_frame_width() / depthW;
-  auto totalHeight = asps.asps_frame_height() + (depthH / numberOfRegions);
-  auto totalWidth = asps.asps_frame_width();
-
-  return Common::Vec2i{totalWidth, totalHeight};
-}
-
-auto AtlasAccessUnit::decOccFrameSize(const V3cParameterSet &vps) const noexcept -> Common::Vec2i {
-  if (vps.vps_miv_extension_present_flag()) {
-    const auto &vme = vps.vps_miv_extension();
-    if (!vme.vme_embedded_occupancy_enabled_flag() && vme.vme_occupancy_scale_enabled_flag()) {
-      const auto &asme = asps.asps_miv_extension();
-      return Common::Vec2i{
-          asps.asps_frame_width() / (asme.asme_occupancy_scale_factor_x_minus1() + 1),
-          asps.asps_frame_height() / (asme.asme_occupancy_scale_factor_y_minus1() + 1)};
-    }
-  }
-  return frameSize();
-}
-
-auto AtlasAccessUnit::patchId(uint32_t row, uint32_t column) const -> uint16_t {
-  const auto k = asps.asps_log2_patch_packing_block_size();
-  return blockToPatchMap.getPlane(0)(row >> k, column >> k);
-}
-
 auto AccessUnit::sequenceConfig() const -> SequenceConfig {
   auto x = SequenceConfig{};
 

@@ -174,7 +174,7 @@ asps_extension_present_flag=false
 )");
 
   SECTION("Example 1") {
-    const auto vuh = V3cUnitHeader{VuhUnitType::V3C_AD};
+    const auto vuh = V3cUnitHeader::ad(0, {});
     auto vps = V3cParameterSet{};
     vps.vps_frame_width({}, 1).vps_frame_height({}, 1);
 
@@ -217,7 +217,7 @@ asps_extension_6bits=0
   }
 
   SECTION("Example 2") {
-    const auto vuh = V3cUnitHeader{VuhUnitType::V3C_AD};
+    const auto vuh = V3cUnitHeader::ad(0, {});
     auto vps = V3cParameterSet{};
     vps.vps_atlas_id(0, {})
         .vps_frame_width({}, 0xFFFF)

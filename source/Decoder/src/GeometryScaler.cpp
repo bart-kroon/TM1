@@ -75,12 +75,12 @@ auto sampleKernel(const Common::Mat<T> &mat, const Common::Vec2i &loc,
   return samples;
 }
 
-auto sampleKernel(const Common::Texture444Frame &attrFrame, const Common::Vec2i &loc,
+auto sampleKernel(const Common::Texture444Frame &texFrame, const Common::Vec2i &loc,
                   const std::vector<Common::Vec2i> &kernelPoints) {
   auto channels = std::array<std::vector<uint16_t>, 3>{};
 
   for (int32_t d = 0; d < 3; ++d) {
-    Common::at(channels, d) = sampleKernel(attrFrame.getPlane(d), loc, kernelPoints);
+    Common::at(channels, d) = sampleKernel(texFrame.getPlane(d), loc, kernelPoints);
   }
 
   auto samples = std::vector<Common::Vec3w>(channels.front().size());
@@ -125,7 +125,7 @@ auto meanColorDistance(const Common::Vec3w &color, const Range &rangeOfColors) {
   return meanDistance / static_cast<float>(N);
 }
 
-auto findForegroundEdges(const Common::Mat<uint16_t> &depth) -> Common::Mat<uint8_t> {
+auto findForegroundEdges(const Common::Mat<> &depth) -> Common::Mat<uint8_t> {
   auto edgeMask = Common::Mat<uint8_t>{depth.sizes()};
   auto m_kernelPoints = getNeighborhood3x3();
   for (int32_t i = 1; i < static_cast<int32_t>(depth.height()) - 1; ++i) {
@@ -141,7 +141,7 @@ auto findForegroundEdges(const Common::Mat<uint16_t> &depth) -> Common::Mat<uint
   return edgeMask;
 }
 
-auto findRegionBoundaries(const Common::Mat<uint16_t> &regionLabels) -> Common::Mat<uint8_t> {
+auto findRegionBoundaries(const Common::Mat<> &regionLabels) -> Common::Mat<uint8_t> {
   auto boundaryMask = Common::Mat<uint8_t>{regionLabels.sizes()};
   auto m_kernelPoints = getNeighborhood5();
   for (int32_t i = 1; i < static_cast<int32_t>(regionLabels.height()) - 1; ++i) {
@@ -154,8 +154,8 @@ auto findRegionBoundaries(const Common::Mat<uint16_t> &regionLabels) -> Common::
   return boundaryMask;
 }
 
-auto findForegroundEdges(const Common::Mat<uint16_t> &depth,
-                         const Common::Mat<uint16_t> &regionLabels) -> Common::Mat<uint8_t> {
+auto findForegroundEdges(const Common::Mat<> &depth, const Common::Mat<> &regionLabels)
+    -> Common::Mat<uint8_t> {
   auto edges = findForegroundEdges(depth);
   const auto bounds = findRegionBoundaries(regionLabels);
   std::transform(std::begin(edges), std::end(edges), std::begin(bounds), std::begin(edges),
@@ -163,8 +163,7 @@ auto findForegroundEdges(const Common::Mat<uint16_t> &depth,
   return edges;
 }
 
-auto erodeMasked(const Common::Mat<uint16_t> &depth, const Common::Mat<uint8_t> &mask)
-    -> Common::Mat<uint16_t> {
+auto erodeMasked(const Common::Mat<> &depth, const Common::Mat<uint8_t> &mask) -> Common::Mat<> {
   auto depthOut = depth;
   auto kernelPoints = getNeighborhood3x3();
   for (int32_t i = 1; i < static_cast<int32_t>(depth.height()) - 1; ++i) {
@@ -232,19 +231,19 @@ public:
     return foregroundColorConfidence;
   }
 
-  auto colorConfidenceAt(const Common::Texture444Frame &attrFrame,
-                         const Common::Mat<uint16_t> &depth,
-                         const Common::Mat<uint8_t> &edgeMagnitudes, const Common::Vec2i &loc)
-      -> float {
+  [[nodiscard]] auto colorConfidenceAt(const Common::Texture444Frame &texFrame,
+                                       const Common::Mat<> &depth,
+                                       const Common::Mat<uint8_t> &edgeMagnitudes,
+                                       const Common::Vec2i &loc) const -> float {
     auto depths = sampleKernel(depth, loc, m_kernelPoints);
-    auto colors = sampleKernel(attrFrame, loc, m_kernelPoints);
+    auto colors = sampleKernel(texFrame, loc, m_kernelPoints);
     auto edges = sampleKernel(edgeMagnitudes, loc, m_kernelPoints);
 
     return colorConfidence(depths, colors, edges);
   }
 
-  auto operator()(const Common::Texture444Frame &attrFrame, const Common::Mat<uint16_t> &depth,
-                  const Common::Mat<uint8_t> &edgeMagnitudes) -> Common::Mat<uint16_t> {
+  auto operator()(const Common::Texture444Frame &texFrame, const Common::Mat<> &depth,
+                  const Common::Mat<uint8_t> &edgeMagnitudes) const -> Common::Mat<> {
     const int32_t numIterations = 1;
     auto depthIter = depth;
     for (int32_t iter = 0; iter < numIterations; iter++) {
@@ -253,7 +252,7 @@ public:
         for (int32_t j = m_B; j < static_cast<int32_t>(depth.width()) - m_B; ++j) {
           if (edgeMagnitudes(i, j) >= m_geometryEdgeMagnitudeTh) {
             auto foregroundConfidence =
-                colorConfidenceAt(attrFrame, depthIter, edgeMagnitudes, {j, i});
+                colorConfidenceAt(texFrame, depthIter, edgeMagnitudes, {j, i});
             if (foregroundConfidence < m_minForegroundConfidence) {
               markers(i, j) = 255;
             }
@@ -293,14 +292,15 @@ public:
     return depthCurvature3x3;
   }
 
-  auto curvatureAt(const Common::Mat<uint16_t> &depth, const Common::Vec2i &loc) -> int32_t {
+  [[nodiscard]] auto curvatureAt(const Common::Mat<> &depth, const Common::Vec2i &loc) const
+      -> int32_t {
     auto depths = sampleKernel(depth, loc, m_kernelPoints);
 
     return curvature(depths);
   }
 
-  auto operator()(const Common::Mat<uint16_t> &depth, const Common::Mat<uint8_t> &edgeMagnitudes)
-      -> Common::Mat<uint16_t> {
+  auto operator()(const Common::Mat<> &depth, const Common::Mat<uint8_t> &edgeMagnitudes) const
+      -> Common::Mat<> {
     auto depthOut = depth;
     auto markers = Common::Mat<uint8_t>{depth.sizes()};
 
@@ -327,12 +327,11 @@ private:
   int32_t m_B = 1;
 };
 
-auto upscaleNearest(const Common::Mat<uint16_t> &input, Common::Vec2i outputSize)
-    -> Common::Mat<uint16_t> {
+auto upscaleNearest(const Common::Mat<> &input, Common::Vec2i outputSize) -> Common::Mat<> {
   const auto inputSize =
       Common::Vec2i{static_cast<int32_t>(input.width()), static_cast<int32_t>(input.height())};
-  auto output = Common::Mat<uint16_t>(
-      {static_cast<size_t>(outputSize.y()), static_cast<size_t>(outputSize.x())});
+  auto output =
+      Common::Mat<>({static_cast<size_t>(outputSize.y()), static_cast<size_t>(outputSize.x())});
 
   for (int32_t yo = 0; yo < outputSize.y(); ++yo) {
     for (int32_t xo = 0; xo < outputSize.x(); ++xo) {
@@ -352,18 +351,22 @@ public:
       : m_alignerColor(geometryEdgeMagnitudeTh, minForegroundConfidence)
       , m_alignerCurvature(geometryEdgeMagnitudeTh, maxCurvature) {}
 
-  auto operator()(const MivBitstream::AtlasAccessUnit &atlas) -> Common::Depth10Frame {
+  auto operator()(const MivBitstream::AtlasAccessUnit &atlas,
+                  const Common::Frame<> &geoFrameNF) const -> Common::Depth10Frame {
     auto geoFrame =
-        Common::Depth10Frame::lumaOnly(atlas.frameSize(), atlas.decGeoFrame.getBitDepth());
+        Common::Depth10Frame{{atlas.asps.asps_frame_width(), atlas.asps.asps_frame_height()},
+                             geoFrameNF.getBitDepth(),
+                             Common::ColorFormat::YUV400};
 
     // Upscale with nearest neighbor interpolation to nominal atlas resolution
-    const auto depthUpscaled = upscaleNearest(atlas.decGeoFrame.getPlane(0), atlas.frameSize());
-    const auto regionsUpscaled =
-        upscaleNearest(atlas.blockToPatchMap.getPlane(0), atlas.frameSize());
+    const auto atlasFrameSize =
+        Common::Vec2i{atlas.asps.asps_frame_width(), atlas.asps.asps_frame_height()};
+    const auto depthUpscaled = upscaleNearest(geoFrameNF.getPlane(0), atlasFrameSize);
+    const auto regionsUpscaled = upscaleNearest(atlas.blockToPatchMap.getPlane(0), atlasFrameSize);
 
     // Erode based on color alignment
     const auto edgeMagnitudes1 = findForegroundEdges(depthUpscaled, regionsUpscaled);
-    const auto depthColorAligned = m_alignerColor(atlas.attrFrame, depthUpscaled, edgeMagnitudes1);
+    const auto depthColorAligned = m_alignerColor(atlas.texFrame, depthUpscaled, edgeMagnitudes1);
 
     // Erode based on (fg) curvature
     const auto edgeMagnitudes2 = findForegroundEdges(depthColorAligned, regionsUpscaled);
@@ -383,34 +386,32 @@ GeometryScaler::GeometryScaler(const Common::Json & /*rootNode*/,
       .gup_erode_threshold(
           Common::Half(componentNode.require("minForegroundConfidence").as<float>()))
       .gup_delta_threshold(componentNode.require("geometryEdgeMagnitudeTh").as<int32_t>())
-      .gup_max_curvature(static_cast<uint8_t>(componentNode.require("maxCurvature").as<int32_t>()));
+      .gup_max_curvature(componentNode.require("maxCurvature").as<uint8_t>());
+}
+
+auto GeometryScaler::scale(
+    const MivBitstream::AtlasAccessUnit &atlas, const Common::Frame<> &geoFrameNF,
+    const std::optional<MivBitstream::GeometryUpscalingParameters> &gup) const -> Common::Frame<> {
+  return scale(atlas, geoFrameNF, gup.value_or(m_defaultGup));
 }
 
 auto GeometryScaler::scale(const MivBitstream::AtlasAccessUnit &atlas,
+                           const Common::Frame<> &geoFrameNF,
                            const MivBitstream::GeometryUpscalingParameters &gup)
-    -> Common::Depth10Frame {
-  auto upscaler = DepthUpscaler{static_cast<int32_t>(gup.gup_delta_threshold()),
-                                gup.gup_erode_threshold(), gup.gup_max_curvature()};
+    -> Common::Frame<> {
+  if (atlas.asps.asps_miv_extension_present_flag()) {
+    const auto &asme = atlas.asps.asps_miv_extension();
 
-  return upscaler(atlas);
-}
+    if (asme.asme_geometry_scale_enabled_flag() &&
+        (asme.asme_geometry_scale_factor_x_minus1() != 0 ||
+         asme.asme_geometry_scale_factor_y_minus1() != 0)) {
+      const auto upscaler = DepthUpscaler{static_cast<int32_t>(gup.gup_delta_threshold()),
+                                          gup.gup_erode_threshold(), gup.gup_max_curvature()};
 
-void GeometryScaler::inplaceScale(MivBitstream::AccessUnit &frame) const {
-  for (size_t k = 0; k <= frame.vps.vps_atlas_count_minus1(); ++k) {
-    const auto j = frame.vps.vps_atlas_id(k);
-    auto &atlas = frame.atlas[k];
-
-    if (frame.vps.vps_geometry_video_present_flag(j) ||
-        (frame.vps.vps_packing_information_present_flag() &&
-         frame.vps.vps_packed_video_present_flag(j) &&
-         frame.vps.packing_information(j).pin_geometry_present_flag())) {
-      if (!atlas.attrFrame.empty() && !atlas.decGeoFrame.empty() &&
-          atlas.decGeoFrame.getSize() != atlas.attrFrame.getSize()) {
-        atlas.geoFrame = scale(atlas, frame.gup.value_or(m_defaultGup));
-      } else {
-        atlas.geoFrame = atlas.decGeoFrame;
-      }
+      return upscaler(atlas, geoFrameNF);
     }
   }
+
+  return geoFrameNF;
 }
 } // namespace TMIV::Decoder

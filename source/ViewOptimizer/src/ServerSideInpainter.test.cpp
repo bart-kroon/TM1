@@ -419,16 +419,16 @@ TEST_CASE("ServerSideInpainter") {
 
         AND_THEN("Set the atlas frame size in the ASPS") {
           for (const auto &atlas : renderFrame.atlas) {
-            REQUIRE(atlas.asps.asps_frame_width() == atlas.attrFrame.getWidth());
-            REQUIRE(atlas.asps.asps_frame_height() == atlas.attrFrame.getHeight());
+            REQUIRE(atlas.asps.asps_frame_width() == atlas.texFrame.getWidth());
+            REQUIRE(atlas.asps.asps_frame_height() == atlas.texFrame.getHeight());
           }
         }
 
         AND_THEN("The block to patch map uniformly points to patch 0") {
           for (const auto &atlas : renderFrame.atlas) {
             const auto ppbs = 1 << atlas.asps.asps_log2_patch_packing_block_size();
-            REQUIRE(atlas.blockToPatchMap.getWidth() * ppbs == atlas.attrFrame.getWidth());
-            REQUIRE(atlas.blockToPatchMap.getHeight() * ppbs == atlas.attrFrame.getHeight());
+            REQUIRE(atlas.blockToPatchMap.getWidth() * ppbs == atlas.texFrame.getWidth());
+            REQUIRE(atlas.blockToPatchMap.getHeight() * ppbs == atlas.texFrame.getHeight());
             REQUIRE(std::all_of(atlas.blockToPatchMap.getPlane(0).cbegin(),
                                 atlas.blockToPatchMap.getPlane(0).cend(),
                                 [](auto value) { return value == 0; }));
@@ -437,7 +437,7 @@ TEST_CASE("ServerSideInpainter") {
 
         AND_THEN("The occupancy map is uniform 1") {
           for (const auto &atlas : renderFrame.atlas) {
-            REQUIRE(atlas.occFrame.getSize() == atlas.attrFrame.getSize());
+            REQUIRE(atlas.occFrame.getSize() == atlas.texFrame.getSize());
             REQUIRE(std::all_of(atlas.occFrame.getPlane(0).cbegin(),
                                 atlas.occFrame.getPlane(0).cend(),
                                 [](auto value) { return value == 1; }));

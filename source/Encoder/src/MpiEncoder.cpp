@@ -412,6 +412,7 @@ auto MpiEncoder::vuiParameters() const -> MivBitstream::VuiParameters {
 }
 
 void MpiEncoder::setGiGeometry3dCoordinatesBitdepthMinus1() {
+  // TODO(#397): Magic bit depth
   uint8_t numBitsMinus1 = 9; // Main 10
   for (auto &vp : m_params.viewParamsList) {
     const auto size = std::max(vp.ci.ci_projection_plane_width_minus1() + 1,

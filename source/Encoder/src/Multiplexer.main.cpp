@@ -50,7 +50,7 @@ private:
   int32_t m_numberOfInputFrames;
   const std::string &m_testId;
 
-  std::unique_ptr<Multiplexer> m_multiplexer{};
+  std::unique_ptr<Multiplexer> m_multiplexer;
 
   [[nodiscard]] auto placeholders() const {
     auto x = IO::Placeholders{};
@@ -71,84 +71,23 @@ public:
       , m_numberOfInputFrames{std::stoi(optionValues("-n"sv).front())}
       , m_testId{optionValues("-r").front()}
       , m_multiplexer{std::make_unique<Multiplexer>(json().optional("packingInformation"))} {
-    setBitstreamIstreamServers();
+    m_multiplexer->setVideoBitstreamServer(
+        [this](MivBitstream::V3cUnitHeader vuh, MivBitstream::AiAttributeTypeId attrTypeId) {
+          return std::make_unique<std::ifstream>(
+              IO::inputVideoSubBitstreamPath(json(), placeholders(), vuh, attrTypeId),
+              std::ios::binary);
+        });
   }
 
   void run() override {
     readInputBitstream();
+
     if (json().optional("packingInformation")) {
-      addPackingInformation();
+      m_multiplexer->addPackingInformation();
     }
-    appendVideoSubBitstreams();
+
+    m_multiplexer->appendVideoSubBitstreams();
     writeOutputBitstream();
-  }
-
-  [[nodiscard]] auto openInputBitstream(const std::string &key,
-                                        const MivBitstream::AtlasId &atlasId,
-                                        int32_t attributeIdx = 0) const {
-    const auto path = IO::inputSubBitstreamPath(key, json(), placeholders(), atlasId, attributeIdx);
-    auto stream = std::make_unique<std::ifstream>(path, std::ios::binary);
-    if (stream->fail()) {
-      throw std::runtime_error(fmt::format("Failed to open sub bitstream {} for reading", path));
-    }
-    std::cout << "Appending " << path << '\n';
-    return stream;
-  }
-
-  [[nodiscard]] auto openGeometryBitstream(const MivBitstream::AtlasId &atlasId) const
-      -> std::unique_ptr<std::istream> {
-    return openInputBitstream(IO::inputGeometryVsbPathFmt, atlasId);
-  }
-
-  [[nodiscard]] auto openOccupancyBitstream(const MivBitstream::AtlasId &atlasId) const
-      -> std::unique_ptr<std::istream> {
-    return openInputBitstream(IO::inputOccupancyVsbPathFmt, atlasId);
-  }
-
-  [[nodiscard]] auto openPackedBitstream(const MivBitstream::AtlasId &atlasId) const
-      -> std::unique_ptr<std::istream> {
-    return openInputBitstream(IO::inputPackedVsbPathFmt, atlasId);
-  }
-
-  [[nodiscard]] auto openAttributeBitstream(MivBitstream::AiAttributeTypeId typeId,
-                                            const MivBitstream::AtlasId &atlasId,
-                                            int32_t attributeIdx) const
-      -> std::unique_ptr<std::istream> {
-    const auto key = [typeId]() {
-      switch (typeId) {
-      case MivBitstream::AiAttributeTypeId::ATTR_TEXTURE:
-        return IO::inputTextureVsbPathFmt;
-      case MivBitstream::AiAttributeTypeId::ATTR_MATERIAL_ID:
-        return IO::inputMaterialIdVsbPathFmt;
-      case MivBitstream::AiAttributeTypeId::ATTR_TRANSPARENCY:
-        return IO::inputTransparencyVsbPathFmt;
-      case MivBitstream::AiAttributeTypeId::ATTR_REFLECTANCE:
-        return IO::inputReflectanceVsbPathFmt;
-      case MivBitstream::AiAttributeTypeId::ATTR_NORMAL:
-        return IO::inputNormalVsbPathFmt;
-      default:
-        throw std::runtime_error(fmt::format("No support for {}", typeId));
-      }
-    }();
-
-    return openInputBitstream(key, atlasId, attributeIdx);
-  }
-
-  void setBitstreamIstreamServers() {
-    m_multiplexer->setAttributeVideoBitstreamServer([this](MivBitstream::AiAttributeTypeId typeId,
-                                                           const MivBitstream::AtlasId &atlasId,
-                                                           int32_t attributeIdx) {
-      return openAttributeBitstream(typeId, atlasId, attributeIdx);
-    });
-
-    m_multiplexer->setGeometryVideoBitstreamServer(
-        [this](const MivBitstream::AtlasId &atlasId) { return openGeometryBitstream(atlasId); });
-
-    m_multiplexer->setOccupancyVideoBitstreamServer(
-        [this](const MivBitstream::AtlasId &atlasId) { return openOccupancyBitstream(atlasId); });
-
-    m_multiplexer->setPackedVideoBitstreamServer(
-        [this](const MivBitstream::AtlasId &atlasId) { return openPackedBitstream(atlasId); });
   }
 
 private:
@@ -162,10 +101,6 @@ private:
     std::cout << "Appended " << path << " with a total of " << m_multiplexer->numberOfV3cUnits()
               << " V3C units including the VPS\n";
   }
-
-  void addPackingInformation() { m_multiplexer->addPackingInformation(); }
-
-  void appendVideoSubBitstreams() { m_multiplexer->appendVideoSubBitstreams(); }
 
   void writeOutputBitstream() const {
     const auto path = IO::outputBitstreamPath(json(), placeholders());

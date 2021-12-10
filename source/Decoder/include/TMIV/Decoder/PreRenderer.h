@@ -34,21 +34,120 @@
 #ifndef TMIV_DECODER_PRERENDERER_H
 #define TMIV_DECODER_PRERENDERER_H
 
-#include <TMIV/Common/Json.h>
-#include <TMIV/Decoder/EntityBasedPatchMapFilter.h>
 #include <TMIV/Decoder/GeometryScaler.h>
+
+#include <TMIV/Common/Json.h>
 #include <TMIV/MivBitstream/AccessUnit.h>
 
 namespace TMIV::Decoder {
+// The pre-renderer implements part of:
+//
+//   * ISO/IEC 23090-12 Annex A Profiles, tiers and levels
+//   * ISO/IEC 23090-12 Annex B Post decoding
+//   * ISO/IEC 23090-12 Annex H Rendering processes
+//
+// This implementation includes an alternative for Annex B.3.6 chroma up-sampling based on
+// nearest-neighbour interpolation.
 class PreRenderer {
 public:
-  PreRenderer(const Common::Json &rootNode, const Common::Json & /* componentNode */);
+  PreRenderer(const Common::Json &rootNode, const Common::Json &componentNode);
 
-  void recoverFrame(MivBitstream::AccessUnit &frame);
+  void preRenderFrame(MivBitstream::AccessUnit &frame) const;
 
 private:
+  static void checkRestrictions(const MivBitstream::AccessUnit &frame);
+
+  // ISO/IEC 23090-12 Annex B.2.1
+  static void convertNominalFormat(const MivBitstream::V3cParameterSet &vps,
+                                   MivBitstream::AtlasId atlasId,
+                                   MivBitstream::AtlasAccessUnit &atlas);
+
+  // ISO/IEC 23090-12 Annex B.2.2
+  static void convertOccupancyNominalFormat(const MivBitstream::V3cParameterSet &vps,
+                                            MivBitstream::AtlasId atlasId,
+                                            MivBitstream::AtlasAccessUnit &atlas,
+                                            const Common::Frame<> &inFrame);
+
+  // ISO/IEC 23090-12 Annex B.2.3
+  static void convertGeometryNominalFormat(const MivBitstream::V3cParameterSet &vps,
+                                           MivBitstream::AtlasId atlasId,
+                                           MivBitstream::AtlasAccessUnit &atlas,
+                                           const Common::Frame<> &inFrame);
+
+  // ISO/IEC 23090-12 Annex B.2.5
+  static void convertAttributeNominalFormat(const MivBitstream::V3cParameterSet &vps,
+                                            MivBitstream::AtlasId atlasId,
+                                            MivBitstream::AtlasAccessUnit &atlas,
+                                            const std::vector<Common::Frame<>> &inFrame);
+
+  // ISO/IEC 23090-12 Annex B.3.2
+  [[nodiscard]] static auto convertBitDepth(Common::Frame<> frame, uint32_t nominalBitDepth,
+                                            bool alignmentFlag, uint8_t dimensions)
+      -> Common::Frame<>;
+
+  // ISO/IEC 23090-12 Annex B.3.3
+  [[nodiscard]] static auto convertResolution(Common::Frame<> inFrame, int32_t videoWidthNF,
+                                              int32_t videoHeightNF) -> Common::Frame<>;
+
+  // Alternative for ISO/IEC 23090-12 Annex B.3.7:
+  //
+  // * nearest neighbour interpolation
+  // * bring all channels to the same resolution as the first one
+  [[nodiscard]] static auto upsampleChroma(Common::Frame<> inFrame) -> Common::Frame<>;
+
+  // ISO/IEC 23090-12 Annex B.3.9
+  [[nodiscard]] static auto thresholdOccupancy(const Common::Frame<> &inFrame, uint8_t threshold)
+      -> Common::Frame<bool>;
+
+  // ISO/IEC 23090-12 Annex B.4.1
+  static void unpackDecodedPackedVideo(const MivBitstream::V3cParameterSet &vps,
+                                       MivBitstream::AtlasId atlasId,
+                                       MivBitstream::AtlasAccessUnit &atlas);
+
+  // ISO/IEC 23090-12 Annex B.4.2 output
+  struct UnpackedVideoComponentResolutions {
+    int32_t unpckOccWidth{};
+    int32_t unpckOccHeight{};
+    int32_t unpckGeoWidth{};
+    int32_t unpckGeoHeight{};
+    std::vector<int32_t> unpckAttrWidth;
+    std::vector<int32_t> unpckAttrHeight;
+  };
+
+  // ISO/IEC 23090-12 Annex B.4.2
+  [[nodiscard]] static auto
+  calculateUnpackedVideoComponentResolution(const MivBitstream::V3cParameterSet &vps,
+                                            MivBitstream::AtlasId atlasId)
+      -> UnpackedVideoComponentResolutions;
+
+  // ISO/IEC 23090-12 Annex B.4.3
+  static void
+  initializeUnpackedVideoComponentFrame(const MivBitstream::PackingInformation &pin,
+                                        const UnpackedVideoComponentResolutions &resolutions,
+                                        uint32_t bitDepth, Common::ColorFormat colorFormat,
+                                        MivBitstream::AtlasAccessUnit &atlas);
+
+  // ISO/IEC 23090-12 Annex B.4.4
+  static void copyDataFromPackedRegionsToUnpackedVideoComponentFrames(
+      const MivBitstream::V3cParameterSet &vps, MivBitstream::AtlasId atlasId,
+      const Common::Frame<> &decPckFrameNCF, MivBitstream::AtlasAccessUnit &atlas);
+
+  // ISO/IEC 23090-12 Annex H.2.2
+  static void reconstructOccupancy(const MivBitstream::ViewParamsList &vpl,
+                                   MivBitstream::AtlasAccessUnit &atlas);
+  // ISO/IEC 23090-12 Annex H.3
+  void filterEntities(MivBitstream::AtlasAccessUnit &atlas) const;
+
+  // ISO/IEC 23090-12 Annex H.4
+  static void offsetTexture(const MivBitstream::V3cParameterSet &vps, MivBitstream::AtlasId atlasId,
+                            MivBitstream::AtlasAccessUnit &atlas);
+
+  // ISO/IEC 23090-12 Annex H.5
+  void scaleGeometryVideo(const std::optional<MivBitstream::GeometryUpscalingParameters> &gup,
+                          MivBitstream::AtlasAccessUnit &atlas) const;
+
   GeometryScaler m_geometryScaler;
-  EntityBasedPatchMapFilter m_entityBasedPatchMapFilter;
+  std::optional<Common::Vec2u> m_entityDecodeRange;
 };
 } // namespace TMIV::Decoder
 

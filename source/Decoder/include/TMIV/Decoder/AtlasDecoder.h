@@ -75,7 +75,7 @@ private:
   static void decodeSeiMessage(AccessUnit &au, const MivBitstream::SeiMessage &message);
 
   V3cUnitSource m_source;
-  MivBitstream::V3cUnitHeader m_vuh{MivBitstream::VuhUnitType::V3C_AD};
+  MivBitstream::V3cUnitHeader m_vuh;
   MivBitstream::V3cParameterSet m_vps;
 
   std::list<MivBitstream::NalUnit> m_buffer;

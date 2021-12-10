@@ -552,6 +552,12 @@ vme_embedded_occupancy_enabled_flag=true
 gm_group_count=0
 )");
 
+    REQUIRE(vps.summary() == R"(V3C parameter set 0:
+  Tier false, [unknown:0], codec group AVC Progressive High, toolset V-PCC Basic, recon Rec0 (V-PCC), decodes unconstrained
+  Atlas 0: 1920 x 1080
+, geometry scaling true, groups 0, embedded occupancy true, occupancy scaling false
+)");
+
     REQUIRE(byteCodingTest(vps, 21));
   }
 
@@ -562,7 +568,21 @@ gm_group_count=0
     PackingInformation packInfo{};
     packInfo.pin_occupancy_2d_bit_depth_minus1(7)
         .pin_occupancy_MSB_align_flag(true)
-        .pin_lossy_occupancy_compression_threshold(64);
+        .pin_lossy_occupancy_compression_threshold(64)
+        .pin_attribute_count(2)
+        .pin_attribute_type_id(0, AiAttributeTypeId::ATTR_REFLECTANCE)
+        .pin_attribute_2d_bit_depth_minus1(0, 1)
+        .pin_attribute_MSB_align_flag(0, true)
+        .pin_attribute_map_absolute_coding_persistence_flag(0, false)
+        .pin_attribute_dimension_minus1(0, 0)
+        .pin_attribute_dimension_partitions_minus1(0, 0)
+        .pin_attribute_type_id(1, AiAttributeTypeId::ATTR_NORMAL)
+        .pin_attribute_2d_bit_depth_minus1(1, 5)
+        .pin_attribute_MSB_align_flag(1, true)
+        .pin_attribute_map_absolute_coding_persistence_flag(1, false)
+        .pin_attribute_dimension_minus1(1, 0)
+        .pin_attribute_dimension_partitions_minus1(1, 0);
+
     vps.vps_v3c_parameter_set_id(15)
         .vps_atlas_count_minus1(2)
         .vps_atlas_id(0, j0)
@@ -640,10 +660,21 @@ vps_packed_video_present_flag[ 32 ]=true
 pin_codec_id[ 32 ]=0
 pin_occupancy_present_flag[ 32 ]=true
 pin_geometry_present_flag[ 32 ]=false
-pin_attribute_present_flag[ 32 ]=false
+pin_attribute_present_flag[ 32 ]=true
 pin_occupancy_2d_bit_depth_minus1[ 32 ]=7
 pin_occupancy_MSB_align_flag[ 32 ]=true
 pin_lossy_occupancy_compression_threshold[ 32 ]=64
+pin_attribute_count[ 32 ]=2
+pin_attribute_type_id[ 32 ][ 0 ]=ATTR_REFLECTANCE
+pin_attribute_2d_bit_depth_minus1[ 32 ][ 0 ]=1
+pin_attribute_MSB_align_flag[ 32 ][ 0 ]=true
+pin_attribute_map_absolute_coding_persistence_flag[ 32 ][ 0 ]=false
+pin_attribute_dimension_minus1[ 32 ][ 0 ]=0
+pin_attribute_type_id[ 32 ][ 1 ]=ATTR_NORMAL
+pin_attribute_2d_bit_depth_minus1[ 32 ][ 1 ]=5
+pin_attribute_MSB_align_flag[ 32 ][ 1 ]=true
+pin_attribute_map_absolute_coding_persistence_flag[ 32 ][ 1 ]=false
+pin_attribute_dimension_minus1[ 32 ][ 1 ]=0
 pin_regions_count_minus1[ 32 ]=0
 pin_region_tile_id[ 32 ][ 0 ]=0
 pin_region_type_id_minus2[ 32 ][ 0 ]=0 (V3C_OVD)
@@ -662,7 +693,15 @@ vps_extension_data_byte=2
 vps_extension_data_byte=250
 vps_extension_data_byte=15
 )");
-    REQUIRE(byteCodingTest(vps, 57));
+    REQUIRE(vps.summary() == R"(V3C parameter set 15:
+  Tier false, [unknown:0], codec group AVC Progressive High, toolset V-PCC Basic, recon Rec0 (V-PCC), decodes unconstrained
+  Atlas 30: 1920 x 1080; [OI: codec 0, 0, 2D 1, align false]
+  Atlas 31: 2048 x 2080; [GI: codec 0, 2D 1, algin false, 3D 1]; [AI: 0
+  Atlas 32: 0 x 0; [PIN: regions 1]
+, geometry scaling false, groups 0, embedded occupancy true, occupancy scaling false
+)");
+
+    REQUIRE(byteCodingTest(vps, 62));
   }
 
   SECTION("Example 3 for mpi") {
@@ -752,8 +791,18 @@ vme_geometry_scale_enabled_flag=false
 vme_embedded_occupancy_enabled_flag=true
 gm_group_count=0
 )");
+
+    REQUIRE(vps.summary() == R"(V3C parameter set 15:
+  Tier false, [unknown:0], codec group AVC Progressive High, toolset V-PCC Basic, recon Rec0 (V-PCC), decodes unconstrained
+  Atlas 20: 4096 x 2048; [AI: 2, ATTR_TEXTURE, codec 1, dims 3, 2D 10, align false, ATTR_TRANSPARENCY, codec 1, dims 1, 2D 10, align false]
+, geometry scaling false, groups 0, embedded occupancy true, occupancy scaling false
+)");
+
     const size_t expected_number_of_bytes = 35;
     REQUIRE(byteCodingTest(vps, expected_number_of_bytes));
+
+    REQUIRE(vps.attrIdxOf(AtlasId{20}, AiAttributeTypeId::ATTR_TEXTURE) == 0);
+    REQUIRE(vps.attrIdxOf(AtlasId{20}, AiAttributeTypeId::ATTR_TRANSPARENCY) == 1);
   }
 }
 } // namespace TMIV::MivBitstream

@@ -45,19 +45,12 @@
 namespace TMIV::Encoder {
 class Multiplexer {
 public:
-  using AttributeVideoBitstreamServer = std::function<std::unique_ptr<std::istream>(
-      MivBitstream::AiAttributeTypeId, const MivBitstream::AtlasId &, int32_t)>;
-  using GeometryVideoBitstreamServer =
-      std::function<std::unique_ptr<std::istream>(const MivBitstream::AtlasId &)>;
-  using OccupancyVideoBitstreamServer = GeometryVideoBitstreamServer;
-  using PackedVideoBitstreamServer = GeometryVideoBitstreamServer;
+  using VideoBitstreamServer = std::function<std::unique_ptr<std::istream>(
+      MivBitstream::V3cUnitHeader, MivBitstream::AiAttributeTypeId)>;
 
   explicit Multiplexer(Common::Json packingInformationNode);
 
-  void setAttributeVideoBitstreamServer(AttributeVideoBitstreamServer server);
-  void setGeometryVideoBitstreamServer(GeometryVideoBitstreamServer server);
-  void setOccupancyVideoBitstreamServer(OccupancyVideoBitstreamServer server);
-  void setPackedVideoBitstreamServer(PackedVideoBitstreamServer server);
+  void setVideoBitstreamServer(VideoBitstreamServer server);
 
   void readInputBitstream(std::istream &stream);
   void appendVideoSubBitstreams();
@@ -68,22 +61,16 @@ public:
 
 private:
   void checkRestrictions(MivBitstream::AtlasId atlasId) const;
-  void appendGvd(MivBitstream::AtlasId atlasId);
-  void appendOvd(MivBitstream::AtlasId atlasId);
-  void appendAvd(MivBitstream::AtlasId atlasId, uint8_t attributeIdx,
-                 MivBitstream::AiAttributeTypeId typeId);
-  void appendPvd(MivBitstream::AtlasId atlasId);
-  void appendVideoSubBitstream(const MivBitstream::V3cUnitHeader &vuh,
-                               std::unique_ptr<std::istream> stream);
+  void appendVideoSubBitstream(MivBitstream::V3cUnitHeader vuh,
+                               MivBitstream::AiAttributeTypeId attrTypeId =
+                                   MivBitstream::AiAttributeTypeId::ATTR_UNSPECIFIED);
 
   MivBitstream::V3cParameterSet m_vps{};
   std::vector<std::string> m_units{};
   Common::Json m_packingInformationNode{};
 
-  AttributeVideoBitstreamServer m_openAttributeVideoBitstream{};
-  GeometryVideoBitstreamServer m_openGeometryVideoBitstream{};
-  OccupancyVideoBitstreamServer m_openOccupancyVideoBitstream{};
-  PackedVideoBitstreamServer m_openPackedVideoBitstream{};
+  VideoBitstreamServer m_videoBitstreamServer;
+
   void updateOccupancyInformation(MivBitstream::PackingInformation &packingInformation,
                                   const MivBitstream::AtlasId &atlasId);
   void updateGeometryInformation(MivBitstream::PackingInformation &packingInformation,

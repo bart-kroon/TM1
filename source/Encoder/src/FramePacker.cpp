@@ -34,21 +34,20 @@
 #include <TMIV/Encoder/FramePacker.h>
 
 namespace TMIV::Encoder {
-void FramePacker::constructFramePack(Common::MVD10Frame &frame) {
+void FramePacker::packFrame(Common::MVD10Frame &frame, uint32_t bitDepth) {
   uint8_t atlasIdx{};
 
   for (auto &atlas : frame) {
-    atlas.framePack = constructPackedAtlasFrame(frame[atlasIdx], atlasIdx);
+    atlas = packAtlasFrame(frame[atlasIdx], atlasIdx, bitDepth);
     atlasIdx++;
   }
 }
 
-auto FramePacker::constructPackedAtlasFrame(const Common::TextureDepth10Frame &frame,
-                                            uint8_t atlasIdx) const -> Common::FramePack10Frame {
-  // TODO(#397): Use a configuration parameter to determine the packed frame bit depth
-  auto result =
-      Common::FramePack10Frame::yuv420(m_regionSizes[atlasIdx].pac, frame.texture.getBitDepth());
-  result.fillNeutral();
+auto FramePacker::packAtlasFrame(const Common::TextureDepth10Frame &frame, uint8_t atlasIdx,
+                                 uint32_t bitDepth) const -> Common::TextureDepth10Frame {
+  auto result = Common::TextureDepth10Frame{};
+  result.packed = Common::FramePack10Frame::yuv420(m_regionSizes[atlasIdx].pac, bitDepth);
+  result.packed.fillNeutral();
 
   for (uint8_t regionIdx = 0; regionIdx <= m_packingInformation.pin_regions_count_minus1();
        ++regionIdx) {
@@ -70,10 +69,10 @@ auto FramePacker::constructPackedAtlasFrame(const Common::TextureDepth10Frame &f
 
         switch (m_packingInformation.pinRegionTypeId(regionIdx)) {
         case MivBitstream::VuhUnitType::V3C_OVD:
-          result.getPlane(0)(py, px) = frame.occupancy.getPlane(0)(uy, ux);
+          result.packed.getPlane(0)(py, px) = frame.occupancy.getPlane(0)(uy, ux);
           break;
         case MivBitstream::VuhUnitType::V3C_GVD:
-          result.getPlane(0)(py, px) = frame.depth.getPlane(0)(uy, ux);
+          result.packed.getPlane(0)(py, px) = frame.depth.getPlane(0)(uy, ux);
           break;
         case MivBitstream::VuhUnitType::V3C_AVD: {
           const auto attrIdx = m_packingInformation.pin_region_attr_index(regionIdx);
@@ -81,12 +80,12 @@ auto FramePacker::constructPackedAtlasFrame(const Common::TextureDepth10Frame &f
 
           switch (attrTypeId) {
           case MivBitstream::AiAttributeTypeId::ATTR_TEXTURE:
-            result.getPlane(0)(py, px) = frame.texture.getPlane(0)(uy, ux);
-            result.getPlane(1)(py / 2, px / 2) = frame.texture.getPlane(1)(uy / 2, ux / 2);
-            result.getPlane(2)(py / 2, px / 2) = frame.texture.getPlane(2)(uy / 2, ux / 2);
+            result.packed.getPlane(0)(py, px) = frame.texture.getPlane(0)(uy, ux);
+            result.packed.getPlane(1)(py / 2, px / 2) = frame.texture.getPlane(1)(uy / 2, ux / 2);
+            result.packed.getPlane(2)(py / 2, px / 2) = frame.texture.getPlane(2)(uy / 2, ux / 2);
             break;
           case MivBitstream::AiAttributeTypeId::ATTR_TRANSPARENCY:
-            result.getPlane(0)(py, px) = frame.transparency.getPlane(0)(uy, ux);
+            result.packed.getPlane(0)(py, px) = frame.transparency.getPlane(0)(uy, ux);
             break;
           default:
             UNREACHABLE;
@@ -160,6 +159,7 @@ void FramePacker::updatePinGeometryInformation(MivBitstream::AtlasId atlasId) {
 void FramePacker::updatePinAttributeInformation(MivBitstream::AtlasId atlasId) {
   m_packingInformation.pin_attribute_count(
       m_params.vps.attribute_information(atlasId).ai_attribute_count());
+
   for (uint8_t i = 0; i < m_params.vps.attribute_information(atlasId).ai_attribute_count(); i++) {
     m_packingInformation.pin_attribute_type_id(i, MivBitstream::AiAttributeTypeId::ATTR_TEXTURE);
     m_packingInformation.pin_attribute_2d_bit_depth_minus1(
@@ -167,7 +167,7 @@ void FramePacker::updatePinAttributeInformation(MivBitstream::AtlasId atlasId) {
     m_packingInformation.pin_attribute_MSB_align_flag(
         0, m_params.vps.attribute_information(atlasId).ai_attribute_MSB_align_flag(i));
     m_packingInformation.pin_attribute_map_absolute_coding_persistence_flag(i, false);
-    m_packingInformation.pin_attribute_dimension_minus1(i, 0);
+    m_packingInformation.pin_attribute_dimension_minus1(i, 2);
   }
 }
 

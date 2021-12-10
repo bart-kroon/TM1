@@ -84,9 +84,9 @@ TEST_CASE("TMIV::Encoder::FramePacker, 1 Atlas with texture and geometry") {
     CHECK(outParams.vps.packing_information(atlasId).pin_region_height_minus1(1) == 63);
     CHECK(outParams.vps.packing_information(atlasId).pin_region_unpack_top_left_x(1) == 0);
     CHECK(outParams.vps.packing_information(atlasId).pin_region_unpack_top_left_y(1) == 0);
-    unit.constructFramePack(frame);
-    CHECK(frame[0].framePack.getWidth() == 32);
-    CHECK(frame[0].framePack.getHeight() == 128);
+    unit.packFrame(frame, 10);
+    CHECK(frame[0].packed.getWidth() == 32);
+    CHECK(frame[0].packed.getHeight() == 128);
   }
 
   SECTION("Downscaled Geometry [2, 2]") {
@@ -123,9 +123,9 @@ TEST_CASE("TMIV::Encoder::FramePacker, 1 Atlas with texture and geometry") {
     CHECK(outParams.vps.packing_information(atlasId).pin_region_height_minus1(2) == 15);
     CHECK(outParams.vps.packing_information(atlasId).pin_region_unpack_top_left_x(2) == 0);
     CHECK(outParams.vps.packing_information(atlasId).pin_region_unpack_top_left_y(2) == 16);
-    unit.constructFramePack(frame);
-    CHECK(frame[0].framePack.getWidth() == 32);
-    CHECK(frame[0].framePack.getHeight() == 80);
+    unit.packFrame(frame, 10);
+    CHECK(frame[0].packed.getWidth() == 32);
+    CHECK(frame[0].packed.getHeight() == 80);
   }
 
   SECTION("Downscaled Geometry [4, 1]") {
@@ -176,9 +176,9 @@ TEST_CASE("TMIV::Encoder::FramePacker, 1 Atlas with texture and geometry") {
     CHECK(outParams.vps.packing_information(atlasId).pin_region_height_minus1(4) == 15);
     CHECK(outParams.vps.packing_information(atlasId).pin_region_unpack_top_left_x(4) == 0);
     CHECK(outParams.vps.packing_information(atlasId).pin_region_unpack_top_left_y(4) == 48);
-    unit.constructFramePack(frame);
-    CHECK(frame[0].framePack.getWidth() == 32);
-    CHECK(frame[0].framePack.getHeight() == 80);
+    unit.packFrame(frame, 10);
+    CHECK(frame[0].packed.getWidth() == 32);
+    CHECK(frame[0].packed.getHeight() == 80);
   }
 }
 
@@ -262,7 +262,7 @@ TEST_CASE("TMIV::Encoder::FramePacker, 1 Atlas with attribute and occupancy only
   SECTION("Downscaled Occupancy [2 2]") {
     asmeAtlas.asme_occupancy_scale_factor_x_minus1(1).asme_occupancy_scale_factor_y_minus1(1);
     atlas.texture.createYuv420({32, 64}, 10);
-    atlas.depth.createY({16, 32}, 10);
+    atlas.occupancy.createY({16, 32}, 10);
     frame.push_back(atlas);
 
     TMIV::Encoder::FramePacker unit{};

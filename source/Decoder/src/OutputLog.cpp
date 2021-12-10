@@ -96,27 +96,21 @@ auto videoDataHash(const MivBitstream::AtlasAccessUnit &frame) noexcept -> HashF
       hash.consume(x);
     }
   }
+
   if (!frame.decOccFrame.empty()) {
     for (auto x : frame.decOccFrame.getPlane(0)) {
       hash.consume(x);
     }
   }
-  if (!frame.attrFrame.empty()) {
-    for (auto x : frame.attrFrame.getPlane(0)) {
-      hash.consume(x);
-    }
-    for (auto x : frame.attrFrame.getPlane(1)) {
-      hash.consume(x);
-    }
-    for (auto x : frame.attrFrame.getPlane(2)) {
-      hash.consume(x);
+
+  for (const auto &x : frame.decAttrFrame) {
+    for (const auto &y : x.getPlanes()) {
+      for (auto z : y) {
+        hash.consume(z);
+      }
     }
   }
-  if (!frame.transparencyFrame.empty()) {
-    for (auto x : frame.transparencyFrame.getPlane(0)) {
-      hash.consume(x);
-    }
-  }
+
   return hash.result();
 }
 

@@ -35,40 +35,26 @@
 
 #include <fstream>
 
+#include "impl.hpp"
+
 using namespace std::string_literals;
 
 namespace TMIV::IO {
-const std::string outputBitstreamPathFmt = "outputBitstreamPathFmt";
-const std::string outputBlockToPatchMapPathFmt = "outputBlockToPatchMapPathFmt";
-const std::string outputDirectory = "outputDirectory";
-const std::string outputGeometryVideoDataPathFmt = "outputGeometryVideoDataPathFmt";
-const std::string outputMultiviewGeometryPathFmt = "outputMultiviewGeometryPathFmt";
-const std::string outputMultiviewOccupancyPathFmt = "outputMultiviewOccupancyPathFmt";
-const std::string outputMultiviewTexturePathFmt = "outputMultiviewTexturePathFmt";
-const std::string outputMultiviewTransparencyPathFmt = "outputMultiviewTransparencyPathFmt";
-const std::string outputOccupancyVideoDataPathFmt = "outputOccupancyVideoDataPathFmt";
-const std::string outputSequenceConfigPathFmt = "outputSequenceConfigPathFmt";
-const std::string outputTextureVideoDataPathFmt = "outputTextureVideoDataPathFmt";
-const std::string outputTransparencyVideoDataPathFmt = "outputTransparencyVideoDataPathFmt";
-const std::string outputViewportGeometryPathFmt = "outputViewportGeometryPathFmt";
-const std::string outputViewportTexturePathFmt = "outputViewportTexturePathFmt";
-const std::string outputPackedVideoDataPathFmt = "outputPackedVideoDataPathFmt";
-
 template <typename Element>
 void saveFrame(const std::filesystem::path &path, const Common::Frame<Element> &frame,
-               int32_t frameIndex) {
+               int32_t frameIdx) {
   create_directories(path.parent_path());
 
-  std::fstream stream(path, frameIndex == 0 ? std::ios::out | std::ios::binary
-                                            : std::ios::in | std::ios::out | std::ios::binary);
+  std::fstream stream(path, frameIdx == 0 ? std::ios::out | std::ios::binary
+                                          : std::ios::in | std::ios::out | std::ios::binary);
   if (!stream.good()) {
     throw std::runtime_error(fmt::format("Failed to open {} for writing", path));
   }
 
-  stream.seekp(int64_t{frameIndex} * frame.getDiskSize());
+  stream.seekp(int64_t{frameIdx} * frame.getDiskSize());
   if (!stream.good()) {
     throw std::runtime_error(
-        fmt::format("Failed to seek for writing to frame {} of {}", frameIndex, path));
+        fmt::format("Failed to seek for writing to frame {} of {}", frameIdx, path));
   }
 
   frame.dump(stream);
@@ -79,131 +65,124 @@ void saveFrame(const std::filesystem::path &path, const Common::Frame<Element> &
   }
 }
 
-void saveAtlasFrame(const Common::Json &config, const Placeholders &placeholders,
-                    int32_t frameIndex, const Common::MVD10Frame &frame) {
-  const auto outputDir = config.require(outputDirectory).as<std::filesystem::path>();
+void saveOutOfBandVideoFrame(const Common::Json &config, const Placeholders &placeholders,
+                             const Common::Frame<> &frame, MivBitstream::V3cUnitHeader vuh,
+                             int32_t frameIdx, MivBitstream::AiAttributeTypeId attrTypeId) {
+  PRECONDITION(!frame.empty());
 
-  for (size_t k = 0; k < frame.size(); ++k) {
-    if (const auto &node = config.optional(outputTextureVideoDataPathFmt)) {
-      saveFrame(outputDir / fmt::format(node.as<std::string>(), placeholders.numberOfInputFrames,
-                                        placeholders.contentId, placeholders.testId, k,
-                                        frame[k].texture.getWidth(), frame[k].texture.getHeight()),
-                frame[k].texture, frameIndex);
-    }
-    if (const auto &node = config.optional(outputTransparencyVideoDataPathFmt)) {
-      saveFrame(outputDir / fmt::format(node.as<std::string>(), placeholders.numberOfInputFrames,
-                                        placeholders.contentId, placeholders.testId, k,
-                                        frame[k].transparency.getWidth(),
-                                        frame[k].transparency.getHeight()),
-                frame[k].transparency, frameIndex);
-    }
-    if (const auto &node = config.optional(outputGeometryVideoDataPathFmt)) {
-      saveFrame(outputDir / fmt::format(node.as<std::string>(), placeholders.numberOfInputFrames,
-                                        placeholders.contentId, placeholders.testId, k,
-                                        frame[k].depth.getWidth(), frame[k].depth.getHeight()),
-                frame[k].depth, frameIndex);
-    }
-    if (const auto &node = config.optional(outputOccupancyVideoDataPathFmt)) {
-      saveFrame(outputDir / fmt::format(node.as<std::string>(), placeholders.numberOfInputFrames,
-                                        placeholders.contentId, placeholders.testId, k,
-                                        frame[k].occupancy.getWidth(),
-                                        frame[k].occupancy.getHeight()),
-                frame[k].occupancy, frameIndex);
-    }
-    if (const auto &node = config.optional(outputPackedVideoDataPathFmt)) {
-      saveFrame(outputDir / fmt::format(node.as<std::string>(), placeholders.numberOfInputFrames,
-                                        placeholders.contentId, placeholders.testId, k,
-                                        frame[k].framePack.getWidth(),
-                                        frame[k].framePack.getHeight()),
-                frame[k].framePack, frameIndex);
-    }
-  }
+  const auto outputDir = config.require("outputDirectory").as<std::filesystem::path>();
+
+  const auto configKey = fmt::format("output{}VideoDataPathFmt",
+                                     detail::videoComponentName(vuh.vuh_unit_type(), attrTypeId));
+
+  const auto path =
+      outputDir / fmt::format(config.require(configKey).as<std::string>(),
+                              placeholders.numberOfInputFrames, placeholders.contentId,
+                              placeholders.testId, vuh.vuh_atlas_id(), frame.getWidth(),
+                              frame.getHeight());
+
+  saveFrame(path, frame, frameIdx);
 }
 
-void saveViewport(const Common::Json &config, const Placeholders &placeholders, int32_t frameIndex,
+void saveViewport(const Common::Json &config, const Placeholders &placeholders, int32_t frameIdx,
                   const std::string &name, const Common::TextureDepth16Frame &frame) {
-  const auto outputDir = config.require(outputDirectory).as<std::filesystem::path>();
+  const auto outputDir = config.require("outputDirectory").as<std::filesystem::path>();
   auto saved = false;
 
-  if (const auto &node = config.optional(outputViewportTexturePathFmt)) {
+  if (const auto &node = config.optional("outputViewportTexturePathFmt")) {
     saveFrame(outputDir / fmt::format(node.as<std::string>(), placeholders.numberOfInputFrames,
                                       placeholders.contentId, placeholders.testId,
                                       placeholders.numberOfOutputFrames, name,
                                       frame.texture.getWidth(), frame.texture.getHeight(),
                                       "yuv420p10le"),
-              frame.texture, frameIndex);
+              frame.texture, frameIdx);
     saved = true;
   }
-  if (const auto &node = config.optional(outputViewportGeometryPathFmt)) {
+  if (const auto &node = config.optional("outputViewportGeometryPathFmt")) {
     saveFrame(outputDir / fmt::format(node.as<std::string>(), placeholders.numberOfInputFrames,
                                       placeholders.contentId, placeholders.testId,
                                       placeholders.numberOfOutputFrames, name,
                                       frame.depth.getWidth(), frame.depth.getHeight(),
                                       "yuv420p16le"),
-              frame.depth, frameIndex);
+              frame.depth, frameIdx);
     saved = true;
   }
 
   if (!saved) {
-    fmt::print("WARNING: Calculated viewport but not saving texture or geometry. Add {} or {} to "
-               "the configuration file.\n",
-               outputViewportTexturePathFmt, outputViewportGeometryPathFmt);
+    fmt::print("WARNING: Calculated viewport but not saving texture or geometry. Add "
+               "outputViewportTexturePathFmt or outputViewportGeometryPathFmt to "
+               "the configuration file.\n");
   }
 }
 
-void saveBlockToPatchMaps(const Common::Json &config, const Placeholders &placeholders,
-                          int32_t frameIndex, const MivBitstream::AccessUnit &frame) {
-  const auto outputDir = config.require(outputDirectory).as<std::filesystem::path>();
+void optionalSaveBlockToPatchMaps(const Common::Json &config, const Placeholders &placeholders,
+                                  int32_t frameIdx, const MivBitstream::AccessUnit &frame) {
+  const auto outputDir = config.require("outputDirectory").as<std::filesystem::path>();
 
-  if (const auto &node = config.optional(outputBlockToPatchMapPathFmt)) {
+  if (const auto &node = config.optional("outputBlockToPatchMapPathFmt")) {
     for (size_t k = 0; k < frame.atlas.size(); ++k) {
       const auto &btpm = frame.atlas[k].blockToPatchMap;
       saveFrame(outputDir / fmt::format(node.as<std::string>(), placeholders.numberOfInputFrames,
                                         placeholders.contentId, placeholders.testId, k,
                                         btpm.getWidth(), btpm.getHeight()),
-                btpm, frameIndex);
+                btpm, frameIdx);
     }
   }
 }
 
-void savePrunedFrame(const Common::Json &config, const Placeholders &placeholders,
-                     int32_t frameIndex,
-                     const std::pair<std::vector<Common::Texture444Depth10Frame>, Common::MaskList>
-                         &prunedViewsAndMasks) {
-  const auto outputDir = config.require(outputDirectory).as<std::filesystem::path>();
+void optionalSavePrunedFrame(const Common::Json &config, const Placeholders &placeholders,
+                             int32_t frameIdx,
+                             const std::pair<std::vector<Common::Texture444Depth10Frame>,
+                                             Common::MaskList> &prunedViewsAndMasks) {
+  const auto outputDir = config.require("outputDirectory").as<std::filesystem::path>();
+
+  // TODO(#397): Generalize pruned view reconstruction to handle all attribute types in any order
 
   for (size_t v = 0; v < prunedViewsAndMasks.first.size(); ++v) {
-    if (const auto &node = config.optional(outputMultiviewTexturePathFmt)) {
+    if (const auto &node = config.optional("outputMultiviewOccupancyPathFmt")) {
+      const auto &occupancy = prunedViewsAndMasks.second[v];
+
+      if (!occupancy.empty()) {
+        saveFrame(outputDir / fmt::format(node.as<std::string>(), placeholders.numberOfInputFrames,
+                                          placeholders.contentId, placeholders.testId, v,
+                                          occupancy.getWidth(), occupancy.getHeight()),
+                  occupancy, frameIdx);
+      }
+    }
+
+    if (const auto &node = config.optional("outputMultiviewGeometryPathFmt")) {
+      const auto &geometry = prunedViewsAndMasks.first[v].second;
+
+      if (!geometry.empty()) {
+        saveFrame(outputDir / fmt::format(node.as<std::string>(), placeholders.numberOfInputFrames,
+                                          placeholders.contentId, placeholders.testId, v,
+                                          geometry.getWidth(), geometry.getHeight()),
+                  geometry, frameIdx);
+      }
+    }
+
+    if (const auto &node = config.optional("outputMultiviewTexturePathFmt")) {
       const auto &texture = prunedViewsAndMasks.first[v].first;
-      saveFrame(outputDir / fmt::format(node.as<std::string>(), placeholders.numberOfInputFrames,
-                                        placeholders.contentId, placeholders.testId, v,
-                                        texture.getWidth(), texture.getHeight()),
-                yuv420(texture), frameIndex);
+
+      if (!texture.empty()) {
+        saveFrame(outputDir / fmt::format(node.as<std::string>(), placeholders.numberOfInputFrames,
+                                          placeholders.contentId, placeholders.testId, v,
+                                          texture.getWidth(), texture.getHeight()),
+                  texture.changeColorFormat(Common::ColorFormat::YUV420), frameIdx);
+      }
     }
-    LIMITATION(!config.optional(outputMultiviewTransparencyPathFmt));
-    if (const auto &node = config.optional(outputMultiviewGeometryPathFmt)) {
-      const auto &depth = prunedViewsAndMasks.first[v].second;
-      saveFrame(outputDir / fmt::format(node.as<std::string>(), placeholders.numberOfInputFrames,
-                                        placeholders.contentId, placeholders.testId, v,
-                                        depth.getWidth(), depth.getHeight()),
-                depth, frameIndex);
-    }
-    if (const auto &node = config.optional(outputMultiviewOccupancyPathFmt)) {
-      const auto &mask = prunedViewsAndMasks.second[v];
-      saveFrame(outputDir / fmt::format(node.as<std::string>(), placeholders.numberOfInputFrames,
-                                        placeholders.contentId, placeholders.testId, v,
-                                        mask.getWidth(), mask.getHeight()),
-                mask, frameIndex);
-    }
+
+    LIMITATION(!config.optional("outputMultiviewTransparencyPathFmt"));
   }
 }
 
-void saveSequenceConfig(const Common::Json &config, const Placeholders &placeholders, int32_t foc,
-                        const MivBitstream::SequenceConfig &seqConfig) {
-  if (const auto &node = config.optional(IO::outputSequenceConfigPathFmt)) {
-    const auto path = config.require(IO::outputDirectory).as<std::filesystem::path>() /
+void optionalSaveSequenceConfig(const Common::Json &config, const Placeholders &placeholders,
+                                int32_t foc, const MivBitstream::SequenceConfig &seqConfig) {
+  if (const auto &node = config.optional("outputSequenceConfigPathFmt")) {
+    const auto path = config.require("outputDirectory").as<std::filesystem::path>() /
                       fmt::format(node.as<std::string>(), placeholders.numberOfInputFrames,
                                   placeholders.contentId, placeholders.testId, foc);
+
     // NOTE(#483): Binary mode to prevent problems with cross-platform consistency checks
     std::ofstream stream{path, std::ios::binary};
     const auto json = Common::Json{seqConfig};
@@ -214,8 +193,8 @@ void saveSequenceConfig(const Common::Json &config, const Placeholders &placehol
 auto outputBitstreamPath(const Common::Json &config, const Placeholders &placeholders)
     -> std::filesystem::path {
   auto path =
-      config.require(IO::outputDirectory).as<std::filesystem::path>() /
-      fmt::format(config.require(IO::outputBitstreamPathFmt).as<std::string>(),
+      config.require("outputDirectory").as<std::filesystem::path>() /
+      fmt::format(config.require("outputBitstreamPathFmt").as<std::string>(),
                   placeholders.numberOfInputFrames, placeholders.contentId, placeholders.testId);
   create_directories(path.parent_path());
   return path;

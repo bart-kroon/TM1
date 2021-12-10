@@ -149,35 +149,39 @@ calculateNominalAtlasFrameSizes(const Configuration &config,
   return Common::SizeVector(numAtlases, {atlasGridWidth * blockSize, atlasGridHeight * blockSize});
 }
 
-[[nodiscard]] auto createGeometryInformation(const MivBitstream::ViewParamsList &viewParamsList) {
+[[nodiscard]] auto createGeometryInformation(uint32_t bitDepth,
+                                             const MivBitstream::ViewParamsList &viewParamsList) {
+  const auto bitDepthMinus1 = Common::downCast<uint8_t>(bitDepth - 1);
+
   auto gi = MivBitstream::GeometryInformation{};
-  gi.gi_geometry_2d_bit_depth_minus1(9).gi_geometry_3d_coordinates_bit_depth_minus1(std::accumulate(
-      viewParamsList.cbegin(), viewParamsList.cend(), uint8_t{9},
-      [](uint8_t init, const MivBitstream::ViewParams &vp) {
-        return std::max(
-            init, Common::downCast<uint8_t>(
-                      Common::ceilLog2(std::max(vp.ci.ci_projection_plane_width_minus1() + 1,
-                                                vp.ci.ci_projection_plane_height_minus1() + 1)) -
-                      1));
-      }));
+  gi.gi_geometry_2d_bit_depth_minus1(bitDepthMinus1)
+      .gi_geometry_3d_coordinates_bit_depth_minus1(std::accumulate(
+          viewParamsList.cbegin(), viewParamsList.cend(), bitDepthMinus1,
+          [](uint8_t init, const MivBitstream::ViewParams &vp) {
+            const auto viewWidth = vp.ci.ci_projection_plane_width_minus1() + 1;
+            const auto viewHeight = vp.ci.ci_projection_plane_height_minus1() + 1;
+            const auto requiredBitDepth = Common::ceilLog2(std::max(viewWidth, viewHeight));
+            return std::max(init, Common::downCast<uint8_t>(requiredBitDepth - 1));
+          }));
+
   return gi;
 }
 
-[[nodiscard]] auto createOccupancyInformation() {
+[[nodiscard]] auto createOccupancyInformation(uint32_t bitDepth) {
   auto oi = MivBitstream::OccupancyInformation{};
   oi.oi_occupancy_codec_id(0)
       .oi_lossy_occupancy_compression_threshold(128)
-      .oi_occupancy_2d_bit_depth_minus1(9)
+      .oi_occupancy_2d_bit_depth_minus1(Common::downCast<uint8_t>(bitDepth - 1))
       .oi_occupancy_MSB_align_flag(false);
   return oi;
 }
 
-[[nodiscard]] auto createAttributeInformation() {
+[[nodiscard]] auto createAttributeInformation(uint32_t bitDepth) {
   auto ai = MivBitstream::AttributeInformation{};
   ai.ai_attribute_count(1)
       .ai_attribute_type_id(0, MivBitstream::AiAttributeTypeId::ATTR_TEXTURE)
       .ai_attribute_dimension_minus1(0, 2)
-      .ai_attribute_2d_bit_depth_minus1(0, 9);
+      .ai_attribute_2d_bit_depth_minus1(0, Common::downCast<uint8_t>(bitDepth - 1));
   return ai;
 }
 
@@ -231,14 +235,14 @@ calculateNominalAtlasFrameSizes(const Configuration &config,
         .vps_attribute_video_present_flag(j, config.haveTexture)
         .vps_miv_extension(createVpsMivExtension(config, viewParamsList, atlasFrameSizes));
 
-    if (config.haveGeometry) {
-      vps.geometry_information(j, createGeometryInformation(viewParamsList));
-    }
     if (config.haveOccupancy) {
-      vps.occupancy_information(j, createOccupancyInformation());
+      vps.occupancy_information(j, createOccupancyInformation(config.occBitDepth));
+    }
+    if (config.haveGeometry) {
+      vps.geometry_information(j, createGeometryInformation(config.geoBitDepth, viewParamsList));
     }
     if (config.haveTexture) {
-      vps.attribute_information(j, createAttributeInformation());
+      vps.attribute_information(j, createAttributeInformation(config.texBitDepth));
     }
   }
   return vps;

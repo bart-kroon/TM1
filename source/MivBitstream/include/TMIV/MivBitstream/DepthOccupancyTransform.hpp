@@ -59,13 +59,13 @@ inline auto OccupancyTransform::occupant(Common::SampleValue x) const -> bool {
   return x >= m_threshold;
 }
 
-template <typename DepthFrame>
-auto DepthTransform::quantizeNormDisp(const Common::Mat<float> &matrix,
-                                      Common::SampleValue minLevel) const -> DepthFrame {
-  auto frame = DepthFrame::lumaOnly(
+inline auto DepthTransform::quantizeNormDisp(const Common::Mat<float> &matrix,
+                                             Common::SampleValue minLevel) const
+    -> Common::Frame<> {
+  auto frame = Common::Frame<>::lumaOnly(
       {static_cast<int32_t>(matrix.width()), static_cast<int32_t>(matrix.height())}, m_bitDepth);
   std::transform(std::begin(matrix), std::end(matrix), std::begin(frame.getPlane(0)), [=](float x) {
-    return Common::assertDownCast<uint16_t>(quantizeNormDisp(x, minLevel));
+    return Common::assertDownCast<Common::DefaultElement>(quantizeNormDisp(x, minLevel));
   });
   return frame;
 }

@@ -37,7 +37,10 @@ using Catch::Matchers::Contains;
 
 #include <TMIV/Common/Frame.h>
 #include <TMIV/MpiPcs/MpiPcs.h>
+
 #include <sstream>
+
+using namespace std::string_literals;
 
 namespace TMIV::MpiPcs {
 TEST_CASE("MpiPcs writer and reader") {

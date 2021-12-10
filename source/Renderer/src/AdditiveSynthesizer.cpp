@@ -72,8 +72,8 @@ public:
                             const MivBitstream::AtlasAccessUnit &atlas,
                             const MivBitstream::ViewParams &viewportParams) {
     SceneVertexDescriptorList result;
-    const auto rows = atlas.frameSize().y();
-    const auto cols = atlas.frameSize().x();
+    const auto rows = atlas.texFrame.getHeight();
+    const auto cols = atlas.texFrame.getWidth();
     result.reserve(rows * cols);
 
     const auto transformList = affineTransformList(frame.viewParamsList, viewportParams.pose);
@@ -126,8 +126,8 @@ public:
 
   static auto atlasTriangles(const MivBitstream::AtlasAccessUnit &atlas) {
     TriangleDescriptorList result;
-    const auto rows = atlas.frameSize().y();
-    const auto cols = atlas.frameSize().x();
+    const auto rows = atlas.texFrame.getHeight();
+    const auto cols = atlas.texFrame.getWidth();
     const int32_t size = 2 * (rows - 1) * (cols - 1);
     result.reserve(size);
 
@@ -161,7 +161,7 @@ public:
 
   static auto atlasColors(const MivBitstream::AtlasAccessUnit &atlas) {
     std::vector<Common::Vec3f> result;
-    auto yuv444 = expandTexture(atlas.attrFrame);
+    auto yuv444 = expandTexture(atlas.texFrame);
     result.reserve(distance(std::begin(result), std::end(result)));
     std::copy(std::begin(yuv444), std::end(yuv444), back_inserter(result));
     return result;

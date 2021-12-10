@@ -34,16 +34,17 @@
 #ifndef TMIV_DECODER_MIVDECODER_H
 #define TMIV_DECODER_MIVDECODER_H
 
+#include <TMIV/Common/FlatMap.h>
 #include <TMIV/Common/Frame.h>
 #include <TMIV/Decoder/AtlasDecoder.h>
 #include <TMIV/Decoder/CommonAtlasDecoder.h>
 #include <TMIV/Decoder/V3cUnitBuffer.h>
 #include <TMIV/MivBitstream/AccessUnit.h>
-#include <TMIV/VideoDecoder/VideoDecoderBase.h>
+#include <TMIV/VideoDecoder/VideoDecoderFactory.h>
 
 namespace TMIV::Decoder {
 class MivDecoder {
-public: // Decoder interface
+public:
   explicit MivDecoder(V3cUnitSource source);
 
   MivDecoder(const MivDecoder &other) = delete;
@@ -52,54 +53,48 @@ public: // Decoder interface
   auto operator=(MivDecoder &&other) -> MivDecoder & = default;
   ~MivDecoder();
 
-  // Provide a frame server for out-of-band occupancy video data (OVD). OVD video sub bitstreams
-  // within the bitstreams take precedence.
-  using OccFrameServer = std::function<Common::Occupancy10Frame(
-      MivBitstream::AtlasId atlasId, int32_t frameIndex, Common::Vec2i frameSize)>;
-  void setOccFrameServer(OccFrameServer value);
+  using V3cUnitHeader = MivBitstream::V3cUnitHeader;
 
-  // Provide a frame server for out-of-band geometry video data (GVD). GVD video sub bitstreams
-  // within the bitstreams take precedence.
-  using GeoFrameServer = std::function<Common::Depth10Frame(
-      MivBitstream::AtlasId atlasId, int32_t frameIndex, Common::Vec2i frameSize)>;
-  void setGeoFrameServer(GeoFrameServer value);
-
-  // Provide a frame server for out-of-band attribute video data (AVD). AVD video sub bitstreams
-  // within the bitstreams take precedence.
+  // Call signature for the frame server.
   //
-  // NOTE 1: There is no harm in setting an attribute frame server for a bitstream that does not
-  //          have any attributes, because the callback will never be invoked.
-  //
-  // NOTE 2: This version of the test model only supports zero, one or two attributes, among texture
-  // and transparency.
-  using TextureFrameServer = std::function<Common::Texture444Frame(
-      MivBitstream::AtlasId atlasId, int32_t frameId, Common::Vec2i frameSize)>;
-  void setTextureFrameServer(TextureFrameServer value);
+  // The V3C unit header and frame index are provided as a way for the frame server to index the
+  // requested video frame. The VPS and ASPS are provided for the frame server to determine a
+  // suitable format. There is no requirement on the return value to be in nominal format. Frames
+  // are required to have sufficient planes.
+  using FrameServer = std::function<Common::Frame<>(
+      V3cUnitHeader vuh, int32_t frameIdx, const MivBitstream::V3cParameterSet &vps,
+      const MivBitstream::AtlasSequenceParameterSetRBSP &asps)>;
 
-  // Additional frame server for transparency.
-  using TransparencyFrameServer = std::function<Common::Transparency10Frame(
-      MivBitstream::AtlasId atlasId, int32_t frameId, Common::Vec2i frameSize)>;
-  void setTransparencyFrameServer(TransparencyFrameServer value);
+  // Provide a frame server for out-of-band video data (if any)
+  void setFrameServer(FrameServer value);
 
-  // Provide a frame server for out-of-band packed video data (PVD). PVD video sub bitstreams
-  // within the bitstreams take precedence.
-  using FramePackServer = std::function<Common::FramePack444Frame(
-      MivBitstream::AtlasId atlasId, int32_t frameId, Common::Vec2i frameSize)>;
-  void setFramePackServer(FramePackServer value);
-
+  // Pull an access unit from the MIV decoder
   auto operator()() -> std::optional<MivBitstream::AccessUnit>;
 
 private:
-  [[nodiscard]] auto expectIrap() const -> bool;
   auto decodeVps() -> std::optional<MivBitstream::V3cParameterSet>;
+
   void resetDecoder();
   void checkCapabilities() const;
-  auto startVideoDecoder(const MivBitstream::V3cUnitHeader &vuh, double &totalTime)
-      -> std::unique_ptr<VideoDecoder::VideoDecoderBase>;
+
+  [[nodiscard]] auto decoderId(V3cUnitHeader vuh) const noexcept -> VideoDecoder::DecoderId;
+
+  // Start a video decoder for the video sub bitstream corresponding to the specified V3C unit
+  // header. If and only if there are no such units in the V3C unit stream, the out-of-band video
+  // frame server will be used instead.
+  auto tryStartVideoDecoder(V3cUnitHeader vuh) -> bool;
+
+  // Decode a video frame of the specified video sub-bitstream using the already initalized video
+  // decoder. Alternatively, pull out-of-band video from the frame server.
+  auto decodeVideoFrame(V3cUnitHeader vuh) -> bool;
+
+  // Pull an out-of-band video frame from the frame server.
+  auto pullOutOfBandVideoFrame(V3cUnitHeader vuh) -> bool;
 
   void decodeCommonAtlas();
   void decodeViewParamsList();
   auto decodeVideoSubBitstreams() -> bool;
+
   void decodeMvpl(const MivBitstream::MivViewParamsList &mvpl, bool dqParamsPresentFlag);
   void decodeMvpue(const MivBitstream::MivViewParamsUpdateExtrinsics &mvpue);
   void decodeMvpui(const MivBitstream::MivViewParamsUpdateIntrinsics &mvpui);
@@ -111,37 +106,18 @@ private:
   [[nodiscard]] auto decodeBlockToPatchMap(size_t k, const MivBitstream::PatchParamsList &ppl) const
       -> Common::BlockToPatchMap;
 
-  auto decodeOccVideo(size_t k) -> bool;
-  auto decodeGeoVideo(size_t k) -> bool;
-  auto decodeAttrTextureVideo(size_t k) -> bool;
-  auto decodeAttrTransparencyVideo(size_t k) -> bool;
-  auto decodeFramePackVideo(size_t k) -> bool;
-
-  void summarizeVps() const;
-
   V3cUnitBuffer m_inputBuffer;
-  OccFrameServer m_occFrameServer;
-  GeoFrameServer m_geoFrameServer;
-  TextureFrameServer m_textureFrameServer;
-  TransparencyFrameServer m_transparencyFrameServer;
-  FramePackServer m_framePackServer;
+  FrameServer m_frameServer;
 
   std::unique_ptr<CommonAtlasDecoder> m_commonAtlasDecoder;
   std::vector<std::unique_ptr<AtlasDecoder>> m_atlasDecoder;
-  std::vector<std::unique_ptr<VideoDecoder::VideoDecoderBase>> m_occVideoDecoder;
-  std::vector<std::unique_ptr<VideoDecoder::VideoDecoderBase>> m_geoVideoDecoder;
-  std::vector<std::unique_ptr<VideoDecoder::VideoDecoderBase>> m_textureVideoDecoder;
-  std::vector<std::unique_ptr<VideoDecoder::VideoDecoderBase>> m_transparencyVideoDecoder;
-  std::vector<std::unique_ptr<VideoDecoder::VideoDecoderBase>> m_framePackVideoDecoder;
+
+  Common::FlatMap<V3cUnitHeader, std::unique_ptr<VideoDecoder::VideoDecoderBase>> m_videoDecoders;
+  Common::FlatMap<V3cUnitHeader, double> m_totalVideoDecodingTime;
 
   std::optional<CommonAtlasDecoder::AccessUnit> m_commonAtlasAu;
   std::vector<std::optional<AtlasDecoder::AccessUnit>> m_atlasAu;
   MivBitstream::AccessUnit m_au;
-
-  double m_totalOccVideoDecodingTime{};
-  double m_totalGeoVideoDecodingTime{};
-  double m_totalAttrVideoDecodingTime{};
-  double m_totalFramePackVideoDecodingTime{};
 
   enum class State { initial, decoding, eof };
   State m_state{State::initial};

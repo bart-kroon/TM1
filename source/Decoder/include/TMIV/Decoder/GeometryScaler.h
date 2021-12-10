@@ -43,10 +43,15 @@ class GeometryScaler {
 public:
   GeometryScaler(const Common::Json & /*rootNode*/, const Common::Json &componentNode);
 
+  [[nodiscard]] auto
+  scale(const MivBitstream::AtlasAccessUnit &atlas, const Common::Frame<> &geoFrameNF,
+        const std::optional<MivBitstream::GeometryUpscalingParameters> &gup) const
+      -> Common::Frame<>;
+
   [[nodiscard]] static auto scale(const MivBitstream::AtlasAccessUnit &atlas,
+                                  const Common::Frame<> &geoFrameNF,
                                   const MivBitstream::GeometryUpscalingParameters &gup)
-      -> Common::Depth10Frame;
-  void inplaceScale(MivBitstream::AccessUnit &frame) const;
+      -> Common::Frame<>;
 
 private:
   MivBitstream::GeometryUpscalingParameters m_defaultGup;

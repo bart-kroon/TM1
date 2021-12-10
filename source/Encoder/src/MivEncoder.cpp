@@ -50,7 +50,7 @@ void MivEncoder::writeAccessUnit(const EncoderParams &params, bool randomAccess)
 
   if (m_irap) {
     m_params.vps.profile_tier_level().ptl_max_decodes_idc(ptlMaxDecodesIdc());
-    writeV3cUnit(MivBitstream::VuhUnitType::V3C_VPS, {}, m_params.vps);
+    writeV3cUnit(MivBitstream::V3cUnitHeader::vps(), m_params.vps);
     m_log2MaxFrmOrderCntLsbMinus4 =
         m_params.casps.casps_log2_max_common_atlas_frame_order_cnt_lsb_minus4();
   }
@@ -60,10 +60,13 @@ void MivEncoder::writeAccessUnit(const EncoderParams &params, bool randomAccess)
 
   // NOTE(#253): always write even for non-IRAP intra periods w/o view parameter updates
   //             to avoid frame order count ambiguity
-  writeV3cUnit(MivBitstream::VuhUnitType::V3C_CAD, {}, commonAtlasSubBitstream());
+  const auto vpsId = m_params.vps.vps_v3c_parameter_set_id();
+  writeV3cUnit(MivBitstream::V3cUnitHeader::cad(vpsId), commonAtlasSubBitstream());
   m_previouslySentMessages.viewParamsList = m_params.viewParamsList;
 
   for (uint8_t k = 0; k <= m_params.vps.vps_atlas_count_minus1(); ++k) {
+    const auto atlasId = m_params.vps.vps_atlas_id(k);
+
     // Clause 7.4.5.3.2 of V-PCC DIS d85 [N19329]: AXPS regardless of atlas ID (and temporal ID)
     // share the same value space for AXPS ID
     auto &aau = m_params.atlas[k];
@@ -72,8 +75,7 @@ void MivEncoder::writeAccessUnit(const EncoderParams &params, bool randomAccess)
     aau.afps.afps_atlas_sequence_parameter_set_id(k);
     aau.ath.ath_atlas_frame_parameter_set_id(k);
 
-    writeV3cUnit(MivBitstream::VuhUnitType::V3C_AD, m_params.vps.vps_atlas_id(k),
-                 atlasSubBitstream(k));
+    writeV3cUnit(MivBitstream::V3cUnitHeader::ad(vpsId, atlasId), atlasSubBitstream(k));
   }
   if (!randomAccess) {
     m_irap = false;
@@ -320,8 +322,8 @@ auto MivEncoder::mivViewParamsUpdateDepthQuantization() const
 auto MivEncoder::atlasSubBitstream(size_t k) -> MivBitstream::AtlasSubBitstream {
   auto asb = MivBitstream::AtlasSubBitstream{m_ssnh};
 
-  auto vuh = MivBitstream::V3cUnitHeader{MivBitstream::VuhUnitType::V3C_AD};
-  vuh.vuh_atlas_id(m_params.vps.vps_atlas_id(k));
+  const auto vuh = MivBitstream::V3cUnitHeader::ad(m_params.vps.vps_v3c_parameter_set_id(),
+                                                   m_params.vps.vps_atlas_id(k));
 
   const auto &aau = m_params.atlas[k];
 
@@ -362,12 +364,7 @@ auto MivEncoder::atlasTileLayer(size_t k) const -> MivBitstream::AtlasTileLayerR
 }
 
 template <typename Payload>
-void MivEncoder::writeV3cUnit(MivBitstream::VuhUnitType vut, MivBitstream::AtlasId atlasId,
-                              Payload &&payload) {
-  auto vuh = MivBitstream::V3cUnitHeader{vut};
-  if (vut != MivBitstream::VuhUnitType::V3C_VPS && vut != MivBitstream::VuhUnitType::V3C_CAD) {
-    vuh.vuh_atlas_id(atlasId);
-  }
+void MivEncoder::writeV3cUnit(MivBitstream::V3cUnitHeader vuh, Payload &&payload) {
   const auto vu = MivBitstream::V3cUnit{vuh, std::forward<Payload>(payload)};
 
   std::ostringstream substream;

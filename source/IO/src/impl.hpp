@@ -31,27 +31,37 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef TMIV_DECODER_ENTITYBASEDPATCHMAPFILTER_H
-#define TMIV_DECODER_ENTITYBASEDPATCHMAPFILTER_H
+#include <TMIV/IO/IO.h>
 
-#include <TMIV/Common/Frame.h>
-#include <TMIV/Common/Json.h>
-#include <TMIV/MivBitstream/AccessUnit.h>
+using namespace std::string_literals;
 
-namespace TMIV::Decoder {
-class EntityBasedPatchMapFilter {
-public:
-  EntityBasedPatchMapFilter(const Common::Json &rootNode, const Common::Json &componentNode);
-
-  // Update the PatchIdMap with respect to entities
-  void inplaceFilterBlockToPatchMaps(MivBitstream::AccessUnit &frame) const;
-
-private:
-  void filterBlockToPatchMaps(MivBitstream::AtlasAccessUnit &atlas) const;
-
-  Common::Vec2i m_entityDecodeRange;
-  bool m_entityFiltering{false};
-};
-} // namespace TMIV::Decoder
-
-#endif
+namespace TMIV::IO::detail {
+constexpr auto videoComponentName(MivBitstream::VuhUnitType vuhUnitType,
+                                  MivBitstream::AiAttributeTypeId attrTypeId) {
+  switch (vuhUnitType) {
+  case MivBitstream::VuhUnitType::V3C_OVD:
+    return "Occupancy";
+  case MivBitstream::VuhUnitType::V3C_GVD:
+    return "Geometry";
+  case MivBitstream::VuhUnitType::V3C_PVD:
+    return "Packed";
+  case MivBitstream::VuhUnitType::V3C_AVD:
+    switch (attrTypeId) {
+    case MivBitstream::AiAttributeTypeId::ATTR_TEXTURE:
+      return "Texture";
+    case MivBitstream::AiAttributeTypeId::ATTR_MATERIAL_ID:
+      return "MaterialId";
+    case MivBitstream::AiAttributeTypeId::ATTR_TRANSPARENCY:
+      return "Transparency";
+    case MivBitstream::AiAttributeTypeId::ATTR_REFLECTANCE:
+      return "Reflectance";
+    case MivBitstream::AiAttributeTypeId::ATTR_NORMAL:
+      return "Normal";
+    default:
+      UNREACHABLE;
+    }
+  default:
+    UNREACHABLE;
+  }
+}
+} // namespace TMIV::IO::detail

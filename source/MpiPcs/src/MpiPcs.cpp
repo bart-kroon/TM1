@@ -77,7 +77,7 @@ void FileHeader::write(std::ostream &stream) {
 Reader::Reader(const Common::Json &config, const IO::Placeholders &placeholders,
                const MivBitstream::SequenceConfig &sc, const bool buildIndexOn)
     : m_startFrame{placeholders.startFrame} {
-  const auto inputDir = config.require(IO::inputDirectory).as<std::filesystem::path>();
+  const auto inputDir = config.require("inputDirectory").as<std::filesystem::path>();
   const auto &node = config.require(inputMpiPcsPathFmt);
 
   const auto cameraName = sc.sourceCameraNames[0];
@@ -184,7 +184,7 @@ void Reader::buildIndex() {
 
 Writer::Writer(const Common::Json &config, const IO::Placeholders &placeholders,
                const MivBitstream::SequenceConfig &sc) {
-  const auto outputDir = config.require(IO::outputDirectory).as<std::filesystem::path>();
+  const auto outputDir = config.require("outputDirectory").as<std::filesystem::path>();
   const auto &node = config.require(outputMpiPcsPathFmt);
 
   const auto cameraName = sc.sourceCameraNames[0];

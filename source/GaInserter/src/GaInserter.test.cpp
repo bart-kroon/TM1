@@ -84,7 +84,7 @@ template <typename Payload> auto createTestV3cUnit(const V3cUnitHeader &vuh, Pay
 auto createVps() { return V3cParameterSet{}; }
 
 auto createTestVpsBitstream() {
-  const auto vuh = V3cUnitHeader{VuhUnitType::V3C_VPS};
+  const auto vuh = V3cUnitHeader::vps();
   const auto vps = createVps();
   return createTestV3cUnit(vuh, vps);
 }
@@ -99,7 +99,7 @@ auto createTestNalUnit(const NalUnitHeader &nuh, const Rbps &rbps,
 
 auto createTestAspsNalUnit() {
   const auto vps = createVps();
-  const auto vuh = V3cUnitHeader{VuhUnitType::V3C_AD};
+  const auto vuh = V3cUnitHeader::ad(0, {});
   const auto asps = AtlasSequenceParameterSetRBSP{};
   return createTestNalUnit(NalUnitHeader{NalUnitType::NAL_ASPS, 0, 1}, asps, vuh, vps);
 }
@@ -179,14 +179,14 @@ auto createTestAtlasData(const SampleStreamNalHeader &ssnh) {
 }
 
 auto createTestCadBitstream() {
-  const auto vuh = V3cUnitHeader{VuhUnitType::V3C_CAD};
+  const auto vuh = V3cUnitHeader::cad(0);
   const auto ssnh = SampleStreamNalHeader{0};
   const auto cad = createTestCommonAtlasData(ssnh);
   return createTestV3cUnit(vuh, cad);
 }
 
 auto createTestAdBitstream() {
-  const auto vuh = V3cUnitHeader{VuhUnitType::V3C_AD};
+  const auto vuh = V3cUnitHeader::ad(0, {});
   const auto ssnh = SampleStreamNalHeader{2};
   const auto ad = createTestAtlasData(ssnh);
   return createTestV3cUnit(vuh, ad);

@@ -48,28 +48,42 @@ namespace TMIV::MivBitstream {
 // 23090-5: v3c_unit_header()
 class V3cUnitHeader {
 public:
-  explicit V3cUnitHeader(VuhUnitType vuh_unit_type) : m_vuh_unit_type{vuh_unit_type} {}
+  [[nodiscard]] static constexpr auto vps() noexcept -> V3cUnitHeader;
+
+  [[nodiscard]] static constexpr auto ad(uint8_t vuh_v3c_parameter_set_id,
+                                         AtlasId atlas_id) noexcept -> V3cUnitHeader;
+
+  [[nodiscard]] static constexpr auto ovd(uint8_t vuh_v3c_parameter_set_id,
+                                          AtlasId atlas_id) noexcept -> V3cUnitHeader;
+
+  [[nodiscard]] static constexpr auto gvd(uint8_t vuh_v3c_parameter_set_id, AtlasId atlas_id,
+                                          uint8_t vuh_map_index = 0,
+                                          bool vuh_auxiliary_video_flag = false) noexcept
+      -> V3cUnitHeader;
+
+  [[nodiscard]] static constexpr auto
+  avd(uint8_t vuh_v3c_parameter_set_id, AtlasId atlas_id, uint8_t vuh_attribute_index,
+      uint8_t vuh_attribute_partition_index = 0, uint8_t vuh_map_index = 0,
+      bool vuh_auxiliary_video_flag = false) noexcept -> V3cUnitHeader;
+
+  [[nodiscard]] static constexpr auto pvd(uint8_t vuh_v3c_parameter_set_id,
+                                          AtlasId atlas_id) noexcept -> V3cUnitHeader;
+
+  [[nodiscard]] static constexpr auto cad(uint8_t vuh_v3c_parameter_set_id) noexcept
+      -> V3cUnitHeader;
 
   [[nodiscard]] constexpr auto vuh_unit_type() const noexcept { return m_vuh_unit_type; }
-
-  [[nodiscard]] auto vuh_v3c_parameter_set_id() const -> uint8_t;
-  [[nodiscard]] auto vuh_atlas_id() const -> AtlasId;
-  [[nodiscard]] auto vuh_attribute_index() const -> uint8_t;
-  [[nodiscard]] auto vuh_attribute_partition_index() const -> uint8_t;
-  [[nodiscard]] auto vuh_map_index() const -> uint8_t;
-  [[nodiscard]] auto vuh_auxiliary_video_flag() const -> bool;
-
-  auto vuh_v3c_parameter_set_id(uint8_t value) noexcept -> V3cUnitHeader &;
-  auto vuh_atlas_id(AtlasId value) noexcept -> V3cUnitHeader &;
-  auto vuh_attribute_index(uint8_t value) noexcept -> V3cUnitHeader &;
-  auto vuh_attribute_partition_index(uint8_t value) noexcept -> V3cUnitHeader &;
-  auto vuh_map_index(uint8_t value) noexcept -> V3cUnitHeader &;
-  auto vuh_auxiliary_video_flag(bool value) noexcept -> V3cUnitHeader &;
+  [[nodiscard]] constexpr auto vuh_v3c_parameter_set_id() const noexcept -> uint8_t;
+  [[nodiscard]] constexpr auto vuh_atlas_id() const noexcept -> AtlasId;
+  [[nodiscard]] constexpr auto vuh_attribute_index() const noexcept -> uint8_t;
+  [[nodiscard]] constexpr auto vuh_attribute_partition_index() const noexcept -> uint8_t;
+  [[nodiscard]] constexpr auto vuh_map_index() const noexcept -> uint8_t;
+  [[nodiscard]] constexpr auto vuh_auxiliary_video_flag() const noexcept -> bool;
 
   friend auto operator<<(std::ostream &stream, const V3cUnitHeader &x) -> std::ostream &;
 
-  auto operator==(const V3cUnitHeader &other) const -> bool;
-  auto operator!=(const V3cUnitHeader &other) const -> bool;
+  constexpr auto operator==(const V3cUnitHeader &other) const noexcept -> bool;
+  constexpr auto operator!=(const V3cUnitHeader &other) const noexcept -> bool;
 
   static auto decodeFrom(std::istream &stream) -> V3cUnitHeader;
 
@@ -78,7 +92,7 @@ public:
   [[nodiscard]] auto summary() const -> std::string;
 
 private:
-  VuhUnitType m_vuh_unit_type;
+  VuhUnitType m_vuh_unit_type{};
   uint8_t m_vuh_v3c_parameter_set_id{};
   AtlasId m_vuh_atlas_id{};
   uint8_t m_vuh_attribute_index{};
@@ -145,5 +159,7 @@ private:
   V3cUnitPayload m_v3c_unit_payload;
 };
 } // namespace TMIV::MivBitstream
+
+#include "V3cUnit.hpp"
 
 #endif

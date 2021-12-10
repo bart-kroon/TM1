@@ -266,10 +266,10 @@ private:
     m_blendingTransparency.resize(size.y(), size.x());
   }
 
-  static auto expandTransparency(const MivBitstream::AccessUnit &frame, int32_t idx)
+  static auto expandTransparency(const MivBitstream::AccessUnit &frame, int32_t frameIdx)
       -> Common::Mat<float> {
-    auto atlasId = frame.vps.vps_atlas_id(idx);
-    const auto &atlas = frame.atlas[idx];
+    auto atlasId = frame.vps.vps_atlas_id(frameIdx);
+    const auto &atlas = frame.atlas[frameIdx];
 
     auto maxValue = 0.F;
 
@@ -289,9 +289,14 @@ private:
 
     POSTCONDITION(0.F < maxValue);
 
-    Common::Mat<float> transparencyMap(
-        {static_cast<size_t>(atlas.frameSize().y()), static_cast<size_t>(atlas.frameSize().x())});
-    const auto &transparencyPlane = frame.atlas[idx].transparencyFrame.getPlane(0);
+    const auto attrIdx =
+        frame.vps.attrIdxOf(atlasId, MivBitstream::AiAttributeTypeId::ATTR_TRANSPARENCY);
+    PRECONDITION(attrIdx.has_value());
+    const auto &transparencyFrame = atlas.attrFrameNF[*attrIdx];
+
+    Common::Mat<float> transparencyMap({static_cast<size_t>(transparencyFrame.getHeight()),
+                                        static_cast<size_t>(transparencyFrame.getWidth())});
+    const auto &transparencyPlane = transparencyFrame.getPlane(0);
 
     std::transform(transparencyPlane.begin(), transparencyPlane.end(), transparencyMap.begin(),
                    [&](auto q) { return static_cast<float>(q) / maxValue; });
@@ -306,7 +311,7 @@ private:
     int32_t idx = 0;
 
     for (const auto &atlas : frame.atlas) {
-      atlasColor.emplace_back(expandTexture(atlas.attrFrame));
+      atlasColor.emplace_back(expandTexture(atlas.texFrame));
       atlasTransparency.emplace_back(expandTransparency(frame, idx));
 
       idx++;

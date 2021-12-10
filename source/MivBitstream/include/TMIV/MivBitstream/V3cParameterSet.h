@@ -613,7 +613,13 @@ public:
   // Convenience function
   [[nodiscard]] auto indexOf(AtlasId atlasId) const -> size_t;
 
+  // Convenience function
+  [[nodiscard]] auto attrIdxOf(AtlasId atlasId, AiAttributeTypeId attrTypeId) const
+      -> std::optional<uint8_t>;
+
   friend auto operator<<(std::ostream &stream, const V3cParameterSet &x) -> std::ostream &;
+
+  [[nodiscard]] auto summary() const -> std::string;
 
   auto operator==(const V3cParameterSet &other) const -> bool;
   auto operator!=(const V3cParameterSet &other) const -> bool;

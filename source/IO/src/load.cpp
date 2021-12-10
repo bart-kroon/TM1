@@ -33,6 +33,8 @@
 
 #include <TMIV/IO/IO.h>
 
+#include "DependencyInjector.h"
+
 #include <fstream>
 #include <regex>
 
@@ -48,7 +50,9 @@ auto loadFrame(const std::filesystem::path &path, int32_t frameIdx, Common::Vec2
     if constexpr (std::is_same_v<NativeElement, Element>) {
       auto frame = Common::Frame<Element>{frameSize, bitDepth, colorFormat};
 
-      std::ifstream stream{path, std::ios::binary};
+      auto &filesystem = DependencyInjector::getInstance().filesystem();
+      auto stream_ = filesystem.ifstream(path, std::ios::binary);
+      auto &stream = *stream_;
 
       if (!stream.good()) {
         throw std::runtime_error(fmt::format("Failed to open {} for reading", path));
@@ -76,7 +80,66 @@ auto loadFrame(const std::filesystem::path &path, int32_t frameIdx, Common::Vec2
 }
 
 namespace {
+struct LoadInputFrameParams {
+  bool isOptional{};
+  const Common::Json &config;
+  const Placeholders &placeholders;
+  int32_t frameIdx{};
+  Common::Vec2i frameSize;
+  std::string name;
+};
+
+auto loadInputFrame(const LoadInputFrameParams &params, Common::ColorFormat colorFormat,
+                    uint32_t bitDepth, MivBitstream::VuhUnitType vuhUnitType,
+                    MivBitstream::AiAttributeTypeId attrTypeId =
+                        MivBitstream::AiAttributeTypeId::ATTR_UNSPECIFIED) -> Common::Frame<> {
+  const auto configKey = fmt::format("input{}PathFmt", videoComponentName(vuhUnitType, attrTypeId));
+
+  if (const auto &node = params.config.optional(configKey)) {
+    const auto inputDir = params.config.require("inputDirectory").as<std::filesystem::path>();
+    const auto videoFormat = videoFormatString(colorFormat, bitDepth);
+
+    const auto path =
+        inputDir / fmt::format(node.as<std::string>(), params.placeholders.numberOfInputFrames,
+                               params.placeholders.contentId, params.placeholders.testId,
+                               params.name, params.frameSize.x(), params.frameSize.y(),
+                               videoFormat);
+
+    return loadFrame<>(path, params.placeholders.startFrame + params.frameIdx, params.frameSize,
+                       bitDepth, colorFormat);
+  }
+  if (params.isOptional) {
+    return {};
+  }
+  throw std::runtime_error(fmt::format("The required configuration key {} is missing", configKey));
+}
+
+auto loadEntityFrame(const LoadInputFrameParams &params, Common::ColorFormat colorFormat,
+                     uint32_t bitDepth) -> Common::Frame<> {
+  const auto configKey = "inputEntityPathFmt"s;
+
+  if (const auto &node = params.config.optional(configKey)) {
+    const auto inputDir = params.config.require("inputDirectory").as<std::filesystem::path>();
+    const auto videoFormat = videoFormatString(colorFormat, bitDepth);
+
+    const auto path =
+        inputDir / fmt::format(node.as<std::string>(), params.placeholders.numberOfInputFrames,
+                               params.placeholders.contentId, params.placeholders.testId,
+                               params.name, params.frameSize.x(), params.frameSize.y(),
+                               videoFormat);
+
+    return loadFrame<>(path, params.placeholders.startFrame + params.frameIdx, params.frameSize,
+                       bitDepth, colorFormat);
+  }
+  LIMITATION(params.isOptional);
+  return {};
+}
+
 auto requantize(Common::Frame<> frame) {
+  if (frame.empty()) {
+    return frame;
+  }
+
   const auto maxValue = frame.maxValue();
 
   std::transform(frame.getPlane(0).cbegin(), frame.getPlane(0).cend(), frame.getPlane(0).begin(),
@@ -101,55 +164,26 @@ auto loadMultiviewFrame(const Common::Json &config, const Placeholders &placehol
              startFrame, frameIdx + startFrame);
 
   for (size_t v = 0; v < frame.size(); ++v) {
-    const auto name = sc.sourceCameraNames[v];
+    const auto &name = sc.sourceCameraNames[v];
     const auto camera = sc.cameraByName(name);
-    const auto &vp = camera.viewParams;
-    const auto frameSize = vp.ci.projectionPlaneSize();
 
-    if (const auto &node = config.optional("inputTexturePathFmt")) {
-      const auto videoFormat = videoFormatString(camera.colorFormatTexture, camera.bitDepthTexture);
-      const auto path =
-          inputDir / fmt::format(node.as<std::string>(), placeholders.numberOfInputFrames,
-                                 placeholders.contentId, placeholders.testId, name, frameSize.x(),
-                                 frameSize.y(), videoFormat);
-      frame[v].texture = yuv420(loadFrame<>(path, startFrame + frameIdx, frameSize,
-                                            camera.bitDepthTexture, camera.colorFormatTexture));
-    }
+    const auto params = LoadInputFrameParams{
+        true, config, placeholders, frameIdx, camera.viewParams.ci.projectionPlaneSize(), name};
 
-    if (const auto &node = config.optional("inputTransparencyPathFmt")) {
-      const auto videoFormat =
-          videoFormatString(camera.colorFormatTransparency, camera.bitDepthTransparency);
-      const auto path =
-          inputDir / fmt::format(node.as<std::string>(), placeholders.numberOfInputFrames,
-                                 placeholders.contentId, placeholders.testId, name, frameSize.x(),
-                                 frameSize.y(), videoFormat);
-      frame[v].transparency =
-          yuv400(loadFrame<>(path, startFrame + frameIdx, frameSize, camera.bitDepthTransparency,
-                             camera.colorFormatTransparency));
-    }
+    frame[v].texture = yuv420(loadInputFrame(
+        params, camera.colorFormatTexture, camera.bitDepthTexture,
+        MivBitstream::VuhUnitType::V3C_AVD, MivBitstream::AiAttributeTypeId::ATTR_TEXTURE));
 
-    if (const auto &node = config.optional("inputGeometryPathFmt")) {
-      const auto videoFormat =
-          videoFormatString(camera.colorFormatGeometry, camera.bitDepthGeometry);
-      const auto path =
-          inputDir / fmt::format(node.as<std::string>(), placeholders.numberOfInputFrames,
-                                 placeholders.contentId, placeholders.testId, name, frameSize.x(),
-                                 frameSize.y(), videoFormat);
-      frame[v].geometry =
-          requantize(yuv400(loadFrame<>(path, startFrame + frameIdx, frameSize,
-                                        camera.bitDepthGeometry, camera.colorFormatGeometry)));
-    }
+    frame[v].transparency = yuv400(loadInputFrame(
+        params, camera.colorFormatTransparency, camera.bitDepthTransparency,
+        MivBitstream::VuhUnitType::V3C_AVD, MivBitstream::AiAttributeTypeId::ATTR_TRANSPARENCY));
 
-    if (const auto &node = config.optional("inputEntityPathFmt")) {
-      const auto videoFormat =
-          videoFormatString(camera.colorFormatEntities, camera.bitDepthEntities);
-      const auto path =
-          inputDir / fmt::format(node.as<std::string>(), placeholders.numberOfInputFrames,
-                                 placeholders.contentId, placeholders.testId, name, frameSize.x(),
-                                 frameSize.y(), videoFormat);
-      frame[v].entities = yuv400(loadFrame<>(path, startFrame + frameIdx, frameSize,
-                                             camera.bitDepthEntities, camera.colorFormatEntities));
-    }
+    frame[v].geometry = requantize(
+        yuv400(loadInputFrame(params, camera.colorFormatGeometry, camera.bitDepthGeometry,
+                              MivBitstream::VuhUnitType::V3C_GVD)));
+
+    frame[v].entities =
+        yuv400(loadEntityFrame(params, camera.colorFormatEntities, camera.bitDepthEntities));
   }
 
   return frame;
@@ -158,47 +192,27 @@ auto loadMultiviewFrame(const Common::Json &config, const Placeholders &placehol
 auto loadMpiTextureMpiLayer(const Common::Json &config, const Placeholders &placeholders,
                             const MivBitstream::SequenceConfig &sc, int32_t frameIdx,
                             int32_t mpiLayerIndex, int32_t nbMpiLayers) -> Common::Frame<> {
-  const auto inputDir = config.require("inputDirectory").as<std::filesystem::path>();
-  const auto &node = config.require("inputTexturePathFmt");
-
   const auto name = sc.sourceCameraNames[0];
-
   const auto camera = sc.cameraByName(name);
-  const auto &vp = camera.viewParams;
-  const auto frameSize = vp.ci.projectionPlaneSize();
-  const auto videoFormat = IO::videoFormatString(camera.colorFormatTexture, camera.bitDepthTexture);
 
-  const auto path = inputDir / fmt::format(node.as<std::string>(), placeholders.numberOfInputFrames,
-                                           placeholders.contentId, placeholders.testId, name,
-                                           frameSize.x(), frameSize.y(), videoFormat);
-
-  auto texture = yuv420(loadFrame<>(path, frameIdx * nbMpiLayers + mpiLayerIndex, frameSize,
-                                    camera.bitDepthTexture, camera.colorFormatTexture));
-
-  return texture;
+  return loadInputFrame(
+      LoadInputFrameParams{false, config, placeholders, frameIdx * nbMpiLayers + mpiLayerIndex,
+                           camera.viewParams.ci.projectionPlaneSize(), name},
+      camera.colorFormatTexture, camera.bitDepthTexture, MivBitstream::VuhUnitType::V3C_AVD,
+      MivBitstream::AiAttributeTypeId::ATTR_TEXTURE);
 }
 
 auto loadMpiTransparencyMpiLayer(const Common::Json &config, const Placeholders &placeholders,
                                  const MivBitstream::SequenceConfig &sc, int32_t frameIdx,
-                                 int32_t mpiLayerIndex, int32_t nbMpiLayers)
-    -> Common::Frame<uint8_t> {
-  const auto inputDir = config.require("inputDirectory").as<std::filesystem::path>();
-  const auto &node = config.require("inputTransparencyPathFmt");
-
+                                 int32_t mpiLayerIndex, int32_t nbMpiLayers) -> Common::Frame<> {
   const auto name = sc.sourceCameraNames[0];
-
   const auto camera = sc.cameraByName(name);
-  const auto &vp = camera.viewParams;
-  const auto frameSize = vp.ci.projectionPlaneSize();
-  const auto videoFormat =
-      IO::videoFormatString(camera.colorFormatTransparency, camera.bitDepthTransparency);
 
-  const auto path = inputDir / fmt::format(node.as<std::string>(), placeholders.numberOfInputFrames,
-                                           placeholders.contentId, placeholders.testId, name,
-                                           frameSize.x(), frameSize.y(), videoFormat);
-
-  return yuv400(loadFrame<uint8_t>(path, frameIdx * nbMpiLayers + mpiLayerIndex, frameSize,
-                                   camera.bitDepthTransparency, camera.colorFormatTransparency));
+  return loadInputFrame(
+      LoadInputFrameParams{false, config, placeholders, frameIdx * nbMpiLayers + mpiLayerIndex,
+                           camera.viewParams.ci.projectionPlaneSize(), name},
+      camera.colorFormatTransparency, camera.bitDepthTransparency,
+      MivBitstream::VuhUnitType::V3C_AVD, MivBitstream::AiAttributeTypeId::ATTR_TRANSPARENCY);
 }
 
 namespace {
@@ -247,13 +261,16 @@ auto loadViewportMetadata(const Common::Json &config, const Placeholders &placeh
       config.require("configDirectory").as<std::filesystem::path>() /
       fmt::format(config.require("inputViewportParamsPathFmt").as<std::string>(),
                   placeholders.numberOfInputFrames, placeholders.contentId, placeholders.testId);
-  std::ifstream stream{viewportParamsPath};
-  if (!stream.good()) {
+
+  auto &filesystem = DependencyInjector::getInstance().filesystem();
+  auto stream = filesystem.ifstream(viewportParamsPath);
+
+  if (!stream->good()) {
     throw std::runtime_error(
         fmt::format("Failed to load viewport parameters from {}", viewportParamsPath));
   }
 
-  const auto sequenceConfig = MivBitstream::SequenceConfig{stream};
+  const auto sequenceConfig = MivBitstream::SequenceConfig{*stream};
   auto result = sequenceConfig.cameraByName(isPoseTrace ? "viewport"s : cameraName);
 
   // The result may have invalid depth values
@@ -265,13 +282,13 @@ auto loadViewportMetadata(const Common::Json &config, const Placeholders &placeh
         fmt::format(config.require("inputPoseTracePathFmt").as<std::string>(),
                     placeholders.numberOfInputFrames, placeholders.contentId, placeholders.testId,
                     cameraName);
-    std::ifstream stream2{poseTracePath};
-    if (!stream2.good()) {
+    auto stream2 = filesystem.ifstream(poseTracePath);
+    if (!stream2->good()) {
       throw std::runtime_error(
           fmt::format("Failed to load pose trace file from {}", poseTracePath));
     }
 
-    const auto pose = loadPoseFromCSV(stream2, frameIdx);
+    const auto pose = loadPoseFromCSV(*stream2, frameIdx);
 
     result.viewParams.pose.position += pose.position;
     result.viewParams.pose.orientation = eulerDeg2quat(pose.rotation);
@@ -411,25 +428,31 @@ auto tryLoadSequenceConfig_(const Common::Json &config, const Placeholders &plac
                             int32_t frameIdx)
     -> std::conditional_t<allowNullopt, std::optional<MivBitstream::SequenceConfig>,
                           MivBitstream::SequenceConfig> {
+  auto &filesystem = DependencyInjector::getInstance().filesystem();
+
   const auto relPath = fmt::format(config.require("inputSequenceConfigPathFmt").as<std::string>(),
                                    placeholders.numberOfInputFrames, placeholders.contentId,
                                    placeholders.testId, frameIdx);
   const auto path1 = config.require("inputDirectory").as<std::filesystem::path>() / relPath;
   const auto path2 = config.require("configDirectory").as<std::filesystem::path>() / relPath;
-  const auto path = exists(path1) ? path1 : path2;
+  const auto path = filesystem.exists(path1) ? path1 : path2;
 
-  if constexpr (allowNullopt) {
-    if (!exists(path)) {
+  if (!filesystem.exists(path)) {
+    if constexpr (allowNullopt) {
       return std::nullopt;
+    } else {
+      throw std::runtime_error(
+          fmt::format("Source camera parameter paths {} and {} do not exist", path1, path2));
     }
   }
-  std::ifstream stream{path};
-  if (!stream.good()) {
-    throw std::runtime_error(
-        fmt::format("Failed to load source camera parameters from {} or {} (with current path {})",
-                    path1, path2, std::filesystem::current_path()));
+
+  auto stream = filesystem.ifstream(path);
+
+  if (!stream->good()) {
+    throw std::runtime_error(fmt::format("Failed to load source camera parameters from {}", path));
   }
-  return MivBitstream::SequenceConfig{stream};
+
+  return MivBitstream::SequenceConfig{*stream};
 }
 } // namespace
 

@@ -31,66 +31,60 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <catch2/catch.hpp>
+
 #include <TMIV/IO/IO.h>
 
 #include "DependencyInjector.h"
-#include "Filesystem.h"
+#include "FakeFilesystem.h"
 
 using namespace std::string_literals;
+using namespace std::string_view_literals;
 
-namespace TMIV::IO {
-auto videoComponentName(MivBitstream::VuhUnitType vuhUnitType,
-                        MivBitstream::AiAttributeTypeId attrTypeId) -> std::string {
-  switch (vuhUnitType) {
-  case MivBitstream::VuhUnitType::V3C_OVD:
-    return "Occupancy"s;
-  case MivBitstream::VuhUnitType::V3C_GVD:
-    return "Geometry"s;
-  case MivBitstream::VuhUnitType::V3C_PVD:
-    return "Packed"s;
-  case MivBitstream::VuhUnitType::V3C_AVD:
-    switch (attrTypeId) {
-    case MivBitstream::AiAttributeTypeId::ATTR_TEXTURE:
-      return "Texture"s;
-    case MivBitstream::AiAttributeTypeId::ATTR_MATERIAL_ID:
-      return "MaterialId"s;
-    case MivBitstream::AiAttributeTypeId::ATTR_TRANSPARENCY:
-      return "Transparency"s;
-    case MivBitstream::AiAttributeTypeId::ATTR_REFLECTANCE:
-      return "Reflectance"s;
-    case MivBitstream::AiAttributeTypeId::ATTR_NORMAL:
-      return "Normal"s;
-    default:
-      UNREACHABLE;
-    }
-  default:
-    UNREACHABLE;
-  }
+namespace test {
+using TMIV::Common::assertDownCast;
+using TMIV::Common::ColorFormat;
+using TMIV::Common::DefaultElement;
+using TMIV::Common::Frame;
+using TMIV::Common::Vec2i;
+using TMIV::IO::DependencyInjector;
+using TMIV::IO::Placeholders;
+
+template <typename... Args>
+auto injectFakeFilesystem(Args &&...args) -> std::shared_ptr<FakeFilesystem> {
+  auto &injector = DependencyInjector::getInstance();
+  auto filesystem = std::make_shared<FakeFilesystem>(std::forward<Args>(args)...);
+  injector.filesystem(filesystem);
+  return filesystem;
 }
 
-auto videoFormatString(Common::ColorFormat colorFormat, uint32_t bitDepth) -> std::string {
-  std::string colorFormatString;
+inline auto placeholders() {
+  auto result = Placeholders{};
 
-  switch (colorFormat) {
-  case Common::ColorFormat::YUV400:
-    colorFormatString = "gray"s;
-    break;
-  case Common::ColorFormat::YUV420:
-    colorFormatString = "yuv420p"s;
-    break;
-  case Common::ColorFormat::YUV444:
-    colorFormatString = "yuv444p"s;
-    break;
-  default:
-    UNREACHABLE;
-  }
+  result.contentId = "seq";
+  result.numberOfInputFrames = 7;
+  result.numberOfOutputFrames = 11;
+  result.startFrame = 19;
+  result.testId = "rate";
 
-  if (bitDepth == 8) {
-    return colorFormatString;
-  }
-  if (bitDepth < 8) {
-    return fmt::format("{}{}", colorFormatString, bitDepth);
-  }
-  return fmt::format("{}{}le", colorFormatString, bitDepth);
+  return result;
 }
-} // namespace TMIV::IO
+
+inline auto frame(Vec2i size, ColorFormat colorFormat, uint32_t bitDepth) {
+  auto frame = Frame<>{size, bitDepth, colorFormat};
+
+  static constexpr auto exampleData = "The quick brown fox jumps over the lazy dog"sv;
+
+  for (auto &plane : frame.getPlanes()) {
+    const auto n = std::min(exampleData.size(), plane.size());
+
+    std::transform(exampleData.cbegin(), exampleData.cbegin() + n, plane.begin(),
+                   [](auto sample) { return assertDownCast<DefaultElement>(sample); });
+  }
+
+  return frame;
+}
+
+inline auto dir1() { return std::filesystem::path("fake"); }
+inline auto dir2() { return std::filesystem::path("mirage"); }
+} // namespace test

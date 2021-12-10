@@ -35,6 +35,8 @@
 
 #include <fstream>
 
+#include "DependencyInjector.h"
+
 using namespace std::string_literals;
 
 namespace TMIV::IO {
@@ -45,10 +47,15 @@ void saveFrame(const std::filesystem::path &path, const Common::Frame<Element> &
     using NativeElement = decltype(zero);
 
     if constexpr (std::is_same_v<NativeElement, Element>) {
-      create_directories(path.parent_path());
+      auto &filesystem = DependencyInjector::getInstance().filesystem();
 
-      std::fstream stream(path, frameIdx == 0 ? std::ios::out | std::ios::binary
-                                              : std::ios::in | std::ios::out | std::ios::binary);
+      filesystem.create_directories(path.parent_path());
+
+      const auto mode = frameIdx == 0 ? std::ios::out | std::ios::binary
+                                      : std::ios::in | std::ios::out | std::ios::binary;
+      auto stream_ = filesystem.ofstream(path, mode);
+      auto &stream = *stream_;
+
       if (!stream.good()) {
         throw std::runtime_error(fmt::format("Failed to open {} for writing", path));
       }
@@ -95,23 +102,21 @@ void saveViewport(const Common::Json &config, const Placeholders &placeholders, 
   auto saved = false;
 
   if (const auto &node = config.optional("outputViewportTexturePathFmt")) {
-    const auto frame_ = yuv420(frame.texture);
     saveFrame(outputDir / fmt::format(node.as<std::string>(), placeholders.numberOfInputFrames,
                                       placeholders.contentId, placeholders.testId,
                                       placeholders.numberOfOutputFrames, name,
                                       frame.texture.getWidth(), frame.texture.getHeight(),
-                                      videoFormatString(frame_)),
-              frame_, frameIdx);
+                                      videoFormatString(frame.texture)),
+              frame.texture, frameIdx);
     saved = true;
   }
   if (const auto &node = config.optional("outputViewportGeometryPathFmt")) {
-    const auto frame_ = yuv420(frame.geometry);
     saveFrame(outputDir / fmt::format(node.as<std::string>(), placeholders.numberOfInputFrames,
                                       placeholders.contentId, placeholders.testId,
                                       placeholders.numberOfOutputFrames, name,
                                       frame.geometry.getWidth(), frame.geometry.getHeight(),
-                                      videoFormatString(frame_)),
-              frame_, frameIdx);
+                                      videoFormatString(frame.geometry)),
+              frame.geometry, frameIdx);
     saved = true;
   }
 
@@ -165,20 +170,28 @@ void optionalSaveSequenceConfig(const Common::Json &config, const Placeholders &
                       fmt::format(node.as<std::string>(), placeholders.numberOfInputFrames,
                                   placeholders.contentId, placeholders.testId, foc);
 
+    auto &filesystem = DependencyInjector::getInstance().filesystem();
+    filesystem.create_directories(path.parent_path());
+
     // NOTE(#483): Binary mode to prevent problems with cross-platform consistency checks
-    std::ofstream stream{path, std::ios::binary};
+    auto stream = filesystem.ofstream(path, std::ios::binary);
+
     const auto json = Common::Json{seqConfig};
-    json.saveTo(stream);
+    json.saveTo(*stream);
   }
 }
 
 auto outputBitstreamPath(const Common::Json &config, const Placeholders &placeholders)
     -> std::filesystem::path {
+  auto &filesystem = DependencyInjector::getInstance().filesystem();
+
   auto path =
       config.require("outputDirectory").as<std::filesystem::path>() /
       fmt::format(config.require("outputBitstreamPathFmt").as<std::string>(),
                   placeholders.numberOfInputFrames, placeholders.contentId, placeholders.testId);
-  create_directories(path.parent_path());
+
+  filesystem.create_directories(path.parent_path());
+
   return path;
 }
 } // namespace TMIV::IO

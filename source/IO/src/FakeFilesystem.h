@@ -31,66 +31,38 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/IO/IO.h>
+#ifndef TMIV_IO_TEST_FAKE_FILESYSTEM_H
+#define TMIV_IO_TEST_FAKE_FILESYSTEM_H
 
-#include "DependencyInjector.h"
-#include "Filesystem.h"
+#include "AbstractFilesystem.h"
 
-using namespace std::string_literals;
+#include <TMIV/Common/FlatMap.h>
 
-namespace TMIV::IO {
-auto videoComponentName(MivBitstream::VuhUnitType vuhUnitType,
-                        MivBitstream::AiAttributeTypeId attrTypeId) -> std::string {
-  switch (vuhUnitType) {
-  case MivBitstream::VuhUnitType::V3C_OVD:
-    return "Occupancy"s;
-  case MivBitstream::VuhUnitType::V3C_GVD:
-    return "Geometry"s;
-  case MivBitstream::VuhUnitType::V3C_PVD:
-    return "Packed"s;
-  case MivBitstream::VuhUnitType::V3C_AVD:
-    switch (attrTypeId) {
-    case MivBitstream::AiAttributeTypeId::ATTR_TEXTURE:
-      return "Texture"s;
-    case MivBitstream::AiAttributeTypeId::ATTR_MATERIAL_ID:
-      return "MaterialId"s;
-    case MivBitstream::AiAttributeTypeId::ATTR_TRANSPARENCY:
-      return "Transparency"s;
-    case MivBitstream::AiAttributeTypeId::ATTR_REFLECTANCE:
-      return "Reflectance"s;
-    case MivBitstream::AiAttributeTypeId::ATTR_NORMAL:
-      return "Normal"s;
-    default:
-      UNREACHABLE;
-    }
-  default:
-    UNREACHABLE;
-  }
-}
+#include <sstream>
 
-auto videoFormatString(Common::ColorFormat colorFormat, uint32_t bitDepth) -> std::string {
-  std::string colorFormatString;
+namespace test {
+class FakeFilesystem final : public TMIV::IO::AbstractFilesystem {
+public:
+  auto ifstream(const std::filesystem::path &path, std::ios_base::openmode mode)
+      -> std::shared_ptr<std::istream> final;
 
-  switch (colorFormat) {
-  case Common::ColorFormat::YUV400:
-    colorFormatString = "gray"s;
-    break;
-  case Common::ColorFormat::YUV420:
-    colorFormatString = "yuv420p"s;
-    break;
-  case Common::ColorFormat::YUV444:
-    colorFormatString = "yuv444p"s;
-    break;
-  default:
-    UNREACHABLE;
-  }
+  auto ofstream(const std::filesystem::path &path, std::ios_base::openmode mode)
+      -> std::shared_ptr<std::ostream> final;
 
-  if (bitDepth == 8) {
-    return colorFormatString;
-  }
-  if (bitDepth < 8) {
-    return fmt::format("{}{}", colorFormatString, bitDepth);
-  }
-  return fmt::format("{}{}le", colorFormatString, bitDepth);
-}
-} // namespace TMIV::IO
+  void create_directories(const std::filesystem::path &p) final;
+
+  auto exists(const std::filesystem::path &p) -> bool final;
+
+  [[nodiscard]] auto empty() const noexcept -> bool;
+  [[nodiscard]] auto haveFile(const std::filesystem::path &path) const noexcept -> bool;
+  [[nodiscard]] auto haveDir(const std::filesystem::path &path) const noexcept -> bool;
+  [[nodiscard]] auto fileData(const std::filesystem::path &path) const -> std::string;
+  void fileData(const std::filesystem::path &path, const std::string &value);
+
+private:
+  TMIV::Common::FlatMap<std::filesystem::path, std::shared_ptr<std::stringstream>> m_files;
+  std::vector<std::filesystem::path> m_directories;
+};
+} // namespace test
+
+#endif

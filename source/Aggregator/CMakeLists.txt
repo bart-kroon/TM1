@@ -8,3 +8,12 @@ create_tmiv_library(
     PUBLIC
         TMIV::CommonLib
     )
+
+create_catch2_unit_test(
+    TARGET
+        AggregatorTest
+    SOURCES
+        "src/Aggregator.test.cpp"
+    PRIVATE
+        TMIV::AggregatorLib
+    )

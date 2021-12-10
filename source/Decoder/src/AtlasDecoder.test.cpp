@@ -33,18 +33,24 @@
 
 #include <catch2/catch.hpp>
 
-#include <TMIV/Decoder/CommonAtlasDecoder.h>
+#include <TMIV/Decoder/AtlasDecoder.h>
 
 #include "FakeChecker.h"
 #include "FakeV3cUnitSource.h"
 
 using Catch::Contains;
+using TMIV::MivBitstream::AtduPatchMode;
+using TMIV::MivBitstream::AthType;
+using TMIV::MivBitstream::AtlasFrameParameterSetRBSP;
+using TMIV::MivBitstream::AtlasSequenceParameterSetRBSP;
 using TMIV::MivBitstream::AtlasSubBitstream;
-using TMIV::MivBitstream::CommonAtlasFrameRBSP;
-using TMIV::MivBitstream::CommonAtlasSequenceParameterSetRBSP;
+using TMIV::MivBitstream::AtlasTileDataUnit;
+using TMIV::MivBitstream::AtlasTileLayerRBSP;
 using TMIV::MivBitstream::NalUnit;
 using TMIV::MivBitstream::NalUnitHeader;
 using TMIV::MivBitstream::NalUnitType;
+using TMIV::MivBitstream::PatchDataUnit;
+using TMIV::MivBitstream::PatchInformationData;
 using TMIV::MivBitstream::SampleStreamNalHeader;
 using TMIV::MivBitstream::V3cParameterSet;
 using TMIV::MivBitstream::V3cUnit;
@@ -52,76 +58,95 @@ using TMIV::MivBitstream::V3cUnitHeader;
 using TMIV::MivBitstream::VuhUnitType;
 
 namespace {
-auto minimalCasps() {
-  auto casps = CommonAtlasSequenceParameterSetRBSP{};
+auto minimalAsps(const V3cUnitHeader &vuh, const V3cParameterSet &vps) {
+  auto asps = AtlasSequenceParameterSetRBSP{}.asps_num_ref_atlas_frame_lists_in_asps(1);
 
   std::ostringstream buffer;
-  casps.encodeTo(buffer);
-  return std::tuple{casps, NalUnit{NalUnitHeader{NalUnitType::NAL_CASPS, 0, 1}, buffer.str()}};
+  asps.encodeTo(buffer, vuh, vps);
+  return std::tuple{asps, NalUnit{NalUnitHeader{NalUnitType::NAL_ASPS, 0, 1}, buffer.str()}};
 }
 
-auto minimalCafIdr(const std::vector<CommonAtlasSequenceParameterSetRBSP> &caspsV) {
-  auto caf = CommonAtlasFrameRBSP{};
-
-  const auto maxCommonAtlasFrmOrderCntLsb =
-      1U << (caspsV.front().casps_log2_max_common_atlas_frame_order_cnt_lsb_minus4() + 4);
+auto minimalAfps(const std::vector<AtlasSequenceParameterSetRBSP> &aspsV) {
+  auto afps = AtlasFrameParameterSetRBSP{};
 
   std::ostringstream buffer;
-  const auto nuh = NalUnitHeader{NalUnitType::NAL_CAF_IDR, 0, 1};
-  caf.encodeTo(buffer, nuh, caspsV, maxCommonAtlasFrmOrderCntLsb);
-  return std::tuple{caf, NalUnit{nuh, buffer.str()}};
+  afps.encodeTo(buffer, aspsV);
+  return std::tuple{afps, NalUnit{NalUnitHeader{NalUnitType::NAL_AFPS, 0, 1}, buffer.str()}};
 }
 
-auto minimalV3cUnit() {
-  const auto vuh = V3cUnitHeader::cad(0);
+auto minimalAtl(const std::vector<AtlasSequenceParameterSetRBSP> &aspsV,
+                std::vector<AtlasFrameParameterSetRBSP> &afpsV) {
+  auto atl = AtlasTileLayerRBSP{};
+  atl.atlas_tile_header().ath_type(AthType::I_TILE).ath_ref_atlas_frame_list_asps_flag(true);
+  atl.atlas_tile_data_unit() =
+      AtlasTileDataUnit{std::pair{AtduPatchMode::I_INTRA, PatchInformationData{PatchDataUnit{}}}};
+
+  std::ostringstream buffer;
+  const auto nuh = NalUnitHeader{NalUnitType::NAL_IDR_N_LP, 0, 1};
+  atl.encodeTo(buffer, nuh, aspsV, afpsV);
+  return std::tuple{atl, NalUnit{nuh, buffer.str()}};
+}
+
+auto minimalV3cUnit(const V3cParameterSet &vps) {
+  const auto vuh = V3cUnitHeader::ad(0, {});
   const auto ssnh = SampleStreamNalHeader{2};
   auto asb = AtlasSubBitstream{ssnh};
 
-  auto [casps, nuCasps] = minimalCasps();
-  auto caspsV = std::vector{casps};
-  asb.nal_units().push_back(nuCasps);
+  const auto [asps, nuAsps] = minimalAsps(vuh, vps);
+  const auto aspsV = std::vector{asps};
+  asb.nal_units().push_back(nuAsps);
 
-  auto [cafIdr, nuCafIdr] = minimalCafIdr(caspsV);
-  asb.nal_units().push_back(nuCafIdr);
+  const auto [afps, nuAfps] = minimalAfps(aspsV);
+  auto afpsV = std::vector{afps};
+  asb.nal_units().push_back(nuAfps);
+
+  auto [atlIdr, nuAtlIdr] = minimalAtl(aspsV, afpsV);
+  asb.nal_units().push_back(nuAtlIdr);
 
   return std::make_shared<V3cUnit>(vuh, asb);
 }
 } // namespace
 
-TEST_CASE("CommonAtlasDecoder") {
-  using TMIV::Decoder::CommonAtlasDecoder;
+TEST_CASE("AtlasDecoder") {
+  using TMIV::Decoder::AtlasDecoder;
 
   auto checker = std::make_shared<test::FakeChecker>();
   const auto vps = V3cParameterSet{};
   checker->checkAndActivateVps(vps);
 
+  const auto vuh = V3cUnitHeader::ad(0, {});
+  checker->checkVuh(vuh);
+
   SECTION("Empty unit source") {
     auto source = test::FakeV3cUnitSource{};
-    auto unit = CommonAtlasDecoder{source, vps, -1, checker};
+    auto unit = AtlasDecoder{source, vuh, vps, -1, checker};
 
     REQUIRE_THROWS_WITH(unit(), Contains("No access units"));
-    CHECK(checker->checkVuh_callCount == 0);
+    REQUIRE(checker->checkVuh_callCount == 1);
+    CHECK(checker->lastVuh == vuh);
   }
 
   SECTION("Minimal functional example") {
     auto source = test::FakeV3cUnitSource{};
 
-    source.units.push_back(minimalV3cUnit());
+    source.units.push_back(minimalV3cUnit(vps));
 
-    auto unit = CommonAtlasDecoder{[&source]() { return source(); }, vps, -1, checker};
+    auto unit = AtlasDecoder{[&source]() { return source(); }, vuh, vps, -1, checker};
 
     const auto au = unit();
     REQUIRE(au.has_value());
     REQUIRE(au->foc == 0);
     REQUIRE(checker->checkVuh_callCount == 1);
-    CHECK(checker->lastVuh == V3cUnitHeader::cad(0));
-    REQUIRE(checker->checkAndActivateNuh_callCount == 2);
-    CHECK(checker->activeNuh == NalUnitHeader{NalUnitType::NAL_CAF_IDR, 0, 1});
-    CHECK(checker->checkCaf_callCount == 1);
+    CHECK(checker->lastVuh == V3cUnitHeader::ad(0, {}));
+    REQUIRE(checker->checkAndActivateNuh_callCount == 3);
+    CHECK(checker->activeNuh == NalUnitHeader{NalUnitType::NAL_IDR_N_LP, 0, 1});
+    CHECK(checker->checkAndActivateAsps_callCount == 1);
+    CHECK(checker->checkAfps_callCount == 1);
+    CHECK(checker->checkAtl_callCount == 1);
 
     REQUIRE_FALSE(unit().has_value());
     REQUIRE_THROWS(unit());
     REQUIRE(checker->checkVuh_callCount == 1);
-    REQUIRE(checker->checkAndActivateNuh_callCount == 2);
+    REQUIRE(checker->checkAndActivateNuh_callCount == 3);
   }
 }

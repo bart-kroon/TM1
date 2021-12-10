@@ -44,7 +44,7 @@ TEST_CASE("profile_tier_level", "[V3C Parameter Set]") {
   REQUIRE(toString(x) == R"(ptl_tier_flag=false
 ptl_profile_codec_group_idc=AVC Progressive High
 ptl_profile_toolset_idc=V-PCC Basic
-ptl_profile_reconstruction_idc=Rec0 (V-PCC)
+ptl_profile_reconstruction_idc=Rec0
 ptl_max_decodes_idc=unconstrained
 ptl_level_idc=[unknown:0]
 ptl_num_sub_profiles=0
@@ -52,12 +52,14 @@ ptl_extended_sub_profile_flag=false
 ptl_toolset_constraints_present_flag=false
 )");
 
+  CHECK(x.profile() == "AVC Progressive High V-PCC Basic Rec0");
+
   REQUIRE(bitCodingTest(x, 72));
 
   SECTION("Example 1") {
     x.ptl_tier_flag(true)
         .ptl_profile_codec_group_idc(PtlProfileCodecGroupIdc::HEVC_Main10)
-        .ptl_profile_toolset_idc(PtlProfilePccToolsetIdc::VPCC_Extended)
+        .ptl_profile_toolset_idc(PtlProfileToolsetIdc::VPCC_Extended)
         .ptl_profile_reconstruction_idc(PtlProfileReconstructionIdc::Rec_Unconstrained)
         .ptl_max_decodes_idc(PtlMaxDecodesIdc::max_4)
         .ptl_level_idc(PtlLevelIdc::Level_2_0)
@@ -72,13 +74,15 @@ ptl_profile_codec_group_idc=HEVC Main10
 ptl_profile_toolset_idc=V-PCC Extended
 ptl_profile_reconstruction_idc=Rec Unconstrained
 ptl_max_decodes_idc=max_4
-ptl_level_idc=Level 2.0
+ptl_level_idc=2.0
 ptl_num_sub_profiles=2
 ptl_extended_sub_profile_flag=true
 ptl_sub_profile_idc[ 0 ]=3
 ptl_sub_profile_idc[ 1 ]=18446744073709551615
 ptl_toolset_constraints_present_flag=false
 )");
+
+    CHECK(x.profile() == "HEVC Main10 V-PCC Extended");
 
     REQUIRE(bitCodingTest(x, 200));
   }
@@ -88,7 +92,7 @@ ptl_toolset_constraints_present_flag=false
 
     x.ptl_tier_flag(true)
         .ptl_profile_codec_group_idc(PtlProfileCodecGroupIdc::HEVC_Main10)
-        .ptl_profile_toolset_idc(PtlProfilePccToolsetIdc::VPCC_Extended)
+        .ptl_profile_toolset_idc(PtlProfileToolsetIdc::VPCC_Extended)
         .ptl_profile_reconstruction_idc(PtlProfileReconstructionIdc::Rec_Unconstrained)
         .ptl_max_decodes_idc(PtlMaxDecodesIdc::max_4)
         .ptl_level_idc(PtlLevelIdc::Level_2_0)
@@ -103,7 +107,7 @@ ptl_profile_codec_group_idc=HEVC Main10
 ptl_profile_toolset_idc=V-PCC Extended
 ptl_profile_reconstruction_idc=Rec Unconstrained
 ptl_max_decodes_idc=max_4
-ptl_level_idc=Level 2.0
+ptl_level_idc=2.0
 ptl_num_sub_profiles=2
 ptl_extended_sub_profile_flag=true
 ptl_sub_profile_idc[ 0 ]=3
@@ -527,7 +531,7 @@ TEST_CASE("v3c_parameter_set", "[V3C Parameter Set]") {
     REQUIRE(toString(vps) == R"(ptl_tier_flag=false
 ptl_profile_codec_group_idc=AVC Progressive High
 ptl_profile_toolset_idc=V-PCC Basic
-ptl_profile_reconstruction_idc=Rec0 (V-PCC)
+ptl_profile_reconstruction_idc=Rec0
 ptl_max_decodes_idc=unconstrained
 ptl_level_idc=[unknown:0]
 ptl_num_sub_profiles=0
@@ -553,7 +557,7 @@ gm_group_count=0
 )");
 
     REQUIRE(vps.summary() == R"(V3C parameter set 0:
-  Tier false, [unknown:0], codec group AVC Progressive High, toolset V-PCC Basic, recon Rec0 (V-PCC), decodes unconstrained
+  AVC Progressive High V-PCC Basic Rec0, tier false, level [unknown:0], decodes unconstrained
   Atlas 0: 1920 x 1080
 , geometry scaling true, groups 0, embedded occupancy true, occupancy scaling false
 )");
@@ -609,7 +613,7 @@ gm_group_count=0
     REQUIRE(toString(vps) == R"(ptl_tier_flag=false
 ptl_profile_codec_group_idc=AVC Progressive High
 ptl_profile_toolset_idc=V-PCC Basic
-ptl_profile_reconstruction_idc=Rec0 (V-PCC)
+ptl_profile_reconstruction_idc=Rec0
 ptl_max_decodes_idc=unconstrained
 ptl_level_idc=[unknown:0]
 ptl_num_sub_profiles=0
@@ -694,7 +698,7 @@ vps_extension_data_byte=250
 vps_extension_data_byte=15
 )");
     REQUIRE(vps.summary() == R"(V3C parameter set 15:
-  Tier false, [unknown:0], codec group AVC Progressive High, toolset V-PCC Basic, recon Rec0 (V-PCC), decodes unconstrained
+  AVC Progressive High V-PCC Basic Rec0, tier false, level [unknown:0], decodes unconstrained
   Atlas 30: 1920 x 1080; [OI: codec 0, 0, 2D 1, align false]
   Atlas 31: 2048 x 2080; [GI: codec 0, 2D 1, algin false, 3D 1]; [AI: 0
   Atlas 32: 0 x 0; [PIN: regions 1]
@@ -744,7 +748,7 @@ vps_extension_data_byte=15
     REQUIRE(toString(vps) == R"(ptl_tier_flag=false
 ptl_profile_codec_group_idc=AVC Progressive High
 ptl_profile_toolset_idc=V-PCC Basic
-ptl_profile_reconstruction_idc=Rec0 (V-PCC)
+ptl_profile_reconstruction_idc=Rec0
 ptl_max_decodes_idc=unconstrained
 ptl_level_idc=[unknown:0]
 ptl_num_sub_profiles=0
@@ -793,7 +797,7 @@ gm_group_count=0
 )");
 
     REQUIRE(vps.summary() == R"(V3C parameter set 15:
-  Tier false, [unknown:0], codec group AVC Progressive High, toolset V-PCC Basic, recon Rec0 (V-PCC), decodes unconstrained
+  AVC Progressive High V-PCC Basic Rec0, tier false, level [unknown:0], decodes unconstrained
   Atlas 20: 4096 x 2048; [AI: 2, ATTR_TEXTURE, codec 1, dims 3, 2D 10, align false, ATTR_TRANSPARENCY, codec 1, dims 1, 2D 10, align false]
 , geometry scaling false, groups 0, embedded occupancy true, occupancy scaling false
 )");

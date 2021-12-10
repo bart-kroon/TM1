@@ -38,7 +38,8 @@
 using namespace std::string_view_literals;
 
 namespace test {
-const auto configuration1 = TMIV::Encoder::Configuration{TMIV::Common::Json::parse(R"({
+auto configuration1() {
+  return TMIV::Encoder::Configuration{TMIV::Common::Json::parse(R"({
     "intraPeriod": 1,
     "blockSizeDepthQualityDependent": [2, 4],
     "haveTextureVideo": false,
@@ -58,12 +59,15 @@ const auto configuration1 = TMIV::Encoder::Configuration{TMIV::Common::Json::par
     "maxLumaPictureSize": 8000000,
     "maxAtlases": 2,
     "codecGroupIdc": "HEVC Main10",
-    "toolsetIdc": "MIV Main"
+    "toolsetIdc": "MIV Main",
+    "reconstructionIdc": "Rec Unconstrained",
+    "levelIdc": "3.5"
 })"sv),
-                                                         TMIV::Common::Json::parse(R"({
+                                      TMIV::Common::Json::parse(R"({
     "depthOccThresholdIfSet": 0.0625,
     "dilate": 0
 })"sv)};
+}
 
 const auto sequenceConfig1 = TMIV::MivBitstream::SequenceConfig{TMIV::Common::Json::parse(R"(
 {
@@ -179,7 +183,7 @@ TEST_CASE("assessDepthQuality typically defers to the depth quality assessor") {
   const auto firstFrame = TMIV::Common::DeepFrameList{};
 
   CHECK(TMIV::Encoder::assessDepthQuality(
-            test::configuration1,
+            test::configuration1(),
             test::FakeDepthQualityAssessor{
                 test::sequenceConfig1.sourceViewParams(), firstFrame, {result}},
             test::sequenceConfig1, firstFrame) == result);
@@ -191,7 +195,7 @@ TEST_CASE("assessDepthQuality does not call the assessor when the depth quality 
   const auto haveGeometry = GENERATE(true, false);
 
   const auto config = [=]() {
-    auto x = test::configuration1;
+    auto x = test::configuration1();
     x.depthLowQualityFlag = result;
     x.haveGeometry = haveGeometry;
     return x;
@@ -204,7 +208,7 @@ TEST_CASE("assessDepthQuality does not call the assessor when the depth quality 
 TEST_CASE("assessDepthQuality returns false without calling the assessor when the encoder is "
           "configured not to have geometry video data") {
   const auto config = [=]() {
-    auto x = test::configuration1;
+    auto x = test::configuration1();
     x.haveGeometry = false;
     return x;
   }();
@@ -236,7 +240,7 @@ TEST_CASE("createEncoderParams sets multiple syntax elements to hard-coded value
   }
 
   const auto config = [=]() {
-    auto x = test::configuration1;
+    auto x = test::configuration1();
     x.haveGeometry = haveGeometry;
     x.geometryScaleEnabledFlag = geometryScaleEnabledFlag;
     x.haveOccupancy = haveOccupancy;
@@ -260,7 +264,7 @@ TEST_CASE("createEncoderParams sets multiple syntax elements to hard-coded value
   CHECK(params.vps.profile_tier_level().ptl_level_idc() ==
         TMIV::MivBitstream::PtlLevelIdc::Level_3_5);
   CHECK(params.vps.profile_tier_level().ptl_profile_reconstruction_idc() ==
-        TMIV::MivBitstream::PtlProfileReconstructionIdc::MIV_Main);
+        TMIV::MivBitstream::PtlProfileReconstructionIdc::Rec_Unconstrained);
 
   for (uint8_t k = 0; k <= params.vps.vps_atlas_count_minus1(); ++k) {
     const auto j = params.vps.vps_atlas_id(k);
@@ -311,7 +315,7 @@ TEST_CASE("createEncoderParams sets multiple syntax elements to hard-coded value
 
 TEST_CASE("createEncoderParams can be configured to allocate an atlas for each view") {
   const auto config = [=]() {
-    auto x = test::configuration1;
+    auto x = test::configuration1();
     x.oneViewPerAtlasFlag = true;
     return x;
   }();
@@ -338,7 +342,7 @@ TEST_CASE("createEncoderParams can be configured to override atlas frame sizes")
                   TMIV::Common::Vec2i{500, 600}, TMIV::Common::Vec2i{700, 800}};
 
   const auto config = [=]() {
-    auto x = test::configuration1;
+    auto x = test::configuration1();
     x.overrideAtlasFrameSizes = atlasFrameSizes;
     return x;
   }();
@@ -368,7 +372,7 @@ TEST_CASE("createEncoderParams warns when the automatically derived atlas frame 
 
   // NOTE(BK): There is no dependency injection for the logging. As a fallback, inspect code
   // coverage and/or perform a visual inspection to check that the waring is issued.
-  CHECK_NOTHROW(TMIV::Encoder::createEncoderParams(test::configuration1, test::sequenceConfig1,
+  CHECK_NOTHROW(TMIV::Encoder::createEncoderParams(test::configuration1(), test::sequenceConfig1,
                                                    viewParamsList, true));
 }
 
@@ -376,7 +380,7 @@ TEST_CASE("createEncoderParams assigns all atlases to the first group when group
   const auto numGroups = GENERATE(uint8_t{1}, uint8_t{2});
 
   const auto config = [=]() {
-    auto x = test::configuration1;
+    auto x = test::configuration1();
     x.numGroups = numGroups;
     return x;
   }();
@@ -396,7 +400,7 @@ TEST_CASE("createEncoderParams takes the attribute offset bit depth from the con
   const auto attributeOffsetBitCount = GENERATE(1, 5, 32);
 
   const auto config = [=]() {
-    auto x = test::configuration1;
+    auto x = test::configuration1();
     x.attributeOffsetFlag = true;
     x.attributeOffsetBitCount = attributeOffsetBitCount;
     return x;
@@ -415,7 +419,7 @@ TEST_CASE("createEncoderParams can embed the viewport camera parameters SEI mess
   const auto viewportCameraParametersSei = GENERATE(false, true);
 
   const auto config = [=]() {
-    auto x = test::configuration1;
+    auto x = test::configuration1();
     x.viewportCameraParametersSei = viewportCameraParametersSei;
     return x;
   }();
@@ -430,7 +434,7 @@ TEST_CASE("createEncoderParams can embed the viewport position SEI message") {
   const auto viewportPositionSei = GENERATE(false, true);
 
   const auto config = [=]() {
-    auto x = test::configuration1;
+    auto x = test::configuration1();
     x.viewportPositionSei = viewportPositionSei;
     return x;
   }();
@@ -448,7 +452,7 @@ TEST_CASE("createEncoderParams sets patch size quantizers when necessary") {
   CAPTURE(blockSize, sizeQuantizer);
 
   const auto config = [=]() {
-    auto x = test::configuration1;
+    auto x = test::configuration1();
     x.blockSizeDepthQualityDependent = TMIV::Common::Vec2i{blockSize, blockSize};
     return x;
   }();

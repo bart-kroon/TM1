@@ -42,8 +42,10 @@ TEST_CASE("TMIV::Encoder::Configuration") {
   using TMIV::Common::Json;
   using TMIV::Common::Vec2i;
   using TMIV::Encoder::Configuration;
+  using TMIV::MivBitstream::PtlLevelIdc;
   using TMIV::MivBitstream::PtlProfileCodecGroupIdc;
-  using TMIV::MivBitstream::PtlProfilePccToolsetIdc;
+  using TMIV::MivBitstream::PtlProfileReconstructionIdc;
+  using TMIV::MivBitstream::PtlProfileToolsetIdc;
 
   SECTION("MIV Main example") {
     auto root = Json::parse(R"({
@@ -66,7 +68,9 @@ TEST_CASE("TMIV::Encoder::Configuration") {
     "maxLumaPictureSize": 0,
     "maxAtlases": 0,
     "codecGroupIdc": "HEVC Main10",
-    "toolsetIdc": "MIV Main"
+    "toolsetIdc": "MIV Main",
+    "reconstructionIdc": "Rec Unconstrained",
+    "levelIdc": "2.5"
 })"sv);
 
     const auto component = Json::parse(R"({
@@ -95,7 +99,9 @@ TEST_CASE("TMIV::Encoder::Configuration") {
     CHECK_FALSE(unit.framePacking);
     CHECK(unit.maxAtlases == 0);
     CHECK(unit.codecGroupIdc == PtlProfileCodecGroupIdc::HEVC_Main10);
-    CHECK(unit.toolsetIdc == PtlProfilePccToolsetIdc::MIV_Main);
+    CHECK(unit.toolsetIdc == PtlProfileToolsetIdc::MIV_Main);
+    CHECK(unit.reconstructionIdc == PtlProfileReconstructionIdc::Rec_Unconstrained);
+    CHECK(unit.levelIdc == PtlLevelIdc::Level_2_5);
     CHECK(unit.dilationIter == 0);
     CHECK_FALSE(unit.viewingSpace.has_value());
     CHECK(unit.overrideAtlasFrameSizes.empty());
@@ -133,18 +139,6 @@ TEST_CASE("TMIV::Encoder::Configuration") {
       CHECK(unit2.codecGroupIdc == PtlProfileCodecGroupIdc::AVC_Progressive_High);
     }
 
-    SECTION("V-PCC Basic is not supported") {
-      root.update(Json::parse(R"({ "toolsetIdc": "V-PCC Basic" })"));
-      REQUIRE_THROWS_WITH((Configuration{root, component}),
-                          "The V-PCC Basic toolset IDC is not supported");
-    }
-
-    SECTION("V-PCC Extended is not supported") {
-      root.update(Json::parse(R"({ "toolsetIdc": "V-PCC Extended" })"));
-      REQUIRE_THROWS_WITH((Configuration{root, component}),
-                          "The V-PCC Extended toolset IDC is not supported");
-    }
-
     SECTION("Unknown codec group IDC") {
       root.update(Json::parse(R"({ "codecGroupIdc": "Fantasy" })"));
       REQUIRE_THROWS_AS((Configuration{root, component}), std::runtime_error);
@@ -153,21 +147,6 @@ TEST_CASE("TMIV::Encoder::Configuration") {
     SECTION("Unknown toolset IDC") {
       root.update(Json::parse(R"({ "toolsetIdc": "Hammer" })"));
       REQUIRE_THROWS_AS((Configuration{root, component}), std::runtime_error);
-    }
-
-    SECTION("MIV Main requires geometry") {
-      root.update(Json::parse(R"({
-    "haveGeometryVideo": false,
-    "dqParamsPresentFlag": false
-})"));
-      REQUIRE_THROWS_WITH((Configuration{root, component}), Contains("haveGeometry"));
-    }
-
-    SECTION("MIV Main does not support occupancy") {
-      root.update(Json::parse(R"({
-    "haveOccupancyVideo": true
-})"));
-      REQUIRE_THROWS_WITH((Configuration{root, component}), Contains("!haveOccupancy"));
     }
   }
 
@@ -193,7 +172,9 @@ TEST_CASE("TMIV::Encoder::Configuration") {
     "maxEntityId": 5,
     "EntityEncodeRange": [0, 4],
     "codecGroupIdc": "AVC Progressive High",
-    "toolsetIdc": "MIV Geometry Absent"
+    "toolsetIdc": "MIV Geometry Absent",
+    "reconstructionIdc": "Rec Unconstrained",
+    "levelIdc": "2.5"
 })"sv);
 
     auto component = Json::parse(R"({
@@ -219,7 +200,7 @@ TEST_CASE("TMIV::Encoder::Configuration") {
     CHECK(unit.maxEntityId == 5);
     CHECK_FALSE(unit.framePacking);
     CHECK(unit.codecGroupIdc == PtlProfileCodecGroupIdc::AVC_Progressive_High);
-    CHECK(unit.toolsetIdc == PtlProfilePccToolsetIdc::MIV_Geometry_Absent);
+    CHECK(unit.toolsetIdc == PtlProfileToolsetIdc::MIV_Geometry_Absent);
     CHECK(unit.dilationIter == 5);
     CHECK_FALSE(unit.viewingSpace.has_value());
     CHECK(unit.overrideAtlasFrameSizes.empty());
@@ -253,21 +234,6 @@ TEST_CASE("TMIV::Encoder::Configuration") {
       REQUIRE(unit2.depthLowQualityFlag.has_value());
       CHECK(*unit2.depthLowQualityFlag);
     }
-
-    SECTION("Geometry absent does not support geometry") {
-      root.update(Json::parse(R"({
-    "haveGeometryVideo": true,
-    "geometryScaleEnabledFlag": false
-})"));
-      REQUIRE_THROWS_WITH((Configuration{root, component}), Contains("!haveGeometry"));
-    }
-
-    SECTION("Geometry absent does not support occupancy") {
-      root.update(Json::parse(R"({
-    "haveOccupancyVideo": true
-})"));
-      REQUIRE_THROWS_WITH((Configuration{root, component}), Contains("!haveOccupancy"));
-    }
   }
 
   SECTION("Enable Frame Packing") {
@@ -290,7 +256,9 @@ TEST_CASE("TMIV::Encoder::Configuration") {
     "maxEntityId": 5,
     "EntityEncodeRange": [0, 4],
     "codecGroupIdc": "AVC Progressive High",
-    "toolsetIdc": "MIV Geometry Absent"
+    "toolsetIdc": "MIV Geometry Absent",
+    "reconstructionIdc": "Rec Unconstrained",
+    "levelIdc": "2.5"
 })"sv);
 
     const auto component = Json::parse(R"({

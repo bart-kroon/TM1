@@ -68,6 +68,9 @@ public:
   // Provide a frame server for out-of-band video data (if any)
   void setFrameServer(FrameServer value);
 
+  // Replace the default checker for this decoder and all newly created sub-decoders.
+  void replaceChecker(SharedChecker value);
+
   // Pull an access unit from the MIV decoder
   auto operator()() -> std::optional<MivBitstream::AccessUnit>;
 
@@ -108,6 +111,7 @@ private:
 
   V3cUnitBuffer m_inputBuffer;
   FrameServer m_frameServer;
+  SharedChecker m_checker;
 
   std::unique_ptr<CommonAtlasDecoder> m_commonAtlasDecoder;
   std::vector<std::unique_ptr<AtlasDecoder>> m_atlasDecoder;

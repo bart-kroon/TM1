@@ -77,7 +77,7 @@ constexpr auto ProfileTierLevel::ptl_profile_codec_group_idc(PtlProfileCodecGrou
   return *this;
 }
 
-constexpr auto ProfileTierLevel::ptl_profile_toolset_idc(PtlProfilePccToolsetIdc value) noexcept
+constexpr auto ProfileTierLevel::ptl_profile_toolset_idc(PtlProfileToolsetIdc value) noexcept
     -> auto & {
   m_ptl_profile_toolset_idc = value;
   return *this;

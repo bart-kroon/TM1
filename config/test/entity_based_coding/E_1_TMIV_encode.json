@@ -51,6 +51,8 @@
     "EncoderMethod": "Encoder",
     "codecGroupIdc": "HEVC Main10",
     "toolsetIdc": "MIV Main",
+    "reconstructionIdc": "Rec Unconstrained",
+    "levelIdc": "3.5",
     "EntityEncodeRange": [
         8,
         16

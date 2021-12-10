@@ -49,6 +49,7 @@ foreach(subdir
         Encoder
         Decoder
         Parser
+        PtlChecker
         GaInserter
         DepthQualityAssessor
         MpiPcs)

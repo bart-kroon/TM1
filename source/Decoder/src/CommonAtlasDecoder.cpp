@@ -42,8 +42,11 @@
 
 namespace TMIV::Decoder {
 CommonAtlasDecoder::CommonAtlasDecoder(V3cUnitSource source, MivBitstream::V3cParameterSet vps,
-                                       int32_t foc)
-    : m_source{std::move(source)}, m_vps{std::move(vps)}, m_foc{foc} {}
+                                       int32_t foc, SharedChecker checker)
+    : m_source{std::move(source)}
+    , m_checker{std::move(checker)}
+    , m_vps{std::move(vps)}
+    , m_foc{foc} {}
 
 auto CommonAtlasDecoder::operator()() -> std::optional<AccessUnit> {
   VERIFY(m_state != State::eof);
@@ -61,7 +64,11 @@ auto CommonAtlasDecoder::operator()() -> std::optional<AccessUnit> {
 
 auto CommonAtlasDecoder::decodeAsb() -> bool {
   if (auto asb = m_source()) {
+    m_checker->checkVuh(asb->v3c_unit_header());
+
     for (const auto &nu : asb->v3c_unit_payload().atlas_sub_bitstream().nal_units()) {
+      m_checker->checkAndActivateNuh(nu.nal_unit_header());
+
       if (nu.nal_unit_header().nal_layer_id() == 0) {
         m_buffer.push_back(nu);
       } else {
@@ -143,6 +150,9 @@ void CommonAtlasDecoder::decodeCafNalUnit(AccessUnit &au, const MivBitstream::Na
   VERIFY_MIVBITSTREAM(0 < m_maxCommonAtlasFrmOrderCntLsb);
   au.caf = MivBitstream::CommonAtlasFrameRBSP::decodeFrom(stream, nu.nal_unit_header(), m_caspsV,
                                                           m_maxCommonAtlasFrmOrderCntLsb);
+
+  m_checker->checkCaf(au.caf);
+
   au.casps = caspsById(m_caspsV, au.caf.caf_common_atlas_sequence_parameter_set_id());
 }
 

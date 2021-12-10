@@ -172,8 +172,8 @@ void MpiEncoder::prepareSequence(const MivBitstream::SequenceConfig &sequenceCon
   vps.profile_tier_level()
       .ptl_level_idc(MivBitstream::PtlLevelIdc::Level_3_5)
       .ptl_profile_codec_group_idc(MivBitstream::PtlProfileCodecGroupIdc::HEVC_Main10)
-      .ptl_profile_reconstruction_idc(MivBitstream::PtlProfileReconstructionIdc::MIV_Main)
-      .ptl_profile_toolset_idc(MivBitstream::PtlProfilePccToolsetIdc::MIV_Extended)
+      .ptl_profile_reconstruction_idc(MivBitstream::PtlProfileReconstructionIdc::Rec_Unconstrained)
+      .ptl_profile_toolset_idc(MivBitstream::PtlProfileToolsetIdc::MIV_Extended)
       .ptl_profile_toolset_constraints_information([]() {
         auto ptci = MivBitstream::ProfileToolsetConstraintsInformation{};
         ptci.ptc_restricted_geometry_flag(true);

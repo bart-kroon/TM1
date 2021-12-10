@@ -50,7 +50,7 @@ public:
 
   void prepareSequence(const MivBitstream::SequenceConfig &config);
   auto processAccessUnit(int32_t firstFrameId, int32_t lastFrameId) -> const EncoderParams &;
-  auto popAtlas() -> Common::MVD10Frame;
+  auto popAtlas() -> Common::V3cFrameList;
   [[nodiscard]] auto maxLumaSamplesPerFrame() const -> size_t { return m_maxLumaSamplesPerFrame; }
 
   using MpiPcsFrameReader = std::function<MpiPcs::Frame(int32_t)>;
@@ -81,7 +81,7 @@ private:
 
   // Attributes
   std::deque<MpiPcs::Frame> m_mpiFrameBuffer;
-  std::vector<Common::BlockToPatchMap> m_blockToPatchMapPerAtlas;
+  Common::FrameList<Common::PatchIdx> m_blockToPatchMapPerAtlas;
   std::unique_ptr<Packer::IPacker> m_packer;
   int32_t m_blockSize{};
   size_t m_maxLumaSamplesPerFrame{};

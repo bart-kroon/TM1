@@ -47,9 +47,9 @@ public:
   virtual ~IAggregator() = default;
 
   virtual void prepareAccessUnit() = 0;
-  virtual void pushMask(const Common::MaskList &mask) = 0;
+  virtual void pushMask(const Common::FrameList<uint8_t> &mask) = 0;
   virtual void completeAccessUnit() = 0;
-  [[nodiscard]] virtual auto getAggregatedMask() const -> const Common::MaskList & = 0;
+  [[nodiscard]] virtual auto getAggregatedMask() const -> const Common::FrameList<uint8_t> & = 0;
 };
 } // namespace TMIV::Aggregator
 

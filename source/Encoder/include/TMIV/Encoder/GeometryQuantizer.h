@@ -38,11 +38,11 @@
 #include <TMIV/Encoder/EncoderParams.h>
 
 namespace TMIV::Encoder::GeometryQuantizer {
-[[nodiscard]] auto transformParams(const EncoderParams &inParams,
-                                   Common::SampleValue depthOccThresholdIfSet) -> EncoderParams;
+[[nodiscard]] auto transformParams(const EncoderParams &inParams, double depthOccThresholdIfSet,
+                                   uint32_t bitDepth) -> EncoderParams;
 
 [[nodiscard]] auto transformAtlases(const EncoderParams &inParams, const EncoderParams &outParams,
-                                    const Common::MVD16Frame &inAtlases) -> Common::MVD10Frame;
+                                    const Common::DeepFrameList &inAtlases) -> Common::V3cFrameList;
 } // namespace TMIV::Encoder::GeometryQuantizer
 
 #endif

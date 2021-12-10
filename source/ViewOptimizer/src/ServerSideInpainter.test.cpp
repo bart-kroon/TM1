@@ -63,8 +63,8 @@ public:
     return m_params;
   }
 
-  [[nodiscard]] auto optimizeFrame(TMIV::Common::MVD16Frame views) const
-      -> TMIV::Common::MVD16Frame override {
+  [[nodiscard]] auto optimizeFrame(TMIV::Common::DeepFrameList views) const
+      -> TMIV::Common::DeepFrameList override {
     return views;
   }
 
@@ -88,20 +88,20 @@ public:
 
   [[nodiscard]] auto renderFrame(const TMIV::MivBitstream::AccessUnit &frame,
                                  const TMIV::MivBitstream::CameraConfig &viewportParams) const
-      -> TMIV::Common::Texture444Depth16Frame override {
+      -> TMIV::Common::RendererFrame override {
     if (inspect_renderFrame_input) {
       inspect_renderFrame_input(frame, viewportParams);
     }
 
-    auto output = TMIV::Common::Texture444Depth16Frame{};
-    output.first.createYuv444(
+    auto output = TMIV::Common::RendererFrame{};
+    output.texture.createYuv444(
         {viewportParams.viewParams.ci.ci_projection_plane_width_minus1() + 1,
          viewportParams.viewParams.ci.ci_projection_plane_height_minus1() + 1},
-        viewportParams.bitDepthColor);
-    output.first.getPlane(0)[0] = 456;
-    output.second.createY({viewportParams.viewParams.ci.ci_projection_plane_width_minus1() + 1,
-                           viewportParams.viewParams.ci.ci_projection_plane_height_minus1() + 1},
-                          viewportParams.bitDepthDepth);
+        viewportParams.bitDepthTexture);
+    output.texture.getPlane(0)[0] = 456;
+    output.geometry.createY({viewportParams.viewParams.ci.ci_projection_plane_width_minus1() + 1,
+                             viewportParams.viewParams.ci.ci_projection_plane_height_minus1() + 1},
+                            viewportParams.bitDepthGeometry);
     return output;
   }
 };
@@ -119,7 +119,7 @@ public:
   // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
   static inline bool called = false;
 
-  void inplaceInpaint(TMIV::Common::Texture444Depth16Frame & /* viewport */,
+  void inplaceInpaint(TMIV::Common::RendererFrame & /* viewport */,
                       const TMIV::MivBitstream::ViewParams & /* metadata */) const override {
     called = true;
   }
@@ -179,17 +179,17 @@ const auto sourceParams = []() {
 
 const auto inputFrame = [](const TMIV::ViewOptimizer::SourceParams &params) {
   REQUIRE(!params.viewParamsList.empty());
-  auto frame = TMIV::Common::MVD16Frame{};
+  auto frame = TMIV::Common::DeepFrameList{};
 
   std::transform(params.viewParamsList.cbegin(), params.viewParamsList.cend(),
                  std::back_inserter(frame), [](const TMIV::MivBitstream::ViewParams &vp) {
-                   auto frame = TMIV::Common::TextureDepth16Frame{};
+                   auto frame = TMIV::Common::DeepFrame{};
                    frame.texture.createYuv420({vp.ci.ci_projection_plane_width_minus1() + 1,
                                                vp.ci.ci_projection_plane_height_minus1() + 1},
                                               10);
-                   frame.depth.createY({vp.ci.ci_projection_plane_width_minus1() + 1,
-                                        vp.ci.ci_projection_plane_height_minus1() + 1},
-                                       16);
+                   frame.geometry.createY({vp.ci.ci_projection_plane_width_minus1() + 1,
+                                           vp.ci.ci_projection_plane_height_minus1() + 1},
+                                          16);
                    return frame;
                  });
   return frame;
@@ -326,8 +326,8 @@ TEST_CASE("ServerSideInpainter") {
         THEN("The added view has the configured size for texture and depth") {
           REQUIRE(outFrame.back().texture.getWidth() == 200);
           REQUIRE(outFrame.back().texture.getHeight() == 100);
-          REQUIRE(outFrame.back().depth.getWidth() == 200);
-          REQUIRE(outFrame.back().depth.getHeight() == 100);
+          REQUIRE(outFrame.back().geometry.getWidth() == 200);
+          REQUIRE(outFrame.back().geometry.getHeight() == 100);
         }
 
         THEN("The inpainter is called") { REQUIRE(FakeInpainter::called); }
@@ -451,11 +451,11 @@ TEST_CASE("ServerSideInpainter") {
     const auto inParams = sourceParams();
     auto inFrame = inputFrame(inParams);
 
-    inFrame.front().depth.getPlane(0)[0] = 0xFFFF;
-    inFrame.front().depth.getPlane(0)[1] = 0xFFF;
-    inFrame.front().depth.getPlane(0)[2] = 0xFF;
-    inFrame.front().depth.getPlane(0)[3] = 0xF;
-    inFrame.front().depth.getPlane(0)[4] = 0;
+    inFrame.front().geometry.getPlane(0)[0] = 0xFFFF;
+    inFrame.front().geometry.getPlane(0)[1] = 0xFFF;
+    inFrame.front().geometry.getPlane(0)[2] = 0xFF;
+    inFrame.front().geometry.getPlane(0)[3] = 0xF;
+    inFrame.front().geometry.getPlane(0)[4] = 0;
 
     FakeSynthesizer::inspect_renderFrame_input =
         [](const TMIV::MivBitstream::AccessUnit &frame,

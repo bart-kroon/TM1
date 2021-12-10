@@ -112,7 +112,7 @@ private:
     }
   }
 
-  [[nodiscard]] auto accessUnit(const Common::MVD16Frame &frame,
+  [[nodiscard]] auto accessUnit(const Common::DeepFrameList &frame,
                                 const MivBitstream::ViewParamsList &vpl, int32_t foc) const
       -> MivBitstream::AccessUnit {
     auto au = MivBitstream::AccessUnit{};
@@ -123,15 +123,15 @@ private:
     au.casps.emplace(MivBitstream::CommonAtlasSequenceParameterSetRBSP{});
     au.casps->casps_miv_extension().casme_depth_low_quality_flag(*m_depthLowQualityFlag);
 
-    std::transform(frame.cbegin(), frame.cend(), std::back_inserter(au.atlas),
-                   [&vpl = au.viewParamsList,
-                    viewIdx = uint16_t{}](const Common::TextureDepth16Frame &frame) mutable {
-                     return atlasAccessUnit(frame, vpl[viewIdx++].viewId);
-                   });
+    std::transform(
+        frame.cbegin(), frame.cend(), std::back_inserter(au.atlas),
+        [&vpl = au.viewParamsList, viewIdx = uint16_t{}](const Common::DeepFrame &frame) mutable {
+          return atlasAccessUnit(frame, vpl[viewIdx++].viewId);
+        });
     return au;
   }
 
-  [[nodiscard]] static auto atlasAccessUnit(const Common::TextureDepth16Frame &frame,
+  [[nodiscard]] static auto atlasAccessUnit(const Common::DeepFrame &frame,
                                             MivBitstream::ViewId viewId)
       -> MivBitstream::AtlasAccessUnit {
     auto aau = MivBitstream::AtlasAccessUnit();
@@ -145,11 +145,10 @@ private:
 
     aau.texFrame = Common::yuv444(frame.texture);
 
-    // TODO(#397): Code duplication with SSI, switch to Common::sampleBitDepth
     aau.geoFrame.createY({w, h}, 10);
-    const auto maxInValue = Common::maxLevel(frame.depth.getBitDepth());
+    const auto maxInValue = Common::maxLevel(frame.geometry.getBitDepth());
     const auto maxOutValue = Common::maxLevel(aau.geoFrame.getBitDepth());
-    std::transform(frame.depth.getPlane(0).cbegin(), frame.depth.getPlane(0).cend(),
+    std::transform(frame.geometry.getPlane(0).cbegin(), frame.geometry.getPlane(0).cend(),
                    aau.geoFrame.getPlane(0).begin(), [=](uint16_t value) {
                      return static_cast<uint16_t>((value * maxOutValue + maxInValue / 2) /
                                                   maxInValue);
@@ -174,8 +173,8 @@ private:
     return aau;
   }
 
-  auto isDepthLowQuality(const Common::MVD16Frame &frame, const MivBitstream::ViewParamsList &vpl)
-      -> bool {
+  auto isDepthLowQuality(const Common::DeepFrameList &frame,
+                         const MivBitstream::ViewParamsList &vpl) -> bool {
     const auto assessor =
         create<DepthQualityAssessor::IDepthQualityAssessor>("DepthQualityAssessor");
     return assessor->isLowDepthQuality(vpl, frame);

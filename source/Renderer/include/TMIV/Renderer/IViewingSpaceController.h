@@ -49,7 +49,7 @@ public:
   virtual ~IViewingSpaceController() = default;
 
   // Viewing space fading
-  virtual void inplaceFading(Common::Texture444Depth16Frame &viewport,
+  virtual void inplaceFading(Common::RendererFrame &viewport,
                              const MivBitstream::ViewParams &viewportParams,
                              const MivBitstream::ViewingSpace &viewingSpace) const = 0;
 };

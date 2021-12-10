@@ -42,22 +42,17 @@
 
 namespace TMIV::MivBitstream {
 struct CameraConfig {
-  enum class Colorspace { yuv420 };
-
   ViewParams viewParams;
-  uint32_t bitDepthColor{};
-  uint32_t bitDepthTransparency{};
-  uint32_t bitDepthDepth{};
-  uint32_t bitDepthEntities{};
-  Colorspace colorspace{Colorspace::yuv420};
-  Colorspace transparencyColorspace{Colorspace::yuv420};
-  Colorspace depthColorspace{Colorspace::yuv420};
-  Colorspace entitiesColorspace{Colorspace::yuv420};
 
-  [[nodiscard]] auto textureVideoFormat() const -> std::string;
-  [[nodiscard]] auto transparencyVideoFormat() const -> std::string;
-  [[nodiscard]] auto geometryVideoFormat() const -> std::string;
-  [[nodiscard]] auto entitiesVideoFormat() const -> std::string;
+  uint32_t bitDepthGeometry{};
+  uint32_t bitDepthTexture{};
+  uint32_t bitDepthTransparency{};
+  uint32_t bitDepthEntities{};
+
+  Common::ColorFormat colorFormatGeometry{Common::ColorFormat::YUV420};
+  Common::ColorFormat colorFormatTexture{Common::ColorFormat::YUV420};
+  Common::ColorFormat colorFormatTransparency{Common::ColorFormat::YUV420};
+  Common::ColorFormat colorFormatEntities{Common::ColorFormat::YUV420};
 
   CameraConfig() = default;
   explicit CameraConfig(const Common::Json &config);

@@ -150,8 +150,8 @@ private:
     std::vector<size_t> pruningOrder;
   };
   std::vector<Cluster> m_clusters;
-  std::vector<Common::Frame<uint8_t>> m_masks;
-  std::vector<Common::Frame<uint8_t>> m_status;
+  Common::FrameList<uint8_t> m_masks;
+  Common::FrameList<uint8_t> m_status;
 
 public:
   explicit Impl(const Common::Json &nodeConfig)
@@ -395,8 +395,8 @@ public:
     return pruningParents;
   }
 
-  auto prune(const MivBitstream::ViewParamsList &viewParamsList, const Common::MVD16Frame &views)
-      -> Common::MaskList {
+  auto prune(const MivBitstream::ViewParamsList &viewParamsList, const Common::DeepFrameList &views)
+      -> Common::FrameList<uint8_t> {
     m_params.viewParamsList = viewParamsList;
 
     bool isItFirstFrame = false;
@@ -422,7 +422,7 @@ public:
   }
 
 private:
-  void analyzeFillAndPruneAgain(const Common::MVD16Frame &views, int32_t nonPrunedArea,
+  void analyzeFillAndPruneAgain(const Common::DeepFrameList &views, int32_t nonPrunedArea,
                                 int32_t percentageRatio) {
     const float A = 0.5F / (1.F - m_lumaStdDev.value());
     std::cout << "Pruning luma threshold:   " << (m_lumaStdDev.value() * m_maxLumaError) << "\n";
@@ -447,52 +447,53 @@ private:
     }
   }
 
-  void prepareFrame(const Common::MVD16Frame &views) {
+  void prepareFrame(const Common::DeepFrameList &views) {
     createInitialMasks(views);
     createSynthesizerPerPartialView(views);
     synthesizeReferenceViews(views);
   }
 
-  void createInitialMasks(const Common::MVD16Frame &views) {
+  void createInitialMasks(const Common::DeepFrameList &views) {
     m_masks.clear();
     m_masks.reserve(views.size());
-    std::transform(
-        std::cbegin(m_params.viewParamsList), std::cend(m_params.viewParamsList),
-        std::cbegin(views), back_inserter(m_masks),
-        [](const MivBitstream::ViewParams &viewParams, const Common::TextureDepth16Frame &view) {
-          auto mask = Common::Frame<uint8_t>::lumaOnly(
-              {viewParams.ci.ci_projection_plane_width_minus1() + 1,
-               viewParams.ci.ci_projection_plane_height_minus1() + 1});
+    std::transform(std::cbegin(m_params.viewParamsList), std::cend(m_params.viewParamsList),
+                   std::cbegin(views), back_inserter(m_masks),
+                   [](const MivBitstream::ViewParams &viewParams, const Common::DeepFrame &view) {
+                     auto mask = Common::Frame<uint8_t>::lumaOnly(
+                         {viewParams.ci.ci_projection_plane_width_minus1() + 1,
+                          viewParams.ci.ci_projection_plane_height_minus1() + 1});
 
-          std::transform(std::cbegin(view.depth.getPlane(0)), std::cend(view.depth.getPlane(0)),
-                         std::begin(mask.getPlane(0)),
-                         [ot = MivBitstream::OccupancyTransform{viewParams}](auto x) {
-                           // #94: When there are invalid pixels in a basic view, these
-                           // should be excluded from the pruning mask
-                           return ot.occupant(x) ? uint8_t{255} : uint8_t{};
-                         });
-          return mask;
-        });
+                     std::transform(std::cbegin(view.geometry.getPlane(0)),
+                                    std::cend(view.geometry.getPlane(0)),
+                                    std::begin(mask.getPlane(0)),
+                                    [ot = MivBitstream::OccupancyTransform{viewParams}](auto x) {
+                                      // #94: When there are invalid pixels in a basic view, these
+                                      // should be excluded from the pruning mask
+                                      return ot.occupant(x) ? uint8_t{255} : uint8_t{};
+                                    });
+                     return mask;
+                   });
 
     m_status = m_masks;
   }
 
-  void createSynthesizerPerPartialView(const Common::MVD16Frame &views) {
+  void createSynthesizerPerPartialView(const Common::DeepFrameList &views) {
     m_synthesizers.clear();
     for (size_t i = 0; i < m_params.viewParamsList.size(); ++i) {
       if (!m_params.viewParamsList[i].isBasicView) {
-        const auto geoBitDepth = views[i].depth.getBitDepth();
+        const auto geoBitDepth = views[i].geometry.getBitDepth();
         const auto depthTransform =
             MivBitstream::DepthTransform{m_params.viewParamsList[i].dq, geoBitDepth};
+
         m_synthesizers.emplace_back(std::make_unique<IncrementalSynthesizer>(
             m_config, m_params.viewParamsList[i].ci.projectionPlaneSize(), i,
-            depthTransform.expandDepth(views[i].depth), expandLuma(views[i].texture),
+            depthTransform.expandDepth(views[i].geometry), expandLuma(views[i].texture),
             expandTexture(yuv444(views[i].texture))));
       }
     }
   }
 
-  void synthesizeReferenceViews(const Common::MVD16Frame &views) {
+  void synthesizeReferenceViews(const Common::DeepFrameList &views) {
     if (m_synthesizers.empty()) {
       // Skip generation the meshes
       std::cout << "Nothing to prune: only basic views\n";
@@ -506,7 +507,7 @@ private:
     }
   }
 
-  auto pruneFrame(const Common::MVD16Frame &views) -> int32_t {
+  auto pruneFrame(const Common::DeepFrameList &views) -> int32_t {
     for (auto &cluster : m_clusters) {
       for (auto i : cluster.pruningOrder) {
         auto it = find_if(std::begin(m_synthesizers), std::end(m_synthesizers),
@@ -531,7 +532,7 @@ private:
   //
   // Special care is taken to make a pruned (masked) mesh once and re-use that
   // multiple times.
-  void synthesizeViews(size_t index, const Common::TextureDepth16Frame &view,
+  void synthesizeViews(size_t index, const Common::DeepFrame &view,
                        const std::vector<size_t> &viewIds) {
     const auto &vp = m_params.viewParamsList[index];
     if (vp.isInpainted) {
@@ -937,7 +938,7 @@ auto HierarchicalPruner::prepareSequence(const PrunerParams &params)
 }
 
 auto HierarchicalPruner::prune(const MivBitstream::ViewParamsList &viewParamsList,
-                               const Common::MVD16Frame &views) -> Common::MaskList {
+                               const Common::DeepFrameList &views) -> Common::FrameList<uint8_t> {
   return m_impl->prune(viewParamsList, views);
 }
 } // namespace TMIV::Pruner

@@ -58,7 +58,8 @@ SCENARIO("Explicit occupancy") {
 
   GIVEN("Signaling occupancy maps explicitly") {
     WHEN("Calling transformParams") {
-      const auto codedParams = TMIV::Encoder::GeometryQuantizer::transformParams(sourceParams, 64);
+      const auto codedParams =
+          TMIV::Encoder::GeometryQuantizer::transformParams(sourceParams, 64, 10);
 
       THEN("Encoder ASPS params are not modified") {
         REQUIRE(codedParams.atlas[0].asps == sourceParams.atlas[0].asps);

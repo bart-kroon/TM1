@@ -259,7 +259,7 @@ void updateOutput(const bool isBasicView, const Cluster &cluster, const int32_t 
 }
 } // namespace
 
-auto retrieveClusters(const int32_t viewIdx, const Common::Mask &maskMap,
+auto retrieveClusters(const int32_t viewIdx, const Common::Frame<uint8_t> &maskMap,
                       const int32_t firstClusterId, const bool isBasicView,
                       const bool enableMerging, const bool multiEntity)
     -> std::pair<ClusterList, ClusteringMap> {

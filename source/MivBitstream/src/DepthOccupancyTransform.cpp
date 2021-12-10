@@ -76,7 +76,7 @@ auto DepthTransform::expandDepth(const Common::Mat<> &matrix) const -> Common::M
   return depth;
 }
 
-auto DepthTransform::expandDepth(const Common::Depth16Frame &frame) const -> Common::Mat<float> {
+auto DepthTransform::expandDepth(const Common::Frame<> &frame) const -> Common::Mat<float> {
   PRECONDITION(frame.getBitDepth() == m_bitDepth);
 
   return expandDepth(frame.getPlane(0));

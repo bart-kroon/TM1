@@ -75,7 +75,7 @@ auto sampleKernel(const Common::Mat<T> &mat, const Common::Vec2i &loc,
   return samples;
 }
 
-auto sampleKernel(const Common::Texture444Frame &texFrame, const Common::Vec2i &loc,
+auto sampleKernel(const Common::Frame<> &texFrame, const Common::Vec2i &loc,
                   const std::vector<Common::Vec2i> &kernelPoints) {
   auto channels = std::array<std::vector<uint16_t>, 3>{};
 
@@ -231,8 +231,7 @@ public:
     return foregroundColorConfidence;
   }
 
-  [[nodiscard]] auto colorConfidenceAt(const Common::Texture444Frame &texFrame,
-                                       const Common::Mat<> &depth,
+  [[nodiscard]] auto colorConfidenceAt(const Common::Frame<> &texFrame, const Common::Mat<> &depth,
                                        const Common::Mat<uint8_t> &edgeMagnitudes,
                                        const Common::Vec2i &loc) const -> float {
     auto depths = sampleKernel(depth, loc, m_kernelPoints);
@@ -242,7 +241,7 @@ public:
     return colorConfidence(depths, colors, edges);
   }
 
-  auto operator()(const Common::Texture444Frame &texFrame, const Common::Mat<> &depth,
+  auto operator()(const Common::Frame<> &texFrame, const Common::Mat<> &depth,
                   const Common::Mat<uint8_t> &edgeMagnitudes) const -> Common::Mat<> {
     const int32_t numIterations = 1;
     auto depthIter = depth;
@@ -352,11 +351,10 @@ public:
       , m_alignerCurvature(geometryEdgeMagnitudeTh, maxCurvature) {}
 
   auto operator()(const MivBitstream::AtlasAccessUnit &atlas,
-                  const Common::Frame<> &geoFrameNF) const -> Common::Depth10Frame {
-    auto geoFrame =
-        Common::Depth10Frame{{atlas.asps.asps_frame_width(), atlas.asps.asps_frame_height()},
-                             geoFrameNF.getBitDepth(),
-                             Common::ColorFormat::YUV400};
+                  const Common::Frame<> &geoFrameNF) const -> Common::Frame<> {
+    auto geoFrame = Common::Frame<>{{atlas.asps.asps_frame_width(), atlas.asps.asps_frame_height()},
+                                    geoFrameNF.getBitDepth(),
+                                    Common::ColorFormat::YUV400};
 
     // Upscale with nearest neighbor interpolation to nominal atlas resolution
     const auto atlasFrameSize =

@@ -69,7 +69,7 @@ protected:
 
 private:
   NalUnitSource m_source;
-  std::vector<Common::Frame<>> m_frameBuffer;
+  Common::FrameList<> m_frameBuffer;
   bool m_eos{};
 };
 } // namespace TMIV::VideoDecoder

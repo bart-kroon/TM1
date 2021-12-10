@@ -35,8 +35,8 @@
 
 namespace TMIV::Encoder {
 namespace {
-auto maxPool(const Common::Depth10Frame &frame, Common::Vec2i frameSize) -> Common::Depth10Frame {
-  auto result = Common::Depth10Frame::lumaOnly(frameSize, frame.getBitDepth());
+auto maxPool(const Common::Frame<> &frame, Common::Vec2i frameSize) -> Common::Frame<> {
+  auto result = Common::Frame<>::lumaOnly(frameSize, frame.getBitDepth());
 
   for (int32_t y = 0; y < frameSize.y(); ++y) {
     const int32_t i1 = y * frame.getHeight() / frameSize.y();
@@ -63,7 +63,7 @@ auto maxPool(const Common::Depth10Frame &frame, Common::Vec2i frameSize) -> Comm
 } // namespace
 
 auto GeometryDownscaler::transformFrame(const std::vector<EncoderAtlasParams> &atlas,
-                                        Common::MVD10Frame frame) -> Common::MVD10Frame {
+                                        Common::V3cFrameList frame) -> Common::V3cFrameList {
   for (size_t k = 0; k < atlas.size(); ++k) {
     const auto &asps = atlas[k].asps;
 
@@ -75,7 +75,7 @@ auto GeometryDownscaler::transformFrame(const std::vector<EncoderAtlasParams> &a
       frameSize.y() /= asme.asme_geometry_scale_factor_y_minus1() + 1;
     }
 
-    frame[k].depth = maxPool(frame[k].depth, frameSize);
+    frame[k].geometry = maxPool(frame[k].geometry, frameSize);
   }
   return frame;
 }

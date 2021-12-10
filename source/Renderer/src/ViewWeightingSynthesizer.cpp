@@ -192,8 +192,7 @@ public:
   }
 
   auto renderFrame(const MivBitstream::AccessUnit &frame,
-                   const MivBitstream::CameraConfig &cameraConfig)
-      -> Common::Texture444Depth16Frame {
+                   const MivBitstream::CameraConfig &cameraConfig) -> Common::RendererFrame {
     const auto &viewParamsList = frame.viewParamsList;
     const auto sourceHelperList = ProjectionHelperList{viewParamsList};
     const auto targetHelper = ProjectionHelper{cameraConfig.viewParams};
@@ -240,11 +239,11 @@ public:
       }
     }
 
-    auto viewport = Common::Texture444Depth16Frame{
-        quantizeTexture(m_viewportColor, cameraConfig.bitDepthColor),
-        MivBitstream::DepthTransform{cameraConfig.viewParams.dq, cameraConfig.bitDepthDepth}
+    auto viewport = Common::RendererFrame{
+        quantizeTexture(m_viewportColor, cameraConfig.bitDepthTexture),
+        MivBitstream::DepthTransform{cameraConfig.viewParams.dq, cameraConfig.bitDepthGeometry}
             .quantizeNormDisp(m_viewportVisibility, 1)};
-    viewport.first.fillInvalidWithNeutral(viewport.second);
+    viewport.texture.fillInvalidWithNeutral(viewport.geometry);
     return viewport;
   }
 
@@ -387,7 +386,7 @@ private:
   void recoverPrunedSource(const MivBitstream::AccessUnit &frame,
                            const ProjectionHelperList &sourceHelperList) {
     // Recover pruned views
-    const auto [prunedViews, prunedMasks] = recoverPrunedViewAndMask(frame);
+    const auto prunedViews = recoverPrunedViews(frame);
 
     // Expand pruned views
     m_sourceColor.clear();
@@ -396,13 +395,18 @@ private:
     for (size_t sourceId = 0; sourceId < prunedViews.size(); sourceId++) {
       const auto &viewParams = sourceHelperList[sourceId].getViewParams();
 
-      m_sourceColor.emplace_back(expandTexture(prunedViews[sourceId].first));
-      m_sourceDepth.emplace_back(MivBitstream::DepthTransform{viewParams.dq, 10}.expandDepth(
-          prunedViews[sourceId].second));
+      m_sourceColor.emplace_back(expandTexture(prunedViews[sourceId].texture));
+
+      const auto geoBitDepth = prunedViews[sourceId].geometry.getBitDepth();
+
+      m_sourceDepth.emplace_back(
+          MivBitstream::DepthTransform{viewParams.dq, geoBitDepth}.expandDepth(
+              prunedViews[sourceId].geometry));
 
       std::transform(
-          prunedMasks[sourceId].getPlane(0).begin(), prunedMasks[sourceId].getPlane(0).end(),
-          m_sourceDepth.back().begin(), m_sourceDepth.back().begin(),
+          prunedViews[sourceId].occupancy.getPlane(0).begin(),
+          prunedViews[sourceId].occupancy.getPlane(0).end(), m_sourceDepth.back().begin(),
+          m_sourceDepth.back().begin(),
           [&](auto maskValue, float depthValue) { return 0 < maskValue ? depthValue : NAN; });
     }
   }
@@ -1109,7 +1113,7 @@ ViewWeightingSynthesizer::~ViewWeightingSynthesizer() = default;
 
 auto ViewWeightingSynthesizer::renderFrame(const MivBitstream::AccessUnit &frame,
                                            const MivBitstream::CameraConfig &cameraConfig) const
-    -> Common::Texture444Depth16Frame {
+    -> Common::RendererFrame {
   return m_impl->renderFrame(frame, cameraConfig);
 }
 } // namespace TMIV::Renderer

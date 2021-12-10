@@ -83,7 +83,7 @@ template <typename Element> auto Frame<Element>::getColorFormat() const noexcept
   return ColorFormat::YUV444;
 }
 
-template <typename Element> auto Frame<Element>::getMemorySize() const noexcept {
+template <typename Element> auto Frame<Element>::getByteCount() const noexcept {
   switch (getColorFormat()) {
   case ColorFormat::YUV400:
     return m_planes.front().size() * sizeof(Element);
@@ -96,19 +96,7 @@ template <typename Element> auto Frame<Element>::getMemorySize() const noexcept 
   }
 }
 
-template <typename Element> auto Frame<Element>::getDiskSize() const noexcept {
-  switch (getColorFormat()) {
-  case ColorFormat::YUV400: // with padding
-  case ColorFormat::YUV420:
-    return (m_planes.front().size() * sizeof(Element) * 3) / 2;
-  case ColorFormat::YUV444:
-    return m_planes.front().size() * sizeof(Element) * 3;
-  default:
-    UNREACHABLE;
-  }
-}
-
-template <typename Element> void Frame<Element>::read(std::istream &stream) {
+template <typename Element> void Frame<Element>::readFrom(std::istream &stream) {
   for (auto &plane : m_planes) {
     auto buffer = std::vector<char>(plane.size() * sizeof(Element));
     stream.read(buffer.data(), assertDownCast<std::streamsize>(buffer.size()));
@@ -116,7 +104,7 @@ template <typename Element> void Frame<Element>::read(std::istream &stream) {
   }
 }
 
-template <typename Element> void Frame<Element>::dump(std::ostream &stream) const {
+template <typename Element> void Frame<Element>::writeTo(std::ostream &stream) const {
   for (const auto &plane : m_planes) {
     auto buffer = std::vector<char>(plane.size() * sizeof(Element));
     std::memcpy(buffer.data(), plane.data(), buffer.size());
@@ -154,25 +142,13 @@ void Frame<Element>::fillInvalidWithNeutral(const Frame<OtherElement> &mask) noe
   fillInvalid(mask, neutralValue());
 }
 
-template <typename Element> void Frame<Element>::padChroma(std::ostream &stream) const {
-  const auto bytes = getDiskSize() - getMemorySize();
-
-  if (0 < bytes) {
-    const auto padding = std::vector(bytes / sizeof(Element), neutralValue());
-
-    auto buffer = std::vector<char>(bytes);
-    std::memcpy(buffer.data(), padding.data(), bytes);
-    stream.write(buffer.data(), assertDownCast<std::streamsize>(bytes));
-  }
-}
-
 template <typename Element> auto Frame<Element>::setBitDepth(uint32_t value) noexcept {
   PRECONDITION(value <= maxBitDepth);
   m_bitDepth = value;
 }
 
 namespace detail {
-template <typename Element> auto octaveDownArea(const Mat<Element> &from, Mat<Element> &to) {
+template <typename Element> void octaveDownArea(const Mat<Element> &from, Mat<Element> &to) {
   using UInt = std::conditional_t<std::numeric_limits<Element>::digits <= 16, uint32_t, uint64_t>;
 
   const auto rows = from.size(0) / 2;
@@ -191,7 +167,7 @@ template <typename Element> auto octaveDownArea(const Mat<Element> &from, Mat<El
   }
 }
 
-template <typename Element> auto octaveUpNearest(const Mat<Element> &from, Mat<Element> &to) {
+template <typename Element> void octaveUpNearest(const Mat<Element> &from, Mat<Element> &to) {
   const auto rows = from.size(0) * 2;
   const auto cols = from.size(1) * 2;
   to.resize(std::array{rows, cols});
@@ -204,45 +180,84 @@ template <typename Element> auto octaveUpNearest(const Mat<Element> &from, Mat<E
 }
 } // namespace detail
 
-template <typename Element>
-auto Frame<Element>::changeColorFormat(ColorFormat newColorFormat) const -> Frame<Element> {
-  const auto colorFormat = getColorFormat();
-
-  if (colorFormat == newColorFormat) {
-    return *this;
+template <typename Element> auto yuv400(const Frame<Element> &frame) {
+  if (frame.getColorFormat() == ColorFormat::YUV400) {
+    return frame;
   }
 
   auto result = Frame<Element>{};
-  result.setBitDepth(getBitDepth());
-  result.getPlanes().resize(newColorFormat == ColorFormat::YUV400 ? 1 : 3);
-  result.getPlane(0) = m_planes.front();
-
-  if (newColorFormat == ColorFormat::YUV420) {
-    if (colorFormat == ColorFormat::YUV400) {
-      const auto rows = m_planes.front().size(0);
-      const auto cols = m_planes.front().size(1);
-      PRECONDITION(rows % 2 == 0 && cols % 2 == 0);
-
-      result.getPlane(1) = Plane{std::array{rows / 2, cols / 2}, neutralValue()};
-      result.getPlane(2) = Plane{std::array{rows / 2, cols / 2}, neutralValue()};
-    }
-    if (colorFormat == ColorFormat::YUV444) {
-      detail::octaveDownArea(m_planes[1], result.getPlane(1));
-      detail::octaveDownArea(m_planes[2], result.getPlane(2));
-    }
-  }
-  if (newColorFormat == ColorFormat::YUV444) {
-    if (colorFormat == ColorFormat::YUV400) {
-      result.getPlane(1) = Plane{m_planes.front().sizes(), neutralValue()};
-      result.getPlane(2) = Plane{m_planes.front().sizes(), neutralValue()};
-    }
-
-    if (colorFormat == ColorFormat::YUV420) {
-      detail::octaveUpNearest(m_planes[1], result.getPlane(1));
-      detail::octaveUpNearest(m_planes[2], result.getPlane(2));
-    }
-  }
-
+  result.setBitDepth(frame.getBitDepth());
+  result.getPlanes().resize(1);
+  result.getPlane(0) = frame.getPlane(0);
   return result;
+}
+
+template <typename Element> auto yuv420(const Frame<Element> &frame) {
+  if (frame.getColorFormat() == ColorFormat::YUV420) {
+    return frame;
+  }
+
+  auto result = Frame<Element>{};
+  result.setBitDepth(frame.getBitDepth());
+  result.getPlanes().resize(3);
+  result.getPlane(0) = frame.getPlane(0);
+
+  if (frame.getColorFormat() == ColorFormat::YUV400) {
+    const auto rows = frame.getPlane(0).size(0);
+    const auto cols = frame.getPlane(0).size(1);
+    PRECONDITION(rows % 2 == 0 && cols % 2 == 0);
+
+    result.getPlane(1) = Mat<Element>{std::array{rows / 2, cols / 2}, frame.neutralValue()};
+    result.getPlane(2) = Mat<Element>{std::array{rows / 2, cols / 2}, frame.neutralValue()};
+    return result;
+  }
+
+  if (frame.getColorFormat() == ColorFormat::YUV444) {
+    detail::octaveDownArea(frame.getPlane(1), result.getPlane(1));
+    detail::octaveDownArea(frame.getPlane(2), result.getPlane(2));
+    return result;
+  }
+
+  UNREACHABLE;
+}
+
+template <typename Element> auto yuv444(const Frame<Element> &frame) {
+  if (frame.getColorFormat() == ColorFormat::YUV444) {
+    return frame;
+  }
+
+  auto result = Frame<Element>{};
+  result.setBitDepth(frame.getBitDepth());
+  result.getPlanes().resize(3);
+  result.getPlane(0) = frame.getPlane(0);
+
+  if (frame.getColorFormat() == ColorFormat::YUV400) {
+    result.getPlane(1) = Mat<Element>{frame.getPlane(0).sizes(), frame.neutralValue()};
+    result.getPlane(2) = Mat<Element>{frame.getPlane(0).sizes(), frame.neutralValue()};
+    return result;
+  }
+
+  if (frame.getColorFormat() == ColorFormat::YUV420) {
+    detail::octaveUpNearest(frame.getPlane(1), result.getPlane(1));
+    detail::octaveUpNearest(frame.getPlane(2), result.getPlane(2));
+    return result;
+  }
+
+  UNREACHABLE;
+}
+
+template <typename OtherElement, typename Element> auto elementCast(const Frame<Element> &inFrame) {
+  static_assert(!std::is_same_v<OtherElement, Element>);
+
+  auto outFrame =
+      Frame<OtherElement>{inFrame.getSize(), inFrame.getBitDepth(), inFrame.getColorFormat()};
+  auto outPlane = outFrame.getPlanes().begin();
+
+  for (const auto &inPlane : inFrame.getPlanes()) {
+    std::transform(inPlane.cbegin(), inPlane.cend(), (*outPlane++).begin(),
+                   [](auto sample) { return Common::assertDownCast<OtherElement>(sample); });
+  }
+
+  return outFrame;
 }
 } // namespace TMIV::Common

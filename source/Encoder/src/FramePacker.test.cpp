@@ -54,13 +54,13 @@ TEST_CASE("TMIV::Encoder::FramePacker, 1 Atlas with texture and geometry") {
   params.atlas.push_back(TMIV::Encoder::EncoderAtlasParams{});
   auto &asmeAtlas = params.atlas[0].asps.asps_miv_extension();
 
-  auto frame = TMIV::Common::MVD10Frame{};
-  auto atlas = TMIV::Common::TextureDepth10Frame{};
+  auto frame = TMIV::Common::V3cFrameList{};
+  auto atlas = TMIV::Common::V3cFrame{};
 
   SECTION("Full-Scale Geoemtry") {
     asmeAtlas.asme_geometry_scale_enabled_flag(false);
     atlas.texture.createYuv420({32, 64}, 10);
-    atlas.depth.createY({32, 64}, 10);
+    atlas.geometry.createY({32, 64}, 10);
     frame.push_back(atlas);
 
     TMIV::Encoder::FramePacker unit{};
@@ -92,7 +92,7 @@ TEST_CASE("TMIV::Encoder::FramePacker, 1 Atlas with texture and geometry") {
   SECTION("Downscaled Geometry [2, 2]") {
     asmeAtlas.asme_geometry_scale_factor_x_minus1(1).asme_geometry_scale_factor_y_minus1(1);
     atlas.texture.createYuv420({32, 64}, 10);
-    atlas.depth.createY({16, 32}, 10);
+    atlas.geometry.createY({16, 32}, 10);
     frame.push_back(atlas);
 
     TMIV::Encoder::FramePacker unit{};
@@ -131,7 +131,7 @@ TEST_CASE("TMIV::Encoder::FramePacker, 1 Atlas with texture and geometry") {
   SECTION("Downscaled Geometry [4, 1]") {
     asmeAtlas.asme_geometry_scale_factor_x_minus1(3).asme_geometry_scale_factor_y_minus1(0);
     atlas.texture.createYuv420({32, 64}, 10);
-    atlas.depth.createY({8, 64}, 10);
+    atlas.geometry.createY({8, 64}, 10);
     frame.push_back(atlas);
 
     TMIV::Encoder::FramePacker unit{};
@@ -198,13 +198,13 @@ TEST_CASE("TMIV::Encoder::FramePacker, 1 Atlas with texture, geometry, and occup
   params.atlas.push_back(TMIV::Encoder::EncoderAtlasParams{});
   auto &asmeAtlas = params.atlas[0].asps.asps_miv_extension();
 
-  auto frame = TMIV::Common::MVD10Frame{};
-  auto atlas = TMIV::Common::TextureDepth10Frame{};
+  auto frame = TMIV::Common::V3cFrameList{};
+  auto atlas = TMIV::Common::V3cFrame{};
 
   SECTION("Full-Scale Geoemtry & Full-Scale Occupancy") {
     asmeAtlas.asme_geometry_scale_enabled_flag(false).asme_occupancy_scale_enabled_flag(false);
     atlas.texture.createYuv420({32, 64}, 10);
-    atlas.depth.createY({32, 64}, 10);
+    atlas.geometry.createY({32, 64}, 10);
     atlas.occupancy.createY({32, 64}, 10);
     frame.push_back(atlas);
 
@@ -256,8 +256,8 @@ TEST_CASE("TMIV::Encoder::FramePacker, 1 Atlas with attribute and occupancy only
   params.atlas.push_back(TMIV::Encoder::EncoderAtlasParams{});
   auto &asmeAtlas = params.atlas[0].asps.asps_miv_extension();
 
-  auto frame = TMIV::Common::MVD10Frame{};
-  auto atlas = TMIV::Common::TextureDepth10Frame{};
+  auto frame = TMIV::Common::V3cFrameList{};
+  auto atlas = TMIV::Common::V3cFrame{};
 
   SECTION("Downscaled Occupancy [2 2]") {
     asmeAtlas.asme_occupancy_scale_factor_x_minus1(1).asme_occupancy_scale_factor_y_minus1(1);

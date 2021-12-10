@@ -102,8 +102,7 @@ TEST_CASE("4x2 frame") {
     REQUIRE(unit.getHeight() == 2);
     REQUIRE(unit.getWidth() == 4);
     REQUIRE(unit.getSize() == Vec2i{4, 2});
-    REQUIRE(unit.getMemorySize() == 12 * sizeof(TestType));
-    REQUIRE(unit.getDiskSize() == 12 * sizeof(TestType));
+    REQUIRE(unit.getByteCount() == 12 * sizeof(TestType));
     REQUIRE(unit.getBitDepth() == 8);
     REQUIRE(unit.neutralValue() == 0x80);
 
@@ -202,7 +201,7 @@ TEST_CASE("Convert Yuv444P10 to YUV420P10") {
       }
     }
 
-    const auto destinationFrame = sourceFrame.changeColorFormat(ColorFormat::YUV420);
+    const auto destinationFrame = yuv420(sourceFrame);
 
     const auto &yPlane = destinationFrame.getPlane(0);
     REQUIRE(yPlane[0] == 32);
@@ -229,7 +228,7 @@ TEST_CASE("Convert YUV420P10 to Yuv444P10 ") {
       }
     }
 
-    const auto destinationFrame = sourceFrame.changeColorFormat(ColorFormat::YUV444);
+    const auto destinationFrame = yuv444(sourceFrame);
 
     const auto &yPlane = destinationFrame.getPlane(0);
     REQUIRE(yPlane[0] == 32);

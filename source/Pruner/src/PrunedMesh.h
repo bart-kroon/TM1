@@ -40,8 +40,7 @@
 namespace TMIV::Pruner {
 // Unproject a pruned (masked) view, resulting in a mesh in the reference
 // frame of the source view
-auto unprojectPrunedView(const Common::TextureDepth16Frame &view,
-                         const MivBitstream::ViewParams &viewParams,
+auto unprojectPrunedView(const Common::DeepFrame &view, const MivBitstream::ViewParams &viewParams,
                          const Common::Mat<uint8_t> &mask)
     -> std::tuple<Renderer::SceneVertexDescriptorList, Renderer::TriangleDescriptorList,
                   std::vector<Common::Vec3f>>;

@@ -47,7 +47,7 @@ public:
   auto operator=(NoInpainter &&) -> NoInpainter & = default;
   ~NoInpainter() override = default;
 
-  void inplaceInpaint(Common::Texture444Depth16Frame & /* viewport */,
+  void inplaceInpaint(Common::RendererFrame & /* viewport */,
                       const MivBitstream::ViewParams & /* metadata */) const override {}
 };
 } // namespace TMIV::Renderer

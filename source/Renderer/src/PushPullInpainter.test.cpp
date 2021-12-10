@@ -61,28 +61,28 @@ TEST_CASE("Push-pull inpainter") {
     const auto w = 8;
     const auto h = 5;
 
-    auto frame = std::pair{TMIV::Common::Texture444Frame::yuv444({w, h}, 10),
-                           TMIV::Common::Depth16Frame::lumaOnly({w, h}, 16)};
+    auto frame = TMIV::Common::RendererFrame{TMIV::Common::Frame<>::yuv444({w, h}, 10),
+                                             TMIV::Common::Frame<>::lumaOnly({w, h}, 16)};
 
-    frame.first.getPlane(0)(h - 1, 0) = 100;
-    frame.first.getPlane(1)(h - 1, 0) = 300;
-    frame.first.getPlane(2)(h - 1, 0) = 900;
-    frame.second.getPlane(0)(h - 1, 0) = 500;
+    frame.texture.getPlane(0)(h - 1, 0) = 100;
+    frame.texture.getPlane(1)(h - 1, 0) = 300;
+    frame.texture.getPlane(2)(h - 1, 0) = 900;
+    frame.geometry.getPlane(0)(h - 1, 0) = 500;
 
-    frame.first.getPlane(0)(0, w - 1) = 200;
-    frame.first.getPlane(1)(0, w - 1) = 600;
-    frame.first.getPlane(2)(0, w - 1) = 0;
-    frame.second.getPlane(0)(0, w - 1) = 400;
+    frame.texture.getPlane(0)(0, w - 1) = 200;
+    frame.texture.getPlane(1)(0, w - 1) = 600;
+    frame.texture.getPlane(2)(0, w - 1) = 0;
+    frame.geometry.getPlane(0)(0, w - 1) = 400;
 
     TMIV::Renderer::PushPullInpainter{{}, {}}.inplaceInpaint(frame, {});
 
-    REQUIRE(std::all_of(frame.first.getPlane(0).cbegin(), frame.first.getPlane(0).cend(),
+    REQUIRE(std::all_of(frame.texture.getPlane(0).cbegin(), frame.texture.getPlane(0).cend(),
                         [](auto x) { return 100 <= x && x <= 200; }));
-    REQUIRE(std::all_of(frame.first.getPlane(1).cbegin(), frame.first.getPlane(1).cend(),
+    REQUIRE(std::all_of(frame.texture.getPlane(1).cbegin(), frame.texture.getPlane(1).cend(),
                         [](auto x) { return 300 <= x && x <= 600; }));
-    REQUIRE(std::all_of(frame.first.getPlane(2).cbegin(), frame.first.getPlane(2).cend(),
+    REQUIRE(std::all_of(frame.texture.getPlane(2).cbegin(), frame.texture.getPlane(2).cend(),
                         [](auto x) { return x <= 900; }));
-    REQUIRE(std::all_of(frame.second.getPlane(0).cbegin(), frame.second.getPlane(0).cend(),
+    REQUIRE(std::all_of(frame.geometry.getPlane(0).cbegin(), frame.geometry.getPlane(0).cend(),
                         [](auto x) { return 400 <= x && x <= 500; }));
   }
 }

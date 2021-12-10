@@ -39,29 +39,77 @@
 #include <iostream>
 
 namespace TMIV::Renderer {
-// NOTE(BK): This new implementation relies on the block to patch map. There is no assumption on
-// patch ordering anymore.
-auto recoverPrunedViewAndMask(const MivBitstream::AccessUnit &frame)
-    -> std::pair<std::vector<Common::Texture444Depth10Frame>, Common::MaskList> {
-  // Initialization
-  auto prunedView = std::vector<Common::Texture444Depth10Frame>{};
-  auto prunedMasks = Common::MaskList{};
+template <typename InComponent, typename OutComponent>
+void initializePrunedViewComponent(const MivBitstream::AccessUnit &inFrame,
+                                   Common::V3cFrameList &outFrame, InComponent &&inComponent,
+                                   OutComponent &&outComponent, uint32_t bitDepth) {
+  outFrame.resize(inFrame.viewParamsList.size());
 
-  const auto &viewParamsList = frame.viewParamsList;
+  // Scan all atlases to find the maximum needed bit depth and color format
+  auto colorFormat = Common::ColorFormat::YUV400;
 
-  for (const auto &viewParams : viewParamsList) {
-    const auto size = viewParams.ci.projectionPlaneSize();
+  for (const auto &atlas : inFrame.atlas) {
+    if (atlas.asps.asps_miv_extension_present_flag() &&
+        atlas.asps.asps_miv_extension().asme_ancillary_atlas_flag()) {
+      continue;
+    }
 
-    // TODO(#397): What should be the bit depth of reconstructed pruned views?
-    prunedView.emplace_back(Common::Texture444Frame::yuv444({size.x(), size.y()}, 10),
-                            Common::Depth10Frame::lumaOnly({size.x(), size.y()}, 10));
+    const auto &in = inComponent(atlas);
 
-    prunedView.back().first.fillNeutral();
-    prunedMasks.emplace_back().createY(size);
+    if (in.empty()) {
+      continue;
+    }
+
+    bitDepth = std::max(bitDepth, in.getBitDepth());
+    colorFormat = std::max(colorFormat, in.getColorFormat());
   }
 
+  // This component is not present nor will it be generated
+  if (0 == bitDepth) {
+    return;
+  }
+
+  // For each view, allocate the component frame
+  for (size_t viewIdx = 0; viewIdx < outFrame.size(); ++viewIdx) {
+    const auto &viewParams = inFrame.viewParamsList[viewIdx];
+    const auto size = Common::Vec2i{viewParams.ci.ci_projection_plane_width_minus1() + 1,
+                                    viewParams.ci.ci_projection_plane_height_minus1() + 1};
+
+    auto &out = outComponent(outFrame[viewIdx]);
+    out.create(size, bitDepth, colorFormat);
+
+    if (colorFormat != Common::ColorFormat::YUV400) {
+      out.fillNeutral();
+    }
+  }
+}
+
+// NOTE(BK): This new implementation relies on the block to patch map. There is no assumption on
+// patch ordering anymore.
+auto recoverPrunedViews(const MivBitstream::AccessUnit &inFrame) -> Common::V3cFrameList {
+  // Initialize
+  auto outFrame = Common::V3cFrameList(inFrame.viewParamsList.size());
+
+  initializePrunedViewComponent(
+      inFrame, outFrame, [](const auto &aau) { return aau.occFrame; },
+      [&](auto &frame) -> auto & { return frame.occupancy; }, 8);
+
+  uint32_t geoBitDepth{}; // account for asme_patch_constant_depth_flag
+
+  for (const auto &atlas : inFrame.atlas) {
+    geoBitDepth = std::max(geoBitDepth, atlas.asps.asps_geometry_2d_bit_depth_minus1() + 1U);
+  }
+
+  initializePrunedViewComponent(
+      inFrame, outFrame, [](const auto &aau) { return aau.geoFrame; },
+      [&](auto &frame) -> auto & { return frame.geometry; }, geoBitDepth);
+
+  initializePrunedViewComponent(
+      inFrame, outFrame, [](const auto &aau) { return aau.texFrame; },
+      [&](auto &frame) -> auto & { return frame.texture; }, 0);
+
   // For each pixel in each atlas
-  for (const auto &atlas : frame.atlas) {
+  for (const auto &atlas : inFrame.atlas) {
     if (atlas.asps.asps_miv_extension_present_flag() &&
         atlas.asps.asps_miv_extension().asme_ancillary_atlas_flag()) {
       continue;
@@ -69,7 +117,7 @@ auto recoverPrunedViewAndMask(const MivBitstream::AccessUnit &frame)
 
     for (int32_t i = 0; i < atlas.asps.asps_frame_height(); ++i) {
       for (int32_t j = 0; j < atlas.asps.asps_frame_width(); ++j) {
-        // Fetch patch ID
+        // Fetch patch index
         const auto patchId = atlas.patchId(i, j);
         if (patchId == Common::unusedPatchId) {
           continue;
@@ -77,7 +125,13 @@ auto recoverPrunedViewAndMask(const MivBitstream::AccessUnit &frame)
 
         // Index patch and view parameters
         const auto &patchParams = atlas.patchParamsList[patchId];
-        const auto viewIdx = frame.viewParamsList.indexOf(patchParams.atlasPatchProjectionId());
+        const auto viewIdx = inFrame.viewParamsList.indexOf(patchParams.atlasPatchProjectionId());
+
+        // Test if this pixel is within the patch
+        if (j >= patchParams.atlasPatch2dPosX() + patchParams.atlasPatch2dSizeX() ||
+            i >= patchParams.atlasPatch2dPosY() + patchParams.atlasPatch2dSizeY()) {
+          continue;
+        }
 
         // Test for occupancy
         if (!atlas.occFrame.empty() && !atlas.occFrame.getPlane(0)(i, j)) {
@@ -89,34 +143,26 @@ auto recoverPrunedViewAndMask(const MivBitstream::AccessUnit &frame)
         const auto x = viewPos.x();
         const auto y = viewPos.y();
 
-        // temporary use only view dimensions
-        if (y >= prunedView[viewIdx].first.getSize()[1] ||
-            x >= prunedView[viewIdx].first.getSize()[0]) {
-          continue;
-        }
+        // Copy occupancy
+        outFrame[viewIdx].occupancy.getPlane(0)(y, x) = outFrame[viewIdx].occupancy.maxValue();
 
         // Copy geometry
-        if (!atlas.geoFrame.empty() &&
-            (!atlas.asps.asps_miv_extension_present_flag() ||
-             !atlas.asps.asps_miv_extension().asme_patch_constant_depth_flag())) {
-          prunedView[viewIdx].second.getPlane(0)(y, x) = atlas.geoFrame.getPlane(0)(i, j);
-        } else if (atlas.asps.asps_miv_extension_present_flag() &&
-                   atlas.asps.asps_miv_extension().asme_patch_constant_depth_flag()) {
-          prunedView[viewIdx].second.getPlane(0)(y, x) =
-              Common::assertDownCast<uint16_t>(patchParams.atlasPatch3dOffsetD());
+        if (atlas.asps.asps_miv_extension_present_flag() &&
+            atlas.asps.asps_miv_extension().asme_patch_constant_depth_flag()) {
+          outFrame[viewIdx].geometry.getPlane(0)(y, x) =
+              Common::assertDownCast<Common::DefaultElement>(patchParams.atlasPatch3dOffsetD());
+        } else if (!atlas.geoFrame.empty()) {
+          outFrame[viewIdx].geometry.getPlane(0)(y, x) = atlas.geoFrame.getPlane(0)(i, j);
         }
 
-        // Copy attributes
+        // Copy texture
         for (int32_t d = 0; d < 3; ++d) {
-          prunedView[viewIdx].first.getPlane(d)(y, x) = atlas.texFrame.getPlane(d)(i, j);
+          outFrame[viewIdx].texture.getPlane(d)(y, x) = atlas.texFrame.getPlane(d)(i, j);
         }
-
-        // Set mask
-        prunedMasks[viewIdx].getPlane(0)(y, x) = UINT8_MAX;
       }
     }
   }
 
-  return std::pair{prunedView, prunedMasks};
+  return outFrame;
 }
 } // namespace TMIV::Renderer

@@ -49,7 +49,8 @@ public:
   ~ServerSideInpainter() override;
 
   auto optimizeParams(const SourceParams &params) -> ViewOptimizerParams override;
-  [[nodiscard]] auto optimizeFrame(Common::MVD16Frame frame) const -> Common::MVD16Frame override;
+  [[nodiscard]] auto optimizeFrame(Common::DeepFrameList frame) const
+      -> Common::DeepFrameList override;
 
 private:
   class Impl;

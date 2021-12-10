@@ -48,9 +48,9 @@
 using namespace std::string_literals;
 
 namespace TMIV::ViewOptimizer {
+using Common::DeepFrame;
+using Common::DeepFrameList;
 using Common::Json;
-using Common::MVD16Frame;
-using Common::TextureDepth16Frame;
 using MivBitstream::AccessUnit;
 using MivBitstream::AtlasAccessUnit;
 using MivBitstream::CommonAtlasSequenceParameterSetRBSP;
@@ -153,20 +153,25 @@ public:
     return m_transportParams;
   }
 
-  [[nodiscard]] auto optimizeFrame(MVD16Frame frame) const -> MVD16Frame {
+  [[nodiscard]] auto optimizeFrame(DeepFrameList frame) const -> DeepFrameList {
     PRECONDITION(!m_transportParams.viewParamsList.empty());
 
     auto viewportParams = MivBitstream::CameraConfig{};
     viewportParams.viewParams = m_transportParams.viewParamsList.back();
-    viewportParams.bitDepthColor = 10; // TODO(#397): Magic bit depth
-    viewportParams.bitDepthDepth = 16; // TODO(#397): Magic bit depth
+
+    for (const auto &view : frame) {
+      viewportParams.bitDepthTexture =
+          std::max(viewportParams.bitDepthTexture, view.texture.getBitDepth());
+      viewportParams.bitDepthGeometry =
+          std::max(viewportParams.bitDepthGeometry, view.geometry.getBitDepth());
+    }
 
     auto synthFrame = m_synthesizer->renderFrame(synthesizerInputFrame(frame), viewportParams);
-    filterDepthFrame(synthFrame.second);
+    filterDepthFrame(synthFrame.geometry);
     m_inpainter->inplaceInpaint(synthFrame, viewportParams.viewParams);
     frame = m_optimizer->optimizeFrame(std::move(frame));
-    frame.emplace_back().texture = Common::yuv420(synthFrame.first);
-    frame.back().depth = synthFrame.second;
+    frame.emplace_back().texture = Common::yuv420(synthFrame.texture);
+    frame.back().geometry = synthFrame.geometry;
     return frame;
   }
 
@@ -248,15 +253,15 @@ private:
     return erpFov;
   }
 
-  [[nodiscard]] auto synthesizerInputFrame(const MVD16Frame &frame) const -> AccessUnit {
+  [[nodiscard]] auto synthesizerInputFrame(const DeepFrameList &frame) const -> AccessUnit {
     auto inFrame = AccessUnit{};
     inFrame.viewParamsList = m_sourceParams.viewParamsList;
 
-    std::transform(frame.cbegin(), frame.cend(), std::back_inserter(inFrame.atlas),
-                   [&vpl = inFrame.viewParamsList,
-                    viewIdx = uint16_t{}](const TextureDepth16Frame &frame) mutable {
-                     return synthesizerInputAtlasAccessUnit(frame, vpl[viewIdx++].viewId);
-                   });
+    std::transform(
+        frame.cbegin(), frame.cend(), std::back_inserter(inFrame.atlas),
+        [&vpl = inFrame.viewParamsList, viewIdx = uint16_t{}](const DeepFrame &frame) mutable {
+          return synthesizerInputAtlasAccessUnit(frame, vpl[viewIdx++].viewId);
+        });
 
     // Transfer depth low quality flag
     inFrame.casps = CommonAtlasSequenceParameterSetRBSP{};
@@ -266,7 +271,7 @@ private:
     return inFrame;
   }
 
-  static auto synthesizerInputAtlasAccessUnit(const TextureDepth16Frame &frame, ViewId viewId)
+  static auto synthesizerInputAtlasAccessUnit(const DeepFrame &frame, ViewId viewId)
       -> AtlasAccessUnit {
     auto aau = AtlasAccessUnit();
 
@@ -278,11 +283,10 @@ private:
 
     aau.texFrame = Common::yuv444(frame.texture);
 
-    // TODO(#397): Improve performance by increasing bit depth to Common::sampleBitDepth
     aau.geoFrame.createY({w, h}, 10);
-    const auto maxInValue = Common::maxLevel(frame.depth.getBitDepth());
+    const auto maxInValue = Common::maxLevel(frame.geometry.getBitDepth());
     const auto maxOutValue = Common::maxLevel(aau.geoFrame.getBitDepth());
-    std::transform(frame.depth.getPlane(0).cbegin(), frame.depth.getPlane(0).cend(),
+    std::transform(frame.geometry.getPlane(0).cbegin(), frame.geometry.getPlane(0).cend(),
                    aau.geoFrame.getPlane(0).begin(), [=](uint16_t value) {
                      return static_cast<uint16_t>((value * maxOutValue + maxInValue / 2) /
                                                   maxInValue);
@@ -307,7 +311,7 @@ private:
     return aau;
   }
 
-  void filterDepthFrame(Common::Depth16Frame &frame) const noexcept {
+  void filterDepthFrame(Common::Frame<> &frame) const noexcept {
     const auto blurred = Common::boxBlur<uint32_t>(frame.getPlane(0), m_blurKernel);
 
     std::transform(frame.getPlane(0).cbegin(), frame.getPlane(0).cend(), blurred.cbegin(),
@@ -329,7 +333,7 @@ auto ServerSideInpainter::optimizeParams(const SourceParams &params) -> ViewOpti
   return m_impl->optimizeParams(params);
 }
 
-auto ServerSideInpainter::optimizeFrame(MVD16Frame frame) const -> MVD16Frame {
+auto ServerSideInpainter::optimizeFrame(DeepFrameList frame) const -> DeepFrameList {
   return m_impl->optimizeFrame(std::move(frame));
 }
 

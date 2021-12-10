@@ -61,7 +61,7 @@ TEST_CASE("VideoDecoder::VideoDecoderFactory") {
     const auto decoder = create(nalUnitSource, DecoderId::HEVC_Main10);
     REQUIRE(dynamic_cast<TMIV::VideoDecoder::HmVideoDecoder *>(decoder.get()) != nullptr);
 #else
-    checkNoSupport(PtlProfileCodecGroupIdc::HEVC_Main10);
+    checkNoSupport(DecoderId::HEVC_Main10);
 #endif
   }
 
@@ -70,7 +70,7 @@ TEST_CASE("VideoDecoder::VideoDecoderFactory") {
     const auto decoder = create(nalUnitSource, DecoderId::VVC_Main10);
     REQUIRE(dynamic_cast<TMIV::VideoDecoder::VVdeCVideoDecoder *>(decoder.get()) != nullptr);
 #else
-    checkNoSupport(PtlProfileCodecGroupIdc::VVC_Main10);
+    checkNoSupport(DecoderId::VVC_Main10);
 #endif
   }
 

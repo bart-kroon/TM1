@@ -418,7 +418,7 @@ void MivDecoder::decodeAtlas(size_t k) {
 //  * [WG 07 N 0003:9.2.7.2] Conversion of tile level blockToPatch information to atlas level
 //                           blockToPatch information
 auto MivDecoder::decodeBlockToPatchMap(size_t k, const MivBitstream::PatchParamsList &ppl) const
-    -> Common::BlockToPatchMap {
+    -> Common::Frame<Common::PatchIdx> {
   const auto &asps = m_au.atlas[k].asps;
 
   const int32_t log2PatchPackingBlockSize = asps.asps_log2_patch_packing_block_size();
@@ -430,8 +430,8 @@ auto MivDecoder::decodeBlockToPatchMap(size_t k, const MivBitstream::PatchParams
       (asps.asps_frame_height() + offset) / patchPackingBlockSize;
 
   // All elements of TileBlockToPatchMap are first initialized to -1 as follows [9.2.6]
-  auto btpm =
-      Common::BlockToPatchMap::lumaOnly({atlasBlockToPatchMapWidth, atlasBlockToPatchMapHeight});
+  auto btpm = Common::Frame<Common::PatchIdx>::lumaOnly(
+      {atlasBlockToPatchMapWidth, atlasBlockToPatchMapHeight});
   btpm.fillValue(Common::unusedPatchId);
 
   // Then the AtlasBlockToPatchMap array is updated as follows:

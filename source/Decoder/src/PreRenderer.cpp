@@ -167,7 +167,7 @@ void PreRenderer::convertGeometryNominalFormat(const MivBitstream::V3cParameterS
 void PreRenderer::convertAttributeNominalFormat(const MivBitstream::V3cParameterSet &vps,
                                                 MivBitstream::AtlasId atlasId,
                                                 MivBitstream::AtlasAccessUnit &atlas,
-                                                const std::vector<Common::Frame<>> &inFrame) {
+                                                const Common::FrameList<> &inFrame) {
   const auto videoWidthNF = vps.vps_frame_width(atlasId);
   const auto videoHeightNF = vps.vps_frame_height(atlasId);
 
@@ -232,6 +232,7 @@ auto PreRenderer::convertBitDepth(Common::Frame<> frame, uint32_t nominalBitDept
     // pass-through
   }
 
+  frame.setBitDepth(nominalBitDepth);
   return frame;
 }
 

@@ -43,6 +43,7 @@ const auto configuration1 = TMIV::Encoder::Configuration{TMIV::Common::Json::par
     "blockSizeDepthQualityDependent": [2, 4],
     "haveTextureVideo": false,
     "haveGeometryVideo": true,
+    "bitDepthGeometryVideo": 10,
     "haveOccupancyVideo": false,
     "framePacking": false,
     "oneViewPerAtlasFlag": false,
@@ -60,7 +61,7 @@ const auto configuration1 = TMIV::Encoder::Configuration{TMIV::Common::Json::par
     "toolsetIdc": "MIV Main"
 })"sv),
                                                          TMIV::Common::Json::parse(R"({
-    "depthOccThresholdIfSet": 64,
+    "depthOccThresholdIfSet": 0.0625,
     "dilate": 0
 })"sv)};
 
@@ -136,7 +137,7 @@ class FakeDepthQualityAssessor final : public TMIV::DepthQualityAssessor::IDepth
 public:
   FakeDepthQualityAssessor() = default;
   FakeDepthQualityAssessor(TMIV::MivBitstream::ViewParamsList viewParamsList,
-                           const TMIV::Common::MVD16Frame &frame, std::vector<bool> results)
+                           const TMIV::Common::DeepFrameList &frame, std::vector<bool> results)
       : m_viewParamsList{std::move(viewParamsList)}
       , m_frame{&frame}
       , m_results{std::move(results)} {}
@@ -148,7 +149,7 @@ public:
   ~FakeDepthQualityAssessor() final { REQUIRE(m_results.empty()); }
 
   auto isLowDepthQuality(const TMIV::MivBitstream::ViewParamsList &viewParamsList,
-                         const TMIV::Common::MVD16Frame &frame) const -> bool final {
+                         const TMIV::Common::DeepFrameList &frame) const -> bool final {
     CHECK(viewParamsList == m_viewParamsList);
     CHECK(&frame == m_frame);
     REQUIRE(!m_results.empty());
@@ -160,7 +161,7 @@ public:
 
 private:
   TMIV::MivBitstream::ViewParamsList m_viewParamsList;
-  const TMIV::Common::MVD16Frame *m_frame{nullptr};
+  const TMIV::Common::DeepFrameList *m_frame{nullptr};
   mutable std::vector<bool> m_results;
 };
 } // namespace test
@@ -169,13 +170,13 @@ namespace TMIV::Encoder {
 auto assessDepthQuality(const Configuration &config,
                         const DepthQualityAssessor::IDepthQualityAssessor &depthQualityAssessor,
                         const MivBitstream::SequenceConfig &sequenceConfig,
-                        const Common::MVD16Frame &firstFrame) -> bool;
+                        const Common::DeepFrameList &firstFrame) -> bool;
 } // namespace TMIV::Encoder
 
 TEST_CASE("assessDepthQuality typically defers to the depth quality assessor") {
   const auto result = GENERATE(true, false);
 
-  const auto firstFrame = TMIV::Common::MVD16Frame{};
+  const auto firstFrame = TMIV::Common::DeepFrameList{};
 
   CHECK(TMIV::Encoder::assessDepthQuality(
             test::configuration1,
@@ -240,6 +241,16 @@ TEST_CASE("createEncoderParams sets multiple syntax elements to hard-coded value
     x.geometryScaleEnabledFlag = geometryScaleEnabledFlag;
     x.haveOccupancy = haveOccupancy;
     x.haveTexture = haveTexture;
+
+    if (haveOccupancy) {
+      x.occBitDepth = 10;
+    }
+    if (haveGeometry) {
+      x.geoBitDepth = 10;
+    }
+    if (haveTexture) {
+      x.texBitDepth = 10;
+    }
     return x;
   }();
 

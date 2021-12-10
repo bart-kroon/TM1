@@ -38,10 +38,10 @@
 
 namespace TMIV::MpiPcs {
 struct TextureTransparency8Frame {
-  TextureTransparency8Frame(Common::TextureFrame texture_, Common::Transparency8Frame transparency_)
+  TextureTransparency8Frame(Common::Frame<> texture_, Common::Frame<uint8_t> transparency_)
       : texture{std::move(texture_)}, transparency{std::move(transparency_)} {}
-  Common::TextureFrame texture{};
-  Common::Transparency8Frame transparency{};
+  Common::Frame<> texture{};
+  Common::Frame<uint8_t> transparency{};
 };
 
 struct Attribute {

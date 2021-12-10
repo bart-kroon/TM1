@@ -47,11 +47,20 @@ auto AccessUnit::sequenceConfig() const -> SequenceConfig {
   x.cameras.resize(viewParamsList.size());
 
   std::transform(viewParamsList.cbegin(), viewParamsList.cend(), x.cameras.begin(),
-                 [](const ViewParams &vp) {
+                 [this](const ViewParams &vp) {
                    auto c = CameraConfig{};
                    c.viewParams = vp;
-                   c.bitDepthColor = 10;
-                   c.bitDepthDepth = 10;
+
+                   for (const auto &a : atlas) {
+                     if (!a.texFrame.empty()) {
+                       c.bitDepthTexture = std::max(c.bitDepthTexture, a.texFrame.getBitDepth());
+                     }
+
+                     if (!a.geoFrame.empty()) {
+                       c.bitDepthGeometry = std::max(c.bitDepthGeometry, a.geoFrame.getBitDepth());
+                     }
+                   }
+
                    return c;
                  });
 

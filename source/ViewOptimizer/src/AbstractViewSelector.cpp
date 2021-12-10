@@ -57,7 +57,8 @@ auto AbstractViewSelector::optimizeParams(const SourceParams &params) -> ViewOpt
   return m_params;
 }
 
-auto AbstractViewSelector::optimizeFrame(Common::MVD16Frame views) const -> Common::MVD16Frame {
+auto AbstractViewSelector::optimizeFrame(Common::DeepFrameList views) const
+    -> Common::DeepFrameList {
   inplaceEraseAdditionalViews(views);
   return views;
 }

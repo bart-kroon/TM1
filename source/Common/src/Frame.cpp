@@ -40,7 +40,7 @@
 #include <sstream>
 
 namespace TMIV::Common {
-auto expandTexture(const Texture444Frame &inYuv) -> Mat<Vec3f> {
+auto expandTexture(const Frame<> &inYuv) -> Mat<Vec3f> {
   const auto &Y = inYuv.getPlane(0);
   const auto &U = inYuv.getPlane(1);
   const auto &V = inYuv.getPlane(2);
@@ -58,7 +58,7 @@ auto expandTexture(const Texture444Frame &inYuv) -> Mat<Vec3f> {
   return out;
 }
 
-auto expandLuma(const TextureFrame &inYuv) -> Mat<float> {
+auto expandLuma(const Frame<> &inYuv) -> Mat<float> {
   auto out = Mat<float>(inYuv.getPlane(0).sizes());
   std::transform(
       inYuv.getPlane(0).cbegin(), inYuv.getPlane(0).cend(), out.begin(),
@@ -66,10 +66,9 @@ auto expandLuma(const TextureFrame &inYuv) -> Mat<float> {
   return out;
 }
 
-auto quantizeTexture(const Mat<Vec3f> &in, uint32_t bitDepth) -> Texture444Frame {
-  auto outYuv =
-      Texture444Frame{Vec2i{static_cast<int32_t>(in.width()), static_cast<int32_t>(in.height())},
-                      bitDepth, ColorFormat::YUV444};
+auto quantizeTexture(const Mat<Vec3f> &in, uint32_t bitDepth) -> Frame<> {
+  auto outYuv = Frame<>{Vec2i{static_cast<int32_t>(in.width()), static_cast<int32_t>(in.height())},
+                        bitDepth, ColorFormat::YUV444};
   const auto width = in.width();
   const auto height = in.height();
 

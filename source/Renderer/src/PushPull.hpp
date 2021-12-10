@@ -39,14 +39,14 @@
 
 namespace TMIV::Renderer {
 template <typename PushFilter, typename PullFilter>
-auto PushPull::filter(const Common::Texture444Depth16Frame &frame, PushFilter &&pushFilter,
-                      PullFilter &&pullFilter) -> const Common::Texture444Depth16Frame & {
+auto PushPull::filter(const Common::RendererFrame &frame, PushFilter &&pushFilter,
+                      PullFilter &&pullFilter) -> const Common::RendererFrame & {
   m_pyramid.push_back(frame);
-  while (1 < m_pyramid.back().first.getWidth() || 1 < m_pyramid.back().first.getHeight()) {
-    const auto w = (m_pyramid.back().first.getWidth() + 1) / 2;
-    const auto h = (m_pyramid.back().first.getHeight() + 1) / 2;
-    m_pyramid.emplace_back(Common::Texture444Frame::yuv444({w, h}, frame.first.getBitDepth()),
-                           Common::Depth16Frame::lumaOnly({w, h}, frame.second.getBitDepth()));
+  while (1 < m_pyramid.back().texture.getWidth() || 1 < m_pyramid.back().texture.getHeight()) {
+    const auto w = (m_pyramid.back().texture.getWidth() + 1) / 2;
+    const auto h = (m_pyramid.back().texture.getHeight() + 1) / 2;
+    m_pyramid.emplace_back().texture = Common::Frame<>::yuv444({w, h}, frame.texture.getBitDepth());
+    m_pyramid.back().geometry = Common::Frame<>::lumaOnly({w, h}, frame.geometry.getBitDepth());
     auto i = m_pyramid.rbegin();
     inplacePushFrame(*(i + 1), *i, pushFilter);
   }
@@ -60,46 +60,46 @@ auto PushPull::filter(const Common::Texture444Depth16Frame &frame, PushFilter &&
 
 inline auto PushPull::numLayers() const noexcept { return m_pyramid.size(); }
 
-inline auto PushPull::layer(size_t i) const noexcept -> const Common::Texture444Depth16Frame & {
+inline auto PushPull::layer(size_t i) const noexcept -> const Common::RendererFrame & {
   return m_pyramid[i];
 }
 
-inline auto PushPull::yuvd(const Common::Texture444Depth16Frame &frame) {
+inline auto PushPull::yuvd(const Common::RendererFrame &frame) {
   return [plane = std::array<std::reference_wrapper<const Common::Mat<uint16_t>>, 4>{
-              frame.first.getPlane(0), frame.first.getPlane(1), frame.first.getPlane(2),
-              frame.second.getPlane(0)}](int32_t i, int32_t j) {
+              frame.texture.getPlane(0), frame.texture.getPlane(1), frame.texture.getPlane(2),
+              frame.geometry.getPlane(0)}](int32_t i, int32_t j) {
     return std::tuple{plane[0](i, j), plane[1](i, j), plane[2](i, j), plane[3](i, j)};
   };
 }
 
-inline auto PushPull::yuvd(Common::Texture444Depth16Frame &frame) {
+inline auto PushPull::yuvd(Common::RendererFrame &frame) {
   return [plane = std::array<std::reference_wrapper<Common::Mat<uint16_t>>, 4>{
-              frame.first.getPlane(0), frame.first.getPlane(1), frame.first.getPlane(2),
-              frame.second.getPlane(0)}](int32_t i, int32_t j) {
+              frame.texture.getPlane(0), frame.texture.getPlane(1), frame.texture.getPlane(2),
+              frame.geometry.getPlane(0)}](int32_t i, int32_t j) {
     return std::tie(plane[0](i, j), plane[1](i, j), plane[2](i, j), plane[3](i, j));
   };
 }
 
 template <typename PushFilter>
-void PushPull::inplacePushFrame(const Common::Texture444Depth16Frame &in,
-                                Common::Texture444Depth16Frame &out, PushFilter &&filter) {
-  const auto wi = in.first.getWidth();
-  const auto hi = in.first.getHeight();
+void PushPull::inplacePushFrame(const Common::RendererFrame &in, Common::RendererFrame &out,
+                                PushFilter &&filter) {
+  const auto wi = in.texture.getWidth();
+  const auto hi = in.texture.getHeight();
   const auto wo = (wi + 1) / 2;
   const auto ho = (hi + 1) / 2;
-  out.first.createYuv444({wo, ho}, in.first.getBitDepth());
-  out.second.createY({wo, ho}, in.second.getBitDepth());
+  out.texture.createYuv444({wo, ho}, in.texture.getBitDepth());
+  out.geometry.createY({wo, ho}, in.geometry.getBitDepth());
   return inplacePush(MatrixProxy{yuvd(in), wi, hi}, MatrixProxy{yuvd(out), wo, ho},
                      std::forward<PushFilter>(filter));
 }
 
 template <typename PullFilter>
-void PushPull::inplacePullFrame(const Common::Texture444Depth16Frame &in,
-                                Common::Texture444Depth16Frame &out, PullFilter &&filter) noexcept {
-  const auto wi = in.first.getWidth();
-  const auto hi = in.first.getHeight();
-  const auto wo = out.first.getWidth();
-  const auto ho = out.first.getHeight();
+void PushPull::inplacePullFrame(const Common::RendererFrame &in, Common::RendererFrame &out,
+                                PullFilter &&filter) noexcept {
+  const auto wi = in.texture.getWidth();
+  const auto hi = in.texture.getHeight();
+  const auto wo = out.texture.getWidth();
+  const auto ho = out.texture.getHeight();
   return inplacePull(MatrixProxy{yuvd(in), wi, hi}, MatrixProxy{yuvd(out), wo, ho},
                      std::forward<PullFilter>(filter));
 }

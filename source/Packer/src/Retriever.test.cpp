@@ -39,7 +39,7 @@ namespace TMIV::Packer {
 namespace {
 const uint16_t INVALID = (1 << 16) - 1;
 
-void addRectangle(Common::Mask &mask, Common::Vec2i topLeft, Common::Vec2i bottomRight) {
+void addRectangle(Common::Frame<uint8_t> &mask, Common::Vec2i topLeft, Common::Vec2i bottomRight) {
   for (int32_t x = topLeft.x(); x <= bottomRight.x(); ++x) {
     for (int32_t y = topLeft.y(); y <= bottomRight.y(); ++y) {
       mask.getPlane(0)(y, x) = 1;
@@ -54,7 +54,7 @@ SCENARIO("Cluster retrieving") {
   bool isBasicView{};
   bool enableMerging{};
   GIVEN("a 0x0 mask") {
-    const auto mask = Common::Mask::lumaOnly({});
+    const auto mask = Common::Frame<uint8_t>::lumaOnly({});
     WHEN("retrieving clusters") {
       const auto [clusterList, clusteringMap] =
           retrieveClusters(viewIdx, mask, firstClusterId, isBasicView, enableMerging, true);
@@ -68,7 +68,7 @@ SCENARIO("Cluster retrieving") {
   }
 
   GIVEN("a 2x2 mask with only zeroes") {
-    Common::Mask mask{};
+    Common::Frame<uint8_t> mask{};
     mask.createY({2, 2});
     WHEN("retrieving clusters") {
       const auto [clusterList, clusteringMap] =
@@ -86,7 +86,7 @@ SCENARIO("Cluster retrieving") {
   }
 
   GIVEN("a 2x2 mask with nonzero values on the diagonal") {
-    Common::Mask mask{};
+    Common::Frame<uint8_t> mask{};
     mask.createY({2, 2});
     mask.getPlane(0)(0, 0) = 1;
     mask.getPlane(0)(1, 1) = 1;
@@ -114,7 +114,7 @@ SCENARIO("Cluster retrieving") {
   GIVEN("a 5x5 mask with a 3x3 nonzero cluster in the center values on the diagonal and merging "
         "enabled") {
     enableMerging = true;
-    Common::Mask mask{};
+    Common::Frame<uint8_t> mask{};
     mask.createY({5, 5});
     addRectangle(mask, {1, 1}, {3, 3});
     WHEN("retrieving clusters") {
@@ -139,7 +139,7 @@ SCENARIO("Cluster retrieving") {
   }
 
   GIVEN("a 10x10 mask with two clusters") {
-    Common::Mask mask{};
+    Common::Frame<uint8_t> mask{};
     mask.createY({10, 10});
     addRectangle(mask, {1, 1}, {2, 2});
     addRectangle(mask, {6, 6}, {7, 7});
@@ -158,7 +158,7 @@ SCENARIO("Cluster retrieving") {
 
   GIVEN("a 20x20 mask with two overlapping clusters and merging enabled") {
     enableMerging = true;
-    Common::Mask mask{};
+    Common::Frame<uint8_t> mask{};
     mask.createY({20, 20});
     addRectangle(mask, {1, 1}, {10, 3});
     addRectangle(mask, {1, 4}, {3, 10});
@@ -178,7 +178,7 @@ SCENARIO("Cluster retrieving for basic view") {
   bool enableMerging{};
 
   GIVEN("a 4x4 mask with two clusters") {
-    Common::Mask mask{};
+    Common::Frame<uint8_t> mask{};
     mask.createY({4, 4});
     addRectangle(mask, {0, 0}, {1, 1});
     addRectangle(mask, {0, 3}, {3, 3});

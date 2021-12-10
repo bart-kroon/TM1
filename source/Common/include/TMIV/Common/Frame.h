@@ -139,13 +139,13 @@ public:
     return m_bitDepth;
   }
 
-  [[nodiscard]] static constexpr auto getMaxBitDepth() noexcept { return maxBitDepth; }
+  // Read the frame from a stream with the same native element (regardless of bit depth)
+  void readFrom(std::istream &stream);
 
-  [[nodiscard]] auto getMemorySize() const noexcept;
-  [[nodiscard]] auto getDiskSize() const noexcept;
+  // Write the frame to a stream with the same native element (regardless of bit depth)
+  void writeTo(std::ostream &stream) const;
 
-  void read(std::istream &stream);
-  void dump(std::ostream &stream) const;
+  [[nodiscard]] auto getByteCount() const noexcept;
 
   // Return the minimum value (assuming full range)
   [[nodiscard]] static constexpr auto minValue() noexcept { return Element{}; }
@@ -189,81 +189,55 @@ public:
   template <typename OtherElement>
   void fillInvalidWithNeutral(const Frame<OtherElement> &mask) noexcept;
 
-  void padChroma(std::ostream &stream) const;
-
-  // Change the color format
-  [[nodiscard]] auto changeColorFormat(ColorFormat newColorFormat) const -> Frame<Element>;
-
   // Change (or set) the bit depth without changing the data, color format or frame size
   auto setBitDepth(uint32_t value) noexcept;
 };
 
-// TODO(#397): Remove these using declarations
-using TextureFrame = Frame<>;
-using Texture444Frame = Frame<>;
-using Depth10Frame = Frame<>;
-using Depth16Frame = Frame<>;
-using Occupancy1Frame = Frame<bool>;
-using Occupancy10Frame = Frame<>;
-using Transparency8Frame = Frame<uint8_t>;
-using Transparency10Frame = Frame<>;
-using FramePack10Frame = Frame<>;
-using FramePack444Frame = Frame<>;
-
-using Mask = Frame<uint8_t>;
-using MaskList = std::vector<Mask>;
-
-using BlockToPatchMap = Frame<uint16_t>;
+using PatchIdx = uint16_t;
 static constexpr auto unusedPatchId = UINT16_MAX;
 
-using EntityMap = Frame<>;
-using EntityMapList = std::vector<EntityMap>;
-
-// TODO(#397): Generalize to enable support for all attribute types
-struct TextureDepth10Frame {
+struct V3cFrame {
   Frame<> texture;
-  Frame<> depth;
+  Frame<> geometry;
   Frame<> occupancy;
   Frame<> transparency;
   Frame<> packed;
 };
-using MVD10Frame = std::vector<TextureDepth10Frame>;
 
-// TODO(#397): Generalize to enable support for all attribute types
-struct TextureDepth16Frame {
+struct DeepFrame {
   Frame<> texture;
-  Frame<> depth;
+  Frame<> geometry;
   Frame<> entities{};
   Frame<bool> occupancy{};
   Frame<> transparency{};
 };
-using MVD16Frame = std::vector<TextureDepth16Frame>;
 
-using Texture444Depth10Frame = std::pair<Texture444Frame, Depth10Frame>;
-using Texture444Depth16Frame = std::pair<Texture444Frame, Depth16Frame>;
+struct RendererFrame {
+  Common::Frame<> texture;
+  Common::Frame<> geometry;
+};
+
+template <typename Element = DefaultElement> using FrameList = std::vector<Frame<Element>>;
+using V3cFrameList = std::vector<V3cFrame>;
+using DeepFrameList = std::vector<DeepFrame>;
 
 // Expand a YUV 4:4:4 texture to packed 4:4:4 32-bit float texture with linear transfer and nearest
 // interpolation for chroma
-auto expandTexture(const Texture444Frame &inYuv) -> Mat<Vec3f>;
+auto expandTexture(const Frame<> &inYuv) -> Mat<Vec3f>;
 
 // Expand a YUV 4:2:0 texture to 32-bit float luma map with linear transfer
-auto expandLuma(const TextureFrame &inYuv) -> Mat<float>;
+auto expandLuma(const Frame<> &inYuv) -> Mat<float>;
 
 // Quantize a packed 4:4:4 32-bit float texture as YUV 4:4:4 texture with linear transfer and area
 // interpolation for chroma
-auto quantizeTexture(const Mat<Vec3f> &in, uint32_t bitDepth) -> Texture444Frame;
+auto quantizeTexture(const Mat<Vec3f> &in, uint32_t bitDepth) -> Frame<>;
 
-template <typename Element> auto yuv400(const Frame<Element> &frame) {
-  return frame.changeColorFormat(ColorFormat::YUV400);
-}
+template <typename Element> [[nodiscard]] auto yuv400(const Frame<Element> &frame);
+template <typename Element> [[nodiscard]] auto yuv420(const Frame<Element> &frame);
+template <typename Element> [[nodiscard]] auto yuv444(const Frame<Element> &frame);
 
-template <typename Element> auto yuv420(const Frame<Element> &frame) {
-  return frame.changeColorFormat(ColorFormat::YUV420);
-}
-
-template <typename Element> auto yuv444(const Frame<Element> &frame) {
-  return frame.changeColorFormat(ColorFormat::YUV444);
-}
+template <typename OtherElement, typename Element>
+[[nodiscard]] auto elementCast(const Frame<Element> &frame);
 } // namespace TMIV::Common
 
 #include "Frame.hpp"

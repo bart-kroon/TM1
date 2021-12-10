@@ -97,7 +97,8 @@ Packer::Packer(const Common::Json &rootNode, const Common::Json &componentNode) 
 
 Packer::~Packer() = default;
 
-void Packer::updateAggregatedEntityMasks(const std::vector<Common::MaskList> &entityMasks) {
+void Packer::updateAggregatedEntityMasks(
+    const std::vector<Common::FrameList<uint8_t>> &entityMasks) {
   for (const auto &entityMask : entityMasks) {
     m_aggregatedEntityMasks.push_back(entityMask);
   }
@@ -158,7 +159,7 @@ void Packer::initialize(const Common::SizeVector &atlasSizes, const int32_t bloc
   }
 }
 
-auto Packer::pack(const Common::SizeVector &atlasSizes, const Common::MaskList &masks,
+auto Packer::pack(const Common::SizeVector &atlasSizes, const Common::FrameList<uint8_t> &masks,
                   const MivBitstream::ViewParamsList &viewParamsList, const int32_t m_blockSize)
     -> MivBitstream::PatchParamsList {
   checkAtlasSize(atlasSizes, m_blockSize);
@@ -253,7 +254,7 @@ auto Packer::pack(const Common::SizeVector &atlasSizes, const Common::MaskList &
   return atlasParamsVector;
 }
 
-auto Packer::computeClusters(const Common::MaskList &masks,
+auto Packer::computeClusters(const Common::FrameList<uint8_t> &masks,
                              const MivBitstream::ViewParamsList &viewParamsList)
     -> std::tuple<ClusterList, ClusteringMapList, std::vector<int32_t>> {
   ClusterList clusterList{};
@@ -265,7 +266,8 @@ auto Packer::computeClusters(const Common::MaskList &masks,
       for (int32_t entityId = m_entityEncodeRange[0]; entityId < m_entityEncodeRange[1];
            entityId++) {
         // Entity clustering
-        Common::Mask mask = m_aggregatedEntityMasks[entityId - m_entityEncodeRange[0]][viewIdx];
+        Common::Frame<uint8_t> mask =
+            m_aggregatedEntityMasks[entityId - m_entityEncodeRange[0]][viewIdx];
 
         auto clusteringOutput = retrieveClusters(
             viewIdx, mask, static_cast<int32_t>(clusterList.size()),

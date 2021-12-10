@@ -38,7 +38,7 @@ Aggregator::Aggregator(const Common::Json & /*rootNode*/, const Common::Json & /
 
 void Aggregator::prepareAccessUnit() { m_aggregatedMask.clear(); }
 
-void Aggregator::pushMask(const Common::MaskList &mask) {
+void Aggregator::pushMask(const Common::FrameList<uint8_t> &mask) {
   if (m_aggregatedMask.empty()) {
     m_aggregatedMask = mask;
   } else {

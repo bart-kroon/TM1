@@ -197,7 +197,7 @@ TEST_CASE("DepthTransform") {
 
   SECTION("Expand a frame of 10-bit levels to depth [m]") {
     const auto frame = [] {
-      auto x = TMIV::Common::Depth10Frame::lumaOnly({4, 3}, 10);
+      auto x = TMIV::Common::Frame<>::lumaOnly({4, 3}, 10);
       std::iota(x.getPlane(0).begin(), x.getPlane(0).end(), uint16_t{});
       return x;
     }();
@@ -217,7 +217,7 @@ TEST_CASE("DepthTransform") {
 
   SECTION("Expand a frame of 16-bit levels to depth [m]") {
     const auto frame = [] {
-      auto x = TMIV::Common::Depth16Frame::lumaOnly({4, 3}, 16);
+      auto x = TMIV::Common::Frame<>::lumaOnly({4, 3}, 16);
       std::iota(x.getPlane(0).begin(), x.getPlane(0).end(), uint16_t{0xE000});
       return x;
     }();

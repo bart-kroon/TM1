@@ -53,31 +53,29 @@ namespace TMIV::MivBitstream {
 struct AtlasAccessUnit {
   AtlasSequenceParameterSetRBSP asps;
   AtlasFrameParameterSetRBSP afps;
-  Common::BlockToPatchMap blockToPatchMap;
+  Common::Frame<Common::PatchIdx> blockToPatchMap;
   PatchParamsList patchParamsList;
 
   // ISO/IEC 23090-12 Annex 9
   Common::Frame<> decOccFrame;
   Common::Frame<> decGeoFrame;
-  std::vector<Common::Frame<>> decAttrFrame;
+  Common::FrameList<> decAttrFrame;
   Common::Frame<> decPckFrame;
 
   // ISO/IEC 23090-12 Annex B
   Common::Frame<> unpckOccFrame;
   Common::Frame<> unpckGeoFrame;
-  std::vector<Common::Frame<>> unpckAttrFrame;
+  Common::FrameList<> unpckAttrFrame;
   Common::Frame<bool> occFrameNF;
   Common::Frame<> geoFrameNF;
-  std::vector<Common::Frame<>> attrFrameNF;
+  Common::FrameList<> attrFrameNF;
 
   // Application of hypothetical reference render processes (Annex H)
-  Common::Occupancy1Frame occFrame;
-  Common::Depth10Frame geoFrame;
-  Common::Depth10Frame texFrame;
+  Common::Frame<bool> occFrame;
+  Common::Frame<> geoFrame;
+  Common::Frame<> texFrame;
 
   // Index into the block to patch map using nominal atlas coordinates
-  //
-  // TODO(#397): Rename to patchIdx
   [[nodiscard]] auto patchId(uint32_t row, uint32_t column) const -> uint16_t {
     const auto k = asps.asps_log2_patch_packing_block_size();
     return blockToPatchMap.getPlane(0)(row >> k, column >> k);

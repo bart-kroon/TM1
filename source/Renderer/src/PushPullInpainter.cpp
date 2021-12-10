@@ -83,7 +83,7 @@ auto pullFilter(const std::array<YUVD, 4> &v, const YUVD &x) -> YUVD {
 }
 } // namespace
 
-void PushPullInpainter::inplaceInpaint(Common::Texture444Depth16Frame &viewport,
+void PushPullInpainter::inplaceInpaint(Common::RendererFrame &viewport,
                                        const MivBitstream::ViewParams & /* metadata */) const {
   auto pushPull = PushPull{};
   viewport = pushPull.filter(viewport, pushFilter, pullFilter);

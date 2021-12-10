@@ -48,7 +48,7 @@ public:
   ~DepthQualityAssessor() override = default;
 
   [[nodiscard]] auto isLowDepthQuality(const MivBitstream::ViewParamsList &vpl,
-                                       const Common::MVD16Frame &sourceViews) const
+                                       const Common::DeepFrameList &sourceViews) const
       -> bool override;
 
 private:

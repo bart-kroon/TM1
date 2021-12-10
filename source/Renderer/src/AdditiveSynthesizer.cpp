@@ -80,9 +80,11 @@ public:
 
     std::vector<MivBitstream::DepthTransform> depthTransform;
     depthTransform.reserve(atlas.patchParamsList.size());
+
     for (const auto &patch : atlas.patchParamsList) {
+      const auto geoBitDepth = atlas.geoFrame.getBitDepth();
       depthTransform.emplace_back(frame.viewParamsList[patch.atlasPatchProjectionId()].dq, patch,
-                                  10);
+                                  geoBitDepth);
     }
 
     // For each used pixel in the atlas...
@@ -252,16 +254,16 @@ public:
 
   [[nodiscard]] auto renderFrame(const MivBitstream::AccessUnit &frame,
                                  const MivBitstream::CameraConfig &cameraConfig) const
-      -> Common::Texture444Depth16Frame {
+      -> Common::RendererFrame {
     auto rasterizer = rasterFrame(frame, cameraConfig.viewParams,
                                   resolutionRatio(frame, cameraConfig.viewParams));
 
     const auto depthTransform =
-        MivBitstream::DepthTransform{cameraConfig.viewParams.dq, cameraConfig.bitDepthDepth};
-    auto viewport = Common::Texture444Depth16Frame{
-        Common::quantizeTexture(rasterizer.attribute<0>(), cameraConfig.bitDepthColor),
+        MivBitstream::DepthTransform{cameraConfig.viewParams.dq, cameraConfig.bitDepthGeometry};
+    auto viewport = Common::RendererFrame{
+        Common::quantizeTexture(rasterizer.attribute<0>(), cameraConfig.bitDepthTexture),
         depthTransform.quantizeNormDisp(rasterizer.normDisp(), 1)};
-    viewport.first.fillInvalidWithNeutral(viewport.second);
+    viewport.texture.fillInvalidWithNeutral(viewport.geometry);
 
     return viewport;
   }
@@ -288,7 +290,7 @@ AdditiveSynthesizer::~AdditiveSynthesizer() = default;
 
 auto AdditiveSynthesizer::renderFrame(const MivBitstream::AccessUnit &frame,
                                       const MivBitstream::CameraConfig &cameraConfig) const
-    -> Common::Texture444Depth16Frame {
+    -> Common::RendererFrame {
   return m_impl->renderFrame(frame, cameraConfig);
 }
 } // namespace TMIV::Renderer

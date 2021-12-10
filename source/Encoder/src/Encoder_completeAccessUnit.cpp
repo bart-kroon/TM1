@@ -45,9 +45,8 @@ struct PatchStats {
   int64_t minVal{0}, maxVal{0}, sumVal{0}, cntVal{0};
 };
 
-void adaptPatchStatsToTexture(std::array<PatchStats, 3> &patchStats,
-                              const Common::TextureDepth16Frame &view,
-                              Common::TextureDepth16Frame &atlas, const Common::Vec2i &pView,
+void adaptPatchStatsToTexture(std::array<PatchStats, 3> &patchStats, const Common::DeepFrame &view,
+                              Common::DeepFrame &atlas, const Common::Vec2i &pView,
                               const Common::Vec2i &pAtlas, Common::Vec3i &colorCorrectionOffset) {
   // Y
   atlas.texture.getPlane(0)(pAtlas.y(), pAtlas.x()) =
@@ -106,7 +105,7 @@ void Encoder::scaleGeometryDynamicRange() {
 
   LIMITATION(std::all_of(m_transportViews.cbegin(), m_transportViews.cend(), [](const auto &frame) {
     return std::all_of(frame.cbegin(), frame.cend(), [](const auto &view) {
-      return view.depth.getBitDepth() == Common::sampleBitDepth;
+      return view.geometry.getBitDepth() == Common::sampleBitDepth;
     });
   }));
 
@@ -118,7 +117,7 @@ void Encoder::scaleGeometryDynamicRange() {
     int32_t maxDepthMapValWithinGOP = 0;
 
     for (size_t f = 0; f < numOfFrames; f++) {
-      for (const auto geometry : m_transportViews[f][v].depth.getPlane(0)) {
+      for (const auto geometry : m_transportViews[f][v].geometry.getPlane(0)) {
         if (geometry < minDepthMapValWithinGOP) {
           minDepthMapValWithinGOP = geometry;
         }
@@ -133,8 +132,8 @@ void Encoder::scaleGeometryDynamicRange() {
     }
 
     for (size_t f = 0; f < numOfFrames; f++) {
-      for (auto &geometry : m_transportViews[f][v].depth.getPlane(0)) {
-        geometry = static_cast<uint16_t>(
+      for (auto &geometry : m_transportViews[f][v].geometry.getPlane(0)) {
+        geometry = static_cast<Common::DefaultElement>(
             (static_cast<double>(geometry) - minDepthMapValWithinGOP) /
             (static_cast<double>(maxDepthMapValWithinGOP) - minDepthMapValWithinGOP) * maxValD);
         if (lowDepthQuality) {
@@ -252,7 +251,8 @@ auto Encoder::completeAccessUnit() -> const EncoderParams & {
 
   constructVideoFrames();
 
-  m_paramsQuantized = GeometryQuantizer::transformParams(params(), m_config.depthOccThresholdIfSet);
+  m_paramsQuantized = GeometryQuantizer::transformParams(params(), m_config.depthOccThresholdIfSet,
+                                                         m_config.geoBitDepth);
 
   if (m_config.framePacking) {
     return m_framePacker.setPackingInformation(m_paramsQuantized);
@@ -260,7 +260,7 @@ auto Encoder::completeAccessUnit() -> const EncoderParams & {
   return m_paramsQuantized;
 }
 
-void Encoder::updateAggregationStatistics(const Common::MaskList &aggregatedMask) {
+void Encoder::updateAggregationStatistics(const Common::FrameList<uint8_t> &aggregatedMask) {
   const auto lumaSamplesPerFrame = std::accumulate(
       aggregatedMask.begin(), aggregatedMask.end(), size_t{}, [](size_t sum, const auto &mask) {
         return sum + 2 * std::count_if(mask.getPlane(0).begin(), mask.getPlane(0).end(),
@@ -295,7 +295,7 @@ void Encoder::calculateAttributeOffset(
           const auto patchIndex = btpm[k][y / m_blockSize][x / m_blockSize];
 
           if (patchIndex == Common::unusedPatchId ||
-              (atlas.depth.getPlane(0)(y, x) == 0 &&
+              (atlas.geometry.getPlane(0)(y, x) == 0 &&
                !params()
                     .viewParamsList[params().patchParamsList[patchIndex].atlasPatchProjectionId()]
                     .isBasicView)) {
@@ -368,7 +368,7 @@ auto Encoder::calculateBtpm() const -> std::vector<std::vector<std::vector<int32
       std::vector<int32_t> tmpw;
       tmpw.reserve(AW);
       for (int32_t w = 0; w < AW; w++) {
-        tmpw.push_back(65535);
+        tmpw.push_back(Common::unusedPatchId);
       }
       tmphw.push_back(tmpw);
     }
@@ -412,7 +412,7 @@ auto Encoder::calculatePatchAttrOffsetValuesFullGOP(
   return Common::verifyDownCast<int32_t>(bitShift);
 }
 
-// NOLINTNEXTLINE(readability-function-cognitive-complexity)
+// NOLINTNEXTLINE(readability-function-cognitive-complexity,readability-function-size)
 void Encoder::constructVideoFrames() {
   int32_t frameId = 0;
 
@@ -435,7 +435,7 @@ void Encoder::constructVideoFrames() {
   const auto &vps = params().vps;
 
   for (const auto &views : m_transportViews) {
-    Common::MVD16Frame atlasList;
+    Common::DeepFrameList atlasList;
 
     for (size_t k = 0; k <= vps.vps_atlas_count_minus1(); ++k) {
       auto &frame = atlasList.emplace_back();
@@ -444,13 +444,20 @@ void Encoder::constructVideoFrames() {
       const auto frameHeight = vps.vps_frame_height(j);
 
       if (m_config.haveTexture) {
-        frame.texture.createYuv420({frameWidth, frameHeight}, m_config.texBitDepth);
+        const auto texBitDepth = views.front().texture.getBitDepth();
+
+        LIMITATION(std::all_of(views.cbegin(), views.cend(),
+                               [texBitDepth](const Common::DeepFrame &frame) {
+                                 return frame.texture.getBitDepth() == texBitDepth;
+                               }));
+
+        frame.texture.createYuv420({frameWidth, frameHeight}, texBitDepth);
         frame.texture.fillNeutral();
       }
 
       if (m_config.haveGeometry) {
-        frame.depth.createY({frameWidth, frameHeight});
-        frame.depth.fillZero();
+        frame.geometry.createY({frameWidth, frameHeight});
+        frame.geometry.fillZero();
       }
 
       if (vps.vps_occupancy_video_present_flag(j)) {
@@ -464,7 +471,6 @@ void Encoder::constructVideoFrames() {
           occFrameWidth /= asme.asme_occupancy_scale_factor_x_minus1() + 1;
           occFrameHeight /= asme.asme_occupancy_scale_factor_y_minus1() + 1;
         }
-        // TODO(#397): The alignment is wrong
         frame.occupancy.createY(
             {Common::align(occFrameWidth, 2), Common::align(occFrameHeight, 2)});
       } else {
@@ -484,7 +490,7 @@ void Encoder::constructVideoFrames() {
 
       const auto k = params().vps.indexOf(patch.atlasId());
       if (0 < params().atlas[k].asps.asps_miv_extension().asme_max_entity_id()) {
-        Common::MVD16Frame tempViews;
+        Common::DeepFrameList tempViews;
         tempViews.push_back(view);
         const auto &entityViews = entitySeparator(tempViews, patch.atlasPatchEntityId());
         patchAttrOffsetValues1Frame =
@@ -541,7 +547,7 @@ auto Encoder::isRedundantBlock(Common::Vec2i topLeft, Common::Vec2i bottomRight,
 
 // NOLINTNEXTLINE(readability-function-cognitive-complexity)
 auto Encoder::writePatchInAtlas(const MivBitstream::PatchParams &patchParams,
-                                const Common::TextureDepth16Frame &view, Common::MVD16Frame &frame,
+                                const Common::DeepFrame &view, Common::DeepFrameList &frame,
                                 int32_t frameId, size_t patchIdx)
     -> std::array<std::array<int64_t, 4>, 3> {
   const auto k = params().vps.indexOf(patchParams.atlasId());
@@ -597,7 +603,7 @@ auto Encoder::writePatchInAtlas(const MivBitstream::PatchParams &patchParams,
           }
 
           if (m_config.haveGeometry) {
-            auto depth = view.depth.getPlane(0)(pView.y(), pView.x());
+            auto depth = view.geometry.getPlane(0)(pView.y(), pView.x());
 
             atlas.occupancy.getPlane(0)(yOcc, xOcc) = true;
 
@@ -610,7 +616,7 @@ auto Encoder::writePatchInAtlas(const MivBitstream::PatchParams &patchParams,
               atlas.occupancy.getPlane(0)(yOcc, xOcc) = false;
             }
 
-            atlas.depth.getPlane(0)(pAtlas.y(), pAtlas.x()) = depth;
+            atlas.geometry.getPlane(0)(pAtlas.y(), pAtlas.x()) = depth;
 
             if (depth > 0 && params().vps.vps_occupancy_video_present_flag(patchParams.atlasId())) {
               atlas.occupancy.getPlane(0)(yOcc, xOcc) = true;
@@ -631,10 +637,10 @@ auto Encoder::writePatchInAtlas(const MivBitstream::PatchParams &patchParams,
   return ret;
 }
 
-void Encoder::adaptAtlas(const MivBitstream::PatchParams &patchParams,
-                         Common::TextureDepth16Frame &atlas, int32_t yOcc, int32_t xOcc,
-                         const Common::Vec2i &pView, const Common::Vec2i &pAtlas) const {
-  atlas.depth.getPlane(0)(pAtlas.y(), pAtlas.x()) = 0;
+void Encoder::adaptAtlas(const MivBitstream::PatchParams &patchParams, Common::DeepFrame &atlas,
+                         int32_t yOcc, int32_t xOcc, const Common::Vec2i &pView,
+                         const Common::Vec2i &pAtlas) const {
+  atlas.geometry.getPlane(0)(pAtlas.y(), pAtlas.x()) = 0;
 
   if (params().vps.vps_occupancy_video_present_flag(patchParams.atlasId())) {
     atlas.occupancy.getPlane(0)(yOcc, xOcc) = false;

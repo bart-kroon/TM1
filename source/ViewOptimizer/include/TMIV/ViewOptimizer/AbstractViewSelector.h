@@ -46,7 +46,8 @@ public:
   AbstractViewSelector(const Common::Json &rootNode, const Common::Json &componentNode);
 
   auto optimizeParams(const SourceParams &params) -> ViewOptimizerParams override;
-  [[nodiscard]] auto optimizeFrame(Common::MVD16Frame views) const -> Common::MVD16Frame override;
+  [[nodiscard]] auto optimizeFrame(Common::DeepFrameList views) const
+      -> Common::DeepFrameList override;
 
 protected:
   [[nodiscard]] virtual auto isBasicView() const -> std::vector<bool> = 0;

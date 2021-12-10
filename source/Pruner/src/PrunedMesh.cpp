@@ -37,8 +37,7 @@
 #include <TMIV/Renderer/reprojectPoints.h>
 
 namespace TMIV::Pruner {
-auto unprojectPrunedView(const Common::TextureDepth16Frame &view,
-                         const MivBitstream::ViewParams &viewParams,
+auto unprojectPrunedView(const Common::DeepFrame &view, const MivBitstream::ViewParams &viewParams,
                          const Common::Mat<uint8_t> &mask)
     -> std::tuple<Renderer::SceneVertexDescriptorList, Renderer::TriangleDescriptorList,
                   std::vector<Common::Vec3f>> {
@@ -57,7 +56,7 @@ auto unprojectPrunedView(const Common::TextureDepth16Frame &view,
     const auto &Y = view.texture.getPlane(0);
     const auto &U = view.texture.getPlane(1);
     const auto &V = view.texture.getPlane(2);
-    const auto &D = view.depth.getPlane(0);
+    const auto &D = view.geometry.getPlane(0);
 
     PRECONDITION(vertices.empty());
     vertices.reserve(numPixels);
@@ -67,7 +66,7 @@ auto unprojectPrunedView(const Common::TextureDepth16Frame &view,
     std::vector<int32_t> key;
     key.reserve(vertices.size());
 
-    const auto geoBitDepth = view.depth.getBitDepth();
+    const auto geoBitDepth = view.geometry.getBitDepth();
     const auto depthTransform = MivBitstream::DepthTransform{viewParams.dq, geoBitDepth};
 
     for (int32_t y = 0; y < size.y(); ++y) {

@@ -139,14 +139,14 @@ private:
   }
 
   void saveAtlasFrame(MivBitstream::AtlasId atlasId, int32_t frameIdx,
-                      const Common::TextureDepth10Frame &frame) {
+                      const Common::V3cFrame &frame) {
     if (!frame.occupancy.empty()) {
-      IO::saveOutOfBandVideoFrame(json(), placeholders(), frame.occupancy,
+      IO::saveOutOfBandVideoFrame(json(), placeholders(), yuv420(frame.occupancy),
                                   MivBitstream::V3cUnitHeader::ovd(m_vpsId, atlasId), frameIdx);
     }
 
-    if (!frame.depth.empty()) {
-      IO::saveOutOfBandVideoFrame(json(), placeholders(), frame.depth,
+    if (!frame.geometry.empty()) {
+      IO::saveOutOfBandVideoFrame(json(), placeholders(), yuv420(frame.geometry),
                                   MivBitstream::V3cUnitHeader::gvd(m_vpsId, atlasId), frameIdx);
     }
 
@@ -159,7 +159,7 @@ private:
     }
 
     if (!frame.transparency.empty()) {
-      IO::saveOutOfBandVideoFrame(json(), placeholders(), frame.transparency,
+      IO::saveOutOfBandVideoFrame(json(), placeholders(), yuv420(frame.transparency),
                                   MivBitstream::V3cUnitHeader::avd(m_vpsId, atlasId, attrIdx++),
                                   frameIdx, MivBitstream::AiAttributeTypeId::ATTR_TRANSPARENCY);
     }

@@ -45,14 +45,14 @@ constexpr auto depthBlendingThreshold = 655.36; // 1% of bit depth
 enum class InpaintingType { horizontal, vertical, omnidirectional };
 
 // NOLINTNEXTLINE(readability-function-cognitive-complexity)
-void perform2WayInpainting(Common::Texture444Depth16Frame &yuvd, InpaintingType inpaintingType,
+void perform2WayInpainting(Common::RendererFrame &yuvd, InpaintingType inpaintingType,
                            const Common::Mat<int32_t> &nonEmptyNeighbor1,
                            const Common::Mat<int32_t> &nonEmptyNeighbor2,
                            const Common::Mat<int32_t> &mapERP2Cassini = Common::Mat<int32_t>()) {
-  auto &Y = yuvd.first.getPlane(0);
-  auto &U = yuvd.first.getPlane(1);
-  auto &V = yuvd.first.getPlane(2);
-  auto &D = yuvd.second.getPlane(0);
+  auto &Y = yuvd.texture.getPlane(0);
+  auto &U = yuvd.texture.getPlane(1);
+  auto &V = yuvd.texture.getPlane(2);
+  auto &D = yuvd.geometry.getPlane(0);
 
   const auto width = static_cast<int32_t>(Y.width());
   const auto height = static_cast<int32_t>(Y.height());
@@ -166,11 +166,11 @@ void perform2WayInpainting(Common::Texture444Depth16Frame &yuvd, InpaintingType 
   }   // h
 }
 
-void fillVerticalCracks(Common::Texture444Depth16Frame &yuvd) {
-  auto &Y = yuvd.first.getPlane(0);
-  auto &U = yuvd.first.getPlane(1);
-  auto &V = yuvd.first.getPlane(2);
-  auto &D = yuvd.second.getPlane(0);
+void fillVerticalCracks(Common::RendererFrame &yuvd) {
+  auto &Y = yuvd.texture.getPlane(0);
+  auto &U = yuvd.texture.getPlane(1);
+  auto &V = yuvd.texture.getPlane(2);
+  auto &D = yuvd.geometry.getPlane(0);
 
   const auto width = static_cast<int32_t>(Y.width());
   const auto height = static_cast<int32_t>(Y.height());
@@ -188,10 +188,9 @@ void fillVerticalCracks(Common::Texture444Depth16Frame &yuvd) {
   }
 }
 
-void inpaintOmnidirectionalView(Common::Texture444Depth16Frame &yuvd,
-                                double fullOmniRangePercentage) {
-  auto &Y = yuvd.first.getPlane(0);
-  auto &D = yuvd.second.getPlane(0);
+void inpaintOmnidirectionalView(Common::RendererFrame &yuvd, double fullOmniRangePercentage) {
+  auto &Y = yuvd.texture.getPlane(0);
+  auto &D = yuvd.geometry.getPlane(0);
 
   auto isHole = Common::Mat<uint8_t>{Y.sizes(), 1};
   auto nonEmptyNeighborL = Common::Mat<int32_t>{Y.sizes(), -1};
@@ -278,8 +277,8 @@ void inpaintOmnidirectionalView(Common::Texture444Depth16Frame &yuvd,
                         mapERP2Cassini);
 }
 
-void inpaintPerspectiveView(Common::Texture444Depth16Frame &yuvd) {
-  auto &D = yuvd.second.getPlane(0);
+void inpaintPerspectiveView(Common::RendererFrame &yuvd) {
+  auto &D = yuvd.geometry.getPlane(0);
 
   const auto width = static_cast<int32_t>(D.width());
   const auto height = static_cast<int32_t>(D.height());
@@ -369,8 +368,7 @@ void inpaintPerspectiveView(Common::Texture444Depth16Frame &yuvd) {
   perform2WayInpainting(yuvd, InpaintingType::horizontal, nonEmptyNeighborT, nonEmptyNeighborB);
 }
 
-void inplaceInpaint_impl(Common::Texture444Depth16Frame &yuvd,
-                         const MivBitstream::ViewParams &meta) {
+void inplaceInpaint_impl(Common::RendererFrame &yuvd, const MivBitstream::ViewParams &meta) {
   fillVerticalCracks(yuvd);
 
   if (meta.ci.ci_cam_type() == MivBitstream::CiCamType::equirectangular) {
@@ -385,7 +383,7 @@ void inplaceInpaint_impl(Common::Texture444Depth16Frame &yuvd,
 
 Inpainter::Inpainter(const Common::Json & /*rootNode*/, const Common::Json & /*componentNode*/) {}
 
-void Inpainter::inplaceInpaint(Common::Texture444Depth16Frame &viewport,
+void Inpainter::inplaceInpaint(Common::RendererFrame &viewport,
                                const MivBitstream::ViewParams &metadata) const {
   inplaceInpaint_impl(viewport, metadata);
 }

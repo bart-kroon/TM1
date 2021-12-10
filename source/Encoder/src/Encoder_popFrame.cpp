@@ -37,7 +37,7 @@
 #include <TMIV/Encoder/GeometryQuantizer.h>
 
 namespace TMIV::Encoder {
-auto Encoder::popAtlas() -> Common::MVD10Frame {
+auto Encoder::popAtlas() -> Common::V3cFrameList {
   incrementFoc();
 
   if (m_config.haveGeometry) {
@@ -52,7 +52,7 @@ auto Encoder::popAtlas() -> Common::MVD10Frame {
     return scaledFrame;
   }
 
-  auto frame = Common::MVD10Frame(m_videoFrameBuffer.front().size());
+  auto frame = Common::V3cFrameList(m_videoFrameBuffer.front().size());
   for (size_t i = 0; i < frame.size(); ++i) {
     frame[i].texture = std::move(m_videoFrameBuffer.front()[i].texture);
   }

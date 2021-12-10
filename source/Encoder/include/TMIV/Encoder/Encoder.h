@@ -48,7 +48,7 @@
 #include <memory>
 
 namespace TMIV::Encoder {
-auto assessColorConsistency(Common::MVD16Frame views, MivBitstream::ViewParamsList params)
+auto assessColorConsistency(Common::DeepFrameList views, MivBitstream::ViewParamsList params)
     -> std::vector<Common::Mat<Common::Vec3i>>;
 
 class Encoder {
@@ -56,11 +56,11 @@ public:
   Encoder(const Common::Json &rootNode, const Common::Json &componentNode);
 
   void prepareSequence(const MivBitstream::SequenceConfig &sequenceConfig,
-                       const Common::MVD16Frame &firstFrame);
+                       const Common::DeepFrameList &firstFrame);
   void prepareAccessUnit();
-  void pushFrame(Common::MVD16Frame sourceViews);
+  void pushFrame(Common::DeepFrameList sourceViews);
   auto completeAccessUnit() -> const EncoderParams &;
-  auto popAtlas() -> Common::MVD10Frame;
+  auto popAtlas() -> Common::V3cFrameList;
   [[nodiscard]] auto maxLumaSamplesPerFrame() const -> size_t;
 
   [[nodiscard]] auto config() const noexcept -> const Configuration & { return m_config; }
@@ -70,20 +70,20 @@ private:
   void resetNonAggregatedMask();
 
   // Encoder_pushFrame.cpp
-  void pushSingleEntityFrame(Common::MVD16Frame sourceViews);
-  void updateNonAggregatedMask(const Common::MVD16Frame &transportViews,
-                               const Common::MaskList &masks);
-  void pushMultiEntityFrame(Common::MVD16Frame sourceViews);
-  static auto entitySeparator(const Common::MVD16Frame &transportViews,
-                              Common::SampleValue entityId) -> Common::MVD16Frame;
-  static auto yuvSampler(const Common::EntityMapList &in) -> std::vector<Common::Frame<>>;
-  static void mergeMasks(Common::MaskList &mergedMasks, Common::MaskList masks);
-  static void updateMasks(const Common::MVD16Frame &views, Common::MaskList &masks);
-  void aggregateEntityMasks(Common::MaskList &masks, Common::SampleValue entityId);
+  void pushSingleEntityFrame(Common::DeepFrameList sourceViews);
+  void updateNonAggregatedMask(const Common::DeepFrameList &transportViews,
+                               const Common::FrameList<uint8_t> &masks);
+  void pushMultiEntityFrame(Common::DeepFrameList sourceViews);
+  static auto entitySeparator(const Common::DeepFrameList &transportViews,
+                              Common::SampleValue entityId) -> Common::DeepFrameList;
+  static auto yuvSampler(const Common::FrameList<> &in) -> Common::FrameList<>;
+  static void mergeMasks(Common::FrameList<uint8_t> &mergedMasks, Common::FrameList<uint8_t> masks);
+  static void updateMasks(const Common::DeepFrameList &views, Common::FrameList<uint8_t> &masks);
+  void aggregateEntityMasks(Common::FrameList<uint8_t> &masks, Common::SampleValue entityId);
 
   // Encoder_completeAccessUnit.cpp
   void scaleGeometryDynamicRange();
-  void updateAggregationStatistics(const Common::MaskList &aggregatedMask);
+  void updateAggregationStatistics(const Common::FrameList<uint8_t> &aggregatedMask);
   void constructVideoFrames();
   void correctColors();
   void calculateAttributeOffset(
@@ -95,9 +95,9 @@ private:
   [[nodiscard]] auto isRedundantBlock(Common::Vec2i topLeft, Common::Vec2i bottomRight,
                                       uint16_t viewIdx, int32_t frameIdx) const -> bool;
   auto writePatchInAtlas(const MivBitstream::PatchParams &patchParams,
-                         const Common::TextureDepth16Frame &view, Common::MVD16Frame &frame,
+                         const Common::DeepFrame &view, Common::DeepFrameList &frame,
                          int32_t frameId, size_t patchIdx) -> std::array<std::array<int64_t, 4>, 3>;
-  void adaptAtlas(const MivBitstream::PatchParams &patchParams, Common::TextureDepth16Frame &atlas,
+  void adaptAtlas(const MivBitstream::PatchParams &patchParams, Common::DeepFrame &atlas,
                   int32_t yOcc, int32_t xOcc, const Common::Vec2i &pView,
                   const Common::Vec2i &pAtlas) const;
 
@@ -116,12 +116,12 @@ private:
 
   // View-optimized encoder input
   ViewOptimizer::ViewOptimizerParams m_transportParams;
-  std::vector<Common::MVD16Frame> m_transportViews;
+  std::vector<Common::DeepFrameList> m_transportViews;
 
   int32_t m_blockSize{};
   EncoderParams m_params;          // Encoder output prior to geometry quantization and scaling
   EncoderParams m_paramsQuantized; // Encoder output prior to geometry scaling
-  std::deque<Common::MVD16Frame> m_videoFrameBuffer;
+  std::deque<Common::DeepFrameList> m_videoFrameBuffer;
 
   // Mark read-only access to encoder params to make mutable access more visible
   [[nodiscard]] auto params() const noexcept -> const EncoderParams & { return m_params; }
@@ -129,7 +129,7 @@ private:
   // Mask aggregation state
   using NonAggregatedMask = Common::Mat<std::bitset<maxIntraPeriod>>;
   std::vector<NonAggregatedMask> m_nonAggregatedMask;
-  std::vector<Common::MaskList> m_aggregatedEntityMask;
+  std::vector<Common::FrameList<uint8_t>> m_aggregatedEntityMask;
   size_t m_maxLumaSamplesPerFrame{};
 
   std::vector<std::vector<Common::Mat<Common::Vec3i>>> m_colorCorrectionMaps;

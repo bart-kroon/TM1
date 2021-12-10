@@ -144,17 +144,23 @@ private:
 
     const auto outputDir = json().require("outputDirectory").as<std::filesystem::path>();
 
+    const auto textureVideoFormat =
+        IO::videoFormatString(cameraConfig.colorFormatTexture, cameraConfig.bitDepthTexture);
+
     auto texturePath =
         outputDir / fmt::format(json().require(outputTexturePathFmt).as<std::string>(),
                                 placeholders().numberOfInputFrames, placeholders().contentId,
                                 placeholders().testId, cameraName, viewSize.x(), viewSize.y(),
-                                "yuv420p10le");
+                                textureVideoFormat);
+
+    const auto transparencyVideoFormat = IO::videoFormatString(cameraConfig.colorFormatTransparency,
+                                                               cameraConfig.bitDepthTransparency);
 
     auto transparencyPath =
         outputDir / fmt::format(json().require(outputTransparencyPathFmt).as<std::string>(),
                                 placeholders().numberOfInputFrames, placeholders().contentId,
                                 placeholders().testId, cameraName, viewSize.x(), viewSize.y(),
-                                "yuv420p");
+                                transparencyVideoFormat);
 
     create_directories(texturePath.parent_path());
     create_directories(transparencyPath.parent_path());
@@ -184,13 +190,12 @@ private:
       for (geometryValue layerId = 0; layerId < layerCount; ++layerId) {
         const auto [textureLayer, transparencyLayer] = mpiPcsFrame.getLayer(layerId);
 
-        textureLayer.dump(textureStream);
+        textureLayer.writeTo(textureStream);
         if (!textureStream.good()) {
           throw std::runtime_error(fmt::format("Failed to write to {}", texturePath));
         }
 
-        transparencyLayer.dump(transparencyStream);
-        transparencyLayer.padChroma(transparencyStream);
+        transparencyLayer.writeTo(transparencyStream);
 
         if (!transparencyStream.good()) {
           throw std::runtime_error(fmt::format("Failed to write to {}", transparencyPath));

@@ -48,6 +48,9 @@ TEST_CASE("Convert AccessUnit to SequenceConfig") {
     au.viewParamsList.front().name = "front"s;
     au.viewParamsList.back().name = "back"s;
 
+    au.atlas.emplace_back().texFrame.createYuv420({8, 4}, 10);
+    au.atlas.back().geoFrame.createY({8, 4}, 10);
+
     const TMIV::MivBitstream::SequenceConfig sc = au.sequenceConfig();
     REQUIRE(sc.cameras.size() == 2);
     CHECK(sc.cameras.front().viewParams.name == "front"s);
@@ -65,15 +68,15 @@ TEST_CASE("Convert AccessUnit to SequenceConfig") {
 
     SECTION("Video format fields need to be set") {
       for (const auto &camera : sc.cameras) {
-        CHECK(camera.bitDepthColor == 10);
+        CHECK(camera.bitDepthTexture == 10);
         CHECK(camera.bitDepthTransparency == 0);
-        CHECK(camera.bitDepthDepth == 10);
+        CHECK(camera.bitDepthGeometry == 10);
         CHECK(camera.bitDepthEntities == 0);
-        CHECK(camera.colorspace == TMIV::MivBitstream::CameraConfig::Colorspace::yuv420);
-        CHECK(camera.transparencyColorspace ==
-              TMIV::MivBitstream::CameraConfig::Colorspace::yuv420);
-        CHECK(camera.depthColorspace == TMIV::MivBitstream::CameraConfig::Colorspace::yuv420);
-        CHECK(camera.entitiesColorspace == TMIV::MivBitstream::CameraConfig::Colorspace::yuv420);
+
+        CHECK(camera.colorFormatTexture == TMIV::Common::ColorFormat::YUV420);
+        CHECK(camera.colorFormatTransparency == TMIV::Common::ColorFormat::YUV420);
+        CHECK(camera.colorFormatGeometry == TMIV::Common::ColorFormat::YUV420);
+        CHECK(camera.colorFormatEntities == TMIV::Common::ColorFormat::YUV420);
       }
     }
   }

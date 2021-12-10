@@ -51,6 +51,7 @@ TEST_CASE("TMIV::Encoder::Configuration") {
     "blockSizeDepthQualityDependent": [2, 4],
     "haveTextureVideo": false,
     "haveGeometryVideo": true,
+    "bitDepthGeometryVideo": 10,
     "haveOccupancyVideo": false,
     "framePacking": false,
     "oneViewPerAtlasFlag": false,
@@ -69,7 +70,7 @@ TEST_CASE("TMIV::Encoder::Configuration") {
 })"sv);
 
     const auto component = Json::parse(R"({
-    "depthOccThresholdIfSet": 64,
+    "depthOccThresholdIfSet": 0.0625,
     "dilate": 0
 })"sv);
 
@@ -175,6 +176,7 @@ TEST_CASE("TMIV::Encoder::Configuration") {
     "intraPeriod": 13,
     "blockSizeDepthQualityDependent": [8, 4],
     "haveTextureVideo": true,
+    "bitDepthTextureVideo": 10,
     "haveGeometryVideo": false,
     "haveOccupancyVideo": false,
     "framePacking": false,
@@ -195,7 +197,7 @@ TEST_CASE("TMIV::Encoder::Configuration") {
 })"sv);
 
     auto component = Json::parse(R"({
-    "depthOccThresholdIfSet": 64,
+    "depthOccThresholdIfSet": 0.0625,
     "dilate": 5
 })"sv);
 
@@ -292,7 +294,7 @@ TEST_CASE("TMIV::Encoder::Configuration") {
 })"sv);
 
     const auto component = Json::parse(R"({
-    "depthOccThresholdIfSet": 64,
+    "depthOccThresholdIfSet": 0.0625,
     "dilate": 5
 })"sv);
 

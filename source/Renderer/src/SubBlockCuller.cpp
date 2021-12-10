@@ -172,7 +172,7 @@ auto divideInBlocks(const MivBitstream::PatchParams &patch) {
 auto SubBlockCuller::filterBlockToPatchMap(const MivBitstream::AccessUnit &frame,
                                            const MivBitstream::AtlasAccessUnit &atlas,
                                            const MivBitstream::ViewParams &viewportParams) const
-    -> Common::BlockToPatchMap {
+    -> Common::Frame<Common::PatchIdx> {
   auto result = atlas.blockToPatchMap;
 
   for (size_t patchIdx = 0; patchIdx < atlas.patchParamsList.size(); ++patchIdx) {
@@ -197,7 +197,7 @@ auto SubBlockCuller::filterBlockToPatchMap(const MivBitstream::AccessUnit &frame
   return result;
 }
 
-void SubBlockCuller::inplaceErasePatch(Common::BlockToPatchMap &patchMap,
+void SubBlockCuller::inplaceErasePatch(Common::Frame<Common::PatchIdx> &patchMap,
                                        const MivBitstream::PatchParams &patch, uint16_t patchId,
                                        const MivBitstream::AtlasSequenceParameterSetRBSP &asps) {
   const auto patchPackingBlockSize = 1U << asps.asps_log2_patch_packing_block_size();

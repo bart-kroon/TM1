@@ -77,7 +77,7 @@ auto findCentralBasicView(MivBitstream::ViewParamsList paramsList) -> size_t {
   return refView;
 }
 
-auto assessColorConsistency(Common::MVD16Frame views, MivBitstream::ViewParamsList params)
+auto assessColorConsistency(Common::DeepFrameList views, MivBitstream::ViewParamsList params)
     -> std::vector<Common::Mat<Common::Vec3i>> {
   std::vector<Common::Mat<Common::Vec3i>> colorCorrectionMaps1Frame;
 
@@ -90,32 +90,34 @@ auto assessColorConsistency(Common::MVD16Frame views, MivBitstream::ViewParamsLi
   synthesizers.clear();
 
   for (size_t i = 0; i < params.size(); ++i) {
-    const auto depthTransform = MivBitstream::DepthTransform{params[i].dq, 16};
+    const auto geoBitDepth = views[i].geometry.getBitDepth();
+    const auto depthTransform = MivBitstream::DepthTransform{params[i].dq, geoBitDepth};
+
     synthesizers.emplace_back(std::make_unique<TMIV::Pruner::IncrementalSynthesizer>(
         tmpConfig, params[i].ci.projectionPlaneSize(), i,
-        depthTransform.expandDepth(views[i].depth), expandLuma(views[i].texture),
+        depthTransform.expandDepth(views[i].geometry), expandLuma(views[i].texture),
         expandTexture(yuv444(views[i].texture))));
   }
 
-  std::vector<Common::Frame<uint8_t>> masks;
+  Common::FrameList<uint8_t> masks;
   masks.clear();
   masks.reserve(views.size());
-  std::transform(
-      std::cbegin(params), std::cend(params), std::cbegin(views), back_inserter(masks),
-      [](const MivBitstream::ViewParams &viewParams, const Common::TextureDepth16Frame &view) {
-        auto mask = Common::Frame<uint8_t>::lumaOnly(
-            {viewParams.ci.ci_projection_plane_width_minus1() + 1,
-             viewParams.ci.ci_projection_plane_height_minus1() + 1});
+  std::transform(std::cbegin(params), std::cend(params), std::cbegin(views), back_inserter(masks),
+                 [](const MivBitstream::ViewParams &viewParams, const Common::DeepFrame &view) {
+                   auto mask = Common::Frame<uint8_t>::lumaOnly(
+                       {viewParams.ci.ci_projection_plane_width_minus1() + 1,
+                        viewParams.ci.ci_projection_plane_height_minus1() + 1});
 
-        std::transform(std::cbegin(view.depth.getPlane(0)), std::cend(view.depth.getPlane(0)),
-                       std::begin(mask.getPlane(0)),
-                       [ot = MivBitstream::OccupancyTransform{viewParams}](auto x) {
-                         // #94: When there are invalid pixels in a basic view, these
-                         // should be excluded from the pruning mask
-                         return ot.occupant(x) ? uint8_t{255} : uint8_t{};
-                       });
-        return mask;
-      });
+                   std::transform(std::cbegin(view.geometry.getPlane(0)),
+                                  std::cend(view.geometry.getPlane(0)),
+                                  std::begin(mask.getPlane(0)),
+                                  [ot = MivBitstream::OccupancyTransform{viewParams}](auto x) {
+                                    // #94: When there are invalid pixels in a basic view, these
+                                    // should be excluded from the pruning mask
+                                    return ot.occupant(x) ? uint8_t{255} : uint8_t{};
+                                  });
+                   return mask;
+                 });
 
   auto refView = views[refViewIdx];
 
@@ -124,6 +126,7 @@ auto assessColorConsistency(Common::MVD16Frame views, MivBitstream::ViewParamsLi
 
   int32_t W = refView.texture.getWidth();
   int32_t H = refView.texture.getHeight();
+  const auto maxValueF = static_cast<float>(refView.texture.maxValue());
 
   for (auto &s : synthesizers) {
     Common::Mat<Common::Vec3i> currentCCMap;
@@ -154,11 +157,11 @@ auto assessColorConsistency(Common::MVD16Frame views, MivBitstream::ViewParamsLi
           }
 
           if (fabs(depthError) < m_maxDepthError && fabs(lumaError) < m_maxLumaError) {
-            currentCCMap(h, w).x() = static_cast<int32_t>(lumaError * 1023);
+            currentCCMap(h, w).x() = static_cast<int32_t>(lumaError * maxValueF);
             auto chromaError = std::get<0>(x.attributes()).y() - jYUV->y();
-            currentCCMap(h, w).y() = static_cast<int32_t>(chromaError * 1023);
+            currentCCMap(h, w).y() = static_cast<int32_t>(chromaError * maxValueF);
             chromaError = std::get<0>(x.attributes()).z() - jYUV->z();
-            currentCCMap(h, w).z() = static_cast<int32_t>(chromaError * 1023);
+            currentCCMap(h, w).z() = static_cast<int32_t>(chromaError * maxValueF);
           } else {
             currentCCMap(h, w) = {};
           }

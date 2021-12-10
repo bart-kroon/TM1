@@ -41,7 +41,7 @@
 
 namespace TMIV::Encoder {
 namespace {
-auto createBlockToPatchMap(size_t k, EncoderParams &params) -> Common::BlockToPatchMap {
+auto createBlockToPatchMap(size_t k, EncoderParams &params) -> Common::Frame<Common::PatchIdx> {
   const auto &asps = params.atlas[k].asps;
   const auto &ppl = params.patchParamsList;
 
@@ -49,8 +49,8 @@ auto createBlockToPatchMap(size_t k, EncoderParams &params) -> Common::BlockToPa
   const auto atlasBlockToPatchMapWidth = asps.asps_frame_width();
   const auto atlasBlockToPatchMapHeight = asps.asps_frame_height();
 
-  auto btpm =
-      Common::BlockToPatchMap::lumaOnly({atlasBlockToPatchMapWidth, atlasBlockToPatchMapHeight});
+  auto btpm = Common::Frame<Common::PatchIdx>::lumaOnly(
+      {atlasBlockToPatchMapWidth, atlasBlockToPatchMapHeight});
 
   std::fill(btpm.getPlane(0).begin(), btpm.getPlane(0).end(), Common::unusedPatchId);
 
@@ -77,9 +77,9 @@ auto createBlockToPatchMap(size_t k, EncoderParams &params) -> Common::BlockToPa
   return btpm;
 }
 
-auto dilateTextureAtlas(Common::Texture444Frame &textureAtlas,
-                        const Common::Transparency8Frame &transparencyAtlas,
-                        uint32_t textureDilation) -> Common::TextureFrame {
+auto dilateTextureAtlas(Common::Frame<> &textureAtlas,
+                        const Common::Frame<uint8_t> &transparencyAtlas, uint32_t textureDilation)
+    -> Common::Frame<> {
   const auto w = textureAtlas.getWidth();
   const auto h = textureAtlas.getHeight();
 
@@ -126,15 +126,13 @@ auto dilateTextureAtlas(Common::Texture444Frame &textureAtlas,
   return yuv420(quantizeTexture(textureNext, textureAtlas.getBitDepth()));
 }
 
-auto reshapeTransparencyAtlas(Common::Transparency8Frame &transparencyAtlas,
-                              uint32_t transparencyDynamic) -> Common::Transparency10Frame {
+auto reshapeTransparencyAtlas(Common::Frame<uint8_t> &transparencyAtlas,
+                              uint32_t transparencyDynamic) -> Common::Frame<> {
   const auto maxInputValue = static_cast<float>(Common::maxLevel(transparencyAtlas.getBitDepth()));
   const auto maxOutputValue = static_cast<float>((uint64_t{1} << transparencyDynamic) - 1);
   const auto maxStorageValue = 1023.F;
 
-  // TODO(#397): Magic bit depth
-  auto transparencyAtlasReshaped =
-      Common::Transparency10Frame::lumaOnly(transparencyAtlas.getSize(), 10);
+  auto transparencyAtlasReshaped = Common::Frame<>::lumaOnly(transparencyAtlas.getSize(), 10);
 
   std::transform(transparencyAtlas.getPlane(0).begin(), transparencyAtlas.getPlane(0).end(),
                  transparencyAtlasReshaped.getPlane(0).begin(), [&](auto v) {
@@ -273,10 +271,10 @@ auto MpiEncoder::processAccessUnit(int32_t firstFrameId, int32_t lastFrameId)
 
   m_params.patchParamsList.clear();
 
-  auto aggregatedMask = Common::Mask::lumaOnly(mpiSize);
+  auto aggregatedMask = Common::Frame<uint8_t>::lumaOnly(mpiSize);
 
-  std::vector<Common::Frame<>> pixelLayerIndicesPerFrame(lastFrameId - firstFrameId,
-                                                         Common::Frame<>::lumaOnly(mpiSize));
+  Common::FrameList<> pixelLayerIndicesPerFrame(lastFrameId - firstFrameId,
+                                                Common::Frame<>::lumaOnly(mpiSize));
   size_t nbActivePixels{};
 
   m_packer->initialize(m_overrideAtlasFrameSizes, m_blockSize);
@@ -342,19 +340,18 @@ auto MpiEncoder::processAccessUnit(int32_t firstFrameId, int32_t lastFrameId)
   return m_params;
 }
 
-auto MpiEncoder::popAtlas() -> Common::MVD10Frame {
+auto MpiEncoder::popAtlas() -> Common::V3cFrameList {
   const auto &ppl = m_params.patchParamsList;
   const auto &mpiFrame = m_mpiFrameBuffer.front();
-  Common::MVD10Frame atlasList;
+  Common::V3cFrameList atlasList;
 
   for (size_t k = 0; k <= m_params.vps.vps_atlas_count_minus1(); ++k) {
     const auto j = m_params.vps.vps_atlas_id(k);
     const auto frameWidth = m_params.vps.vps_frame_width(j);
     const auto frameHeight = m_params.vps.vps_frame_height(j);
 
-    // TODO(#397): Magic bit depth
-    auto textureFrame = Common::Texture444Frame::yuv444({frameWidth, frameHeight}, 10);
-    auto transparencyFrame = Common::Transparency8Frame::lumaOnly({frameWidth, frameHeight});
+    auto textureFrame = Common::Frame<>::yuv444({frameWidth, frameHeight}, 10);
+    auto transparencyFrame = Common::Frame<uint8_t>::lumaOnly({frameWidth, frameHeight});
 
     textureFrame.fillNeutral();
     transparencyFrame.fillZero();
@@ -412,7 +409,6 @@ auto MpiEncoder::vuiParameters() const -> MivBitstream::VuiParameters {
 }
 
 void MpiEncoder::setGiGeometry3dCoordinatesBitdepthMinus1() {
-  // TODO(#397): Magic bit depth
   uint8_t numBitsMinus1 = 9; // Main 10
   for (auto &vp : m_params.viewParamsList) {
     const auto size = std::max(vp.ci.ci_projection_plane_width_minus1() + 1,

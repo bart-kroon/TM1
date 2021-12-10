@@ -61,14 +61,14 @@ SCENARIO("Luma standard deviation in pruning") {
   }
   viewParamsList.constructViewIdIndex();
 
-  auto views = Common::MVD16Frame(numOfCams);
+  auto views = Common::DeepFrameList(numOfCams);
 
   GIVEN("Equal colors") {
     for (int32_t c = 0; c < numOfCams; c++) {
       views[c].texture.createYuv420({W, H}, 10);
-      views[c].depth.createY({W, H}, 16);
+      views[c].geometry.createY({W, H}, 16);
       views[c].texture.fillNeutral();
-      views[c].depth.fillOne();
+      views[c].geometry.fillOne();
     }
     WHEN("Calculating luma stdev") {
       const auto stdev = calculateLumaStdDev(views, viewParamsList, config, maxDepthError);
@@ -78,9 +78,9 @@ SCENARIO("Luma standard deviation in pruning") {
   GIVEN("Small color difference") {
     for (int32_t c = 0; c < numOfCams; c++) {
       views[c].texture.createYuv420({W, H}, 10);
-      views[c].depth.createY({W, H}, 16);
+      views[c].geometry.createY({W, H}, 16);
       views[c].texture.fillNeutral();
-      views[c].depth.fillOne();
+      views[c].geometry.fillOne();
     }
     for (int32_t h = 0; h < H; h++) {
       for (int32_t w = 0; w < W; w++) {
@@ -95,9 +95,9 @@ SCENARIO("Luma standard deviation in pruning") {
   GIVEN("Big color difference") {
     for (int32_t c = 0; c < numOfCams; c++) {
       views[c].texture.createYuv420({W, H}, 10);
-      views[c].depth.createY({W, H}, 16);
+      views[c].geometry.createY({W, H}, 16);
       views[c].texture.fillNeutral();
-      views[c].depth.fillOne();
+      views[c].geometry.fillOne();
     }
     views[0].texture.fillOne();
     WHEN("Calculating luma stdev") {
@@ -108,11 +108,11 @@ SCENARIO("Luma standard deviation in pruning") {
   GIVEN("Equal colors but different depth") {
     for (int32_t c = 0; c < numOfCams; c++) {
       views[c].texture.createYuv420({W, H}, 10);
-      views[c].depth.createY({W, H}, 16);
+      views[c].geometry.createY({W, H}, 16);
       views[c].texture.fillNeutral();
-      views[c].depth.fillOne();
+      views[c].geometry.fillOne();
     }
-    views[0].depth.fillNeutral();
+    views[0].geometry.fillNeutral();
     WHEN("Calculating luma stdev") {
       auto stdev = calculateLumaStdDev(views, viewParamsList, config, maxDepthError);
       THEN("No similar points, luma threshold empty") { REQUIRE(!stdev.has_value()); }

@@ -20,6 +20,7 @@ create_tmiv_library(
     TARGET
         IOLib
     SOURCES
+        "src/IO.cpp"
         "src/load.cpp"
         "src/save.cpp"
     PUBLIC

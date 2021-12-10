@@ -113,8 +113,7 @@ public:
   }
 
   auto renderFrame(const MivBitstream::AccessUnit &frame,
-                   const MivBitstream::CameraConfig &cameraConfig)
-      -> Common::Texture444Depth16Frame {
+                   const MivBitstream::CameraConfig &cameraConfig) -> Common::RendererFrame {
     // 0 - Check for block size consistency
     if (frame.irap) {
       prepare(frame);
@@ -178,11 +177,11 @@ public:
 
     // 7 - Quantization
     const auto depthTransform =
-        MivBitstream::DepthTransform{cameraConfig.viewParams.dq, cameraConfig.bitDepthDepth};
+        MivBitstream::DepthTransform{cameraConfig.viewParams.dq, cameraConfig.bitDepthGeometry};
     auto viewport =
-        Common::Texture444Depth16Frame{quantizeTexture(m_blendingColor, cameraConfig.bitDepthColor),
-                                       depthTransform.quantizeNormDisp(m_blendingDepth, 1)};
-    viewport.first.fillInvalidWithNeutral(viewport.second);
+        Common::RendererFrame{quantizeTexture(m_blendingColor, cameraConfig.bitDepthTexture),
+                              depthTransform.quantizeNormDisp(m_blendingDepth, 1)};
+    viewport.texture.fillInvalidWithNeutral(viewport.geometry);
 
     return viewport;
   }
@@ -479,7 +478,7 @@ MpiSynthesizer::~MpiSynthesizer() = default;
 
 auto MpiSynthesizer::renderFrame(const MivBitstream::AccessUnit &frame,
                                  const MivBitstream::CameraConfig &cameraConfig) const
-    -> Common::Texture444Depth16Frame {
+    -> Common::RendererFrame {
   return m_impl->renderFrame(frame, cameraConfig);
 }
 } // namespace TMIV::Renderer

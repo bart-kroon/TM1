@@ -118,13 +118,13 @@ auto recoverPrunedViews(const MivBitstream::AccessUnit &inFrame) -> Common::V3cF
     for (int32_t i = 0; i < atlas.asps.asps_frame_height(); ++i) {
       for (int32_t j = 0; j < atlas.asps.asps_frame_width(); ++j) {
         // Fetch patch index
-        const auto patchId = atlas.patchId(i, j);
-        if (patchId == Common::unusedPatchId) {
+        const auto patchIdx = atlas.patchIdx(i, j);
+        if (patchIdx == Common::unusedPatchIdx) {
           continue;
         }
 
         // Index patch and view parameters
-        const auto &patchParams = atlas.patchParamsList[patchId];
+        const auto &patchParams = atlas.patchParamsList[patchIdx];
         const auto viewIdx = inFrame.viewParamsList.indexOf(patchParams.atlasPatchProjectionId());
 
         // Test if this pixel is within the patch

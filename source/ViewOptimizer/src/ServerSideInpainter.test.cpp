@@ -310,10 +310,10 @@ TEST_CASE("ServerSideInpainter") {
       }
 
       THEN("Only the added view is marked as inpainted") {
-        REQUIRE(params.viewParamsList.back().isInpainted);
+        REQUIRE(params.viewParamsList.back().viewInpaintFlag);
         for (auto i = params.viewParamsList.crbegin() + 1; i != params.viewParamsList.crend();
              ++i) {
-          REQUIRE(!i->isInpainted);
+          REQUIRE(!i->viewInpaintFlag);
         }
       }
 

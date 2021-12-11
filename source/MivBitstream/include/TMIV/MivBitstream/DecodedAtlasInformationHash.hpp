@@ -122,10 +122,10 @@ inline auto DecodedAtlasInformationHash::daih_tile_id_len_minus1() const -> uint
   return *m_daih_tile_id_len_minus1;
 }
 
-inline auto DecodedAtlasInformationHash::daih_tile_id(uint8_t tileIndex) const -> uint8_t {
+inline auto DecodedAtlasInformationHash::daih_tile_id(uint8_t tileId) const -> uint8_t {
   VERIFY_MIVBITSTREAM(m_daih_tile_id.has_value());
-  VERIFY_MIVBITSTREAM(tileIndex < m_daih_tile_id.value().size());
-  return m_daih_tile_id.value()[tileIndex];
+  VERIFY_MIVBITSTREAM(tileId < m_daih_tile_id.value().size());
+  return m_daih_tile_id.value()[tileId];
 }
 
 inline auto DecodedAtlasInformationHash::decoded_atlas_tile_hash() const
@@ -231,12 +231,12 @@ inline auto DecodedAtlasInformationHash::daih_tile_id_len_minus1(uint8_t value) 
   return *this;
 }
 
-inline auto DecodedAtlasInformationHash::daih_tile_id(uint8_t tileIndex, uint8_t value) -> auto & {
+inline auto DecodedAtlasInformationHash::daih_tile_id(uint8_t tileId, uint8_t value) -> auto & {
   if (!m_daih_tile_id.has_value()) {
     m_daih_tile_id.emplace(*m_daih_num_tiles_minus1 + 1);
   }
-  VERIFY_MIVBITSTREAM(tileIndex < m_daih_tile_id.value().size());
-  m_daih_tile_id.value()[tileIndex] = value;
+  VERIFY_MIVBITSTREAM(tileId < m_daih_tile_id.value().size());
+  m_daih_tile_id.value()[tileId] = value;
   return *this;
 }
 

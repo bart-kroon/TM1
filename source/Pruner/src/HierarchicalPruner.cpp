@@ -80,11 +80,11 @@ auto iterativeReweightedLeastSquaresOnNonPrunedPixels(
   Common::Mat<double> A_t;
   Common::Mat<double> A_pseudo;
   for (size_t i = 0; i < numPixels; ++i) {
-    size_t pixelIndex = nonPrunedPixIndices[i];
-    const auto rR = static_cast<double>(referenceRGB[pixelIndex][0]);
-    const auto rG = static_cast<double>(referenceRGB[pixelIndex][1]);
-    const auto rB = static_cast<double>(referenceRGB[pixelIndex][2]);
-    const auto s = static_cast<double>(synthesizedRGB[pixelIndex][colorChannel]);
+    size_t pixelIdx = nonPrunedPixIndices[i];
+    const auto rR = static_cast<double>(referenceRGB[pixelIdx][0]);
+    const auto rG = static_cast<double>(referenceRGB[pixelIdx][1]);
+    const auto rB = static_cast<double>(referenceRGB[pixelIdx][2]);
+    const auto s = static_cast<double>(synthesizedRGB[pixelIdx][colorChannel]);
 
     const auto w = static_cast<double>(weights[i]);
 
@@ -535,7 +535,7 @@ private:
   void synthesizeViews(size_t index, const Common::DeepFrame &view,
                        const std::vector<size_t> &viewIds) {
     const auto &vp = m_params.viewParamsList[index];
-    if (vp.isInpainted) {
+    if (vp.viewInpaintFlag) {
       std::cout << "Skipping inpainted view " << vp.name << '\n';
       return;
     }

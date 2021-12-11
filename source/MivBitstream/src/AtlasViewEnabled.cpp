@@ -51,10 +51,10 @@ auto AtlasViewEnabled::ave_num_views_minus1() const -> uint16_t {
   return *m_ave_num_views_minus1;
 }
 
-auto AtlasViewEnabled::ave_atlas_id(uint8_t atlasIndex) const -> uint8_t {
-  PRECONDITION(atlasIndex <= ave_atlas_count_minus1());
+auto AtlasViewEnabled::ave_atlas_id(uint8_t atlasIdx) const -> uint8_t {
+  PRECONDITION(atlasIdx <= ave_atlas_count_minus1());
   VERIFY_MIVBITSTREAM(m_ave_atlas_id.has_value());
-  return m_ave_atlas_id.value().at(atlasIndex);
+  return m_ave_atlas_id.value().at(atlasIdx);
 }
 
 auto AtlasViewEnabled::ave_view_enabled_in_atlas_flag(uint8_t atlasId, uint16_t viewIdx) const
@@ -98,10 +98,10 @@ auto AtlasViewEnabled::ave_num_views_minus1(uint16_t value) noexcept -> AtlasVie
   return *this;
 }
 
-auto AtlasViewEnabled::ave_atlas_id(uint8_t atlasIndex, uint8_t value) -> AtlasViewEnabled & {
-  PRECONDITION(atlasIndex <= ave_atlas_count_minus1());
+auto AtlasViewEnabled::ave_atlas_id(uint8_t atlasIdx, uint8_t value) -> AtlasViewEnabled & {
+  PRECONDITION(atlasIdx <= ave_atlas_count_minus1());
   VERIFY_MIVBITSTREAM(m_ave_atlas_id.has_value());
-  m_ave_atlas_id.value().at(atlasIndex) = value;
+  m_ave_atlas_id.value().at(atlasIdx) = value;
   return *this;
 }
 

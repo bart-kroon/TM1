@@ -52,7 +52,7 @@ auto createBlockToPatchMap(size_t k, EncoderParams &params) -> Common::Frame<Com
   auto btpm = Common::Frame<Common::PatchIdx>::lumaOnly(
       {atlasBlockToPatchMapWidth, atlasBlockToPatchMapHeight});
 
-  std::fill(btpm.getPlane(0).begin(), btpm.getPlane(0).end(), Common::unusedPatchId);
+  std::fill(btpm.getPlane(0).begin(), btpm.getPlane(0).end(), Common::unusedPatchIdx);
 
   for (size_t p = 0; p < ppl.size(); ++p) {
     const auto &pp = ppl[p];
@@ -66,7 +66,7 @@ auto createBlockToPatchMap(size_t k, EncoderParams &params) -> Common::Frame<Com
       for (size_t y = 0; y < atlasPatchHeightBlk; ++y) {
         for (size_t x = 0; x < atlasPatchWidthBlk; ++x) {
           if (!asps.asps_patch_precedence_order_flag() ||
-              btpm.getPlane(0)(yOrg + y, xOrg + x) == Common::unusedPatchId) {
+              btpm.getPlane(0)(yOrg + y, xOrg + x) == Common::unusedPatchIdx) {
             btpm.getPlane(0)(yOrg + y, xOrg + x) = static_cast<uint16_t>(p);
           }
         }
@@ -265,8 +265,8 @@ auto MpiEncoder::processAccessUnit(int32_t firstFrameId, int32_t lastFrameId)
 
   m_mpiFrameBuffer.clear();
 
-  for (int32_t frameIndex = firstFrameId; frameIndex < lastFrameId; frameIndex++) {
-    m_mpiFrameBuffer.emplace_back(readFrame(frameIndex));
+  for (int32_t frameIdx = firstFrameId; frameIdx < lastFrameId; frameIdx++) {
+    m_mpiFrameBuffer.emplace_back(readFrame(frameIdx));
   }
 
   m_params.patchParamsList.clear();
@@ -282,21 +282,21 @@ auto MpiEncoder::processAccessUnit(int32_t firstFrameId, int32_t lastFrameId)
   for (auto layerId = 0; layerId < mpiViewParams.nbMpiLayers; ++layerId) {
     aggregatedMask.fillZero();
 
-    for (size_t frameBufferIndex = 0; frameBufferIndex < pixelLayerIndicesPerFrame.size();
-         ++frameBufferIndex) {
-      const auto &frame = m_mpiFrameBuffer[frameBufferIndex];
-      auto &pixelLayerIndices = pixelLayerIndicesPerFrame[frameBufferIndex];
+    for (size_t frameBufferIdx = 0; frameBufferIdx < pixelLayerIndicesPerFrame.size();
+         ++frameBufferIdx) {
+      const auto &frame = m_mpiFrameBuffer[frameBufferIdx];
+      auto &pixelLayerIndices = pixelLayerIndicesPerFrame[frameBufferIdx];
 
       Common::parallel_for(frame.getPixelList().size(), [&](size_t pixelId) {
         const auto &pixel = frame.getPixelList()[pixelId];
-        auto &pixelLayerIndex = pixelLayerIndices.getPlane(0)[pixelId];
+        auto &pixelLayerIdx = pixelLayerIndices.getPlane(0)[pixelId];
 
-        if (pixelLayerIndex < pixel.size()) {
-          const auto &attribute = pixel[pixelLayerIndex];
+        if (pixelLayerIdx < pixel.size()) {
+          const auto &attribute = pixel[pixelLayerIdx];
 
           if (attribute.geometry == layerId) {
             aggregatedMask.getPlane(0)[pixelId] = 255;
-            pixelLayerIndex++;
+            pixelLayerIdx++;
           }
         }
       });
@@ -359,8 +359,8 @@ auto MpiEncoder::popAtlas() -> Common::V3cFrameList {
     const auto &blockToPatchMap = m_blockToPatchMapPerAtlas[k];
 
     Common::parallel_for(frameWidth, frameHeight, [&](size_t i, size_t j) {
-      if (auto patchId = blockToPatchMap.getPlane(0)(i, j); patchId != Common::unusedPatchId) {
-        const auto &patch = ppl[patchId];
+      if (auto patchIdx = blockToPatchMap.getPlane(0)(i, j); patchIdx != Common::unusedPatchIdx) {
+        const auto &patch = ppl[patchIdx];
         auto posInView = patch.atlasToView({static_cast<int32_t>(j), static_cast<int32_t>(i)});
 
         const auto &pixel = mpiFrame(posInView.y(), posInView.x());

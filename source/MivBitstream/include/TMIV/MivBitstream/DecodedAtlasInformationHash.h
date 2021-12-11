@@ -159,7 +159,7 @@ public:
   [[nodiscard]] auto decoded_atlas_b2p_hash() const -> const DecodedAtlasB2pHash &;
   [[nodiscard]] auto daih_num_tiles_minus1() const -> uint8_t;
   [[nodiscard]] auto daih_tile_id_len_minus1() const -> uint8_t;
-  [[nodiscard]] auto daih_tile_id(uint8_t tileIndex) const -> uint8_t;
+  [[nodiscard]] auto daih_tile_id(uint8_t tileId) const -> uint8_t;
   [[nodiscard]] auto decoded_atlas_tile_hash() const -> const DecodedAtlasTileHash &;
   [[nodiscard]] auto decoded_atlas_tile_b2p_hash() const -> const DecodedAtlasTileB2pHash &;
 
@@ -176,7 +176,7 @@ public:
   auto decoded_atlas_b2p_hash(DecodedAtlasB2pHash &dabh) -> auto &;
   auto daih_num_tiles_minus1(uint8_t value) -> auto &;
   auto daih_tile_id_len_minus1(uint8_t value) -> auto &;
-  auto daih_tile_id(uint8_t tileIndex, uint8_t value) -> auto &;
+  auto daih_tile_id(uint8_t tileId, uint8_t value) -> auto &;
   auto decoded_atlas_tile_hash(DecodedAtlasTileHash &dath) -> auto &;
   auto decoded_atlas_tile_b2p_hash(DecodedAtlasTileB2pHash &datbh) -> auto &;
 

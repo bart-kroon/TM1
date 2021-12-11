@@ -433,37 +433,37 @@ auto AttributeInformation::ai_attribute_count() const noexcept -> uint8_t {
   return static_cast<uint8_t>(m_aiAttributes.size());
 }
 
-auto AttributeInformation::ai_attribute_type_id(uint8_t attributeId) const -> AiAttributeTypeId {
-  VERIFY_V3CBITSTREAM(attributeId < ai_attribute_count());
-  return m_aiAttributes[attributeId].ai_attribute_type_id;
+auto AttributeInformation::ai_attribute_type_id(uint8_t attrIdx) const -> AiAttributeTypeId {
+  VERIFY_V3CBITSTREAM(attrIdx < ai_attribute_count());
+  return m_aiAttributes[attrIdx].ai_attribute_type_id;
 }
 
-auto AttributeInformation::ai_attribute_codec_id(uint8_t attributeId) const -> uint8_t {
-  VERIFY_V3CBITSTREAM(attributeId < ai_attribute_count());
-  return m_aiAttributes[attributeId].ai_attribute_codec_id;
+auto AttributeInformation::ai_attribute_codec_id(uint8_t attrIdx) const -> uint8_t {
+  VERIFY_V3CBITSTREAM(attrIdx < ai_attribute_count());
+  return m_aiAttributes[attrIdx].ai_attribute_codec_id;
 }
 
-auto AttributeInformation::ai_attribute_dimension_minus1(uint8_t attributeId) const -> uint8_t {
-  VERIFY_V3CBITSTREAM(attributeId < ai_attribute_count());
-  return m_aiAttributes[attributeId].ai_attribute_dimension_minus1;
+auto AttributeInformation::ai_attribute_dimension_minus1(uint8_t attrIdx) const -> uint8_t {
+  VERIFY_V3CBITSTREAM(attrIdx < ai_attribute_count());
+  return m_aiAttributes[attrIdx].ai_attribute_dimension_minus1;
 }
 
-auto AttributeInformation::ai_attribute_2d_bit_depth_minus1(uint8_t attributeId) const -> uint8_t {
-  VERIFY_V3CBITSTREAM(attributeId < ai_attribute_count());
-  return m_aiAttributes[attributeId].ai_attribute_2d_bit_depth_minus1;
+auto AttributeInformation::ai_attribute_2d_bit_depth_minus1(uint8_t attrIdx) const -> uint8_t {
+  VERIFY_V3CBITSTREAM(attrIdx < ai_attribute_count());
+  return m_aiAttributes[attrIdx].ai_attribute_2d_bit_depth_minus1;
 }
 
-auto AttributeInformation::ai_attribute_MSB_align_flag(uint8_t attributeId) const -> bool {
-  VERIFY_V3CBITSTREAM(attributeId < ai_attribute_count());
-  return m_aiAttributes[attributeId].ai_attribute_MSB_align_flag;
+auto AttributeInformation::ai_attribute_MSB_align_flag(uint8_t attrIdx) const -> bool {
+  VERIFY_V3CBITSTREAM(attrIdx < ai_attribute_count());
+  return m_aiAttributes[attrIdx].ai_attribute_MSB_align_flag;
 }
 
-auto AttributeInformation::ai_attribute_map_absolute_coding_persistence_flag(
-    uint8_t attributeId) const -> bool {
-  VERIFY_V3CBITSTREAM(attributeId < ai_attribute_count());
+auto AttributeInformation::ai_attribute_map_absolute_coding_persistence_flag(uint8_t attrIdx) const
+    -> bool {
+  VERIFY_V3CBITSTREAM(attrIdx < ai_attribute_count());
   VERIFY_V3CBITSTREAM(
-      m_aiAttributes[attributeId].ai_attribute_map_absolute_coding_persistence_flag.has_value());
-  return *m_aiAttributes[attributeId].ai_attribute_map_absolute_coding_persistence_flag;
+      m_aiAttributes[attrIdx].ai_attribute_map_absolute_coding_persistence_flag.has_value());
+  return *m_aiAttributes[attrIdx].ai_attribute_map_absolute_coding_persistence_flag;
 }
 
 auto AttributeInformation::ai_attribute_count(uint8_t value) -> AttributeInformation & {
@@ -471,46 +471,46 @@ auto AttributeInformation::ai_attribute_count(uint8_t value) -> AttributeInforma
   return *this;
 }
 
-auto AttributeInformation::ai_attribute_type_id(uint8_t attributeId, AiAttributeTypeId value)
+auto AttributeInformation::ai_attribute_type_id(uint8_t attrIdx, AiAttributeTypeId value)
     -> AttributeInformation & {
-  VERIFY_V3CBITSTREAM(attributeId < ai_attribute_count());
-  m_aiAttributes[attributeId].ai_attribute_type_id = value;
+  VERIFY_V3CBITSTREAM(attrIdx < ai_attribute_count());
+  m_aiAttributes[attrIdx].ai_attribute_type_id = value;
   return *this;
 }
 
-auto AttributeInformation::ai_attribute_codec_id(uint8_t attributeId, uint8_t value)
+auto AttributeInformation::ai_attribute_codec_id(uint8_t attrIdx, uint8_t value)
     -> AttributeInformation & {
-  VERIFY_V3CBITSTREAM(attributeId < ai_attribute_count());
-  m_aiAttributes[attributeId].ai_attribute_codec_id = value;
+  VERIFY_V3CBITSTREAM(attrIdx < ai_attribute_count());
+  m_aiAttributes[attrIdx].ai_attribute_codec_id = value;
   return *this;
 }
 
-auto AttributeInformation::ai_attribute_map_absolute_coding_persistence_flag(uint8_t attributeId,
+auto AttributeInformation::ai_attribute_map_absolute_coding_persistence_flag(uint8_t attrIdx,
                                                                              bool value)
     -> AttributeInformation & {
-  VERIFY_V3CBITSTREAM(attributeId < ai_attribute_count());
-  m_aiAttributes[attributeId].ai_attribute_map_absolute_coding_persistence_flag = value;
+  VERIFY_V3CBITSTREAM(attrIdx < ai_attribute_count());
+  m_aiAttributes[attrIdx].ai_attribute_map_absolute_coding_persistence_flag = value;
   return *this;
 }
 
-auto AttributeInformation::ai_attribute_dimension_minus1(uint8_t attributeId, uint8_t value)
+auto AttributeInformation::ai_attribute_dimension_minus1(uint8_t attrIdx, uint8_t value)
     -> AttributeInformation & {
-  VERIFY_V3CBITSTREAM(attributeId < ai_attribute_count());
-  m_aiAttributes[attributeId].ai_attribute_dimension_minus1 = value;
+  VERIFY_V3CBITSTREAM(attrIdx < ai_attribute_count());
+  m_aiAttributes[attrIdx].ai_attribute_dimension_minus1 = value;
   return *this;
 }
 
-auto AttributeInformation::ai_attribute_2d_bit_depth_minus1(uint8_t attributeId, uint8_t value)
+auto AttributeInformation::ai_attribute_2d_bit_depth_minus1(uint8_t attrIdx, uint8_t value)
     -> AttributeInformation & {
-  VERIFY_V3CBITSTREAM(attributeId < ai_attribute_count());
-  m_aiAttributes[attributeId].ai_attribute_2d_bit_depth_minus1 = value;
+  VERIFY_V3CBITSTREAM(attrIdx < ai_attribute_count());
+  m_aiAttributes[attrIdx].ai_attribute_2d_bit_depth_minus1 = value;
   return *this;
 }
 
-auto AttributeInformation::ai_attribute_MSB_align_flag(uint8_t attributeId, bool value)
+auto AttributeInformation::ai_attribute_MSB_align_flag(uint8_t attrIdx, bool value)
     -> AttributeInformation & {
-  VERIFY_V3CBITSTREAM(attributeId < ai_attribute_count());
-  m_aiAttributes[attributeId].ai_attribute_MSB_align_flag = value;
+  VERIFY_V3CBITSTREAM(attrIdx < ai_attribute_count());
+  m_aiAttributes[attrIdx].ai_attribute_MSB_align_flag = value;
   return *this;
 }
 

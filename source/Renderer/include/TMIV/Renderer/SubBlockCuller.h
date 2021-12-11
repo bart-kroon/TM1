@@ -55,7 +55,7 @@ public:
 
 private:
   static void inplaceErasePatch(Common::Frame<Common::PatchIdx> &patchMap,
-                                const MivBitstream::PatchParams &patch, Common::PatchIdx patchId,
+                                const MivBitstream::PatchParams &patch, Common::PatchIdx patchIdx,
                                 const MivBitstream::AtlasSequenceParameterSetRBSP &asps);
 };
 } // namespace TMIV::Renderer

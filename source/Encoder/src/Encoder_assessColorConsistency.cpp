@@ -41,6 +41,12 @@
 
 namespace TMIV::Encoder {
 auto findCentralBasicView(MivBitstream::ViewParamsList paramsList) -> size_t {
+  PRECONDITION(!paramsList.empty());
+
+  if (paramsList.size() == 1) {
+    return 0;
+  }
+
   Common::Vec3f minPos{paramsList[0].pose.position};
   Common::Vec3f maxPos{paramsList[0].pose.position};
 

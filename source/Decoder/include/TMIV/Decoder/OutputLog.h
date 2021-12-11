@@ -39,7 +39,11 @@
 namespace TMIV::Decoder {
 class HashFunction {
 public:
-  constexpr auto consume(uint32_t value) noexcept -> HashFunction &;
+  template <typename ConvertibleToUint32,
+            typename = std::enable_if_t<std::is_integral_v<ConvertibleToUint32> ||
+                                        std::is_enum_v<ConvertibleToUint32>>>
+  constexpr auto consume(ConvertibleToUint32 value) noexcept -> HashFunction &;
+
   constexpr auto consume(MivBitstream::ViewId value) noexcept -> HashFunction &;
   auto consumeF(float value) noexcept -> HashFunction &;
   [[nodiscard]] constexpr auto result() const noexcept;
@@ -51,13 +55,18 @@ private:
   uint32_t m_hash{0xFFFFFFFF};
 };
 
-[[nodiscard]] auto videoDataHash(const MivBitstream::AtlasAccessUnit &frame) noexcept
-    -> HashFunction::Result;
+[[nodiscard]] auto videoDataHash(const Common::Frame<> &frame) noexcept -> HashFunction::Result;
 [[nodiscard]] auto blockToPatchMapHash(const MivBitstream::AtlasAccessUnit &frame) noexcept
     -> HashFunction::Result;
 [[nodiscard]] auto patchParamsListHash(const MivBitstream::PatchParamsList &ppl) noexcept
     -> HashFunction::Result;
 [[nodiscard]] auto viewParamsListHash(const MivBitstream::ViewParamsList &vpl) noexcept
+    -> HashFunction::Result;
+[[nodiscard]] auto asmeHash(const MivBitstream::AtlasAccessUnit &frame) noexcept
+    -> HashFunction::Result;
+[[nodiscard]] auto afmeHash(const MivBitstream::AtlasAccessUnit &frame) noexcept
+    -> HashFunction::Result;
+[[nodiscard]] auto casmeHash(const MivBitstream::AccessUnit &frame) noexcept
     -> HashFunction::Result;
 void writeFrameToOutputLog(const MivBitstream::AccessUnit &frame, std::ostream &stream);
 } // namespace TMIV::Decoder

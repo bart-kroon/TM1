@@ -185,10 +185,10 @@ TEST_CASE("pruning_parent", "[Common Atlas Frame MIV Extension]") {
     const auto unit = PruningParents{{2, 3, 5, 8}};
     REQUIRE(toString(unit, uint16_t{5}) == R"(pp_is_root_flag[ 5 ]=false
 pp_num_parent_minus1[ 5 ]=3
-pp_parent_id[ 5 ][ 0 ]=2
-pp_parent_id[ 5 ][ 1 ]=3
-pp_parent_id[ 5 ][ 2 ]=5
-pp_parent_id[ 5 ][ 3 ]=8
+pp_parent_idx[ 5 ][ 0 ]=2
+pp_parent_idx[ 5 ][ 1 ]=3
+pp_parent_idx[ 5 ][ 2 ]=5
+pp_parent_idx[ 5 ][ 3 ]=8
 )");
 
     const uint16_t mvp_num_views_minus1 = 10;
@@ -199,7 +199,7 @@ pp_parent_id[ 5 ][ 3 ]=8
 TEST_CASE("miv_view_params_list", "[Common Atlas Frame MIV Extension]") {
   auto unit = MivViewParamsList{};
   auto casps = CommonAtlasSequenceParameterSetRBSP{};
-  casps.casps_miv_extension() = {};
+  casps.casps_miv_extension().casme_depth_quantization_params_present_flag(false);
 
   SECTION("Default constructor") {
     REQUIRE(toString(unit) == R"(mvp_num_views_minus1=0

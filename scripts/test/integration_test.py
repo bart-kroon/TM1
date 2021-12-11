@@ -114,6 +114,7 @@ class IntegrationTest:
         with concurrent.futures.ThreadPoolExecutor(max_workers=self.maxWorkers) as executor:
             futures = self.testMivAnchor(executor)
             futures += self.testMivViewAnchor(executor)
+            futures += self.testOneView(executor)
             futures += self.testMivDsdeAnchor(executor)
             futures += self.testBestReference(executor)
             futures += self.testAdditiveSynthesizer(executor)
@@ -357,6 +358,64 @@ class IntegrationTest:
         )
 
         return [f2_1, f2_2, f2_3, f2_4]
+
+    def testOneView(self, executor):
+        if not self.dryRun:
+            (self.testDir / "W3" / "D" / "R0").mkdir(parents=True, exist_ok=True)
+
+        geometryResolution = Resolution(256, 136)
+        textureResolution = Resolution(512, 272)
+        poseTraceRenderResolution = Resolution(480, 270)
+
+        f1 = self.launchCommand(
+            executor,
+            [],
+            ["{0}/bin/Encoder", "-c", "{1}/config/test/one_view/W_1_TMIV_encode.json"]
+            + ["-p", "configDirectory", "{1}/config", "-p", "inputDirectory", "{2}", "-p"]
+            + ["outputDirectory", "{3}", "-n", "3", "-s", "D", "-p", "intraPeriod", "2"]
+            + ["-p", "inputSequenceConfigPathFmt", "test/sequences/T{{1}}_OneView.json"]
+            + ["-f", "0"],
+            "{3}/W3/D/TMIV_W3_D.log",
+            [
+                "W3/D/TMIV_W3_D.bit",
+                f"W3/D/TMIV_W3_D_geo_c00_{geometryResolution}_yuv420p.yuv",
+                f"W3/D/TMIV_W3_D_tex_c00_{textureResolution}_yuv420p.yuv",
+            ],
+        )
+
+        f2_1 = self.launchCommand(
+            executor,
+            [f1],
+            ["{0}/bin/Parser", "-b", "{3}/W3/D/TMIV_W3_D.bit", "-o", "{3}/W3/D/TMIV_W3_D.hls"],
+            None,
+            ["W3/D/TMIV_W3_D.hls"],
+        )
+
+        f2_2 = self.launchCommand(
+            executor,
+            [f1],
+            ["{0}/bin/BitrateReport", "-b", "{3}/W3/D/TMIV_W3_D.bit"],
+            "{3}/W3/D/TMIV_W3_D.csv",
+            [],
+        )
+
+        f2_3 = self.launchCommand(
+            executor,
+            [f1],
+            ["{0}/bin/Decoder", "-c", "{1}/config/test/one_view/W_4_TMIV_decode.json"]
+            + ["-p", "configDirectory", "{1}/config", "-p", "inputDirectory", "{3}"]
+            + ["-p", "outputDirectory", "{3}", "-p", "inputGeometryVideoFramePathFmt"]
+            + ["W{{0}}/{{1}}/TMIV_W{{0}}_{{1}}_geo_c{{3:02}}_{{4}}x{{5}}_{{6}}.yuv"]
+            + ["-p", "inputTextureVideoFramePathFmt"]
+            + ["W{{0}}/{{1}}/TMIV_W{{0}}_{{1}}_tex_c{{3:02}}_{{4}}x{{5}}_{{6}}.yuv"]
+            + ["-p", "inputBitstreamPathFmt", "W3/D/TMIV_W3_D.bit"]
+            + ["-p", "inputViewportParamsPathFmt", "test/sequences/T{{1}}.json"]
+            + ["-n", "3", "-N", "3", "-s", "D", "-r", "R0", "-P", "p02"],
+            "{3}/W3/D/R0/W3_D_R0_p02.log",
+            [f"W3/D/R0/W3_D_R0_p02_tex_{poseTraceRenderResolution}_yuv420p10le.yuv"],
+        )
+
+        return [f2_1, f2_2, f2_3]
 
     def testMivDsdeAnchor(self, executor):
         if not self.dryRun:

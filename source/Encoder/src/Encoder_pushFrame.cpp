@@ -99,7 +99,7 @@ auto dilate(const Common::Mat<uint8_t> &mask) -> Common::Mat<uint8_t> {
 
 void Encoder::updateNonAggregatedMask(const Common::DeepFrameList &transportViews,
                                       const Common::FrameList<uint8_t> &masks) {
-  const auto frameId = m_transportViews.size();
+  const auto frameIdx = m_transportViews.size();
   Common::FrameList<uint8_t> dilatedMasks = masks; // Atlas dilation
 
   // Atlas dilation
@@ -118,7 +118,7 @@ void Encoder::updateNonAggregatedMask(const Common::DeepFrameList &transportView
     for (int32_t i = 0; i < height; i++) {
       for (int32_t j = 0; j < width; j++) {
         if (dilatedMasks[viewIdx].getPlane(0)(i, j) != 0) {
-          m_nonAggregatedMask[viewIdx](i, j)[frameId] = true;
+          m_nonAggregatedMask[viewIdx](i, j)[frameIdx] = true;
         }
       }
     }
@@ -161,14 +161,14 @@ auto Encoder::yuvSampler(const Common::FrameList<> &in) -> Common::FrameList<> {
       if (k != 0) {
         step = 2;
       }
-      int32_t rowIndex = 0;
+      int32_t rowIdx = 0;
       for (int32_t i = 0; i != height; i = i + step) {
-        int32_t colIndex = 0;
+        int32_t colIdx = 0;
         for (int32_t j = 0; j != width; j = j + step) {
-          outYuv.getPlane(k)(rowIndex, colIndex) = entityMap.getPlane(0)(i, j);
-          colIndex++;
+          outYuv.getPlane(k)(rowIdx, colIdx) = entityMap.getPlane(0)(i, j);
+          colIdx++;
         }
-        rowIndex++;
+        rowIdx++;
       }
     }
     outYuvAll.push_back(outYuv);
@@ -233,11 +233,11 @@ auto Encoder::entitySeparator(const Common::DeepFrameList &transportViews,
   for (size_t viewIdx = 0; viewIdx < transportViews.size(); viewIdx++) {
     const auto neutralColor = entityViews[viewIdx].texture.neutralValue();
 
-    for (int32_t planeId = 0; planeId < 3; ++planeId) {
-      std::transform(transportViews[viewIdx].texture.getPlane(planeId).begin(),
-                     transportViews[viewIdx].texture.getPlane(planeId).end(),
-                     entityMapsYUV[viewIdx].getPlane(planeId).begin(),
-                     entityViews[viewIdx].texture.getPlane(planeId).begin(),
+    for (int32_t planeIdx = 0; planeIdx < 3; ++planeIdx) {
+      std::transform(transportViews[viewIdx].texture.getPlane(planeIdx).begin(),
+                     transportViews[viewIdx].texture.getPlane(planeIdx).end(),
+                     entityMapsYUV[viewIdx].getPlane(planeIdx).begin(),
+                     entityViews[viewIdx].texture.getPlane(planeIdx).begin(),
                      [=](auto i, auto j) { return (j == entityId) ? i : neutralColor; });
     }
     std::transform(transportViews[viewIdx].geometry.getPlane(0).begin(),

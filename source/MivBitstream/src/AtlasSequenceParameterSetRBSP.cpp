@@ -121,23 +121,19 @@ void AspsVpccExtension::encodeTo(Common::OutputBitstream &bitstream,
 }
 
 auto AspsMivExtension::asme_geometry_scale_factor_x_minus1() const -> uint16_t {
-  VERIFY_MIVBITSTREAM(m_asme_geometry_scale_factor_x_minus1.has_value());
-  return *m_asme_geometry_scale_factor_x_minus1;
+  return m_asme_geometry_scale_factor_x_minus1.value_or(0);
 }
 
 auto AspsMivExtension::asme_geometry_scale_factor_y_minus1() const -> uint16_t {
-  VERIFY_MIVBITSTREAM(m_asme_geometry_scale_factor_y_minus1.has_value());
-  return *m_asme_geometry_scale_factor_y_minus1;
+  return m_asme_geometry_scale_factor_y_minus1.value_or(0);
 }
 
 auto AspsMivExtension::asme_occupancy_scale_factor_x_minus1() const -> uint16_t {
-  VERIFY_MIVBITSTREAM(m_asme_occupancy_scale_factor_x_minus1.has_value());
-  return *m_asme_occupancy_scale_factor_x_minus1;
+  return m_asme_occupancy_scale_factor_x_minus1.value_or(0);
 }
 
 auto AspsMivExtension::asme_occupancy_scale_factor_y_minus1() const -> uint16_t {
-  VERIFY_MIVBITSTREAM(m_asme_occupancy_scale_factor_y_minus1.has_value());
-  return *m_asme_occupancy_scale_factor_y_minus1;
+  return m_asme_occupancy_scale_factor_y_minus1.value_or(0);
 }
 
 auto AspsMivExtension::asme_patch_attribute_offset_bit_depth_minus1() const -> uint16_t {

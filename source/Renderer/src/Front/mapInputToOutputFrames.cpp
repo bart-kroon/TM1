@@ -37,8 +37,8 @@
 
 namespace TMIV::Renderer::Front {
 namespace {
-// Returns a frame index. If frameIndex is strictly less than the actual number of frames in the
-// encoded stream, then regular values are returned else mirrored indices are computed.
+// Returns a frame index. If outputFrameIndex is strictly less than the actual number of frames in
+// the encoded stream, then regular values are returned else mirrored indices are computed.
 auto getExtendedIndex(int32_t outputFrameIndex, int32_t numberOfInputFrames) -> int32_t {
   if (numberOfInputFrames <= 0) {
     throw std::runtime_error("Cannot extend frame index with zero input frames");

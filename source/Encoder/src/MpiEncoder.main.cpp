@@ -102,7 +102,7 @@ public:
     }
 
     m_encoder.setMpiPcsFrameReader(
-        [&](int32_t frameIndex) -> MpiPcs::Frame { return m_mpiPcsReader.read(frameIndex); });
+        [&](int32_t frameIdx) -> MpiPcs::Frame { return m_mpiPcsReader.read(frameIdx); });
 
     m_encoder.prepareSequence(m_inputSequenceConfig);
 

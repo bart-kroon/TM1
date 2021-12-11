@@ -90,16 +90,16 @@ public:
     // For each used pixel in the atlas...
     for (int32_t i_atlas = 0; i_atlas < rows; ++i_atlas) {
       for (int32_t j_atlas = 0; j_atlas < cols; ++j_atlas) {
-        const auto patchId = atlas.patchId(i_atlas, j_atlas);
+        const auto patchIdx = atlas.patchIdx(i_atlas, j_atlas);
 
         // Push dummy vertices to keep indexing simple
-        if (patchId == Common::unusedPatchId) {
+        if (patchIdx == Common::unusedPatchIdx) {
           result.emplace_back();
           continue;
         }
 
         // Look up metadata
-        const auto &patch = atlas.patchParamsList[patchId];
+        const auto &patch = atlas.patchParamsList[patchIdx];
         const auto viewIdx = frame.viewParamsList.indexOf(patch.atlasPatchProjectionId());
         const auto &viewParams = frame.viewParamsList[viewIdx];
 
@@ -113,7 +113,7 @@ public:
           continue;
         }
 
-        const auto d = depthTransform[patchId].expandDepth(level);
+        const auto d = depthTransform[patchIdx].expandDepth(level);
 
         // Reproject and calculate ray angle
         const auto &R_t = transformList[viewIdx];
@@ -134,9 +134,9 @@ public:
     result.reserve(size);
 
     auto addTriangle = [&](Common::Vec2i v0, Common::Vec2i v1, Common::Vec2i v2) {
-      const int32_t patchId = atlas.patchId(v0.y(), v0.x());
-      if (patchId == Common::unusedPatchId || patchId != atlas.patchId(v1.y(), v1.x()) ||
-          patchId != atlas.patchId(v2.y(), v2.x())) {
+      const int32_t patchIdx = atlas.patchIdx(v0.y(), v0.x());
+      if (patchIdx == Common::unusedPatchIdx || patchIdx != atlas.patchIdx(v1.y(), v1.x()) ||
+          patchIdx != atlas.patchIdx(v2.y(), v2.x())) {
         return;
       }
       const auto vertexId0 = v0.y() * cols + v0.x();

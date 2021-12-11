@@ -76,7 +76,7 @@ struct AtlasAccessUnit {
   Common::Frame<> texFrame;
 
   // Index into the block to patch map using nominal atlas coordinates
-  [[nodiscard]] auto patchId(uint32_t row, uint32_t column) const -> uint16_t {
+  [[nodiscard]] auto patchIdx(uint32_t row, uint32_t column) const -> uint16_t {
     const auto k = asps.asps_log2_patch_packing_block_size();
     return blockToPatchMap.getPlane(0)(row >> k, column >> k);
   }

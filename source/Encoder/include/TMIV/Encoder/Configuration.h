@@ -65,7 +65,7 @@ struct Configuration {
   Common::stack::Vec2<Common::SampleValue> entityEncRange;
   bool dynamicDepthRange;
   bool attributeOffsetFlag;
-  int32_t attributeOffsetBitCount{};
+  uint32_t attributeOffsetBitCount{};
   bool dqParamsPresentFlag{true};
   bool colorCorrectionEnabledFlag;
   bool randomAccess;

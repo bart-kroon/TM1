@@ -258,7 +258,7 @@ private:
     m_inpaintedViews.clear();
 
     for (size_t viewIdx = 0; viewIdx < frame.viewParamsList.size(); ++viewIdx) {
-      if (frame.viewParamsList[viewIdx].isInpainted) {
+      if (frame.viewParamsList[viewIdx].viewInpaintFlag) {
         m_inpaintedViews.insert(viewIdx);
       }
     }
@@ -442,12 +442,12 @@ private:
 
       Common::parallel_for(
           atlas.asps.asps_frame_width(), atlas.asps.asps_frame_height(), [&](size_t Y, size_t X) {
-            const auto patchId = atlas.patchId(static_cast<int32_t>(Y), static_cast<int32_t>(X));
-            if (patchId == Common::unusedPatchId) {
+            const auto patchIdx = atlas.patchIdx(static_cast<int32_t>(Y), static_cast<int32_t>(X));
+            if (patchIdx == Common::unusedPatchIdx) {
               return;
             }
 
-            const auto &patchParams = atlas.patchParamsList[patchId];
+            const auto &patchParams = atlas.patchParamsList[patchIdx];
             const auto viewIdx = frame.viewParamsList.indexOf(patchParams.atlasPatchProjectionId());
 
             if (!m_cameraVisibility[viewIdx]) {

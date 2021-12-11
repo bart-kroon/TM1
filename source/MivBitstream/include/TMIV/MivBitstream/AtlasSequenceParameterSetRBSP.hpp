@@ -72,7 +72,6 @@ constexpr auto AspsMivExtension::asme_geometry_scale_enabled_flag() const noexce
 }
 
 constexpr auto AspsMivExtension::asme_occupancy_scale_enabled_flag() const {
-  VERIFY_MIVBITSTREAM(!asme_embedded_occupancy_enabled_flag());
   return m_asme_occupancy_scale_enabled_flag;
 }
 

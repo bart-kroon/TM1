@@ -54,7 +54,7 @@ public:
          const MivBitstream::SequenceConfig &sc, bool buildIndexOn = true);
   [[nodiscard]] auto getPath() const -> const std::filesystem::path & { return m_path; }
   auto read(std::istream &stream, std::streampos posId, Common::Vec2i size) -> Frame;
-  auto read(int32_t frameId) -> Frame;
+  auto read(int32_t frameIdx) -> Frame;
 
 private:
   std::filesystem::path m_path{};

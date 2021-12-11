@@ -48,7 +48,7 @@ auto choosePatch(const MivBitstream::PatchParams &patch,
                  const MivBitstream::ViewParamsList &cameras,
                  const MivBitstream::ViewParams &target, uint32_t depthBitDepth) -> bool {
   const auto &camera = cameras[patch.atlasPatchProjectionId()];
-  if (camera.isInpainted) {
+  if (camera.viewInpaintFlag) {
     return true;
   }
   const auto R_t = AffineTransform(cameras[patch.atlasPatchProjectionId()].pose, target.pose);
@@ -198,7 +198,7 @@ auto SubBlockCuller::filterBlockToPatchMap(const MivBitstream::AccessUnit &frame
 }
 
 void SubBlockCuller::inplaceErasePatch(Common::Frame<Common::PatchIdx> &patchMap,
-                                       const MivBitstream::PatchParams &patch, uint16_t patchId,
+                                       const MivBitstream::PatchParams &patch, uint16_t patchIdx,
                                        const MivBitstream::AtlasSequenceParameterSetRBSP &asps) {
   const auto patchPackingBlockSize = 1U << asps.asps_log2_patch_packing_block_size();
   const auto firstX = patch.atlasPatch2dPosX() / patchPackingBlockSize;
@@ -208,8 +208,8 @@ void SubBlockCuller::inplaceErasePatch(Common::Frame<Common::PatchIdx> &patchMap
 
   for (auto y = firstY; y < lastY; ++y) {
     for (auto x = firstX; x < lastX; ++x) {
-      if (patchMap.getPlane(0)(y, x) == patchId) {
-        patchMap.getPlane(0)(y, x) = Common::unusedPatchId;
+      if (patchMap.getPlane(0)(y, x) == patchIdx) {
+        patchMap.getPlane(0)(y, x) = Common::unusedPatchIdx;
       }
     }
   }

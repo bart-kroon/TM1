@@ -416,7 +416,7 @@ void PreRenderer::initializeUnpackedVideoComponentFrame(
       const auto attrColorFormat = unpckAttrDim == 1 ? Common::ColorFormat::YUV400 : colorFormat;
 
       atlas.unpckAttrFrame[attrIdx] =
-          Common::Frame<>{{unpckAttrHeight, unpckAttrWidth}, bitDepth, attrColorFormat};
+          Common::Frame<>{{unpckAttrWidth, unpckAttrHeight}, bitDepth, attrColorFormat};
     }
   }
 }

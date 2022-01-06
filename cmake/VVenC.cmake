@@ -30,6 +30,17 @@ if(BUILD_VVenC)
     set_property(TARGET vvenc apputils vvencFFapp PROPERTY FOLDER "VVenC")
     target_compile_features(vvenc PUBLIC cxx_std_14)
     install(TARGETS vvencFFapp EXPORT TMIVTargets RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+    
+    FetchContent_GetProperties(VVENC)
+    install(
+        DIRECTORY "${vvenc_SOURCE_DIR}/cfg/"
+        DESTINATION "${CMAKE_INSTALL_DATADIR}/config/vvenc")    
+    install(
+        FILES
+            "${vvenc_SOURCE_DIR}/README.md"
+            "${vvenc_SOURCE_DIR}/LICENSE.txt"
+            "${vvenc_SOURCE_DIR}/AUTHORS.md"
+        DESTINATION "${CMAKE_INSTALL_DATADIR}/doc/VVenC")
 endif()
 
 if(BUILD_VVdeC)

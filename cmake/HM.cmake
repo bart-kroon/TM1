@@ -91,6 +91,17 @@ if (BUILD_HM)
 
         add_hm_executable(TAppEncoder)
         target_link_libraries(TAppEncoder PRIVATE TLibEncoder TAppCommon TLibVideoIO)
+    
+        FetchContent_GetProperties(HM)
+        install(
+            DIRECTORY "${hm_SOURCE_DIR}/cfg/"
+            DESTINATION "${CMAKE_INSTALL_DATADIR}/config/hm")    
+        install(
+            FILES
+                "${hm_SOURCE_DIR}/README"
+                "${hm_SOURCE_DIR}/COPYING"
+                "${hm_SOURCE_DIR}/doc/software-manual.pdf"
+            DESTINATION "${CMAKE_INSTALL_DATADIR}/doc/HM")
     endif()
 else()
     message(WARNING "HM is disabled.")

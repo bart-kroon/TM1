@@ -93,3 +93,15 @@ install(
         "${CMAKE_CURRENT_BINARY_DIR}/TMIVConfig.cmake"
         "${CMAKE_CURRENT_BINARY_DIR}/TMIVConfigVersion.cmake"
     DESTINATION ${TMIV_CMAKE_CONFIG_DESTINATION})
+
+install(
+    DIRECTORY "config"
+    DESTINATION ${CMAKE_INSTALL_DATADIR})
+install(
+    FILES
+        "README.md"
+        "LICENSE"
+    DESTINATION ${CMAKE_INSTALL_DOCDIR})
+install(
+    DIRECTORY "doc"
+    DESTINATION ${CMAKE_INSTALL_DOCDIR})

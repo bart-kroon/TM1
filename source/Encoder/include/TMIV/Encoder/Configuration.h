@@ -71,7 +71,8 @@ struct Configuration {
   bool randomAccess;
   bool patchRedundancyRemoval;
   uint8_t numGroups;
-  uint16_t maxEntityId{};
+  uint16_t maxEntityId;
+  bool halveDepthRange;
 
   // SEI-related parameters
   bool viewportCameraParametersSei;

@@ -57,7 +57,8 @@ TEST_CASE("TMIV::Encoder::Configuration") {
     "haveOccupancyVideo": false,
     "framePacking": false,
     "oneViewPerAtlasFlag": false,
-    "dynamicDepthRange": false,
+    "dynamicDepthRange": true,
+    "halveDepthRange": true,
     "randomAccess": false,
     "patchRedundancyRemoval": true,
     "viewportCameraParametersSei": false,
@@ -86,7 +87,8 @@ TEST_CASE("TMIV::Encoder::Configuration") {
     CHECK(unit.haveGeometry);
     CHECK_FALSE(unit.haveOccupancy);
     CHECK_FALSE(unit.oneViewPerAtlasFlag);
-    CHECK_FALSE(unit.dynamicDepthRange);
+    CHECK(unit.dynamicDepthRange);
+    CHECK(unit.halveDepthRange);
     CHECK(unit.dqParamsPresentFlag);
     CHECK_FALSE(unit.randomAccess);
     CHECK(unit.patchRedundancyRemoval);

@@ -6,6 +6,7 @@
     "configDirectory": "config",
     "colorCorrectionEnabledFlag": false,
     "dynamicDepthRange": true,
+    "halveDepthRange": true,
     "Encoder": {
         "DepthQualityAssessor": {
             "blendingFactor": 0.03,

@@ -149,7 +149,7 @@ void Encoder::scaleGeometryDynamicRange() {
     const double normDispLow =
         minDepthMapValWithinGOP / maxValD * (normDispHighOrig - normDispLowOrig) + normDispLowOrig;
 
-    if (lowDepthQuality) {
+    if (lowDepthQuality && config().halveDepthRange) {
       normDispHigh = 2 * normDispHigh - normDispLow;
     }
 

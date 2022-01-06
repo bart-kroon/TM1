@@ -12,6 +12,7 @@
     },
     "DepthQualityAssessorMethod": "DepthQualityAssessor",
     "dynamicDepthRange": true,
+    "halveDepthRange": true,
     "Encoder": {
         "Aggregator": {},
         "AggregatorMethod": "Aggregator",

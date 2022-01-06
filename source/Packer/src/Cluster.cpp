@@ -486,6 +486,6 @@ auto Cluster::split(const ClusteringMap &clusteringMap, int32_t overlap) const
       }
     }
   }
-  return std::pair<Cluster, Cluster>(c1, c2);
+  return {c1, c2};
 }
 } // namespace TMIV::Packer

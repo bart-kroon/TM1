@@ -170,7 +170,7 @@ auto bisectingPlane(Common::Vec3f pos1, Common::Vec3f pos2, Common::Vec3f pos3,
     return Common::Vec4f({normal2[0], normal2[1], normal2[2], -dot(pos2, normal2)});
   }
   { // note: degenerate case, 3 aligned points
-    return orthogonalPlane(pos2, pos1, predecessor);
+    return orthogonalPlane(pos1, pos2, predecessor);
   }
 }
 

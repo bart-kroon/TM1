@@ -1,8 +1,11 @@
 Checks: '
 -*,
 bugprone-*,
+-bugprone-easily-swappable-parameters,
+-bugprone-implicit-widening-of-multiplication-result,
 cppcoreguidelines-*,
 -cppcoreguidelines-avoid-magic-numbers,
+-cppcoreguidelines-prefer-member-initializer,
 google-readability-braces-around-statements,
 google-build-using-namespace,
 misc-unused-parameters,

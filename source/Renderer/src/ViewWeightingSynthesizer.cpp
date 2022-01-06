@@ -865,7 +865,7 @@ private:
           }
 
           m_viewportVisibility(y, x) =
-              (0.f < bestCandidate.y()) ? (bestCandidate.x() / bestCandidate.y()) : 0.F;
+              (0.F < bestCandidate.y()) ? (bestCandidate.x() / bestCandidate.y()) : 0.F;
         });
   }
 

@@ -292,7 +292,7 @@ auto MivDecoder::decodeVideoFrame(MivBitstream::V3cUnitHeader vuh) -> bool {
     return pullOutOfBandVideoFrame(vuh);
   }
 
-  fmt::print("Decode video frame: {}, foc=:{}\n", vuh.summary(), m_au.foc);
+  fmt::print("Decode video frame: {}, foc={}\n", vuh.summary(), m_au.foc);
   const auto t0 = clockInSeconds();
 
   const auto atlasIdx = m_au.vps.indexOf(vuh.vuh_atlas_id());
@@ -303,7 +303,7 @@ auto MivDecoder::decodeVideoFrame(MivBitstream::V3cUnitHeader vuh) -> bool {
     return false;
   }
 
-  m_checker->checkVideoFrame(vuh.vuh_unit_type(), frame);
+  m_checker->checkVideoFrame(vuh.vuh_unit_type(), m_au.atlas[atlasIdx].asps, frame);
 
   m_totalVideoDecodingTime[vuh] += clockInSeconds() - t0;
   return true;
@@ -323,7 +323,7 @@ auto MivDecoder::pullOutOfBandVideoFrame(MivBitstream::V3cUnitHeader vuh) -> boo
     return false;
   }
 
-  m_checker->checkVideoFrame(vuh.vuh_unit_type(), frame);
+  m_checker->checkVideoFrame(vuh.vuh_unit_type(), m_au.atlas[atlasIdx].asps, frame);
   return true;
 }
 

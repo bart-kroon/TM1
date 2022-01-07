@@ -206,15 +206,12 @@ void PtlChecker::checkVuh(const MivBitstream::V3cUnitHeader &vuh) {
   }
 }
 
-void PtlChecker::checkAndActivateNuh(const MivBitstream::NalUnitHeader &nuh) {
+void PtlChecker::checkNuh(const MivBitstream::NalUnitHeader &nuh) {
   PTL_CHECK(miv1, "A.1", nuh.nal_temporal_id_plus1() == 1);
-
-  m_nuh = nuh;
 }
 
 void PtlChecker::checkAndActivateVps(const MivBitstream::V3cParameterSet &vps) {
   m_vps = vps;
-  m_asps.reset();
 
   checkVpsCommon(vps);
 
@@ -418,11 +415,9 @@ void PtlChecker::checkVpsMivExtension(const MivBitstream::VpsMivExtension &vme) 
   }
 }
 
-void PtlChecker::checkAndActivateAsps(MivBitstream::AtlasId atlasId,
-                                      const MivBitstream::AtlasSequenceParameterSetRBSP &asps) {
+void PtlChecker::checkAsps(MivBitstream::AtlasId atlasId,
+                           const MivBitstream::AtlasSequenceParameterSetRBSP &asps) {
   PRECONDITION(m_vps.has_value());
-
-  m_asps = asps;
 
   switch (ptl_profile_toolset_idc()) {
   case TS::VPCC_Basic:
@@ -490,9 +485,8 @@ void PtlChecker::checkAfps(const MivBitstream::AtlasFrameParameterSetRBSP &afps)
   PTL_CHECK(miv1, "Table A-1", !afps.afps_raw_3d_offset_bit_count_explicit_mode_flag());
 }
 
-void PtlChecker::checkAtl(const MivBitstream::AtlasTileLayerRBSP &atl) {
-  PRECONDITION(m_nuh.has_value());
-
+void PtlChecker::checkAtl(const MivBitstream::NalUnitHeader &nuh,
+                          const MivBitstream::AtlasTileLayerRBSP &atl) {
   const auto &ath = atl.atlas_tile_header();
   const auto ath_type = ath.ath_type();
 
@@ -514,22 +508,21 @@ void PtlChecker::checkAtl(const MivBitstream::AtlasTileLayerRBSP &atl) {
 
   const auto idrCodedAtlas = contains(
       std::array{NUT::NAL_IDR_W_RADL, NUT::NAL_IDR_N_LP, NUT::NAL_GIDR_W_RADL, NUT::NAL_GIDR_N_LP},
-      m_nuh->nal_unit_type());
+      nuh.nal_unit_type());
   PTL_CHECK(v3c2dis, "A.6.1", !idrCodedAtlas || ath.ath_atlas_frm_order_cnt_lsb() == 0);
 }
 
-void PtlChecker::checkCaf(const MivBitstream::CommonAtlasFrameRBSP &caf) {
-  PRECONDITION(m_nuh.has_value());
-
-  const auto irapCodedCommonAtlas = m_nuh->nal_unit_type() == NUT::NAL_CAF_IDR;
+void PtlChecker::checkCaf(const MivBitstream::NalUnitHeader &nuh,
+                          const MivBitstream::CommonAtlasFrameRBSP &caf) {
+  const auto irapCodedCommonAtlas = nuh.nal_unit_type() == NUT::NAL_CAF_IDR;
   PTL_CHECK(v3c2dis, "A.6.1",
             !irapCodedCommonAtlas || caf.caf_common_atlas_frm_order_cnt_lsb() == 0);
 }
 
-void PtlChecker::checkVideoFrame(VUT vut, const Common::Frame<> &frame) {
+void PtlChecker::checkVideoFrame(VUT vut, const MivBitstream::AtlasSequenceParameterSetRBSP &asps,
+                                 const Common::Frame<> &frame) {
   PRECONDITION(!frame.empty());
   PRECONDITION(m_vps.has_value());
-  PRECONDITION(m_asps.has_value());
 
   const auto ptl_profile_codec_group_idc =
       m_vps->profile_tier_level().ptl_profile_codec_group_idc();
@@ -555,11 +548,11 @@ void PtlChecker::checkVideoFrame(VUT vut, const Common::Frame<> &frame) {
 
   switch (vut) {
   case VUT::V3C_OVD:
-    return checkOccupancyVideoFrame(frame);
+    return checkOccupancyVideoFrame(asps, frame);
   case VUT::V3C_GVD:
-    return checkGeometryVideoFrame(frame);
+    return checkGeometryVideoFrame(asps, frame);
   case VUT::V3C_AVD:
-    return checkAttributeVideoFrame(frame);
+    return checkAttributeVideoFrame(asps, frame);
   case VUT::V3C_PVD:
     // Specification issue http://mpegx.int-evry.fr/software/MPEG/PCC/Specs/23090-5/-/issues/496
     break;
@@ -568,47 +561,50 @@ void PtlChecker::checkVideoFrame(VUT vut, const Common::Frame<> &frame) {
   }
 }
 
-void PtlChecker::checkOccupancyVideoFrame(const Common::Frame<> &frame) const {
+void PtlChecker::checkOccupancyVideoFrame(const MivBitstream::AtlasSequenceParameterSetRBSP &asps,
+                                          const Common::Frame<> &frame) const {
   int32_t occScaleX = 1;
   int32_t occScaleY = 1;
 
   if (m_vps->vps_miv_extension_present_flag() &&
       m_vps->vps_miv_extension().vme_occupancy_scale_enabled_flag()) {
-    const auto &asme = m_asps->asps_miv_extension();
+    const auto &asme = asps.asps_miv_extension();
 
     occScaleX = asme.asme_occupancy_scale_factor_x_minus1() + 1;
     occScaleY = asme.asme_occupancy_scale_factor_y_minus1() + 1;
   }
 
-  const auto asmeOccupancyFrameWidth = m_asps->asps_frame_width() / occScaleX;
-  const auto asmeOccupancyFrameHeight = m_asps->asps_frame_height() / occScaleY;
+  const auto asmeOccupancyFrameWidth = asps.asps_frame_width() / occScaleX;
+  const auto asmeOccupancyFrameHeight = asps.asps_frame_height() / occScaleY;
 
   PTL_CHECK(miv1, "A.4.1", frame.getWidth() == asmeOccupancyFrameWidth);
   PTL_CHECK(miv1, "A.4.1", frame.getHeight() == asmeOccupancyFrameHeight);
 }
 
-void PtlChecker::checkGeometryVideoFrame(const Common::Frame<> &frame) const {
+void PtlChecker::checkGeometryVideoFrame(const MivBitstream::AtlasSequenceParameterSetRBSP &asps,
+                                         const Common::Frame<> &frame) const {
   int32_t geoScaleX = 1;
   int32_t geoScaleY = 1;
 
   if (m_vps->vps_miv_extension_present_flag() &&
       m_vps->vps_miv_extension().vme_geometry_scale_enabled_flag()) {
-    const auto &asme = m_asps->asps_miv_extension();
+    const auto &asme = asps.asps_miv_extension();
 
     geoScaleX = asme.asme_geometry_scale_factor_x_minus1() + 1;
     geoScaleY = asme.asme_geometry_scale_factor_y_minus1() + 1;
   }
 
-  const auto asmeGeometryFrameWidth = m_asps->asps_frame_width() / geoScaleX;
-  const auto asmeGeometryFrameHeight = m_asps->asps_frame_height() / geoScaleY;
+  const auto asmeGeometryFrameWidth = asps.asps_frame_width() / geoScaleX;
+  const auto asmeGeometryFrameHeight = asps.asps_frame_height() / geoScaleY;
 
   PTL_CHECK(miv1, "A.4.1", frame.getWidth() == asmeGeometryFrameWidth);
   PTL_CHECK(miv1, "A.4.1", frame.getHeight() == asmeGeometryFrameHeight);
 }
 
-void PtlChecker::checkAttributeVideoFrame(const Common::Frame<> &frame) const {
-  const auto aspsFrameWidth = m_asps->asps_frame_width();
-  const auto aspsFrameHeight = m_asps->asps_frame_height();
+void PtlChecker::checkAttributeVideoFrame(const MivBitstream::AtlasSequenceParameterSetRBSP &asps,
+                                          const Common::Frame<> &frame) const {
+  const auto aspsFrameWidth = asps.asps_frame_width();
+  const auto aspsFrameHeight = asps.asps_frame_height();
 
   PTL_CHECK(miv1, "A.4.1", frame.getWidth() == aspsFrameWidth);
   PTL_CHECK(miv1, "A.4.1", frame.getHeight() == aspsFrameHeight);

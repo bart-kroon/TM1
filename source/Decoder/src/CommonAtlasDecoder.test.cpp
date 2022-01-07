@@ -116,7 +116,6 @@ TEST_CASE("CommonAtlasDecoder") {
     REQUIRE(checker->checkVuh_callCount == 1);
     CHECK(checker->lastVuh == V3cUnitHeader::cad(0));
     REQUIRE(checker->checkAndActivateNuh_callCount == 2);
-    CHECK(checker->activeNuh == NalUnitHeader{NalUnitType::NAL_CAF_IDR, 0, 1});
     CHECK(checker->checkCaf_callCount == 1);
 
     REQUIRE_FALSE(unit().has_value());

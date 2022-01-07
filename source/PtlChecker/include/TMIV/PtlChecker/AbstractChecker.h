@@ -54,14 +54,18 @@ public:
   virtual void replaceLogger(Logger value) = 0;
 
   virtual void checkVuh(const MivBitstream::V3cUnitHeader &vuh) = 0;
-  virtual void checkAndActivateNuh(const MivBitstream::NalUnitHeader &nuh) = 0;
+  virtual void checkNuh(const MivBitstream::NalUnitHeader &nuh) = 0;
   virtual void checkAndActivateVps(const MivBitstream::V3cParameterSet &vps) = 0;
-  virtual void checkAndActivateAsps(MivBitstream::AtlasId atlasId,
-                                    const MivBitstream::AtlasSequenceParameterSetRBSP &asps) = 0;
+  virtual void checkAsps(MivBitstream::AtlasId atlasId,
+                         const MivBitstream::AtlasSequenceParameterSetRBSP &asps) = 0;
   virtual void checkAfps(const MivBitstream::AtlasFrameParameterSetRBSP &afps) = 0;
-  virtual void checkAtl(const MivBitstream::AtlasTileLayerRBSP &atl) = 0;
-  virtual void checkCaf(const MivBitstream::CommonAtlasFrameRBSP &caf) = 0;
-  virtual void checkVideoFrame(MivBitstream::VuhUnitType vut, const Common::Frame<> &frame) = 0;
+  virtual void checkAtl(const MivBitstream::NalUnitHeader &nuh,
+                        const MivBitstream::AtlasTileLayerRBSP &atl) = 0;
+  virtual void checkCaf(const MivBitstream::NalUnitHeader &nuh,
+                        const MivBitstream::CommonAtlasFrameRBSP &caf) = 0;
+  virtual void checkVideoFrame(MivBitstream::VuhUnitType vut,
+                               const MivBitstream::AtlasSequenceParameterSetRBSP &asps,
+                               const Common::Frame<> &frame) = 0;
 };
 
 using SharedChecker = std::shared_ptr<PtlChecker::AbstractChecker>;

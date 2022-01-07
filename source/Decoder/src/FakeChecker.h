@@ -49,48 +49,41 @@ public:
     lastVuh = vuh;
   }
 
-  void checkAndActivateNuh(const TMIV::MivBitstream::NalUnitHeader &nuh) override {
+  void checkNuh(const TMIV::MivBitstream::NalUnitHeader & /* nuh */) override {
     ++checkAndActivateNuh_callCount;
-    activeNuh = nuh;
   }
 
   void checkAndActivateVps(const TMIV::MivBitstream::V3cParameterSet &vps) override {
     ++checkAndActivateVps_callCount;
     activeVps = vps;
-    activeNuh.reset();
-    activeAsps.reset();
   }
 
-  void
-  checkAndActivateAsps(TMIV::MivBitstream::AtlasId /* atlasId */,
-                       const TMIV::MivBitstream::AtlasSequenceParameterSetRBSP &asps) override {
+  void checkAsps(TMIV::MivBitstream::AtlasId /* atlasId */,
+                 const TMIV::MivBitstream::AtlasSequenceParameterSetRBSP & /* asps */) override {
     REQUIRE(activeVps.has_value());
 
     ++checkAndActivateAsps_callCount;
-    activeAsps = asps;
   }
 
   void checkAfps(const TMIV::MivBitstream::AtlasFrameParameterSetRBSP & /* afps */) override {
     ++checkAfps_callCount;
   }
 
-  void checkAtl(const TMIV::MivBitstream::AtlasTileLayerRBSP & /* atl */) override {
-    REQUIRE(activeNuh.has_value());
-
+  void checkAtl(const TMIV::MivBitstream::NalUnitHeader & /* nuh */,
+                const TMIV::MivBitstream::AtlasTileLayerRBSP & /* atl */) override {
     ++checkAtl_callCount;
   }
 
-  void checkCaf(const TMIV::MivBitstream::CommonAtlasFrameRBSP & /* atl */) override {
-    REQUIRE(activeNuh.has_value());
-
+  void checkCaf(const TMIV::MivBitstream::NalUnitHeader & /* nuh */,
+                const TMIV::MivBitstream::CommonAtlasFrameRBSP & /* atl */) override {
     ++checkCaf_callCount;
   }
 
   void checkVideoFrame(TMIV::MivBitstream::VuhUnitType /* vut */,
+                       const TMIV::MivBitstream::AtlasSequenceParameterSetRBSP & /*asps */,
                        const TMIV::Common::Frame<> &frame) override {
     REQUIRE(!frame.empty());
     REQUIRE(activeVps.has_value());
-    REQUIRE(activeAsps.has_value());
 
     ++checkVideoFrame_callCount;
   }
@@ -105,8 +98,6 @@ public:
   size_t checkVideoFrame_callCount{};
 
   std::optional<TMIV::MivBitstream::V3cUnitHeader> lastVuh;
-  std::optional<TMIV::MivBitstream::NalUnitHeader> activeNuh;
   std::optional<TMIV::MivBitstream::V3cParameterSet> activeVps;
-  std::optional<TMIV::MivBitstream::AtlasSequenceParameterSetRBSP> activeAsps;
 };
 } // namespace test

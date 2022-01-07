@@ -139,7 +139,6 @@ TEST_CASE("AtlasDecoder") {
     REQUIRE(checker->checkVuh_callCount == 1);
     CHECK(checker->lastVuh == V3cUnitHeader::ad(0, {}));
     REQUIRE(checker->checkAndActivateNuh_callCount == 3);
-    CHECK(checker->activeNuh == NalUnitHeader{NalUnitType::NAL_IDR_N_LP, 0, 1});
     CHECK(checker->checkAndActivateAsps_callCount == 1);
     CHECK(checker->checkAfps_callCount == 1);
     CHECK(checker->checkAtl_callCount == 1);

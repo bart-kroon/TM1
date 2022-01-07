@@ -68,7 +68,7 @@ auto AtlasDecoder::decodeAsb() -> bool {
   if (auto asb = m_source()) {
     PRECONDITION(m_vuh == asb->v3c_unit_header());
     for (const auto &nu : asb->v3c_unit_payload().atlas_sub_bitstream().nal_units()) {
-      m_checker->checkAndActivateNuh(nu.nal_unit_header());
+      m_checker->checkNuh(nu.nal_unit_header());
 
       if (nu.nal_unit_header().nal_layer_id() == 0) {
         m_buffer.push_back(nu);
@@ -145,7 +145,7 @@ void AtlasDecoder::decodeAclNalUnit(AccessUnit &au, const MivBitstream::NalUnit 
   au.atl =
       MivBitstream::AtlasTileLayerRBSP::decodeFrom(stream, nu.nal_unit_header(), m_aspsV, m_afpsV);
 
-  m_checker->checkAtl(au.atl);
+  m_checker->checkAtl(nu.nal_unit_header(), au.atl);
 
   au.afps = afpsById(m_afpsV, au.atl.atlas_tile_header().ath_atlas_frame_parameter_set_id());
   au.asps = aspsById(m_aspsV, au.afps.afps_atlas_sequence_parameter_set_id());
@@ -168,7 +168,7 @@ void AtlasDecoder::decodeSuffixNalUnit(AccessUnit &au, const MivBitstream::NalUn
 void AtlasDecoder::decodeAsps(std::istream &stream) {
   auto asps = MivBitstream::AtlasSequenceParameterSetRBSP::decodeFrom(stream, m_vuh, m_vps);
 
-  m_checker->checkAndActivateAsps(m_vuh.vuh_atlas_id(), asps);
+  m_checker->checkAsps(m_vuh.vuh_atlas_id(), asps);
 
   m_maxAtlasFrmOrderCntLsb = 1U << (asps.asps_log2_max_atlas_frame_order_cnt_lsb_minus4() + 4U);
 

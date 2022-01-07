@@ -67,7 +67,7 @@ auto CommonAtlasDecoder::decodeAsb() -> bool {
     m_checker->checkVuh(asb->v3c_unit_header());
 
     for (const auto &nu : asb->v3c_unit_payload().atlas_sub_bitstream().nal_units()) {
-      m_checker->checkAndActivateNuh(nu.nal_unit_header());
+      m_checker->checkNuh(nu.nal_unit_header());
 
       if (nu.nal_unit_header().nal_layer_id() == 0) {
         m_buffer.push_back(nu);
@@ -151,7 +151,7 @@ void CommonAtlasDecoder::decodeCafNalUnit(AccessUnit &au, const MivBitstream::Na
   au.caf = MivBitstream::CommonAtlasFrameRBSP::decodeFrom(stream, nu.nal_unit_header(), m_caspsV,
                                                           m_maxCommonAtlasFrmOrderCntLsb);
 
-  m_checker->checkCaf(au.caf);
+  m_checker->checkCaf(nu.nal_unit_header(), au.caf);
 
   au.casps = caspsById(m_caspsV, au.caf.caf_common_atlas_sequence_parameter_set_id());
 }

@@ -46,14 +46,18 @@ public:
   void replaceLogger(Logger value) override;
 
   void checkVuh(const MivBitstream::V3cUnitHeader &vuh) override;
-  void checkAndActivateNuh(const MivBitstream::NalUnitHeader &nuh) override;
+  void checkNuh(const MivBitstream::NalUnitHeader &nuh) override;
   void checkAndActivateVps(const MivBitstream::V3cParameterSet &vps) override;
-  void checkAndActivateAsps(MivBitstream::AtlasId atlasId,
-                            const MivBitstream::AtlasSequenceParameterSetRBSP &asps) override;
+  void checkAsps(MivBitstream::AtlasId atlasId,
+                 const MivBitstream::AtlasSequenceParameterSetRBSP &asps) override;
   void checkAfps(const MivBitstream::AtlasFrameParameterSetRBSP &afps) override;
-  void checkAtl(const MivBitstream::AtlasTileLayerRBSP &atl) override;
-  void checkCaf(const MivBitstream::CommonAtlasFrameRBSP &caf) override;
-  void checkVideoFrame(MivBitstream::VuhUnitType vut, const Common::Frame<> &frame) override;
+  void checkAtl(const MivBitstream::NalUnitHeader &nuh,
+                const MivBitstream::AtlasTileLayerRBSP &atl) override;
+  void checkCaf(const MivBitstream::NalUnitHeader &nuh,
+                const MivBitstream::CommonAtlasFrameRBSP &caf) override;
+  void checkVideoFrame(MivBitstream::VuhUnitType vut,
+                       const MivBitstream::AtlasSequenceParameterSetRBSP &asps,
+                       const Common::Frame<> &frame) override;
 
 private:
   static void defaultLogger(const std::string &failure);
@@ -79,14 +83,15 @@ private:
 
   void checkAsme(MivBitstream::AtlasId atlasId, const MivBitstream::AspsMivExtension &asme) const;
 
-  void checkOccupancyVideoFrame(const Common::Frame<> &frame) const;
-  void checkGeometryVideoFrame(const Common::Frame<> &frame) const;
-  void checkAttributeVideoFrame(const Common::Frame<> &frame) const;
+  void checkOccupancyVideoFrame(const MivBitstream::AtlasSequenceParameterSetRBSP &asps,
+                                const Common::Frame<> &frame) const;
+  void checkGeometryVideoFrame(const MivBitstream::AtlasSequenceParameterSetRBSP &asps,
+                               const Common::Frame<> &frame) const;
+  void checkAttributeVideoFrame(const MivBitstream::AtlasSequenceParameterSetRBSP &asps,
+                                const Common::Frame<> &frame) const;
 
   Logger m_logger{&defaultLogger};
   std::optional<MivBitstream::V3cParameterSet> m_vps;
-  std::optional<MivBitstream::AtlasSequenceParameterSetRBSP> m_asps;
-  std::optional<MivBitstream::NalUnitHeader> m_nuh;
 };
 } // namespace TMIV::PtlChecker
 

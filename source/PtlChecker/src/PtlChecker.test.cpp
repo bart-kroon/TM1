@@ -253,7 +253,7 @@ auto asps(const V3cParameterSet &vps, AtlasId atlasId) {
 TEST_CASE("By default the PtlChecker logs warnings") {
   auto unit = PtlChecker{};
   const auto nuh = NalUnitHeader{NalUnitType::NAL_IDR_N_LP, 0, 2};
-  CHECK_NOTHROW(unit.checkAndActivateNuh(nuh));
+  CHECK_NOTHROW(unit.checkNuh(nuh));
 }
 
 TEST_CASE("PtlChecker ISO/IEC DIS 23090-5(2E):2021 A.1") {
@@ -266,8 +266,8 @@ TEST_CASE("PtlChecker ISO/IEC DIS 23090-5(2E):2021 A.1") {
     const auto nuh1 = NalUnitHeader{NalUnitType::NAL_IDR_N_LP, 0, 1};
     const auto nuh2 = NalUnitHeader{NalUnitType::NAL_IDR_N_LP, 0, 2};
 
-    CHECK_NOTHROW(unit.checkAndActivateNuh(nuh1));
-    CHECK_THROWS_AS(unit.checkAndActivateNuh(nuh2), test::Exception);
+    CHECK_NOTHROW(unit.checkNuh(nuh1));
+    CHECK_THROWS_AS(unit.checkNuh(nuh2), test::Exception);
   }
 }
 
@@ -291,81 +291,82 @@ TEST_CASE("PtlChecker ISO/IEC DIS 23090-5(2E):2021 Table A-2") {
   const auto yuv420p10 = Frame<>::yuv420(test::size, 10);
   const auto yuv420p12 = Frame<>::yuv420(test::size, 12);
 
-  const auto setup = [&](CG codecGroupIdc) {
+  const auto setup = [&](CG codecGroupIdc) -> TMIV::MivBitstream::AtlasSequenceParameterSetRBSP {
     auto vps = test::vps(codecGroupIdc);
     unit.checkAndActivateVps(vps);
     const auto atlasId = vps.vps_atlas_id(0);
-    const auto asps = test::asps(vps, atlasId);
-    unit.checkAndActivateAsps(atlasId, asps);
+    auto asps = test::asps(vps, atlasId);
+    unit.checkAsps(atlasId, asps);
+    return asps;
   };
 
   SECTION("AVC Progressive High") {
-    setup(CG::AVC_Progressive_High);
+    const auto asps = setup(CG::AVC_Progressive_High);
 
     const auto vuh = GENERATE(VUT::V3C_OVD, VUT::V3C_GVD, VUT::V3C_AVD);
 
-    CHECK_THROWS_AS(unit.checkVideoFrame(vuh, mono8), test::Exception);
-    CHECK_NOTHROW(unit.checkVideoFrame(vuh, yuv420p8));
-    CHECK_THROWS_AS(unit.checkVideoFrame(vuh, yuv444p8), test::Exception);
-    CHECK_THROWS_AS(unit.checkVideoFrame(vuh, yuv420p10), test::Exception);
+    CHECK_THROWS_AS(unit.checkVideoFrame(vuh, asps, mono8), test::Exception);
+    CHECK_NOTHROW(unit.checkVideoFrame(vuh, asps, yuv420p8));
+    CHECK_THROWS_AS(unit.checkVideoFrame(vuh, asps, yuv444p8), test::Exception);
+    CHECK_THROWS_AS(unit.checkVideoFrame(vuh, asps, yuv420p10), test::Exception);
   }
 
   SECTION("HEVC Main10") {
-    setup(CG::HEVC_Main10);
+    const auto asps = setup(CG::HEVC_Main10);
 
     const auto vuh = GENERATE(VUT::V3C_OVD, VUT::V3C_GVD, VUT::V3C_AVD);
 
-    CHECK_THROWS_AS(unit.checkVideoFrame(vuh, mono8), test::Exception);
-    CHECK_NOTHROW(unit.checkVideoFrame(vuh, yuv420p8));
-    CHECK_THROWS_AS(unit.checkVideoFrame(vuh, yuv444p8), test::Exception);
-    CHECK_NOTHROW(unit.checkVideoFrame(vuh, yuv420p10));
-    CHECK_THROWS_AS(unit.checkVideoFrame(vuh, yuv420p12), test::Exception);
+    CHECK_THROWS_AS(unit.checkVideoFrame(vuh, asps, mono8), test::Exception);
+    CHECK_NOTHROW(unit.checkVideoFrame(vuh, asps, yuv420p8));
+    CHECK_THROWS_AS(unit.checkVideoFrame(vuh, asps, yuv444p8), test::Exception);
+    CHECK_NOTHROW(unit.checkVideoFrame(vuh, asps, yuv420p10));
+    CHECK_THROWS_AS(unit.checkVideoFrame(vuh, asps, yuv420p12), test::Exception);
   }
 
   SECTION("HEVC444") {
-    setup(CG::HEVC444);
+    const auto asps = setup(CG::HEVC444);
 
     SECTION("Occupancy or geometry video data") {
       const auto vuh = GENERATE(VUT::V3C_OVD, VUT::V3C_GVD);
 
-      CHECK_NOTHROW(unit.checkVideoFrame(vuh, mono8));
-      CHECK_NOTHROW(unit.checkVideoFrame(vuh, yuv420p8));
-      CHECK_THROWS_AS(unit.checkVideoFrame(vuh, yuv444p8), test::Exception);
-      CHECK_NOTHROW(unit.checkVideoFrame(vuh, yuv420p10));
-      CHECK_THROWS_AS(unit.checkVideoFrame(vuh, yuv420p12), test::Exception);
+      CHECK_NOTHROW(unit.checkVideoFrame(vuh, asps, mono8));
+      CHECK_NOTHROW(unit.checkVideoFrame(vuh, asps, yuv420p8));
+      CHECK_THROWS_AS(unit.checkVideoFrame(vuh, asps, yuv444p8), test::Exception);
+      CHECK_NOTHROW(unit.checkVideoFrame(vuh, asps, yuv420p10));
+      CHECK_THROWS_AS(unit.checkVideoFrame(vuh, asps, yuv420p12), test::Exception);
     }
 
     SECTION("Attribute video data") {
-      CHECK_NOTHROW(unit.checkVideoFrame(VUT::V3C_AVD, mono8));
-      CHECK_NOTHROW(unit.checkVideoFrame(VUT::V3C_AVD, yuv420p8));
-      CHECK_NOTHROW(unit.checkVideoFrame(VUT::V3C_AVD, yuv444p8));
-      CHECK_NOTHROW(unit.checkVideoFrame(VUT::V3C_AVD, yuv420p10));
-      CHECK_THROWS_AS(unit.checkVideoFrame(VUT::V3C_AVD, yuv420p12), test::Exception);
+      CHECK_NOTHROW(unit.checkVideoFrame(VUT::V3C_AVD, asps, mono8));
+      CHECK_NOTHROW(unit.checkVideoFrame(VUT::V3C_AVD, asps, yuv420p8));
+      CHECK_NOTHROW(unit.checkVideoFrame(VUT::V3C_AVD, asps, yuv444p8));
+      CHECK_NOTHROW(unit.checkVideoFrame(VUT::V3C_AVD, asps, yuv420p10));
+      CHECK_THROWS_AS(unit.checkVideoFrame(VUT::V3C_AVD, asps, yuv420p12), test::Exception);
     }
   }
 
   SECTION("VVC Main 10") {
-    setup(CG::VVC_Main10);
+    const auto asps = setup(CG::VVC_Main10);
 
     const auto vuh = GENERATE(VUT::V3C_OVD, VUT::V3C_GVD, VUT::V3C_AVD);
 
-    CHECK_NOTHROW(unit.checkVideoFrame(vuh, mono8));
-    CHECK_NOTHROW(unit.checkVideoFrame(vuh, yuv420p8));
-    CHECK_THROWS_AS(unit.checkVideoFrame(vuh, yuv444p8), test::Exception);
-    CHECK_NOTHROW(unit.checkVideoFrame(vuh, yuv420p10));
-    CHECK_THROWS_AS(unit.checkVideoFrame(vuh, yuv420p12), test::Exception);
+    CHECK_NOTHROW(unit.checkVideoFrame(vuh, asps, mono8));
+    CHECK_NOTHROW(unit.checkVideoFrame(vuh, asps, yuv420p8));
+    CHECK_THROWS_AS(unit.checkVideoFrame(vuh, asps, yuv444p8), test::Exception);
+    CHECK_NOTHROW(unit.checkVideoFrame(vuh, asps, yuv420p10));
+    CHECK_THROWS_AS(unit.checkVideoFrame(vuh, asps, yuv420p12), test::Exception);
   }
 
   SECTION("MP4RA") {
-    setup(CG::MP4RA);
+    const auto asps = setup(CG::MP4RA);
 
     const auto vuh = GENERATE(VUT::V3C_OVD, VUT::V3C_GVD, VUT::V3C_AVD);
 
-    CHECK_NOTHROW(unit.checkVideoFrame(vuh, mono8));
-    CHECK_NOTHROW(unit.checkVideoFrame(vuh, yuv420p8));
-    CHECK_NOTHROW(unit.checkVideoFrame(vuh, yuv444p8));
-    CHECK_NOTHROW(unit.checkVideoFrame(vuh, yuv420p10));
-    CHECK_NOTHROW(unit.checkVideoFrame(vuh, yuv420p12));
+    CHECK_NOTHROW(unit.checkVideoFrame(vuh, asps, mono8));
+    CHECK_NOTHROW(unit.checkVideoFrame(vuh, asps, yuv420p8));
+    CHECK_NOTHROW(unit.checkVideoFrame(vuh, asps, yuv444p8));
+    CHECK_NOTHROW(unit.checkVideoFrame(vuh, asps, yuv420p10));
+    CHECK_NOTHROW(unit.checkVideoFrame(vuh, asps, yuv420p12));
   }
 }
 
@@ -383,13 +384,17 @@ TEST_CASE("PtlChecker ISO/IEC DIS 23090-5(2E):2021 Table A-3") {
 TEST_CASE("PtlChecker ISO/IEC 23090-12:2021 A.4.1") {
   auto unit = test::unit();
 
-  const auto testFrameSizeCheck = [&](VUT vut, int32_t width, int32_t height) {
+  const auto testFrameSizeCheck = [&](VUT vut,
+                                      const TMIV::MivBitstream::AtlasSequenceParameterSetRBSP &asps,
+                                      int32_t width, int32_t height) {
     const auto frame1 = [](int32_t w, int32_t h) { return Frame<>::yuv420({w, h}, 8); };
 
     CAPTURE(vut, width, height);
-    CHECK_NOTHROW(unit.checkVideoFrame(vut, frame1(width, height)));
-    CHECK_THROWS_AS(unit.checkVideoFrame(vut, frame1(width + height, height)), test::Exception);
-    CHECK_THROWS_AS(unit.checkVideoFrame(vut, frame1(width, width + height)), test::Exception);
+    CHECK_NOTHROW(unit.checkVideoFrame(vut, asps, frame1(width, height)));
+    CHECK_THROWS_AS(unit.checkVideoFrame(vut, asps, frame1(width + height, height)),
+                    test::Exception);
+    CHECK_THROWS_AS(unit.checkVideoFrame(vut, asps, frame1(width, width + height)),
+                    test::Exception);
   };
 
   SECTION("No occupancy or geometry scaling") {
@@ -401,16 +406,16 @@ TEST_CASE("PtlChecker ISO/IEC 23090-12:2021 A.4.1") {
     for (uint8_t k = 0; k <= vps.vps_atlas_count_minus1(); ++k) {
       const auto atlasId = vps.vps_atlas_id(k);
       const auto asps = test::asps(vps, atlasId);
-      unit.checkAndActivateAsps(atlasId, asps);
+      unit.checkAsps(atlasId, asps);
 
       if (vps.vps_occupancy_video_present_flag(atlasId)) {
-        testFrameSizeCheck(VUT::V3C_OVD, 72, 24);
+        testFrameSizeCheck(VUT::V3C_OVD, asps, 72, 24);
       }
       if (vps.vps_geometry_video_present_flag(atlasId)) {
-        testFrameSizeCheck(VUT::V3C_GVD, 72, 24);
+        testFrameSizeCheck(VUT::V3C_GVD, asps, 72, 24);
       }
       if (vps.vps_attribute_video_present_flag(atlasId)) {
-        testFrameSizeCheck(VUT::V3C_AVD, 72, 24);
+        testFrameSizeCheck(VUT::V3C_AVD, asps, 72, 24);
       }
     }
   }
@@ -430,9 +435,9 @@ TEST_CASE("PtlChecker ISO/IEC 23090-12:2021 A.4.1") {
             .asme_occupancy_scale_enabled_flag(true)
             .asme_occupancy_scale_factor_x_minus1(0)
             .asme_occupancy_scale_factor_y_minus1(1);
-        unit.checkAndActivateAsps(atlasId, asps);
+        unit.checkAsps(atlasId, asps);
 
-        testFrameSizeCheck(VUT::V3C_OVD, 72, 12);
+        testFrameSizeCheck(VUT::V3C_OVD, asps, 72, 12);
       }
     }
   }
@@ -453,9 +458,9 @@ TEST_CASE("PtlChecker ISO/IEC 23090-12:2021 A.4.1") {
           .asme_geometry_scale_enabled_flag(true)
           .asme_geometry_scale_factor_x_minus1(2)
           .asme_geometry_scale_factor_y_minus1(3);
-      unit.checkAndActivateAsps(atlasId, asps);
+      unit.checkAsps(atlasId, asps);
 
-      testFrameSizeCheck(VUT::V3C_GVD, 24, 6);
+      testFrameSizeCheck(VUT::V3C_GVD, asps, 24, 6);
     }
   }
 }
@@ -780,7 +785,7 @@ TEST_CASE("PtlChecker ISO/IEC 23090-12:2021 Table A-1") {
 
       unit.checkAndActivateVps(vps);
 
-      CHECK_THROWS_IFF(unit.checkAndActivateAsps(atlasId, asps), flagValue && !allowSet);
+      CHECK_THROWS_IFF(unit.checkAsps(atlasId, asps), flagValue && !allowSet);
     };
 
     testFlag(&ASPS::asps_long_term_ref_atlas_frames_flag, !test::mivToolset(toolsetIdc));
@@ -825,7 +830,7 @@ TEST_CASE("PtlChecker ISO/IEC 23090-12:2021 Table A-1") {
       asps.asps_miv_extension().asme_patch_constant_depth_flag(constantDepth);
 
       if (constantDepth) {
-        CHECK_THROWS_IFF(unit.checkAndActivateAsps(j, asps), toolsetIdc == TS::MIV_Main);
+        CHECK_THROWS_IFF(unit.checkAsps(j, asps), toolsetIdc == TS::MIV_Main);
       } else {
         const auto pin_geometry_present_flag =
             vps.vps_packed_video_present_flag(j)
@@ -834,13 +839,13 @@ TEST_CASE("PtlChecker ISO/IEC 23090-12:2021 Table A-1") {
 
         CAPTURE(vps.vps_geometry_video_present_flag(j), pin_geometry_present_flag);
 
-        CHECK_THROWS_IFF(unit.checkAndActivateAsps(j, asps),
-                         !vps.vps_geometry_video_present_flag(j) && !pin_geometry_present_flag &&
-                             toolsetIdc == TS::MIV_Extended);
+        CHECK_THROWS_IFF(unit.checkAsps(j, asps), !vps.vps_geometry_video_present_flag(j) &&
+                                                      !pin_geometry_present_flag &&
+                                                      toolsetIdc == TS::MIV_Extended);
       }
 
       asme.asme_patch_constant_depth_flag(prevConstantDepth);
-      CHECK_NOTHROW(unit.checkAndActivateAsps(j, asps));
+      CHECK_NOTHROW(unit.checkAsps(j, asps));
     }
   }
 
@@ -882,16 +887,19 @@ TEST_CASE("PtlChecker ISO/IEC 23090-12:2021 Table A-1") {
   SECTION("ath_type") {
     const auto type = GENERATE(AthType::I_TILE, AthType::P_TILE, AthType::SKIP_TILE);
 
-    unit.checkAndActivateNuh(NUH{NUT::NAL_CRA, 0, 1});
+    const auto nuh = NUH{NUT::NAL_CRA, 0, 1};
+    unit.checkNuh(nuh);
 
     auto atl = AtlasTileLayerRBSP{};
     atl.atlas_tile_header().ath_type(type);
 
-    CHECK_THROWS_IFF(unit.checkAtl(atl), type != AthType::I_TILE && test::mivToolset(toolsetIdc));
+    CHECK_THROWS_IFF(unit.checkAtl(nuh, atl),
+                     type != AthType::I_TILE && test::mivToolset(toolsetIdc));
   }
 
   SECTION("atdu_patch_mode") {
-    unit.checkAndActivateNuh(NUH{NUT::NAL_CRA, 0, 1});
+    const auto nuh = NUH{NUT::NAL_CRA, 0, 1};
+    unit.checkNuh(nuh);
 
     auto atl = AtlasTileLayerRBSP{};
     atl.atlas_tile_header().ath_type(AthType::I_TILE);
@@ -899,7 +907,7 @@ TEST_CASE("PtlChecker ISO/IEC 23090-12:2021 Table A-1") {
     const auto mode = GENERATE(APM::I_INTRA, APM::I_RAW, APM::I_EOM, APM::I_END);
     atl.atlas_tile_data_unit() = AtlasTileDataUnit{std::pair{APM::I_INTRA, PatchInformationData{}},
                                                    std::pair{mode, PatchInformationData{}}};
-    CHECK_THROWS_IFF(unit.checkAtl(atl), mode != APM::I_INTRA && test::mivToolset(toolsetIdc));
+    CHECK_THROWS_IFF(unit.checkAtl(nuh, atl), mode != APM::I_INTRA && test::mivToolset(toolsetIdc));
   }
 }
 
@@ -972,7 +980,7 @@ TEST_CASE("PtlChecker ISO/IEC DIS 23090-5(2E):2021 A.6.1 level limits") {
     unit.checkAndActivateVps(vps);
 
     const auto asps = test::asps(vps, j);
-    CHECK_THROWS_IFF(unit.checkAndActivateAsps(j, asps), fail && level != LV::Level_8_5);
+    CHECK_THROWS_IFF(unit.checkAsps(j, asps), fail && level != LV::Level_8_5);
   }
 
   SECTION("vps_map_count_minus1") {
@@ -1027,31 +1035,33 @@ TEST_CASE("PtlChecker ISO/IEC DIS 23090-5(2E):2021 A.6.1 FOC LSB") {
                                 NUT::NAL_GIDR_N_LP);
       CAPTURE(nut);
 
-      unit.checkAndActivateNuh(NUH{nut, 0, 1});
+      const auto nuh = NUH{nut, 0, 1};
+      unit.checkNuh(nuh);
 
       auto atl = AtlasTileLayerRBSP{};
       atl.atlas_tile_header().ath_type(AthType::I_TILE);
-      CHECK_NOTHROW(unit.checkAtl(atl));
+      CHECK_NOTHROW(unit.checkAtl(nuh, atl));
 
       atl.atlas_tile_header().ath_atlas_frm_order_cnt_lsb(1);
-      CHECK_THROWS_AS(unit.checkAtl(atl), test::Exception);
+      CHECK_THROWS_AS(unit.checkAtl(nuh, atl), test::Exception);
     }
 
     SECTION("Non-IDR coded atlas") {
       const auto nut = GENERATE(NUT::NAL_CRA, NUT::NAL_SKIP_N);
       CAPTURE(nut);
 
-      unit.checkAndActivateNuh(NUH{nut, 0, 1});
+      const auto nuh = NUH{nut, 0, 1};
+      unit.checkNuh(nuh);
 
       auto atl = AtlasTileLayerRBSP{};
       atl.atlas_tile_header().ath_type(AthType::I_TILE);
-      CHECK_NOTHROW(unit.checkAtl(atl));
+      CHECK_NOTHROW(unit.checkAtl(nuh, atl));
 
       atl.atlas_tile_header().ath_atlas_frm_order_cnt_lsb(1);
-      CHECK_NOTHROW(unit.checkAtl(atl));
+      CHECK_NOTHROW(unit.checkAtl(nuh, atl));
 
       atl.atlas_tile_header().ath_atlas_frm_order_cnt_lsb(65535);
-      CHECK_NOTHROW(unit.checkAtl(atl));
+      CHECK_NOTHROW(unit.checkAtl(nuh, atl));
     }
   }
 
@@ -1061,26 +1071,28 @@ TEST_CASE("PtlChecker ISO/IEC DIS 23090-5(2E):2021 A.6.1 FOC LSB") {
 
     // http://mpegx.int-evry.fr/software/MPEG/PCC/Specs/23090-5/-/issues/498
     SECTION("IRAP coded common atlas") {
-      unit.checkAndActivateNuh(NUH{NUT::NAL_CAF_IDR, 0, 1});
+      const auto nuh = NUH{NUT::NAL_CAF_IDR, 0, 1};
+      unit.checkNuh(nuh);
 
       auto caf = CommonAtlasFrameRBSP{};
-      CHECK_NOTHROW(unit.checkCaf(caf));
+      CHECK_NOTHROW(unit.checkCaf(nuh, caf));
 
       caf.caf_common_atlas_frm_order_cnt_lsb(1);
-      CHECK_THROWS_AS(unit.checkCaf(caf), test::Exception);
+      CHECK_THROWS_AS(unit.checkCaf(nuh, caf), test::Exception);
     }
 
     SECTION("Non-IRAP coded common atlas") {
-      unit.checkAndActivateNuh(NUH{NUT::NAL_CAF_TRIAL, 0, 1});
+      const auto nuh = NUH{NUT::NAL_CAF_TRIAL, 0, 1};
+      unit.checkNuh(nuh);
 
       auto caf = CommonAtlasFrameRBSP{};
-      CHECK_NOTHROW(unit.checkCaf(caf));
+      CHECK_NOTHROW(unit.checkCaf(nuh, caf));
 
       caf.caf_common_atlas_frm_order_cnt_lsb(1);
-      CHECK_NOTHROW(unit.checkCaf(caf));
+      CHECK_NOTHROW(unit.checkCaf(nuh, caf));
 
       caf.caf_common_atlas_frm_order_cnt_lsb(65535);
-      CHECK_NOTHROW(unit.checkCaf(caf));
+      CHECK_NOTHROW(unit.checkCaf(nuh, caf));
     }
   }
 }

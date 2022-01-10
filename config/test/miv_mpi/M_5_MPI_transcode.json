@@ -1,12 +1,12 @@
 {
-  "configDirectory": "config",
-  "inputSequenceConfigPathFmt": "ctc/sequences/{1}.json",
-  "inputDirectory": ".",
-  "inputMpiPcsPathFmt": "{1}/{3}.pcs",
-  "inputTexturePathFmt": "{1}/{3}_texture_{4}x{5}_{6}.yuv",
-  "inputTransparencyPathFmt": "{1}/{3}_transparency_{4}x{5}_{6}.yuv",
-  "outputDirectory": ".",
-  "outputMpiPcsPathFmt": "{1}/{3}.pcs",
-  "outputTexturePathFmt": "{1}/{3}_texture_{4}x{5}_{6}.yuv",
-  "outputTransparencyPathFmt": "{1}/{3}_transparency_{4}x{5}_{6}.yuv"
+    "configDirectory": "config",
+    "inputDirectory": ".",
+    "inputMpiPcsPathFmt": "{1}/{3}.pcs",
+    "inputSequenceConfigPathFmt": "ctc/sequences/{1}.json",
+    "inputTexturePathFmt": "{1}/{3}_texture_{4}x{5}_{6}.yuv",
+    "inputTransparencyPathFmt": "{1}/{3}_transparency_{4}x{5}_{6}.yuv",
+    "outputDirectory": ".",
+    "outputMpiPcsPathFmt": "{1}/{3}.pcs",
+    "outputTexturePathFmt": "{1}/{3}_texture_{4}x{5}_{6}.yuv",
+    "outputTransparencyPathFmt": "{1}/{3}_transparency_{4}x{5}_{6}.yuv"
 }

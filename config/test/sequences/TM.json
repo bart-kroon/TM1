@@ -1,9 +1,5 @@
 {
-    "BoundingBox_center": [
-        0,
-        0,
-        0
-    ],
+    "BoundingBox_center": [0, 0, 0],
     "Content_name": "Mpi_Fan_Pcs",
     "Fps": 30,
     "Frames_number": 17,
@@ -15,79 +11,36 @@
             "BitDepthDepth": 16,
             "ColorSpace": "YUV420",
             "DepthColorSpace": "YUV420",
-            "Depth_range": [
-                0.35,
-                12.5
-            ],
+            "Depth_range": [0.35, 12.5],
             "Depthmap": 1,
-            "Focal": [
-                514.6825,
-                514.6825
-            ],
+            "Focal": [514.6825, 514.6825],
             "HasInvalidDepth": false,
             "Name": "viewport",
-            "Position": [
-                -2.5,
-                1.65,
-                1.45
-            ],
-            "Principle_point": [
-                240.0,
-                135.0
-            ],
+            "Position": [-2.5, 1.65, 1.45],
+            "Principle_point": [240.0, 135.0],
             "Projection": "Perspective",
-            "Resolution": [
-                480,
-                270
-            ],
-            "Rotation": [
-                -33.9126,
-                7.7346,
-                -0.0
-            ]
-        },
-        {
+            "Resolution": [480, 270],
+            "Rotation": [-33.9126, 7.7346, -0.0]
+        }, {
             "Background": 1,
             "BitDepthColor": 10,
             "BitDepthDepth": 0,
             "BitDepthTransparency": 8,
             "ColorSpace": "YUV444",
-            "Depth_range": [
-                0.05352102593,
-                16.41784096
-            ],
+            "Depth_range": [0.05352102593, 16.41784096],
             "Depthmap": 0,
-            "Focal": [
-                437.3241882,
-                437.3241882
-            ],
+            "Focal": [437.3241882, 437.3241882],
             "HasInvalidDepth": false,
             "Name": "mpi",
-            "Position": [
-                -2.499999762,
-                1.649999857,
-                1.449999332
-            ],
-            "Principle_point": [
-                524.0,
-                256.0
-            ],
+            "Position": [-2.499999762, 1.649999857, 1.449999332],
+            "Principle_point": [524.0, 256.0],
             "Projection": "Perspective",
-            "Resolution": [
-                1048,
-                512
-            ],
-            "Rotation": [
-                -33.91259003,
-                7.734590054,
-                0.0
-            ],
+            "Resolution": [1048, 512],
+            "Rotation": [-33.91259003, 7.734590054, 0.0],
             "TransparencyColorSpace": "YUV400",
             "nbMpiLayers": 1024
         }
     ],
     "lengthsInMeters": true,
-    "sourceCameraNames": [
-        "mpi"
-    ]
+    "sourceCameraNames": ["mpi"]
 }

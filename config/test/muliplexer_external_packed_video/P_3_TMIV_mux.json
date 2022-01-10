@@ -26,8 +26,7 @@
                     "pin_region_unpack_top_left_x": 0,
                     "pin_region_unpack_top_left_y": 0,
                     "pin_region_width_minus1": 640
-                },
-                {
+                }, {
                     "pin_region_auxiliary_data_flag": false,
                     "pin_region_height_minus1": 120,
                     "pin_region_map_index": 0,

@@ -63,3 +63,12 @@ Code quality rules:
     - ./scripts/check/code_quality_rules.py
     - git diff
     - if [[ $(git diff) ]]; then echo "At least one code quality rule check has triggered. Please see above."; return 1; fi
+
+format-json:
+  stage: check
+  image: cbachhuber/clang:12
+  tags: [ linux ]
+  script:
+    - ./scripts/check/format_json.py
+    - git diff
+    - if [[ $(git diff) ]]; then echo "JSON formatting is wrong. Please see above."; return 1; fi

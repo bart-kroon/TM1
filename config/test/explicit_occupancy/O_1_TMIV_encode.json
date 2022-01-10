@@ -1,49 +1,16 @@
 {
-    "attributeOffsetBitCount": 10,
-    "attributeOffsetEnabledFlag": true,
-    "bitDepthGeometryVideo": 10,
-    "bitDepthOccupancyVideo": 10,
-    "bitDepthTextureVideo": 10,
-    "blockSizeDepthQualityDependent": [ 16, 32 ],
-    "configDirectory": "config",
-    "colorCorrectionEnabledFlag": false,
-    "dynamicDepthRange": true,
-    "halveDepthRange": true,
     "Encoder": {
+        "Aggregator": {},
+        "AggregatorMethod": "Aggregator",
         "DepthQualityAssessor": {
             "blendingFactor": 0.03,
             "maxOutlierRatio": 0.001
         },
         "DepthQualityAssessorMethod": "DepthQualityAssessor",
-        "Aggregator": {},
-        "AggregatorMethod": "Aggregator",
-        "ServerSideInpainter": {
-            "SubMethod": "BasicViewAllocator",
-            "BasicViewAllocator": {
-                "maxBasicViewFraction": 0.5,
-                "outputAdditionalViews": true,
-                "minNonCodedViews": 3
-            },
-            "resolution": [ 1024, 512 ],
-            "SynthesizerMethod": "AdditiveSynthesizer",
-            "AdditiveSynthesizer": {
-                "depthParameter": -100,
-                "maxStretching": 5,
-                "rayAngleParameter": 10,
-                "stretchingParameter": 3
-            },
-            "InpainterMethod": "PushPullInpainter",
-            "PushPullInpainter": {},
-            "blurRadius": 12,
-            "inpaintThreshold": 100,
-            "fieldOfViewMargin": 0.3
-        },
-        "dilate": 16,
         "HierarchicalPruner": {
             "depthParameter": 50,
             "dilate": 5,
             "enable2ndPassPruner": true,
-            "sampleSize": 32,
             "erode": 2,
             "maxBasicViewsPerGraph": 3,
             "maxColorError": 0.1,
@@ -51,39 +18,66 @@
             "maxLumaError": 0.04,
             "maxStretching": 5,
             "rayAngleParameter": 10,
+            "sampleSize": 32,
             "stretchingParameter": 3
         },
         "Packer": {
-            "enableMerging": true,
             "MinPatchSize": 16,
             "Overlap": 1,
             "PiP": 1,
-            "sortingMethod": 0,
-            "enableRecursiveSplit": true
+            "enableMerging": true,
+            "enableRecursiveSplit": true,
+            "sortingMethod": 0
         },
         "PackerMethod": "Packer",
         "PrunerMethod": "HierarchicalPruner",
-        "ViewOptimizerMethod": "ServerSideInpainter"
+        "ServerSideInpainter": {
+            "AdditiveSynthesizer": {
+                "depthParameter": -100,
+                "maxStretching": 5,
+                "rayAngleParameter": 10,
+                "stretchingParameter": 3
+            },
+            "BasicViewAllocator": {
+                "maxBasicViewFraction": 0.5,
+                "minNonCodedViews": 3,
+                "outputAdditionalViews": true
+            },
+            "InpainterMethod": "PushPullInpainter",
+            "PushPullInpainter": {},
+            "SubMethod": "BasicViewAllocator",
+            "SynthesizerMethod": "AdditiveSynthesizer",
+            "blurRadius": 12,
+            "fieldOfViewMargin": 0.3,
+            "inpaintThreshold": 100,
+            "resolution": [1024, 512]
+        },
+        "ViewOptimizerMethod": "ServerSideInpainter",
+        "dilate": 16
     },
     "EncoderMethod": "Encoder",
+    "attributeOffsetBitCount": 10,
+    "attributeOffsetEnabledFlag": true,
+    "bitDepthGeometryVideo": 10,
+    "bitDepthOccupancyVideo": 10,
+    "bitDepthTextureVideo": 10,
+    "blockSizeDepthQualityDependent": [16, 32],
     "codecGroupIdc": "VVC Main10",
-    "toolsetIdc": "MIV Extended",
-    "reconstructionIdc": "Rec Unconstrained",
-    "levelIdc": "3.5",
+    "colorCorrectionEnabledFlag": false,
+    "configDirectory": "config",
+    "dynamicDepthRange": true,
+    "framePacking": false,
     "geometryScaleEnabledFlag": true,
+    "halveDepthRange": true,
     "haveGeometryVideo": true,
     "haveOccupancyVideo": true,
     "haveTextureVideo": true,
-    "framePacking": false,
-    "randomAccess": false,
-    "patchRedundancyRemoval": true,
-    "viewportCameraParametersSei": false,
-    "viewportPositionSei": false,
     "inputDirectory": ".",
     "inputGeometryPathFmt": "{1}/{3}_depth_{4}x{5}_{6}.yuv",
     "inputSequenceConfigPathFmt": "ctc/sequences/{1}.json",
     "inputTexturePathFmt": "{1}/{3}_texture_{4}x{5}_{6}.yuv",
     "intraPeriod": 32,
+    "levelIdc": "3.5",
     "maxAtlases": 2,
     "maxEntityId": 0,
     "maxLumaPictureSize": 8912896,
@@ -94,5 +88,11 @@
     "outputDirectory": ".",
     "outputGeometryVideoDataPathFmt": "O{0}/{1}/TMIV_O{0}_{1}_geo_c{3:02}_{4}x{5}_{6}.yuv",
     "outputOccupancyVideoDataPathFmt": "O{0}/{1}/TMIV_O{0}_{1}_occ_c{3:02}_{4}x{5}_{6}.yuv",
-    "outputTextureVideoDataPathFmt": "O{0}/{1}/TMIV_O{0}_{1}_tex_c{3:02}_{4}x{5}_{6}.yuv"
+    "outputTextureVideoDataPathFmt": "O{0}/{1}/TMIV_O{0}_{1}_tex_c{3:02}_{4}x{5}_{6}.yuv",
+    "patchRedundancyRemoval": true,
+    "randomAccess": false,
+    "reconstructionIdc": "Rec Unconstrained",
+    "toolsetIdc": "MIV Extended",
+    "viewportCameraParametersSei": false,
+    "viewportPositionSei": false
 }

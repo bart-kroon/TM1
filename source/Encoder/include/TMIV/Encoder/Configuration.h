@@ -44,7 +44,7 @@ namespace TMIV::Encoder {
 static constexpr auto maxIntraPeriod = 32;
 
 struct Configuration {
-  Configuration(const Common::Json & /*rootNode*/, const Common::Json & /*componentNode*/);
+  explicit Configuration(const Common::Json &componentNode);
 
   // Main parameters
   int32_t intraPeriod;
@@ -96,10 +96,10 @@ struct Configuration {
   }
 
 private:
-  void queryMainParameters(const Common::Json &rootNode, const Common::Json &componentNode);
-  void queryProfileTierLevelParameters(const Common::Json &rootNode);
-  void queryBitDepthParameters(const Common::Json &rootNode);
-  void querySeiParameters(const Common::Json &rootNode);
+  void queryMainParameters(const Common::Json &componentNode);
+  void queryProfileTierLevelParameters(const Common::Json &componentNode);
+  void queryBitDepthParameters(const Common::Json &componentNode);
+  void querySeiParameters(const Common::Json &componentNode);
   void verifyValid() const;
 };
 } // namespace TMIV::Encoder

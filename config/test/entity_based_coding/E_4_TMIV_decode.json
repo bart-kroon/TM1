@@ -1,12 +1,11 @@
 {
     "CullerMethod": "NoCuller",
-    "Decoder": {
-        "EntityDecodeRange": [9, 11],
+    "EntityDecodeRange": [9, 11],
+    "GeometryScaler": {
         "geometryEdgeMagnitudeTh": 10,
         "maxCurvature": 5,
         "minForegroundConfidence": 0.5
     },
-    "DecoderMethod": "Decoder",
     "NoCuller": {},
     "Renderer": {
         "InpainterMethod": "NoInpainter",

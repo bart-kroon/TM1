@@ -50,7 +50,7 @@ namespace TMIV::Decoder {
 // nearest-neighbour interpolation.
 class PreRenderer {
 public:
-  PreRenderer(const Common::Json &rootNode, const Common::Json &componentNode);
+  explicit PreRenderer(const Common::Json &componentNode);
 
   void preRenderFrame(MivBitstream::AccessUnit &frame) const;
 

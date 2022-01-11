@@ -1,38 +1,35 @@
 {
-    "Encoder": {
-        "Aggregator": {},
-        "AggregatorMethod": "Aggregator",
-        "BasicViewAllocator": {
-            "maxBasicViewFraction": 1.0,
-            "minNonCodedViews": 3,
-            "outputAdditionalViews": false
-        },
-        "DepthQualityAssessor": {
-            "blendingFactor": 0.03,
-            "maxOutlierRatio": 0.001
-        },
-        "DepthQualityAssessorMethod": "DepthQualityAssessor",
-        "NoPruner": {},
-        "Packer": {
-            "MinPatchSize": 16,
-            "Overlap": 1,
-            "PiP": 1,
-            "enableMerging": true,
-            "enableRecursiveSplit": true,
-            "sortingMethod": 0
-        },
-        "PackerMethod": "Packer",
-        "PrunerMethod": "NoPruner",
-        "ViewOptimizerMethod": "BasicViewAllocator",
-        "dilate": 16
+    "Aggregator": {},
+    "AggregatorMethod": "Aggregator",
+    "BasicViewAllocator": {
+        "maxBasicViewFraction": 1.0,
+        "minNonCodedViews": 3,
+        "outputAdditionalViews": false
     },
-    "EncoderMethod": "Encoder",
+    "DepthQualityAssessor": {
+        "blendingFactor": 0.03,
+        "maxOutlierRatio": 0.001
+    },
+    "DepthQualityAssessorMethod": "DepthQualityAssessor",
+    "NoPruner": {},
+    "Packer": {
+        "MinPatchSize": 16,
+        "Overlap": 1,
+        "PiP": 1,
+        "enableMerging": true,
+        "enableRecursiveSplit": true,
+        "sortingMethod": 0
+    },
+    "PackerMethod": "Packer",
+    "PrunerMethod": "NoPruner",
+    "ViewOptimizerMethod": "BasicViewAllocator",
     "attributeOffsetEnabledFlag": false,
     "bitDepthTextureVideo": 10,
     "blockSizeDepthQualityDependent": [16, 32],
     "codecGroupIdc": "VVC Main10",
     "colorCorrectionEnabledFlag": false,
     "configDirectory": "config",
+    "dilate": 16,
     "dqParamsPresentFlag": false,
     "dynamicDepthRange": false,
     "framePacking": false,

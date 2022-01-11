@@ -39,15 +39,15 @@ using namespace std::string_view_literals;
 
 namespace test {
 auto createUnit() {
-  const auto rootNode = TMIV::Common::Json::parse("{}"sv);
-
   const auto componentNode = TMIV::Common::Json::parse(R"({
-        "minForegroundConfidence": 0,
-        "geometryEdgeMagnitudeTh": 0,
-        "maxCurvature": 0
+        "GeometryScaler": {
+            "minForegroundConfidence": 0,
+            "geometryEdgeMagnitudeTh": 0,
+            "maxCurvature": 0
+        }
 })"sv);
 
-  return TMIV::Decoder::PreRenderer{rootNode, componentNode};
+  return TMIV::Decoder::PreRenderer{componentNode};
 }
 } // namespace test
 

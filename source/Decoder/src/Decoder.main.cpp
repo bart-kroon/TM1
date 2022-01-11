@@ -76,7 +76,7 @@ public:
                                 {"-r", "Test point (e.g. QP3 or R0)", false},
                                 {"-v", "Source view to render (e.g. v11)", true},
                                 {"-P", "Pose trace to render (e.g. p02)", true}}}
-      , m_preRenderer{json(), json().require("Decoder"s)}
+      , m_preRenderer{json()}
       , m_placeholders{optionValues("-s").front(), optionValues("-r").front(),
                        std::stoi(optionValues("-n"sv).front()),
                        std::stoi(optionValues("-N"sv).front())}

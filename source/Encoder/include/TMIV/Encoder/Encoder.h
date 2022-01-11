@@ -53,7 +53,7 @@ auto assessColorConsistency(Common::DeepFrameList views, MivBitstream::ViewParam
 
 class Encoder {
 public:
-  Encoder(const Common::Json &rootNode, const Common::Json &componentNode);
+  explicit Encoder(const Common::Json &componentNode);
 
   void prepareSequence(const MivBitstream::SequenceConfig &sequenceConfig,
                        const Common::DeepFrameList &firstFrame);

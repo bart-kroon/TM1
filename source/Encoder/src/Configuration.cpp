@@ -42,38 +42,38 @@ using MivBitstream::PtlProfileCodecGroupIdc;
 using MivBitstream::PtlProfileReconstructionIdc;
 using MivBitstream::PtlProfileToolsetIdc;
 
-Configuration::Configuration(const Common::Json &rootNode, const Common::Json &componentNode)
-    : intraPeriod{rootNode.require("intraPeriod").as<int32_t>()}
-    , blockSizeDepthQualityDependent{rootNode.require("blockSizeDepthQualityDependent")
+Configuration::Configuration(const Common::Json &componentNode)
+    : intraPeriod{componentNode.require("intraPeriod").as<int32_t>()}
+    , blockSizeDepthQualityDependent{componentNode.require("blockSizeDepthQualityDependent")
                                          .asVec<int32_t, 2>()}
-    , haveTexture{rootNode.require("haveTextureVideo").as<bool>()}
-    , haveGeometry{rootNode.require("haveGeometryVideo").as<bool>()}
-    , haveOccupancy{rootNode.require("haveOccupancyVideo").as<bool>()}
-    , framePacking{rootNode.require("framePacking").as<bool>()}
-    , oneViewPerAtlasFlag{rootNode.require("oneViewPerAtlasFlag").as<bool>()}
+    , haveTexture{componentNode.require("haveTextureVideo").as<bool>()}
+    , haveGeometry{componentNode.require("haveGeometryVideo").as<bool>()}
+    , haveOccupancy{componentNode.require("haveOccupancyVideo").as<bool>()}
+    , framePacking{componentNode.require("framePacking").as<bool>()}
+    , oneViewPerAtlasFlag{componentNode.require("oneViewPerAtlasFlag").as<bool>()}
     , geometryScaleEnabledFlag{haveGeometry && haveTexture &&
-                               rootNode.require("geometryScaleEnabledFlag").as<bool>()}
+                               componentNode.require("geometryScaleEnabledFlag").as<bool>()}
     , dilationIter{componentNode.require("dilate").as<int32_t>()}
-    , dynamicDepthRange{rootNode.require("dynamicDepthRange").as<bool>()}
-    , attributeOffsetFlag{haveTexture && rootNode.require("attributeOffsetEnabledFlag").as<bool>()}
+    , dynamicDepthRange{componentNode.require("dynamicDepthRange").as<bool>()}
+    , attributeOffsetFlag{haveTexture &&
+                          componentNode.require("attributeOffsetEnabledFlag").as<bool>()}
     , colorCorrectionEnabledFlag{haveTexture &&
-                                 rootNode.require("colorCorrectionEnabledFlag").as<bool>()}
-    , randomAccess{rootNode.require("randomAccess").as<bool>()}
-    , patchRedundancyRemoval{rootNode.require("patchRedundancyRemoval").as<bool>()}
-    , numGroups{rootNode.require("numGroups").as<uint8_t>()}
-    , maxEntityId{rootNode.require("maxEntityId").as<uint16_t>()}
-    , halveDepthRange{dynamicDepthRange && rootNode.require("halveDepthRange").as<bool>()}
-    , viewportCameraParametersSei{rootNode.require("viewportCameraParametersSei").as<bool>()}
-    , viewportPositionSei{rootNode.require("viewportPositionSei").as<bool>()} {
-  queryMainParameters(rootNode, componentNode);
-  queryProfileTierLevelParameters(rootNode);
-  queryBitDepthParameters(rootNode);
-  querySeiParameters(rootNode);
+                                 componentNode.require("colorCorrectionEnabledFlag").as<bool>()}
+    , randomAccess{componentNode.require("randomAccess").as<bool>()}
+    , patchRedundancyRemoval{componentNode.require("patchRedundancyRemoval").as<bool>()}
+    , numGroups{componentNode.require("numGroups").as<uint8_t>()}
+    , maxEntityId{componentNode.require("maxEntityId").as<uint16_t>()}
+    , halveDepthRange{dynamicDepthRange && componentNode.require("halveDepthRange").as<bool>()}
+    , viewportCameraParametersSei{componentNode.require("viewportCameraParametersSei").as<bool>()}
+    , viewportPositionSei{componentNode.require("viewportPositionSei").as<bool>()} {
+  queryMainParameters(componentNode);
+  queryProfileTierLevelParameters(componentNode);
+  queryBitDepthParameters(componentNode);
+  querySeiParameters(componentNode);
   verifyValid();
 }
 
-void Configuration::queryMainParameters(const Common::Json &rootNode,
-                                        const Common::Json &componentNode) {
+void Configuration::queryMainParameters(const Common::Json &componentNode) {
   if (const auto &node = componentNode.optional("overrideAtlasFrameSizes")) {
     std::cout
         << "WARNING: Overriding atlas frame sizes is meant for internal/preliminary experiments "
@@ -82,9 +82,9 @@ void Configuration::queryMainParameters(const Common::Json &rootNode,
       overrideAtlasFrameSizes.push_back(subnode.asVec<int32_t, 2>());
     }
   } else if (!oneViewPerAtlasFlag) {
-    maxLumaSampleRate = rootNode.require("maxLumaSampleRate").as<double>();
-    maxLumaPictureSize = rootNode.require("maxLumaPictureSize").as<int32_t>();
-    maxAtlases = rootNode.require("maxAtlases").as<int32_t>();
+    maxLumaSampleRate = componentNode.require("maxLumaSampleRate").as<double>();
+    maxLumaPictureSize = componentNode.require("maxLumaPictureSize").as<int32_t>();
+    maxAtlases = componentNode.require("maxAtlases").as<int32_t>();
     maxAtlases = maxAtlases / std::max(1, int32_t{numGroups});
   }
 
@@ -104,19 +104,19 @@ void Configuration::queryMainParameters(const Common::Json &rootNode,
   }
 
   if (!haveGeometry) {
-    dqParamsPresentFlag = rootNode.require("dqParamsPresentFlag").as<bool>();
+    dqParamsPresentFlag = componentNode.require("dqParamsPresentFlag").as<bool>();
   }
 
   if (attributeOffsetFlag) {
-    attributeOffsetBitCount = rootNode.require("attributeOffsetBitCount").as<uint32_t>();
+    attributeOffsetBitCount = componentNode.require("attributeOffsetBitCount").as<uint32_t>();
   }
 
   // Read the entity encoding range if exists
   if (0 < maxEntityId) {
-    entityEncRange = rootNode.require("EntityEncodeRange").asVec<Common::SampleValue, 2>();
+    entityEncRange = componentNode.require("EntityEncodeRange").asVec<Common::SampleValue, 2>();
   }
 
-  if (const auto &node = rootNode.optional("depthLowQualityFlag")) {
+  if (const auto &node = componentNode.optional("depthLowQualityFlag")) {
     depthLowQualityFlag = node.as<bool>();
   }
 }
@@ -136,26 +136,26 @@ auto queryIdc(const Common::Json &node, const std::string &key, const std::strin
 }
 } // namespace
 
-void Configuration::queryProfileTierLevelParameters(const Common::Json &rootNode) {
+void Configuration::queryProfileTierLevelParameters(const Common::Json &componentNode) {
   codecGroupIdc =
-      queryIdc(rootNode, "codecGroupIdc", "codec group", MivBitstream::knownCodecGroupIdcs);
-  toolsetIdc = queryIdc(rootNode, "toolsetIdc", "toolset", MivBitstream::knownToolsetIdcs);
-  reconstructionIdc = queryIdc(rootNode, "reconstructionIdc", "reconstruction",
+      queryIdc(componentNode, "codecGroupIdc", "codec group", MivBitstream::knownCodecGroupIdcs);
+  toolsetIdc = queryIdc(componentNode, "toolsetIdc", "toolset", MivBitstream::knownToolsetIdcs);
+  reconstructionIdc = queryIdc(componentNode, "reconstructionIdc", "reconstruction",
                                MivBitstream::knownReconstructionIdcs);
-  levelIdc = queryIdc(rootNode, "levelIdc", "level", MivBitstream::knownLevelIdcs);
+  levelIdc = queryIdc(componentNode, "levelIdc", "level", MivBitstream::knownLevelIdcs);
 }
 
-void Configuration::queryBitDepthParameters(const Common::Json &rootNode) {
+void Configuration::queryBitDepthParameters(const Common::Json &componentNode) {
   if (haveOccupancy) {
-    occBitDepth = rootNode.require("bitDepthOccupancyVideo").as<uint32_t>();
+    occBitDepth = componentNode.require("bitDepthOccupancyVideo").as<uint32_t>();
   }
 
   if (haveGeometry) {
-    geoBitDepth = rootNode.require("bitDepthGeometryVideo").as<uint32_t>();
+    geoBitDepth = componentNode.require("bitDepthGeometryVideo").as<uint32_t>();
   }
 
   if (haveTexture) {
-    texBitDepth = rootNode.require("bitDepthTextureVideo").as<uint32_t>();
+    texBitDepth = componentNode.require("bitDepthTextureVideo").as<uint32_t>();
   }
 
   if (framePacking) {
@@ -163,9 +163,9 @@ void Configuration::queryBitDepthParameters(const Common::Json &rootNode) {
   }
 }
 
-void Configuration::querySeiParameters(const Common::Json &rootNode) {
-  if (const auto &node = rootNode.optional("ViewingSpace")) {
-    viewingSpace = MivBitstream::ViewingSpace::loadFromJson(node, rootNode);
+void Configuration::querySeiParameters(const Common::Json &componentNode) {
+  if (const auto &node = componentNode.optional("ViewingSpace")) {
+    viewingSpace = MivBitstream::ViewingSpace::loadFromJson(node, componentNode);
   }
 }
 

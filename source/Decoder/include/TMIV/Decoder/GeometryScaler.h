@@ -41,7 +41,9 @@
 namespace TMIV::Decoder {
 class GeometryScaler {
 public:
-  GeometryScaler(const Common::Json & /*rootNode*/, const Common::Json &componentNode);
+  // The node is optional because the decoder does not always have to render, for instance when
+  // producing a decoder output log for conformance testing.
+  explicit GeometryScaler(const Common::Json &optionalNode);
 
   [[nodiscard]] auto
   scale(const MivBitstream::AtlasAccessUnit &atlas, const Common::Frame<> &geoFrameNF,
@@ -54,7 +56,12 @@ public:
       -> Common::Frame<>;
 
 private:
-  MivBitstream::GeometryUpscalingParameters m_defaultGup;
+  MivBitstream::GeometryUpscalingParameters m_defaultGup =
+      MivBitstream::GeometryUpscalingParameters{}
+          .gup_type(MivBitstream::GupType::HVR)
+          .gup_erode_threshold(Common::Half{0.5F})
+          .gup_delta_threshold(10)
+          .gup_max_curvature(5);
 };
 } // namespace TMIV::Decoder
 

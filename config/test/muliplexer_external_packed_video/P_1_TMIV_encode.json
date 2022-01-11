@@ -1,62 +1,57 @@
 {
+    "Aggregator": {},
+    "AggregatorMethod": "Aggregator",
     "DepthQualityAssessor": {
         "blendingFactor": 0.03,
         "maxOutlierRatio": 0.001
     },
     "DepthQualityAssessorMethod": "DepthQualityAssessor",
-    "Encoder": {
-        "Aggregator": {},
-        "AggregatorMethod": "Aggregator",
-        "HierarchicalPruner": {
-            "depthParameter": 50,
-            "dilate": 5,
-            "enable2ndPassPruner": true,
-            "erode": 2,
-            "maxBasicViewsPerGraph": 3,
-            "maxColorError": 0.1,
-            "maxDepthError": 0.1,
-            "maxLumaError": 0.04,
+    "HierarchicalPruner": {
+        "depthParameter": 50,
+        "dilate": 5,
+        "enable2ndPassPruner": true,
+        "erode": 2,
+        "maxBasicViewsPerGraph": 3,
+        "maxColorError": 0.1,
+        "maxDepthError": 0.1,
+        "maxLumaError": 0.04,
+        "maxStretching": 5,
+        "rayAngleParameter": 10,
+        "sampleSize": 32,
+        "stretchingParameter": 3
+    },
+    "Packer": {
+        "MinPatchSize": 16,
+        "Overlap": 1,
+        "PiP": 1,
+        "enableMerging": true,
+        "enableRecursiveSplit": true,
+        "sortingMethod": 0
+    },
+    "PackerMethod": "Packer",
+    "PrunerMethod": "HierarchicalPruner",
+    "ServerSideInpainter": {
+        "AdditiveSynthesizer": {
+            "depthParameter": -100,
             "maxStretching": 5,
             "rayAngleParameter": 10,
-            "sampleSize": 32,
             "stretchingParameter": 3
         },
-        "Packer": {
-            "MinPatchSize": 16,
-            "Overlap": 1,
-            "PiP": 1,
-            "enableMerging": true,
-            "enableRecursiveSplit": true,
-            "sortingMethod": 0
+        "BasicViewAllocator": {
+            "maxBasicViewFraction": 0.5,
+            "minNonCodedViews": 3,
+            "outputAdditionalViews": true
         },
-        "PackerMethod": "Packer",
-        "PrunerMethod": "HierarchicalPruner",
-        "ServerSideInpainter": {
-            "AdditiveSynthesizer": {
-                "depthParameter": -100,
-                "maxStretching": 5,
-                "rayAngleParameter": 10,
-                "stretchingParameter": 3
-            },
-            "BasicViewAllocator": {
-                "maxBasicViewFraction": 0.5,
-                "minNonCodedViews": 3,
-                "outputAdditionalViews": true
-            },
-            "InpainterMethod": "PushPullInpainter",
-            "PushPullInpainter": {},
-            "SubMethod": "BasicViewAllocator",
-            "SynthesizerMethod": "AdditiveSynthesizer",
-            "blurRadius": 12,
-            "fieldOfViewMargin": 0.3,
-            "inpaintThreshold": 100,
-            "resolution": [1024, 512]
-        },
-        "ViewOptimizerMethod": "ServerSideInpainter",
-        "depthOccThresholdIfSet": 0.0625,
-        "dilate": 16
+        "InpainterMethod": "PushPullInpainter",
+        "PushPullInpainter": {},
+        "SubMethod": "BasicViewAllocator",
+        "SynthesizerMethod": "AdditiveSynthesizer",
+        "blurRadius": 12,
+        "fieldOfViewMargin": 0.3,
+        "inpaintThreshold": 100,
+        "resolution": [1024, 512]
     },
-    "EncoderMethod": "Encoder",
+    "ViewOptimizerMethod": "ServerSideInpainter",
     "attributeOffsetBitCount": 10,
     "attributeOffsetEnabledFlag": true,
     "bitDepthGeometryVideo": 10,
@@ -65,6 +60,8 @@
     "codecGroupIdc": "VVC Main10",
     "colorCorrectionEnabledFlag": false,
     "configDirectory": "config",
+    "depthOccThresholdIfSet": 0.0625,
+    "dilate": 16,
     "dynamicDepthRange": true,
     "framePacking": false,
     "geometryScaleEnabledFlag": true,

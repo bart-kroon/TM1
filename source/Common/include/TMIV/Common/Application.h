@@ -67,29 +67,10 @@ protected:
   [[nodiscard]] auto optionValues(std::string_view option) const
       -> const std::vector<std::string> &;
 
-  // Use the configuration file with a factory to create a component/module
-  template <class Interface, typename... Args>
-  [[nodiscard]] auto create(const std::string &name, Args &&...next) const {
-    auto result = getComponentParentAndName(json(), name, std::forward<Args>(next)...);
-    return Common::create<Interface>(std::move(result.second), json(), result.first);
-  }
-
 private:
   void add_file(const std::filesystem::path &path);
   void add_parameter(std::string key, std::string_view value);
   void add_stream(std::istream &stream);
-  [[nodiscard]] static auto getComponentParentAndName(const Json &node, const std::string &name)
-      -> std::pair<const Json &, std::string> {
-    return {node, name};
-  }
-
-  template <typename... Args>
-  [[nodiscard]] auto getComponentParentAndName(const Json &node, const std::string &first,
-                                               Args &&...next) const
-      -> std::pair<const Json &, std::string> {
-    return getComponentParentAndName(node.require(node.require(first + "Method").as<std::string>()),
-                                     std::forward<Args>(next)...);
-  }
 
   Json m_json;
   clock_t m_startTime;

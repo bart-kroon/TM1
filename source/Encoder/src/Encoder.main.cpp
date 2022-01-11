@@ -75,7 +75,7 @@ public:
                                 {"-s", "Content ID (e.g. B for Museum)", false},
                                 {"-n", "Number of input frames (e.g. 97)", false},
                                 {"-f", "Input start frame (e.g. 23)", false}}}
-      , m_encoder{json(), json().require("Encoder")}
+      , m_encoder{json()}
       , m_contentId{optionValues("-s"sv).front()}
       , m_numberOfInputFrames{std::stoi(optionValues("-n"sv).front())}
       , m_startFrame{std::stoi(optionValues("-f"sv).front())}

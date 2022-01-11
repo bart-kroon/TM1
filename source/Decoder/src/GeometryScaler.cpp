@@ -378,13 +378,13 @@ private:
 };
 } // namespace
 
-GeometryScaler::GeometryScaler(const Common::Json & /*rootNode*/,
-                               const Common::Json &componentNode) {
-  m_defaultGup.gup_type(MivBitstream::GupType::HVR)
-      .gup_erode_threshold(
-          Common::Half(componentNode.require("minForegroundConfidence").as<float>()))
-      .gup_delta_threshold(componentNode.require("geometryEdgeMagnitudeTh").as<int32_t>())
-      .gup_max_curvature(componentNode.require("maxCurvature").as<uint8_t>());
+GeometryScaler::GeometryScaler(const Common::Json &optionalNode) {
+  if (optionalNode) {
+    m_defaultGup.gup_erode_threshold(
+        Common::Half{optionalNode.require("minForegroundConfidence").as<float>()});
+    m_defaultGup.gup_delta_threshold(optionalNode.require("geometryEdgeMagnitudeTh").as<int32_t>());
+    m_defaultGup.gup_max_curvature(optionalNode.require("maxCurvature").as<uint8_t>());
+  }
 }
 
 auto GeometryScaler::scale(

@@ -71,15 +71,12 @@ TEST_CASE("TMIV::Encoder::Configuration") {
     "codecGroupIdc": "HEVC Main10",
     "toolsetIdc": "MIV Main",
     "reconstructionIdc": "Rec Unconstrained",
-    "levelIdc": "2.5"
-})"sv);
-
-    const auto component = Json::parse(R"({
+    "levelIdc": "2.5",
     "depthOccThresholdIfSet": 0.0625,
     "dilate": 0
 })"sv);
 
-    const auto unit = Configuration{root, component};
+    const auto unit = Configuration{root};
 
     CHECK(unit.intraPeriod == 1);
     CHECK(unit.blockSizeDepthQualityDependent == Vec2i{2, 4});
@@ -125,30 +122,30 @@ TEST_CASE("TMIV::Encoder::Configuration") {
     }
 })"));
 
-      const auto unit2 = Configuration{root, component};
+      const auto unit2 = Configuration{root};
 
       CHECK(unit2.viewingSpace.has_value());
     }
 
     SECTION("Test for maxIntraPeriod") {
       root.update(Json::parse(R"({ "intraPeriod": 33 })"));
-      REQUIRE_THROWS_AS((Configuration{root, component}), std::runtime_error);
+      REQUIRE_THROWS_AS((Configuration{root}), std::runtime_error);
     }
 
     SECTION("AVC Progressive High") {
       root.update(Json::parse(R"({ "codecGroupIdc": "AVC Progressive High" })"));
-      const auto unit2 = Configuration{root, component};
+      const auto unit2 = Configuration{root};
       CHECK(unit2.codecGroupIdc == PtlProfileCodecGroupIdc::AVC_Progressive_High);
     }
 
     SECTION("Unknown codec group IDC") {
       root.update(Json::parse(R"({ "codecGroupIdc": "Fantasy" })"));
-      REQUIRE_THROWS_AS((Configuration{root, component}), std::runtime_error);
+      REQUIRE_THROWS_AS((Configuration{root}), std::runtime_error);
     }
 
     SECTION("Unknown toolset IDC") {
       root.update(Json::parse(R"({ "toolsetIdc": "Hammer" })"));
-      REQUIRE_THROWS_AS((Configuration{root, component}), std::runtime_error);
+      REQUIRE_THROWS_AS((Configuration{root}), std::runtime_error);
     }
   }
 
@@ -176,15 +173,12 @@ TEST_CASE("TMIV::Encoder::Configuration") {
     "codecGroupIdc": "AVC Progressive High",
     "toolsetIdc": "MIV Geometry Absent",
     "reconstructionIdc": "Rec Unconstrained",
-    "levelIdc": "2.5"
-})"sv);
-
-    auto component = Json::parse(R"({
+    "levelIdc": "2.5",
     "depthOccThresholdIfSet": 0.0625,
     "dilate": 5
 })"sv);
 
-    const auto unit = Configuration{root, component};
+    const auto unit = Configuration{root};
 
     CHECK(unit.intraPeriod == 13);
     CHECK(unit.blockSizeDepthQualityDependent == Vec2i{8, 4});
@@ -209,9 +203,9 @@ TEST_CASE("TMIV::Encoder::Configuration") {
     CHECK_FALSE(unit.depthLowQualityFlag.has_value());
 
     SECTION("Override atlas frame sizes") {
-      component.update(Json::parse(R"({ "overrideAtlasFrameSizes": [ [4, 5], [6, 7] ] })"));
+      root.update(Json::parse(R"({ "overrideAtlasFrameSizes": [ [4, 5], [6, 7] ] })"));
 
-      const auto unit2 = Configuration{root, component};
+      const auto unit2 = Configuration{root};
 
       CHECK(unit2.overrideAtlasFrameSizes == std::vector{Vec2i{4, 5}, Vec2i{6, 7}});
     }
@@ -222,7 +216,7 @@ TEST_CASE("TMIV::Encoder::Configuration") {
     "attributeOffsetBitCount": 1
 })"));
 
-      const auto unit2 = Configuration{root, component};
+      const auto unit2 = Configuration{root};
 
       CHECK(unit2.attributeOffsetFlag);
       CHECK(unit2.attributeOffsetBitCount == 1);
@@ -231,7 +225,7 @@ TEST_CASE("TMIV::Encoder::Configuration") {
     SECTION("Depth low quality flag") {
       root.update(Json::parse(R"({ "depthLowQualityFlag": true })"));
 
-      const auto unit2 = Configuration{root, component};
+      const auto unit2 = Configuration{root};
 
       REQUIRE(unit2.depthLowQualityFlag.has_value());
       CHECK(*unit2.depthLowQualityFlag);
@@ -260,15 +254,12 @@ TEST_CASE("TMIV::Encoder::Configuration") {
     "codecGroupIdc": "AVC Progressive High",
     "toolsetIdc": "MIV Geometry Absent",
     "reconstructionIdc": "Rec Unconstrained",
-    "levelIdc": "2.5"
-})"sv);
-
-    const auto component = Json::parse(R"({
+    "levelIdc": "2.5",
     "depthOccThresholdIfSet": 0.0625,
     "dilate": 5
 })"sv);
 
-    const auto unit = Configuration{root, component};
+    const auto unit = Configuration{root};
 
     CHECK(unit.framePacking);
     CHECK_FALSE(unit.haveTexture);

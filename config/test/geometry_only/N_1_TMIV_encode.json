@@ -1,52 +1,49 @@
 {
-    "Encoder": {
-        "Aggregator": {},
-        "AggregatorMethod": "Aggregator",
-        "BasicViewAllocator": {
-            "maxBasicViewFraction": 0.5,
-            "minNonCodedViews": 3,
-            "outputAdditionalViews": true
-        },
-        "DepthQualityAssessor": {
-            "blendingFactor": 0.03,
-            "maxOutlierRatio": 0.001
-        },
-        "DepthQualityAssessorMethod": "DepthQualityAssessor",
-        "HierarchicalPruner": {
-            "depthParameter": 50,
-            "dilate": 5,
-            "enable2ndPassPruner": true,
-            "erode": 2,
-            "maxBasicViewsPerGraph": 3,
-            "maxColorError": 0.1,
-            "maxDepthError": 0.1,
-            "maxLumaError": 0.04,
-            "maxStretching": 5,
-            "rayAngleParameter": 10,
-            "sampleSize": 32,
-            "stretchingParameter": 3
-        },
-        "Packer": {
-            "MinPatchSize": 16,
-            "Overlap": 1,
-            "PiP": 1,
-            "enableMerging": true,
-            "enableRecursiveSplit": true,
-            "sortingMethod": 0
-        },
-        "PackerMethod": "Packer",
-        "PrunerMethod": "HierarchicalPruner",
-        "ViewOptimizerMethod": "BasicViewAllocator",
-        "depthOccThresholdIfSet": 0.0625,
-        "dilate": 16
+    "Aggregator": {},
+    "AggregatorMethod": "Aggregator",
+    "BasicViewAllocator": {
+        "maxBasicViewFraction": 0.5,
+        "minNonCodedViews": 3,
+        "outputAdditionalViews": true
     },
-    "EncoderMethod": "Encoder",
+    "DepthQualityAssessor": {
+        "blendingFactor": 0.03,
+        "maxOutlierRatio": 0.001
+    },
+    "DepthQualityAssessorMethod": "DepthQualityAssessor",
+    "HierarchicalPruner": {
+        "depthParameter": 50,
+        "dilate": 5,
+        "enable2ndPassPruner": true,
+        "erode": 2,
+        "maxBasicViewsPerGraph": 3,
+        "maxColorError": 0.1,
+        "maxDepthError": 0.1,
+        "maxLumaError": 0.04,
+        "maxStretching": 5,
+        "rayAngleParameter": 10,
+        "sampleSize": 32,
+        "stretchingParameter": 3
+    },
+    "Packer": {
+        "MinPatchSize": 16,
+        "Overlap": 1,
+        "PiP": 1,
+        "enableMerging": true,
+        "enableRecursiveSplit": true,
+        "sortingMethod": 0
+    },
+    "PackerMethod": "Packer",
+    "PrunerMethod": "HierarchicalPruner",
+    "ViewOptimizerMethod": "BasicViewAllocator",
     "bitDepthGeometryVideo": 10,
     "bitDepthTextureVideo": 10,
     "blockSizeDepthQualityDependent": [16, 32],
     "codecGroupIdc": "HEVC Main10",
     "colorCorrectionEnabledFlag": false,
     "configDirectory": "config",
+    "depthOccThresholdIfSet": 0.0625,
+    "dilate": 16,
     "dynamicDepthRange": true,
     "framePacking": false,
     "geometryScaleEnabledFlag": true,

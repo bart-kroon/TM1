@@ -62,9 +62,7 @@ auto configuration1() {
     "codecGroupIdc": "HEVC Main10",
     "toolsetIdc": "MIV Main",
     "reconstructionIdc": "Rec Unconstrained",
-    "levelIdc": "3.5"
-})"sv),
-                                      TMIV::Common::Json::parse(R"({
+    "levelIdc": "3.5",
     "depthOccThresholdIfSet": 0.0625,
     "dilate": 0
 })"sv)};

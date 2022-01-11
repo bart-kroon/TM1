@@ -36,8 +36,8 @@
 #include <TMIV/MivBitstream/DepthOccupancyTransform.h>
 
 namespace TMIV::Decoder {
-PreRenderer::PreRenderer(const Common::Json &rootNode, const Common::Json &componentNode)
-    : m_geometryScaler{rootNode, componentNode} {
+PreRenderer::PreRenderer(const Common::Json &componentNode)
+    : m_geometryScaler{componentNode.optional("GeometryScaler")} {
   if (const auto &node = componentNode.optional("EntityDecodeRange")) {
     m_entityDecodeRange = node.asVec<uint32_t, 2>();
   }

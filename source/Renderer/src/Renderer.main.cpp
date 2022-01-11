@@ -175,8 +175,8 @@ private:
 
   auto isDepthLowQuality(const Common::DeepFrameList &frame,
                          const MivBitstream::ViewParamsList &vpl) -> bool {
-    const auto assessor =
-        create<DepthQualityAssessor::IDepthQualityAssessor>("DepthQualityAssessor");
+    const auto assessor = Common::create<DepthQualityAssessor::IDepthQualityAssessor>(
+        "DepthQualityAssessor", json(), json());
     return assessor->isLowDepthQuality(vpl, frame);
   }
 };

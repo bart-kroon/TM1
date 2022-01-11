@@ -1,11 +1,10 @@
 {
     "CullerMethod": "NoCuller",
-    "Decoder": {
+    "GeometryScaler": {
         "geometryEdgeMagnitudeTh": 10,
         "maxCurvature": 5,
         "minForegroundConfidence": 0.5
     },
-    "DecoderMethod": "Decoder",
     "NoCuller": {},
     "Renderer": {
         "Inpainter": {},

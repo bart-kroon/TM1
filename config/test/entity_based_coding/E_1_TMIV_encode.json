@@ -11,7 +11,6 @@
         "maxOutlierRatio": 0.001
     },
     "DepthQualityAssessorMethod": "DepthQualityAssessor",
-    "EntityEncodeRange": [8, 16],
     "HierarchicalPruner": {
         "depthParameter": 50,
         "dilate": 5,
@@ -27,11 +26,11 @@
         "stretchingParameter": 3
     },
     "Packer": {
-        "MinPatchSize": 16,
-        "Overlap": 1,
-        "PiP": 1,
         "enableMerging": true,
+        "enablePatchInPatch": true,
         "enableRecursiveSplit": true,
+        "minPatchSize": 16,
+        "overlap": 1,
         "sortingMethod": 0
     },
     "PackerMethod": "Packer",
@@ -46,8 +45,8 @@
     "colorCorrectionEnabledFlag": false,
     "configDirectory": "config",
     "depthOccThresholdIfSet": 0.0625,
-    "dilate": 16,
     "dynamicDepthRange": true,
+    "entityEncodeRange": [8, 16],
     "framePacking": false,
     "geometryScaleEnabledFlag": true,
     "halveDepthRange": true,
@@ -65,6 +64,7 @@
     "maxEntityId": 24,
     "maxLumaPictureSize": 8912896,
     "maxLumaSampleRate": 1069547520.0,
+    "nonAggregatedMaskDilationIter": 16,
     "numGroups": 1,
     "oneViewPerAtlasFlag": false,
     "outputBitstreamPathFmt": "E{0}/{1}/TMIV_E{0}_{1}.bit",

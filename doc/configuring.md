@@ -251,11 +251,11 @@ Most of the parameters are defined in the root. The exception is:
 
 ### Packer
 
-* **MinPatchSize:** int; is the number of pixels of the smallest border of the
+* **minPatchSize:** int; is the number of pixels of the smallest border of the
   patch, below which the patch is discarded. Default value is 8.
-* **Overlap:** int; is the number of pixels which will be added to a frontier
+* **overlap:** int; is the number of pixels which will be added to a frontier
   of a newly split patch; it prevents seam artefacts. Default value is 1.
-* **PiP:** int; is a flag enabling the Patch-in-Patch feature when equal to 1.
+* **enablePatchInPatch:** bool; enable the patch-in-patch extension on the MaxRect algorithm.
   It allows the insertion of patches into other patches. Default value is 1.
 * **enableMerging:** bool; enable the patch merging step.
 * **sortingMethod:** int; code for the sorting method of clusters during packing
@@ -308,8 +308,8 @@ Most of the parameters are defined in the root. The exception is:
 
 ### MPI encoder
 
-* **TextureDilation:** int; Number of dilations steps for the the texture atlas.
-* **TransparencyDynamic:** int; The number of transparency levels in the transparency atlas is given by pow(2, TransparencyDynamic).
+* **textureDilation:** int; Number of dilations steps for the the texture atlas.
+* **transparencyDynamic:** int; The number of transparency levels in the transparency atlas is given by pow(2, transparencyDynamic).
 
 ### MPI synthesizer
 

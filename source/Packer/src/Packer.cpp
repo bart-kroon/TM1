@@ -71,9 +71,9 @@ void adaptPatchParamsToMask(MivBitstream::PatchParams &p, int32_t maskWidth, int
 
 } // namespace
 Packer::Packer(const Common::Json &rootNode, const Common::Json &componentNode) {
-  m_minPatchSize = componentNode.require("MinPatchSize").as<int32_t>();
-  m_overlap = componentNode.require("Overlap").as<int32_t>();
-  m_pip = componentNode.require("PiP").as<int32_t>() != 0;
+  m_minPatchSize = componentNode.require("minPatchSize").as<int32_t>();
+  m_overlap = componentNode.require("overlap").as<int32_t>();
+  m_pip = componentNode.require("enablePatchInPatch").as<bool>();
   m_enableMerging = componentNode.require("enableMerging").as<bool>();
   switch (auto sortingMethod = componentNode.require("sortingMethod").as<int32_t>()) {
   case 0:
@@ -91,7 +91,7 @@ Packer::Packer(const Common::Json &rootNode, const Common::Json &componentNode) 
     m_maxEntityId = node.as<int32_t>();
   }
   if (m_maxEntityId > 0) {
-    m_entityEncodeRange = rootNode.require("EntityEncodeRange").asVec<int32_t, 2>();
+    m_entityEncodeRange = rootNode.require("entityEncodeRange").asVec<int32_t, 2>();
   }
 }
 

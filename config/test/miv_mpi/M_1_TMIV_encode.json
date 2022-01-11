@@ -2,16 +2,16 @@
     "EncoderMethod": "MpiEncoder",
     "MpiEncoder": {
         "Packer": {
-            "MinPatchSize": 8,
-            "Overlap": 1,
-            "PiP": 1,
             "enableMerging": true,
+            "enablePatchInPatch": true,
             "enableRecursiveSplit": false,
+            "minPatchSize": 8,
+            "overlap": 1,
             "sortingMethod": 1
         },
         "PackerMethod": "Packer",
-        "TextureDilation": 2,
-        "TransparencyDynamic": 4
+        "textureDilation": 2,
+        "transparencyDynamic": 4
     },
     "attributeOffsetBitCount": 10,
     "attributeOffsetEnabledFlag": true,

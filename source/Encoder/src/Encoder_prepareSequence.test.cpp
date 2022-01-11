@@ -64,7 +64,7 @@ auto configuration1() {
     "reconstructionIdc": "Rec Unconstrained",
     "levelIdc": "3.5",
     "depthOccThresholdIfSet": 0.0625,
-    "dilate": 0
+    "nonAggregatedMaskDilationIter": 0
 })"sv)};
 }
 

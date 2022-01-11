@@ -1,6 +1,5 @@
 {
     "CullerMethod": "NoCuller",
-    "EntityDecodeRange": [9, 11],
     "GeometryScaler": {
         "geometryEdgeMagnitudeTh": 10,
         "maxCurvature": 5,
@@ -23,6 +22,7 @@
         "ViewingSpaceControllerMethod": "ViewingSpaceController"
     },
     "RendererMethod": "Renderer",
+    "entityDecodeRange": [9, 11],
     "geometryEdgeMagnitudeTh": 10,
     "inputBitstreamPathFmt": "W{0}/{1}/{2}/TMIV_W{0}_{1}_{2}.bit",
     "inputDirectory": ".",

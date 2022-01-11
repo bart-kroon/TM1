@@ -73,7 +73,7 @@ TEST_CASE("TMIV::Encoder::Configuration") {
     "reconstructionIdc": "Rec Unconstrained",
     "levelIdc": "2.5",
     "depthOccThresholdIfSet": 0.0625,
-    "dilate": 0
+    "nonAggregatedMaskDilationIter": 0
 })"sv);
 
     const auto unit = Configuration{root};
@@ -169,13 +169,13 @@ TEST_CASE("TMIV::Encoder::Configuration") {
     "viewportPositionSei": false,
     "numGroups": 3,
     "maxEntityId": 5,
-    "EntityEncodeRange": [0, 4],
+    "entityEncodeRange": [0, 4],
     "codecGroupIdc": "AVC Progressive High",
     "toolsetIdc": "MIV Geometry Absent",
     "reconstructionIdc": "Rec Unconstrained",
     "levelIdc": "2.5",
     "depthOccThresholdIfSet": 0.0625,
-    "dilate": 5
+    "nonAggregatedMaskDilationIter": 5
 })"sv);
 
     const auto unit = Configuration{root};
@@ -250,13 +250,13 @@ TEST_CASE("TMIV::Encoder::Configuration") {
     "patchRedundancyRemoval": true,
     "numGroups": 3,
     "maxEntityId": 5,
-    "EntityEncodeRange": [0, 4],
+    "entityEncodeRange": [0, 4],
     "codecGroupIdc": "AVC Progressive High",
     "toolsetIdc": "MIV Geometry Absent",
     "reconstructionIdc": "Rec Unconstrained",
     "levelIdc": "2.5",
     "depthOccThresholdIfSet": 0.0625,
-    "dilate": 5
+    "nonAggregatedMaskDilationIter": 5
 })"sv);
 
     const auto unit = Configuration{root};

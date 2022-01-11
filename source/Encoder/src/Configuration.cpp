@@ -53,7 +53,7 @@ Configuration::Configuration(const Common::Json &componentNode)
     , oneViewPerAtlasFlag{componentNode.require("oneViewPerAtlasFlag").as<bool>()}
     , geometryScaleEnabledFlag{haveGeometry && haveTexture &&
                                componentNode.require("geometryScaleEnabledFlag").as<bool>()}
-    , dilationIter{componentNode.require("dilate").as<int32_t>()}
+    , dilationIter{componentNode.require("nonAggregatedMaskDilationIter").as<int32_t>()}
     , dynamicDepthRange{componentNode.require("dynamicDepthRange").as<bool>()}
     , attributeOffsetFlag{haveTexture &&
                           componentNode.require("attributeOffsetEnabledFlag").as<bool>()}
@@ -113,7 +113,7 @@ void Configuration::queryMainParameters(const Common::Json &componentNode) {
 
   // Read the entity encoding range if exists
   if (0 < maxEntityId) {
-    entityEncRange = componentNode.require("EntityEncodeRange").asVec<Common::SampleValue, 2>();
+    entityEncRange = componentNode.require("entityEncodeRange").asVec<Common::SampleValue, 2>();
   }
 
   if (const auto &node = componentNode.optional("depthLowQualityFlag")) {

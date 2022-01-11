@@ -153,8 +153,8 @@ MpiEncoder::MpiEncoder(const Common::Json &rootNode, const Common::Json &compone
     , m_intraPeriod{rootNode.require("intraPeriod").as<int32_t>()}
     , m_blockSizeDepthQualityDependent{rootNode.require("blockSizeDepthQualityDependent")
                                            .asVec<int32_t, 2>()}
-    , m_textureDilation{componentNode.require("TextureDilation").as<uint32_t>()}
-    , m_transparencyDynamic{componentNode.require("TransparencyDynamic").as<uint32_t>()}
+    , m_textureDilation{componentNode.require("textureDilation").as<uint32_t>()}
+    , m_transparencyDynamic{componentNode.require("transparencyDynamic").as<uint32_t>()}
     , m_packer{Common::create<Packer::IPacker>("Packer", rootNode, componentNode)} {
   VERIFY(m_intraPeriod <= maxIntraPeriod);
 

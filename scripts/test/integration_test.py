@@ -707,7 +707,7 @@ class IntegrationTest:
             + ["-p", "inputSequenceConfigPathFmt", "test/sequences/TB.json"]
             + ["-p", "maxLumaPictureSize", "1048576"]
             + ["-p", "maxAtlases", "1"]
-            + ["-p", "EntityEncodeRange", "[10, 13]"]
+            + ["-p", "entityEncodeRange", "[10, 13]"]
             + ["-p", "inputCameraNames", '[ "v3", "v5", "v9"]'],
             "{3}/E3/B/TMIV_E3_B.log",
             [
@@ -780,7 +780,7 @@ class IntegrationTest:
             + ["-p", "outputDirectory", "{3}"]
             + ["-p", "inputViewportParamsPathFmt", "test/sequences/T{{1}}.json"]
             + ["-n", "3", "-N", "3", "-s", "B", "-r", "QP3", "-P", "p01"]
-            + ["-p", "EntityDecodeRange", "[10, 11]"],
+            + ["-p", "entityDecodeRange", "[10, 11]"],
             "{3}/E3/B/QP3/E3_B_QP3_p01.log",
             ["E3/B/QP3/E3_B_QP3_p01_tex_512x512_yuv420p10le.yuv"],
         )

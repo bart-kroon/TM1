@@ -21,11 +21,11 @@
         "stretchingParameter": 3
     },
     "Packer": {
-        "MinPatchSize": 16,
-        "Overlap": 1,
-        "PiP": 1,
         "enableMerging": true,
+        "enablePatchInPatch": true,
         "enableRecursiveSplit": true,
+        "minPatchSize": 16,
+        "overlap": 1,
         "sortingMethod": 0
     },
     "PackerMethod": "Packer",
@@ -61,7 +61,6 @@
     "colorCorrectionEnabledFlag": false,
     "configDirectory": "config",
     "depthOccThresholdIfSet": 0.0625,
-    "dilate": 16,
     "dynamicDepthRange": true,
     "framePacking": true,
     "geometryScaleEnabledFlag": true,
@@ -79,6 +78,7 @@
     "maxEntityId": 0,
     "maxLumaPictureSize": 8912896,
     "maxLumaSampleRate": 1069547520.0,
+    "nonAggregatedMaskDilationIter": 16,
     "numGroups": 1,
     "oneViewPerAtlasFlag": false,
     "outputBitstreamPathFmt": "P{0}/{1}/TMIV_P{0}_{1}.bit",

@@ -55,8 +55,7 @@ Configuration::Configuration(const Common::Json &componentNode)
                                componentNode.require("geometryScaleEnabledFlag").as<bool>()}
     , dilationIter{componentNode.require("nonAggregatedMaskDilationIter").as<int32_t>()}
     , dynamicDepthRange{componentNode.require("dynamicDepthRange").as<bool>()}
-    , attributeOffsetFlag{haveTexture &&
-                          componentNode.require("attributeOffsetEnabledFlag").as<bool>()}
+    , textureOffsetFlag{haveTexture && componentNode.require("textureOffsetEnabledFlag").as<bool>()}
     , colorCorrectionEnabledFlag{haveTexture &&
                                  componentNode.require("colorCorrectionEnabledFlag").as<bool>()}
     , randomAccess{componentNode.require("randomAccess").as<bool>()}
@@ -107,8 +106,8 @@ void Configuration::queryMainParameters(const Common::Json &componentNode) {
     dqParamsPresentFlag = componentNode.require("dqParamsPresentFlag").as<bool>();
   }
 
-  if (attributeOffsetFlag) {
-    attributeOffsetBitCount = componentNode.require("attributeOffsetBitCount").as<uint32_t>();
+  if (textureOffsetFlag) {
+    textureOffsetBitCount = componentNode.require("textureOffsetBitCount").as<uint32_t>();
   }
 
   // Read the entity encoding range if exists

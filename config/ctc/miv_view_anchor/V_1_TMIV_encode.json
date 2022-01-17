@@ -39,7 +39,6 @@
         "resolution": [1024, 512]
     },
     "ViewOptimizerMethod": "ServerSideInpainter",
-    "attributeOffsetEnabledFlag": false,
     "bitDepthGeometryVideo": 10,
     "bitDepthTextureVideo": 10,
     "blockSizeDepthQualityDependent": [16, 32],
@@ -74,6 +73,7 @@
     "patchRedundancyRemoval": true,
     "randomAccess": false,
     "reconstructionIdc": "Rec Unconstrained",
+    "textureOffsetEnabledFlag": false,
     "toolsetIdc": "MIV Main",
     "viewportCameraParametersSei": false,
     "viewportPositionSei": false

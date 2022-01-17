@@ -36,8 +36,6 @@
     "PackerMethod": "Packer",
     "PrunerMethod": "HierarchicalPruner",
     "ViewOptimizerMethod": "BasicViewAllocator",
-    "attributeOffsetBitCount": 10,
-    "attributeOffsetEnabledFlag": true,
     "bitDepthGeometryVideo": 10,
     "bitDepthTextureVideo": 10,
     "blockSizeDepthQualityDependent": [16, 32],
@@ -74,6 +72,8 @@
     "patchRedundancyRemoval": true,
     "randomAccess": false,
     "reconstructionIdc": "Rec Unconstrained",
+    "textureOffsetBitCount": 10,
+    "textureOffsetEnabledFlag": true,
     "toolsetIdc": "MIV Main",
     "viewportCameraParametersSei": false,
     "viewportPositionSei": false

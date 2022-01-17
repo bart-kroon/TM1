@@ -135,7 +135,7 @@ TEST_CASE("TMIV::MivBitstream::PatchParams") {
       REQUIRE(unit.atlasPatchEntityId() == 0);
       REQUIRE_FALSE(unit.asme_depth_occ_threshold_flag());
       REQUIRE(unit.atlasPatchDepthOccThreshold() == 0);
-      REQUIRE(unit.atlasPatchAttributeOffset() == Vec3w({}));
+      REQUIRE(unit.atlasPatchTextureOffset() == Vec3w({}));
       REQUIRE(!unit.atlasPatchInpaintFlag());
     }
 
@@ -175,7 +175,7 @@ TEST_CASE("TMIV::MivBitstream::PatchParams") {
       REQUIRE(unit.atlasPatchEntityId() == 0);
       REQUIRE_FALSE(unit.asme_depth_occ_threshold_flag());
       REQUIRE(unit.atlasPatchDepthOccThreshold() == 0);
-      REQUIRE(unit.atlasPatchAttributeOffset() == Vec3w({}));
+      REQUIRE(unit.atlasPatchTextureOffset() == Vec3w({}));
       REQUIRE(!unit.atlasPatchInpaintFlag());
     }
 
@@ -232,7 +232,7 @@ TEST_CASE("TMIV::MivBitstream::PatchParams") {
       REQUIRE(unit.atlasPatchEntityId() == 13);
       REQUIRE(unit.asme_depth_occ_threshold_flag());
       REQUIRE(unit.atlasPatchDepthOccThreshold() == 9);
-      REQUIRE(unit.atlasPatchAttributeOffset() == Vec3w{10, 11, 12});
+      REQUIRE(unit.atlasPatchTextureOffset() == Vec3w{10, 11, 12});
       REQUIRE(!unit.atlasPatchInpaintFlag());
     }
   }
@@ -335,7 +335,7 @@ TEST_CASE("TMIV::MivBitstream::PatchParams") {
           .atlasPatchLoDScaleY(1)
           .atlasPatchEntityId(13)
           .atlasPatchDepthOccThreshold(9)
-          .atlasPatchAttributeOffset(Vec3w{10, 11, 12});
+          .atlasPatchTextureOffset(Vec3w{10, 11, 12});
 
       auto asps = AtlasSequenceParameterSetRBSP{};
       asps.asps_log2_patch_packing_block_size(3)

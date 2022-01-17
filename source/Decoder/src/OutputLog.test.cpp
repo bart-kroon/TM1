@@ -147,7 +147,7 @@ TEST_CASE("Decoder::writeFrameToOutputLog") {
           .atlasPatch3dOffsetU(2)
           .atlasPatch3dOffsetV(100)
           .atlasPatch3dRangeD(1000)
-          .atlasPatchAttributeOffset({6, 7, 9})
+          .atlasPatchTextureOffset({6, 7, 9})
           .atlasPatchDepthOccThreshold(50)
           .atlasPatchEntityId(100)
           .atlasPatchInpaintFlag(true)

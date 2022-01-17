@@ -569,11 +569,11 @@ void PreRenderer::offsetTexture(const MivBitstream::V3cParameterSet &vps,
 
       for (int32_t c = 0; c < 3; c++) {
         // http://mpegx.int-evry.fr/software/MPEG/MIV/RS/TM1/-/issues/596
-        const auto atlasPatchAttributeOffset =
-            Common::shift(pp.atlasPatchAttributeOffset()[c], bitDepthDifference) - midValue;
+        const auto atlasPatchTextureOffset =
+            Common::shift(pp.atlasPatchTextureOffset()[c], bitDepthDifference) - midValue;
         auto &value = frame.getPlane(c)(i, j);
         value = static_cast<uint16_t>(
-            std::clamp<int32_t>(value + atlasPatchAttributeOffset, 0, maxValue));
+            std::clamp<int32_t>(value + atlasPatchTextureOffset, 0, maxValue));
       }
     }
   }

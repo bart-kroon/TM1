@@ -64,8 +64,8 @@ struct Configuration {
   int32_t dilationIter;
   Common::stack::Vec2<Common::SampleValue> entityEncRange;
   bool dynamicDepthRange;
-  bool attributeOffsetFlag;
-  uint32_t attributeOffsetBitCount{};
+  bool textureOffsetFlag;
+  uint32_t textureOffsetBitCount{};
   bool dqParamsPresentFlag{true};
   bool colorCorrectionEnabledFlag;
   bool randomAccess;

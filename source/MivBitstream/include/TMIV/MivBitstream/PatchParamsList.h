@@ -69,7 +69,7 @@ public:
   [[nodiscard]] constexpr auto atlasPatchEntityId() const noexcept;
   [[nodiscard]] constexpr auto atlasPatchDepthOccThreshold() const noexcept;
   [[nodiscard]] constexpr auto asme_depth_occ_threshold_flag() const noexcept;
-  [[nodiscard]] auto atlasPatchAttributeOffset() const;
+  [[nodiscard]] auto atlasPatchTextureOffset() const;
   [[nodiscard]] constexpr auto atlasPatchInpaintFlag() const noexcept;
 
   constexpr auto atlasPatch2dPosX(int32_t value) noexcept -> PatchParams &;
@@ -87,7 +87,7 @@ public:
   constexpr auto atlasPatchLoDScaleY(int32_t value) noexcept -> PatchParams &;
   constexpr auto atlasPatchEntityId(Common::SampleValue value) noexcept -> PatchParams &;
   constexpr auto atlasPatchDepthOccThreshold(uint32_t value) noexcept -> PatchParams &;
-  auto atlasPatchAttributeOffset(Common::Vec3w value) noexcept -> PatchParams &;
+  auto atlasPatchTextureOffset(Common::Vec3w value) noexcept -> PatchParams &;
   constexpr auto atlasPatchInpaintFlag(bool value) noexcept -> PatchParams &;
 
   // Is the patch rotated such that width and height swap?
@@ -143,7 +143,7 @@ private:
   FlexiblePatchOrientation m_atlasPatchOrientationIndex{FlexiblePatchOrientation::FPO_INVALID};
   Common::SampleValue m_atlasPatchEntityId{};
   std::optional<uint32_t> m_atlasPatchDepthOccThreshold;
-  Common::Vec3w m_atlasPatchAttributeOffset{};
+  Common::Vec3w m_atlasPatchTextureOffset{};
   bool m_atlasPatchInpaintFlag{};
 };
 

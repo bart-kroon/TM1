@@ -301,7 +301,7 @@ createCommonAtlasSequenceParameterSet(const Configuration &config,
   auto asme = MivBitstream::AspsMivExtension{};
   asme.asme_embedded_occupancy_enabled_flag(
           vps.vps_miv_extension().vme_embedded_occupancy_enabled_flag())
-      .asme_patch_attribute_offset_enabled_flag(config.attributeOffsetFlag)
+      .asme_patch_attribute_offset_enabled_flag(config.textureOffsetFlag)
       .asme_max_entity_id(config.maxEntityId);
 
   if (config.geometryScaleEnabledFlag) {
@@ -315,9 +315,9 @@ createCommonAtlasSequenceParameterSet(const Configuration &config,
     asme.asme_occupancy_scale_factor_x_minus1(Common::downCast<uint16_t>(scaleFactorX - 1))
         .asme_occupancy_scale_factor_y_minus1(Common::downCast<uint16_t>(scaleFactorY - 1));
   }
-  if (config.attributeOffsetFlag) {
+  if (config.textureOffsetFlag) {
     asme.asme_patch_attribute_offset_bit_depth_minus1(
-        Common::downCast<uint16_t>(config.attributeOffsetBitCount - 1));
+        Common::downCast<uint16_t>(config.textureOffsetBitCount - 1));
   }
   return asme;
 }

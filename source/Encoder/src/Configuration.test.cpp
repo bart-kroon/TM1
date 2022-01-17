@@ -161,7 +161,7 @@ TEST_CASE("TMIV::Encoder::Configuration") {
     "oneViewPerAtlasFlag": true,
     "dynamicDepthRange": false,
     "dqParamsPresentFlag": false,
-    "attributeOffsetEnabledFlag": false,
+    "textureOffsetEnabledFlag": false,
     "colorCorrectionEnabledFlag": false,
     "randomAccess": true,
     "patchRedundancyRemoval": false,
@@ -212,14 +212,14 @@ TEST_CASE("TMIV::Encoder::Configuration") {
 
     SECTION("Attribute offset") {
       root.update(Json::parse(R"({
-    "attributeOffsetEnabledFlag": true,
-    "attributeOffsetBitCount": 1
+    "textureOffsetEnabledFlag": true,
+    "textureOffsetBitCount": 1
 })"));
 
       const auto unit2 = Configuration{root};
 
-      CHECK(unit2.attributeOffsetFlag);
-      CHECK(unit2.attributeOffsetBitCount == 1);
+      CHECK(unit2.textureOffsetFlag);
+      CHECK(unit2.textureOffsetBitCount == 1);
     }
 
     SECTION("Depth low quality flag") {
@@ -245,7 +245,7 @@ TEST_CASE("TMIV::Encoder::Configuration") {
     "oneViewPerAtlasFlag": true,
     "dynamicDepthRange": false,
     "dqParamsPresentFlag": false,
-    "attributeOffsetEnabledFlag": false,
+    "textureOffsetEnabledFlag": false,
     "randomAccess": true,
     "patchRedundancyRemoval": true,
     "numGroups": 3,

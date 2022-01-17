@@ -13,8 +13,6 @@
         "textureDilation": 2,
         "transparencyDynamic": 4
     },
-    "attributeOffsetBitCount": 10,
-    "attributeOffsetEnabledFlag": true,
     "blockSizeDepthQualityDependent": [8, 8],
     "codecGroupIdc": "VVC Main10",
     "colorCorrectionEnabledFlag": false,
@@ -41,6 +39,8 @@
     "patchRedundancyRemoval": true,
     "randomAccess": false,
     "reconstructionIdc": "Rec Unconstrained",
+    "textureOffsetBitCount": 10,
+    "textureOffsetEnabledFlag": true,
     "toolsetIdc": "MIV Main",
     "viewportCameraParametersSei": false,
     "viewportPositionSei": false

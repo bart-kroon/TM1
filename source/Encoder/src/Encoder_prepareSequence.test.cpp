@@ -396,12 +396,12 @@ TEST_CASE("createEncoderParams assigns all atlases to the first group when group
 }
 
 TEST_CASE("createEncoderParams takes the attribute offset bit depth from the configuration") {
-  const auto attributeOffsetBitCount = GENERATE(1, 5, 32);
+  const auto textureOffsetBitCount = GENERATE(1, 5, 32);
 
   const auto config = [=]() {
     auto x = test::configuration1();
-    x.attributeOffsetFlag = true;
-    x.attributeOffsetBitCount = attributeOffsetBitCount;
+    x.textureOffsetFlag = true;
+    x.textureOffsetBitCount = textureOffsetBitCount;
     return x;
   }();
 
@@ -410,7 +410,7 @@ TEST_CASE("createEncoderParams takes the attribute offset bit depth from the con
 
   for (const auto &atlas : params.atlas) {
     CHECK(atlas.asps.asps_miv_extension().asme_patch_attribute_offset_bit_depth_minus1() ==
-          static_cast<uint16_t>(attributeOffsetBitCount - 1));
+          static_cast<uint16_t>(textureOffsetBitCount - 1));
   }
 }
 

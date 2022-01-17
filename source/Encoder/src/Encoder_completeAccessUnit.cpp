@@ -271,7 +271,7 @@ void Encoder::updateAggregationStatistics(const Common::FrameList<uint8_t> &aggr
   m_maxLumaSamplesPerFrame = std::max(m_maxLumaSamplesPerFrame, lumaSamplesPerFrame);
 }
 
-void Encoder::calculateAttributeOffset(
+void Encoder::calculateTextureOffset(
     std::vector<std::array<std::array<int64_t, 4>, 3>> patchAttrOffsetValuesFullGOP) {
   const auto bitShift = calculatePatchAttrOffsetValuesFullGOP(patchAttrOffsetValuesFullGOP);
 
@@ -305,7 +305,7 @@ void Encoder::calculateAttributeOffset(
             continue;
           }
           const auto &pp = params().patchParamsList[patchIdx];
-          const auto offset = pp.atlasPatchAttributeOffset();
+          const auto offset = pp.atlasPatchTextureOffset();
           const auto textureMedVal = Common::medLevel<uint16_t>(atlas.texture.getBitDepth());
           atlas.texture.getPlane(0)(y, x) -= ((offset.x() << bitShift) - textureMedVal);
           if (y % 2 == 0 && x % 2 == 0) {
@@ -379,9 +379,9 @@ auto Encoder::calculateBtpm() const -> std::vector<std::vector<std::vector<int32
 
 auto Encoder::calculatePatchAttrOffsetValuesFullGOP(
     std::vector<std::array<std::array<int64_t, 4>, 3>> &patchAttrOffsetValuesFullGOP) -> int32_t {
-  PRECONDITION(m_config.texBitDepth >= m_config.attributeOffsetBitCount);
+  PRECONDITION(m_config.texBitDepth >= m_config.textureOffsetBitCount);
 
-  const auto bitShift = m_config.texBitDepth - m_config.attributeOffsetBitCount;
+  const auto bitShift = m_config.texBitDepth - m_config.textureOffsetBitCount;
   const auto textureMedVal = Common::medLevel<uint16_t>(m_config.texBitDepth);
   const auto textureMaxVal = Common::maxLevel<uint16_t>(m_config.texBitDepth);
 
@@ -406,7 +406,7 @@ auto Encoder::calculatePatchAttrOffsetValuesFullGOP(
       patchAttrOffsetValuesFullGOP[p][c][2] >>= bitShift;
     }
 
-    m_params.patchParamsList[p].atlasPatchAttributeOffset(
+    m_params.patchParamsList[p].atlasPatchTextureOffset(
         {static_cast<uint16_t>(patchAttrOffsetValuesFullGOP[p][0][2]),
          static_cast<uint16_t>(patchAttrOffsetValuesFullGOP[p][1][2]),
          static_cast<uint16_t>(patchAttrOffsetValuesFullGOP[p][2][2])});
@@ -421,7 +421,7 @@ void Encoder::constructVideoFrames() {
   auto patchAttrOffsetValuesFullGOP = std::vector<std::array<std::array<int64_t, 4>, 3>>{};
   const auto textureMaxVal = Common::maxLevel<uint16_t>(m_config.texBitDepth);
 
-  if (m_config.attributeOffsetFlag) {
+  if (m_config.textureOffsetFlag) {
     for (size_t p = 0; p < params().patchParamsList.size(); ++p) {
       std::array<std::array<int64_t, 4>, 3> tmp{};
       for (int32_t c = 0; c < 3; c++) {
@@ -500,7 +500,7 @@ void Encoder::constructVideoFrames() {
         patchAttrOffsetValues1Frame = writePatchInAtlas(patch, view, atlasList, frameIdx, patchIdx);
       }
 
-      if (m_config.attributeOffsetFlag) {
+      if (m_config.textureOffsetFlag) {
         for (int32_t c = 0; c < 3; c++) {
           if (patchAttrOffsetValuesFullGOP[patchCnt][c][0] >
               Common::at(patchAttrOffsetValues1Frame, c)[0]) {
@@ -523,8 +523,8 @@ void Encoder::constructVideoFrames() {
     m_videoFrameBuffer.push_back(std::move(atlasList));
     ++frameIdx;
   }
-  if (m_config.attributeOffsetFlag) {
-    calculateAttributeOffset(patchAttrOffsetValuesFullGOP);
+  if (m_config.textureOffsetFlag) {
+    calculateTextureOffset(patchAttrOffsetValuesFullGOP);
   }
 }
 

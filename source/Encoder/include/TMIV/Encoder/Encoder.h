@@ -86,7 +86,7 @@ private:
   void updateAggregationStatistics(const Common::FrameList<uint8_t> &aggregatedMask);
   void constructVideoFrames();
   void correctColors();
-  void calculateAttributeOffset(
+  void calculateTextureOffset(
       std::vector<std::array<std::array<int64_t, 4>, 3>> patchAttrOffsetValuesFullGOP);
   auto calculatePatchAttrOffsetValuesFullGOP(
       std::vector<std::array<std::array<int64_t, 4>, 3>> &patchAttrOffsetValuesFullGOP) -> int32_t;

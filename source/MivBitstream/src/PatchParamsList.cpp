@@ -142,7 +142,7 @@ auto PatchParams::decodePdu(const PatchDataUnit &pdu, const AtlasSequenceParamet
       pp.atlasPatchDepthOccThreshold(pdu.pdu_miv_extension().pdu_depth_occ_threshold());
     }
     if (asme.asme_patch_attribute_offset_enabled_flag()) {
-      pp.atlasPatchAttributeOffset(pdu.pdu_miv_extension().pdu_attribute_offset());
+      pp.atlasPatchTextureOffset(pdu.pdu_miv_extension().pdu_attribute_offset());
     }
     if (asme.asme_inpaint_enabled_flag()) {
       pp.atlasPatchInpaintFlag(pdu.pdu_miv_extension().pdu_inpaint_flag());
@@ -210,7 +210,7 @@ auto PatchParams::encodePdu(const AtlasSequenceParameterSetRBSP &asps,
   }
   if (asps.asps_miv_extension_present_flag() &&
       asps.asps_miv_extension().asme_patch_attribute_offset_enabled_flag()) {
-    pdu.pdu_miv_extension().pdu_attribute_offset(atlasPatchAttributeOffset());
+    pdu.pdu_miv_extension().pdu_attribute_offset(atlasPatchTextureOffset());
   }
   if (asps.asps_miv_extension_present_flag() &&
       asps.asps_miv_extension().asme_inpaint_enabled_flag()) {

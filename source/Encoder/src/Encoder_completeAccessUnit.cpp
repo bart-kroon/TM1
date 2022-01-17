@@ -647,7 +647,7 @@ void Encoder::adaptAtlas(const MivBitstream::PatchParams &patchParams, Common::D
     atlas.occupancy.getPlane(0)(yOcc, xOcc) = false;
   }
   if (m_config.haveTexture) {
-    const auto textureMedVal = Common::medLevel<uint16_t>(m_config.texBitDepth);
+    const auto textureMedVal = Common::medLevel<uint16_t>(atlas.texture.getBitDepth());
 
     atlas.texture.getPlane(0)(pAtlas.y(), pAtlas.x()) = textureMedVal;
     if ((pView.x() % 2) == 0 && (pView.y() % 2) == 0) {

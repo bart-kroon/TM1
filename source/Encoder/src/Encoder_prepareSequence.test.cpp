@@ -409,7 +409,7 @@ TEST_CASE("createEncoderParams takes the attribute offset bit depth from the con
       config, test::sequenceConfig1, test::sequenceConfig1.sourceViewParams(), true);
 
   for (const auto &atlas : params.atlas) {
-    CHECK(atlas.asps.asps_miv_extension().asme_patch_attribute_offset_bit_depth_minus1() ==
+    CHECK(atlas.asps.asps_miv_extension().asme_patch_texture_offset_bit_depth_minus1() ==
           static_cast<uint16_t>(textureOffsetBitCount - 1));
   }
 }

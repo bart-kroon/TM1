@@ -135,7 +135,9 @@ TEST_CASE("TMIV::MivBitstream::PatchParams") {
       REQUIRE(unit.atlasPatchEntityId() == 0);
       REQUIRE_FALSE(unit.asme_depth_occ_threshold_flag());
       REQUIRE(unit.atlasPatchDepthOccThreshold() == 0);
-      REQUIRE(unit.atlasPatchTextureOffset() == Vec3w({}));
+      REQUIRE(unit.atlasPatchTextureOffset(0) == 0);
+      REQUIRE(unit.atlasPatchTextureOffset(1) == 0);
+      REQUIRE(unit.atlasPatchTextureOffset(2) == 0);
       REQUIRE(!unit.atlasPatchInpaintFlag());
     }
 
@@ -175,7 +177,9 @@ TEST_CASE("TMIV::MivBitstream::PatchParams") {
       REQUIRE(unit.atlasPatchEntityId() == 0);
       REQUIRE_FALSE(unit.asme_depth_occ_threshold_flag());
       REQUIRE(unit.atlasPatchDepthOccThreshold() == 0);
-      REQUIRE(unit.atlasPatchTextureOffset() == Vec3w({}));
+      REQUIRE(unit.atlasPatchTextureOffset(0) == 0);
+      REQUIRE(unit.atlasPatchTextureOffset(1) == 0);
+      REQUIRE(unit.atlasPatchTextureOffset(2) == 0);
       REQUIRE(!unit.atlasPatchInpaintFlag());
     }
 
@@ -195,7 +199,9 @@ TEST_CASE("TMIV::MivBitstream::PatchParams") {
           .pdu_lod_scale_y_idc(0)
           .pdu_miv_extension()
           .pdu_depth_occ_threshold(9)
-          .pdu_attribute_offset(Vec3w{10, 11, 12})
+          .pdu_texture_offset(0, 10)
+          .pdu_texture_offset(1, 11)
+          .pdu_texture_offset(2, 12)
           .pdu_entity_id(13);
 
       auto asps = AtlasSequenceParameterSetRBSP{};
@@ -207,7 +213,7 @@ TEST_CASE("TMIV::MivBitstream::PatchParams") {
           .asps_miv_extension()
           .asme_embedded_occupancy_enabled_flag(true)
           .asme_depth_occ_threshold_flag(true)
-          .asme_patch_attribute_offset_enabled_flag(true);
+          .asme_patch_texture_offset_enabled_flag(true);
 
       auto ath = AtlasTileHeader();
       ath.ath_pos_min_d_quantizer(6)
@@ -232,7 +238,9 @@ TEST_CASE("TMIV::MivBitstream::PatchParams") {
       REQUIRE(unit.atlasPatchEntityId() == 13);
       REQUIRE(unit.asme_depth_occ_threshold_flag());
       REQUIRE(unit.atlasPatchDepthOccThreshold() == 9);
-      REQUIRE(unit.atlasPatchTextureOffset() == Vec3w{10, 11, 12});
+      REQUIRE(unit.atlasPatchTextureOffset(0) == 10);
+      REQUIRE(unit.atlasPatchTextureOffset(1) == 11);
+      REQUIRE(unit.atlasPatchTextureOffset(2) == 12);
       REQUIRE(!unit.atlasPatchInpaintFlag());
     }
   }
@@ -277,7 +285,9 @@ TEST_CASE("TMIV::MivBitstream::PatchParams") {
       REQUIRE(!pdu.pdu_lod_enabled_flag());
       REQUIRE(pdu.pdu_lod_scale_x_minus1() == 0);
       REQUIRE(pdu.pdu_lod_scale_y_idc() == 0);
-      REQUIRE(pdu.pdu_miv_extension().pdu_attribute_offset() == Vec3w{});
+      REQUIRE(pdu.pdu_miv_extension().pdu_texture_offset(0) == 0);
+      REQUIRE(pdu.pdu_miv_extension().pdu_texture_offset(1) == 0);
+      REQUIRE(pdu.pdu_miv_extension().pdu_texture_offset(2) == 0);
       REQUIRE(pdu.pdu_miv_extension().pdu_entity_id() == 0);
       REQUIRE_THROWS(pdu.pdu_miv_extension().pdu_depth_occ_threshold());
     }
@@ -335,7 +345,9 @@ TEST_CASE("TMIV::MivBitstream::PatchParams") {
           .atlasPatchLoDScaleY(1)
           .atlasPatchEntityId(13)
           .atlasPatchDepthOccThreshold(9)
-          .atlasPatchTextureOffset(Vec3w{10, 11, 12});
+          .atlasPatchTextureOffset(0, 10)
+          .atlasPatchTextureOffset(1, 11)
+          .atlasPatchTextureOffset(2, 12);
 
       auto asps = AtlasSequenceParameterSetRBSP{};
       asps.asps_log2_patch_packing_block_size(3)
@@ -346,7 +358,7 @@ TEST_CASE("TMIV::MivBitstream::PatchParams") {
           .asps_miv_extension()
           .asme_embedded_occupancy_enabled_flag(true)
           .asme_depth_occ_threshold_flag(true)
-          .asme_patch_attribute_offset_enabled_flag(true);
+          .asme_patch_texture_offset_enabled_flag(true);
 
       auto afps = AtlasFrameParameterSetRBSP{};
       afps.afps_lod_mode_enabled_flag(true);
@@ -372,7 +384,9 @@ TEST_CASE("TMIV::MivBitstream::PatchParams") {
       REQUIRE(pdu.pdu_lod_scale_x_minus1() == 2);
       REQUIRE(pdu.pdu_lod_scale_y_idc() == 0);
       REQUIRE(pdu.pdu_miv_extension().pdu_depth_occ_threshold() == 9);
-      REQUIRE(pdu.pdu_miv_extension().pdu_attribute_offset() == Vec3w{10, 11, 12});
+      REQUIRE(pdu.pdu_miv_extension().pdu_texture_offset(0) == 10);
+      REQUIRE(pdu.pdu_miv_extension().pdu_texture_offset(1) == 11);
+      REQUIRE(pdu.pdu_miv_extension().pdu_texture_offset(2) == 12);
       REQUIRE(pdu.pdu_miv_extension().pdu_entity_id() == 13);
     }
 

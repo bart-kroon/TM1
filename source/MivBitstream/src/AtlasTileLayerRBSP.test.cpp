@@ -158,7 +158,7 @@ pdu_orientation_index[ 0 ][ 101 ]=FPO_NULL
         .asme_embedded_occupancy_enabled_flag(true)
         .asme_depth_occ_threshold_flag(true)
         .asme_max_entity_id(100)
-        .asme_patch_attribute_offset_bit_depth_minus1(5)
+        .asme_patch_texture_offset_bit_depth_minus1(5)
         .asme_inpaint_enabled_flag(true);
 
     x.pdu_2d_pos_x(34)
@@ -174,7 +174,9 @@ pdu_orientation_index[ 0 ][ 101 ]=FPO_NULL
         .pdu_miv_extension()
         .pdu_entity_id(35)
         .pdu_depth_occ_threshold(600)
-        .pdu_attribute_offset(Common::Vec3w{4, 5, 6})
+        .pdu_texture_offset(0, 4)
+        .pdu_texture_offset(1, 5)
+        .pdu_texture_offset(2, 6)
         .pdu_inpaint_flag(false);
 
     REQUIRE(toString(x, 12, 102) == R"(pdu_2d_pos_x[ 12 ][ 102 ]=34
@@ -189,9 +191,9 @@ pdu_projection_id[ 12 ][ 102 ]=300
 pdu_orientation_index[ 12 ][ 102 ]=FPO_MROT180
 pdu_entity_id[ 12 ][ 102 ]=35
 pdu_depth_occ_threshold[ 12 ][ 102 ]=600
-pdu_attribute_offset[ 12 ][ 102 ][ 0 ]=4
-pdu_attribute_offset[ 12 ][ 102 ][ 1 ]=5
-pdu_attribute_offset[ 12 ][ 102 ][ 2 ]=6
+pdu_texture_offset[ 12 ][ 102 ][ 0 ]=4
+pdu_texture_offset[ 12 ][ 102 ][ 1 ]=5
+pdu_texture_offset[ 12 ][ 102 ][ 2 ]=6
 pdu_inpaint_flag[ 12 ][ 102 ]=false
 )");
 

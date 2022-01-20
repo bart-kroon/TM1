@@ -320,8 +320,8 @@ auto PduMivExtension::pdu_depth_occ_threshold() const -> Common::SampleValue {
   return *m_pdu_depth_occ_threshold;
 }
 
-auto PduMivExtension::pdu_attribute_offset() const -> Common::Vec3w {
-  return m_pdu_attribute_offset.value_or(Common::Vec3w{});
+auto PduMivExtension::pdu_texture_offset(uint8_t c) const -> Common::SampleValue {
+  return m_pdu_texture_offset.value_or(Common::Vec3sv{})[c];
 }
 
 auto PduMivExtension::printTo(std::ostream &stream, uint32_t tileId, size_t patchIdx) const
@@ -333,10 +333,10 @@ auto PduMivExtension::printTo(std::ostream &stream, uint32_t tileId, size_t patc
     fmt::print(stream, "pdu_depth_occ_threshold[ {} ][ {} ]={}\n", tileId, patchIdx,
                pdu_depth_occ_threshold());
   }
-  if (m_pdu_attribute_offset) {
-    for (int32_t c = 0; c < 3; ++c) {
-      fmt::print(stream, "pdu_attribute_offset[ {} ][ {} ][ {} ]={}\n", tileId, patchIdx, c,
-                 pdu_attribute_offset()[c]);
+  if (m_pdu_texture_offset) {
+    for (uint8_t c = 0; c < 3; ++c) {
+      fmt::print(stream, "pdu_texture_offset[ {} ][ {} ][ {} ]={}\n", tileId, patchIdx, c,
+                 pdu_texture_offset(c));
     }
   }
   if (m_pdu_inpaint_flag) {
@@ -348,7 +348,7 @@ auto PduMivExtension::printTo(std::ostream &stream, uint32_t tileId, size_t patc
 auto PduMivExtension::operator==(const PduMivExtension &other) const -> bool {
   return pdu_entity_id() == other.pdu_entity_id() &&
          m_pdu_depth_occ_threshold == other.m_pdu_depth_occ_threshold &&
-         pdu_attribute_offset() == other.pdu_attribute_offset() &&
+         m_pdu_texture_offset == other.m_pdu_texture_offset &&
          pdu_inpaint_flag() == other.pdu_inpaint_flag();
 }
 
@@ -368,12 +368,12 @@ auto PduMivExtension::decodeFrom(Common::InputBitstream &bitstream,
     x.pdu_depth_occ_threshold(
         bitstream.readBits<Common::SampleValue>(asps.asps_geometry_2d_bit_depth_minus1() + 1));
   }
-  if (asme.asme_patch_attribute_offset_enabled_flag()) {
-    int32_t bits = asps.asps_miv_extension().asme_patch_attribute_offset_bit_depth_minus1() + 1;
-    const auto offset0 = bitstream.readBits<uint16_t>(bits);
-    const auto offset1 = bitstream.readBits<uint16_t>(bits);
-    const auto offset2 = bitstream.readBits<uint16_t>(bits);
-    x.pdu_attribute_offset({offset0, offset1, offset2});
+  if (asme.asme_patch_texture_offset_enabled_flag()) {
+    int32_t bits = asps.asps_miv_extension().asme_patch_texture_offset_bit_depth_minus1() + 1;
+
+    for (uint8_t c = 0; c < 3; ++c) {
+      x.pdu_texture_offset(c, bitstream.readBits<uint16_t>(bits));
+    }
   }
   if (asme.asme_inpaint_enabled_flag()) {
     x.pdu_inpaint_flag(bitstream.getFlag());
@@ -394,12 +394,12 @@ void PduMivExtension::encodeTo(Common::OutputBitstream &bitstream,
   } else {
     PRECONDITION(!m_pdu_depth_occ_threshold.has_value());
   }
-  if (asme.asme_patch_attribute_offset_enabled_flag()) {
-    const auto bits = asps.asps_miv_extension().asme_patch_attribute_offset_bit_depth_minus1() + 1;
-    PRECONDITION(m_pdu_attribute_offset.has_value());
-    bitstream.writeBits(pdu_attribute_offset().x(), bits);
-    bitstream.writeBits(pdu_attribute_offset().y(), bits);
-    bitstream.writeBits(pdu_attribute_offset().z(), bits);
+  if (asme.asme_patch_texture_offset_enabled_flag()) {
+    const auto bits = asps.asps_miv_extension().asme_patch_texture_offset_bit_depth_minus1() + 1;
+
+    for (uint8_t c = 0; c < 3; ++c) {
+      bitstream.writeBits(pdu_texture_offset(c), bits);
+    }
   }
   if (asme.asme_inpaint_enabled_flag()) {
     PRECONDITION(m_pdu_inpaint_flag.has_value());

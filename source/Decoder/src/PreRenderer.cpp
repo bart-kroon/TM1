@@ -546,16 +546,12 @@ void PreRenderer::offsetTexture(const MivBitstream::V3cParameterSet &vps,
 
   const auto &asme = atlas.asps.asps_miv_extension();
 
-  if (!asme.asme_patch_attribute_offset_enabled_flag()) {
+  if (!asme.asme_patch_texture_offset_enabled_flag()) {
     return;
   }
 
   const auto midValue = frame.neutralValue();
-  const auto maxValue = frame.maxValue();
-
-  const auto scaledBitCount = asme.asme_patch_attribute_offset_bit_depth_minus1() + 1;
-  const auto inputBitDepth = Common::downCast<int32_t>(frame.getBitDepth());
-  const auto bitDepthDifference = inputBitDepth - scaledBitCount;
+  const int32_t maxValue = frame.maxValue();
 
   for (int32_t i = 0; i < frame.getHeight(); ++i) {
     for (int32_t j = 0; j < frame.getWidth(); ++j) {
@@ -567,13 +563,14 @@ void PreRenderer::offsetTexture(const MivBitstream::V3cParameterSet &vps,
 
       const auto &pp = atlas.patchParamsList[patchIdx];
 
-      for (int32_t c = 0; c < 3; c++) {
-        // http://mpegx.int-evry.fr/software/MPEG/MIV/RS/TM1/-/issues/596
-        const auto atlasPatchTextureOffset =
-            Common::shift(pp.atlasPatchTextureOffset()[c], bitDepthDifference) - midValue;
+      for (uint8_t c = 0; c < 3; c++) {
         auto &value = frame.getPlane(c)(i, j);
-        value = static_cast<uint16_t>(
-            std::clamp<int32_t>(value + atlasPatchTextureOffset, 0, maxValue));
+
+        static_assert(Common::sampleBitDepth < 32);
+        const auto textureOffset = Common::assertDownCast<int32_t>(pp.atlasPatchTextureOffset(c));
+
+        value = static_cast<Common::DefaultElement>(
+            std::clamp(value + textureOffset - midValue, {}, maxValue));
       }
     }
   }

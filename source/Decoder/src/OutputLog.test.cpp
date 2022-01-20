@@ -147,7 +147,9 @@ TEST_CASE("Decoder::writeFrameToOutputLog") {
           .atlasPatch3dOffsetU(2)
           .atlasPatch3dOffsetV(100)
           .atlasPatch3dRangeD(1000)
-          .atlasPatchTextureOffset({6, 7, 9})
+          .atlasPatchTextureOffset(0, 6)
+          .atlasPatchTextureOffset(1, 7)
+          .atlasPatchTextureOffset(2, 9)
           .atlasPatchDepthOccThreshold(50)
           .atlasPatchEntityId(100)
           .atlasPatchInpaintFlag(true)
@@ -266,9 +268,8 @@ TEST_CASE("Decoder::writeFrameToOutputLog") {
       CHECK(TMIV::Decoder::asmeHash(frame.atlas.front()) == 0x2d591ac8);
       CHECK(stream.str() == reference);
 
-      frame.atlas.front().asps.asps_miv_extension().asme_patch_attribute_offset_enabled_flag(true);
-      frame.atlas.front().asps.asps_miv_extension().asme_patch_attribute_offset_bit_depth_minus1(
-          12);
+      frame.atlas.front().asps.asps_miv_extension().asme_patch_texture_offset_enabled_flag(true);
+      frame.atlas.front().asps.asps_miv_extension().asme_patch_texture_offset_bit_depth_minus1(12);
       reference += "-1 0 8 5 00000000 00000000 00000000 16fb3059 00000000 00000000\n";
       writeFrameToOutputLog(frame, stream);
       CHECK(TMIV::Decoder::asmeHash(frame.atlas.front()) == 0x16fb3059);

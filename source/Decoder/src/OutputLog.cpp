@@ -129,9 +129,9 @@ auto patchParamsListHash(const MivBitstream::PatchParamsList &ppl) noexcept
     hash.consume(pp.atlasPatchLoDScaleY());
     hash.consume(pp.atlasPatchEntityId());
     hash.consume(pp.atlasPatchDepthOccThreshold());
-    hash.consume(pp.atlasPatchTextureOffset()[0]);
-    hash.consume(pp.atlasPatchTextureOffset()[1]);
-    hash.consume(pp.atlasPatchTextureOffset()[2]);
+    hash.consume(pp.atlasPatchTextureOffset(0));
+    hash.consume(pp.atlasPatchTextureOffset(1));
+    hash.consume(pp.atlasPatchTextureOffset(2));
     hash.consume(pp.atlasPatchInpaintFlag());
   }
   return hash.result();
@@ -207,9 +207,9 @@ auto asmeHash(const MivBitstream::AtlasAccessUnit &frame) noexcept -> HashFuncti
     hash.consume(asme.asme_occupancy_scale_factor_x_minus1());
     hash.consume(asme.asme_occupancy_scale_factor_y_minus1());
     hash.consume(asme.asme_patch_constant_depth_flag());
-    hash.consume(asme.asme_patch_attribute_offset_enabled_flag());
-    hash.consume(asme.asme_patch_attribute_offset_enabled_flag()
-                     ? asme.asme_patch_attribute_offset_bit_depth_minus1()
+    hash.consume(asme.asme_patch_texture_offset_enabled_flag());
+    hash.consume(asme.asme_patch_texture_offset_enabled_flag()
+                     ? asme.asme_patch_texture_offset_bit_depth_minus1()
                      : uint32_t{});
     hash.consume(asme.asme_max_entity_id());
     hash.consume(asme.asme_inpaint_enabled_flag());

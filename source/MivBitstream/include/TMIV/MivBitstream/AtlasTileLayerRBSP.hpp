@@ -181,8 +181,12 @@ constexpr auto PduMivExtension::pdu_depth_occ_threshold(Common::SampleValue valu
   return *this;
 }
 
-inline auto PduMivExtension::pdu_attribute_offset(Common::Vec3w value) noexcept -> auto & {
-  m_pdu_attribute_offset = value;
+inline auto PduMivExtension::pdu_texture_offset(uint8_t c, Common::SampleValue value) noexcept
+    -> auto & {
+  if (!m_pdu_texture_offset) {
+    m_pdu_texture_offset = Common::Vec3sv{};
+  }
+  (*m_pdu_texture_offset)[c] = value;
   return *this;
 }
 

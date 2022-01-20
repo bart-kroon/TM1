@@ -285,11 +285,15 @@ void Encoder::calculateTextureOffset(
       const auto &asme = params().atlas[k].asps.asps_miv_extension();
       auto occScaleX = 1;
       auto occScaleY = 1;
+
       if (!asme.asme_embedded_occupancy_enabled_flag() &&
           asme.asme_occupancy_scale_enabled_flag()) {
         occScaleX = asme.asme_occupancy_scale_factor_x_minus1() + 1;
         occScaleY = asme.asme_occupancy_scale_factor_y_minus1() + 1;
       }
+
+      const auto textureMedVal = Common::medLevel<uint16_t>(atlas.texture.getBitDepth());
+
       for (int32_t y = 0; y < atlas.texture.getHeight(); ++y) {
         for (int32_t x = 0; x < atlas.texture.getWidth(); ++x) {
           const auto patchIdx = btpm[k][y / m_blockSize][x / m_blockSize];
@@ -305,12 +309,17 @@ void Encoder::calculateTextureOffset(
             continue;
           }
           const auto &pp = params().patchParamsList[patchIdx];
-          const auto offset = pp.atlasPatchTextureOffset();
-          const auto textureMedVal = Common::medLevel<uint16_t>(atlas.texture.getBitDepth());
-          atlas.texture.getPlane(0)(y, x) -= ((offset.x() << bitShift) - textureMedVal);
+          const auto applyOffset = [&](uint8_t c, int32_t i, int32_t j) {
+            auto &sample = atlas.texture.getPlane(c)(i, j);
+            sample = Common::assertDownCast<Common::DefaultElement>(
+                sample - Common::shift(pp.atlasPatchTextureOffset(c), -bitShift) + textureMedVal);
+          };
+
+          applyOffset(0, y, x);
+
           if (y % 2 == 0 && x % 2 == 0) {
-            atlas.texture.getPlane(1)(y / 2, x / 2) -= ((offset.y() << bitShift) - textureMedVal);
-            atlas.texture.getPlane(2)(y / 2, x / 2) -= ((offset.z() << bitShift) - textureMedVal);
+            applyOffset(1, y / 2, x / 2);
+            applyOffset(2, y / 2, x / 2);
           }
         }
       }
@@ -379,11 +388,12 @@ auto Encoder::calculateBtpm() const -> std::vector<std::vector<std::vector<int32
 
 auto Encoder::calculatePatchAttrOffsetValuesFullGOP(
     std::vector<std::array<std::array<int64_t, 4>, 3>> &patchAttrOffsetValuesFullGOP) -> int32_t {
-  PRECONDITION(m_config.texBitDepth >= m_config.textureOffsetBitCount);
+  const auto inputBitDepth = m_videoFrameBuffer.front().front().texture.getBitDepth();
+  const auto bitShift =
+      static_cast<int32_t>(m_config.texBitDepth) - static_cast<int32_t>(inputBitDepth);
 
-  const auto bitShift = m_config.texBitDepth - m_config.textureOffsetBitCount;
-  const auto textureMedVal = Common::medLevel<uint16_t>(m_config.texBitDepth);
-  const auto textureMaxVal = Common::maxLevel<uint16_t>(m_config.texBitDepth);
+  const auto textureMedVal = Common::medLevel<uint16_t>(inputBitDepth);
+  const auto textureMaxVal = Common::maxLevel<uint16_t>(inputBitDepth);
 
   for (size_t p = 0; p != params().patchParamsList.size(); ++p) {
     for (int32_t c = 0; c < 3; c++) {
@@ -403,15 +413,17 @@ auto Encoder::calculatePatchAttrOffsetValuesFullGOP(
       }
 
       patchAttrOffsetValuesFullGOP[p][c][2] += textureMedVal;
-      patchAttrOffsetValuesFullGOP[p][c][2] >>= bitShift;
+      patchAttrOffsetValuesFullGOP[p][c][2] =
+          Common::shift(patchAttrOffsetValuesFullGOP[p][c][2], bitShift);
     }
 
-    m_params.patchParamsList[p].atlasPatchTextureOffset(
-        {static_cast<uint16_t>(patchAttrOffsetValuesFullGOP[p][0][2]),
-         static_cast<uint16_t>(patchAttrOffsetValuesFullGOP[p][1][2]),
-         static_cast<uint16_t>(patchAttrOffsetValuesFullGOP[p][2][2])});
+    for (uint8_t c = 0; c < 3; ++c) {
+      m_params.patchParamsList[p].atlasPatchTextureOffset(
+          c, static_cast<uint16_t>(patchAttrOffsetValuesFullGOP[p][c][2]));
+    }
   }
-  return Common::verifyDownCast<int32_t>(bitShift);
+
+  return bitShift;
 }
 
 // NOLINTNEXTLINE(readability-function-cognitive-complexity,readability-function-size)

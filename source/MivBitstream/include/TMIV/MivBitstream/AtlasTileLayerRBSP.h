@@ -168,12 +168,12 @@ class PduMivExtension {
 public:
   [[nodiscard]] constexpr auto pdu_entity_id() const noexcept;
   [[nodiscard]] auto pdu_depth_occ_threshold() const -> Common::SampleValue;
-  [[nodiscard]] auto pdu_attribute_offset() const -> Common::Vec3w;
+  [[nodiscard]] auto pdu_texture_offset(uint8_t c) const -> Common::SampleValue;
   [[nodiscard]] constexpr auto pdu_inpaint_flag() const noexcept;
 
   constexpr auto pdu_entity_id(Common::SampleValue value) noexcept -> auto &;
   constexpr auto pdu_depth_occ_threshold(Common::SampleValue value) noexcept -> auto &;
-  auto pdu_attribute_offset(Common::Vec3w value) noexcept -> auto &;
+  auto pdu_texture_offset(uint8_t c, Common::SampleValue value) noexcept -> auto &;
   constexpr auto pdu_inpaint_flag(bool value) noexcept -> auto &;
 
   auto printTo(std::ostream &stream, uint32_t tileId, size_t patchIdx) const -> std::ostream &;
@@ -190,7 +190,7 @@ public:
 private:
   std::optional<Common::SampleValue> m_pdu_entity_id;
   std::optional<Common::SampleValue> m_pdu_depth_occ_threshold;
-  std::optional<Common::Vec3w> m_pdu_attribute_offset;
+  std::optional<Common::Vec3sv> m_pdu_texture_offset;
   std::optional<bool> m_pdu_inpaint_flag;
 };
 

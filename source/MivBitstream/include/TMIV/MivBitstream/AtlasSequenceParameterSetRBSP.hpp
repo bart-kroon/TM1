@@ -79,8 +79,8 @@ constexpr auto AspsMivExtension::asme_patch_constant_depth_flag() const noexcept
   return m_asme_patch_constant_depth_flag;
 }
 
-constexpr auto AspsMivExtension::asme_patch_attribute_offset_enabled_flag() const noexcept {
-  return m_asme_patch_attribute_offset_flag;
+constexpr auto AspsMivExtension::asme_patch_texture_offset_enabled_flag() const noexcept {
+  return m_asme_patch_texture_offset_flag;
 }
 
 constexpr auto AspsMivExtension::asme_max_entity_id() const noexcept {
@@ -146,16 +146,16 @@ constexpr auto AspsMivExtension::asme_occupancy_scale_factor_y_minus1(uint16_t v
   return *this;
 }
 
-constexpr auto AspsMivExtension::asme_patch_attribute_offset_enabled_flag(bool value) noexcept
+constexpr auto AspsMivExtension::asme_patch_texture_offset_enabled_flag(bool value) noexcept
     -> auto & {
-  m_asme_patch_attribute_offset_flag = value;
+  m_asme_patch_texture_offset_flag = value;
   return *this;
 }
 
-constexpr auto
-AspsMivExtension::asme_patch_attribute_offset_bit_depth_minus1(uint16_t value) noexcept -> auto & {
-  asme_patch_attribute_offset_enabled_flag(true);
-  m_asme_patch_attribute_offset_bit_depth_minus1 = value;
+constexpr auto AspsMivExtension::asme_patch_texture_offset_bit_depth_minus1(uint16_t value) noexcept
+    -> auto & {
+  asme_patch_texture_offset_enabled_flag(true);
+  m_asme_patch_texture_offset_bit_depth_minus1 = value;
   return *this;
 }
 
@@ -198,10 +198,9 @@ constexpr auto AspsMivExtension::operator==(const AspsMivExtension &other) const
       return false;
     }
   }
-  if (asme_patch_attribute_offset_enabled_flag() &&
-      other.asme_patch_attribute_offset_enabled_flag()) {
-    if (m_asme_patch_attribute_offset_bit_depth_minus1 !=
-        other.m_asme_patch_attribute_offset_bit_depth_minus1) {
+  if (asme_patch_texture_offset_enabled_flag() && other.asme_patch_texture_offset_enabled_flag()) {
+    if (m_asme_patch_texture_offset_bit_depth_minus1 !=
+        other.m_asme_patch_texture_offset_bit_depth_minus1) {
       return false;
     }
   }
@@ -210,8 +209,8 @@ constexpr auto AspsMivExtension::operator==(const AspsMivExtension &other) const
          asme_embedded_occupancy_enabled_flag() == other.asme_embedded_occupancy_enabled_flag() &&
          asme_geometry_scale_enabled_flag() == other.asme_geometry_scale_enabled_flag() &&
          asme_patch_constant_depth_flag() == other.asme_patch_constant_depth_flag() &&
-         asme_patch_attribute_offset_enabled_flag() ==
-             other.asme_patch_attribute_offset_enabled_flag() &&
+         asme_patch_texture_offset_enabled_flag() ==
+             other.asme_patch_texture_offset_enabled_flag() &&
          asme_max_entity_id() == other.asme_max_entity_id() &&
          asme_inpaint_enabled_flag() == other.asme_inpaint_enabled_flag();
 }

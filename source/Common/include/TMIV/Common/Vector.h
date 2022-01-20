@@ -35,6 +35,7 @@
 #define TMIV_COMMON_VECTOR_H
 
 #include "Array.h"
+#include "Common.h"
 #include "Math.h"
 
 #include <ostream>
@@ -142,6 +143,8 @@ using Vec4d = stack::Vec4<double>;
 using Vec2w = stack::Vec2<uint16_t>;
 using Vec3w = stack::Vec3<uint16_t>;
 using Vec4w = stack::Vec4<uint16_t>;
+
+using Vec3sv = stack::Vec3<SampleValue>;
 
 using SizeVector = std::vector<Vec2i>;
 

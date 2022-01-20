@@ -92,7 +92,7 @@ asme_embedded_occupancy_enabled_flag=false
 asme_geometry_scale_enabled_flag=false
 asme_occupancy_scale_enabled_flag=false
 asme_patch_constant_depth_flag=false
-asme_patch_attribute_offset_enabled_flag=false
+asme_patch_texture_offset_enabled_flag=false
 asme_max_entity_id=0
 asme_inpaint_enabled_flag=false
 )");
@@ -105,7 +105,7 @@ asme_inpaint_enabled_flag=false
         .asme_depth_occ_threshold_flag(true)
         .asme_geometry_scale_factor_x_minus1(1)
         .asme_geometry_scale_factor_y_minus1(2)
-        .asme_patch_attribute_offset_bit_depth_minus1(3)
+        .asme_patch_texture_offset_bit_depth_minus1(3)
         .asme_max_entity_id(15)
         .asme_inpaint_enabled_flag(true);
 
@@ -116,8 +116,8 @@ asme_geometry_scale_enabled_flag=true
 asme_geometry_scale_factor_x_minus1=1
 asme_geometry_scale_factor_y_minus1=2
 asme_patch_constant_depth_flag=false
-asme_patch_attribute_offset_enabled_flag=true
-asme_patch_attribute_offset_bit_depth_minus1=3
+asme_patch_texture_offset_enabled_flag=true
+asme_patch_texture_offset_bit_depth_minus1=3
 asme_max_entity_id=15
 asme_inpaint_enabled_flag=true
 )");
@@ -137,7 +137,7 @@ asme_occupancy_scale_enabled_flag=true
 asme_occupancy_scale_factor_x_minus1=2
 asme_occupancy_scale_factor_y_minus1=3
 asme_patch_constant_depth_flag=false
-asme_patch_attribute_offset_enabled_flag=false
+asme_patch_texture_offset_enabled_flag=false
 asme_max_entity_id=0
 asme_inpaint_enabled_flag=false
 )");
@@ -291,7 +291,7 @@ asme_geometry_scale_enabled_flag=true
 asme_geometry_scale_factor_x_minus1=1
 asme_geometry_scale_factor_y_minus1=2
 asme_patch_constant_depth_flag=true
-asme_patch_attribute_offset_enabled_flag=false
+asme_patch_texture_offset_enabled_flag=false
 asme_max_entity_id=0
 asme_inpaint_enabled_flag=false
 asps_extension_data_flag=false

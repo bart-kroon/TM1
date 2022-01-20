@@ -136,9 +136,9 @@ auto AspsMivExtension::asme_occupancy_scale_factor_y_minus1() const -> uint16_t 
   return m_asme_occupancy_scale_factor_y_minus1.value_or(0);
 }
 
-auto AspsMivExtension::asme_patch_attribute_offset_bit_depth_minus1() const -> uint16_t {
-  VERIFY_MIVBITSTREAM(m_asme_patch_attribute_offset_bit_depth_minus1.has_value());
-  return *m_asme_patch_attribute_offset_bit_depth_minus1;
+auto AspsMivExtension::asme_patch_texture_offset_bit_depth_minus1() const -> uint16_t {
+  VERIFY_MIVBITSTREAM(m_asme_patch_texture_offset_bit_depth_minus1.has_value());
+  return *m_asme_patch_texture_offset_bit_depth_minus1;
 }
 
 auto operator<<(std::ostream &stream, const AspsMivExtension &x) -> std::ostream & {
@@ -168,12 +168,12 @@ auto operator<<(std::ostream &stream, const AspsMivExtension &x) -> std::ostream
                x.asme_occupancy_scale_factor_y_minus1());
   }
   fmt::print(stream, "asme_patch_constant_depth_flag={}\n", x.asme_patch_constant_depth_flag());
-  fmt::print(stream, "asme_patch_attribute_offset_enabled_flag={}\n",
-             x.asme_patch_attribute_offset_enabled_flag());
+  fmt::print(stream, "asme_patch_texture_offset_enabled_flag={}\n",
+             x.asme_patch_texture_offset_enabled_flag());
 
-  if (x.asme_patch_attribute_offset_enabled_flag()) {
-    fmt::print(stream, "asme_patch_attribute_offset_bit_depth_minus1={}\n",
-               x.asme_patch_attribute_offset_bit_depth_minus1());
+  if (x.asme_patch_texture_offset_enabled_flag()) {
+    fmt::print(stream, "asme_patch_texture_offset_bit_depth_minus1={}\n",
+               x.asme_patch_texture_offset_bit_depth_minus1());
   }
   fmt::print(stream, "asme_max_entity_id={}\n", x.asme_max_entity_id());
   fmt::print(stream, "asme_inpaint_enabled_flag={}\n", x.asme_inpaint_enabled_flag());
@@ -200,9 +200,9 @@ auto AspsMivExtension::decodeFrom(Common::InputBitstream &bitstream) -> AspsMivE
     x.asme_occupancy_scale_factor_y_minus1(bitstream.getUExpGolomb<uint16_t>());
   }
   x.asme_patch_constant_depth_flag(bitstream.getFlag());
-  x.asme_patch_attribute_offset_enabled_flag(bitstream.getFlag());
-  if (x.asme_patch_attribute_offset_enabled_flag()) {
-    x.asme_patch_attribute_offset_bit_depth_minus1(bitstream.getUExpGolomb<uint16_t>());
+  x.asme_patch_texture_offset_enabled_flag(bitstream.getFlag());
+  if (x.asme_patch_texture_offset_enabled_flag()) {
+    x.asme_patch_texture_offset_bit_depth_minus1(bitstream.getUExpGolomb<uint16_t>());
   }
   x.asme_max_entity_id(bitstream.getUExpGolomb<uint16_t>());
   x.asme_inpaint_enabled_flag(bitstream.getFlag());
@@ -228,9 +228,9 @@ void AspsMivExtension::encodeTo(Common::OutputBitstream &bitstream) const {
     bitstream.putUExpGolomb(asme_occupancy_scale_factor_y_minus1());
   }
   bitstream.putFlag(asme_patch_constant_depth_flag());
-  bitstream.putFlag(asme_patch_attribute_offset_enabled_flag());
-  if (asme_patch_attribute_offset_enabled_flag()) {
-    bitstream.putUExpGolomb(asme_patch_attribute_offset_bit_depth_minus1());
+  bitstream.putFlag(asme_patch_texture_offset_enabled_flag());
+  if (asme_patch_texture_offset_enabled_flag()) {
+    bitstream.putUExpGolomb(asme_patch_texture_offset_bit_depth_minus1());
   }
   bitstream.putUExpGolomb(asme_max_entity_id());
   bitstream.putFlag(asme_inpaint_enabled_flag());

@@ -83,7 +83,9 @@ constexpr auto PatchParams::asme_depth_occ_threshold_flag() const noexcept {
   return m_atlasPatchDepthOccThreshold.has_value();
 }
 
-inline auto PatchParams::atlasPatchTextureOffset() const { return m_atlasPatchTextureOffset; }
+inline auto PatchParams::atlasPatchTextureOffset(uint8_t c) const {
+  return m_atlasPatchTextureOffset[c];
+}
 
 constexpr auto PatchParams::atlasPatchInpaintFlag() const noexcept {
   return m_atlasPatchInpaintFlag;
@@ -163,8 +165,9 @@ constexpr auto PatchParams::atlasPatchDepthOccThreshold(uint32_t value) noexcept
   return *this;
 }
 
-inline auto PatchParams::atlasPatchTextureOffset(Common::Vec3w value) noexcept -> PatchParams & {
-  m_atlasPatchTextureOffset = value;
+inline auto PatchParams::atlasPatchTextureOffset(uint8_t c, Common::SampleValue value) noexcept
+    -> PatchParams & {
+  m_atlasPatchTextureOffset[c] = value;
   return *this;
 }
 
@@ -188,7 +191,7 @@ inline auto PatchParams::operator==(const PatchParams &other) const -> bool {
          atlasPatchLoDScaleY() == other.atlasPatchLoDScaleY() &&
          atlasPatchEntityId() == other.atlasPatchEntityId() &&
          atlasPatchDepthOccThreshold() == other.atlasPatchDepthOccThreshold() &&
-         atlasPatchTextureOffset() == other.atlasPatchTextureOffset() &&
+         m_atlasPatchTextureOffset == other.m_atlasPatchTextureOffset &&
          atlasPatchInpaintFlag() == other.atlasPatchInpaintFlag();
 }
 

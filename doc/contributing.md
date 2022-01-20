@@ -69,6 +69,8 @@ The appropriate level of testing (for testing instructions, see [testing.md](/do
   * Improved test model performance relating to intra periods or pose traces: 97 frames, incl. 300-frame pose traces
   * New modes not covered by CTC anchor or integration test: provide a suitable new test
 
+## Providing merge requests for integration
+
 ### Dividing work into multiple merge requests
 
 When code has different levels of testability, it is often possible to split work in multiple merge requests. For instance, a new functionality may:
@@ -83,7 +85,6 @@ By splitting off the easy-to-test parts there is less uncertainty in the final M
 To avoid duplicate work, merge conflicts and/or confusion, we impose a limit on the number of open merge requests:
 
 - Open merge requests are counted regardless of their "WIP", "Draft" or "ready" status.
-- Open merge requests that are labeled ~"Test Model" are not counted
 - A developer that does not yet have an open merge request, is allowed to open one when there are less than six (6).
 - A developer that already has at least one open merge request, is allowed to open one more when there are less than four (4).
 - A maintainer that cannot progress on any open merge request, is allowed to have at most three (3).
@@ -105,11 +106,14 @@ NOTE: In general there is no bitstream compatibility between minor releases beca
 
 This repository has the following branch model:
 
-* The [public mirror](https://gitlab.com/mpeg-i-visual/tmiv) is updated whenever there is a new release
+* The [public mirror](https://gitlab.com/mpeg-i-visual/tmiv) is updated whenever there is a new release.
 * Branch `main` is working on the next major/minor/patch release out of the last MPEG meeting. Pushing is forbidden and only maintainers can merge. Developers need to do merge requests. If a software coordinator of one organization creates a merge request then a software coordinator of another organization performs code review and merges.
 * When an existing release needs to be patched, a `vx.y-dev` branch (e.g. `v8.0-dev`) is created. These branches are protected in the same way as the main branch and can also be the target of merge requests. These branches are removed as soon as the new release is tagged (e.g. `v8.0.2`).
-* Branch `m12345` is the proponent branch to document m12345 and will be deleted after the MPEG meeting when integrated or rejected
-* Issue branches as created by gitlab, will be deleted after the merge request
+* Branch `m12345` is the proponent branch to document m12345 and will be deleted after the MPEG meeting when integrated or rejected.
+* Branch `mpeg123-ee4` or `mpeg123-ee4-name_of_experiment` contains work that is pre-agreed in exploration experiment 4 of the MPEG 123 meeting.
+* Branch `mpeg123-jee4` or `mpeg123-jee4-name_of_experiment` contains work that is pre-agreed in joint exploration experiment 4 of the MPEG 123 meeting.
+* Issue branches as created by gitlab, will be deleted after the merge request.
+* In special circumstances a branch can be protected, for instance when a proposal branch will be used again in the next AHG period.
 
 ## Code guidelines
 
@@ -127,47 +131,63 @@ NOTE: This section may be expanded by the software coordinators based on what co
 
 ### Static analysis tools
 
-- There is a zero warning policy to avoid the simple bugs
-- Use Clang Tidy with the provided `.clang-tidy` file
-- Preferably use `-Werror -Wall -Wextra -Wpedantic` on GCC and Clang
-- Without access to these tools, you may ask for a build log from the software coordinators
+- There is a zero warning policy to avoid the simple bugs.
+- Use Clang Tidy with the provided `.clang-tidy` file.
+- Preferably enable suitable compiler warnings and warnings-on-errors.
+- For *example* compiler options, please study `.gitlab/ci/builds.yml`.
+- Continuous integration automatically provides build logs for multiple compiler toolchains.
 
-### Formatting
+### Formatting and automatic code checks
 
-- Preferably use Clang Format with the provided `.clang-format` file
-- When not using Clang Format, at least try to follow the style to keeps diffs small
-- The software coordinators may format contributions in code review
+- Use Clang Format with the provided `.clang-format` file.
+- In many IDE's there is in-built support for Clang Format.
+- There is a formatting check in CI, and code that is not formatted will not pass.
+- The project has a custom JSON formatter that is suitable for the kind tool and sequence configuration files that we have.
+- In addition, there are a couple of project-specific checks for instance to avoid empty lines after `{` and to replace platform-specific types such as `int` with `<cstdint>` types such as `int32_t`.
+- If any of these steps fail, then the CI log will show a difference view before and after applying the check.
+- All checks and the JSON formatter can be run locally. The scripts are in `scripts/check`, for instance use `python3 scripts/check/format_json.py` to format all JSON files.
 
 #### Integer casting
 
 - Avoid casting integers when possible. This is not always possible, for instance `vps_atlas_count_minus1()` returns a `std::uint8_t` to match with the specification but `std::vector<>::size()` returns a `std::size_t`.
-- Use curly braces (unified constructor syntax) for implicit casts, e.g. `int{vps_atlas_count_minus1()}`
-- Use `static_cast<>` for explicit casts, e.g. `static_cast<int>(vector.size())`
+- Use curly braces (unified constructor syntax) for implicit casts, e.g. `int{vps_atlas_count_minus1()}`.
+- Use `static_cast<>` for explicit casts, e.g. `static_cast<int>(vector.size())`.
 - Do not use C++ explicit casts `int()` for readability, use `static_cast<>` instead.
-- Using C-style cast was deprecated before most of us are born
+- Using C-style cast was deprecated before most of us were born.
 
 ### Naming of identifiers
 
-- CMake modules, C++ namespaces and C++ classes are in `UpperCamelCase` notation
+- CMake modules, C++ namespaces and C++ classes are in `UpperCamelCase` notation.
 - C++ variables are in `lowerCamelCase` notation, with the following exception:
-  - Syntax elements are named exactly like in the specification, e.g. `vps_frame_width`
-  - No such exception is made for parser/formatter of a syntax structure (see [below](#syntax-structures)), e.g. `v3c_parameter_set()` --> `V3cParameterSet`
-- Avoid unnecessary abbreviations
-  - Abbreviations that are defined in ISO/IEC 23090-12 Clause 3 _Terms and Definitions_ are allowed
-  - Some commonly-used TMIV-specific classes are also abbreviated, e.g. `ViewParamsList` --> `vpl`
-  - Avoid non-standard abbreviations
+  - Syntax elements are named exactly like in the specification, e.g. `vps_frame_width`.
+  - No such exception is made for parser/formatter of a syntax structure (see [below](#syntax-structures)), e.g. `v3c_parameter_set()` --> `V3cParameterSet`.
+- Avoid unnecessary abbreviations:
+  - Abbreviations that are defined in ISO/IEC 23090-12 Clause 3 _Terms and Definitions_ are allowed.
+  - Some commonly-used TMIV-specific classes are also abbreviated, e.g. `ViewParamsList` --> `vpl`.
+  - Avoid non-standard abbreviations.
 
-### Implementing proposals
+## Implementing proposals
 
-- When writing software for a proposal, assume that your proposal will be adopted in the specification. (If not already known.)
+- When writing software for a proposal, assume that your proposal will be adopted into the specification. (Assume success. Accept failure.)
 - When you already know your syntax is adopted, preferably work on the specification first and implement it *exactly* like edited, thus including any editorial changes by the editors.
-- This is a test model: write for readability and algorithmic complexity, but do not optimize
+- This is a test model: write for readability and algorithmic complexity, but do not optimize.
 
-### Syntax structures
+### Conditional compilation of proposals with new syntax
 
-Syntax structures are in this context defined by the MIV and V-PCC/V3C specification and don't refer to C++ syntax. When you parse a syntax structure, you obtain the syntax element values and any variables that are defined as part of the semantics. When you format a syntax structure, you take the syntax element values and variables from the semantics and into a syntax structure.
+For proposals with new syntax that are accepted for integration into the test model, but not yet for adoption into the draft standard:
+
+- For a proposal with input document number MPEG/M12345,
+- Have an option in the CMake project `ENABLE_M12345` to toggle the build of the proposal.
+- By default the option is turned `OFF`, and in CI builds the option is turned `ON` to enable code coverage.
+- In `TMIV/Common/include/TMIV/Common/Config.h`, add a line `static constexpr bool m12345_enabled = ENABLE_M12345`.
+- Prefix all identifiers including configuration parameters with `m12345_` whereby 12345 is the input document number of the proposal.
+- Surround all code blocks specific to the proposal with `if (m12345_enabled)`.
+- When the syntax is adopted, the group has to decide if the `ENABLE_M12345` is kept or not.
+- When the syntax is rejected, the SW coordinators will remove the proposal from the test model.
 
 ### Implementing a new syntax structure
+
+Syntax structures are in this context defined by the MIV and V-PCC/V3C specification and don't refer to C++ syntax. When you parse a syntax structure, you obtain the syntax element values and any variables that are defined as part of the semantics. When you format a syntax structure, you take the syntax element values and variables from the semantics and into a syntax structure.
 
 - Add a parser/formatter to the MivBitstreamLib, named exactly like the syntax structure but in `uppperCamelCase` notation, e.g. `v3c_parameter_set()` --> `V3cParameterSet`
 - Add a comment box on top of the class definition that lists all the limitations.
@@ -184,4 +204,5 @@ Syntax structures are in this context defined by the MIV and V-PCC/V3C specifica
 
 ### Break on exceptions
 
-If you want to debug bitstream related errors, e.g. if `VERIFY_*BITSTREAM` is throwing an exception, it is a good idea to set your IDE to break on unhandled exceptions ([Visual Studio instructions](https://docs.microsoft.com/en-us/visualstudio/debugger/managing-exceptions-with-the-debugger), [CLion instructions](https://www.jetbrains.com/help/clion/using-breakpoints.html#exception-breakpoints)) and start a debugging session.
+* If you want to debug bitstream related errors, e.g. if `VERIFY_*BITSTREAM` is throwing an exception, it is a good idea to set your IDE to break on unhandled exceptions ([Visual Studio instructions](https://docs.microsoft.com/en-us/visualstudio/debugger/managing-exceptions-with-the-debugger), [CLion instructions](https://www.jetbrains.com/help/clion/using-breakpoints.html#exception-breakpoints)) and start a debugging session.
+* Alternatively, when that gives too many false alarms, it is possible to set breakpoints on a specific error handler in `source/Common/include/TMIV/Common/verify.h`.

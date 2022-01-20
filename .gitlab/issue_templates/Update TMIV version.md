@@ -3,3 +3,5 @@
 1. (Open and handle more merge requests on the branch.)
 1. [ ] Create a tag on the relevant branch (e.g. `main` or `v8.0-dev`) with release notes in the same style as for previous tags
 1. [ ] Mirror that branch to https://gitlab.com/mpeg-i-visual/tmiv (using a `git push -f --tag`)
+
+/label ~Organization

@@ -38,65 +38,6 @@
 #include <iostream>
 
 namespace TMIV::Encoder {
-namespace {
-struct PatchStats {
-  PatchStats() = default;
-  PatchStats(int64_t _minVal) : minVal{_minVal} {}
-  int64_t minVal{0}, maxVal{0}, sumVal{0}, cntVal{0};
-};
-
-void adaptPatchStatsToTexture(std::array<PatchStats, 3> &patchStats, const Common::DeepFrame &view,
-                              Common::DeepFrame &atlas, const Common::Vec2i &pView,
-                              const Common::Vec2i &pAtlas, Common::Vec3i &colorCorrectionOffset) {
-  // Y
-  atlas.texture.getPlane(0)(pAtlas.y(), pAtlas.x()) =
-      view.texture.getPlane(0)(pView.y(), pView.x());
-
-  patchStats[0].sumVal += atlas.texture.getPlane(0)(pAtlas.y(), pAtlas.x());
-  patchStats[0].cntVal += 1;
-
-  if (patchStats[0].minVal > atlas.texture.getPlane(0)(pAtlas.y(), pAtlas.x())) {
-    patchStats[0].minVal = atlas.texture.getPlane(0)(pAtlas.y(), pAtlas.x());
-  }
-  if (patchStats[0].maxVal < atlas.texture.getPlane(0)(pAtlas.y(), pAtlas.x())) {
-    patchStats[0].maxVal = atlas.texture.getPlane(0)(pAtlas.y(), pAtlas.x());
-  }
-  const auto valY =
-      int32_t{atlas.texture.getPlane(0)(pAtlas.y(), pAtlas.x())} + colorCorrectionOffset.x();
-  atlas.texture.getPlane(0)(pAtlas.y(), pAtlas.x()) = Common::assertDownCast<uint16_t>(valY);
-
-  // UV
-  if ((pView.x() % 2) == 0 && (pView.y() % 2) == 0) {
-    for (int32_t p = 1; p < 3; ++p) {
-      atlas.texture.getPlane(p)(pAtlas.y() / 2, pAtlas.x() / 2) =
-          view.texture.getPlane(p)(pView.y() / 2, pView.x() / 2);
-
-      Common::at(patchStats, p).sumVal += atlas.texture.getPlane(p)(pAtlas.y() / 2, pAtlas.x() / 2);
-      Common::at(patchStats, p).cntVal += 1;
-
-      if (Common::at(patchStats, p).minVal >
-          atlas.texture.getPlane(p)(pAtlas.y() / 2, pAtlas.x() / 2)) {
-        Common::at(patchStats, p).minVal =
-            atlas.texture.getPlane(p)(pAtlas.y() / 2, pAtlas.x() / 2);
-      }
-      if (Common::at(patchStats, p).maxVal <
-          atlas.texture.getPlane(p)(pAtlas.y() / 2, pAtlas.x() / 2)) {
-        Common::at(patchStats, p).maxVal =
-            atlas.texture.getPlane(p)(pAtlas.y() / 2, pAtlas.x() / 2);
-      }
-    }
-    const auto valU = int32_t{atlas.texture.getPlane(1)(pAtlas.y() / 2, pAtlas.x() / 2)} +
-                      colorCorrectionOffset.y();
-    const auto valV = int32_t{atlas.texture.getPlane(2)(pAtlas.y() / 2, pAtlas.x() / 2)} +
-                      colorCorrectionOffset.z();
-    atlas.texture.getPlane(1)(pAtlas.y() / 2, pAtlas.x() / 2) =
-        Common::assertDownCast<uint16_t>(valU);
-    atlas.texture.getPlane(2)(pAtlas.y() / 2, pAtlas.x() / 2) =
-        Common::assertDownCast<uint16_t>(valV);
-  }
-}
-} // namespace
-
 void Encoder::scaleGeometryDynamicRange() {
   PRECONDITION(m_config.dynamicDepthRange);
   const auto lowDepthQuality = params().casps.casps_miv_extension().casme_depth_low_quality_flag();
@@ -271,13 +212,14 @@ void Encoder::updateAggregationStatistics(const Common::FrameList<uint8_t> &aggr
   m_maxLumaSamplesPerFrame = std::max(m_maxLumaSamplesPerFrame, lumaSamplesPerFrame);
 }
 
-void Encoder::calculateTextureOffset(
-    std::vector<std::array<std::array<int64_t, 4>, 3>> patchAttrOffsetValuesFullGOP) {
-  const auto bitShift = calculatePatchAttrOffsetValuesFullGOP(patchAttrOffsetValuesFullGOP);
-
+void Encoder::applyPatchTextureOffset() {
   std::vector<std::vector<std::vector<int32_t>>> btpm = calculateBtpm();
 
   adaptBtpmToPatchCount(btpm);
+
+  const auto inputBitDepth = m_videoFrameBuffer.front().front().texture.getBitDepth();
+  const auto bitShift =
+      static_cast<int32_t>(inputBitDepth) - static_cast<int32_t>(m_config.texBitDepth);
 
   for (auto &videoFrame : m_videoFrameBuffer) {
     for (uint8_t k = 0; k <= params().vps.vps_atlas_count_minus1(); ++k) {
@@ -291,8 +233,6 @@ void Encoder::calculateTextureOffset(
         occScaleX = asme.asme_occupancy_scale_factor_x_minus1() + 1;
         occScaleY = asme.asme_occupancy_scale_factor_y_minus1() + 1;
       }
-
-      const auto textureMedVal = Common::medLevel<uint16_t>(atlas.texture.getBitDepth());
 
       for (int32_t y = 0; y < atlas.texture.getHeight(); ++y) {
         for (int32_t x = 0; x < atlas.texture.getWidth(); ++x) {
@@ -309,10 +249,11 @@ void Encoder::calculateTextureOffset(
             continue;
           }
           const auto &pp = params().patchParamsList[patchIdx];
+
           const auto applyOffset = [&](uint8_t c, int32_t i, int32_t j) {
             auto &sample = atlas.texture.getPlane(c)(i, j);
             sample = Common::assertDownCast<Common::DefaultElement>(
-                sample - Common::shift(pp.atlasPatchTextureOffset(c), -bitShift) + textureMedVal);
+                sample - Common::shift(pp.atlasPatchTextureOffset(c), bitShift));
           };
 
           applyOffset(0, y, x);
@@ -386,67 +327,51 @@ auto Encoder::calculateBtpm() const -> std::vector<std::vector<std::vector<int32
   return btpm;
 }
 
-auto Encoder::calculatePatchAttrOffsetValuesFullGOP(
-    std::vector<std::array<std::array<int64_t, 4>, 3>> &patchAttrOffsetValuesFullGOP) -> int32_t {
+void Encoder::encodePatchTextureOffset(const PatchTextureStats &stats) {
   const auto inputBitDepth = m_videoFrameBuffer.front().front().texture.getBitDepth();
-  const auto bitShift =
-      static_cast<int32_t>(m_config.texBitDepth) - static_cast<int32_t>(inputBitDepth);
 
-  const auto textureMedVal = Common::medLevel<uint16_t>(inputBitDepth);
-  const auto textureMaxVal = Common::maxLevel<uint16_t>(inputBitDepth);
+  const auto muddle = [this, inputBitDepth]() {
+    // Take into account three different bit depths
+    const auto outputBitDepth = m_config.texBitDepth;
+    const auto offsetBitDepth = m_config.textureOffsetBitCount;
+    const auto minBitDepth = std::min({inputBitDepth, outputBitDepth, offsetBitDepth});
+
+    // Implement round-towards-zero behaviour
+    static_assert((-13 >> 2) == -4); // bad
+    static_assert((-13 / 4) == -3);  // good
+    const auto divisor = int64_t{1} << (inputBitDepth - minBitDepth);
+    const auto scaler = int64_t{1} << (outputBitDepth - minBitDepth);
+
+    return [=](int64_t x) { return Common::downCast<int32_t>((x / divisor) * scaler); };
+  }();
+
+  const int64_t m = Common::medLevel(inputBitDepth);
+  const int64_t L = Common::maxLevel(inputBitDepth);
+
+  // Constrained optimization to find the atlas patch texture offset o, at input bit depth:
+  //
+  // input        :       0 <= s.min()     <= s.mean()     <= s.max()     <= L
+  // output       :       0 <= s.min() - o <= s.mean() - o <= s.max() - o <= L
+  // target       : s.mean(s) - o == m            =>            o == mean(s) - m
+  // constraint 1 :             0 <= s.min() - o  =>            o <= s.min()
+  // constraint 2 :   s.max() - o <= L            =>  s.max() - L <= o
 
   for (size_t p = 0; p != params().patchParamsList.size(); ++p) {
-    for (int32_t c = 0; c < 3; c++) {
-      if (patchAttrOffsetValuesFullGOP[p][c][3] > 0) {
-        patchAttrOffsetValuesFullGOP[p][c][2] /= patchAttrOffsetValuesFullGOP[p][c][3];
-      } else {
-        patchAttrOffsetValuesFullGOP[p][c][2] = 0;
-      }
-      patchAttrOffsetValuesFullGOP[p][c][2] -= textureMedVal; // offset
-
-      if (patchAttrOffsetValuesFullGOP[p][c][0] - patchAttrOffsetValuesFullGOP[p][c][2] < 0) {
-        patchAttrOffsetValuesFullGOP[p][c][2] = patchAttrOffsetValuesFullGOP[p][c][0];
-      } else if (patchAttrOffsetValuesFullGOP[p][c][1] - patchAttrOffsetValuesFullGOP[p][c][2] >
-                 static_cast<int64_t>(textureMaxVal)) {
-        patchAttrOffsetValuesFullGOP[p][c][2] =
-            patchAttrOffsetValuesFullGOP[p][c][1] - textureMaxVal;
-      }
-
-      patchAttrOffsetValuesFullGOP[p][c][2] += textureMedVal;
-      patchAttrOffsetValuesFullGOP[p][c][2] =
-          Common::shift(patchAttrOffsetValuesFullGOP[p][c][2], bitShift);
-    }
-
     for (uint8_t c = 0; c < 3; ++c) {
+      const auto &s = stats[p][c];
       m_params.patchParamsList[p].atlasPatchTextureOffset(
-          c, static_cast<uint16_t>(patchAttrOffsetValuesFullGOP[p][c][2]));
+          c, muddle(std::clamp(s.floorMean() - m, s.max() - L, s.min())));
     }
   }
-
-  return bitShift;
 }
 
 // NOLINTNEXTLINE(readability-function-cognitive-complexity,readability-function-size)
 void Encoder::constructVideoFrames() {
   int32_t frameIdx = 0;
 
-  auto patchAttrOffsetValuesFullGOP = std::vector<std::array<std::array<int64_t, 4>, 3>>{};
-  const auto textureMaxVal = Common::maxLevel<uint16_t>(m_config.texBitDepth);
-
-  if (m_config.textureOffsetFlag) {
-    for (size_t p = 0; p < params().patchParamsList.size(); ++p) {
-      std::array<std::array<int64_t, 4>, 3> tmp{};
-      for (int32_t c = 0; c < 3; c++) {
-        Common::at(tmp, c)[0] = textureMaxVal;
-        Common::at(tmp, c)[1] = 0;
-        Common::at(tmp, c)[2] = 0;
-        Common::at(tmp, c)[3] = 0;
-      }
-      patchAttrOffsetValuesFullGOP.push_back(tmp);
-    }
-  }
-
   const auto &vps = params().vps;
+
+  auto patchTextureStats = PatchTextureStats(params().patchParamsList.size());
 
   for (const auto &views : m_transportViews) {
     Common::DeepFrameList atlasList;
@@ -493,50 +418,28 @@ void Encoder::constructVideoFrames() {
       frame.occupancy.fillZero();
     }
 
-    int32_t patchCnt = 0;
-    auto patchAttrOffsetValues1Frame = std::array<std::array<int64_t, 4>, 3>{};
-
-    for (size_t patchIdx = 0; patchIdx < params().patchParamsList.size(); patchIdx++) {
-      const auto &patch = params().patchParamsList[patchIdx];
+    for (size_t p = 0; p < params().patchParamsList.size(); p++) {
+      const auto &patch = params().patchParamsList[p];
       const auto viewIdx = params().viewParamsList.indexOf(patch.atlasPatchProjectionId());
       const auto &view = views[viewIdx];
-
       const auto k = params().vps.indexOf(patch.atlasId());
+
       if (0 < params().atlas[k].asps.asps_miv_extension().asme_max_entity_id()) {
         Common::DeepFrameList tempViews;
         tempViews.push_back(view);
         const auto &entityViews = entitySeparator(tempViews, patch.atlasPatchEntityId());
-        patchAttrOffsetValues1Frame =
-            writePatchInAtlas(patch, entityViews[0], atlasList, frameIdx, patchIdx);
+        patchTextureStats[p] += writePatchInAtlas(patch, entityViews[0], atlasList, frameIdx, p);
       } else {
-        patchAttrOffsetValues1Frame = writePatchInAtlas(patch, view, atlasList, frameIdx, patchIdx);
-      }
-
-      if (m_config.textureOffsetFlag) {
-        for (int32_t c = 0; c < 3; c++) {
-          if (patchAttrOffsetValuesFullGOP[patchCnt][c][0] >
-              Common::at(patchAttrOffsetValues1Frame, c)[0]) {
-            patchAttrOffsetValuesFullGOP[patchCnt][c][0] =
-                Common::at(patchAttrOffsetValues1Frame, c)[0];
-          }
-          if (patchAttrOffsetValuesFullGOP[patchCnt][c][1] <
-              Common::at(patchAttrOffsetValues1Frame, c)[1]) {
-            patchAttrOffsetValuesFullGOP[patchCnt][c][1] =
-                Common::at(patchAttrOffsetValues1Frame, c)[1];
-          }
-          patchAttrOffsetValuesFullGOP[patchCnt][c][2] +=
-              Common::at(patchAttrOffsetValues1Frame, c)[2];
-          patchAttrOffsetValuesFullGOP[patchCnt][c][3] +=
-              Common::at(patchAttrOffsetValues1Frame, c)[3];
-        }
-        patchCnt++;
+        patchTextureStats[p] += writePatchInAtlas(patch, view, atlasList, frameIdx, p);
       }
     }
     m_videoFrameBuffer.push_back(std::move(atlasList));
     ++frameIdx;
   }
+
   if (m_config.textureOffsetFlag) {
-    calculateTextureOffset(patchAttrOffsetValuesFullGOP);
+    encodePatchTextureOffset(patchTextureStats);
+    applyPatchTextureOffset();
   }
 }
 
@@ -558,11 +461,28 @@ auto Encoder::isRedundantBlock(Common::Vec2i topLeft, Common::Vec2i bottomRight,
   return true;
 }
 
-// NOLINTNEXTLINE(readability-function-cognitive-complexity)
+namespace {
+void adaptPatchStatsToTexture(TextureStats &patchStats, const Common::DeepFrame &view,
+                              Common::DeepFrame &atlas, const Common::Vec2i &pView,
+                              const Common::Vec2i &pAtlas, Common::Vec3i &colorCorrectionOffset) {
+  for (int32_t c = 0; c < 3; ++c) {
+    const auto n = 0 < c ? 2 : 1;
+
+    if (pView.x() % n == 0 && pView.y() % n == 0) {
+      const auto sample = view.texture.getPlane(c)(pView.y() / n, pView.x() / n);
+
+      patchStats[c] << sample;
+      atlas.texture.getPlane(c)(pAtlas.y() / n, pAtlas.x() / n) =
+          Common::assertDownCast<uint16_t>(sample + colorCorrectionOffset[c]);
+    }
+  }
+}
+} // namespace
+
+// NOLINTNEXTLINE(readability-function-cognitive-complexity,readability-function-size)
 auto Encoder::writePatchInAtlas(const MivBitstream::PatchParams &patchParams,
                                 const Common::DeepFrame &view, Common::DeepFrameList &frame,
-                                int32_t frameIdx, size_t patchIdx)
-    -> std::array<std::array<int64_t, 4>, 3> {
+                                int32_t frameIdx, size_t patchIdx) -> TextureStats {
   const auto k = params().vps.indexOf(patchParams.atlasId());
   auto &atlas = frame[k];
 
@@ -574,9 +494,7 @@ auto Encoder::writePatchInAtlas(const MivBitstream::PatchParams &patchParams,
   const auto &inViewParams = m_transportParams.viewParamsList[patchParams.atlasPatchProjectionId()];
   const auto &outViewParams = params().viewParamsList[patchParams.atlasPatchProjectionId()];
 
-  std::array<PatchStats, 3> patchStats{};
-  const auto textureMaxVal = Common::maxLevel<uint16_t>(m_config.texBitDepth);
-  std::fill(patchStats.begin(), patchStats.end(), PatchStats{textureMaxVal});
+  auto textureStats = TextureStats{};
 
   PRECONDITION(0 <= posU && posU + sizeU <= inViewParams.ci.ci_projection_plane_width_minus1() + 1);
   PRECONDITION(0 <= posV &&
@@ -611,7 +529,7 @@ auto Encoder::writePatchInAtlas(const MivBitstream::PatchParams &patchParams,
           }
 
           if (m_config.haveTexture) {
-            adaptPatchStatsToTexture(patchStats, view, atlas, pView, pAtlas,
+            adaptPatchStatsToTexture(textureStats, view, atlas, pView, pAtlas,
                                      m_patchColorCorrectionOffset[patchIdx]);
           }
 
@@ -640,14 +558,7 @@ auto Encoder::writePatchInAtlas(const MivBitstream::PatchParams &patchParams,
     }
   }
 
-  std::array<std::array<int64_t, 4>, 3> ret{};
-  for (int32_t c = 0; c < 3; c++) {
-    Common::at(ret, c)[0] = Common::at(patchStats, c).minVal;
-    Common::at(ret, c)[1] = Common::at(patchStats, c).maxVal;
-    Common::at(ret, c)[2] = Common::at(patchStats, c).sumVal;
-    Common::at(ret, c)[3] = Common::at(patchStats, c).cntVal;
-  }
-  return ret;
+  return textureStats;
 }
 
 void Encoder::adaptAtlas(const MivBitstream::PatchParams &patchParams, Common::DeepFrame &atlas,

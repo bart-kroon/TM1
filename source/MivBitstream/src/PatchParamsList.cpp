@@ -85,9 +85,32 @@ void encodePdu3dRangeDTo(SampleValue atlasPatch3dRangeD, const AtlasSequencePara
   // Check that the atlasPatch3dRangeD value has a code point (easy to get wrong)
   PRECONDITION(decodePdu3dRangeD(pdu, asps, ath) == atlasPatch3dRangeD);
 }
+
+// TODO(MPEG/MIV/Specs/23090-12#447): 8.4.2.3 asme_patch_texture_offset_bit_depth_minus1 semantics
+auto texture2dBitDepthMinus1(const V3cParameterSet &vps, AtlasId atlasId) {
+  auto result = std::optional<uint8_t>{};
+
+  for (uint8_t attrIdx = 0; attrIdx < vps.attrCount(atlasId); ++attrIdx) {
+    if (vps.attrTypeId(atlasId, attrIdx) == AiAttributeTypeId::ATTR_TEXTURE) {
+      if (result) {
+        if (*result != vps.attr2dBitDepthMinus1(atlasId, attrIdx)) {
+          throw std::runtime_error(
+              "The MIV specification is unclear on what should happen when patch texture offset is "
+              "enabled, there are multiple texture attributes, and they differ in 2D bit depth.");
+        }
+      } else {
+        result = vps.attr2dBitDepthMinus1(atlasId, attrIdx);
+      }
+    }
+  }
+
+  VERIFY_MIVBITSTREAM(result.has_value());
+  return *result;
+}
 } // namespace
 
-auto PatchParams::decodePdu(const PatchDataUnit &pdu, const AtlasSequenceParameterSetRBSP &asps,
+auto PatchParams::decodePdu(const PatchDataUnit &pdu, const V3cParameterSet &vps, AtlasId atlasId,
+                            const AtlasSequenceParameterSetRBSP &asps,
                             const AtlasFrameParameterSetRBSP &afps, const AtlasTileHeader &ath)
     -> PatchParams {
   auto pp = PatchParams{};
@@ -142,8 +165,14 @@ auto PatchParams::decodePdu(const PatchDataUnit &pdu, const AtlasSequenceParamet
       pp.atlasPatchDepthOccThreshold(pdu.pdu_miv_extension().pdu_depth_occ_threshold());
     }
     if (asme.asme_patch_texture_offset_enabled_flag()) {
+      const auto ai_attribute_2d_bit_depth_minus1 = texture2dBitDepthMinus1(vps, atlasId);
+
       for (uint8_t c = 0; c < 3; ++c) {
-        pp.atlasPatchTextureOffset(c, pdu.pdu_miv_extension().pdu_texture_offset(c));
+        pp.atlasPatchTextureOffset(c, Common::downCast<int32_t>(Common::shift(
+                                          pdu.pdu_miv_extension().pdu_texture_offset(c),
+                                          ai_attribute_2d_bit_depth_minus1 -
+                                              asme.asme_patch_texture_offset_bit_depth_minus1())) -
+                                          (int32_t{1} << ai_attribute_2d_bit_depth_minus1));
       }
     }
     if (asme.asme_inpaint_enabled_flag()) {
@@ -154,7 +183,8 @@ auto PatchParams::decodePdu(const PatchDataUnit &pdu, const AtlasSequenceParamet
   return pp;
 }
 
-auto PatchParams::encodePdu(const AtlasSequenceParameterSetRBSP &asps,
+auto PatchParams::encodePdu(const V3cParameterSet &vps, AtlasId atlasId,
+                            const AtlasSequenceParameterSetRBSP &asps,
                             const AtlasFrameParameterSetRBSP &afps,
                             const AtlasTileHeader &ath) const -> MivBitstream::PatchDataUnit {
   auto pdu = MivBitstream::PatchDataUnit{};
@@ -210,15 +240,23 @@ auto PatchParams::encodePdu(const AtlasSequenceParameterSetRBSP &asps,
   if (asme_depth_occ_threshold_flag()) {
     pdu.pdu_miv_extension().pdu_depth_occ_threshold(atlasPatchDepthOccThreshold());
   }
-  if (asps.asps_miv_extension_present_flag() &&
-      asps.asps_miv_extension().asme_patch_texture_offset_enabled_flag()) {
-    for (uint8_t c = 0; c < 3; ++c) {
-      pdu.pdu_miv_extension().pdu_texture_offset(c, atlasPatchTextureOffset(c));
+  if (asps.asps_miv_extension_present_flag()) {
+    const auto &asme = asps.asps_miv_extension();
+
+    if (asme.asme_patch_texture_offset_enabled_flag()) {
+      const auto ai_attribute_2d_bit_depth_minus1 = texture2dBitDepthMinus1(vps, atlasId);
+
+      for (uint8_t c = 0; c < 3; ++c) {
+        pdu.pdu_miv_extension().pdu_texture_offset(
+            c, Common::shift(atlasPatchTextureOffset(c),
+                             asme.asme_patch_texture_offset_bit_depth_minus1() -
+                                 ai_attribute_2d_bit_depth_minus1) +
+                   (int32_t{1} << asme.asme_patch_texture_offset_bit_depth_minus1()));
+      }
     }
-  }
-  if (asps.asps_miv_extension_present_flag() &&
-      asps.asps_miv_extension().asme_inpaint_enabled_flag()) {
-    pdu.pdu_miv_extension().pdu_inpaint_flag(atlasPatchInpaintFlag());
+    if (asme.asme_inpaint_enabled_flag()) {
+      pdu.pdu_miv_extension().pdu_inpaint_flag(atlasPatchInpaintFlag());
+    }
   }
 
   return pdu;

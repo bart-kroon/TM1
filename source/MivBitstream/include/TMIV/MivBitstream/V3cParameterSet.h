@@ -641,6 +641,10 @@ public:
   [[nodiscard]] auto attrIdxOf(AtlasId atlasId, AiAttributeTypeId attrTypeId) const
       -> std::optional<uint8_t>;
 
+  [[nodiscard]] auto attrCount(AtlasId atlasId) const;
+  [[nodiscard]] auto attrTypeId(AtlasId atlasId, uint8_t attrIdx) const;
+  [[nodiscard]] auto attr2dBitDepthMinus1(AtlasId atlasId, uint8_t attrIdx) const;
+
   friend auto operator<<(std::ostream &stream, const V3cParameterSet &x) -> std::ostream &;
 
   [[nodiscard]] auto summary() const -> std::string;

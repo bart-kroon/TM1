@@ -477,11 +477,13 @@ auto MivDecoder::decodePatchParamsList(size_t k, MivBitstream::PatchParamsList &
   const auto &atdu = m_atlasAu[k]->atl.atlas_tile_data_unit();
   const auto &asps = m_atlasAu[k]->asps;
   const auto &afps = m_atlasAu[k]->afps;
+  const auto atlasId = m_au.vps.vps_atlas_id(k);
 
   ppl.assign(atdu.atduTotalNumberOfPatches(), {});
   atdu.visit([&](size_t p, MivBitstream::AtduPatchMode /* unused */,
                  const MivBitstream::PatchInformationData &pid) {
-    ppl[p] = MivBitstream::PatchParams::decodePdu(pid.patch_data_unit(), asps, afps, ath);
+    ppl[p] = MivBitstream::PatchParams::decodePdu(pid.patch_data_unit(), m_au.vps, atlasId, asps,
+                                                  afps, ath);
   });
 
   return ppl;

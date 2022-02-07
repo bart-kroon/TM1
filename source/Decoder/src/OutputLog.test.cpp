@@ -149,7 +149,7 @@ TEST_CASE("Decoder::writeFrameToOutputLog") {
           .atlasPatch3dRangeD(1000)
           .atlasPatchTextureOffset(0, 6)
           .atlasPatchTextureOffset(1, 7)
-          .atlasPatchTextureOffset(2, 9)
+          .atlasPatchTextureOffset(2, -9)
           .atlasPatchDepthOccThreshold(50)
           .atlasPatchEntityId(100)
           .atlasPatchInpaintFlag(true)
@@ -158,9 +158,9 @@ TEST_CASE("Decoder::writeFrameToOutputLog") {
           .atlasPatchOrientationIndex(TMIV::MivBitstream::FlexiblePatchOrientation::FPO_MROT180)
           .atlasPatchProjectionId(ViewId{10});
 
-      reference += "-1 0 8 5 00000000 659eb2c7 00000000 00000000 00000000 00000000\n";
+      reference += "-1 0 8 5 00000000 c223bbe1 00000000 00000000 00000000 00000000\n";
       writeFrameToOutputLog(frame, stream);
-      CHECK(TMIV::Decoder::patchParamsListHash(frame.atlas.front().patchParamsList) == 0x659eb2c7);
+      CHECK(TMIV::Decoder::patchParamsListHash(frame.atlas.front().patchParamsList) == 0xc223bbe1);
       CHECK(stream.str() == reference);
     }
 

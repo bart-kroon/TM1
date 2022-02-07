@@ -51,6 +51,8 @@ namespace TMIV::MivBitstream {
 // in-memory use because of the delta coding and quantization of some of the fields.
 class PatchParams {
 public:
+  static_assert(Common::sampleBitDepth < 32);
+
   [[nodiscard]] constexpr auto atlasId() const noexcept;
   constexpr auto atlasId(AtlasId value) noexcept -> decltype(auto);
 
@@ -87,7 +89,7 @@ public:
   constexpr auto atlasPatchLoDScaleY(int32_t value) noexcept -> PatchParams &;
   constexpr auto atlasPatchEntityId(Common::SampleValue value) noexcept -> PatchParams &;
   constexpr auto atlasPatchDepthOccThreshold(uint32_t value) noexcept -> PatchParams &;
-  auto atlasPatchTextureOffset(uint8_t c, Common::SampleValue value) noexcept -> PatchParams &;
+  auto atlasPatchTextureOffset(uint8_t c, int32_t value) noexcept -> PatchParams &;
   constexpr auto atlasPatchInpaintFlag(bool value) noexcept -> PatchParams &;
 
   // Is the patch rotated such that width and height swap?
@@ -116,10 +118,12 @@ public:
   [[nodiscard]] static auto viewToAtlas(Common::Vec2i uv, const Common::Mat3x3i &m) noexcept
       -> Common::Vec2i;
 
-  static auto decodePdu(const PatchDataUnit &pdu, const AtlasSequenceParameterSetRBSP &asps,
+  static auto decodePdu(const PatchDataUnit &pdu, const V3cParameterSet &vps, AtlasId atlasId,
+                        const AtlasSequenceParameterSetRBSP &asps,
                         const AtlasFrameParameterSetRBSP &afps, const AtlasTileHeader &ath)
       -> PatchParams;
-  [[nodiscard]] auto encodePdu(const AtlasSequenceParameterSetRBSP &asps,
+  [[nodiscard]] auto encodePdu(const V3cParameterSet &vps, AtlasId atlasId,
+                               const AtlasSequenceParameterSetRBSP &asps,
                                const AtlasFrameParameterSetRBSP &afps,
                                const AtlasTileHeader &ath) const -> PatchDataUnit;
 
@@ -143,7 +147,7 @@ private:
   FlexiblePatchOrientation m_atlasPatchOrientationIndex{FlexiblePatchOrientation::FPO_INVALID};
   Common::SampleValue m_atlasPatchEntityId{};
   std::optional<uint32_t> m_atlasPatchDepthOccThreshold;
-  Common::Vec3sv m_atlasPatchTextureOffset{};
+  Common::Vec3i m_atlasPatchTextureOffset{};
   bool m_atlasPatchInpaintFlag{};
 };
 

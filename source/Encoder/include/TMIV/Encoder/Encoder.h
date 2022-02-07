@@ -38,11 +38,13 @@
 #include <TMIV/DepthQualityAssessor/IDepthQualityAssessor.h>
 #include <TMIV/Encoder/Configuration.h>
 #include <TMIV/Encoder/FramePacker.h>
+#include <TMIV/Encoder/SampleStats.h>
 #include <TMIV/MivBitstream/SequenceConfig.h>
 #include <TMIV/Packer/IPacker.h>
 #include <TMIV/Pruner/IPruner.h>
 #include <TMIV/ViewOptimizer/IViewOptimizer.h>
 
+#include <algorithm>
 #include <bitset>
 #include <deque>
 #include <memory>
@@ -50,6 +52,9 @@
 namespace TMIV::Encoder {
 auto assessColorConsistency(Common::DeepFrameList views, MivBitstream::ViewParamsList params)
     -> std::vector<Common::Mat<Common::Vec3i>>;
+
+using TextureStats = Common::stack::Vec3<SampleStats>;
+using PatchTextureStats = std::vector<TextureStats>;
 
 class Encoder {
 public:
@@ -86,18 +91,15 @@ private:
   void updateAggregationStatistics(const Common::FrameList<uint8_t> &aggregatedMask);
   void constructVideoFrames();
   void correctColors();
-  void calculateTextureOffset(
-      std::vector<std::array<std::array<int64_t, 4>, 3>> patchAttrOffsetValuesFullGOP);
-  auto calculatePatchAttrOffsetValuesFullGOP(
-      std::vector<std::array<std::array<int64_t, 4>, 3>> &patchAttrOffsetValuesFullGOP) -> int32_t;
+  void encodePatchTextureOffset(const PatchTextureStats &stats);
+  void applyPatchTextureOffset();
   [[nodiscard]] auto calculateBtpm() const -> std::vector<std::vector<std::vector<int32_t>>>;
   void adaptBtpmToPatchCount(std::vector<std::vector<std::vector<int32_t>>> &btpm) const;
   [[nodiscard]] auto isRedundantBlock(Common::Vec2i topLeft, Common::Vec2i bottomRight,
                                       uint16_t viewIdx, int32_t frameIdx) const -> bool;
   auto writePatchInAtlas(const MivBitstream::PatchParams &patchParams,
                          const Common::DeepFrame &view, Common::DeepFrameList &frame,
-                         int32_t frameIdx, size_t patchIdx)
-      -> std::array<std::array<int64_t, 4>, 3>;
+                         int32_t frameIdx, size_t patchIdx) -> TextureStats;
   void adaptAtlas(const MivBitstream::PatchParams &patchParams, Common::DeepFrame &atlas,
                   int32_t yOcc, int32_t xOcc, const Common::Vec2i &pView,
                   const Common::Vec2i &pAtlas) const;

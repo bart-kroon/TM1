@@ -625,4 +625,25 @@ constexpr auto V3cParameterSet::vps_extension_present_flag(bool value) noexcept 
 constexpr auto V3cParameterSet::profile_tier_level() noexcept -> auto & {
   return m_profile_tier_level;
 }
+
+inline auto V3cParameterSet::attrCount(AtlasId atlasId) const {
+  if (vps_attribute_video_present_flag(atlasId)) {
+    return attribute_information(atlasId).ai_attribute_count();
+  }
+  return packing_information(atlasId).pin_attribute_count();
+}
+
+inline auto V3cParameterSet::attrTypeId(AtlasId atlasId, uint8_t attrIdx) const {
+  if (vps_attribute_video_present_flag(atlasId)) {
+    return attribute_information(atlasId).ai_attribute_type_id(attrIdx);
+  }
+  return packing_information(atlasId).pin_attribute_type_id(attrIdx);
+}
+
+inline auto V3cParameterSet::attr2dBitDepthMinus1(AtlasId atlasId, uint8_t attrIdx) const {
+  if (vps_attribute_video_present_flag(atlasId)) {
+    return attribute_information(atlasId).ai_attribute_2d_bit_depth_minus1(attrIdx);
+  }
+  return packing_information(atlasId).pin_attribute_2d_bit_depth_minus1(attrIdx);
+}
 } // namespace TMIV::MivBitstream

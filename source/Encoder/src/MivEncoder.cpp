@@ -353,7 +353,7 @@ auto MivEncoder::atlasTileLayer(size_t k) const -> MivBitstream::AtlasTileLayerR
   for (const auto &pp : m_params.patchParamsList) {
     if (pp.atlasId() == atlasId) {
       patchData.emplace_back(MivBitstream::AtduPatchMode::I_INTRA,
-                             pp.encodePdu(aau.asps, aau.afps, aau.ath));
+                             pp.encodePdu(m_params.vps, atlasId, aau.asps, aau.afps, aau.ath));
     }
   }
 

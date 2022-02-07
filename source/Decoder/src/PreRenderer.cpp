@@ -550,7 +550,6 @@ void PreRenderer::offsetTexture(const MivBitstream::V3cParameterSet &vps,
     return;
   }
 
-  const auto midValue = frame.neutralValue();
   const int32_t maxValue = frame.maxValue();
 
   for (int32_t i = 0; i < frame.getHeight(); ++i) {
@@ -566,11 +565,8 @@ void PreRenderer::offsetTexture(const MivBitstream::V3cParameterSet &vps,
       for (uint8_t c = 0; c < 3; c++) {
         auto &value = frame.getPlane(c)(i, j);
 
-        static_assert(Common::sampleBitDepth < 32);
-        const auto textureOffset = Common::assertDownCast<int32_t>(pp.atlasPatchTextureOffset(c));
-
         value = static_cast<Common::DefaultElement>(
-            std::clamp(value + textureOffset - midValue, {}, maxValue));
+            std::clamp(value + pp.atlasPatchTextureOffset(c), {}, maxValue));
       }
     }
   }

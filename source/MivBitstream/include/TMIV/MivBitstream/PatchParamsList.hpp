@@ -165,7 +165,7 @@ constexpr auto PatchParams::atlasPatchDepthOccThreshold(uint32_t value) noexcept
   return *this;
 }
 
-inline auto PatchParams::atlasPatchTextureOffset(uint8_t c, Common::SampleValue value) noexcept
+inline auto PatchParams::atlasPatchTextureOffset(uint8_t c, int32_t value) noexcept
     -> PatchParams & {
   m_atlasPatchTextureOffset[c] = value;
   return *this;

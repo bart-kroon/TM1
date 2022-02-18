@@ -1,0 +1,27 @@
+.cpp_rules_template: &cpp_rules_definition
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      changes:
+        - .clang-format
+        - .clang-tidy
+        - .gitlab-ci.yml
+        - ".gitlab/ci/*.yml"
+        - "**/CMakeLists.txt"
+        - "**/*.cmake"
+        - "**/*.cmake.in"
+        - "**/*.cpp"
+        - "**/*.h"
+        - "**/*.hpp"
+
+C++ formatting:
+  <<: *cpp_rules_definition
+
+Code quality rules:
+  <<: *cpp_rules_definition
+
+Release build (GCC 9):
+  <<: *cpp_rules_definition
+
+Debug build and static analysis (Clang 12):
+  <<: *cpp_rules_definition

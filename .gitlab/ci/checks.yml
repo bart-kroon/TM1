@@ -1,9 +1,9 @@
-black:
-  stage: check
+Python formatting:
+  stage: formatting
   image:
     name: cytopia/black:latest
     entrypoint: ["/bin/sh", "-c"]
-  tags: [ linux ]
+  tags: [ linux-short ]
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
@@ -13,10 +13,10 @@ black:
   script:
     - python3 -m black --check --diff scripts/
 
-pytest:
-  stage: check
+Python unit tests:
+  stage: checks
   image: python:latest
-  tags: [ linux ]
+  tags: [ linux-short ]
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
@@ -33,41 +33,46 @@ pytest:
   script:
     - pytest scripts
 
-clang-format:
-  stage: check
+C++ formatting:
+  stage: formatting
   image: cbachhuber/clang:12
-  tags: [ linux ]
+  tags: [ linux-short ]
   script:
     - ./scripts/check/clang_format.py
     - git diff
     - if [[ $(git diff) ]]; then echo "Formatting is wrong. Please see above."; return 1; fi
 
-no multi-line commit messages:
-  stage: check
+No multi-line commit messages:
+  stage: checks
   image:
     name: cbachhuber/clang:12
-  tags: [ linux ]
+  tags: [ linux-short ]
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
   script:
     - git fetch --all -p
-    - NUM_COMMIT_MESSAGE_LINES=$(git log --pretty=format:%B main..HEAD | sed '/^\s*$/d' | grep -c "")
-    - NUM_COMMITS=$(git rev-list --count main..HEAD)
+    - NUM_COMMIT_MESSAGE_LINES=$(git log --pretty=format:%B remotes/origin/main..HEAD | sed '/^\s*$/d' | grep -c "")
+    - NUM_COMMITS=$(git rev-list --count remotes/origin/main..HEAD)
     - if [[ "$NUM_COMMIT_MESSAGE_LINES" -ne "$NUM_COMMITS" ]]; then echo "Merge requests with multi-line commit messages result in a wrong commit message on main. Please rewrite the commit message(s) to have only one line."; fail; fi
 
 Code quality rules:
-  stage: check
+  stage: checks
   image: cbachhuber/clang:12
-  tags: [ linux ]
+  tags: [ linux-short ]
   script:
     - ./scripts/check/code_quality_rules.py
     - git diff
     - if [[ $(git diff) ]]; then echo "At least one code quality rule check has triggered. Please see above."; return 1; fi
 
-format-json:
-  stage: check
+JSON formatting:
+  stage: formatting
   image: cbachhuber/clang:12
-  tags: [ linux ]
+  tags: [ linux-short ]
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      changes:
+        - "**/*.json"
   script:
     - ./scripts/check/format_json.py
     - git diff

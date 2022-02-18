@@ -1,7 +1,8 @@
 stages:
-  - check
-  - build
-  - integration
+  - formatting
+  - checks
+  - release build
+  - static analysis
 
 default:
   interruptible: true
@@ -9,41 +10,4 @@ default:
 include:
   - /.gitlab/ci/checks.yml
   - /.gitlab/ci/builds.yml
-  - /.gitlab/ci/integration_test.yml
-
-.cpp_rules_template: &cpp_rules_definition
-  rules:
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-      changes:
-        - .clang-format
-        - .clang-tidy
-        - .gitlab-ci.yml
-        - ".gitlab/ci/*.yml"
-        - "**/CMakeLists.txt"
-        - "**/*.cmake"
-        - "**/*.cmake.in"
-        - "**/*.cpp"
-        - "**/*.h"
-        - "**/*.hpp"
-        - "scripts/test/integration_test.py"
-
-clang-format:
-  <<: *cpp_rules_definition
-
-Code quality rules:
-  <<: *cpp_rules_definition
-
-GCC 9 Release:
-  <<: *cpp_rules_definition
-
-Clang 12 Debug:
-  <<: *cpp_rules_definition
-
-VC 16 Release:
-  <<: *cpp_rules_definition
-
-Integration Test:
-  <<: *cpp_rules_definition
-  dependencies:
-    - VC 16 Release
+  - /.gitlab/ci/rules.yml

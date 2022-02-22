@@ -305,7 +305,9 @@ createCommonAtlasSequenceParameterSet(const Configuration &config,
       .asme_max_entity_id(config.maxEntityId);
 
   if (config.geometryScaleEnabledFlag) {
-    asme.asme_geometry_scale_factor_x_minus1(1).asme_geometry_scale_factor_y_minus1(1);
+    static int factor = 0;
+    asme.asme_geometry_scale_factor_x_minus1(static_cast<uint16_t>(factor++));
+    asme.asme_geometry_scale_factor_y_minus1(static_cast<uint16_t>(factor++));
   }
   if (config.haveOccupancy) {
     const auto occFrameSizeX = std::lcm(2, vps.vps_frame_width(j) / blockSize);

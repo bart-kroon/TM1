@@ -5,6 +5,7 @@ create_tmiv_library(
         EncoderLib
     SOURCES
         "src/Configuration.cpp"    
+        "src/EncodeMiv.cpp"
         "src/Encoder.cpp"
         "src/Encoder_assessColorConsistency.cpp"
         "src/Encoder_prepareSequence.cpp"
@@ -14,8 +15,8 @@ create_tmiv_library(
         "src/Encoder_popFrame.cpp"
         "src/GeometryQuantizer.cpp"
         "src/GeometryDownscaler.cpp"
-        "src/MivEncoder.cpp"
         "src/FramePacker.cpp"
+        "src/V3cSampleSink.cpp"
     PUBLIC
         TMIV::ViewOptimizerLib
         TMIV::PrunerLib
@@ -47,46 +48,17 @@ create_tmiv_executable(
         TMIV::MpiPcsLib
     )
 
-create_tmiv_library(
-    TARGET
-        MultiplexerLib
-    SOURCES
-        "src/Multiplexer.cpp"
-    PUBLIC
-        TMIV::MivBitstreamLib
-)
-
-create_catch2_unit_test(
-    TARGET
-        MultiplexerTest
-    SOURCES
-        "src/Multiplexer.test.cpp"
-    PRIVATE
-        TMIV::MultiplexerLib
-)
-
-create_tmiv_executable(
-    TARGET
-        Multiplexer
-    SOURCES
-        "src/Multiplexer.main.cpp"
-    PRIVATE
-        TMIV::MultiplexerLib
-        TMIV::IOLib
-    )
-
 create_catch2_unit_test(
     TARGET
         EncoderTest
     SOURCES
-        "src/AnnexB.test.cpp"
         "src/ColorConsistencyAssessor.test.cpp"
         "src/Configuration.test.cpp"
+        "src/EncodeMiv.test.cpp"
         "src/Encoder_prepareSequence.test.cpp"
         "src/ExplicitOccupancy.test.cpp"
         "src/FramePacker.test.cpp"
         "src/GeometryQuantizer.test.cpp"
-        "src/MivEncoder.test.cpp"
     PRIVATE
         TMIV::EncoderLib
     )

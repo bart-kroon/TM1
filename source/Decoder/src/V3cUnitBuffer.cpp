@@ -37,32 +37,60 @@
 #include <utility>
 
 namespace TMIV::Decoder {
-V3cUnitBuffer::V3cUnitBuffer(V3cUnitSource source) : m_source{std::move(source)} {}
+V3cUnitBuffer::V3cUnitBuffer(Common::Source<MivBitstream::V3cUnit> source, OnVps onVps)
+    : m_source{std::move(source)}, m_onVps{std::move(onVps)} {}
 
-auto V3cUnitBuffer::operator()(const MivBitstream::V3cUnitHeader &vuh)
+auto V3cUnitBuffer::operator()(MivBitstream::V3cUnitHeader vuh)
     -> std::optional<MivBitstream::V3cUnit> {
   auto i = m_buffer.begin();
 
   for (;;) {
     if (i == m_buffer.end()) {
+      if (m_source == nullptr) {
+        return {};
+      }
       if (auto vu = m_source()) {
-        m_buffer.push_back(std::move(*vu));
-        i = std::prev(m_buffer.end());
+        i = m_buffer.insert(i, std::move(*vu));
       } else {
+        m_source = nullptr;
         return {};
       }
     }
     if (i->v3c_unit_header() == vuh) {
       auto vu = std::move(*i);
-      i = m_buffer.erase(i);
+      m_buffer.erase(i);
       return vu;
     }
-    if (vuh.vuh_unit_type() == MivBitstream::VuhUnitType::V3C_VPS) {
-      std::cout << "WARNING: Ignoring V3C unit:\n" << *i;
+    if (i->v3c_unit_header() == MivBitstream::V3cUnitHeader::vps()) {
+      auto vu = std::move(*i);
       i = m_buffer.erase(i);
+      m_onVps(vu);
+    } else if (vuh == MivBitstream::V3cUnitHeader::vps()) {
+      throw V3cUnitBufferError(fmt::format("Expected a VPS but found the following V3C unit: {}",
+                                           i->v3c_unit_header().summary()));
     } else {
       ++i;
     }
   }
+}
+
+auto videoSubBitstreamSource(std::shared_ptr<V3cUnitBuffer> buffer, MivBitstream::V3cUnitHeader vuh)
+    -> Common::Source<MivBitstream::VideoSubBitstream> {
+  return [buffer = std::move(buffer), vuh]() -> std::optional<MivBitstream::VideoSubBitstream> {
+    if (auto v3cUnit = (*buffer)(vuh)) {
+      return v3cUnit->v3c_unit_payload().video_sub_bitstream();
+    }
+    return std::nullopt;
+  };
+}
+
+auto atlasSubBitstreamSource(std::shared_ptr<V3cUnitBuffer> buffer, MivBitstream::V3cUnitHeader vuh)
+    -> Common::Source<MivBitstream::AtlasSubBitstream> {
+  return [buffer = std::move(buffer), vuh]() -> std::optional<MivBitstream::AtlasSubBitstream> {
+    if (auto v3cUnit = (*buffer)(vuh)) {
+      return v3cUnit->v3c_unit_payload().atlas_sub_bitstream();
+    }
+    return std::nullopt;
+  };
 }
 } // namespace TMIV::Decoder

@@ -158,6 +158,10 @@ private:
   V3cUnitHeader m_v3c_unit_header;
   V3cUnitPayload m_v3c_unit_payload;
 };
+
+[[nodiscard]] auto commonAtlasVuhs(const V3cParameterSet &vps) -> std::vector<V3cUnitHeader>;
+[[nodiscard]] auto atlasVuhs(const V3cParameterSet &vps) -> std::vector<V3cUnitHeader>;
+[[nodiscard]] auto videoVuhs(const V3cParameterSet &vps) -> std::vector<V3cUnitHeader>;
 } // namespace TMIV::MivBitstream
 
 #include "V3cUnit.hpp"

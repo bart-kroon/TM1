@@ -217,6 +217,14 @@ struct RendererFrame {
   Common::Frame<> geometry;
 };
 
+struct DecodedFrame : public Common::Frame<> {
+  DecodedFrame() = default;
+  DecodedFrame(Common::Frame<> frame, bool irap_)
+      : Common::Frame<>{std::move(frame)}, irap{irap_} {}
+
+  bool irap{};
+};
+
 template <typename Element = DefaultElement> using FrameList = std::vector<Frame<Element>>;
 using V3cFrameList = std::vector<V3cFrame>;
 using DeepFrameList = std::vector<DeepFrame>;

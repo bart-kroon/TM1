@@ -68,8 +68,8 @@
     "outputGeometryVideoDataPathFmt": "N{0}/{1}/TMIV_N{0}_{1}_geo_c{3:02}_{4}x{5}_{6}.yuv",
     "outputTextureVideoDataPathFmt": "N{0}/{1}/TMIV_N{0}_{1}_tex_c{3:02}_{4}x{5}_{6}.yuv",
     "patchRedundancyRemoval": true,
-    "randomAccess": false,
     "reconstructionIdc": "Rec Unconstrained",
+    "rewriteParameterSets": false,
     "toolsetIdc": "MIV Main",
     "viewportCameraParametersSei": false,
     "viewportPositionSei": false

@@ -33,15 +33,20 @@
 
 #include <TMIV/Common/Application.h>
 #include <TMIV/Common/Factory.h>
-#include <TMIV/Decoder/MivDecoder.h>
+#include <TMIV/Decoder/DecodeAtlasSubBitstream.h>
+#include <TMIV/Decoder/DecodeMiv.h>
+#include <TMIV/Decoder/DecodeNalUnitStream.h>
+#include <TMIV/Decoder/DecodeV3cSampleStream.h>
+#include <TMIV/Decoder/DecodeVideoSubBitstream.h>
 #include <TMIV/Decoder/OutputLog.h>
 #include <TMIV/Decoder/PreRenderer.h>
-#include <TMIV/Decoder/V3cSampleStreamDecoder.h>
 #include <TMIV/IO/IO.h>
 #include <TMIV/MivBitstream/SequenceConfig.h>
+#include <TMIV/PtlChecker/PtlChecker.h>
 #include <TMIV/Renderer/Front/MultipleFrameRenderer.h>
 #include <TMIV/Renderer/Front/mapInputToOutputFrames.h>
 #include <TMIV/Renderer/RecoverPrunedViews.h>
+#include <TMIV/VideoDecoder/VideoDecoder.h>
 
 #include <fstream>
 #include <iostream>
@@ -61,8 +66,8 @@ private:
   std::multimap<int32_t, int32_t> m_inputToOutputFrameIdMap;
   std::filesystem::path m_inputBitstreamPath;
   std::ifstream m_inputBitstream;
-  V3cSampleStreamDecoder m_vssDecoder;
-  MivDecoder m_mivDecoder;
+  PtlChecker::SharedChecker m_checker;
+  Common::Source<MivBitstream::AccessUnit> m_mivDecoder;
   MivBitstream::SequenceConfig m_outputSequenceConfig;
   std::ofstream m_outputLog;
 
@@ -85,9 +90,8 @@ public:
             m_placeholders.numberOfInputFrames, m_placeholders.numberOfOutputFrames)}
       , m_inputBitstreamPath{IO::inputBitstreamPath(json(), m_placeholders)}
       , m_inputBitstream{m_inputBitstreamPath, std::ios::binary}
-      , m_vssDecoder{createVssDecoder()}
-      , m_mivDecoder{[this]() { return m_vssDecoder(); }} {
-    setFrameServer(m_mivDecoder);
+      , m_checker{std::make_shared<PtlChecker::PtlChecker>()}
+      , m_mivDecoder{decodeMiv()} {
     tryOpenOutputLog();
   }
 
@@ -98,7 +102,7 @@ public:
       }
 
       // Check which frames to render if we would
-      const auto range = m_inputToOutputFrameIdMap.equal_range(frame->foc);
+      const auto range = m_inputToOutputFrameIdMap.equal_range(frame->frameIdx);
       if (range.first == range.second) {
         return;
       }
@@ -106,31 +110,85 @@ public:
       // Recover geometry, occupancy, and filter blockToPatchMap
       m_preRenderer.preRenderFrame(*frame);
 
-      outputSequenceConfig(frame->sequenceConfig(), frame->foc);
-      IO::optionalSaveBlockToPatchMaps(json(), m_placeholders, frame->foc, *frame);
-      optionalSavePrunedFrame(frame->foc, Renderer::recoverPrunedViews(*frame));
+      outputSequenceConfig(frame->sequenceConfig(), frame->frameIdx);
+      IO::optionalSaveBlockToPatchMaps(json(), m_placeholders, frame->frameIdx, *frame);
+      optionalSavePrunedFrame(frame->frameIdx, Renderer::recoverPrunedViews(*frame));
 
       m_renderer.renderMultipleFrames(*frame, range.first, range.second);
     }
   }
 
 private:
-  auto createVssDecoder() -> V3cSampleStreamDecoder {
+  auto decodeMiv() -> Common::Source<MivBitstream::AccessUnit> {
     if (!m_inputBitstream.good()) {
       throw std::runtime_error(fmt::format("Failed to open {} for reading", m_inputBitstreamPath));
     }
-    return V3cSampleStreamDecoder{m_inputBitstream};
+    return Decoder::decodeMiv(decodeV3cSampleStream(m_inputBitstream), videoDecoderFactory(),
+                              m_checker, commonAtlasDecoderFactory(), atlasDecoderFactory());
   }
 
-  void setFrameServer(MivDecoder &mivDecoder) const {
-    mivDecoder.setFrameServer([this](MivBitstream::V3cUnitHeader vuh, int32_t frameIdx,
-                                     const MivBitstream::V3cParameterSet &vps,
-                                     const MivBitstream::AtlasSequenceParameterSetRBSP &asps) {
-      if (frameIdx < m_placeholders.numberOfInputFrames) {
-        return IO::loadOutOfBandVideoFrame(json(), m_placeholders, vuh, frameIdx, vps, asps);
+  auto videoDecoderFactory() -> VideoDecoderFactory {
+    return [this](Common::Source<MivBitstream::VideoSubBitstream> source,
+                  const MivBitstream::V3cParameterSet &vps,
+                  MivBitstream::V3cUnitHeader vuh) -> Common::Source<Common::DecodedFrame> {
+      if ((source = Common::test(source))) {
+        return decodeVideo(vps, decodeNalUnitStream(decodeVideoSubBitstream(std::move(source))));
       }
-      return Common::Frame<>{};
-    });
+      return loadOutOfBandVideo(vuh);
+    };
+  }
+
+  static auto decodeVideo(const MivBitstream::V3cParameterSet &vps,
+                          Common::Source<std::string> source)
+      -> Common::Source<Common::DecodedFrame> {
+    const auto codecGroupIdc = vps.profile_tier_level().ptl_profile_codec_group_idc();
+
+    auto result = [codecGroupIdc, &source]() {
+      switch (codecGroupIdc) {
+      case MivBitstream::PtlProfileCodecGroupIdc::AVC_Progressive_High:
+        return VideoDecoder::decodeAvcProgressiveHigh(std::move(source));
+      case MivBitstream::PtlProfileCodecGroupIdc::HEVC_Main10:
+        return VideoDecoder::decodeHevcMain10(std::move(source));
+      case MivBitstream::PtlProfileCodecGroupIdc::HEVC444:
+        return VideoDecoder::decodeHevc444(std::move(source));
+      case MivBitstream::PtlProfileCodecGroupIdc::VVC_Main10:
+        return VideoDecoder::decodeVvcMain10(std::move(source));
+      default:
+        return Common::Source<Common::DecodedFrame>{};
+      }
+    }();
+
+    if (result) {
+      return result;
+    }
+    throw std::runtime_error(
+        fmt::format("Failed to initialize a video decoder for codec group IDC {}", codecGroupIdc));
+  }
+
+  auto loadOutOfBandVideo(MivBitstream::V3cUnitHeader vuh) -> Common::Source<Common::DecodedFrame> {
+    return [=, frameIdx = int32_t{}]() mutable -> std::optional<Common::DecodedFrame> {
+      if (frameIdx < m_placeholders.numberOfInputFrames) {
+        return IO::loadOutOfBandVideoFrame(json(), m_placeholders, vuh, frameIdx++);
+      }
+      return std::nullopt;
+    };
+  }
+
+  auto commonAtlasDecoderFactory() -> CommonAtlasDecoderFactory {
+    return [checker = m_checker](
+               Common::Source<MivBitstream::AtlasSubBitstream> source,
+               const MivBitstream::V3cParameterSet &vps) -> Common::Source<CommonAtlasAccessUnit> {
+      return decodeCommonAtlas(decodeAtlasSubBitstream(std::move(source)), vps, checker);
+    };
+  }
+
+  auto atlasDecoderFactory() -> AtlasDecoderFactory {
+    return
+        [checker = m_checker](Common::Source<MivBitstream::AtlasSubBitstream> source,
+                              const MivBitstream::V3cParameterSet &vps,
+                              MivBitstream::V3cUnitHeader vuh) -> Common::Source<AtlasAccessUnit> {
+          return decodeAtlas(decodeAtlasSubBitstream(std::move(source)), vuh, vps, checker);
+        };
   }
 
   void tryOpenOutputLog() {
@@ -145,14 +203,14 @@ private:
     }
   }
 
-  void outputSequenceConfig(MivBitstream::SequenceConfig sc, int32_t foc) {
+  void outputSequenceConfig(MivBitstream::SequenceConfig sc, int32_t frameIdx) {
     // NOTE(#463): Inject the frame count into the sequence configuration, because the decoder
     // library does not have that knowledge.
     sc.numberOfFrames = std::stoi(optionValues("-n"sv).front());
 
     if (m_outputSequenceConfig != sc) {
       m_outputSequenceConfig = std::move(sc);
-      IO::optionalSaveSequenceConfig(json(), m_placeholders, foc, m_outputSequenceConfig);
+      IO::optionalSaveSequenceConfig(json(), m_placeholders, frameIdx, m_outputSequenceConfig);
     }
   }
 
@@ -191,8 +249,8 @@ auto main(int argc, char *argv[]) -> int32_t {
   } catch (std::runtime_error &e) {
     std::cerr << e.what() << std::endl;
     return 1;
-  } catch (std::logic_error &e) {
+  } catch (std::bad_function_call &e) {
     std::cerr << e.what() << std::endl;
-    return 3;
+    return 2;
   }
 }

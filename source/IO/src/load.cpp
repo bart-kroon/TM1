@@ -298,128 +298,97 @@ auto loadViewportMetadata(const Common::Json &config, const Placeholders &placeh
 }
 
 namespace {
-[[nodiscard]] auto attrTypeId(MivBitstream::V3cUnitHeader vuh,
-                              const MivBitstream::V3cParameterSet &vps) noexcept {
-  if (vuh.vuh_unit_type() == MivBitstream::VuhUnitType::V3C_AVD) {
-    const auto &ai = vps.attribute_information(vuh.vuh_atlas_id());
-    return ai.ai_attribute_type_id(vuh.vuh_attribute_index());
-  }
-  return MivBitstream::AiAttributeTypeId::ATTR_UNSPECIFIED;
-}
+auto loadVuhFromJson(const Common::Json &node) -> MivBitstream::V3cUnitHeader {
+  const auto vuh_unit_type = node.require("vuh_unit_type").as<MivBitstream::VuhUnitType>();
+  const auto vuh_v3c_parameter_set_id = node.require("vuh_v3c_parameter_set_id").as<uint8_t>();
+  const auto vuh_atlas_id = MivBitstream::AtlasId{node.require("vuh_atlas_id").as<uint8_t>()};
 
-[[nodiscard]] auto outOfBandFrameSizeOf(MivBitstream::V3cUnitHeader vuh,
-                                        const MivBitstream::V3cParameterSet &vps,
-                                        const MivBitstream::AtlasSequenceParameterSetRBSP &asps)
-    -> Common::Vec2i {
-  auto scaleFactor = Common::Vec2i{1, 1};
-
-  switch (vuh.vuh_unit_type()) {
+  switch (vuh_unit_type) {
   case MivBitstream::VuhUnitType::V3C_OVD:
-    if (asps.asps_miv_extension_present_flag() &&
-        asps.asps_miv_extension().asme_occupancy_scale_enabled_flag()) {
-      scaleFactor = {asps.asps_miv_extension().asme_occupancy_scale_factor_x_minus1() + 1,
-                     asps.asps_miv_extension().asme_occupancy_scale_factor_y_minus1() + 1};
-    }
-    break;
+    return MivBitstream::V3cUnitHeader::ovd(vuh_v3c_parameter_set_id, vuh_atlas_id);
   case MivBitstream::VuhUnitType::V3C_GVD:
-    if (asps.asps_miv_extension_present_flag() &&
-        asps.asps_miv_extension().asme_geometry_scale_enabled_flag()) {
-      scaleFactor = {asps.asps_miv_extension().asme_geometry_scale_factor_x_minus1() + 1,
-                     asps.asps_miv_extension().asme_geometry_scale_factor_y_minus1() + 1};
-    }
-    break;
+    return MivBitstream::V3cUnitHeader::gvd(vuh_v3c_parameter_set_id, vuh_atlas_id,
+                                            node.require("vuh_map_index").as<uint8_t>(),
+                                            node.require("vuh_auxiliary_video_flag").as<bool>());
   case MivBitstream::VuhUnitType::V3C_AVD:
-    break;
-  case MivBitstream::VuhUnitType::V3C_PVD: {
-    auto size = Common::Vec2i{};
+    return MivBitstream::V3cUnitHeader::avd(
+        vuh_v3c_parameter_set_id, vuh_atlas_id, node.require("vuh_attribute_index").as<uint8_t>(),
+        node.require("vuh_attribute_partition_index").as<uint8_t>(),
+        node.require("vuh_map_index").as<uint8_t>(),
+        node.require("vuh_auxiliary_video_flag").as<bool>());
+  case MivBitstream::VuhUnitType::V3C_PVD:
+    return MivBitstream::V3cUnitHeader::pvd(vuh_v3c_parameter_set_id, vuh_atlas_id);
 
-    const auto &pin = vps.packing_information(vuh.vuh_atlas_id());
-
-    for (uint8_t regionIdx = 0; regionIdx <= pin.pin_regions_count_minus1(); ++regionIdx) {
-      size.x() = std::max(pin.pin_region_top_left_x(regionIdx) +
-                              pin.pin_region_width_minus1(regionIdx) + 1,
-                          size.x());
-      size.y() = std::max(pin.pin_region_top_left_y(regionIdx) +
-                              pin.pin_region_height_minus1(regionIdx) + 1,
-                          size.y());
-    }
-
-    return size;
-  }
   default:
-    UNREACHABLE;
+    throw std::runtime_error(fmt::format("Invalid V3C unit type ID {}", vuh_unit_type));
   }
-
-  return {vps.vps_frame_width(vuh.vuh_atlas_id()) / scaleFactor.x(),
-          vps.vps_frame_height(vuh.vuh_atlas_id()) / scaleFactor.y()};
 }
 
-[[nodiscard]] auto outOfBandBitDepthOf(MivBitstream::V3cUnitHeader vuh,
-                                       const MivBitstream::V3cParameterSet &vps) noexcept {
-  switch (vuh.vuh_unit_type()) {
-  case MivBitstream::VuhUnitType::V3C_OVD: {
-    const auto &oi = vps.occupancy_information(vuh.vuh_atlas_id());
-    return oi.oi_occupancy_2d_bit_depth_minus1() + 1U;
-  }
-  case MivBitstream::VuhUnitType::V3C_GVD: {
-    const auto &gi = vps.geometry_information(vuh.vuh_atlas_id());
-    return gi.gi_geometry_2d_bit_depth_minus1() + 1U;
-  }
-  case MivBitstream::VuhUnitType::V3C_AVD: {
-    const auto &ai = vps.attribute_information(vuh.vuh_atlas_id());
-    return ai.ai_attribute_2d_bit_depth_minus1(vuh.vuh_attribute_index()) + 1U;
-  }
-  case MivBitstream::VuhUnitType::V3C_PVD: {
-    auto bitDepth = 0U;
+struct OutOfBandMetadata {
+  explicit OutOfBandMetadata(const Common::Json &node)
+      : vuh(loadVuhFromJson(node))
+      , attrTypeId{vuh.vuh_unit_type() == MivBitstream::VuhUnitType::V3C_AVD
+                       ? node.require("ai_attribute_type_id").as<MivBitstream::AiAttributeTypeId>()
+                       : MivBitstream::AiAttributeTypeId::ATTR_UNSPECIFIED}
+      , frameSize{node.require("frame_size").asVec<int32_t, 2>()}
+      , bitDepth{node.require("bit_depth").as<uint32_t>()}
+      , irapFrameIndices{node.require("irap_frame_indices").asVector<int32_t>()} {}
 
-    const auto &pin = vps.packing_information(vuh.vuh_atlas_id());
+  MivBitstream::V3cUnitHeader vuh{};
+  MivBitstream::AiAttributeTypeId attrTypeId{};
+  Common::Vec2i frameSize{};
+  uint32_t bitDepth{};
+  Common::ColorFormat colorFormat{Common::ColorFormat::YUV420};
+  std::vector<int32_t> irapFrameIndices;
+};
 
-    if (pin.pin_occupancy_present_flag()) {
-      bitDepth = std::max(bitDepth, pin.pin_occupancy_2d_bit_depth_minus1() + 1U);
+auto outOfBandMetadataPath(const Common::Json &config, const Placeholders &placeholders) {
+  return inputBitstreamPath(config, placeholders).replace_extension(".json");
+}
+
+auto loadOutOfbandMetadata(const Common::Json &config, const Placeholders &placeholders,
+                           MivBitstream::V3cUnitHeader vuh) {
+  const auto file = outOfBandMetadataPath(config, placeholders);
+  auto &filesystem = DependencyInjector::getInstance().filesystem();
+  auto stream = filesystem.ifstream(file);
+
+  if (!stream->good()) {
+    throw std::runtime_error(fmt::format("Failed to load the out-of-band metadata from {}", file));
+  }
+
+  const auto metadata = Common::Json::loadFrom(*stream);
+
+  for (const auto &node : metadata.as<Common::Json::Array>()) {
+    if (loadVuhFromJson(node) == vuh) {
+      return OutOfBandMetadata{node};
     }
-
-    if (pin.pin_geometry_present_flag()) {
-      bitDepth = std::max(bitDepth, pin.pin_geometry_2d_bit_depth_minus1() + 1U);
-    }
-
-    if (pin.pin_attribute_present_flag()) {
-      for (uint8_t i = 0; i < pin.pin_attribute_count(); ++i) {
-        bitDepth = std::max(bitDepth, pin.pin_attribute_2d_bit_depth_minus1(i) + 1U);
-      }
-    }
-
-    return bitDepth;
   }
-  default:
-    UNREACHABLE;
-  }
+
+  throw std::runtime_error(
+      fmt::format("Missing V3C unit header in out-of-band metadata file:\n{}", vuh));
 }
 } // namespace
 
 auto loadOutOfBandVideoFrame(const Common::Json &config, const Placeholders &placeholders,
-                             MivBitstream::V3cUnitHeader vuh, int32_t frameIdx,
-                             const MivBitstream::V3cParameterSet &vps,
-                             const MivBitstream::AtlasSequenceParameterSetRBSP &asps)
-    -> Common::Frame<> {
+                             MivBitstream::V3cUnitHeader vuh, int32_t frameIdx)
+    -> Common::DecodedFrame {
   if (placeholders.numberOfInputFrames <= frameIdx) {
-    return Common::Frame<>{};
+    return {};
   }
 
+  const auto metadata = loadOutOfbandMetadata(config, placeholders, vuh);
   const auto configKey = fmt::format("input{}VideoFramePathFmt",
-                                     videoComponentName(vuh.vuh_unit_type(), attrTypeId(vuh, vps)));
-
-  const auto frameSize = outOfBandFrameSizeOf(vuh, vps, asps);
-  const auto bitDepth = outOfBandBitDepthOf(vuh, vps);
-  static constexpr auto colorFormat = Common::ColorFormat::YUV420;
-  const auto videoFormat = videoFormatString(colorFormat, bitDepth);
+                                     videoComponentName(vuh.vuh_unit_type(), metadata.attrTypeId));
+  const auto videoFormat = videoFormatString(metadata.colorFormat, metadata.bitDepth);
 
   const auto path =
-      config.require("outputDirectory").as<std::filesystem::path>() /
+      config.require("inputDirectory").as<std::filesystem::path>() /
       fmt::format(config.require(configKey).as<std::string>(), placeholders.numberOfInputFrames,
-                  placeholders.contentId, placeholders.testId, vuh.vuh_atlas_id(), frameSize.x(),
-                  frameSize.y(), videoFormat);
+                  placeholders.contentId, placeholders.testId, vuh.vuh_atlas_id(),
+                  metadata.frameSize.x(), metadata.frameSize.y(), videoFormat);
 
-  return loadFrame<>(path, frameIdx, frameSize, bitDepth, colorFormat);
+  return {loadFrame<>(path, frameIdx, metadata.frameSize, metadata.bitDepth, metadata.colorFormat),
+          Common::contains(metadata.irapFrameIndices, frameIdx)};
 }
 
 namespace {

@@ -390,8 +390,6 @@ auto MpiEncoder::popAtlas() -> Common::V3cFrameList {
 
   m_mpiFrameBuffer.pop_front();
 
-  incrementFoc();
-
   return atlasList;
 }
 
@@ -461,17 +459,4 @@ auto MpiEncoder::log2FocLsbMinus4() const -> uint8_t {
   // Avoid confusion but test MSB/LSB logic in decoder
   return Common::downCast<uint8_t>(std::max(4U, Common::ceilLog2(m_intraPeriod) + 1U) - 4U);
 }
-
-void MpiEncoder::incrementFoc() {
-  const auto &atlas0 = m_params.atlas.front();
-  const auto log2FocLsb = atlas0.asps.asps_log2_max_atlas_frame_order_cnt_lsb_minus4() + 4U;
-  auto focLsb = atlas0.ath.ath_atlas_frm_order_cnt_lsb();
-  if (++focLsb >> log2FocLsb == 1U) {
-    focLsb = 0;
-  }
-  for (auto &atlas : m_params.atlas) {
-    atlas.ath.ath_atlas_frm_order_cnt_lsb(focLsb);
-  }
-}
-
 } // namespace TMIV::Encoder

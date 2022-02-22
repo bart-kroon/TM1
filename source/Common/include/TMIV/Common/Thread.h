@@ -67,6 +67,10 @@ inline void parallel_for(size_t nbIter, std::function<void(size_t)> fun) {
 inline void parallel_for(size_t w, size_t h, std::function<void(size_t, size_t)> fun) {
   size_t nbIter = w * h;
 
+  if (nbIter == 0) {
+    return;
+  }
+
   auto segment_execute = [&](size_t first, size_t last) {
     size_t i0 = first / w;
     size_t i1 = std::max(i0 + 1, last / w);

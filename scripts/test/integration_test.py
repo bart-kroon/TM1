@@ -98,6 +98,7 @@ class IntegrationTest:
         )
         self.dryRun = args.dry_run
         self.md5sums = []
+        self.testDir.mkdir(parents=True, exist_ok=True)
         self.md5sumsFile = self.testDir / "integration_test.md5"
 
         self.stop = False
@@ -136,7 +137,7 @@ class IntegrationTest:
         self.checkIfProbeExistsInDir(
             "TMIV installation",
             self.tmivInstallDir,
-            Path("include") / "TMIV" / "Decoder" / "MivDecoder.h",
+            Path("include") / "TMIV" / "Decoder" / "DecodeMiv.h",
         )
         self.checkIfProbeExistsInDir("TMIV source", self.tmivSourceDir, Path("README.md"))
         self.checkIfProbeExistsInDir(
@@ -192,7 +193,7 @@ class IntegrationTest:
         f2_1 = self.launchCommand(
             executor,
             [f1],
-            ["{0}/bin/vvencFFapp", "-c", "{1}/config/ctc/miv_anchor/A_2_VVenC_encode_geo.cfg"]
+            ["{0}/bin/vvencFFapp", "-c", "{1}/config/test/miv_anchor/A_2_VVenC_encode_geo.cfg"]
             + ["-i", f"{{3}}/A3/E/TMIV_A3_E_geo_c00_{geometryResolution}_yuv420p10le.yuv", "-b"]
             + ["{3}/A3/E/QP3/TMIV_A3_E_QP3_geo_c00.bit", "-s", str(geometryResolution), "-q", "20"]
             + ["-f", "3", "-fr", "30"],
@@ -203,7 +204,7 @@ class IntegrationTest:
         f2_2 = self.launchCommand(
             executor,
             [f1],
-            ["{0}/bin/vvencFFapp", "-c", "{1}/config/ctc/miv_anchor/A_2_VVenC_encode_geo.cfg"]
+            ["{0}/bin/vvencFFapp", "-c", "{1}/config/test/miv_anchor/A_2_VVenC_encode_geo.cfg"]
             + ["-i", f"{{3}}/A3/E/TMIV_A3_E_geo_c01_{geometryResolution}_yuv420p10le.yuv", "-b"]
             + ["{3}/A3/E/QP3/TMIV_A3_E_QP3_geo_c01.bit", "-s", str(geometryResolution), "-q", "20"]
             + ["-f", "3", "-fr", "30"],
@@ -214,7 +215,7 @@ class IntegrationTest:
         f2_3 = self.launchCommand(
             executor,
             [f1],
-            ["{0}/bin/vvencFFapp", "-c", "{1}/config/ctc/miv_anchor/A_2_VVenC_encode_tex.cfg"]
+            ["{0}/bin/vvencFFapp", "-c", "{1}/config/test/miv_anchor/A_2_VVenC_encode_tex.cfg"]
             + ["-i", f"{{3}}/A3/E/TMIV_A3_E_tex_c00_{textureResolution}_yuv420p10le.yuv", "-b"]
             + ["{3}/A3/E/QP3/TMIV_A3_E_QP3_tex_c00.bit", "-s", str(textureResolution), "-q", "43"]
             + ["-f", "3", "-fr", "30"],
@@ -225,7 +226,7 @@ class IntegrationTest:
         f2_4 = self.launchCommand(
             executor,
             [f1],
-            ["{0}/bin/vvencFFapp", "-c", "{1}/config/ctc/miv_anchor/A_2_VVenC_encode_tex.cfg"]
+            ["{0}/bin/vvencFFapp", "-c", "{1}/config/test/miv_anchor/A_2_VVenC_encode_tex.cfg"]
             + ["-i", f"{{3}}/A3/E/TMIV_A3_E_tex_c01_{textureResolution}_yuv420p10le.yuv", "-b"]
             + ["{3}/A3/E/QP3/TMIV_A3_E_QP3_tex_c01.bit", "-s", str(textureResolution), "-q", "43"]
             + ["-f", "3", "-fr", "30"],
@@ -627,7 +628,8 @@ class IntegrationTest:
             + ["-p", "configDirectory", "{1}/config", "-p", "inputDirectory", "{2}"]
             + ["-p", "outputDirectory", "{3}", "-n", "3", "-s", "E", "-p", "intraPeriod", "2"]
             + ["-p", "inputSequenceConfigPathFmt", "test/sequences/T{{1}}.json"]
-            + ["-p", "maxLumaPictureSize", "1048576", "-f", "0", "-p", "randomAccess", "true"],
+            + ["-p", "maxLumaPictureSize", "1048576", "-f", "0"]
+            + ["-p", "rewriteParameterSets", "true"],
             "{3}/P3/E/TMIV_P3_E.log",
             [
                 "P3/E/TMIV_P3_E.bit",
@@ -708,7 +710,8 @@ class IntegrationTest:
             + ["-p", "maxLumaPictureSize", "1048576"]
             + ["-p", "maxAtlases", "1"]
             + ["-p", "entityEncodeRange", "[10, 13]"]
-            + ["-p", "inputCameraNames", '[ "v3", "v5", "v9"]'],
+            + ["-p", "inputCameraNames", '[ "v3", "v5", "v9"]']
+            + ["-p", "rewriteParameterSets", "true"],
             "{3}/E3/B/TMIV_E3_B.log",
             [
                 "E3/B/TMIV_E3_B.bit",
@@ -723,8 +726,7 @@ class IntegrationTest:
             ["{0}/bin/TAppEncoder"]
             + ["-c", "{1}/config/test/entity_based_coding/E_2_HM_encode_geo.cfg"]
             + ["-i", "{3}/E3/B/TMIV_E3_B_geo_c00_256x1024_yuv420p10le.yuv"]
-            + ["-b", "{3}/E3/B/QP3/TMIV_E3_B_QP3_geo_c00.bit"]
-            + ["-wdt", "256", "-hgt", "1024", "-q", "12", "-f", "3", "-fr", "30"],
+            + ["-b", "{3}/E3/B/QP3/TMIV_E3_B_QP3_geo_c00.bit"],
             "{3}/E3/B/QP3/TMIV_E3_B_QP3_geo_c00.log",
             ["E3/B/QP3/TMIV_E3_B_QP3_geo_c00.bit"],
         )
@@ -735,8 +737,7 @@ class IntegrationTest:
             ["{0}/bin/TAppEncoder"]
             + ["-c", "{1}/config/test/entity_based_coding/E_2_HM_encode_tex.cfg"]
             + ["-i", "{3}/E3/B/TMIV_E3_B_tex_c00_512x2048_yuv420p10le.yuv"]
-            + ["-b", "{3}/E3/B/QP3/TMIV_E3_B_QP3_tex_c00.bit"]
-            + ["-wdt", "512", "-hgt", "2048", "-q", "33", "-f", "3", "-fr", "30"],
+            + ["-b", "{3}/E3/B/QP3/TMIV_E3_B_QP3_tex_c00.bit"],
             "{3}/E3/B/QP3/TMIV_E3_B_QP3_tex_c00.log",
             ["E3/B/QP3/TMIV_E3_B_QP3_tex_c00.bit"],
         )

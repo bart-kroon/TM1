@@ -38,7 +38,7 @@
 namespace test {
 class FakeChecker : public TMIV::PtlChecker::AbstractChecker {
 public:
-  void replaceLogger(Logger /* value */) override { FAIL("No need to test"); }
+  void replaceLogger(Logger /* value */) override { UNREACHABLE; }
 
   void checkVuh(const TMIV::MivBitstream::V3cUnitHeader &vuh) override {
     if (vuh.vuh_unit_type() != TMIV::MivBitstream::VuhUnitType::V3C_VPS) {

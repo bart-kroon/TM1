@@ -52,6 +52,8 @@ struct EncoderAtlasParams {
 };
 
 struct EncoderParams {
+  int32_t foc{};
+
   MivBitstream::V3cParameterSet vps;
   MivBitstream::CommonAtlasSequenceParameterSetRBSP casps;
 

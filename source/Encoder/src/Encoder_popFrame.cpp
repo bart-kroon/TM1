@@ -38,8 +38,6 @@
 
 namespace TMIV::Encoder {
 auto Encoder::popAtlas() -> Common::V3cFrameList {
-  incrementFoc();
-
   if (m_config.haveGeometry) {
     auto quantizedFrame = GeometryQuantizer::transformAtlases(params(), m_paramsQuantized,
                                                               m_videoFrameBuffer.front());
@@ -61,17 +59,5 @@ auto Encoder::popAtlas() -> Common::V3cFrameList {
     m_framePacker.packFrame(frame, m_config.pacBitDepth);
   }
   return frame;
-}
-
-void Encoder::incrementFoc() {
-  const auto &atlas0 = params().atlas.front();
-  const auto log2FocLsb = atlas0.asps.asps_log2_max_atlas_frame_order_cnt_lsb_minus4() + 4U;
-  auto focLsb = atlas0.ath.ath_atlas_frm_order_cnt_lsb();
-  if (++focLsb >> log2FocLsb == 1U) {
-    focLsb = 0;
-  }
-  for (auto &atlas : m_params.atlas) {
-    atlas.ath.ath_atlas_frm_order_cnt_lsb(focLsb);
-  }
 }
 } // namespace TMIV::Encoder

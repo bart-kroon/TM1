@@ -115,7 +115,7 @@ public:
   auto renderFrame(const MivBitstream::AccessUnit &frame,
                    const MivBitstream::CameraConfig &cameraConfig) -> Common::RendererFrame {
     // 0 - Check for block size consistency
-    if (frame.irap) {
+    if (frame.foc == 0) {
       prepare(frame);
     }
 

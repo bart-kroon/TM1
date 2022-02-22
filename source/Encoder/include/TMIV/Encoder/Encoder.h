@@ -104,9 +104,6 @@ private:
                   int32_t yOcc, int32_t xOcc, const Common::Vec2i &pView,
                   const Common::Vec2i &pAtlas) const;
 
-  // Encoder_popFrame.cpp
-  void incrementFoc();
-
   // Encoder sub-components
   std::unique_ptr<DepthQualityAssessor::IDepthQualityAssessor> m_depthQualityAssessor;
   std::unique_ptr<ViewOptimizer::IViewOptimizer> m_viewOptimizer;

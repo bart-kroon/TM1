@@ -77,9 +77,40 @@ void saveFrame(const std::filesystem::path &path, const Common::Frame<Element> &
   });
 }
 
-void saveOutOfBandVideoFrame(const Common::Json &config, const Placeholders &placeholders,
+namespace {
+auto outOfBandMetadataPath(const Common::Json &config, const Placeholders &placeholders) {
+  return outputBitstreamPath(config, placeholders).replace_extension(".json");
+}
+} // namespace
+
+void saveOutOfBandMetadata(const Common::Json &config, const Placeholders &placeholders,
+                           Common::Json::Array metadata) {
+  auto file = outOfBandMetadataPath(config, placeholders);
+  auto &filesystem = DependencyInjector::getInstance().filesystem();
+  auto stream = filesystem.ofstream(file);
+  Common::Json{std::move(metadata)}.saveTo(*stream);
+  *stream << '\n';
+}
+
+namespace {
+auto irapFrameIndices(const Common::Json &config, const Placeholders &placeholders)
+    -> Common::Json::Array {
+  auto result = std::vector<Common::Json>{};
+
+  const auto intraPeriod = config.require("intraPeriod").as<int32_t>();
+
+  for (int32_t frameIdx = 0; frameIdx < placeholders.numberOfInputFrames; frameIdx += intraPeriod) {
+    result.emplace_back(frameIdx);
+  }
+
+  return result;
+}
+} // namespace
+
+auto saveOutOfBandVideoFrame(const Common::Json &config, const Placeholders &placeholders,
                              const Common::Frame<> &frame, MivBitstream::V3cUnitHeader vuh,
-                             int32_t frameIdx, MivBitstream::AiAttributeTypeId attrTypeId) {
+                             int32_t frameIdx, MivBitstream::AiAttributeTypeId attrTypeId)
+    -> Common::Json::Object {
   PRECONDITION(!frame.empty());
 
   const auto outputDir = config.require("outputDirectory").as<std::filesystem::path>();
@@ -94,6 +125,36 @@ void saveOutOfBandVideoFrame(const Common::Json &config, const Placeholders &pla
                               frame.getHeight(), videoFormatString(frame));
 
   saveFrame(path, frame, frameIdx);
+
+  if (frameIdx != 0) {
+    return {};
+  }
+
+  using Json = Common::Json;
+  using VUH = MivBitstream::VuhUnitType;
+
+  auto obj = Json::Object{};
+
+  obj["vuh_unit_type"] = Json{vuh.vuh_unit_type()};
+  obj["vuh_v3c_parameter_set_id"] = Json{vuh.vuh_v3c_parameter_set_id()};
+  obj["vuh_atlas_id"] = Json{vuh.vuh_atlas_id()};
+
+  if (vuh.vuh_unit_type() == VUH::V3C_GVD || vuh.vuh_unit_type() == VUH::V3C_AVD) {
+    obj["vuh_map_index"s] = Json{vuh.vuh_map_index()};
+    obj["vuh_auxiliary_video_flag"s] = Json{vuh.vuh_auxiliary_video_flag()};
+  }
+
+  if (vuh.vuh_unit_type() == VUH::V3C_AVD) {
+    obj["vuh_attribute_index"] = Json{vuh.vuh_attribute_index()};
+    obj["vuh_attribute_partition_index"] = Json{vuh.vuh_attribute_partition_index()};
+    obj["ai_attribute_type_id"s] = Json{attrTypeId};
+  }
+
+  obj["frame_size"s] = Json{Json::Array{Json{frame.getWidth()}, Json{frame.getHeight()}}};
+  obj["bit_depth"s] = Json{frame.getBitDepth()};
+  obj["irap_frame_indices"s] = irapFrameIndices(config, placeholders);
+
+  return obj;
 }
 
 void saveViewport(const Common::Json &config, const Placeholders &placeholders, int32_t frameIdx,
@@ -164,11 +225,11 @@ void optionalSavePrunedFrame(const Common::Json &config, const Placeholders &pla
 }
 
 void optionalSaveSequenceConfig(const Common::Json &config, const Placeholders &placeholders,
-                                int32_t foc, const MivBitstream::SequenceConfig &seqConfig) {
+                                int32_t frameIdx, const MivBitstream::SequenceConfig &seqConfig) {
   if (const auto &node = config.optional("outputSequenceConfigPathFmt")) {
     const auto path = config.require("outputDirectory").as<std::filesystem::path>() /
                       fmt::format(node.as<std::string>(), placeholders.numberOfInputFrames,
-                                  placeholders.contentId, placeholders.testId, foc);
+                                  placeholders.contentId, placeholders.testId, frameIdx);
 
     auto &filesystem = DependencyInjector::getInstance().filesystem();
     filesystem.create_directories(path.parent_path());

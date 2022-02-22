@@ -58,7 +58,6 @@ Configuration::Configuration(const Common::Json &componentNode)
     , textureOffsetFlag{haveTexture && componentNode.require("textureOffsetEnabledFlag").as<bool>()}
     , colorCorrectionEnabledFlag{haveTexture &&
                                  componentNode.require("colorCorrectionEnabledFlag").as<bool>()}
-    , randomAccess{componentNode.require("randomAccess").as<bool>()}
     , patchRedundancyRemoval{componentNode.require("patchRedundancyRemoval").as<bool>()}
     , numGroups{componentNode.require("numGroups").as<uint8_t>()}
     , maxEntityId{componentNode.require("maxEntityId").as<uint16_t>()}

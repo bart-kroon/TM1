@@ -48,6 +48,7 @@
 
 // A bitstream crafted to hit code in the parser
 namespace test {
+namespace {
 using TMIV::MivBitstream::AccessUnitDelimiterRBSP;
 using TMIV::MivBitstream::AtlasAdaptationParameterSetRBSP;
 using TMIV::MivBitstream::AtlasFrameParameterSetRBSP;
@@ -169,6 +170,7 @@ auto createTestBitstream() {
 
   return stream.str();
 }
+} // namespace
 } // namespace test
 
 #include "Parser.test.reference.hpp"

@@ -67,6 +67,7 @@ using TMIV::MivBitstream::V3cParameterSet;
 using TMIV::PtlChecker::PtlChecker;
 
 namespace test {
+namespace {
 class Exception : public std::runtime_error {
 public:
   using runtime_error::runtime_error;
@@ -89,7 +90,7 @@ auto unit() {
          toolsetIdc == TS::MIV_Geometry_Absent;
 }
 
-static constexpr auto size = TMIV::Common::Vec2i{72, 24};
+constexpr auto size = TMIV::Common::Vec2i{72, 24};
 
 auto allowedAttrTypeIds(TS toolsetIdc) {
   switch (toolsetIdc) {
@@ -240,6 +241,7 @@ auto asps(const V3cParameterSet &vps, AtlasId atlasId) {
 
   return result;
 }
+} // namespace
 } // namespace test
 
 // NOLINTNEXTLINE(cppcoreguidelines-macro-usage)

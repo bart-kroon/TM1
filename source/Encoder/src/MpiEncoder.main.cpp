@@ -33,8 +33,9 @@
 
 #include <TMIV/Common/Application.h>
 #include <TMIV/Common/Factory.h>
-#include <TMIV/Encoder/MivEncoder.h>
+#include <TMIV/Encoder/EncodeMiv.h>
 #include <TMIV/Encoder/MpiEncoder.h>
+#include <TMIV/Encoder/V3cSampleSink.h>
 #include <TMIV/MpiPcs/MpiPcs.h>
 
 #include <fstream>
@@ -56,7 +57,7 @@ private:
   MpiPcs::Reader m_mpiPcsReader;
   std::filesystem::path m_outputBitstreamPath;
   std::ofstream m_outputBitstream;
-  std::unique_ptr<Encoder::MivEncoder> m_mivEncoder;
+  Common::Sink<EncoderParams> m_sink;
   static constexpr uint8_t m_vpsId = 0;
 
   [[nodiscard]] auto placeholders() const {
@@ -92,7 +93,7 @@ public:
       m_inputSequenceConfig.sourceCameraNames = node.asVector<std::string>();
     }
 
-    m_mivEncoder = std::make_unique<MivEncoder>(m_outputBitstream);
+    m_sink = encodeMiv(v3cSampleSink(m_outputBitstream), false);
   }
 
   void run() override {
@@ -108,16 +109,17 @@ public:
 
     for (int32_t i = 0; i < m_numberOfInputFrames; i += m_intraPeriod) {
       int32_t lastFrame = std::min(m_numberOfInputFrames, i + m_intraPeriod);
-      encodeAccessUnit(i, lastFrame);
+      encodeIntraPeriod(i, lastFrame);
     }
 
+    m_sink(std::nullopt);
     reportSummary(m_outputBitstream.tellp());
   }
 
 private:
-  void encodeAccessUnit(int32_t firstFrame, int32_t lastFrame) {
+  void encodeIntraPeriod(int32_t firstFrame, int32_t lastFrame) {
     std::cout << "Access unit: [" << firstFrame << ", " << lastFrame << ")\n";
-    m_mivEncoder->writeAccessUnit(m_encoder.processAccessUnit(firstFrame, lastFrame), false);
+    m_sink(m_encoder.processAccessUnit(firstFrame, lastFrame));
     popAtlases(firstFrame, lastFrame);
   }
 
@@ -163,5 +165,8 @@ auto main(int argc, char *argv[]) -> int32_t {
   } catch (std::runtime_error &e) {
     std::cerr << e.what() << std::endl;
     return 1;
+  } catch (std::bad_function_call &e) {
+    std::cerr << e.what() << std::endl;
+    return 2;
   }
 }

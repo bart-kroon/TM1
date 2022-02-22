@@ -3,7 +3,7 @@
  * and contributor rights, including patent rights, and no such rights are
  * granted under this license.
  *
- * Copyright (c) 2010-2021, ITU/ISO/IEC
+ * Copyright (c) 2010-2022, ITU/ISO/IEC
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,9 +31,12 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/VideoDecoder/HmVideoDecoder.h>
+#if HAVE_HM
 
-#include <TMIV/VideoDecoder/VideoDecoderBase.h>
+#include <TMIV/VideoDecoder/VideoDecoder.h>
+
+#include <TMIV/Common/Decoder.h>
+#include <TMIV/Common/Frame.h>
 
 #include <TLibCommon/TComList.h>
 #include <TLibCommon/TComPicYuv.h>
@@ -44,220 +47,240 @@
 #include <array>
 
 namespace TMIV::VideoDecoder {
+namespace {
 // This implementation is based on TAppDec.cpp (HM 16.16) with all optional parameters locked to
 // default values and without fields.
+class HmVideoDecoder final : public Common::Decoder<std::string, Common::DecodedFrame> {
+public:
+  explicit HmVideoDecoder(Common::Source<std::string> source)
+      : Common::Decoder<std::string, Common::DecodedFrame>{std::move(source)}
+      , m_cTDecTop{new TDecTop} {
+    m_cTDecTop->create();
+    m_cTDecTop->init();
+    m_cTDecTop->setDecodedPictureHashSEIEnabled(1);
 
-struct HmVideoDecoder::HmContext {
-  int32_t poc{};
-  TComList<TComPic *> *pcListPic{nullptr};
-  TDecTop cTDecTop{};
-  int32_t iPOCLastDisplay{-MAX_INT};
-  bool loopFiltered{};
-  int32_t iSkipFrame{};
-  std::string inputBuffer;
-  std::array<int32_t, MAX_NUM_CHANNEL_TYPE> outputBitDepth{};
-  TComPic *pcPic{};
-};
-
-HmVideoDecoder::HmVideoDecoder(NalUnitSource source)
-    : VideoDecoderBase{std::move(source)}, m_context{new HmContext} {
-  // create & initialize internal classes
-  m_context->cTDecTop.create();
-  m_context->cTDecTop.init();
-  m_context->cTDecTop.setDecodedPictureHashSEIEnabled(1);
-
-  // set the last displayed POC correctly for skip forward.
-  m_context->iPOCLastDisplay += m_context->iSkipFrame;
-}
-
-HmVideoDecoder::~HmVideoDecoder() {
-  // NOTE(BK): It's either double delete or leaking memory. Easy to fix by putting a reference
-  //           count in initROM/destroyROM, but the intention was not to modify HM.
-  // m_context->cTDecTop.deletePicBuffer();
-  m_context->cTDecTop.destroy();
-}
-
-auto HmVideoDecoder::decodeSome() -> bool {
-  // m_context->inputBuffer serves to work around a design fault in the decoder, whereby the process
-  // of reading a new slice that is the first slice of a new frame requires the TDecTop::decode()
-  // method to be called again with the same nal unit.
-  if (m_context->inputBuffer.empty()) {
-    m_context->inputBuffer = takeNalUnit();
-  }
-  if (m_context->inputBuffer.empty()) {
-    xFlushOutput();
-    return false;
+    // set the last displayed POC correctly for skip forward.
+    m_iPOCLastDisplay += m_iSkipFrame;
   }
 
-  // Copy the NAL unit payload into the HM representation of a NAL unit
-  InputNALUnit nalu;
-  nalu.getBitstream().getFifo().resize(m_context->inputBuffer.size());
-  memcpy(nalu.getBitstream().getFifo().data(), m_context->inputBuffer.data(),
-         m_context->inputBuffer.size());
-
-  // call actual decoding function
-  bool bNewPicture = false;
-  read(nalu);
-  bNewPicture = m_context->cTDecTop.decode(nalu, m_context->iSkipFrame, m_context->iPOCLastDisplay);
-  if (!bNewPicture) {
-    m_context->inputBuffer = takeNalUnit();
-  }
-
-  if ((bNewPicture || m_context->inputBuffer.empty() || nalu.m_nalUnitType == NAL_UNIT_EOS) &&
-      !m_context->cTDecTop.getFirstSliceInSequence()) {
-    if (!m_context->loopFiltered || !m_context->inputBuffer.empty()) {
-      m_context->cTDecTop.executeLoopFilters(m_context->poc, m_context->pcListPic);
+protected:
+  auto decodeSome() -> bool final {
+    // inputBuffer serves to work around a design fault in the decoder, whereby the process
+    // of reading a new slice that is the first slice of a new frame requires the TDecTop::decode()
+    // method to be called again with the same nal unit.
+    if (m_inputBuffer.empty()) {
+      m_inputBuffer = takeNalUnit();
     }
-    m_context->loopFiltered = (nalu.m_nalUnitType == NAL_UNIT_EOS);
-    if (nalu.m_nalUnitType == NAL_UNIT_EOS) {
-      m_context->cTDecTop.setFirstSliceInSequence(true);
-    }
-  } else if ((bNewPicture || m_context->inputBuffer.empty() ||
-              nalu.m_nalUnitType == NAL_UNIT_EOS) &&
-             m_context->cTDecTop.getFirstSliceInSequence()) {
-    m_context->cTDecTop.setFirstSliceInPicture(true);
-  }
-
-  if (m_context->pcListPic != nullptr) {
-    if (m_context->outputBitDepth.front() == 0) {
-      const auto &recon = m_context->pcListPic->front()->getPicSym()->getSPS().getBitDepths().recon;
-      std::copy(std::cbegin(recon), std::cend(recon), std::begin(m_context->outputBitDepth));
-    }
-
-    if (bNewPicture) {
-      xWriteOutput();
-    }
-    if ((bNewPicture || nalu.m_nalUnitType == NAL_UNIT_CODED_SLICE_CRA) &&
-        m_context->cTDecTop.getNoOutputPriorPicsFlag()) {
-      m_context->cTDecTop.checkNoOutputPriorPics(m_context->pcListPic);
-      m_context->cTDecTop.setNoOutputPriorPicsFlag(false);
-    }
-    if (bNewPicture && (nalu.m_nalUnitType == NAL_UNIT_CODED_SLICE_IDR_W_RADL ||
-                        nalu.m_nalUnitType == NAL_UNIT_CODED_SLICE_IDR_N_LP ||
-                        nalu.m_nalUnitType == NAL_UNIT_CODED_SLICE_BLA_N_LP ||
-                        nalu.m_nalUnitType == NAL_UNIT_CODED_SLICE_BLA_W_RADL ||
-                        nalu.m_nalUnitType == NAL_UNIT_CODED_SLICE_BLA_W_LP)) {
+    if (m_inputBuffer.empty()) {
       xFlushOutput();
-    }
-    if (nalu.m_nalUnitType == NAL_UNIT_EOS) {
-      xWriteOutput();
-      m_context->cTDecTop.setFirstSliceInPicture(false);
-    }
-    // write reconstruction to file -- for additional bumping as defined in C.5.2.3
-    if (!bNewPicture && nalu.m_nalUnitType >= NAL_UNIT_CODED_SLICE_TRAIL_N &&
-        nalu.m_nalUnitType <= NAL_UNIT_RESERVED_VCL31) {
-      xWriteOutput();
-    }
-  }
-  return true;
-}
 
-void HmVideoDecoder::xWriteOutput() {
-  if (m_context->pcListPic->empty()) {
-    return;
-  }
+      // NOTE(BK): It's either double delete or leaking memory. Easy to fix by putting a reference
+      //           count in initROM/destroyROM, but the intention was not to modify HM 16.16.
+      // deletePicBuffer();
+      m_cTDecTop->destroy();
 
-  int32_t numPicsNotYetDisplayed = 0;
-  int32_t dpbFullness = 0;
-  const auto &activeSPS = m_context->pcListPic->front()->getPicSym()->getSPS();
-  const auto maxNrSublayers = activeSPS.getMaxTLayers();
-  const auto numReorderPicsHighestTid = activeSPS.getNumReorderPics(maxNrSublayers - 1);
-  const auto maxDecPicBufferingHighestTid = activeSPS.getMaxDecPicBuffering(maxNrSublayers - 1);
-
-  for (const auto *pcPic : *m_context->pcListPic) {
-    if (pcPic->getOutputMark() && pcPic->getPOC() > m_context->iPOCLastDisplay) {
-      numPicsNotYetDisplayed++;
-      dpbFullness++;
-    } else if (pcPic->getSlice(0)->isReferenced()) {
-      dpbFullness++;
+      return false;
     }
-  }
 
-  for (auto *pcPic : *m_context->pcListPic) {
-    if (pcPic->getOutputMark() && pcPic->getPOC() > m_context->iPOCLastDisplay &&
-        (numPicsNotYetDisplayed > numReorderPicsHighestTid ||
-         dpbFullness > maxDecPicBufferingHighestTid)) {
-      numPicsNotYetDisplayed--;
-      if (!pcPic->getSlice(0)->isReferenced()) {
-        dpbFullness--;
+    // Copy the NAL unit payload into the HM representation of a NAL unit
+    InputNALUnit nalu;
+    nalu.getBitstream().getFifo().resize(m_inputBuffer.size());
+    memcpy(nalu.getBitstream().getFifo().data(), m_inputBuffer.data(), m_inputBuffer.size());
+
+    // call actual decoding function
+    bool bNewPicture = false;
+    read(nalu);
+    bNewPicture = m_cTDecTop->decode(nalu, m_iSkipFrame, m_iPOCLastDisplay);
+    if (!bNewPicture) {
+      m_inputBuffer = takeNalUnit();
+    }
+
+    if ((bNewPicture || m_inputBuffer.empty() || nalu.m_nalUnitType == NAL_UNIT_EOS) &&
+        !m_cTDecTop->getFirstSliceInSequence()) {
+      if (!m_loopFiltered || !m_inputBuffer.empty()) {
+        m_cTDecTop->executeLoopFilters(m_poc, m_pcListPic);
+      }
+      m_loopFiltered = (nalu.m_nalUnitType == NAL_UNIT_EOS);
+      if (nalu.m_nalUnitType == NAL_UNIT_EOS) {
+        m_cTDecTop->setFirstSliceInSequence(true);
+      }
+    } else if ((bNewPicture || m_inputBuffer.empty() || nalu.m_nalUnitType == NAL_UNIT_EOS) &&
+               m_cTDecTop->getFirstSliceInSequence()) {
+      m_cTDecTop->setFirstSliceInPicture(true);
+    }
+
+    if (m_pcListPic != nullptr) {
+      if (m_outputBitDepth.front() == 0) {
+        const auto &recon = m_pcListPic->front()->getPicSym()->getSPS().getBitDepths().recon;
+        std::copy(std::cbegin(recon), std::cend(recon), std::begin(m_outputBitDepth));
       }
 
-      m_context->pcPic = pcPic;
-      xWritePicture();
+      if (bNewPicture) {
+        xWriteOutput();
+      }
+      if ((bNewPicture || nalu.m_nalUnitType == NAL_UNIT_CODED_SLICE_CRA) &&
+          m_cTDecTop->getNoOutputPriorPicsFlag()) {
+        m_cTDecTop->checkNoOutputPriorPics(m_pcListPic);
+        m_cTDecTop->setNoOutputPriorPicsFlag(false);
+      }
+      if (bNewPicture && (nalu.m_nalUnitType == NAL_UNIT_CODED_SLICE_IDR_W_RADL ||
+                          nalu.m_nalUnitType == NAL_UNIT_CODED_SLICE_IDR_N_LP ||
+                          nalu.m_nalUnitType == NAL_UNIT_CODED_SLICE_BLA_N_LP ||
+                          nalu.m_nalUnitType == NAL_UNIT_CODED_SLICE_BLA_W_RADL ||
+                          nalu.m_nalUnitType == NAL_UNIT_CODED_SLICE_BLA_W_LP)) {
+        xFlushOutput();
+      }
+      if (nalu.m_nalUnitType == NAL_UNIT_EOS) {
+        xWriteOutput();
+        m_cTDecTop->setFirstSliceInPicture(false);
+      }
+      // write reconstruction to file -- for additional bumping as defined in C.5.2.3
+      if (!bNewPicture && nalu.m_nalUnitType >= NAL_UNIT_CODED_SLICE_TRAIL_N &&
+          nalu.m_nalUnitType <= NAL_UNIT_RESERVED_VCL31) {
+        xWriteOutput();
+      }
     }
-  }
-}
-
-void HmVideoDecoder::xFlushOutput() {
-  if (m_context->pcListPic->empty()) {
-    return;
+    return true;
   }
 
-  for (auto *pcPic : *m_context->pcListPic) {
-    if (pcPic->getOutputMark()) {
-      m_context->pcPic = pcPic;
-      xWritePicture();
+private:
+  auto takeNalUnit() -> std::string {
+    if (!m_end) {
+      if (auto unit = pull()) {
+        return *unit;
+      }
     }
-    if (pcPic != nullptr) {
-      pcPic->destroy();
-      delete pcPic; // NOLINT(cppcoreguidelines-owning-memory)
+    m_end = true;
+    return {};
+  }
+
+  void xWriteOutput() {
+    if (m_pcListPic->empty()) {
+      return;
     }
-  }
 
-  m_context->pcListPic->clear();
-  m_context->iPOCLastDisplay = -MAX_INT;
-}
+    int32_t numPicsNotYetDisplayed = 0;
+    int32_t dpbFullness = 0;
+    const auto &activeSPS = m_pcListPic->front()->getPicSym()->getSPS();
+    const auto maxNrSublayers = activeSPS.getMaxTLayers();
+    const auto numReorderPicsHighestTid = activeSPS.getNumReorderPics(maxNrSublayers - 1);
+    const auto maxDecPicBufferingHighestTid = activeSPS.getMaxDecPicBuffering(maxNrSublayers - 1);
 
-void HmVideoDecoder::xWritePicture() {
-  xOutputPicture();
+    for (const auto *pcPic : *m_pcListPic) {
+      if (pcPic->getOutputMark() && pcPic->getPOC() > m_iPOCLastDisplay) {
+        numPicsNotYetDisplayed++;
+        dpbFullness++;
+      } else if (pcPic->getSlice(0)->isReferenced()) {
+        dpbFullness++;
+      }
+    }
 
-  // update POC of display order
-  m_context->iPOCLastDisplay = m_context->pcPic->getPOC();
+    for (auto *pcPic_ : *m_pcListPic) {
+      if (pcPic_->getOutputMark() && pcPic_->getPOC() > m_iPOCLastDisplay &&
+          (numPicsNotYetDisplayed > numReorderPicsHighestTid ||
+           dpbFullness > maxDecPicBufferingHighestTid)) {
+        numPicsNotYetDisplayed--;
+        if (!pcPic_->getSlice(0)->isReferenced()) {
+          dpbFullness--;
+        }
 
-  // erase non-referenced comPic in the reference comPic list after display
-  if (!m_context->pcPic->getSlice(0)->isReferenced() && m_context->pcPic->getReconMark()) {
-    m_context->pcPic->setReconMark(false);
-
-    // mark it should be extended later
-    m_context->pcPic->getPicYuvRec()->setBorderExtension(false);
-  }
-
-  m_context->pcPic->setOutputMark(false);
-}
-
-void HmVideoDecoder::xOutputPicture() {
-  auto *comPicYuv = m_context->pcPic->getPicYuvRec();
-  PRECONDITION(comPicYuv != nullptr);
-
-  auto outFrame = Common::Frame<>{};
-  outFrame.setBitDepth(Common::at(m_context->outputBitDepth, toChannelType(COMPONENT_Y)));
-  outFrame.getPlanes().resize(comPicYuv->getNumberValidComponents());
-
-  for (const auto d : {COMPONENT_Y, COMPONENT_Cb, COMPONENT_Cr}) {
-    if (d < comPicYuv->getNumberValidComponents()) {
-      const auto planeBitDepth = Common::at(m_context->outputBitDepth, toChannelType(d));
-      LIMITATION(planeBitDepth == outFrame.getBitDepth());
-
-      const auto *row = comPicYuv->getAddr(d);
-      const auto stride = comPicYuv->getStride(d);
-      const auto width = comPicYuv->getWidth(d);
-      const auto height = comPicYuv->getHeight(d);
-
-      auto &outPlane = outFrame.getPlane(d);
-      outPlane.resize({static_cast<size_t>(height), static_cast<size_t>(width)});
-
-      for (int32_t i = 0; i < height; ++i) {
-        // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-        std::transform(row, row + width, outPlane.row_begin(i), [](const auto sample) {
-          return Common::assertDownCast<Common::DefaultElement>(sample);
-        });
-
-        // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-        row += stride;
+        m_pcPic = pcPic_;
+        xWritePicture();
       }
     }
   }
 
-  return VideoDecoderBase::outputFrame(outFrame);
+  void xFlushOutput() {
+    if (m_pcListPic->empty()) {
+      return;
+    }
+
+    for (auto *pcPic : *m_pcListPic) {
+      if (pcPic->getOutputMark()) {
+        m_pcPic = pcPic;
+        xWritePicture();
+      }
+      if (pcPic != nullptr) {
+        pcPic->destroy();
+        delete pcPic; // NOLINT(cppcoreguidelines-owning-memory)
+      }
+    }
+
+    m_pcListPic->clear();
+    m_iPOCLastDisplay = -MAX_INT;
+  }
+
+  void xWritePicture() {
+    xOutputPicture();
+
+    // update POC of display order
+    m_iPOCLastDisplay = m_pcPic->getPOC();
+
+    // erase non-referenced comPic in the reference comPic list after display
+    if (!m_pcPic->getSlice(0)->isReferenced() && m_pcPic->getReconMark()) {
+      m_pcPic->setReconMark(false);
+
+      // mark it should be extended later
+      m_pcPic->getPicYuvRec()->setBorderExtension(false);
+    }
+
+    m_pcPic->setOutputMark(false);
+  }
+
+  void xOutputPicture() {
+    auto *comPicYuv = m_pcPic->getPicYuvRec();
+    PRECONDITION(comPicYuv != nullptr);
+
+    auto outFrame = Common::Frame<>{};
+    outFrame.setBitDepth(Common::at(m_outputBitDepth, toChannelType(COMPONENT_Y)));
+    outFrame.getPlanes().resize(comPicYuv->getNumberValidComponents());
+
+    for (const auto d : {COMPONENT_Y, COMPONENT_Cb, COMPONENT_Cr}) {
+      if (d < comPicYuv->getNumberValidComponents()) {
+        const auto planeBitDepth = Common::at(m_outputBitDepth, toChannelType(d));
+        LIMITATION(planeBitDepth == outFrame.getBitDepth());
+
+        const auto *row = comPicYuv->getAddr(d);
+        const auto stride = comPicYuv->getStride(d);
+        const auto width = comPicYuv->getWidth(d);
+        const auto height = comPicYuv->getHeight(d);
+
+        auto &outPlane = outFrame.getPlane(d);
+        outPlane.resize({static_cast<size_t>(height), static_cast<size_t>(width)});
+
+        for (int32_t i = 0; i < height; ++i) {
+          // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+          std::transform(row, row + width, outPlane.row_begin(i), [](const auto sample) {
+            return Common::assertDownCast<Common::DefaultElement>(sample);
+          });
+
+          // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+          row += stride;
+        }
+      }
+    }
+
+    push({outFrame, m_pcPic->getSlice(0)->isIRAP()});
+  }
+
+  int32_t m_poc{};
+  TComList<TComPic *> *m_pcListPic{nullptr};
+  std::unique_ptr<TDecTop> m_cTDecTop{};
+  int32_t m_iPOCLastDisplay{-MAX_INT};
+  bool m_loopFiltered{};
+  int32_t m_iSkipFrame{};
+  std::string m_inputBuffer;
+  bool m_end{};
+  std::array<int32_t, MAX_NUM_CHANNEL_TYPE> m_outputBitDepth{};
+  TComPic *m_pcPic{};
+};
+} // namespace
+
+auto decodeHevcMain10(Common::Source<std::string> source) -> Common::Source<Common::DecodedFrame> {
+  return [decoder = std::make_shared<HmVideoDecoder>(std::move(source))]() mutable {
+    return (*decoder)();
+  };
 }
 } // namespace TMIV::VideoDecoder
+
+#endif // HAVE_HM

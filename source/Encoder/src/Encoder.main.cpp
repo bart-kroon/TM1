@@ -35,7 +35,8 @@
 
 #include <TMIV/Common/Application.h>
 #include <TMIV/Common/Factory.h>
-#include <TMIV/Encoder/MivEncoder.h>
+#include <TMIV/Encoder/EncodeMiv.h>
+#include <TMIV/Encoder/V3cSampleSink.h>
 #include <TMIV/IO/IO.h>
 
 #include <fstream>
@@ -58,7 +59,7 @@ private:
   MivBitstream::SequenceConfig m_inputSequenceConfig;
   std::filesystem::path m_outputBitstreamPath;
   std::ofstream m_outputBitstream;
-  MivEncoder m_mivEncoder;
+  Common::Sink<EncoderParams> m_sink;
 
   [[nodiscard]] auto placeholders() const {
     auto x = IO::Placeholders{};
@@ -83,7 +84,8 @@ public:
       , m_inputSequenceConfig{IO::loadSequenceConfig(json(), placeholders(), 0)}
       , m_outputBitstreamPath{IO::outputBitstreamPath(json(), placeholders())}
       , m_outputBitstream{m_outputBitstreamPath, std::ios::binary}
-      , m_mivEncoder{m_outputBitstream} {
+      , m_sink{encodeMiv(v3cSampleSink(m_outputBitstream),
+                         json().require("rewriteParameterSets").as<bool>())} {
     if (!m_outputBitstream.good()) {
       throw std::runtime_error(fmt::format("Failed to open {} for writing", m_outputBitstreamPath));
     }
@@ -107,18 +109,19 @@ public:
 
     for (int32_t i = 0; i < m_numberOfInputFrames; i += m_intraPeriod) {
       int32_t lastFrame = std::min(m_numberOfInputFrames, i + m_intraPeriod);
-      encodeAccessUnit(i, lastFrame);
+      encodeIntraPeriod(i, lastFrame);
     }
 
+    m_sink(std::nullopt);
     reportSummary(m_outputBitstream.tellp());
   }
 
 private:
-  void encodeAccessUnit(int32_t firstFrame, int32_t lastFrame) {
-    std::cout << "Access unit: [" << firstFrame << ", " << lastFrame << ")\n";
+  void encodeIntraPeriod(int32_t firstFrame, int32_t lastFrame) {
+    std::cout << "Intra period: [" << firstFrame << ", " << lastFrame << ")\n";
     m_encoder.prepareAccessUnit();
     pushFrames(firstFrame, lastFrame);
-    m_mivEncoder.writeAccessUnit(m_encoder.completeAccessUnit(), m_encoder.config().randomAccess);
+    m_sink(m_encoder.completeAccessUnit());
     popAtlases(firstFrame, lastFrame);
   }
 
@@ -132,42 +135,45 @@ private:
     for (int32_t frameIdx = firstFrame; frameIdx < lastFrame; ++frameIdx) {
       const auto frame = m_encoder.popAtlas();
 
+      auto metadata = Common::Json::Array{};
+
       for (size_t atlasIdx = 0; atlasIdx < frame.size(); ++atlasIdx) {
-        saveAtlasFrame(MivBitstream::AtlasId{atlasIdx}, frameIdx, frame[atlasIdx]);
+        const auto sub = saveAtlasFrame(MivBitstream::AtlasId{atlasIdx}, frameIdx, frame[atlasIdx]);
+        metadata.insert(metadata.end(), sub.cbegin(), sub.cend());
+      }
+      if (frameIdx == 0) {
+        IO::saveOutOfBandMetadata(json(), placeholders(), metadata);
       }
     }
   }
 
-  void saveAtlasFrame(MivBitstream::AtlasId atlasId, int32_t frameIdx,
-                      const Common::V3cFrame &frame) {
-    if (!frame.occupancy.empty()) {
-      IO::saveOutOfBandVideoFrame(json(), placeholders(), yuv420(frame.occupancy),
-                                  MivBitstream::V3cUnitHeader::ovd(m_vpsId, atlasId), frameIdx);
-    }
+  auto saveAtlasFrame(MivBitstream::AtlasId atlasId, int32_t frameIdx,
+                      const Common::V3cFrame &frame) -> Common::Json::Array {
+    using VUH = MivBitstream::V3cUnitHeader;
+    using VUT = MivBitstream::VuhUnitType;
+    using ATI = MivBitstream::AiAttributeTypeId;
 
-    if (!frame.geometry.empty()) {
-      IO::saveOutOfBandVideoFrame(json(), placeholders(), yuv420(frame.geometry),
-                                  MivBitstream::V3cUnitHeader::gvd(m_vpsId, atlasId), frameIdx);
-    }
-
+    auto metadata = Common::Json::Array{};
     uint8_t attrIdx{};
 
-    if (!frame.texture.empty()) {
-      IO::saveOutOfBandVideoFrame(json(), placeholders(), frame.texture,
-                                  MivBitstream::V3cUnitHeader::avd(m_vpsId, atlasId, attrIdx++),
-                                  frameIdx, MivBitstream::AiAttributeTypeId::ATTR_TEXTURE);
-    }
+    const auto save = [this, frameIdx, &metadata,
+                       &attrIdx](const Common::Frame<> &component, VUH vuh,
+                                 ATI attrTypeId = ATI::ATTR_UNSPECIFIED) {
+      if (!component.empty()) {
+        metadata.emplace_back(IO::saveOutOfBandVideoFrame(json(), placeholders(), yuv420(component),
+                                                          vuh, frameIdx, attrTypeId));
+        if (vuh.vuh_unit_type() == VUT::V3C_AVD) {
+          ++attrIdx;
+        }
+      }
+    };
 
-    if (!frame.transparency.empty()) {
-      IO::saveOutOfBandVideoFrame(json(), placeholders(), yuv420(frame.transparency),
-                                  MivBitstream::V3cUnitHeader::avd(m_vpsId, atlasId, attrIdx++),
-                                  frameIdx, MivBitstream::AiAttributeTypeId::ATTR_TRANSPARENCY);
-    }
-
-    if (!frame.packed.empty()) {
-      IO::saveOutOfBandVideoFrame(json(), placeholders(), frame.packed,
-                                  MivBitstream::V3cUnitHeader::pvd(m_vpsId, atlasId), frameIdx);
-    }
+    save(frame.occupancy, VUH::ovd(m_vpsId, atlasId));
+    save(frame.geometry, VUH::gvd(m_vpsId, atlasId));
+    save(frame.texture, VUH::avd(m_vpsId, atlasId, attrIdx), ATI::ATTR_TEXTURE);
+    save(frame.transparency, VUH::avd(m_vpsId, atlasId, attrIdx), ATI::ATTR_TRANSPARENCY);
+    save(frame.packed, VUH::pvd(m_vpsId, atlasId));
+    return metadata;
   }
 
   void reportSummary(std::streampos bytesWritten) const {
@@ -194,5 +200,8 @@ auto main(int argc, char *argv[]) -> int32_t {
   } catch (std::runtime_error &e) {
     std::cerr << e.what() << std::endl;
     return 1;
+  } catch (std::bad_function_call &e) {
+    std::cerr << e.what() << std::endl;
+    return 2;
   }
 }

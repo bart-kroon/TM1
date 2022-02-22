@@ -34,6 +34,7 @@
 #ifndef TMIV_IO_IO_H
 #define TMIV_IO_IO_H
 
+#include <TMIV/Common/Frame.h>
 #include <TMIV/Common/Json.h>
 #include <TMIV/MivBitstream/AccessUnit.h>
 
@@ -55,10 +56,8 @@ auto loadViewportMetadata(const Common::Json &config, const Placeholders &placeh
     -> MivBitstream::CameraConfig;
 
 auto loadOutOfBandVideoFrame(const Common::Json &config, const Placeholders &placeholders,
-                             MivBitstream::V3cUnitHeader vuh, int32_t frameIdx,
-                             const MivBitstream::V3cParameterSet &vps,
-                             const MivBitstream::AtlasSequenceParameterSetRBSP &asps)
-    -> Common::Frame<>;
+                             MivBitstream::V3cUnitHeader vuh, int32_t frameIdx)
+    -> Common::DecodedFrame;
 
 auto loadSequenceConfig(const Common::Json &config, const Placeholders &placeholders,
                         int32_t frameIdx) -> MivBitstream::SequenceConfig;
@@ -82,10 +81,14 @@ auto loadMpiTransparencyMpiLayer(const Common::Json &config, const Placeholders 
     MivBitstream::AiAttributeTypeId attrTypeId = MivBitstream::AiAttributeTypeId::ATTR_UNSPECIFIED)
     -> std::filesystem::path;
 
-void saveOutOfBandVideoFrame(
+void saveOutOfBandMetadata(const Common::Json &config, const Placeholders &placeholders,
+                           Common::Json::Array metadata);
+
+auto saveOutOfBandVideoFrame(
     const Common::Json &config, const Placeholders &placeholders, const Common::Frame<> &frame,
     MivBitstream::V3cUnitHeader vuh, int32_t frameIdx,
-    MivBitstream::AiAttributeTypeId attrTypeId = MivBitstream::AiAttributeTypeId::ATTR_UNSPECIFIED);
+    MivBitstream::AiAttributeTypeId attrTypeId = MivBitstream::AiAttributeTypeId::ATTR_UNSPECIFIED)
+    -> Common::Json::Object;
 
 void saveViewport(const Common::Json &config, const Placeholders &placeholders, int32_t frameIdx,
                   const std::string &name, const Common::DeepFrame &frame);
@@ -99,7 +102,7 @@ void optionalSavePrunedFrame(
     MivBitstream::AiAttributeTypeId attrTypeId = MivBitstream::AiAttributeTypeId::ATTR_UNSPECIFIED);
 
 void optionalSaveSequenceConfig(const Common::Json &config, const Placeholders &placeholders,
-                                int32_t foc, const MivBitstream::SequenceConfig &seqConfig);
+                                int32_t frameIdx, const MivBitstream::SequenceConfig &seqConfig);
 
 // Construct the output bitstream path and create the parent directories
 auto outputBitstreamPath(const Common::Json &config, const Placeholders &placeholders)

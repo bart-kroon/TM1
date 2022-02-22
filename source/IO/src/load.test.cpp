@@ -256,8 +256,27 @@ TEST_CASE("TMIV::IO::loadOutOfBandVideoFrame") {
   filesystem->fileData(test::dir1() / "nor_7_seq_rate_3_4x6_yuv420p6.yuv",
                        std::string(24 * 3 / 2 - truncate, '_'));
 
+  filesystem->fileData(test::dir1() / "TMIV_7_seq_rate.json", R"(
+    [
+        {
+            "vuh_unit_type": 4,
+            "vuh_v3c_parameter_set_id": 2,
+            "vuh_atlas_id": 3,
+            "vuh_attribute_index": 4,
+            "vuh_attribute_partition_index": 0,
+            "vuh_map_index": 0,
+            "vuh_auxiliary_video_flag": false,
+            "ai_attribute_type_id": 4,
+            "frame_size": [ 4, 6 ],
+            "bit_depth": 6,
+            "irap_frame_indices": [ 0, 5, 13 ]
+        }
+    ]
+)"s);
+
   const auto config = Json::parse(R"({
-      "outputDirectory": "fake",
+      "inputDirectory": "fake",
+      "inputBitstreamPathFmt": "TMIV_{0}_{1}_{2}.bit",
       "inputNormalVideoFramePathFmt": "nor_{0}_{1}_{2}_{3}_{4}x{5}_{6}.yuv"
 })"sv);
 
@@ -267,27 +286,16 @@ TEST_CASE("TMIV::IO::loadOutOfBandVideoFrame") {
   const auto attrIdx = uint8_t{4};
   const auto vuh = V3cUnitHeader::avd(2, atlasId, attrIdx);
 
-  vps.vps_atlas_count_minus1(2)
-      .vps_atlas_id(1, atlasId)
-      .vps_frame_width(atlasId, 4)
-      .vps_frame_height(atlasId, 6)
-      .vps_attribute_video_present_flag(atlasId, true)
-      .attribute_information(atlasId)
-      .ai_attribute_count(6)
-      .ai_attribute_type_id(attrIdx, AiAttributeTypeId::ATTR_NORMAL)
-      .ai_attribute_2d_bit_depth_minus1(attrIdx, 5);
-
-  AtlasSequenceParameterSetRBSP asps;
-
   if (truncate == 1) {
-    REQUIRE_THROWS(loadOutOfBandVideoFrame(config, test::placeholders(), vuh, 0, vps, asps));
+    REQUIRE_THROWS(loadOutOfBandVideoFrame(config, test::placeholders(), vuh, 0));
   } else {
-    const auto result = loadOutOfBandVideoFrame(config, test::placeholders(), vuh, 0, vps, asps);
+    const auto result = loadOutOfBandVideoFrame(config, test::placeholders(), vuh, 0);
 
     REQUIRE_FALSE(result.empty());
     CHECK(result.getSize() == Vec2i{4, 6});
     CHECK(result.getBitDepth() == 6);
     CHECK(result.getColorFormat() == ColorFormat::YUV420);
+    CHECK(result.irap);
   }
 }
 

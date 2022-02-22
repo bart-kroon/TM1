@@ -149,7 +149,7 @@ NOTE: This section may be expanded by the software coordinators based on what co
 
 #### Integer casting
 
-- Avoid casting integers when possible. This is not always possible, for instance `vps_atlas_count_minus1()` returns a `std::uint8_t` to match with the specification but `std::vector<>::size()` returns a `std::size_t`.
+- Avoid casting integers when possible. This is not always possible, for instance `vps_atlas_count_minus1()` returns a `std::uint8_t` to match with the specification but `std::vector<>::size()` returns a `:size_t`.
 - Use curly braces (unified constructor syntax) for implicit casts, e.g. `int{vps_atlas_count_minus1()}`.
 - Use `static_cast<>` for explicit casts, e.g. `static_cast<int>(vector.size())`.
 - Do not use C++ explicit casts `int()` for readability, use `static_cast<>` instead.

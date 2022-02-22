@@ -35,6 +35,7 @@
 #define TMIV_MIVBITSTREAM_ATLASID_H
 
 #include <TMIV/Common/Bitstream.h>
+#include <TMIV/Common/Json.h>
 
 #include <cstdint>
 #include <ostream>
@@ -67,6 +68,8 @@ public:
   }
 
   void encodeTo(Common::OutputBitstream &bitstream) const { bitstream.writeBits(m_value, 6); }
+
+  explicit operator Common::Json() const { return Common::Json{m_value}; }
 
 private:
   friend struct fmt::formatter<TMIV::MivBitstream::AtlasId>;

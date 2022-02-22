@@ -40,6 +40,7 @@ create_catch2_unit_test(
     SOURCES
         "src/Bitstream.test.cpp"
         "src/Common.test.cpp"
+        "src/Decoder.test.cpp"
         "src/Filter.test.cpp"
         "src/FlatMap.test.cpp"
         "src/Frame.test.cpp"
@@ -47,6 +48,7 @@ create_catch2_unit_test(
         "src/Json.test.cpp"
         "src/Matrix.test.cpp"
         "src/Quaternion.test.cpp"
+        "src/Source.test.cpp"
         "src/verify.test.cpp"
     PRIVATE
         TMIV::CommonLib

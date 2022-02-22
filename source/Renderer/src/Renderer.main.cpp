@@ -80,15 +80,16 @@ public:
   }
 
   void run() override {
-    for (int32_t foc = 0;; ++foc) {
+    for (int32_t frameIdx = 0;; ++frameIdx) {
       // Check which frames to render if we would
-      const auto range = m_inputToOutputFrameIdMap.equal_range(foc);
+      const auto range = m_inputToOutputFrameIdMap.equal_range(frameIdx);
       if (range.first == range.second) {
         return;
       }
 
-      updateParams(foc);
-      const auto frame = IO::loadMultiviewFrame(json(), m_placeholders, m_inputSequenceConfig, foc);
+      updateParams(frameIdx);
+      const auto frame =
+          IO::loadMultiviewFrame(json(), m_placeholders, m_inputSequenceConfig, frameIdx);
       const auto inputViewParamsList = m_inputSequenceConfig.sourceViewParams();
 
       if (!m_depthLowQualityFlag) {
@@ -96,28 +97,29 @@ public:
       }
 
       // Make up an access unit
-      const auto au = accessUnit(frame, inputViewParamsList, foc);
+      const auto au = accessUnit(frame, inputViewParamsList, frameIdx);
 
       m_renderer.renderMultipleFrames(au, range.first, range.second);
     }
   }
 
 private:
-  void updateParams(int32_t foc) {
-    if (foc == 0) {
+  void updateParams(int32_t frameIdx) {
+    if (frameIdx == 0) {
       m_inputSequenceConfig = IO::loadSequenceConfig(json(), m_placeholders, 0);
-    } else if (auto sc = IO::tryLoadSequenceConfig(json(), m_placeholders, foc)) {
-      std::cout << "Updating parameters at frame " << foc << '\n';
+    } else if (auto sc = IO::tryLoadSequenceConfig(json(), m_placeholders, frameIdx)) {
+      std::cout << "Updating parameters at frame " << frameIdx << '\n';
       m_inputSequenceConfig = *sc;
     }
   }
 
   [[nodiscard]] auto accessUnit(const Common::DeepFrameList &frame,
-                                const MivBitstream::ViewParamsList &vpl, int32_t foc) const
+                                const MivBitstream::ViewParamsList &vpl, int32_t frameIdx) const
       -> MivBitstream::AccessUnit {
     auto au = MivBitstream::AccessUnit{};
     au.viewParamsList = vpl;
-    au.foc = foc;
+    au.frameIdx = frameIdx;
+    au.foc = frameIdx;
 
     PRECONDITION(m_depthLowQualityFlag.has_value());
     au.casps.emplace(MivBitstream::CommonAtlasSequenceParameterSetRBSP{});

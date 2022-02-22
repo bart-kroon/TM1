@@ -45,7 +45,7 @@ public:
   using A::A;
   MatrixInterface() : A() {}
   explicit MatrixInterface(const A &a) : A(a) {}
-  explicit MatrixInterface(A &&a) : A(std::move(a)) {}
+  explicit MatrixInterface(A &&a) noexcept : A(std::move(a)) {}
 
   using A::operator=;
 

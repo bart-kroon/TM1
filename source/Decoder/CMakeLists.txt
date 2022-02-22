@@ -4,17 +4,20 @@ create_tmiv_library(
     TARGET
         DecoderLib
     SOURCES
-        "src/AtlasDecoder.cpp"
-        "src/CommonAtlasDecoder.cpp"
+        "src/DecodeAtlas.cpp"
+        "src/DecodeAtlasSubBitstream.cpp"
+        "src/DecodeCommonAtlas.cpp"
+        "src/DecodeMiv.cpp"
+        "src/DecodeNalUnitStream.cpp"
+        "src/DecodePatchParamsList.cpp"
+        "src/DecodeV3cSampleStream.cpp"
+        "src/DecodeVideoSubBitstream.cpp"
+        "src/DecodeViewParamsList.cpp"
         "src/GeometryScaler.cpp"
-        "src/MivDecoder.cpp"
         "src/OutputLog.cpp"
         "src/PreRenderer.cpp"
-        "src/V3cSampleStreamDecoder.cpp"
         "src/V3cUnitBuffer.cpp"
     PUBLIC
-        TMIV::MivBitstreamLib
-        TMIV::VideoDecoderLib
         TMIV::PtlCheckerLib
     )
 
@@ -26,6 +29,7 @@ create_tmiv_executable(
         "src/registerComponents.cpp"
     PRIVATE
         TMIV::DecoderLib
+        TMIV::VideoDecoderLib
         TMIV::RendererFrontLib
     )
 
@@ -33,11 +37,16 @@ create_catch2_unit_test(
     TARGET
         DecoderTest
     SOURCES
-        "src/AtlasDecoder.test.cpp"
-        "src/CommonAtlasDecoder.test.cpp"
-        "src/MivDecoder.test.cpp"
+        "src/DecodeAtlas.test.cpp"
+        "src/DecodeAtlasSubBitstream.test.cpp"
+        "src/DecodeCommonAtlas.test.cpp"
+        "src/DecodeMiv.test.cpp"
+        "src/DecodeNalUnitStream.test.cpp"
+        "src/DecodeV3cSampleStream.test.cpp"
+        "src/DecodeVideoSubBitstream.test.cpp"
         "src/PreRenderer.test.cpp"
         "src/OutputLog.test.cpp"
+        "src/V3cUnitBuffer.test.cpp"
     PRIVATE
         TMIV::DecoderLib
     )

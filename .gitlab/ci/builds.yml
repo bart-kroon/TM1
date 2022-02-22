@@ -9,7 +9,7 @@ Release build (GCC 9):
     - mkdir -p build && cd build
     - >
       cmake
-      -DCMAKE_CXX_FLAGS="-Wall -Wextra -Wpedantic -Werror -Wfloat-conversion"
+      -DCMAKE_CXX_FLAGS="-Wall -Wextra -Wpedantic -Werror -Wfloat-conversion -Wno-maybe-uninitialized"
       -DENABLE_CLANG_TIDY=OFF -DCMAKE_BUILD_TYPE=Release
       -DNO_INTERNET=ON
       -DLOCAL_CATCH2_DIR=/dependencies/Catch2-2_13_4/
@@ -45,7 +45,7 @@ Debug build and static analysis (Clang 12):
     - cd ..
     - mkdir coverage_html
     - >
-      gcovr build --gcov-executable 'llvm-cov-12 gcov' -f 'source/' -e '.*\.test\.cpp'
+      gcovr build --gcov-executable 'llvm-cov-12 gcov' -f 'source/' -e '.*\.test\.cpp' -e '.*\.main\.cpp' -e '.*registerComponents.cpp'
       --xml coverage.xml --xml-pretty --html-details coverage_html/index.html --print-summary
   artifacts:
     reports:

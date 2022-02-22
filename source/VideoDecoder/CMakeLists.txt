@@ -1,24 +1,15 @@
 cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
 
-if (HAVE_HM)
-    set(hmSources
-        "src/HmVideoDecoder.cpp"
-    )
-endif()
-
-if (HAVE_VVDEC)
-    set(vvdecSources
-        "src/VVdeCVideoDecoder.cpp")
-endif()
-
 create_tmiv_library(
     TARGET
         VideoDecoderLib
     SOURCES
-        "src/VideoDecoderBase.cpp"
-        "src/VideoDecoderFactory.cpp"
-        ${hmSources}
-        ${vvdecSources}
+        "src/HmPartition.cpp"
+        "src/HmVideoDecoder.cpp"
+        "src/UnavailableVideoDecoders.cpp"
+        "src/UnavailablePartitioners.cpp"
+        "src/VVdeCPartition.cpp"
+        "src/VVdeCVideoDecoder.cpp"
     PUBLIC
         TMIV::CommonLib
     )
@@ -44,8 +35,8 @@ create_catch2_unit_test(
     TARGET
         VideoDecoderTest
     SOURCES
-        "src/VideoDecoderBase.test.cpp"
-        "src/VideoDecoderFactory.test.cpp"
+        "src/Partition.test.cpp"
+        "src/VideoDecoder.test.cpp"
     PRIVATE
         TMIV::VideoDecoderLib
     )

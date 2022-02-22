@@ -64,8 +64,12 @@ inline Json::Json(std::string &&value) : m_node{std::move(value)} {}
 inline Json::Json(Array &&value) : m_node{std::move(value)} {}
 
 template <typename T, typename> Json::Json(const T &value) {
-  using ValueType = std::conditional_t<std::is_integral_v<T>, Json::Integer, Json::Number>;
-  m_node = ValueType{value};
+  if constexpr (std::is_enum_v<T>) {
+    m_node = Json::Integer{static_cast<std::underlying_type_t<T>>(value)};
+  } else {
+    using ValueType = std::conditional_t<std::is_integral_v<T>, Json::Integer, Json::Number>;
+    m_node = ValueType{value};
+  }
 }
 
 template <typename... Args>
@@ -133,6 +137,8 @@ template <typename T> auto Json::as() const -> decltype(auto) {
       return std::any_cast<bool>(m_node);
     } else if constexpr (std::is_integral_v<T>) {
       return Common::verifyDownCast<T>(std::any_cast<Integer>(m_node));
+    } else if constexpr (std::is_enum_v<T>) {
+      return static_cast<T>(std::any_cast<Integer>(m_node));
     } else if constexpr (std::is_floating_point_v<T>) {
       if (const auto *value = std::any_cast<Integer>(&m_node)) {
         return static_cast<T>(*value); // cast integer to float

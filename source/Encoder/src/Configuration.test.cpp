@@ -59,7 +59,7 @@ TEST_CASE("TMIV::Encoder::Configuration") {
     "oneViewPerAtlasFlag": false,
     "dynamicDepthRange": true,
     "halveDepthRange": true,
-    "randomAccess": false,
+    "rewriteParameterSets": false,
     "patchRedundancyRemoval": true,
     "viewportCameraParametersSei": false,
     "viewportPositionSei": true,
@@ -87,7 +87,6 @@ TEST_CASE("TMIV::Encoder::Configuration") {
     CHECK(unit.dynamicDepthRange);
     CHECK(unit.halveDepthRange);
     CHECK(unit.dqParamsPresentFlag);
-    CHECK_FALSE(unit.randomAccess);
     CHECK(unit.patchRedundancyRemoval);
     CHECK_FALSE(unit.viewportCameraParametersSei);
     CHECK(unit.viewportPositionSei);
@@ -163,7 +162,7 @@ TEST_CASE("TMIV::Encoder::Configuration") {
     "dqParamsPresentFlag": false,
     "textureOffsetEnabledFlag": false,
     "colorCorrectionEnabledFlag": false,
-    "randomAccess": true,
+    "rewriteParameterSets": true,
     "patchRedundancyRemoval": false,
     "viewportCameraParametersSei": true,
     "viewportPositionSei": false,
@@ -188,7 +187,6 @@ TEST_CASE("TMIV::Encoder::Configuration") {
     CHECK(unit.oneViewPerAtlasFlag);
     CHECK_FALSE(unit.dynamicDepthRange);
     CHECK_FALSE(unit.dqParamsPresentFlag);
-    CHECK(unit.randomAccess);
     CHECK_FALSE(unit.patchRedundancyRemoval);
     CHECK(unit.viewportCameraParametersSei);
     CHECK_FALSE(unit.viewportPositionSei);
@@ -246,7 +244,7 @@ TEST_CASE("TMIV::Encoder::Configuration") {
     "dynamicDepthRange": false,
     "dqParamsPresentFlag": false,
     "textureOffsetEnabledFlag": false,
-    "randomAccess": true,
+    "rewriteParameterSets": true,
     "patchRedundancyRemoval": true,
     "numGroups": 3,
     "maxEntityId": 5,

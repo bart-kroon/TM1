@@ -1594,11 +1594,13 @@ auto V3cParameterSet::summary() const -> std::string {
     fmt::print(stream, "\n");
   }
 
-  const auto &vme = vps_miv_extension();
-  fmt::print(stream,
-             ", geometry scaling {}, groups {}, embedded occupancy {}, occupancy scaling {}\n",
-             vme.vme_geometry_scale_enabled_flag(), vme.group_mapping().gm_group_count(),
-             vme.vme_embedded_occupancy_enabled_flag(), vme.vme_occupancy_scale_enabled_flag());
+  if (vps_miv_extension_present_flag()) {
+    const auto &vme = vps_miv_extension();
+    fmt::print(stream,
+               ", geometry scaling {}, groups {}, embedded occupancy {}, occupancy scaling {}\n",
+               vme.vme_geometry_scale_enabled_flag(), vme.group_mapping().gm_group_count(),
+               vme.vme_embedded_occupancy_enabled_flag(), vme.vme_occupancy_scale_enabled_flag());
+  }
 
   return stream.str();
 }

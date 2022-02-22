@@ -232,4 +232,44 @@ auto V3cUnit::encodeTo(std::ostream &stream) const -> size_t {
   v3c_unit_payload().encodeTo(stream, v3c_unit_header());
   return static_cast<size_t>(stream.tellp() - position);
 }
+
+auto commonAtlasVuhs(const V3cParameterSet &vps) -> std::vector<V3cUnitHeader> {
+  return std::vector{V3cUnitHeader::cad(vps.vps_v3c_parameter_set_id())};
+}
+
+auto atlasVuhs(const V3cParameterSet &vps) -> std::vector<V3cUnitHeader> {
+  auto result = std::vector<V3cUnitHeader>(vps.vps_atlas_count_minus1() + size_t{1});
+
+  for (uint8_t k = 0; k <= vps.vps_atlas_count_minus1(); ++k) {
+    result[k] = V3cUnitHeader::ad(vps.vps_v3c_parameter_set_id(), vps.vps_atlas_id(k));
+  }
+  return result;
+}
+
+auto videoVuhs(const V3cParameterSet &vps) -> std::vector<V3cUnitHeader> {
+  auto result = std::vector<V3cUnitHeader>{};
+  const auto vpsId = vps.vps_v3c_parameter_set_id();
+
+  for (uint8_t k = 0; k <= vps.vps_atlas_count_minus1(); ++k) {
+    const auto atlasId = vps.vps_atlas_id(k);
+
+    if (vps.vps_occupancy_video_present_flag(atlasId)) {
+      result.push_back(V3cUnitHeader::ovd(vpsId, atlasId));
+    }
+    if (vps.vps_geometry_video_present_flag(atlasId)) {
+      result.push_back(V3cUnitHeader::gvd(vpsId, atlasId));
+    }
+    if (vps.vps_attribute_video_present_flag(atlasId)) {
+      const auto &ai = vps.attribute_information(atlasId);
+
+      for (uint8_t i = 0; i < ai.ai_attribute_count(); ++i) {
+        result.push_back(V3cUnitHeader::avd(vpsId, atlasId, i));
+      }
+    }
+    if (vps.vps_packed_video_present_flag(atlasId)) {
+      result.push_back(V3cUnitHeader::pvd(vpsId, atlasId));
+    }
+  }
+  return result;
+}
 } // namespace TMIV::MivBitstream

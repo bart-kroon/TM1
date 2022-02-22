@@ -83,8 +83,8 @@ struct AtlasAccessUnit {
 };
 
 struct AccessUnit {
-  bool irap{};
-  int32_t foc{-1};
+  int32_t foc{-1};      // Frame order count in the coded sequence, resets to zero at each IRAP
+  int32_t frameIdx{-1}; // Consecutive frame index (0-based)
 
   V3cParameterSet vps;
   std::optional<CommonAtlasSequenceParameterSetRBSP> casps;

@@ -34,23 +34,36 @@
 #ifndef TMIV_DECODER_V3CUNITBUFFER_H
 #define TMIV_DECODER_V3CUNITBUFFER_H
 
+#include <TMIV/Common/Source.h>
 #include <TMIV/MivBitstream/V3cUnit.h>
 
-#include <functional>
 #include <list>
 
 namespace TMIV::Decoder {
-using V3cUnitSource = std::function<std::optional<MivBitstream::V3cUnit>()>;
-
 class V3cUnitBuffer {
 public:
-  explicit V3cUnitBuffer(V3cUnitSource source);
+  // Callback for when reading past a VPS in search for a certain V3C unit
+  // The VPS at the start of the bitstream needs to be read explicitly
+  using OnVps = std::function<void(MivBitstream::V3cUnit)>;
 
-  auto operator()(const MivBitstream::V3cUnitHeader &vuh) -> std::optional<MivBitstream::V3cUnit>;
+  V3cUnitBuffer(Common::Source<MivBitstream::V3cUnit> source, OnVps onVps);
+
+  auto operator()(MivBitstream::V3cUnitHeader vuh) -> std::optional<MivBitstream::V3cUnit>;
 
 private:
-  V3cUnitSource m_source;
+  Common::Source<MivBitstream::V3cUnit> m_source;
   std::list<MivBitstream::V3cUnit> m_buffer;
+  OnVps m_onVps;
+};
+
+auto videoSubBitstreamSource(std::shared_ptr<V3cUnitBuffer> buffer, MivBitstream::V3cUnitHeader vuh)
+    -> Common::Source<MivBitstream::VideoSubBitstream>;
+
+auto atlasSubBitstreamSource(std::shared_ptr<V3cUnitBuffer> buffer, MivBitstream::V3cUnitHeader vuh)
+    -> Common::Source<MivBitstream::AtlasSubBitstream>;
+
+struct V3cUnitBufferError : public std::runtime_error {
+  using std::runtime_error::runtime_error;
 };
 } // namespace TMIV::Decoder
 

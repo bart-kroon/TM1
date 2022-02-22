@@ -64,7 +64,6 @@ private:
   void setGiGeometry3dCoordinatesBitdepthMinus1();
   void prepareIvau();
   [[nodiscard]] auto log2FocLsbMinus4() const -> uint8_t;
-  void incrementFoc();
 
   auto readFrame(int32_t frameIdx) -> MpiPcs::Frame { return m_mpiPcsFrameReader(frameIdx); }
 

@@ -92,7 +92,7 @@ public:
   explicit Json(Array &&value);
 
   // Value construction with numeric promotion
-  template <typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
+  template <typename T, typename = std::enable_if_t<std::is_arithmetic_v<T> || std::is_enum_v<T>>>
   explicit Json(const T &value);
 
   // In-place value constructors

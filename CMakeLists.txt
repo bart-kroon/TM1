@@ -48,6 +48,7 @@ foreach(subdir
         VideoDecoder
         Encoder
         Decoder
+        Multiplexer
         Parser
         PtlChecker
         GaInserter

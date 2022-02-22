@@ -43,6 +43,7 @@ TEST_CASE("TMIV::IO::saveOutOfBandVideoFrame") {
 
   SECTION("Geometry video data") {
     const auto config = Json::parse(R"({
+    "intraPeriod": 8,
     "outputDirectory": "fake",
     "outputGeometryVideoDataPathFmt": "geo_{0}_{1}_{2}_{3}_{4}x{5}_{6}.yuv"
 })"sv);
@@ -58,6 +59,7 @@ TEST_CASE("TMIV::IO::saveOutOfBandVideoFrame") {
 
   SECTION("Attribute video data") {
     const auto config = Json::parse(R"({
+    "intraPeriod": 8,
     "outputDirectory": "fake",
     "outputTextureVideoDataPathFmt":"tex_{0}_{1}_{2}_{3}_{4}x{5}_{6}.yuv"
 })"sv);

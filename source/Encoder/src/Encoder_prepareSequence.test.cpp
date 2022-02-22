@@ -50,7 +50,7 @@ auto configuration1() {
     "oneViewPerAtlasFlag": false,
     "dynamicDepthRange": false,
     "halveDepthRange": true,
-    "randomAccess": false,
+    "rewriteParameterSets": false,
     "patchRedundancyRemoval": true,
     "viewportCameraParametersSei": false,
     "viewportPositionSei": false,

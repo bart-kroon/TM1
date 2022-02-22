@@ -319,6 +319,7 @@ createCommonAtlasSequenceParameterSet(const Configuration &config,
     asme.asme_patch_texture_offset_bit_depth_minus1(
         Common::downCast<uint16_t>(config.textureOffsetBitCount - 1));
   }
+  asme.asme_inpaint_enabled_flag(true);
   return asme;
 }
 

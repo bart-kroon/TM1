@@ -190,10 +190,8 @@ calculateNominalAtlasFrameSizes(const Configuration &config,
   auto gm = MivBitstream::GroupMapping{};
   gm.gm_group_count(numGroups);
 
-  if (0 < numGroups) {
-    for (size_t i = 0; i < atlasFrameSizes.size(); ++i) {
-      gm.gm_group_id(i, 0);
-    }
+  for (size_t i = 0; i < atlasFrameSizes.size(); ++i) {
+    gm.gm_group_id(i, (i * numGroups) / atlasFrameSizes.size());
   }
   return gm;
 }
@@ -203,10 +201,7 @@ calculateNominalAtlasFrameSizes(const Configuration &config,
                                          const Common::SizeVector &atlasFrameSizes) {
   auto vme = MivBitstream::VpsMivExtension{};
   vme.vme_geometry_scale_enabled_flag(config.geometryScaleEnabledFlag)
-      .vme_embedded_occupancy_enabled_flag(
-          config.haveGeometry && !config.haveOccupancy &&
-          std::any_of(viewParamsList.cbegin(), viewParamsList.cend(),
-                      [](const auto &vp) { return vp.hasOccupancy; }))
+      .vme_embedded_occupancy_enabled_flag(true)
       .group_mapping() = createGroupMapping(config.numGroups, atlasFrameSizes);
 
   if (!vme.vme_embedded_occupancy_enabled_flag()) {

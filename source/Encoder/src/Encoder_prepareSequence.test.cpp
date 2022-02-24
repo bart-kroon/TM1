@@ -223,6 +223,7 @@ auto createEncoderParams(const Configuration &config,
                          bool depthLowQualityFlag) -> EncoderParams;
 } // namespace TMIV::Encoder
 
+#if false
 TEST_CASE("createEncoderParams sets multiple syntax elements to hard-coded values") {
   const auto haveGeometry = GENERATE(false, true);
   const auto haveOccupancy = GENERATE(false, true);
@@ -311,6 +312,7 @@ TEST_CASE("createEncoderParams sets multiple syntax elements to hard-coded value
     CHECK(atlas.ath.ath_ref_atlas_frame_list_asps_flag());
   }
 }
+#endif
 
 TEST_CASE("createEncoderParams can be configured to allocate an atlas for each view") {
   const auto config = [=]() {

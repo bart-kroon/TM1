@@ -231,12 +231,16 @@ calculateNominalAtlasFrameSizes(const Configuration &config,
         .vps_frame_width(j, atlasFrameSizes[k].x())
         .vps_frame_height(j, atlasFrameSizes[k].y())
         .vps_geometry_video_present_flag(j, config.haveGeometry)
-        .vps_occupancy_video_present_flag(j, config.haveOccupancy)
         .vps_attribute_video_present_flag(j, config.haveTexture)
         .vps_miv_extension(createVpsMivExtension(config, viewParamsList, atlasFrameSizes));
 
-    if (config.haveOccupancy) {
-      vps.occupancy_information(j, createOccupancyInformation(config.occBitDepth));
+    if (k == 0) {
+      vps.vps_occupancy_video_present_flag(j, false);
+    } else {
+      vps.vps_occupancy_video_present_flag(j, config.haveOccupancy);
+      if (config.haveOccupancy) {
+        vps.occupancy_information(j, createOccupancyInformation(config.occBitDepth));
+      }
     }
     if (config.haveGeometry) {
       vps.geometry_information(j, createGeometryInformation(config.geoBitDepth, viewParamsList));

@@ -123,7 +123,7 @@ public:
 
     VERIFY(m_state == State::decoding);
 
-    if (m_au.foc == 0 && m_nextVps) {
+    if (m_au.foc == 0 && !m_nextVps.empty()) {
       decodeVps();
     }
 
@@ -205,10 +205,9 @@ private:
 
   void onVps(const MivBitstream::V3cUnit &vu) {
     VERIFY_MIVBITSTREAM(m_state != State::end);
-    VERIFY_MIVBITSTREAM(!m_nextVps);
 
     m_checker->checkVuh(vu.v3c_unit_header());
-    m_nextVps = vu.v3c_unit_payload().v3c_parameter_set();
+    m_nextVps.push(vu.v3c_unit_payload().v3c_parameter_set());
   }
 
   template <typename T, typename Start>
@@ -237,10 +236,10 @@ private:
   }
 
   void decodeVps() {
-    VERIFY(m_state == State::decoding && m_au.foc == 0 && m_nextVps);
+    VERIFY(m_state == State::decoding && m_au.foc == 0 && !m_nextVps.empty());
 
-    m_au.vps = *std::move(m_nextVps);
-    m_nextVps.reset();
+    m_au.vps = std::move(m_nextVps.front());
+    m_nextVps.pop();
 
     std::cout << m_au.vps.summary();
     m_checker->checkAndActivateVps(m_au.vps);
@@ -389,7 +388,7 @@ private:
   AtlasDecoderFactory m_atlasDecoderFactory;
 
   State m_state{State::initial};
-  std::optional<MivBitstream::V3cParameterSet> m_nextVps;
+  std::queue<MivBitstream::V3cParameterSet> m_nextVps;
 
   SubDecoderMap<CommonAtlasAccessUnit> m_cad; // common atlas data
   SubDecoderMap<AtlasAccessUnit> m_ad;        // atlas data

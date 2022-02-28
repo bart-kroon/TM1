@@ -621,12 +621,12 @@ private:
   static void calcSamples(const int32_t sampleSize, const std::vector<size_t> &nonPrunedPixIndices,
                           const TMIV::Common::Mat<TMIV::Common::Vec3f> &referenceRGB,
                           const TMIV::Common::Mat<TMIV::Common::Vec3f> &synthesizedRGB,
-                          std::vector<uint64_t> &sampledIndices, std::vector<float> &weights) {
+                          std::vector<size_t> &sampledIndices, std::vector<float> &weights) {
     struct VecRgb {
       VecRgb(float _r, float _g, float _b) : r{_r}, g{_g}, b{_b} {}
       float r{}, g{}, b{};
     };
-    std::vector<std::vector<uint64_t>> sampledPixIndices(sampleSize * sampleSize * sampleSize);
+    std::vector<std::vector<size_t>> sampledPixIndices(sampleSize * sampleSize * sampleSize);
     std::vector<VecRgb> meanColors(sampleSize * sampleSize * sampleSize, {0.F, 0.F, 0.F});
     for (size_t idx : nonPrunedPixIndices) {
       VecRgb ref{std::min(255.F, std::max(0.F, referenceRGB[idx][0]) * 255.F),
@@ -690,7 +690,7 @@ private:
       return result;
     }
 
-    std::vector<uint64_t> sampledIndices;
+    std::vector<size_t> sampledIndices;
     std::vector<float> weights;
 
     calcSamples(m_sampleSize, nonPrunedPixIndices, referenceRGB, synthesizedRGB, sampledIndices,

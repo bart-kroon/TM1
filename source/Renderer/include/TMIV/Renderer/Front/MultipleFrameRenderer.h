@@ -49,8 +49,8 @@ public:
                         IO::Placeholders placeholders);
 
   void renderMultipleFrames(const MivBitstream::AccessUnit &frame,
-                            FrameMapping::const_iterator first,
-                            FrameMapping::const_iterator last) const;
+                            const FrameMapping::const_iterator &first,
+                            const FrameMapping::const_iterator &last) const;
 
   [[nodiscard]] auto isOptimizedForRestrictedGeometry() const -> bool {
     // NOTe(FT): added to handle the absence of renderer in the G3 anchor type

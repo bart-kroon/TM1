@@ -198,5 +198,8 @@ auto main(int argc, char *argv[]) -> int32_t {
   } catch (std::logic_error &e) {
     std::cerr << e.what() << std::endl;
     return 3;
+  } catch (std::exception &e) {
+    std::cerr << e.what() << std::endl;
+    return 127;
   }
 }

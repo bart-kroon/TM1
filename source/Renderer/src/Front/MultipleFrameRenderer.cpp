@@ -56,8 +56,8 @@ MultipleFrameRenderer::MultipleFrameRenderer(const Common::Json &rootNode,
 }
 
 void MultipleFrameRenderer::renderMultipleFrames(const MivBitstream::AccessUnit &frame,
-                                                 FrameMapping::const_iterator first,
-                                                 FrameMapping::const_iterator last) const {
+                                                 const FrameMapping::const_iterator &first,
+                                                 const FrameMapping::const_iterator &last) const {
   for (auto i = first; i != last; ++i) {
     if (i->first == i->second) {
       for (const auto &name : m_outputCameraNames) {

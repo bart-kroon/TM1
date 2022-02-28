@@ -203,5 +203,8 @@ auto main(int argc, char *argv[]) -> int32_t {
   } catch (std::bad_function_call &e) {
     std::cerr << e.what() << std::endl;
     return 2;
+  } catch (std::exception &e) {
+    std::cerr << e.what() << std::endl;
+    return 127;
   }
 }

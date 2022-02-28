@@ -65,7 +65,8 @@ const auto codedVideoSequenceSize = 4 + 6 + 4 + 7;
   return SampleStreamNalHeader{1};
 }
 
-[[nodiscard]] auto asb(size_t irapCount) noexcept {
+[[nodiscard]] auto asb(size_t irapCount) {
+  using TMIV::Common::V3cBitstreamError;
   using TMIV::MivBitstream::AtlasSubBitstream;
   using TMIV::MivBitstream::NalUnit;
   using TMIV::MivBitstream::NalUnitHeader;

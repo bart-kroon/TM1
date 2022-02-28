@@ -276,17 +276,17 @@ auto Json::format() const -> std::string {
 }
 
 namespace {
-auto saveValue(std::tuple<bool> /* tag */, std::ostream &stream, bool value, int32_t /* level */)
-    -> std::ostream & {
+auto saveValue(const std::tuple<bool> & /* tag */, std::ostream &stream, bool value,
+               int32_t /* level */) -> std::ostream & {
   return stream << std::boolalpha << value;
 }
 
-auto saveValue(std::tuple<Json::Integer> /* tag */, std::ostream &stream, Json::Integer value,
-               int32_t /* level */) -> std::ostream & {
+auto saveValue(const std::tuple<Json::Integer> & /* tag */, std::ostream &stream,
+               Json::Integer value, int32_t /* level */) -> std::ostream & {
   return stream << value;
 }
 
-auto saveValue(std::tuple<Json::Number> /* tag */, std::ostream &stream, Json::Number value,
+auto saveValue(const std::tuple<Json::Number> & /* tag */, std::ostream &stream, Json::Number value,
                int32_t /* level */) -> std::ostream & {
   if (std::isinf(value)) {
     if (0 < value) {

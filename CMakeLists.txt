@@ -36,6 +36,7 @@ include(cmake/VVenC.cmake)
 include(cmake/clang_tidy.cmake)
 
 foreach(subdir
+        UnitTest
         Common
         MivBitstream
         IO

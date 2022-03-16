@@ -58,7 +58,7 @@ The first step is to obtain source archives for TMIV and all external libraries 
 
 1. Visit this URL: https://github.com/catchorg/Catch2/tree/v2.13.4
 1. Click on the green button "Code" and select "Download ZIP"
-1. Unzip, resulting in a directory `/Workspace/Catch2-2.13.4` such that the file `/Workspace/Catch2-2.13.4/README.md` exists.
+1. Unzip, resulting in a directory `/Workspace/Catch2-2.13.8` such that the file `/Workspace/Catch2-2.13.8/README.md` exists.
 
 ### {fmt} string formatting library
 

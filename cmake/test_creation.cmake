@@ -19,7 +19,7 @@ function(create_catch2_unit_test)
 
     target_link_libraries(${TEST_CREATOR_TARGET}
         PRIVATE
-            Catch2::Catch2WithMain
+            UnitTestLib
             ${TEST_CREATOR_PRIVATE})
 
     if(CLANG_TIDY_PATH)

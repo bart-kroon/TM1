@@ -157,4 +157,76 @@ TEST_CASE("Quanternion<T>", "[quaternion]") {
     }
   }
 }
+
+static auto directAveragingOfOrientationsDegrees(const std::vector<Vec3d> &orientationsDegrees)
+    -> Vec3d {
+  std::vector<Common::QuatD> orientations;
+  orientations.reserve(orientationsDegrees.size());
+  for (const auto &eulerd : orientationsDegrees) {
+    orientations.push_back(Common::eulerDeg2quat(eulerd));
+  }
+  auto orientationAverage = directAveragingOfOrientations(orientations);
+  auto orientationAverageDegrees = Common::quat2eulerDeg(orientationAverage);
+
+  return orientationAverageDegrees;
+}
+
+// This test evaluates the precision of the implemented direct method for averaging orientations
+// against the more accurate and more complex maximum likelihood method.
+// The expected values are generated using Matlab meanrot() function
+TEST_CASE("DirectAveragingOfOrientations") {
+  const double smallAngleDegrees = 1.0;
+  const double verySmallAngleDegrees = 0.1;
+
+  SECTION("Average orientation example") {
+    std::vector<Vec3d> orientationsDegrees = {{40, 20, 10}, {50, 10, 5}, {45, 70, 1}};
+    auto orientationAverageDegreesExpected = Vec3d{45.7876, 32.6452, 6.0407};
+    auto orientationAverageDegreesActual =
+        directAveragingOfOrientationsDegrees(orientationsDegrees);
+    auto difference =
+        Common::norm(orientationAverageDegreesExpected - orientationAverageDegreesActual);
+
+    REQUIRE(difference < smallAngleDegrees);
+  }
+
+  SECTION("Average orientation example") {
+    std::vector<Vec3d> orientationsDegrees = {{40, 20, 10}, {50, 350, 5}, {45, 70, 1}};
+    auto orientationAverageDegreesExpected = Vec3d{45.7158, 25.9763, 6.3364};
+    auto orientationAverageDegreesActual =
+        directAveragingOfOrientationsDegrees(orientationsDegrees);
+    auto difference =
+        Common::norm(orientationAverageDegreesExpected - orientationAverageDegreesActual);
+
+    REQUIRE(difference < smallAngleDegrees);
+  }
+
+  SECTION("Average orientation of real camera rig") {
+    // Use the camera setup of test sequence 'S' as a realistic example
+    std::vector<Vec3d> orientationsDegrees = {
+        {40.2684, -3.81838, 132.56},    {38.5782, -5.7702, 129.004},
+        {37.1499, -8.23096, 126.987},   {35.0126, -10.0534, 122.19},
+        {34.1317, -13.3612, 121.78},    {32.1488, -15.4979, 117.9},
+        {29.9645, -18.9061, 118.087},   {29.165, -21.9032, 116.952},
+        {27.6615, -25.2889, 114.787},   {26.2221, -29.6156, 112.98},
+        {23.7379, -31.5641, 110.607},   {21.5129, -35.3238, 110.244},
+        {19.9639, -37.8383, 108.283},   {17.4955, -41.5014, 108.827},
+        {15.5377, -44.2564, 103.857},   {14.2657, -48.203, 104.231},
+        {11.0674, -54.3679, 104.882},   {11.2173, -54.3154, 105.835},
+        {8.73715, -58.845, 100.842},    {6.50795, -62.8814, 102.931},
+        {4.50941, -67.5603, 104.599},   {3.49002, -70.983, 101.682},
+        {2.3553, -74.5453, 99.9127},    {4.02029, -78.5012, 97.4278},
+        {2.06328, -81.5449, 94.4807},   {2.22225, -85.9019, 94.0953},
+        {-128.387, -89.5978, -135.637}, {-173.897, -87.9799, -96.0767},
+        {-178.197, -84.3768, -92.716},  {-175.99, -83.3803, -100.826}};
+
+    auto orientationAverageDegreesExpected = Vec3d{15.8680, -47.5520, 105.7264};
+    auto orientationAverageDegreesActual =
+        directAveragingOfOrientationsDegrees(orientationsDegrees);
+    auto difference =
+        Common::norm(orientationAverageDegreesExpected - orientationAverageDegreesActual);
+
+    REQUIRE(difference < verySmallAngleDegrees);
+  }
+}
+
 } // namespace TMIV::Common

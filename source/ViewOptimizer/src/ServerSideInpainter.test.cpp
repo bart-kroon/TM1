@@ -137,7 +137,8 @@ const auto construct = []() {
     "FakeInpainter": {},
     "blurRadius": 12,
     "inpaintThreshold": 100,
-    "fieldOfViewMargin" : 0.3
+    "fieldOfViewMargin" : 0.1,
+    "segmentsPerEdge" : 20
 }
 )"s)};
 };
@@ -163,7 +164,7 @@ const auto sourceParams = []() {
       .ci_perspective_center_ver(2.F)
       .ci_perspective_focal_hor(3.F)
       .ci_perspective_focal_ver(4.F);
-  vp_2.pose.position = {10.F, -5.F, 3.F};
+  vp_2.pose.position = {4.F, -5.F, 3.F};
   vp_2.dq.dq_norm_disp_low(-0.03F).dq_norm_disp_high(0.5F);
   vp_2.viewId = TMIV::MivBitstream::ViewId{1};
 
@@ -221,7 +222,8 @@ TEST_CASE("ServerSideInpainter") {
         "FakeInpainter": {},
         "blurRadius": 12,
         "inpaintThreshold": 100,
-        "fieldOfViewMargin" : 0.3
+        "fieldOfViewMargin" : 0.1,
+        "segmentsPerEdge" : 20
     }
 }
 )"s);
@@ -290,7 +292,7 @@ TEST_CASE("ServerSideInpainter") {
       }
 
       THEN("The cardinal point of the added view is at the center of gravity") {
-        REQUIRE(params.viewParamsList.back().pose.position.x() == 5.5F);
+        REQUIRE(params.viewParamsList.back().pose.position.x() == 2.5F);
         REQUIRE(params.viewParamsList.back().pose.position.y() == -1.5F);
         REQUIRE(params.viewParamsList.back().pose.position.z() == 3.F);
       }
@@ -349,10 +351,10 @@ TEST_CASE("ServerSideInpainter") {
       THEN("The added view is partial ERP") {
         REQUIRE(params.viewParamsList.back().ci.ci_cam_type() ==
                 TMIV::MivBitstream::CiCamType::equirectangular);
-        REQUIRE(params.viewParamsList.back().ci.ci_erp_phi_min() == Approx(-115.25447F));
-        REQUIRE(params.viewParamsList.back().ci.ci_erp_phi_max() == Approx(115.25447F));
+        REQUIRE(params.viewParamsList.back().ci.ci_erp_phi_min() == Approx(-154.21486F));
+        REQUIRE(params.viewParamsList.back().ci.ci_erp_phi_max() == Approx(107.17455F));
         REQUIRE(params.viewParamsList.back().ci.ci_erp_theta_min() == -90.F);
-        REQUIRE(params.viewParamsList.back().ci.ci_erp_theta_max() == 90.F);
+        REQUIRE(params.viewParamsList.back().ci.ci_erp_theta_max() == Approx(41.28546F));
       }
     }
   }

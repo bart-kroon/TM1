@@ -47,9 +47,10 @@
         "SubMethod": "BasicViewAllocator",
         "SynthesizerMethod": "AdditiveSynthesizer",
         "blurRadius": 12,
-        "fieldOfViewMargin": 0.3,
+        "fieldOfViewMargin": 0.1,
         "inpaintThreshold": 100,
-        "resolution": [1024, 512]
+        "resolution": [1024, 512],
+        "segmentsPerEdge": 20
     },
     "ViewOptimizerMethod": "ServerSideInpainter",
     "bitDepthGeometryVideo": 10,

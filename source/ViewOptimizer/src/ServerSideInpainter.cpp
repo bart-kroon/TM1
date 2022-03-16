@@ -39,8 +39,10 @@
 #include <TMIV/Common/Json.h>
 #include <TMIV/Common/Quaternion.h>
 #include <TMIV/MivBitstream/AccessUnit.h>
+#include <TMIV/MivBitstream/DepthOccupancyTransform.h>
 #include <TMIV/Renderer/IInpainter.h>
 #include <TMIV/Renderer/ISynthesizer.h>
+#include <TMIV/Renderer/reprojectPoints.h>
 
 #include <cstring>
 #include <numeric>
@@ -48,72 +50,141 @@
 using namespace std::string_literals;
 
 namespace TMIV::ViewOptimizer {
-using Common::DeepFrame;
-using Common::DeepFrameList;
-using Common::Json;
-using MivBitstream::AccessUnit;
-using MivBitstream::AtlasAccessUnit;
-using MivBitstream::CommonAtlasSequenceParameterSetRBSP;
-using MivBitstream::ViewId;
-using MivBitstream::ViewParams;
-using MivBitstream::ViewParamsList;
-using Renderer::IInpainter;
-using Renderer::ISynthesizer;
+using TMIV::Common::DeepFrame;
+using TMIV::Common::DeepFrameList;
+using TMIV::Common::Json;
+using TMIV::Common::QuatD;
 using TMIV::Common::Vec2f;
+using TMIV::Common::Vec2i;
+using TMIV::Common::Vec3d;
+using TMIV::Common::Vec3f;
+using TMIV::MivBitstream::AccessUnit;
+using TMIV::MivBitstream::AtlasAccessUnit;
 using TMIV::MivBitstream::CiCamType;
+using TMIV::MivBitstream::CommonAtlasSequenceParameterSetRBSP;
+using TMIV::MivBitstream::ViewId;
+using TMIV::MivBitstream::ViewParams;
+using TMIV::MivBitstream::ViewParamsList;
+using TMIV::Renderer::IInpainter;
+using TMIV::Renderer::ISynthesizer;
 
-class FieldOfView {
-private:
-  float m_minPhi;
-  float m_maxPhi;
-  float m_minTheta;
-  float m_maxTheta;
-
-public:
-  [[nodiscard]] constexpr auto minPhi() const noexcept { return m_minPhi; }
-  [[nodiscard]] constexpr auto maxPhi() const noexcept { return m_maxPhi; }
-  [[nodiscard]] constexpr auto minTheta() const noexcept { return m_minTheta; }
-  [[nodiscard]] constexpr auto maxTheta() const noexcept { return m_maxTheta; }
-
-  FieldOfView(float minPhi_, float maxPhi_, float minTheta_, float maxTheta_)
-      : m_minPhi{std::max(-180.F, minPhi_)}
-      , m_maxPhi{std::min(180.F, maxPhi_)}
-      , m_minTheta{std::max(-90.F, minTheta_)}
-      , m_maxTheta{std::min(90.F, maxTheta_)} {}
-
-  // Null element of the combine operation: combine(zero, something) == something
-  [[nodiscard]] static auto zero() noexcept -> FieldOfView { return {180.F, -180.F, 90.F, -90.F}; }
-
-  [[nodiscard]] static auto full() noexcept -> FieldOfView { return {-180.F, 180.F, -90.F, 90.F}; }
-
-  [[nodiscard]] static auto computeFrom(const ViewParams &vp) noexcept -> FieldOfView {
-    const auto focal = Vec2f{vp.ci.ci_perspective_focal_hor(), vp.ci.ci_perspective_focal_ver()};
-
-    // half angle of the field of view of the perspective projection
-    const float halfFovX =
-        Common::rad2deg(std::atan(0.5F * vp.ci.projectionPlaneSizeF().x() / std::abs(focal.x())));
-    const float halfFovY =
-        Common::rad2deg(std::atan(0.5F * vp.ci.projectionPlaneSizeF().y() / std::abs(focal.y())));
-
-    const auto euler = Common::Vec3f{Common::floatCast, quat2eulerDeg(vp.pose.orientation)};
-    const auto yaw = euler[0];
-    const auto pitch = euler[1];
-    const auto phi = yaw;
-    const auto theta = -pitch;
-
-    return {phi - halfFovX, phi + halfFovX, theta - halfFovY, theta + halfFovY};
-  }
-
-  [[nodiscard]] auto applyMargin(float margin) const noexcept -> FieldOfView {
-    return {m_minPhi - margin * std::abs(m_minPhi), m_maxPhi + margin * std::abs(m_maxPhi),
-            m_minTheta - margin * std::abs(m_minTheta), m_maxTheta + margin * std::abs(m_maxTheta)};
-  }
-
-  [[nodiscard]] auto combine(const FieldOfView &other) const noexcept -> FieldOfView {
-    return {std::min(m_minPhi, other.m_minPhi), std::max(m_maxPhi, other.m_maxPhi),
-            std::min(m_minTheta, other.m_minTheta), std::max(m_maxTheta, other.m_maxTheta)};
-  }
+template <typename V> struct CameraFrustum {
+  std::vector<V> planeNear;
+  std::vector<V> planeFar;
 };
+
+template <size_t cn>
+auto meanOfVectors(const std::vector<Common::stack::Vector<float, cn>> &values) {
+  PRECONDITION(!values.empty());
+
+  Common::stack::Vector<float, cn> result{};
+  for (auto v : values) {
+    result += v;
+  }
+  return result / static_cast<float>(values.size());
+}
+
+template <typename ReturnType, typename RangeType, typename Func>
+auto sampleRange(const RangeType &range, Func get) {
+  std::vector<ReturnType> result;
+  result.reserve(range.size());
+  for (const auto &v : range) {
+    result.push_back(get(v));
+  }
+  return result;
+}
+
+auto cartesianToPolarDegrees(const Vec3f &position) -> Vec2f {
+  const auto phi = Common::rad2deg<float>(std::atan2(position.y(), position.x()));
+  const auto theta =
+      Common::rad2deg<float>(std::atan2(position.z(), std::hypot(position.x(), position.y())));
+  return {phi, theta};
+}
+
+auto calcProjectionPlaneBoundary(const Vec2i &size, int segmentsPerEdge) -> std::vector<Vec2f> {
+  std::vector<Vec2f> boundary;
+
+  const float dx = 1.F / static_cast<float>(segmentsPerEdge);
+  const float dy = 1.F / static_cast<float>(segmentsPerEdge);
+
+  // normalized boundary
+  for (float x = 0.F; x < 1.F; x += dx) {
+    boundary.push_back({x, 0.F});
+  }
+  for (float y = 0.F; y < 1.F; y += dy) {
+    boundary.push_back({1.F, y});
+  }
+  for (float x = 1.F; x > 0.F; x -= dx) {
+    boundary.push_back({x, 1.F});
+  }
+  for (float y = 1.F; y > 0.F; y -= dy) {
+    boundary.push_back({0.F, y});
+  }
+
+  // un-normalize
+  auto w = static_cast<float>(size[0]);
+  auto h = static_cast<float>(size[1]);
+  for (auto &xy : boundary) {
+    xy = {xy[0] * (w - 1), xy[1] * (h - 1)};
+  }
+
+  return boundary;
+}
+
+auto rad2deg(const Vec3d &v) -> Vec3d {
+  using TMIV::Common::rad2deg;
+  return Vec3d{rad2deg(v[0]), rad2deg(v[1]), rad2deg(v[2])};
+}
+
+auto rad2deg(const Vec2f &v) -> Vec2f {
+  using TMIV::Common::rad2deg;
+  return Vec2f{rad2deg(v[0]), rad2deg(v[1])};
+}
+
+auto calcCameraFrustum(const MivBitstream::ViewParams &viewParams, int segmentsPerEdge)
+    -> CameraFrustum<Vec3f> {
+  const auto ci = viewParams.ci;
+
+  const Vec2i projectionPlaneSize = {ci.ci_projection_plane_width_minus1() + 1,
+                                     ci.ci_projection_plane_height_minus1() + 1};
+
+  const auto projectionPlaneBoundary =
+      calcProjectionPlaneBoundary(projectionPlaneSize, segmentsPerEdge);
+
+  // The choosen bit-depth is arbitrary. It is needed to find the maxium depth range
+  const unsigned int depthBitDepth = 16U;
+  const auto depthTransform = MivBitstream::DepthTransform{viewParams.dq, depthBitDepth};
+  const auto depthNear = depthTransform.expandDepth(Common::maxLevel(depthBitDepth));
+  const auto depthFar = 1.F / depthTransform.minNormDisp();
+
+  CameraFrustum<Vec3f> frustumInCameraCoordinates;
+  for (const auto &loc : projectionPlaneBoundary) {
+    frustumInCameraCoordinates.planeNear.push_back(Renderer::unprojectVertex(loc, depthNear, ci));
+    frustumInCameraCoordinates.planeFar.push_back(Renderer::unprojectVertex(loc, depthFar, ci));
+  }
+
+  return frustumInCameraCoordinates;
+}
+
+auto calcCameraFrustum(const MivBitstream::ViewParams &viewParams,
+                       const MivBitstream::Pose &poseWorld, int segmentsPerEdge)
+    -> CameraFrustum<Vec3f> {
+  auto frustumInCameraCoordinates = calcCameraFrustum(viewParams, segmentsPerEdge);
+
+  // Transform coordinates to world
+  CameraFrustum<Vec3f> frustumInWorldCoordinates;
+  const auto Rt_transform = Renderer::AffineTransform(viewParams.pose, poseWorld);
+
+  for (auto &xyz : frustumInCameraCoordinates.planeNear) {
+    frustumInWorldCoordinates.planeNear.push_back(Rt_transform(xyz));
+  }
+
+  for (auto &xyz : frustumInCameraCoordinates.planeFar) {
+    frustumInWorldCoordinates.planeFar.push_back(Rt_transform(xyz));
+  }
+
+  return frustumInWorldCoordinates;
+}
 
 class ServerSideInpainter::Impl {
 private:
@@ -127,6 +198,7 @@ private:
   float m_fieldOfViewMargin;
   SourceParams m_sourceParams;
   ViewOptimizerParams m_transportParams;
+  int m_segmentsPerEdge;
 
 public:
   Impl(const Json &rootNode, const Json &componentNode)
@@ -143,7 +215,8 @@ public:
       , m_inpainter{Common::create<IInpainter>("Inpainter"s, rootNode, componentNode)}
       , m_blurKernel{componentNode.require("blurRadius").as<int32_t>()}
       , m_inpaintThreshold{componentNode.require("inpaintThreshold").as<int32_t>()}
-      , m_fieldOfViewMargin{componentNode.require("fieldOfViewMargin").as<float>()} {}
+      , m_fieldOfViewMargin{componentNode.require("fieldOfViewMargin").as<float>()}
+      , m_segmentsPerEdge{componentNode.require("segmentsPerEdge").as<int>()} {}
 
   auto optimizeParams(const SourceParams &params) -> ViewOptimizerParams {
     m_sourceParams = params;
@@ -179,18 +252,17 @@ private:
   [[nodiscard]] auto syntheticViewParams() noexcept -> ViewParams {
     auto vp = ViewParams{};
 
-    const auto fov = fieldOfViewRig(m_sourceParams.viewParamsList, m_fieldOfViewMargin);
+    vp.pose = computeCameraRigPose();
+
+    auto [minPhi, minTheta, maxPhi, maxTheta] = computeCameraRigFieldOfView(vp.pose);
 
     vp.ci.ci_projection_plane_width_minus1(m_projectionPlaneWidth - 1)
         .ci_projection_plane_height_minus1(m_projectionPlaneHeight - 1)
         .ci_cam_type(MivBitstream::CiCamType::equirectangular)
-        .ci_erp_phi_min(fov.minPhi())
-        .ci_erp_phi_max(fov.maxPhi())
-        .ci_erp_theta_min(fov.minTheta())
-        .ci_erp_theta_max(fov.maxTheta());
-
-    const auto center = centerOfGravity(m_sourceParams.viewParamsList);
-    std::copy(center.cbegin(), center.cend(), vp.pose.position.begin());
+        .ci_erp_phi_min(minPhi)
+        .ci_erp_phi_max(maxPhi)
+        .ci_erp_theta_min(minTheta)
+        .ci_erp_theta_max(maxTheta);
 
     vp.dq.dq_norm_disp_low(INFINITY);
     vp.dq.dq_norm_disp_high(-INFINITY);
@@ -217,40 +289,71 @@ private:
     return vp;
   }
 
-  static auto centerOfGravity(const ViewParamsList &vpl) noexcept -> std::array<float, 3> {
-    PRECONDITION(!vpl.empty());
+  [[nodiscard]] auto computeCameraRigPose() const -> MivBitstream::Pose {
+    auto cameraPositions =
+        sampleRange<Vec3f>(m_sourceParams.viewParamsList, [](auto v) { return v.pose.position; });
+    auto cameraOrientations = sampleRange<QuatD>(m_sourceParams.viewParamsList,
+                                                 [](auto v) { return v.pose.orientation; });
 
-    auto sumX = 0.;
-    auto sumY = 0.;
-    auto sumZ = 0.;
-    auto count = 0.;
+    auto meanPosition = meanOfVectors(cameraPositions);
+    auto meanOrientation = directAveragingOfOrientations(cameraOrientations);
 
-    for (const auto &vp : vpl) {
-      sumX += vp.pose.position.x();
-      sumY += vp.pose.position.y();
-      sumZ += vp.pose.position.z();
-      ++count;
-    }
-
-    return {static_cast<float>(sumX / count), static_cast<float>(sumY / count),
-            static_cast<float>(sumZ / count)};
+    return MivBitstream::Pose{meanPosition, meanOrientation};
   }
 
-  static auto fieldOfViewRig(const ViewParamsList &vpl, float margin) noexcept -> FieldOfView {
-    PRECONDITION(!vpl.empty());
+  [[nodiscard]] auto computeCameraRigFieldOfView(const MivBitstream::Pose &poseRig)
+      -> std::array<float, 4> {
+    float minPhi = -180.F;
+    float maxPhi = 180.F;
+    float minTheta = -90.F;
+    float maxTheta = 90.F;
 
-    auto erpFov = FieldOfView::zero();
-
-    for (const auto &vp : vpl) {
+    bool allCamerasArePerspective = true;
+    for (const auto &vp : m_sourceParams.viewParamsList) {
       if (vp.ci.ci_cam_type() != CiCamType::perspective) {
-        return FieldOfView::full();
+        allCamerasArePerspective = false;
+        break;
       }
-
-      const auto fov = FieldOfView::computeFrom(vp);
-      erpFov = fov.applyMargin(margin).combine(erpFov);
     }
 
-    return erpFov;
+    if (allCamerasArePerspective) {
+      std::vector<CameraFrustum<Vec3f>> frustums;
+      for (auto &viewParams : m_sourceParams.viewParamsList) {
+        frustums.push_back(calcCameraFrustum(viewParams, poseRig, m_segmentsPerEdge));
+      }
+
+      std::vector<Vec3f> vecXyz;
+      for (const auto &f : frustums) {
+        vecXyz.insert(vecXyz.end(), f.planeNear.begin(), f.planeNear.end());
+        vecXyz.insert(vecXyz.end(), f.planeFar.begin(), f.planeFar.end());
+      }
+
+      std::vector<Vec2f> vecPolarDegrees;
+      vecPolarDegrees.reserve(vecXyz.size());
+      for (const auto &xyz : vecXyz) {
+        vecPolarDegrees.push_back(cartesianToPolarDegrees(xyz));
+      }
+
+      // compute bounding rect
+      minPhi = vecPolarDegrees[0][0];
+      maxPhi = vecPolarDegrees[0][0];
+      minTheta = vecPolarDegrees[0][1];
+      maxTheta = vecPolarDegrees[0][1];
+      for (const auto &pt : vecPolarDegrees) {
+        minPhi = std::min(minPhi, pt[0]);
+        maxPhi = std::max(maxPhi, pt[0]);
+        minTheta = std::min(minTheta, pt[1]);
+        maxTheta = std::max(maxTheta, pt[1]);
+      }
+
+      // apply margin
+      minPhi = std::max(minPhi - m_fieldOfViewMargin * std::abs(minPhi), -180.F);
+      maxPhi = std::min(maxPhi + m_fieldOfViewMargin * std::abs(maxPhi), 180.F);
+      minTheta = std::max(minTheta - m_fieldOfViewMargin * std::abs(minTheta), -90.F);
+      maxTheta = std::min(maxTheta + m_fieldOfViewMargin * std::abs(maxTheta), 90.F);
+    }
+
+    return {minPhi, minTheta, maxPhi, maxTheta};
   }
 
   [[nodiscard]] auto synthesizerInputFrame(const DeepFrameList &frame) const -> AccessUnit {

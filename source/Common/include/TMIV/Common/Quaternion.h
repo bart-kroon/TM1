@@ -179,6 +179,36 @@ template <typename Float> auto rotationMatrix(Quaternion<Float> q) {
                               2.F * (q.y() * q.z() + q.x() * q.w()),        // R_zy
                               1.F - 2.F * (q.x() * q.x() + q.y() * q.y())}; // R_zz
 }
+
+// An aligned (negated) quaternion represents the same orientation
+inline auto alignQuaternion(const Common::QuatD &quatRef, const Common::QuatD &quat)
+    -> Common::QuatD {
+  auto quadsAreAligned = Common::dot_product(quatRef.begin(), quatRef.end(), quat.begin()) >= 0.0;
+
+  return quadsAreAligned ? quat : Common::QuatD{-quat.x(), -quat.y(), -quat.z(), -quat.w()};
+}
+
+// Note that this simple approximation has limited accuracy
+// Quaternions are directly averaged while a correction is applied for the double-cover problem
+// where -q and q represent the same orientation.
+// See https://math.stackexchange.com/questions/61146/averaging-quaternions
+inline auto directAveragingOfOrientations(const std::vector<Common::QuatD> &normalizedQuats)
+    -> Common::QuatD {
+  PRECONDITION(!normalizedQuats.empty());
+
+  auto result = normalizedQuats[0];
+
+  for (auto k = 1U; k < normalizedQuats.size(); k++) {
+    auto quatAligned = alignQuaternion(normalizedQuats[0], normalizedQuats[k]);
+    result += quatAligned;
+  }
+
+  result = result / static_cast<double>(normalizedQuats.size());
+  result = Common::normalize(result);
+
+  return result;
+}
+
 } // namespace TMIV::Common
 
 #endif

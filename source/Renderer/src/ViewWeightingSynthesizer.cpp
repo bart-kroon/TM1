@@ -326,10 +326,31 @@ private:
       m_cameraWeight = {1.F};
     }
   }
+
+  auto static findMaximumDepthRange(const ProjectionHelperList &sourceHelperList) -> Common::Vec2f {
+    const unsigned int depthBitDepth = 10U;
+    auto maxDepthRange = Common::Vec2f{INFINITY, 0.F};
+    for (const auto &helper : sourceHelperList) {
+      const auto depthTransform =
+          MivBitstream::DepthTransform{helper.getViewParams().dq, depthBitDepth};
+
+      const auto twoT =
+          static_cast<float>(2 * helper.getViewParams().dq.dq_depth_occ_threshold_default());
+      float A = (0.F - twoT) / (Common::maxLevel(depthBitDepth) - twoT);
+      float ORI_normDispLow = (helper.getViewParams().dq.dq_norm_disp_low() -
+                               A * helper.getViewParams().dq.dq_norm_disp_high()) /
+                              (1.F - A);
+      maxDepthRange[0] =
+          std::min(maxDepthRange[0], depthTransform.expandDepth(Common::maxLevel(depthBitDepth)));
+      maxDepthRange[1] = std::max(maxDepthRange[1], 1.F / ORI_normDispLow);
+    }
+    return maxDepthRange;
+  }
+
   void computeCameraVisibility(const ProjectionHelperList &sourceHelperList,
                                const ProjectionHelper &targetHelper) {
     const auto N = 4U;
-    const auto depthRange = Common::Vec2f{0.5F, 10.F};
+    const auto depthRange = findMaximumDepthRange(sourceHelperList);
 
     auto pointCloud = std::vector<Common::Vec3f>{};
     auto x = 0.F;
@@ -355,6 +376,12 @@ private:
     m_cameraVisibility.clear();
 
     for (size_t viewIdx = 0; viewIdx < sourceHelperList.size(); viewIdx++) {
+      if (isViewInpainted(viewIdx)) {
+        // The inpainted view should always be visible
+        m_cameraVisibility.emplace_back(true);
+        continue;
+      }
+
       const auto &helper = sourceHelperList[viewIdx];
       auto K = 0U;
 
@@ -958,6 +985,7 @@ private:
                                             const ProjectionHelper &targetHelper) {
     const auto viewIdInpainted = *m_inpaintedViews.begin();
     const auto &backgroundDepth = m_viewportDepth[viewIdInpainted];
+    ASSERT(!backgroundDepth.empty());
     const auto z = backgroundDepth(y, x);
 
     if (isValidDepth(z)) {

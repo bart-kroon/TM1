@@ -50,7 +50,7 @@ auto operator<<(std::ostream & /*stream*/, GupType /*x*/) -> std::ostream &;
 class GeometryUpscalingParameters {
 public:
   [[nodiscard]] auto gup_type() const noexcept -> GupType;
-  [[nodiscard]] auto gup_erode_threshold() const noexcept -> Common::Half;
+  [[nodiscard]] auto gup_erode_threshold() const -> Common::Half;
   [[nodiscard]] auto gup_delta_threshold() const noexcept -> uint32_t;
   [[nodiscard]] auto gup_max_curvature() const noexcept -> uint8_t;
 

@@ -249,7 +249,7 @@ public:
   }
 
 private:
-  [[nodiscard]] auto syntheticViewParams() noexcept -> ViewParams {
+  [[nodiscard]] auto syntheticViewParams() -> ViewParams {
     auto vp = ViewParams{};
 
     vp.pose = computeCameraRigPose();

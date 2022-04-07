@@ -52,8 +52,7 @@ public:
   constexpr ViewId() noexcept = default;
 
   template <typename Integer, typename = std::enable_if_t<std::is_integral_v<Integer>>>
-  constexpr explicit ViewId(Integer value) noexcept
-      : m_value{Common::verifyDownCast<uint16_t>(value)} {}
+  constexpr explicit ViewId(Integer value) : m_value{Common::verifyDownCast<uint16_t>(value)} {}
 
   friend auto operator<<(std::ostream &stream, ViewId viewId) -> std::ostream & {
     return stream << int32_t{viewId.m_value};

@@ -47,7 +47,7 @@ using namespace std::string_view_literals;
 
 namespace TMIV::Common {
 Application::Application(const char *tool, std::vector<const char *> argv, Options options)
-    : m_startTime{}, m_options{std::move(options)} {
+    : m_options{std::move(options)} {
   auto take = [&argv]() {
     if (argv.empty()) {
       throw std::runtime_error("Missing a command-line argument");

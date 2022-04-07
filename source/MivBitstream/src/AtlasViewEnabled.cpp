@@ -84,7 +84,7 @@ auto AtlasViewEnabled::ave_persistence_flag(bool value) noexcept -> AtlasViewEna
   return *this;
 }
 
-auto AtlasViewEnabled::ave_atlas_count_minus1(uint8_t value) noexcept -> AtlasViewEnabled & {
+auto AtlasViewEnabled::ave_atlas_count_minus1(uint8_t value) -> AtlasViewEnabled & {
   m_ave_atlas_count_minus1 = value;
   if (m_ave_atlas_id.has_value()) {
     m_ave_atlas_id.value().clear();

@@ -116,8 +116,8 @@ private:
   //
   // Note that m_batches.size() == m_strips[].batches.size()
   struct Batch {
-    const ImageVertexDescriptorList vertices;
-    const AttributeMaps attributes;
+    ImageVertexDescriptorList vertices;
+    AttributeMaps attributes;
   };
 
   using Size = Common::Mat<float>::tuple_type;

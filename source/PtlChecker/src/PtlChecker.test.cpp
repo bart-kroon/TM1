@@ -35,8 +35,6 @@
 
 #include <TMIV/PtlChecker/PtlChecker.h>
 
-#include <TMIV/PtlChecker/PtlChecker.h>
-
 using CG = TMIV::MivBitstream::PtlProfileCodecGroupIdc;
 using TS = TMIV::MivBitstream::PtlProfileToolsetIdc;
 using RC = TMIV::MivBitstream::PtlProfileReconstructionIdc;

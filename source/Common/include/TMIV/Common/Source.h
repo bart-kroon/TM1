@@ -57,7 +57,8 @@ template <typename T> [[nodiscard]] constexpr auto emptySource() noexcept -> Sou
 
 // uniformSource(size_t n, T x) returns a source of length n: { x, ..., x, nullopt, ... }
 template <typename T>
-[[nodiscard]] constexpr auto uniformSource(size_t n, const T &x) noexcept -> Source<T> {
+[[nodiscard]] constexpr auto uniformSource(size_t n, const T &x) -> Source<T> {
+  // NOLINTNEXTLINE(bugprone-exception-escape)
   return [n, x]() mutable -> std::optional<T> {
     if (n == 0) {
       return std::nullopt;

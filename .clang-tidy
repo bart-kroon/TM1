@@ -12,6 +12,7 @@ misc-unused-parameters,
 modernize-*,
 performance-*,
 readability-*,
+-readability-identifier-length,
 -readability-magic-numbers
 '
 

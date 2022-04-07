@@ -145,7 +145,7 @@ TEST_CASE("Quanternion<T>", "[quaternion]") {
                               static_cast<double>(i == 2)};
         const auto rotate_p_by_r = rotate(p2, conj(r));
         for (int32_t j = 0; j < 3; ++j) {
-          REQUIRE(R(i, j) == Approx(rotate_p_by_r[j]));
+          REQUIRE(R(i, j) == Approx(rotate_p_by_r[j]).margin(1E-6));
         }
       }
     }

@@ -49,7 +49,7 @@ auto operator<<(std::ostream &stream, GupType x) -> std::ostream & {
 
 auto GeometryUpscalingParameters::gup_type() const noexcept -> GupType { return m_gup_type; }
 
-auto GeometryUpscalingParameters::gup_erode_threshold() const noexcept -> Common::Half {
+auto GeometryUpscalingParameters::gup_erode_threshold() const -> Common::Half {
   return gup_type() == GupType::HVR ? m_gup_erode_threshold : Common::Half{inferredErodeThreshold};
 }
 

@@ -42,7 +42,7 @@ namespace TMIV::Decoder {
 namespace {
 // https://en.wikipedia.org/wiki/Cyclic_redundancy_check
 namespace crc32 {
-static constexpr auto table = []() {
+constexpr auto table = []() {
   auto result = std::array<uint32_t, 0x100>();
 
   for (uint32_t i = 0; i < 0x100; ++i) {

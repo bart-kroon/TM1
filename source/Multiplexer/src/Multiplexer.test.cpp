@@ -86,7 +86,7 @@ const auto codedVideoSequenceSize = 4 + 6 + 4 + 7;
   return V3cUnit{V3cUnitHeader::vps(), V3cParameterSet{}};
 }
 
-[[nodiscard]] auto vpsWithVideo() noexcept {
+[[nodiscard]] auto vpsWithVideo() {
   auto vps = V3cParameterSet{};
   vps.vps_v3c_parameter_set_id(vuh_v3c_parameter_set_id)
       .vps_atlas_id(0, vuh_atlas_id)

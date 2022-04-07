@@ -190,7 +190,7 @@ auto calculateLumaStdDev(const Common::DeepFrameList &views,
   const auto synthesizers = initSynthesizersForFrameAnalysis(views, viewParamsList, config);
 
   const size_t refViewId = findCentralBasicView(viewParamsList);
-  auto refView = views[refViewId];
+  const auto &refView = views[refViewId];
 
   const auto masks = initMasksForFrameAnalysis(views, viewParamsList);
   auto [ivertices, triangles, attributes] =

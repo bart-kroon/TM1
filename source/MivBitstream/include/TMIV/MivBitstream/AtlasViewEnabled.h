@@ -55,7 +55,7 @@ public:
 
   auto ave_cancel_flag(bool value) noexcept -> AtlasViewEnabled &;
   auto ave_persistence_flag(bool value) noexcept -> AtlasViewEnabled &;
-  auto ave_atlas_count_minus1(uint8_t value) noexcept -> AtlasViewEnabled &;
+  auto ave_atlas_count_minus1(uint8_t value) -> AtlasViewEnabled &;
   auto ave_num_views_minus1(uint16_t value) noexcept -> AtlasViewEnabled &;
   auto ave_atlas_id(uint8_t atlasIdx, uint8_t value) -> AtlasViewEnabled &;
   auto ave_view_enabled_in_atlas_flag(uint8_t atlasId, uint16_t viewIdx, bool value)

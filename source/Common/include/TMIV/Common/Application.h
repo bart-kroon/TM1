@@ -73,7 +73,7 @@ private:
   void add_stream(std::istream &stream);
 
   Json m_json;
-  clock_t m_startTime;
+  clock_t m_startTime{};
   Options m_options;
 };
 } // namespace TMIV::Common

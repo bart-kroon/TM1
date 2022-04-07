@@ -49,8 +49,7 @@ public:
   constexpr AtlasId() noexcept = default;
 
   template <typename Integer, typename = std::enable_if_t<std::is_integral_v<Integer>>>
-  constexpr explicit AtlasId(Integer value) noexcept
-      : m_value{Common::verifyDownCast<uint8_t>(value)} {}
+  constexpr explicit AtlasId(Integer value) : m_value{Common::verifyDownCast<uint8_t>(value)} {}
 
   friend auto operator<<(std::ostream &stream, AtlasId atlasId) -> std::ostream & {
     return stream << int32_t{atlasId.m_value};

@@ -404,7 +404,7 @@ auto GeometryAssistance::operator!=(const GeometryAssistance &other) const noexc
 void GeometryAssistance::writeTo(std::ostream &stream) const {
   stream << "gas_qs=" << m_gas_qs << "\n";
   stream << "gas_num_views_minus1=" << m_gas_num_views_minus1 << "\n";
-  stream << "gas_log2_bw_minus2=" << (int)m_gas_log2_bw_minus2 << "\n";
+  stream << "gas_log2_bw_minus2=" << int32_t{m_gas_log2_bw_minus2} << "\n";
   uint16_t num_views = m_gas_num_views_minus1 + 1;
   for (uint16_t v_idx = 0; v_idx < num_views; v_idx++) {
     stream << "# VIEWIDX " << v_idx << "\n";

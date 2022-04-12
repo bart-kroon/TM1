@@ -98,25 +98,30 @@ public:
   }
 
   void run() override {
-    while (auto frame = m_mivDecoder()) {
-      if (m_outputLog.is_open()) {
-        writeFrameToOutputLog(*frame, m_outputLog);
+    for (int32_t inputFrameIdx = 0; inputFrameIdx < m_placeholders.numberOfInputFrames;
+         ++inputFrameIdx) {
+      if (auto frame = m_mivDecoder()) {
+        VERIFY_MIVBITSTREAM(frame->frameIdx == inputFrameIdx);
+
+        if (m_outputLog.is_open()) {
+          writeFrameToOutputLog(*frame, m_outputLog);
+        }
+
+        // Recover geometry, occupancy, and filter blockToPatchMap
+        m_preRenderer.preRenderFrame(*frame);
+
+        outputSequenceConfig(frame->sequenceConfig(), frame->frameIdx);
+        IO::optionalSaveBlockToPatchMaps(json(), m_placeholders, frame->frameIdx, *frame);
+        optionalSavePrunedFrame(frame->frameIdx, Renderer::recoverPrunedViews(*frame));
+
+        // Render multiple frames
+        const auto range = m_inputToOutputFrameIdMap.equal_range(frame->frameIdx);
+        m_renderer.renderMultipleFrames(*frame, range.first, range.second);
+      } else {
+        throw std::runtime_error(
+            fmt::format("The input frame count was set to {} but the bitstream only has {} frames.",
+                        m_placeholders.numberOfInputFrames, inputFrameIdx));
       }
-
-      // Check which frames to render if we would
-      const auto range = m_inputToOutputFrameIdMap.equal_range(frame->frameIdx);
-      if (range.first == range.second) {
-        return;
-      }
-
-      // Recover geometry, occupancy, and filter blockToPatchMap
-      m_preRenderer.preRenderFrame(*frame);
-
-      outputSequenceConfig(frame->sequenceConfig(), frame->frameIdx);
-      IO::optionalSaveBlockToPatchMaps(json(), m_placeholders, frame->frameIdx, *frame);
-      optionalSavePrunedFrame(frame->frameIdx, Renderer::recoverPrunedViews(*frame));
-
-      m_renderer.renderMultipleFrames(*frame, range.first, range.second);
     }
   }
 

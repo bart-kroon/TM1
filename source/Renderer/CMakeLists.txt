@@ -16,7 +16,7 @@ create_tmiv_library(
         "src/PushPullInpainter.cpp"
         "src/RecoverPrunedViews.cpp"
     PUBLIC
-        TMIV::ViewingSpaceLib
+        ViewingSpaceLib
     PRIVATE
         Threads::Threads
     )
@@ -29,8 +29,10 @@ create_tmiv_library(
         "src/Front/mapInputToOutputFrames.cpp"
         "src/Front/MultipleFrameRenderer.cpp"
     PUBLIC
-        TMIV::RendererLib
-        TMIV::IOLib
+        RendererLib
+        IOLib
+    PRIVATE
+        fmt::fmt
     )
 
    
@@ -41,8 +43,8 @@ create_tmiv_executable(
         "src/Renderer.main.cpp"
         "src/registerComponents.cpp"
     PRIVATE
-        TMIV::RendererFrontLib
-        TMIV::DepthQualityAssessorLib
+        RendererFrontLib
+        DepthQualityAssessorLib
     )
 
 create_catch2_unit_test(
@@ -59,7 +61,7 @@ create_catch2_unit_test(
         "src/PushPull.test.cpp"
         "src/PushPullInpainter.test.cpp"
     PRIVATE
-        TMIV::RendererLib
+        RendererLib
     )
 
 create_catch2_unit_test(
@@ -69,5 +71,5 @@ create_catch2_unit_test(
         "src/Front/mapInputToOutputFrames.test.cpp"
         "src/Front/MultipleFrameRenderer.test.cpp"
     PRIVATE
-        TMIV::RendererFrontLib
+        RendererFrontLib
     )

@@ -39,6 +39,7 @@
 
 #include <vvdec/vvdec.h>
 
+#include <cstring>
 #include <memory>
 
 using namespace std::string_literals;

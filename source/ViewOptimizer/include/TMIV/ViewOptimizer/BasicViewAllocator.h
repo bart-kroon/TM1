@@ -34,8 +34,8 @@
 #ifndef TMIV_VIEWOPTIMIZER_BASICVIEWALLOCATOR_H
 #define TMIV_VIEWOPTIMIZER_BASICVIEWALLOCATOR_H
 
-#include <TMIV/ViewOptimizer/AbstractViewSelector.h>
-#include <TMIV/ViewOptimizer/KMedoidsCost.h>
+#include "AbstractViewSelector.h"
+#include "KMedoidsCost.h"
 
 namespace TMIV::ViewOptimizer {
 class BasicViewAllocator : public AbstractViewSelector {

@@ -34,9 +34,10 @@
 #ifndef TMIV_MIVBITSTREAM_GEOMETRYASSISTANCE_H
 #define TMIV_MIVBITSTREAM_GEOMETRYASSISTANCE_H
 
+#include "CafMivExtension.h"
+
 #include <TMIV/Common/Bitstream.h>
 #include <TMIV/Common/Json.h>
-#include <TMIV/MivBitstream/CafMivExtension.h>
 
 #include <vector>
 

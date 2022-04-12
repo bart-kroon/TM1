@@ -44,7 +44,7 @@ using TMIV::Common::contains;
 
 auto FakeFilesystem::ifstream(const std::filesystem::path &path, std::ios_base::openmode mode)
     -> std::shared_ptr<std::istream> {
-  fmt::print("FakeFilesystem: ifstream {} mode {:x}\n", path, mode);
+  fmt::print("FakeFilesystem: ifstream {} mode {}\n", path, mode);
 
   REQUIRE(haveFile(path));
   return m_files[path];
@@ -52,7 +52,7 @@ auto FakeFilesystem::ifstream(const std::filesystem::path &path, std::ios_base::
 
 auto FakeFilesystem::ofstream(const std::filesystem::path &path, std::ios_base::openmode mode)
     -> std::shared_ptr<std::ostream> {
-  fmt::print("FakeFilesystem: ofstream {} mode {:x}\n", path, mode);
+  fmt::print("FakeFilesystem: ofstream {} mode {}\n", path, mode);
 
   REQUIRE_FALSE(haveFile(path));
   CHECK(contains(m_directories, path.parent_path()));

@@ -35,6 +35,7 @@
 #define TMIV_RENDERER_ACCUMULATINGPIXEL_H
 
 #include "blend.h"
+
 #include <TMIV/Common/LinAlg.h>
 
 #include <cassert>

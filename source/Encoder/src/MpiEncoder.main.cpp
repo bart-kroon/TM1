@@ -38,6 +38,8 @@
 #include <TMIV/Encoder/V3cSampleSink.h>
 #include <TMIV/MpiPcs/MpiPcs.h>
 
+#include <fmt/ostream.h>
+
 #include <fstream>
 #include <iostream>
 

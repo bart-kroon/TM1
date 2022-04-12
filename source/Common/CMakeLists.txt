@@ -10,9 +10,8 @@ create_tmiv_library(
         "src/Json.cpp"
         "src/Half.cpp"
         "src/Frame.cpp"
-    PUBLIC
-        fmt::fmt
     PRIVATE
+        fmt::fmt
         Threads::Threads
     )
 
@@ -51,5 +50,5 @@ create_catch2_unit_test(
         "src/Source.test.cpp"
         "src/verify.test.cpp"
     PRIVATE
-        TMIV::CommonLib
+        CommonLib
     )

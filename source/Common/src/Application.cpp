@@ -37,6 +37,8 @@
 #include <TMIV/Common/Version.h>
 #include <TMIV/Common/verify.h>
 
+#include <fmt/ostream.h>
+
 #include <cstdlib>
 #include <fstream>
 #include <iomanip>

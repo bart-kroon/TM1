@@ -34,7 +34,7 @@
 #ifndef TMIV_RENDERER_NOCULLER_H
 #define TMIV_RENDERER_NOCULLER_H
 
-#include <TMIV/Renderer/ICuller.h>
+#include "ICuller.h"
 
 namespace TMIV::Renderer {
 class NoCuller : public ICuller {

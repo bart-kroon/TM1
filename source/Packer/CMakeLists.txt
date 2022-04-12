@@ -9,7 +9,9 @@ create_tmiv_library(
         "src/Packer.cpp"
         "src/Retriever.cpp"
     PUBLIC
-        TMIV::MivBitstreamLib
+        MivBitstreamLib
+    PRIVATE
+        fmt::fmt
     )
 
 create_catch2_unit_test(
@@ -19,5 +21,5 @@ create_catch2_unit_test(
         "src/Cluster.test.cpp"
         "src/Retriever.test.cpp"
     PRIVATE
-        TMIV::PackerLib
+        PackerLib
 )

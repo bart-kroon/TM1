@@ -37,6 +37,8 @@
 #include <TMIV/Common/Thread.h>
 #include <TMIV/Common/verify.h>
 
+#include <fmt/format.h>
+
 #include <iostream>
 
 namespace TMIV::Encoder {

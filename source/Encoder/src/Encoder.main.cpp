@@ -39,6 +39,8 @@
 #include <TMIV/Encoder/V3cSampleSink.h>
 #include <TMIV/IO/IO.h>
 
+#include <fmt/ostream.h>
+
 #include <fstream>
 #include <iostream>
 

@@ -35,6 +35,8 @@
 
 #include "DependencyInjector.h"
 
+#include <fmt/ostream.h>
+
 #include <fstream>
 #include <regex>
 
@@ -384,7 +386,7 @@ auto loadOutOfBandVideoFrame(const Common::Json &config, const Placeholders &pla
   const auto path =
       config.require("inputDirectory").as<std::filesystem::path>() /
       fmt::format(config.require(configKey).as<std::string>(), placeholders.numberOfInputFrames,
-                  placeholders.contentId, placeholders.testId, vuh.vuh_atlas_id(),
+                  placeholders.contentId, placeholders.testId, vuh.vuh_atlas_id().asInt(),
                   metadata.frameSize.x(), metadata.frameSize.y(), videoFormat);
 
   return {loadFrame<>(path, frameIdx, metadata.frameSize, metadata.bitDepth, metadata.colorFormat),
@@ -455,6 +457,7 @@ auto inputVideoSubBitstreamPath(const Common::Json &config, const Placeholders &
 
   return config.require("inputDirectory").as<std::filesystem::path>() /
          fmt::format(config.require(configKey).as<std::string>(), placeholders.numberOfInputFrames,
-                     placeholders.contentId, placeholders.testId, vuh.vuh_atlas_id(), attrIdx);
+                     placeholders.contentId, placeholders.testId, vuh.vuh_atlas_id().asInt(),
+                     attrIdx);
 }
 } // namespace TMIV::IO

@@ -33,6 +33,8 @@
 
 #include <TMIV/IO/IO.h>
 
+#include <fmt/ostream.h>
+
 #include <fstream>
 
 #include "DependencyInjector.h"
@@ -121,7 +123,7 @@ auto saveOutOfBandVideoFrame(const Common::Json &config, const Placeholders &pla
   const auto path =
       outputDir / fmt::format(config.require(configKey).as<std::string>(),
                               placeholders.numberOfInputFrames, placeholders.contentId,
-                              placeholders.testId, vuh.vuh_atlas_id(), frame.getWidth(),
+                              placeholders.testId, vuh.vuh_atlas_id().asInt(), frame.getWidth(),
                               frame.getHeight(), videoFormatString(frame));
 
   saveFrame(path, frame, frameIdx);

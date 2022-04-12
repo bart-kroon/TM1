@@ -34,7 +34,7 @@
 #ifndef TMIV_RENDERER_PUSHPULLINPAINTER_H
 #define TMIV_RENDERER_PUSHPULLINPAINTER_H
 
-#include <TMIV/Renderer/Inpainter.h>
+#include "Inpainter.h"
 
 namespace TMIV::Renderer {
 class PushPullInpainter : public IInpainter {

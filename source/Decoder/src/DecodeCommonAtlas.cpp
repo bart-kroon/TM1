@@ -39,6 +39,8 @@
 
 #include "NalUnitSemantics.h"
 
+#include <fmt/ostream.h>
+
 namespace TMIV::Decoder {
 namespace {
 class CommonAtlasDecoder final

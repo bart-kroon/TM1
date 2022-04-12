@@ -34,11 +34,12 @@
 #ifndef TMIV_ENCODER_ENCODER_H
 #define TMIV_ENCODER_ENCODER_H
 
+#include "Configuration.h"
+#include "FramePacker.h"
+#include "SampleStats.h"
+
 #include <TMIV/Aggregator/IAggregator.h>
 #include <TMIV/DepthQualityAssessor/IDepthQualityAssessor.h>
-#include <TMIV/Encoder/Configuration.h>
-#include <TMIV/Encoder/FramePacker.h>
-#include <TMIV/Encoder/SampleStats.h>
 #include <TMIV/MivBitstream/SequenceConfig.h>
 #include <TMIV/Packer/IPacker.h>
 #include <TMIV/Pruner/IPruner.h>

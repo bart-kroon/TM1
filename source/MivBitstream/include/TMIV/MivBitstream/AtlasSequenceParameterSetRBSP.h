@@ -34,8 +34,8 @@
 #ifndef TMIV_MIVBITSTREAM_ATLASSEQUENCEPARAMETERSETRBSP_H
 #define TMIV_MIVBITSTREAM_ATLASSEQUENCEPARAMETERSETRBSP_H
 
-#include <TMIV/MivBitstream/V3cParameterSet.h>
-#include <TMIV/MivBitstream/V3cUnit.h>
+#include "V3cParameterSet.h"
+#include "V3cUnit.h"
 
 #include <TMIV/Common/Bitstream.h>
 

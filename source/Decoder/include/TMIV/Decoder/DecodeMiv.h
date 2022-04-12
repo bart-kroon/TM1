@@ -34,9 +34,10 @@
 #ifndef TMIV_DECODER_MIVDECODER_H
 #define TMIV_DECODER_MIVDECODER_H
 
+#include "DecodeAtlas.h"
+#include "DecodeCommonAtlas.h"
+
 #include <TMIV/Common/Decoder.h>
-#include <TMIV/Decoder/DecodeAtlas.h>
-#include <TMIV/Decoder/DecodeCommonAtlas.h>
 #include <TMIV/MivBitstream/AccessUnit.h>
 
 namespace TMIV::Decoder {

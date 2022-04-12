@@ -34,7 +34,7 @@
 #ifndef TMIV_COMMON_JSON_H
 #define TMIV_COMMON_JSON_H
 
-#include <TMIV/Common/Vector.h>
+#include "Vector.h"
 
 #include <any>
 #include <iosfwd>

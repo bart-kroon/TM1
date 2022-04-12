@@ -34,8 +34,9 @@
 #ifndef TMIV_MIVBITSTREAM_ATLASFRAMEPARAMETERSETRBSP_H
 #define TMIV_MIVBITSTREAM_ATLASFRAMEPARAMETERSETRBSP_H
 
+#include "AtlasSequenceParameterSetRBSP.h"
+
 #include <TMIV/Common/Bitstream.h>
-#include <TMIV/MivBitstream/AtlasSequenceParameterSetRBSP.h>
 
 #include <cstdint>
 #include <cstdlib>

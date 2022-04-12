@@ -9,7 +9,7 @@ create_tmiv_library(
         "src/KMedoidsCost.cpp"
         "src/ServerSideInpainter.cpp"
     PUBLIC
-        TMIV::RendererLib
+        RendererLib
     )
 
 create_catch2_unit_test(
@@ -18,5 +18,5 @@ create_catch2_unit_test(
     SOURCES
         "src/ServerSideInpainter.test.cpp"
     PRIVATE
-        TMIV::ViewOptimizerLib
+        ViewOptimizerLib
     )

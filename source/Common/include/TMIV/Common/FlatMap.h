@@ -34,7 +34,7 @@
 #ifndef TMIV_COMMON_FLAT_MAP_H
 #define TMIV_COMMON_FLAT_MAP_H
 
-#include <TMIV/Common/verify.h>
+#include "verify.h"
 
 #include <vector>
 

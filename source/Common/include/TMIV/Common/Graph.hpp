@@ -35,12 +35,11 @@
 #error "Include the .h instead of the .hpp."
 #endif
 
-#include <TMIV/Common/verify.h>
+#include "verify.h"
 
 #include <algorithm>
+#include <sstream>
 #include <utility>
-
-#include <fmt/format.h>
 
 namespace TMIV::Common::Graph {
 template <typename T>
@@ -50,9 +49,10 @@ void SparseDirectedAcyclicGraph<T>::connect(const NodeId start, const NodeId des
 
   if (isCyclic()) {
     m_adjacencyList[start].pop_back();
-    throw std::logic_error(fmt::format("Adding a connection from {} to {} would make the graph "
-                                       "cyclic! Did not add the connection.",
-                                       start, destination));
+    std::ostringstream stream;
+    stream << "Adding a connection from " << start << " to " << destination
+           << " would make the graph cyclic! Did not add the connection.";
+    throw std::logic_error(stream.str());
   }
 }
 

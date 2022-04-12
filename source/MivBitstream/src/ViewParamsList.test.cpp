@@ -80,7 +80,7 @@ TEST_CASE("Pose") {
       unit.printTo(stream, 1);
 
       const auto actualText = stream.str();
-      const auto *referenceText = R"(position[ 1 ]=(1.0, 2.0, 3.0)
+      const auto *referenceText = R"(position[ 1 ]=(1, 2, 3)
 orientation[ 1 ]=0.9 + i 0.3 + j 0.3 + k 0.1
 )";
       REQUIRE(actualText == referenceText);

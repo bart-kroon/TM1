@@ -34,7 +34,7 @@
 #ifndef TMIV_MIVBITSTREAM_PATCHPARAMSLIST_H
 #define TMIV_MIVBITSTREAM_PATCHPARAMSLIST_H
 
-#include <TMIV/MivBitstream/AtlasTileLayerRBSP.h>
+#include "AtlasTileLayerRBSP.h"
 
 #include <TMIV/Common/Common.h>
 #include <TMIV/Common/LinAlg.h>

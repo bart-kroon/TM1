@@ -8,8 +8,10 @@ create_tmiv_library(
         "src/EncodeV3cSampleStream.cpp"
         "src/Multiplexer.cpp"
     PUBLIC
-        TMIV::DecoderLib
-        TMIV::VideoDecoderLib
+        DecoderLib
+        VideoDecoderLib
+    PRIVATE
+        fmt::fmt
 )
 
 create_catch2_unit_test(
@@ -20,7 +22,7 @@ create_catch2_unit_test(
         "src/EncodeV3cSampleStream.test.cpp"
         "src/Multiplexer.test.cpp"
     PRIVATE
-        TMIV::MultiplexerLib
+        MultiplexerLib
 )
 
 create_tmiv_executable(
@@ -29,6 +31,7 @@ create_tmiv_executable(
     SOURCES
         "src/Multiplexer.main.cpp"
     PRIVATE
-        TMIV::MultiplexerLib
-        TMIV::IOLib
+        MultiplexerLib
+        IOLib
+        fmt::fmt
     )

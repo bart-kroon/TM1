@@ -35,12 +35,10 @@
 #error "Include the .h, not the .hpp"
 #endif
 
-#include <TMIV/Common/Common.h>
-
-#include <fmt/format.h>
-#include <fmt/printf.h>
+#include "Common.h"
 
 #include <filesystem>
+#include <sstream>
 
 namespace TMIV::Common {
 inline Json::operator bool() const { return m_node.has_value(); }
@@ -159,9 +157,10 @@ template <typename T> auto Json::as() const -> decltype(auto) {
       return std::any_cast<const T &>(m_node);
     }
   } catch (std::bad_any_cast & /* unused */) {
-    throw std::runtime_error(fmt::format("JSON: value has wrong type:\n  * The expected type is "
-                                         "{}\n  * The value is: {}",
-                                         typeid(T).name(), format()));
+    std::ostringstream stream;
+    stream << "JSON: value has wrong type:\n  * The expected type is " << typeid(T).name()
+           << "\n  * The value is: " << format();
+    throw std::runtime_error(stream.str());
   }
 }
 
@@ -182,7 +181,9 @@ inline auto Json::require(const std::string &key) const -> const Json & {
     return node;
   }
   using namespace std::string_view_literals;
-  throw std::runtime_error(fmt::format("JSON: Parameter '{}' is required but missing"sv, key));
+  std::ostringstream stream;
+  stream << "JSON: Parameter '" << key << "' is required but missing";
+  throw std::runtime_error(stream.str());
 }
 
 template <typename T> auto Json::asVector() const -> std::vector<T> {

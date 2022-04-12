@@ -35,6 +35,8 @@
 
 #include <TMIV/Decoder/DecodeMiv.h>
 
+#include <fmt/ostream.h>
+
 #include "FakeChecker.h"
 
 using TMIV::Common::DecodedFrame;

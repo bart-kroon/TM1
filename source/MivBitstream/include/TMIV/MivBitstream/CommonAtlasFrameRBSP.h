@@ -34,8 +34,8 @@
 #ifndef TMIV_MIVBITSTREAM_COMMONATLASFRAMERBSP_H
 #define TMIV_MIVBITSTREAM_COMMONATLASFRAMERBSP_H
 
-#include <TMIV/MivBitstream/CafMivExtension.h>
-#include <TMIV/MivBitstream/V3cParameterSet.h>
+#include "CafMivExtension.h"
+#include "V3cParameterSet.h"
 
 #include <TMIV/Common/Bitstream.h>
 #include <TMIV/Common/Matrix.h>

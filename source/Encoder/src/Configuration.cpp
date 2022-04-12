@@ -36,6 +36,8 @@
 
 #include <TMIV/Common/verify.h>
 
+#include <fmt/ostream.h>
+
 namespace TMIV::Encoder {
 using MivBitstream::PtlLevelIdc;
 using MivBitstream::PtlProfileCodecGroupIdc;

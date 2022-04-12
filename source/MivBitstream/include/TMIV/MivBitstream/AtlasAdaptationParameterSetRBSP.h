@@ -34,8 +34,8 @@
 #ifndef TMIV_MIVBITSTREAM_ATLASADAPTATIONPARAMETERSETRBSP_H
 #define TMIV_MIVBITSTREAM_ATLASADAPTATIONPARAMETERSETRBSP_H
 
-#include <TMIV/MivBitstream/V3cParameterSet.h>
-#include <TMIV/MivBitstream/VuiParameters.h>
+#include "V3cParameterSet.h"
+#include "VuiParameters.h"
 
 #include <iosfwd>
 #include <optional>

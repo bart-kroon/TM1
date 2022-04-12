@@ -34,7 +34,7 @@
 #ifndef TMIV_VIEWOPTIMIZER_SERVERSIDEINPAINTER_H
 #define TMIV_VIEWOPTIMIZER_SERVERSIDEINPAINTER_H
 
-#include <TMIV/ViewOptimizer/IViewOptimizer.h>
+#include "IViewOptimizer.h"
 
 #include <memory>
 

@@ -37,6 +37,8 @@
 #include <TMIV/Common/Quaternion.h>
 #include <TMIV/Common/verify.h>
 
+#include <fmt/ostream.h>
+
 #include <regex>
 #include <stdexcept>
 

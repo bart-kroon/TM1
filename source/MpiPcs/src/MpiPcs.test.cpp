@@ -38,6 +38,8 @@ using Catch::Matchers::Contains;
 #include <TMIV/Common/Frame.h>
 #include <TMIV/MpiPcs/MpiPcs.h>
 
+#include <fmt/format.h>
+
 #include <sstream>
 
 using namespace std::string_literals;

@@ -34,10 +34,10 @@
 #ifndef TMIV_COMMON_QUATERNION_H
 #define TMIV_COMMON_QUATERNION_H
 
-#include <TMIV/Common/Math.h>
-#include <TMIV/Common/Matrix.h>
-#include <TMIV/Common/Vector.h>
-#include <TMIV/Common/verify.h>
+#include "Math.h"
+#include "Matrix.h"
+#include "Vector.h"
+#include "verify.h"
 
 #include <cassert>
 #include <type_traits>

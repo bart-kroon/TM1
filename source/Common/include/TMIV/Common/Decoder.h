@@ -34,8 +34,8 @@
 #ifndef TMIV_COMMON_DECODER_H
 #define TMIV_COMMON_DECODER_H
 
-#include <TMIV/Common/Source.h>
-#include <TMIV/Common/verify.h>
+#include "Source.h"
+#include "verify.h"
 
 #include <queue>
 

@@ -36,11 +36,12 @@
 
 #include <functional>
 #include <iterator>
+#include <memory>
 #include <optional>
 #include <type_traits>
 #include <utility>
 
-#include <TMIV/Common/verify.h>
+#include "verify.h"
 
 namespace TMIV::Common {
 // An infinite stream of T's (stream comonad)

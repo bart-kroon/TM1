@@ -34,13 +34,14 @@
 #ifndef TMIV_COMMON_ARRAY_H
 #define TMIV_COMMON_ARRAY_H
 
-#include <TMIV/Common/Algorithm.h>
-#include <TMIV/Common/Traits.h>
-#include <TMIV/Common/verify.h>
+#include "Algorithm.h"
+#include "Traits.h"
+#include "verify.h"
 
 #include <algorithm>
 #include <array>
 #include <cassert>
+#include <functional>
 #include <iterator>
 #include <numeric>
 #include <ostream>

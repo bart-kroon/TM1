@@ -36,6 +36,8 @@
 
 #include "MaxRectPiP.h"
 
+#include <fmt/format.h>
+
 #include <iostream>
 #include <queue>
 #include <stdexcept>

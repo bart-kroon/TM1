@@ -6,7 +6,7 @@ create_tmiv_library(
     SOURCES
         "src/Parser.cpp"
     PUBLIC
-        TMIV::MivBitstreamLib
+        MivBitstreamLib
     )
 
 create_tmiv_executable(
@@ -15,7 +15,8 @@ create_tmiv_executable(
     SOURCES
         "src/Parser.main.cpp"
     PRIVATE
-        TMIV::ParserLib
+        ParserLib
+        fmt::fmt
     )
 
 create_catch2_unit_test(
@@ -24,7 +25,7 @@ create_catch2_unit_test(
     SOURCES
         "src/Parser.test.cpp"
     PRIVATE
-        TMIV::ParserLib
+        ParserLib
 )
 
 create_tmiv_executable(
@@ -33,5 +34,5 @@ create_tmiv_executable(
     SOURCES
         "src/BitrateReport.main.cpp"
     PRIVATE
-        TMIV::MivBitstreamLib
+        MivBitstreamLib
     )

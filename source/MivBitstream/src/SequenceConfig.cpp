@@ -36,6 +36,8 @@
 #include <TMIV/Common/Math.h>
 #include <TMIV/Common/Quaternion.h>
 
+#include <fmt/format.h>
+
 #include <regex>
 
 using namespace std::string_literals;

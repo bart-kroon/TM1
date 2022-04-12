@@ -34,7 +34,7 @@
 #ifndef TMIV_MIVBITSTREAM_SEQUENCECONFIG_H
 #define TMIV_MIVBITSTREAM_SEQUENCECONFIG_H
 
-#include <TMIV/MivBitstream/ViewParamsList.h>
+#include "ViewParamsList.h"
 
 #include <TMIV/Common/Frame.h>
 

@@ -34,8 +34,9 @@
 #ifndef TMIV_DEPTHQUALITYASSESSOR_DEPTHQUALITYASSESSOR_H
 #define TMIV_DEPTHQUALITYASSESSOR_DEPTHQUALITYASSESSOR_H
 
+#include "IDepthQualityAssessor.h"
+
 #include <TMIV/Common/Frame.h>
-#include <TMIV/DepthQualityAssessor/IDepthQualityAssessor.h>
 
 namespace TMIV::DepthQualityAssessor {
 class DepthQualityAssessor : public IDepthQualityAssessor {

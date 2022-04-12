@@ -6,7 +6,9 @@ create_tmiv_library(
     SOURCES
         "src/PtlChecker.cpp"
     PUBLIC
-        TMIV::MivBitstreamLib
+        MivBitstreamLib
+    PRIVATE
+        fmt::fmt
     )
 
 create_catch2_unit_test(
@@ -15,5 +17,5 @@ create_catch2_unit_test(
     SOURCES
         "src/PtlChecker.test.cpp"
     PRIVATE
-        TMIV::PtlCheckerLib
+        PtlCheckerLib
     )

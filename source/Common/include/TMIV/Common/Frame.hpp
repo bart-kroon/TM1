@@ -35,7 +35,7 @@
 #error "Include the .h instead of the .hpp."
 #endif
 
-#include <TMIV/Common/verify.h>
+#include "verify.h"
 
 #include <cstring>
 

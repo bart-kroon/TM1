@@ -34,8 +34,9 @@
 #ifndef TMIV_ENCODER_GEOMETRYQUANTIZER_H
 #define TMIV_ENCODER_GEOMETRYQUANTIZER_H
 
+#include "EncoderParams.h"
+
 #include <TMIV/Common/Frame.h>
-#include <TMIV/Encoder/EncoderParams.h>
 
 namespace TMIV::Encoder::GeometryQuantizer {
 [[nodiscard]] auto transformParams(const EncoderParams &inParams, double depthOccThresholdIfSet,

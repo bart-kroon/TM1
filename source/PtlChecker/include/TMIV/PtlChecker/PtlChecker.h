@@ -34,7 +34,7 @@
 #ifndef TMIV_PTLCHECKER_PTLCHECKER_H
 #define TMIV_PTLCHECKER_PTLCHECKER_H
 
-#include <TMIV/PtlChecker/AbstractChecker.h>
+#include "AbstractChecker.h"
 
 namespace TMIV::PtlChecker {
 class PtlChecker : public AbstractChecker {

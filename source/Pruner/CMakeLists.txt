@@ -9,7 +9,7 @@ create_tmiv_library(
         "src/PrunedMesh.cpp"
         "src/NoPruner.cpp"
     PUBLIC
-        TMIV::RendererLib
+        RendererLib
     )
 
 create_catch2_unit_test(
@@ -18,5 +18,5 @@ create_catch2_unit_test(
     SOURCES
         "src/LumaStdDev.test.cpp"
     PRIVATE
-        TMIV::PrunerLib
+        PrunerLib
     )

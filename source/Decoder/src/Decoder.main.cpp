@@ -48,6 +48,8 @@
 #include <TMIV/Renderer/RecoverPrunedViews.h>
 #include <TMIV/VideoDecoder/VideoDecoder.h>
 
+#include <fmt/ostream.h>
+
 #include <fstream>
 #include <iostream>
 #include <memory>

@@ -34,8 +34,9 @@
 #ifndef TMIV_RENDERER_NO_INPAINTER_H
 #define TMIV_RENDERER_NO_INPAINTER_H
 
+#include "IInpainter.h"
+
 #include <TMIV/Common/Json.h>
-#include <TMIV/Renderer/IInpainter.h>
 
 namespace TMIV::Renderer {
 class NoInpainter : public IInpainter {

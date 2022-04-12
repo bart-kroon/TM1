@@ -33,6 +33,8 @@
 
 #include <TMIV/PtlChecker/PtlChecker.h>
 
+#include <fmt/format.h>
+
 // A macro is used to capture the text of the condition. There is no reflection in C++17.
 //
 // NOLINTNEXTLINE(cppcoreguidelines-macro-usage)

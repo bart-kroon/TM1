@@ -33,6 +33,8 @@
 
 #include <TMIV/MivBitstream/DepthOccupancyTransform.h>
 
+#include <fmt/format.h>
+
 #include <cassert>
 
 namespace TMIV::MivBitstream {

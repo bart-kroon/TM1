@@ -34,9 +34,7 @@
 #ifndef TMIV_MIVBITSTREAM_V3CPARAMETERSET_H
 #define TMIV_MIVBITSTREAM_V3CPARAMETERSET_H
 
-#include <TMIV/MivBitstream/AtlasId.h>
-
-#include <fmt/format.h>
+#include "AtlasId.h"
 
 #include <array>
 #include <cstdint>

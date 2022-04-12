@@ -35,7 +35,7 @@
 #error "Include the .h, not the .hpp"
 #endif
 
-#include <TMIV/Common/verify.h>
+#include "verify.h"
 
 namespace TMIV::Common {
 using uchar = std::make_unsigned_t<std::istream::char_type>;

@@ -36,6 +36,8 @@
 
 #include <TMIV/Common/Frame.h>
 
+#include <memory>
+
 namespace TMIV::MpiPcs {
 struct TextureTransparency8Frame {
   TextureTransparency8Frame(Common::Frame<> texture_, Common::Frame<uint8_t> transparency_)

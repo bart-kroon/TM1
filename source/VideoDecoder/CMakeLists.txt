@@ -11,11 +11,13 @@ create_tmiv_library(
         "src/VVdeCPartition.cpp"
         "src/VVdeCVideoDecoder.cpp"
     PUBLIC
-        TMIV::CommonLib
+        CommonLib
+    PRIVATE
+        fmt::fmt
     )
 
 if (HAVE_HM)
-    target_link_libraries(VideoDecoderLib PRIVATE TMIV::TLibDecoder)
+    target_link_libraries(VideoDecoderLib PRIVATE TLibDecoder)
     target_compile_definitions(VideoDecoderLib PUBLIC HAVE_HM)
 endif()
 
@@ -38,5 +40,6 @@ create_catch2_unit_test(
         "src/Partition.test.cpp"
         "src/VideoDecoder.test.cpp"
     PRIVATE
-        TMIV::VideoDecoderLib
+        VideoDecoderLib
+        fmt::fmt
     )

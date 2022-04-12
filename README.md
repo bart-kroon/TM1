@@ -38,11 +38,11 @@ find_package(TMIV 7.0.0 REQUIRED)
 
 The `TMIV_DIR` variable needs to be set to the directory named `/Workspace/tmiv_install/lib/cmake/TMIV` or `/Workspace/tmiv_install/lib64/cmake/TMIV` depending on the platform. 
 
-After that the targets `TMIV::DecoderLib`, `TMIV::EncoderLib`, etc. are available as target dependencies.
+After that the targets `DecoderLib`, `TMIV::DecoderLib`, `EncoderLib`, `TMIV::EncoderLib`, etc. are available as target dependencies.
 
 ## Structure of the reference software
 
-This software consists of multiple executables and static libraries. Below figure is the CMake module dependency graph of TMIV 5.0. The most important executables are Encoder and Decoder. When enabled, the project also includes the HM executables TAppEncoder and TAppDecoder.
+This software consists of multiple executables and static libraries. Below figure is the CMake module dependency graph. The most important executables are Encoder and Decoder. When enabled, the project also includes the HM executables TAppEncoder and TAppDecoder.
 
 ![CMake module graph](doc/module_graph.svg)
 

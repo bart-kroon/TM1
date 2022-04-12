@@ -34,8 +34,9 @@
 #ifndef TMIV_RENDERER_VIEWINGSPACECONTROLLER_H
 #define TMIV_RENDERER_VIEWINGSPACECONTROLLER_H
 
+#include "IViewingSpaceController.h"
+
 #include <TMIV/Common/Json.h>
-#include <TMIV/Renderer/IViewingSpaceController.h>
 
 namespace TMIV::Renderer {
 class ViewingSpaceController : public IViewingSpaceController {

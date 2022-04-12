@@ -54,10 +54,4 @@ TEST_CASE("ViewId", "[V3C Parameter Set]") {
     REQUIRE(j != ViewId{});
     REQUIRE(bitCodingTest(j, 6, 6));
   }
-
-  SECTION("Formatting") {
-    const auto j = ViewId{3};
-    CHECK(fmt::format("{}", j) == "3"s);
-    CHECK(fmt::format("c{:02}", j) == "c03"s);
-  }
 }

@@ -49,7 +49,6 @@ if (BUILD_HM)
         add_library(${module} ${cppSourceFiles} ${cSourceFiles} ${headerFiles})
         set_property(TARGET ${module} PROPERTY CXX_CLANG_TIDY) # no clang-tidy
         set_property(TARGET ${module} PROPERTY FOLDER "HM libraries")
-        add_library(TMIV::${module} ALIAS ${module})
         install(TARGETS ${module} EXPORT TMIVTargets ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})    
     endfunction()
 

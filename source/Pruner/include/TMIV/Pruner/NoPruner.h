@@ -34,7 +34,7 @@
 #ifndef TMIV_PRUNER_NOPRUNER_H
 #define TMIV_PRUNER_NOPRUNER_H
 
-#include <TMIV/Pruner/IPruner.h>
+#include "IPruner.h"
 
 namespace TMIV::Pruner {
 class NoPruner : public IPruner {

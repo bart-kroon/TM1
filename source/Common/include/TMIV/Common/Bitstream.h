@@ -34,7 +34,7 @@
 #ifndef TMIV_COMMON_BITSTREAM_H
 #define TMIV_COMMON_BITSTREAM_H
 
-#include <TMIV/Common/Half.h>
+#include "Half.h"
 
 #include <cstdint>
 #include <istream>

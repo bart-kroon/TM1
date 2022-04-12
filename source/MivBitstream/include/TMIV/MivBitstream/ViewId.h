@@ -74,23 +74,11 @@ public:
   }
 
 private:
-  friend struct fmt::formatter<TMIV::MivBitstream::ViewId>;
   friend class ViewParamsList;
   friend class TMIV::Decoder::HashFunction;
 
   uint16_t m_value{};
 };
 } // namespace TMIV::MivBitstream
-
-template <> struct fmt::formatter<TMIV::MivBitstream::ViewId> {
-  fmt::formatter<int32_t> base;
-
-  constexpr auto parse(format_parse_context &ctx) { return base.parse(ctx); }
-
-  template <typename FormatContext>
-  auto format(const TMIV::MivBitstream::ViewId &id, FormatContext &ctx) {
-    return base.format(id.m_value, ctx);
-  }
-};
 
 #endif

@@ -18,11 +18,13 @@ create_tmiv_library(
         "src/FramePacker.cpp"
         "src/V3cSampleSink.cpp"
     PUBLIC
-        TMIV::ViewOptimizerLib
-        TMIV::PrunerLib
-        TMIV::AggregatorLib
-        TMIV::PackerLib
-        TMIV::DepthQualityAssessorLib
+        ViewOptimizerLib
+        PrunerLib
+        AggregatorLib
+        PackerLib
+        DepthQualityAssessorLib
+    PRIVATE
+        fmt::fmt
     )
 
 create_tmiv_executable(
@@ -32,8 +34,9 @@ create_tmiv_executable(
         "src/Encoder.main.cpp"
         "src/registerComponents.cpp"
     PRIVATE
-        TMIV::EncoderLib
-        TMIV::IOLib
+        EncoderLib
+        IOLib
+        fmt::fmt
     )
 
 create_tmiv_executable(
@@ -44,8 +47,9 @@ create_tmiv_executable(
         "src/MpiEncoder.main.cpp"
         "src/registerComponents.cpp"
     PRIVATE
-        TMIV::EncoderLib
-        TMIV::MpiPcsLib
+        EncoderLib
+        MpiPcsLib
+        fmt::fmt
     )
 
 create_catch2_unit_test(
@@ -60,5 +64,5 @@ create_catch2_unit_test(
         "src/FramePacker.test.cpp"
         "src/GeometryQuantizer.test.cpp"
     PRIVATE
-        TMIV::EncoderLib
+        EncoderLib
     )

@@ -34,7 +34,7 @@
 #ifndef TMIV_PRUNER_HIERARCHICALPRUNER_H
 #define TMIV_PRUNER_HIERARCHICALPRUNER_H
 
-#include <TMIV/Pruner/IPruner.h>
+#include "IPruner.h"
 
 #include <TMIV/Common/Json.h>
 

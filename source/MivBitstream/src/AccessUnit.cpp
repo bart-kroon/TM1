@@ -33,6 +33,8 @@
 
 #include <TMIV/MivBitstream/AccessUnit.h>
 
+#include <fmt/ostream.h>
+
 namespace TMIV::MivBitstream {
 auto AccessUnit::sequenceConfig() const -> SequenceConfig {
   auto x = SequenceConfig{};

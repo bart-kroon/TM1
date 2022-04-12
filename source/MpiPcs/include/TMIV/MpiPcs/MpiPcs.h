@@ -34,8 +34,9 @@
 #ifndef TMIV_IO_MPIPCS_H
 #define TMIV_IO_MPIPCS_H
 
+#include "Frame.h"
+
 #include <TMIV/IO/IO.h>
-#include <TMIV/MpiPcs/Frame.h>
 
 namespace TMIV::MpiPcs {
 class FileHeader {

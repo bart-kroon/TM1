@@ -36,6 +36,8 @@
 #include "DependencyInjector.h"
 #include "Filesystem.h"
 
+#include <fmt/format.h>
+
 using namespace std::string_literals;
 
 namespace TMIV::IO {

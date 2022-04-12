@@ -35,11 +35,11 @@
 
 #include <TMIV/Common/verify.h>
 
+#include <fmt/ostream.h>
+
 #include <sstream>
 #include <type_traits>
 #include <utility>
-
-#include <fmt/ostream.h>
 
 namespace TMIV::MivBitstream {
 auto operator<<(std::ostream &stream, PtlProfileCodecGroupIdc x) -> std::ostream & {

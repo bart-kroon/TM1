@@ -38,7 +38,9 @@ create_tmiv_library(
         "src/V3cSampleStreamFormat.cpp"
         "src/V3cUnit.cpp"
     PUBLIC
-        TMIV::CommonLib
+        CommonLib
+    PRIVATE
+        fmt::fmt
     )
 
 create_catch2_unit_test(
@@ -78,5 +80,5 @@ create_catch2_unit_test(
         "src/V3cParameterSet.test.cpp"
         "src/V3cUnit.test.cpp"
     PRIVATE
-        TMIV::MivBitstreamLib
+        MivBitstreamLib
     )

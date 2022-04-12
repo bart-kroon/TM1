@@ -35,6 +35,8 @@
 
 #include <TMIV/Common/Factory.h>
 
+#include <fmt/format.h>
+
 using namespace std::string_literals;
 
 namespace TMIV::Renderer::Front {

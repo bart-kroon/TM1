@@ -34,10 +34,10 @@
 #ifndef TMIV_MIVBITSTREAM_CAFMIVEXTENSION_H
 #define TMIV_MIVBITSTREAM_CAFMIVEXTENSION_H
 
-#include <TMIV/MivBitstream/CommonAtlasSequenceParameterSetRBSP.h>
-#include <TMIV/MivBitstream/NalUnit.h>
-#include <TMIV/MivBitstream/V3cParameterSet.h>
-#include <TMIV/MivBitstream/ViewId.h>
+#include "CommonAtlasSequenceParameterSetRBSP.h"
+#include "NalUnit.h"
+#include "V3cParameterSet.h"
+#include "ViewId.h"
 
 #include <TMIV/Common/Bitstream.h>
 #include <TMIV/Common/Common.h>

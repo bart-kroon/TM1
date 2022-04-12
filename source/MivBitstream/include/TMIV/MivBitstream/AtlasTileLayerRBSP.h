@@ -34,13 +34,14 @@
 #ifndef TMIV_MIVBITSTREAM_ATLASTILELAYERRBSP_H
 #define TMIV_MIVBITSTREAM_ATLASTILELAYERRBSP_H
 
+#include "AtlasFrameParameterSetRBSP.h"
+#include "AtlasSequenceParameterSetRBSP.h"
+#include "V3cParameterSet.h"
+#include "V3cUnit.h"
+#include "ViewId.h"
+
 #include <TMIV/Common/Bitstream.h>
 #include <TMIV/Common/Common.h>
-#include <TMIV/MivBitstream/AtlasFrameParameterSetRBSP.h>
-#include <TMIV/MivBitstream/AtlasSequenceParameterSetRBSP.h>
-#include <TMIV/MivBitstream/V3cParameterSet.h>
-#include <TMIV/MivBitstream/V3cUnit.h>
-#include <TMIV/MivBitstream/ViewId.h>
 
 #include <TMIV/Common/Vector.h>
 

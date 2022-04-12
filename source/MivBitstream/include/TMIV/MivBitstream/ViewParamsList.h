@@ -34,7 +34,7 @@
 #ifndef TMIV_MIVBITSTREAM_VIEWPARAMSLIST_H
 #define TMIV_MIVBITSTREAM_VIEWPARAMSLIST_H
 
-#include <TMIV/MivBitstream/CafMivExtension.h>
+#include "CafMivExtension.h"
 
 #include <TMIV/Common/Json.h>
 #include <TMIV/Common/Vector.h>

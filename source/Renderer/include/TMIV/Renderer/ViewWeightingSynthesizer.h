@@ -34,7 +34,7 @@
 #ifndef TMIV_RENDERER_VIEWWEIGHTINGSYNTHESIZER_H
 #define TMIV_RENDERER_VIEWWEIGHTINGSYNTHESIZER_H
 
-#include <TMIV/Renderer/ISynthesizer.h>
+#include "ISynthesizer.h"
 
 namespace TMIV::Renderer {
 class ViewWeightingSynthesizer : public ISynthesizer {

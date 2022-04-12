@@ -37,9 +37,9 @@
 #include <cassert>
 #include <cstdlib>
 #include <iostream>
+#include <limits>
+#include <sstream>
 #include <stdexcept>
-
-#include <fmt/format.h>
 
 #if defined(__clang__) || defined(__GNUC__)
 // NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
@@ -212,7 +212,9 @@ class PtlError : public std::runtime_error {
 
 inline auto message(char const *introduction, char const *condition, char const *file, int32_t line)
     -> std::string {
-  return fmt::format("{}:\n\t{}\n\t[{}@{}]\n", introduction, condition, file, line);
+  std::ostringstream stream;
+  stream << introduction << ":\n\t" << condition << "\n\t[" << file << "@" << line << "]\n";
+  return stream.str();
 }
 
 [[noreturn]] inline void runtimeError(char const *condition, char const *file, int32_t line) {

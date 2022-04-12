@@ -6,5 +6,5 @@ create_tmiv_library(
     SOURCES
         "src/DepthQualityAssessor.cpp"
     PUBLIC
-        TMIV::RendererLib
+        RendererLib
     )

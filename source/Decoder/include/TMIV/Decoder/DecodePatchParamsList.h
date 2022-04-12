@@ -34,7 +34,8 @@
 #ifndef TMIV_DECODER_DECODEPATCHPARAMSLIST_H
 #define TMIV_DECODER_DECODEPATCHPARAMSLIST_H
 
-#include <TMIV/Decoder/DecodeAtlas.h>
+#include "DecodeAtlas.h"
+
 #include <TMIV/MivBitstream/AccessUnit.h>
 
 namespace TMIV::Decoder {

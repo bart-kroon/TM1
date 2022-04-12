@@ -34,8 +34,9 @@
 #ifndef TMIV_RENDERER_SUBBLOCKCULLER_H
 #define TMIV_RENDERER_SUBBLOCKCULLER_H
 
+#include "ICuller.h"
+
 #include <TMIV/Common/Json.h>
-#include <TMIV/Renderer/ICuller.h>
 
 namespace TMIV::Renderer {
 class SubBlockCuller : public ICuller {

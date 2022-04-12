@@ -12,7 +12,6 @@ function(create_tmiv_library)
         ${ARGN})
 
     add_library(${TMIV_LIB_CREATOR_TARGET} ${TMIV_LIB_CREATOR_SOURCES})
-    add_library(TMIV::${TMIV_LIB_CREATOR_TARGET} ALIAS ${TMIV_LIB_CREATOR_TARGET})
     set_property(TARGET ${TMIV_LIB_CREATOR_TARGET} PROPERTY FOLDER "TMIV libraries")   
     target_link_libraries(${TMIV_LIB_CREATOR_TARGET} PUBLIC ${TMIV_LIB_CREATOR_PUBLIC})
     target_link_libraries(${TMIV_LIB_CREATOR_TARGET} PRIVATE ${TMIV_LIB_CREATOR_PRIVATE})

@@ -37,6 +37,7 @@
 #include <TMIV/Common/Source.h>
 
 #include <string>
+#include <vector>
 
 namespace TMIV::VideoDecoder {
 using NalUnitSource = Common::Source<std::string>;

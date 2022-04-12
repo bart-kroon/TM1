@@ -34,11 +34,12 @@
 #ifndef TMIV_MIVBITSTREAM_COMMONATLASSEQUENCEPARAMETERSETRBSP_H
 #define TMIV_MIVBITSTREAM_COMMONATLASSEQUENCEPARAMETERSETRBSP_H
 
-#include <optional>
-#include <vector>
+#include "VuiParameters.h"
 
 #include <TMIV/Common/Bitstream.h>
-#include <TMIV/MivBitstream/VuiParameters.h>
+
+#include <optional>
+#include <vector>
 
 namespace TMIV::MivBitstream {
 // 23090-12: casps_miv_extension( )

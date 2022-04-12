@@ -34,7 +34,7 @@
 #ifndef TMIV_COMMON_FACTORY_H
 #define TMIV_COMMON_FACTORY_H
 
-#include <TMIV/Common/Json.h>
+#include "Json.h"
 
 #include <functional>
 #include <map>

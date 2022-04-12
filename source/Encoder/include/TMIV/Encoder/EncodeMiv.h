@@ -34,8 +34,9 @@
 #ifndef TMIV_ENCODER_ENCODEMIV_H
 #define TMIV_ENCODER_ENCODEMIV_H
 
+#include "EncoderParams.h"
+
 #include <TMIV/Common/Sink.h>
-#include <TMIV/Encoder/EncoderParams.h>
 #include <TMIV/MivBitstream/V3cUnit.h>
 
 namespace TMIV::Encoder {

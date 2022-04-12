@@ -34,18 +34,18 @@
 #ifndef TMIV_MIVBITSTREAM_ACCESSUNIT_H
 #define TMIV_MIVBITSTREAM_ACCESSUNIT_H
 
-#include <TMIV/MivBitstream/AtlasAdaptationParameterSetRBSP.h>
-#include <TMIV/MivBitstream/AtlasFrameParameterSetRBSP.h>
-#include <TMIV/MivBitstream/AtlasSequenceParameterSetRBSP.h>
-#include <TMIV/MivBitstream/AtlasTileLayerRBSP.h>
-#include <TMIV/MivBitstream/GeometryUpscalingParameters.h>
-#include <TMIV/MivBitstream/PatchParamsList.h>
-#include <TMIV/MivBitstream/SequenceConfig.h>
-#include <TMIV/MivBitstream/V3cParameterSet.h>
-#include <TMIV/MivBitstream/ViewParamsList.h>
-#include <TMIV/MivBitstream/ViewingSpace.h>
-#include <TMIV/MivBitstream/ViewportCameraParameters.h>
-#include <TMIV/MivBitstream/ViewportPosition.h>
+#include "AtlasAdaptationParameterSetRBSP.h"
+#include "AtlasFrameParameterSetRBSP.h"
+#include "AtlasSequenceParameterSetRBSP.h"
+#include "AtlasTileLayerRBSP.h"
+#include "GeometryUpscalingParameters.h"
+#include "PatchParamsList.h"
+#include "SequenceConfig.h"
+#include "V3cParameterSet.h"
+#include "ViewParamsList.h"
+#include "ViewingSpace.h"
+#include "ViewportCameraParameters.h"
+#include "ViewportPosition.h"
 
 #include <TMIV/Common/Frame.h>
 

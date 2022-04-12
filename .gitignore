@@ -15,3 +15,4 @@ install.*/
 out/
 out.*/
 scripts/docker/buildtools2019/*.exe
+/doc/detailed_module_graph.svg

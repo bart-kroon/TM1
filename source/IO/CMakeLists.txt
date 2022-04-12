@@ -26,8 +26,10 @@ create_tmiv_library(
         "src/DependencyInjector.cpp"
         "src/Filesystem.cpp"
     PUBLIC
-        TMIV::MivBitstreamLib
+        MivBitstreamLib
         ${CppFilesystemLib}
+    PRIVATE
+        fmt::fmt
     )
 
 create_catch2_unit_test(
@@ -39,5 +41,6 @@ create_catch2_unit_test(
         "src/save.test.cpp"
         "src/FakeFilesystem.cpp"
     PRIVATE
-        TMIV::IOLib
+        IOLib
+        fmt::fmt
     )

@@ -34,8 +34,8 @@
 #ifndef TMIV_MIVBITSTREAM_NALSAMPLESTREAM_H
 #define TMIV_MIVBITSTREAM_NALSAMPLESTREAM_H
 
-#include <TMIV/MivBitstream/NalSampleStreamFormat.h>
-#include <TMIV/MivBitstream/NalUnit.h>
+#include "NalSampleStreamFormat.h"
+#include "NalUnit.h"
 
 #include <vector>
 

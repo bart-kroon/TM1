@@ -34,7 +34,7 @@
 #ifndef TMIV_VIEWOPTIMIZER_ABSTRACTVIEWSELECTOR_H
 #define TMIV_VIEWOPTIMIZER_ABSTRACTVIEWSELECTOR_H
 
-#include <TMIV/ViewOptimizer/IViewOptimizer.h>
+#include "IViewOptimizer.h"
 
 #include <TMIV/Common/Json.h>
 

@@ -18,7 +18,9 @@ create_tmiv_library(
         "src/PreRenderer.cpp"
         "src/V3cUnitBuffer.cpp"
     PUBLIC
-        TMIV::PtlCheckerLib
+        PtlCheckerLib
+    PRIVATE
+        fmt::fmt
     )
 
 create_tmiv_executable(
@@ -28,9 +30,10 @@ create_tmiv_executable(
         "src/Decoder.main.cpp"
         "src/registerComponents.cpp"
     PRIVATE
-        TMIV::DecoderLib
-        TMIV::VideoDecoderLib
-        TMIV::RendererFrontLib
+        DecoderLib
+        VideoDecoderLib
+        RendererFrontLib
+        fmt::fmt
     )
 
 create_catch2_unit_test(
@@ -48,5 +51,6 @@ create_catch2_unit_test(
         "src/OutputLog.test.cpp"
         "src/V3cUnitBuffer.test.cpp"
     PRIVATE
-        TMIV::DecoderLib
+        DecoderLib
+        fmt::fmt
     )

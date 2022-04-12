@@ -115,9 +115,9 @@ caf_miv_extension_present_flag=true
 caf_extension_7bits=0
 miv_view_params_list=mvp_num_views_minus1=0
 mvp_explicit_view_id_flag=false
-ce_view_pos_x[ 0 ]=0.0
-ce_view_pos_y[ 0 ]=0.0
-ce_view_pos_z[ 0 ]=0.0
+ce_view_pos_x[ 0 ]=0
+ce_view_pos_y[ 0 ]=0
+ce_view_pos_z[ 0 ]=0
 ce_view_quat_x[ 0 ]=0
 ce_view_quat_y[ 0 ]=0
 ce_view_quat_z[ 0 ]=0

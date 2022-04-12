@@ -34,10 +34,10 @@
 #ifndef TMIV_PACKER_PACKER_H
 #define TMIV_PACKER_PACKER_H
 
-#include <TMIV/Packer/IPacker.h>
+#include "Cluster.h"
+#include "IPacker.h"
 
 #include <TMIV/Common/Json.h>
-#include <TMIV/Packer/Cluster.h>
 
 #include <tuple>
 

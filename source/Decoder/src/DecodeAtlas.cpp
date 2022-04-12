@@ -39,6 +39,8 @@
 
 #include "NalUnitSemantics.h"
 
+#include <fmt/ostream.h>
+
 #include <sstream>
 
 namespace TMIV::Decoder {

@@ -34,7 +34,7 @@
 #ifndef TMIV_RENDERER_ISYNTHESIZER_H
 #define TMIV_RENDERER_ISYNTHESIZER_H
 
-#include <TMIV/Renderer/IRenderer.h>
+#include "IRenderer.h"
 
 namespace TMIV::Renderer {
 using ISynthesizer = IRenderer;

@@ -34,7 +34,7 @@
 #ifndef TMIV_RENDERER_REPROJECTPOINTS_H
 #define TMIV_RENDERER_REPROJECTPOINTS_H
 
-#include <TMIV/Renderer/Engine.h>
+#include "Engine.h"
 
 namespace TMIV::Renderer {
 // Change the reference frame from a source camera to a target camera

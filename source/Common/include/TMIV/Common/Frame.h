@@ -34,9 +34,9 @@
 #ifndef TMIV_COMMON_FRAME_H
 #define TMIV_COMMON_FRAME_H
 
-#include <TMIV/Common/Common.h>
-#include <TMIV/Common/Matrix.h>
-#include <TMIV/Common/Vector.h>
+#include "Common.h"
+#include "Matrix.h"
+#include "Vector.h"
 
 #include <array>
 #include <cassert>

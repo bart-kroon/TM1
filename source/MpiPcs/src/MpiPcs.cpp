@@ -33,6 +33,8 @@
 
 #include <TMIV/MpiPcs/MpiPcs.h>
 
+#include <fmt/ostream.h>
+
 #include <fstream>
 
 namespace TMIV::MpiPcs {

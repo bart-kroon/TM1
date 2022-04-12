@@ -33,6 +33,8 @@
 
 #include <TMIV/Decoder/V3cUnitBuffer.h>
 
+#include <fmt/format.h>
+
 #include <iostream>
 #include <utility>
 

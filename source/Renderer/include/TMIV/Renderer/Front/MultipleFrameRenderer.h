@@ -34,9 +34,10 @@
 #ifndef TMIV_RENDERER_FRONT_RENDERMULTIPLEFRAMES_H
 #define TMIV_RENDERER_FRONT_RENDERMULTIPLEFRAMES_H
 
+#include "mapInputToOutputFrames.h"
+
 #include <TMIV/IO/IO.h>
 #include <TMIV/MivBitstream/AccessUnit.h>
-#include <TMIV/Renderer/Front/mapInputToOutputFrames.h>
 #include <TMIV/Renderer/ICuller.h>
 #include <TMIV/Renderer/IRenderer.h>
 

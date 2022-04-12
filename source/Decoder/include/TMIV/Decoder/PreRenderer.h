@@ -34,7 +34,7 @@
 #ifndef TMIV_DECODER_PRERENDERER_H
 #define TMIV_DECODER_PRERENDERER_H
 
-#include <TMIV/Decoder/GeometryScaler.h>
+#include "GeometryScaler.h"
 
 #include <TMIV/Common/Json.h>
 #include <TMIV/MivBitstream/AccessUnit.h>

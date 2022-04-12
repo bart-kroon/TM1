@@ -33,6 +33,8 @@
 
 #include <TMIV/Decoder/DecodeViewParamsList.h>
 
+#include <fmt/format.h>
+
 namespace TMIV::Decoder {
 namespace {
 void decodeMvpl(const MivBitstream::MivViewParamsList &mvpl, bool dqParamsPresentFlag,

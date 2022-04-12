@@ -34,8 +34,9 @@
 #ifndef TMIV_ENCODER_GEOMETRYDOWNSCALER_H
 #define TMIV_ENCODER_GEOMETRYDOWNSCALER_H
 
+#include "EncoderParams.h"
+
 #include <TMIV/Common/Frame.h>
-#include <TMIV/Encoder/EncoderParams.h>
 
 namespace TMIV::Encoder::GeometryDownscaler {
 [[nodiscard]] auto transformFrame(const std::vector<EncoderAtlasParams> &atlas,

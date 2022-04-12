@@ -34,7 +34,7 @@
 #ifndef TMIV_RENDERER_ADDITIVESYNTHESIZER_H
 #define TMIV_RENDERER_ADDITIVESYNTHESIZER_H
 
-#include <TMIV/Renderer/ISynthesizer.h>
+#include "ISynthesizer.h"
 
 namespace TMIV::Renderer {
 class AdditiveSynthesizer : public ISynthesizer {

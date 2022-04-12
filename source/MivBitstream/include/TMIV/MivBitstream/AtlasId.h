@@ -70,22 +70,11 @@ public:
 
   explicit operator Common::Json() const { return Common::Json{m_value}; }
 
-private:
-  friend struct fmt::formatter<TMIV::MivBitstream::AtlasId>;
+  [[nodiscard]] constexpr auto asInt() const -> int { return m_value; }
 
+private:
   uint8_t m_value{};
 };
 } // namespace TMIV::MivBitstream
-
-template <> struct fmt::formatter<TMIV::MivBitstream::AtlasId> {
-  fmt::formatter<int32_t> base;
-
-  constexpr auto parse(format_parse_context &ctx) { return base.parse(ctx); }
-
-  template <typename FormatContext>
-  auto format(const TMIV::MivBitstream::AtlasId &id, FormatContext &ctx) {
-    return base.format(id.m_value, ctx);
-  }
-};
 
 #endif

@@ -34,12 +34,12 @@
 #ifndef TMIV_MIVBITSTREAM_VIEWINGSPACE_H
 #define TMIV_MIVBITSTREAM_VIEWINGSPACE_H
 
+#include "ViewParamsList.h"
+
 #include <TMIV/Common/Bitstream.h>
 #include <TMIV/Common/Json.h>
 #include <TMIV/Common/Quaternion.h>
 #include <TMIV/Common/Vector.h>
-
-#include <TMIV/MivBitstream/ViewParamsList.h>
 
 #include <cassert>
 #include <iosfwd>

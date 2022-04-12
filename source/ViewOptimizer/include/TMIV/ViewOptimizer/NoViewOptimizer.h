@@ -34,8 +34,9 @@
 #ifndef TMIV_VIEWOPTIMIZER_NOVIEWOPTIMIZER_H
 #define TMIV_VIEWOPTIMIZER_NOVIEWOPTIMIZER_H
 
+#include "IViewOptimizer.h"
+
 #include <TMIV/Common/Json.h>
-#include <TMIV/ViewOptimizer/IViewOptimizer.h>
 
 namespace TMIV::ViewOptimizer {
 class NoViewOptimizer : public IViewOptimizer {

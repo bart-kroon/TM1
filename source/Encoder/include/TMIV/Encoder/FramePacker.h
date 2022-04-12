@@ -34,8 +34,9 @@
 #ifndef TMIV_ENCODER_FRAMEPACK_H
 #define TMIV_ENCODER_FRAMEPACK_H
 
+#include "EncoderParams.h"
+
 #include <TMIV/Common/Frame.h>
-#include <TMIV/Encoder/EncoderParams.h>
 
 namespace TMIV::Encoder {
 class FramePacker {

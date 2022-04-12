@@ -6,7 +6,7 @@ create_tmiv_library(
     SOURCES
         "src/Aggregator.cpp"
     PUBLIC
-        TMIV::CommonLib
+        CommonLib
     )
 
 create_catch2_unit_test(
@@ -15,5 +15,5 @@ create_catch2_unit_test(
     SOURCES
         "src/Aggregator.test.cpp"
     PRIVATE
-        TMIV::AggregatorLib
+        AggregatorLib
     )

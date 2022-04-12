@@ -39,7 +39,7 @@
 
 #include <TLibDecoder/NALread.h>
 
-#include <memory>
+#include <cstring>
 
 using namespace std::string_literals;
 

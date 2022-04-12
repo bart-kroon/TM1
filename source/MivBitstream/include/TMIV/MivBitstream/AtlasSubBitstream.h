@@ -34,7 +34,7 @@
 #ifndef TMIV_MIVBITSTREAM_ATLASSUBBITSTREAM_H
 #define TMIV_MIVBITSTREAM_ATLASSUBBITSTREAM_H
 
-#include <TMIV/MivBitstream/NalSampleStream.h>
+#include "NalSampleStream.h"
 
 namespace TMIV::MivBitstream {
 // 23090-5: atlas_sub_bitstream()

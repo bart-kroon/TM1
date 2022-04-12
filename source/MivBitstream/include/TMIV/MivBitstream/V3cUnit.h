@@ -34,9 +34,9 @@
 #ifndef TMIV_MIVBITSTREAM_V3CUNIT_H
 #define TMIV_MIVBITSTREAM_V3CUNIT_H
 
-#include <TMIV/MivBitstream/AtlasSubBitstream.h>
-#include <TMIV/MivBitstream/V3cParameterSet.h>
-#include <TMIV/MivBitstream/VideoSubBitstream.h>
+#include "AtlasSubBitstream.h"
+#include "V3cParameterSet.h"
+#include "VideoSubBitstream.h"
 
 #include <cstdint>
 #include <cstdlib>

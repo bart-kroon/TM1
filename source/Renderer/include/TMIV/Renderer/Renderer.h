@@ -34,10 +34,10 @@
 #ifndef TMIV_RENDERER_RENDERER_H
 #define TMIV_RENDERER_RENDERER_H
 
-#include <TMIV/Renderer/IInpainter.h>
-#include <TMIV/Renderer/IRenderer.h>
-#include <TMIV/Renderer/ISynthesizer.h>
-#include <TMIV/Renderer/IViewingSpaceController.h>
+#include "IInpainter.h"
+#include "IRenderer.h"
+#include "ISynthesizer.h"
+#include "IViewingSpaceController.h"
 
 namespace TMIV::Renderer {
 // Basic implementation of IRenderer

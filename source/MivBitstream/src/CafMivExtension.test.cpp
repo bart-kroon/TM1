@@ -115,9 +115,9 @@ ci_ortho_height[ 1 ]=50
 TEST_CASE("camera_extrinsics", "[Common Atlas Frame MIV Extension]") {
   auto unit = CameraExtrinsics{};
 
-  REQUIRE(toString(unit, uint16_t{1}) == R"(ce_view_pos_x[ 1 ]=0.0
-ce_view_pos_y[ 1 ]=0.0
-ce_view_pos_z[ 1 ]=0.0
+  REQUIRE(toString(unit, uint16_t{1}) == R"(ce_view_pos_x[ 1 ]=0
+ce_view_pos_y[ 1 ]=0
+ce_view_pos_z[ 1 ]=0
 ce_view_quat_x[ 1 ]=0
 ce_view_quat_y[ 1 ]=0
 ce_view_quat_z[ 1 ]=0
@@ -133,9 +133,9 @@ ce_view_quat_z[ 1 ]=0
         .ce_view_quat_y(-1239)
         .ce_view_quat_z(0);
 
-    REQUIRE(toString(unit, uint16_t{1}) == R"(ce_view_pos_x[ 1 ]=3.0
-ce_view_pos_y[ 1 ]=1.0
-ce_view_pos_z[ 1 ]=4.0
+    REQUIRE(toString(unit, uint16_t{1}) == R"(ce_view_pos_x[ 1 ]=3
+ce_view_pos_y[ 1 ]=1
+ce_view_pos_z[ 1 ]=4
 ce_view_quat_x[ 1 ]=153
 ce_view_quat_y[ 1 ]=-1239
 ce_view_quat_z[ 1 ]=0
@@ -204,9 +204,9 @@ TEST_CASE("miv_view_params_list", "[Common Atlas Frame MIV Extension]") {
   SECTION("Default constructor") {
     REQUIRE(toString(unit) == R"(mvp_num_views_minus1=0
 mvp_explicit_view_id_flag=false
-ce_view_pos_x[ 0 ]=0.0
-ce_view_pos_y[ 0 ]=0.0
-ce_view_pos_z[ 0 ]=0.0
+ce_view_pos_x[ 0 ]=0
+ce_view_pos_y[ 0 ]=0
+ce_view_pos_z[ 0 ]=0
 ce_view_quat_x[ 0 ]=0
 ce_view_quat_y[ 0 ]=0
 ce_view_quat_z[ 0 ]=0
@@ -240,9 +240,9 @@ mvp_pruning_graph_params_present_flag=false
 
     REQUIRE(toString(unit) == R"(mvp_num_views_minus1=0
 mvp_explicit_view_id_flag=false
-ce_view_pos_x[ 0 ]=0.0
-ce_view_pos_y[ 0 ]=0.0
-ce_view_pos_z[ 0 ]=0.0
+ce_view_pos_x[ 0 ]=0
+ce_view_pos_y[ 0 ]=0
+ce_view_pos_z[ 0 ]=0
 ce_view_quat_x[ 0 ]=0
 ce_view_quat_y[ 0 ]=0
 ce_view_quat_z[ 0 ]=0
@@ -284,23 +284,23 @@ mvp_explicit_view_id_flag=true
 mvp_view_id[ 0 ]=0
 mvp_view_id[ 1 ]=2
 mvp_view_id[ 2 ]=1
-ce_view_pos_x[ 0 ]=0.0
-ce_view_pos_y[ 0 ]=0.0
-ce_view_pos_z[ 0 ]=0.0
+ce_view_pos_x[ 0 ]=0
+ce_view_pos_y[ 0 ]=0
+ce_view_pos_z[ 0 ]=0
 ce_view_quat_x[ 0 ]=0
 ce_view_quat_y[ 0 ]=0
 ce_view_quat_z[ 0 ]=0
 mvp_inpaint_flag[ 0 ]=false
-ce_view_pos_x[ 1 ]=0.0
-ce_view_pos_y[ 1 ]=0.0
-ce_view_pos_z[ 1 ]=0.0
+ce_view_pos_x[ 1 ]=0
+ce_view_pos_y[ 1 ]=0
+ce_view_pos_z[ 1 ]=0
 ce_view_quat_x[ 1 ]=0
 ce_view_quat_y[ 1 ]=0
 ce_view_quat_z[ 1 ]=0
 mvp_inpaint_flag[ 1 ]=true
-ce_view_pos_x[ 2 ]=0.0
-ce_view_pos_y[ 2 ]=0.0
-ce_view_pos_z[ 2 ]=0.0
+ce_view_pos_x[ 2 ]=0
+ce_view_pos_y[ 2 ]=0
+ce_view_pos_z[ 2 ]=0
 ce_view_quat_x[ 2 ]=0
 ce_view_quat_y[ 2 ]=0
 ce_view_quat_z[ 2 ]=0
@@ -333,9 +333,9 @@ pp_is_root_flag[ 2 ]=true
 
     REQUIRE(toString(unit) == R"(mvp_num_views_minus1=0
 mvp_explicit_view_id_flag=false
-ce_view_pos_x[ 0 ]=0.0
-ce_view_pos_y[ 0 ]=0.0
-ce_view_pos_z[ 0 ]=0.0
+ce_view_pos_x[ 0 ]=0
+ce_view_pos_y[ 0 ]=0
+ce_view_pos_z[ 0 ]=0
 ce_view_quat_x[ 0 ]=0
 ce_view_quat_y[ 0 ]=0
 ce_view_quat_z[ 0 ]=0
@@ -377,23 +377,23 @@ TEST_CASE("caf_miv_extension", "[Common Atlas Frame MIV Extension]") {
 
     REQUIRE(toString(unit) == R"(miv_view_params_list=mvp_num_views_minus1=2
 mvp_explicit_view_id_flag=false
-ce_view_pos_x[ 0 ]=0.0
-ce_view_pos_y[ 0 ]=0.0
-ce_view_pos_z[ 0 ]=0.0
+ce_view_pos_x[ 0 ]=0
+ce_view_pos_y[ 0 ]=0
+ce_view_pos_z[ 0 ]=0
 ce_view_quat_x[ 0 ]=0
 ce_view_quat_y[ 0 ]=0
 ce_view_quat_z[ 0 ]=0
 mvp_inpaint_flag[ 0 ]=false
-ce_view_pos_x[ 1 ]=0.0
-ce_view_pos_y[ 1 ]=0.0
-ce_view_pos_z[ 1 ]=0.0
+ce_view_pos_x[ 1 ]=0
+ce_view_pos_y[ 1 ]=0
+ce_view_pos_z[ 1 ]=0
 ce_view_quat_x[ 1 ]=0
 ce_view_quat_y[ 1 ]=0
 ce_view_quat_z[ 1 ]=0
 mvp_inpaint_flag[ 1 ]=false
-ce_view_pos_x[ 2 ]=0.0
-ce_view_pos_y[ 2 ]=0.0
-ce_view_pos_z[ 2 ]=0.0
+ce_view_pos_x[ 2 ]=0
+ce_view_pos_y[ 2 ]=0
+ce_view_pos_z[ 2 ]=0
 ce_view_quat_x[ 2 ]=0
 ce_view_quat_y[ 2 ]=0
 ce_view_quat_z[ 2 ]=0
@@ -439,9 +439,9 @@ came_update_intrinsics_flag=false
 came_update_depth_quantization_flag=false
 mvpue_num_view_updates_minus1=0
 mvpue_view_idx[ 0 ]=3
-ce_view_pos_x[ 0 ]=1.0
-ce_view_pos_y[ 0 ]=2.0
-ce_view_pos_z[ 0 ]=3.0
+ce_view_pos_x[ 0 ]=1
+ce_view_pos_y[ 0 ]=2
+ce_view_pos_z[ 0 ]=3
 ce_view_quat_x[ 0 ]=32767
 ce_view_quat_y[ 0 ]=-32768
 ce_view_quat_z[ 0 ]=1
@@ -537,9 +537,9 @@ TEST_CASE("miv_view_params_update_extrinsics", "[Common Atlas Frame MIV Extensio
 
     REQUIRE(toString(unit) == R"(mvpue_num_view_updates_minus1=0
 mvpue_view_idx[ 0 ]=6
-ce_view_pos_x[ 0 ]=3.0
-ce_view_pos_y[ 0 ]=1.0
-ce_view_pos_z[ 0 ]=4.0
+ce_view_pos_x[ 0 ]=3
+ce_view_pos_y[ 0 ]=1
+ce_view_pos_z[ 0 ]=4
 ce_view_quat_x[ 0 ]=-2
 ce_view_quat_y[ 0 ]=-1
 ce_view_quat_z[ 0 ]=0
@@ -568,16 +568,16 @@ ce_view_quat_z[ 0 ]=0
 
     REQUIRE(toString(unit) == R"(mvpue_num_view_updates_minus1=1
 mvpue_view_idx[ 0 ]=6
-ce_view_pos_x[ 0 ]=3.0
-ce_view_pos_y[ 0 ]=1.0
-ce_view_pos_z[ 0 ]=4.0
+ce_view_pos_x[ 0 ]=3
+ce_view_pos_y[ 0 ]=1
+ce_view_pos_z[ 0 ]=4
 ce_view_quat_x[ 0 ]=-1
 ce_view_quat_y[ 0 ]=0
 ce_view_quat_z[ 0 ]=-10
 mvpue_view_idx[ 1 ]=3
-ce_view_pos_x[ 1 ]=7.0
-ce_view_pos_y[ 1 ]=8.0
-ce_view_pos_z[ 1 ]=3.0
+ce_view_pos_x[ 1 ]=7
+ce_view_pos_y[ 1 ]=8
+ce_view_pos_z[ 1 ]=3
 ce_view_quat_x[ 1 ]=3
 ce_view_quat_y[ 1 ]=6
 ce_view_quat_z[ 1 ]=9

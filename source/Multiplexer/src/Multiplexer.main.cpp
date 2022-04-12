@@ -39,6 +39,8 @@
 #include <TMIV/Multiplexer/Multiplexer.h>
 #include <TMIV/VideoDecoder/Partition.h>
 
+#include <fmt/ostream.h>
+
 #include <filesystem>
 #include <fstream>
 #include <iostream>

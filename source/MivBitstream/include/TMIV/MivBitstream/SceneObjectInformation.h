@@ -221,6 +221,6 @@ private:
 };
 } // namespace TMIV::MivBitstream
 
-#include <TMIV/MivBitstream/SceneObjectInformation.hpp>
+#include "SceneObjectInformation.hpp"
 
 #endif

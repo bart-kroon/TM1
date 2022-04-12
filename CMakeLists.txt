@@ -8,6 +8,10 @@ project(
 
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+if (NOT CMAKE_CXX_STANDARD)
+    set(CMAKE_CXX_STANDARD 17)
+endif()
+
 option(NO_INTERNET "Use pre-downloaded source archives for external libraries, e.g. Catch2, HM, and fmt" OFF)
 
 include(cmake/fmt.cmake)
@@ -30,7 +34,12 @@ set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
 
 include(cmake/HM.cmake)
+
+# TODO(BK): Switch to find_package because the coupling with fetchcontent is too tight and thus fragile
+set (TMIV_CMAKE_CXX_STANDARD ${CMAKE_CXX_STANDARD})
+set(CMAKE_CXX_STANDARD 14)
 include(cmake/VVenC.cmake)
+set(CMAKE_CXX_STANDARD ${TMIV_CMAKE_CXX_STANDARD})
 
 # Optionally enable clang-tidy, but only for TMIV modules
 include(cmake/clang_tidy.cmake)
@@ -59,11 +68,9 @@ foreach(subdir
 endforeach()
 
 add_custom_target(module_graph
-    COMMAND
-        ${CMAKE_COMMAND}
-        "-DOUTPUT_FILE=${CMAKE_SOURCE_DIR}/doc/module_graph.svg"
-        "-P"
-        "${CMAKE_CURRENT_LIST_DIR}/cmake/module_graph.cmake")
+    COMMAND ${CMAKE_COMMAND}
+        "-DDOC_DIR=${CMAKE_SOURCE_DIR}/doc"
+        "-P" "${CMAKE_CURRENT_LIST_DIR}/cmake/module_graph.cmake")
 set_property(TARGET module_graph PROPERTY FOLDER "Utilities")
 
 # To use TMIV as a sub project, clone, build and install.

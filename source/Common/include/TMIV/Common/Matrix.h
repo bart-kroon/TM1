@@ -34,8 +34,8 @@
 #ifndef TMIV_COMMON_MATRIX_H
 #define TMIV_COMMON_MATRIX_H
 
-#include <TMIV/Common/Array.h>
-#include <TMIV/Common/Common.h>
+#include "Array.h"
+#include "Common.h"
 
 namespace TMIV::Common {
 template <typename A> class MatrixInterface : public A {

@@ -34,7 +34,7 @@
 #ifndef TMIV_MIVBITSTREAM_VIEWPORTCAMERAPARAMETERS_H
 #define TMIV_MIVBITSTREAM_VIEWPORTCAMERAPARAMETERS_H
 
-#include <TMIV/MivBitstream/ViewParamsList.h>
+#include "ViewParamsList.h"
 
 namespace TMIV::MivBitstream {
 // 23090-5: viewport_camera_parameters( )

@@ -149,7 +149,7 @@ public:
   FakeDepthQualityAssessor(FakeDepthQualityAssessor &&other) = default;
   auto operator=(const FakeDepthQualityAssessor &other) -> FakeDepthQualityAssessor & = delete;
   auto operator=(FakeDepthQualityAssessor &&other) -> FakeDepthQualityAssessor & = default;
-  ~FakeDepthQualityAssessor() final { REQUIRE(m_results.empty()); }
+  ~FakeDepthQualityAssessor() final { CHECK(m_results.empty()); }
 
   auto isLowDepthQuality(const TMIV::MivBitstream::ViewParamsList &viewParamsList,
                          const TMIV::Common::DeepFrameList &frame) const -> bool final {

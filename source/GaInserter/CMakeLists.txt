@@ -6,7 +6,7 @@ create_tmiv_library(
     SOURCES
         "src/GaInserter.cpp"
     PUBLIC
-        TMIV::MivBitstreamLib
+        MivBitstreamLib
     )
 
 create_tmiv_executable(
@@ -15,7 +15,8 @@ create_tmiv_executable(
     SOURCES
         "src/GaInserter.main.cpp"
     PRIVATE
-        TMIV::GaInserterLib
+        GaInserterLib
+        fmt::fmt
     )
 
 create_catch2_unit_test(
@@ -24,5 +25,5 @@ create_catch2_unit_test(
     SOURCES
         "src/GaInserter.test.cpp"
     PRIVATE
-        TMIV::GaInserterLib
+        GaInserterLib
 )

@@ -54,10 +54,4 @@ TEST_CASE("AtlasId", "[V3C Parameter Set]") {
     REQUIRE(j != AtlasId{});
     REQUIRE(bitCodingTest(j, 6));
   }
-
-  SECTION("Formatting") {
-    const auto j = AtlasId{3};
-    CHECK(fmt::format("{}", j) == "3"s);
-    CHECK(fmt::format("c{:02}", j) == "c03"s);
-  }
 }

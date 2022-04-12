@@ -34,7 +34,7 @@
 #ifndef TMIV_AGGREGATOR_AGGREGATOR_H
 #define TMIV_AGGREGATOR_AGGREGATOR_H
 
-#include <TMIV/Aggregator/IAggregator.h>
+#include "IAggregator.h"
 
 #include <TMIV/Common/Json.h>
 

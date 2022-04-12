@@ -35,6 +35,8 @@
 
 #include <TMIV/Common/Common.h>
 
+#include <fmt/format.h>
+
 #include <regex>
 #include <sstream>
 

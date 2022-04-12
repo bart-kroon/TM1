@@ -37,6 +37,8 @@
 #include <TMIV/Common/Decoder.h>
 #include <TMIV/Common/FlatMap.h>
 
+#include <fmt/format.h>
+
 namespace TMIV::Multiplexer {
 using VU = MivBitstream::V3cUnit;
 using VUT = MivBitstream::VuhUnitType;

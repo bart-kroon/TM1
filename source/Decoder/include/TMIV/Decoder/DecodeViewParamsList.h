@@ -34,7 +34,7 @@
 #ifndef TMIV_DECODER_DECODEVIEWPARAMSLIST_H
 #define TMIV_DECODER_DECODEVIEWPARAMSLIST_H
 
-#include <TMIV/Decoder/DecodeCommonAtlas.h>
+#include "DecodeCommonAtlas.h"
 
 namespace TMIV::Decoder {
 void decodeViewParamsList(const CommonAtlasAccessUnit &au, MivBitstream::ViewParamsList &vpl);

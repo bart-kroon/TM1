@@ -36,7 +36,7 @@
 
 // Common data types and functions that are often used and do not need a separate header file
 
-#include <TMIV/Common/verify.h>
+#include "verify.h"
 
 #include <algorithm>
 #include <cassert>

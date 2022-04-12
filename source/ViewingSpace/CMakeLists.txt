@@ -7,7 +7,7 @@ create_tmiv_library(
         "src/SignedDistance.cpp"
         "src/ViewingSpaceEvaluator.cpp"
     PUBLIC
-        TMIV::MivBitstreamLib
+        MivBitstreamLib
     )
 
 create_catch2_unit_test(
@@ -16,5 +16,5 @@ create_catch2_unit_test(
     SOURCES
         "src/ViewingSpace.test.cpp"
     PRIVATE
-        TMIV::ViewingSpaceLib
+        ViewingSpaceLib
     )

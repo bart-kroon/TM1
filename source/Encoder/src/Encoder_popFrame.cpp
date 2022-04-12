@@ -31,13 +31,12 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/Encoder/Encoder.h>
-
-#include <TMIV/Encoder/GeometryDownscaler.h>
-#include <TMIV/Encoder/GeometryQuantizer.h>
+#include "EncoderImpl.h"
+#include "GeometryDownscaler.h"
+#include "GeometryQuantizer.h"
 
 namespace TMIV::Encoder {
-auto Encoder::popAtlas() -> Common::V3cFrameList {
+auto Encoder::Impl::popAtlas() -> Common::V3cFrameList {
   if (m_config.haveGeometry) {
     auto quantizedFrame = GeometryQuantizer::transformAtlases(params(), m_paramsQuantized,
                                                               m_videoFrameBuffer.front());

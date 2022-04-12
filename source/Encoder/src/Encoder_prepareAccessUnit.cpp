@@ -31,17 +31,17 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/Encoder/Encoder.h>
+#include "EncoderImpl.h"
 
 namespace TMIV::Encoder {
-void Encoder::prepareAccessUnit() {
+void Encoder::Impl::prepareAccessUnit() {
   resetNonAggregatedMask();
   m_transportViews.clear();
   m_aggregatedEntityMask.clear();
   m_aggregator->prepareAccessUnit();
 }
 
-void Encoder::resetNonAggregatedMask() {
+void Encoder::Impl::resetNonAggregatedMask() {
   m_nonAggregatedMask.clear();
   for (const auto &viewParams : m_transportParams.viewParamsList) {
     m_nonAggregatedMask.push_back(

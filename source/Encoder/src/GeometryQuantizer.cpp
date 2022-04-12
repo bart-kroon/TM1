@@ -31,7 +31,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/Encoder/GeometryQuantizer.h>
+#include "GeometryQuantizer.h"
 
 #include <TMIV/MivBitstream/DepthOccupancyTransform.h>
 

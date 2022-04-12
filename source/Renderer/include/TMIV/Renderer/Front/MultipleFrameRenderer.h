@@ -38,8 +38,8 @@
 
 #include <TMIV/IO/IO.h>
 #include <TMIV/MivBitstream/AccessUnit.h>
-#include <TMIV/Renderer/ICuller.h>
-#include <TMIV/Renderer/IRenderer.h>
+
+#include <memory>
 
 namespace TMIV::Renderer::Front {
 class MultipleFrameRenderer {
@@ -48,29 +48,21 @@ public:
                         const std::vector<std::string> &outputCameraNames,
                         const std::vector<std::string> &outputPoseTraceNames,
                         IO::Placeholders placeholders);
+  MultipleFrameRenderer(const MultipleFrameRenderer &) = delete;
+  MultipleFrameRenderer(MultipleFrameRenderer &&) = default;
+  auto operator=(const MultipleFrameRenderer &) -> MultipleFrameRenderer & = delete;
+  auto operator=(MultipleFrameRenderer &&) -> MultipleFrameRenderer & = default;
+  ~MultipleFrameRenderer();
 
   void renderMultipleFrames(const MivBitstream::AccessUnit &frame,
                             const FrameMapping::const_iterator &first,
                             const FrameMapping::const_iterator &last) const;
 
-  [[nodiscard]] auto isOptimizedForRestrictedGeometry() const -> bool {
-    // NOTe(FT): added to handle the absence of renderer in the G3 anchor type
-    if (m_renderer) {
-      return m_renderer->isOptimizedForRestrictedGeometry();
-    }
-    return false;
-  }
+  [[nodiscard]] auto isOptimizedForRestrictedGeometry() const -> bool;
 
 private:
-  void renderFrame(MivBitstream::AccessUnit frame, int32_t outputFrameIndex,
-                   const std::string &cameraName, bool isPoseTrace) const;
-
-  const Common::Json &m_config;
-  const std::vector<std::string> &m_outputCameraNames;
-  const std::vector<std::string> &m_outputPoseTraceNames;
-  IO::Placeholders m_placeholders;
-  std::unique_ptr<Renderer::ICuller> m_culler;
-  std::unique_ptr<Renderer::IRenderer> m_renderer;
+  class Impl;
+  std::unique_ptr<Impl> m_impl;
 };
 } // namespace TMIV::Renderer::Front
 

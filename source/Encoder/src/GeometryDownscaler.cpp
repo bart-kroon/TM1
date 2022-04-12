@@ -31,7 +31,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/Encoder/GeometryDownscaler.h>
+#include "GeometryDownscaler.h"
 
 namespace TMIV::Encoder {
 namespace {

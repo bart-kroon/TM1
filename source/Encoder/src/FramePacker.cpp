@@ -31,7 +31,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/Encoder/FramePacker.h>
+#include "FramePacker.h"
 
 namespace TMIV::Encoder {
 void FramePacker::packFrame(Common::V3cFrameList &frame, uint32_t bitDepth) {

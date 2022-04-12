@@ -31,16 +31,18 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef TMIV_ENCODER_GEOMETRYDOWNSCALER_H
-#define TMIV_ENCODER_GEOMETRYDOWNSCALER_H
-
-#include "EncoderParams.h"
+#ifndef TMIV_ENCODER_GEOMETRYQUANTIZER_H
+#define TMIV_ENCODER_GEOMETRYQUANTIZER_H
 
 #include <TMIV/Common/Frame.h>
+#include <TMIV/Encoder/EncoderParams.h>
 
-namespace TMIV::Encoder::GeometryDownscaler {
-[[nodiscard]] auto transformFrame(const std::vector<EncoderAtlasParams> &atlas,
-                                  Common::V3cFrameList frame) -> Common::V3cFrameList;
-} // namespace TMIV::Encoder::GeometryDownscaler
+namespace TMIV::Encoder::GeometryQuantizer {
+[[nodiscard]] auto transformParams(const EncoderParams &inParams, double depthOccThresholdIfSet,
+                                   uint32_t bitDepth) -> EncoderParams;
+
+[[nodiscard]] auto transformAtlases(const EncoderParams &inParams, const EncoderParams &outParams,
+                                    const Common::DeepFrameList &inAtlases) -> Common::V3cFrameList;
+} // namespace TMIV::Encoder::GeometryQuantizer
 
 #endif

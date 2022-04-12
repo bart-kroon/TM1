@@ -31,14 +31,13 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/Encoder/Encoder.h>
-
-#include <TMIV/Encoder/GeometryQuantizer.h>
+#include "EncoderImpl.h"
+#include "GeometryQuantizer.h"
 
 #include <iostream>
 
 namespace TMIV::Encoder {
-void Encoder::scaleGeometryDynamicRange() {
+void Encoder::Impl::scaleGeometryDynamicRange() {
   PRECONDITION(m_config.dynamicDepthRange);
   const auto lowDepthQuality = params().casps.casps_miv_extension().casme_depth_low_quality_flag();
   const auto numOfFrames = m_transportViews.size();
@@ -99,7 +98,7 @@ void Encoder::scaleGeometryDynamicRange() {
   }
 }
 
-void Encoder::correctColors() {
+void Encoder::Impl::correctColors() {
   for (const auto &patch : params().patchParamsList) {
     int32_t sumErrY = 0;
     int32_t sumErrU = 0;
@@ -150,7 +149,7 @@ void Encoder::correctColors() {
   }
 }
 
-auto Encoder::completeAccessUnit() -> const EncoderParams & {
+auto Encoder::Impl::completeAccessUnit() -> const EncoderParams & {
   m_aggregator->completeAccessUnit();
   const auto &aggregatedMask = m_aggregator->getAggregatedMask();
 
@@ -201,7 +200,7 @@ auto Encoder::completeAccessUnit() -> const EncoderParams & {
   return m_paramsQuantized;
 }
 
-void Encoder::updateAggregationStatistics(const Common::FrameList<uint8_t> &aggregatedMask) {
+void Encoder::Impl::updateAggregationStatistics(const Common::FrameList<uint8_t> &aggregatedMask) {
   const auto lumaSamplesPerFrame = std::accumulate(
       aggregatedMask.begin(), aggregatedMask.end(), size_t{}, [](size_t sum, const auto &mask) {
         return sum + 2 * std::count_if(mask.getPlane(0).begin(), mask.getPlane(0).end(),
@@ -212,7 +211,7 @@ void Encoder::updateAggregationStatistics(const Common::FrameList<uint8_t> &aggr
   m_maxLumaSamplesPerFrame = std::max(m_maxLumaSamplesPerFrame, lumaSamplesPerFrame);
 }
 
-void Encoder::applyPatchTextureOffset() {
+void Encoder::Impl::applyPatchTextureOffset() {
   std::vector<std::vector<std::vector<int32_t>>> btpm = calculateBtpm();
 
   adaptBtpmToPatchCount(btpm);
@@ -268,7 +267,8 @@ void Encoder::applyPatchTextureOffset() {
   }
 }
 
-void Encoder::adaptBtpmToPatchCount(std::vector<std::vector<std::vector<int32_t>>> &btpm) const {
+void Encoder::Impl::adaptBtpmToPatchCount(
+    std::vector<std::vector<std::vector<int32_t>>> &btpm) const {
   int32_t patchCnt = 0;
   for (const auto &patch : params().patchParamsList) {
     size_t atlasId = params().vps.indexOf(patch.atlasId());
@@ -307,7 +307,7 @@ void Encoder::adaptBtpmToPatchCount(std::vector<std::vector<std::vector<int32_t>
   }
 }
 
-auto Encoder::calculateBtpm() const -> std::vector<std::vector<std::vector<int32_t>>> {
+auto Encoder::Impl::calculateBtpm() const -> std::vector<std::vector<std::vector<int32_t>>> {
   std::vector<std::vector<std::vector<int32_t>>> btpm;
   for (uint8_t k = 0; k <= params().vps.vps_atlas_count_minus1(); ++k) {
     const auto &currentAtlas = m_videoFrameBuffer[0][k];
@@ -327,7 +327,7 @@ auto Encoder::calculateBtpm() const -> std::vector<std::vector<std::vector<int32
   return btpm;
 }
 
-void Encoder::encodePatchTextureOffset(const PatchTextureStats &stats) {
+void Encoder::Impl::encodePatchTextureOffset(const PatchTextureStats &stats) {
   const auto inputBitDepth = m_videoFrameBuffer.front().front().texture.getBitDepth();
 
   const auto muddle = [this, inputBitDepth]() {
@@ -366,7 +366,7 @@ void Encoder::encodePatchTextureOffset(const PatchTextureStats &stats) {
 }
 
 // NOLINTNEXTLINE(readability-function-cognitive-complexity,readability-function-size)
-void Encoder::constructVideoFrames() {
+void Encoder::Impl::constructVideoFrames() {
   int32_t frameIdx = 0;
 
   const auto &vps = params().vps;
@@ -443,8 +443,8 @@ void Encoder::constructVideoFrames() {
   }
 }
 
-auto Encoder::isRedundantBlock(Common::Vec2i topLeft, Common::Vec2i bottomRight, uint16_t viewIdx,
-                               int32_t frameIdx) const -> bool {
+auto Encoder::Impl::isRedundantBlock(Common::Vec2i topLeft, Common::Vec2i bottomRight,
+                                     uint16_t viewIdx, int32_t frameIdx) const -> bool {
   if (!m_config.patchRedundancyRemoval) {
     return false;
   }
@@ -480,9 +480,9 @@ void adaptPatchStatsToTexture(TextureStats &patchStats, const Common::DeepFrame 
 } // namespace
 
 // NOLINTNEXTLINE(readability-function-cognitive-complexity,readability-function-size)
-auto Encoder::writePatchInAtlas(const MivBitstream::PatchParams &patchParams,
-                                const Common::DeepFrame &view, Common::DeepFrameList &frame,
-                                int32_t frameIdx, size_t patchIdx) -> TextureStats {
+auto Encoder::Impl::writePatchInAtlas(const MivBitstream::PatchParams &patchParams,
+                                      const Common::DeepFrame &view, Common::DeepFrameList &frame,
+                                      int32_t frameIdx, size_t patchIdx) -> TextureStats {
   const auto k = params().vps.indexOf(patchParams.atlasId());
   auto &atlas = frame[k];
 
@@ -561,9 +561,9 @@ auto Encoder::writePatchInAtlas(const MivBitstream::PatchParams &patchParams,
   return textureStats;
 }
 
-void Encoder::adaptAtlas(const MivBitstream::PatchParams &patchParams, Common::DeepFrame &atlas,
-                         int32_t yOcc, int32_t xOcc, const Common::Vec2i &pView,
-                         const Common::Vec2i &pAtlas) const {
+void Encoder::Impl::adaptAtlas(const MivBitstream::PatchParams &patchParams,
+                               Common::DeepFrame &atlas, int32_t yOcc, int32_t xOcc,
+                               const Common::Vec2i &pView, const Common::Vec2i &pAtlas) const {
   atlas.geometry.getPlane(0)(pAtlas.y(), pAtlas.x()) = 0;
 
   if (params().vps.vps_occupancy_video_present_flag(patchParams.atlasId())) {

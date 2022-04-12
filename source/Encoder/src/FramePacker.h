@@ -31,27 +31,53 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "EncoderImpl.h"
+#ifndef TMIV_ENCODER_FRAMEPACK_H
+#define TMIV_ENCODER_FRAMEPACK_H
+
+#include <TMIV/Common/Frame.h>
+#include <TMIV/Encoder/EncoderParams.h>
 
 namespace TMIV::Encoder {
-Encoder::Encoder(const Common::Json &componentNode) : m_impl{new Impl{componentNode}} {}
+class FramePacker {
+public:
+  void packFrame(Common::V3cFrameList &frame, uint32_t bitDepth);
+  auto setPackingInformation(EncoderParams params) -> const EncoderParams &;
 
-Encoder::~Encoder() = default;
+private:
+  struct RegionCounts {
+    uint8_t attr{};
+    uint8_t geo{};
+    uint8_t occ{};
+  };
 
-void Encoder::prepareSequence(const MivBitstream::SequenceConfig &sequenceConfig,
-                              const Common::DeepFrameList &firstFrame) {
-  m_impl->prepareSequence(sequenceConfig, firstFrame);
-}
+  struct RegionSizes {
+    Common::Vec2i frame{0, 0};
+    Common::Vec2i geo{0, 0};
+    Common::Vec2i occ{0, 0};
+    Common::Vec2i pac{0, 0};
+  };
 
-void Encoder::prepareAccessUnit() { m_impl->prepareAccessUnit(); }
+  [[nodiscard]] auto packAtlasFrame(const Common::V3cFrame &frame, uint8_t atlasIdx,
+                                    uint32_t bitDepth) const -> Common::V3cFrame;
 
-void Encoder::pushFrame(Common::DeepFrameList sourceViews) {
-  m_impl->pushFrame(std::move(sourceViews));
-}
+  void combinePlanes(size_t atlasIdx, const Common::Frame<> &atlasTexture);
+  void extractScaledGeometry(size_t atlasIdx, const Common::heap::Matrix<uint16_t> &planeDepth);
+  void updateVideoPresentFlags(MivBitstream::AtlasId atlasId);
+  void updatePinOccupancyInformation(MivBitstream::AtlasId atlasId);
+  auto computeOccupancySizeAndRegionCount(size_t atlasIdx) -> uint8_t;
+  void updatePinGeometryInformation(MivBitstream::AtlasId atlasId);
+  auto computeGeometrySizeAndRegionCount(size_t atlasIdx) -> uint8_t;
+  void updatePinAttributeInformation(MivBitstream::AtlasId atlasId);
+  void setAttributePinRegion(size_t i, const Common::Vec2i &frameSize);
+  void setGeometryPinRegion(size_t i, size_t atlasIdx, const RegionCounts &regionCounts);
+  void setOccupancyPinRegion(size_t i, size_t atlasIdx, const RegionCounts &regionCounts);
+  void updatePinRegionInformation(size_t i);
 
-auto Encoder::completeAccessUnit() -> const EncoderParams & { return m_impl->completeAccessUnit(); }
-
-auto Encoder::popAtlas() -> Common::V3cFrameList { return m_impl->popAtlas(); }
-
-auto Encoder::maxLumaSamplesPerFrame() const -> size_t { return m_impl->maxLumaSamplesPerFrame(); }
+  std::vector<RegionSizes> m_regionSizes{};
+  EncoderParams m_params;
+  MivBitstream::PackingInformation m_packingInformation{};
+  MivBitstream::PinRegion m_pinRegion{};
+};
 } // namespace TMIV::Encoder
+
+#endif

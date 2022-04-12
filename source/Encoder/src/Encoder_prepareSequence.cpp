@@ -31,10 +31,10 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/Encoder/Encoder.h>
+#include "EncoderImpl.h"
+#include "GeometryQuantizer.h"
 
 #include <TMIV/Common/verify.h>
-#include <TMIV/Encoder/GeometryQuantizer.h>
 #include <TMIV/MivBitstream/SequenceConfig.h>
 
 #include <iostream>
@@ -425,8 +425,8 @@ namespace {
 }
 } // namespace
 
-void Encoder::prepareSequence(const MivBitstream::SequenceConfig &sequenceConfig,
-                              const Common::DeepFrameList &firstFrame) {
+void Encoder::Impl::prepareSequence(const MivBitstream::SequenceConfig &sequenceConfig,
+                                    const Common::DeepFrameList &firstFrame) {
   const auto depthLowQualityFlag =
       assessDepthQuality(m_config, *m_depthQualityAssessor, sequenceConfig, firstFrame);
   m_blockSize = m_config.blockSize(depthLowQualityFlag);

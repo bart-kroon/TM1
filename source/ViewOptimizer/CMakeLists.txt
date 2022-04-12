@@ -9,6 +9,8 @@ create_tmiv_library(
         "src/KMedoidsCost.cpp"
         "src/ServerSideInpainter.cpp"
     PUBLIC
+        MivBitstreamLib
+    PRIVATE
         RendererLib
     )
 
@@ -19,4 +21,5 @@ create_catch2_unit_test(
         "src/ServerSideInpainter.test.cpp"
     PRIVATE
         ViewOptimizerLib
+        RendererLib
     )

@@ -7,6 +7,7 @@ create_tmiv_library(
         "src/Configuration.cpp"    
         "src/EncodeMiv.cpp"
         "src/Encoder.cpp"
+        "src/EncoderImpl.cpp"
         "src/Encoder_assessColorConsistency.cpp"
         "src/Encoder_prepareSequence.cpp"
         "src/Encoder_prepareAccessUnit.cpp"
@@ -18,12 +19,14 @@ create_tmiv_library(
         "src/FramePacker.cpp"
         "src/V3cSampleSink.cpp"
     PUBLIC
-        ViewOptimizerLib
-        PrunerLib
-        AggregatorLib
-        PackerLib
-        DepthQualityAssessorLib
+        MivBitstreamLib
     PRIVATE
+        AggregatorLib
+        DepthQualityAssessorLib
+        PackerLib
+        PrunerLib
+        RendererLib
+        ViewOptimizerLib
         fmt::fmt
     )
 
@@ -35,6 +38,12 @@ create_tmiv_executable(
         "src/registerComponents.cpp"
     PRIVATE
         EncoderLib
+        AggregatorLib
+        DepthQualityAssessorLib
+        PackerLib
+        PrunerLib
+        RendererLib
+        ViewOptimizerLib
         IOLib
         fmt::fmt
     )
@@ -48,6 +57,12 @@ create_tmiv_executable(
         "src/registerComponents.cpp"
     PRIVATE
         EncoderLib
+        AggregatorLib
+        DepthQualityAssessorLib
+        PackerLib
+        PrunerLib
+        RendererLib
+        ViewOptimizerLib
         MpiPcsLib
         fmt::fmt
     )
@@ -65,4 +80,10 @@ create_catch2_unit_test(
         "src/GeometryQuantizer.test.cpp"
     PRIVATE
         EncoderLib
+        AggregatorLib
+        DepthQualityAssessorLib
+        PackerLib
+        PrunerLib
+        RendererLib
+        ViewOptimizerLib
     )

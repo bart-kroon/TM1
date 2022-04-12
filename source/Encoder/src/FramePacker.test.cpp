@@ -31,10 +31,9 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/Common/Common.h>
-#include <TMIV/Encoder/Encoder.h>
-#include <TMIV/MivBitstream/V3cParameterSet.h>
 #include <catch2/catch.hpp>
+
+#include "FramePacker.h"
 
 using namespace std::string_view_literals;
 using Catch::Contains;

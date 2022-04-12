@@ -8,9 +8,10 @@ create_tmiv_library(
         "src/EncodeV3cSampleStream.cpp"
         "src/Multiplexer.cpp"
     PUBLIC
+        MivBitstreamLib
+    PRIVATE
         DecoderLib
         VideoDecoderLib
-    PRIVATE
         fmt::fmt
 )
 
@@ -32,6 +33,8 @@ create_tmiv_executable(
         "src/Multiplexer.main.cpp"
     PRIVATE
         MultiplexerLib
+        DecoderLib
+        VideoDecoderLib
         IOLib
         fmt::fmt
     )

@@ -31,10 +31,10 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/Encoder/Configuration.h>
-#include <TMIV/MivBitstream/SequenceConfig.h>
+#include "Configuration.h"
 
 #include <TMIV/Common/verify.h>
+#include <TMIV/MivBitstream/SequenceConfig.h>
 
 #include <fmt/ostream.h>
 

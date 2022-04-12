@@ -31,8 +31,9 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "EncoderImpl.h"
+
 #include <TMIV/Common/Frame.h>
-#include <TMIV/Encoder/Encoder.h>
 #include <TMIV/Renderer/Rasterizer.h>
 #include <catch2/catch.hpp>
 

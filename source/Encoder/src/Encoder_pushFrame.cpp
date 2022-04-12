@@ -31,12 +31,12 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/Encoder/Encoder.h>
+#include "EncoderImpl.h"
 
 #include <iostream>
 
 namespace TMIV::Encoder {
-void Encoder::pushFrame(Common::DeepFrameList sourceViews) {
+void Encoder::Impl::pushFrame(Common::DeepFrameList sourceViews) {
   if (m_config.maxEntityId == 0) {
     pushSingleEntityFrame(std::move(sourceViews));
   } else {
@@ -44,7 +44,7 @@ void Encoder::pushFrame(Common::DeepFrameList sourceViews) {
   }
 }
 
-void Encoder::pushSingleEntityFrame(Common::DeepFrameList sourceViews) {
+void Encoder::Impl::pushSingleEntityFrame(Common::DeepFrameList sourceViews) {
   auto transportViews = m_viewOptimizer->optimizeFrame(std::move(sourceViews));
   if (m_config.colorCorrectionEnabledFlag) {
     m_colorCorrectionMaps.push_back(
@@ -97,8 +97,8 @@ auto dilate(const Common::Mat<uint8_t> &mask) -> Common::Mat<uint8_t> {
 }
 } // namespace
 
-void Encoder::updateNonAggregatedMask(const Common::DeepFrameList &transportViews,
-                                      const Common::FrameList<uint8_t> &masks) {
+void Encoder::Impl::updateNonAggregatedMask(const Common::DeepFrameList &transportViews,
+                                            const Common::FrameList<uint8_t> &masks) {
   const auto frameIdx = m_transportViews.size();
   Common::FrameList<uint8_t> dilatedMasks = masks; // Atlas dilation
 
@@ -125,7 +125,7 @@ void Encoder::updateNonAggregatedMask(const Common::DeepFrameList &transportView
   }
 }
 
-void Encoder::pushMultiEntityFrame(Common::DeepFrameList sourceViews) {
+void Encoder::Impl::pushMultiEntityFrame(Common::DeepFrameList sourceViews) {
   auto transportViews = m_viewOptimizer->optimizeFrame(std::move(sourceViews));
 
   Common::FrameList<uint8_t> mergedMasks;
@@ -149,7 +149,7 @@ void Encoder::pushMultiEntityFrame(Common::DeepFrameList sourceViews) {
   m_aggregator->pushMask(mergedMasks);
 }
 
-auto Encoder::yuvSampler(const Common::FrameList<> &in) -> Common::FrameList<> {
+auto Encoder::Impl::yuvSampler(const Common::FrameList<> &in) -> Common::FrameList<> {
   Common::FrameList<> outYuvAll;
 
   for (const auto &entityMap : in) {
@@ -176,8 +176,8 @@ auto Encoder::yuvSampler(const Common::FrameList<> &in) -> Common::FrameList<> {
   return outYuvAll;
 }
 
-void Encoder::mergeMasks(Common::FrameList<uint8_t> &mergedMasks,
-                         Common::FrameList<uint8_t> masks) {
+void Encoder::Impl::mergeMasks(Common::FrameList<uint8_t> &mergedMasks,
+                               Common::FrameList<uint8_t> masks) {
   for (size_t viewIdx = 0; viewIdx < mergedMasks.size(); viewIdx++) {
     for (size_t i = 0; i < mergedMasks[viewIdx].getPlane(0).size(); i++) {
       if (masks[viewIdx].getPlane(0)[i] != uint8_t{}) {
@@ -187,7 +187,8 @@ void Encoder::mergeMasks(Common::FrameList<uint8_t> &mergedMasks,
   }
 }
 
-void Encoder::updateMasks(const Common::DeepFrameList &views, Common::FrameList<uint8_t> &masks) {
+void Encoder::Impl::updateMasks(const Common::DeepFrameList &views,
+                                Common::FrameList<uint8_t> &masks) {
   for (size_t viewIdx = 0; viewIdx < views.size(); viewIdx++) {
     for (size_t i = 0; i < masks[viewIdx].getPlane(0).size(); i++) {
       if (views[viewIdx].geometry.getPlane(0)[i] == uint16_t{}) {
@@ -197,8 +198,8 @@ void Encoder::updateMasks(const Common::DeepFrameList &views, Common::FrameList<
   }
 }
 
-void Encoder::aggregateEntityMasks(Common::FrameList<uint8_t> &masks,
-                                   Common::SampleValue entityId) {
+void Encoder::Impl::aggregateEntityMasks(Common::FrameList<uint8_t> &masks,
+                                         Common::SampleValue entityId) {
   if (m_aggregatedEntityMask.size() < m_config.entityEncRange[1] - m_config.entityEncRange[0]) {
     m_aggregatedEntityMask.push_back(masks);
   } else {
@@ -211,8 +212,8 @@ void Encoder::aggregateEntityMasks(Common::FrameList<uint8_t> &masks,
   }
 }
 
-auto Encoder::entitySeparator(const Common::DeepFrameList &transportViews,
-                              Common::SampleValue entityId) -> Common::DeepFrameList {
+auto Encoder::Impl::entitySeparator(const Common::DeepFrameList &transportViews,
+                                    Common::SampleValue entityId) -> Common::DeepFrameList {
   // Initalize entityViews
   Common::DeepFrameList entityViews;
   for (const auto &transportView : transportViews) {

@@ -16,8 +16,9 @@ create_tmiv_library(
         "src/PushPullInpainter.cpp"
         "src/RecoverPrunedViews.cpp"
     PUBLIC
-        ViewingSpaceLib
+        MivBitstreamLib
     PRIVATE
+        ViewingSpaceLib
         Threads::Threads
     )
 
@@ -29,9 +30,9 @@ create_tmiv_library(
         "src/Front/mapInputToOutputFrames.cpp"
         "src/Front/MultipleFrameRenderer.cpp"
     PUBLIC
-        RendererLib
         IOLib
     PRIVATE
+        RendererLib
         fmt::fmt
     )
 
@@ -45,6 +46,7 @@ create_tmiv_executable(
     PRIVATE
         RendererFrontLib
         DepthQualityAssessorLib
+        ViewingSpaceLib
     )
 
 create_catch2_unit_test(

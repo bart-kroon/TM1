@@ -33,7 +33,7 @@
 
 #include <catch2/catch.hpp>
 
-#include <TMIV/Encoder/GeometryQuantizer.h>
+#include "GeometryQuantizer.h"
 
 #include <TMIV/Common/Common.h>
 

@@ -33,7 +33,7 @@
 
 #include <catch2/catch.hpp>
 
-#include <TMIV/Encoder/Configuration.h>
+#include "Configuration.h"
 
 using namespace std::string_view_literals;
 

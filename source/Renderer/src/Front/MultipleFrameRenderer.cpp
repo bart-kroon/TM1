@@ -34,16 +34,66 @@
 #include <TMIV/Renderer/Front/MultipleFrameRenderer.h>
 
 #include <TMIV/Common/Factory.h>
+#include <TMIV/Renderer/ICuller.h>
+#include <TMIV/Renderer/IRenderer.h>
 
 #include <fmt/format.h>
 
 using namespace std::string_literals;
 
 namespace TMIV::Renderer::Front {
+class MultipleFrameRenderer::Impl {
+public:
+  Impl(const Common::Json &rootNode, const std::vector<std::string> &outputCameraNames,
+       const std::vector<std::string> &outputPoseTraceNames, IO::Placeholders placeholders);
+
+  void renderMultipleFrames(const MivBitstream::AccessUnit &frame,
+                            const FrameMapping::const_iterator &first,
+                            const FrameMapping::const_iterator &last) const;
+
+  [[nodiscard]] auto isOptimizedForRestrictedGeometry() const -> bool {
+    // NOTe(FT): added to handle the absence of renderer in the G3 anchor type
+    if (m_renderer) {
+      return m_renderer->isOptimizedForRestrictedGeometry();
+    }
+    return false;
+  }
+
+private:
+  void renderFrame(MivBitstream::AccessUnit frame, int32_t outputFrameIndex,
+                   const std::string &cameraName, bool isPoseTrace) const;
+
+  const Common::Json &m_config;
+  const std::vector<std::string> &m_outputCameraNames;
+  const std::vector<std::string> &m_outputPoseTraceNames;
+  IO::Placeholders m_placeholders;
+  std::unique_ptr<Renderer::ICuller> m_culler;
+  std::unique_ptr<Renderer::IRenderer> m_renderer;
+};
+
 MultipleFrameRenderer::MultipleFrameRenderer(const Common::Json &rootNode,
                                              const std::vector<std::string> &outputCameraNames,
                                              const std::vector<std::string> &outputPoseTraceNames,
                                              IO::Placeholders placeholders)
+    : m_impl{new Impl{rootNode, outputCameraNames, outputPoseTraceNames, std::move(placeholders)}} {
+}
+
+MultipleFrameRenderer::~MultipleFrameRenderer() = default;
+
+void MultipleFrameRenderer::renderMultipleFrames(const MivBitstream::AccessUnit &frame,
+                                                 const FrameMapping::const_iterator &first,
+                                                 const FrameMapping::const_iterator &last) const {
+  m_impl->renderMultipleFrames(frame, first, last);
+}
+
+auto MultipleFrameRenderer::isOptimizedForRestrictedGeometry() const -> bool {
+  return m_impl->isOptimizedForRestrictedGeometry();
+}
+
+MultipleFrameRenderer::Impl::Impl(const Common::Json &rootNode,
+                                  const std::vector<std::string> &outputCameraNames,
+                                  const std::vector<std::string> &outputPoseTraceNames,
+                                  IO::Placeholders placeholders)
     : m_config{rootNode}
     , m_outputCameraNames{outputCameraNames}
     , m_outputPoseTraceNames{outputPoseTraceNames}
@@ -57,9 +107,9 @@ MultipleFrameRenderer::MultipleFrameRenderer(const Common::Json &rootNode,
   }
 }
 
-void MultipleFrameRenderer::renderMultipleFrames(const MivBitstream::AccessUnit &frame,
-                                                 const FrameMapping::const_iterator &first,
-                                                 const FrameMapping::const_iterator &last) const {
+void MultipleFrameRenderer::Impl::renderMultipleFrames(
+    const MivBitstream::AccessUnit &frame, const FrameMapping::const_iterator &first,
+    const FrameMapping::const_iterator &last) const {
   for (auto i = first; i != last; ++i) {
     if (i->first == i->second) {
       for (const auto &name : m_outputCameraNames) {
@@ -72,8 +122,10 @@ void MultipleFrameRenderer::renderMultipleFrames(const MivBitstream::AccessUnit 
   }
 }
 
-void MultipleFrameRenderer::renderFrame(MivBitstream::AccessUnit frame, int32_t outputFrameIndex,
-                                        const std::string &cameraName, bool isPoseTrace) const {
+void MultipleFrameRenderer::Impl::renderFrame(MivBitstream::AccessUnit frame,
+                                              int32_t outputFrameIndex,
+                                              const std::string &cameraName,
+                                              bool isPoseTrace) const {
   fmt::print("Rendering input frame {} to output frame {} for target {} {}.\n", frame.frameIdx,
              outputFrameIndex, isPoseTrace ? "pose trace" : "view", cameraName);
 

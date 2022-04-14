@@ -471,7 +471,7 @@ void Halfspace::encodeTo(Common::OutputBitstream &stream, bool /*cameraInferred*
 
 auto ViewingSpace::loadFromJson(const Common::Json &node, const Common::Json &config)
     -> ViewingSpace {
-  auto parseOperation = [](const std::string &str) -> auto {
+  auto parseOperation = [](const std::string &str) {
     if (str == "add") {
       return ElementaryShapeOperation::add;
     }
@@ -530,7 +530,7 @@ auto ViewingSpace::loadFromJson(const Common::Json &node, const Common::Json &co
 
 auto ElementaryShape::loadFromJson(const Common::Json &node, const Common::Json &config)
     -> ElementaryShape {
-  auto parseOperation = [](const std::string &str) -> auto {
+  auto parseOperation = [](const std::string &str) {
     if (str == "add") {
       return PrimitiveShapeOperation::add;
     }

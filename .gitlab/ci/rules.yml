@@ -20,8 +20,8 @@ C++ formatting:
 Code quality rules:
   <<: *cpp_rules_definition
 
-Release build (GCC 9):
+Release build (GCC 12):
   <<: *cpp_rules_definition
 
-Debug build and static analysis (Clang 12):
+Debug build and static analysis (Clang 14):
   <<: *cpp_rules_definition

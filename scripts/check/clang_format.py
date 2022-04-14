@@ -54,7 +54,7 @@ def get_files_to_format():
 
 
 def apply_clang_format_to_single_file(cpp_file):
-    subprocess.call(["clang-format", cpp_file, "-style=File", "-i"])
+    subprocess.call(["clang-format-14", cpp_file, "-style=File", "-i"])
 
 
 if __name__ == "__main__":

@@ -1,52 +1,59 @@
-Release build (GCC 9):
+Release build (GCC 12):
   stage: release build
-  image: cbachhuber/tmiv-clang:2
+  image: tmiv-ci:20220413
   tags: [ linux-long ]
   before_script:
-    - export CXX=/usr/lib/ccache/g++
-    - export CC=/usr/lib/ccache/gcc
+    - export CXX=g++-12
+    - export CC=gcc-12
   script:
     - mkdir -p build && cd build
     - >
       cmake
+      -G Ninja
       -DCMAKE_CXX_FLAGS="-Wall -Wextra -Wpedantic -Werror -Wfloat-conversion -Wno-maybe-uninitialized -Wold-style-cast"
       -DENABLE_CLANG_TIDY=OFF -DCMAKE_BUILD_TYPE=Release
       -DNO_INTERNET=ON
-      -DLOCAL_CATCH2_DIR=/dependencies/Catch2-2_13_4/
-      -DLOCAL_FMT_DIR=/dependencies/fmt-7_0_3/
+      -DLOCAL_CATCH2_DIR=/dependencies/Catch2-2_13_8/
+      -DLOCAL_FMT_DIR=/dependencies/fmt-8_1_1/
       -DLOCAL_HM_DIR=/dependencies/HM-16_16/
       -DLOCAL_VVDEC_DIR=/dependencies/vvdec-1_0_1/
       -DLOCAL_VVENC_DIR=/dependencies/vvenc-0_3_1_0/
       ..
-    - make -j $(nproc)
-    - make -j $(nproc) test
+    - ninja -j $(nproc)
+    - ninja -j $(nproc) test
+    - ccache -s
 
-Debug build and static analysis (Clang 12):
+Debug build and static analysis (Clang 14):
   stage: static analysis
-  image: cbachhuber/tmiv-clang:2
+  image: tmiv-ci:20220413
   tags: [ linux-long ]
+  before_script:
+    - export CXX=clang++-14
+    - export CC=clang-14
   script:
     - mkdir -p build && cd build
     - >
       cmake
+      -G Ninja
       -DCMAKE_CXX_FLAGS="-stdlib=libc++
       -Wall -Wextra -Wpedantic -Werror -Wunreachable-code-aggressive -Wimplicit-int-conversion
       -fprofile-arcs -ftest-coverage"
       -DCMAKE_BUILD_TYPE=Debug
       -DNO_INTERNET=ON
-      -DLOCAL_CATCH2_DIR=/dependencies/Catch2-2_13_4/
-      -DLOCAL_FMT_DIR=/dependencies/fmt-7_0_3/
+      -DLOCAL_CATCH2_DIR=/dependencies/Catch2-2_13_8/
+      -DLOCAL_FMT_DIR=/dependencies/fmt-8_1_1/
       -DLOCAL_HM_DIR=/dependencies/HM-16_16/
       -DLOCAL_VVDEC_DIR=/dependencies/vvdec-1_0_1/
       -DLOCAL_VVENC_DIR=/dependencies/vvenc-0_3_1_0/
       ..
-    - make -j $(nproc)
-    - make -j $(nproc) test
+    - ninja -j $(nproc)
+    - ninja -j $(nproc) test
     - cd ..
     - mkdir coverage_html
     - >
-      gcovr build --gcov-executable 'llvm-cov-12 gcov' -f 'source/' -e '.*\.test\.cpp' -e '.*\.main\.cpp' -e '.*registerComponents.cpp'
+      gcovr build --gcov-executable 'llvm-cov-14 gcov' -f 'source/' -e '.*\.test\.cpp' -e '.*\.main\.cpp' -e '.*registerComponents.cpp'
       --xml coverage.xml --xml-pretty --html-details coverage_html/index.html --print-summary
+    - ccache -s
   artifacts:
     reports:
       cobertura: coverage.xml

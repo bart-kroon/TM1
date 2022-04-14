@@ -35,15 +35,20 @@
 
 #include <fmt/format.h>
 
+namespace TMIV::PtlChecker {
+void ptlCheckImpl(const PtlChecker::Logger &logger, bool condition, const char *what,
+                  const char *document, const char *numberedItem) {
+  if (!condition) {
+    logger(fmt::format("{} [{} {}]", what, document, numberedItem));
+  }
+}
+
 // A macro is used to capture the text of the condition. There is no reflection in C++17.
 //
 // NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define PTL_CHECK(document, numberedItem, condition)                                               \
-  if (!(condition)) {                                                                              \
-    m_logger(fmt::format("{} [{} {}]", #condition, document, numberedItem));                       \
-  }
+  ::TMIV::PtlChecker::ptlCheckImpl(m_logger, condition, #condition, document, numberedItem)
 
-namespace TMIV::PtlChecker {
 static constexpr auto miv1 = "ISO/IEC 23090-12:2021";
 static constexpr auto v3c2dis = "ISO/IEC DIS 23090-5(2E):2021";
 
@@ -453,7 +458,7 @@ void PtlChecker::checkAsps(MivBitstream::AtlasId atlasId,
   }
 
   const auto aspsFrameSize = asps.asps_frame_width() * asps.asps_frame_height();
-  PTL_CHECK(v3c2dis, "Table A-6", aspsFrameSize <= maxAtlasSize())
+  PTL_CHECK(v3c2dis, "Table A-6", aspsFrameSize <= maxAtlasSize());
 }
 
 void PtlChecker::checkAsme(MivBitstream::AtlasId atlasId,
@@ -508,9 +513,11 @@ void PtlChecker::checkAtl(const MivBitstream::NalUnitHeader &nuh,
     break;
   }
 
-  const auto idrCodedAtlas = contains(
-      std::array{NUT::NAL_IDR_W_RADL, NUT::NAL_IDR_N_LP, NUT::NAL_GIDR_W_RADL, NUT::NAL_GIDR_N_LP},
-      nuh.nal_unit_type());
+  // NOTE(BK): Name idrNuts to work around what appears to be a GCC 12 false alarm:
+  // error: dangling pointer to an unnamed temporary may be used [-Werror=dangling-pointer=]
+  static constexpr auto idrNuts =
+      std::array{NUT::NAL_IDR_W_RADL, NUT::NAL_IDR_N_LP, NUT::NAL_GIDR_W_RADL, NUT::NAL_GIDR_N_LP};
+  const auto idrCodedAtlas = contains(idrNuts, nuh.nal_unit_type());
   PTL_CHECK(v3c2dis, "A.6.1", !idrCodedAtlas || ath.ath_atlas_frm_order_cnt_lsb() == 0);
 }
 

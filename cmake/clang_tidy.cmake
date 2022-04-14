@@ -12,7 +12,7 @@ endif()
 option(ENABLE_CLANG_TIDY "Turn on clang_tidy processing if available" ${ENABLE_CLANG_TIDY_DEFAULT})
 
 if (ENABLE_CLANG_TIDY)
-    find_program(CLANG_TIDY_PATH NAMES "clang-tidy")
+    find_program(CLANG_TIDY_PATH NAMES "clang-tidy-14" "clang-tidy")
 
     if(CLANG_TIDY_PATH)
         set(CMAKE_CXX_CLANG_TIDY "${CLANG_TIDY_PATH}")

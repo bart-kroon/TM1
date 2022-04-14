@@ -14,5 +14,5 @@ install/
 install.*/
 out/
 out.*/
-scripts/docker/buildtools2019/*.exe
 /doc/detailed_module_graph.svg
+scripts/docker/tmiv-ci/tmiv_integration_test

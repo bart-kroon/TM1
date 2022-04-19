@@ -49,20 +49,29 @@ auto main(int argc, const char *argv[]) -> int32_t {
       std::cerr << "Usage: Parser -b BITSTREAM -o HLS_LOG_FILE";
       return 1;
     }
+
     std::ifstream inStream{args[2], std::ios::binary};
+
     if (!inStream.good()) {
       fmt::print("Failed to open {} for reading.\n", args[2]);
       return 1;
     }
+
     std::ofstream outStream{args[4], std::ios::binary};
+
     if (!outStream.good()) {
       fmt::print("Failed to open {} for writing.\n", args[4]);
+      return 1;
     }
+
     TMIV::Parser::Parser parser{outStream};
     parser.parseV3cSampleStream(inStream);
     return 0;
-  } catch (std::exception &e) {
-    std::clog << e.what() << std::endl;
+  } catch (std::runtime_error &e) {
+    std::cerr << e.what() << std::endl;
     return 1;
+  } catch (std::exception &e) {
+    std::cerr << e.what() << std::endl;
+    return 3;
   }
 }

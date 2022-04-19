@@ -36,6 +36,17 @@ create_tmiv_executable(
         fmt::fmt
     )
 
+create_tmiv_executable(
+    TARGET
+        DecoderLog
+    SOURCES
+        "src/DecoderLog.main.cpp"
+    PRIVATE
+        DecoderLib
+        VideoDecoderLib
+        fmt::fmt
+    )
+
 create_catch2_unit_test(
     TARGET
         DecoderTest

@@ -11,7 +11,7 @@ Release build (GCC 12):
       cmake
       -G Ninja
       -DCMAKE_CXX_FLAGS="-Wall -Wextra -Wpedantic -Werror -Wfloat-conversion -Wno-maybe-uninitialized -Wold-style-cast"
-      -DENABLE_CLANG_TIDY=OFF -DCMAKE_BUILD_TYPE=Release
+      -DENABLE_CLANG_TIDY=OFF -DCMAKE_BUILD_TYPE=Release -DENABLE_M57419=ON
       -DNO_INTERNET=ON
       -DLOCAL_CATCH2_DIR=/dependencies/Catch2-2_13_8/
       -DLOCAL_FMT_DIR=/dependencies/fmt-8_1_1/

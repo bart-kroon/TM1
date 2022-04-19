@@ -73,6 +73,9 @@ TEST_CASE("TMIV::Encoder::Configuration") {
     "toolsetIdc": "MIV Main",
     "reconstructionIdc": "Rec Unconstrained",
     "levelIdc": "2.5",
+    "m57419_piecewiseDepthLinearScaling": false,
+    "m57419_intervalNumber": 16,
+    "m57419_edgeThreshold": 40,
     "depthOccThresholdIfSet": 0.0625,
     "nonAggregatedMaskDilationIter": 0
 })"sv);
@@ -104,6 +107,12 @@ TEST_CASE("TMIV::Encoder::Configuration") {
     CHECK(unit.dilationIter == 0);
     CHECK_FALSE(unit.viewingSpace.has_value());
     CHECK(unit.overrideAtlasFrameSizes.empty());
+
+#if ENABLE_M57419
+    CHECK_FALSE(unit.m57419_piecewiseDepthLinearScaling);
+    CHECK(unit.m57419_intervalNumber == 16);
+    CHECK(unit.m57419_edgeThreshold == 40);
+#endif
 
     SECTION("Add viewing space") {
       root.update(Json::parse(R"({
@@ -174,6 +183,9 @@ TEST_CASE("TMIV::Encoder::Configuration") {
     "toolsetIdc": "MIV Geometry Absent",
     "reconstructionIdc": "Rec Unconstrained",
     "levelIdc": "2.5",
+    "m57419_piecewiseDepthLinearScaling": false,
+    "m57419_intervalNumber": 16,
+    "m57419_edgeThreshold": 40,
     "depthOccThresholdIfSet": 0.0625,
     "nonAggregatedMaskDilationIter": 5
 })"sv);
@@ -200,6 +212,12 @@ TEST_CASE("TMIV::Encoder::Configuration") {
     CHECK_FALSE(unit.viewingSpace.has_value());
     CHECK(unit.overrideAtlasFrameSizes.empty());
     CHECK_FALSE(unit.depthLowQualityFlag.has_value());
+
+#if ENABLE_M57419
+    CHECK_FALSE(unit.m57419_piecewiseDepthLinearScaling);
+    CHECK(unit.m57419_intervalNumber == 16);
+    CHECK(unit.m57419_edgeThreshold == 40);
+#endif
 
     SECTION("Override atlas frame sizes") {
       root.update(Json::parse(R"({ "overrideAtlasFrameSizes": [ [4, 5], [6, 7] ] })"));
@@ -254,6 +272,9 @@ TEST_CASE("TMIV::Encoder::Configuration") {
     "toolsetIdc": "MIV Geometry Absent",
     "reconstructionIdc": "Rec Unconstrained",
     "levelIdc": "2.5",
+    "m57419_piecewiseDepthLinearScaling": false,
+    "m57419_intervalNumber": 16,
+    "m57419_edgeThreshold": 40,
     "depthOccThresholdIfSet": 0.0625,
     "nonAggregatedMaskDilationIter": 5
 })"sv);

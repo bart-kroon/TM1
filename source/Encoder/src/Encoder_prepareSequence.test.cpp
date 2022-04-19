@@ -64,6 +64,9 @@ auto configuration1() {
     "toolsetIdc": "MIV Main",
     "reconstructionIdc": "Rec Unconstrained",
     "levelIdc": "3.5",
+    "m57419_edgeThreshold": 40,
+    "m57419_intervalNumber": 16,
+    "m57419_piecewiseDepthLinearScaling": false,
     "depthOccThresholdIfSet": 0.0625,
     "nonAggregatedMaskDilationIter": 0
 })"sv)};

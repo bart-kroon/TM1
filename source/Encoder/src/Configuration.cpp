@@ -70,6 +70,14 @@ Configuration::Configuration(const Common::Json &componentNode)
   queryProfileTierLevelParameters(componentNode);
   queryBitDepthParameters(componentNode);
   querySeiParameters(componentNode);
+
+#if ENABLE_M57419
+  m57419_piecewiseDepthLinearScaling =
+      componentNode.require("m57419_piecewiseDepthLinearScaling").as<bool>();
+  m57419_intervalNumber = componentNode.require("m57419_intervalNumber").as<int>();
+  m57419_edgeThreshold = componentNode.require("m57419_edgeThreshold").as<int>();
+#endif
+
   verifyValid();
 }
 

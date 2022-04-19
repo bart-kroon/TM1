@@ -43,6 +43,10 @@ create_tmiv_library(
         fmt::fmt
     )
 
+if(${ENABLE_M57419})
+    target_compile_definitions(MivBitstreamLib PUBLIC ENABLE_M57419)
+endif()
+
 create_catch2_unit_test(
     TARGET
         MivBitstreamTest

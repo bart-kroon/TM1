@@ -91,6 +91,12 @@ struct Configuration {
   uint32_t texBitDepth{};
   uint32_t pacBitDepth{};
 
+#if ENABLE_M57419
+  bool m57419_piecewiseDepthLinearScaling;
+  int m57419_intervalNumber;
+  int m57419_edgeThreshold;
+#endif
+
   [[nodiscard]] auto blockSize(bool depthLowQualityFlag_) const noexcept {
     return blockSizeDepthQualityDependent[static_cast<int32_t>(depthLowQualityFlag_)];
   }

@@ -109,12 +109,20 @@ public:
   [[nodiscard]] auto minNormDisp() const -> float;
 
 private:
-  const float m_normDispLow{};
-  const float m_normDispHigh{};
+  float m_normDispLow{};
+  float m_normDispHigh{};
   float m_minNormDisp{};
-  const uint32_t m_bitDepth{};
+  uint32_t m_bitDepth{};
   Common::SampleValue m_depthStart{};
   Common::SampleValue m_depthEnd{std::numeric_limits<Common::SampleValue>::max()};
+
+#if ENABLE_M57419
+  uint8_t m_intervalNum{};
+  uint8_t m_quantizationLaw{};
+  std::vector<float> m_normDispMap;
+  float m_normDispInterval{};
+  float m_normDispMax{};
+#endif
 };
 
 } // namespace TMIV::MivBitstream

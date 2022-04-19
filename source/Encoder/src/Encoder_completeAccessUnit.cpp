@@ -34,6 +34,8 @@
 #include "EncoderImpl.h"
 #include "GeometryQuantizer.h"
 
+#include "PiecewiseLinearDepthScaling.h"
+
 #include <iostream>
 
 namespace TMIV::Encoder {
@@ -71,16 +73,28 @@ void Encoder::Impl::scaleGeometryDynamicRange() {
       continue;
     }
 
-    for (size_t f = 0; f < numOfFrames; f++) {
-      for (auto &geometry : m_transportViews[f][v].geometry.getPlane(0)) {
-        geometry = static_cast<Common::DefaultElement>(
-            (static_cast<double>(geometry) - minDepthMapValWithinGOP) /
-            (static_cast<double>(maxDepthMapValWithinGOP) - minDepthMapValWithinGOP) * maxValD);
-        if (lowDepthQuality) {
-          geometry /= 2;
+#if ENABLE_M57419
+    std::vector<double> mapped_pivot;
+
+    if (m_config.m57419_piecewiseDepthLinearScaling) {
+      mapped_pivot = m57419_piecewiseLinearScaleGeometryDynamicRange(
+          numOfFrames, v, minDepthMapValWithinGOP, maxDepthMapValWithinGOP, lowDepthQuality);
+    } else {
+#endif
+      for (size_t f = 0; f < numOfFrames; f++) {
+        for (auto &geometry : m_transportViews[f][v].geometry.getPlane(0)) {
+          geometry = static_cast<Common::DefaultElement>(
+              (static_cast<double>(geometry) - minDepthMapValWithinGOP) /
+              (static_cast<double>(maxDepthMapValWithinGOP) - minDepthMapValWithinGOP) * maxValD);
+          if (lowDepthQuality) {
+            geometry /= 2;
+          }
         }
       }
+#if ENABLE_M57419
     }
+#endif
+
     const double normDispHighOrig = m_transportParams.viewParamsList[v].dq.dq_norm_disp_high();
     const double normDispLowOrig = m_transportParams.viewParamsList[v].dq.dq_norm_disp_low();
 
@@ -95,6 +109,25 @@ void Encoder::Impl::scaleGeometryDynamicRange() {
 
     m_params.viewParamsList[v].dq.dq_norm_disp_high(static_cast<float>(normDispHigh));
     m_params.viewParamsList[v].dq.dq_norm_disp_low(static_cast<float>(normDispLow));
+
+#if ENABLE_M57419
+    if (m_config.m57419_piecewiseDepthLinearScaling) {
+      const auto piece_num = m_config.m57419_intervalNumber;
+      m_params.viewParamsList[v].dq.dq_interval_num(static_cast<uint8_t>(piece_num));
+
+      if (lowDepthQuality) {
+        m_params.viewParamsList[v].dq.dq_quantization_law(static_cast<uint8_t>(2));
+      } else {
+        m_params.viewParamsList[v].dq.dq_quantization_law(static_cast<uint8_t>(1));
+      }
+
+      for (int i = 0; i < piece_num + 1; i++) {
+        double normDispMap =
+            mapped_pivot[i] / maxValD * (normDispHighOrig - normDispLowOrig) + normDispLowOrig;
+        m_params.viewParamsList[v].dq.dq_norm_disp_map(i, static_cast<float>(normDispMap));
+      }
+    }
+#endif
   }
 }
 

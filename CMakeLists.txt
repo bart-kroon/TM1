@@ -44,6 +44,14 @@ set(CMAKE_CXX_STANDARD ${TMIV_CMAKE_CXX_STANDARD})
 # Optionally enable clang-tidy, but only for TMIV modules
 include(cmake/clang_tidy.cmake)
 
+# For experimentation purposes, the test model may implement proposals that are not yet adopted. By
+# default the aim of the test model is to encode and decode valid bitstreams. Compilation of these
+# proposals is therefore controlled by a CMake option and precompiler flag. When later it would be
+# decided to adopt (or reject) the proposal the option (and code) will be removed by the software
+# coordinators.
+
+option(ENABLE_M57419 "Enable experimental support for piecewise linear scaling [MPEG/M57419]" OFF)
+
 foreach(subdir
         UnitTest
         Common

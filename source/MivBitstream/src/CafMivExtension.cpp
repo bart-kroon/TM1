@@ -255,7 +255,12 @@ void CameraExtrinsics::encodeTo(Common::OutputBitstream &bitstream) const {
 }
 
 auto DepthQuantization::printTo(std::ostream &stream, uint16_t viewIdx) const -> std::ostream & {
+#if ENABLE_M57419
+  VERIFY_MIVBITSTREAM(dq_quantization_law() <= 1);
+#else
   VERIFY_MIVBITSTREAM(dq_quantization_law() == 0);
+#endif
+
   stream << "dq_quantization_law[ " << viewIdx << " ]=" << int32_t{dq_quantization_law()}
          << "\ndq_norm_disp_low[ " << viewIdx << " ]=" << dq_norm_disp_low()
          << "\ndq_norm_disp_high[ " << viewIdx << " ]=" << dq_norm_disp_high()
@@ -267,11 +272,29 @@ auto DepthQuantization::printTo(std::ostream &stream, uint16_t viewIdx) const ->
 auto DepthQuantization::decodeFrom(Common::InputBitstream &bitstream) -> DepthQuantization {
   auto x = DepthQuantization{};
 
-  const auto dq_quantization_law = bitstream.getUExpGolomb<uint8_t>();
-  VERIFY_MIVBITSTREAM(dq_quantization_law == 0);
+  x.dq_quantization_law(bitstream.getUExpGolomb<uint8_t>());
 
-  x.dq_norm_disp_low(bitstream.getFloat32());
-  x.dq_norm_disp_high(bitstream.getFloat32());
+  if (x.dq_quantization_law() == 0) {
+    x.dq_norm_disp_low(bitstream.getFloat32());
+    x.dq_norm_disp_high(bitstream.getFloat32());
+  }
+
+#if ENABLE_M57419
+  VERIFY_MIVBITSTREAM(x.dq_quantization_law() <= 1);
+
+  if (x.dq_quantization_law() == 1) {
+    x.dq_norm_disp_low(bitstream.getFloat32());
+    x.dq_norm_disp_high(bitstream.getFloat32());
+    x.dq_interval_num(bitstream.getUint8());
+
+    for (int i = 0; i <= x.dq_interval_num(); i++) {
+      x.dq_norm_disp_map(i, bitstream.getFloat32());
+    }
+  }
+#else
+  VERIFY_MIVBITSTREAM(x.dq_quantization_law() == 0);
+#endif
+
   x.dq_depth_occ_threshold_default(bitstream.getUExpGolomb<uint32_t>());
 
   return x;
@@ -279,8 +302,24 @@ auto DepthQuantization::decodeFrom(Common::InputBitstream &bitstream) -> DepthQu
 
 void DepthQuantization::encodeTo(Common::OutputBitstream &bitstream) const {
   bitstream.putUExpGolomb(dq_quantization_law());
-  bitstream.putFloat32(dq_norm_disp_low());
-  bitstream.putFloat32(dq_norm_disp_high());
+
+  if (dq_quantization_law() == 0) {
+    bitstream.putFloat32(dq_norm_disp_low());
+    bitstream.putFloat32(dq_norm_disp_high());
+  }
+
+#if ENABLE_M57419
+  if (dq_quantization_law() == 1) {
+    bitstream.putFloat32(dq_norm_disp_low());
+    bitstream.putFloat32(dq_norm_disp_high());
+    bitstream.putUint8(dq_interval_num());
+
+    for (int i = 0; i <= dq_interval_num(); i++) {
+      bitstream.putFloat32(dq_norm_disp_map(i));
+    }
+  }
+#endif
+
   bitstream.putUExpGolomb(dq_depth_occ_threshold_default());
 }
 

@@ -196,14 +196,25 @@ constexpr auto CameraExtrinsics::operator!=(const CameraExtrinsics &other) const
   return !operator==(other);
 }
 
-constexpr auto DepthQuantization::dq_quantization_law() noexcept { return uint8_t{}; }
+constexpr auto DepthQuantization::dq_quantization_law() const noexcept {
+  return m_dq_quantization_law;
+}
 
 constexpr auto DepthQuantization::dq_norm_disp_low() const noexcept { return m_dq_norm_disp_low; }
 
 constexpr auto DepthQuantization::dq_norm_disp_high() const noexcept { return m_dq_norm_disp_high; }
 
+#if ENABLE_M57419
+constexpr auto DepthQuantization::dq_interval_num() const noexcept { return m_dq_interval_num; }
+#endif
+
 constexpr auto DepthQuantization::dq_depth_occ_threshold_default() const noexcept {
   return m_dq_depth_occ_threshold_default;
+}
+
+constexpr auto DepthQuantization::dq_quantization_law(const uint8_t value) noexcept -> auto & {
+  m_dq_quantization_law = value;
+  return *this;
 }
 
 constexpr auto DepthQuantization::dq_norm_disp_low(const float value) noexcept -> auto & {
@@ -222,10 +233,34 @@ constexpr auto DepthQuantization::dq_depth_occ_threshold_default(uint32_t value)
   return *this;
 }
 
+#if ENABLE_M57419
+constexpr auto DepthQuantization::dq_interval_num(const uint8_t value) noexcept -> auto & {
+  m_dq_interval_num = value;
+  return *this;
+}
+#endif
+
 constexpr auto DepthQuantization::operator==(const DepthQuantization &other) const noexcept {
-  return dq_norm_disp_low() == other.dq_norm_disp_low() &&
-         dq_norm_disp_high() == other.dq_norm_disp_high() &&
-         dq_depth_occ_threshold_default() == other.dq_depth_occ_threshold_default();
+  if (dq_quantization_law() != other.dq_quantization_law() ||
+      dq_depth_occ_threshold_default() != other.dq_depth_occ_threshold_default()) {
+    return false;
+  }
+
+  if (dq_quantization_law() == 0 && (dq_norm_disp_low() != other.dq_norm_disp_low() ||
+                                     dq_norm_disp_high() != other.dq_norm_disp_high())) {
+    return false;
+  }
+
+#if ENABLE_M57419
+  if (dq_quantization_law() == 1 && (dq_norm_disp_low() != other.dq_norm_disp_low() ||
+                                     dq_norm_disp_high() != other.dq_norm_disp_high() ||
+                                     m_dq_interval_num != other.m_dq_interval_num ||
+                                     m_dq_norm_disp_map != other.m_dq_norm_disp_map)) {
+    return false;
+  }
+#endif
+
+  return true;
 }
 
 constexpr auto DepthQuantization::operator!=(const DepthQuantization &other) const noexcept {

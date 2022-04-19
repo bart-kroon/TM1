@@ -17,6 +17,7 @@ create_tmiv_library(
         "src/GeometryQuantizer.cpp"
         "src/GeometryDownscaler.cpp"
         "src/FramePacker.cpp"
+        "src/PiecewiseLinearDepthScaling.cpp"
         "src/V3cSampleSink.cpp"
     PUBLIC
         MivBitstreamLib
@@ -78,6 +79,7 @@ create_catch2_unit_test(
         "src/ExplicitOccupancy.test.cpp"
         "src/FramePacker.test.cpp"
         "src/GeometryQuantizer.test.cpp"
+        "src/PiecewiseLinearDepthScaling.test.cpp"
     PRIVATE
         EncoderLib
         AggregatorLib

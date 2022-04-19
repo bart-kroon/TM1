@@ -105,6 +105,15 @@ private:
                   int32_t yOcc, int32_t xOcc, const Common::Vec2i &pView,
                   const Common::Vec2i &pAtlas) const;
 
+#if ENABLE_M57419
+  auto m57419_makeHistogram(int piece_num, size_t numOfFrames, size_t v, int32_t minDepthVal,
+                            int32_t maxDepthVal) -> std::vector<int>;
+  auto m57419_piecewiseLinearScaleGeometryDynamicRange(size_t numOfFrames, size_t v,
+                                                       int32_t minDepthMapValWithinGOP,
+                                                       int32_t maxDepthMapValWithinGOP,
+                                                       bool lowDepthQuality) -> std::vector<double>;
+#endif
+
   // Encoder sub-components
   std::unique_ptr<DepthQualityAssessor::IDepthQualityAssessor> m_depthQualityAssessor;
   std::unique_ptr<ViewOptimizer::IViewOptimizer> m_viewOptimizer;

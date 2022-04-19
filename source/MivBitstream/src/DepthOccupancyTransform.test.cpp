@@ -155,6 +155,50 @@ TEST_CASE("DepthTransform") {
     }
   }
 
+#if ENABLE_M57419
+  SECTION("Expand a level to normalized disparity [m^-1], PLS method") {
+    const auto normDispLow = GENERATE(-2.F, 0.F, 10.F);
+    const auto normDispHigh = GENERATE(-1.F, 0.F, 100.F);
+
+    if (normDispLow != normDispHigh && 0 < std::max(normDispLow, normDispHigh)) {
+      auto dq = DepthQuantization{};
+      dq.dq_norm_disp_low(normDispLow);
+      dq.dq_norm_disp_high(normDispHigh);
+
+      dq.dq_quantization_law(1);
+      dq.dq_interval_num(1);
+
+      float normDispMap0 = normDispLow;
+      float normDispMap1 =
+          normDispLow + (normDispHigh - normDispLow) / static_cast<float>(dq.dq_interval_num());
+      dq.dq_norm_disp_map(0, normDispMap0);
+      dq.dq_norm_disp_map(1, normDispMap1);
+
+      const auto bits = GENERATE(1U, 12U);
+      constexpr uint16_t lowLevel = 0;
+      const auto highLevel = TMIV::Common::maxLevel<uint16_t>(bits);
+      const auto map0_level = lowLevel;
+      const uint16_t map1_level =
+          lowLevel + (highLevel - lowLevel) / static_cast<uint16_t>(dq.dq_interval_num());
+
+      const auto unit = DepthTransform{dq, bits};
+
+      const auto minNormDisp = unit.minNormDisp();
+      const auto lowDisp = std::max(minNormDisp, normDispLow);
+      const auto highDisp = std::max(minNormDisp, normDispHigh);
+      const auto map0_disp = std::max(minNormDisp, normDispMap0);
+      const auto map1_disp = std::max(minNormDisp, normDispMap1);
+
+      REQUIRE(unit.expandNormDisp(lowLevel) == lowDisp);
+      if (lowLevel < highLevel) {
+        REQUIRE(unit.expandNormDisp(map0_level) == map0_disp);
+        REQUIRE(unit.expandNormDisp(map1_level) == map1_disp);
+        REQUIRE(unit.expandNormDisp(highLevel) == highDisp);
+      }
+    }
+  }
+#endif
+
   SECTION("Expand a level to normalized disparity [m^-1], per-patch depth transform") {
     const auto normDispLow = GENERATE(-2.F, 3.F);
     const auto normDispHigh = GENERATE(5.F, 7.F);
@@ -270,6 +314,55 @@ TEST_CASE("DepthTransform") {
       REQUIRE(unit.quantizeNormDisp(x, 100) <= maxLevel);
     }
   }
+
+#if ENABLE_M57419
+  SECTION("Quantize normalized disparity [m^-1] to a level, PLS method") {
+    const auto normDispLow = GENERATE(-2.F, 3.F);
+    const auto normDispHigh = GENERATE(5.F, 7.F);
+
+    auto dq = DepthQuantization{};
+    dq.dq_norm_disp_low(normDispLow);
+    dq.dq_norm_disp_high(normDispHigh);
+
+    dq.dq_quantization_law(1);
+    dq.dq_interval_num(1);
+
+    float normDispMap0 = normDispLow;
+    float normDispMap1 =
+        normDispLow + (normDispHigh - normDispLow) / static_cast<float>(dq.dq_interval_num());
+    dq.dq_norm_disp_map(0, normDispMap0);
+    dq.dq_norm_disp_map(1, normDispMap1);
+
+    constexpr auto bits = 14U;
+    constexpr auto maxLevel = TMIV::Common::maxLevel(bits);
+
+    const auto unit = DepthTransform{dq, bits};
+
+    REQUIRE(unit.quantizeNormDisp(normDispLow, 0) == 0);
+    REQUIRE(unit.quantizeNormDisp(normDispHigh, 0) == maxLevel);
+    REQUIRE(unit.quantizeNormDisp(normDispMap0, 0) == 0);
+    REQUIRE(unit.quantizeNormDisp(normDispMap1, 0) == maxLevel);
+
+    SECTION("Invalid depth values are set to zero") {
+      REQUIRE(unit.quantizeNormDisp(-1.F, 100) == 0);
+      REQUIRE(unit.quantizeNormDisp(0.F, 200) == 0);
+      REQUIRE(unit.quantizeNormDisp(NAN, 300) == 0);
+    }
+
+    SECTION("Valid depth values are clamped to [minLevel, maxLevel]") {
+      const auto x = GENERATE(1E-3F, 0.01, 0.1, 1., 10., 100.);
+      const auto minLevel = GENERATE(0U, 1U, 10U, 100U, 1000U);
+
+      REQUIRE(minLevel <= unit.quantizeNormDisp(x, minLevel));
+    }
+
+    SECTION("Valid depth values are clamped to maxLevel") {
+      const auto x = GENERATE(1E-3F, 0.01, 0.1, 1., 10., 100.);
+
+      REQUIRE(unit.quantizeNormDisp(x, 100) <= maxLevel);
+    }
+  }
+#endif
 
   SECTION("(Implementation-defined) minimum normalized disparity") {
     const auto normDispLow = GENERATE(-2.F, 1E-4F, 1E-3F, 0.01F, 3.F);

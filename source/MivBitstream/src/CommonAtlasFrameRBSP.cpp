@@ -161,4 +161,18 @@ void CommonAtlasFrameRBSP::encodeTo(std::ostream &stream, const NalUnitHeader &n
   }
   bitstream.rbspTrailingBits();
 }
+
+#if ENABLE_M57419
+auto DepthQuantization::dq_norm_disp_map(int index) const noexcept -> float {
+  return m_dq_norm_disp_map[index];
+}
+
+auto DepthQuantization::dq_norm_disp_map(int index, float value) noexcept -> DepthQuantization & {
+  if (static_cast<uint8_t>(m_dq_norm_disp_map.size()) < index + 1) {
+    m_dq_norm_disp_map.resize(index + 1);
+  }
+  m_dq_norm_disp_map[index] = value;
+  return *this;
+}
+#endif
 } // namespace TMIV::MivBitstream

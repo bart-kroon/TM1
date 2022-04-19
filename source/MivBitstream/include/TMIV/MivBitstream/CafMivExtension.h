@@ -161,14 +161,23 @@ private:
 // 23090-12: depth_quantization()
 class DepthQuantization {
 public:
-  [[nodiscard]] static constexpr auto dq_quantization_law() noexcept;
+  [[nodiscard]] constexpr auto dq_quantization_law() const noexcept;
   [[nodiscard]] constexpr auto dq_norm_disp_low() const noexcept;
   [[nodiscard]] constexpr auto dq_norm_disp_high() const noexcept;
   [[nodiscard]] constexpr auto dq_depth_occ_threshold_default() const noexcept;
 
+  constexpr auto dq_quantization_law(uint8_t value) noexcept -> auto &;
   constexpr auto dq_norm_disp_low(float value) noexcept -> auto &;
   constexpr auto dq_norm_disp_high(float value) noexcept -> auto &;
   constexpr auto dq_depth_occ_threshold_default(uint32_t value) noexcept -> auto &;
+
+#if ENABLE_M57419
+  [[nodiscard]] constexpr auto dq_interval_num() const noexcept;
+  [[nodiscard]] auto dq_norm_disp_map(int i) const noexcept -> float;
+
+  constexpr auto dq_interval_num(uint8_t value) noexcept -> auto &;
+  auto dq_norm_disp_map(int i, float value) noexcept -> DepthQuantization &;
+#endif
 
   auto printTo(std::ostream &stream, uint16_t viewIdx) const -> std::ostream &;
 
@@ -180,9 +189,16 @@ public:
   void encodeTo(Common::OutputBitstream &bitstream) const;
 
 private:
+  uint8_t m_dq_quantization_law{};
   float m_dq_norm_disp_low{};
   float m_dq_norm_disp_high{};
   uint32_t m_dq_depth_occ_threshold_default{};
+
+#if ENABLE_M57419
+  uint8_t m_low_depth_quality{};
+  uint8_t m_dq_interval_num{};
+  std::vector<float> m_dq_norm_disp_map;
+#endif
 };
 
 // 23090-12: pruning_parents()

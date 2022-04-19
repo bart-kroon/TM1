@@ -89,6 +89,7 @@ void Configuration::queryMainParameters(const Common::Json &componentNode) {
   }
 
   if (haveGeometry && !haveOccupancy) {
+    embeddedOccupancy = componentNode.require("embeddedOccupancy").as<bool>();
     depthOccThresholdIfSet = componentNode.require("depthOccThresholdIfSet").as<double>();
 
     if (!(0.0 < depthOccThresholdIfSet)) {

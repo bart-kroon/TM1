@@ -55,6 +55,7 @@ TEST_CASE("TMIV::Encoder::Configuration") {
     "haveGeometryVideo": true,
     "bitDepthGeometryVideo": 10,
     "haveOccupancyVideo": false,
+    "embeddedOccupancy": true,
     "framePacking": false,
     "oneViewPerAtlasFlag": false,
     "dynamicDepthRange": true,

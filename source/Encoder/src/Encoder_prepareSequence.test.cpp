@@ -48,6 +48,7 @@ auto configuration1() {
     "haveOccupancyVideo": false,
     "framePacking": false,
     "oneViewPerAtlasFlag": false,
+    "embeddedOccupancy": true,
     "dynamicDepthRange": false,
     "halveDepthRange": true,
     "rewriteParameterSets": false,
@@ -227,6 +228,7 @@ TEST_CASE("createEncoderParams sets multiple syntax elements to hard-coded value
   const auto haveGeometry = GENERATE(false, true);
   const auto haveOccupancy = GENERATE(false, true);
   const auto haveTexture = GENERATE(false, true);
+  const auto embeddedOccupancy = GENERATE(false, true);
 
   if (!haveGeometry && !haveTexture) {
     return;
@@ -238,12 +240,17 @@ TEST_CASE("createEncoderParams sets multiple syntax elements to hard-coded value
     return;
   }
 
+  if ((!haveGeometry || haveOccupancy) && embeddedOccupancy) {
+    return;
+  }
+
   const auto config = [=]() {
     auto x = test::configuration1();
     x.haveGeometry = haveGeometry;
     x.geometryScaleEnabledFlag = geometryScaleEnabledFlag;
     x.haveOccupancy = haveOccupancy;
     x.haveTexture = haveTexture;
+    x.embeddedOccupancy = embeddedOccupancy;
 
     if (haveOccupancy) {
       x.occBitDepth = 10;

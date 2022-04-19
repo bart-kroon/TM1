@@ -199,17 +199,13 @@ calculateNominalAtlasFrameSizes(const Configuration &config,
 }
 
 [[nodiscard]] auto createVpsMivExtension(const Configuration &config,
-                                         const MivBitstream::ViewParamsList &viewParamsList,
                                          const Common::SizeVector &atlasFrameSizes) {
   auto vme = MivBitstream::VpsMivExtension{};
   vme.vme_geometry_scale_enabled_flag(config.geometryScaleEnabledFlag)
-      .vme_embedded_occupancy_enabled_flag(
-          config.haveGeometry && !config.haveOccupancy &&
-          std::any_of(viewParamsList.cbegin(), viewParamsList.cend(),
-                      [](const auto &vp) { return vp.hasOccupancy; }))
+      .vme_embedded_occupancy_enabled_flag(config.embeddedOccupancy)
       .group_mapping() = createGroupMapping(config.numGroups, atlasFrameSizes);
 
-  if (!vme.vme_embedded_occupancy_enabled_flag()) {
+  if (!config.embeddedOccupancy) {
     vme.vme_occupancy_scale_enabled_flag(config.haveOccupancy);
   }
   return vme;
@@ -233,7 +229,7 @@ calculateNominalAtlasFrameSizes(const Configuration &config,
         .vps_geometry_video_present_flag(j, config.haveGeometry)
         .vps_occupancy_video_present_flag(j, config.haveOccupancy)
         .vps_attribute_video_present_flag(j, config.haveTexture)
-        .vps_miv_extension(createVpsMivExtension(config, viewParamsList, atlasFrameSizes));
+        .vps_miv_extension(createVpsMivExtension(config, atlasFrameSizes));
 
     if (config.haveOccupancy) {
       vps.occupancy_information(j, createOccupancyInformation(config.occBitDepth));
@@ -299,8 +295,7 @@ createCommonAtlasSequenceParameterSet(const Configuration &config,
                                           const MivBitstream::V3cParameterSet &vps,
                                           int32_t blockSize, MivBitstream::AtlasId j) {
   auto asme = MivBitstream::AspsMivExtension{};
-  asme.asme_embedded_occupancy_enabled_flag(
-          vps.vps_miv_extension().vme_embedded_occupancy_enabled_flag())
+  asme.asme_embedded_occupancy_enabled_flag(config.embeddedOccupancy)
       .asme_patch_texture_offset_enabled_flag(config.textureOffsetFlag)
       .asme_max_entity_id(config.maxEntityId);
 

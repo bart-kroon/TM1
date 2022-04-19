@@ -189,6 +189,7 @@ These parameters are in the root of the configuration file and may be accessed b
     * **bitDepthGeometryVideo:** int; the bit depth of the geometry video (if present).
     * **bitDepthTextureVideo:** int; the bit depth of the texture video (if present).
     * **framePacking:** bool; output packed video data (PVD) to encode the packed components together in a single video frame. The bit depth is derived from the component bit depths.
+    * **embeddedOccupancy:** bool; with geometry video enabled and occupancy video disabled, indicate if occupancy is encoded in geometry (true) or if occupancy is only available at patch-level (false).
     * **geometryScaleEnabledFlag:** bool; when true geometry is downscaled by a factor of two in respect to the atlas frame size. Otherwise geometry is at full resolution.
 * Atlas frame size calculation and packing:
     * **intraPeriod:** int; the intra patch frame period. This is the step in frame order count between consecutive frames that have an atlas tile layer of type I_TILE. The test model is not aware of the intra period of the video codec. This other intra period is configured independently.

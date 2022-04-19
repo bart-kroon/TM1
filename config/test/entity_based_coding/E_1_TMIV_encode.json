@@ -44,6 +44,7 @@
     "configDirectory": "config",
     "depthOccThresholdIfSet": 0.0625,
     "dynamicDepthRange": true,
+    "embeddedOccupancy": true,
     "entityEncodeRange": [8, 16],
     "framePacking": false,
     "geometryScaleEnabledFlag": true,

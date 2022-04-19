@@ -155,41 +155,36 @@ const auto exampleAve = []() {
   return ave;
 }();
 
-template <typename Structure> auto seiPayload(const Structure &structure) {
-  std::ostringstream stream;
-  OutputBitstream bitstream{stream};
-  structure.encodeTo(bitstream);
-  return stream.str();
-}
-
 auto prefixSei() {
   using TMIV::MivBitstream::SeiMessage;
+  using TMIV::MivBitstream::SeiPayload;
   using TMIV::MivBitstream::SeiRBSP;
   using PT = TMIV::MivBitstream::PayloadType;
 
   auto sei = SeiRBSP{};
-  sei.messages().emplace_back(PT::geometry_upscaling_parameters, seiPayload(exampleGup));
-  // sei.messages().emplace_back(PT::viewing_space, seiPayload(exampleVs));
-  sei.messages().emplace_back(PT::viewport_camera_parameters, seiPayload(exampleVcp));
-  sei.messages().emplace_back(PT::attribute_smoothing, "[not implemented, to be ignored]");
+  sei.messages().emplace_back(PT::geometry_upscaling_parameters, SeiPayload{exampleGup});
+  sei.messages().emplace_back(PT::viewing_space, SeiPayload{exampleVs});
+  sei.messages().emplace_back(PT::viewport_camera_parameters, SeiPayload{exampleVcp});
+  sei.messages().emplace_back(PT::filler_payload, SeiPayload{" ~ noise ~ "});
+  sei.messages().emplace_back(PT::viewport_position, SeiPayload{exampleVp});
+  sei.messages().emplace_back(PT::atlas_view_enabled, SeiPayload{exampleAve});
 
   std::ostringstream stream;
-  sei.encodeTo(stream);
+  sei.encodeTo(stream, NalUnitType::NAL_PREFIX_ESEI);
   return NalUnit{NalUnitHeader{NalUnitType::NAL_PREFIX_ESEI, 0, 1}, stream.str()};
 }
 
 auto suffixSei() {
   using TMIV::MivBitstream::SeiMessage;
+  using TMIV::MivBitstream::SeiPayload;
   using TMIV::MivBitstream::SeiRBSP;
   using PT = TMIV::MivBitstream::PayloadType;
 
   auto sei = SeiRBSP{};
-  sei.messages().emplace_back(PT::viewport_position, seiPayload(exampleVp));
-  sei.messages().emplace_back(PT::atlas_view_enabled, seiPayload(exampleAve));
-  sei.messages().emplace_back(PT::buffering_period, "[not implemented, to be ignored]");
+  sei.messages().emplace_back(PT::filler_payload, SeiPayload{" ~ noise ~ "});
 
   std::ostringstream stream;
-  sei.encodeTo(stream);
+  sei.encodeTo(stream, NalUnitType::NAL_SUFFIX_ESEI);
   return NalUnit{NalUnitHeader{NalUnitType::NAL_SUFFIX_ESEI, 0, 1}, stream.str()};
 }
 
@@ -268,15 +263,15 @@ TEST_CASE("TMIV::Decoder::decodeCommonAtlas") {
 
     const auto au = unit();
     REQUIRE(au);
-    // REQUIRE(au->vs); TODO(#644): Investigate
-    // REQUIRE(au->vcp); TODO(#644): Investigate
+    REQUIRE(au->vs);
+    REQUIRE(au->vcp);
     REQUIRE(au->vp);
     REQUIRE(au->ave);
 
     CHECK(au->foc == 0);
     CHECK(au->gup == test::exampleGup);
-    // CHECK(*au->vs == test::exampleVs);
-    // CHECK(*au->vcp == test::exampleVcp);
+    CHECK(*au->vs == test::exampleVs);
+    CHECK(*au->vcp == test::exampleVcp);
     CHECK(*au->vp == test::exampleVp);
     CHECK(*au->ave == test::exampleAve);
   }

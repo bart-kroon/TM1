@@ -36,6 +36,19 @@
 
 #include <TMIV/Common/Bitstream.h>
 
+#include <TMIV/MivBitstream/AtlasObjectAssociation.h>
+#include <TMIV/MivBitstream/AtlasViewEnabled.h>
+#include <TMIV/MivBitstream/DecodedAtlasInformationHash.h>
+#include <TMIV/MivBitstream/GeometryAssistance.h>
+#include <TMIV/MivBitstream/GeometryUpscalingParameters.h>
+#include <TMIV/MivBitstream/PackedIndependentRegions.h>
+#include <TMIV/MivBitstream/SceneObjectInformation.h>
+#include <TMIV/MivBitstream/ViewingSpace.h>
+#include <TMIV/MivBitstream/ViewingSpaceHandling.h>
+#include <TMIV/MivBitstream/ViewportCameraParameters.h>
+#include <TMIV/MivBitstream/ViewportPosition.h>
+
+#include <variant>
 #include <vector>
 
 namespace TMIV::MivBitstream {
@@ -75,28 +88,50 @@ enum class PayloadType : uint16_t {
 
 auto operator<<(std::ostream &stream, PayloadType pt) -> std::ostream &;
 
+// 23090-5: sei_payload( payloadType, payloadSize )
+struct SeiPayload {
+  using UnsupportedPayload = std::string;
+
+  using Payload = std::variant<std::monostate, UnsupportedPayload, SceneObjectInformation,
+                               AtlasObjectAssociation, ViewportCameraParameters, ViewportPosition,
+                               PackedIndependentRegions, ViewingSpace, ViewingSpaceHandling,
+                               GeometryUpscalingParameters, AtlasViewEnabled, GeometryAssistance,
+                               DecodedAtlasInformationHash>;
+
+  Payload payload;
+
+  friend auto operator<<(std::ostream &stream, const SeiPayload &x) -> std::ostream &;
+
+  auto operator==(const SeiPayload &other) const noexcept -> bool;
+  auto operator!=(const SeiPayload &other) const noexcept -> bool;
+
+  static auto decodeFromString(const std::string &payload, PayloadType payloadType, NalUnitType nut)
+      -> SeiPayload;
+
+  [[nodiscard]] auto encodeToString(PayloadType payloadType, NalUnitType nut) const -> std::string;
+};
+
 // 23090-5: sei_message()
 class SeiMessage {
 public:
   SeiMessage() = default;
-  SeiMessage(PayloadType pt, std::string payload);
+  SeiMessage(PayloadType payloadType, SeiPayload payload);
 
   [[nodiscard]] auto payloadType() const noexcept -> PayloadType;
-  [[nodiscard]] auto payloadSize() const noexcept -> size_t;
-  [[nodiscard]] auto payload() const noexcept -> const std::string &;
+  [[nodiscard]] auto seiPayload() const noexcept -> const SeiPayload &;
 
   friend auto operator<<(std::ostream &stream, const SeiMessage &x) -> std::ostream &;
 
   auto operator==(const SeiMessage &other) const noexcept -> bool;
   auto operator!=(const SeiMessage &other) const noexcept -> bool;
 
-  static auto decodeFrom(std::istream &stream) -> SeiMessage;
+  static auto decodeFrom(std::istream &stream, NalUnitType nut) -> SeiMessage;
 
-  void encodeTo(std::ostream &stream) const;
+  void encodeTo(std::ostream &stream, NalUnitType nut) const;
 
 private:
   PayloadType m_payloadType{};
-  std::string m_payload;
+  SeiPayload m_seiPayload;
 };
 
 // 23090-5: sei_rbsp()
@@ -113,9 +148,9 @@ public:
   auto operator==(const SeiRBSP &other) const noexcept -> bool;
   auto operator!=(const SeiRBSP &other) const noexcept -> bool;
 
-  static auto decodeFrom(std::istream &stream) -> SeiRBSP;
+  static auto decodeFrom(std::istream &stream, NalUnitType nut) -> SeiRBSP;
 
-  void encodeTo(std::ostream &stream) const;
+  void encodeTo(std::ostream &stream, NalUnitType nut) const;
 
 private:
   std::vector<SeiMessage> m_messages;

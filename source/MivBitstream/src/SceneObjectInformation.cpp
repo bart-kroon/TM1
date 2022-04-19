@@ -487,6 +487,11 @@ auto SceneObjectInformation::operator==(const SceneObjectInformation &other) con
          (m_object_updates == other.m_object_updates);
 }
 
+auto SceneObjectInformation::operator!=(const SceneObjectInformation &other) const noexcept
+    -> bool {
+  return !operator==(other);
+}
+
 // NOLINTNEXTLINE(readability-function-cognitive-complexity)
 auto decodeSceneObjectUpdates(Common::InputBitstream &bitstream,
                               const SceneObjectInformation &result)

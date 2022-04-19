@@ -85,6 +85,7 @@ public:
   friend auto operator<<(std::ostream &stream, const PackedIndependentRegions &x) -> std::ostream &;
 
   auto operator==(const PackedIndependentRegions &other) const noexcept -> bool;
+  auto operator!=(const PackedIndependentRegions &other) const noexcept -> bool;
 
   static auto decodeFrom(Common::InputBitstream &bitstream) -> PackedIndependentRegions;
   void encodeTo(Common::OutputBitstream &bitstream) const;

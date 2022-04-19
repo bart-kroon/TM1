@@ -36,6 +36,10 @@
 #include <TMIV/Common/Bytestream.h>
 #include <TMIV/Common/verify.h>
 
+#include <fmt/ostream.h>
+
+#include <sstream>
+#include <type_traits>
 #include <utility>
 
 namespace TMIV::MivBitstream {
@@ -108,64 +112,193 @@ auto operator<<(std::ostream &stream, PayloadType pt) -> std::ostream & {
   }
 }
 
-SeiMessage::SeiMessage(PayloadType pt, std::string payload)
-    : m_payloadType{pt}, m_payload{std::move(std::move(payload))} {}
+auto operator<<(std::ostream &stream, const SeiPayload &x) -> std::ostream & {
+  return std::visit(
+      [&stream](const auto &payload) -> std::ostream & {
+        if constexpr (std::is_same_v<decltype(payload), const std::monostate &> ||
+                      std::is_same_v<decltype(payload), const std::string &>) {
+          return stream; // no or unknown payload
+        } else {
+          return stream << payload;
+        }
+      },
+      x.payload);
+}
+
+auto SeiPayload::operator==(const SeiPayload &other) const noexcept -> bool {
+  return payload == other.payload;
+}
+
+auto SeiPayload::operator!=(const SeiPayload &other) const noexcept -> bool {
+  return payload != other.payload;
+}
+
+auto SeiPayload::decodeFromString(const std::string &payload, PayloadType payloadType,
+                                  NalUnitType nut) -> SeiPayload {
+  std::istringstream stream{payload};
+  Common::InputBitstream bitstream{stream};
+
+  if (nut == NalUnitType::NAL_PREFIX_NSEI || nut == NalUnitType::NAL_PREFIX_ESEI) {
+    switch (payloadType) {
+    case PayloadType::scene_object_information:
+      return {SceneObjectInformation::decodeFrom(bitstream)};
+    case PayloadType::atlas_object_association:
+      return {AtlasObjectAssociation::decodeFrom(bitstream)};
+    case PayloadType::viewport_camera_parameters:
+      return {ViewportCameraParameters::decodeFrom(bitstream)};
+    case PayloadType::viewport_position:
+      return {ViewportPosition::decodeFrom(bitstream)};
+    case PayloadType::packed_independent_regions:
+      return {PackedIndependentRegions::decodeFrom(bitstream)};
+    case PayloadType::viewing_space:
+      return {ViewingSpace::decodeFrom(bitstream)};
+    case PayloadType::viewing_space_handling:
+      return {ViewingSpaceHandling::decodeFrom(bitstream)};
+    case PayloadType::geometry_upscaling_parameters:
+      return {GeometryUpscalingParameters::decodeFrom(bitstream)};
+    case PayloadType::atlas_view_enabled:
+      return {AtlasViewEnabled::decodeFrom(bitstream)};
+    case PayloadType::geometry_assistance:
+      return {GeometryAssistance::decodeFrom(bitstream)};
+    default:
+      std::ostringstream buffer;
+      buffer << stream.rdbuf();
+      return {UnsupportedPayload{buffer.str()}};
+    }
+  } else {
+    switch (payloadType) {
+    case PayloadType::decoded_atlas_information_hash:
+      return {DecodedAtlasInformationHash::decodeFrom(bitstream)};
+    default:
+      std::ostringstream buffer;
+      buffer << stream.rdbuf();
+      return {UnsupportedPayload{buffer.str()}};
+    }
+  }
+}
+
+auto SeiPayload::encodeToString(PayloadType payloadType, NalUnitType nut) const -> std::string {
+  std::ostringstream stream;
+  Common::OutputBitstream bitstream{stream};
+
+  if (nut == NalUnitType::NAL_PREFIX_NSEI || nut == NalUnitType::NAL_PREFIX_ESEI) {
+    switch (payloadType) {
+    case PayloadType::scene_object_information:
+      std::get<SceneObjectInformation>(payload).encodeTo(bitstream);
+      break;
+    case PayloadType::atlas_object_association:
+      std::get<AtlasObjectAssociation>(payload).encodeTo(bitstream);
+      break;
+    case PayloadType::viewport_camera_parameters:
+      std::get<ViewportCameraParameters>(payload).encodeTo(bitstream);
+      break;
+    case PayloadType::viewport_position:
+      std::get<ViewportPosition>(payload).encodeTo(bitstream);
+      break;
+    case PayloadType::packed_independent_regions:
+      std::get<PackedIndependentRegions>(payload).encodeTo(bitstream);
+      break;
+    case PayloadType::viewing_space:
+      std::get<ViewingSpace>(payload).encodeTo(bitstream);
+      break;
+    case PayloadType::viewing_space_handling:
+      std::get<ViewingSpaceHandling>(payload).encodeTo(bitstream);
+      break;
+    case PayloadType::geometry_upscaling_parameters:
+      std::get<GeometryUpscalingParameters>(payload).encodeTo(bitstream);
+      break;
+    case PayloadType::atlas_view_enabled:
+      std::get<AtlasViewEnabled>(payload).encodeTo(bitstream);
+      break;
+    case PayloadType::geometry_assistance:
+      std::get<GeometryAssistance>(payload).encodeTo(bitstream);
+      break;
+    default:
+      const auto &payload_ = std::get_if<UnsupportedPayload>(&payload);
+      VERIFY(payload_ != nullptr);
+      stream.write(payload_->data(), Common::assertDownCast<std::streamsize>(payload_->size()));
+    }
+  } else {
+    const auto &payload_ = std::get_if<UnsupportedPayload>(&payload);
+    VERIFY(payload_ != nullptr);
+    stream.write(payload_->data(), Common::assertDownCast<std::streamsize>(payload_->size()));
+  }
+
+  if (!bitstream.byteAligned()) {
+    bitstream.byteAlignment();
+  }
+
+  return stream.str();
+}
+
+SeiMessage::SeiMessage(PayloadType payloadType, SeiPayload payload)
+    : m_payloadType{payloadType}, m_seiPayload{std::move(payload)} {}
 
 auto SeiMessage::payloadType() const noexcept -> PayloadType { return m_payloadType; }
 
-auto SeiMessage::payloadSize() const noexcept -> size_t { return payload().size(); }
-
-auto SeiMessage::payload() const noexcept -> const std::string & { return m_payload; }
+auto SeiMessage::seiPayload() const noexcept -> const SeiPayload & { return m_seiPayload; }
 
 auto operator<<(std::ostream &stream, const SeiMessage &x) -> std::ostream & {
   stream << "payloadType=" << x.payloadType() << '\n';
-  stream << "payloadSize=" << x.payloadSize() << '\n';
+  stream << x.seiPayload();
   return stream;
 }
 
 auto SeiMessage::operator==(const SeiMessage &other) const noexcept -> bool {
-  return payloadType() == other.payloadType() && payloadSize() == other.payloadSize() &&
-         payload() == other.payload();
+  return payloadType() == other.payloadType() && seiPayload() == other.seiPayload();
 }
 
 auto SeiMessage::operator!=(const SeiMessage &other) const noexcept -> bool {
   return !operator==(other);
 }
 
-namespace {
-auto decodeSeiHeaderValue(std::istream &stream) -> size_t {
-  size_t value = 0;
-  uint8_t sm_payload_type_byte = 0;
+auto SeiMessage::decodeFrom(std::istream &stream, NalUnitType nut) -> SeiMessage {
+  auto payloadType_ = size_t{};
+  auto sm_payload_type_byte = uint8_t{};
+
   do {
     sm_payload_type_byte = Common::getUint8(stream);
-    value += sm_payload_type_byte;
-  } while (sm_payload_type_byte == UINT8_MAX);
-  return value;
-}
-} // namespace
+    payloadType_ += sm_payload_type_byte;
+  } while (sm_payload_type_byte == 0xFF);
 
-auto SeiMessage::decodeFrom(std::istream &stream) -> SeiMessage {
-  const auto payloadType = PayloadType(decodeSeiHeaderValue(stream));
-  const auto payloadSize = decodeSeiHeaderValue(stream);
-  auto buffer = std::vector<char>(payloadSize);
-  stream.read(buffer.data(), Common::downCast<std::streamsize>(buffer.size()));
-  return {payloadType, std::string(buffer.data(), buffer.size())};
+  const auto payloadType = static_cast<PayloadType>(payloadType_);
+
+  auto payloadSize = size_t{};
+  auto sm_payload_size_byte = uint8_t{};
+
+  do {
+    sm_payload_size_byte = Common::getUint8(stream);
+    payloadSize += sm_payload_size_byte;
+  } while (sm_payload_size_byte == 0xFF);
+
+  auto payload = std::string(payloadSize, '\0');
+  stream.read(payload.data(), Common::assertDownCast<std::streamsize>(payloadSize));
+
+  return SeiMessage{payloadType, SeiPayload::decodeFromString(payload, payloadType, nut)};
 }
 
-namespace {
-void encodeSeiHeaderValue(std::ostream &stream, size_t value) {
-  while (value >= UINT8_MAX) {
-    Common::putUint8(stream, UINT8_MAX);
-    value -= UINT8_MAX;
-  }
-  Common::putUint8(stream, static_cast<uint8_t>(value));
-}
-} // namespace
+void SeiMessage::encodeTo(std::ostream &stream, NalUnitType nut) const {
+  const auto payload = seiPayload().encodeToString(payloadType(), nut);
 
-void SeiMessage::encodeTo(std::ostream &stream) const {
-  encodeSeiHeaderValue(stream, static_cast<uint32_t>(payloadType()));
-  encodeSeiHeaderValue(stream, payloadSize());
-  stream.write(payload().data(), Common::downCast<std::streamsize>(payload().size()));
+  auto payloadType_ = static_cast<size_t>(payloadType());
+  auto sm_payload_type_byte = uint8_t{};
+
+  do {
+    sm_payload_type_byte = static_cast<uint8_t>(std::min(size_t{0xFF}, payloadType_));
+    Common::putUint8(stream, sm_payload_type_byte);
+    payloadType_ -= sm_payload_type_byte;
+  } while (sm_payload_type_byte == 0xFF);
+
+  auto payloadSize = payload.size();
+  auto sm_payload_size_byte = uint8_t{};
+
+  do {
+    sm_payload_size_byte = static_cast<uint8_t>(std::min<size_t>(0xFF, payloadSize));
+    Common::putUint8(stream, sm_payload_size_byte);
+    payloadSize -= sm_payload_size_byte;
+  } while (sm_payload_size_byte == 0xFF);
+
+  stream.write(payload.data(), Common::assertDownCast<std::streamsize>(payload.size()));
 }
 
 SeiRBSP::SeiRBSP(std::vector<SeiMessage> messages) : m_messages{std::move(messages)} {}
@@ -183,22 +316,23 @@ auto SeiRBSP::operator==(const SeiRBSP &other) const noexcept -> bool {
 
 auto SeiRBSP::operator!=(const SeiRBSP &other) const noexcept -> bool { return !operator==(other); }
 
-auto SeiRBSP::decodeFrom(std::istream &stream) -> SeiRBSP {
-  auto messages = std::vector<SeiMessage>{};
+auto SeiRBSP::decodeFrom(std::istream &stream, NalUnitType nut) -> SeiRBSP {
+  auto x = SeiRBSP{};
 
   do {
-    messages.push_back(SeiMessage::decodeFrom(stream));
+    x.messages().push_back(SeiMessage::decodeFrom(stream, nut));
   } while (Common::moreRbspData(stream));
+
   Common::rbspTrailingBits(stream);
 
-  return SeiRBSP{messages};
+  return x;
 }
 
-void SeiRBSP::encodeTo(std::ostream &stream) const {
+void SeiRBSP::encodeTo(std::ostream &stream, NalUnitType nut) const {
   PRECONDITION(!messages().empty());
 
   for (const auto &x : messages()) {
-    x.encodeTo(stream);
+    x.encodeTo(stream, nut);
   }
   Common::rbspTrailingBits(stream);
 }

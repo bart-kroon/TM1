@@ -191,6 +191,7 @@ public:
   friend auto operator<<(std::ostream &stream, const SceneObjectInformation &x) -> std::ostream &;
 
   auto operator==(const SceneObjectInformation &other) const noexcept -> bool;
+  auto operator!=(const SceneObjectInformation &other) const noexcept -> bool;
 
   static auto decodeFrom(Common::InputBitstream &bitstream) -> SceneObjectInformation;
 

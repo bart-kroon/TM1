@@ -115,6 +115,8 @@ private:
 
 class GeometryAssistance {
 public:
+  friend auto operator<<(std::ostream &stream, const GeometryAssistance &x) -> std::ostream &;
+
   auto operator==(const GeometryAssistance &other) const noexcept -> bool;
   auto operator!=(const GeometryAssistance &other) const noexcept -> bool;
 

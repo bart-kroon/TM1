@@ -141,12 +141,11 @@ vuh_atlas_id=0
 ssnh_unit_size_precision_bytes_minus1=2
 
 ----------------------------------------------------------------------------------------------------
-nal_unit_type=NAL_SUFFIX_NSEI
+nal_unit_type=NAL_PREFIX_NSEI
 nal_layer_id=0
 nal_temporal_id_plus1=1
 NumBytesInRbsp=41
 payloadType=geometry_assistance
-payloadSize=28
 gas_qs=1
 gas_num_views_minus1=0
 gas_log2_bw_minus2=8
@@ -158,7 +157,6 @@ block y=0 x=1 gas_split_flag=true gas_quad_split_flag=false gas_split_orientatio
 block y=1 x=0 gas_split_flag=false [gas_skip_flag=false,gas_zmin_delta=-81,gas_zmax_delta=-153]
 block y=1 x=1 gas_split_flag=false [gas_skip_flag=false,gas_ltmin_flag=true,gas_ltmax_flag=false,gas_zmin_delta=0,gas_zmax_delta=0]
 payloadType=geometry_assistance
-payloadSize=8
 gas_qs=1
 gas_num_views_minus1=0
 gas_log2_bw_minus2=8

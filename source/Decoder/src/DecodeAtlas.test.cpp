@@ -107,10 +107,11 @@ auto prefixSei() {
   using PT = TMIV::MivBitstream::PayloadType;
 
   auto sei = SeiRBSP{};
-  sei.messages().emplace_back(PT::attribute_smoothing, "[not implemented, to be ignored]");
+  sei.messages().emplace_back(PT::attribute_smoothing,
+                              TMIV::MivBitstream::SeiPayload{"[not implemented, to be ignored]"});
 
   std::ostringstream stream;
-  sei.encodeTo(stream);
+  sei.encodeTo(stream, NalUnitType::NAL_PREFIX_ESEI);
   return NalUnit{NalUnitHeader{NalUnitType::NAL_PREFIX_ESEI, 0, 1}, stream.str()};
 }
 
@@ -120,10 +121,11 @@ auto suffixSei() {
   using PT = TMIV::MivBitstream::PayloadType;
 
   auto sei = SeiRBSP{};
-  sei.messages().emplace_back(PT::buffering_period, "[not implemented, to be ignored]");
+  sei.messages().emplace_back(PT::buffering_period,
+                              TMIV::MivBitstream::SeiPayload{"[not implemented, to be ignored]"});
 
   std::ostringstream stream;
-  sei.encodeTo(stream);
+  sei.encodeTo(stream, NalUnitType::NAL_PREFIX_ESEI);
   return NalUnit{NalUnitHeader{NalUnitType::NAL_SUFFIX_ESEI, 0, 1}, stream.str()};
 }
 

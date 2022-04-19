@@ -211,20 +211,11 @@ private:
     return MivBitstream::PtlMaxDecodesIdc::unconstrained;
   }
 
-  template <typename Payload>
-  auto encodeSeiMessage(const Payload &payload, MivBitstream::PayloadType payloadType)
-      -> MivBitstream::SeiMessage {
-    std::ostringstream subStream;
-    Common::OutputBitstream subBitstream{subStream};
-    payload.encodeTo(subBitstream);
-    return MivBitstream::SeiMessage{payloadType, subStream.str()};
-  }
-
   static void encodeSeiRbspToAsb(MivBitstream::AtlasSubBitstream &asb,
                                  const MivBitstream::SeiRBSP &seiRbsp,
                                  const MivBitstream::NalUnitHeader &nuh) {
     std::ostringstream subStream;
-    seiRbsp.encodeTo(subStream);
+    seiRbsp.encodeTo(subStream, nuh.nal_unit_type());
     asb.nal_units().emplace_back(nuh, subStream.str());
   }
 
@@ -443,34 +434,33 @@ private:
   }
 
   void encodePrefixSeiMessages(MivBitstream::AtlasSubBitstream &asb) {
-    std::vector<MivBitstream::SeiMessage> seiMessages{};
-    if (m_params.viewingSpace.has_value() &&
-        m_previouslySentMessages.viewingSpace != m_params.viewingSpace) {
-      seiMessages.emplace_back(
-          encodeSeiMessage(*m_params.viewingSpace, MivBitstream::PayloadType::viewing_space));
+    auto sei = MivBitstream::SeiRBSP{};
+
+    if (m_params.viewingSpace && m_previouslySentMessages.viewingSpace != m_params.viewingSpace) {
+      sei.messages().emplace_back(MivBitstream::PayloadType::viewing_space,
+                                  MivBitstream::SeiPayload{*m_params.viewingSpace});
       m_previouslySentMessages.viewingSpace = m_params.viewingSpace;
     }
 
-    if (m_params.viewportCameraParameters.has_value() &&
+    if (m_params.viewportCameraParameters &&
         m_previouslySentMessages.viewportCameraParameters != m_params.viewportCameraParameters) {
-      seiMessages.emplace_back(
-          encodeSeiMessage(*m_params.viewportCameraParameters,
-                           MivBitstream::PayloadType::viewport_camera_parameters));
+      sei.messages().emplace_back(MivBitstream::PayloadType::viewport_camera_parameters,
+                                  MivBitstream::SeiPayload{*m_params.viewportCameraParameters});
       m_previouslySentMessages.viewportCameraParameters = m_params.viewportCameraParameters;
     }
 
-    if (m_params.viewportPosition.has_value() &&
+    if (m_params.viewportPosition &&
         m_previouslySentMessages.viewportPosition != m_params.viewportPosition) {
-      seiMessages.emplace_back(encodeSeiMessage(*m_params.viewportPosition,
-                                                MivBitstream::PayloadType::viewport_position));
+      sei.messages().emplace_back(MivBitstream::PayloadType::viewport_position,
+                                  MivBitstream::SeiPayload{*m_params.viewportPosition});
       m_previouslySentMessages.viewportPosition = m_params.viewportPosition;
     }
 
-    if (!seiMessages.empty()) {
-      MivBitstream::SeiRBSP seiRbsp{std::move(seiMessages)};
-      encodeSeiRbspToAsb(asb, seiRbsp, nuhPrefixNsei);
+    if (!sei.messages().empty()) {
+      encodeSeiRbspToAsb(asb, sei, nuhPrefixNsei);
     }
   }
+
   static void encodeSuffixSeiMessages(MivBitstream::AtlasSubBitstream &asb) {
     std::vector<MivBitstream::SeiMessage> seiMessages{};
     if (!seiMessages.empty()) {

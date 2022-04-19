@@ -102,6 +102,11 @@ auto PackedIndependentRegions::operator==(const PackedIndependentRegions &other)
   return m_pirPackedFrames == other.m_pirPackedFrames;
 }
 
+auto PackedIndependentRegions::operator!=(const PackedIndependentRegions &other) const noexcept
+    -> bool {
+  return !operator==(other);
+}
+
 auto PackedIndependentRegions::decodeFrom(Common::InputBitstream &bitstream)
     -> PackedIndependentRegions {
   PackedIndependentRegions result{};

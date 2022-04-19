@@ -37,24 +37,13 @@
 #include <TMIV/MivBitstream/AccessUnitDelimiterRBSP.h>
 #include <TMIV/MivBitstream/AtlasAdaptationParameterSetRBSP.h>
 #include <TMIV/MivBitstream/AtlasFrameParameterSetRBSP.h>
-#include <TMIV/MivBitstream/AtlasObjectAssociation.h>
 #include <TMIV/MivBitstream/AtlasSequenceParameterSetRBSP.h>
 #include <TMIV/MivBitstream/AtlasTileLayerRBSP.h>
-#include <TMIV/MivBitstream/AtlasViewEnabled.h>
 #include <TMIV/MivBitstream/CommonAtlasFrameRBSP.h>
 #include <TMIV/MivBitstream/CommonAtlasSequenceParameterSetRBSP.h>
-#include <TMIV/MivBitstream/DecodedAtlasInformationHash.h>
-#include <TMIV/MivBitstream/GeometryAssistance.h>
-#include <TMIV/MivBitstream/GeometryUpscalingParameters.h>
-#include <TMIV/MivBitstream/PackedIndependentRegions.h>
-#include <TMIV/MivBitstream/SceneObjectInformation.h>
 #include <TMIV/MivBitstream/SeiRBSP.h>
 #include <TMIV/MivBitstream/V3cSampleStreamFormat.h>
 #include <TMIV/MivBitstream/V3cUnit.h>
-#include <TMIV/MivBitstream/ViewingSpace.h>
-#include <TMIV/MivBitstream/ViewingSpaceHandling.h>
-#include <TMIV/MivBitstream/ViewportCameraParameters.h>
-#include <TMIV/MivBitstream/ViewportPosition.h>
 
 #include <fstream>
 
@@ -68,14 +57,14 @@ public:
       : m_log{log}, m_recoded{recoded}, m_seiJsons{seiJsons} {}
 
   void parseV3cSampleStream(std::istream &stream) {
-    const auto ssvh = TMIV::MivBitstream::SampleStreamV3cHeader::decodeFrom(stream);
+    const auto ssvh = MivBitstream::SampleStreamV3cHeader::decodeFrom(stream);
     if (m_recoded != nullptr) {
       ssvh.encodeTo(*m_recoded);
     }
     m_log << ssvh;
 
     while (stream.peek(), !stream.eof()) {
-      const auto ssvu = TMIV::MivBitstream::SampleStreamV3cUnit::decodeFrom(stream, ssvh);
+      const auto ssvu = MivBitstream::SampleStreamV3cUnit::decodeFrom(stream, ssvh);
       m_log << '\n' << std::string(100, '=') << '\n' << ssvu;
       std::istringstream substream{ssvu.ssvu_v3c_unit()};
       parseV3cUnit(substream, ssvu.ssvu_v3c_unit_size());
@@ -86,7 +75,7 @@ public:
 
 private:
   void parseV3cUnit(std::istream &stream, size_t numBytesInV3CUnit) {
-    auto vu = TMIV::MivBitstream::V3cUnit::decodeFrom(stream, numBytesInV3CUnit);
+    auto vu = MivBitstream::V3cUnit::decodeFrom(stream, numBytesInV3CUnit);
     m_log << vu.v3c_unit_header();
     m_vuh = vu.v3c_unit_header();
 
@@ -103,7 +92,7 @@ private:
 
   void parseV3cUnitPayload(const std::monostate & /* unused */) {}
 
-  void parseV3cUnitPayload(const TMIV::MivBitstream::V3cParameterSet &vps) {
+  void parseV3cUnitPayload(const MivBitstream::V3cParameterSet &vps) {
     m_log << vps;
     m_vps = vps;
     // vps.encodeTo(m_substream);
@@ -111,28 +100,29 @@ private:
     vu.encodeTo(m_substream);
   }
 
-  void parseV3cUnitPayload(const TMIV::MivBitstream::AtlasSubBitstream &asb) {
+  void parseV3cUnitPayload(const MivBitstream::AtlasSubBitstream &asb) {
     m_log << asb.sample_stream_nal_header();
 
     for (const auto &nu : asb.nal_units()) {
       parseNalUnit(nu);
     }
-    if (!m_seiJsons.empty() &&
-        m_vuh.value().vuh_unit_type() == TMIV::MivBitstream::VuhUnitType::V3C_AD) {
+    if (!m_seiJsons.empty() && m_vuh.value().vuh_unit_type() == MivBitstream::VuhUnitType::V3C_AD) {
       m_log << "*** inserting " << m_seiJsons.size() << " SEI messages\n";
-      std::vector<TMIV::MivBitstream::SeiMessage> seiMessages;
-      for (auto &j : m_seiJsons) {
-        TMIV::MivBitstream::SeiMessage gaSei = readGeometryAssistanceSEI(j);
-        seiMessages.emplace_back(gaSei);
+      std::vector<MivBitstream::SeiMessage> seiMessages;
+      for (auto &seiJson : m_seiJsons) {
+        seiMessages.emplace_back(
+            MivBitstream::PayloadType::geometry_assistance,
+            MivBitstream::SeiPayload{MivBitstream::GeometryAssistance::readFrom(seiJson)});
       }
       m_seiJsons.clear(); // only insert frames into first atlas for testing.
+
       MivBitstream::SeiRBSP seiRbsp{std::move(seiMessages)};
       std::ostringstream subStream;
-      seiRbsp.encodeTo(subStream);
+
+      static constexpr auto nut = MivBitstream::NalUnitType::NAL_PREFIX_NSEI;
+      seiRbsp.encodeTo(subStream, nut);
       auto asb_copy = asb;
-      asb_copy.nal_units().emplace_back(
-          MivBitstream::NalUnitHeader{MivBitstream::NalUnitType::NAL_SUFFIX_NSEI, 0, 1},
-          subStream.str());
+      asb_copy.nal_units().emplace_back(MivBitstream::NalUnitHeader{nut, 0, 1}, subStream.str());
 
       const auto vu = MivBitstream::V3cUnit{*m_vuh, asb_copy};
       vu.encodeTo(m_substream);
@@ -142,54 +132,53 @@ private:
     }
   }
 
-  void parseV3cUnitPayload(const TMIV::MivBitstream::VideoSubBitstream & /* unused */) {
+  void parseV3cUnitPayload(const MivBitstream::VideoSubBitstream & /* unused */) {
     m_log << "videosubstream\n";
   }
 
-  void parseNalUnit(const TMIV::MivBitstream::NalUnit &nu) {
+  void parseNalUnit(const MivBitstream::NalUnit &nu) {
     m_log << '\n' << std::string(100, '-') << '\n' << nu;
     std::istringstream stream{nu.rbsp()};
-    if (nu.nal_unit_header().nal_unit_type() < TMIV::MivBitstream::NalUnitType::NAL_ASPS) {
+    if (nu.nal_unit_header().nal_unit_type() < MivBitstream::NalUnitType::NAL_ASPS) {
       return parseAtl(stream, nu.nal_unit_header());
     }
     switch (nu.nal_unit_header().nal_unit_type()) {
-    case TMIV::MivBitstream::NalUnitType::NAL_ASPS:
+    case MivBitstream::NalUnitType::NAL_ASPS:
       return parseAsps(stream);
-    case TMIV::MivBitstream::NalUnitType::NAL_AFPS:
+    case MivBitstream::NalUnitType::NAL_AFPS:
       return parseAfps(stream);
-    case TMIV::MivBitstream::NalUnitType::NAL_AUD:
-    case TMIV::MivBitstream::NalUnitType::NAL_V3C_AUD:
+    case MivBitstream::NalUnitType::NAL_AUD:
+    case MivBitstream::NalUnitType::NAL_V3C_AUD:
       return parseAud(stream);
-    case TMIV::MivBitstream::NalUnitType::NAL_EOS:
-    case TMIV::MivBitstream::NalUnitType::NAL_EOB:
-    case TMIV::MivBitstream::NalUnitType::NAL_FD:
+    case MivBitstream::NalUnitType::NAL_EOS:
+    case MivBitstream::NalUnitType::NAL_EOB:
+    case MivBitstream::NalUnitType::NAL_FD:
       return;
-    case TMIV::MivBitstream::NalUnitType::NAL_PREFIX_NSEI:
-    case TMIV::MivBitstream::NalUnitType::NAL_SUFFIX_NSEI:
-    case TMIV::MivBitstream::NalUnitType::NAL_PREFIX_ESEI:
-    case TMIV::MivBitstream::NalUnitType::NAL_SUFFIX_ESEI:
-      return parseSei(stream);
-    case TMIV::MivBitstream::NalUnitType::NAL_AAPS:
+    case MivBitstream::NalUnitType::NAL_PREFIX_NSEI:
+    case MivBitstream::NalUnitType::NAL_SUFFIX_NSEI:
+    case MivBitstream::NalUnitType::NAL_PREFIX_ESEI:
+    case MivBitstream::NalUnitType::NAL_SUFFIX_ESEI:
+      return parseSei(stream, nu.nal_unit_header().nal_unit_type());
+    case MivBitstream::NalUnitType::NAL_AAPS:
       return parseAaps(stream);
-    case TMIV::MivBitstream::NalUnitType::NAL_CASPS:
+    case MivBitstream::NalUnitType::NAL_CASPS:
       return parseCasps(stream);
-    case TMIV::MivBitstream::NalUnitType::NAL_CAF_TRIAL:
-    case TMIV::MivBitstream::NalUnitType::NAL_CAF_IDR:
+    case MivBitstream::NalUnitType::NAL_CAF_TRIAL:
+    case MivBitstream::NalUnitType::NAL_CAF_IDR:
       return parseCaf(stream, nu.nal_unit_header());
     default:
       std::cout << "Unknown NAL unit:\n" << nu;
     }
   }
 
-  void parseAtl(std::istream &stream, const TMIV::MivBitstream::NalUnitHeader &nuh) {
-    const auto atl =
-        TMIV::MivBitstream::AtlasTileLayerRBSP::decodeFrom(stream, nuh, m_aspsV, m_afpsV);
+  void parseAtl(std::istream &stream, const MivBitstream::NalUnitHeader &nuh) {
+    const auto atl = MivBitstream::AtlasTileLayerRBSP::decodeFrom(stream, nuh, m_aspsV, m_afpsV);
     m_log << atl;
   }
 
   void parseAsps(std::istream &stream) {
     const auto asps =
-        TMIV::MivBitstream::AtlasSequenceParameterSetRBSP::decodeFrom(stream, *m_vuh, m_vps);
+        MivBitstream::AtlasSequenceParameterSetRBSP::decodeFrom(stream, *m_vuh, m_vps);
     m_log << asps;
     for (auto &x : m_aspsV) {
       if (x.asps_atlas_sequence_parameter_set_id() == asps.asps_atlas_sequence_parameter_set_id()) {
@@ -201,7 +190,7 @@ private:
   }
 
   void parseAfps(std::istream &stream) {
-    const auto afps = TMIV::MivBitstream::AtlasFrameParameterSetRBSP::decodeFrom(stream, m_aspsV);
+    const auto afps = MivBitstream::AtlasFrameParameterSetRBSP::decodeFrom(stream, m_aspsV);
     m_log << afps;
     for (auto &x : m_afpsV) {
       if (x.afps_atlas_frame_parameter_set_id() == afps.afps_atlas_frame_parameter_set_id()) {
@@ -213,19 +202,17 @@ private:
   }
 
   void parseAud(std::istream &stream) {
-    const auto aud = TMIV::MivBitstream::AccessUnitDelimiterRBSP::decodeFrom(stream);
+    const auto aud = MivBitstream::AccessUnitDelimiterRBSP::decodeFrom(stream);
     m_log << aud;
   }
 
-  void parseSei(std::istream &stream) {
-    const auto sei = TMIV::MivBitstream::SeiRBSP::decodeFrom(stream);
-    for (const auto &message : sei.messages()) {
-      parseSeiMessage(message);
-    }
+  void parseSei(std::istream &stream, MivBitstream::NalUnitType nut) {
+    const auto sei = MivBitstream::SeiRBSP::decodeFrom(stream, nut);
+    m_log << sei;
   }
 
   void parseAaps(std::istream &stream) {
-    const auto aaps = TMIV::MivBitstream::AtlasAdaptationParameterSetRBSP::decodeFrom(stream);
+    const auto aaps = MivBitstream::AtlasAdaptationParameterSetRBSP::decodeFrom(stream);
     m_log << aaps;
     if (aaps.aaps_log2_max_afoc_present_flag()) {
       m_maxCommonAtlasFrmOrderCntLsb =
@@ -234,7 +221,7 @@ private:
   }
 
   void parseCasps(std::istream &stream) {
-    const auto casps = TMIV::MivBitstream::CommonAtlasSequenceParameterSetRBSP::decodeFrom(stream);
+    const auto casps = MivBitstream::CommonAtlasSequenceParameterSetRBSP::decodeFrom(stream);
     m_log << casps;
     for (auto &x : m_caspsV) {
       if (x.casps_common_atlas_sequence_parameter_set_id() ==
@@ -248,127 +235,28 @@ private:
         1U << (casps.casps_log2_max_common_atlas_frame_order_cnt_lsb_minus4() + 4U);
   }
 
-  void parseCaf(std::istream &stream, const TMIV::MivBitstream::NalUnitHeader &nuh) {
-    const auto caf = TMIV::MivBitstream::CommonAtlasFrameRBSP::decodeFrom(
-        stream, nuh, m_caspsV, m_maxCommonAtlasFrmOrderCntLsb);
+  void parseCaf(std::istream &stream, const MivBitstream::NalUnitHeader &nuh) {
+    const auto caf = MivBitstream::CommonAtlasFrameRBSP::decodeFrom(stream, nuh, m_caspsV,
+                                                                    m_maxCommonAtlasFrmOrderCntLsb);
     m_caf = caf;
     m_log << caf;
   }
 
-  void parseSeiMessage(const TMIV::MivBitstream::SeiMessage &message) {
-    m_log << message;
-    std::istringstream stream{message.payload()};
-    TMIV::Common::InputBitstream bitstream{stream};
-
-    switch (message.payloadType()) {
-    case TMIV::MivBitstream::PayloadType::atlas_object_association:
-      return parseAtlasObjectAssociationSei(bitstream);
-    case TMIV::MivBitstream::PayloadType::atlas_view_enabled:
-      return parseAtlasViewEnabledSei(bitstream);
-    case TMIV::MivBitstream::PayloadType::geometry_upscaling_parameters:
-      return parseGeometryUpscalingParametersSei(bitstream);
-    case TMIV::MivBitstream::PayloadType::decoded_atlas_information_hash:
-      return parseDecodedAtlasInformationHashSei(bitstream);
-    case TMIV::MivBitstream::PayloadType::packed_independent_regions:
-      return parsePackedIndependentRegionSei(bitstream);
-    case TMIV::MivBitstream::PayloadType::scene_object_information:
-      return parseSceneObjectInformationSei(bitstream);
-    case TMIV::MivBitstream::PayloadType::viewing_space:
-      return parseViewingSpaceSei(bitstream);
-    case TMIV::MivBitstream::PayloadType::viewing_space_handling:
-      return parseViewingSpaceHandlingSei(bitstream);
-    case TMIV::MivBitstream::PayloadType::viewport_camera_parameters:
-      return parseViewportCameraParametersSei(bitstream);
-    case TMIV::MivBitstream::PayloadType::viewport_position:
-      return parseViewportPositionSei(bitstream);
-    case TMIV::MivBitstream::PayloadType::geometry_assistance:
-      return parseGeometryAssistanceSei(bitstream);
-    default:
-      std::cout << "Unknown SEI message:\n" << message;
-    }
-  }
-
-  void parseAtlasObjectAssociationSei(TMIV::Common::InputBitstream &bitstream) {
-    const auto aoa = TMIV::MivBitstream::AtlasObjectAssociation::decodeFrom(bitstream);
-    m_log << aoa;
-  }
-
-  void parseAtlasViewEnabledSei(TMIV::Common::InputBitstream &bitstream) {
-    const auto ave = TMIV::MivBitstream::AtlasViewEnabled::decodeFrom(bitstream);
-    m_log << ave;
-  }
-
-  void parseGeometryUpscalingParametersSei(TMIV::Common::InputBitstream &bitstream) {
-    const auto gup = TMIV::MivBitstream::GeometryUpscalingParameters::decodeFrom(bitstream);
-    m_log << gup;
-  }
-
-  void parseDecodedAtlasInformationHashSei(TMIV::Common::InputBitstream &bitstream) {
-    const auto daih = TMIV::MivBitstream::DecodedAtlasInformationHash::decodeFrom(bitstream);
-    m_log << daih;
-  }
-
-  void parsePackedIndependentRegionSei(TMIV::Common::InputBitstream &bitstream) {
-    const auto pir = TMIV::MivBitstream::PackedIndependentRegions::decodeFrom(bitstream);
-    m_log << pir;
-  }
-
-  void parseSceneObjectInformationSei(TMIV::Common::InputBitstream &bitstream) {
-    const auto soi = TMIV::MivBitstream::SceneObjectInformation::decodeFrom(bitstream);
-    m_log << soi;
-  }
-
-  void parseViewingSpaceSei(TMIV::Common::InputBitstream &bitstream) {
-    const auto vs = TMIV::MivBitstream::ViewingSpace::decodeFrom(bitstream);
-    m_log << vs;
-  }
-
-  void parseViewingSpaceHandlingSei(TMIV::Common::InputBitstream &bitstream) {
-    const auto vsh = TMIV::MivBitstream::ViewingSpaceHandling::decodeFrom(bitstream);
-    m_log << vsh;
-  }
-
-  void parseViewportCameraParametersSei(TMIV::Common::InputBitstream &bitstream) {
-    const auto vs = TMIV::MivBitstream::ViewportCameraParameters::decodeFrom(bitstream);
-    m_log << vs;
-  }
-
-  void parseViewportPositionSei(TMIV::Common::InputBitstream &bitstream) {
-    const auto vs = TMIV::MivBitstream::ViewportPosition::decodeFrom(bitstream);
-    m_log << vs;
-  }
-
-  void parseGeometryAssistanceSei(TMIV::Common::InputBitstream &bitstream) {
-    const auto ga = TMIV::MivBitstream::GeometryAssistance::decodeFrom(bitstream);
-    ga.writeTo(m_log);
-  }
-
-  static auto readGeometryAssistanceSEI(Common::Json const &seiJson)
-      -> TMIV::MivBitstream::SeiMessage {
-    TMIV::MivBitstream::GeometryAssistance ga =
-        TMIV::MivBitstream::GeometryAssistance::readFrom(seiJson);
-    std::stringstream ostream;
-    TMIV::Common::OutputBitstream obitstream{ostream};
-    ga.encodeTo(obitstream);
-    return MivBitstream::SeiMessage{TMIV::MivBitstream::PayloadType::geometry_assistance,
-                                    ostream.str()};
-  }
-
   std::ostream &m_log;
   std::ostream *m_recoded;
-  std::vector<TMIV::Common::Json> m_seiJsons;
+  std::vector<Common::Json> m_seiJsons;
   std::stringstream m_substream; // used for recoding
-  std::vector<TMIV::MivBitstream::CommonAtlasSequenceParameterSetRBSP> m_caspsV;
-  std::vector<TMIV::MivBitstream::AtlasSequenceParameterSetRBSP> m_aspsV;
-  std::vector<TMIV::MivBitstream::AtlasFrameParameterSetRBSP> m_afpsV;
-  std::optional<TMIV::MivBitstream::V3cUnitHeader> m_vuh;
-  TMIV::MivBitstream::V3cParameterSet m_vps;
-  TMIV::MivBitstream::CommonAtlasFrameRBSP m_caf;
+  std::vector<MivBitstream::CommonAtlasSequenceParameterSetRBSP> m_caspsV;
+  std::vector<MivBitstream::AtlasSequenceParameterSetRBSP> m_aspsV;
+  std::vector<MivBitstream::AtlasFrameParameterSetRBSP> m_afpsV;
+  std::optional<MivBitstream::V3cUnitHeader> m_vuh;
+  MivBitstream::V3cParameterSet m_vps;
+  MivBitstream::CommonAtlasFrameRBSP m_caf;
   uint32_t m_maxCommonAtlasFrmOrderCntLsb{};
 };
 
 GaInserter::GaInserter(std::ostream &log, std::ostream *recoded,
-                       std::vector<TMIV::Common::Json> &seiJsons)
+                       std::vector<Common::Json> &seiJsons)
     : m_impl{new Impl{log, recoded, seiJsons}} {}
 
 GaInserter::~GaInserter() = default;

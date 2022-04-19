@@ -86,6 +86,12 @@ class OutputBitstream {
 public:
   explicit OutputBitstream(std::ostream &stream) : m_stream{stream} {}
 
+  OutputBitstream(const OutputBitstream &) = delete;
+  OutputBitstream(OutputBitstream &&) = delete;
+  auto operator=(const OutputBitstream &) -> OutputBitstream & = delete;
+  auto operator=(OutputBitstream &&) -> OutputBitstream & = delete;
+  ~OutputBitstream();
+
   // Output bit position indicator
   [[nodiscard]] auto tellp() const -> std::streampos;
 

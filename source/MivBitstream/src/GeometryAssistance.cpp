@@ -389,6 +389,11 @@ auto GeometryAssistance::blocks(std::vector<std::vector<std::vector<GaBlock>>> &
   return *this;
 }
 
+auto operator<<(std::ostream &stream, const GeometryAssistance &x) -> std::ostream & {
+  x.writeTo(stream);
+  return stream;
+}
+
 auto GeometryAssistance::operator==(const GeometryAssistance &other) const noexcept -> bool {
   return gas_qs() == other.gas_qs() && gas_num_views() == other.gas_num_views() &&
          gas_bw() == other.gas_bw() &&
@@ -487,7 +492,6 @@ void GeometryAssistance::encodeTo(Common::OutputBitstream &bitstream) const {
       }
     }
   }
-  bitstream.zeroAlign();
 }
 
 auto GeometryAssistance::decodeFrom(Common::InputBitstream &bitstream) -> GeometryAssistance {
@@ -517,7 +521,6 @@ auto GeometryAssistance::decodeFrom(Common::InputBitstream &bitstream) -> Geomet
       }
     }
   }
-  bitstream.zeroAlign();
   return x;
 }
 } // namespace TMIV::MivBitstream

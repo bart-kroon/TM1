@@ -83,25 +83,15 @@ TEST_CASE("sei_message", "[Supplemental Enhancement Information RBSP]") {
   SECTION("Default Constructor") {
     const auto message = SeiMessage{};
     REQUIRE(toString(message) == R"(payloadType=buffering_period
-payloadSize=0
 )");
-    REQUIRE(byteCodingTest(message, 2));
+    REQUIRE_THROWS(byteCodingTest(message, 2, NalUnitType::NAL_PREFIX_NSEI));
   }
 
   SECTION("Time Code") {
-    const auto message = SeiMessage{PayloadType::time_code, "Tick tock"};
+    const auto message = SeiMessage{PayloadType::time_code, SeiPayload{"Tick tock"}};
     REQUIRE(toString(message) == R"(payloadType=time_code
-payloadSize=9
 )");
-    REQUIRE(byteCodingTest(message, 11));
-  }
-
-  SECTION("Atlas Object Association") {
-    const auto message = SeiMessage{PayloadType::atlas_object_association, "My Atlas"};
-    REQUIRE(toString(message) == R"(payloadType=atlas_object_association
-payloadSize=8
-)");
-    REQUIRE(byteCodingTest(message, 10));
+    REQUIRE(byteCodingTest(message, 11, NalUnitType::NAL_PREFIX_NSEI));
   }
 }
 
@@ -121,54 +111,37 @@ TEST_CASE("sei_rbsp", "[Supplemental Enhancement Information RBSP]") {
   REQUIRE(toString(x).empty());
 
   SECTION("Example 1") {
-    x.messages().emplace_back();
-    x.messages().emplace_back(PayloadType::sei_manifest, "Manifest");
+    x.messages().emplace_back(PayloadType::buffering_period, SeiPayload{"quite long"});
+    x.messages().emplace_back(PayloadType::sei_manifest, SeiPayload{"Manifest"});
 
     REQUIRE(toString(x) == R"(payloadType=buffering_period
-payloadSize=0
 payloadType=sei_manifest
-payloadSize=8
 )");
-    REQUIRE(byteCodingTest(x, 13));
+    REQUIRE(byteCodingTest(x, 23, NalUnitType::NAL_SUFFIX_NSEI));
   }
 
   SECTION("Example 2") {
-    const size_t number_of_bytes_of_atlas_object_association_payload = 7;
-
-    x.messages().emplace_back(PayloadType::filler_payload, std::string(1000, 'x'));
-    x.messages().emplace_back(PayloadType::filler_payload, std::string(254, 'a'));
-    x.messages().emplace_back(PayloadType::filler_payload, std::string(255, 'b'));
-    x.messages().emplace_back(PayloadType::filler_payload, std::string(256, 'c'));
-    x.messages().emplace_back(PayloadType::filler_payload, std::string(257, 'd'));
-    x.messages().emplace_back(PayloadType::user_data_unregistered, "Unregistered");
-    x.messages().emplace_back(
-        PayloadType::atlas_object_association,
-        std::string(number_of_bytes_of_atlas_object_association_payload, 'e'));
+    x.messages().emplace_back(PayloadType::filler_payload, SeiPayload{std::string(1000, 'x')});
+    x.messages().emplace_back(PayloadType::filler_payload, SeiPayload{std::string(254, 'a')});
+    x.messages().emplace_back(PayloadType::filler_payload, SeiPayload{std::string(255, 'b')});
+    x.messages().emplace_back(PayloadType::filler_payload, SeiPayload{std::string(256, 'c')});
+    x.messages().emplace_back(PayloadType::filler_payload, SeiPayload{std::string(257, 'd')});
+    x.messages().emplace_back(PayloadType::user_data_unregistered, SeiPayload{"Unregistered"});
 
     REQUIRE(toString(x) == R"(payloadType=filler_payload
-payloadSize=1000
 payloadType=filler_payload
-payloadSize=254
 payloadType=filler_payload
-payloadSize=255
 payloadType=filler_payload
-payloadSize=256
 payloadType=filler_payload
-payloadSize=257
 payloadType=user_data_unregistered
-payloadSize=12
-payloadType=atlas_object_association
-payloadSize=7
 )");
     const size_t trailing_byte = 1;
     const size_t expected_number_of_bytes =
         computePayloadAndHeaderSizeFor(1000) + computePayloadAndHeaderSizeFor(254) +
         computePayloadAndHeaderSizeFor(255) + computePayloadAndHeaderSizeFor(256) +
-        computePayloadAndHeaderSizeFor(257) + computePayloadAndHeaderSizeFor(12) +
-        computePayloadAndHeaderSizeFor(number_of_bytes_of_atlas_object_association_payload) +
-        trailing_byte;
+        computePayloadAndHeaderSizeFor(257) + computePayloadAndHeaderSizeFor(12) + trailing_byte;
 
-    REQUIRE(byteCodingTest(x, expected_number_of_bytes));
+    REQUIRE(byteCodingTest(x, expected_number_of_bytes, NalUnitType::NAL_SUFFIX_NSEI));
   }
 }
 } // namespace TMIV::MivBitstream

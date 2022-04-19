@@ -33,6 +33,8 @@
 
 #include <TMIV/Common/Bitstream.h>
 
+#include <fmt/format.h>
+
 #include <cstring>
 #include <iostream>
 #include <limits>
@@ -148,6 +150,12 @@ auto InputBitstream::moreRbspData() -> bool {
 void InputBitstream::reset() {
   m_size = 0;
   m_buffer = 0;
+}
+
+OutputBitstream::~OutputBitstream() {
+  if (!byteAligned()) {
+    fmt::print("WARNING: Output bitstream is not byte aligned.\n");
+  }
 }
 
 auto OutputBitstream::tellp() const -> std::streampos {

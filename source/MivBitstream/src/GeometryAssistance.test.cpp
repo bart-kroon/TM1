@@ -58,6 +58,7 @@ TEST_CASE("geometry_assistance", "[Geometry assistance SEI payload syntax]") {
     auto ga = TMIV::MivBitstream::GeometryAssistance::readFrom(json_ga);
     std::ostringstream text;
     ga.writeTo(text);
+
     REQUIRE(text.str() ==
             R"(gas_qs=1
 gas_num_views_minus1=0
@@ -70,16 +71,7 @@ block y=0 x=1 gas_split_flag=1 gas_quad_split_flag=1 [gas_skip_flag=0,gas_zmin_d
 block y=1 x=0 gas_split_flag=0 [gas_skip_flag=0,gas_zmin_delta=88,gas_zmax_delta=213]
 block y=1 x=1 gas_split_flag=0 [gas_skip_flag=0,gas_ltmin_flag=0,gas_ltmax_flag=0,gas_zmin_delta=-4,gas_zmax_delta=-221]
 )");
-    REQUIRE(bitCodingTest(ga, 320));
-
-    std::ostringstream bitstream;
-    TMIV::Common::OutputBitstream miv_obitstream(bitstream);
-    ga.encodeTo(miv_obitstream);
-    // check bitstream length.
-    std::istringstream ibitstream(bitstream.str());
-    TMIV::Common::InputBitstream miv_ibitstream(ibitstream);
-    auto decoded_ga = MivBitstream::GeometryAssistance::decodeFrom(miv_ibitstream);
-    decoded_ga.writeTo(std::cout);
+    REQUIRE(bitCodingTest(ga, 319));
   }
 }
 } // namespace TMIV::MivBitstream

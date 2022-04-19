@@ -113,7 +113,7 @@ private:
     case MivBitstream::NalUnitType::NAL_PREFIX_NSEI:
       return decodeSei(au, stream);
     default:
-      fmt::print("WARNING: Ignoring prefix NAL unit {}", nut());
+      fmt::print("WARNING: Ignoring prefix NAL unit {}.\n", nut());
     }
   }
 
@@ -153,7 +153,7 @@ private:
     case MivBitstream::NalUnitType::NAL_SUFFIX_NSEI:
       return decodeSei(au, stream);
     default:
-      fmt::print("WARNING: Ignoring suffix NAL unit {}", nut());
+      fmt::print("WARNING: Ignoring suffix NAL unit {}.\n", nut());
     }
   }
 
@@ -176,36 +176,42 @@ private:
     return m_caspsV.push_back(casps);
   }
 
-  static void decodeSei(CommonAtlasAccessUnit &au, std::istream &stream) {
-    auto sei = MivBitstream::SeiRBSP::decodeFrom(stream);
+  void decodeSei(CommonAtlasAccessUnit &au, std::istream &stream) const {
+    auto sei = MivBitstream::SeiRBSP::decodeFrom(stream, nut());
+
     for (auto &message : sei.messages()) {
-      decodeSeiMessage(au, message);
+      std::visit([&au](const auto &payload) { decodeSeiMessage(au, payload); },
+                 message.seiPayload().payload);
     }
   }
 
-  static void decodeSeiMessage(CommonAtlasAccessUnit &au, const MivBitstream::SeiMessage &message) {
-    std::istringstream messageStream{message.payload()};
-    Common::InputBitstream bitstream{messageStream};
+  template <typename Payload>
+  static void decodeSeiMessage([[maybe_unused]] CommonAtlasAccessUnit &au,
+                               [[maybe_unused]] const Payload &payload) {}
 
-    switch (message.payloadType()) {
-    case MivBitstream::PayloadType::geometry_upscaling_parameters:
-      au.gup = MivBitstream::GeometryUpscalingParameters::decodeFrom(bitstream);
-      return;
-    case MivBitstream::PayloadType::viewing_space:
-      au.vs = MivBitstream::ViewingSpace::decodeFrom(bitstream);
-      return;
-    case MivBitstream::PayloadType::viewport_camera_parameters:
-      au.vcp = MivBitstream::ViewportCameraParameters::decodeFrom(bitstream);
-      return;
-    case MivBitstream::PayloadType::viewport_position:
-      au.vp = MivBitstream::ViewportPosition::decodeFrom(bitstream);
-      return;
-    case MivBitstream::PayloadType::atlas_view_enabled:
-      au.ave = MivBitstream::AtlasViewEnabled::decodeFrom(bitstream);
-      return;
-    default:
-      fmt::print("WARNING: Ignoring SEI message {}", message.payloadType());
-    }
+  static void decodeSeiMessage(CommonAtlasAccessUnit &au,
+                               const MivBitstream::GeometryUpscalingParameters &payload) {
+    au.gup = payload;
+  }
+
+  static void decodeSeiMessage(CommonAtlasAccessUnit &au,
+                               const MivBitstream::ViewingSpace &payload) {
+    au.vs = payload;
+  }
+
+  static void decodeSeiMessage(CommonAtlasAccessUnit &au,
+                               const MivBitstream::ViewportCameraParameters &payload) {
+    au.vcp = payload;
+  }
+
+  static void decodeSeiMessage(CommonAtlasAccessUnit &au,
+                               const MivBitstream::ViewportPosition &payload) {
+    au.vp = payload;
+  }
+
+  static void decodeSeiMessage(CommonAtlasAccessUnit &au,
+                               const MivBitstream::AtlasViewEnabled &payload) {
+    au.ave = payload;
   }
 
   MivBitstream::V3cParameterSet m_vps;

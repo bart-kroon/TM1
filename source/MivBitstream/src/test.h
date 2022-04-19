@@ -72,7 +72,7 @@ auto bitCodingTest(const Type &reference, int32_t bitsize, Args &&...args) -> bo
   std::stringstream stream;
   TMIV::Common::OutputBitstream obitstream{stream};
   reference.encodeTo(obitstream, args...);
-  REQUIRE(bitsize == obitstream.tellp());
+  CHECK(bitsize == obitstream.tellp());
   obitstream.zeroAlign();
 
   TMIV::Common::InputBitstream ibitstream{stream};

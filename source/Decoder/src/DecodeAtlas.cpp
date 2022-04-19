@@ -116,7 +116,7 @@ private:
     case MivBitstream::NalUnitType::NAL_PREFIX_NSEI:
       return decodeSei(au, stream);
     default:
-      fmt::print("WARNING: Ignoring prefix NAL unit {}", nut());
+      fmt::print("WARNING: Ignoring prefix NAL unit {}.\n", nut());
     }
   }
 
@@ -155,7 +155,7 @@ private:
     case MivBitstream::NalUnitType::NAL_SUFFIX_NSEI:
       return decodeSei(au, stream);
     default:
-      fmt::print("WARNING: Ignoring suffix NAL unit {}", nut());
+      fmt::print("WARNING: Ignoring suffix NAL unit {}\n", nut());
     }
   }
 
@@ -189,24 +189,22 @@ private:
     return m_afpsV.push_back(afps);
   }
 
-  static void decodeSei(AtlasAccessUnit &au, std::istream &stream) {
-    const auto sei = MivBitstream::SeiRBSP::decodeFrom(stream);
+  void decodeSei(AtlasAccessUnit &au, std::istream &stream) const {
+    const auto sei = MivBitstream::SeiRBSP::decodeFrom(stream, nut());
+
     for (const auto &message : sei.messages()) {
-      decodeSeiMessage(au, message);
+      std::visit([&au](const auto &payload) { decodeSeiMessage(au, payload); },
+                 message.seiPayload().payload);
     }
   }
 
-  static void decodeSeiMessage(AtlasAccessUnit &au, const MivBitstream::SeiMessage &message) {
-    std::istringstream messageStream{message.payload()};
-    Common::InputBitstream bitstream{messageStream};
+  template <typename Payload>
+  static void decodeSeiMessage([[maybe_unused]] AtlasAccessUnit &au,
+                               [[maybe_unused]] const Payload &payload) {}
 
-    switch (message.payloadType()) {
-    case MivBitstream::PayloadType::geometry_assistance:
-      au.ga.emplace_back(MivBitstream::GeometryAssistance::decodeFrom(bitstream));
-      return;
-    default:
-      fmt::print("WARNING: Ignoring SEI message {}", message.payloadType());
-    }
+  static void decodeSeiMessage(AtlasAccessUnit &au,
+                               const MivBitstream::GeometryAssistance &payload) {
+    au.ga.push_back(payload);
   }
 
   MivBitstream::V3cUnitHeader m_vuh;

@@ -77,12 +77,22 @@ public:
       , m_testId{optionValues("-r").front()} {}
 
   void run() override {
+    requireUnequalBitstreamPaths();
     auto stream = openOutputBitstream();
     encodeV3cSampleStream(multiplex(openInputBitstream(), codedVideoSequenceSourceFactory()),
                           *stream);
   }
 
 private:
+  void requireUnequalBitstreamPaths() const {
+    const auto in = IO::inputBitstreamPath(json(), placeholders());
+    const auto out = IO::outputBitstreamPath(json(), placeholders());
+
+    if (in.relative_path().make_preferred() == out.relative_path().make_preferred()) {
+      throw std::runtime_error("The input and output bitstream path cannot be the same.");
+    }
+  }
+
   auto openInputBitstream() -> Common::Source<MivBitstream::V3cUnit> {
     const auto path = IO::inputBitstreamPath(json(), placeholders());
     m_istream.open(path, std::ios::binary);

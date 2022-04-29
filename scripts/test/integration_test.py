@@ -175,7 +175,7 @@ class IntegrationTest:
         f1 = self.launchCommand(
             executor,
             [],
-            ["{0}/bin/Encoder", "-c", "{1}/config/ctc/miv_anchor/A_1_TMIV_encode.json"]
+            ["{0}/bin/TmivEncoder", "-c", "{1}/config/ctc/miv_anchor/A_1_TMIV_encode.json"]
             + ["-p", "configDirectory", "{1}/config", "-p", "inputDirectory", "{2}"]
             + ["-p", "outputDirectory", "{3}", "-n", "3", "-s", "E", "-p", "intraPeriod", "2"]
             + ["-p", "inputSequenceConfigPathFmt", "test/sequences/T{{1}}.json"]
@@ -237,7 +237,7 @@ class IntegrationTest:
         f3 = self.launchCommand(
             executor,
             [f2_1, f2_2, f2_3, f2_4],
-            ["{0}/bin/Multiplexer", "-c", "{1}/config/test/miv_anchor/A_3_TMIV_mux.json"]
+            ["{0}/bin/TmivMultiplexer", "-c", "{1}/config/test/miv_anchor/A_3_TMIV_mux.json"]
             + ["-p", "inputDirectory", "{3}", "-p", "outputDirectory", "{3}"]
             + ["-n", "3", "-s", "E", "-r", "QP3"],
             "{3}/A3/E/QP3/TMIV_A3_E_QP3.log",
@@ -248,7 +248,7 @@ class IntegrationTest:
             executor,
             [f3],
             [
-                "{0}/bin/Parser",
+                "{0}/bin/TmivParser",
                 "-b",
                 "{3}/A3/E/QP3/TMIV_A3_E_QP3.bit",
                 "-o",
@@ -261,7 +261,7 @@ class IntegrationTest:
         f2_6 = self.launchCommand(
             executor,
             [f3],
-            ["{0}/bin/BitrateReport", "-b", "{3}/A3/E/QP3/TMIV_A3_E_QP3.bit"],
+            ["{0}/bin/TmivBitrateReport", "-b", "{3}/A3/E/QP3/TMIV_A3_E_QP3.bit"],
             "{3}/A3/E/QP3/TMIV_A3_E_QP3.csv",
             [],
         )
@@ -269,7 +269,7 @@ class IntegrationTest:
         f4 = self.launchCommand(
             executor,
             [f3],
-            ["{0}/bin/Decoder", "-c", "{1}/config/ctc/miv_anchor/A_4_TMIV_decode.json"]
+            ["{0}/bin/TmivDecoder", "-c", "{1}/config/ctc/miv_anchor/A_4_TMIV_decode.json"]
             + ["-p", "configDirectory", "{1}/config", "-p", "inputDirectory", "{3}"]
             + ["-p", "outputDirectory", "{3}", "-n", "3", "-N", "3", "-s", "E"]
             + ["-r", "QP3", "-v", "v11", "-p", "outputLogPath", "{3}/A3/E/QP3/TMIV_A3_E_QP3.dec"]
@@ -295,7 +295,7 @@ class IntegrationTest:
         f1 = self.launchCommand(
             executor,
             [],
-            ["{0}/bin/Encoder", "-c", "{1}/config/ctc/miv_view_anchor/V_1_TMIV_encode.json"]
+            ["{0}/bin/TmivEncoder", "-c", "{1}/config/ctc/miv_view_anchor/V_1_TMIV_encode.json"]
             + ["-p", "configDirectory", "{1}/config", "-p", "inputDirectory", "{2}", "-p"]
             + ["outputDirectory", "{3}", "-n", "3", "-s", "D", "-p", "intraPeriod", "2"]
             + ["-p", "inputSequenceConfigPathFmt", "test/sequences/T{{1}}.json"]
@@ -313,7 +313,7 @@ class IntegrationTest:
         f2_1 = self.launchCommand(
             executor,
             [f1],
-            ["{0}/bin/Decoder", "-c", "{1}/config/ctc/miv_view_anchor/V_4_TMIV_decode.json"]
+            ["{0}/bin/TmivDecoder", "-c", "{1}/config/ctc/miv_view_anchor/V_4_TMIV_decode.json"]
             + ["-p", "configDirectory", "{1}/config", "-p", "inputDirectory", "{3}", "-p"]
             + ["outputDirectory", "{3}", "-p", "inputGeometryVideoFramePathFmt"]
             + ["V{{0}}/{{1}}/TMIV_V{{0}}_{{1}}_geo_c{{3:02}}_{{4}}x{{5}}_{{6}}.yuv"]
@@ -329,7 +329,7 @@ class IntegrationTest:
         f2_2 = self.launchCommand(
             executor,
             [f1],
-            ["{0}/bin/Parser", "-b", "{3}/V3/D/TMIV_V3_D.bit", "-o", "{3}/V3/D/TMIV_V3_D.hls"],
+            ["{0}/bin/TmivParser", "-b", "{3}/V3/D/TMIV_V3_D.bit", "-o", "{3}/V3/D/TMIV_V3_D.hls"],
             None,
             ["V3/D/TMIV_V3_D.hls"],
         )
@@ -337,7 +337,7 @@ class IntegrationTest:
         f2_3 = self.launchCommand(
             executor,
             [f1],
-            ["{0}/bin/BitrateReport", "-b", "{3}/V3/D/TMIV_V3_D.bit"],
+            ["{0}/bin/TmivBitrateReport", "-b", "{3}/V3/D/TMIV_V3_D.bit"],
             "{3}/V3/D/TMIV_V3_D.csv",
             [],
         )
@@ -345,7 +345,7 @@ class IntegrationTest:
         f2_4 = self.launchCommand(
             executor,
             [f1],
-            ["{0}/bin/Decoder", "-c", "{1}/config/ctc/miv_view_anchor/V_4_TMIV_decode.json"]
+            ["{0}/bin/TmivDecoder", "-c", "{1}/config/ctc/miv_view_anchor/V_4_TMIV_decode.json"]
             + ["-p", "configDirectory", "{1}/config", "-p", "inputDirectory", "{3}"]
             + ["-p", "outputDirectory", "{3}", "-p", "inputGeometryVideoFramePathFmt"]
             + ["V{{0}}/{{1}}/TMIV_V{{0}}_{{1}}_geo_c{{3:02}}_{{4}}x{{5}}_{{6}}.yuv"]
@@ -371,7 +371,7 @@ class IntegrationTest:
         f1 = self.launchCommand(
             executor,
             [],
-            ["{0}/bin/Encoder", "-c", "{1}/config/test/one_view/W_1_TMIV_encode.json"]
+            ["{0}/bin/TmivEncoder", "-c", "{1}/config/test/one_view/W_1_TMIV_encode.json"]
             + ["-p", "configDirectory", "{1}/config", "-p", "inputDirectory", "{2}", "-p"]
             + ["outputDirectory", "{3}", "-n", "3", "-s", "D", "-p", "intraPeriod", "2"]
             + ["-p", "inputSequenceConfigPathFmt", "test/sequences/T{{1}}_OneView.json"]
@@ -387,7 +387,7 @@ class IntegrationTest:
         f2_1 = self.launchCommand(
             executor,
             [f1],
-            ["{0}/bin/Parser", "-b", "{3}/W3/D/TMIV_W3_D.bit", "-o", "{3}/W3/D/TMIV_W3_D.hls"],
+            ["{0}/bin/TmivParser", "-b", "{3}/W3/D/TMIV_W3_D.bit", "-o", "{3}/W3/D/TMIV_W3_D.hls"],
             None,
             ["W3/D/TMIV_W3_D.hls"],
         )
@@ -395,7 +395,7 @@ class IntegrationTest:
         f2_2 = self.launchCommand(
             executor,
             [f1],
-            ["{0}/bin/BitrateReport", "-b", "{3}/W3/D/TMIV_W3_D.bit"],
+            ["{0}/bin/TmivBitrateReport", "-b", "{3}/W3/D/TMIV_W3_D.bit"],
             "{3}/W3/D/TMIV_W3_D.csv",
             [],
         )
@@ -403,7 +403,7 @@ class IntegrationTest:
         f2_3 = self.launchCommand(
             executor,
             [f1],
-            ["{0}/bin/Decoder", "-c", "{1}/config/test/one_view/W_4_TMIV_decode.json"]
+            ["{0}/bin/TmivDecoder", "-c", "{1}/config/test/one_view/W_4_TMIV_decode.json"]
             + ["-p", "configDirectory", "{1}/config", "-p", "inputDirectory", "{3}"]
             + ["-p", "outputDirectory", "{3}", "-p", "inputGeometryVideoFramePathFmt"]
             + ["W{{0}}/{{1}}/TMIV_W{{0}}_{{1}}_geo_c{{3:02}}_{{4}}x{{5}}_{{6}}.yuv"]
@@ -428,7 +428,7 @@ class IntegrationTest:
         f1 = self.launchCommand(
             executor,
             [],
-            ["{0}/bin/Encoder", "-c", "{1}/config/ctc/miv_dsde_anchor/G_1_TMIV_encode.json"]
+            ["{0}/bin/TmivEncoder", "-c", "{1}/config/ctc/miv_dsde_anchor/G_1_TMIV_encode.json"]
             + ["-p", "configDirectory", "{1}/config", "-p", "inputDirectory", "{2}"]
             + ["-p", "outputDirectory", "{3}", "-n", "3", "-s", "N", "-p", "intraPeriod", "2"]
             + ["-p", "inputSequenceConfigPathFmt", "test/sequences/T{{1}}.json"]
@@ -446,7 +446,7 @@ class IntegrationTest:
         f2_1 = self.launchCommand(
             executor,
             [f1],
-            ["{0}/bin/Parser", "-b", "{3}/G3/N/TMIV_G3_N.bit", "-o", "{3}/G3/N/TMIV_G3_N.hls"],
+            ["{0}/bin/TmivParser", "-b", "{3}/G3/N/TMIV_G3_N.bit", "-o", "{3}/G3/N/TMIV_G3_N.hls"],
             None,
             ["G3/N/TMIV_G3_N.hls"],
         )
@@ -454,7 +454,7 @@ class IntegrationTest:
         f2_2 = self.launchCommand(
             executor,
             [f1],
-            ["{0}/bin/BitrateReport", "-b", "{3}/G3/N/TMIV_G3_N.bit"],
+            ["{0}/bin/TmivBitrateReport", "-b", "{3}/G3/N/TMIV_G3_N.bit"],
             "{3}/G3/N/TMIV_G3_N.csv",
             [],
         )
@@ -462,7 +462,7 @@ class IntegrationTest:
         f2_3 = self.launchCommand(
             executor,
             [f1],
-            ["{0}/bin/Decoder", "-c", "{1}/config/ctc/miv_dsde_anchor/G_4_TMIV_decode.json"]
+            ["{0}/bin/TmivDecoder", "-c", "{1}/config/ctc/miv_dsde_anchor/G_4_TMIV_decode.json"]
             + ["-p", "configDirectory", "{1}/config", "-p", "inputDirectory", "{3}"]
             + ["-p", "outputDirectory", "{3}", "-p", "inputGeometryVideoFramePathFmt"]
             + ["G{{0}}/{{1}}/TMIV_G{{0}}_{{1}}_geo_c{{3:02}}_{{4}}x{{5}}_{{6}}.yuv"]
@@ -494,7 +494,7 @@ class IntegrationTest:
         f1_1 = self.launchCommand(
             executor,
             [],
-            ["{0}/bin/Renderer", "-c", "{1}/config/ctc/best_reference/R_1_TMIV_render.json"]
+            ["{0}/bin/TmivRenderer", "-c", "{1}/config/ctc/best_reference/R_1_TMIV_render.json"]
             + ["-p", "configDirectory", "{1}/config", "-p", "inputDirectory", "{2}"]
             + ["-p", "outputDirectory", "{3}", "-n", "3", "-N", "3", "-s", "O", "-r", "R0"]
             + ["-p", "inputSequenceConfigPathFmt", "test/sequences/T{{1}}.json"]
@@ -510,7 +510,7 @@ class IntegrationTest:
         f1_2 = self.launchCommand(
             executor,
             [],
-            ["{0}/bin/Renderer", "-c", "{1}/config/ctc/best_reference/R_1_TMIV_render.json"]
+            ["{0}/bin/TmivRenderer", "-c", "{1}/config/ctc/best_reference/R_1_TMIV_render.json"]
             + ["-p", "configDirectory", "{1}/config", "-p", "inputDirectory", "{2}"]
             + ["-p", "outputDirectory", "{3}", "-n", "3", "-N", "3", "-s", "O"]
             + ["-p", "inputSequenceConfigPathFmt", "test/sequences/T{{1}}.json"]
@@ -535,7 +535,7 @@ class IntegrationTest:
         f1 = self.launchCommand(
             executor,
             [],
-            ["{0}/bin/MpiEncoder", "-c", "{1}/config/test/miv_mpi/M_1_TMIV_encode.json"]
+            ["{0}/bin/TmivMpiEncoder", "-c", "{1}/config/test/miv_mpi/M_1_TMIV_encode.json"]
             + ["-p", "configDirectory", "{1}/config", "-p", "inputDirectory", "{2}"]
             + ["-p", "outputDirectory", "{3}", "-n", "3", "-s", "M", "-p", "intraPeriod", "2"]
             + ["-p", "inputSequenceConfigPathFmt", "test/sequences/T{{1}}.json"]
@@ -575,7 +575,7 @@ class IntegrationTest:
         f3 = self.launchCommand(
             executor,
             [f2_1, f2_2],
-            ["{0}/bin/Multiplexer", "-c", "{1}/config/test/miv_mpi/M_3_TMIV_mux.json"]
+            ["{0}/bin/TmivMultiplexer", "-c", "{1}/config/test/miv_mpi/M_3_TMIV_mux.json"]
             + ["-p", "configDirectory", "{1}/config", "-p", "inputDirectory", "{3}"]
             + ["-p", "outputDirectory", "{3}", "-n", "3", "-s", "M", "-r", "QP3"],
             "{3}/M3/M/QP3/TMIV_M3_M_QP3.log",
@@ -585,7 +585,7 @@ class IntegrationTest:
         f4_1 = self.launchCommand(
             executor,
             [f3],
-            ["{0}/bin/Parser"]
+            ["{0}/bin/TmivParser"]
             + ["-b", "{3}/M3/M/QP3/TMIV_M3_M_QP3.bit"]
             + ["-o", "{3}/M3/M/QP3/TMIV_M3_M_QP3.hls"],
             None,
@@ -595,7 +595,7 @@ class IntegrationTest:
         f4_2 = self.launchCommand(
             executor,
             [f3],
-            ["{0}/bin/BitrateReport", "-b", "{3}/M3/M/QP3/TMIV_M3_M_QP3.bit"],
+            ["{0}/bin/TmivBitrateReport", "-b", "{3}/M3/M/QP3/TMIV_M3_M_QP3.bit"],
             "{3}/M3/M/QP3/TMIV_M3_M_QP3.csv",
             [],
         )
@@ -603,7 +603,7 @@ class IntegrationTest:
         f4_3 = self.launchCommand(
             executor,
             [f3],
-            ["{0}/bin/Decoder", "-c", "{1}/config/test/miv_mpi/M_4_TMIV_decode.json"]
+            ["{0}/bin/TmivDecoder", "-c", "{1}/config/test/miv_mpi/M_4_TMIV_decode.json"]
             + ["-p", "configDirectory", "{1}/config", "-p", "inputDirectory", "{3}"]
             + ["-p", "inputViewportParamsPathFmt", "test/sequences/T{{1}}.json"]
             + ["-p", "outputDirectory", "{3}", "-n", "3", "-N", "3", "-s", "M", "-r", "QP3"]
@@ -624,7 +624,7 @@ class IntegrationTest:
         f1 = self.launchCommand(
             executor,
             [],
-            ["{0}/bin/Encoder", "-c", "{1}/config/test/frame_packing/P_1_TMIV_encode.json"]
+            ["{0}/bin/TmivEncoder", "-c", "{1}/config/test/frame_packing/P_1_TMIV_encode.json"]
             + ["-p", "configDirectory", "{1}/config", "-p", "inputDirectory", "{2}"]
             + ["-p", "outputDirectory", "{3}", "-n", "3", "-s", "E", "-p", "intraPeriod", "2"]
             + ["-p", "inputSequenceConfigPathFmt", "test/sequences/T{{1}}.json"]
@@ -641,7 +641,7 @@ class IntegrationTest:
         f2_1 = self.launchCommand(
             executor,
             [f1],
-            ["{0}/bin/Decoder", "-c", "{1}/config/test/frame_packing/P_4_TMIV_decode.json"]
+            ["{0}/bin/TmivDecoder", "-c", "{1}/config/test/frame_packing/P_4_TMIV_decode.json"]
             + ["-p", "configDirectory", "{1}/config", "-p", "inputDirectory", "{3}", "-p"]
             + ["outputDirectory", "{3}", "-p", "inputPackedVideoFramePathFmt"]
             + ["P{{0}}/{{1}}/TMIV_P{{0}}_{{1}}_pac_c{{3:02}}_{{4}}x{{5}}_{{6}}.yuv"]
@@ -655,7 +655,7 @@ class IntegrationTest:
         f2_2 = self.launchCommand(
             executor,
             [f1],
-            ["{0}/bin/Parser", "-b", "{3}/P3/E/TMIV_P3_E.bit", "-o", "{3}/P3/E/TMIV_P3_E.hls"],
+            ["{0}/bin/TmivParser", "-b", "{3}/P3/E/TMIV_P3_E.bit", "-o", "{3}/P3/E/TMIV_P3_E.hls"],
             None,
             ["P3/E/TMIV_P3_E.hls"],
         )
@@ -663,7 +663,7 @@ class IntegrationTest:
         f2_3 = self.launchCommand(
             executor,
             [f1],
-            ["{0}/bin/BitrateReport", "-b", "{3}/P3/E/TMIV_P3_E.bit"],
+            ["{0}/bin/TmivBitrateReport", "-b", "{3}/P3/E/TMIV_P3_E.bit"],
             "{3}/P3/E/TMIV_P3_E.csv",
             [],
         )
@@ -679,7 +679,8 @@ class IntegrationTest:
         f1 = self.launchCommand(
             executor,
             [],
-            ["{0}/bin/Renderer", "-c", "{1}/config/test/additive_synthesizer/S_1_TMIV_render.json"]
+            ["{0}/bin/TmivRenderer", "-c"]
+            + ["{1}/config/test/additive_synthesizer/S_1_TMIV_render.json"]
             + ["-p", "configDirectory", "{1}/config", "-p", "inputDirectory", "{2}"]
             + ["-p", "outputDirectory", "{3}", "-n", "1", "-N", "1", "-s", "C", "-r", "R0"]
             + ["-p", "inputSequenceConfigPathFmt", "test/sequences/T{{1}}.json"]
@@ -701,7 +702,8 @@ class IntegrationTest:
         f1 = self.launchCommand(
             executor,
             [],
-            ["{0}/bin/Encoder", "-c", "{1}/config/test/entity_based_coding/E_1_TMIV_encode.json"]
+            ["{0}/bin/TmivEncoder", "-c"]
+            + ["{1}/config/test/entity_based_coding/E_1_TMIV_encode.json"]
             + ["-p", "configDirectory", "{1}/config", "-p", "inputDirectory", "{2}"]
             + ["-p", "outputDirectory", "{3}"]
             + ["-n", "3", "-s", "B", "-f", "0"]
@@ -745,7 +747,8 @@ class IntegrationTest:
         f3 = self.launchCommand(
             executor,
             [f2_1, f2_2],
-            ["{0}/bin/Multiplexer", "-c", "{1}/config/test/entity_based_coding/E_3_TMIV_mux.json"]
+            ["{0}/bin/TmivMultiplexer", "-c"]
+            + ["{1}/config/test/entity_based_coding/E_3_TMIV_mux.json"]
             + ["-p", "configDirectory", "{1}/config"]
             + ["-p", "inputDirectory", "{3}"]
             + ["-p", "outputDirectory", "{3}"]
@@ -757,7 +760,7 @@ class IntegrationTest:
         f4_1 = self.launchCommand(
             executor,
             [f3],
-            ["{0}/bin/Parser", "-b", "{3}/E3/B/QP3/TMIV_E3_B_QP3.bit"]
+            ["{0}/bin/TmivParser", "-b", "{3}/E3/B/QP3/TMIV_E3_B_QP3.bit"]
             + ["-o", "{3}/E3/B/QP3/TMIV_E3_B_QP3.hls"],
             "{3}/E3/B/QP3/TMIV_E3_B_QP3.hls",
             [],
@@ -766,7 +769,7 @@ class IntegrationTest:
         f4_2 = self.launchCommand(
             executor,
             [f3],
-            ["{0}/bin/BitrateReport", "-b", "{3}/E3/B/QP3/TMIV_E3_B_QP3.bit"],
+            ["{0}/bin/TmivBitrateReport", "-b", "{3}/E3/B/QP3/TMIV_E3_B_QP3.bit"],
             "{3}/E3/B/QP3/TMIV_E3_B_QP3.csv",
             [],
         )
@@ -774,7 +777,7 @@ class IntegrationTest:
         f4_3 = self.launchCommand(
             executor,
             [f3],
-            ["{0}/bin/Decoder"]
+            ["{0}/bin/TmivDecoder"]
             + ["-c", "{1}/config/test/entity_based_coding/E_4_TMIV_decode.json"]
             + ["-p", "configDirectory", "{1}/config"]
             + ["-p", "inputDirectory", "{3}"]
@@ -800,7 +803,7 @@ class IntegrationTest:
         f1 = self.launchCommand(
             executor,
             [],
-            ["{0}/bin/Encoder", "-c", "{1}/config/test/explicit_occupancy/O_1_TMIV_encode.json"]
+            ["{0}/bin/TmivEncoder", "-c", "{1}/config/test/explicit_occupancy/O_1_TMIV_encode.json"]
             + ["-p", "configDirectory", "{1}/config", "-p", "inputDirectory", "{2}"]
             + ["-p", "outputDirectory", "{3}", "-n", "3", "-s", "N", "-p", "intraPeriod", "2"]
             + ["-p", "inputSequenceConfigPathFmt", "test/sequences/T{{1}}.json"]
@@ -821,7 +824,7 @@ class IntegrationTest:
         f2_1 = self.launchCommand(
             executor,
             [f1],
-            ["{0}/bin/Decoder", "-c", "{1}/config/test/explicit_occupancy/O_4_TMIV_decode.json"]
+            ["{0}/bin/TmivDecoder", "-c", "{1}/config/test/explicit_occupancy/O_4_TMIV_decode.json"]
             + ["-p", "configDirectory", "{1}/config", "-p", "inputDirectory", "{3}", "-p"]
             + ["outputDirectory", "{3}", "-p", "inputOccupancyVideoFramePathFmt"]
             + ["O{{0}}/{{1}}/TMIV_O{{0}}_{{1}}_occ_c{{3:02}}_{{4}}x{{5}}_{{6}}.yuv"]
@@ -839,7 +842,7 @@ class IntegrationTest:
         f2_2 = self.launchCommand(
             executor,
             [f1],
-            ["{0}/bin/Parser", "-b", "{3}/O3/N/TMIV_O3_N.bit", "-o", "{3}/O3/N/TMIV_O3_N.hls"],
+            ["{0}/bin/TmivParser", "-b", "{3}/O3/N/TMIV_O3_N.bit", "-o", "{3}/O3/N/TMIV_O3_N.hls"],
             None,
             ["O3/N/TMIV_O3_N.hls"],
         )
@@ -847,7 +850,7 @@ class IntegrationTest:
         f2_3 = self.launchCommand(
             executor,
             [f1],
-            ["{0}/bin/BitrateReport", "-b", "{3}/O3/N/TMIV_O3_N.bit"],
+            ["{0}/bin/TmivBitrateReport", "-b", "{3}/O3/N/TMIV_O3_N.bit"],
             "{3}/O3/N/TMIV_O3_N.csv",
             [],
         )

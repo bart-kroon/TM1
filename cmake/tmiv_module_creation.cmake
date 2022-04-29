@@ -43,12 +43,12 @@ function(create_tmiv_executable)
         "${multiValues}"
         ${ARGN})
 
-    add_executable(${TMIV_EXE_CREATOR_TARGET} ${TMIV_EXE_CREATOR_SOURCES})
-    set_property(TARGET ${TMIV_EXE_CREATOR_TARGET} PROPERTY FOLDER "TMIV executables")
-    target_link_libraries(${TMIV_EXE_CREATOR_TARGET} PRIVATE ${TMIV_EXE_CREATOR_PRIVATE})
+    add_executable(Tmiv${TMIV_EXE_CREATOR_TARGET} ${TMIV_EXE_CREATOR_SOURCES})
+    set_property(TARGET Tmiv${TMIV_EXE_CREATOR_TARGET} PROPERTY FOLDER "TMIV executables")
+    target_link_libraries(Tmiv${TMIV_EXE_CREATOR_TARGET} PRIVATE ${TMIV_EXE_CREATOR_PRIVATE})
 
     install(
-        TARGETS ${TMIV_EXE_CREATOR_TARGET}
+        TARGETS Tmiv${TMIV_EXE_CREATOR_TARGET}
         EXPORT TMIVTargets
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 endfunction()

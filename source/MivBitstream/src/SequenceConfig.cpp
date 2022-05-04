@@ -64,14 +64,22 @@ CameraConfig::operator Common::Json() const {
   using Object = Json::Object;
 
   auto root = Json{viewParams}.as<Object>();
-  root["BitDepthColor"s] = bitDepthTexture;
-  root["BitDepthDepth"s] = bitDepthGeometry;
-  root["ColorSpace"] = "YUV420";
-  root["DepthColorSpace"] = "YUV420";
+
+  if (0 < bitDepthTexture) {
+    root["BitDepthColor"s] = bitDepthTexture;
+    root["ColorSpace"] = "YUV420";
+  }
+
+  if (0 < bitDepthGeometry) {
+    root["BitDepthDepth"s] = bitDepthGeometry;
+    root["DepthColorSpace"] = "YUV420";
+  }
+
   if (0 < bitDepthTransparency) {
     root["BitDepthTransparency"s] = bitDepthTransparency;
     root["TransparencyColorSpace"] = "YUV420";
   }
+
   if (0 < bitDepthEntities) {
     root["BitDepthEntities"s] = bitDepthEntities;
     root["EntitiesColorSpace"] = "YUV420";

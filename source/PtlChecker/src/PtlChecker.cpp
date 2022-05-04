@@ -226,7 +226,7 @@ void PtlChecker::checkAndActivateVps(const MivBitstream::V3cParameterSet &vps) {
     checkVpsAtlas(vps, vps.vps_atlas_id(k));
   }
 
-  if (vps.vps_miv_extension_present_flag()) {
+  if (vps.vpsMivExtensionPresentFlag()) {
     checkVpsMivExtension(vps.vps_miv_extension());
   }
 }
@@ -242,26 +242,26 @@ void PtlChecker::checkVpsCommon(const MivBitstream::V3cParameterSet &vps) const 
 
   PTL_CHECK(v3c2dis, "?", !ptl_tier_flag());
 
-  const auto vps_miv_extension_present_flag = vps.vps_miv_extension_present_flag();
-  const auto vps_packing_information_present_flag = vps.vps_packing_information_present_flag();
+  const auto vpsMivExtensionPresentFlag = vps.vpsMivExtensionPresentFlag();
+  const auto vpsPackingInformationPresentFlag = vps.vpsPackingInformationPresentFlag();
   const auto vps_atlas_count_minus1 = vps.vps_atlas_count_minus1();
 
   switch (ptl_profile_toolset_idc()) {
   case TS::VPCC_Basic:
   case TS::VPCC_Extended:
-    PTL_CHECK(v3c2dis, "Table H-3", !vps_miv_extension_present_flag);
-    PTL_CHECK(v3c2dis, "Table H-3", !vps_packing_information_present_flag);
+    PTL_CHECK(v3c2dis, "Table H-3", !vpsMivExtensionPresentFlag);
+    PTL_CHECK(v3c2dis, "Table H-3", !vpsPackingInformationPresentFlag);
     PTL_CHECK(v3c2dis, "Table H-3", vps_atlas_count_minus1 == 0);
     break;
   case TS::MIV_Main:
     PTL_CHECK(miv1, "Table A-1", ptl_profile_reconstruction_idc() == RC::Rec_Unconstrained);
-    PTL_CHECK(miv1, "Table A-1", vps_miv_extension_present_flag);
-    PTL_CHECK(miv1, "Table A-1", !vps_packing_information_present_flag);
+    PTL_CHECK(miv1, "Table A-1", vpsMivExtensionPresentFlag);
+    PTL_CHECK(miv1, "Table A-1", !vpsPackingInformationPresentFlag);
     break;
   case TS::MIV_Extended:
   case TS::MIV_Geometry_Absent:
     PTL_CHECK(miv1, "Table A-1", ptl_profile_reconstruction_idc() == RC::Rec_Unconstrained);
-    PTL_CHECK(miv1, "Table A-1", vps_miv_extension_present_flag);
+    PTL_CHECK(miv1, "Table A-1", vpsMivExtensionPresentFlag);
     break;
   }
 }
@@ -575,7 +575,7 @@ void PtlChecker::checkOccupancyVideoFrame(const MivBitstream::AtlasSequenceParam
   int32_t occScaleX = 1;
   int32_t occScaleY = 1;
 
-  if (m_vps->vps_miv_extension_present_flag() &&
+  if (m_vps->vpsMivExtensionPresentFlag() &&
       m_vps->vps_miv_extension().vme_occupancy_scale_enabled_flag()) {
     const auto &asme = asps.asps_miv_extension();
 
@@ -595,7 +595,7 @@ void PtlChecker::checkGeometryVideoFrame(const MivBitstream::AtlasSequenceParame
   int32_t geoScaleX = 1;
   int32_t geoScaleY = 1;
 
-  if (m_vps->vps_miv_extension_present_flag() &&
+  if (m_vps->vpsMivExtensionPresentFlag() &&
       m_vps->vps_miv_extension().vme_geometry_scale_enabled_flag()) {
     const auto &asme = asps.asps_miv_extension();
 

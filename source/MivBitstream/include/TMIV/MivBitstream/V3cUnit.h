@@ -128,7 +128,7 @@ public:
   void encodeTo(std::ostream &stream, const V3cUnitHeader &vuh) const;
 
 private:
-  const Payload m_payload;
+  Payload m_payload;
 };
 
 // 23090-5: v3c_unit(NumBytesInV3CUnit)

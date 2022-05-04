@@ -62,6 +62,7 @@ using TMIV::MivBitstream::PatchInformationData;
 using TMIV::MivBitstream::ProfileTierLevel;
 using TMIV::MivBitstream::ProfileToolsetConstraintsInformation;
 using TMIV::MivBitstream::V3cParameterSet;
+using TMIV::MivBitstream::VpsExtensionType;
 using TMIV::PtlChecker::PtlChecker;
 
 namespace test {
@@ -513,11 +514,15 @@ TEST_CASE("PtlChecker ISO/IEC 23090-12:2021 Table A-1") {
                      reconstructionIdc != RC::Rec_Unconstrained && test::mivToolset(toolsetIdc));
   }
 
-  SECTION("vps_miv_extension_present_flag") {
+  SECTION("vpsMivExtensionPresentFlag") {
     const auto vmePresent = GENERATE(false, true);
     CAPTURE(vmePresent);
 
-    vps.vps_miv_extension_present_flag(vmePresent);
+    if (vmePresent) {
+      vps.vps_extension(TMIV::MivBitstream::VpsExtensionType::VPS_EXT_MIV).vps_miv_extension();
+    } else {
+      vps.removeVpsExtension(TMIV::MivBitstream::VpsExtensionType::VPS_EXT_MIV);
+    }
 
     if (test::vpccToolset(toolsetIdc)) {
       CHECK_THROWS_IFF(unit.checkAndActivateVps(vps), vmePresent);
@@ -526,11 +531,13 @@ TEST_CASE("PtlChecker ISO/IEC 23090-12:2021 Table A-1") {
     }
   }
 
-  SECTION("vps_packing_information_present_flag") {
+  SECTION("vpsPackingInformationPresentFlag") {
     const auto pinPresent = GENERATE(false, true);
     CAPTURE(pinPresent);
 
-    vps.vps_packing_information_present_flag(pinPresent);
+    if (pinPresent) {
+      vps.vps_extension(VpsExtensionType::VPS_EXT_PACKED).vps_packed_video_extension();
+    }
 
     CHECK_THROWS_IFF(unit.checkAndActivateVps(vps),
                      pinPresent && (toolsetIdc == TS::MIV_Main || test::vpccToolset(toolsetIdc)));
@@ -601,7 +608,7 @@ TEST_CASE("PtlChecker ISO/IEC 23090-12:2021 Table A-1") {
   }
 
   SECTION("vme_embedded_occupancy_enabled_flag") {
-    if (!vps.vps_miv_extension_present_flag()) {
+    if (!vps.vpsMivExtensionPresentFlag()) {
       return;
     }
     const auto eoEnabled = GENERATE(false, true);
@@ -802,7 +809,7 @@ TEST_CASE("PtlChecker ISO/IEC 23090-12:2021 Table A-1") {
   }
 
   SECTION("asme_patch_constant_depth_flag") {
-    if (!vps.vps_miv_extension_present_flag()) {
+    if (!vps.vpsMivExtensionPresentFlag()) {
       return;
     }
 
@@ -854,7 +861,7 @@ TEST_CASE("PtlChecker ISO/IEC 23090-12:2021 Table A-1") {
       return;
     }
 
-    vps.vps_packing_information_present_flag(true);
+    vps.vps_extension(VpsExtensionType::VPS_EXT_PACKED).vps_packed_video_extension();
 
     for (uint8_t k = 0; k <= vps.vps_atlas_count_minus1(); ++k) {
       const auto j = vps.vps_atlas_id(k);

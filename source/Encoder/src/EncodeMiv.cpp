@@ -115,6 +115,7 @@ private:
     if (writeParameterSets()) {
       flush();
       m_params.vps.profile_tier_level().ptl_max_decodes_idc(ptlMaxDecodesIdc());
+      m_params.vps.calculateExtensionLengths();
       m_sink(V3cUnit{VUH::vps(), m_params.vps});
       m_log2MaxFrmOrderCntLsbMinus4 =
           m_params.casps.casps_log2_max_common_atlas_frame_order_cnt_lsb_minus4();

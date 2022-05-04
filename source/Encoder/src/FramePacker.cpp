@@ -243,7 +243,8 @@ auto FramePacker::setPackingInformation(EncoderParams params) -> const EncoderPa
   // Current implementation is limited to texture attribute, geometry, and occupancy
   m_params = std::move(params);
 
-  m_params.vps.vps_packing_information_present_flag(true);
+  m_params.vps.vps_extension(MivBitstream::VpsExtensionType::VPS_EXT_PACKED)
+      .vps_packed_video_extension();
   m_regionSizes.clear();
   for (size_t atlasIdx = 0; atlasIdx <= m_params.vps.vps_atlas_count_minus1(); atlasIdx++) {
     const auto atlasId = m_params.vps.vps_atlas_id(atlasIdx);

@@ -68,7 +68,8 @@ enum class ErrorCode : int32_t {
   misaligned_common_atlas_foc,
   misaligned_video_irap,
   missing_atlas_irap,
-  missing_common_atlas_irap
+  missing_common_atlas_irap,
+  unsupported_vps_extension
 };
 
 [[nodiscard]] auto errorStringFor(ErrorCode code) -> const char *;

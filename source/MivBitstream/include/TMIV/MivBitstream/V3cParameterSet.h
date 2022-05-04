@@ -36,6 +36,8 @@
 
 #include "AtlasId.h"
 
+#include <TMIV/Common/FlatMap.h>
+
 #include <array>
 #include <cstdint>
 #include <cstdlib>
@@ -124,6 +126,8 @@ enum class AiAttributeTypeId : uint8_t {
   ATTR_UNSPECIFIED = 15
 };
 
+enum class VpsExtensionType : uint8_t { VPS_EXT_UNSPECIFIED, VPS_EXT_PACKED, VPS_EXT_MIV };
+
 auto operator<<(std::ostream &stream, PtlProfileCodecGroupIdc x) -> std::ostream &;
 auto operator<<(std::ostream &stream, PtlProfileToolsetIdc x) -> std::ostream &;
 auto operator<<(std::ostream &stream, PtlProfileReconstructionIdc x) -> std::ostream &;
@@ -131,6 +135,7 @@ auto operator<<(std::ostream &stream, PtlMaxDecodesIdc x) -> std::ostream &;
 auto operator<<(std::ostream &stream, PtlLevelIdc x) -> std::ostream &;
 auto operator<<(std::ostream &stream, VuhUnitType x) -> std::ostream &;
 auto operator<<(std::ostream &stream, AiAttributeTypeId x) -> std::ostream &;
+auto operator<<(std::ostream &stream, VpsExtensionType x) -> std::ostream &;
 
 // TMIV-internal filename convention
 auto codeOf(AiAttributeTypeId typeId) -> char;
@@ -494,7 +499,7 @@ public:
   auto pin_region_attr_index(size_t i, uint8_t value) -> auto &;
   auto pin_region_attr_partition_index(size_t i, uint8_t value) -> auto &;
 
-  auto printTo(std::ostream &stream, const AtlasId &j) const -> std::ostream &;
+  auto printTo(std::ostream &stream, AtlasId j) const -> std::ostream &;
 
   auto operator==(const PackingInformation &other) const noexcept -> bool;
   auto operator!=(const PackingInformation &other) const noexcept -> bool;
@@ -573,6 +578,58 @@ private:
   GroupMapping m_group_mapping;
 };
 
+// 23090-5 + m59327: vps_packed_video_extension( )
+class VpsPackedVideoExtension {
+public:
+  [[nodiscard]] auto vps_packed_video_present_flag(AtlasId atlasId) const -> bool;
+  [[nodiscard]] auto packing_information(AtlasId atlasId) const -> const PackingInformation &;
+
+  auto vps_packed_video_present_flag(AtlasId atlasId, bool value) -> VpsPackedVideoExtension &;
+  auto packing_information(AtlasId atlasId) -> PackingInformation &;
+
+  friend auto operator<<(std::ostream &stream, const VpsPackedVideoExtension &x) -> std::ostream &;
+
+  auto operator==(const VpsPackedVideoExtension &other) const -> bool;
+  auto operator!=(const VpsPackedVideoExtension &other) const -> bool;
+
+  static auto decodeFrom(Common::InputBitstream &stream, const V3cParameterSet &vps)
+      -> VpsPackedVideoExtension;
+
+  void encodeTo(Common::OutputBitstream &stream, const V3cParameterSet &vps) const;
+
+private:
+  Common::FlatMap<AtlasId, std::optional<PackingInformation>> m_packing_information;
+};
+
+// 23090-5 + m59327: vps_extension( extension_type, extension_length )
+class VpsExtension {
+public:
+  [[nodiscard]] auto vps_miv_extension() const -> const VpsMivExtension &;
+  [[nodiscard]] auto vps_packed_video_extension() const -> const VpsPackedVideoExtension &;
+  [[nodiscard]] auto vps_extension_data_byte() const -> const std::vector<uint8_t> &;
+
+  auto vps_miv_extension() -> VpsMivExtension &;
+  auto vps_packed_video_extension() -> VpsPackedVideoExtension &;
+  [[nodiscard]] auto vps_extension_data_byte() -> std::vector<uint8_t> &;
+
+  friend auto operator<<(std::ostream &stream, const VpsExtension &x) -> std::ostream &;
+
+  auto operator==(const VpsExtension &other) const -> bool;
+  auto operator!=(const VpsExtension &other) const -> bool;
+
+  static auto decodeFrom(Common::InputBitstream &stream, VpsExtensionType extensionType,
+                         uint16_t extensionLength, const V3cParameterSet &vps) -> VpsExtension;
+
+  [[nodiscard]] auto extensionLength(const V3cParameterSet &vps) const -> uint16_t;
+  void encodeTo(Common::OutputBitstream &stream, VpsExtensionType extensionType,
+                uint16_t extensionLength, const V3cParameterSet &vps) const;
+
+private:
+  std::optional<VpsPackedVideoExtension> m_vps_packed_video_extension;
+  std::optional<VpsMivExtension> m_vps_miv_extension;
+  std::vector<uint8_t> m_vps_extension_data_byte;
+};
+
 // 23090-5: v3c_parameter_set()
 //
 // 23090-12 restrictions:
@@ -583,6 +640,7 @@ public:
   [[nodiscard]] constexpr auto vps_v3c_parameter_set_id() const noexcept;
   [[nodiscard]] auto vps_atlas_count_minus1() const noexcept -> uint8_t;
   [[nodiscard]] auto vps_atlas_id(size_t k) const -> AtlasId;
+
   [[nodiscard]] auto vps_frame_width(AtlasId j) const -> int32_t;
   [[nodiscard]] auto vps_frame_height(AtlasId j) const -> int32_t;
   [[nodiscard]] auto vps_map_count_minus1(AtlasId j) const -> uint8_t;
@@ -590,23 +648,30 @@ public:
   [[nodiscard]] auto vps_occupancy_video_present_flag(AtlasId j) const -> bool;
   [[nodiscard]] auto vps_geometry_video_present_flag(AtlasId j) const -> bool;
   [[nodiscard]] auto vps_attribute_video_present_flag(AtlasId j) const -> bool;
+
   [[nodiscard]] auto occupancy_information(AtlasId j) const -> const OccupancyInformation &;
   [[nodiscard]] auto geometry_information(AtlasId j) const -> const GeometryInformation &;
   [[nodiscard]] auto attribute_information(AtlasId j) const -> const AttributeInformation &;
-  [[nodiscard]] constexpr auto vps_extension_present_flag() const noexcept;
-  [[nodiscard]] constexpr auto vps_packing_information_present_flag() const noexcept;
-  [[nodiscard]] constexpr auto vps_miv_extension_present_flag() const noexcept;
-  [[nodiscard]] constexpr auto vps_extension_6bits() const noexcept;
-  [[nodiscard]] auto vps_packed_video_present_flag(const AtlasId &j) const -> bool;
-  [[nodiscard]] auto packing_information(const AtlasId &j) const -> const PackingInformation &;
+
+  [[nodiscard]] auto vps_extension_present_flag() const noexcept -> bool;
+  [[nodiscard]] auto vps_extension_count() const noexcept -> uint8_t;
+  [[nodiscard]] auto vps_extensions_length_minus1() const -> uint32_t;
+  [[nodiscard]] auto vps_extension_type(uint8_t n) const -> VpsExtensionType;
+  [[nodiscard]] auto vps_extension_length(uint8_t n) const -> uint16_t;
+  [[nodiscard]] auto vps_extension(VpsExtensionType vet) const -> const VpsExtension &;
+
+  [[nodiscard]] auto vpsPackingInformationPresentFlag() const -> bool;
+  [[nodiscard]] auto vpsMivExtensionPresentFlag() const -> bool;
+
+  [[nodiscard]] auto vps_packed_video_present_flag(AtlasId j) const -> bool;
+  [[nodiscard]] auto packing_information(AtlasId j) const -> const PackingInformation &;
   [[nodiscard]] auto vps_miv_extension() const -> const VpsMivExtension &;
-  [[nodiscard]] auto vps_extension_length_minus1() const -> size_t;
-  [[nodiscard]] auto vpsExtensionData() const -> const std::vector<uint8_t> &;
 
   auto profile_tier_level(ProfileTierLevel value) noexcept -> V3cParameterSet &;
   constexpr auto vps_v3c_parameter_set_id(uint8_t value) noexcept -> auto &;
   auto vps_atlas_count_minus1(uint8_t value) -> V3cParameterSet &;
   auto vps_atlas_id(size_t k, AtlasId value) -> V3cParameterSet &;
+
   auto vps_frame_width(AtlasId j, int32_t value) -> V3cParameterSet &;
   auto vps_frame_height(AtlasId j, int32_t value) -> V3cParameterSet &;
   auto vps_map_count_minus1(AtlasId j, uint8_t value) -> V3cParameterSet &;
@@ -614,17 +679,17 @@ public:
   auto vps_occupancy_video_present_flag(AtlasId j, bool value) -> V3cParameterSet &;
   auto vps_geometry_video_present_flag(AtlasId j, bool value) -> V3cParameterSet &;
   auto vps_attribute_video_present_flag(AtlasId j, bool value) -> V3cParameterSet &;
+
   auto occupancy_information(AtlasId j, OccupancyInformation value) -> V3cParameterSet &;
   auto geometry_information(AtlasId j, GeometryInformation value) -> V3cParameterSet &;
   auto attribute_information(AtlasId j, AttributeInformation value) -> V3cParameterSet &;
-  constexpr auto vps_extension_present_flag(bool value) noexcept -> auto &;
-  auto vps_packing_information_present_flag(bool value) noexcept -> V3cParameterSet &;
-  auto vps_miv_extension_present_flag(bool value) noexcept -> V3cParameterSet &;
-  auto vps_extension_6bits(uint8_t value) noexcept -> V3cParameterSet &;
-  auto vps_packed_video_present_flag(const AtlasId &j, bool value) -> V3cParameterSet &;
-  auto packing_information(const AtlasId &j, PackingInformation value) -> V3cParameterSet &;
+
+  auto vps_extension(VpsExtensionType vet) -> VpsExtension &;
+  void removeVpsExtension(VpsExtensionType vet);
+
+  auto vps_packed_video_present_flag(AtlasId j, bool value) -> V3cParameterSet &;
+  auto packing_information(AtlasId j, PackingInformation value) -> V3cParameterSet &;
   auto vps_miv_extension(const VpsMivExtension &value) -> V3cParameterSet &;
-  auto vpsExtensionData(std::vector<uint8_t> value) noexcept -> V3cParameterSet &;
 
   constexpr auto profile_tier_level() noexcept -> auto &;
   [[nodiscard]] auto occupancy_information(AtlasId j) -> OccupancyInformation &;
@@ -652,6 +717,7 @@ public:
 
   static auto decodeFrom(std::istream &stream) -> V3cParameterSet;
 
+  void calculateExtensionLengths();
   void encodeTo(std::ostream &stream) const;
 
 private:
@@ -664,11 +730,12 @@ private:
     bool vps_occupancy_video_present_flag{};
     bool vps_geometry_video_present_flag{};
     bool vps_attribute_video_present_flag{};
-    bool vps_packed_video_present_flag{};
     std::optional<OccupancyInformation> occupancy_information{};
     std::optional<GeometryInformation> geometry_information{};
     std::optional<AttributeInformation> attribute_information{};
-    std::optional<PackingInformation> packing_information{};
+
+    auto operator==(const VpsAtlas &other) const -> bool;
+    auto operator!=(const VpsAtlas &other) const -> bool;
   };
 
   [[nodiscard]] auto atlas(AtlasId atlasId) const -> const VpsAtlas &;
@@ -677,12 +744,12 @@ private:
   ProfileTierLevel m_profile_tier_level;
   uint8_t m_vps_v3c_parameter_set_id{};
   std::vector<VpsAtlas> m_vpsAtlases{VpsAtlas{}};
-  bool m_vps_extension_present_flag{};
-  std::optional<bool> m_vps_packing_information_present_flag{};
-  std::optional<bool> m_vps_miv_extension_present_flag{};
-  std::optional<uint8_t> m_vps_extension_7bits{};
-  std::optional<VpsMivExtension> m_vps_miv_extension;
-  std::optional<std::vector<uint8_t>> m_vpsExtensionData;
+
+  uint8_t m_vps_extension_count{};
+  std::optional<uint32_t> m_vps_extensions_length_minus1{};
+  std::vector<VpsExtensionType> m_vps_extension_type;
+  std::vector<uint16_t> m_vps_extension_length;
+  std::vector<VpsExtension> m_vps_extension;
 };
 } // namespace TMIV::MivBitstream
 

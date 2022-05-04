@@ -596,29 +596,8 @@ constexpr auto V3cParameterSet::vps_v3c_parameter_set_id() const noexcept {
   return m_vps_v3c_parameter_set_id;
 }
 
-constexpr auto V3cParameterSet::vps_extension_present_flag() const noexcept {
-  return m_vps_extension_present_flag;
-}
-
-constexpr auto V3cParameterSet::vps_packing_information_present_flag() const noexcept {
-  return m_vps_packing_information_present_flag.value_or(false);
-}
-
-constexpr auto V3cParameterSet::vps_miv_extension_present_flag() const noexcept {
-  return m_vps_miv_extension_present_flag.value_or(false);
-}
-
-constexpr auto V3cParameterSet::vps_extension_6bits() const noexcept {
-  return m_vps_extension_7bits.value_or(0);
-}
-
 constexpr auto V3cParameterSet::vps_v3c_parameter_set_id(uint8_t value) noexcept -> auto & {
   m_vps_v3c_parameter_set_id = value;
-  return *this;
-}
-
-constexpr auto V3cParameterSet::vps_extension_present_flag(bool value) noexcept -> auto & {
-  m_vps_extension_present_flag = value;
   return *this;
 }
 

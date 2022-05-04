@@ -45,7 +45,7 @@ auto vps() {
   x.vps_geometry_video_present_flag({}, true);
   x.geometry_information({}).gi_geometry_2d_bit_depth_minus1(8);
   x.geometry_information({}).gi_geometry_3d_coordinates_bit_depth_minus1(10);
-  x.vps_extension_present_flag(true);
+  x.calculateExtensionLengths();
   return x;
 }
 } // namespace examples
@@ -240,13 +240,10 @@ gi_geometry_codec_id[ 0 ]=0
 gi_geometry_2d_bit_depth_minus1[ 0 ]=8
 gi_geometry_MSB_align_flag[ 0 ]=false
 gi_geometry_3d_coordinates_bit_depth_minus1[ 0 ]=10
-vps_extension_present_flag=true
-vps_packing_information_present_flag=false
-vps_miv_extension_present_flag=false
-vps_extension_6bits=0
+vps_extension_present_flag=false
 )");
 
-    REQUIRE(byteCodingTest(x, 22, vuh));
+    REQUIRE(byteCodingTest(x, 21, vuh));
   }
 
   SECTION("AD") {
@@ -316,13 +313,10 @@ gi_geometry_codec_id[ 0 ]=0
 gi_geometry_2d_bit_depth_minus1[ 0 ]=8
 gi_geometry_MSB_align_flag[ 0 ]=false
 gi_geometry_3d_coordinates_bit_depth_minus1[ 0 ]=10
-vps_extension_present_flag=true
-vps_packing_information_present_flag=false
-vps_miv_extension_present_flag=false
-vps_extension_6bits=0
+vps_extension_present_flag=false
 )");
 
-    REQUIRE(unitCodingTest(x, 26));
+    REQUIRE(unitCodingTest(x, 25));
   }
 
   SECTION("Example 2") {

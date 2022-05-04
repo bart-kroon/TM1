@@ -45,6 +45,14 @@ template <typename Key, typename Value> struct KeyValuePair {
 
   Key key;
   Value value{};
+
+  [[nodiscard]] constexpr auto operator==(const KeyValuePair &other) const {
+    return key == other.key && value == other.value;
+  }
+
+  [[nodiscard]] constexpr auto operator!=(const KeyValuePair &other) const {
+    return !operator==(other);
+  }
 };
 
 template <typename Key, typename Value>
@@ -70,6 +78,11 @@ public:
       }
     }
     return this->emplace_back(target, Value{}).value;
+  }
+
+  [[nodiscard]] auto contains(const Key &target) const noexcept {
+    return std::any_of(this->cbegin(), this->cend(),
+                       [&target](const auto &kvp) { return kvp.key == target; });
   }
 };
 } // namespace TMIV::Common

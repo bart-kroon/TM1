@@ -134,7 +134,7 @@ void PreRenderer::convertGeometryNominalFormat(const MivBitstream::V3cParameterS
   auto videoWidthNF = vps.vps_frame_width(atlasId);
   auto videoHeightNF = vps.vps_frame_height(atlasId);
 
-  if (vps.vps_miv_extension_present_flag() &&
+  if (vps.vpsMivExtensionPresentFlag() &&
       vps.vps_miv_extension().vme_geometry_scale_enabled_flag()) {
     const auto &asme = atlas.asps.asps_miv_extension();
     const auto asmeGeometryScaleFactorX = asme.asme_geometry_scale_factor_x_minus1() + int32_t{1};

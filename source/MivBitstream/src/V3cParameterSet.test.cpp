@@ -523,10 +523,10 @@ TEST_CASE("v3c_parameter_set", "[V3C Parameter Set]") {
     vps.vps_atlas_id(0, {});
     vps.vps_frame_width({}, 1920);
     vps.vps_frame_height({}, 1080);
-    vps.vps_packing_information_present_flag(false);
     vps.vps_miv_extension()
         .vme_geometry_scale_enabled_flag(true)
         .vme_embedded_occupancy_enabled_flag(true);
+    vps.calculateExtensionLengths();
 
     REQUIRE(toString(vps) == R"(ptl_tier_flag=false
 ptl_profile_codec_group_idc=AVC Progressive High
@@ -548,9 +548,10 @@ vps_occupancy_video_present_flag[ 0 ]=false
 vps_geometry_video_present_flag[ 0 ]=false
 vps_attribute_video_present_flag[ 0 ]=false
 vps_extension_present_flag=true
-vps_packing_information_present_flag=false
-vps_miv_extension_present_flag=true
-vps_extension_6bits=0
+vps_extension_count=1
+vps_extensions_length_minus1=3
+vps_extension_type[ 0 ]=VPS_EXT_MIV
+vps_extension_length[ 0 ]=1
 vme_geometry_scale_enabled_flag=true
 vme_embedded_occupancy_enabled_flag=true
 gm_group_count=0
@@ -562,7 +563,7 @@ gm_group_count=0
 , geometry scaling true, groups 0, embedded occupancy true, occupancy scaling false
 )");
 
-    REQUIRE(byteCodingTest(vps, 21));
+    REQUIRE(byteCodingTest(vps, 25));
   }
 
   SECTION("Example 2") {
@@ -607,8 +608,9 @@ gm_group_count=0
         .vps_packed_video_present_flag(j2, true)
         .packing_information(j2, packInfo)
         .vps_miv_extension(VpsMivExtension{})
-        .vps_extension_6bits(63)
-        .vpsExtensionData({2, 250, 15});
+        .vps_extension(static_cast<VpsExtensionType>(63))
+        .vps_extension_data_byte() = {2, 250, 15};
+    vps.calculateExtensionLengths();
 
     REQUIRE(toString(vps) == R"(ptl_tier_flag=false
 ptl_profile_codec_group_idc=AVC Progressive High
@@ -655,9 +657,10 @@ vps_occupancy_video_present_flag[ 32 ]=false
 vps_geometry_video_present_flag[ 32 ]=false
 vps_attribute_video_present_flag[ 32 ]=false
 vps_extension_present_flag=true
-vps_packing_information_present_flag=true
-vps_miv_extension_present_flag=true
-vps_extension_6bits=63
+vps_extension_count=3
+vps_extensions_length_minus1=35
+vps_extension_type[ 0 ]=VPS_EXT_PACKED
+vps_extension_length[ 0 ]=23
 vps_packed_video_present_flag[ 30 ]=false
 vps_packed_video_present_flag[ 31 ]=false
 vps_packed_video_present_flag[ 32 ]=true
@@ -689,10 +692,13 @@ pin_region_height_minus1[ 32 ][ 0 ]=0
 pin_region_unpack_top_left_x[ 32 ][ 0 ]=0
 pin_region_unpack_top_left_y[ 32 ][ 0 ]=0
 pin_region_rotation_flag[ 32 ][ 0 ]=false
+vps_extension_type[ 1 ]=VPS_EXT_MIV
+vps_extension_length[ 1 ]=1
 vme_geometry_scale_enabled_flag=false
 vme_embedded_occupancy_enabled_flag=true
 gm_group_count=0
-vps_extension_length_minus1=2
+vps_extension_type[ 2 ]=[unknown:63]
+vps_extension_length[ 2 ]=3
 vps_extension_data_byte=2
 vps_extension_data_byte=250
 vps_extension_data_byte=15
@@ -705,7 +711,7 @@ vps_extension_data_byte=15
 , geometry scaling false, groups 0, embedded occupancy true, occupancy scaling false
 )");
 
-    REQUIRE(byteCodingTest(vps, 62));
+    REQUIRE(byteCodingTest(vps, 73));
   }
 
   SECTION("Example 3 for mpi") {
@@ -741,9 +747,8 @@ vps_extension_data_byte=15
         .vps_occupancy_video_present_flag(j0, false)
         .vps_attribute_video_present_flag(j0, true)
         .attribute_information(j0, y)
-        .vps_packing_information_present_flag(false)
-        .vps_miv_extension(VpsMivExtension{})
-        .vps_extension_6bits(0);
+        .vps_miv_extension(VpsMivExtension{});
+    vps.calculateExtensionLengths();
 
     REQUIRE(toString(vps) == R"(ptl_tier_flag=false
 ptl_profile_codec_group_idc=AVC Progressive High
@@ -788,9 +793,10 @@ ai_attribute_dimension_minus1[ 20 ][ 1 ]=0
 ai_attribute_2d_bit_depth_minus1[ 20 ][ 1 ]=9
 ai_attribute_MSB_align_flag[ 20 ][ 1 ]=false
 vps_extension_present_flag=true
-vps_packing_information_present_flag=false
-vps_miv_extension_present_flag=true
-vps_extension_6bits=0
+vps_extension_count=1
+vps_extensions_length_minus1=3
+vps_extension_type[ 0 ]=VPS_EXT_MIV
+vps_extension_length[ 0 ]=1
 vme_geometry_scale_enabled_flag=false
 vme_embedded_occupancy_enabled_flag=true
 gm_group_count=0
@@ -802,11 +808,20 @@ gm_group_count=0
 , geometry scaling false, groups 0, embedded occupancy true, occupancy scaling false
 )");
 
-    const size_t expected_number_of_bytes = 35;
-    REQUIRE(byteCodingTest(vps, expected_number_of_bytes));
+    REQUIRE(byteCodingTest(vps, 39));
 
     REQUIRE(vps.attrIdxOf(AtlasId{20}, AiAttributeTypeId::ATTR_TEXTURE) == 0);
     REQUIRE(vps.attrIdxOf(AtlasId{20}, AiAttributeTypeId::ATTR_TRANSPARENCY) == 1);
   }
+}
+
+TEST_CASE("MivBitstream::VpsExtensionType") {
+  using TMIV::MivBitstream::VpsExtensionType;
+
+  CHECK(toString(VpsExtensionType::VPS_EXT_UNSPECIFIED) == "VPS_EXT_UNSPECIFIED"s);
+  CHECK(toString(VpsExtensionType::VPS_EXT_MIV) == "VPS_EXT_MIV"s);
+  CHECK(toString(VpsExtensionType::VPS_EXT_PACKED) == "VPS_EXT_PACKED"s);
+  CHECK(toString(static_cast<VpsExtensionType>(3)) == "[unknown:3]"s);
+  CHECK(toString(static_cast<VpsExtensionType>(255)) == "[unknown:255]"s);
 }
 } // namespace TMIV::MivBitstream

@@ -335,8 +335,10 @@ private:
   }
 
   void checkCapabilities() const {
-    MIVDECODER_CHECK(m_au.vps.vps_miv_extension_present_flag(), E::expected_miv_extension);
-    VERIFY_V3CBITSTREAM(m_au.vps.vps_extension_6bits() == 0);
+    MIVDECODER_CHECK(m_au.vps.vpsMivExtensionPresentFlag(), E::expected_miv_extension);
+    MIVDECODER_CHECK(m_au.vps.vps_extension_count() ==
+                         (m_au.vps.vpsPackingInformationPresentFlag() ? 2 : 1),
+                     E::unsupported_vps_extension);
 
     auto haveVideo = false;
 
@@ -421,6 +423,8 @@ auto errorStringFor(ErrorCode code) -> const char * {
     return "Expected common atlas AU to be an IRAP";
   case E::expected_miv_extension:
     return "Expected the VPS MIV extension";
+  case E::unsupported_vps_extension:
+    return "The only supported VPS extensions are MIV and packed video";
   case E::expected_video:
     return "Due to potential frame skipping it is only possible to decode common atlas data or "
            "atlas data when at least one video sub-bitstream is present in the MIV bitstream";

@@ -115,7 +115,7 @@ def main():
             if isinstance(result, Path):
                 print(f"Skipped {result} due to earlier errors.")
             elif result.returncode == 0:
-                print(f"{CLANG_TIDY}: {result.file}.", flush=True)
+                print(f"{CLANG_TIDY}: {result.file}", flush=True)
             else:
                 error_count += 1
                 what = result.stdout.decode().replace("/builds/software/MPEG/MIV/RS/TM1/", "")

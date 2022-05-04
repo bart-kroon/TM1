@@ -45,11 +45,12 @@ TEST_CASE("TMIV::Encoder::FramePacker, 1 Atlas with texture and geometry") {
   const auto atlasId = params.vps.vps_atlas_id(0);
   params.vps.vps_geometry_video_present_flag(atlasId, true)
       .vps_attribute_video_present_flag(atlasId, true)
-      .vps_miv_extension_present_flag(true)
       .vps_frame_width(atlasId, 32)
       .vps_frame_height(atlasId, 64)
       .attribute_information(atlasId)
       .ai_attribute_count(1);
+  params.vps.vps_extension(TMIV::MivBitstream::VpsExtensionType::VPS_EXT_MIV).vps_miv_extension();
+
   params.atlas.push_back(TMIV::Encoder::EncoderAtlasParams{});
   auto &asmeAtlas = params.atlas[0].asps.asps_miv_extension();
 
@@ -67,7 +68,7 @@ TEST_CASE("TMIV::Encoder::FramePacker, 1 Atlas with texture and geometry") {
     CHECK(outParams.vps.vps_attribute_video_present_flag(atlasId) == false);
     CHECK(outParams.vps.vps_geometry_video_present_flag(atlasId) == false);
     CHECK(outParams.vps.vps_packed_video_present_flag(atlasId) == true);
-    CHECK(outParams.vps.vps_packing_information_present_flag() == true);
+    CHECK(outParams.vps.vpsPackingInformationPresentFlag());
     CHECK(outParams.vps.packing_information(atlasId).pin_regions_count_minus1() == 1);
     CHECK(outParams.vps.packing_information(atlasId).pin_region_type_id_minus2(0) == 2); // V3C_AVD
     CHECK(outParams.vps.packing_information(atlasId).pin_region_top_left_x(0) == 0);
@@ -99,7 +100,7 @@ TEST_CASE("TMIV::Encoder::FramePacker, 1 Atlas with texture and geometry") {
     CHECK(outParams.vps.vps_attribute_video_present_flag(atlasId) == false);
     CHECK(outParams.vps.vps_geometry_video_present_flag(atlasId) == false);
     CHECK(outParams.vps.vps_packed_video_present_flag(atlasId) == true);
-    CHECK(outParams.vps.vps_packing_information_present_flag() == true);
+    CHECK(outParams.vps.vpsPackingInformationPresentFlag());
     CHECK(outParams.vps.packing_information(atlasId).pin_regions_count_minus1() == 2);
     CHECK(outParams.vps.packing_information(atlasId).pin_region_type_id_minus2(0) == 2); // V3C_AVD
     CHECK(outParams.vps.packing_information(atlasId).pin_region_top_left_x(0) == 0);
@@ -138,7 +139,7 @@ TEST_CASE("TMIV::Encoder::FramePacker, 1 Atlas with texture and geometry") {
     CHECK(outParams.vps.vps_attribute_video_present_flag(atlasId) == false);
     CHECK(outParams.vps.vps_geometry_video_present_flag(atlasId) == false);
     CHECK(outParams.vps.vps_packed_video_present_flag(atlasId) == true);
-    CHECK(outParams.vps.vps_packing_information_present_flag() == true);
+    CHECK(outParams.vps.vpsPackingInformationPresentFlag());
     CHECK(outParams.vps.packing_information(atlasId).pin_regions_count_minus1() == 4);
     CHECK(outParams.vps.packing_information(atlasId).pin_region_type_id_minus2(0) == 2); // V3C_AVD
     CHECK(outParams.vps.packing_information(atlasId).pin_region_top_left_x(0) == 0);
@@ -188,11 +189,11 @@ TEST_CASE("TMIV::Encoder::FramePacker, 1 Atlas with texture, geometry, and occup
   params.vps.vps_occupancy_video_present_flag(atlasId, true)
       .vps_geometry_video_present_flag(atlasId, true)
       .vps_attribute_video_present_flag(atlasId, true)
-      .vps_miv_extension_present_flag(true)
       .vps_frame_width(atlasId, 32)
       .vps_frame_height(atlasId, 64)
       .attribute_information(atlasId)
       .ai_attribute_count(1);
+  params.vps.vps_extension(TMIV::MivBitstream::VpsExtensionType::VPS_EXT_MIV).vps_miv_extension();
 
   params.atlas.push_back(TMIV::Encoder::EncoderAtlasParams{});
   auto &asmeAtlas = params.atlas[0].asps.asps_miv_extension();
@@ -213,7 +214,7 @@ TEST_CASE("TMIV::Encoder::FramePacker, 1 Atlas with texture, geometry, and occup
     CHECK(outParams.vps.vps_geometry_video_present_flag(atlasId) == false);
     CHECK(outParams.vps.vps_occupancy_video_present_flag(atlasId) == false);
     CHECK(outParams.vps.vps_packed_video_present_flag(atlasId) == true);
-    CHECK(outParams.vps.vps_packing_information_present_flag() == true);
+    CHECK(outParams.vps.vpsPackingInformationPresentFlag());
     CHECK(outParams.vps.packing_information(atlasId).pin_regions_count_minus1() == 2);
     CHECK(outParams.vps.packing_information(atlasId).pin_region_type_id_minus2(0) == 2); // V3C_AVD
     CHECK(outParams.vps.packing_information(atlasId).pin_region_top_left_x(0) == 0);
@@ -246,11 +247,11 @@ TEST_CASE("TMIV::Encoder::FramePacker, 1 Atlas with attribute and occupancy only
   params.vps.vps_occupancy_video_present_flag(atlasId, true)
       .vps_geometry_video_present_flag(atlasId, false)
       .vps_attribute_video_present_flag(atlasId, true)
-      .vps_miv_extension_present_flag(true)
       .vps_frame_width(atlasId, 32)
       .vps_frame_height(atlasId, 64)
       .attribute_information(atlasId)
       .ai_attribute_count(1);
+  params.vps.vps_extension(TMIV::MivBitstream::VpsExtensionType::VPS_EXT_MIV).vps_miv_extension();
 
   params.atlas.push_back(TMIV::Encoder::EncoderAtlasParams{});
   auto &asmeAtlas = params.atlas[0].asps.asps_miv_extension();
@@ -270,7 +271,7 @@ TEST_CASE("TMIV::Encoder::FramePacker, 1 Atlas with attribute and occupancy only
     CHECK(outParams.vps.vps_geometry_video_present_flag(atlasId) == false);
     CHECK(outParams.vps.vps_occupancy_video_present_flag(atlasId) == false);
     CHECK(outParams.vps.vps_packed_video_present_flag(atlasId) == true);
-    CHECK(outParams.vps.vps_packing_information_present_flag() == true);
+    CHECK(outParams.vps.vpsPackingInformationPresentFlag());
     CHECK(outParams.vps.packing_information(atlasId).pin_regions_count_minus1() == 2);
     CHECK(outParams.vps.packing_information(atlasId).pin_region_type_id_minus2(0) == 2); // V3C_AVD
     CHECK(outParams.vps.packing_information(atlasId).pin_region_top_left_x(0) == 0);

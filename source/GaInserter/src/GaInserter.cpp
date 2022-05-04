@@ -95,6 +95,7 @@ private:
   void parseV3cUnitPayload(const MivBitstream::V3cParameterSet &vps) {
     m_log << vps;
     m_vps = vps;
+    m_vps.calculateExtensionLengths();
     // vps.encodeTo(m_substream);
     const auto vu = MivBitstream::V3cUnit{*m_vuh, vps};
     vu.encodeTo(m_substream);

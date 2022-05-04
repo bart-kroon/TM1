@@ -39,6 +39,8 @@ Debug build and static analysis (Clang 14):
       -Wall -Wextra -Wpedantic -Werror -Wunreachable-code-aggressive -Wimplicit-int-conversion
       -fprofile-arcs -ftest-coverage"
       -DCMAKE_BUILD_TYPE=Debug
+      -DENABLE_CLANG_TIDY=OFF
+      -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
       -DNO_INTERNET=ON
       -DLOCAL_CATCH2_DIR=/dependencies/Catch2-2_13_8/
       -DLOCAL_FMT_DIR=/dependencies/fmt-8_1_1/
@@ -49,6 +51,7 @@ Debug build and static analysis (Clang 14):
     - ninja -j $(nproc)
     - ninja -j $(nproc) test
     - cd ..
+    - python3 scripts/ci/partial_clang_tidy.py
     - mkdir coverage_html
     - >
       gcovr build --gcov-executable 'llvm-cov-14 gcov' -f 'source/' -e '.*\.test\.cpp' -e '.*\.main\.cpp' -e '.*registerComponents.cpp'
@@ -59,4 +62,32 @@ Debug build and static analysis (Clang 14):
       cobertura: coverage.xml
     paths:
       - coverage_html/
+      - build/compile_commands.json
     expire_in: 5 days
+
+
+Full static analysis (Clang 14):
+  stage: static analysis
+  image: tmiv-ci:20220413
+  tags: [ linux-long ]
+  before_script:
+    - export CXX=clang++-14
+    - export CC=clang-14
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+  script:
+    - mkdir -p build && cd build
+    - >
+      cmake
+      -G Ninja
+      -DCMAKE_CXX_FLAGS="-stdlib=libc++ -Wall -Wextra -Wpedantic -Werror -Wunreachable-code-aggressive -Wimplicit-int-conversion"
+      -DCMAKE_BUILD_TYPE=Debug
+      -DENABLE_CLANG_TIDY=ON
+      -DNO_INTERNET=ON
+      -DLOCAL_CATCH2_DIR=/dependencies/Catch2-2_13_8/
+      -DLOCAL_FMT_DIR=/dependencies/fmt-8_1_1/
+      -DLOCAL_HM_DIR=/dependencies/HM-16_16/
+      -DLOCAL_VVDEC_DIR=/dependencies/vvdec-1_0_1/
+      -DLOCAL_VVENC_DIR=/dependencies/vvenc-0_3_1_0/
+      ..
+    - ninja -j $(nproc)

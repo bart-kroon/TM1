@@ -174,7 +174,7 @@ auto isLowDepthQuality(const MivBitstream::ViewParamsList &vpl,
 }
 } // namespace
 
-DepthQualityAssessor::DepthQualityAssessor(const Common::Json & /*unused*/,
+DepthQualityAssessor::DepthQualityAssessor(const Common::Json & /* unused */,
                                            const Common::Json &componentNode) {
   m_blendingFactor = componentNode.require("blendingFactor").as<float>();
   m_maxOutlierRatio = componentNode.require("maxOutlierRatio").as<float>();

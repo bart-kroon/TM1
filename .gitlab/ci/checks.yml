@@ -4,6 +4,7 @@ Python formatting:
   tags: [ linux-short ]
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_PIPELINE_SOURCE == "schedule"
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
       changes:
         - "**/*.py"
@@ -17,6 +18,7 @@ Python unit tests:
   tags: [ linux-short ]
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_PIPELINE_SOURCE == "schedule"
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
       changes:
         - "**/*.py"
@@ -47,6 +49,7 @@ No multi-line commit messages:
   tags: [ linux-short ]
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_PIPELINE_SOURCE == "schedule"
   script:
     - git fetch --all -p
     - NUM_COMMIT_MESSAGE_LINES=$(git log --pretty=format:%B remotes/origin/main..HEAD | sed '/^\s*$/d' | grep -c "")
@@ -68,6 +71,7 @@ JSON formatting:
   tags: [ linux-short ]
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_PIPELINE_SOURCE == "schedule"
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
       changes:
         - "**/*.json"

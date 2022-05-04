@@ -77,7 +77,7 @@ TEST_CASE("View camera parameters from view params") {
   const auto json = TMIV::Common::Json::parse(R"(
 {
     "Depth_range": [ 0.1, 500.0 ],
-    "Hor_range": [ -90.0, 90.0 ],
+    "Hor_range": [ -90.0, 90.0  ],
     "Name": "v2",
     "Position": [ -0.2878679633140564, -0.0878679633140564, 1.0 ],
     "Projection": "Equirectangular",

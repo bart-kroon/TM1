@@ -3,6 +3,7 @@ stages:
   - checks
   - release build
   - static analysis
+  - integration tests
 
 default:
   interruptible: true
@@ -10,4 +11,5 @@ default:
 include:
   - /.gitlab/ci/checks.yml
   - /.gitlab/ci/builds.yml
+  - /.gitlab/ci/tests.yml
   - /.gitlab/ci/rules.yml

@@ -1,8 +1,5 @@
 # MIV reference software
 
-[![pipeline status](http://mpegx.int-evry.fr/software/MPEG/MIV/RS/TM1/badges/main/pipeline.svg)](http://mpegx.int-evry.fr/software/MPEG/MIV/RS/TM1/-/commits/main)
-[![coverage report](http://mpegx.int-evry.fr/software/MPEG/MIV/RS/TM1/badges/main/coverage.svg)](http://mpegx.int-evry.fr/software/MPEG/MIV/RS/TM1/-/graphs/main/charts)
-
 ## Introduction
 
 A general overview of ISO/IEC 23090-12 MPEG immersive video (MIV) is available at http://mpeg-miv.org, including [a list of relevant MPEG documents](https://mpeg-miv.org/index.php/mpeg-documents/).

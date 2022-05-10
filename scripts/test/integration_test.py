@@ -266,22 +266,32 @@ class IntegrationTest:
             [],
         )
 
-        f4 = self.launchCommand(
+        f4_1 = self.launchCommand(
             executor,
             [f3],
             ["{0}/bin/TmivDecoder", "-c", "{1}/config/ctc/miv_anchor/A_4_TMIV_decode.json"]
             + ["-p", "configDirectory", "{1}/config", "-p", "inputDirectory", "{3}"]
             + ["-p", "outputDirectory", "{3}", "-n", "3", "-N", "3", "-s", "E"]
-            + ["-r", "QP3", "-v", "v11", "-p", "outputLogPath", "{3}/A3/E/QP3/TMIV_A3_E_QP3.dec"]
+            + ["-r", "QP3", "-v", "v11", "-p", "outputLogPath", "{3}/A3/E/QP3/TMIV_A3_E_QP3.dec2"]
             + ["-p", "inputViewportParamsPathFmt", "test/sequences/T{{1}}.json"],
             "{3}/A3/E/QP3/A3_E_QP3_v11.log",
             [
-                "A3/E/QP3/TMIV_A3_E_QP3.dec",
+                "A3/E/QP3/TMIV_A3_E_QP3.dec2",
                 f"A3/E/QP3/A3_E_QP3_v11_tex_{renderResolution}_yuv420p10le.yuv",
             ],
         )
 
-        return [f4, f2_5, f2_6]
+        f4_2 = self.launchCommand(
+            executor,
+            [f3],
+            ["{0}/bin/TmivDecoderLog"]
+            + ["-b", "{3}/A3/E/QP3/TMIV_A3_E_QP3.bit"]
+            + ["-o", "{3}/A3/E/QP3/TMIV_A3_E_QP3.dec"],
+            "{3}/A3/E/QP3/TMIV_A3_E_QP3.dec_log",
+            ["A3/E/QP3/TMIV_A3_E_QP3.dec"],
+        )
+
+        return [f4_1, f4_2, f2_5, f2_6]
 
     def testMivViewAnchor(self, executor):
         if not self.dryRun:
@@ -612,7 +622,17 @@ class IntegrationTest:
             [f"M3/M/QP3/M3_M_QP3_viewport_tex_{renderResolution}_yuv420p10le.yuv"],
         )
 
-        return [f4_1, f4_2, f4_3]
+        f4_4 = self.launchCommand(
+            executor,
+            [f3],
+            ["{0}/bin/TmivDecoderLog"]
+            + ["-b", "{3}/M3/M/QP3/TMIV_M3_M_QP3.bit"]
+            + ["-o", "{3}/M3/M/QP3/TMIV_M3_M_QP3.dec"],
+            "{3}/M3/M/QP3/TMIV_M3_M_QP3.dec_log",
+            ["M3/M/QP3/TMIV_M3_M_QP3.dec"],
+        )
+
+        return [f4_1, f4_2, f4_3, f4_4]
 
     def testFramePacking(self, executor):
         if not self.dryRun:
@@ -789,7 +809,17 @@ class IntegrationTest:
             ["E3/B/QP3/E3_B_QP3_p01_tex_512x512_yuv420p10le.yuv"],
         )
 
-        return [f4_1, f4_2, f4_3]
+        f4_4 = self.launchCommand(
+            executor,
+            [f3],
+            ["{0}/bin/TmivDecoderLog"]
+            + ["-b", "{3}/E3/B/QP3/TMIV_E3_B_QP3.bit"]
+            + ["-o", "{3}/E3/B/QP3/TMIV_E3_B_QP3.dec"],
+            "{3}/E3/B/QP3/TMIV_E3_B_QP3.dec_log",
+            ["E3/B/QP3/TMIV_E3_B_QP3.dec"],
+        )
+
+        return [f4_1, f4_2, f4_3, f4_4]
 
     def testExplicitOccupancy(self, executor):
         if not self.dryRun:

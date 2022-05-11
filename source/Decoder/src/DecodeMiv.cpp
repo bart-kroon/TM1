@@ -325,6 +325,7 @@ private:
       atlas.afps = decoder.au->afps;
       decodePatchParamsList(m_au.vps, vuh, *decoder.au, atlas.patchParamsList);
       requireAllPatchesWithinProjectionPlaneBounds(m_au.viewParamsList, atlas.patchParamsList);
+      requireAllPatchesWithinAtlasFrameBounds(atlas.patchParamsList, atlas.asps);
       atlas.blockToPatchMap = decodeBlockToPatchMap(atlas.asps, atlas.patchParamsList);
       fmt::print("[idx:{:4} foc:{:4}] Decoded atlas frame: {}\n", m_au.frameIdx, decoder.au->foc,
                  vuh.summary());

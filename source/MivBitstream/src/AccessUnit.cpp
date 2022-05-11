@@ -101,11 +101,35 @@ void requireAllPatchesWithinProjectionPlaneBounds(const ViewParamsList &vpl,
 
     if (u_1 < 0 || u_1 > u_2 || u_2 > size_u || v_1 < 0 || v_1 > v_2 || v_2 > size_v) {
       throw std::runtime_error(
-          fmt::format("Patch with index {} and projection ID {} is out of bounds", patchIdx,
-                      pp.atlasPatchProjectionId()));
+          fmt::format("Patch with index {} and projection ID {} is out of projection plane bounds",
+                      patchIdx, pp.atlasPatchProjectionId()));
     }
 
     ++patchIdx;
+  }
+}
+
+void requireAllPatchesWithinAtlasFrameBounds(const PatchParamsList &ppl,
+                                             const AtlasSequenceParameterSetRBSP &asps) {
+  auto patchIdx = 0;
+
+  for (const auto &pp : ppl) {
+    VERIFY(0 <= pp.atlasPatch2dSizeX());
+    VERIFY(0 <= pp.atlasPatch2dSizeY());
+
+    const auto size_x = asps.asps_frame_width();
+    const auto size_y = asps.asps_frame_height();
+
+    const auto x_1 = pp.atlasPatch2dPosX();
+    const auto y_1 = pp.atlasPatch2dPosY();
+    const auto x_2 = x_1 + pp.atlasPatch2dSizeX();
+    const auto y_2 = y_1 + pp.atlasPatch2dSizeY();
+
+    if (x_1 < 0 || x_2 > size_x || y_1 < 0 || y_2 > size_y) {
+      throw std::runtime_error(
+          fmt::format("Patch with index {} and projection ID {} is out of atlas frame bounds",
+                      patchIdx, pp.atlasPatchProjectionId()));
+    }
   }
 }
 } // namespace TMIV::MivBitstream

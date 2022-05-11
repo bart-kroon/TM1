@@ -163,3 +163,74 @@ TEST_CASE("Test if patches are within the projection plane bounds") {
     }
   }
 }
+
+TEST_CASE("Test if patches are within the atlas frame bounds") {
+  using TMIV::MivBitstream::requireAllPatchesWithinAtlasFrameBounds;
+
+  const auto asps_atlas_width = GENERATE(7, 64);
+  const auto asps_atlas_height = GENERATE(24, 77);
+
+  const auto asps = [=]() {
+    return TMIV::MivBitstream::AtlasSequenceParameterSetRBSP{}
+        .asps_frame_width(asps_atlas_width)
+        .asps_frame_height(asps_atlas_height);
+  }();
+
+  auto ppl = TMIV::MivBitstream::PatchParamsList{};
+
+  SECTION("Empty list") { REQUIRE_NOTHROW(requireAllPatchesWithinAtlasFrameBounds(ppl, asps)); }
+
+  ppl.emplace_back().atlasPatch2dPosX(3).atlasPatch2dPosY(2).atlasPatch2dSizeY(4).atlasPatch2dSizeX(
+      asps_atlas_width - 3);
+  ppl.emplace_back().atlasPatch2dPosX(1).atlasPatch2dPosY(1).atlasPatch2dSizeX(6).atlasPatch2dSizeY(
+      asps_atlas_height - 1);
+
+  SECTION("Valid list") {
+    REQUIRE(ppl.size() == 2);
+    requireAllPatchesWithinAtlasFrameBounds(ppl, asps);
+  }
+
+  SECTION("Invalid list: atlasPatch2dPosX +1") {
+    ppl[0].atlasPatch2dPosX(ppl[0].atlasPatch2dPosX() + 1);
+    REQUIRE_THROWS(requireAllPatchesWithinAtlasFrameBounds(ppl, asps));
+  }
+
+  SECTION("Invalid list: atlasPatch2dPosY +1") {
+    ppl[1].atlasPatch2dPosY(ppl[1].atlasPatch2dPosY() + 1);
+    REQUIRE_THROWS(requireAllPatchesWithinAtlasFrameBounds(ppl, asps));
+  }
+
+  SECTION("Invalid list: atlasPatch2dSizeX +1") {
+    ppl[0].atlasPatch2dSizeX(ppl[0].atlasPatch2dSizeX() + 1);
+    REQUIRE_THROWS(requireAllPatchesWithinAtlasFrameBounds(ppl, asps));
+  }
+
+  SECTION("Invalid list: atlasPatch2dSizeY +1") {
+    ppl[1].atlasPatch2dSizeY(ppl[1].atlasPatch2dSizeY() + 1);
+    REQUIRE_THROWS(requireAllPatchesWithinAtlasFrameBounds(ppl, asps));
+  }
+
+  SECTION("Invalid list: Negative atlasPatch2dPosX") {
+    const auto x = GENERATE(-64, -1);
+    ppl.emplace_back().atlasPatch2dPosX(x);
+    REQUIRE_THROWS(requireAllPatchesWithinAtlasFrameBounds(ppl, asps));
+  }
+
+  SECTION("Invalid list: Negative atlasPatch2dPosY") {
+    const auto y = GENERATE(-64, -1);
+    ppl.emplace_back().atlasPatch2dPosY(y);
+    REQUIRE_THROWS(requireAllPatchesWithinAtlasFrameBounds(ppl, asps));
+  }
+
+  SECTION("Invalid list: Negative atlasPatch2dSizeX") {
+    const auto x = GENERATE(-64, -1);
+    ppl.emplace_back().atlasPatch2dSizeX(x);
+    REQUIRE_THROWS(requireAllPatchesWithinAtlasFrameBounds(ppl, asps));
+  }
+
+  SECTION("Invalid list: Negative atlasPatch2dSizeY") {
+    const auto y = GENERATE(-64, -1);
+    ppl.emplace_back().atlasPatch2dSizeY(y);
+    REQUIRE_THROWS(requireAllPatchesWithinAtlasFrameBounds(ppl, asps));
+  }
+}

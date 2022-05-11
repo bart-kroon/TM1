@@ -102,6 +102,9 @@ struct AccessUnit {
 
 void requireAllPatchesWithinProjectionPlaneBounds(const ViewParamsList &vpl,
                                                   const PatchParamsList &ppl);
+
+void requireAllPatchesWithinAtlasFrameBounds(const PatchParamsList &ppl,
+                                             const AtlasSequenceParameterSetRBSP &asps);
 } // namespace TMIV::MivBitstream
 
 #endif

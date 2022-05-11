@@ -403,7 +403,7 @@ public:
       isItFirstFrame = true;
       const auto lumaStdDev =
           calculateLumaStdDev(views, m_params.viewParamsList, m_config, m_maxDepthError);
-      if (lumaStdDev.has_value()) {
+      if (lumaStdDev.has_value() && *lumaStdDev != 0.F) {
         m_lumaStdDev.emplace(lumaStdDev.value());
       } else {
         m_lumaStdDev.emplace(1.0F); // to preserve initial maxLumaError value set in config .json

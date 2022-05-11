@@ -5,13 +5,13 @@
 
 ## Introduction
 
-A general overview of ISO/IEC 23090-12 MPEG Immersive video (MIV) is available at http://mpeg-miv.org, including [a list of relevant MPEG documents](https://mpeg-miv.org/index.php/mpeg-documents/).
+A general overview of ISO/IEC 23090-12 MPEG immersive video (MIV) is available at http://mpeg-miv.org, including [a list of relevant MPEG documents](https://mpeg-miv.org/index.php/mpeg-documents/).
 
 This software project provides:
 
-* an embodiment of the *Test Model of MPEG Immersive video* (TMIV)
-* a ISO/IEC 23090-12 *MPEG Immersive video* (MIV) codec
-* the reference software encoder and decoder of ISO/IEC 23090-23 *Conformance and Reference Software for MPEG Immersive video*.
+* an embodiment of the *Test Model of MPEG immersive video* (TMIV)
+* a ISO/IEC 23090-12 *MPEG immersive video* (MIV) codec
+* the reference software encoder and decoder of ISO/IEC 23090-23 *Conformance and reference software for MPEG immersive video*.
 
 ## Build and installation instructions
 

@@ -113,18 +113,14 @@ void Encoder::Impl::scaleGeometryDynamicRange() {
 #if ENABLE_M57419
     if (m_config.m57419_piecewiseDepthLinearScaling) {
       const auto piece_num = m_config.m57419_intervalNumber;
-      m_params.viewParamsList[v].dq.dq_interval_num(static_cast<uint8_t>(piece_num));
+      m_params.viewParamsList[v].dq.dq_pivot_count_minus1(static_cast<uint8_t>(piece_num - 1));
 
-      if (lowDepthQuality) {
-        m_params.viewParamsList[v].dq.dq_quantization_law(static_cast<uint8_t>(2));
-      } else {
-        m_params.viewParamsList[v].dq.dq_quantization_law(static_cast<uint8_t>(1));
-      }
+      m_params.viewParamsList[v].dq.dq_quantization_law(static_cast<uint8_t>(2));
 
       for (int i = 0; i < piece_num + 1; i++) {
         double normDispMap =
             mapped_pivot[i] / maxValD * (normDispHighOrig - normDispLowOrig) + normDispLowOrig;
-        m_params.viewParamsList[v].dq.dq_norm_disp_map(i, static_cast<float>(normDispMap));
+        m_params.viewParamsList[v].dq.dq_pivot_norm_disp(i, static_cast<float>(normDispMap));
       }
     }
 #endif

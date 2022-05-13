@@ -163,15 +163,15 @@ void CommonAtlasFrameRBSP::encodeTo(std::ostream &stream, const NalUnitHeader &n
 }
 
 #if ENABLE_M57419
-auto DepthQuantization::dq_norm_disp_map(int index) const noexcept -> float {
-  return m_dq_norm_disp_map[index];
+auto DepthQuantization::dq_pivot_norm_disp(int index) const noexcept -> float {
+  return m_dq_pivot_norm_disp[index];
 }
 
-auto DepthQuantization::dq_norm_disp_map(int index, float value) noexcept -> DepthQuantization & {
-  if (static_cast<uint8_t>(m_dq_norm_disp_map.size()) < index + 1) {
-    m_dq_norm_disp_map.resize(index + 1);
+auto DepthQuantization::dq_pivot_norm_disp(int index, float value) noexcept -> DepthQuantization & {
+  if (static_cast<uint8_t>(m_dq_pivot_norm_disp.size()) < index + 1) {
+    m_dq_pivot_norm_disp.resize(index + 1);
   }
-  m_dq_norm_disp_map[index] = value;
+  m_dq_pivot_norm_disp[index] = value;
   return *this;
 }
 #endif

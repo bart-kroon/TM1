@@ -205,7 +205,9 @@ constexpr auto DepthQuantization::dq_norm_disp_low() const noexcept { return m_d
 constexpr auto DepthQuantization::dq_norm_disp_high() const noexcept { return m_dq_norm_disp_high; }
 
 #if ENABLE_M57419
-constexpr auto DepthQuantization::dq_interval_num() const noexcept { return m_dq_interval_num; }
+constexpr auto DepthQuantization::dq_pivot_count_minus1() const noexcept {
+  return m_dq_pivot_count_minus1;
+}
 #endif
 
 constexpr auto DepthQuantization::dq_depth_occ_threshold_default() const noexcept {
@@ -234,8 +236,8 @@ constexpr auto DepthQuantization::dq_depth_occ_threshold_default(uint32_t value)
 }
 
 #if ENABLE_M57419
-constexpr auto DepthQuantization::dq_interval_num(const uint8_t value) noexcept -> auto & {
-  m_dq_interval_num = value;
+constexpr auto DepthQuantization::dq_pivot_count_minus1(const uint8_t value) noexcept -> auto & {
+  m_dq_pivot_count_minus1 = value;
   return *this;
 }
 #endif
@@ -252,10 +254,10 @@ constexpr auto DepthQuantization::operator==(const DepthQuantization &other) con
   }
 
 #if ENABLE_M57419
-  if (dq_quantization_law() == 1 && (dq_norm_disp_low() != other.dq_norm_disp_low() ||
+  if (dq_quantization_law() == 2 && (dq_norm_disp_low() != other.dq_norm_disp_low() ||
                                      dq_norm_disp_high() != other.dq_norm_disp_high() ||
-                                     m_dq_interval_num != other.m_dq_interval_num ||
-                                     m_dq_norm_disp_map != other.m_dq_norm_disp_map)) {
+                                     m_dq_pivot_count_minus1 != other.m_dq_pivot_count_minus1 ||
+                                     m_dq_pivot_norm_disp != other.m_dq_pivot_norm_disp)) {
     return false;
   }
 #endif

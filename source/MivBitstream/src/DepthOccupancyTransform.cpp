@@ -55,21 +55,24 @@ DepthTransform::DepthTransform(const DepthQuantization &dq, uint32_t bitDepth)
   ASSERT(0 < m_minNormDisp);
 
 #if ENABLE_M57419
-  m_intervalNum = dq.dq_interval_num();
+  m_viewPivotCount = dq.dq_pivot_count_minus1() + 1;
   m_quantizationLaw = dq.dq_quantization_law();
 
-  if (m_quantizationLaw != static_cast<uint8_t>(0)) {
-    m_normDispMap.resize(m_intervalNum + 1);
-    for (int i = 0; i < m_intervalNum + 1; i++) {
-      m_normDispMap[i] = dq.dq_norm_disp_map(i);
+  if (m_quantizationLaw == 2) {
+    m_normDispMap.resize(m_viewPivotCount + 2);
+    m_normDispMap[0] = m_normDispLow;
+    m_normDispMap[m_viewPivotCount + 1] = m_normDispHigh;
+
+    for (int i = 0; i < m_viewPivotCount; i++) {
+      m_normDispMap[i + 1] = dq.dq_pivot_norm_disp(i);
     }
 
     m_normDispMax = m_normDispHigh;
-    if (m_quantizationLaw == static_cast<uint8_t>(2)) {
-      m_normDispMax = (m_normDispMax + m_normDispMap[0]) / 2;
-    }
+    m_normDispMax =
+        (m_normDispMax + m_normDispMap[0]) / 2; // NOTE[FT]: why is this halving needed ?
 
-    m_normDispInterval = (m_normDispMax - m_normDispMap[0]) / static_cast<float>(m_intervalNum);
+    m_normDispInterval =
+        (m_normDispMax - m_normDispMap[0]) / static_cast<float>(m_viewPivotCount + 1);
   }
 #endif
 }
@@ -85,16 +88,17 @@ auto DepthTransform::expandNormDisp(Common::SampleValue x) const -> float {
   const auto level = Common::expandValue(std::clamp(x, m_depthStart, m_depthEnd), m_bitDepth);
 
 #if ENABLE_M57419
-  if (m_quantizationLaw == 1) {
+  if (m_quantizationLaw == 2) {
     float normDisp = m_normDispLow + (m_normDispHigh - m_normDispLow) * level;
 
-    for (int i = 1; i <= m_intervalNum; i++) {
-      if (normDisp <= m_normDispMap[i]) {
-        float in = m_normDispMap[i - 1];
-        float map = m_normDispMap[0] + static_cast<float>(i - 1) * m_normDispInterval;
-        float inD = m_normDispMap[i] - in;
-        float mapD = m_normDispInterval;
-        normDisp = std::max(m_minNormDisp, (normDisp - in) * mapD / inD + map);
+    for (int i = 0; i <= m_viewPivotCount; i++) {
+      if (normDisp <= m_normDispMap[i + 1]) {
+        const auto x1 = m_normDispMap[i];
+        const auto x2 = m_normDispMap[i + 1];
+        const auto mappedIntervalSize = x2 - x1;
+        float orgStartMap = m_normDispMap[0] + static_cast<float>(i) * m_normDispInterval;
+        normDisp = std::max(m_minNormDisp, orgStartMap + (normDisp - x1) * m_normDispInterval /
+                                                             mappedIntervalSize);
         break;
       }
     }
@@ -125,23 +129,24 @@ auto DepthTransform::expandDepth(const Common::Frame<> &frame) const -> Common::
 auto DepthTransform::quantizeNormDisp(float x, Common::SampleValue minLevel) const
     -> Common::SampleValue {
   if (x > 0.F) {
-#if ENABLE_M54719
+#if ENABLE_M57419
     float level{};
 
     if (m_quantizationLaw == 0) {
       level = (x - m_normDispLow) / (m_normDispHigh - m_normDispLow);
-    } else if (m_quantizationLaw == 1) {
-      int interval_index =
-          std::clamp((int)((x - m_normDispMap[0]) / m_normDispInterval), 0, m_intervalNum - 1);
-
-      auto in = (double)(m_normDispMap[0] + (double)interval_index * m_normDispInterval);
-      auto map = (double)m_normDispMap[interval_index];
-      double inD = m_normDispInterval;
-      double mapD = m_normDispMap[interval_index + 1] - map;
-
-      double normDisp = std::clamp((x - in) * mapD / inD + map, (double)m_normDispMap[0],
-                                   (double)m_normDispMap[m_intervalNum]);
-      level = (float)((normDisp - m_normDispLow) / (m_normDispHigh - m_normDispLow));
+    } else if (m_quantizationLaw == 2) {
+      uint8_t i = std::clamp(static_cast<uint8_t>((x - m_normDispMap[0]) / m_normDispInterval),
+                             uint8_t{}, m_viewPivotCount);
+      auto orgStartMap =
+          static_cast<double>(m_normDispMap[0] + static_cast<double>(i) * m_normDispInterval);
+      const auto x1 = static_cast<double>(m_normDispMap[i]);
+      const auto x2 = static_cast<double>(m_normDispMap[i + 1]);
+      const auto mappedIntervalSize = x2 - x1;
+      double normDisp =
+          std::clamp(x1 + (x - orgStartMap) * (mappedIntervalSize) / m_normDispInterval,
+                     static_cast<double>(m_normDispMap[0]),
+                     static_cast<double>(m_normDispMap[m_viewPivotCount + 1]));
+      level = static_cast<float>((normDisp - m_normDispLow) / (m_normDispHigh - m_normDispLow));
     }
 #else
     const auto level = (x - m_normDispLow) / (m_normDispHigh - m_normDispLow);

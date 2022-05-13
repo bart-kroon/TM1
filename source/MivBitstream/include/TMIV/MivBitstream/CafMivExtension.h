@@ -172,11 +172,11 @@ public:
   constexpr auto dq_depth_occ_threshold_default(uint32_t value) noexcept -> auto &;
 
 #if ENABLE_M57419
-  [[nodiscard]] constexpr auto dq_interval_num() const noexcept;
-  [[nodiscard]] auto dq_norm_disp_map(int i) const noexcept -> float;
+  [[nodiscard]] constexpr auto dq_pivot_count_minus1() const noexcept;
+  [[nodiscard]] auto dq_pivot_norm_disp(int i) const noexcept -> float;
 
-  constexpr auto dq_interval_num(uint8_t value) noexcept -> auto &;
-  auto dq_norm_disp_map(int i, float value) noexcept -> DepthQuantization &;
+  constexpr auto dq_pivot_count_minus1(uint8_t value) noexcept -> auto &;
+  auto dq_pivot_norm_disp(int i, float value) noexcept -> DepthQuantization &;
 #endif
 
   auto printTo(std::ostream &stream, uint16_t viewIdx) const -> std::ostream &;
@@ -195,9 +195,8 @@ private:
   uint32_t m_dq_depth_occ_threshold_default{};
 
 #if ENABLE_M57419
-  uint8_t m_low_depth_quality{};
-  uint8_t m_dq_interval_num{};
-  std::vector<float> m_dq_norm_disp_map;
+  uint8_t m_dq_pivot_count_minus1{};
+  std::vector<float> m_dq_pivot_norm_disp;
 #endif
 };
 

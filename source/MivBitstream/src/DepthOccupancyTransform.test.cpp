@@ -160,40 +160,42 @@ TEST_CASE("DepthTransform") {
     const auto normDispLow = GENERATE(-2.F, 0.F, 10.F);
     const auto normDispHigh = GENERATE(-1.F, 0.F, 100.F);
 
-    if (normDispLow != normDispHigh && 0 < std::max(normDispLow, normDispHigh)) {
+    if (normDispLow != normDispHigh && 0 < std::max(normDispLow, normDispHigh) &&
+        normDispLow < normDispHigh) {
       auto dq = DepthQuantization{};
       dq.dq_norm_disp_low(normDispLow);
       dq.dq_norm_disp_high(normDispHigh);
 
-      dq.dq_quantization_law(1);
-      dq.dq_interval_num(1);
-
-      float normDispMap0 = normDispLow;
-      float normDispMap1 =
-          normDispLow + (normDispHigh - normDispLow) / static_cast<float>(dq.dq_interval_num());
-      dq.dq_norm_disp_map(0, normDispMap0);
-      dq.dq_norm_disp_map(1, normDispMap1);
+      dq.dq_quantization_law(2);
+      dq.dq_pivot_count_minus1(0);
+      float normDisp_at_pivot_point =
+          normDispLow +
+          (normDispHigh - normDispLow) / static_cast<float>(dq.dq_pivot_count_minus1() + 2);
+      dq.dq_pivot_norm_disp(0, normDisp_at_pivot_point);
 
       const auto bits = GENERATE(1U, 12U);
+
       constexpr uint16_t lowLevel = 0;
       const auto highLevel = TMIV::Common::maxLevel<uint16_t>(bits);
-      const auto map0_level = lowLevel;
-      const uint16_t map1_level =
-          lowLevel + (highLevel - lowLevel) / static_cast<uint16_t>(dq.dq_interval_num());
+      const uint16_t midLevel =
+          lowLevel + (highLevel - lowLevel) / static_cast<uint16_t>(dq.dq_pivot_count_minus1() + 2);
+      const uint16_t midLevel_minus1 = static_cast<uint16_t>(std::clamp(
+          static_cast<int>(lowLevel), static_cast<int>(midLevel) - 1, static_cast<int>(highLevel)));
+      const uint16_t midLevel_plus1 = static_cast<uint16_t>(std::clamp(
+          static_cast<int>(lowLevel), static_cast<int>(midLevel) + 1, static_cast<int>(highLevel)));
 
       const auto unit = DepthTransform{dq, bits};
-
-      const auto minNormDisp = unit.minNormDisp();
-      const auto lowDisp = std::max(minNormDisp, normDispLow);
-      const auto highDisp = std::max(minNormDisp, normDispHigh);
-      const auto map0_disp = std::max(minNormDisp, normDispMap0);
-      const auto map1_disp = std::max(minNormDisp, normDispMap1);
+      const auto lowDisp = unit.expandNormDisp(lowLevel);
+      const auto midDisp = unit.expandNormDisp(midLevel);
+      const auto highDisp = unit.expandNormDisp(highLevel);
 
       REQUIRE(unit.expandNormDisp(lowLevel) == lowDisp);
+
       if (lowLevel < highLevel) {
-        REQUIRE(unit.expandNormDisp(map0_level) == map0_disp);
-        REQUIRE(unit.expandNormDisp(map1_level) == map1_disp);
-        REQUIRE(unit.expandNormDisp(highLevel) == highDisp);
+        REQUIRE(unit.expandNormDisp(lowLevel) == lowDisp);
+        REQUIRE(unit.expandNormDisp(midLevel_minus1) <= midDisp);
+        REQUIRE(unit.expandNormDisp(midLevel_plus1) >= midDisp);
+        REQUIRE(unit.expandNormDisp(highLevel) <= highDisp);
       }
     }
   }
@@ -324,14 +326,14 @@ TEST_CASE("DepthTransform") {
     dq.dq_norm_disp_low(normDispLow);
     dq.dq_norm_disp_high(normDispHigh);
 
-    dq.dq_quantization_law(1);
-    dq.dq_interval_num(1);
+    dq.dq_quantization_law(2);
+    dq.dq_pivot_count_minus1(0);
 
     float normDispMap0 = normDispLow;
-    float normDispMap1 =
-        normDispLow + (normDispHigh - normDispLow) / static_cast<float>(dq.dq_interval_num());
-    dq.dq_norm_disp_map(0, normDispMap0);
-    dq.dq_norm_disp_map(1, normDispMap1);
+    float normDispMap1 = normDispLow + (normDispHigh - normDispLow) /
+                                           static_cast<float>(dq.dq_pivot_count_minus1() + 2);
+    dq.dq_pivot_norm_disp(0, normDispMap0);
+    dq.dq_pivot_norm_disp(1, normDispMap1);
 
     constexpr auto bits = 14U;
     constexpr auto maxLevel = TMIV::Common::maxLevel(bits);

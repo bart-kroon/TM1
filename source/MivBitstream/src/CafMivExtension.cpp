@@ -256,7 +256,7 @@ void CameraExtrinsics::encodeTo(Common::OutputBitstream &bitstream) const {
 
 auto DepthQuantization::printTo(std::ostream &stream, uint16_t viewIdx) const -> std::ostream & {
 #if ENABLE_M57419
-  VERIFY_MIVBITSTREAM(dq_quantization_law() <= 1);
+  VERIFY_MIVBITSTREAM(dq_quantization_law() == 0 || dq_quantization_law() == 2);
 #else
   VERIFY_MIVBITSTREAM(dq_quantization_law() == 0);
 #endif
@@ -280,15 +280,15 @@ auto DepthQuantization::decodeFrom(Common::InputBitstream &bitstream) -> DepthQu
   }
 
 #if ENABLE_M57419
-  VERIFY_MIVBITSTREAM(x.dq_quantization_law() <= 1);
+  VERIFY_MIVBITSTREAM(x.dq_quantization_law() == 0 || x.dq_quantization_law() == 2);
 
-  if (x.dq_quantization_law() == 1) {
+  if (x.dq_quantization_law() == 2) {
     x.dq_norm_disp_low(bitstream.getFloat32());
     x.dq_norm_disp_high(bitstream.getFloat32());
-    x.dq_interval_num(bitstream.getUint8());
+    x.dq_pivot_count_minus1(bitstream.getUint8());
 
-    for (int i = 0; i <= x.dq_interval_num(); i++) {
-      x.dq_norm_disp_map(i, bitstream.getFloat32());
+    for (int i = 0; i <= x.dq_pivot_count_minus1(); i++) {
+      x.dq_pivot_norm_disp(i, bitstream.getFloat32());
     }
   }
 #else
@@ -309,13 +309,13 @@ void DepthQuantization::encodeTo(Common::OutputBitstream &bitstream) const {
   }
 
 #if ENABLE_M57419
-  if (dq_quantization_law() == 1) {
+  if (dq_quantization_law() == 2) {
     bitstream.putFloat32(dq_norm_disp_low());
     bitstream.putFloat32(dq_norm_disp_high());
-    bitstream.putUint8(dq_interval_num());
+    bitstream.putUint8(dq_pivot_count_minus1());
 
-    for (int i = 0; i <= dq_interval_num(); i++) {
-      bitstream.putFloat32(dq_norm_disp_map(i));
+    for (int i = 0; i <= dq_pivot_count_minus1(); i++) {
+      bitstream.putFloat32(dq_pivot_norm_disp(i));
     }
   }
 #endif

@@ -117,7 +117,7 @@ private:
   Common::SampleValue m_depthEnd{std::numeric_limits<Common::SampleValue>::max()};
 
 #if ENABLE_M57419
-  uint8_t m_intervalNum{};
+  uint8_t m_viewPivotCount{};
   uint8_t m_quantizationLaw{};
   std::vector<float> m_normDispMap;
   float m_normDispInterval{};

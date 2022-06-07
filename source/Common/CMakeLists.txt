@@ -15,6 +15,10 @@ create_tmiv_library(
         Threads::Threads
     )
 
+if (NOT TARGET CommonLib)
+    message(FATAL_ERROR "CommonLib is required in every build of TMIV.")
+endif()
+
 configure_file(include/TMIV/Common/Version.h.in include/TMIV/Common/Version.h @ONLY)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/include/TMIV/Common/Version.h
         DESTINATION include/TMIV/Common)

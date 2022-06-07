@@ -16,12 +16,12 @@ create_tmiv_library(
         fmt::fmt
     )
 
-if (HAVE_HM)
+if (HAVE_HM AND TARGET VideoDecoderLib)
     target_link_libraries(VideoDecoderLib PRIVATE TLibDecoder)
     target_compile_definitions(VideoDecoderLib PUBLIC HAVE_HM)
 endif()
 
-if (HAVE_VVDEC)
+if (HAVE_VVDEC AND TARGET VideoDecoderLib)
     target_link_libraries(VideoDecoderLib PRIVATE vvdec)
     target_compile_definitions(VideoDecoderLib PUBLIC HAVE_VVDEC)
 

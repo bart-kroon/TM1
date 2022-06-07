@@ -11,6 +11,22 @@ function(create_tmiv_library)
         "${multiValues}"
         ${ARGN})
 
+    if (NOT "${TMIV_BUILD_LIB_LIST}" STREQUAL "")
+        set(found_library OFF)
+
+        foreach (enabled_lib ${TMIV_BUILD_LIB_LIST})
+            if (${enabled_lib} STREQUAL ${TMIV_LIB_CREATOR_TARGET})
+                set(found_library ON)
+                break()
+            endif()
+        endforeach()
+
+        if (NOT found_library)
+            message(STATUS "Library ${TMIV_LIB_CREATOR_TARGET} is excluded from the build.")
+            return()
+        endif()
+    endif ()
+
     add_library(${TMIV_LIB_CREATOR_TARGET} ${TMIV_LIB_CREATOR_SOURCES})
     set_property(TARGET ${TMIV_LIB_CREATOR_TARGET} PROPERTY FOLDER "TMIV libraries")   
     target_link_libraries(${TMIV_LIB_CREATOR_TARGET} PUBLIC ${TMIV_LIB_CREATOR_PUBLIC})
@@ -42,6 +58,22 @@ function(create_tmiv_executable)
         "${singleValues}"
         "${multiValues}"
         ${ARGN})
+
+    if (NOT "${TMIV_BUILD_APP_LIST}" STREQUAL "")
+        set(found_app OFF)
+
+        foreach (enabled_app ${TMIV_BUILD_APP_LIST})
+            if (${enabled_app} STREQUAL ${TMIV_EXE_CREATOR_TARGET})
+                set(found_app ON)
+                break()
+            endif()
+        endforeach()
+
+        if (NOT found_app)
+            message(STATUS "Executable ${TMIV_EXE_CREATOR_TARGET} is excluded from the build.")
+            return()
+        endif()
+    endif ()
 
     add_executable(Tmiv${TMIV_EXE_CREATOR_TARGET} ${TMIV_EXE_CREATOR_SOURCES})
     set_property(TARGET Tmiv${TMIV_EXE_CREATOR_TARGET} PROPERTY FOLDER "TMIV executables")

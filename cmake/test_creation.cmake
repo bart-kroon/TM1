@@ -15,6 +15,22 @@ function(create_catch2_unit_test)
             "${multiValues}"
             ${ARGN})
 
+    if (NOT "${TMIV_BUILD_TEST_LIST}" STREQUAL "")
+        set(found_test OFF)
+
+        foreach (enabled_test ${TMIV_BUILD_TEST_LIST})
+            if (${enabled_test} STREQUAL ${TEST_CREATOR_TARGET})
+                set(found_test ON)
+                break()
+            endif()
+        endforeach()
+
+        if (NOT found_test)
+            message(STATUS "Test ${TEST_CREATOR_TARGET} is excluded from the build.")
+            return()
+        endif()
+    endif ()
+    
     add_executable(${TEST_CREATOR_TARGET} ${TEST_CREATOR_SOURCES})
 
     target_link_libraries(${TEST_CREATOR_TARGET}

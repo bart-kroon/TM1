@@ -287,11 +287,19 @@ class IntegrationTest:
             ["{0}/bin/TmivDecoderLog"]
             + ["-b", "{3}/A3/E/QP3/TMIV_A3_E_QP3.bit"]
             + ["-o", "{3}/A3/E/QP3/TMIV_A3_E_QP3.dec"],
-            "{3}/A3/E/QP3/TMIV_A3_E_QP3.dec_log",
+            "{3}/A3/E/QP3/TMIV_A3_E_QP3.dec.log",
             ["A3/E/QP3/TMIV_A3_E_QP3.dec"],
         )
 
-        return [f4_1, f4_2, f2_5, f2_6]
+        f4_3 = self.launchCommand(
+            executor,
+            [f3],
+            ["{0}/bin/TmivNativeVideoDecoderTest", "{3}/A3/E/QP3/TMIV_A3_E_QP3.bit", "3", "2"],
+            "{3}/A3/E/QP3/TMIV_A3_E_QP3.nvdt.log",
+            [],
+        )
+
+        return [f4_1, f4_2, f4_3, f2_5, f2_6]
 
     def testMivViewAnchor(self, executor):
         if not self.dryRun:
@@ -628,11 +636,19 @@ class IntegrationTest:
             ["{0}/bin/TmivDecoderLog"]
             + ["-b", "{3}/M3/M/QP3/TMIV_M3_M_QP3.bit"]
             + ["-o", "{3}/M3/M/QP3/TMIV_M3_M_QP3.dec"],
-            "{3}/M3/M/QP3/TMIV_M3_M_QP3.dec_log",
+            "{3}/M3/M/QP3/TMIV_M3_M_QP3.dec.log",
             ["M3/M/QP3/TMIV_M3_M_QP3.dec"],
         )
 
-        return [f4_1, f4_2, f4_3, f4_4]
+        f4_5 = self.launchCommand(
+            executor,
+            [f3],
+            ["{0}/bin/TmivNativeVideoDecoderTest", "{3}/M3/M/QP3/TMIV_M3_M_QP3.bit", "3", "2"],
+            "{3}/M3/M/QP3/TMIV_M3_M_QP3.nvdt.log",
+            [],
+        )
+
+        return [f4_1, f4_2, f4_3, f4_4, f4_5]
 
     def testFramePacking(self, executor):
         if not self.dryRun:
@@ -815,11 +831,19 @@ class IntegrationTest:
             ["{0}/bin/TmivDecoderLog"]
             + ["-b", "{3}/E3/B/QP3/TMIV_E3_B_QP3.bit"]
             + ["-o", "{3}/E3/B/QP3/TMIV_E3_B_QP3.dec"],
-            "{3}/E3/B/QP3/TMIV_E3_B_QP3.dec_log",
+            "{3}/E3/B/QP3/TMIV_E3_B_QP3.dec.log",
             ["E3/B/QP3/TMIV_E3_B_QP3.dec"],
         )
 
-        return [f4_1, f4_2, f4_3, f4_4]
+        f4_5 = self.launchCommand(
+            executor,
+            [f3],
+            ["{0}/bin/TmivNativeVideoDecoderTest", "{3}/E3/B/QP3/TMIV_E3_B_QP3.bit", "3", "2"],
+            "{3}/E3/B/QP3/TMIV_E3_B_QP3.nvdt.log",
+            [],
+        )
+
+        return [f4_1, f4_2, f4_3, f4_4, f4_5]
 
     def testExplicitOccupancy(self, executor):
         if not self.dryRun:

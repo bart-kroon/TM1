@@ -65,3 +65,13 @@ create_catch2_unit_test(
         DecoderLib
         fmt::fmt
     )
+
+create_tmiv_executable(
+    TARGET
+        NativeVideoDecoderTest
+    SOURCES
+        "src/NativeVideoDecoder.test.cpp"
+    PRIVATE
+        DecoderLib
+    )
+set_property(TARGET TmivNativeVideoDecoderTest PROPERTY FOLDER "TMIV tests")

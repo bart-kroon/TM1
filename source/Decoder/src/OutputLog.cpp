@@ -174,9 +174,11 @@ auto viewParamsListHash(const MivBitstream::ViewParamsList &vpl) noexcept -> Has
     hash.consumeF(static_cast<float>(vp.pose.orientation[1])); // y
     hash.consumeF(static_cast<float>(vp.pose.orientation[2])); // z
 
-    hash.consumeF(vp.dq.dq_norm_disp_low());
-    hash.consumeF(vp.dq.dq_norm_disp_high());
-    hash.consume(vp.dq.dq_depth_occ_threshold_default());
+    if (vp.dq.dq_quantization_law() == 0) {
+      hash.consumeF(vp.dq.dq_norm_disp_low());
+      hash.consumeF(vp.dq.dq_norm_disp_high());
+      hash.consume(vp.dq.dq_depth_occ_threshold_default());
+    }
 
     hash.consume(vp.viewInpaintFlag);
 

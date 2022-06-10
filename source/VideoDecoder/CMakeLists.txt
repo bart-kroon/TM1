@@ -4,12 +4,8 @@ create_tmiv_library(
     TARGET
         VideoDecoderLib
     SOURCES
-        "src/HmPartition.cpp"
-        "src/HmVideoDecoder.cpp"
         "src/UnavailableVideoDecoders.cpp"
         "src/UnavailablePartitioners.cpp"
-        "src/VVdeCPartition.cpp"
-        "src/VVdeCVideoDecoder.cpp"
     PUBLIC
         CommonLib
     PRIVATE
@@ -17,12 +13,34 @@ create_tmiv_library(
     )
 
 if (HAVE_HM AND TARGET VideoDecoderLib)
-    target_link_libraries(VideoDecoderLib PRIVATE TLibDecoder)
+    create_tmiv_library(
+        TARGET
+            VideoDecoderHmLib
+        SOURCES
+            "src/HM/HmPartition.cpp"
+            "src/HM/HmVideoDecoder.cpp"
+        PRIVATE
+            CommonLib
+            TLibDecoder
+        )
+    set_property(TARGET VideoDecoderHmLib PROPERTY CXX_STANDARD 17) # HM headers are not valid C++20
+    target_link_libraries(VideoDecoderLib PRIVATE VideoDecoderHmLib)
     target_compile_definitions(VideoDecoderLib PUBLIC HAVE_HM)
 endif()
 
 if (HAVE_VVDEC AND TARGET VideoDecoderLib)
-    target_link_libraries(VideoDecoderLib PRIVATE vvdec)
+    create_tmiv_library(
+        TARGET
+            VideoDecoderVvdecLib
+        SOURCES
+            "src/VVdeC/VVdeCPartition.cpp"
+            "src/VVdeC/VVdeCVideoDecoder.cpp"
+        PRIVATE
+            CommonLib
+            vvdec
+            fmt::fmt
+        )
+    target_link_libraries(VideoDecoderLib PRIVATE VideoDecoderVvdecLib)
     target_compile_definitions(VideoDecoderLib PUBLIC HAVE_VVDEC)
 
     install(

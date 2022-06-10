@@ -27,14 +27,16 @@ function(create_tmiv_library)
         endif()
     endif ()
 
-    add_library(${TMIV_LIB_CREATOR_TARGET} ${TMIV_LIB_CREATOR_SOURCES})
-    set_property(TARGET ${TMIV_LIB_CREATOR_TARGET} PROPERTY FOLDER "TMIV libraries")   
-    target_link_libraries(${TMIV_LIB_CREATOR_TARGET} PUBLIC ${TMIV_LIB_CREATOR_PUBLIC})
-    target_link_libraries(${TMIV_LIB_CREATOR_TARGET} PRIVATE ${TMIV_LIB_CREATOR_PRIVATE})
+    if(NOT TARGET ${TMIV_LIB_CREATOR_TARGET})
+        add_library(${TMIV_LIB_CREATOR_TARGET} ${TMIV_LIB_CREATOR_SOURCES})
+        set_property(TARGET ${TMIV_LIB_CREATOR_TARGET} PROPERTY FOLDER "TMIV libraries")   
+        target_link_libraries(${TMIV_LIB_CREATOR_TARGET} PUBLIC ${TMIV_LIB_CREATOR_PUBLIC})
+        target_link_libraries(${TMIV_LIB_CREATOR_TARGET} PRIVATE ${TMIV_LIB_CREATOR_PRIVATE})
     
-    target_include_directories(${TMIV_LIB_CREATOR_TARGET}
-        PUBLIC
-            "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>")
+        target_include_directories(${TMIV_LIB_CREATOR_TARGET}
+            PUBLIC
+                "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>")
+    endif()
 
     install(
         TARGETS ${TMIV_LIB_CREATOR_TARGET}
@@ -75,9 +77,11 @@ function(create_tmiv_executable)
         endif()
     endif ()
 
-    add_executable(Tmiv${TMIV_EXE_CREATOR_TARGET} ${TMIV_EXE_CREATOR_SOURCES})
-    set_property(TARGET Tmiv${TMIV_EXE_CREATOR_TARGET} PROPERTY FOLDER "TMIV executables")
-    target_link_libraries(Tmiv${TMIV_EXE_CREATOR_TARGET} PRIVATE ${TMIV_EXE_CREATOR_PRIVATE})
+    if(NOT TARGET Tmiv${TMIV_EXE_CREATOR_TARGET})
+        add_executable(Tmiv${TMIV_EXE_CREATOR_TARGET} ${TMIV_EXE_CREATOR_SOURCES})
+        set_property(TARGET Tmiv${TMIV_EXE_CREATOR_TARGET} PROPERTY FOLDER "TMIV executables")
+        target_link_libraries(Tmiv${TMIV_EXE_CREATOR_TARGET} PRIVATE ${TMIV_EXE_CREATOR_PRIVATE})
+    endif()
 
     install(
         TARGETS Tmiv${TMIV_EXE_CREATOR_TARGET}

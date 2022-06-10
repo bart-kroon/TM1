@@ -38,26 +38,26 @@
 #include <array>
 
 namespace test {
-struct Movable {
-  Movable() = delete;
-  Movable(const Movable &) = delete;
-  Movable(Movable &&) = default;
-  auto operator=(const Movable &) -> Movable & = delete;
-  auto operator=(Movable &&) -> Movable & = default;
-  ~Movable() = default;
+struct DefaultInitMovable {
+  DefaultInitMovable() = default;
+  DefaultInitMovable(const DefaultInitMovable &) = delete;
+  DefaultInitMovable(DefaultInitMovable &&) = default;
+  auto operator=(const DefaultInitMovable &) -> DefaultInitMovable & = delete;
+  auto operator=(DefaultInitMovable &&) -> DefaultInitMovable & = default;
+  ~DefaultInitMovable() = default;
 };
 
 auto exampleStream() -> TMIV::Common::Stream<int32_t> {
   return [n = 0]() mutable -> int32_t { return n++; };
 }
 
-auto exampleSource(int32_t n) -> TMIV::Common::Source<Movable> {
-  return [=]() mutable -> std::optional<Movable> {
+auto exampleSource(int32_t n) -> TMIV::Common::Source<DefaultInitMovable> {
+  return [=]() mutable -> std::optional<DefaultInitMovable> {
     if (n == 0) {
       return std::nullopt;
     }
     --n;
-    return Movable{};
+    return DefaultInitMovable{};
   };
 }
 } // namespace test
@@ -65,7 +65,7 @@ auto exampleSource(int32_t n) -> TMIV::Common::Source<Movable> {
 TEST_CASE("TMIV::Common::emptySource()") {
   using TMIV::Common::emptySource;
 
-  auto source = emptySource<test::Movable>();
+  auto source = emptySource<test::DefaultInitMovable>();
   REQUIRE_FALSE(source());
   REQUIRE_FALSE(source());
 }
@@ -121,7 +121,7 @@ TEST_CASE("TMIV::Common::test(Source<T>)") {
   SECTION("Empty source") {
     using TMIV::Common::emptySource;
 
-    auto source = emptySource<test::Movable>();
+    auto source = emptySource<test::DefaultInitMovable>();
     auto actual = test(source);
     REQUIRE(actual == nullptr);
   }

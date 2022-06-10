@@ -31,11 +31,9 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#if HAVE_VVDEC
-
 #include <TMIV/Common/Common.h>
 
-#include "PartitionImpl.h"
+#include "../PartitionImpl.h"
 
 #include <vvdec/vvdec.h>
 
@@ -75,5 +73,3 @@ auto partitionVvcMain10(NalUnitSource source) -> CodedVideoSequenceSource {
   return partition(std::move(source), isIrapStart, isIrapVcf);
 }
 } // namespace TMIV::VideoDecoder
-
-#endif // HAVE_VVDEC

@@ -36,6 +36,7 @@
 #include <TMIV/Common/verify.h>
 
 namespace TMIV::VideoDecoder {
+namespace {
 template <typename IsIrapStart, typename IsIrapVcf>
 auto partition(NalUnitSource source, IsIrapStart &&isIrapStart, IsIrapVcf &&isIrapVcf)
     -> CodedVideoSequenceSource {
@@ -64,4 +65,5 @@ auto partition(NalUnitSource source, IsIrapStart &&isIrapStart, IsIrapVcf &&isIr
         return sequence;
       };
 }
+} // namespace
 } // namespace TMIV::VideoDecoder

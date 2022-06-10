@@ -33,22 +33,30 @@ if (BUILD_HM)
     set(libSourceDir "${HM_SOURCE_DIR}/source/Lib")
 
     function(add_hm_executable module)
-        file(GLOB cppSourceFiles "${appSourceDir}/${module}/*.cpp")
-        file(GLOB cSourceFiles "${appSourceDir}/${module}/*.c")
-        file(GLOB headerFiles "${appSourceDir}/${module}/*.h")
-        add_executable(${module} ${cppSourceFiles} ${cSourceFiles} ${headerFiles})
-        set_property(TARGET ${module} PROPERTY CXX_CLANG_TIDY) # no clang-tidy
-        set_property(TARGET ${module} PROPERTY FOLDER "HM executables")
+        if(NOT TARGET ${module})
+            file(GLOB cppSourceFiles "${appSourceDir}/${module}/*.cpp")
+            file(GLOB cSourceFiles "${appSourceDir}/${module}/*.c")
+            file(GLOB headerFiles "${appSourceDir}/${module}/*.h")
+            add_executable(${module} ${cppSourceFiles} ${cSourceFiles} ${headerFiles})
+            set_property(TARGET ${module} PROPERTY CXX_STANDARD 17) # HM is not valid C++20
+            set_property(TARGET ${module} PROPERTY CXX_CLANG_TIDY) # no clang-tidy
+            set_property(TARGET ${module} PROPERTY FOLDER "HM executables")
+        endif()
+
         install(TARGETS ${module} EXPORT TMIVTargets RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
     endfunction()
 
     function(add_hm_library module)
-        file(GLOB cppSourceFiles "${libSourceDir}/${module}/*.cpp")
-        file(GLOB cSourceFiles "${libSourceDir}/${module}/*.c")
-        file(GLOB headerFiles "${libSourceDir}/${module}/*.h")
-        add_library(${module} ${cppSourceFiles} ${cSourceFiles} ${headerFiles})
-        set_property(TARGET ${module} PROPERTY CXX_CLANG_TIDY) # no clang-tidy
-        set_property(TARGET ${module} PROPERTY FOLDER "HM libraries")
+        if(NOT TARGET ${module})
+            file(GLOB cppSourceFiles "${libSourceDir}/${module}/*.cpp")
+            file(GLOB cSourceFiles "${libSourceDir}/${module}/*.c")
+            file(GLOB headerFiles "${libSourceDir}/${module}/*.h")
+            add_library(${module} ${cppSourceFiles} ${cSourceFiles} ${headerFiles})
+            set_property(TARGET ${module} PROPERTY CXX_STANDARD 17) # HM is not valid C++20
+            set_property(TARGET ${module} PROPERTY CXX_CLANG_TIDY) # no clang-tidy
+            set_property(TARGET ${module} PROPERTY FOLDER "HM libraries")
+        endif()
+
         install(TARGETS ${module} EXPORT TMIVTargets ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})    
     endfunction()
 

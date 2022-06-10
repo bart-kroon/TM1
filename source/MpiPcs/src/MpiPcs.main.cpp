@@ -148,19 +148,21 @@ private:
         IO::videoFormatString(cameraConfig.colorFormatTexture, cameraConfig.bitDepthTexture);
 
     auto texturePath =
-        outputDir / fmt::format(json().require(outputTexturePathFmt).as<std::string>(),
-                                placeholders().numberOfInputFrames, placeholders().contentId,
-                                placeholders().testId, cameraName, viewSize.x(), viewSize.y(),
-                                textureVideoFormat);
+        outputDir /
+        fmt::format(fmt::runtime(json().require(outputTexturePathFmt).as<std::string>()),
+                    placeholders().numberOfInputFrames, placeholders().contentId,
+                    placeholders().testId, cameraName, viewSize.x(), viewSize.y(),
+                    textureVideoFormat);
 
     const auto transparencyVideoFormat = IO::videoFormatString(cameraConfig.colorFormatTransparency,
                                                                cameraConfig.bitDepthTransparency);
 
     auto transparencyPath =
-        outputDir / fmt::format(json().require(outputTransparencyPathFmt).as<std::string>(),
-                                placeholders().numberOfInputFrames, placeholders().contentId,
-                                placeholders().testId, cameraName, viewSize.x(), viewSize.y(),
-                                transparencyVideoFormat);
+        outputDir /
+        fmt::format(fmt::runtime(json().require(outputTransparencyPathFmt).as<std::string>()),
+                    placeholders().numberOfInputFrames, placeholders().contentId,
+                    placeholders().testId, cameraName, viewSize.x(), viewSize.y(),
+                    transparencyVideoFormat);
 
     create_directories(texturePath.parent_path());
     create_directories(transparencyPath.parent_path());

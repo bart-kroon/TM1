@@ -31,8 +31,6 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#if HAVE_VVDEC
-
 #include <TMIV/VideoDecoder/VideoDecoder.h>
 
 #include <TMIV/Common/Bytestream.h>
@@ -201,5 +199,3 @@ auto decodeVvcMain10(Common::Source<std::string> source) -> Common::Source<Commo
   };
 }
 } // namespace TMIV::VideoDecoder
-
-#endif // HAVE_VVDEC

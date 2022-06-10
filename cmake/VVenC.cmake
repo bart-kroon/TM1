@@ -7,6 +7,10 @@ if(BUILD_VVenC OR BUILD_VVdeC)
     include(FetchContent)
 endif()
 
+# TODO(BK): Switch to find_package because the coupling with fetchcontent is too tight and thus fragile
+set (TMIV_CMAKE_CXX_STANDARD ${CMAKE_CXX_STANDARD})
+set(CMAKE_CXX_STANDARD 14)
+
 if(BUILD_VVenC)
     if(NO_INTERNET)
         set(LOCAL_VVENC_DIR ${CMAKE_SOURCE_DIR}/../vvenc-0.3.1.0 CACHE PATH "Path to the local VVenC directory" )
@@ -69,3 +73,5 @@ if(BUILD_VVdeC)
     target_compile_features(vvdec PUBLIC cxx_std_17)
     install(TARGETS vvdecapp EXPORT TMIVTargets RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 endif()
+
+set(CMAKE_CXX_STANDARD ${TMIV_CMAKE_CXX_STANDARD})

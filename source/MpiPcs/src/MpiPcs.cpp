@@ -89,9 +89,10 @@ Reader::Reader(const Common::Json &config, const IO::Placeholders &placeholders,
                                                  cameraConfig.bitDepthTransparency);
 
   m_size = cameraConfig.viewParams.ci.projectionPlaneSize();
-  m_path = inputDir / fmt::format(node.as<std::string>(), placeholders.numberOfInputFrames,
-                                  placeholders.contentId, placeholders.testId, cameraName,
-                                  m_size.x(), m_size.y(), videoFormat);
+  m_path =
+      inputDir / fmt::format(fmt::runtime(node.as<std::string>()), placeholders.numberOfInputFrames,
+                             placeholders.contentId, placeholders.testId, cameraName, m_size.x(),
+                             m_size.y(), videoFormat);
 
   if (buildIndexOn) {
     buildIndex();
@@ -198,9 +199,10 @@ Writer::Writer(const Common::Json &config, const IO::Placeholders &placeholders,
                                                  cameraConfig.bitDepthTransparency);
 
   const auto size = cameraConfig.viewParams.ci.projectionPlaneSize();
-  m_path = outputDir / fmt::format(node.as<std::string>(), placeholders.numberOfInputFrames,
-                                   placeholders.contentId, placeholders.testId, cameraName,
-                                   size.x(), size.y(), videoFormat);
+  m_path =
+      outputDir / fmt::format(fmt::runtime(node.as<std::string>()),
+                              placeholders.numberOfInputFrames, placeholders.contentId,
+                              placeholders.testId, cameraName, size.x(), size.y(), videoFormat);
 
   create_directories(m_path.parent_path());
 

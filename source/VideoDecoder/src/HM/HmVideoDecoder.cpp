@@ -31,8 +31,6 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#if HAVE_HM
-
 #include <TMIV/VideoDecoder/VideoDecoder.h>
 
 #include <TMIV/Common/Decoder.h>
@@ -282,5 +280,3 @@ auto decodeHevcMain10(Common::Source<std::string> source) -> Common::Source<Comm
   };
 }
 } // namespace TMIV::VideoDecoder
-
-#endif // HAVE_HM

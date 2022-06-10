@@ -102,10 +102,10 @@ auto loadInputFrame(const LoadInputFrameParams &params, Common::ColorFormat colo
     const auto videoFormat = videoFormatString(colorFormat, bitDepth);
 
     const auto path =
-        inputDir / fmt::format(node.as<std::string>(), params.placeholders.numberOfInputFrames,
-                               params.placeholders.contentId, params.placeholders.testId,
-                               params.name, params.frameSize.x(), params.frameSize.y(),
-                               videoFormat);
+        inputDir /
+        fmt::format(fmt::runtime(node.as<std::string>()), params.placeholders.numberOfInputFrames,
+                    params.placeholders.contentId, params.placeholders.testId, params.name,
+                    params.frameSize.x(), params.frameSize.y(), videoFormat);
 
     return loadFrame<>(path, params.placeholders.startFrame + params.frameIdx, params.frameSize,
                        bitDepth, colorFormat);
@@ -125,10 +125,10 @@ auto loadEntityFrame(const LoadInputFrameParams &params, Common::ColorFormat col
     const auto videoFormat = videoFormatString(colorFormat, bitDepth);
 
     const auto path =
-        inputDir / fmt::format(node.as<std::string>(), params.placeholders.numberOfInputFrames,
-                               params.placeholders.contentId, params.placeholders.testId,
-                               params.name, params.frameSize.x(), params.frameSize.y(),
-                               videoFormat);
+        inputDir /
+        fmt::format(fmt::runtime(node.as<std::string>()), params.placeholders.numberOfInputFrames,
+                    params.placeholders.contentId, params.placeholders.testId, params.name,
+                    params.frameSize.x(), params.frameSize.y(), videoFormat);
 
     return loadFrame<>(path, params.placeholders.startFrame + params.frameIdx, params.frameSize,
                        bitDepth, colorFormat);
@@ -261,7 +261,7 @@ auto loadViewportMetadata(const Common::Json &config, const Placeholders &placeh
     -> MivBitstream::CameraConfig {
   const auto viewportParamsPath =
       config.require("configDirectory").as<std::filesystem::path>() /
-      fmt::format(config.require("inputViewportParamsPathFmt").as<std::string>(),
+      fmt::format(fmt::runtime(config.require("inputViewportParamsPathFmt").as<std::string>()),
                   placeholders.numberOfInputFrames, placeholders.contentId, placeholders.testId);
 
   auto &filesystem = DependencyInjector::getInstance().filesystem();
@@ -281,7 +281,7 @@ auto loadViewportMetadata(const Common::Json &config, const Placeholders &placeh
   if (isPoseTrace) {
     const auto poseTracePath =
         config.require("configDirectory").as<std::filesystem::path>() /
-        fmt::format(config.require("inputPoseTracePathFmt").as<std::string>(),
+        fmt::format(fmt::runtime(config.require("inputPoseTracePathFmt").as<std::string>()),
                     placeholders.numberOfInputFrames, placeholders.contentId, placeholders.testId,
                     cameraName);
     auto stream2 = filesystem.ifstream(poseTracePath);
@@ -383,11 +383,11 @@ auto loadOutOfBandVideoFrame(const Common::Json &config, const Placeholders &pla
                                      videoComponentName(vuh.vuh_unit_type(), metadata.attrTypeId));
   const auto videoFormat = videoFormatString(metadata.colorFormat, metadata.bitDepth);
 
-  const auto path =
-      config.require("inputDirectory").as<std::filesystem::path>() /
-      fmt::format(config.require(configKey).as<std::string>(), placeholders.numberOfInputFrames,
-                  placeholders.contentId, placeholders.testId, vuh.vuh_atlas_id().asInt(),
-                  metadata.frameSize.x(), metadata.frameSize.y(), videoFormat);
+  const auto path = config.require("inputDirectory").as<std::filesystem::path>() /
+                    fmt::format(fmt::runtime(config.require(configKey).as<std::string>()),
+                                placeholders.numberOfInputFrames, placeholders.contentId,
+                                placeholders.testId, vuh.vuh_atlas_id().asInt(),
+                                metadata.frameSize.x(), metadata.frameSize.y(), videoFormat);
 
   return {loadFrame<>(path, frameIdx, metadata.frameSize, metadata.bitDepth, metadata.colorFormat),
           Common::contains(metadata.irapFrameIndices, frameIdx)};
@@ -401,9 +401,9 @@ auto tryLoadSequenceConfig_(const Common::Json &config, const Placeholders &plac
                           MivBitstream::SequenceConfig> {
   auto &filesystem = DependencyInjector::getInstance().filesystem();
 
-  const auto relPath = fmt::format(config.require("inputSequenceConfigPathFmt").as<std::string>(),
-                                   placeholders.numberOfInputFrames, placeholders.contentId,
-                                   placeholders.testId, frameIdx);
+  const auto relPath = fmt::format(
+      fmt::runtime(config.require("inputSequenceConfigPathFmt").as<std::string>()),
+      placeholders.numberOfInputFrames, placeholders.contentId, placeholders.testId, frameIdx);
   const auto path1 = config.require("inputDirectory").as<std::filesystem::path>() / relPath;
   const auto path2 = config.require("configDirectory").as<std::filesystem::path>() / relPath;
   const auto path = filesystem.exists(path1) ? path1 : path2;
@@ -440,7 +440,7 @@ auto tryLoadSequenceConfig(const Common::Json &config, const Placeholders &place
 auto inputBitstreamPath(const Common::Json &config, const Placeholders &placeholders)
     -> std::filesystem::path {
   return config.require("inputDirectory").as<std::filesystem::path>() /
-         fmt::format(config.require("inputBitstreamPathFmt").as<std::string>(),
+         fmt::format(fmt::runtime(config.require("inputBitstreamPathFmt").as<std::string>()),
                      placeholders.numberOfInputFrames, placeholders.contentId, placeholders.testId);
 }
 
@@ -456,8 +456,8 @@ auto inputVideoSubBitstreamPath(const Common::Json &config, const Placeholders &
                            : uint8_t{};
 
   return config.require("inputDirectory").as<std::filesystem::path>() /
-         fmt::format(config.require(configKey).as<std::string>(), placeholders.numberOfInputFrames,
-                     placeholders.contentId, placeholders.testId, vuh.vuh_atlas_id().asInt(),
-                     attrIdx);
+         fmt::format(fmt::runtime(config.require(configKey).as<std::string>()),
+                     placeholders.numberOfInputFrames, placeholders.contentId, placeholders.testId,
+                     vuh.vuh_atlas_id().asInt(), attrIdx);
 }
 } // namespace TMIV::IO

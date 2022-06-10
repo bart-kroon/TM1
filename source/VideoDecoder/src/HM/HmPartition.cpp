@@ -31,11 +31,9 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#if HAVE_HM
-
 #include <TMIV/Common/Common.h>
 
-#include "PartitionImpl.h"
+#include "../PartitionImpl.h"
 
 #include <TLibDecoder/NALread.h>
 
@@ -75,5 +73,3 @@ auto partitionHevc444(NalUnitSource source) -> CodedVideoSequenceSource {
   return partitionHevcMain10(std::move(source));
 }
 } // namespace TMIV::VideoDecoder
-
-#endif // HAVE_HM

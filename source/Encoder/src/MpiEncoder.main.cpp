@@ -129,16 +129,21 @@ private:
     for (int32_t frameIdx = firstFrame; frameIdx < lastFrame; ++frameIdx) {
       const auto frame = m_encoder.popAtlas();
 
+      auto metadata = Common::Json::Array{};
+
       for (size_t atlasIdx = 0; atlasIdx < frame.size(); ++atlasIdx) {
         const auto atlasId = MivBitstream::AtlasId{atlasIdx};
-
-        IO::saveOutOfBandVideoFrame(json(), placeholders(), frame[atlasIdx].texture,
-                                    MivBitstream::V3cUnitHeader::avd(m_vpsId, atlasId, 0), frameIdx,
-                                    MivBitstream::AiAttributeTypeId::ATTR_TEXTURE);
-
-        IO::saveOutOfBandVideoFrame(json(), placeholders(), yuv420(frame[atlasIdx].transparency),
-                                    MivBitstream::V3cUnitHeader::avd(m_vpsId, atlasId, 1), frameIdx,
-                                    MivBitstream::AiAttributeTypeId::ATTR_TRANSPARENCY);
+        metadata.emplace_back(
+            IO::saveOutOfBandVideoFrame(json(), placeholders(), frame[atlasIdx].texture,
+                                        MivBitstream::V3cUnitHeader::avd(m_vpsId, atlasId, 0),
+                                        frameIdx, MivBitstream::AiAttributeTypeId::ATTR_TEXTURE));
+        metadata.emplace_back(IO::saveOutOfBandVideoFrame(
+            json(), placeholders(), yuv420(frame[atlasIdx].transparency),
+            MivBitstream::V3cUnitHeader::avd(m_vpsId, atlasId, 1), frameIdx,
+            MivBitstream::AiAttributeTypeId::ATTR_TRANSPARENCY));
+      }
+      if (frameIdx == 0) {
+        IO::saveOutOfBandMetadata(json(), placeholders(), metadata);
       }
     }
   }
@@ -170,5 +175,8 @@ auto main(int argc, char *argv[]) -> int32_t {
   } catch (std::bad_function_call &e) {
     std::cerr << e.what() << std::endl;
     return 2;
+  } catch (std::exception &e) {
+    std::cerr << e.what() << std::endl;
+    return 127;
   }
 }

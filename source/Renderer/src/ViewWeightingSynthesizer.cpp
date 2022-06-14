@@ -200,11 +200,13 @@ public:
     // 0) Initialization
     findInpaintedView(frame);
     computeCameraWeight(sourceHelperList, targetHelper);
-    computeCameraVisibility(sourceHelperList, targetHelper);
-    computeAngularDistortionPerSource(sourceHelperList);
 
     // 1) Deconstruction
-    recoverPrunedSource(frame, sourceHelperList);
+    const auto depthBitDepth = recoverPrunedSource(frame, sourceHelperList);
+
+    // 0) Initialization (cont'd)
+    computeCameraVisibility(sourceHelperList, targetHelper, depthBitDepth);
+    computeAngularDistortionPerSource(sourceHelperList);
 
     // 2) Reprojection
     reprojectPrunedSource(frame, sourceHelperList, targetHelper);
@@ -327,8 +329,8 @@ private:
     }
   }
 
-  auto static findMaximumDepthRange(const ProjectionHelperList &sourceHelperList) -> Common::Vec2f {
-    const unsigned int depthBitDepth = 10U;
+  auto static findMaximumDepthRange(const ProjectionHelperList &sourceHelperList,
+                                    const uint32_t depthBitDepth) -> Common::Vec2f {
     auto maxDepthRange = Common::Vec2f{INFINITY, 0.F};
     for (const auto &helper : sourceHelperList) {
       const auto depthTransform =
@@ -336,7 +338,7 @@ private:
 
       const auto twoT =
           static_cast<float>(2 * helper.getViewParams().dq.dq_depth_occ_threshold_default());
-      float A = (0.F - twoT) / (Common::maxLevel(depthBitDepth) - twoT);
+      float A = (0.F - twoT) / (static_cast<float>(Common::maxLevel(depthBitDepth)) - twoT);
       float ORI_normDispLow = (helper.getViewParams().dq.dq_norm_disp_low() -
                                A * helper.getViewParams().dq.dq_norm_disp_high()) /
                               (1.F - A);
@@ -348,9 +350,9 @@ private:
   }
 
   void computeCameraVisibility(const ProjectionHelperList &sourceHelperList,
-                               const ProjectionHelper &targetHelper) {
+                               const ProjectionHelper &targetHelper, const uint32_t depthBitDepth) {
     const auto N = 4U;
-    const auto depthRange = findMaximumDepthRange(sourceHelperList);
+    const auto depthRange = findMaximumDepthRange(sourceHelperList, depthBitDepth);
 
     auto pointCloud = std::vector<Common::Vec3f>{};
     auto x = 0.F;
@@ -397,6 +399,7 @@ private:
       m_cameraVisibility.emplace_back(0 < K);
     }
   }
+
   void computeAngularDistortionPerSource(const ProjectionHelperList &sourceHelperList) {
     m_cameraDistortion.resize(sourceHelperList.size(), 0.F);
 
@@ -410,10 +413,11 @@ private:
     }
   }
 
-  void recoverPrunedSource(const MivBitstream::AccessUnit &frame,
-                           const ProjectionHelperList &sourceHelperList) {
+  auto recoverPrunedSource(const MivBitstream::AccessUnit &frame,
+                           const ProjectionHelperList &sourceHelperList) -> uint32_t {
     // Recover pruned views
     const auto prunedViews = recoverPrunedViews(frame);
+    uint32_t geoBitDepth{};
 
     // Expand pruned views
     m_sourceColor.clear();
@@ -424,7 +428,7 @@ private:
 
       m_sourceColor.emplace_back(expandTexture(prunedViews[sourceId].texture));
 
-      const auto geoBitDepth = prunedViews[sourceId].geometry.getBitDepth();
+      geoBitDepth = prunedViews[sourceId].geometry.getBitDepth();
 
       m_sourceDepth.emplace_back(
           MivBitstream::DepthTransform{viewParams.dq, geoBitDepth}.expandDepth(
@@ -436,7 +440,9 @@ private:
           m_sourceDepth.back().begin(),
           [&](auto maskValue, float depthValue) { return 0 < maskValue ? depthValue : NAN; });
     }
+    return geoBitDepth;
   }
+
   void reprojectPrunedSource(const MivBitstream::AccessUnit &frame,
                              const ProjectionHelperList &sourceHelperList,
                              const ProjectionHelper &targetHelper) {

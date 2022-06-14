@@ -1,35 +1,41 @@
-FROM ubuntu:22.04
+FROM tmiv-checks:20220609
 
-RUN apt-get update -qq \
-  && apt-get upgrade -qqy \
-  && apt-get install -qqy --no-install-recommends \
-    build-essential \
-    ccache \
-    clang-14 \
-    clang-tidy-14 \
-    clang-format-14 \
-    cmake \
-    g++-12 \
-    gcc-12 \
-    git \
-    lcov \
-    libc++-14-dev \
-    libc++abi-14-dev \
-    llvm-14 \
-    ninja-build \
-    python3-pip
-
+# Copy the test material for the integration test
 COPY tmiv_integration_test /tmiv_integration_test
 
-RUN python3 -m pip install gcovr black
-
+# Set-up ccache to speed up CI
 RUN /usr/sbin/update-ccache-symlinks
 ENV PATH=/usr/lib/ccache:$PATH
 ENV CCACHE_DIR=/cache/.ccache
 
-RUN mkdir -p /dependencies
-RUN git clone --depth 1 --branch v2.13.8 https://github.com/catchorg/Catch2.git /dependencies/Catch2-2_13_8
-RUN git clone --depth 1 --branch 8.1.1 https://github.com/fmtlib/fmt.git /dependencies/fmt-8_1_1
-RUN git clone --depth 1 --branch HM-16.16 https://vcgit.hhi.fraunhofer.de/jct-vc/HM.git /dependencies/HM-16_16
-RUN git clone --depth 1 --branch v1.0.1 https://github.com/fraunhoferhhi/vvdec /dependencies/vvdec-1_0_1
-RUN git clone --depth 1 --branch v0.3.1.0 https://github.com/fraunhoferhhi/vvenc /dependencies/vvenc-0_3_1_0
+# Copy dependencies and build script
+#
+# Having built the dependencies locally, copy:
+#   C:\Data\TM1\.deps\source -> source
+#   C:\Data\TM1\scripts\build\build_dependencies.py -> build_dependencies.py
+RUN mkdir -p /dependencies/build
+COPY source /dependencies/source
+COPY HM /dependencies/build/HM
+COPY build_dependencies.json /dependencies/build/build_dependencies.json
+COPY build_dependencies.py /dependencies/build/build_dependencies.py
+
+# Build the dependencies in the Docker environment (Clang 14)
+ENV CXX=clang++-14\ -w\ -stdlib=libc++
+ENV CC=clang-14\ -w
+RUN /dependencies/build/build_dependencies.py \
+  --source-dir /dependencies/source \
+  --build-dir /dependencies/build/clang-Debug \
+  --install-dir /dependencies/install/clang-Debug \
+  --build-type Debug -j 2
+
+# Build the dependencies in the Docker environment (GCC 12)
+ENV CXX=g++-12\ -w
+ENV CC=gcc-12\ -w
+RUN /dependencies/build/build_dependencies.py \
+  --source-dir /dependencies/source \
+  --build-dir /dependencies/build/gcc-Release \
+  --install-dir /dependencies/install/gcc-Release \
+  --build-type Release -j 2
+
+# Remove the build directory but keep the source directory
+RUN rm -r /dependencies/build

@@ -68,7 +68,19 @@ def parseArguments():
     parser.add_argument(
         "--dry-run", action="store_true", help="Only print TMIV commands without executing them"
     )
-    return parser.parse_args()
+    parser.add_argument(
+        "--deps-install-dir",
+        type=dirPath,
+        help="Directory with the installed TM1 dependencies",
+        default=None,
+    )
+
+    args = parser.parse_args()
+
+    if not args.deps_install_dir:
+        args.deps_install_dir = args.tmiv_install_dir
+
+    return args
 
 
 def computeMd5Sum(fileName: Path):
@@ -88,6 +100,7 @@ class IntegrationTest:
         args = parseArguments()
 
         self.tmivInstallDir = args.tmiv_install_dir.absolute().resolve()
+        self.depsInstallDir = args.deps_install_dir.absolute().resolve()
         self.tmivSourceDir = args.tmiv_source_dir.absolute().resolve()
         self.contentDir = args.content_dir.absolute().resolve()
         self.testDir = args.output_dir.absolute().resolve()
@@ -109,6 +122,7 @@ class IntegrationTest:
             print("{{1}} = {}".format(self.tmivSourceDir))
             print("{{2}} = {}".format(self.contentDir))
             print("{{3}} = {}".format(self.testDir), flush=True)
+            print("{{4}} = {}".format(self.depsInstallDir))
 
         app.inspectEnvironment()
 
@@ -193,7 +207,7 @@ class IntegrationTest:
         f2_1 = self.launchCommand(
             executor,
             [f1],
-            ["{0}/bin/vvencFFapp", "-c", "{1}/config/test/miv_anchor/A_2_VVenC_encode_geo.cfg"]
+            ["{4}/bin/vvencFFapp", "-c", "{1}/config/test/miv_anchor/A_2_VVenC_encode_geo.cfg"]
             + ["-i", f"{{3}}/A3/E/TMIV_A3_E_geo_c00_{geometryResolution}_yuv420p10le.yuv", "-b"]
             + ["{3}/A3/E/QP3/TMIV_A3_E_QP3_geo_c00.bit", "-s", str(geometryResolution), "-q", "20"]
             + ["-f", "3", "-fr", "30"],
@@ -204,7 +218,7 @@ class IntegrationTest:
         f2_2 = self.launchCommand(
             executor,
             [f1],
-            ["{0}/bin/vvencFFapp", "-c", "{1}/config/test/miv_anchor/A_2_VVenC_encode_geo.cfg"]
+            ["{4}/bin/vvencFFapp", "-c", "{1}/config/test/miv_anchor/A_2_VVenC_encode_geo.cfg"]
             + ["-i", f"{{3}}/A3/E/TMIV_A3_E_geo_c01_{geometryResolution}_yuv420p10le.yuv", "-b"]
             + ["{3}/A3/E/QP3/TMIV_A3_E_QP3_geo_c01.bit", "-s", str(geometryResolution), "-q", "20"]
             + ["-f", "3", "-fr", "30"],
@@ -215,7 +229,7 @@ class IntegrationTest:
         f2_3 = self.launchCommand(
             executor,
             [f1],
-            ["{0}/bin/vvencFFapp", "-c", "{1}/config/test/miv_anchor/A_2_VVenC_encode_tex.cfg"]
+            ["{4}/bin/vvencFFapp", "-c", "{1}/config/test/miv_anchor/A_2_VVenC_encode_tex.cfg"]
             + ["-i", f"{{3}}/A3/E/TMIV_A3_E_tex_c00_{textureResolution}_yuv420p10le.yuv", "-b"]
             + ["{3}/A3/E/QP3/TMIV_A3_E_QP3_tex_c00.bit", "-s", str(textureResolution), "-q", "43"]
             + ["-f", "3", "-fr", "30"],
@@ -226,7 +240,7 @@ class IntegrationTest:
         f2_4 = self.launchCommand(
             executor,
             [f1],
-            ["{0}/bin/vvencFFapp", "-c", "{1}/config/test/miv_anchor/A_2_VVenC_encode_tex.cfg"]
+            ["{4}/bin/vvencFFapp", "-c", "{1}/config/test/miv_anchor/A_2_VVenC_encode_tex.cfg"]
             + ["-i", f"{{3}}/A3/E/TMIV_A3_E_tex_c01_{textureResolution}_yuv420p10le.yuv", "-b"]
             + ["{3}/A3/E/QP3/TMIV_A3_E_QP3_tex_c01.bit", "-s", str(textureResolution), "-q", "43"]
             + ["-f", "3", "-fr", "30"],
@@ -569,7 +583,7 @@ class IntegrationTest:
         f2_1 = self.launchCommand(
             executor,
             [f1],
-            ["{0}/bin/TAppEncoder", "-c", "{1}/config/test/miv_mpi/M_2_HM_encode_tra.cfg"]
+            ["{4}/bin/TAppEncoder", "-c", "{1}/config/test/miv_mpi/M_2_HM_encode_tra.cfg"]
             + ["-i", f"{{3}}/M3/M/TMIV_M3_M_tra_c00_{atlasResolution}_yuv420p10le.yuv"]
             + ["-b", "{3}/M3/M/QP3/TMIV_M3_M_QP3_tra_c00.bit"]
             + ["-wdt", str(atlasResolution.width), "-hgt", str(atlasResolution.height)]
@@ -581,7 +595,7 @@ class IntegrationTest:
         f2_2 = self.launchCommand(
             executor,
             [f1],
-            ["{0}/bin/TAppEncoder", "-c", "{1}/config/test/miv_mpi/M_2_HM_encode_tex.cfg"]
+            ["{4}/bin/TAppEncoder", "-c", "{1}/config/test/miv_mpi/M_2_HM_encode_tex.cfg"]
             + ["-i", f"{{3}}/M3/M/TMIV_M3_M_tex_c00_{atlasResolution}_yuv420p10le.yuv"]
             + ["-b", "{3}/M3/M/QP3/TMIV_M3_M_QP3_tex_c00.bit"]
             + ["-wdt", str(atlasResolution.width), "-hgt", str(atlasResolution.height)]
@@ -761,7 +775,7 @@ class IntegrationTest:
         f2_1 = self.launchCommand(
             executor,
             [f1],
-            ["{0}/bin/TAppEncoder"]
+            ["{4}/bin/TAppEncoder"]
             + ["-c", "{1}/config/test/entity_based_coding/E_2_HM_encode_geo.cfg"]
             + ["-i", "{3}/E3/B/TMIV_E3_B_geo_c00_256x1024_yuv420p10le.yuv"]
             + ["-b", "{3}/E3/B/QP3/TMIV_E3_B_QP3_geo_c00.bit"],
@@ -772,7 +786,7 @@ class IntegrationTest:
         f2_2 = self.launchCommand(
             executor,
             [f1],
-            ["{0}/bin/TAppEncoder"]
+            ["{4}/bin/TAppEncoder"]
             + ["-c", "{1}/config/test/entity_based_coding/E_2_HM_encode_tex.cfg"]
             + ["-i", "{3}/E3/B/TMIV_E3_B_tex_c00_512x2048_yuv420p10le.yuv"]
             + ["-b", "{3}/E3/B/QP3/TMIV_E3_B_QP3_tex_c00.bit"],
@@ -944,7 +958,11 @@ class IntegrationTest:
 
         def fillPlaceholders(arg):
             return arg.format(
-                self.tmivInstallDir, self.tmivSourceDir, self.contentDir, self.testDir
+                self.tmivInstallDir,
+                self.tmivSourceDir,
+                self.contentDir,
+                self.testDir,
+                self.depsInstallDir,
             )
 
         args = list(map(fillPlaceholders, args))

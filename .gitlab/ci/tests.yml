@@ -1,6 +1,6 @@
 Integration test (GCC 12):
   stage: integration tests
-  image: tmiv-ci:20220413
+  image: tmiv-ci:20220613
   tags: [ linux-long ]
   script:
     - >
@@ -10,6 +10,7 @@ Integration test (GCC 12):
       /tmiv_integration_test
       /builds/software/MPEG/MIV/RS/TM1/integration_test
       -r /builds/software/MPEG/MIV/RS/TM1/test/integration_test.md5
+      --deps-install-dir /dependencies/install/gcc-Release
   artifacts:
     when: always
     paths:

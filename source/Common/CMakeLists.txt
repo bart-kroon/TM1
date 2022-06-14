@@ -31,12 +31,6 @@ target_include_directories(CommonLib
 target_compile_features(CommonLib
     PUBLIC cxx_std_17)
 
-install(
-    TARGETS
-        fmt
-    EXPORT TMIVTargets
-    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
-
 create_catch2_unit_test(
     TARGET
         CommonTest

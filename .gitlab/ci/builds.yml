@@ -1,6 +1,6 @@
 Release build (GCC 12):
   stage: release build
-  image: tmiv-ci:20220413
+  image: tmiv-ci:20220613
   tags: [ linux-long ]
   before_script:
     - export CXX=g++-12
@@ -10,16 +10,15 @@ Release build (GCC 12):
     - >
       cmake
       -G Ninja
-      -DCMAKE_CXX_FLAGS="-Wall -Wextra -Wpedantic -Werror -Wfloat-conversion -Wno-maybe-uninitialized -Wold-style-cast"
+      -DCMAKE_CXX_FLAGS="-Wall -Wextra -Wpedantic -Werror -Wfloat-conversion -Wno-maybe-uninitialized -Wold-style-cast -Wno-alloc-size-larger-than"
       -DENABLE_CLANG_TIDY=OFF -DCMAKE_BUILD_TYPE=Release -DENABLE_M57419=ON
       -DCMAKE_INSTALL_PREFIX=/builds/software/MPEG/MIV/RS/TM1/install
       -DBUILD_TAppEncoder=ON
       -DNO_INTERNET=ON
-      -DLOCAL_CATCH2_DIR=/dependencies/Catch2-2_13_8/
-      -DLOCAL_FMT_DIR=/dependencies/fmt-8_1_1/
-      -DLOCAL_HM_DIR=/dependencies/HM-16_16/
-      -DLOCAL_VVDEC_DIR=/dependencies/vvdec-1_0_1/
-      -DLOCAL_VVENC_DIR=/dependencies/vvenc-0_3_1_0/
+      -DCatch2_DIR=/dependencies/install/gcc-Release/lib/cmake/Catch2
+      -DFMT_DIR=/dependencies/install/gcc-Release/lib/cmake/fmt
+      -DHM_DIR=/dependencies/install/gcc-Release/lib/cmake/HM
+      -Dvvdec_DIR=/dependencies/install/gcc-Release/lib/cmake/vvdec
       ..
     - ninja -j $(nproc)
     - ninja -j $(nproc) test
@@ -33,7 +32,7 @@ Release build (GCC 12):
 
 Debug build and static analysis (Clang 14):
   stage: static analysis
-  image: tmiv-ci:20220413
+  image: tmiv-ci:20220613
   tags: [ linux-long ]
   before_script:
     - export CXX=clang++-14
@@ -50,11 +49,10 @@ Debug build and static analysis (Clang 14):
       -DENABLE_CLANG_TIDY=OFF
       -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
       -DNO_INTERNET=ON
-      -DLOCAL_CATCH2_DIR=/dependencies/Catch2-2_13_8/
-      -DLOCAL_FMT_DIR=/dependencies/fmt-8_1_1/
-      -DLOCAL_HM_DIR=/dependencies/HM-16_16/
-      -DLOCAL_VVDEC_DIR=/dependencies/vvdec-1_0_1/
-      -DLOCAL_VVENC_DIR=/dependencies/vvenc-0_3_1_0/
+      -DCatch2_DIR=/dependencies/install/clang-Debug/lib/cmake/Catch2
+      -DFMT_DIR=/dependencies/install/clang-Debug/lib/cmake/fmt
+      -DHM_DIR=/dependencies/install/clang-Debug/lib/cmake/HM
+      -Dvvdec_DIR=/dependencies/install/clang-Debug/lib/cmake/vvdec
       ..
     - ninja -j $(nproc)
     - ninja -j $(nproc) test
@@ -76,7 +74,7 @@ Debug build and static analysis (Clang 14):
 
 Full static analysis (Clang 14):
   stage: static analysis
-  image: tmiv-ci:20220413
+  image: tmiv-ci:20220613
   tags: [ linux-long ]
   before_script:
     - export CXX=clang++-14
@@ -85,6 +83,7 @@ Full static analysis (Clang 14):
     - if: $CI_PIPELINE_SOURCE == "schedule"
   script:
     - mkdir -p build && cd build
+    - ls -lh /dependencies/source
     - >
       cmake
       -G Ninja
@@ -92,10 +91,10 @@ Full static analysis (Clang 14):
       -DCMAKE_BUILD_TYPE=Debug
       -DENABLE_CLANG_TIDY=ON
       -DNO_INTERNET=ON
-      -DLOCAL_CATCH2_DIR=/dependencies/Catch2-2_13_8/
-      -DLOCAL_FMT_DIR=/dependencies/fmt-8_1_1/
-      -DLOCAL_HM_DIR=/dependencies/HM-16_16/
-      -DLOCAL_VVDEC_DIR=/dependencies/vvdec-1_0_1/
-      -DLOCAL_VVENC_DIR=/dependencies/vvenc-0_3_1_0/
+      -DLOCAL_CATCH2_DIR=/dependencies/source/Catch2-v2.13.8/
+      -DLOCAL_FMT_DIR=/dependencies/source/FMT-8.1.1/
+      -DLOCAL_HM_DIR=/dependencies/source/HM-HM-16.16/
+      -DLOCAL_VVDEC_DIR=/dependencies/source/vvdec-v1.0.1/
+      -DLOCAL_VVENC_DIR=/dependencies/source/vvenc-v0.3.1.0/
       ..
     - ninja -j $(nproc)

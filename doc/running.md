@@ -244,7 +244,6 @@ The test model has the capability of muxing, demuxing and in-memory decoding of 
 ### Running the HM encoder
 
 After TMIV encoding (analogous as TMIV encoding for VVC in the CTC), only with the config in `tmiv/config/test/miv_multiplex/V_1_TMIV_encode.json`, run HM on **all** resulting YUV files.
-If you have configured the project with `BUILD_HM=ON, BUILD_TAppEncoder=TRUE, and BUILD_TAppDecoder=TRUE`, then the HM executables are available in the TMIV installation directory.
 To encode one YUV sequence, use the following settings to run HM:
 
 1. Use the supplied configuration file (there will be a configuration for each component, in this case geometry and texture)

@@ -1,25 +1,16 @@
 cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
 
-option(BUILD_HM "Build and use HM in TMIV" ON)
+find_or_fetch(
+    NAME HM
+    VERSION "16.16"
+    GIT_URL "https://vcgit.hhi.fraunhofer.de/jct-vc/HM.git"
+    GIT_REF "HM-16.16"
+    BUILD_FLAG BUILD_HM
+)
 
-if (BUILD_HM)
-    set(HAVE_HM ON)  # required to link TMIV to HM
-
-    include(FetchContent)
-    if(NO_INTERNET)
-        set(LOCAL_HM_DIR ${CMAKE_SOURCE_DIR}/../HM-16.16 CACHE PATH "Path to the local HM directory" )
-        message(STATUS "Looking for a local copy of HEVC Test Model (HM) in ${LOCAL_HM_DIR}")
-        fetchcontent_declare(HM URL ${LOCAL_HM_DIR})
-    else()
-        fetchcontent_declare(HM
-                GIT_REPOSITORY https://vcgit.hhi.fraunhofer.de/jct-vc/HM.git
-                GIT_TAG "HM-16.16"
-                GIT_PROGRESS TRUE
-                )
-    endif()
-
+if(FIND_OR_FETCH_FETCHED)
     fetchcontent_makeavailable(HM)
-    set(HM_SOURCE_DIR ${CMAKE_BINARY_DIR}/_deps/hm-src/)
+    set(HM_SOURCE_DIR "${CMAKE_BINARY_DIR}/_deps/hm-src/")
 
     option(BUILD_TAppDecoder "Build HM exectable TAppDecoder" FALSE)
     option(BUILD_TAppEncoder "Build HM exectable TAppEncoder" FALSE)
@@ -52,6 +43,7 @@ if (BUILD_HM)
             file(GLOB cSourceFiles "${libSourceDir}/${module}/*.c")
             file(GLOB headerFiles "${libSourceDir}/${module}/*.h")
             add_library(${module} ${cppSourceFiles} ${cSourceFiles} ${headerFiles})
+            add_library(HM::${module} ALIAS ${module})
             set_property(TARGET ${module} PROPERTY CXX_STANDARD 17) # HM is not valid C++20
             set_property(TARGET ${module} PROPERTY CXX_CLANG_TIDY) # no clang-tidy
             set_property(TARGET ${module} PROPERTY FOLDER "HM libraries")
@@ -110,6 +102,8 @@ if (BUILD_HM)
                 "${hm_SOURCE_DIR}/doc/software-manual.pdf"
             DESTINATION "${CMAKE_INSTALL_DATADIR}/doc/HM")
     endif()
-else()
-    message(STATUS "HM is disabled.")
+endif()
+
+if(FIND_OR_FETCH_HAVE)
+    set(HAVE_HM ON)
 endif()

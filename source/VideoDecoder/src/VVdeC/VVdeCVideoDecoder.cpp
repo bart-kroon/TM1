@@ -113,7 +113,7 @@ private:
       *unit = "\0\0\1"s + *unit; // Prefix a start code
       const auto payloadUsedSize = Common::downCast<int32_t>(unit->size());
 
-      if (m_accessUnit->payloadSize < unit->size()) {
+      if (static_cast<size_t>(m_accessUnit->payloadSize) < unit->size()) {
         vvdec_accessUnit_free_payload(m_accessUnit);
         vvdec_accessUnit_alloc_payload(m_accessUnit, payloadUsedSize);
       }

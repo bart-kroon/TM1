@@ -1,0 +1,28 @@
+[
+    {
+        "git_ref": "HM-16.16",
+        "git_url": "https://vcgit.hhi.fraunhofer.de/jct-vc/HM.git",
+        "name": "HM",
+        "variables": [{"name": "CMAKE_CXX_STANDARD", "type": "STRING", "value": "14"}]
+    }, {
+        "git_ref": "v2.13.8",
+        "git_url": "https://github.com/catchorg/Catch2.git",
+        "name": "Catch2",
+        "variables": [{"name": "BUILD_TESTING", "type": "STRING", "value": "OFF"}, {"name": "CMAKE_CXX_STANDARD", "type": "STRING", "value": "17"}, {"name": "CATCH_BUILD_STATIC_LIBRARY", "type": "STRING", "value": "ON"}]
+    }, {
+        "git_ref": "8.1.1",
+        "git_url": "https://github.com/fmtlib/fmt.git",
+        "name": "FMT",
+        "variables": [{"name": "FMT_TEST", "type": "BOOL", "value": "OFF"}, {"name": "CMAKE_CXX_STANDARD", "type": "STRING", "value": "17"}]
+    }, {
+        "git_ref": "v1.0.1",
+        "git_url": "https://github.com/fraunhoferhhi/vvdec",
+        "name": "vvdec",
+        "variables": [{"name": "CMAKE_CXX_STANDARD", "type": "STRING", "value": "14"}]
+    }, {
+        "git_ref": "v0.3.1.0",
+        "git_url": "https://github.com/fraunhoferhhi/vvenc",
+        "name": "vvenc",
+        "variables": [{"name": "CMAKE_CXX_STANDARD", "type": "STRING", "value": "14"}]
+    }
+]

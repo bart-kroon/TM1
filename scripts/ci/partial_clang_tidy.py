@@ -60,12 +60,17 @@ def changedCppFiles():
     )
 
 
+class FileNotInBuild(Exception):
+    def __init__(self, file: str):
+        self.file = file
+
+
 def compileCommand(file: Path, compile_commands: dict):
     for item in compile_commands:
         if item["file"] == str(file):
             return item["directory"], item["command"]
 
-    raise RuntimeError(f"Could not find {file} in the compile commands.")
+    raise FileNotInBuild(file)
 
 
 def runClangTidy(file: Path, compile_commands: dict):
@@ -76,25 +81,29 @@ def runClangTidy(file: Path, compile_commands: dict):
     if error_count > 0:
         return print_path
 
-    directory, command = compileCommand(file, compile_commands)
-    cmd = [CLANG_TIDY, "--use-color", "--quiet"]
+    try:
+        directory, command = compileCommand(file, compile_commands)
 
-    if str(file).endswith(".test.cpp"):
-        cmd.append(
-            "-checks=-readability-function-size,"
-            "-readability-magic-numbers,"
-            "-readability-function-cognitive-complexity"
-        )
+        cmd = [CLANG_TIDY, "--use-color", "--quiet"]
 
-    cmd += [
-        "--extra-arg-before=--driver-mode=g++",
-        file,
-        "--",
-    ] + command.split()
+        if str(file).endswith(".test.cpp"):
+            cmd.append(
+                "-checks=-readability-function-size,"
+                "-readability-magic-numbers,"
+                "-readability-function-cognitive-complexity"
+            )
 
-    result = run(cmd, cwd=directory, capture_output=True)
-    result.file = print_path
-    return result
+        cmd += [
+            "--extra-arg-before=--driver-mode=g++",
+            file,
+            "--",
+        ] + command.split()
+
+        result = run(cmd, cwd=directory, capture_output=True)
+        result.file = print_path
+        return result
+    except FileNotInBuild as e:
+        return e
 
 
 def main():
@@ -109,11 +118,12 @@ def main():
 
     for future in as_completed(futures):
         try:
-            result: CompletedProcess
             result = future.result()
 
             if isinstance(result, Path):
                 print(f"Skipped {result} due to earlier errors.")
+            elif isinstance(result, FileNotInBuild):
+                print(f"Skipped {result.file} because the file is not included in this build.")
             elif result.returncode == 0:
                 print(f"{CLANG_TIDY}: {result.file}", flush=True)
             else:

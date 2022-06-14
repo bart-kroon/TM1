@@ -21,7 +21,7 @@ if (HAVE_HM AND TARGET VideoDecoderLib)
             "src/HM/HmVideoDecoder.cpp"
         PRIVATE
             CommonLib
-            TLibDecoder
+            HM::TLibDecoder
         )
     set_property(TARGET VideoDecoderHmLib PROPERTY CXX_STANDARD 17) # HM headers are not valid C++20
     target_link_libraries(VideoDecoderLib PRIVATE VideoDecoderHmLib)
@@ -37,17 +37,11 @@ if (HAVE_VVDEC AND TARGET VideoDecoderLib)
             "src/VVdeC/VVdeCVideoDecoder.cpp"
         PRIVATE
             CommonLib
-            vvdec
+            vvdec::vvdec
             fmt::fmt
         )
     target_link_libraries(VideoDecoderLib PRIVATE VideoDecoderVvdecLib)
     target_compile_definitions(VideoDecoderLib PUBLIC HAVE_VVDEC)
-
-    install(
-        TARGETS
-            vvdec
-        EXPORT TMIVTargets
-        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
 endif()
 
 

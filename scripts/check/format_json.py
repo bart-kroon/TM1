@@ -88,18 +88,27 @@ def format_json_dict(data: dict, indent="") -> str:
 
 
 def apply_format_json_to_single_file(json_file):
-    with open(json_file, encoding="utf8") as stream:
-        original = stream.read()
+    try:
+        with open(json_file, encoding="utf8") as stream:
+            original = stream.read()
 
-    data = json.loads(original)
-    text = format_json(data) + "\n"
+        data = json.loads(original)
+        text = format_json(data) + "\n"
 
-    if original != text:
-        print(f"Formatted {json_file}.")
-        with open(json_file, mode="w", encoding="utf8") as stream:
-            stream.write(text)
+        if original != text:
+            print(f"Formatted {json_file}.")
+            with open(json_file, mode="w", encoding="utf8") as stream:
+                stream.write(text)
+    except Exception as e:
+        print(f"While processing {json_file}")
+        raise
 
 
 if __name__ == "__main__":
-    apply_format_json()
+    try:
+        apply_format_json()
+    except Exception as e:
+        print(e)
+        exit(1)
+
     exit(0)

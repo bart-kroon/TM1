@@ -22,6 +22,7 @@ mark_as_advanced(TMIV_BUILD_TEST_LIST)
 
 option(NO_INTERNET "Use pre-downloaded source archives for external libraries, e.g. Catch2, HM, and fmt" OFF)
 
+include(cmake/find_or_fetch.cmake)
 include(cmake/fmt.cmake)
 
 include(CTest)
@@ -41,6 +42,7 @@ find_package(Threads REQUIRED)
 
 include(cmake/HM.cmake)
 include(cmake/VVenC.cmake)
+include(cmake/VVdeC.cmake)
 
 # Optionally enable clang-tidy, but only for TMIV modules
 include(cmake/clang_tidy.cmake)

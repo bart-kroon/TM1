@@ -47,16 +47,6 @@ using TMIV::Common::Source;
 
 enum class Codec { HEVC, VVC };
 
-auto operator<<(std::ostream &stream, Codec codec) -> std::ostream & {
-  switch (codec) {
-  case Codec::HEVC:
-    return stream << "HEVC";
-  case Codec::VVC:
-    return stream << "VVC";
-  }
-  UNREACHABLE;
-}
-
 template <Codec codec> struct NalUnitHeader {
   static constexpr auto forbidden_zero_bit = false;
   static constexpr auto nuh_reserved_zero_bit = false;
@@ -84,20 +74,6 @@ template <Codec codec> struct NalUnitHeader {
 };
 
 enum class NUT { parameterSet, nonIrapVcl, irapVcl, nonIrapPrefix };
-
-auto operator<<(std::ostream &stream, NUT nut) -> std::ostream & {
-  switch (nut) {
-  case NUT::parameterSet:
-    return stream << "parameterSet";
-  case NUT::nonIrapVcl:
-    return stream << "nonIrapVcl";
-  case NUT::irapVcl:
-    return stream << "irapVcl";
-  case NUT::nonIrapPrefix:
-    return stream << "nonIrapPrefix";
-  }
-  UNREACHABLE;
-}
 
 template <Codec codec> auto generateNalUnit(NUT nut) -> std::string {
   std::ostringstream stream;
@@ -149,7 +125,8 @@ template <Codec codec> auto generateNalUnit(NUT nut) -> std::string {
   nuh.encodeTo(stream);
 
   // Add a string that is visible in the debugger
-  fmt::print(stream, "[Payload of the {} {} NAL unit]\n", codec, nut);
+  fmt::print(stream, "[Payload of the {} {} NAL unit]\n", static_cast<int>(codec),
+             static_cast<int>(nut));
 
   return stream.str();
 }
@@ -222,7 +199,6 @@ template <Codec codec, typename FunctionAtTest>
 void testBitstreamPatterns(FunctionAtTest &&functionAtTest) {
   const auto pattern =
       GENERATE(bitstreamPatternA, bitstreamPatternB, bitstreamPatternC, bitstreamPatternD);
-  CAPTURE(pattern, codec);
 
   auto unitAtTest = functionAtTest(inputSource<codec>(pattern));
   auto referenceSource_ = referenceSource<codec>(pattern);

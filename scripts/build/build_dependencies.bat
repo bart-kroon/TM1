@@ -1,5 +1,9 @@
 @echo off
 
+if "%VSCMD_VER%"=="" goto :try_vc17
+echo Already configured for VC %VSCMD_VER%
+goto build_dependencies
+
 :try_vc17
 rem Try configure for VC17
 set VCVARS_FILE="C:\Program Files\Microsoft Visual Studio\2022\Professional\VC\Auxiliary\Build\vcvars64.bat"

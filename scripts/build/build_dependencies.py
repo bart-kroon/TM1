@@ -132,7 +132,7 @@ def qualified_name(dep: dict):
 
 
 def cmake_configure(
-    source_dir: Path, build_dir: Path, install_dir: Path, build_type: str, variables: list[dict]
+    source_dir: Path, build_dir: Path, install_dir: Path, build_type: str, variables: list
 ):
     args = ["cmake", "-G", "Ninja"]
     args += ["-S", source_dir.as_posix()]

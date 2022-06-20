@@ -19,6 +19,7 @@ The typical system requirements to build this software are:
 - [CMake](https://cmake.org/) 3.14 or newer
 - [Ninja](https://ninja-build.org/) 1.10 or newer
 - [Git](https://git-scm.com/) command-line tools
+- [Python](https://www.python.org/) 3.8 or newer
 - Internet connection
 
 The minimal system requirements are the terminal, C++17 compiler toolchain and CMake.
@@ -102,7 +103,7 @@ This project expects prebuilt libraries in default locations. For alternate loca
 To build and install the project execute:
 
 ```shell
-ninja
+ninja -C /Workspace/tmiv_build
 ```
 
 Type `ninja --help` for available options. By default `ninja` uses parallel processing. Use `-j` to specify the number of concurrent build steps.
@@ -114,5 +115,5 @@ Alternatively, use an IDE to build the project.
 To install the project execute:
 
 ```shell
-ninja install
+ninja -C /Workspace/tmiv_build install
 ```

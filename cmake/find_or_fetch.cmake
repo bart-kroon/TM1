@@ -13,6 +13,7 @@ function(find_or_fetch)
     endif()
 
     set(${ARG_NAME}_DIR "${CMAKE_INSTALL_PREFIX}/lib/cmake/${ARG_NAME}" CACHE INTERNAL "")
+    message(STATUS "Looking for a CMake configuration of ${ARG_NAME} in ${${ARG_NAME}_DIR}")
     find_package(${ARG_NAME} ${ARG_VERSION} QUIET CONFIG)
 
     if(${ARG_NAME}_FOUND)

@@ -21,6 +21,7 @@ mark_as_advanced(TMIV_BUILD_LIB_LIST)
 mark_as_advanced(TMIV_BUILD_TEST_LIST)
 
 option(NO_INTERNET "Use pre-downloaded source archives for external libraries, e.g. Catch2, HM, and fmt" OFF)
+set(ignore_when_not_used "${NO_INTERNET}") # Do not issue a warning when this flag is set and all dependencies are found locally
 
 include(cmake/find_or_fetch.cmake)
 include(cmake/fmt.cmake)

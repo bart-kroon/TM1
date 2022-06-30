@@ -50,7 +50,7 @@ struct CommonAtlasAccessUnit {
   int32_t foc{};
   MivBitstream::CommonAtlasSequenceParameterSetRBSP casps;
   MivBitstream::CommonAtlasFrameRBSP caf;
-  MivBitstream::GeometryUpscalingParameters gup;
+  std::optional<MivBitstream::GeometryUpscalingParameters> gup;
   std::optional<MivBitstream::ViewingSpace> vs{};
   std::optional<MivBitstream::ViewportCameraParameters> vcp{};
   std::optional<MivBitstream::ViewportPosition> vp{};

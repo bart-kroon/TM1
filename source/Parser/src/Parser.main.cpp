@@ -33,6 +33,8 @@
 
 #include <TMIV/Parser/Parser.h>
 
+#include <TMIV/Common/verify.h>
+
 #include <fmt/format.h>
 
 #include <fstream>
@@ -67,11 +69,7 @@ auto main(int argc, const char *argv[]) -> int32_t {
     TMIV::Parser::Parser parser{outStream};
     parser.parseV3cSampleStream(inStream);
     return 0;
-  } catch (std::runtime_error &e) {
-    std::cerr << e.what() << std::endl;
-    return 1;
-  } catch (std::exception &e) {
-    std::cerr << e.what() << std::endl;
-    return 3;
+  } catch (...) {
+    return TMIV::Common::handleException();
   }
 }

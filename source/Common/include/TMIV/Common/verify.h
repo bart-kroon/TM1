@@ -337,6 +337,8 @@ template <typename Container, typename... SizeT>
 constexpr auto at(Container &container, size_t index0, SizeT... index) noexcept -> decltype(auto) {
   return at(at(container, index0), index...);
 }
+
+[[nodiscard]] auto handleException() noexcept -> int32_t;
 } // namespace TMIV::Common
 
 #endif

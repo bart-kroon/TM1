@@ -134,14 +134,7 @@ auto main(int argc, char *argv[]) -> int32_t {
         TMIV::Decoder::test::NativeVideoDecoderTest{stream, std::atoi(args[2]), std::atoi(args[3])};
     test.run();
     return 0;
-  } catch (std::runtime_error &e) {
-    std::cerr << e.what() << "\n";
-    return 1;
-  } catch (std::bad_function_call &e) {
-    std::cerr << e.what() << "\n";
-    return 2;
-  } catch (std::exception &e) {
-    std::cerr << e.what() << "\n";
-    return 3;
+  } catch (...) {
+    return TMIV::Common::handleException();
   }
 }

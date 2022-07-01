@@ -9,6 +9,7 @@ create_tmiv_library(
         "src/Bytestream.cpp"
         "src/Json.cpp"
         "src/Half.cpp"
+        "src/handleException.cpp"
         "src/Frame.cpp"
     PRIVATE
         fmt::fmt

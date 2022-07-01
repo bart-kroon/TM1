@@ -203,8 +203,7 @@ auto main(int argc, char *argv[]) -> int32_t {
     parser.parseV3cSampleStream(stream);
     parser.report().printTo(std::cout);
     return 0;
-  } catch (std::exception &e) {
-    std::clog << e.what() << std::endl;
-    return 1;
+  } catch (...) {
+    return TMIV::Common::handleException();
   }
 }

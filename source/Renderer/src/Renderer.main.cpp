@@ -192,14 +192,7 @@ auto main(int argc, char *argv[]) -> int32_t {
     app.run();
     app.printTime();
     return 0;
-  } catch (std::runtime_error &e) {
-    std::cerr << e.what() << std::endl;
-    return 1;
-  } catch (std::logic_error &e) {
-    std::cerr << e.what() << std::endl;
-    return 3;
-  } catch (std::exception &e) {
-    std::cerr << e.what() << std::endl;
-    return 127;
+  } catch (...) {
+    return TMIV::Common::handleException();
   }
 }

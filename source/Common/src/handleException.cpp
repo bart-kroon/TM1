@@ -31,52 +31,34 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/GaInserter/GaInserter.h>
+#include <TMIV/Common/verify.h>
 
-#include <fmt/format.h>
+#include <functional>
 
-#include <TMIV/Common/Json.h>
-#include <fstream>
-#include <iostream>
-#include <vector>
-
-using namespace std::string_view_literals;
-
-auto main(int argc, const char *argv[]) -> int {
+namespace TMIV::Common {
+// This pattern is called a Lippincott function. It makes sure that exceptions are handled uniformly
+// by all TMIV executables.
+auto handleException() noexcept -> int32_t {
   try {
-    const auto args = std::vector(argv, argv + argc);
-
-    if ((args.size() != 5 && args.size() != 7) || args[1] != "-b"sv || args[3] != "-o"sv ||
-        (args.size() == 7 && args[5] != "-nf"sv)) {
-      std::cerr << "Usage: GaInserter -b BITSTREAM -o HLS_LOG_FILE [-nf nframes]";
-      return 1;
-    }
-    std::ifstream inStream{args[2], std::ios::binary};
-    if (!inStream.good()) {
-      fmt::print("Failed to open {} for reading.\n", args[2]);
-      return 1;
-    }
-    std::ofstream outStream{args[4], std::ios::binary};
-    if (!outStream.good()) {
-      fmt::print("Failed to open {} for writing.\n", args[4]);
-    }
-    int nframes = 0;
-    if (args.size() == 7) {
-      nframes = atoi(args[6]);
-    }
-    // Read the frame info to be inserted.
-    std::vector<TMIV::Common::Json> seiJsons;
-    for (int frame = 0; frame < nframes; frame++) {
-      std::string seiFile = "frame" + std::to_string(frame) + ".json";
-      std::ifstream stream{seiFile};
-      const auto json = TMIV::Common::Json::loadFrom(stream);
-      seiJsons.emplace_back(json);
-    }
-    std::ofstream recodedStream{"recoded.bit", std::ios::binary};
-    TMIV::GaInserter::GaInserter gaInserter{outStream, &recodedStream, seiJsons};
-    gaInserter.parseV3cSampleStream(inStream);
-    return 0;
+    throw;
+  } catch (std::runtime_error &e) {
+    std::cerr << "ERROR: " << e.what() << '\n';
+    return 1;
+  } catch (std::out_of_range &e) {
+    std::cerr << "ERROR: " << e.what() << " [out_of_range]\n";
+    return 4;
+  } catch (std::bad_function_call &e) {
+    std::cerr << "ERROR: " << e.what() << " [bad_function_call]\n";
+    return 2;
+  } catch (std::logic_error &e) {
+    std::cerr << "ERROR: " << e.what() << " [logic_error]\n";
+    return 3;
+  } catch (std::exception &e) {
+    std::cerr << "ERROR: " << e.what() << " [exception]\n";
+    return 127;
   } catch (...) {
-    return TMIV::Common::handleException();
+    std::cerr << "ERROR: Exception of unknown type.\n";
+    return 128;
   }
 }
+} // namespace TMIV::Common

@@ -108,6 +108,15 @@ auto recoverPrunedViews(const MivBitstream::AccessUnit &inFrame) -> Common::V3cF
       inFrame, outFrame, [](const auto &aau) { return aau.texFrame; },
       [&](auto &frame) -> auto & { return frame.texture; }, 0);
 
+  // Initialize transparency if present, assuming the attribute index is 1
+  initializePrunedViewComponent(
+      inFrame, outFrame,
+      [](const auto &aau) {
+        static Common::Frame<> empty;
+        return 2 <= aau.attrFrameNF.size() ? aau.attrFrameNF[1] : empty;
+      },
+      [&](auto &frame) -> auto & { return frame.transparency; }, 0);
+
   // For each pixel in each atlas
   for (const auto &atlas : inFrame.atlas) {
     if (atlas.asps.asps_miv_extension_present_flag() &&
@@ -158,6 +167,11 @@ auto recoverPrunedViews(const MivBitstream::AccessUnit &inFrame) -> Common::V3cF
         // Copy texture
         for (int32_t d = 0; d < 3; ++d) {
           outFrame[viewIdx].texture.getPlane(d)(y, x) = atlas.texFrame.getPlane(d)(i, j);
+        }
+
+        // Copy transparency if present, assuming the attribute index is 1
+        if (2 <= atlas.attrFrameNF.size()) {
+          outFrame[viewIdx].transparency.getPlane(0)(y, x) = atlas.attrFrameNF[1].getPlane(0)(i, j);
         }
       }
     }

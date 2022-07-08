@@ -19,4 +19,4 @@ RUN apt-get update -qq \
     ninja-build \
     python3-pip
 
-RUN python3 -m pip install gcovr black
+RUN python3 -m pip install gcovr black pytest pyfakefs

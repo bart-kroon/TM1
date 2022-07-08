@@ -1,6 +1,6 @@
 Python formatting:
   stage: formatting
-  image: tmiv-checks:20220609
+  image: tmiv-checks:20220708
   tags: [ linux-short ]
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
@@ -14,7 +14,7 @@ Python formatting:
 
 Python unit tests:
   stage: checks
-  image: tmiv-checks:20220609
+  image: tmiv-checks:20220708
   tags: [ linux-short ]
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
@@ -28,14 +28,12 @@ Python unit tests:
       - .cache/pip
   variables:
     PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
-  before_script:
-    - python3 -m pip install pytest pyfakefs
   script:
     - pytest scripts
 
 C++ formatting:
   stage: formatting
-  image: tmiv-checks:20220609
+  image: tmiv-checks:20220708
   tags: [ linux-short ]
   script:
     - ./scripts/check/clang_format.py
@@ -45,7 +43,7 @@ C++ formatting:
 No multi-line commit messages:
   stage: checks
   image:
-    name: tmiv-checks:20220609
+    name: tmiv-checks:20220708
   tags: [ linux-short ]
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
@@ -57,7 +55,7 @@ No multi-line commit messages:
 
 Code quality rules:
   stage: checks
-  image: tmiv-checks:20220609
+  image: tmiv-checks:20220708
   tags: [ linux-short ]
   script:
     - ./scripts/check/code_quality_rules.py
@@ -66,7 +64,7 @@ Code quality rules:
 
 JSON formatting:
   stage: formatting
-  image: tmiv-checks:20220609
+  image: tmiv-checks:20220708
   tags: [ linux-short ]
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH

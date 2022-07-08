@@ -98,6 +98,12 @@ public:
           continue;
         }
 
+        // Exclude non-occupant pixels
+        if (!atlas.occFrame.getPlane(0)(i_atlas, j_atlas)) {
+          result.emplace_back();
+          continue;
+        }
+
         // Look up metadata
         const auto &patch = atlas.patchParamsList[patchIdx];
         const auto viewIdx = frame.viewParamsList.indexOf(patch.atlasPatchProjectionId());
@@ -106,13 +112,6 @@ public:
         // Look up depth value and affine parameters
         const auto uv = Common::Vec2f{Common::floatCast, patch.atlasToView({j_atlas, i_atlas})};
         auto level = atlas.geoFrame.getPlane(0)(i_atlas, j_atlas);
-
-        const auto occupancyTransform = MivBitstream::OccupancyTransform{viewParams, patch};
-        if (!occupancyTransform.occupant(level)) {
-          result.emplace_back();
-          continue;
-        }
-
         const auto d = depthTransform[patchIdx].expandDepth(level);
 
         // Reproject and calculate ray angle

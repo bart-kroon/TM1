@@ -37,7 +37,7 @@ function(find_or_fetch)
         elseif(NOT NO_INTERNET)
             fetchcontent_declare(${LCASE_NAME}
                 GIT_REPOSITORY "${ARG_GIT_URL}"
-                GIT_TAG "v${ARG_GIT_TAG}"
+                GIT_TAG "${ARG_GIT_REF}"
                 GIT_PROGRESS TRUE)
             set(FIND_OR_FETCH_FETCHED ON)
         endif()

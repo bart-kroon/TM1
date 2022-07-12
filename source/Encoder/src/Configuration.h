@@ -93,8 +93,8 @@ struct Configuration {
 
 #if ENABLE_M57419
   bool m57419_piecewiseDepthLinearScaling;
-  int m57419_intervalNumber;
-  int m57419_edgeThreshold;
+  int32_t m57419_intervalNumber;
+  int32_t m57419_edgeThreshold;
 #endif
 
   [[nodiscard]] auto blockSize(bool depthLowQualityFlag_) const noexcept {

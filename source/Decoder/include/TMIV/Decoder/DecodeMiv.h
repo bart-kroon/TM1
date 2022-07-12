@@ -76,7 +76,7 @@ enum class ErrorCode : int32_t {
 
 class Exception : public Common::MivBitstreamError {
 public:
-  Exception(ErrorCode code, char const *file, int line);
+  Exception(ErrorCode code, char const *file, int32_t line);
 
   [[nodiscard]] auto code() const -> ErrorCode { return m_code; }
   [[nodiscard]] auto file() const -> char const * { return m_file; }

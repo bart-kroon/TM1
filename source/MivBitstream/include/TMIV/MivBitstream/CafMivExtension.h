@@ -173,10 +173,10 @@ public:
 
 #if ENABLE_M57419
   [[nodiscard]] constexpr auto dq_pivot_count_minus1() const noexcept;
-  [[nodiscard]] auto dq_pivot_norm_disp(int i) const noexcept -> float;
+  [[nodiscard]] auto dq_pivot_norm_disp(int32_t i) const noexcept -> float;
 
   constexpr auto dq_pivot_count_minus1(uint8_t value) noexcept -> auto &;
-  auto dq_pivot_norm_disp(int i, float value) noexcept -> DepthQuantization &;
+  auto dq_pivot_norm_disp(int32_t i, float value) noexcept -> DepthQuantization &;
 #endif
 
   auto printTo(std::ostream &stream, uint16_t viewIdx) const -> std::ostream &;

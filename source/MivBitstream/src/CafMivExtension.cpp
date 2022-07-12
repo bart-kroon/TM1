@@ -287,7 +287,7 @@ auto DepthQuantization::decodeFrom(Common::InputBitstream &bitstream) -> DepthQu
     x.dq_norm_disp_high(bitstream.getFloat32());
     x.dq_pivot_count_minus1(bitstream.getUint8());
 
-    for (int i = 0; i <= x.dq_pivot_count_minus1(); i++) {
+    for (int32_t i = 0; i <= x.dq_pivot_count_minus1(); i++) {
       x.dq_pivot_norm_disp(i, bitstream.getFloat32());
     }
   }
@@ -314,7 +314,7 @@ void DepthQuantization::encodeTo(Common::OutputBitstream &bitstream) const {
     bitstream.putFloat32(dq_norm_disp_high());
     bitstream.putUint8(dq_pivot_count_minus1());
 
-    for (int i = 0; i <= dq_pivot_count_minus1(); i++) {
+    for (int32_t i = 0; i <= dq_pivot_count_minus1(); i++) {
       bitstream.putFloat32(dq_pivot_norm_disp(i));
     }
   }

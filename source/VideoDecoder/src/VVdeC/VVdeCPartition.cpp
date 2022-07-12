@@ -47,7 +47,7 @@ namespace {
 auto nalUnitType(const std::string &unit) -> vvdecNalType {
   // This is a test model: prefer simple VVdeC API over efficiency
   const auto data = "\0\0\1"s + unit;
-  const auto size = Common::downCast<int>(data.size());
+  const auto size = Common::downCast<int32_t>(data.size());
 
   auto au = std::shared_ptr<vvdecAccessUnit>(vvdec_accessUnit_alloc(), vvdec_accessUnit_free);
   vvdec_accessUnit_alloc_payload(au.get(), size);

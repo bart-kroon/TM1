@@ -41,13 +41,14 @@
 
 namespace TMIV::Encoder {
 #if ENABLE_M57419
-auto m57419_edgeDetection(std::vector<std::vector<int>> geometryUnit, double line_thres) -> bool {
+auto m57419_edgeDetection(std::vector<std::vector<int32_t>> geometryUnit, double line_thres)
+    -> bool {
   bool isEdgeSample = false;
 
-  int gv = abs(2 * geometryUnit[1][1] - geometryUnit[0][1] - geometryUnit[2][1]);
-  int gh = abs(2 * geometryUnit[1][1] - geometryUnit[1][0] - geometryUnit[1][2]);
-  int gd0 = abs(2 * geometryUnit[1][1] - geometryUnit[0][0] - geometryUnit[2][2]);
-  int gd1 = abs(2 * geometryUnit[1][1] - geometryUnit[0][2] - geometryUnit[2][0]);
+  int32_t gv = abs(2 * geometryUnit[1][1] - geometryUnit[0][1] - geometryUnit[2][1]);
+  int32_t gh = abs(2 * geometryUnit[1][1] - geometryUnit[1][0] - geometryUnit[1][2]);
+  int32_t gd0 = abs(2 * geometryUnit[1][1] - geometryUnit[0][0] - geometryUnit[2][2]);
+  int32_t gd1 = abs(2 * geometryUnit[1][1] - geometryUnit[0][2] - geometryUnit[2][0]);
 
   double gvh_max = std::max(gv, gh);
   double gvh_min = std::min(gv, gh);
@@ -63,14 +64,14 @@ auto m57419_edgeDetection(std::vector<std::vector<int>> geometryUnit, double lin
   return isEdgeSample;
 }
 
-auto m57419_normalizeHistogram(const std::vector<int> &histEdge, int piece_num,
+auto m57419_normalizeHistogram(const std::vector<int32_t> &histEdge, int32_t piece_num,
                                bool lowDepthQuality, int32_t minDepthVal, int32_t maxDepthVal)
     -> std::vector<double> {
   double total_histEdge = std::accumulate(histEdge.begin(), histEdge.end(), 0);
 
   std::vector<double> norm_histEdge;
   norm_histEdge.assign(piece_num, 0);
-  for (int i = 0; i < piece_num; i++) {
+  for (int32_t i = 0; i < piece_num; i++) {
     norm_histEdge[i] = static_cast<double>(histEdge[i]) / total_histEdge;
   }
 
@@ -90,13 +91,13 @@ auto m57419_normalizeHistogram(const std::vector<int> &histEdge, int piece_num,
   }
 
   double alpha = (minProb_restrict * maxProb_ori) - (maxProb_restrict * minProb_ori);
-  for (int i = 0; i < piece_num; i++) {
+  for (int32_t i = 0; i < piece_num; i++) {
     norm_histEdge[i] = ((maxProb_restrict - minProb_restrict) * norm_histEdge[i] + alpha) /
                        (maxProb_ori - minProb_ori);
   }
 
   total_histEdge = 0.;
-  for (int i = 0; i < piece_num; i++) {
+  for (int32_t i = 0; i < piece_num; i++) {
     total_histEdge += norm_histEdge[i];
   }
 
@@ -105,7 +106,7 @@ auto m57419_normalizeHistogram(const std::vector<int> &histEdge, int piece_num,
   }
 
   double accum_histEdge = 0.;
-  for (int i = 0; i < piece_num; i++) {
+  for (int32_t i = 0; i < piece_num; i++) {
     accum_histEdge += norm_histEdge[i];
     norm_histEdge[i] = accum_histEdge / total_histEdge;
   }
@@ -113,23 +114,23 @@ auto m57419_normalizeHistogram(const std::vector<int> &histEdge, int piece_num,
   std::vector<double> mapped_pivot;
   mapped_pivot.assign(piece_num + 1, 0.);
   mapped_pivot[0] = minDepthVal;
-  for (int i = 1; i <= piece_num; i++) {
+  for (int32_t i = 1; i <= piece_num; i++) {
     mapped_pivot[i] =
-        minDepthVal + static_cast<int>((maxDepthVal - minDepthVal) * norm_histEdge[i - 1]);
+        minDepthVal + static_cast<int32_t>((maxDepthVal - minDepthVal) * norm_histEdge[i - 1]);
   }
   return mapped_pivot;
 }
 
-auto m57419_depthMapping(int32_t minDepthVal, int32_t maxDepthVal, int piece_num,
+auto m57419_depthMapping(int32_t minDepthVal, int32_t maxDepthVal, int32_t piece_num,
                          uint16_t inGeometry, const std::vector<double> &mapped_pivot,
                          bool lowDepthQuality) -> uint16_t {
   static constexpr int32_t maxValue = Common::maxLevel(Common::sampleBitDepth);
   static constexpr auto maxValD = static_cast<double>(maxValue);
 
   double depthStep = static_cast<double>(maxDepthVal - minDepthVal) / piece_num;
-  int depthStep_idx =
-      std::clamp(static_cast<int>((static_cast<double>(inGeometry - minDepthVal)) / depthStep), 0,
-                 piece_num - 1);
+  int32_t depthStep_idx =
+      std::clamp(static_cast<int32_t>((static_cast<double>(inGeometry - minDepthVal)) / depthStep),
+                 0, piece_num - 1);
   auto in = static_cast<uint16_t>((depthStep_idx * depthStep) + minDepthVal);
   double map = mapped_pivot[depthStep_idx];
   double mapD = mapped_pivot[depthStep_idx + 1] - mapped_pivot[depthStep_idx];
@@ -145,33 +146,34 @@ auto m57419_depthMapping(int32_t minDepthVal, int32_t maxDepthVal, int piece_num
   return outGeometry;
 }
 
-auto Encoder::Impl::m57419_makeHistogram(int piece_num, size_t numOfFrames, size_t v,
+auto Encoder::Impl::m57419_makeHistogram(int32_t piece_num, size_t numOfFrames, size_t v,
                                          int32_t minDepthVal, int32_t maxDepthVal)
-    -> std::vector<int> {
+    -> std::vector<int32_t> {
   double line_thres = m_config.m57419_edgeThreshold;
   double interval = static_cast<double>(maxDepthVal - minDepthVal) / piece_num;
 
-  std::vector<int> histEdge;
+  std::vector<int32_t> histEdge;
   histEdge.assign(piece_num, 0);
 
   for (size_t f = 0; f < numOfFrames; f++) {
-    int heightOfView = m_transportViews[f][v].geometry.getHeight();
-    int widthOfView = m_transportViews[f][v].geometry.getWidth();
+    int32_t heightOfView = m_transportViews[f][v].geometry.getHeight();
+    int32_t widthOfView = m_transportViews[f][v].geometry.getWidth();
 
-    for (int i = 1; i < heightOfView - 1; ++i) {
-      for (int j = 1; j < widthOfView - 1; ++j) {
-        std::vector<std::vector<int>> geometryUnit(3, std::vector(3, 0));
-        for (int ki = 0; ki <= 2; ++ki) {
-          for (int kj = 0; kj <= 2; ++kj) {
-            int ui = i - 1 + ki;
-            int uj = i - 1 + kj;
+    for (int32_t i = 1; i < heightOfView - 1; ++i) {
+      for (int32_t j = 1; j < widthOfView - 1; ++j) {
+        std::vector<std::vector<int32_t>> geometryUnit(3, std::vector(3, 0));
+        for (int32_t ki = 0; ki <= 2; ++ki) {
+          for (int32_t kj = 0; kj <= 2; ++kj) {
+            int32_t ui = i - 1 + ki;
+            int32_t uj = i - 1 + kj;
             geometryUnit[ki][kj] = m_transportViews[f][v].geometry.getPlane(0)(ui, uj);
           }
         }
         if (m_nonAggregatedMask[v](i, j)[f] && m57419_edgeDetection(geometryUnit, line_thres)) {
-          int interval_idx = std::clamp(
-              static_cast<int>((static_cast<double>(geometryUnit[1][1] - minDepthVal)) / interval),
-              0, piece_num - 1);
+          int32_t interval_idx =
+              std::clamp(static_cast<int32_t>(
+                             (static_cast<double>(geometryUnit[1][1] - minDepthVal)) / interval),
+                         0, piece_num - 1);
           histEdge[interval_idx]++;
         }
       }
@@ -185,10 +187,10 @@ auto Encoder::Impl::m57419_piecewiseLinearScaleGeometryDynamicRange(size_t numOf
                                                                     int32_t maxDepthMapValWithinGOP,
                                                                     bool lowDepthQuality)
     -> std::vector<double> {
-  int piece_num = m_config.m57419_intervalNumber;
+  int32_t piece_num = m_config.m57419_intervalNumber;
   VERIFY(0 < piece_num);
 
-  std::vector<int> histEdge;
+  std::vector<int32_t> histEdge;
   std::vector<double> mapped_pivot;
   histEdge = m57419_makeHistogram(piece_num, numOfFrames, v, minDepthMapValWithinGOP,
                                   maxDepthMapValWithinGOP);

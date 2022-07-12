@@ -102,7 +102,7 @@ protected:
   }
 
 private:
-  static void verify(int err, const char *file, int32_t line) {
+  static void verify(int32_t err, const char *file, int32_t line) {
     if (err != VVDEC_OK) {
       Common::assertionFailed(vvdec_get_error_msg(err), file, line);
     }

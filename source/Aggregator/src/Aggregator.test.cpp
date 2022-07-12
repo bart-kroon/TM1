@@ -40,13 +40,13 @@
 using namespace std::string_view_literals;
 
 namespace test {
-auto mask(int seed) {
+auto mask(int32_t seed) {
   auto result = TMIV::Common::Frame<uint8_t>::lumaOnly({5, 7});
   std::iota(result.getPlane(0).begin(), result.getPlane(0).end(), static_cast<uint8_t>(seed));
   return result;
 }
 
-auto maskList(int seed) {
+auto maskList(int32_t seed) {
   auto result = std::vector<TMIV::Common::Frame<uint8_t>>{};
   result.push_back(mask(seed));
   result.push_back(mask(seed + 250));

@@ -42,7 +42,7 @@
 
 using namespace std::string_view_literals;
 
-auto main(int argc, const char *argv[]) -> int {
+auto main(int argc, const char *argv[]) -> int32_t {
   try {
     const auto args = std::vector(argv, argv + argc);
 
@@ -60,13 +60,13 @@ auto main(int argc, const char *argv[]) -> int {
     if (!outStream.good()) {
       fmt::print("Failed to open {} for writing.\n", args[4]);
     }
-    int nframes = 0;
+    int32_t nframes = 0;
     if (args.size() == 7) {
       nframes = atoi(args[6]);
     }
     // Read the frame info to be inserted.
     std::vector<TMIV::Common::Json> seiJsons;
-    for (int frame = 0; frame < nframes; frame++) {
+    for (int32_t frame = 0; frame < nframes; frame++) {
       std::string seiFile = "frame" + std::to_string(frame) + ".json";
       std::ifstream stream{seiFile};
       const auto json = TMIV::Common::Json::loadFrom(stream);

@@ -179,10 +179,12 @@ TEST_CASE("DepthTransform") {
       const auto highLevel = TMIV::Common::maxLevel<uint16_t>(bits);
       const uint16_t midLevel =
           lowLevel + (highLevel - lowLevel) / static_cast<uint16_t>(dq.dq_pivot_count_minus1() + 2);
-      const uint16_t midLevel_minus1 = static_cast<uint16_t>(std::clamp(
-          static_cast<int>(lowLevel), static_cast<int>(midLevel) - 1, static_cast<int>(highLevel)));
-      const uint16_t midLevel_plus1 = static_cast<uint16_t>(std::clamp(
-          static_cast<int>(lowLevel), static_cast<int>(midLevel) + 1, static_cast<int>(highLevel)));
+      const uint16_t midLevel_minus1 = static_cast<uint16_t>(
+          std::clamp(static_cast<int32_t>(lowLevel), static_cast<int32_t>(midLevel) - 1,
+                     static_cast<int32_t>(highLevel)));
+      const uint16_t midLevel_plus1 = static_cast<uint16_t>(
+          std::clamp(static_cast<int32_t>(lowLevel), static_cast<int32_t>(midLevel) + 1,
+                     static_cast<int32_t>(highLevel)));
 
       const auto unit = DepthTransform{dq, bits};
       const auto lowDisp = unit.expandNormDisp(lowLevel);

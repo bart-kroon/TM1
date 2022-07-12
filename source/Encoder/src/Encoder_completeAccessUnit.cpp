@@ -117,7 +117,7 @@ void Encoder::Impl::scaleGeometryDynamicRange() {
 
       m_params.viewParamsList[v].dq.dq_quantization_law(static_cast<uint8_t>(2));
 
-      for (int i = 0; i < piece_num + 1; i++) {
+      for (int32_t i = 0; i < piece_num + 1; i++) {
         double normDispMap =
             mapped_pivot[i] / maxValD * (normDispHighOrig - normDispLowOrig) + normDispLowOrig;
         m_params.viewParamsList[v].dq.dq_pivot_norm_disp(i, static_cast<float>(normDispMap));

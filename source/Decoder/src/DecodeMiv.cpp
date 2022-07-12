@@ -446,6 +446,6 @@ auto errorStringFor(ErrorCode code) -> const char * {
   UNREACHABLE;
 }
 
-Exception::Exception(ErrorCode code, char const *file, int line)
+Exception::Exception(ErrorCode code, char const *file, int32_t line)
     : Common::MivBitstreamError{errorStringFor(code)}, m_code{code}, m_file{file}, m_line{line} {}
 } // namespace TMIV::Decoder

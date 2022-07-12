@@ -52,6 +52,46 @@ class CodeQualityRules:
     def remove_empty_lines_after_curly_brace(self, text):
         return text.replace("{\n\n", "{\n")
 
+    def replace_platform_dependent_primitive_types(self, text):
+        return re.sub(
+            r"(//[^\n]+|main)?[^a-zA-Z0-9_\"]((un)?signed\s+)?(short|int|long|long long)[^a-zA-Z0-9_\"]",
+            self.replace_platform_dependent_types_replace,
+            text,
+        )
+
+    def replace_platform_dependent_types_replace(self, match):
+        if self.verbose:
+            print("Check: Replace platform dependent types with cstdint type aliases")
+            for i in range(len(match.groups())):
+                print("{}match[{}] = '{}'".format("" if i == 0 else "  ", i, match[i]))
+
+        text = match[0]
+
+        if match[1]:
+            return text
+
+        # Carve a hole for postfix operator ++/--
+        if text == "(int)":
+            return text
+
+        replacement_type = {
+            "short": "int16_t",
+            "signed short": "int16_t",
+            "unsigned short": "uint16_t",
+            "int": "int32_t",
+            "signed": "int32_t",
+            "signed int": "int32_t",
+            "long": "int32_t",
+            "signed long": "int32_t",
+            "unsigned": "uint32_t",
+            "unsigned int": "uint32_t",
+            "long long": "int64_t",
+            "signed long long": "int64_t",
+            "unsigned long": "uint32_t",
+            "unsigned long long": "uint64_t",
+        }[text[1:-1]]
+        return "".join((text[0], replacement_type, text[-1]))
+
     def remove_std_primitive_types(self, text):
         return re.sub(
             r"std::(u?int(_fast|_least)?(8|16|32|64)_t|u?intmax_t|u?intptr_t|size_t|ptrdiff_t)[^a-zA-Z0-9_]",
@@ -86,6 +126,27 @@ class CodeQualityRules:
             return match[0]
         return "{0}static_cast<{1}>(".format(match[3], match[4])
 
+    def detect_c_style_cast(self, text):
+        return re.sub(
+            r"(//[^\n]+)?\((bool|char|float|double|u?int(_fast|_least)?(8|16|32|64)_t|u?intmax_t|u?intptr_t|size_t|ptrdiff_t|streamoff)\)[^\)>]",
+            self.detect_c_style_cast_replace,
+            text,
+        )
+
+    def detect_c_style_cast_replace(self, match):
+        if self.verbose:
+            print("Check: Replace a c-style cast to primitive type with a static_cast")
+            for i in range(len(match.groups())):
+                print("{}match[{}] = '{}'".format("" if i == 0 else "  ", i, match[i]))
+
+        if match[1]:
+            return match[0]
+
+        type_ = match[0][1:-1]
+        raise RuntimeError(
+            f"Replace c-style cast {match[0]} with Common::downCast<{type_}>( ) or static_cast<{type_}>( )"
+        )
+
     ### other logic ###
 
     def apply_all_rules_to_a_single_cpp_file(self, file):
@@ -95,8 +156,10 @@ class CodeQualityRules:
         original = text
         for method in (
             self.remove_empty_lines_after_curly_brace,
+            self.replace_platform_dependent_primitive_types,
             self.remove_std_primitive_types,
             self.replace_function_style_cast_to_primitive_types_by_static_cast,
+            self.detect_c_style_cast,
         ):
             text = method(text)
 
@@ -144,9 +207,13 @@ def parse_args():
 
 
 if __name__ == "__main__":
-    args = parse_args()
-    app = CodeQualityRules(args.verbose, args.dry_run)
-    files = app.get_list_of_files()
-    cpp_files = app.filter_cpp_files(files)
-    app.apply_all_rules_to_multiple_cpp_files(cpp_files)
-    exit(0)
+    try:
+        args = parse_args()
+        app = CodeQualityRules(args.verbose, args.dry_run)
+        files = app.get_list_of_files()
+        cpp_files = app.filter_cpp_files(files)
+        app.apply_all_rules_to_multiple_cpp_files(cpp_files)
+        exit(0)
+    except Exception as e:
+        print(e)
+        exit(1)

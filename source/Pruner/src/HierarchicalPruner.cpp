@@ -437,7 +437,7 @@ private:
         m_lumaStdDev.emplace(1.0F);
       }
 
-      m_reviveRatio = static_cast<int>(100.F * ((1.F - m_lumaStdDev.value()) * A + 0.5F));
+      m_reviveRatio = static_cast<int32_t>(100.F * ((1.F - m_lumaStdDev.value()) * A + 0.5F));
       prepareFrame(views);
       nonPrunedArea = pruneFrame(views);
 
@@ -702,7 +702,7 @@ private:
     const auto x3{iterativeReweightedLeastSquaresOnNonPrunedPixels(
         sampledIndices, referenceRGB, synthesizedRGB, weights, 2, eps)};
 
-    std::vector<int> nonPrunedPixErrBinIdx(nonPrunedPixIndices.size());
+    std::vector<int32_t> nonPrunedPixErrBinIdx(nonPrunedPixIndices.size());
     const int32_t numBinErrHistogram = 100;
     double errHistThreshExeedSampleNum = 0.F;
     std::vector<double> errHistogram(numBinErrHistogram, 0.F);
@@ -716,8 +716,9 @@ private:
       VecRgb d{std::abs(c.r - s.r), std::abs(c.g - s.g), std::abs(c.b - s.b)};
       auto err = std::max(d.r, std::max(d.g, d.b));
 
-      int32_t errHistBinIdx = std::min(
-          numBinErrHistogram - 1, static_cast<int>(err * static_cast<float>(numBinErrHistogram)));
+      int32_t errHistBinIdx =
+          std::min(numBinErrHistogram - 1,
+                   static_cast<int32_t>(err * static_cast<float>(numBinErrHistogram)));
       nonPrunedPixErrBinIdx[i] = errHistBinIdx;
       errHistogram[errHistBinIdx] += 1.F;
 

@@ -101,7 +101,7 @@ auto cartesianToPolarDegrees(const Vec3f &position) -> Vec2f {
   return {phi, theta};
 }
 
-auto calcProjectionPlaneBoundary(const Vec2i &size, int segmentsPerEdge) -> std::vector<Vec2f> {
+auto calcProjectionPlaneBoundary(const Vec2i &size, int32_t segmentsPerEdge) -> std::vector<Vec2f> {
   std::vector<Vec2f> boundary;
 
   const float dx = 1.F / static_cast<float>(segmentsPerEdge);
@@ -141,7 +141,7 @@ auto rad2deg(const Vec2f &v) -> Vec2f {
   return Vec2f{rad2deg(v[0]), rad2deg(v[1])};
 }
 
-auto calcCameraFrustum(const MivBitstream::ViewParams &viewParams, int segmentsPerEdge)
+auto calcCameraFrustum(const MivBitstream::ViewParams &viewParams, int32_t segmentsPerEdge)
     -> CameraFrustum<Vec3f> {
   const auto ci = viewParams.ci;
 
@@ -152,7 +152,7 @@ auto calcCameraFrustum(const MivBitstream::ViewParams &viewParams, int segmentsP
       calcProjectionPlaneBoundary(projectionPlaneSize, segmentsPerEdge);
 
   // The choosen bit-depth is arbitrary. It is needed to find the maxium depth range
-  const unsigned int depthBitDepth = 16U;
+  const uint32_t depthBitDepth = 16U;
   const auto depthTransform = MivBitstream::DepthTransform{viewParams.dq, depthBitDepth};
   const auto depthNear = depthTransform.expandDepth(Common::maxLevel(depthBitDepth));
   const auto depthFar = 1.F / depthTransform.minNormDisp();
@@ -167,7 +167,7 @@ auto calcCameraFrustum(const MivBitstream::ViewParams &viewParams, int segmentsP
 }
 
 auto calcCameraFrustum(const MivBitstream::ViewParams &viewParams,
-                       const MivBitstream::Pose &poseWorld, int segmentsPerEdge)
+                       const MivBitstream::Pose &poseWorld, int32_t segmentsPerEdge)
     -> CameraFrustum<Vec3f> {
   auto frustumInCameraCoordinates = calcCameraFrustum(viewParams, segmentsPerEdge);
 
@@ -198,7 +198,7 @@ private:
   float m_fieldOfViewMargin;
   SourceParams m_sourceParams;
   ViewOptimizerParams m_transportParams;
-  int m_segmentsPerEdge;
+  int32_t m_segmentsPerEdge;
 
 public:
   Impl(const Json &rootNode, const Json &componentNode)
@@ -216,7 +216,7 @@ public:
       , m_blurKernel{componentNode.require("blurRadius").as<int32_t>()}
       , m_inpaintThreshold{componentNode.require("inpaintThreshold").as<int32_t>()}
       , m_fieldOfViewMargin{componentNode.require("fieldOfViewMargin").as<float>()}
-      , m_segmentsPerEdge{componentNode.require("segmentsPerEdge").as<int>()} {}
+      , m_segmentsPerEdge{componentNode.require("segmentsPerEdge").as<int32_t>()} {}
 
   auto optimizeParams(const SourceParams &params) -> ViewOptimizerParams {
     m_sourceParams = params;

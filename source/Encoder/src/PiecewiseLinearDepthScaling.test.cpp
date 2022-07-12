@@ -39,7 +39,7 @@ using namespace std::string_view_literals;
 
 #if ENABLE_M57419
 TEST_CASE("edge detection for piecwise linear scaling") {
-  std::vector<std::vector<int>> geometryUnit(3, std::vector(3, 0));
+  std::vector<std::vector<int32_t>> geometryUnit(3, std::vector(3, 0));
   geometryUnit[0] = {0, 10, 100};
   geometryUnit[1] = {0, 10, 100};
   geometryUnit[2] = {0, 10, 100};
@@ -50,7 +50,7 @@ TEST_CASE("edge detection for piecwise linear scaling") {
 TEST_CASE("histogram normalization in PLS, for CG seq") {
   const auto piece_num = 4;
 
-  std::vector<int> histEdge;
+  std::vector<int32_t> histEdge;
   histEdge.assign(piece_num, 0);
   histEdge[0] = 300;
   histEdge[1] = 200;
@@ -65,17 +65,17 @@ TEST_CASE("histogram normalization in PLS, for CG seq") {
   mapped_pivot = TMIV::Encoder::m57419_normalizeHistogram(histEdge, piece_num, lowDepthQuality,
                                                           minDepthVal, maxDepthVal);
 
-  CHECK(static_cast<int>(mapped_pivot[0]) == 1000);
-  CHECK(static_cast<int>(mapped_pivot[1]) == 1866);
-  CHECK(static_cast<int>(mapped_pivot[2]) == 2666);
-  CHECK(static_cast<int>(mapped_pivot[3]) == 3666);
-  CHECK(static_cast<int>(mapped_pivot[4]) == 5000);
+  CHECK(static_cast<int32_t>(mapped_pivot[0]) == 1000);
+  CHECK(static_cast<int32_t>(mapped_pivot[1]) == 1866);
+  CHECK(static_cast<int32_t>(mapped_pivot[2]) == 2666);
+  CHECK(static_cast<int32_t>(mapped_pivot[3]) == 3666);
+  CHECK(static_cast<int32_t>(mapped_pivot[4]) == 5000);
 }
 
 TEST_CASE("histogram normalization in PLS, for NC sequences") {
   const auto piece_num = 4;
 
-  std::vector<int> histEdge;
+  std::vector<int32_t> histEdge;
   histEdge.assign(piece_num, 0);
   histEdge[0] = 300;
   histEdge[1] = 200;
@@ -90,11 +90,11 @@ TEST_CASE("histogram normalization in PLS, for NC sequences") {
   mapped_pivot = TMIV::Encoder::m57419_normalizeHistogram(histEdge, piece_num, lowDepthQuality,
                                                           minDepthVal, maxDepthVal);
 
-  CHECK(static_cast<int>(mapped_pivot[0]) == 1000);
-  CHECK(static_cast<int>(mapped_pivot[1]) == 1562);
-  CHECK(static_cast<int>(mapped_pivot[2]) == 2062);
-  CHECK(static_cast<int>(mapped_pivot[3]) == 2750);
-  CHECK(static_cast<int>(mapped_pivot[4]) == 3750);
+  CHECK(static_cast<int32_t>(mapped_pivot[0]) == 1000);
+  CHECK(static_cast<int32_t>(mapped_pivot[1]) == 1562);
+  CHECK(static_cast<int32_t>(mapped_pivot[2]) == 2062);
+  CHECK(static_cast<int32_t>(mapped_pivot[3]) == 2750);
+  CHECK(static_cast<int32_t>(mapped_pivot[4]) == 3750);
 }
 
 TEST_CASE("calculation remapped geometry value in PLS, for CG sequences") {

@@ -44,7 +44,7 @@ auto transformParams(const EncoderParams &inParams, double depthOccThresholdIfSe
     for (auto &x : outParams.viewParamsList) {
       if (x.hasOccupancy) {
         const auto depthOccThreshold = Common::downCast<uint32_t>(
-            std::llround(std::ldexp(depthOccThresholdIfSet, Common::downCast<int>(bitDepth))));
+            std::llround(std::ldexp(depthOccThresholdIfSet, Common::downCast<int32_t>(bitDepth))));
 
         x.dq.dq_depth_occ_threshold_default(depthOccThreshold); // =T
         const auto nearLevel = static_cast<float>(Common::maxLevel(bitDepth));

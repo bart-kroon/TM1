@@ -125,8 +125,8 @@ template <Codec codec> auto generateNalUnit(NUT nut) -> std::string {
   nuh.encodeTo(stream);
 
   // Add a string that is visible in the debugger
-  fmt::print(stream, "[Payload of the {} {} NAL unit]\n", static_cast<int>(codec),
-             static_cast<int>(nut));
+  fmt::print(stream, "[Payload of the {} {} NAL unit]\n", static_cast<int32_t>(codec),
+             static_cast<int32_t>(nut));
 
   return stream.str();
 }

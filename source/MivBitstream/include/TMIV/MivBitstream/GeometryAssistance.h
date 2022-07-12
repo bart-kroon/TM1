@@ -61,14 +61,14 @@ public:
   auto gas_zmin_delta(int32_t value) noexcept -> GaSubBlock &;
   auto gas_zmax_delta(int32_t value) noexcept -> GaSubBlock &;
 
-  auto writeTo(std::ostream &stream, unsigned int blk_y, unsigned int blk_x, unsigned int sb_y,
-               unsigned int sb_x) const -> std::ostream &;
-  void readFrom(TMIV::Common::Json const &jin, unsigned int blk_y, unsigned int blk_x,
-                unsigned int sb_y, unsigned int sb_x);
-  void encodeTo(Common::OutputBitstream &bitstream, unsigned int blk_y, unsigned int blk_x,
-                unsigned int sb_y, unsigned int sb_x) const;
-  void decodeFrom(Common::InputBitstream &bitstream, unsigned int blk_y, unsigned int blk_x,
-                  unsigned int sb_y, unsigned int sb_x);
+  auto writeTo(std::ostream &stream, uint32_t blk_y, uint32_t blk_x, uint32_t sb_y,
+               uint32_t sb_x) const -> std::ostream &;
+  void readFrom(TMIV::Common::Json const &jin, uint32_t blk_y, uint32_t blk_x, uint32_t sb_y,
+                uint32_t sb_x);
+  void encodeTo(Common::OutputBitstream &bitstream, uint32_t blk_y, uint32_t blk_x, uint32_t sb_y,
+                uint32_t sb_x) const;
+  void decodeFrom(Common::InputBitstream &bitstream, uint32_t blk_y, uint32_t blk_x, uint32_t sb_y,
+                  uint32_t sb_x);
 
 private:
   bool m_gas_skip_flag{};
@@ -97,11 +97,10 @@ public:
   auto gas_split_first_block_bigger(bool value) noexcept -> GaBlock &;
   auto subblocks(std::vector<GaSubBlock> & /*value*/) -> GaBlock &;
 
-  auto writeTo(std::ostream &stream, unsigned int blk_y, unsigned int blk_x) const
-      -> std::ostream &;
-  void readFrom(TMIV::Common::Json const &jin, unsigned int blk_y, unsigned int blk_x);
-  void encodeTo(Common::OutputBitstream &bitstream, unsigned int blk_y, unsigned int blk_x) const;
-  void decodeFrom(Common::InputBitstream &bitstream, unsigned int blk_y, unsigned int blk_x);
+  auto writeTo(std::ostream &stream, uint32_t blk_y, uint32_t blk_x) const -> std::ostream &;
+  void readFrom(TMIV::Common::Json const &jin, uint32_t blk_y, uint32_t blk_x);
+  void encodeTo(Common::OutputBitstream &bitstream, uint32_t blk_y, uint32_t blk_x) const;
+  void decodeFrom(Common::InputBitstream &bitstream, uint32_t blk_y, uint32_t blk_x);
 
 private:
   bool m_gas_split_flag{};

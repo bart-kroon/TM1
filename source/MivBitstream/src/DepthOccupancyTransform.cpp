@@ -63,7 +63,7 @@ DepthTransform::DepthTransform(const DepthQuantization &dq, uint32_t bitDepth)
     m_normDispMap[0] = m_normDispLow;
     m_normDispMap[m_viewPivotCount + 1] = m_normDispHigh;
 
-    for (int i = 0; i < m_viewPivotCount; i++) {
+    for (int32_t i = 0; i < m_viewPivotCount; i++) {
       m_normDispMap[i + 1] = dq.dq_pivot_norm_disp(i);
     }
 
@@ -91,7 +91,7 @@ auto DepthTransform::expandNormDisp(Common::SampleValue x) const -> float {
   if (m_quantizationLaw == 2) {
     float normDisp = m_normDispLow + (m_normDispHigh - m_normDispLow) * level;
 
-    for (int i = 0; i <= m_viewPivotCount; i++) {
+    for (int32_t i = 0; i <= m_viewPivotCount; i++) {
       if (normDisp <= m_normDispMap[i + 1]) {
         const auto x1 = m_normDispMap[i];
         const auto x2 = m_normDispMap[i + 1];

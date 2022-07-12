@@ -57,13 +57,13 @@ public:
 class NativeVideoDecoderTest {
 private:
   std::istream &m_stream;
-  int m_frameCount;
-  int m_intraPeriod;
+  int32_t m_frameCount;
+  int32_t m_intraPeriod;
   PtlChecker::SharedChecker m_checker;
   Common::Source<MivBitstream::AccessUnit> m_mivDecoder;
 
 public:
-  NativeVideoDecoderTest(std::istream &stream, int frameCount, int intraPeriod)
+  NativeVideoDecoderTest(std::istream &stream, int32_t frameCount, int32_t intraPeriod)
       : m_stream{stream}
       , m_frameCount{frameCount}
       , m_intraPeriod{intraPeriod}

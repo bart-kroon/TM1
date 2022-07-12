@@ -45,8 +45,8 @@ namespace TMIV::Decoder::test {
 // on the GPU
 class MockVideoDecoder {
 public:
-  MockVideoDecoder(Common::Source<MivBitstream::VideoSubBitstream> source, int frameCount,
-                   int intraPeriod)
+  MockVideoDecoder(Common::Source<MivBitstream::VideoSubBitstream> source, int32_t frameCount,
+                   int32_t intraPeriod)
       : m_source{source}, m_frameCount{frameCount}, m_intraPeriod{intraPeriod} {}
 
   auto operator()() {
@@ -79,9 +79,9 @@ private:
   }
 
   Common::Source<MivBitstream::VideoSubBitstream> m_source;
-  int m_frameCount;
-  int m_intraPeriod;
-  int m_frameIdx{};
+  int32_t m_frameCount;
+  int32_t m_intraPeriod;
+  int32_t m_frameIdx{};
   bool m_have{true};
 };
 } // namespace TMIV::Decoder::test

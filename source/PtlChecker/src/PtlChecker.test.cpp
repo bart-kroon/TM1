@@ -778,7 +778,7 @@ TEST_CASE("PtlChecker ISO/IEC 23090-12:2021 Table A-1") {
 
     const auto atlasId = vps.vps_atlas_id(0);
 
-    const auto testFlag = [&](ASPS &(ASPS::*setter)(bool), bool allowSet) {
+    const auto testFlag = [&](ASPS &(ASPS::*setter)(bool value), bool allowSet) {
       auto asps = test::asps(vps, atlasId);
       (asps.*setter)(flagValue);
 

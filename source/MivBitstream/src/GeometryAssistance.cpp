@@ -81,8 +81,8 @@ auto GaSubBlock::operator!=(const GaSubBlock &other) const noexcept -> bool {
   return !operator==(other);
 }
 
-auto GaSubBlock::writeTo(std::ostream &stream, unsigned int blk_y, unsigned int blk_x,
-                         unsigned int sb_y, unsigned int sb_x) const -> std::ostream & {
+auto GaSubBlock::writeTo(std::ostream &stream, uint32_t blk_y, uint32_t blk_x, uint32_t sb_y,
+                         uint32_t sb_x) const -> std::ostream & {
   stream << " [";
   stream << "gas_skip_flag=" << m_gas_skip_flag;
   if (m_gas_skip_flag) {
@@ -102,25 +102,25 @@ auto GaSubBlock::writeTo(std::ostream &stream, unsigned int blk_y, unsigned int 
   return stream;
 }
 
-void GaSubBlock::readFrom(TMIV::Common::Json const &jin, unsigned int blk_y, unsigned int blk_x,
-                          unsigned int sb_y, unsigned int sb_x) {
-  m_gas_skip_flag = jin.require("gas_skip_flag").as<int>() != 0;
+void GaSubBlock::readFrom(TMIV::Common::Json const &jin, uint32_t blk_y, uint32_t blk_x,
+                          uint32_t sb_y, uint32_t sb_x) {
+  m_gas_skip_flag = jin.require("gas_skip_flag").as<int32_t>() != 0;
   if (m_gas_skip_flag) {
     return;
   }
   if ((blk_y == 0 && sb_y == 0) || (blk_x == 0 && sb_x == 0)) {
     ; // no neighbor signaling.
   } else {
-    m_gas_ltmin_flag = jin.require("gas_ltmin_flag").as<int>() != 0;
-    m_gas_ltmax_flag = jin.require("gas_ltmax_flag").as<int>() != 0;
+    m_gas_ltmin_flag = jin.require("gas_ltmin_flag").as<int32_t>() != 0;
+    m_gas_ltmax_flag = jin.require("gas_ltmax_flag").as<int32_t>() != 0;
   }
 
-  m_gas_zmin_delta = jin.require("gas_zmin_delta").as<int>();
-  m_gas_zmax_delta = jin.require("gas_zmax_delta").as<int>();
+  m_gas_zmin_delta = jin.require("gas_zmin_delta").as<int32_t>();
+  m_gas_zmax_delta = jin.require("gas_zmax_delta").as<int32_t>();
 }
 
-void GaSubBlock::encodeTo(Common::OutputBitstream &bitstream, unsigned int blk_y,
-                          unsigned int blk_x, unsigned int sb_y, unsigned int sb_x) const {
+void GaSubBlock::encodeTo(Common::OutputBitstream &bitstream, uint32_t blk_y, uint32_t blk_x,
+                          uint32_t sb_y, uint32_t sb_x) const {
   bitstream.putFlag(m_gas_skip_flag);
   if (m_gas_skip_flag) {
     return;
@@ -135,8 +135,8 @@ void GaSubBlock::encodeTo(Common::OutputBitstream &bitstream, unsigned int blk_y
   bitstream.putSExpGolomb(m_gas_zmax_delta);
 }
 
-void GaSubBlock::decodeFrom(Common::InputBitstream &bitstream, unsigned int blk_y,
-                            unsigned int blk_x, unsigned int sb_y, unsigned int sb_x) {
+void GaSubBlock::decodeFrom(Common::InputBitstream &bitstream, uint32_t blk_y, uint32_t blk_x,
+                            uint32_t sb_y, uint32_t sb_x) {
   m_gas_skip_flag = bitstream.getFlag();
   if (m_gas_skip_flag) {
     return;
@@ -208,11 +208,11 @@ auto GaBlock::operator==(const GaBlock &other) const noexcept -> bool {
 
 auto GaBlock::operator!=(const GaBlock &other) const noexcept -> bool { return !operator==(other); }
 
-auto GaBlock::writeTo(std::ostream &stream, unsigned int blk_y, unsigned int blk_x) const
+auto GaBlock::writeTo(std::ostream &stream, uint32_t blk_y, uint32_t blk_x) const
     -> std::ostream & {
   stream << " gas_split_flag=" << m_gas_split_flag;
-  unsigned int n_sb_x = 0;
-  unsigned int n_sb_y = 0;
+  uint32_t n_sb_x = 0;
+  uint32_t n_sb_y = 0;
   if (m_gas_split_flag) {
     stream << " gas_quad_split_flag=" << m_gas_quad_split_flag;
     if (m_gas_quad_split_flag) {
@@ -234,28 +234,29 @@ auto GaBlock::writeTo(std::ostream &stream, unsigned int blk_y, unsigned int blk
   } else {
     n_sb_x = n_sb_y = 1;
   }
-  unsigned int sb_idx = 0;
-  for (unsigned int sb_y = 0; sb_y < n_sb_y; sb_y++) {
-    for (unsigned int sb_x = 0; sb_x < n_sb_x; sb_x++, sb_idx++) {
+  uint32_t sb_idx = 0;
+  for (uint32_t sb_y = 0; sb_y < n_sb_y; sb_y++) {
+    for (uint32_t sb_x = 0; sb_x < n_sb_x; sb_x++, sb_idx++) {
       m_sub_blocks[sb_idx].writeTo(stream, blk_y, blk_x, sb_y, sb_x);
     }
   }
   return stream;
 }
 
-void GaBlock::readFrom(TMIV::Common::Json const &jin, unsigned int blk_y, unsigned int blk_x) {
-  unsigned int n_sb_x = 1;
-  unsigned int n_sb_y = 1;
-  m_gas_split_flag = jin.require("gas_split_flag").as<int>() != 0;
+void GaBlock::readFrom(TMIV::Common::Json const &jin, uint32_t blk_y, uint32_t blk_x) {
+  uint32_t n_sb_x = 1;
+  uint32_t n_sb_y = 1;
+  m_gas_split_flag = jin.require("gas_split_flag").as<int32_t>() != 0;
   if (m_gas_split_flag) {
-    m_gas_quad_split_flag = jin.require("gas_quad_split_flag").as<int>() != 0;
+    m_gas_quad_split_flag = jin.require("gas_quad_split_flag").as<int32_t>() != 0;
     if (m_gas_quad_split_flag) {
       n_sb_x = n_sb_y = 2;
     } else {
-      m_gas_split_orientation_flag = jin.require("gas_split_orientation_flag").as<int>() != 0;
-      m_gas_split_symmetry_flag = jin.require("gas_split_symmetry_flag").as<int>() != 0;
+      m_gas_split_orientation_flag = jin.require("gas_split_orientation_flag").as<int32_t>() != 0;
+      m_gas_split_symmetry_flag = jin.require("gas_split_symmetry_flag").as<int32_t>() != 0;
       if (!m_gas_split_symmetry_flag) {
-        m_gas_split_first_block_bigger = jin.require("gas_split_first_block_bigger").as<int>() != 0;
+        m_gas_split_first_block_bigger =
+            jin.require("gas_split_first_block_bigger").as<int32_t>() != 0;
       }
       if (m_gas_split_orientation_flag) {
         n_sb_x = 2;
@@ -266,20 +267,19 @@ void GaBlock::readFrom(TMIV::Common::Json const &jin, unsigned int blk_y, unsign
       }
     }
   }
-  unsigned int sb_idx = 0;
+  uint32_t sb_idx = 0;
   auto subblks = jin.require("subblks").as<Common::Json::Array>();
   m_sub_blocks.resize(n_sb_y * n_sb_x);
-  for (unsigned int sb_y = 0; sb_y < n_sb_y; sb_y++) {
-    for (unsigned int sb_x = 0; sb_x < n_sb_x; sb_x++, sb_idx++) {
+  for (uint32_t sb_y = 0; sb_y < n_sb_y; sb_y++) {
+    for (uint32_t sb_x = 0; sb_x < n_sb_x; sb_x++, sb_idx++) {
       m_sub_blocks[sb_idx].readFrom(subblks.at(sb_idx), blk_y, blk_x, sb_y, sb_x);
     }
   }
 }
 
-void GaBlock::encodeTo(Common::OutputBitstream &bitstream, unsigned int blk_y,
-                       unsigned int blk_x) const {
-  unsigned int n_sb_x = 1;
-  unsigned int n_sb_y = 1;
+void GaBlock::encodeTo(Common::OutputBitstream &bitstream, uint32_t blk_y, uint32_t blk_x) const {
+  uint32_t n_sb_x = 1;
+  uint32_t n_sb_y = 1;
   bitstream.putFlag(m_gas_split_flag);
   if (m_gas_split_flag) {
     bitstream.putFlag(m_gas_quad_split_flag);
@@ -298,18 +298,17 @@ void GaBlock::encodeTo(Common::OutputBitstream &bitstream, unsigned int blk_y,
       }
     }
   }
-  unsigned int sb_idx = 0;
-  for (unsigned int sb_y = 0; sb_y < n_sb_y; sb_y++) {
-    for (unsigned int sb_x = 0; sb_x < n_sb_x; sb_x++, sb_idx++) {
+  uint32_t sb_idx = 0;
+  for (uint32_t sb_y = 0; sb_y < n_sb_y; sb_y++) {
+    for (uint32_t sb_x = 0; sb_x < n_sb_x; sb_x++, sb_idx++) {
       m_sub_blocks[sb_idx].encodeTo(bitstream, blk_y, blk_x, sb_y, sb_x);
     }
   }
 }
 
-void GaBlock::decodeFrom(Common::InputBitstream &bitstream, unsigned int blk_y,
-                         unsigned int blk_x) {
-  unsigned int n_sb_x = 1;
-  unsigned int n_sb_y = 1;
+void GaBlock::decodeFrom(Common::InputBitstream &bitstream, uint32_t blk_y, uint32_t blk_x) {
+  uint32_t n_sb_x = 1;
+  uint32_t n_sb_y = 1;
   m_gas_split_flag = bitstream.getFlag();
   if (m_gas_split_flag) {
     m_gas_quad_split_flag = bitstream.getFlag();
@@ -328,10 +327,10 @@ void GaBlock::decodeFrom(Common::InputBitstream &bitstream, unsigned int blk_y,
       }
     }
   }
-  unsigned int sb_idx = 0;
+  uint32_t sb_idx = 0;
   m_sub_blocks.resize(n_sb_y * n_sb_x);
-  for (unsigned int sb_y = 0; sb_y < n_sb_y; sb_y++) {
-    for (unsigned int sb_x = 0; sb_x < n_sb_x; sb_x++, sb_idx++) {
+  for (uint32_t sb_y = 0; sb_y < n_sb_y; sb_y++) {
+    for (uint32_t sb_x = 0; sb_x < n_sb_x; sb_x++, sb_idx++) {
       m_sub_blocks[sb_idx].decodeFrom(bitstream, blk_y, blk_x, sb_y, sb_x);
     }
   }
@@ -434,7 +433,7 @@ void GeometryAssistance::writeTo(std::ostream &stream) const {
 auto GeometryAssistance::readFrom(TMIV::Common::Json const &jin) -> GeometryAssistance {
   auto ga = GeometryAssistance{};
 
-  ga.m_gas_qs = jin.require("gas_qs").as<int>();
+  ga.m_gas_qs = jin.require("gas_qs").as<int32_t>();
   ga.m_gas_num_views_minus1 = jin.require("gas_num_views_minus1").as<uint16_t>();
   ga.m_gas_log2_bw_minus2 = jin.require("gas_log2_bw_minus2").as<uint8_t>();
 

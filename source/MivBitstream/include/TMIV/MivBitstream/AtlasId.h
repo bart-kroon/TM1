@@ -70,7 +70,7 @@ public:
 
   explicit operator Common::Json() const { return Common::Json{m_value}; }
 
-  [[nodiscard]] constexpr auto asInt() const -> int { return m_value; }
+  [[nodiscard]] constexpr auto asInt() const -> int32_t { return m_value; }
 
 private:
   uint8_t m_value{};

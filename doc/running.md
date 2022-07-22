@@ -11,6 +11,8 @@ In addition, there are other configurations available under [config/test/](/conf
 
 The file names of the configuration files, and the file names within them are only examples.
 
+It is mandatory to have the same intraperiod value for both TMIV encoder and video encoder.
+
 ## Instructions for CTC conditions
 
 It is assumed that the reader has read the CTC document [[5]](/README.md#references) first. This description does not replace that document.
@@ -380,8 +382,11 @@ For this example, we will be using the MIV anchor [M_1_TMIV_encode.json](/config
     -c /Workspace/tmiv/config/test/miv_mpi/M_1_TMIV_encode.json \
     -p configDirectory /Workspace/tmiv/config \
     -p inputDirectory /Content \
-    -p outputDirectory /Experiment
+    -p outputDirectory /Experiment \
+    -p intraperiod 2
 ```
+
+The last argument line ensures the TMIV encoding will use the same intraperiod value as the one provided in the video encoder configuration files.
 
 Following generated atlas for the example will be produced:
 ```

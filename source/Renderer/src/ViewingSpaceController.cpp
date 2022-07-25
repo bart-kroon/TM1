@@ -32,11 +32,11 @@
  */
 
 #include <TMIV/Renderer/ViewingSpaceController.h>
+
+#include <TMIV/Common/LoggingStrategyFmt.h>
 #include <TMIV/ViewingSpace/ViewingSpaceEvaluator.h>
 
 #include <cmath>
-
-#include <iostream>
 
 namespace TMIV::Renderer {
 namespace {
@@ -47,7 +47,7 @@ auto computeIndex(const MivBitstream::ViewParams &metadata, const MivBitstream::
   vp.viewRotation = Common::QuatF{Common::floatCast, metadata.pose.orientation};
 
   auto index = TMIV::ViewingSpace::ViewingSpaceEvaluator::computeInclusion(vs, vp);
-  std::cout << "viewing space inclusion index: " << index << std::endl;
+  Common::logInfo("viewing space inclusion index: {}", index);
 
   return index;
 }

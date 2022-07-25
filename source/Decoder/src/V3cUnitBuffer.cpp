@@ -35,7 +35,6 @@
 
 #include <fmt/format.h>
 
-#include <iostream>
 #include <utility>
 
 namespace TMIV::Decoder {

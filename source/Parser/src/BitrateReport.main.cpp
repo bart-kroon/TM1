@@ -31,13 +31,13 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <TMIV/Common/LoggingStrategyFmt.h>
 #include <TMIV/MivBitstream/NalUnit.h>
 #include <TMIV/MivBitstream/V3cSampleStreamFormat.h>
 #include <TMIV/MivBitstream/V3cUnit.h>
 
 #include <cstring>
 #include <fstream>
-#include <iostream>
 #include <map>
 #include <sstream>
 #include <stdexcept>
@@ -184,24 +184,38 @@ private:
   BitrateReport m_report;
 };
 
-auto main(int argc, char *argv[]) -> int32_t {
+using namespace std::string_view_literals;
+
+using TMIV::Common::logError;
+using TMIV::Common::logInfo;
+
+auto main(int argc, const char *argv[]) -> int32_t {
   try {
     const auto args = std::vector(argv, argv + argc);
 
-    if (args.size() != 3 || strcmp(args[1], "-b") != 0) {
-      std::clog << "Usage: BitrateReport -b BITSTREAM" << std::endl;
+    if (args.size() != 5 || args[1] != "-b"sv || args[3] != "-o"sv) {
+      logInfo("Usage: TmivBitrateReport -b BITSTREAM -o REPORT_FILE");
       return 1;
     }
 
-    std::ifstream stream{args[2], std::ios::binary};
-    if (!stream.good()) {
-      std::clog << "Failed to open bitstream for reading" << std::endl;
+    std::ifstream inStream{args[2], std::ios::binary};
+
+    if (!inStream.good()) {
+      logError("Failed to open {} for reading.", args[2]);
+      return 1;
+    }
+
+    std::ofstream outStream{args[4], std::ios::binary};
+
+    if (!outStream.good()) {
+      logError("Failed to open {} for writing.", args[4]);
       return 1;
     }
 
     PartialParser parser;
-    parser.parseV3cSampleStream(stream);
-    parser.report().printTo(std::cout);
+    parser.parseV3cSampleStream(inStream);
+    parser.report().printTo(outStream);
+
     return 0;
   } catch (...) {
     return TMIV::Common::handleException();

@@ -36,11 +36,13 @@
 #include <TMIV/Common/Bytestream.h>
 #include <TMIV/Common/Decoder.h>
 #include <TMIV/Common/Frame.h>
+#include <TMIV/Common/LoggingStrategyFmt.h>
 #include <TMIV/Common/verify.h>
 
 #include <vvdec/vvdec.h>
 
-#include <fmt/format.h>
+#include <list>
+#include <mutex>
 
 using namespace std::string_literals;
 
@@ -63,12 +65,9 @@ public:
     m_decoder = vvdec_decoder_open(&params);
     VERIFY(m_decoder);
 
-    verify(vvdec_set_logging_callback(m_decoder, []([[maybe_unused]] void *context,
-                                                    [[maybe_unused]] int32_t level, const char *fmt,
-                                                    va_list args) { vfprintf(stdout, fmt, args); }),
-           __FILE__, __LINE__);
+    verify(vvdec_set_logging_callback(m_decoder, loggingCallback), __FILE__, __LINE__);
 
-    fmt::print("{}\n", vvdec_get_dec_information(m_decoder));
+    Common::logInfo(vvdec_get_dec_information(m_decoder));
   }
 
   VVdeCVideoDecoder(const VVdeCVideoDecoder &) = delete;
@@ -102,6 +101,69 @@ protected:
   }
 
 private:
+  [[nodiscard]] static auto translateLogLevel(int32_t level) -> Common::LogLevel {
+    switch (level) {
+    case VVDEC_ERROR:
+      return Common::LogLevel::error;
+    case VVDEC_WARNING:
+      return Common::LogLevel::warning;
+    case VVDEC_INFO:
+    case VVDEC_NOTICE:
+      return Common::LogLevel::info;
+    case VVDEC_VERBOSE:
+      return Common::LogLevel::verbose;
+    default:
+      return Common::LogLevel::debug;
+    }
+  }
+
+  struct LineBuffer {
+    LineBuffer(void *context) : context{context} {}
+
+    void *context{};
+    Common::LogLevel level{Common::LogLevel::debug};
+    std::vector<char> buffer;
+
+    void append(Common::LogLevel level_, char character) {
+      level = std::min(level, level_);
+
+      if (character == '\n') {
+        const auto what = std::string_view{buffer.data(), buffer.size()};
+        Common::logMessage(level, "[VVdeC @ {}] {}", context, what);
+        buffer.clear();
+        level = Common::LogLevel::debug;
+      } else {
+        buffer.push_back(character);
+      }
+    }
+  };
+
+  [[nodiscard]] static auto lineBuffer(void *context) -> LineBuffer & {
+    static std::list<LineBuffer> buffers; // stable addressing
+    static std::mutex mutex;
+
+    std::unique_lock<std::mutex> lock{mutex};
+
+    for (auto &buffer : buffers) {
+      if (buffer.context == context) {
+        return buffer;
+      }
+    }
+
+    return buffers.emplace_back(context);
+  }
+
+  static void loggingCallback(void *context, int32_t level, const char *fmt, va_list args) {
+    auto &lineBuffer_ = lineBuffer(context);
+    const auto level_ = translateLogLevel(level);
+    auto charBuffer = std::array<char, 0x1000>{};
+    const auto charCount = vsnprintf(charBuffer.data(), charBuffer.size(), fmt, args);
+
+    for (int32_t i = 0; i < charCount; ++i) {
+      lineBuffer_.append(level_, Common::at(charBuffer, i));
+    }
+  }
+
   static void verify(int32_t err, const char *file, int32_t line) {
     if (err != VVDEC_OK) {
       Common::assertionFailed(vvdec_get_error_msg(err), file, line);

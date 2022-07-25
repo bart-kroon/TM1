@@ -33,36 +33,37 @@
 
 #include <TMIV/Parser/Parser.h>
 
+#include <TMIV/Common/LoggingStrategyFmt.h>
 #include <TMIV/Common/verify.h>
 
-#include <fmt/format.h>
-
 #include <fstream>
-#include <iostream>
 #include <vector>
 
 using namespace std::string_view_literals;
+
+using TMIV::Common::logError;
+using TMIV::Common::logInfo;
 
 auto main(int argc, const char *argv[]) -> int32_t {
   try {
     const auto args = std::vector(argv, argv + argc);
 
     if (args.size() != 5 || args[1] != "-b"sv || args[3] != "-o"sv) {
-      std::cerr << "Usage: Parser -b BITSTREAM -o HLS_LOG_FILE";
+      logInfo("Usage: TmivParser -b BITSTREAM -o HLS_LOG_FILE");
       return 1;
     }
 
     std::ifstream inStream{args[2], std::ios::binary};
 
     if (!inStream.good()) {
-      fmt::print("Failed to open {} for reading.\n", args[2]);
+      logError("Failed to open {} for reading.", args[2]);
       return 1;
     }
 
     std::ofstream outStream{args[4], std::ios::binary};
 
     if (!outStream.good()) {
-      fmt::print("Failed to open {} for writing.\n", args[4]);
+      logError("Failed to open {} for writing.", args[4]);
       return 1;
     }
 

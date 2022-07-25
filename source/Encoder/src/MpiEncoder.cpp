@@ -34,12 +34,9 @@
 #include <TMIV/Encoder/MpiEncoder.h>
 
 #include <TMIV/Common/Factory.h>
+#include <TMIV/Common/LoggingStrategyFmt.h>
 #include <TMIV/Common/Thread.h>
 #include <TMIV/Common/verify.h>
-
-#include <fmt/format.h>
-
-#include <iostream>
 
 namespace TMIV::Encoder {
 namespace {
@@ -327,11 +324,11 @@ auto MpiEncoder::processAccessUnit(int32_t firstFrameId, int32_t lastFrameId)
               back_inserter(m_params.patchParamsList));
   }
 
-  fmt::print("Aggregated luma samples per frame is {}M\n",
-             1e-6 * 2 * static_cast<double>(nbActivePixels));
+  Common::logInfo("Aggregated luma samples per frame is {}M",
+                  1e-6 * 2 * static_cast<double>(nbActivePixels));
   m_maxLumaSamplesPerFrame = std::max(m_maxLumaSamplesPerFrame, nbActivePixels);
 
-  fmt::print("Packing done with nb of patches = {}\n", m_params.patchParamsList.size());
+  Common::logInfo("Packing done with nb of patches = {}", m_params.patchParamsList.size());
 
   m_blockToPatchMapPerAtlas.clear();
 
@@ -339,7 +336,7 @@ auto MpiEncoder::processAccessUnit(int32_t firstFrameId, int32_t lastFrameId)
     m_blockToPatchMapPerAtlas.emplace_back(createBlockToPatchMap(k, m_params));
   }
 
-  std::cout << "Block to patch map created" << std::endl;
+  Common::logInfo("Block to patch map created");
 
   return m_params;
 }

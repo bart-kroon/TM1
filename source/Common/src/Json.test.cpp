@@ -34,8 +34,7 @@
 #include <catch2/catch.hpp>
 
 #include <TMIV/Common/Json.h>
-
-#include <iostream>
+#include <TMIV/Common/LoggingStrategy.h>
 
 using namespace std::string_literals;
 using namespace std::string_view_literals;
@@ -138,7 +137,7 @@ TEST_CASE("Json::as<T>() supports numeric conversion of floats") {
     try {
       json.as<int32_t>();
     } catch (std::exception &e) {
-      std::cout << e.what() << '\n';
+      logInfo(e.what());
     }
   }
 }

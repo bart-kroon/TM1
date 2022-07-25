@@ -33,13 +33,11 @@
 
 #include <TMIV/Common/Bitstream.h>
 
-#include <fmt/format.h>
-
-#include <cstring>
-#include <iostream>
-#include <limits>
+#include <TMIV/Common/LoggingStrategy.h>
 
 #include <cmath>
+#include <cstring>
+#include <limits>
 
 namespace TMIV::Common {
 auto InputBitstream::tellg() const -> std::streampos {
@@ -154,7 +152,7 @@ void InputBitstream::reset() {
 
 OutputBitstream::~OutputBitstream() {
   if (!byteAligned()) {
-    fmt::print("WARNING: Output bitstream is not byte aligned.\n");
+    Common::logWarning("Output bitstream is not byte aligned.");
   }
 }
 

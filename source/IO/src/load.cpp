@@ -35,7 +35,7 @@
 
 #include "DependencyInjector.h"
 
-#include <fmt/ostream.h>
+#include <TMIV/Common/LoggingStrategyFmt.h>
 
 #include <fstream>
 #include <regex>
@@ -162,8 +162,8 @@ auto loadMultiviewFrame(const Common::Json &config, const Placeholders &placehol
 
   const auto inputDir = config.require("inputDirectory").as<std::filesystem::path>();
   const auto startFrame = placeholders.startFrame;
-  fmt::print("Loading multiview frame {0} with start frame offset {1} (= {2}).\n", frameIdx,
-             startFrame, frameIdx + startFrame);
+  Common::logInfo("Loading multiview frame {0} with start frame offset {1} (= {2}).", frameIdx,
+                  startFrame, frameIdx + startFrame);
 
   for (size_t v = 0; v < frame.size(); ++v) {
     const auto &name = sc.sourceCameraNames[v];

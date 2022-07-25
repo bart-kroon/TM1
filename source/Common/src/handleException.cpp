@@ -33,6 +33,9 @@
 
 #include <TMIV/Common/verify.h>
 
+#include <TMIV/Common/Application.h>
+#include <TMIV/Common/LoggingStrategyFmt.h>
+
 #include <functional>
 
 namespace TMIV::Common {
@@ -41,23 +44,26 @@ namespace TMIV::Common {
 auto handleException() noexcept -> int32_t {
   try {
     throw;
+  } catch (Usage &e) {
+    logInfo(e.what());
+    return 1;
   } catch (std::runtime_error &e) {
-    std::cerr << "ERROR: " << e.what() << '\n';
+    logError(e.what());
     return 1;
   } catch (std::out_of_range &e) {
-    std::cerr << "ERROR: " << e.what() << " [out_of_range]\n";
+    logError("{} [out_of_range]", e.what());
     return 4;
   } catch (std::bad_function_call &e) {
-    std::cerr << "ERROR: " << e.what() << " [bad_function_call]\n";
+    logError("{} [bad_function_call]", e.what());
     return 2;
   } catch (std::logic_error &e) {
-    std::cerr << "ERROR: " << e.what() << " [logic_error]\n";
+    logError("{} [logic_error]", e.what());
     return 3;
   } catch (std::exception &e) {
-    std::cerr << "ERROR: " << e.what() << " [exception]\n";
+    logError("{} [exception]", e.what());
     return 127;
   } catch (...) {
-    std::cerr << "ERROR: Exception of unknown type.\n";
+    logError("Exception of unknown type.");
     return 128;
   }
 }

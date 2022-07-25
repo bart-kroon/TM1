@@ -33,15 +33,13 @@
 
 #include <TMIV/Common/Application.h>
 #include <TMIV/Common/Factory.h>
+#include <TMIV/Common/LoggingStrategyFmt.h>
 #include <TMIV/Encoder/EncodeMiv.h>
 #include <TMIV/Encoder/MpiEncoder.h>
 #include <TMIV/Encoder/V3cSampleSink.h>
 #include <TMIV/MpiPcs/MpiPcs.h>
 
-#include <fmt/ostream.h>
-
 #include <fstream>
-#include <iostream>
 
 using namespace std::string_view_literals;
 
@@ -89,9 +87,10 @@ public:
 
     // Support experiments that use a subset of the source cameras
     if (const auto &node = json().optional("inputCameraNames")) {
-      std::cout << "WARNING: Source camera names are derived from the sequence configuration. This "
-                   "functionality to override source camera names is only for internal testing, "
-                   "e.g. to test with a subset of views.\n";
+      Common::logWarning(
+          "Source camera names are derived from the sequence configuration. This "
+          "functionality to override source camera names is only for internal testing, "
+          "e.g. to test with a subset of views.");
       m_inputSequenceConfig.sourceCameraNames = node.asVector<std::string>();
     }
 
@@ -120,7 +119,7 @@ public:
 
 private:
   void encodeIntraPeriod(int32_t firstFrame, int32_t lastFrame) {
-    std::cout << "Access unit: [" << firstFrame << ", " << lastFrame << ")\n";
+    Common::logInfo("Access unit: [{}, {})", firstFrame, lastFrame);
     m_sink(m_encoder.processAccessUnit(firstFrame, lastFrame));
     popAtlases(firstFrame, lastFrame);
   }
@@ -149,14 +148,14 @@ private:
   }
 
   void reportSummary(std::streampos bytesWritten) const {
-    fmt::print("Maximum luma samples per frame is {}\n", m_encoder.maxLumaSamplesPerFrame());
-    fmt::print("Total size is {} B ({} kb)\n", bytesWritten,
-               8e-3 * static_cast<double>(bytesWritten));
-    fmt::print("Frame count is {}\n", m_numberOfInputFrames);
-    fmt::print("Frame rate is {} Hz\n", m_inputSequenceConfig.frameRate);
-    fmt::print("Total bitrate is {} kbps\n", 8e-3 * static_cast<double>(bytesWritten) *
-                                                 m_inputSequenceConfig.frameRate /
-                                                 m_numberOfInputFrames);
+    Common::logInfo("Maximum luma samples per frame is {}", m_encoder.maxLumaSamplesPerFrame());
+    Common::logInfo("Total size is {} B ({} kb)", bytesWritten,
+                    8e-3 * static_cast<double>(bytesWritten));
+    Common::logInfo("Frame count is {}", m_numberOfInputFrames);
+    Common::logInfo("Frame rate is {} Hz", m_inputSequenceConfig.frameRate);
+    Common::logInfo("Total bitrate is {} kbps", 8e-3 * static_cast<double>(bytesWritten) *
+                                                    m_inputSequenceConfig.frameRate /
+                                                    m_numberOfInputFrames);
   }
 };
 } // namespace TMIV::Encoder

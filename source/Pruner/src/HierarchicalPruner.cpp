@@ -36,7 +36,9 @@
 #include "IncrementalSynthesizer.h"
 #include "LumaStdDev.h"
 #include "PrunedMesh.h"
+
 #include <TMIV/Common/Graph.h>
+#include <TMIV/Common/LoggingStrategyFmt.h>
 #include <TMIV/MivBitstream/DepthOccupancyTransform.h>
 #include <TMIV/Renderer/reprojectPoints.h>
 
@@ -44,9 +46,11 @@
 #include <cmath>
 #include <future>
 #include <iomanip>
-#include <iostream>
+
 #include <numeric>
 #include <optional>
+
+using namespace std::string_view_literals;
 
 namespace TMIV::Pruner {
 namespace {
@@ -332,17 +336,20 @@ public:
   }
 
   void printClusters(const MivBitstream::ViewParamsList &vpl) const {
-    std::cout << "Pruning graph:\n";
+    Common::logInfo("Pruning graph:");
+
     for (const auto &cluster : m_clusters) {
-      std::cout << "  (";
+      std::ostringstream what;
+
+      what << "  (";
       for (auto i : cluster.basicViewId) {
-        std::cout << ' ' << vpl[i].name;
+        what << ' ' << vpl[i].name;
       }
-      std::cout << " )";
+      what << " )";
       for (auto i : cluster.pruningOrder) {
-        std::cout << " <- " << vpl[i].name;
+        what << " <- " << vpl[i].name;
       }
-      std::cout << '\n';
+      Common::logInfo(what.str());
     }
   }
 
@@ -424,13 +431,13 @@ private:
   void analyzeFillAndPruneAgain(const Common::DeepFrameList &views, int32_t nonPrunedArea,
                                 int32_t percentageRatio) {
     const float A = 0.5F / (1.F - m_lumaStdDev.value());
-    std::cout << "Pruning luma threshold:   " << (m_lumaStdDev.value() * m_maxLumaError) << "\n";
+    Common::logInfo("Pruning luma threshold:   {}", m_lumaStdDev.value() * m_maxLumaError);
 
     while (nonPrunedArea > (m_params.sampleBudget * percentageRatio / 100) &&
            m_lumaStdDev.value() < 1.0F) {
-      std::cout << "Non-pruned exceeds " << percentageRatio << "% of total sample budget ("
-                << (100.0 * nonPrunedArea / static_cast<double>(m_params.sampleBudget)) << "%)\n";
-      std::cout << "Pruning luma threshold changed\n";
+      Common::logInfo("Non-pruned exceeds {}% of total sample budget ({}%)", percentageRatio,
+                      100.0 * nonPrunedArea / static_cast<double>(m_params.sampleBudget));
+      Common::logInfo("Pruning luma threshold changed");
 
       *m_lumaStdDev *= 1.5F;
       if (m_lumaStdDev.value() > 1.0F) {
@@ -441,8 +448,8 @@ private:
       prepareFrame(views);
       nonPrunedArea = pruneFrame(views);
 
-      std::cout << "Pruning luma threshold:   " << (m_lumaStdDev.value() * m_maxLumaError) << "\n";
-      std::cout << "reviveRatio: " << m_reviveRatio << "\n";
+      Common::logInfo("Pruning luma threshold:   {}", m_lumaStdDev.value() * m_maxLumaError);
+      Common::logInfo("reviveRatio: {}", m_reviveRatio);
     }
   }
 
@@ -495,7 +502,7 @@ private:
   void synthesizeReferenceViews(const Common::DeepFrameList &views) {
     if (m_synthesizers.empty()) {
       // Skip generation the meshes
-      std::cout << "Nothing to prune: only basic views\n";
+      Common::logInfo("Nothing to prune: only basic views");
       return;
     }
 
@@ -522,7 +529,7 @@ private:
           std::accumulate(std::begin(mask.getPlane(0)), std::end(mask.getPlane(0)), sumValues);
     }
     const auto lumaSamplesPerFrame = 2. * sumValues / 255e6;
-    std::cout << "Non-pruned luma samples per frame is " << lumaSamplesPerFrame << "M\n";
+    Common::logInfo("Non-pruned luma samples per frame is {}M", lumaSamplesPerFrame);
 
     return static_cast<int32_t>((lumaSamplesPerFrame * 1e6) / 2);
   }
@@ -535,27 +542,18 @@ private:
                        const std::vector<size_t> &viewIds) {
     const auto &vp = m_params.viewParamsList[index];
     if (vp.viewInpaintFlag) {
-      std::cout << "Skipping inpainted view " << vp.name << '\n';
+      Common::logVerbose("Skipping inpainted view {}", vp.name);
       return;
     }
     auto [ivertices, triangles, attributes] =
         unprojectPrunedView(view, m_params.viewParamsList[index], m_masks[index].getPlane(0));
 
-    if (m_params.viewParamsList[index].isBasicView) {
-      std::cout << "Basic view ";
-    } else {
-      std::cout << "Prune view ";
-    }
-
-    const auto prec = std::cout.precision(2);
-    const auto flags = std::cout.setf(std::ios::fixed, std::ios::floatfield);
-    std::cout << std::setw(2) << index << " (" << std::setw(3)
-              << m_params.viewParamsList[index].name << "): " << ivertices.size() << " vertices ("
-              << 100. * static_cast<double>(ivertices.size()) /
-                     (static_cast<double>(view.texture.getWidth()) * view.texture.getHeight())
-              << "% of full view)\n";
-    std::cout.precision(prec);
-    std::cout.setf(flags);
+    Common::logVerbose(
+        "{} {:2} ({:3}) {} vertices ({:.2f}% of full view)",
+        m_params.viewParamsList[index].isBasicView ? "Basic view"sv : "Prune view"sv, index,
+        m_params.viewParamsList[index].name, ivertices.size(),
+        100. * static_cast<double>(ivertices.size()) /
+            (static_cast<double>(view.texture.getWidth()) * view.texture.getHeight()));
 
     for (auto &s : m_synthesizers) {
       if (Common::contains(viewIds, s->index)) {

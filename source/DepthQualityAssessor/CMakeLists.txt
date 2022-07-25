@@ -7,4 +7,5 @@ create_tmiv_library(
         "src/DepthQualityAssessor.cpp"
     PRIVATE
         RendererLib
+        fmt::fmt
     )

@@ -35,7 +35,6 @@
 
 #include <TMIV/Common/verify.h>
 
-#include <fmt/format.h>
 #include <fmt/ostream.h>
 
 namespace TMIV::Decoder {
@@ -88,9 +87,7 @@ auto HashFunction::consumeF(float value) noexcept -> HashFunction & {
 
 constexpr auto HashFunction::result() const noexcept { return ~m_hash; }
 
-auto HashFunction::toString(uint32_t value) -> std::string {
-  return fmt::format(FMT_STRING("{:08x}"), value);
-}
+auto HashFunction::toString(uint32_t value) -> std::string { return fmt::format("{:08x}", value); }
 
 auto videoDataHash(const Common::Frame<> &frame) noexcept -> HashFunction::Result {
   auto hash = HashFunction{};

@@ -35,9 +35,9 @@
 
 #include <TMIV/Common/Common.h>
 #include <TMIV/Common/LinAlg.h>
+#include <TMIV/Common/LoggingStrategyFmt.h>
 
 #include <algorithm>
-#include <iostream>
 #include <limits>
 #include <numeric>
 
@@ -66,19 +66,23 @@ auto BasicViewAllocator::isBasicView() const -> std::vector<bool> {
   const auto first = forwardView(positions);
 
   auto centroids = selectInitialCentroids(cost, first, count);
-  std::cout << "Initial centroids:";
+  std::ostringstream what;
+  what << "Initial centroids:";
   for (auto i : centroids) {
-    std::cout << ' ' << params().viewParamsList[i].name;
+    what << ' ' << params().viewParamsList[i].name;
   }
-  std::cout << " (cost: " << cost(centroids) << " m^-2)\n";
+  what << " (cost: " << cost(centroids) << " m^-2)";
+  Common::logInfo(what.str());
 
   while (auto update = updateCentroids(cost, centroids)) {
     std::swap(*update, centroids);
-    std::cout << "Updated centroids:";
+    what.str({});
+    what << "Updated centroids:";
     for (auto i : centroids) {
-      std::cout << ' ' << params().viewParamsList[i].name;
+      what << ' ' << params().viewParamsList[i].name;
     }
-    std::cout << " (cost: " << cost(centroids) << " m^-2)\n";
+    what << " (cost: " << cost(centroids) << " m^-2)";
+    Common::logVerbose(what.str());
   }
 
   auto result = std::vector<bool>(cost.N(), false);
@@ -100,20 +104,20 @@ auto BasicViewAllocator::basicViewCount() const -> size_t {
   for (auto samplesInView : lumaSamplesPerSourceViewSortedDesc()) {
     samplesInTotal += samplesInView;
     if (samplesInTotal > maxSamples) {
-      std::cout << "Basic view count is limited by maximum basic view fraction.\n";
+      Common::logInfo("Basic view count is limited by maximum basic view fraction.");
       break;
     }
 
     if (count % numAtlases == 0) {
       samplesInAtlas0 += samplesInView;
       if (samplesInAtlas0 > static_cast<size_t>(m_maxLumaPictureSize)) {
-        std::cout << "Basic view count is limited by maximum luma picture size.\n";
+        Common::logInfo("Basic view count is limited by maximum luma picture size.");
         break;
       }
     }
 
     if (++count + m_minNonCodedViews >= params().viewParamsList.size()) {
-      std::cout << "Basic view count is limited by minimum non-coded view count.\n";
+      Common::logInfo("Basic view count is limited by minimum non-coded view count.");
       break;
     }
   }
@@ -157,7 +161,7 @@ auto BasicViewAllocator::forwardView(const Positions &pos) const -> size_t {
                  [&target](const auto &p) { return Common::norm2(p - target); });
   const auto nearest = std::min_element(dist2.cbegin(), dist2.cend());
   const auto index = static_cast<size_t>(nearest - dist2.cbegin());
-  std::cout << "Forward central view is " << params().viewParamsList[index].name << ".\n";
+  Common::logInfo("Forward central view is {}.", params().viewParamsList[index].name);
 
   return index;
 }

@@ -36,10 +36,10 @@
 #include <TMIV/Common/Bitstream.h>
 #include <TMIV/Common/verify.h>
 
+#include <fmt/ostream.h>
+
 #include <ostream>
 #include <utility>
-
-#include <fmt/ostream.h>
 
 namespace TMIV::MivBitstream {
 RefListStruct::RefListStruct(std::vector<int16_t> deltaAfocSt)

@@ -31,11 +31,12 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/Common/Thread.h>
 #include <TMIV/DepthQualityAssessor/DepthQualityAssessor.h>
+
+#include <TMIV/Common/LoggingStrategyFmt.h>
+#include <TMIV/Common/Thread.h>
 #include <TMIV/MivBitstream/DepthOccupancyTransform.h>
 #include <TMIV/Renderer/reprojectPoints.h>
-#include <iostream>
 
 namespace TMIV::DepthQualityAssessor {
 namespace {
@@ -99,8 +100,7 @@ auto isLowQuality(float blendingFactor, float maxOutlierRatio,
                        static_cast<float>(secondUnprojection.width() * secondUnprojection.height());
 
   if (maxOutlierRatio < outlierRatio) {
-    std::cout << "DepthQualityAssessor -> Threshold exceeded (" << outlierRatio * 100.F << "%)"
-              << std::endl;
+    Common::logInfo("DepthQualityAssessor -> Threshold exceeded ({}%)", outlierRatio * 100.F);
     return true;
   }
 
@@ -165,10 +165,10 @@ auto isLowDepthQuality(const MivBitstream::ViewParamsList &vpl,
       }
     }
 
-    std::cout << "DepthQualityAssessor -> View #" << firstId << " done !" << std::endl;
+    Common::logInfo("DepthQualityAssessor -> View #{} done !", firstId);
   }
 
-  std::cout << "DepthQualityAssessor -> OK" << std::endl;
+  Common::logInfo("DepthQualityAssessor -> OK");
 
   return false;
 }

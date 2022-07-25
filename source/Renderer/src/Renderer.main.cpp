@@ -33,6 +33,7 @@
 
 #include <TMIV/Common/Application.h>
 #include <TMIV/Common/Factory.h>
+#include <TMIV/Common/LoggingStrategyFmt.h>
 #include <TMIV/DepthQualityAssessor/IDepthQualityAssessor.h>
 #include <TMIV/IO/IO.h>
 #include <TMIV/MivBitstream/SequenceConfig.h>
@@ -41,7 +42,6 @@
 
 #include <filesystem>
 #include <fstream>
-#include <iostream>
 
 using namespace std::string_view_literals;
 
@@ -108,7 +108,7 @@ private:
     if (frameIdx == 0) {
       m_inputSequenceConfig = IO::loadSequenceConfig(json(), m_placeholders, 0);
     } else if (auto sc = IO::tryLoadSequenceConfig(json(), m_placeholders, frameIdx)) {
-      std::cout << "Updating parameters at frame " << frameIdx << '\n';
+      Common::logInfo("Updating parameters at frame {}", frameIdx);
       m_inputSequenceConfig = *sc;
     }
   }

@@ -1799,15 +1799,15 @@ auto operator<<(std::ostream &stream, const V3cParameterSet &x) -> std::ostream 
 auto V3cParameterSet::summary() const -> std::string {
   std::ostringstream stream;
 
-  fmt::print(stream, "V3C parameter set {}:\n", vps_v3c_parameter_set_id());
+  fmt::print(stream, "V3C parameter set {}:", vps_v3c_parameter_set_id());
 
   const auto &ptl = profile_tier_level();
-  fmt::print(stream, "  {}, tier {}, level {}, decodes {}\n", ptl.profile(), ptl.ptl_tier_flag(),
+  fmt::print(stream, "\n  {}, tier {}, level {}, decodes {}", ptl.profile(), ptl.ptl_tier_flag(),
              ptl.ptl_level_idc(), ptl.ptl_max_decodes_idc());
 
   for (size_t k = 0; k <= vps_atlas_count_minus1(); ++k) {
     const auto j = vps_atlas_id(k);
-    fmt::print(stream, "  Atlas {}: {} x {}", j, vps_frame_width(j), vps_frame_height(j));
+    fmt::print(stream, "\n  Atlas {}: {} x {}", j, vps_frame_width(j), vps_frame_height(j));
     if (vps_occupancy_video_present_flag(j)) {
       const auto &oi = occupancy_information(j);
       fmt::print(stream, "; [OI: codec {}, {}, 2D {}, align {}]", oi.oi_occupancy_codec_id(),
@@ -1839,14 +1839,12 @@ auto V3cParameterSet::summary() const -> std::string {
       const auto &pin = packing_information(j);
       fmt::print(stream, "; [PIN: regions {}]", pin.pin_regions_count_minus1() + 1);
     }
-
-    fmt::print(stream, "\n");
   }
 
   if (vpsMivExtensionPresentFlag()) {
     const auto &vme = vps_miv_extension();
     fmt::print(stream,
-               ", geometry scaling {}, groups {}, embedded occupancy {}, occupancy scaling {}\n",
+               "\n, geometry scaling {}, groups {}, embedded occupancy {}, occupancy scaling {}",
                vme.vme_geometry_scale_enabled_flag(), vme.group_mapping().gm_group_count(),
                vme.vme_embedded_occupancy_enabled_flag(), vme.vme_occupancy_scale_enabled_flag());
   }

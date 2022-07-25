@@ -31,6 +31,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <TMIV/Common/LoggingStrategyFmt.h>
 #include <TMIV/Decoder/DecodeAtlasSubBitstream.h>
 #include <TMIV/Decoder/DecodeMiv.h>
 #include <TMIV/Decoder/DecodeNalUnitStream.h>
@@ -39,8 +40,6 @@
 #include <TMIV/Decoder/OutputLog.h>
 #include <TMIV/PtlChecker/PtlChecker.h>
 #include <TMIV/VideoDecoder/VideoDecoder.h>
-
-#include <fmt/ostream.h>
 
 #include <fstream>
 
@@ -136,26 +135,29 @@ private:
 };
 } // namespace TMIV::Decoder
 
+using TMIV::Common::logError;
+using TMIV::Common::logInfo;
+
 auto main(int argc, char *argv[]) -> int32_t {
   try {
     const auto args = std::vector(argv, argv + argc);
 
     if (args.size() != 5 || args[1] != "-b"sv || args[3] != "-o"sv) {
-      std::cerr << "Usage: DecoderLog -b BITSTREAM -o DECODER_LOG";
+      logInfo("Usage: DecoderLog -b BITSTREAM -o DECODER_LOG");
       return 1;
     }
 
     std::ifstream inStream{args[2], std::ios::binary};
 
     if (!inStream.good()) {
-      fmt::print("Failed to open {} for reading.\n", args[2]);
+      logError("Failed to open {} for reading.\n", args[2]);
       return 1;
     }
 
     std::ofstream outStream{args[4], std::ios::binary};
 
     if (!outStream.good()) {
-      fmt::print("Failed to open {} for writing.\n", args[4]);
+      logError("Failed to open {} for writing.\n", args[4]);
       return 1;
     }
 

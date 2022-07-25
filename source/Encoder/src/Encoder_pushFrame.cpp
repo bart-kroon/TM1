@@ -33,7 +33,7 @@
 
 #include "EncoderImpl.h"
 
-#include <iostream>
+#include <TMIV/Common/LoggingStrategyFmt.h>
 
 namespace TMIV::Encoder {
 void Encoder::Impl::pushFrame(Common::DeepFrameList sourceViews) {
@@ -135,7 +135,7 @@ void Encoder::Impl::pushMultiEntityFrame(Common::DeepFrameList sourceViews) {
 
   for (auto entityId = m_config.entityEncRange[0]; entityId < m_config.entityEncRange[1];
        entityId++) {
-    std::cout << "Processing entity " << entityId << '\n';
+    Common::logInfo("Processing entity {}", entityId);
 
     const auto transportEntityViews = entitySeparator(transportViews, entityId);
     auto masks = m_pruner->prune(m_transportParams.viewParamsList, transportEntityViews);

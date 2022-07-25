@@ -34,9 +34,10 @@
 #ifndef TMIV_COMMON_VERIFY_H
 #define TMIV_COMMON_VERIFY_H
 
+#include "LoggingStrategy.h"
+
 #include <cassert>
 #include <cstdlib>
-#include <iostream>
 #include <limits>
 #include <sstream>
 #include <stdexcept>
@@ -238,7 +239,7 @@ inline auto message(char const *introduction, char const *condition, char const 
 [[noreturn]] inline void assertionFailed(char const *condition, char const *file,
                                          int32_t line) noexcept {
   try {
-    std::cerr << message("Assertion failed", condition, file, line);
+    logError(message("Assertion failed", condition, file, line));
   } catch (...) {
   }
   std::abort();

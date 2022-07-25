@@ -560,8 +560,7 @@ gm_group_count=0
     REQUIRE(vps.summary() == R"(V3C parameter set 0:
   AVC Progressive High V-PCC Basic Rec0, tier false, level [unknown:0], decodes unconstrained
   Atlas 0: 1920 x 1080
-, geometry scaling true, groups 0, embedded occupancy true, occupancy scaling false
-)");
+, geometry scaling true, groups 0, embedded occupancy true, occupancy scaling false)");
 
     REQUIRE(byteCodingTest(vps, 25));
   }
@@ -708,8 +707,7 @@ vps_extension_data_byte=15
   Atlas 30: 1920 x 1080; [OI: codec 0, 0, 2D 1, align false]
   Atlas 31: 2048 x 2080; [GI: codec 0, 2D 1, algin false, 3D 1]; [AI: 0
   Atlas 32: 0 x 0; [PIN: regions 1]
-, geometry scaling false, groups 0, embedded occupancy true, occupancy scaling false
-)");
+, geometry scaling false, groups 0, embedded occupancy true, occupancy scaling false)");
 
     REQUIRE(byteCodingTest(vps, 73));
   }
@@ -805,8 +803,7 @@ gm_group_count=0
     REQUIRE(vps.summary() == R"(V3C parameter set 15:
   AVC Progressive High V-PCC Basic Rec0, tier false, level [unknown:0], decodes unconstrained
   Atlas 20: 4096 x 2048; [AI: 2, ATTR_TEXTURE, codec 1, dims 3, 2D 10, align false, ATTR_TRANSPARENCY, codec 1, dims 1, 2D 10, align false]
-, geometry scaling false, groups 0, embedded occupancy true, occupancy scaling false
-)");
+, geometry scaling false, groups 0, embedded occupancy true, occupancy scaling false)");
 
     REQUIRE(byteCodingTest(vps, 39));
 

@@ -33,7 +33,7 @@
 
 #include <TMIV/PtlChecker/PtlChecker.h>
 
-#include <fmt/format.h>
+#include <TMIV/Common/LoggingStrategyFmt.h>
 
 namespace TMIV::PtlChecker {
 void ptlCheckImpl(const PtlChecker::Logger &logger, bool condition, const char *what,
@@ -71,10 +71,9 @@ void PtlChecker::replaceLogger(Logger value) {
 }
 
 void PtlChecker::defaultLogger(const std::string &failure) {
-  fmt::print("WARNING: A profile-tier-level check has failed: {}\n"
-             "         From this point onwards behaviour is undefined."
-             " Do not report any subsequent errors.\n",
-             failure);
+  Common::logWarning("A profile-tier-level check has failed: {}. From this point onwards behaviour "
+                     "is undefined. Do not report any subsequent errors.",
+                     failure);
 }
 
 auto PtlChecker::ptl_profile_codec_group_idc() const noexcept {

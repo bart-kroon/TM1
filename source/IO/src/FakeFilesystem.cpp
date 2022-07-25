@@ -36,15 +36,15 @@
 #include "FakeFilesystem.h"
 
 #include <TMIV/Common/Common.h>
-
-#include <fmt/ostream.h>
+#include <TMIV/Common/LoggingStrategyFmt.h>
 
 namespace test {
 using TMIV::Common::contains;
+using TMIV::Common::logInfo;
 
 auto FakeFilesystem::ifstream(const std::filesystem::path &path, std::ios_base::openmode mode)
     -> std::shared_ptr<std::istream> {
-  fmt::print("FakeFilesystem: ifstream {} mode {}\n", path, mode);
+  logInfo("FakeFilesystem: ifstream {} mode {}\n", path, mode);
 
   REQUIRE(haveFile(path));
   return m_files[path];
@@ -52,7 +52,7 @@ auto FakeFilesystem::ifstream(const std::filesystem::path &path, std::ios_base::
 
 auto FakeFilesystem::ofstream(const std::filesystem::path &path, std::ios_base::openmode mode)
     -> std::shared_ptr<std::ostream> {
-  fmt::print("FakeFilesystem: ofstream {} mode {}\n", path, mode);
+  logInfo("FakeFilesystem: ofstream {} mode {}\n", path, mode);
 
   REQUIRE_FALSE(haveFile(path));
   CHECK(contains(m_directories, path.parent_path()));
@@ -63,7 +63,7 @@ auto FakeFilesystem::ofstream(const std::filesystem::path &path, std::ios_base::
 }
 
 void FakeFilesystem::create_directories(const std::filesystem::path &p) {
-  fmt::print("FakeFilesystem: create_directories {}\n", p);
+  logInfo("FakeFilesystem: create_directories {}\n", p);
 
   if (!contains(m_directories, p)) {
     m_directories.push_back(p);
@@ -73,7 +73,7 @@ void FakeFilesystem::create_directories(const std::filesystem::path &p) {
 auto FakeFilesystem::exists(const std::filesystem::path &p) -> bool {
   const auto result = haveFile(p) || haveDir(p);
 
-  fmt::print("FakeFilesystem: exists {} -> {}\n", p, result);
+  logInfo("FakeFilesystem: exists {} -> {}\n", p, result);
 
   return result;
 }

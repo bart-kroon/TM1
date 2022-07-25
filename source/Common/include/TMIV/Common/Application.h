@@ -36,9 +36,14 @@
 
 #include "Factory.h"
 #include "Json.h"
+
 #include <ctime>
 
 namespace TMIV::Common {
+class Usage : public std::runtime_error {
+  using std::runtime_error::runtime_error;
+};
+
 class Application {
 public:
   struct Option {

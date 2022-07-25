@@ -36,7 +36,6 @@
 #include <TMIV/MivBitstream/DepthOccupancyTransform.h>
 
 #include <algorithm>
-#include <iostream>
 
 namespace TMIV::Renderer {
 template <typename InComponent, typename OutComponent>

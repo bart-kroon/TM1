@@ -11,6 +11,7 @@ create_tmiv_library(
         "src/Half.cpp"
         "src/handleException.cpp"
         "src/Frame.cpp"
+        "src/LoggingStrategy.cpp"
     PRIVATE
         fmt::fmt
         Threads::Threads
@@ -44,10 +45,13 @@ create_catch2_unit_test(
         "src/Frame.test.cpp"
         "src/Graph.test.cpp"
         "src/Json.test.cpp"
+        "src/LoggingStrategy.test.cpp"
+        "src/LoggingStrategyFmt.test.cpp"
         "src/Matrix.test.cpp"
         "src/Quaternion.test.cpp"
         "src/Source.test.cpp"
         "src/verify.test.cpp"
     PRIVATE
         CommonLib
+        fmt::fmt
     )

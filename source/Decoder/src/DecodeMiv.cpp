@@ -36,6 +36,7 @@
 #include <TMIV/Common/Bytestream.h>
 #include <TMIV/Common/FlatMap.h>
 #include <TMIV/Common/Frame.h>
+#include <TMIV/Common/LoggingStrategyFmt.h>
 #include <TMIV/Common/verify.h>
 #include <TMIV/Decoder/DecodeAtlas.h>
 #include <TMIV/Decoder/DecodeAtlasSubBitstream.h>
@@ -45,10 +46,8 @@
 #include <TMIV/Decoder/V3cUnitBuffer.h>
 #include <TMIV/MivBitstream/AccessUnit.h>
 
-#include <fmt/format.h>
-
 #include <ctime>
-#include <iostream>
+
 #include <utility>
 
 namespace TMIV::Decoder {
@@ -218,18 +217,19 @@ private:
     for (auto &kvp : map) {
       if (!Common::contains(next, kvp.key)) {
         kvp.value = {};
-        fmt::print("[idx:{:4} foc:{:4}] Stopped decoder: {}\n", m_au.frameIdx, 0,
-                   kvp.key.summary());
+        Common::logInfo("[idx:{:4} foc:{:4}] Stopped decoder: {}", m_au.frameIdx, 0,
+                        kvp.key.summary());
       }
     }
     for (auto vuh : next) {
       if (map.cend() !=
           std::find_if(map.cbegin(), map.cend(), [vuh](const auto &x) { return x.key == vuh; })) {
-        fmt::print("[idx:{:4} foc:{:4}] Continued decoder: {}\n", m_au.frameIdx, 0, vuh.summary());
+        Common::logInfo("[idx:{:4} foc:{:4}] Continued decoder: {}", m_au.frameIdx, 0,
+                        vuh.summary());
       } else {
         auto &value = map[vuh];
         value.decoder = start(vuh);
-        fmt::print("[idx:{:4} foc:{:4}] Started decoder: {}\n", m_au.frameIdx, 0, vuh.summary());
+        Common::logInfo("[idx:{:4} foc:{:4}] Started decoder: {}", m_au.frameIdx, 0, vuh.summary());
         VERIFY(decodeAu(vuh, value));
       }
     }
@@ -241,7 +241,7 @@ private:
     m_au.vps = std::move(m_nextVps.front());
     m_nextVps.pop();
 
-    std::cout << m_au.vps.summary();
+    Common::logInfo(m_au.vps.summary());
     m_checker->checkAndActivateVps(m_au.vps);
     checkCapabilities();
     allocateAuBuffers();
@@ -280,11 +280,11 @@ private:
       decFrame(vuh, m_au.atlas[atlasIdx]) = std::move(*decoder.au);
 
       m_totalVideoDecodingTime[vuh] += clockInSeconds() - t0;
-      fmt::print("[idx:{:4} foc:{:4}] Decoded video frame: {}\n", m_au.frameIdx, m_au.foc,
-                 vuh.summary());
+      Common::logInfo("[idx:{:4} foc:{:4}] Decoded video frame: {}", m_au.frameIdx, m_au.foc,
+                      vuh.summary());
       return true;
     }
-    fmt::print("[idx:{:4}         ] End of video stream: {}\n", m_au.frameIdx, vuh.summary());
+    Common::logInfo("[idx:{:4}         ] End of video stream: {}", m_au.frameIdx, vuh.summary());
     return false;
   }
 
@@ -304,8 +304,8 @@ private:
       m_au.vcp = decoder.au->vcp;
       m_au.vp = decoder.au->vp;
       m_au.casps = decoder.au->casps;
-      fmt::print("[idx:{:4} foc:{:4}] Decoded common atlas frame: {}\n", m_au.frameIdx,
-                 decoder.au->foc, vuh.summary());
+      Common::logInfo("[idx:{:4} foc:{:4}] Decoded common atlas frame: {}", m_au.frameIdx,
+                      decoder.au->foc, vuh.summary());
       decoder.au = std::nullopt;
       return true;
     }
@@ -327,8 +327,8 @@ private:
       requireAllPatchesWithinProjectionPlaneBounds(m_au.viewParamsList, atlas.patchParamsList);
       requireAllPatchesWithinAtlasFrameBounds(atlas.patchParamsList, atlas.asps);
       atlas.blockToPatchMap = decodeBlockToPatchMap(atlas.asps, atlas.patchParamsList);
-      fmt::print("[idx:{:4} foc:{:4}] Decoded atlas frame: {}\n", m_au.frameIdx, decoder.au->foc,
-                 vuh.summary());
+      Common::logInfo("[idx:{:4} foc:{:4}] Decoded atlas frame: {}", m_au.frameIdx, decoder.au->foc,
+                      vuh.summary());
       decoder.au = std::nullopt;
       return true;
     }
@@ -378,7 +378,7 @@ private:
     ~ReportTotalTime() {
       for (const auto [vuh, totalTime] : *this) {
         if (0. < totalTime) {
-          fmt::print("Total {} decoding time: {} s\n", vuh.summary(), totalTime);
+          Common::logInfo("Total {} decoding time: {} s", vuh.summary(), totalTime);
         }
       }
     }

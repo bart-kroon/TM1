@@ -33,6 +33,7 @@
 
 #include "Configuration.h"
 
+#include <TMIV/Common/LoggingStrategy.h>
 #include <TMIV/Common/verify.h>
 #include <TMIV/MivBitstream/SequenceConfig.h>
 
@@ -83,9 +84,8 @@ Configuration::Configuration(const Common::Json &componentNode)
 
 void Configuration::queryMainParameters(const Common::Json &componentNode) {
   if (const auto &node = componentNode.optional("overrideAtlasFrameSizes")) {
-    std::cout
-        << "WARNING: Overriding atlas frame sizes is meant for internal/preliminary experiments "
-           "only.\n";
+    Common::logWarning("Overriding atlas frame sizes is meant for internal/preliminary experiments "
+                       "only.");
     for (const auto &subnode : node.as<Common::Json::Array>()) {
       overrideAtlasFrameSizes.push_back(subnode.asVec<int32_t, 2>());
     }

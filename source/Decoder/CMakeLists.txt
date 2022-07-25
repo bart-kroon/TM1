@@ -73,5 +73,6 @@ create_tmiv_executable(
         "src/NativeVideoDecoder.test.cpp"
     PRIVATE
         DecoderLib
+        fmt::fmt
     )
 set_property(TARGET TmivNativeVideoDecoderTest PROPERTY FOLDER "TMIV tests")

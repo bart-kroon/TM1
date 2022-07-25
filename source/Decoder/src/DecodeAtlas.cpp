@@ -34,12 +34,11 @@
 #include <TMIV/Decoder/DecodeAtlas.h>
 
 #include <TMIV/Common/Decoder.h>
+#include <TMIV/Common/LoggingStrategyFmt.h>
 #include <TMIV/Common/verify.h>
 #include <TMIV/MivBitstream/SeiRBSP.h>
 
 #include "NalUnitSemantics.h"
-
-#include <fmt/ostream.h>
 
 #include <sstream>
 
@@ -116,7 +115,7 @@ private:
     case MivBitstream::NalUnitType::NAL_PREFIX_NSEI:
       return decodeSei(au, stream);
     default:
-      fmt::print("WARNING: Ignoring prefix NAL unit {}.\n", nut());
+      Common::logWarning("Ignoring prefix NAL unit {}.", nut());
     }
   }
 
@@ -155,7 +154,7 @@ private:
     case MivBitstream::NalUnitType::NAL_SUFFIX_NSEI:
       return decodeSei(au, stream);
     default:
-      fmt::print("WARNING: Ignoring suffix NAL unit {}\n", nut());
+      Common::logWarning("Ignoring suffix NAL unit {}", nut());
     }
   }
 

@@ -36,7 +36,7 @@
 
 #include "PiecewiseLinearDepthScaling.h"
 
-#include <iostream>
+#include <TMIV/Common/LoggingStrategyFmt.h>
 
 namespace TMIV::Encoder {
 void Encoder::Impl::scaleGeometryDynamicRange() {
@@ -235,8 +235,8 @@ void Encoder::Impl::updateAggregationStatistics(const Common::FrameList<uint8_t>
         return sum + 2 * std::count_if(mask.getPlane(0).begin(), mask.getPlane(0).end(),
                                        [](auto x) { return x > 0; });
       });
-  std::cout << "Aggregated luma samples per frame is "
-            << (1e-6 * static_cast<double>(lumaSamplesPerFrame)) << "M\n";
+  Common::logInfo("Aggregated luma samples per frame is {}M",
+                  1e-6 * static_cast<double>(lumaSamplesPerFrame));
   m_maxLumaSamplesPerFrame = std::max(m_maxLumaSamplesPerFrame, lumaSamplesPerFrame);
 }
 

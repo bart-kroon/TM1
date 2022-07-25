@@ -36,8 +36,7 @@
 #include <TMIV/Common/Bytestream.h>
 #include <TMIV/Common/Decoder.h>
 #include <TMIV/Common/FlatMap.h>
-
-#include <fmt/format.h>
+#include <TMIV/Common/LoggingStrategyFmt.h>
 
 namespace TMIV::Multiplexer {
 using VU = MivBitstream::V3cUnit;
@@ -58,7 +57,7 @@ protected:
       push(*unit);
 
       const auto vuh = unit->v3c_unit_header();
-      fmt::print("Copy V3C unit: {}\n", vuh.summary());
+      Common::logInfo("Copy V3C unit: {}", vuh.summary());
 
       if (m_videoSources.empty()) {
         VERIFY_MIVBITSTREAM(vuh.vuh_unit_type() == VUT::V3C_VPS);
@@ -87,7 +86,7 @@ private:
         attrTypeId = ai.ai_attribute_type_id(vuh.vuh_attribute_index());
       }
 
-      fmt::print("Creating video source for: {}\n", vuh.summary());
+      Common::logInfo("Creating video source for: {}", vuh.summary());
       m_videoSources[vuh] = m_factory(vps, vuh, attrTypeId);
     }
     if (m_videoSources.empty()) {
@@ -104,7 +103,7 @@ private:
         if (auto units = videoSource()) {
           for (const auto &unit : *units) {
             const auto size = Common::downCast<int32_t>(unit.size());
-            fmt::print("[{}] NAL unit: {} bytes\n", vuh.summary(), unit.size());
+            Common::logInfo("[{}] NAL unit: {} bytes", vuh.summary(), unit.size());
             Common::putUint32(vsb, size);
             vsb.write(unit.data(), size);
           }

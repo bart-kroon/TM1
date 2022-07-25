@@ -119,7 +119,6 @@ SCENARIO("Color consistency assessment") {
           maxDiff = std::max(maxDiff, std::abs(avg[i]));
         }
       }
-      std::cout << maxDiff << "okok";
       THEN("Colors are inconsistent") { REQUIRE(maxDiff == 9); }
     }
   }

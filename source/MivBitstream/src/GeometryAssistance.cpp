@@ -33,7 +33,6 @@
 
 #include <TMIV/Common/Json.h>
 #include <TMIV/MivBitstream/GeometryAssistance.h>
-#include <iostream>
 
 namespace TMIV::MivBitstream {
 auto GaSubBlock::gas_skip_flag() const noexcept -> bool { return m_gas_skip_flag; }

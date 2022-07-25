@@ -34,8 +34,7 @@
 #include <TMIV/ViewOptimizer/AbstractViewSelector.h>
 
 #include <TMIV/Common/Common.h>
-
-#include <iostream>
+#include <TMIV/Common/LoggingStrategy.h>
 
 namespace TMIV::ViewOptimizer {
 AbstractViewSelector::AbstractViewSelector(const Common::Json & /* rootNode */,
@@ -76,24 +75,28 @@ void AbstractViewSelector::inplaceEraseAdditionalViews(std::vector<T> &views) co
 }
 
 void AbstractViewSelector::printSummary() const {
-  std::cout << "Basic views:";
+  std::ostringstream what;
+
+  what << "Basic views:";
   for (size_t i = 0; i < m_isBasicView.size(); ++i) {
     if (m_isBasicView[i]) {
-      std::cout << ' ' << m_params.viewParamsList[i].name;
+      what << ' ' << m_params.viewParamsList[i].name;
     }
   }
-  std::cout << '\n';
+  Common::logInfo(what.str());
 
   if (m_outputAdditionalViews) {
-    std::cout << "Additional views:";
+    what.str({});
+
+    what << "Additional views:";
     for (size_t i = 0; i < m_isBasicView.size(); ++i) {
       if (!m_isBasicView[i]) {
-        std::cout << ' ' << m_params.viewParamsList[i].name;
+        what << ' ' << m_params.viewParamsList[i].name;
       }
     }
-    std::cout << '\n';
+    Common::logInfo(what.str());
   } else {
-    std::cout << "No additional views.\n";
+    Common::logInfo("No additional views.");
   }
 }
 } // namespace TMIV::ViewOptimizer

@@ -34,10 +34,9 @@
 #include <TMIV/Renderer/Front/MultipleFrameRenderer.h>
 
 #include <TMIV/Common/Factory.h>
+#include <TMIV/Common/LoggingStrategyFmt.h>
 #include <TMIV/Renderer/ICuller.h>
 #include <TMIV/Renderer/IRenderer.h>
-
-#include <fmt/format.h>
 
 using namespace std::string_literals;
 
@@ -126,8 +125,8 @@ void MultipleFrameRenderer::Impl::renderFrame(MivBitstream::AccessUnit frame,
                                               int32_t outputFrameIndex,
                                               const std::string &cameraName,
                                               bool isPoseTrace) const {
-  fmt::print("Rendering input frame {} to output frame {} for target {} {}.\n", frame.frameIdx,
-             outputFrameIndex, isPoseTrace ? "pose trace" : "view", cameraName);
+  Common::logInfo("Rendering input frame {} to output frame {} for target {} {}.", frame.frameIdx,
+                  outputFrameIndex, isPoseTrace ? "pose trace" : "view", cameraName);
 
   const auto viewportParams =
       IO::loadViewportMetadata(m_config, m_placeholders, outputFrameIndex, cameraName, isPoseTrace);

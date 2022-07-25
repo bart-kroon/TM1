@@ -80,25 +80,6 @@ private:
 };
 } // namespace TMIV::Common::Graph
 
-//! \brief Send the graph g to the stream os.
-template <typename WeightType, std::enable_if_t<std::is_arithmetic_v<WeightType>, bool> = true>
-auto operator<<(std::ostream &os,
-                const TMIV::Common::Graph::SparseDirectedAcyclicGraph<WeightType> &g)
-    -> std::ostream & {
-  for (size_t i = 0; i < g.getNumberOfNodes(); i++) {
-    os << "n" << i << " ->";
-    for (size_t j = 0; j < g.getNeighbourhoodSize(i); j++) {
-      auto l = g.getNeighbour(i, j);
-      os << " n" << l.id() << "[" << l.weight() << "]";
-    }
-    if (i != (g.getNumberOfNodes() - 1)) {
-      os << '\n';
-    }
-  }
-
-  return os;
-}
-
 #include "Graph.hpp"
 
 #endif

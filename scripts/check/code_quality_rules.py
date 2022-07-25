@@ -52,6 +52,9 @@ class CodeQualityRules:
     def remove_empty_lines_after_curly_brace(self, text):
         return text.replace("{\n\n", "{\n")
 
+    def remove_iostream_header(self, text):
+        return text.replace("#include <iostream>\n", "")
+
     def replace_platform_dependent_primitive_types(self, text):
         return re.sub(
             r"(//[^\n]+|main)?[^a-zA-Z0-9_\"]((un)?signed\s+)?(short|int|long|long long)[^a-zA-Z0-9_\"]",
@@ -147,6 +150,14 @@ class CodeQualityRules:
             f"Replace c-style cast {match[0]} with Common::downCast<{type_}>( ) or static_cast<{type_}>( )"
         )
 
+    def detect_fmt_print(self, text):
+        return re.sub(r"fmt::print\(\"", self.detect_fmt_print_replace, text)
+
+    def detect_fmt_print_replace(self, match):
+        raise RuntimeError(
+            "Replace `fmt::print(fmt, args...)` with `Common::logInfo(fmt, args...)`"
+        )
+
     ### other logic ###
 
     def apply_all_rules_to_a_single_cpp_file(self, file):
@@ -156,12 +167,18 @@ class CodeQualityRules:
         original = text
         for method in (
             self.remove_empty_lines_after_curly_brace,
+            self.remove_iostream_header,
             self.replace_platform_dependent_primitive_types,
             self.remove_std_primitive_types,
             self.replace_function_style_cast_to_primitive_types_by_static_cast,
             self.detect_c_style_cast,
+            self.detect_fmt_print,
         ):
-            text = method(text)
+            try:
+                text = method(text)
+            except Exception:
+                print(f"In file {file}:")
+                raise
 
         if original != text:
             print("At least one check triggered on", file)

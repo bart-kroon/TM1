@@ -34,10 +34,10 @@
 #include "EncoderImpl.h"
 #include "GeometryQuantizer.h"
 
+#include <TMIV/Common/LoggingStrategyFmt.h>
 #include <TMIV/Common/verify.h>
 #include <TMIV/MivBitstream/SequenceConfig.h>
 
-#include <iostream>
 #include <numeric>
 
 namespace TMIV::Encoder {
@@ -102,8 +102,7 @@ calculateNominalAtlasFrameSizes(const Configuration &config,
   }
 
   if (!config.overrideAtlasFrameSizes.empty()) {
-    std::cout
-        << "WARNING: When overriding nominal atlas frame sizes, constraints are not checked.\n";
+    Common::logWarning("When overriding nominal atlas frame sizes, constraints are not checked.");
     return config.overrideAtlasFrameSizes;
   }
 
@@ -124,7 +123,7 @@ calculateNominalAtlasFrameSizes(const Configuration &config,
   auto numAtlases = (maxBlocks + maxBlocksPerAtlas1 - 1) / maxBlocksPerAtlas1;
 
   if (numAtlases > config.maxAtlases) {
-    std::cout << "The maxAtlases constraint is a limiting factor.\n";
+    Common::logInfo("The maxAtlases constraint is a limiting factor.");
     numAtlases = config.maxAtlases;
   }
 
@@ -132,7 +131,7 @@ calculateNominalAtlasFrameSizes(const Configuration &config,
   auto maxBlocksPerAtlas2 = maxBlocks / numAtlases;
 
   if (maxBlocksPerAtlas2 > maxBlocksPerAtlas1) {
-    std::cout << "The maxLumaPictureSize constraint is a limiting factor.\n";
+    Common::logInfo("The maxLumaPictureSize constraint is a limiting factor.");
     maxBlocksPerAtlas2 = maxBlocksPerAtlas1;
   }
 
@@ -143,7 +142,7 @@ calculateNominalAtlasFrameSizes(const Configuration &config,
 
   // Warn if the aspect ratio is outside of HEVC limits (unlikely)
   if (atlasGridWidth * 8 < atlasGridHeight || atlasGridHeight * 8 < atlasGridWidth) {
-    std::cout << "WARNING: Atlas aspect ratio is outside of HEVC general tier and level limits\n";
+    Common::logWarning("Atlas aspect ratio is outside of HEVC general tier and level limits");
   }
 
   return Common::SizeVector(numAtlases, {atlasGridWidth * blockSize, atlasGridHeight * blockSize});

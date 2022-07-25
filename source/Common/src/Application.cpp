@@ -33,17 +33,16 @@
 
 #include <TMIV/Common/Application.h>
 
+#include <TMIV/Common/LoggingStrategyFmt.h>
 #include <TMIV/Common/Thread.h>
 #include <TMIV/Common/Version.h>
 #include <TMIV/Common/verify.h>
 
-#include <fmt/ostream.h>
-
 #include <cstdlib>
 #include <fstream>
 #include <iomanip>
-#include <iostream>
 #include <stdexcept>
+#include <string>
 
 using namespace std::string_view_literals;
 
@@ -76,8 +75,19 @@ Application::Application(const char *tool, std::vector<const char *> argv, Optio
       } else {
         throw std::runtime_error("The -j option has as argument a positive number");
       }
+    } else if ("-V"sv == option) {
+      [&take]() {
+        const auto *const arg = take();
+
+        for (const auto level : allLogLevels) {
+          if (fmt::format("{}", level) == arg) {
+            return changeMaxLogLevel(level);
+          }
+        }
+        throw std::runtime_error(fmt::format("Unknown log level {}", arg));
+      }();
     } else if ("--version"sv == option) {
-      fmt::print("TMIV {} version {}\n", tool, version);
+      Common::logInfo("TMIV {} version {}", tool, version);
       exit(0);
     } else if ("--help"sv == option) {
       m_json = Json{};
@@ -100,7 +110,14 @@ Application::Application(const char *tool, std::vector<const char *> argv, Optio
                              [](const auto &o) { return !o.multiple && o.values.empty(); })) {
     std::ostringstream what;
     what << "Usage: " << tool
-         << " [OPTIONS...] (-c CONFIGURATION)+ (-p KEY VALUE)* [-j THREAD_COUNT]\n\nOptions are:";
+         << " [OPTIONS...] (-c CONFIGURATION)+ (-p KEY VALUE)* [-j THREAD_COUNT] [-V";
+    auto sep = ' ';
+
+    for (const auto level : allLogLevels) {
+      what << sep << level;
+      sep = '|';
+    }
+    what << "]\n\nOptions are:";
     for (const auto &o : m_options) {
       what << fmt::format("\n  {:3} {:47} {}", o.option, o.description,
                           o.multiple ? "zero or more allowed" : "required exactly once");
@@ -111,7 +128,7 @@ NOTE 1: When the same parameter is provided multiple times on the command-line,
         through -c or -p, then the right-most argument has precedence.
 NOTE 2: The default thread count is equal to the logical processor count of the
         system. Use -j 1 to disable parallel processing.)";
-    throw std::runtime_error(what.str());
+    throw Usage{what.str()};
   }
 }
 
@@ -142,7 +159,7 @@ void Application::add_parameter(std::string key, std::string_view value) {
     json = Json::parse(value);
   } catch (std::runtime_error & /* unused */) {
   }
-  fmt::print("Override {}: {}\n", key, json.format());
+  Common::logInfo("Override {}: {}", key, json.format());
 
   m_json.update(Json{std::in_place_type<Json::Object>, std::pair{std::move(key), json}});
 }
@@ -159,7 +176,6 @@ void Application::startTime() { m_startTime = clock(); }
 void Application::printTime() const {
   auto executeTime =
       (static_cast<double>(clock()) - static_cast<double>(m_startTime)) / CLOCKS_PER_SEC;
-  std::cout << "Total Time: " << std::fixed << std::setprecision(3) << executeTime << " sec."
-            << std::endl;
+  logInfo("Total Time: {:.3} sec.", executeTime);
 }
 } // namespace TMIV::Common

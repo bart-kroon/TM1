@@ -32,13 +32,12 @@
  */
 
 #include <TMIV/Packer/Packer.h>
+
+#include <TMIV/Common/LoggingStrategyFmt.h>
 #include <TMIV/Packer/Retriever.h>
 
 #include "MaxRectPiP.h"
 
-#include <fmt/format.h>
-
-#include <iostream>
 #include <queue>
 #include <stdexcept>
 
@@ -212,9 +211,10 @@ auto Packer::pack(const Common::SizeVector &atlasSizes, const Common::FrameList<
 
           if (m_maxEntityId > 0) {
             p.atlasPatchEntityId(cluster.getEntityId());
-            std::cout << "Packing patch " << patchIdx << " of entity " << p.atlasPatchEntityId()
-                      << " from view " << p.atlasPatchProjectionId() << " with #active pixels "
-                      << cluster.getNumActivePixels() << " in atlas " << p.atlasId() << std::endl;
+            Common::logInfo(
+                "Packing patch {} of entity {} from view {} with #active pixels {} in atlas {}",
+                patchIdx, p.atlasPatchEntityId(), p.atlasPatchProjectionId(),
+                cluster.getNumActivePixels(), p.atlasId());
           }
 
           atlasParamsVector.push_back(p);
@@ -227,7 +227,7 @@ auto Packer::pack(const Common::SizeVector &atlasSizes, const Common::FrameList<
 
       if (!packed) {
         if (m_maxEntityId > 0) {
-          std::cout << "Spliting cluster " << cluster.getClusterId() << std::endl;
+          Common::logInfo("Spliting cluster {}", cluster.getClusterId());
         }
         if (cluster.isBasicView()) {
           throw std::runtime_error("Failed to pack basic view");
@@ -288,8 +288,8 @@ auto Packer::computeClusters(const Common::FrameList<uint8_t> &masks,
         }
 
         if (!clusteringOutput.first.empty()) {
-          std::cout << "entity " << entityId << " from view " << viewIdx << " results in "
-                    << clusteringOutput.first.size() << " patches\n";
+          Common::logVerbose("entity {} from view {} results in {} patches", entityId, viewIdx,
+                             clusteringOutput.first.size());
         }
         ++index;
       }
@@ -304,8 +304,8 @@ auto Packer::computeClusters(const Common::FrameList<uint8_t> &masks,
     }
   }
   if (m_maxEntityId > 0) {
-    std::cout << "clusteringMap size = " << clusteringMap.size()
-              << " with total # clusters = " << clusteringMapIndex.size() << std::endl;
+    Common::logInfo("clusteringMap size = {} with total # clusters = {}", clusteringMap.size(),
+                    clusteringMapIndex.size());
   }
   return {clusterList, clusteringMap, clusteringMapIndex};
 }

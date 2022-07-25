@@ -33,7 +33,7 @@
 
 #include <TMIV/MpiPcs/MpiPcs.h>
 
-#include <fmt/ostream.h>
+#include <TMIV/Common/LoggingStrategyFmt.h>
 
 #include <fstream>
 
@@ -132,8 +132,8 @@ auto Reader::read(int32_t frameIdx) -> Frame {
     throw std::runtime_error(fmt::format("Failed to open {} for reading", m_path));
   }
 
-  fmt::print("Loading MPI pcs frame {0} with start frame offset {1} (= {2}).\n", frameIdx,
-             m_startFrame, frameIdx + m_startFrame);
+  Common::logInfo("Loading MPI pcs frame {0} with start frame offset {1} (= {2}).", frameIdx,
+                  m_startFrame, frameIdx + m_startFrame);
 
   return read(stream, m_index[frameIdx + m_startFrame], m_size);
 }

@@ -33,7 +33,7 @@
 
 #include <TMIV/IO/IO.h>
 
-#include <fmt/ostream.h>
+#include <TMIV/Common/LoggingStrategyFmt.h>
 
 #include <fstream>
 
@@ -184,9 +184,9 @@ void saveViewport(const Common::Json &config, const Placeholders &placeholders, 
   }
 
   if (!saved) {
-    fmt::print("WARNING: Calculated viewport but not saving texture or geometry. Add "
-               "outputViewportTexturePathFmt or outputViewportGeometryPathFmt to "
-               "the configuration file.\n");
+    Common::logWarning("Calculated viewport but not saving texture or geometry. Add "
+                       "outputViewportTexturePathFmt or outputViewportGeometryPathFmt to "
+                       "the configuration file.");
   }
 }
 

@@ -36,8 +36,6 @@
 #include <TMIV/Common/Bitstream.h>
 #include <TMIV/Common/verify.h>
 
-#include <iostream>
-
 namespace TMIV::Common {
 auto readBytes(std::istream &stream, size_t bytes) -> uint64_t {
   VERIFY_BITSTREAM(bytes <= 8);

@@ -12,6 +12,7 @@ create_tmiv_library(
         MivBitstreamLib
     PRIVATE
         RendererLib
+        fmt::fmt
     )
 
 create_catch2_unit_test(

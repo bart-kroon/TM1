@@ -34,9 +34,9 @@
 #include <TMIV/MivBitstream/CafMivExtension.h>
 #include <TMIV/MivBitstream/CommonAtlasSequenceParameterSetRBSP.h>
 
-#include <cmath>
-
 #include <fmt/ostream.h>
+
+#include <cmath>
 
 namespace TMIV::MivBitstream {
 auto operator<<(std::ostream &stream, const CiCamType x) -> std::ostream & {

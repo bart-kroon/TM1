@@ -32,9 +32,12 @@
  */
 
 #include <catch2/catch.hpp>
-#include <sstream>
 
 #include <TMIV/Common/Graph.h>
+
+#include <fmt/ostream.h>
+
+#include <sstream>
 
 namespace TMIV::Common::Graph {
 TEST_CASE("SparseDirectedAcyclicGraph graph default constructor") {
@@ -133,39 +136,5 @@ TEST_CASE(
   unit.connect(4, 2, 1.1F);
   const auto result = unit.getDescendingOrderId();
   REQUIRE(result == std::vector<NodeId>{0, 1, 2, 3, 4});
-}
-
-TEST_CASE("Graph ostream operator for float") {
-  SparseDirectedAcyclicGraph<float> unit{5};
-  unit.connect(1, 0, 0.3F);
-  unit.connect(2, 0, 1.3F);
-  unit.connect(3, 2, 1.2F);
-  unit.connect(4, 2, 1.1F);
-  std::ostringstream stream;
-  stream << unit;
-  REQUIRE(stream.str() == R"(n0 ->
-n1 -> n0[0.3]
-n2 -> n0[1.3]
-n3 -> n2[1.2]
-n4 -> n2[1.1])");
-}
-
-TEST_CASE("Graph ostream operator for integer") {
-  SparseDirectedAcyclicGraph<int32_t> unit{6};
-  unit.connect(1, 0, 0);
-  unit.connect(2, 0, 1);
-  unit.connect(3, 2, 4);
-  unit.connect(4, 2, 80);
-  unit.connect(4, 0, 32);
-  unit.connect(5, 0, 3);
-  unit.connect(5, 2, 5);
-  std::ostringstream stream{};
-  stream << unit;
-  REQUIRE(stream.str() == R"(n0 ->
-n1 -> n0[0]
-n2 -> n0[1]
-n3 -> n2[4]
-n4 -> n2[80] n0[32]
-n5 -> n0[3] n2[5])");
 }
 } // namespace TMIV::Common::Graph

@@ -31,6 +31,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <TMIV/Common/LoggingStrategyFmt.h>
 #include <TMIV/Decoder/DecodeAtlasSubBitstream.h>
 #include <TMIV/Decoder/DecodeMiv.h>
 #include <TMIV/Decoder/DecodeV3cSampleStream.h>
@@ -110,23 +111,26 @@ private:
 };
 } // namespace TMIV::Decoder::test
 
+using TMIV::Common::logError;
+using TMIV::Common::logInfo;
+
 auto main(int argc, char *argv[]) -> int32_t {
   try {
     const auto args = std::vector(argv, argv + argc);
 
     if (argc != 4) {
-      std::cerr << "Usage: TmivNativeVideoDecoderTest BITSTREAM FRAME_COUNT INTRA_PERIOD\n";
-      std::cerr << "\n";
-      std::cerr << "  * The BITSTREAM should be a V3C sample stream with a supported profile.\n";
-      std::cerr << "  * The FRAME_COUNT and INTRA_PERIOD parameters must match the BITSTREAM,\n";
-      std::cerr << "    otherwise the test is invalid.\n";
+      logInfo("Usage: TmivNativeVideoDecoderTest BITSTREAM FRAME_COUNT INTRA_PERIOD");
+      logInfo("");
+      logInfo("  * The BITSTREAM should be a V3C sample stream with a supported profile.");
+      logInfo("  * The FRAME_COUNT and INTRA_PERIOD parameters must match the BITSTREAM,");
+      logInfo("    otherwise the test is invalid.");
       return 1;
     }
 
     std::ifstream stream{args[1], std::ios::binary};
 
     if (!stream.good()) {
-      std::cerr << "Failed to open " << args[1] << " for reading.\n";
+      logError("Failed to open {} for reading.", args[1]);
       return 1;
     }
 

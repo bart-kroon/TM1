@@ -33,14 +33,16 @@
 
 #include <TMIV/GaInserter/GaInserter.h>
 
-#include <fmt/format.h>
-
 #include <TMIV/Common/Json.h>
+#include <TMIV/Common/LoggingStrategyFmt.h>
+
 #include <fstream>
-#include <iostream>
 #include <vector>
 
 using namespace std::string_view_literals;
+
+using TMIV::Common::logError;
+using TMIV::Common::logInfo;
 
 auto main(int argc, const char *argv[]) -> int32_t {
   try {
@@ -48,17 +50,17 @@ auto main(int argc, const char *argv[]) -> int32_t {
 
     if ((args.size() != 5 && args.size() != 7) || args[1] != "-b"sv || args[3] != "-o"sv ||
         (args.size() == 7 && args[5] != "-nf"sv)) {
-      std::cerr << "Usage: GaInserter -b BITSTREAM -o HLS_LOG_FILE [-nf nframes]";
+      logInfo("Usage: GaInserter -b BITSTREAM -o HLS_LOG_FILE [-nf nframes]");
       return 1;
     }
     std::ifstream inStream{args[2], std::ios::binary};
     if (!inStream.good()) {
-      fmt::print("Failed to open {} for reading.\n", args[2]);
+      logError("Failed to open {} for reading.\n", args[2]);
       return 1;
     }
     std::ofstream outStream{args[4], std::ios::binary};
     if (!outStream.good()) {
-      fmt::print("Failed to open {} for writing.\n", args[4]);
+      logError("Failed to open {} for writing.\n", args[4]);
     }
     int32_t nframes = 0;
     if (args.size() == 7) {

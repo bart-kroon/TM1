@@ -39,7 +39,6 @@
 #include <TMIV/Common/Bitstream.h>
 
 #include <array>
-#include <iostream>
 #include <sstream>
 
 namespace {

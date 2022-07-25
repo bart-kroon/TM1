@@ -40,7 +40,6 @@ using Catch::Matchers::Contains;
 #include <TMIV/Common/Half.h>
 #include <TMIV/Common/LinAlg.h>
 
-#include <iostream>
 #include <sstream>
 
 using namespace std::string_literals;

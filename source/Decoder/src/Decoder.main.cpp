@@ -51,7 +51,6 @@
 #include <fmt/ostream.h>
 
 #include <fstream>
-#include <iostream>
 #include <memory>
 
 using namespace std::string_view_literals;

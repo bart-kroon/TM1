@@ -34,6 +34,7 @@
 #include <TMIV/GaInserter/GaInserter.h>
 
 #include <TMIV/Common/Bytestream.h>
+#include <TMIV/Common/LoggingStrategyFmt.h>
 #include <TMIV/MivBitstream/AccessUnitDelimiterRBSP.h>
 #include <TMIV/MivBitstream/AtlasAdaptationParameterSetRBSP.h>
 #include <TMIV/MivBitstream/AtlasFrameParameterSetRBSP.h>
@@ -168,7 +169,7 @@ private:
     case MivBitstream::NalUnitType::NAL_CAF_IDR:
       return parseCaf(stream, nu.nal_unit_header());
     default:
-      std::cout << "Unknown NAL unit:\n" << nu;
+      Common::logInfo("Unknown NAL unit: ", nu);
     }
   }
 

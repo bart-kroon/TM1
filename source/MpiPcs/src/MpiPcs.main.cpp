@@ -32,12 +32,10 @@
  */
 #include <TMIV/Common/Application.h>
 #include <TMIV/Common/Factory.h>
+#include <TMIV/Common/LoggingStrategyFmt.h>
 #include <TMIV/MpiPcs/MpiPcs.h>
 
-#include <fmt/ostream.h>
-
 #include <fstream>
-#include <iostream>
 
 using namespace std::string_view_literals;
 
@@ -106,10 +104,10 @@ private:
 
     MpiPcs::Writer mpiPcsWriter{json(), placeholders(), m_inputSequenceConfig};
 
-    fmt::print("RAW to PCS conversion: {} frames ({} layers)\n", m_numberOfInputFrames,
-               viewParams.nbMpiLayers);
+    Common::logInfo("RAW to PCS conversion: {} frames ({} layers)", m_numberOfInputFrames,
+                    viewParams.nbMpiLayers);
 
-    fmt::print("MpiPcs output file: {}\n", mpiPcsWriter.getPath());
+    Common::logInfo("MpiPcs output file: {}", mpiPcsWriter.getPath());
 
     using geometryValue = MpiPcs::Attribute::GeometryValue;
     const auto layerCount = Common::verifyDownCast<geometryValue>(viewParams.nbMpiLayers);
@@ -128,10 +126,10 @@ private:
 
       mpiPcsWriter.append(mpiPcsFrame);
 
-      fmt::print("Frame #{} transcoded\n", frameIdx);
+      Common::logInfo("Frame #{} transcoded", frameIdx);
     }
 
-    fmt::print("RAW to PCS conversion completed\n");
+    Common::logInfo("RAW to PCS conversion completed");
   }
 
   void doPcsToRawConversion() const {
@@ -177,11 +175,11 @@ private:
       throw std::runtime_error(fmt::format("Failed to open {} for writing", transparencyPath));
     }
 
-    fmt::print("PCS to RAW conversion: {} frames ({} layers)\n", m_numberOfInputFrames,
-               viewParams.nbMpiLayers);
+    Common::logInfo("PCS to RAW conversion: {} frames ({} layers)", m_numberOfInputFrames,
+                    viewParams.nbMpiLayers);
 
-    fmt::print("Texture output file {}\n", texturePath);
-    fmt::print("Transparency output file {}\n", transparencyPath);
+    Common::logInfo("Texture output file {}", texturePath);
+    Common::logInfo("Transparency output file {}", transparencyPath);
 
     using geometryValue = MpiPcs::Attribute::GeometryValue;
     const auto layerCount = Common::verifyDownCast<geometryValue>(viewParams.nbMpiLayers);
@@ -204,10 +202,10 @@ private:
         }
       }
 
-      fmt::print("Frame #{} transcoded\n", frameIdx);
+      Common::logInfo("Frame #{} transcoded", frameIdx);
     }
 
-    fmt::print("PCS to RAW conversion completed\n");
+    Common::logInfo("PCS to RAW conversion completed");
   }
 };
 

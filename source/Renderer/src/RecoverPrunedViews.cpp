@@ -38,6 +38,18 @@
 #include <algorithm>
 
 namespace TMIV::Renderer {
+namespace {
+template <typename Function>
+void forEachNonAncillaryAtlas(const MivBitstream::AccessUnit &inFrame, Function &&function) {
+  for (const auto &atlas : inFrame.atlas) {
+    if (atlas.asps.asps_miv_extension_present_flag() &&
+        atlas.asps.asps_miv_extension().asme_ancillary_atlas_flag()) {
+      continue;
+    }
+    function(atlas);
+  }
+}
+
 template <typename InComponent, typename OutComponent>
 void initializePrunedViewComponent(const MivBitstream::AccessUnit &inFrame,
                                    Common::V3cFrameList &outFrame, InComponent &&inComponent,
@@ -47,21 +59,17 @@ void initializePrunedViewComponent(const MivBitstream::AccessUnit &inFrame,
   // Scan all atlases to find the maximum needed bit depth and color format
   auto colorFormat = Common::ColorFormat::YUV400;
 
-  for (const auto &atlas : inFrame.atlas) {
-    if (atlas.asps.asps_miv_extension_present_flag() &&
-        atlas.asps.asps_miv_extension().asme_ancillary_atlas_flag()) {
-      continue;
-    }
-
+  forEachNonAncillaryAtlas(inFrame, [inComponent = std::forward<decltype(inComponent)>(inComponent),
+                                     &bitDepth, &colorFormat](const auto &atlas) {
     const auto &in = inComponent(atlas);
 
     if (in.empty()) {
-      continue;
+      return;
     }
 
     bitDepth = std::max(bitDepth, in.getBitDepth());
     colorFormat = std::max(colorFormat, in.getColorFormat());
-  }
+  });
 
   // This component is not present nor will it be generated
   if (0 == bitDepth) {
@@ -83,6 +91,59 @@ void initializePrunedViewComponent(const MivBitstream::AccessUnit &inFrame,
   }
 }
 
+auto blitPixel(const MivBitstream::AccessUnit &inFrame, Common::V3cFrameList &outFrame,
+               const MivBitstream::AtlasAccessUnit &atlas, int32_t i, int32_t j) {
+  // Fetch patch index
+  const auto patchIdx = atlas.patchIdx(i, j);
+  if (patchIdx == Common::unusedPatchIdx) {
+    return;
+  }
+
+  // Index patch and view parameters
+  VERIFY(patchIdx < atlas.patchParamsList.size());
+  const auto &patchParams = atlas.patchParamsList[patchIdx];
+  const auto viewIdx = inFrame.viewParamsList.indexOf(patchParams.atlasPatchProjectionId());
+
+  // Test if this pixel is within the patch
+  if (j >= patchParams.atlasPatch2dPosX() + patchParams.atlasPatch2dSizeX() ||
+      i >= patchParams.atlasPatch2dPosY() + patchParams.atlasPatch2dSizeY()) {
+    return;
+  }
+
+  // Test for occupancy
+  if (!atlas.occFrame.empty() && !atlas.occFrame.getPlane(0)(i, j)) {
+    return;
+  }
+
+  // Map to view position
+  const auto viewPos = patchParams.atlasToView({j, i});
+  const auto x = viewPos.x();
+  const auto y = viewPos.y();
+
+  // Copy occupancy
+  outFrame[viewIdx].occupancy.getPlane(0)(y, x) = outFrame[viewIdx].occupancy.maxValue();
+
+  // Copy geometry
+  if (atlas.asps.asps_miv_extension_present_flag() &&
+      atlas.asps.asps_miv_extension().asme_patch_constant_depth_flag()) {
+    outFrame[viewIdx].geometry.getPlane(0)(y, x) =
+        Common::assertDownCast<Common::DefaultElement>(patchParams.atlasPatch3dOffsetD());
+  } else if (!atlas.geoFrame.empty()) {
+    outFrame[viewIdx].geometry.getPlane(0)(y, x) = atlas.geoFrame.getPlane(0)(i, j);
+  }
+
+  // Copy texture
+  for (int32_t d = 0; d < 3; ++d) {
+    outFrame[viewIdx].texture.getPlane(d)(y, x) = atlas.texFrame.getPlane(d)(i, j);
+  }
+
+  // Copy transparency if present, assuming the attribute index is 1
+  if (2 <= atlas.attrFrameNF.size()) {
+    outFrame[viewIdx].transparency.getPlane(0)(y, x) = atlas.attrFrameNF[1].getPlane(0)(i, j);
+  }
+}
+} // namespace
+
 // NOTE(BK): This new implementation relies on the block to patch map. There is no assumption on
 // patch ordering anymore.
 auto recoverPrunedViews(const MivBitstream::AccessUnit &inFrame) -> Common::V3cFrameList {
@@ -95,9 +156,9 @@ auto recoverPrunedViews(const MivBitstream::AccessUnit &inFrame) -> Common::V3cF
 
   uint32_t geoBitDepth{}; // account for asme_patch_constant_depth_flag
 
-  for (const auto &atlas : inFrame.atlas) {
+  forEachNonAncillaryAtlas(inFrame, [&geoBitDepth](const auto &atlas) {
     geoBitDepth = std::max(geoBitDepth, atlas.asps.asps_geometry_2d_bit_depth_minus1() + 1U);
-  }
+  });
 
   initializePrunedViewComponent(
       inFrame, outFrame, [](const auto &aau) { return aau.geoFrame; },
@@ -117,64 +178,21 @@ auto recoverPrunedViews(const MivBitstream::AccessUnit &inFrame) -> Common::V3cF
       [&](auto &frame) -> auto & { return frame.transparency; }, 0);
 
   // For each pixel in each atlas
-  for (const auto &atlas : inFrame.atlas) {
-    if (atlas.asps.asps_miv_extension_present_flag() &&
-        atlas.asps.asps_miv_extension().asme_ancillary_atlas_flag()) {
-      continue;
-    }
+  forEachNonAncillaryAtlas(
+      inFrame, [&inFrame, &outFrame](const MivBitstream::AtlasAccessUnit &atlas) {
+        const auto blockSize = 1 << atlas.asps.asps_log2_patch_packing_block_size();
+        VERIFY(!atlas.blockToPatchMap.empty());
+        VERIFY((atlas.asps.asps_frame_width() + blockSize - 1) / blockSize ==
+               atlas.blockToPatchMap.getWidth());
+        VERIFY((atlas.asps.asps_frame_height() + blockSize - 1) / blockSize ==
+               atlas.blockToPatchMap.getHeight());
 
-    for (int32_t i = 0; i < atlas.asps.asps_frame_height(); ++i) {
-      for (int32_t j = 0; j < atlas.asps.asps_frame_width(); ++j) {
-        // Fetch patch index
-        const auto patchIdx = atlas.patchIdx(i, j);
-        if (patchIdx == Common::unusedPatchIdx) {
-          continue;
+        for (int32_t i = 0; i < atlas.asps.asps_frame_height(); ++i) {
+          for (int32_t j = 0; j < atlas.asps.asps_frame_width(); ++j) {
+            blitPixel(inFrame, outFrame, atlas, i, j);
+          }
         }
-
-        // Index patch and view parameters
-        const auto &patchParams = atlas.patchParamsList[patchIdx];
-        const auto viewIdx = inFrame.viewParamsList.indexOf(patchParams.atlasPatchProjectionId());
-
-        // Test if this pixel is within the patch
-        if (j >= patchParams.atlasPatch2dPosX() + patchParams.atlasPatch2dSizeX() ||
-            i >= patchParams.atlasPatch2dPosY() + patchParams.atlasPatch2dSizeY()) {
-          continue;
-        }
-
-        // Test for occupancy
-        if (!atlas.occFrame.empty() && !atlas.occFrame.getPlane(0)(i, j)) {
-          continue;
-        }
-
-        // Map to view position
-        const auto viewPos = patchParams.atlasToView({j, i});
-        const auto x = viewPos.x();
-        const auto y = viewPos.y();
-
-        // Copy occupancy
-        outFrame[viewIdx].occupancy.getPlane(0)(y, x) = outFrame[viewIdx].occupancy.maxValue();
-
-        // Copy geometry
-        if (atlas.asps.asps_miv_extension_present_flag() &&
-            atlas.asps.asps_miv_extension().asme_patch_constant_depth_flag()) {
-          outFrame[viewIdx].geometry.getPlane(0)(y, x) =
-              Common::assertDownCast<Common::DefaultElement>(patchParams.atlasPatch3dOffsetD());
-        } else if (!atlas.geoFrame.empty()) {
-          outFrame[viewIdx].geometry.getPlane(0)(y, x) = atlas.geoFrame.getPlane(0)(i, j);
-        }
-
-        // Copy texture
-        for (int32_t d = 0; d < 3; ++d) {
-          outFrame[viewIdx].texture.getPlane(d)(y, x) = atlas.texFrame.getPlane(d)(i, j);
-        }
-
-        // Copy transparency if present, assuming the attribute index is 1
-        if (2 <= atlas.attrFrameNF.size()) {
-          outFrame[viewIdx].transparency.getPlane(0)(y, x) = atlas.attrFrameNF[1].getPlane(0)(i, j);
-        }
-      }
-    }
-  }
+      });
 
   return outFrame;
 }

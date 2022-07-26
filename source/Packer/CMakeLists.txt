@@ -19,6 +19,7 @@ create_catch2_unit_test(
         PackerTest
     SOURCES
         "src/Cluster.test.cpp"
+        "src/MaxRectPiP.test.cpp"
         "src/Retriever.test.cpp"
     PRIVATE
         PackerLib

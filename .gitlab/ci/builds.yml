@@ -61,7 +61,7 @@ Debug build and static analysis (Clang 14):
     - mkdir coverage_html
     - >
       gcovr build --gcov-executable 'llvm-cov-14 gcov' -f 'source/' -e '.*\.test\.cpp' -e '.*\.main\.cpp' -e '.*registerComponents.cpp'
-      --xml coverage.xml --xml-pretty --html-details coverage_html/index.html --print-summary
+      --xml coverage.xml --xml-pretty --exclude-unreachable-branches --sort-uncovered --html-details coverage_html/index.html --print-summary
     - ccache -s
   artifacts:
     reports:

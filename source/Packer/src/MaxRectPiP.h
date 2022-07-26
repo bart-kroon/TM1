@@ -41,7 +41,7 @@ namespace TMIV::Packer {
 class MaxRectPiP {
 public:
   class Output {
-  protected:
+  private:
     int32_t m_x = 0;
     int32_t m_y = 0;
     bool m_isRotated = false;
@@ -60,7 +60,7 @@ public:
 
 private:
   class Rectangle {
-  protected:
+  private:
     int32_t m_x0 = 0;
     int32_t m_y0 = 0;
     int32_t m_x1 = 0;
@@ -83,8 +83,7 @@ private:
     [[nodiscard]] auto getArea() const -> int32_t { return (width() * height()); }
   };
 
-protected:
-  int32_t m_width = 0, m_height = 0, m_alignment = 0;
+  int32_t m_alignment = 0;
   std::list<Rectangle> m_F;
   bool m_pip = true;
   OccupancyMap m_occupancyMap;
@@ -93,7 +92,7 @@ public:
   MaxRectPiP(int32_t w, int32_t h, int32_t a, bool pip);
   auto push(const Cluster &c, const ClusteringMap &clusteringMap, Output &packerOutput) -> bool;
 
-protected:
+private:
   void updateOccupancyMap(const Cluster &c, const ClusteringMap &clusteringMap,
                           const Output &packerOutput);
   auto pushInUsedSpace(int32_t w, int32_t h, bool isBasicView, Output &packerOutput) -> bool;

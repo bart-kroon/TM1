@@ -58,7 +58,7 @@ void Cluster::push(int32_t i, int32_t j) {
   numActivePixels_++;
 }
 
-auto Cluster::setEntityId(Cluster &c, int32_t entityId) -> Cluster {
+auto Cluster::setEntityId(const Cluster &c, int32_t entityId) -> Cluster {
   Cluster d(c.viewIdx_, c.isBasicView(), c.clusterId_, entityId);
   d.imin_ = c.imin_;
   d.imax_ = c.imax_;

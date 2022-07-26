@@ -19,6 +19,7 @@ create_catch2_unit_test(
     TARGET
         ViewOptimizerTest
     SOURCES
+        "src/BasicViewAllocator.test.cpp"
         "src/ServerSideInpainter.test.cpp"
     PRIVATE
         ViewOptimizerLib

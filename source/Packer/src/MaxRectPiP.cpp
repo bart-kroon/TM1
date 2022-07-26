@@ -97,8 +97,7 @@ auto MaxRectPiP::Rectangle::getShortSideFitScore(int32_t w, int32_t h) const -> 
 }
 
 //////////////////////////////////////////////////////////////
-MaxRectPiP::MaxRectPiP(int32_t w, int32_t h, int32_t a, bool pip)
-    : m_width(w), m_height(h), m_alignment(a), m_pip(pip) {
+MaxRectPiP::MaxRectPiP(int32_t w, int32_t h, int32_t a, bool pip) : m_alignment(a), m_pip(pip) {
   // Maps
   auto wa = static_cast<uint32_t>(w / a);
   auto ha = static_cast<uint32_t>(h / a);

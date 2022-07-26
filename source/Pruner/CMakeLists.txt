@@ -18,6 +18,7 @@ create_catch2_unit_test(
         PrunerTest
     SOURCES
         "src/LumaStdDev.test.cpp"
+        "src/HierarchicalPruner.test.cpp"
     PRIVATE
         PrunerLib
         RendererLib

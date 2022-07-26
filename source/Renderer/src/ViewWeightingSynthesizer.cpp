@@ -164,32 +164,21 @@ private:
   Common::Mat<Common::Vec3f> m_viewportColor;
   std::set<size_t> m_inpaintedViews;
 
-  float m_angularScaling{1.5F};
-  float m_minimalWeight{2.5F};
-  float m_stretchFactor{100.F};
-  float m_blendingFactor{0.03F};
-  float m_overloadFactor{2.F};
-  int32_t m_filteringPass{1};
+  float m_angularScaling;
+  float m_minimalWeight;
+  float m_stretchFactor;
+  float m_blendingFactor;
+  float m_overloadFactor;
+  int32_t m_filteringPass;
 
 public:
-  explicit Impl(const Common::Json &componentNode) {
-    m_angularScaling = componentNode.require("angularScaling").as<float>();
-    m_minimalWeight = componentNode.require("minimalWeight").as<float>();
-    m_stretchFactor = componentNode.require("stretchFactor").as<float>();
-    m_blendingFactor = componentNode.require("blendingFactor").as<float>();
-    m_overloadFactor = componentNode.require("overloadFactor").as<float>();
-    m_filteringPass = componentNode.require("filteringPass").as<int32_t>();
-  }
-
-  Impl(float angularScaling, float minimalWeight, float stretchFactor, float blendingFactor,
-       float overloadFactor, int32_t filteringPass) {
-    m_angularScaling = angularScaling;
-    m_minimalWeight = minimalWeight;
-    m_stretchFactor = stretchFactor;
-    m_blendingFactor = blendingFactor;
-    m_overloadFactor = overloadFactor;
-    m_filteringPass = filteringPass;
-  }
+  explicit Impl(const Common::Json &componentNode)
+      : m_angularScaling{componentNode.require("angularScaling").as<float>()}
+      , m_minimalWeight{componentNode.require("minimalWeight").as<float>()}
+      , m_stretchFactor{componentNode.require("stretchFactor").as<float>()}
+      , m_blendingFactor{componentNode.require("blendingFactor").as<float>()}
+      , m_overloadFactor{componentNode.require("overloadFactor").as<float>()}
+      , m_filteringPass{componentNode.require("filteringPass").as<int32_t>()} {}
 
   auto renderFrame(const MivBitstream::AccessUnit &frame,
                    const MivBitstream::CameraConfig &cameraConfig) -> Common::RendererFrame {
@@ -218,6 +207,7 @@ public:
     recoverPrunedWeight(sourceHelperList, targetHelper);
 
     // 5) Selection
+    VERIFY(frame.casps);
     selectViewportDepth(!frame.casps->casps_miv_extension().casme_depth_low_quality_flag(),
                         targetHelper);
 
@@ -423,20 +413,21 @@ private:
     m_sourceColor.clear();
     m_sourceDepth.clear();
 
-    for (size_t sourceId = 0; sourceId < prunedViews.size(); sourceId++) {
-      const auto &viewParams = sourceHelperList[sourceId].getViewParams();
+    for (size_t sourceIdx = 0; sourceIdx < prunedViews.size(); sourceIdx++) {
+      const auto &viewParams = sourceHelperList[sourceIdx].getViewParams();
 
-      m_sourceColor.emplace_back(expandTexture(prunedViews[sourceId].texture));
+      VERIFY(!prunedViews[sourceIdx].texture.empty());
+      m_sourceColor.emplace_back(expandTexture(prunedViews[sourceIdx].texture));
 
-      geoBitDepth = prunedViews[sourceId].geometry.getBitDepth();
+      geoBitDepth = prunedViews[sourceIdx].geometry.getBitDepth();
 
       m_sourceDepth.emplace_back(
           MivBitstream::DepthTransform{viewParams.dq, geoBitDepth}.expandDepth(
-              prunedViews[sourceId].geometry));
+              prunedViews[sourceIdx].geometry));
 
       std::transform(
-          prunedViews[sourceId].occupancy.getPlane(0).begin(),
-          prunedViews[sourceId].occupancy.getPlane(0).end(), m_sourceDepth.back().begin(),
+          prunedViews[sourceIdx].occupancy.getPlane(0).begin(),
+          prunedViews[sourceIdx].occupancy.getPlane(0).end(), m_sourceDepth.back().begin(),
           m_sourceDepth.back().begin(),
           [&](auto maskValue, float depthValue) { return 0 < maskValue ? depthValue : NAN; });
     }
@@ -450,20 +441,20 @@ private:
     m_sourceReprojection.resize(m_sourceDepth.size());
     m_sourceRayDirection.resize(m_sourceDepth.size());
 
-    for (size_t sourceId = 0; sourceId < m_sourceDepth.size(); sourceId++) {
-      m_sourceUnprojection[sourceId].resize(m_sourceDepth[sourceId].height(),
-                                            m_sourceDepth[sourceId].width());
-      std::fill(m_sourceUnprojection[sourceId].begin(), m_sourceUnprojection[sourceId].end(),
+    for (size_t sourceIdx = 0; sourceIdx < m_sourceDepth.size(); sourceIdx++) {
+      m_sourceUnprojection[sourceIdx].resize(m_sourceDepth[sourceIdx].height(),
+                                             m_sourceDepth[sourceIdx].width());
+      std::fill(m_sourceUnprojection[sourceIdx].begin(), m_sourceUnprojection[sourceIdx].end(),
                 Common::Vec3f{NAN, NAN, NAN});
 
-      m_sourceReprojection[sourceId].resize(m_sourceDepth[sourceId].height(),
-                                            m_sourceDepth[sourceId].width());
-      std::fill(m_sourceReprojection[sourceId].begin(), m_sourceReprojection[sourceId].end(),
+      m_sourceReprojection[sourceIdx].resize(m_sourceDepth[sourceIdx].height(),
+                                             m_sourceDepth[sourceIdx].width());
+      std::fill(m_sourceReprojection[sourceIdx].begin(), m_sourceReprojection[sourceIdx].end(),
                 std::pair{Common::Vec2f{NAN, NAN}, NAN});
 
-      m_sourceRayDirection[sourceId].resize(m_sourceDepth[sourceId].height(),
-                                            m_sourceDepth[sourceId].width());
-      std::fill(m_sourceRayDirection[sourceId].begin(), m_sourceRayDirection[sourceId].end(),
+      m_sourceRayDirection[sourceIdx].resize(m_sourceDepth[sourceIdx].height(),
+                                             m_sourceDepth[sourceIdx].width());
+      std::fill(m_sourceRayDirection[sourceIdx].begin(), m_sourceRayDirection[sourceIdx].end(),
                 Common::Vec3f{NAN, NAN, NAN});
     }
 
@@ -959,14 +950,14 @@ private:
     }
   }
 
-  [[nodiscard]] auto isProneToGhosting(uint32_t sourceId, const std::pair<Common::Vec2f, float> &p,
+  [[nodiscard]] auto isProneToGhosting(uint32_t sourceIdx, const std::pair<Common::Vec2f, float> &p,
                                        const Common::Vec3f &OP,
                                        const ProjectionHelperList &sourceHelperList) const -> bool {
     static constexpr auto offsetList = std::array{Common::Vec2i({1, 0}), Common::Vec2i({-1, 0}),
                                                   Common::Vec2i({0, 1}), Common::Vec2i({0, -1})};
 
-    const auto w_last = static_cast<int32_t>(m_sourceDepth[sourceId].width()) - 1;
-    const auto h_last = static_cast<int32_t>(m_sourceDepth[sourceId].height()) - 1;
+    const auto w_last = static_cast<int32_t>(m_sourceDepth[sourceIdx].width()) - 1;
+    const auto h_last = static_cast<int32_t>(m_sourceDepth[sourceIdx].height()) - 1;
 
     const auto x = static_cast<int32_t>(std::floor(p.first.x()));
     const auto y = static_cast<int32_t>(std::floor(p.first.y()));
@@ -975,14 +966,14 @@ private:
       const auto xo = std::clamp(x + offset.x(), 0, w_last);
       const auto yo = std::clamp(y + offset.y(), 0, h_last);
 
-      const auto z = m_sourceDepth[sourceId](yo, xo);
+      const auto z = m_sourceDepth[sourceIdx](yo, xo);
 
-      if (!sourceHelperList[sourceId].isValidDepth(z)) {
+      if (!sourceHelperList[sourceIdx].isValidDepth(z)) {
         return true;
       }
 
-      const auto OQ = m_sourceRayDirection[sourceId](yo, xo);
-      return 2.F * m_cameraDistortion[sourceId] < std::abs(std::acos(dot(OP, OQ)));
+      const auto OQ = m_sourceRayDirection[sourceIdx](yo, xo);
+      return 2.F * m_cameraDistortion[sourceIdx] < std::abs(std::acos(dot(OP, OQ)));
     });
   }
 
@@ -1089,14 +1080,14 @@ private:
       const auto P = targetHelper.doUnprojection(pn1, z);
       const auto OP = unit(P - O);
 
-      for (size_t sourceId = 0U; sourceId < sourceHelperList.size(); sourceId++) {
-        if (m_cameraVisibility[sourceId] && !isViewInpainted(sourceId)) {
-          const auto pn2 = sourceHelperList[sourceId].doProjection(P);
+      for (size_t sourceIdx = 0U; sourceIdx < sourceHelperList.size(); sourceIdx++) {
+        if (m_cameraVisibility[sourceIdx] && !isViewInpainted(sourceIdx)) {
+          const auto pn2 = sourceHelperList[sourceIdx].doProjection(P);
 
-          if (isValidDepth(pn2.second) && sourceHelperList[sourceId].isInsideViewport(pn2.first)) {
+          if (isValidDepth(pn2.second) && sourceHelperList[sourceIdx].isInsideViewport(pn2.first)) {
             if (isOnViewportContour ||
-                !isProneToGhosting(static_cast<uint32_t>(sourceId), pn2, OP, sourceHelperList)) {
-              incrementColorAndWeight(element, sourceId, pn2, sourceHelperList, oColor, oWeight);
+                !isProneToGhosting(static_cast<uint32_t>(sourceIdx), pn2, OP, sourceHelperList)) {
+              incrementColorAndWeight(element, sourceIdx, pn2, sourceHelperList, oColor, oWeight);
             }
           }
         }
@@ -1105,12 +1096,12 @@ private:
     return {oColor, oWeight};
   }
 
-  void incrementColorAndWeight(const Common::Vec2f &element, size_t sourceId,
+  void incrementColorAndWeight(const Common::Vec2f &element, size_t sourceIdx,
                                const std::pair<Common::Vec2f, float> &pn2,
                                const ProjectionHelperList &sourceHelperList, Common::Vec3f &oColor,
                                float &oWeight) const {
-    const auto zRef = textureGather(m_sourceDepth[sourceId], pn2.first);
-    const auto cRef = textureGather(m_sourceColor[sourceId], pn2.first);
+    const auto zRef = textureGather(m_sourceDepth[sourceIdx], pn2.first);
+    const auto cRef = textureGather(m_sourceColor[sourceIdx], pn2.first);
 
     const auto q = Common::Vec2f{pn2.first.x() - 0.5F, pn2.first.y() - 0.5F};
     const auto f = Common::Vec2f{q.x() - std::floor(q.x()), q.y() - std::floor(q.y())};
@@ -1120,11 +1111,11 @@ private:
         Common::Vec4f{fb.x() * f.y(), f.x() * f.y(), f.x() * fb.y(), fb.x() * fb.y()};
 
     for (auto j = 0U; j < 4U; j++) {
-      if (sourceHelperList[sourceId].isValidDepth(zRef[j])) {
+      if (sourceHelperList[sourceIdx].isValidDepth(zRef[j])) {
         const auto nu = (zRef[j] - pn2.second) / (pn2.second * m_blendingFactor);
         const auto wDepth = element.y() / (1.F + nu * nu);
 
-        const auto w = (m_cameraWeight[sourceId] * wColor[j] * wDepth);
+        const auto w = (m_cameraWeight[sourceIdx] * wColor[j] * wDepth);
 
         oColor += w * cRef[j];
         oWeight += w;
@@ -1136,12 +1127,6 @@ private:
 ViewWeightingSynthesizer::ViewWeightingSynthesizer(const Common::Json & /*rootNode*/,
                                                    const Common::Json &componentNode)
     : m_impl(new Impl{componentNode}) {}
-
-ViewWeightingSynthesizer::ViewWeightingSynthesizer(float angularScaling, float minimalWeight,
-                                                   float stretchFactor, float blendingFactor,
-                                                   float overloadFactor, int32_t filteringPass)
-    : m_impl(new Impl(angularScaling, minimalWeight, stretchFactor, blendingFactor, overloadFactor,
-                      filteringPass)) {}
 
 ViewWeightingSynthesizer::~ViewWeightingSynthesizer() = default;
 

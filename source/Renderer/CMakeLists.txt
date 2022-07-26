@@ -62,6 +62,8 @@ create_catch2_unit_test(
         "src/Rasterizer.test.cpp"
         "src/PushPull.test.cpp"
         "src/PushPullInpainter.test.cpp"
+        "src/RecoverPrunedViews.test.cpp"
+        "src/ViewWeightingSynthesizer.test.cpp"
     PRIVATE
         RendererLib
     )

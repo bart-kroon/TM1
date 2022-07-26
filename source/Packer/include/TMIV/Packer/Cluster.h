@@ -85,7 +85,7 @@ public:
     out.jmax_ = 0;
     return out;
   }
-  static auto setEntityId(Cluster &c, int32_t entityId) -> Cluster;
+  static auto setEntityId(const Cluster &c, int32_t entityId) -> Cluster;
   static auto align(const Cluster &c, int32_t alignment) -> Cluster;
   static auto merge(const Cluster &c1, const Cluster &c2) -> Cluster;
 

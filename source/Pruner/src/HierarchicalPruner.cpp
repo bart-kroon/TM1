@@ -133,17 +133,18 @@ const auto depthErrorEps = 1E-4F;
 
 class HierarchicalPruner::Impl {
 private:
-  const float m_maxDepthError{};
-  const float m_maxLumaError{};
-  const float m_maxStretching{};
-  const int32_t m_erode{};
-  const int32_t m_dilate{};
-  const int32_t m_maxBasicViewsPerGraph{};
-  const bool m_enable2ndPassPruner{};
-  const int32_t m_sampleSize{};
+  float m_maxDepthError;
+  float m_maxLumaError;
+  float m_maxStretching;
+  int32_t m_erode;
+  int32_t m_dilate;
+  int32_t m_maxBasicViewsPerGraph;
+  bool m_enable2ndPassPruner;
+  int32_t m_sampleSize;
+  float m_maxColorError;
+  Renderer::AccumulatingPixel<Common::Vec3f> m_config;
+
   int32_t m_reviveRatio{100};
-  const float m_maxColorError{};
-  const Renderer::AccumulatingPixel<Common::Vec3f> m_config;
   std::optional<float> m_lumaStdDev{};
   PrunerParams m_params;
   std::vector<std::unique_ptr<IncrementalSynthesizer>> m_synthesizers;
@@ -292,6 +293,7 @@ public:
 
   void clusterViews(const Common::Mat<float> &overlap,
                     const MivBitstream::ViewParamsList &viewParamsList) {
+    VERIFY(!viewParamsList.empty());
     const auto clusterIds = exhaustiveSearch(overlap, viewParamsList);
 
     m_clusters = std::vector<Cluster>(1 + *max_element(clusterIds.cbegin(), clusterIds.cend()));

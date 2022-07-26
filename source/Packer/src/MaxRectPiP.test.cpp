@@ -31,30 +31,71 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef TMIV_RENDERER_VIEWWEIGHTINGSYNTHESIZER_H
-#define TMIV_RENDERER_VIEWWEIGHTINGSYNTHESIZER_H
+#include <catch2/catch.hpp>
 
-#include "ISynthesizer.h"
+#include "MaxRectPiP.h"
 
-namespace TMIV::Renderer {
-class ViewWeightingSynthesizer : public ISynthesizer {
-private:
-  class Impl;
-  mutable std::unique_ptr<Impl> m_impl;
+#include <random>
 
-public:
-  ViewWeightingSynthesizer(const Common::Json & /* unused */, const Common::Json &componentNode);
-  ViewWeightingSynthesizer(const ViewWeightingSynthesizer &) = delete;
-  ViewWeightingSynthesizer(ViewWeightingSynthesizer &&) = default;
-  auto operator=(const ViewWeightingSynthesizer &) -> ViewWeightingSynthesizer & = delete;
-  auto operator=(ViewWeightingSynthesizer &&) -> ViewWeightingSynthesizer & = default;
-  ~ViewWeightingSynthesizer() override;
+using TMIV::Common::DefaultElement;
+using TMIV::Packer::Cluster;
+using TMIV::Packer::ClusteringMap;
+using TMIV::Packer::MaxRectPiP;
 
-  // Render from a texture atlas to a viewport
-  auto renderFrame(const MivBitstream::AccessUnit &frame,
-                   const MivBitstream::CameraConfig &cameraConfig) const
-      -> Common::RendererFrame override;
-};
-} // namespace TMIV::Renderer
+TEST_CASE("TMIV::Packer::MaxRectPiP") {
+  const auto viewIdx = 100;
+  const auto isBasicView = GENERATE(false, true);
+  const auto clusterId = 81;
+  const auto entityId = 4;
+  CAPTURE(isBasicView);
 
-#endif
+  auto cluster = Cluster{viewIdx, isBasicView, clusterId, entityId};
+
+  std::mt19937 rnd{2};
+
+  const auto height = 100U;
+  const auto width = 150U;
+
+  auto map = ClusteringMap::lumaOnly({width, height});
+
+  for (int32_t n = 0; n < 1000; ++n) {
+    const auto i = static_cast<int32_t>(rnd() % height);
+    const auto j = static_cast<int32_t>(rnd() % width);
+    cluster.push(i, j);
+    map.getPlane(0)(i, j) = clusterId;
+  }
+
+  const auto pip = GENERATE(false, true);
+  CAPTURE(pip);
+
+  auto unit = MaxRectPiP{2 * width, 2 * height, 4, pip};
+
+  auto output = MaxRectPiP::Output{};
+  CHECK(unit.push(cluster, map, output));
+
+  CHECK(output.x() == 0);
+  CHECK(output.y() == 0);
+  CHECK(output.isRotated() != isBasicView);
+
+  SECTION("Second smaller cluster") {
+    const auto clusterId2 = clusterId + 3;
+    cluster = Cluster{viewIdx, isBasicView, clusterId2, entityId};
+
+    const auto height2 = 10U;
+    const auto width2 = 30U;
+
+    for (int32_t n = 0; n < 10; ++n) {
+      const auto i = static_cast<int32_t>(rnd() % height2);
+      const auto j = static_cast<int32_t>(rnd() % width2);
+      cluster.push(i, j);
+      map.getPlane(0)(i, j) = clusterId2;
+    }
+
+    auto output2 = MaxRectPiP::Output{};
+    CHECK(unit.push(cluster, map, output2));
+
+    CHECK(output2.x() == 0);
+    CHECK(output2.y() == (isBasicView ? 100 : 152));
+    CHECK(output2.isRotated() != isBasicView);
+  }
+}

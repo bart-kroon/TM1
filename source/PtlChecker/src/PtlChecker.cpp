@@ -51,6 +51,7 @@ void ptlCheckImpl(const PtlChecker::Logger &logger, bool condition, const char *
 
 static constexpr auto miv1 = "ISO/IEC 23090-12:2021";
 static constexpr auto v3c2dis = "ISO/IEC DIS 23090-5(2E):2021";
+static constexpr auto miv2wd3 = "ISO/IEC WD3 23090-12(2E)";
 
 using CF = Common::ColorFormat;
 using CG = MivBitstream::PtlProfileCodecGroupIdc;
@@ -104,6 +105,16 @@ auto PtlChecker::ptc_restricted_geometry_flag() const noexcept {
     return ptc.ptc_restricted_geometry_flag();
   }
 
+  return false;
+}
+
+auto PtlChecker::ptc_one_v3c_frame_only_flag() const noexcept {
+  const auto &ptl = m_vps->profile_tier_level();
+
+  if (ptl.ptl_toolset_constraints_present_flag()) {
+    const auto &ptc = ptl.ptl_profile_toolset_constraints_information();
+    return ptc.ptc_one_v3c_frame_only_flag();
+  }
   return false;
 }
 
@@ -237,6 +248,7 @@ void PtlChecker::checkVpsCommon(const MivBitstream::V3cParameterSet &vps) const 
             contains(MivBitstream::knownToolsetIdcs, ptl_profile_toolset_idc()));
   PTL_CHECK(v3c2dis, "Table H-4",
             contains(MivBitstream::knownReconstructionIdcs, ptl_profile_reconstruction_idc()));
+  PTL_CHECK(miv2wd3, "A.4.3", ptl_level_idc() != LV::Level_8_5 || ptc_one_v3c_frame_only_flag());
   PTL_CHECK(v3c2dis, "A.6.2, Table A-5", contains(MivBitstream::knownLevelIdcs, ptl_level_idc()));
 
   PTL_CHECK(v3c2dis, "?", !ptl_tier_flag());
@@ -439,12 +451,15 @@ void PtlChecker::checkAsps(MivBitstream::AtlasId atlasId,
   case TS::MIV_Main:
   case TS::MIV_Extended:
   case TS::MIV_Geometry_Absent:
+    PTL_CHECK(miv1, "Table A-1", !asps.asps_max_dec_atlas_frame_buffering_minus1());
     PTL_CHECK(miv1, "Table A-1", !asps.asps_long_term_ref_atlas_frames_flag());
     PTL_CHECK(miv1, "Table A-1", !asps.asps_pixel_deinterleaving_enabled_flag());
     PTL_CHECK(miv1, "Table A-1", !asps.asps_patch_precedence_order_flag());
     PTL_CHECK(miv1, "Table A-1", !asps.asps_raw_patch_enabled_flag());
     PTL_CHECK(miv1, "Table A-1", !asps.asps_eom_patch_enabled_flag());
     PTL_CHECK(miv1, "Table A-1", !asps.asps_plr_enabled_flag());
+    PTL_CHECK(miv1, "Table A-1", !asps.asps_vpcc_extension_present_flag());
+    break;
   }
 
   if (ptc_restricted_geometry_flag()) {
@@ -616,5 +631,11 @@ void PtlChecker::checkAttributeVideoFrame(const MivBitstream::AtlasSequenceParam
 
   PTL_CHECK(miv1, "A.4.1", frame.getWidth() == aspsFrameWidth);
   PTL_CHECK(miv1, "A.4.1", frame.getHeight() == aspsFrameHeight);
+}
+
+void PtlChecker::checkV3cFrame([[maybe_unused]] const MivBitstream::AccessUnit &frame) {
+  VERIFY(m_vps);
+  PTL_CHECK(miv2wd3, "A.4.3", !ptc_one_v3c_frame_only_flag() || !m_haveV3cFrame);
+  m_haveV3cFrame = true;
 }
 } // namespace TMIV::PtlChecker

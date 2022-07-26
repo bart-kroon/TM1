@@ -149,11 +149,13 @@ constexpr auto elementSize(uint32_t bitDepth) -> size_t {
 
 // Does a collection contain a specified value?
 template <typename Collection, typename Value>
-auto contains(const Collection &collection, Value &&value) -> bool {
-  using std::cbegin;
-  using std::cend;
-  return std::any_of(cbegin(collection), cend(collection),
-                     [&value](const auto &x) { return x == value; });
+constexpr auto contains(const Collection &collection, Value &&value) -> bool {
+  for (const auto &x : collection) { // NOLINT(readability-use-anyofallof)
+    if (x == value) {                //  std::any_of is not constexpr in C++17
+      return true;
+    }
+  }
+  return false;
 }
 } // namespace TMIV::Common
 

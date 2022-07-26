@@ -58,6 +58,7 @@ public:
   void checkVideoFrame(MivBitstream::VuhUnitType vut,
                        const MivBitstream::AtlasSequenceParameterSetRBSP &asps,
                        const Common::Frame<> &frame) override;
+  void checkV3cFrame(const MivBitstream::AccessUnit &frame) override;
 
 private:
   static void defaultLogger(const std::string &failure);
@@ -68,6 +69,7 @@ private:
   [[nodiscard]] auto ptl_tier_flag() const noexcept;
   [[nodiscard]] auto ptl_level_idc() const noexcept;
   [[nodiscard]] auto ptc_restricted_geometry_flag() const noexcept;
+  [[nodiscard]] auto ptc_one_v3c_frame_only_flag() const noexcept;
 
   [[nodiscard]] auto maxAtlasSize() const noexcept;
   [[nodiscard]] auto levelMapCount() const noexcept;
@@ -92,6 +94,7 @@ private:
 
   Logger m_logger{&defaultLogger};
   std::optional<MivBitstream::V3cParameterSet> m_vps;
+  bool m_haveV3cFrame{};
 };
 } // namespace TMIV::PtlChecker
 

@@ -156,6 +156,7 @@ public:
       m_checker->checkVideoFrame(vuh.vuh_unit_type(), atlas.asps, decFrame(vuh, atlas));
     }
 
+    m_checker->checkV3cFrame(m_au);
     return m_au;
   }
 

@@ -152,6 +152,7 @@ void Configuration::queryProfileTierLevelParameters(const Common::Json &componen
   reconstructionIdc = queryIdc(componentNode, "reconstructionIdc", "reconstruction",
                                MivBitstream::knownReconstructionIdcs);
   levelIdc = queryIdc(componentNode, "levelIdc", "level", MivBitstream::knownLevelIdcs);
+  oneV3cFrameOnly = componentNode.require("oneV3cFrameOnly").as<bool>();
 }
 
 void Configuration::queryBitDepthParameters(const Common::Json &componentNode) {

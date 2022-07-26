@@ -57,11 +57,16 @@ assessDepthQuality(const Configuration &config,
 
 namespace {
 [[nodiscard]] auto createProfileTierLevel(const Configuration &config) {
-  auto ptl = MivBitstream::ProfileTierLevel{};
-  ptl.ptl_level_idc(config.levelIdc)
-      .ptl_profile_codec_group_idc(config.codecGroupIdc)
-      .ptl_profile_reconstruction_idc(config.reconstructionIdc)
-      .ptl_profile_toolset_idc(config.toolsetIdc);
+  auto ptl = MivBitstream::ProfileTierLevel{}
+                 .ptl_level_idc(config.levelIdc)
+                 .ptl_profile_codec_group_idc(config.codecGroupIdc)
+                 .ptl_profile_reconstruction_idc(config.reconstructionIdc)
+                 .ptl_profile_toolset_idc(config.toolsetIdc);
+
+  if (config.oneV3cFrameOnly) {
+    ptl.ptl_profile_toolset_constraints_information(
+        MivBitstream::ProfileToolsetConstraintsInformation{}.ptc_one_v3c_frame_only_flag(true));
+  }
   return ptl;
 }
 

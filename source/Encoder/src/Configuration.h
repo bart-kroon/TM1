@@ -84,6 +84,7 @@ struct Configuration {
   MivBitstream::PtlProfileToolsetIdc toolsetIdc{};
   MivBitstream::PtlProfileReconstructionIdc reconstructionIdc{};
   MivBitstream::PtlLevelIdc levelIdc{};
+  bool oneV3cFrameOnly{};
 
   // Bit-depth parameters
   uint32_t occBitDepth{};

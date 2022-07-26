@@ -88,7 +88,7 @@ ptl_toolset_constraints_present_flag=false
   }
 
   SECTION("Example 2") {
-    auto ptci = ProfileToolsetConstraintsInformation{};
+    auto ptci = ProfileToolsetConstraintsInformation{}.ptc_one_v3c_frame_only_flag(true);
 
     x.ptl_tier_flag(true)
         .ptl_profile_codec_group_idc(PtlProfileCodecGroupIdc::HEVC_Main10)
@@ -113,7 +113,7 @@ ptl_extended_sub_profile_flag=true
 ptl_sub_profile_idc[ 0 ]=3
 ptl_sub_profile_idc[ 1 ]=18446744073709551615
 ptl_toolset_constraints_present_flag=true
-ptc_one_v3c_frame_only_flag=false
+ptc_one_v3c_frame_only_flag=true
 ptc_eom_constraint_flag=false
 ptc_max_map_count_minus1=0
 ptc_max_atlas_count_minus1=0
@@ -126,6 +126,8 @@ ptc_no_45degree_projection_patch_constraint_flag=false
 ptc_restricted_geometry_flag=false
 ptc_num_reserved_constraint_bytes=0
 )");
+
+    CHECK(x.profile() == "HEVC Main10 V-PCC Extended Still");
 
     REQUIRE(bitCodingTest(x, 240));
   }
@@ -801,7 +803,7 @@ gm_group_count=0
 )");
 
     REQUIRE(vps.summary() == R"(V3C parameter set 15:
-  AVC Progressive High V-PCC Basic Rec0, tier false, level [unknown:0], decodes unconstrained
+  AVC Progressive High V-PCC Basic Restricted Geometry Rec0, tier false, level [unknown:0], decodes unconstrained
   Atlas 20: 4096 x 2048; [AI: 2, ATTR_TEXTURE, codec 1, dims 3, 2D 10, align false, ATTR_TRANSPARENCY, codec 1, dims 1, 2D 10, align false]
 , geometry scaling false, groups 0, embedded occupancy true, occupancy scaling false)");
 

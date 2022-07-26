@@ -88,6 +88,10 @@ public:
     ++checkVideoFrame_callCount;
   }
 
+  void checkV3cFrame([[maybe_unused]] const TMIV::MivBitstream::AccessUnit &frame) override {
+    ++checkV3cFrame_callCount;
+  }
+
   size_t checkVuh_callCount{};
   size_t checkAndActivateNuh_callCount{};
   size_t checkAndActivateVps_callCount{};
@@ -96,6 +100,7 @@ public:
   size_t checkAtl_callCount{};
   size_t checkCaf_callCount{};
   size_t checkVideoFrame_callCount{};
+  size_t checkV3cFrame_callCount{};
 
   std::optional<TMIV::MivBitstream::V3cUnitHeader> lastVuh;
   std::optional<TMIV::MivBitstream::V3cParameterSet> activeVps;

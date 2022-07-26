@@ -11,5 +11,6 @@ Some parameters are hard-coded in current version of miv_mpi encoder, hence ther
 "levelIdc": "3.5",
 "reconstructionIdc": "Rec Unconstrained",
 "toolsetIdc": "MIV Extended",
+"oneV3cFrameOnly": false,
 ```
     

@@ -318,10 +318,11 @@ class IntegrationTest:
 
     def testMivViewAnchor(self, executor):
         if not self.dryRun:
-            (self.testDir / "V3" / "D" / "R0").mkdir(parents=True, exist_ok=True)
+            (self.testDir / "V1" / "D" / "R0").mkdir(parents=True, exist_ok=True)
 
-        geometryResolution = Resolution(512, 1024)
-        textureResolution = Resolution(1024, 2048)
+        # maxLumaPictureSize is set to limit to 1:8 aspect ratio
+        geometryResolution = Resolution(512, 4096)
+        textureResolution = Resolution(1024, 8192)
         poseTraceRenderResolution = Resolution(480, 270)
         cameraRenderResolution = Resolution(512, 272)
 
@@ -330,17 +331,18 @@ class IntegrationTest:
             [],
             ["{0}/bin/TmivEncoder", "-c", "{1}/config/ctc/miv_view_anchor/V_1_TMIV_encode.json"]
             + ["-p", "configDirectory", "{1}/config", "-p", "inputDirectory", "{2}", "-p"]
-            + ["outputDirectory", "{3}", "-n", "3", "-s", "D", "-p", "intraPeriod", "2"]
+            + ["outputDirectory", "{3}", "-n", "1", "-s", "D", "-p", "intraPeriod", "2"]
             + ["-p", "inputSequenceConfigPathFmt", "test/sequences/T{{1}}.json"]
-            + ["-p", "maxLumaPictureSize", "2097152", "-f", "0"]
+            + ["-p", "maxLumaPictureSize", "8388608", "-f", "0"]
+            + ["-p", "levelIdc", '"8.5"', "-p", "oneV3cFrameOnly", "true"]
             + ["-V", "debug"],
-            "{3}/V3/D/TMIV_V3_D.log",
+            "{3}/V1/D/TMIV_V1_D.log",
             [
-                "V3/D/TMIV_V3_D.bit",
-                f"V3/D/TMIV_V3_D_geo_c00_{geometryResolution}_yuv420p10le.yuv",
-                f"V3/D/TMIV_V3_D_geo_c01_{geometryResolution}_yuv420p10le.yuv",
-                f"V3/D/TMIV_V3_D_tex_c00_{textureResolution}_yuv420p10le.yuv",
-                f"V3/D/TMIV_V3_D_tex_c01_{textureResolution}_yuv420p10le.yuv",
+                "V1/D/TMIV_V1_D.bit",
+                f"V1/D/TMIV_V1_D_geo_c00_{geometryResolution}_yuv420p10le.yuv",
+                f"V1/D/TMIV_V1_D_geo_c01_{geometryResolution}_yuv420p10le.yuv",
+                f"V1/D/TMIV_V1_D_tex_c00_{textureResolution}_yuv420p10le.yuv",
+                f"V1/D/TMIV_V1_D_tex_c01_{textureResolution}_yuv420p10le.yuv",
             ],
         )
 
@@ -353,32 +355,32 @@ class IntegrationTest:
             + ["V{{0}}/{{1}}/TMIV_V{{0}}_{{1}}_geo_c{{3:02}}_{{4}}x{{5}}_{{6}}.yuv"]
             + ["-p", "inputTextureVideoFramePathFmt"]
             + ["V{{0}}/{{1}}/TMIV_V{{0}}_{{1}}_tex_c{{3:02}}_{{4}}x{{5}}_{{6}}.yuv"]
-            + ["-p", "inputBitstreamPathFmt", "V3/D/TMIV_V3_D.bit"]
+            + ["-p", "inputBitstreamPathFmt", "V1/D/TMIV_V1_D.bit"]
             + ["-p", "inputViewportParamsPathFmt", "test/sequences/T{{1}}.json"]
-            + ["-n", "3", "-N", "3", "-s", "D", "-r", "R0", "-v", "v14"]
+            + ["-n", "1", "-N", "3", "-s", "D", "-r", "R0", "-v", "v14"]
             + ["-V", "debug"],
-            "{3}/V3/D/R0/V3_D_R0_v14.log",
-            [f"V3/D/R0/V3_D_R0_v14_tex_{cameraRenderResolution}_yuv420p10le.yuv"],
+            "{3}/V1/D/R0/V1_D_R0_v14.log",
+            [f"V1/D/R0/V1_D_R0_v14_tex_{cameraRenderResolution}_yuv420p10le.yuv"],
         )
 
         f2_2 = self.launchCommand(
             executor,
             [f1],
             ["{0}/bin/TmivParser"]
-            + ["-b", "{3}/V3/D/TMIV_V3_D.bit"]
-            + ["-o", "{3}/V3/D/TMIV_V3_D.hls"],
+            + ["-b", "{3}/V1/D/TMIV_V1_D.bit"]
+            + ["-o", "{3}/V1/D/TMIV_V1_D.hls"],
             None,
-            ["V3/D/TMIV_V3_D.hls"],
+            ["V1/D/TMIV_V1_D.hls"],
         )
 
         f2_3 = self.launchCommand(
             executor,
             [f1],
             ["{0}/bin/TmivBitrateReport"]
-            + ["-b", "{3}/V3/D/TMIV_V3_D.bit"]
-            + ["-o", "{3}/V3/D/TMIV_V3_D.csv"],
+            + ["-b", "{3}/V1/D/TMIV_V1_D.bit"]
+            + ["-o", "{3}/V1/D/TMIV_V1_D.csv"],
             None,
-            ["V3/D/TMIV_V3_D.csv"],
+            ["V1/D/TMIV_V1_D.csv"],
         )
 
         f2_4 = self.launchCommand(
@@ -390,12 +392,12 @@ class IntegrationTest:
             + ["V{{0}}/{{1}}/TMIV_V{{0}}_{{1}}_geo_c{{3:02}}_{{4}}x{{5}}_{{6}}.yuv"]
             + ["-p", "inputTextureVideoFramePathFmt"]
             + ["V{{0}}/{{1}}/TMIV_V{{0}}_{{1}}_tex_c{{3:02}}_{{4}}x{{5}}_{{6}}.yuv"]
-            + ["-p", "inputBitstreamPathFmt", "V3/D/TMIV_V3_D.bit"]
+            + ["-p", "inputBitstreamPathFmt", "V1/D/TMIV_V1_D.bit"]
             + ["-p", "inputViewportParamsPathFmt", "test/sequences/T{{1}}.json"]
-            + ["-n", "3", "-N", "3", "-s", "D", "-r", "R0", "-P", "p02"]
+            + ["-n", "1", "-N", "3", "-s", "D", "-r", "R0", "-P", "p02"]
             + ["-V", "debug"],
-            "{3}/V3/D/R0/V3_D_R0_p02.log",
-            [f"V3/D/R0/V3_D_R0_p02_tex_{poseTraceRenderResolution}_yuv420p10le.yuv"],
+            "{3}/V1/D/R0/V1_D_R0_p02.log",
+            [f"V1/D/R0/V1_D_R0_p02_tex_{poseTraceRenderResolution}_yuv420p10le.yuv"],
         )
 
         return [f2_1, f2_2, f2_3, f2_4]

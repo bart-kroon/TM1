@@ -74,6 +74,11 @@ static constexpr auto knownToolsetIdcs =
                PtlProfileToolsetIdc::MIV_Main, PtlProfileToolsetIdc::MIV_Extended,
                PtlProfileToolsetIdc::MIV_Geometry_Absent};
 
+// Clause 3: MIV toolset profile component
+static constexpr auto mivToolsetProfileComponents =
+    std::array{PtlProfileToolsetIdc::MIV_Main, PtlProfileToolsetIdc::MIV_Extended,
+               PtlProfileToolsetIdc::MIV_Geometry_Absent};
+
 enum class PtlProfileReconstructionIdc : uint8_t {
   VPCC_Rec0,              // ISO/IEC DIS 23090-5(2E):2021 Table H-4 (V-PCC)
   VPCC_Rec1,              // ISO/IEC DIS 23090-5(2E):2021 Table H-4 (V-PCC)

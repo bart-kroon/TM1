@@ -83,6 +83,7 @@
     "maxLumaSampleRate": 1069547520.0,
     "nonAggregatedMaskDilationIter": 16,
     "numGroups": 1,
+    "oneV3cFrameOnly": false,
     "oneViewPerAtlasFlag": false,
     "outputBitstreamPathFmt": "P{0}/{1}/TMIV_P{0}_{1}.bit",
     "outputDirectory": ".",

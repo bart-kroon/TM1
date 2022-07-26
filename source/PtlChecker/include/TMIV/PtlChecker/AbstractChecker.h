@@ -66,6 +66,7 @@ public:
   virtual void checkVideoFrame(MivBitstream::VuhUnitType vut,
                                const MivBitstream::AtlasSequenceParameterSetRBSP &asps,
                                const Common::Frame<> &frame) = 0;
+  virtual void checkV3cFrame(const MivBitstream::AccessUnit &frame) = 0;
 };
 
 using SharedChecker = std::shared_ptr<PtlChecker::AbstractChecker>;

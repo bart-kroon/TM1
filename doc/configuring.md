@@ -168,6 +168,22 @@ Unless specified otherwise, the base directory for these path formats is `output
 * **outputTransparencyPathFmt**: the path format of the uncompressed transparency (alpha) video data of an MPI sequence, produced by the MPI converter, with the same placeholders as `inputGeometryPathFmt`.
 * **outputMpiPcsPathFmt**: the path format of a compressed MPI content in PCS format, produced by the MPI converter, with the same placeholders as `inputGeometryPathFmt`.
 
+## Profile-tier-level parameters
+
+The Encoder accepts profile-tier-level parameters and writes these into the bitstream. The Encoder does not check these parameters.
+In general the Encoder is happy to go out-of-profile to enable experiments. Similarly, the Decoder will check PTL constraints but will only warn.
+The DecoderLog executable checks conformance of a bitstream, and will raise a runtime error when a bitstream is out-of-profile. 
+
+* **toolsetIdc:** string; the `ptl_profile_toolset_idc` value, as in the specification, e.g. "MIV Main".
+* **levelIdc:** string; the `ptl_level_idc` value, as a string "1.0", "1.5", etc. On the command-line, add quotes otherwise the value is interpret as a number.
+* **oneV3cFrameOnly:** bool; the `ptc_one_v3c_frame_only_flag` value.
+* **reconstructionIdc:** string; the `ptl_reconstruction_idc` value, as in the specification, e.g. "Rec Unconstrained".
+
+Note that:
+
+* The `ptc_max_decodes` value is automatically determined by the Encoder.
+* The `ptc_restricted_geometry_flag` is false for the Encoder and true for the MpiEncoder.
+
 ## Algorithmic parameters
 
 Some of the algorithmic components of the test model have parameters. This section provides a short description of these parameters in reference to the _test model_ [[4]](/README.md#references).
@@ -213,7 +229,7 @@ These parameters are in the root of the configuration file and may be accessed b
 * **maxOutlierRatio:** float; pixel outlier threshold above which the geometry
   quality is judged to be low.
 
-### Encoder and group-based encoder
+### Encoder
 
 Most of the parameters are defined in the root. The exception is:
 

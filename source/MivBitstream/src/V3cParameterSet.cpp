@@ -354,11 +354,25 @@ void ProfileTierLevel::encodeTo(Common::OutputBitstream &bitstream) const {
 }
 
 auto ProfileTierLevel::profile() const -> std::string {
-  if (ptl_profile_reconstruction_idc() == PtlProfileReconstructionIdc::Rec_Unconstrained) {
-    return fmt::format("{} {}", ptl_profile_codec_group_idc(), ptl_profile_toolset_idc());
+  std::ostringstream stream;
+
+  fmt::print(stream, "{} {}", ptl_profile_codec_group_idc(), ptl_profile_toolset_idc());
+
+  if (ptl_toolset_constraints_present_flag()) {
+    const auto &ptci = ptl_profile_toolset_constraints_information();
+
+    if (ptci.ptc_restricted_geometry_flag()) {
+      fmt::print(stream, " Restricted Geometry");
+    }
+    if (ptci.ptc_one_v3c_frame_only_flag()) {
+      fmt::print(stream, " Still");
+    }
   }
-  return fmt::format("{} {} {}", ptl_profile_codec_group_idc(), ptl_profile_toolset_idc(),
-                     ptl_profile_reconstruction_idc());
+
+  if (ptl_profile_reconstruction_idc() != PtlProfileReconstructionIdc::Rec_Unconstrained) {
+    fmt::print(stream, " {}", ptl_profile_reconstruction_idc());
+  }
+  return stream.str();
 }
 
 auto OccupancyInformation::printTo(std::ostream &stream, AtlasId atlasId) const -> std::ostream & {

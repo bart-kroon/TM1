@@ -46,8 +46,12 @@ using NUH = TMIV::MivBitstream::NalUnitHeader;
 using ATI = TMIV::MivBitstream::AiAttributeTypeId;
 using ASPS = TMIV::MivBitstream::AtlasSequenceParameterSetRBSP;
 using APM = TMIV::MivBitstream::AtduPatchMode;
+using VET = TMIV::MivBitstream::VpsExtensionType;
 
+using TMIV::Common::contains;
 using TMIV::Common::Frame;
+using TMIV::Common::Vec2i;
+using TMIV::MivBitstream::AccessUnit;
 using TMIV::MivBitstream::AthType;
 using TMIV::MivBitstream::AtlasFrameParameterSetRBSP;
 using TMIV::MivBitstream::AtlasId;
@@ -55,6 +59,7 @@ using TMIV::MivBitstream::AtlasTileDataUnit;
 using TMIV::MivBitstream::AtlasTileLayerRBSP;
 using TMIV::MivBitstream::AttributeInformation;
 using TMIV::MivBitstream::CommonAtlasFrameRBSP;
+using TMIV::MivBitstream::mivToolsetProfileComponents;
 using TMIV::MivBitstream::NalUnitHeader;
 using TMIV::MivBitstream::NalUnitType;
 using TMIV::MivBitstream::PackingInformation;
@@ -85,11 +90,10 @@ auto unit() {
 }
 
 [[nodiscard]] constexpr auto mivToolset(TS toolsetIdc) noexcept {
-  return toolsetIdc == TS::MIV_Main || toolsetIdc == TS::MIV_Extended ||
-         toolsetIdc == TS::MIV_Geometry_Absent;
+  return contains(mivToolsetProfileComponents, toolsetIdc);
 }
 
-constexpr auto size = TMIV::Common::Vec2i{72, 24};
+constexpr auto size = Vec2i{72, 24};
 
 auto allowedAttrTypeIds(TS toolsetIdc) {
   switch (toolsetIdc) {
@@ -143,7 +147,7 @@ auto vps(CG codecGroupIdc = CG::HEVC444, TS toolsetIdc = TS::MIV_Main,
   ptl.ptl_profile_codec_group_idc(codecGroupIdc)
       .ptl_profile_toolset_idc(toolsetIdc)
       .ptl_profile_reconstruction_idc(RC::Rec_Unconstrained)
-      .ptl_level_idc(LV::Level_8_5);
+      .ptl_level_idc(LV::Level_4_5);
 
   // Set MIV Extended sub-profile
   if (restrictedGeometry) {
@@ -261,11 +265,8 @@ TEST_CASE("PtlChecker ISO/IEC DIS 23090-5(2E):2021 A.1") {
   auto unit = test::unit();
 
   SECTION("The temporal ID of an atlas sub-bitstream shall be equal to 0") {
-    using TMIV::MivBitstream::NalUnitHeader;
-    using TMIV::MivBitstream::NalUnitType;
-
-    const auto nuh1 = NalUnitHeader{NalUnitType::NAL_IDR_N_LP, 0, 1};
-    const auto nuh2 = NalUnitHeader{NalUnitType::NAL_IDR_N_LP, 0, 2};
+    const auto nuh1 = NUH{NUT::NAL_IDR_N_LP, 0, 1};
+    const auto nuh2 = NUH{NUT::NAL_IDR_N_LP, 0, 2};
 
     CHECK_NOTHROW(unit.checkNuh(nuh1));
     CHECK_THROWS_AS(unit.checkNuh(nuh2), test::Exception);
@@ -292,7 +293,7 @@ TEST_CASE("PtlChecker ISO/IEC DIS 23090-5(2E):2021 Table A-2") {
   const auto yuv420p10 = Frame<>::yuv420(test::size, 10);
   const auto yuv420p12 = Frame<>::yuv420(test::size, 12);
 
-  const auto setup = [&](CG codecGroupIdc) -> TMIV::MivBitstream::AtlasSequenceParameterSetRBSP {
+  const auto setup = [&](CG codecGroupIdc) -> ASPS {
     auto vps = test::vps(codecGroupIdc);
     unit.checkAndActivateVps(vps);
     const auto atlasId = vps.vps_atlas_id(0);
@@ -385,9 +386,7 @@ TEST_CASE("PtlChecker ISO/IEC DIS 23090-5(2E):2021 Table A-3") {
 TEST_CASE("PtlChecker ISO/IEC 23090-12:2021 A.4.1") {
   auto unit = test::unit();
 
-  const auto testFrameSizeCheck = [&](VUT vut,
-                                      const TMIV::MivBitstream::AtlasSequenceParameterSetRBSP &asps,
-                                      int32_t width, int32_t height) {
+  const auto testFrameSizeCheck = [&](VUT vut, const ASPS &asps, int32_t width, int32_t height) {
     const auto frame1 = [](int32_t w, int32_t h) { return Frame<>::yuv420({w, h}, 8); };
 
     CAPTURE(vut, width, height);
@@ -519,9 +518,9 @@ TEST_CASE("PtlChecker ISO/IEC 23090-12:2021 Table A-1") {
     CAPTURE(vmePresent);
 
     if (vmePresent) {
-      vps.vps_extension(TMIV::MivBitstream::VpsExtensionType::VPS_EXT_MIV).vps_miv_extension();
+      vps.vps_extension(VET::VPS_EXT_MIV).vps_miv_extension();
     } else {
-      vps.removeVpsExtension(TMIV::MivBitstream::VpsExtensionType::VPS_EXT_MIV);
+      vps.removeVpsExtension(VET::VPS_EXT_MIV);
     }
 
     if (test::vpccToolset(toolsetIdc)) {
@@ -656,9 +655,10 @@ TEST_CASE("PtlChecker ISO/IEC 23090-12:2021 Table A-1") {
         } else if (attrCount == 2) {
           CHECK_THROWS_IFF(unit.checkAndActivateVps(vps),
                            toolsetIdc == TS::MIV_Main || toolsetIdc == TS::MIV_Geometry_Absent);
-        } else {
-          // V-PCC level checking is not implemented
+        } else if (attrCount < 63) {
           CHECK_THROWS_IFF(unit.checkAndActivateVps(vps), test::mivToolset(toolsetIdc));
+        } else {
+          CHECK_THROWS(unit.checkAndActivateVps(vps));
         }
 
         test::addAttributes(vps, j, prevAttrCount);
@@ -806,6 +806,29 @@ TEST_CASE("PtlChecker ISO/IEC 23090-12:2021 Table A-1") {
     testFlag(&ASPS::asps_use_eight_orientations_flag, toolsetIdc != TS::VPCC_Basic);
     testFlag(&ASPS::asps_extended_projection_enabled_flag, toolsetIdc != TS::VPCC_Basic);
     testFlag(&ASPS::asps_miv_extension_present_flag, !test::vpccToolset(toolsetIdc));
+    testFlag(&ASPS::asps_vpcc_extension_present_flag, !test::mivToolset(toolsetIdc));
+  }
+
+  SECTION("asps_max_dec_atlas_frame_buffering_minus1") {
+    const auto value = GENERATE(uint8_t{}, uint8_t{33});
+    CAPTURE(value);
+
+    const auto atlasId = vps.vps_atlas_id(0);
+
+    auto asps = test::asps(vps, atlasId);
+    asps.asps_max_dec_atlas_frame_buffering_minus1(value);
+
+    if (asps.asps_miv_extension_present_flag() || restrictedGeometry) {
+      auto &asme = asps.asps_miv_extension();
+
+      if (restrictedGeometry) {
+        asme.asme_patch_constant_depth_flag(true);
+      }
+    }
+
+    unit.checkAndActivateVps(vps);
+
+    CHECK_THROWS_IFF(unit.checkAsps(atlasId, asps), value != 0 && test::mivToolset(toolsetIdc));
   }
 
   SECTION("asme_patch_constant_depth_flag") {
@@ -946,6 +969,31 @@ TEST_CASE("PtlChecker ISO/IEC 23090-12:2021 A.4.2") {
   }
 }
 
+TEST_CASE("PtlChecker ISO/IEC 23090-12(2E) A.4.3") {
+  SECTION("ptc_only_one_v3c_frame_flag") {
+    const auto ptc_one_v3c_frame_only_flag = GENERATE(false, true);
+    const auto ptl_level_idc = GENERATE(LV::Level_1_0, LV::Level_4_5, LV::Level_8_5);
+
+    auto unit = test::unit();
+    auto vps = test::vps(TS::MIV_Main);
+    vps.profile_tier_level().ptl_level_idc(ptl_level_idc);
+    auto frame = AccessUnit{};
+
+    if (ptc_one_v3c_frame_only_flag) {
+      vps.profile_tier_level().ptl_profile_toolset_constraints_information(
+          ProfileToolsetConstraintsInformation{}.ptc_one_v3c_frame_only_flag(true));
+    }
+
+    CHECK_THROWS_IFF(unit.checkAndActivateVps(vps),
+                     !ptc_one_v3c_frame_only_flag && ptl_level_idc == LV::Level_8_5);
+
+    if (ptc_one_v3c_frame_only_flag || ptl_level_idc != LV::Level_8_5) {
+      unit.checkV3cFrame(frame);
+      CHECK_THROWS_IFF(unit.checkV3cFrame(frame), ptc_one_v3c_frame_only_flag);
+    }
+  }
+}
+
 TEST_CASE("PtlChecker tier") {
   // NOTE(#517): http://mpegx.int-evry.fr/software/MPEG/PCC/Specs/23090-5/-/issues/497
   // It is unclear how to handle `ptl_tier_flag`. Current solution is to warn on tier 1 bitstreams.
@@ -980,6 +1028,11 @@ TEST_CASE("PtlChecker ISO/IEC DIS 23090-5(2E):2021 A.6.1 level limits") {
     auto vps = test::vps(TS::MIV_Main, false);
     vps.profile_tier_level().ptl_level_idc(level);
 
+    if (level == LV::Level_8_5) {
+      vps.profile_tier_level().ptl_profile_toolset_constraints_information(
+          ProfileToolsetConstraintsInformation{}.ptc_one_v3c_frame_only_flag(true));
+    }
+
     const auto j = vps.vps_atlas_id(0);
     vps.vps_frame_width(j, 1);
     vps.vps_frame_height(j, fail ? maxAtlasSize + 1 : maxAtlasSize);
@@ -999,6 +1052,12 @@ TEST_CASE("PtlChecker ISO/IEC DIS 23090-5(2E):2021 A.6.1 level limits") {
 
     auto vps = test::vps(TS::VPCC_Extended, false);
     vps.profile_tier_level().ptl_level_idc(level);
+
+    if (level == LV::Level_8_5) {
+      vps.profile_tier_level().ptl_profile_toolset_constraints_information(
+          ProfileToolsetConstraintsInformation{}.ptc_one_v3c_frame_only_flag(true));
+    }
+
     const auto j = vps.vps_atlas_id(0);
     vps.vps_map_count_minus1(j, static_cast<uint8_t>(maxMapCount - (fail ? 0 : 1)));
 
@@ -1014,6 +1073,11 @@ TEST_CASE("PtlChecker ISO/IEC DIS 23090-5(2E):2021 A.6.1 level limits") {
 
     auto vps = test::vps(TS::VPCC_Extended, false);
     vps.profile_tier_level().ptl_level_idc(level);
+
+    if (level == LV::Level_8_5) {
+      vps.profile_tier_level().ptl_profile_toolset_constraints_information(
+          ProfileToolsetConstraintsInformation{}.ptc_one_v3c_frame_only_flag(true));
+    }
 
     const auto j = vps.vps_atlas_id(0);
     test::addAttributes(vps, j, static_cast<uint8_t>(maxAttrCount + (fail ? 1 : 0)));

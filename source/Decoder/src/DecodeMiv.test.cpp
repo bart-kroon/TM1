@@ -298,6 +298,7 @@ TEST_CASE("TMIV::Decoder::decodeMiv (1)") {
     CHECK(checker->checkVuh_callCount == 1);
     CHECK(checker->checkAndActivateVps_callCount == 1);
     CHECK(checker->checkVideoFrame_callCount == 1);
+    CHECK(checker->checkV3cFrame_callCount == 1);
 
     // PTL checking of (common) atlas sub-bitstreams is delegated, not this unit:
     CHECK(checker->checkAndActivateNuh_callCount == 0);

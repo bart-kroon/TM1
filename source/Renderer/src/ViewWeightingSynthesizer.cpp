@@ -195,6 +195,7 @@ public:
 
     // 0) Initialization (cont'd)
     computeCameraVisibility(sourceHelperList, targetHelper, depthBitDepth);
+    clearUnusedFramedata(sourceHelperList);
     computeAngularDistortionPerSource(sourceHelperList);
 
     // 2) Reprojection
@@ -252,6 +253,15 @@ private:
     for (size_t viewIdx = 0; viewIdx < frame.viewParamsList.size(); ++viewIdx) {
       if (frame.viewParamsList[viewIdx].viewInpaintFlag) {
         m_inpaintedViews.insert(viewIdx);
+      }
+    }
+  }
+
+  void clearUnusedFramedata(const ProjectionHelperList &sourceHelperList) {
+    for (size_t viewIdx = 0; viewIdx < sourceHelperList.size(); viewIdx++) {
+      if (!m_cameraVisibility[viewIdx]) {
+        m_sourceColor[viewIdx] = Common::Mat<Common::Vec3f>{};
+        m_sourceDepth[viewIdx] = Common::Mat<float>{};
       }
     }
   }

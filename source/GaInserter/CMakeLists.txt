@@ -7,7 +7,6 @@ create_tmiv_library(
         "src/GaInserter.cpp"
     PUBLIC
         MivBitstreamLib
-        fmt::fmt
     )
 
 create_tmiv_executable(
@@ -17,7 +16,6 @@ create_tmiv_executable(
         "src/GaInserter.main.cpp"
     PRIVATE
         GaInserterLib
-        fmt::fmt
     )
 
 create_catch2_unit_test(
@@ -27,5 +25,4 @@ create_catch2_unit_test(
         "src/GaInserter.test.cpp"
     PRIVATE
         GaInserterLib
-        fmt::fmt
 )

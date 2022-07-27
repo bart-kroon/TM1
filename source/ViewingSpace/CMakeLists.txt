@@ -8,7 +8,6 @@ create_tmiv_library(
         "src/ViewingSpaceEvaluator.cpp"
     PUBLIC
         MivBitstreamLib
-        fmt::fmt
     )
 
 create_catch2_unit_test(

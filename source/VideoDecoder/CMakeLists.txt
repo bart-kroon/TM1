@@ -8,8 +8,6 @@ create_tmiv_library(
         "src/UnavailablePartitioners.cpp"
     PUBLIC
         CommonLib
-    PRIVATE
-        fmt::fmt
     )
 
 if (HAVE_HM AND TARGET VideoDecoderLib)
@@ -38,7 +36,6 @@ if (HAVE_VVDEC AND TARGET VideoDecoderLib)
         PRIVATE
             CommonLib
             vvdec::vvdec
-            fmt::fmt
         )
     target_link_libraries(VideoDecoderLib PRIVATE VideoDecoderVvdecLib)
     target_compile_definitions(VideoDecoderLib PUBLIC HAVE_VVDEC)
@@ -53,5 +50,4 @@ create_catch2_unit_test(
         "src/VideoDecoder.test.cpp"
     PRIVATE
         VideoDecoderLib
-        fmt::fmt
     )

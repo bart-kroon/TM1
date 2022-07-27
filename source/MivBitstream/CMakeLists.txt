@@ -39,8 +39,6 @@ create_tmiv_library(
         "src/V3cUnit.cpp"
     PUBLIC
         CommonLib
-    PRIVATE
-        fmt::fmt
     )
 
 if(${ENABLE_M57419})

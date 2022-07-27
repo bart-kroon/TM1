@@ -19,8 +19,6 @@ create_tmiv_library(
         "src/V3cUnitBuffer.cpp"
     PUBLIC
         PtlCheckerLib
-    PRIVATE
-        fmt::fmt
     )
 
 create_tmiv_executable(
@@ -33,7 +31,6 @@ create_tmiv_executable(
         DecoderLib
         VideoDecoderLib
         RendererFrontLib
-        fmt::fmt
     )
 
 create_tmiv_executable(
@@ -44,7 +41,6 @@ create_tmiv_executable(
     PRIVATE
         DecoderLib
         VideoDecoderLib
-        fmt::fmt
     )
 
 create_catch2_unit_test(
@@ -63,7 +59,6 @@ create_catch2_unit_test(
         "src/V3cUnitBuffer.test.cpp"
     PRIVATE
         DecoderLib
-        fmt::fmt
     )
 
 create_tmiv_executable(
@@ -73,7 +68,6 @@ create_tmiv_executable(
         "src/NativeVideoDecoder.test.cpp"
     PRIVATE
         DecoderLib
-        fmt::fmt
     )
 if (TARGET TmivNativeVideoDecoderTest)
     set_property(TARGET TmivNativeVideoDecoderTest PROPERTY FOLDER "TMIV tests")

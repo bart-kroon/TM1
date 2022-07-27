@@ -12,7 +12,6 @@ create_tmiv_library(
     PRIVATE
         DecoderLib
         VideoDecoderLib
-        fmt::fmt
 )
 
 create_catch2_unit_test(
@@ -36,5 +35,4 @@ create_tmiv_executable(
         DecoderLib
         VideoDecoderLib
         IOLib
-        fmt::fmt
     )

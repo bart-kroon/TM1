@@ -28,8 +28,6 @@ create_tmiv_library(
     PUBLIC
         MivBitstreamLib
         ${CppFilesystemLib}
-    PRIVATE
-        fmt::fmt
     )
 
 create_catch2_unit_test(
@@ -42,5 +40,4 @@ create_catch2_unit_test(
         "src/FakeFilesystem.cpp"
     PRIVATE
         IOLib
-        fmt::fmt
     )

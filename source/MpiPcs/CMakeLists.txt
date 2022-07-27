@@ -8,8 +8,6 @@ create_tmiv_library(
         "src/MpiPcs.cpp"
     PUBLIC
         IOLib
-    PRIVATE
-        fmt::fmt
     )
 
 create_tmiv_executable(
@@ -19,7 +17,6 @@ create_tmiv_executable(
         "src/MpiPcs.main.cpp"
     PRIVATE
         MpiPcsLib
-        fmt::fmt
     )
 
 create_catch2_unit_test(
@@ -30,5 +27,4 @@ create_catch2_unit_test(
         "src/Frame.test.cpp"
     PRIVATE
         MpiPcsLib
-        fmt::fmt
     )

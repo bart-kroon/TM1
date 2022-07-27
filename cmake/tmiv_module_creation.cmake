@@ -31,7 +31,7 @@ function(create_tmiv_library)
         add_library(${TMIV_LIB_CREATOR_TARGET} ${TMIV_LIB_CREATOR_SOURCES})
         set_property(TARGET ${TMIV_LIB_CREATOR_TARGET} PROPERTY FOLDER "TMIV libraries")   
         target_link_libraries(${TMIV_LIB_CREATOR_TARGET} PUBLIC ${TMIV_LIB_CREATOR_PUBLIC})
-        target_link_libraries(${TMIV_LIB_CREATOR_TARGET} PRIVATE ${TMIV_LIB_CREATOR_PRIVATE})
+        target_link_libraries(${TMIV_LIB_CREATOR_TARGET} PRIVATE fmt::fmt ${TMIV_LIB_CREATOR_PRIVATE})
     
         target_include_directories(${TMIV_LIB_CREATOR_TARGET}
             PUBLIC
@@ -80,7 +80,7 @@ function(create_tmiv_executable)
     if(NOT TARGET Tmiv${TMIV_EXE_CREATOR_TARGET})
         add_executable(Tmiv${TMIV_EXE_CREATOR_TARGET} ${TMIV_EXE_CREATOR_SOURCES})
         set_property(TARGET Tmiv${TMIV_EXE_CREATOR_TARGET} PROPERTY FOLDER "TMIV executables")
-        target_link_libraries(Tmiv${TMIV_EXE_CREATOR_TARGET} PRIVATE ${TMIV_EXE_CREATOR_PRIVATE})
+        target_link_libraries(Tmiv${TMIV_EXE_CREATOR_TARGET} PRIVATE fmt::fmt ${TMIV_EXE_CREATOR_PRIVATE})
     endif()
 
     install(

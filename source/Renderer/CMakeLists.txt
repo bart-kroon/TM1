@@ -33,7 +33,6 @@ create_tmiv_library(
         IOLib
     PRIVATE
         RendererLib
-        fmt::fmt
     )
 
    

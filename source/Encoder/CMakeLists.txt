@@ -28,7 +28,6 @@ create_tmiv_library(
         PrunerLib
         RendererLib
         ViewOptimizerLib
-        fmt::fmt
     )
 
 create_tmiv_executable(
@@ -46,7 +45,6 @@ create_tmiv_executable(
         RendererLib
         ViewOptimizerLib
         IOLib
-        fmt::fmt
     )
 
 create_tmiv_executable(
@@ -65,7 +63,6 @@ create_tmiv_executable(
         RendererLib
         ViewOptimizerLib
         MpiPcsLib
-        fmt::fmt
     )
 
 create_catch2_unit_test(

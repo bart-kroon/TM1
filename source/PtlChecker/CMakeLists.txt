@@ -7,8 +7,6 @@ create_tmiv_library(
         "src/PtlChecker.cpp"
     PUBLIC
         MivBitstreamLib
-    PRIVATE
-        fmt::fmt
     )
 
 create_catch2_unit_test(

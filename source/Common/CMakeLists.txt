@@ -13,7 +13,6 @@ create_tmiv_library(
         "src/Frame.cpp"
         "src/LoggingStrategy.cpp"
     PRIVATE
-        fmt::fmt
         Threads::Threads
     )
 
@@ -53,5 +52,4 @@ create_catch2_unit_test(
         "src/verify.test.cpp"
     PRIVATE
         CommonLib
-        fmt::fmt
     )

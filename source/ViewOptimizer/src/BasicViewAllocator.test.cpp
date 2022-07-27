@@ -93,8 +93,8 @@ TEST_CASE("TMIV::ViewOptimizer::BasicViewAllocator") {
 
     SECTION("optimizeParams") {
       const auto viewOptimizerParams = unit.optimizeParams(test::sourceParams);
-      REQUIRE(viewOptimizerParams.viewParamsList.size() ==
-              test::sourceParams.viewParamsList.size());
+      const auto referenceSize = test::sourceParams.viewParamsList.size();
+      REQUIRE(viewOptimizerParams.viewParamsList.size() == referenceSize);
 
       const auto expected =
           std::array{true, false, true, true, true, false, true, true, true, false};

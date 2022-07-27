@@ -24,4 +24,5 @@ create_catch2_unit_test(
     PRIVATE
         ViewOptimizerLib
         RendererLib
+        fmt::fmt
     )

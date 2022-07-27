@@ -75,4 +75,6 @@ create_tmiv_executable(
         DecoderLib
         fmt::fmt
     )
-set_property(TARGET TmivNativeVideoDecoderTest PROPERTY FOLDER "TMIV tests")
+if (TARGET TmivNativeVideoDecoderTest)
+    set_property(TARGET TmivNativeVideoDecoderTest PROPERTY FOLDER "TMIV tests")
+endif()

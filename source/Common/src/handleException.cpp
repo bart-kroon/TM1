@@ -45,7 +45,7 @@ auto handleException() noexcept -> int32_t {
   try {
     throw;
   } catch (Usage &e) {
-    logInfo(e.what());
+    circumventLogger("{}\n", e.what());
     return 1;
   } catch (std::runtime_error &e) {
     logError(e.what());

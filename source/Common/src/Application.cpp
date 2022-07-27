@@ -109,7 +109,7 @@ Application::Application(const char *tool, std::vector<const char *> argv, Optio
   if (!m_json || std::any_of(m_options.cbegin(), m_options.cend(),
                              [](const auto &o) { return !o.multiple && o.values.empty(); })) {
     std::ostringstream what;
-    what << "Usage: " << tool
+    what << "Usage: Tmiv" << tool
          << " [OPTIONS...] (-c CONFIGURATION)+ (-p KEY VALUE)* [-j THREAD_COUNT] [-V";
     auto sep = ' ';
 

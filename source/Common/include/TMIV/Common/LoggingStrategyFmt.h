@@ -99,6 +99,12 @@ template <typename... Args, typename = std::enable_if_t<0 != sizeof...(Args)>>
 void logDebug(fmt::format_string<Args...> fmt, Args &&...args) noexcept {
   logMessage(LogLevel::debug, fmt, std::forward<Args>(args)...);
 }
+
+// Like fmt::print(fmt, args...), but document that it is desired to circumvent the logger
+template <typename... Args> void circumventLogger(fmt::format_string<Args...> fmt, Args &&...args) {
+  using fmt::print; // Circumvent code quality check
+  print(fmt, std::forward<Args>(args)...);
+}
 } // namespace TMIV::Common
 
 #endif

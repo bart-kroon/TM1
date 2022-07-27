@@ -37,6 +37,7 @@
 
 using TMIV::Common::allLogLevels;
 using TMIV::Common::changeMaxLogLevel;
+using TMIV::Common::circumventLogger;
 using TMIV::Common::logDebug;
 using TMIV::Common::logError;
 using TMIV::Common::logInfo;
@@ -68,7 +69,6 @@ TEST_CASE("Format errors are handled by printing and returning normally") {
 
   changeMaxLogLevel(LogLevel::debug);
   replaceLoggingStrategy([&callCount](LogLevel level, std::string_view what) {
-    using fmt::print; // Circumvent code quality check
     ++callCount;
     CAPTURE(callCount, level, what);
 
@@ -79,7 +79,7 @@ TEST_CASE("Format errors are handled by printing and returning normally") {
       break;
     case 2:
       CHECK(level == LogLevel::error);
-      print("{}\n", what);
+      circumventLogger("{}\n", what);
       break;
     case 3:
       CHECK(level == LogLevel::info);

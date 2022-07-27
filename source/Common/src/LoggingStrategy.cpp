@@ -88,9 +88,7 @@ struct LoggerSingleton {
       }
     }();
 
-    using fmt::print; // Circumvent code quality check
-
-    print("{:013.6f}  {:7}  {}{}\n", duration.count(), level, prefix, what);
+    circumventLogger("{:013.6f}  {:7}  {}{}\n", duration.count(), level, prefix, what);
   };
 
   LogLevel maxLevel =
@@ -132,14 +130,13 @@ void logVerbose(std::string_view what) noexcept { logMessage(LogLevel::verbose, 
 void logDebug(std::string_view what) noexcept { logMessage(LogLevel::debug, what); }
 
 [[noreturn]] void handleLogMessageException() noexcept {
-  using fmt::print; // Circumvent code quality check
   try {
     try {
       throw;
     } catch (std::exception &e) {
-      print("ERROR: Exception in TMIV::Common::logMessage: {}\n", e.what());
+      circumventLogger("ERROR: Exception in TMIV::Common::logMessage: {}\n", e.what());
     } catch (...) {
-      print("ERROR: Unknown exception in TMIV::Common::logMessage.\n");
+      circumventLogger("ERROR: Unknown exception in TMIV::Common::logMessage.\n");
     }
   } catch (...) {
   }

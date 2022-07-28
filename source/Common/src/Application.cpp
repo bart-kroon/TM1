@@ -176,6 +176,8 @@ void Application::startTime() { m_startTime = clock(); }
 void Application::printTime() const {
   auto executeTime =
       (static_cast<double>(clock()) - static_cast<double>(m_startTime)) / CLOCKS_PER_SEC;
-  logInfo("Total Time: {:.3} sec.", executeTime);
+  logInfo("Note that the total time reported directly below is CPU time, and the logging timestamp "
+          "is wall time. Typically the CPU time is reported.");
+  logInfo("Total Time: {:.3f} sec.", executeTime);
 }
 } // namespace TMIV::Common

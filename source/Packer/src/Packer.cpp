@@ -160,15 +160,33 @@ void Packer::initialize(const Common::SizeVector &atlasSizes, const int32_t bloc
   }
 }
 
+namespace {
+auto patchParamsFor(size_t atlasId, const MivBitstream::ViewParamsList &viewParamsList,
+                    const Cluster &cluster, MaxRectPiP::Output &packerOutput, int32_t blockSize)
+    -> MivBitstream::PatchParams {
+  return MivBitstream::PatchParams{}
+      .atlasId(MivBitstream::AtlasId{static_cast<uint8_t>(atlasId)})
+      .atlasPatchProjectionId(viewParamsList[cluster.getViewIdx()].viewId)
+      .atlasPatch2dPosX(packerOutput.x())
+      .atlasPatch2dPosY(packerOutput.y())
+      .atlasPatch3dOffsetU(cluster.jmin())
+      .atlasPatch3dOffsetV(cluster.imin())
+      .atlasPatchOrientationIndex(packerOutput.isRotated()
+                                      ? MivBitstream::FlexiblePatchOrientation::FPO_ROT270
+                                      : MivBitstream::FlexiblePatchOrientation::FPO_NULL)
+      .atlasPatch3dSizeU(Common::align(cluster.width(), blockSize))
+      .atlasPatch3dSizeV(Common::align(cluster.height(), blockSize));
+}
+} // namespace
+
 auto Packer::pack(const Common::SizeVector &atlasSizes, const Common::FrameList<uint8_t> &masks,
-                  const MivBitstream::ViewParamsList &viewParamsList, const int32_t m_blockSize)
+                  const MivBitstream::ViewParamsList &viewParamsList, const int32_t blockSize)
     -> MivBitstream::PatchParamsList {
-  checkAtlasSize(atlasSizes, m_blockSize);
+  checkAtlasSize(atlasSizes, blockSize);
 
   auto [clusterList, clusteringMap, clusteringMapIndex] = computeClusters(masks, viewParamsList);
 
-  auto clusterToPack =
-      computeClusterToPack(viewParamsList, m_blockSize, clusterList, clusteringMap);
+  auto clusterToPack = computeClusterToPack(viewParamsList, blockSize, clusterList, clusteringMap);
 
   // Packing
   MivBitstream::PatchParamsList atlasParamsVector{};
@@ -192,19 +210,7 @@ auto Packer::pack(const Common::SizeVector &atlasSizes, const Common::FrameList<
         MaxRectPiP &packer = m_packerList[atlasId];
 
         if (packer.push(cluster, clusteringMap[clusteringMap_viewId], packerOutput)) {
-          MivBitstream::PatchParams p;
-
-          p.atlasId(MivBitstream::AtlasId{static_cast<uint8_t>(atlasId)});
-          p.atlasPatchProjectionId(viewParamsList[cluster.getViewIdx()].viewId);
-          p.atlasPatch2dPosX(packerOutput.x());
-          p.atlasPatch2dPosY(packerOutput.y());
-          p.atlasPatch3dOffsetU(cluster.jmin());
-          p.atlasPatch3dOffsetV(cluster.imin());
-          p.atlasPatchOrientationIndex(packerOutput.isRotated()
-                                           ? MivBitstream::FlexiblePatchOrientation::FPO_ROT270
-                                           : MivBitstream::FlexiblePatchOrientation::FPO_NULL);
-          p.atlasPatch3dSizeU(Common::align(cluster.width(), m_blockSize));
-          p.atlasPatch3dSizeV(Common::align(cluster.height(), m_blockSize));
+          auto p = patchParamsFor(atlasId, viewParamsList, cluster, packerOutput, blockSize);
 
           adaptPatchParamsToMask(p, masks[cluster.getViewIdx()].getWidth(),
                                  masks[cluster.getViewIdx()].getHeight());
@@ -234,19 +240,17 @@ auto Packer::pack(const Common::SizeVector &atlasSizes, const Common::FrameList<
         }
         auto cc = cluster.split(clusteringMap[clusteringMap_viewId], m_overlap);
 
-        if (m_minPatchSize * m_minPatchSize <= cc.first.getArea()) {
-          // modification to align the imin,jmin to even values to help renderer
-          Cluster c = Cluster::align(cc.first, 2);
-          clusterToPack.push(c);
-          clusteringMapIndex.push_back(clusteringMap_viewId);
-        }
+        const auto alignPatch = [&, &clusteringMapIndex = clusteringMapIndex](auto member) {
+          if (m_minPatchSize * m_minPatchSize <= (cc.*member).getArea()) {
+            // modification to align the imin,jmin to even values to help renderer
+            Cluster c = Cluster::align((cc.*member), 2);
+            clusterToPack.push(c);
+            clusteringMapIndex.push_back(clusteringMap_viewId);
+          }
+        };
 
-        if (m_minPatchSize * m_minPatchSize <= cc.second.getArea()) {
-          // modification to align the imin,jmin to even values to help renderer
-          Cluster c = Cluster::align(cc.second, 2);
-          clusterToPack.push(c);
-          clusteringMapIndex.push_back(clusteringMap_viewId);
-        }
+        alignPatch(&decltype(cc)::first);
+        alignPatch(&decltype(cc)::second);
       }
     }
 

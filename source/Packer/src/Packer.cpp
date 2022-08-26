@@ -194,6 +194,17 @@ auto Packer::pack(const Common::SizeVector &atlasSizes, const Common::FrameList<
 
   int32_t patchIdx = 0;
   int32_t clusteringMap_viewId = 0;
+  int32_t numTotalClusterPixels{};
+  int32_t numKeptClusterPixels{};
+
+  auto clusterToPackCopy = clusterToPack;
+
+  while (!clusterToPackCopy.empty()) {
+    const Cluster &cluster = clusterToPackCopy.top();
+    numTotalClusterPixels = numTotalClusterPixels + cluster.getNumActivePixels();
+    clusterToPackCopy.pop();
+  }
+
   while (!clusterToPack.empty()) {
     const Cluster &cluster = clusterToPack.top();
 
@@ -209,6 +220,8 @@ auto Packer::pack(const Common::SizeVector &atlasSizes, const Common::FrameList<
       for (size_t atlasId = 0; atlasId < m_packerList.size(); ++atlasId) {
         MaxRectPiP &packer = m_packerList[atlasId];
 
+        packer.setIsPushInFreeSpace(false);
+
         if (packer.push(cluster, clusteringMap[clusteringMap_viewId], packerOutput)) {
           auto p = patchParamsFor(atlasId, viewParamsList, cluster, packerOutput, blockSize);
 
@@ -223,8 +236,14 @@ auto Packer::pack(const Common::SizeVector &atlasSizes, const Common::FrameList<
                 cluster.getNumActivePixels(), p.atlasId());
           }
 
+          if (packer.getIsPushInFreeSpace()) {
+            packer.setAreaPatchPushedInFreeSpace((p.atlasPatch2dSizeX() * p.atlasPatch2dSizeY()));
+          }
+
           atlasParamsVector.push_back(p);
           patchIdx++;
+
+          numKeptClusterPixels = numKeptClusterPixels + cluster.getNumActivePixels();
 
           packed = true;
           break;
@@ -256,6 +275,20 @@ auto Packer::pack(const Common::SizeVector &atlasSizes, const Common::FrameList<
 
     clusterToPack.pop();
   }
+
+  for (size_t atlasId = 0; atlasId < m_packerList.size(); ++atlasId) {
+    Common::logVerbose(
+        "Ratio of patch area in atlas {}: {:.4f}%", atlasId,
+        ((static_cast<double>(m_packerList[atlasId].getAreaPatchPushedInFreeSpace()) /
+          (atlasSizes[atlasId][0] * atlasSizes[atlasId][1])) *
+         100));
+    m_packerList[atlasId].setAreaPatchPushedInFreeSpace(0);
+  }
+
+  Common::logVerbose(
+      "Ratio of discarded pixels of cluster: {:.4f}%",
+      (static_cast<double>(numTotalClusterPixels - numKeptClusterPixels) / numTotalClusterPixels) *
+          100);
 
   return atlasParamsVector;
 }

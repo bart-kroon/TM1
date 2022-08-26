@@ -91,12 +91,22 @@ private:
 public:
   MaxRectPiP(int32_t w, int32_t h, int32_t a, bool pip);
   auto push(const Cluster &c, const ClusteringMap &clusteringMap, Output &packerOutput) -> bool;
+  auto setIsPushInFreeSpace(bool value) { m_isPushInFreeSpace = value; }
+  auto getIsPushInFreeSpace() const -> bool { return m_isPushInFreeSpace; }
+
+  auto setAreaPatchPushedInFreeSpace(int32_t area) {
+    m_areaOfPatchPushedInFreeSpace = m_areaOfPatchPushedInFreeSpace + area;
+  }
+  auto getAreaPatchPushedInFreeSpace() const -> int32_t { return m_areaOfPatchPushedInFreeSpace; }
 
 private:
   void updateOccupancyMap(const Cluster &c, const ClusteringMap &clusteringMap,
                           const Output &packerOutput);
   auto pushInUsedSpace(int32_t w, int32_t h, bool isBasicView, Output &packerOutput) -> bool;
   auto pushInFreeSpace(int32_t w, int32_t h, bool isBasicView, Output &packerOutput) -> bool;
+
+  bool m_isPushInFreeSpace{};
+  int32_t m_areaOfPatchPushedInFreeSpace{};
 };
 } // namespace TMIV::Packer
 

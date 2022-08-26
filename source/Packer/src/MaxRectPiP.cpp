@@ -292,6 +292,8 @@ auto MaxRectPiP::pushInFreeSpace(int32_t w, int32_t h, bool isBasicView,
   // Update output
   packerOutput.set(B.left(), B.bottom(), best_rotation);
 
+  setIsPushInFreeSpace(true);
+
   return true;
 }
 } // namespace TMIV::Packer

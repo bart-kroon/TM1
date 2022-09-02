@@ -59,7 +59,7 @@ static auto viewingDirection(const Common::QuatF &rotation) -> ViewingDirection 
 
   ViewingDirection d{};
   d.yaw = Common::rad2deg(std::atan2(directionVector.y(), directionVector.x()));
-  d.pitch = Common::rad2deg(std::acos(-directionVector.z()));
+  d.pitch = Common::rad2deg(std::acos(std::clamp(-directionVector.z(), -1.F, 1.F)));
   return d;
 }
 

@@ -155,7 +155,8 @@ class CodeQualityRules:
 
     def detect_fmt_print_replace(self, match):
         raise RuntimeError(
-            "Replace `fmt::print(fmt, args...)` with `Common::logInfo(fmt, args...)`"
+            "Replace `fmt::print(fmt, args...)` with `Common::logInfo(fmt, args...)`. "
+            "Note that `fmt::print(stream, fmt, args...)` with `std::ostringstream &stream` is allowed."
         )
 
     ### other logic ###

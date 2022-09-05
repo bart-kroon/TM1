@@ -94,7 +94,7 @@ void initializePrunedViewComponent(const MivBitstream::AccessUnit &inFrame,
 auto blitPixel(const MivBitstream::AccessUnit &inFrame, Common::V3cFrameList &outFrame,
                const MivBitstream::AtlasAccessUnit &atlas, int32_t i, int32_t j) {
   // Fetch patch index
-  const auto patchIdx = atlas.patchIdx(i, j);
+  const auto patchIdx = atlas.filteredPatchIdx(i, j);
   if (patchIdx == Common::unusedPatchIdx) {
     return;
   }

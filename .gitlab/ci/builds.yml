@@ -1,6 +1,6 @@
 Release build (GCC 12):
   stage: release build
-  image: tmiv-ci:20220708
+  image: tmiv-ci:20220715
   tags: [ linux-long ]
   before_script:
     - export CXX=g++-12
@@ -32,7 +32,7 @@ Release build (GCC 12):
 
 Debug build and static analysis (Clang 14):
   stage: static analysis
-  image: tmiv-ci:20220708
+  image: tmiv-ci:20220715
   tags: [ linux-long ]
   before_script:
     - export CXX=clang++-14
@@ -74,7 +74,7 @@ Debug build and static analysis (Clang 14):
 
 Full static analysis (Clang 14):
   stage: static analysis
-  image: tmiv-ci:20220708
+  image: tmiv-ci:20220715
   tags: [ linux-long ]
   before_script:
     - export CXX=clang++-14

@@ -90,7 +90,7 @@ public:
     // For each used pixel in the atlas...
     for (int32_t i_atlas = 0; i_atlas < rows; ++i_atlas) {
       for (int32_t j_atlas = 0; j_atlas < cols; ++j_atlas) {
-        const auto patchIdx = atlas.patchIdx(i_atlas, j_atlas);
+        const auto patchIdx = atlas.filteredPatchIdx(i_atlas, j_atlas);
 
         // Push dummy vertices to keep indexing simple
         if (patchIdx == Common::unusedPatchIdx) {
@@ -133,9 +133,10 @@ public:
     result.reserve(size);
 
     auto addTriangle = [&](Common::Vec2i v0, Common::Vec2i v1, Common::Vec2i v2) {
-      const int32_t patchIdx = atlas.patchIdx(v0.y(), v0.x());
-      if (patchIdx == Common::unusedPatchIdx || patchIdx != atlas.patchIdx(v1.y(), v1.x()) ||
-          patchIdx != atlas.patchIdx(v2.y(), v2.x())) {
+      const int32_t patchIdx = atlas.filteredPatchIdx(v0.y(), v0.x());
+      if (patchIdx == Common::unusedPatchIdx ||
+          patchIdx != atlas.filteredPatchIdx(v1.y(), v1.x()) ||
+          patchIdx != atlas.filteredPatchIdx(v2.y(), v2.x())) {
         return;
       }
       const auto vertexId0 = v0.y() * cols + v0.x();

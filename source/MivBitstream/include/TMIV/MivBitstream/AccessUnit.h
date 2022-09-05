@@ -80,6 +80,17 @@ struct AtlasAccessUnit {
     const auto k = asps.asps_log2_patch_packing_block_size();
     return blockToPatchMap.getPlane(0)(row >> k, column >> k);
   }
+
+  // A filtered, nominal resolution variant on the blockToPatchMap (not specified)
+  Common::Frame<Common::PatchIdx> pixelToPatchMap;
+
+  // Index into the pixel to patch map using nominal atlas coordinates
+  [[nodiscard]] auto filteredPatchIdx(uint32_t row, uint32_t column) const -> uint16_t {
+    if (pixelToPatchMap.empty()) {
+      return patchIdx(row, column);
+    }
+    return pixelToPatchMap.getPlane(0)(row, column);
+  }
 };
 
 struct AccessUnit {

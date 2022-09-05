@@ -424,7 +424,9 @@ private:
                    weights[1] * std::get<1>(pixelAttributes[1]) +
                    weights[2] * std::get<1>(pixelAttributes[2]);
       auto patchIdGathered = textureGather<uint16_t>(
-          [&](uint32_t row, uint32_t col) { return frame.atlas[atlasId].patchIdx(row, col); },
+          [&](uint32_t row, uint32_t col) {
+            return frame.atlas[atlasId].filteredPatchIdx(row, col);
+          },
           gatherCoord);
       auto colorGathered = textureGather(atlasColor[atlasId], gatherCoord);
       auto transparencyGathered = textureGather(atlasTransparency[atlasId], gatherCoord);

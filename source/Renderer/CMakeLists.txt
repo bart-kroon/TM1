@@ -20,6 +20,7 @@ create_tmiv_library(
     PRIVATE
         ViewingSpaceLib
         Threads::Threads
+        fmt::fmt
     )
 
     

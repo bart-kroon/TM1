@@ -50,23 +50,23 @@
 using namespace std::string_literals;
 
 namespace TMIV::ViewOptimizer {
-using TMIV::Common::DeepFrame;
-using TMIV::Common::DeepFrameList;
-using TMIV::Common::Json;
-using TMIV::Common::QuatD;
-using TMIV::Common::Vec2f;
-using TMIV::Common::Vec2i;
-using TMIV::Common::Vec3d;
-using TMIV::Common::Vec3f;
-using TMIV::MivBitstream::AccessUnit;
-using TMIV::MivBitstream::AtlasAccessUnit;
-using TMIV::MivBitstream::CiCamType;
-using TMIV::MivBitstream::CommonAtlasSequenceParameterSetRBSP;
-using TMIV::MivBitstream::ViewId;
-using TMIV::MivBitstream::ViewParams;
-using TMIV::MivBitstream::ViewParamsList;
-using TMIV::Renderer::IInpainter;
-using TMIV::Renderer::ISynthesizer;
+using Common::DeepFrame;
+using Common::DeepFrameList;
+using Common::Json;
+using Common::QuatD;
+using Common::Vec2f;
+using Common::Vec2i;
+using Common::Vec3d;
+using Common::Vec3f;
+using MivBitstream::AccessUnit;
+using MivBitstream::AtlasAccessUnit;
+using MivBitstream::CiCamType;
+using MivBitstream::CommonAtlasSequenceParameterSetRBSP;
+using MivBitstream::ViewId;
+using MivBitstream::ViewParams;
+using MivBitstream::ViewParamsList;
+using Renderer::IInpainter;
+using Renderer::ISynthesizer;
 
 template <typename V> struct CameraFrustum {
   std::vector<V> planeNear;

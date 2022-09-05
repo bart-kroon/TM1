@@ -67,6 +67,7 @@ private:
   int32_t m_overlap{};
   bool m_pip{};
   bool m_enableMerging{};
+  bool m_prioritizeSSI{};
   SORTING_METHOD m_sortingMethod{};
   bool m_enableRecursiveSplit{true};
   int32_t m_maxEntityId{0};

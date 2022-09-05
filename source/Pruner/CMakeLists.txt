@@ -10,6 +10,7 @@ create_tmiv_library(
         "src/NoPruner.cpp"
     PRIVATE
         RendererLib
+        fmt::fmt
     )
 
 create_catch2_unit_test(

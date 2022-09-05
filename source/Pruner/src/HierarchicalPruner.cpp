@@ -143,7 +143,7 @@ private:
   int32_t m_sampleSize;
   float m_maxColorError;
   Renderer::AccumulatingPixel<Common::Vec3f> m_config;
-
+  bool m_skipInpaintViews{};
   int32_t m_reviveRatio{100};
   std::optional<float> m_lumaStdDev{};
   PrunerParams m_params;
@@ -171,7 +171,12 @@ public:
       , m_maxColorError{nodeConfig.require("maxColorError").as<float>()}
       , m_config{nodeConfig.require("rayAngleParameter").as<float>(),
                  nodeConfig.require("depthParameter").as<float>(),
-                 nodeConfig.require("stretchingParameter").as<float>(), m_maxStretching} {}
+                 nodeConfig.require("stretchingParameter").as<float>(), m_maxStretching} {
+    if (const auto &node = nodeConfig.optional("skipInpaintViews")) {
+      m_skipInpaintViews = node.as<bool>();
+    }
+    Common::logVerbose("[VT prep] skipInpaintViews = {}", m_skipInpaintViews);
+  }
 
   static void assignAdditionalViews(const Common::Mat<float> &overlap,
                                     const MivBitstream::ViewParamsList &viewParamsList,
@@ -300,7 +305,7 @@ public:
     for (size_t i = 0; i < clusterIds.size(); ++i) {
       if (viewParamsList[i].isBasicView) {
         m_clusters[clusterIds[i]].basicViewId.push_back(i);
-      } else {
+      } else if (!m_skipInpaintViews || !viewParamsList[i].viewInpaintFlag) {
         m_clusters[clusterIds[i]].additionalViewId.push_back(i);
       }
     }

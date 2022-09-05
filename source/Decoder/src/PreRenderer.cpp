@@ -33,6 +33,7 @@
 
 #include <TMIV/Decoder/PreRenderer.h>
 
+#include <TMIV/Common/LoggingStrategyFmt.h>
 #include <TMIV/MivBitstream/DepthOccupancyTransform.h>
 
 namespace TMIV::Decoder {
@@ -41,6 +42,11 @@ PreRenderer::PreRenderer(const Common::Json &componentNode)
   if (const auto &node = componentNode.optional("entityDecodeRange")) {
     m_entityDecodeRange = node.asVec<uint32_t, 2>();
   }
+  if (const auto &node = componentNode.optional("patchMargin")) {
+    m_patchMargin = node.as<int32_t>();
+    VERIFY(0 <= m_patchMargin);
+  }
+  Common::logVerbose("[VT prep] patchMargin is {}", m_patchMargin);
 }
 
 void PreRenderer::preRenderFrame(MivBitstream::AccessUnit &frame) const {
@@ -60,6 +66,9 @@ void PreRenderer::preRenderFrame(MivBitstream::AccessUnit &frame) const {
     scaleGeometryVideo(frame.gup, atlas);
     reconstructOccupancy(frame.viewParamsList, atlas);
     filterEntities(atlas);
+
+    // Not specified
+    constructPixelToPatchMap(atlas);
   }
 }
 
@@ -577,6 +586,25 @@ void PreRenderer::scaleGeometryVideo(
     MivBitstream::AtlasAccessUnit &atlas) const {
   if (!atlas.geoFrameNF.empty()) {
     atlas.geoFrame = m_geometryScaler.scale(atlas, atlas.geoFrameNF, gup);
+  }
+}
+
+void PreRenderer::constructPixelToPatchMap(MivBitstream::AtlasAccessUnit &atlas) const {
+  atlas.pixelToPatchMap.createY(
+      Common::Vec2i{atlas.asps.asps_frame_width(), atlas.asps.asps_frame_height()});
+  atlas.pixelToPatchMap.fillValue(Common::unusedPatchIdx);
+
+  for (const auto &pp : atlas.patchParamsList) {
+    const auto x1 = pp.atlasPatch2dPosX() + m_patchMargin;
+    const auto y1 = pp.atlasPatch2dPosY() + m_patchMargin;
+    const auto x2 = pp.atlasPatch2dPosX() + pp.atlasPatch2dSizeX() - m_patchMargin;
+    const auto y2 = pp.atlasPatch2dPosY() + pp.atlasPatch2dSizeY() - m_patchMargin;
+
+    for (int32_t y = y1; y < y2; ++y) {
+      for (int32_t x = x1; x < x2; ++x) {
+        atlas.pixelToPatchMap.getPlane(0)(y, x) = atlas.patchIdx(y, x);
+      }
+    }
   }
 }
 } // namespace TMIV::Decoder

@@ -16,3 +16,6 @@ __pycache__/
 /out/
 /out.*/
 /doc/detailed_module_graph.svg
+/build.ninja
+.ninja_log
+build.json

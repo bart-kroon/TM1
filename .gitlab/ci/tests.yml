@@ -1,6 +1,6 @@
 Integration test (GCC 12):
   stage: integration tests
-  image: tmiv-ci:20220708
+  image: tmiv-ci:20220715
   tags: [ linux-long ]
   script:
     - >

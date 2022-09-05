@@ -1,4 +1,4 @@
-FROM tmiv-checks:20220708
+FROM tmiv-checks:20220715
 
 # Copy the test material for the integration test
 COPY tmiv_integration_test /tmiv_integration_test

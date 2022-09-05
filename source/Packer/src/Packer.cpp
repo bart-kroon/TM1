@@ -76,6 +76,13 @@ Packer::Packer(const Common::Json &rootNode, const Common::Json &componentNode) 
   m_overlap = componentNode.require("overlap").as<int32_t>();
   m_pip = componentNode.require("enablePatchInPatch").as<bool>();
   m_enableMerging = componentNode.require("enableMerging").as<bool>();
+
+  if (const auto &node = componentNode.optional("prioritizeSSI")) {
+    m_prioritizeSSI = node.as<bool>();
+  }
+
+  Common::logVerbose("[VT prep] prioritizeSSI = {}", m_prioritizeSSI);
+
   switch (auto sortingMethod = componentNode.require("sortingMethod").as<int32_t>()) {
   case 0:
     m_sortingMethod = AREA_DESCENDING;
@@ -113,6 +120,13 @@ auto Packer::computeClusterToPack(const MivBitstream::ViewParamsList &viewParams
         viewParamsList[p2.getViewIdx()].isBasicView) {
       return viewParamsList[p2.getViewIdx()].isBasicView;
     }
+
+    // Give priority to the server-side-inpainted view
+    if (m_prioritizeSSI && viewParamsList[p1.getViewIdx()].viewInpaintFlag !=
+                               viewParamsList[p2.getViewIdx()].viewInpaintFlag) {
+      return viewParamsList[p2.getViewIdx()].viewInpaintFlag;
+    }
+
     // NOTE(FT): added for packing patches from MPI ==> reading in writePatchInAtlas is done in
     // increasing mpiLayerId order
     if (m_sortingMethod == AREA_DESCENDING) {

@@ -146,8 +146,12 @@ private:
   void scaleGeometryVideo(const std::optional<MivBitstream::GeometryUpscalingParameters> &gup,
                           MivBitstream::AtlasAccessUnit &atlas) const;
 
+  // Not specified
+  void constructPixelToPatchMap(MivBitstream::AtlasAccessUnit &atlas) const;
+
   GeometryScaler m_geometryScaler;
   std::optional<Common::Vec2u> m_entityDecodeRange;
+  int32_t m_patchMargin{};
 };
 } // namespace TMIV::Decoder
 

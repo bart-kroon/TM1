@@ -35,6 +35,7 @@
 
 #include <TMIV/Common/Graph.h>
 #include <TMIV/Common/LinAlg.h>
+#include <TMIV/Common/LoggingStrategyFmt.h>
 #include <TMIV/Common/Thread.h>
 #include <TMIV/Common/verify.h>
 #include <TMIV/MivBitstream/DepthOccupancyTransform.h>
@@ -142,11 +143,17 @@ private:
     Common::Vec2f secondAxis{};
     float pointSize{};
   };
+
   struct BoundingBox {
     int32_t x0;
     int32_t x1;
     int32_t y0;
     int32_t y1;
+  };
+
+  struct FilterReprojectedPrunedDepthMapsParams {
+    int32_t erodeCount{};
+    int32_t dilateCount{};
   };
 
   std::vector<float> m_cameraWeight;
@@ -170,6 +177,7 @@ private:
   float m_blendingFactor;
   float m_overloadFactor;
   int32_t m_filteringPass;
+  std::optional<FilterReprojectedPrunedDepthMapsParams> m_filterReprojectedPrunedDepthMaps;
 
 public:
   explicit Impl(const Common::Json &componentNode)
@@ -178,7 +186,14 @@ public:
       , m_stretchFactor{componentNode.require("stretchFactor").as<float>()}
       , m_blendingFactor{componentNode.require("blendingFactor").as<float>()}
       , m_overloadFactor{componentNode.require("overloadFactor").as<float>()}
-      , m_filteringPass{componentNode.require("filteringPass").as<int32_t>()} {}
+      , m_filteringPass{componentNode.require("filteringPass").as<int32_t>()} {
+    if (const auto &node = componentNode.optional("filterReprojectedPrunedDepthMaps")) {
+      m_filterReprojectedPrunedDepthMaps = FilterReprojectedPrunedDepthMapsParams{
+          node.require("erodeCount").as<int32_t>(), node.require("dilateCount").as<int32_t>()};
+    }
+    Common::logVerbose("[VT prep] filterReprojectedPrunedDepthMaps is {}",
+                       m_filterReprojectedPrunedDepthMaps.has_value());
+  }
 
   auto renderFrame(const MivBitstream::AccessUnit &frame,
                    const MivBitstream::CameraConfig &cameraConfig) -> Common::RendererFrame {
@@ -202,6 +217,11 @@ public:
 
     // 3) Warping
     warpPrunedSource(frame, targetHelper);
+
+    // 3.5) Morphological filtering
+    if (m_filterReprojectedPrunedDepthMaps) {
+      filterReprojectedPrunedDepthMaps(frame);
+    }
 
     // 4) Weight recovery
     recoverPrunedWeight(sourceHelperList, targetHelper);
@@ -252,6 +272,115 @@ private:
     for (size_t viewIdx = 0; viewIdx < frame.viewParamsList.size(); ++viewIdx) {
       if (frame.viewParamsList[viewIdx].viewInpaintFlag) {
         m_inpaintedViews.insert(viewIdx);
+      }
+    }
+  }
+
+  void filterReprojectedPrunedDepthMaps(const MivBitstream::AccessUnit &frame) {
+    const auto &viewParamsList = frame.viewParamsList;
+
+    const auto W = Common::downCast<int32_t>(m_viewportDepth[0].width());
+    const auto H = Common::downCast<int32_t>(m_viewportDepth[0].height());
+
+    Common::Mat<float> tmpmat;
+    Common::Mat<float> tmpmat2;
+    tmpmat.resize(H, W);
+    tmpmat2.resize(H, W);
+
+    for (size_t v = 0; v < viewParamsList.size() - 1; v++) {
+      if (!m_cameraVisibility[v]) {
+        continue;
+      }
+
+      filterReprojectedPrunedDepthMapsCopyInput(tmpmat, v);
+      filterReprojectedPrunedDepthMapsInplaceErode(tmpmat, tmpmat2);
+      filterReprojectedPrunedDepthMapsInplaceDilate(tmpmat, tmpmat2, v);
+      filterReprojectedPrunedDepthMapsCopyOutput(tmpmat, v);
+    }
+  }
+
+  void filterReprojectedPrunedDepthMapsCopyInput(Common::Mat<float> &tmpmat, size_t v) {
+    const auto W = Common::downCast<int32_t>(tmpmat.width());
+    const auto H = Common::downCast<int32_t>(tmpmat.height());
+
+    for (int32_t h = 0; h < H; h++) {
+      for (int32_t w = 0; w < W; w++) {
+        tmpmat(h, w) = m_viewportDepth[v](h, w);
+      }
+    }
+  }
+
+  void filterReprojectedPrunedDepthMapsInplaceErode(Common::Mat<float> &tmpmat,
+                                                    Common::Mat<float> &tmpmat2) const {
+    static constexpr auto halfWindowSize = 1;
+    const auto W = Common::downCast<int32_t>(tmpmat.width());
+    const auto H = Common::downCast<int32_t>(tmpmat.height());
+
+    for (int32_t i = 0; i < m_filterReprojectedPrunedDepthMaps->erodeCount; i++) {
+      for (int32_t h = 0; h < H; h++) {
+        for (int32_t w = 0; w < W; w++) {
+          tmpmat2(h, w) = tmpmat(h, w);
+        }
+      }
+
+      for (int32_t h = halfWindowSize; h < H - halfWindowSize; h++) {
+        for (int32_t w = halfWindowSize; w < W - halfWindowSize; w++) {
+          int32_t emptyNeighbors = 0;
+          for (int32_t hh = h - halfWindowSize; hh <= h + halfWindowSize; hh++) {
+            for (int32_t ww = w - halfWindowSize; ww <= w + halfWindowSize; ww++) {
+              if (!(tmpmat2(hh, ww) > 0)) {
+                emptyNeighbors++;
+              }
+            }
+          }
+
+          if (emptyNeighbors > 0) {
+            tmpmat(h, w) = NAN;
+          }
+        }
+      }
+    }
+  }
+
+  void filterReprojectedPrunedDepthMapsInplaceDilate(Common::Mat<float> &tmpmat,
+                                                     Common::Mat<float> &tmpmat2, size_t v) {
+    static constexpr auto halfWindowSize = 1;
+    const auto W = Common::downCast<int32_t>(tmpmat.width());
+    const auto H = Common::downCast<int32_t>(tmpmat.height());
+
+    for (int32_t i = 0; i < m_filterReprojectedPrunedDepthMaps->dilateCount; i++) {
+      for (int32_t h = 0; h < H; h++) {
+        for (int32_t w = 0; w < W; w++) {
+          tmpmat2(h, w) = tmpmat(h, w);
+        }
+      }
+
+      for (int32_t h = halfWindowSize; h < H - halfWindowSize; h++) {
+        for (int32_t w = halfWindowSize; w < W - halfWindowSize; w++) {
+          int32_t nonEmptyNeighbors = 0;
+          for (int32_t hh = h - halfWindowSize; hh <= h + halfWindowSize; hh++) {
+            for (int32_t ww = w - halfWindowSize; ww <= w + halfWindowSize; ww++) {
+              if ((tmpmat2(hh, ww) > 0)) {
+                nonEmptyNeighbors++;
+              }
+            }
+          }
+
+          if (nonEmptyNeighbors > 0) {
+            tmpmat(h, w) = m_viewportDepth[v](h, w);
+          }
+        }
+      }
+    }
+  }
+
+  void filterReprojectedPrunedDepthMapsCopyOutput(Common::Mat<float> &tmpmat, size_t v) {
+    const auto W = Common::downCast<int32_t>(tmpmat.width());
+    const auto H = Common::downCast<int32_t>(tmpmat.height());
+
+    for (int32_t h = 0; h < H; h++) {
+      for (int32_t w = 0; w < W; w++) {
+        m_viewportDepth[v](h, w) = tmpmat(h, w);
       }
     }
   }
@@ -466,7 +595,8 @@ private:
 
       Common::parallel_for(
           atlas.asps.asps_frame_width(), atlas.asps.asps_frame_height(), [&](size_t Y, size_t X) {
-            const auto patchIdx = atlas.patchIdx(static_cast<int32_t>(Y), static_cast<int32_t>(X));
+            const auto patchIdx =
+                atlas.filteredPatchIdx(static_cast<int32_t>(Y), static_cast<int32_t>(X));
             if (patchIdx == Common::unusedPatchIdx) {
               return;
             }
@@ -1122,7 +1252,7 @@ private:
       }
     }
   }
-}; // namespace TMIV::Renderer
+};
 
 ViewWeightingSynthesizer::ViewWeightingSynthesizer(const Common::Json & /*rootNode*/,
                                                    const Common::Json &componentNode)

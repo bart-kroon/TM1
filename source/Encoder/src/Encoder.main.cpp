@@ -157,12 +157,9 @@ private:
     auto metadata = Common::Json::Array{};
     uint8_t attrIdx{};
 
-    // NOTE(#696): Not using ATI in the lambda argument as a workaround for a problem in VS 2022
-    // https://developercommunity.visualstudio.com/t/Using-declaration-in-argument-of-lambda:/10050103
     const auto save = [this, frameIdx, &metadata,
                        &attrIdx](const Common::Frame<> &component, VUH vuh,
-                                 MivBitstream::AiAttributeTypeId attrTypeId =
-                                     MivBitstream::AiAttributeTypeId::ATTR_UNSPECIFIED) {
+                                 ATI attrTypeId = ATI::ATTR_UNSPECIFIED) {
       if (!component.empty()) {
         metadata.emplace_back(IO::saveOutOfBandVideoFrame(json(), placeholders(), yuv420(component),
                                                           vuh, frameIdx, attrTypeId));

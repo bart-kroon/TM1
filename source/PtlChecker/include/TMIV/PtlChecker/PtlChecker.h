@@ -36,10 +36,19 @@
 
 #include "AbstractChecker.h"
 
+#include <memory>
+
 namespace TMIV::PtlChecker {
 class PtlChecker : public AbstractChecker {
 public:
   using Logger = std::function<void(const std::string &failure)>;
+
+  PtlChecker();
+  PtlChecker(PtlChecker const &other) = delete;
+  PtlChecker(PtlChecker &&other) noexcept;
+  auto operator=(PtlChecker const &other) -> PtlChecker & = delete;
+  auto operator=(PtlChecker &&other) noexcept -> PtlChecker &;
+  ~PtlChecker() override;
 
   // To support experimentation, the PTL checker only logs a warning. This behaviour can be changed
   // by replacing the log function.
@@ -61,40 +70,8 @@ public:
   void checkV3cFrame(const MivBitstream::AccessUnit &frame) override;
 
 private:
-  static void defaultLogger(const std::string &failure);
-
-  [[nodiscard]] auto ptl_profile_codec_group_idc() const noexcept;
-  [[nodiscard]] auto ptl_profile_toolset_idc() const noexcept;
-  [[nodiscard]] auto ptl_profile_reconstruction_idc() const noexcept;
-  [[nodiscard]] auto ptl_tier_flag() const noexcept;
-  [[nodiscard]] auto ptl_level_idc() const noexcept;
-  [[nodiscard]] auto ptc_restricted_geometry_flag() const noexcept;
-  [[nodiscard]] auto ptc_one_v3c_frame_only_flag() const noexcept;
-
-  [[nodiscard]] auto maxAtlasSize() const noexcept;
-  [[nodiscard]] auto levelMapCount() const noexcept;
-  [[nodiscard]] auto maxNumAttributeCount() const noexcept;
-
-  void checkVpsCommon(const MivBitstream::V3cParameterSet &vps) const;
-  void checkVpsAtlas(const MivBitstream::V3cParameterSet &vps, MivBitstream::AtlasId atlasId) const;
-  void checkGeometryInformation(const MivBitstream::GeometryInformation &gi) const;
-  void checkAttributesInformation(const MivBitstream::AttributeInformation &ai) const;
-  void checkAttributeInformation(const MivBitstream::AttributeInformation &ai,
-                                 uint8_t attrIdx) const;
-  void checkVpsMivExtension(const MivBitstream::VpsMivExtension &vme) const;
-
-  void checkAsme(MivBitstream::AtlasId atlasId, const MivBitstream::AspsMivExtension &asme) const;
-
-  void checkOccupancyVideoFrame(const MivBitstream::AtlasSequenceParameterSetRBSP &asps,
-                                const Common::Frame<> &frame) const;
-  void checkGeometryVideoFrame(const MivBitstream::AtlasSequenceParameterSetRBSP &asps,
-                               const Common::Frame<> &frame) const;
-  void checkAttributeVideoFrame(const MivBitstream::AtlasSequenceParameterSetRBSP &asps,
-                                const Common::Frame<> &frame) const;
-
-  Logger m_logger{&defaultLogger};
-  std::optional<MivBitstream::V3cParameterSet> m_vps;
-  bool m_haveV3cFrame{};
+  struct Impl;
+  std::unique_ptr<Impl> m_impl;
 };
 } // namespace TMIV::PtlChecker
 

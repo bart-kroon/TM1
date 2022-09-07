@@ -57,6 +57,7 @@ public:
   void checkVuh(const MivBitstream::V3cUnitHeader &vuh) override;
   void checkNuh(const MivBitstream::NalUnitHeader &nuh) override;
   void checkAndActivateVps(const MivBitstream::V3cParameterSet &vps) override;
+  void activateCasps(const MivBitstream::CommonAtlasSequenceParameterSetRBSP &casps) override;
   void checkAsps(MivBitstream::AtlasId atlasId,
                  const MivBitstream::AtlasSequenceParameterSetRBSP &asps) override;
   void checkAfps(const MivBitstream::AtlasFrameParameterSetRBSP &afps) override;
@@ -68,6 +69,8 @@ public:
                        const MivBitstream::AtlasSequenceParameterSetRBSP &asps,
                        const Common::Frame<> &frame) override;
   void checkV3cFrame(const MivBitstream::AccessUnit &frame) override;
+
+  [[nodiscard]] auto frameRate() const -> double;
 
 private:
   struct Impl;

@@ -58,6 +58,9 @@ public:
     activeVps = vps;
   }
 
+  void activateCasps(
+      const TMIV::MivBitstream::CommonAtlasSequenceParameterSetRBSP & /* casps */) override {}
+
   void checkAsps(TMIV::MivBitstream::AtlasId /* atlasId */,
                  const TMIV::MivBitstream::AtlasSequenceParameterSetRBSP & /* asps */) override {
     REQUIRE(activeVps.has_value());

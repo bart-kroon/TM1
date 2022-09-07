@@ -56,6 +56,7 @@ public:
   virtual void checkVuh(const MivBitstream::V3cUnitHeader &vuh) = 0;
   virtual void checkNuh(const MivBitstream::NalUnitHeader &nuh) = 0;
   virtual void checkAndActivateVps(const MivBitstream::V3cParameterSet &vps) = 0;
+  virtual void activateCasps(const MivBitstream::CommonAtlasSequenceParameterSetRBSP &casps) = 0;
   virtual void checkAsps(MivBitstream::AtlasId atlasId,
                          const MivBitstream::AtlasSequenceParameterSetRBSP &asps) = 0;
   virtual void checkAfps(const MivBitstream::AtlasFrameParameterSetRBSP &afps) = 0;

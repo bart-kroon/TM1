@@ -37,28 +37,50 @@
 
 namespace TMIV::PtlChecker {
 using Common::contains;
+using Common::downCast;
+using Common::logVerbose;
 
 struct PtlChecker::Impl {
+  struct V3cFrameVariables {
+    int64_t numProjPatches;
+    int64_t numLumaSamples;
+  };
+
   Logger m_logger{&defaultLogger};
   std::optional<MivBitstream::V3cParameterSet> m_vps;
   bool m_haveV3cFrame{};
+  double m_frameRate{30.};
+  std::vector<V3cFrameVariables> m_window;
 
-  static void ptlCheckImpl(const Logger &logger, bool condition, const char *what,
-                           const char *document, const char *numberedItem) {
+  void ptlCheck(bool condition, const char *what, const char *document,
+                const char *numberedItem) const {
     if (!condition) {
-      logger(fmt::format("{} [{} {}]", what, document, numberedItem));
+      m_logger(fmt::format("{} [{} {}]", what, document, numberedItem));
     }
   }
 
-// A macro is used to capture the text of the condition. There is no reflection in C++17.
-//
-// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
+  // A macro is used to capture the text of the condition. There is no reflection in C++17.
+  //
+  // NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define PTL_CHECK(document, numberedItem, condition)                                               \
-  ptlCheckImpl(m_logger, condition, #condition, document, numberedItem)
+  ptlCheck(condition, #condition, document, numberedItem)
 
-  static constexpr auto miv1 = "ISO/IEC 23090-12:2021";
-  static constexpr auto v3c2dis = "ISO/IEC DIS 23090-5(2E):2021";
-  static constexpr auto miv2wd3 = "ISO/IEC WD3 23090-12(2E)";
+  template <typename Value, typename Limit>
+  auto levelCheck(const char *document, const char *numberedItem, const char *identifier,
+                  Value value, Limit limit) const {
+    using Integer = std::common_type_t<Value, Limit>;
+
+    if (Integer{value} <= Integer{limit}) {
+      logVerbose("Level check: {} <= {} = {}", value, identifier, limit);
+    } else {
+      m_logger(
+          fmt::format("{} <= {} = {} [{} {}]", value, identifier, limit, document, numberedItem));
+    }
+    return value;
+  }
+
+  static constexpr auto v3cSpec = "ISO/IEC 23090-5(2E)/Amd.1";
+  static constexpr auto mivSpec = "ISO/IEC 23090-12/Amd.1";
 
   using CF = Common::ColorFormat;
   using CG = MivBitstream::PtlProfileCodecGroupIdc;
@@ -124,70 +146,58 @@ struct PtlChecker::Impl {
     return false;
   }
 
-  [[nodiscard]] auto maxAtlasSize() const noexcept {
+  template <typename... Integer> [[nodiscard]] auto levelLimit(Integer... limit) const {
+    return levelLimit(std::array<std::common_type_t<Integer...>, sizeof...(Integer)>{limit...});
+  }
+
+  template <typename Integer>
+  [[nodiscard]] auto levelLimit(const std::array<Integer, 4> &limits) const {
     const auto level = ptl_level_idc();
 
     if (level <= LV::Level_1_5) {
-      return 2'228'224;
+      return limits[0];
     }
     if (level <= LV::Level_2_5) {
-      return 8'912'896;
+      return limits[1];
     }
     if (level <= LV::Level_3_5) {
-      return 35'651'584;
+      return limits[2];
     }
     if (level <= LV::Level_4_5) {
-      return 134'217'728;
+      return limits[3];
     }
-    return INT32_MAX;
+    return std::numeric_limits<Integer>::max();
   }
 
-  [[nodiscard]] auto levelMapCount() const noexcept {
-    const auto level = ptl_level_idc();
-
-    if (level <= LV::Level_1_5) {
-      return 2;
-    }
-    if (level <= LV::Level_2_5) {
-      return 4;
-    }
-    if (level <= LV::Level_3_5) {
-      return 8;
-    }
-    if (level <= LV::Level_4_5) {
-      return 16;
-    }
-    return 64;
-  }
-
-  [[nodiscard]] auto maxNumAttributeCount() const noexcept {
+  template <typename Integer>
+  [[nodiscard]] auto levelLimit(const std::array<Integer, 8> &limits) const {
     const auto level = ptl_level_idc();
 
     if (level <= LV::Level_1_0) {
-      return 1;
+      return limits[0];
     }
     if (level <= LV::Level_1_5) {
-      return 3;
+      return limits[1];
     }
     if (level <= LV::Level_2_0) {
-      return 4;
+      return limits[2];
     }
     if (level <= LV::Level_2_5) {
-      return 8;
+      return limits[3];
     }
     if (level <= LV::Level_3_0) {
-      return 16;
+      return limits[4];
     }
     if (level <= LV::Level_3_5) {
-      return 24;
+      return limits[5];
     }
     if (level <= LV::Level_4_0) {
-      return 32;
+      return limits[6];
     }
     if (level <= LV::Level_4_5) {
-      return 48;
+      return limits[7];
     }
-    return 63;
+    return std::numeric_limits<Integer>::max();
   }
 
   void checkVuh(const MivBitstream::V3cUnitHeader &vuh) {
@@ -200,29 +210,29 @@ struct PtlChecker::Impl {
     switch (ptl_profile_toolset_idc()) {
     case TS::VPCC_Basic:
     case TS::VPCC_Extended:
-      PTL_CHECK(v3c2dis, "Table H-3",
+      PTL_CHECK(v3cSpec, "Table H-3",
                 contains(std::array{VUT::V3C_AD, VUT::V3C_OVD, VUT::V3C_GVD, VUT::V3C_AVD},
                          vuh.vuh_unit_type()));
       break;
     case TS::MIV_Main:
-      PTL_CHECK(miv1, "Table A-1",
+      PTL_CHECK(mivSpec, "Table A-1",
                 contains(std::array{VUT::V3C_AD, VUT::V3C_GVD, VUT::V3C_AVD, VUT::V3C_CAD},
                          vuh.vuh_unit_type()));
       break;
     case TS::MIV_Extended:
       if (ptc_restricted_geometry_flag()) {
-        PTL_CHECK(miv1, "Table A-1",
+        PTL_CHECK(mivSpec, "Table A-1",
                   contains(std::array{VUT::V3C_AD, VUT::V3C_AVD, VUT::V3C_PVD, VUT::V3C_CAD},
                            vuh.vuh_unit_type()));
       } else {
-        PTL_CHECK(miv1, "Table A-1",
+        PTL_CHECK(mivSpec, "Table A-1",
                   contains(std::array{VUT::V3C_AD, VUT::V3C_OVD, VUT::V3C_GVD, VUT::V3C_AVD,
                                       VUT::V3C_PVD, VUT::V3C_CAD},
                            vuh.vuh_unit_type()));
       }
       break;
     case TS::MIV_Geometry_Absent:
-      PTL_CHECK(miv1, "Table A-1",
+      PTL_CHECK(mivSpec, "Table A-1",
                 contains(std::array{VUT::V3C_AD, VUT::V3C_AVD, VUT::V3C_PVD, VUT::V3C_CAD},
                          vuh.vuh_unit_type()));
       break;
@@ -230,7 +240,7 @@ struct PtlChecker::Impl {
   }
 
   void checkNuh(const MivBitstream::NalUnitHeader &nuh) const {
-    PTL_CHECK(miv1, "A.1", nuh.nal_temporal_id_plus1() == 1);
+    PTL_CHECK(mivSpec, "A.1", nuh.nal_temporal_id_plus1() == 1);
   }
 
   void checkAndActivateVps(const MivBitstream::V3cParameterSet &vps) {
@@ -248,16 +258,16 @@ struct PtlChecker::Impl {
   }
 
   void checkVpsCommon(const MivBitstream::V3cParameterSet &vps) const {
-    PTL_CHECK(v3c2dis, "Table A-1",
+    PTL_CHECK(v3cSpec, "Table A-1",
               contains(MivBitstream::knownCodecGroupIdcs, ptl_profile_codec_group_idc()));
-    PTL_CHECK(v3c2dis, "Table A-3",
+    PTL_CHECK(v3cSpec, "Table A-3",
               contains(MivBitstream::knownToolsetIdcs, ptl_profile_toolset_idc()));
-    PTL_CHECK(v3c2dis, "Table H-4",
+    PTL_CHECK(v3cSpec, "Table H-4",
               contains(MivBitstream::knownReconstructionIdcs, ptl_profile_reconstruction_idc()));
-    PTL_CHECK(miv2wd3, "A.4.3", ptl_level_idc() != LV::Level_8_5 || ptc_one_v3c_frame_only_flag());
-    PTL_CHECK(v3c2dis, "A.6.2, Table A-5", contains(MivBitstream::knownLevelIdcs, ptl_level_idc()));
+    PTL_CHECK(mivSpec, "A.4.3", ptl_level_idc() != LV::Level_8_5 || ptc_one_v3c_frame_only_flag());
+    PTL_CHECK(v3cSpec, "A.6.2, Table A-5", contains(MivBitstream::knownLevelIdcs, ptl_level_idc()));
 
-    PTL_CHECK(v3c2dis, "?", !ptl_tier_flag());
+    PTL_CHECK(v3cSpec, "?", !ptl_tier_flag());
 
     const auto vpsMivExtensionPresentFlag = vps.vpsMivExtensionPresentFlag();
     const auto vpsPackingInformationPresentFlag = vps.vpsPackingInformationPresentFlag();
@@ -266,19 +276,19 @@ struct PtlChecker::Impl {
     switch (ptl_profile_toolset_idc()) {
     case TS::VPCC_Basic:
     case TS::VPCC_Extended:
-      PTL_CHECK(v3c2dis, "Table H-3", !vpsMivExtensionPresentFlag);
-      PTL_CHECK(v3c2dis, "Table H-3", !vpsPackingInformationPresentFlag);
-      PTL_CHECK(v3c2dis, "Table H-3", vps_atlas_count_minus1 == 0);
+      PTL_CHECK(v3cSpec, "Table H-3", !vpsMivExtensionPresentFlag);
+      PTL_CHECK(v3cSpec, "Table H-3", !vpsPackingInformationPresentFlag);
+      PTL_CHECK(v3cSpec, "Table H-3", vps_atlas_count_minus1 == 0);
       break;
     case TS::MIV_Main:
-      PTL_CHECK(miv1, "Table A-1", ptl_profile_reconstruction_idc() == RC::Rec_Unconstrained);
-      PTL_CHECK(miv1, "Table A-1", vpsMivExtensionPresentFlag);
-      PTL_CHECK(miv1, "Table A-1", !vpsPackingInformationPresentFlag);
+      PTL_CHECK(mivSpec, "Table A-1", ptl_profile_reconstruction_idc() == RC::Rec_Unconstrained);
+      PTL_CHECK(mivSpec, "Table A-1", vpsMivExtensionPresentFlag);
+      PTL_CHECK(mivSpec, "Table A-1", !vpsPackingInformationPresentFlag);
       break;
     case TS::MIV_Extended:
     case TS::MIV_Geometry_Absent:
-      PTL_CHECK(miv1, "Table A-1", ptl_profile_reconstruction_idc() == RC::Rec_Unconstrained);
-      PTL_CHECK(miv1, "Table A-1", vpsMivExtensionPresentFlag);
+      PTL_CHECK(mivSpec, "Table A-1", ptl_profile_reconstruction_idc() == RC::Rec_Unconstrained);
+      PTL_CHECK(mivSpec, "Table A-1", vpsMivExtensionPresentFlag);
       break;
     }
   }
@@ -289,35 +299,36 @@ struct PtlChecker::Impl {
     const auto vps_occupancy_video_present_flag = vps.vps_occupancy_video_present_flag(atlasId);
     const auto vps_geometry_video_present_flag = vps.vps_geometry_video_present_flag(atlasId);
 
-    PTL_CHECK(v3c2dis, "Table A-5", vps_map_count_minus1 < levelMapCount());
+    levelCheck(v3cSpec, "Table A-5", "LevelMapCount", vps_map_count_minus1 + 1,
+               levelLimit(2, 2, 4, 4, 8, 8, 16, 16));
 
     switch (ptl_profile_toolset_idc()) {
     case TS::VPCC_Basic:
-      PTL_CHECK(v3c2dis, "Table H-3", vps_map_count_minus1 <= 1);
-      PTL_CHECK(v3c2dis, "Table H-3", vps_occupancy_video_present_flag);
-      PTL_CHECK(v3c2dis, "Table H-3", vps_geometry_video_present_flag);
+      PTL_CHECK(v3cSpec, "Table H-3", vps_map_count_minus1 <= 1);
+      PTL_CHECK(v3cSpec, "Table H-3", vps_occupancy_video_present_flag);
+      PTL_CHECK(v3cSpec, "Table H-3", vps_geometry_video_present_flag);
       break;
     case TS::VPCC_Extended:
-      PTL_CHECK(v3c2dis, "Table H-3", vps_occupancy_video_present_flag);
-      PTL_CHECK(v3c2dis, "Table H-3", vps_geometry_video_present_flag);
+      PTL_CHECK(v3cSpec, "Table H-3", vps_occupancy_video_present_flag);
+      PTL_CHECK(v3cSpec, "Table H-3", vps_geometry_video_present_flag);
       break;
     case TS::MIV_Main:
-      PTL_CHECK(miv1, "Table A-1", vps_map_count_minus1 == 0);
-      PTL_CHECK(miv1, "Table A-1", !vps_occupancy_video_present_flag);
-      PTL_CHECK(miv1, "Table A-1", vps_geometry_video_present_flag);
+      PTL_CHECK(mivSpec, "Table A-1", vps_map_count_minus1 == 0);
+      PTL_CHECK(mivSpec, "Table A-1", !vps_occupancy_video_present_flag);
+      PTL_CHECK(mivSpec, "Table A-1", vps_geometry_video_present_flag);
       break;
     case TS::MIV_Extended:
-      PTL_CHECK(miv1, "Table A-1", vps_map_count_minus1 == 0);
+      PTL_CHECK(mivSpec, "Table A-1", vps_map_count_minus1 == 0);
 
       if (ptc_restricted_geometry_flag()) {
-        PTL_CHECK(miv1, "Table A-1", !vps_occupancy_video_present_flag);
-        PTL_CHECK(miv1, "Table A-1", !vps_geometry_video_present_flag);
+        PTL_CHECK(mivSpec, "Table A-1", !vps_occupancy_video_present_flag);
+        PTL_CHECK(mivSpec, "Table A-1", !vps_geometry_video_present_flag);
       }
       break;
     case TS::MIV_Geometry_Absent:
-      PTL_CHECK(miv1, "Table A-1", vps_map_count_minus1 == 0);
-      PTL_CHECK(miv1, "Table A-1", !vps_occupancy_video_present_flag);
-      PTL_CHECK(miv1, "Table A-1", !vps_geometry_video_present_flag);
+      PTL_CHECK(mivSpec, "Table A-1", vps_map_count_minus1 == 0);
+      PTL_CHECK(mivSpec, "Table A-1", !vps_occupancy_video_present_flag);
+      PTL_CHECK(mivSpec, "Table A-1", !vps_geometry_video_present_flag);
       break;
     }
 
@@ -340,7 +351,7 @@ struct PtlChecker::Impl {
     case TS::MIV_Main:
     case TS::MIV_Extended:
     case TS::MIV_Geometry_Absent:
-      PTL_CHECK(miv1, "Table A-1", !gi_geometry_MSB_align_flag);
+      PTL_CHECK(mivSpec, "Table A-1", !gi_geometry_MSB_align_flag);
       break;
     }
   }
@@ -348,28 +359,29 @@ struct PtlChecker::Impl {
   void checkAttributesInformation(const MivBitstream::AttributeInformation &ai) const {
     const auto ai_attribute_count = ai.ai_attribute_count();
 
-    PTL_CHECK(v3c2dis, "Table A-5", ai_attribute_count <= maxNumAttributeCount());
+    levelCheck(v3cSpec, "Table A-5", "MaxNumAttributeCount", ai_attribute_count,
+               levelLimit(1, 3, 4, 8, 16, 24, 32, 48));
 
     switch (ptl_profile_toolset_idc()) {
     case TS::VPCC_Basic:
     case TS::VPCC_Extended:
       break;
     case TS::MIV_Main:
-      PTL_CHECK(miv1, "Table A-1", ai_attribute_count <= 1);
+      PTL_CHECK(mivSpec, "Table A-1", ai_attribute_count <= 1);
       break;
     case TS::MIV_Extended:
       if (ptc_restricted_geometry_flag()) {
-        PTL_CHECK(miv1, "Table A-1", ai_attribute_count == 2);
+        PTL_CHECK(mivSpec, "Table A-1", ai_attribute_count == 2);
 
         if (ai_attribute_count == 2) {
-          PTL_CHECK(miv1, "Table A-1", ai.ai_attribute_type_id(0) != ai.ai_attribute_type_id(1));
+          PTL_CHECK(mivSpec, "Table A-1", ai.ai_attribute_type_id(0) != ai.ai_attribute_type_id(1));
         }
       } else {
-        PTL_CHECK(miv1, "Table A-1", ai_attribute_count <= 2);
+        PTL_CHECK(mivSpec, "Table A-1", ai_attribute_count <= 2);
       }
       break;
     case TS::MIV_Geometry_Absent:
-      PTL_CHECK(miv1, "Table A-1", ai_attribute_count <= 1);
+      PTL_CHECK(mivSpec, "Table A-1", ai_attribute_count <= 1);
       break;
     }
 
@@ -384,35 +396,35 @@ struct PtlChecker::Impl {
     const auto ai_attribute_dimension_minus1 = ai.ai_attribute_dimension_minus1(attrIdx);
     const auto ai_attribute_MSB_align_flag = ai.ai_attribute_MSB_align_flag(attrIdx);
 
-    PTL_CHECK(v3c2dis, "8.4.4.5", ai_attribute_type_id != ATI::ATTR_UNSPECIFIED);
-    PTL_CHECK(v3c2dis, "8.4.4.5",
+    PTL_CHECK(v3cSpec, "8.4.4.5", ai_attribute_type_id != ATI::ATTR_UNSPECIFIED);
+    PTL_CHECK(v3cSpec, "8.4.4.5",
               ai_attribute_type_id != ATI::ATTR_NORMAL || ai_attribute_dimension_minus1 == 2);
 
     switch (ptl_profile_toolset_idc()) {
     case TS::VPCC_Basic:
-      PTL_CHECK(v3c2dis, "Table H-3", ai_attribute_dimension_minus1 == 2);
+      PTL_CHECK(v3cSpec, "Table H-3", ai_attribute_dimension_minus1 == 2);
       break;
     case TS::VPCC_Extended:
       break;
     case TS::MIV_Main:
     case TS::MIV_Geometry_Absent:
-      PTL_CHECK(miv1, "Table A-1", ai_attribute_type_id == ATI::ATTR_TEXTURE);
-      PTL_CHECK(miv1, "Table A-1", !ai_attribute_MSB_align_flag);
+      PTL_CHECK(mivSpec, "Table A-1", ai_attribute_type_id == ATI::ATTR_TEXTURE);
+      PTL_CHECK(mivSpec, "Table A-1", !ai_attribute_MSB_align_flag);
 
       if (ai_attribute_type_id == ATI::ATTR_TEXTURE) {
-        PTL_CHECK(miv1, "Table A-1", ai_attribute_dimension_minus1 == 2);
+        PTL_CHECK(mivSpec, "Table A-1", ai_attribute_dimension_minus1 == 2);
       }
       break;
     case TS::MIV_Extended:
-      PTL_CHECK(miv1, "Table A-1",
+      PTL_CHECK(mivSpec, "Table A-1",
                 ai_attribute_type_id == ATI::ATTR_TEXTURE ||
                     ai_attribute_type_id == ATI::ATTR_TRANSPARENCY);
-      PTL_CHECK(miv1, "Table A-1", !ai_attribute_MSB_align_flag);
+      PTL_CHECK(mivSpec, "Table A-1", !ai_attribute_MSB_align_flag);
 
       if (ai_attribute_type_id == ATI::ATTR_TEXTURE) {
-        PTL_CHECK(miv1, "Table A-1", ai_attribute_dimension_minus1 == 2);
+        PTL_CHECK(mivSpec, "Table A-1", ai_attribute_dimension_minus1 == 2);
       } else if (ai_attribute_type_id == ATI::ATTR_TRANSPARENCY) {
-        PTL_CHECK(miv1, "Table A-1", ai_attribute_dimension_minus1 == 0);
+        PTL_CHECK(mivSpec, "Table A-1", ai_attribute_dimension_minus1 == 0);
       }
       break;
     }
@@ -426,16 +438,31 @@ struct PtlChecker::Impl {
     case TS::VPCC_Extended:
       break;
     case TS::MIV_Main:
-      PTL_CHECK(miv1, "Table A-1", vme_embedded_occupancy_enabled_flag);
+      PTL_CHECK(mivSpec, "Table A-1", vme_embedded_occupancy_enabled_flag);
       break;
     case TS::MIV_Extended:
       if (ptc_restricted_geometry_flag()) {
-        PTL_CHECK(miv1, "Table A-1", !vme_embedded_occupancy_enabled_flag);
+        PTL_CHECK(mivSpec, "Table A-1", !vme_embedded_occupancy_enabled_flag);
       }
       break;
     case TS::MIV_Geometry_Absent:
-      PTL_CHECK(miv1, "Table A-1", !vme_embedded_occupancy_enabled_flag);
+      PTL_CHECK(mivSpec, "Table A-1", !vme_embedded_occupancy_enabled_flag);
       break;
+    }
+  }
+
+  void activateCasps(const MivBitstream::CommonAtlasSequenceParameterSetRBSP &casps) {
+    if (casps.casps_miv_extension_present_flag()) {
+      const auto &casme = casps.casps_miv_extension();
+
+      if (casme.casme_vui_params_present_flag()) {
+        const auto &vui = casme.vui_parameters();
+
+        if (vui.vui_timing_info_present_flag()) {
+          m_frameRate = static_cast<double>(vui.vui_time_scale()) /
+                        static_cast<double>(vui.vui_num_units_in_tick());
+        }
+      }
     }
   }
 
@@ -445,40 +472,41 @@ struct PtlChecker::Impl {
 
     switch (ptl_profile_toolset_idc()) {
     case TS::VPCC_Basic:
-      PTL_CHECK(v3c2dis, "Table H-3", !asps.asps_eom_patch_enabled_flag());
-      PTL_CHECK(v3c2dis, "Table H-3", !asps.asps_plr_enabled_flag());
-      PTL_CHECK(v3c2dis, "Table H-3", !asps.asps_use_eight_orientations_flag());
-      PTL_CHECK(v3c2dis, "Table H-3", !asps.asps_extended_projection_enabled_flag());
-      PTL_CHECK(v3c2dis, "Table H-3", !asps.asps_miv_extension_present_flag());
+      PTL_CHECK(v3cSpec, "Table H-3", !asps.asps_eom_patch_enabled_flag());
+      PTL_CHECK(v3cSpec, "Table H-3", !asps.asps_plr_enabled_flag());
+      PTL_CHECK(v3cSpec, "Table H-3", !asps.asps_use_eight_orientations_flag());
+      PTL_CHECK(v3cSpec, "Table H-3", !asps.asps_extended_projection_enabled_flag());
+      PTL_CHECK(v3cSpec, "Table H-3", !asps.asps_miv_extension_present_flag());
       break;
     case TS::VPCC_Extended:
-      PTL_CHECK(v3c2dis, "Table H-3", !asps.asps_miv_extension_present_flag());
+      PTL_CHECK(v3cSpec, "Table H-3", !asps.asps_miv_extension_present_flag());
       break;
     case TS::MIV_Main:
     case TS::MIV_Extended:
     case TS::MIV_Geometry_Absent:
-      PTL_CHECK(miv1, "Table A-1", !asps.asps_max_dec_atlas_frame_buffering_minus1());
-      PTL_CHECK(miv1, "Table A-1", !asps.asps_long_term_ref_atlas_frames_flag());
-      PTL_CHECK(miv1, "Table A-1", !asps.asps_pixel_deinterleaving_enabled_flag());
-      PTL_CHECK(miv1, "Table A-1", !asps.asps_patch_precedence_order_flag());
-      PTL_CHECK(miv1, "Table A-1", !asps.asps_raw_patch_enabled_flag());
-      PTL_CHECK(miv1, "Table A-1", !asps.asps_eom_patch_enabled_flag());
-      PTL_CHECK(miv1, "Table A-1", !asps.asps_plr_enabled_flag());
-      PTL_CHECK(miv1, "Table A-1", !asps.asps_vpcc_extension_present_flag());
+      PTL_CHECK(mivSpec, "Table A-1", !asps.asps_max_dec_atlas_frame_buffering_minus1());
+      PTL_CHECK(mivSpec, "Table A-1", !asps.asps_long_term_ref_atlas_frames_flag());
+      PTL_CHECK(mivSpec, "Table A-1", !asps.asps_pixel_deinterleaving_enabled_flag());
+      PTL_CHECK(mivSpec, "Table A-1", !asps.asps_patch_precedence_order_flag());
+      PTL_CHECK(mivSpec, "Table A-1", !asps.asps_raw_patch_enabled_flag());
+      PTL_CHECK(mivSpec, "Table A-1", !asps.asps_eom_patch_enabled_flag());
+      PTL_CHECK(mivSpec, "Table A-1", !asps.asps_plr_enabled_flag());
+      PTL_CHECK(mivSpec, "Table A-1", !asps.asps_vpcc_extension_present_flag());
       break;
     }
 
     if (ptc_restricted_geometry_flag()) {
       // Because of asme_patch_constant_depth_flag, the ASME is required
-      PTL_CHECK(miv1, "Table A-1 (implicit)", asps.asps_miv_extension_present_flag());
+      PTL_CHECK(mivSpec, "Table A-1 (implicit)", asps.asps_miv_extension_present_flag());
     }
 
     if (asps.asps_miv_extension_present_flag()) {
       checkAsme(atlasId, asps.asps_miv_extension());
     }
 
-    const auto aspsFrameSize = asps.asps_frame_width() * asps.asps_frame_height();
-    PTL_CHECK(v3c2dis, "Table A-6", aspsFrameSize <= maxAtlasSize());
+    levelCheck(v3cSpec, "Table A-6", "MaxAtlasSize",
+               asps.asps_frame_width() * asps.asps_frame_height(),
+               levelLimit(2'228'224, 8'912'896, 35'651'584, 134'217'728));
   }
 
   void checkAsme(MivBitstream::AtlasId atlasId, const MivBitstream::AspsMivExtension &asme) const {
@@ -491,12 +519,11 @@ struct PtlChecker::Impl {
 
     switch (ptl_profile_toolset_idc()) {
     case TS::MIV_Main:
-      PTL_CHECK(miv1, "Table A-1", !asme_patch_constant_depth_flag);
+      PTL_CHECK(mivSpec, "Table A-1", !asme_patch_constant_depth_flag);
       break;
     case TS::MIV_Extended:
-      // Circumvent spec issue
-      // http://mpegx.int-evry.fr/software/MPEG/MIV/Specs/23090-12/-/issues/436
-      PTL_CHECK(miv1, "Table A-1",
+      // NOTE(MPEG/MIV/Specs/23090-12#436): MIV ext. profile with packed geometry is out-of-profile
+      PTL_CHECK(mivSpec, "Table A-1",
                 vps_geometry_video_present_flag || pin_geometry_present_flag ||
                     asme_patch_constant_depth_flag);
       break;
@@ -508,8 +535,8 @@ struct PtlChecker::Impl {
   }
 
   void checkAfps(const MivBitstream::AtlasFrameParameterSetRBSP &afps) const {
-    PTL_CHECK(miv1, "Table A-1", !afps.afps_lod_mode_enabled_flag());
-    PTL_CHECK(miv1, "Table A-1", !afps.afps_raw_3d_offset_bit_count_explicit_mode_flag());
+    PTL_CHECK(mivSpec, "Table A-1", !afps.afps_lod_mode_enabled_flag());
+    PTL_CHECK(mivSpec, "Table A-1", !afps.afps_raw_3d_offset_bit_count_explicit_mode_flag());
   }
 
   void checkAtl(const MivBitstream::NalUnitHeader &nuh,
@@ -524,12 +551,12 @@ struct PtlChecker::Impl {
     case TS::MIV_Main:
     case TS::MIV_Extended:
     case TS::MIV_Geometry_Absent:
-      PTL_CHECK(miv1, "Table A-1", ath_type == MivBitstream::AthType::I_TILE);
+      PTL_CHECK(mivSpec, "Table A-1", ath_type == MivBitstream::AthType::I_TILE);
 
       atl.atlas_tile_data_unit().visit(
           [this](size_t /* p */, APM atdu_patch_mode,
                  const MivBitstream::PatchInformationData & /* pid */) {
-            PTL_CHECK(miv1, "Table A-1", atdu_patch_mode == APM::I_INTRA);
+            PTL_CHECK(mivSpec, "Table A-1", atdu_patch_mode == APM::I_INTRA);
           });
       break;
     }
@@ -539,13 +566,13 @@ struct PtlChecker::Impl {
     static constexpr auto idrNuts = std::array{NUT::NAL_IDR_W_RADL, NUT::NAL_IDR_N_LP,
                                                NUT::NAL_GIDR_W_RADL, NUT::NAL_GIDR_N_LP};
     const auto idrCodedAtlas = contains(idrNuts, nuh.nal_unit_type());
-    PTL_CHECK(v3c2dis, "A.6.1", !idrCodedAtlas || ath.ath_atlas_frm_order_cnt_lsb() == 0);
+    PTL_CHECK(v3cSpec, "A.6.1", !idrCodedAtlas || ath.ath_atlas_frm_order_cnt_lsb() == 0);
   }
 
   void checkCaf(const MivBitstream::NalUnitHeader &nuh,
                 const MivBitstream::CommonAtlasFrameRBSP &caf) const {
     const auto irapCodedCommonAtlas = nuh.nal_unit_type() == NUT::NAL_CAF_IDR;
-    PTL_CHECK(v3c2dis, "A.6.1",
+    PTL_CHECK(v3cSpec, "A.6.1",
               !irapCodedCommonAtlas || caf.caf_common_atlas_frm_order_cnt_lsb() == 0);
   }
 
@@ -563,7 +590,7 @@ struct PtlChecker::Impl {
     }
 
     const auto colorFormat = frame.getColorFormat();
-    PTL_CHECK(v3c2dis, "Table A-2",
+    PTL_CHECK(v3cSpec, "Table A-2",
               colorFormat == CF::YUV420 ||
                   (colorFormat == CF::YUV400 && (ptl_profile_codec_group_idc == CG::HEVC444 ||
                                                  ptl_profile_codec_group_idc == CG::VVC_Main10)) ||
@@ -571,7 +598,7 @@ struct PtlChecker::Impl {
                    ptl_profile_codec_group_idc == CG::HEVC444));
 
     const auto bitDepth = frame.getBitDepth();
-    PTL_CHECK(v3c2dis, "Table A-2",
+    PTL_CHECK(v3cSpec, "Table A-2",
               bitDepth == 8 || (bitDepth == 10 && (ptl_profile_codec_group_idc == CG::HEVC_Main10 ||
                                                    ptl_profile_codec_group_idc == CG::HEVC444 ||
                                                    ptl_profile_codec_group_idc == CG::VVC_Main10)));
@@ -584,7 +611,7 @@ struct PtlChecker::Impl {
     case VUT::V3C_AVD:
       return checkAttributeVideoFrame(asps, frame);
     case VUT::V3C_PVD:
-      // Specification issue http://mpegx.int-evry.fr/software/MPEG/PCC/Specs/23090-5/-/issues/496
+      // NOTE(MPEG/PCC/Specs/23090-5#496): Table A-2 does not have columns for packed video
       break;
     default:
       UNREACHABLE;
@@ -607,8 +634,8 @@ struct PtlChecker::Impl {
     const auto asmeOccupancyFrameWidth = asps.asps_frame_width() / occScaleX;
     const auto asmeOccupancyFrameHeight = asps.asps_frame_height() / occScaleY;
 
-    PTL_CHECK(miv1, "A.4.1", frame.getWidth() == asmeOccupancyFrameWidth);
-    PTL_CHECK(miv1, "A.4.1", frame.getHeight() == asmeOccupancyFrameHeight);
+    PTL_CHECK(mivSpec, "A.4.1", frame.getWidth() == asmeOccupancyFrameWidth);
+    PTL_CHECK(mivSpec, "A.4.1", frame.getHeight() == asmeOccupancyFrameHeight);
   }
 
   void checkGeometryVideoFrame(const MivBitstream::AtlasSequenceParameterSetRBSP &asps,
@@ -627,8 +654,8 @@ struct PtlChecker::Impl {
     const auto asmeGeometryFrameWidth = asps.asps_frame_width() / geoScaleX;
     const auto asmeGeometryFrameHeight = asps.asps_frame_height() / geoScaleY;
 
-    PTL_CHECK(miv1, "A.4.1", frame.getWidth() == asmeGeometryFrameWidth);
-    PTL_CHECK(miv1, "A.4.1", frame.getHeight() == asmeGeometryFrameHeight);
+    PTL_CHECK(mivSpec, "A.4.1", frame.getWidth() == asmeGeometryFrameWidth);
+    PTL_CHECK(mivSpec, "A.4.1", frame.getHeight() == asmeGeometryFrameHeight);
   }
 
   void checkAttributeVideoFrame(const MivBitstream::AtlasSequenceParameterSetRBSP &asps,
@@ -636,15 +663,85 @@ struct PtlChecker::Impl {
     const auto aspsFrameWidth = asps.asps_frame_width();
     const auto aspsFrameHeight = asps.asps_frame_height();
 
-    PTL_CHECK(miv1, "A.4.1", frame.getWidth() == aspsFrameWidth);
-    PTL_CHECK(miv1, "A.4.1", frame.getHeight() == aspsFrameHeight);
+    PTL_CHECK(mivSpec, "A.4.1", frame.getWidth() == aspsFrameWidth);
+    PTL_CHECK(mivSpec, "A.4.1", frame.getHeight() == aspsFrameHeight);
+  }
+
+  [[nodiscard]] auto checkNumProjPatches(const MivBitstream::AccessUnit &frame) const {
+    return std::accumulate(frame.atlas.cbegin(), frame.atlas.cend(), int64_t{},
+                           [this](int64_t init, const auto &atlas) {
+                             return init +
+                                    levelCheck(v3cSpec, "Table A-6", "MaxNumProjPatches",
+                                               downCast<int64_t>(atlas.patchParamsList.size()),
+                                               levelLimit(2'048, 4'096, 16'384, 32'384, 65'536,
+                                                          65'536, 262'140, 262'140));
+                           });
+  }
+
+  [[nodiscard]] auto checkNumLumaSamples(const MivBitstream::AccessUnit &frame) const {
+    auto result = int64_t{};
+
+    const auto count = [&result, this](const auto &frame) {
+      if (!frame.empty()) {
+        result +=
+            levelCheck(v3cSpec, "Table A-7", "MaxPictureSize", frame.getWidth() * frame.getHeight(),
+                       levelLimit(2'228'224, 8'912'896, 35'651'584, 142'606'336));
+      }
+    };
+
+    for (const auto &atlas : frame.atlas) {
+      count(atlas.decOccFrame);
+      count(atlas.decGeoFrame);
+
+      for (const auto &decAttrFrame : atlas.decAttrFrame) {
+        count(decAttrFrame);
+      }
+
+      count(atlas.decPckFrame);
+    }
+
+    return result;
+  }
+
+  template <typename Integer>
+  [[nodiscard]] auto maxPerSec(Integer V3cFrameVariables::*field) const {
+    return std::accumulate(
+        m_window.cbegin(), m_window.cend(), Integer{},
+        [field](Integer init, const V3cFrameVariables &frame) { return init + frame.*field; });
   }
 
   void checkV3cFrame([[maybe_unused]] const MivBitstream::AccessUnit &frame) {
     VERIFY(m_vps);
-    PTL_CHECK(miv2wd3, "A.4.3", !ptc_one_v3c_frame_only_flag() || !m_haveV3cFrame);
+    PTL_CHECK(mivSpec, "A.4.3", !ptc_one_v3c_frame_only_flag() || !m_haveV3cFrame);
     m_haveV3cFrame = true;
+
+    [[maybe_unused]] auto &variables = m_window.emplace_back();
+
+    // NOTE(MPEG/PCC/Specs/23090-5#550): Annex A normatively references informative Annex B
+    // NOTE(MPEG/PCC/Specs/23090-5#569): It is unclear how to aggregate over atlases
+
+    variables.numProjPatches = checkNumProjPatches(frame);
+    variables.numLumaSamples = checkNumLumaSamples(frame);
+
+    while (m_frameRate < static_cast<double>(m_window.size())) {
+      m_window.erase(m_window.begin());
+    }
+
+    levelCheck(v3cSpec, "Table A-6", "MaxProjPatchesPerSec",
+               maxPerSec(&V3cFrameVariables::numProjPatches),
+               levelLimit(65'536, 131'072, 524'288, 1'036'288, 2'097'152, 4'194'304, 8'388'608,
+                          16'777'216));
+
+    // NOTE(MPEG/PCC/Specs/23090-5#570): Table A-6: Max CAB size and MaxAtlasBR limits are
+    // unpractically high. Not implementing any test.
+
+    levelCheck(v3cSpec, "Table A-7", "MaxAggregateLumaSr",
+               maxPerSec(&V3cFrameVariables::numLumaSamples),
+               levelLimit(133'693'440, 267'386'880, 534'773'760, 1'069'547'520, 2'139'095'040,
+                          4'278'190'080, 8'556'380'160, 17'112'760'320));
   }
+
+  [[nodiscard]] auto frameRate() const { return m_frameRate; }
 };
 
 PtlChecker::PtlChecker() : m_impl{new Impl} {}
@@ -663,6 +760,10 @@ void PtlChecker::checkNuh(const MivBitstream::NalUnitHeader &nuh) { m_impl->chec
 
 void PtlChecker::checkAndActivateVps(const MivBitstream::V3cParameterSet &vps) {
   m_impl->checkAndActivateVps(vps);
+}
+
+void PtlChecker::activateCasps(const MivBitstream::CommonAtlasSequenceParameterSetRBSP &casps) {
+  m_impl->activateCasps(casps);
 }
 
 void PtlChecker::checkAsps(MivBitstream::AtlasId atlasId,
@@ -693,4 +794,6 @@ void PtlChecker::checkVideoFrame(MivBitstream::VuhUnitType vut,
 void PtlChecker::checkV3cFrame(const MivBitstream::AccessUnit &frame) {
   m_impl->checkV3cFrame(frame);
 }
+
+auto PtlChecker::frameRate() const -> double { return m_impl->frameRate(); }
 } // namespace TMIV::PtlChecker

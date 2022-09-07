@@ -49,6 +49,7 @@ using APM = TMIV::MivBitstream::AtduPatchMode;
 using VET = TMIV::MivBitstream::VpsExtensionType;
 
 using TMIV::Common::contains;
+using TMIV::Common::downCast;
 using TMIV::Common::Frame;
 using TMIV::Common::Vec2i;
 using TMIV::MivBitstream::AccessUnit;
@@ -59,6 +60,7 @@ using TMIV::MivBitstream::AtlasTileDataUnit;
 using TMIV::MivBitstream::AtlasTileLayerRBSP;
 using TMIV::MivBitstream::AttributeInformation;
 using TMIV::MivBitstream::CommonAtlasFrameRBSP;
+using TMIV::MivBitstream::CommonAtlasSequenceParameterSetRBSP;
 using TMIV::MivBitstream::mivToolsetProfileComponents;
 using TMIV::MivBitstream::NalUnitHeader;
 using TMIV::MivBitstream::NalUnitType;
@@ -68,6 +70,7 @@ using TMIV::MivBitstream::ProfileTierLevel;
 using TMIV::MivBitstream::ProfileToolsetConstraintsInformation;
 using TMIV::MivBitstream::V3cParameterSet;
 using TMIV::MivBitstream::VpsExtensionType;
+using TMIV::MivBitstream::VuiParameters;
 using TMIV::PtlChecker::PtlChecker;
 
 namespace test {
@@ -82,6 +85,7 @@ void logger(const std::string &warning) { throw Exception(warning); }
 auto unit() {
   auto result = PtlChecker{};
   result.replaceLogger(&logger);
+  TMIV::Common::replaceLoggingStrategy([](auto &&...) {});
   return result;
 }
 
@@ -994,10 +998,8 @@ TEST_CASE("PtlChecker ISO/IEC 23090-12(2E) A.4.3") {
   }
 }
 
+// NOTE(MPEG/PCC/Specs/23090-5#497):What is the impact of ptl_tier_flag?
 TEST_CASE("PtlChecker tier") {
-  // NOTE(#517): http://mpegx.int-evry.fr/software/MPEG/PCC/Specs/23090-5/-/issues/497
-  // It is unclear how to handle `ptl_tier_flag`. Current solution is to warn on tier 1 bitstreams.
-
   auto unit = test::unit();
   auto vps = test::vps(TS::MIV_Main, false);
   vps.profile_tier_level().ptl_tier_flag(true);
@@ -1090,8 +1092,7 @@ TEST_CASE("PtlChecker ISO/IEC DIS 23090-5(2E):2021 A.6.1 level limits") {
   // NOTE(#517): No need to check afti_num_tiles_in_atlas_frame_minus1 due to MIV profile
   // restrictions
 
-  // NOTE(#517): Not counting points (yet) because the specification is broken:
-  // http://mpegx.int-evry.fr/software/MPEG/MIV/Specs/23090-12/-/issues/435
+  // NOTE(MPEG/MIV/Specs/23090-12#435): NumProjPoints is 0 for embedded occupancy
 }
 
 TEST_CASE("PtlChecker ISO/IEC DIS 23090-5(2E):2021 A.6.1 FOC LSB") {
@@ -1140,7 +1141,7 @@ TEST_CASE("PtlChecker ISO/IEC DIS 23090-5(2E):2021 A.6.1 FOC LSB") {
     auto vps = test::vps(TS::MIV_Main, false);
     unit.checkAndActivateVps(vps);
 
-    // http://mpegx.int-evry.fr/software/MPEG/PCC/Specs/23090-5/-/issues/498
+    // NOTE(MPEG/PCC/Specs/23090-5#498): Missing term `IRAP coded common atlas`
     SECTION("IRAP coded common atlas") {
       const auto nuh = NUH{NUT::NAL_CAF_IDR, 0, 1};
       unit.checkNuh(nuh);
@@ -1165,5 +1166,85 @@ TEST_CASE("PtlChecker ISO/IEC DIS 23090-5(2E):2021 A.6.1 FOC LSB") {
       caf.caf_common_atlas_frm_order_cnt_lsb(65535);
       CHECK_NOTHROW(unit.checkCaf(nuh, caf));
     }
+  }
+}
+
+TEST_CASE("PtlChecker ISO/IEC 23090-5(2E)/Amd.1 A.6.2") {
+  auto unit = test::unit();
+
+  SECTION("Frame rate for level checks") {
+    SECTION("By default the frame rate is assumed to be 30 Hz") { CHECK(unit.frameRate() == 30.); }
+
+    SECTION("The frame rate may be provided in the VUI") {
+      const auto ratio = GENERATE(std::tuple{1, 15}, std::tuple{3, 40});
+
+      unit.activateCasps([=]() {
+        auto casps = CommonAtlasSequenceParameterSetRBSP{};
+        casps.casps_miv_extension().vui_parameters(VuiParameters{}
+                                                       .vui_num_units_in_tick(std::get<0>(ratio))
+                                                       .vui_time_scale(std::get<1>(ratio)));
+        return casps;
+      }());
+
+      CHECK(unit.frameRate() * std::get<0>(ratio) == std::get<1>(ratio));
+    }
+  }
+
+  SECTION("MaxNumProjPatches") {
+    const auto limit =
+        GENERATE(std::tuple{LV::Level_1_5, 4'096}, std::tuple{LV::Level_4_0, 262'140});
+    const auto invalid = GENERATE(false, true);
+    const auto atlasCount = GENERATE(1, 5);
+
+    auto vps = test::vps(TS::MIV_Main);
+    vps.profile_tier_level().ptl_level_idc(std::get<0>(limit));
+    unit.checkAndActivateVps(vps);
+
+    auto frame = AccessUnit{};
+
+    for (int32_t atlasIdx = 0; atlasIdx < atlasCount; ++atlasIdx) {
+      frame.atlas.emplace_back().patchParamsList.resize(static_cast<size_t>(invalid) +
+                                                        std::get<1>(limit));
+    }
+
+    CHECK_THROWS_IFF(unit.checkV3cFrame(frame), invalid);
+  }
+
+  SECTION("MaxNumProjPatchesPerSec") {
+    const auto limit =
+        GENERATE(std::tuple{LV::Level_1_0, 65'536}, std::tuple{LV::Level_3_5, 4'194'304});
+    const auto invalid = GENERATE(false, true);
+    const auto atlasCount = GENERATE(1, 5);
+
+    auto vps = test::vps(TS::MIV_Main);
+    vps.profile_tier_level().ptl_level_idc(std::get<0>(limit));
+    unit.checkAndActivateVps(vps);
+
+    // Avoid triggering the MaxNumProjPatches check by increasing the frame rate above 64
+    static constexpr auto frameRate = 65;
+
+    unit.activateCasps([=]() {
+      auto casps = CommonAtlasSequenceParameterSetRBSP{};
+      casps.casps_miv_extension().vui_parameters(
+          VuiParameters{}.vui_num_units_in_tick(1).vui_time_scale(frameRate));
+      return casps;
+    }());
+
+    auto frame = AccessUnit{};
+
+    const auto numProjPatches =
+        static_cast<size_t>(invalid) + std::get<1>(limit) / (frameRate * atlasCount);
+    CAPTURE(std::get<0>(limit), std::get<1>(limit), invalid, atlasCount, numProjPatches);
+
+    for (int32_t atlasIdx = 0; atlasIdx < atlasCount; ++atlasIdx) {
+      frame.atlas.emplace_back().patchParamsList.resize(numProjPatches);
+    }
+
+    auto check = [&]() {
+      for (int32_t frameIdx = 0; frameIdx < 2 * frameRate; ++frameIdx) {
+        unit.checkV3cFrame(frame);
+      }
+    };
+    CHECK_THROWS_IFF(check(), invalid);
   }
 }

@@ -318,8 +318,10 @@ TEST_CASE("createEncoderParams sets multiple syntax elements to hard-coded value
       CHECK(asme.asme_geometry_scale_factor_y_minus1() == 1);
     }
 
-    CHECK(atlas.ath.ath_type() == TMIV::MivBitstream::AthType::I_TILE);
-    CHECK(atlas.ath.ath_ref_atlas_frame_list_asps_flag());
+    for (const auto &ath : atlas.athList) {
+      CHECK(ath.ath_type() == TMIV::MivBitstream::AthType::I_TILE);
+      CHECK(ath.ath_ref_atlas_frame_list_asps_flag());
+    }
   }
 }
 
@@ -481,8 +483,11 @@ TEST_CASE("createEncoderParams sets patch size quantizers when necessary") {
       REQUIRE_FALSE(atlas.asps.asps_patch_size_quantizer_present_flag());
     } else {
       REQUIRE(atlas.asps.asps_patch_size_quantizer_present_flag());
-      CHECK(atlas.ath.ath_patch_size_x_info_quantizer() == TMIV::Common::ceilLog2(sizeQuantizer));
-      CHECK(atlas.ath.ath_patch_size_y_info_quantizer() == TMIV::Common::ceilLog2(sizeQuantizer));
+
+      for (const auto &ath : atlas.athList) {
+        CHECK(ath.ath_patch_size_x_info_quantizer() == TMIV::Common::ceilLog2(sizeQuantizer));
+        CHECK(ath.ath_patch_size_y_info_quantizer() == TMIV::Common::ceilLog2(sizeQuantizer));
+      }
     }
   }
 }

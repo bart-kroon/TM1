@@ -71,8 +71,13 @@ protected:
     }
 
     VERIFY_V3CBITSTREAM(isAcl(nut()));
-    decodeAclNalUnit(au);
-    m_nu = pull();
+
+    const auto tileNumsMinus1 =
+        m_afpsV.front().atlas_frame_tile_information().afti_num_tiles_in_atlas_frame_minus1();
+    for (int32_t tileIdx = 0; tileIdx <= tileNumsMinus1; ++tileIdx) {
+      decodeAclNalUnit(au, tileIdx);
+      m_nu = pull();
+    }
 
     while (m_nu && isSuffixNalUnit(nut())) {
       decodeSuffixNalUnit(au);
@@ -119,16 +124,15 @@ private:
     }
   }
 
-  void decodeAclNalUnit(AtlasAccessUnit &au) {
+  void decodeAclNalUnit(AtlasAccessUnit &au, int32_t tileIdx) {
     std::istringstream stream{m_nu->rbsp()};
-    au.atl = MivBitstream::AtlasTileLayerRBSP::decodeFrom(stream, m_nu->nal_unit_header(), m_aspsV,
-                                                          m_afpsV);
-    m_checker->checkAtl(m_nu->nal_unit_header(), au.atl);
+    au.atlV.emplace_back(MivBitstream::AtlasTileLayerRBSP::decodeFrom(
+        stream, m_nu->nal_unit_header(), m_aspsV, m_afpsV));
+    m_checker->checkAtl(m_nu->nal_unit_header(), au.atlV[tileIdx]);
 
-    const auto focLsb = au.atl.atlas_tile_header().ath_atlas_frm_order_cnt_lsb();
+    const auto focLsb = au.atlV.front().atlas_tile_header().ath_atlas_frm_order_cnt_lsb();
     const auto irap = MivBitstream::NalUnitType::NAL_IDR_W_RADL <= nut() &&
                       nut() <= MivBitstream::NalUnitType::NAL_RSV_IRAP_ACL_29;
-
     if (irap) {
       VERIFY_V3CBITSTREAM(focLsb == 0);
       m_foc = 0;
@@ -138,9 +142,9 @@ private:
         ++m_foc;
       }
     }
-
     au.foc = m_foc;
-    au.afps = afpsById(m_afpsV, au.atl.atlas_tile_header().ath_atlas_frame_parameter_set_id());
+    au.afps =
+        afpsById(m_afpsV, au.atlV.front().atlas_tile_header().ath_atlas_frame_parameter_set_id());
     au.asps = aspsById(m_aspsV, au.afps.afps_atlas_sequence_parameter_set_id());
   }
 

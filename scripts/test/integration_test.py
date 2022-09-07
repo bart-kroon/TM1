@@ -137,6 +137,7 @@ class IntegrationTest:
             futures += self.testFramePacking(executor)
             futures += self.testEntityCoding(executor)
             futures += self.testExplicitOccupancy(executor)
+            futures += self.testMultiTile(executor)
             self.sync(futures)
 
         if not self.dryRun:
@@ -900,6 +901,76 @@ class IntegrationTest:
         )
 
         return [f4_1, f4_2, f4_3, f4_4, f4_5]
+
+    def testMultiTile(self, executor):
+        if not self.dryRun:
+            (self.testDir / "T3" / "E" / "QP3").mkdir(parents=True, exist_ok=True)
+
+        geometryResolution = Resolution(512, 512)
+        textureResolution = Resolution(1024, 1024)
+        renderResolution = Resolution(480, 270)
+
+        f1 = self.launchCommand(
+            executor,
+            [],
+            ["{0}/bin/TmivEncoder", "-c", "{1}/config/test/multi-tile/T_1_TMIV_encode.json"]
+            + ["-p", "configDirectory", "{1}/config", "-p", "inputDirectory", "{2}"]
+            + ["-p", "outputDirectory", "{3}", "-n", "3", "-s", "E", "-p", "intraPeriod", "2"]
+            + ["-p", "inputSequenceConfigPathFmt", "test/sequences/T{{1}}.json"]
+            + ["-p", "maxLumaPictureSize", "1048576", "-f", "0"],
+            "{3}/T3/E/TMIV_T3_E.log",
+            [
+                "T3/E/TMIV_T3_E.bit",
+                f"T3/E/TMIV_T3_E_geo_c00_{geometryResolution}_yuv420p10le.yuv",
+                f"T3/E/TMIV_T3_E_geo_c01_{geometryResolution}_yuv420p10le.yuv",
+                f"T3/E/TMIV_T3_E_tex_c00_{textureResolution}_yuv420p10le.yuv",
+                f"T3/E/TMIV_T3_E_tex_c00_{textureResolution}_yuv420p10le.yuv",
+            ],
+        )
+
+        f2_1 = self.launchCommand(
+            executor,
+            [f1],
+            [
+                "{0}/bin/TmivParser",
+                "-b",
+                "{3}/T3/E/TMIV_T3_E.bit",
+                "-o",
+                "{3}/T3/E/TMIV_T3_E.hls",
+            ],
+            None,
+            ["T3/E/TMIV_T3_E.hls"],
+        )
+
+        f2_2 = self.launchCommand(
+            executor,
+            [f1],
+            ["{0}/bin/TmivBitrateReport"]
+            + ["-b", "{3}/T3/E/TMIV_T3_E.bit"]
+            + ["-o", "{3}/T3/E/TMIV_T3_E.csv"],
+            None,
+            ["T3/E/TMIV_T3_E.csv"],
+        )
+
+        f2_3 = self.launchCommand(
+            executor,
+            [f1],
+            ["{0}/bin/TmivDecoder", "-c", "{1}/config/test/multi-tile/T_4_TMIV_decode.json"]
+            + ["-p", "configDirectory", "{1}/config", "-p", "inputDirectory", "{3}"]
+            + ["-p", "outputDirectory", "{3}"]
+            + ["-p", "inputGeometryVideoFramePathFmt"]
+            + ["T{{0}}/{{1}}/TMIV_T{{0}}_{{1}}_geo_c{{3:02}}_{{4}}x{{5}}_{{6}}.yuv"]
+            + ["-p", "inputTextureVideoFramePathFmt"]
+            + ["T{{0}}/{{1}}/TMIV_T{{0}}_{{1}}_tex_c{{3:02}}_{{4}}x{{5}}_{{6}}.yuv"]
+            + ["-p", "inputBitstreamPathFmt", "T3/E/TMIV_T3_E.bit"]
+            + ["-p", "inputViewportParamsPathFmt", "test/sequences/T{{1}}.json"]
+            + ["-n", "3", "-N", "3", "-s", "E"]
+            + ["-r", "QP3", "-v", "v5"],
+            "{3}/T3/E/QP3/T3_E_QP3_v5.log",
+            [f"T3/E/QP3/T3_E_QP3_v5_tex_{renderResolution}_yuv420p10le.yuv"],
+        )
+
+        return [f2_1, f2_2, f2_3]
 
     def testExplicitOccupancy(self, executor):
         if not self.dryRun:

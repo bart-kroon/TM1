@@ -105,6 +105,14 @@ private:
                   int32_t yOcc, int32_t xOcc, const Common::Vec2i &pView,
                   const Common::Vec2i &pAtlas) const;
 
+  void setTiles();
+  auto setPartition() -> bool;
+  void updateTile();
+  void setAtlasFrameTileInformationSnytax(bool uniformPartitionSpacingFlag,
+                                          bool partitionPerTileFlag);
+  void setAtlasTileHeaderSnytax(size_t atlasIdx);
+  std::vector<std::vector<std::vector<int32_t>>> m_partitionArray;
+
 #if ENABLE_M57419
   auto m57419_makeHistogram(int32_t piece_num, size_t numOfFrames, size_t v, int32_t minDepthVal,
                             int32_t maxDepthVal) -> std::vector<int32_t>;

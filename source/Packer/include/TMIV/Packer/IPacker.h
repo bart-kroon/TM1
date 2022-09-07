@@ -36,6 +36,7 @@
 
 #include <TMIV/Common/Frame.h>
 #include <TMIV/MivBitstream/PatchParamsList.h>
+#include <TMIV/MivBitstream/Tile.h>
 #include <TMIV/MivBitstream/ViewParamsList.h>
 
 namespace TMIV::Packer {
@@ -48,8 +49,10 @@ public:
   auto operator=(IPacker &&) -> IPacker & = default;
   virtual ~IPacker() = default;
 
-  virtual void initialize(const Common::SizeVector &atlasSizes, int32_t blockSize) = 0;
-  virtual auto pack(const Common::SizeVector &atlasSize, const Common::FrameList<uint8_t> &masks,
+  virtual void initialize(const std::vector<Common::SizeVector> &atlasSizes, int32_t blockSize) = 0;
+  virtual void initialize(std::vector<std::vector<MivBitstream::TilePartition>> tileSizes) = 0;
+  virtual auto pack(const std::vector<Common::SizeVector> &atlasSize,
+                    const Common::FrameList<uint8_t> &masks,
                     const MivBitstream::ViewParamsList &viewParamsList, int32_t blockSize)
       -> MivBitstream::PatchParamsList = 0;
   virtual void

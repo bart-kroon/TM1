@@ -71,6 +71,7 @@ Configuration::Configuration(const Common::Json &componentNode)
   queryProfileTierLevelParameters(componentNode);
   queryBitDepthParameters(componentNode);
   querySeiParameters(componentNode);
+  queryTileParameters(componentNode);
 
 #if ENABLE_M57419
   m57419_piecewiseDepthLinearScaling =
@@ -80,6 +81,16 @@ Configuration::Configuration(const Common::Json &componentNode)
 #endif
 
   verifyValid();
+}
+
+void Configuration::queryTileParameters(const Common::Json &componentNode) {
+  if (const auto &tilenode = componentNode.optional("Tiling")) {
+    numberPartitionCol = tilenode.require("numberPartitionCol").as<int32_t>();
+    numberPartitionRow = tilenode.require("numberPartitionRow").as<int32_t>();
+    singlePartitionPerTileFlag = tilenode.require("singlePartitionPerTileFlag").as<bool>();
+    partitionWidth = tilenode.require("partitionWidth").asVector<int32_t>();
+    partitionHeight = tilenode.require("partitionHeight").asVector<int32_t>();
+  }
 }
 
 void Configuration::queryMainParameters(const Common::Json &componentNode) {

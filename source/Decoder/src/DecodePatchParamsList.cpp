@@ -36,15 +36,21 @@
 namespace TMIV::Decoder {
 void decodePatchParamsList(const MivBitstream::V3cParameterSet &vps,
                            MivBitstream::V3cUnitHeader vuh, const AtlasAccessUnit &au,
-                           MivBitstream::PatchParamsList &ppl) {
-  if (au.atl.atlas_tile_header().ath_type() == MivBitstream::AthType::I_TILE) {
-    ppl.assign(au.atl.atlas_tile_data_unit().atduTotalNumberOfPatches(), {});
+                           MivBitstream::TilePartition &tile, size_t tileIdx) {
+  if (au.atlV[tileIdx].atlas_tile_header().ath_type() == MivBitstream::AthType::I_TILE) {
+    VERIFY(tileIdx == au.atlV[tileIdx].atlas_tile_header().ath_id());
 
-    au.atl.atlas_tile_data_unit().visit([&](size_t p, MivBitstream::AtduPatchMode /* unused */,
-                                            const MivBitstream::PatchInformationData &pid) {
-      ppl[p] = MivBitstream::PatchParams::decodePdu(pid.patch_data_unit(), vps, vuh.vuh_atlas_id(),
-                                                    au.asps, au.afps, au.atl.atlas_tile_header());
-    });
+    MivBitstream::PatchParamsList ppl;
+    ppl.assign(au.atlV[tileIdx].atlas_tile_data_unit().atduTotalNumberOfPatches(), {});
+
+    au.atlV[tileIdx].atlas_tile_data_unit().visit(
+        [&](size_t p, MivBitstream::AtduPatchMode /* unused */,
+            const MivBitstream::PatchInformationData &pid) {
+          ppl[p] = MivBitstream::PatchParams::decodePdu(pid.patch_data_unit(), vps,
+                                                        vuh.vuh_atlas_id(), au.asps, au.afps,
+                                                        au.atlV[tileIdx].atlas_tile_header());
+        });
+    tile.partitionPatchList(ppl);
   }
 }
 

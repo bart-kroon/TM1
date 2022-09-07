@@ -38,6 +38,7 @@
 #include "IPacker.h"
 
 #include <TMIV/Common/Json.h>
+#include <TMIV/MivBitstream/Tile.h>
 
 #include <tuple>
 
@@ -55,8 +56,11 @@ public:
   auto operator=(Packer &&) -> Packer & = default;
   ~Packer() override;
 
-  void initialize(const Common::SizeVector &atlasSizes, int32_t blockSize) override;
-  auto pack(const Common::SizeVector &atlasSize, const Common::FrameList<uint8_t> &masks,
+  void initialize(std::vector<std::vector<MivBitstream::TilePartition>> tileSizes) override;
+
+  void initialize(const std::vector<Common::SizeVector> &atlasSizes, int32_t blockSize) override;
+  auto pack(const std::vector<Common::SizeVector> &atlasSize,
+            const Common::FrameList<uint8_t> &masks,
             const MivBitstream::ViewParamsList &viewParamsList, int32_t blockSize)
       -> MivBitstream::PatchParamsList override;
   void
@@ -73,12 +77,18 @@ private:
   int32_t m_maxEntityId{0};
   std::vector<Common::FrameList<uint8_t>> m_aggregatedEntityMasks{};
   Common::Vec2i m_entityEncodeRange;
-  std::vector<MaxRectPiP> m_packerList;
+
+  std::vector<std::vector<MivBitstream::TilePartition>> m_tileList;
+  std::vector<std::vector<MaxRectPiP>> m_packerList;
+
   auto computeClusters(const Common::FrameList<uint8_t> &masks,
                        const MivBitstream::ViewParamsList &viewParamsList)
       -> std::tuple<ClusterList, ClusteringMapList, std::vector<int32_t>>;
   auto computeClusterToPack(const MivBitstream::ViewParamsList &viewParamsList, int32_t m_blockSize,
                             ClusterList &clusterList, const ClusteringMapList &clusteringMap) const;
+  [[nodiscard]] auto getViewId(const Cluster &cluster,
+                               const std::vector<int32_t> &clusteringMapIndex) const -> int32_t;
+  void ifEntityOrBasic(const Cluster &cluster) const;
 };
 
 } // namespace TMIV::Packer

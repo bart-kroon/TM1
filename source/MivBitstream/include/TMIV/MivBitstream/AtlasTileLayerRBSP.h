@@ -370,6 +370,8 @@ private:
   AtlasTileHeader m_atlas_tile_header;
   AtlasTileDataUnit m_atlas_tile_data_unit;
 };
+
+using AtlasTileHeaderList = std::vector<AtlasTileHeader>;
 } // namespace TMIV::MivBitstream
 
 #include "AtlasTileLayerRBSP.hpp"

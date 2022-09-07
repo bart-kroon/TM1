@@ -166,23 +166,32 @@ auto Packer::computeClusterToPack(const MivBitstream::ViewParamsList &viewParams
   return clusterToPack;
 }
 
-void Packer::initialize(const Common::SizeVector &atlasSizes, const int32_t blockSize) {
+void Packer::initialize(const std::vector<Common::SizeVector> &atlasSizes,
+                        const int32_t blockSize) {
   m_packerList.clear();
-  m_packerList.reserve(atlasSizes.size());
-  for (const auto &sz : atlasSizes) {
-    m_packerList.emplace_back(sz.x(), sz.y(), blockSize, m_pip);
+  m_packerList.resize(atlasSizes.size());
+  for (size_t atlasIdx = 0; atlasIdx < atlasSizes.size(); atlasIdx++) {
+    for (const auto &t : atlasSizes[atlasIdx]) {
+      m_packerList[atlasIdx].emplace_back(t.x(), t.y(), blockSize, m_pip);
+    }
   }
 }
 
+void Packer::initialize(std::vector<std::vector<MivBitstream::TilePartition>> tileSizes) {
+  m_tileList.clear();
+  m_tileList = tileSizes;
+}
+
 namespace {
-auto patchParamsFor(size_t atlasId, const MivBitstream::ViewParamsList &viewParamsList,
-                    const Cluster &cluster, MaxRectPiP::Output &packerOutput, int32_t blockSize)
+auto patchParamsFor(size_t atlasIdx, const MivBitstream::ViewParamsList &viewParamsList,
+                    const Cluster &cluster, Common::Vec2i tilePosition,
+                    MaxRectPiP::Output &packerOutput, int32_t blockSize)
     -> MivBitstream::PatchParams {
   return MivBitstream::PatchParams{}
-      .atlasId(MivBitstream::AtlasId{static_cast<uint8_t>(atlasId)})
+      .atlasId(MivBitstream::AtlasId{static_cast<uint8_t>(atlasIdx)})
       .atlasPatchProjectionId(viewParamsList[cluster.getViewIdx()].viewId)
-      .atlasPatch2dPosX(packerOutput.x())
-      .atlasPatch2dPosY(packerOutput.y())
+      .atlasPatch2dPosX(packerOutput.x() + tilePosition[0])
+      .atlasPatch2dPosY(packerOutput.y() + tilePosition[1])
       .atlasPatch3dOffsetU(cluster.jmin())
       .atlasPatch3dOffsetV(cluster.imin())
       .atlasPatchOrientationIndex(packerOutput.isRotated()
@@ -193,11 +202,13 @@ auto patchParamsFor(size_t atlasId, const MivBitstream::ViewParamsList &viewPara
 }
 } // namespace
 
-auto Packer::pack(const Common::SizeVector &atlasSizes, const Common::FrameList<uint8_t> &masks,
+auto Packer::pack(const std::vector<Common::SizeVector> &atlasSizes,
+                  const Common::FrameList<uint8_t> &masks,
                   const MivBitstream::ViewParamsList &viewParamsList, const int32_t blockSize)
     -> MivBitstream::PatchParamsList {
-  checkAtlasSize(atlasSizes, blockSize);
-
+  for (const auto &atlassize : atlasSizes) {
+    checkAtlasSize(atlassize, blockSize);
+  }
   auto [clusterList, clusteringMap, clusteringMapIndex] = computeClusters(masks, viewParamsList);
 
   auto clusterToPack = computeClusterToPack(viewParamsList, blockSize, clusterList, clusteringMap);
@@ -222,55 +233,55 @@ auto Packer::pack(const Common::SizeVector &atlasSizes, const Common::FrameList<
   while (!clusterToPack.empty()) {
     const Cluster &cluster = clusterToPack.top();
 
-    if (m_maxEntityId > 0) {
-      clusteringMap_viewId = clusteringMapIndex[cluster.getClusterId()];
-    } else {
-      clusteringMap_viewId = cluster.getViewIdx();
-    }
+    clusteringMap_viewId = getViewId(cluster, clusteringMapIndex);
 
     if (m_minPatchSize * m_minPatchSize <= cluster.getArea()) {
       bool packed = false;
 
-      for (size_t atlasId = 0; atlasId < m_packerList.size(); ++atlasId) {
-        MaxRectPiP &packer = m_packerList[atlasId];
+      for (size_t atlasIdx = 0; atlasIdx < m_packerList.size(); ++atlasIdx) {
+        for (size_t tileIdx = 0; tileIdx < m_packerList[atlasIdx].size(); ++tileIdx) {
+          MaxRectPiP &packer = m_packerList[atlasIdx][tileIdx];
 
-        packer.setIsPushInFreeSpace(false);
+          packer.setIsPushInFreeSpace(false);
 
-        if (packer.push(cluster, clusteringMap[clusteringMap_viewId], packerOutput)) {
-          auto p = patchParamsFor(atlasId, viewParamsList, cluster, packerOutput, blockSize);
+          if (packer.push(cluster, clusteringMap[clusteringMap_viewId], packerOutput)) {
+            Common::Vec2i tilePosition = {m_tileList[atlasIdx][tileIdx].partitionPosX(),
+                                          m_tileList[atlasIdx][tileIdx].partitionPosY()};
+            auto p = patchParamsFor(atlasIdx, viewParamsList, cluster, tilePosition, packerOutput,
+                                    blockSize);
 
-          adaptPatchParamsToMask(p, masks[cluster.getViewIdx()].getWidth(),
-                                 masks[cluster.getViewIdx()].getHeight());
+            adaptPatchParamsToMask(p, masks[cluster.getViewIdx()].getWidth(),
+                                   masks[cluster.getViewIdx()].getHeight());
 
-          if (m_maxEntityId > 0) {
-            p.atlasPatchEntityId(cluster.getEntityId());
-            Common::logInfo(
-                "Packing patch {} of entity {} from view {} with #active pixels {} in atlas {}",
-                patchIdx, p.atlasPatchEntityId(), p.atlasPatchProjectionId(),
-                cluster.getNumActivePixels(), p.atlasId());
+            if (m_maxEntityId > 0) {
+              p.atlasPatchEntityId(cluster.getEntityId());
+              Common::logInfo(
+                  "Packing patch {} of entity {} from view {} with #active pixels {} in atlas {}",
+                  patchIdx, p.atlasPatchEntityId(), p.atlasPatchProjectionId(),
+                  cluster.getNumActivePixels(), p.atlasId());
+            }
+
+            if (packer.getIsPushInFreeSpace()) {
+              packer.setAreaPatchPushedInFreeSpace((p.atlasPatch2dSizeX() * p.atlasPatch2dSizeY()));
+            }
+
+            atlasParamsVector.push_back(p);
+            patchIdx++;
+
+            numKeptClusterPixels = numKeptClusterPixels + cluster.getNumActivePixels();
+
+            packed = true;
+            break;
           }
+        }
 
-          if (packer.getIsPushInFreeSpace()) {
-            packer.setAreaPatchPushedInFreeSpace((p.atlasPatch2dSizeX() * p.atlasPatch2dSizeY()));
-          }
-
-          atlasParamsVector.push_back(p);
-          patchIdx++;
-
-          numKeptClusterPixels = numKeptClusterPixels + cluster.getNumActivePixels();
-
-          packed = true;
+        if (packed) {
           break;
         }
       }
 
       if (!packed) {
-        if (m_maxEntityId > 0) {
-          Common::logInfo("Spliting cluster {}", cluster.getClusterId());
-        }
-        if (cluster.isBasicView()) {
-          throw std::runtime_error("Failed to pack basic view");
-        }
+        ifEntityOrBasic(cluster);
         auto cc = cluster.split(clusteringMap[clusteringMap_viewId], m_overlap);
 
         const auto alignPatch = [&, &clusteringMapIndex = clusteringMapIndex](auto member) {
@@ -290,13 +301,15 @@ auto Packer::pack(const Common::SizeVector &atlasSizes, const Common::FrameList<
     clusterToPack.pop();
   }
 
-  for (size_t atlasId = 0; atlasId < m_packerList.size(); ++atlasId) {
-    Common::logVerbose(
-        "Ratio of patch area in atlas {}: {:.4f}%", atlasId,
-        ((static_cast<double>(m_packerList[atlasId].getAreaPatchPushedInFreeSpace()) /
-          (atlasSizes[atlasId][0] * atlasSizes[atlasId][1])) *
-         100));
-    m_packerList[atlasId].setAreaPatchPushedInFreeSpace(0);
+  for (size_t atlasIdx = 0; atlasIdx < m_packerList.size(); ++atlasIdx) {
+    for (size_t tileIdx = 0; tileIdx < m_packerList[atlasIdx].size(); ++tileIdx) {
+      Common::logVerbose(
+          "Ratio of patch area in atlas {} tile {}: {:.4f}%", atlasIdx, tileIdx,
+          ((static_cast<double>(m_packerList[atlasIdx][tileIdx].getAreaPatchPushedInFreeSpace()) /
+            (atlasSizes[atlasIdx][tileIdx][0] * atlasSizes[atlasIdx][tileIdx][1])) *
+           100));
+      m_packerList[atlasIdx][tileIdx].setAreaPatchPushedInFreeSpace(0);
+    }
   }
 
   Common::logVerbose(
@@ -305,6 +318,23 @@ auto Packer::pack(const Common::SizeVector &atlasSizes, const Common::FrameList<
           100);
 
   return atlasParamsVector;
+}
+
+auto Packer::getViewId(const Cluster &cluster, const std::vector<int32_t> &clusteringMapIndex) const
+    -> int32_t {
+  if (m_maxEntityId > 0) {
+    return clusteringMapIndex[cluster.getClusterId()];
+  }
+  return cluster.getViewIdx();
+}
+
+void Packer::ifEntityOrBasic(const Cluster &cluster) const {
+  if (m_maxEntityId > 0) {
+    Common::logInfo("Spliting cluster {}", cluster.getClusterId());
+  }
+  if (cluster.isBasicView()) {
+    throw std::runtime_error("Failed to pack basic view");
+  }
 }
 
 auto Packer::computeClusters(const Common::FrameList<uint8_t> &masks,

@@ -40,47 +40,163 @@
 
 namespace TMIV::MivBitstream {
 auto operator<<(std::ostream &stream, const AtlasFrameTileInformation &x) -> std::ostream & {
-  stream << "afti_single_tile_in_atlas_frame_flag=" << std::boolalpha
-         << x.afti_single_tile_in_atlas_frame_flag() << '\n';
+  fmt::print(stream, "afti_single_tile_in_atlas_frame_flag={}\n",
+             x.afti_single_tile_in_atlas_frame_flag());
   stream << "afti_signalled_tile_id_flag=" << std::boolalpha << x.afti_signalled_tile_id_flag()
          << '\n';
+  if (x.afti_single_tile_in_atlas_frame_flag()) {
+    return stream;
+  }
+
+  fmt::print(stream, "afti_uniform_partition_spacing_flag={}\n",
+             x.afti_uniform_partition_spacing_flag());
+  if (x.afti_uniform_partition_spacing_flag()) {
+    fmt::print(stream, "afti_partition_cols_width_minus1={}\n",
+               x.afti_partition_cols_width_minus1());
+    fmt::print(stream, "afti_partition_rows_height_minus1={}\n",
+               x.afti_partition_rows_height_minus1());
+  } else {
+    fmt::print(stream, "afti_num_partition_columns_minus1={}\n",
+               x.afti_num_partition_columns_minus1());
+    fmt::print(stream, "afti_num_partition_rows_minus1={}\n", x.afti_num_partition_rows_minus1());
+    for (int32_t i = 0; i < x.afti_num_partition_columns_minus1(); ++i) {
+      fmt::print(stream, "afti_partition_column_width_minus1={}\n",
+                 x.m_afti_partition_column_width_minus1[i]);
+    }
+    for (int32_t i = 0; i < x.afti_num_partition_rows_minus1(); ++i) {
+      fmt::print(stream, "afti_partition_row_height_minus1={}\n",
+                 x.m_afti_partition_row_height_minus1[i]);
+    }
+  }
+
+  fmt::print(stream, "afti_single_partition_per_tile_flag={}\n",
+             x.afti_single_partition_per_tile_flag());
+
+  if (!x.afti_single_partition_per_tile_flag()) {
+    fmt::print(stream, "afti_num_tiles_in_atlas_frame_minus1={}\n",
+               x.afti_num_tiles_in_atlas_frame_minus1());
+    for (int32_t i = 0; i <= x.afti_num_tiles_in_atlas_frame_minus1(); ++i) {
+      fmt::print(stream, "afti_top_left_partition_idx={}\n", x.m_afti_top_left_partition_idx[i]);
+      fmt::print(stream, "afti_bottom_right_partition_column_offset={}\n",
+                 x.m_afti_bottom_right_partition_column_offset[i]);
+      fmt::print(stream, "afti_bottom_right_partition_row_offset={}\n",
+                 x.m_afti_bottom_right_partition_row_offset[i]);
+    }
+  }
   return stream;
 }
 
-auto AtlasFrameTileInformation::decodeFrom(Common::InputBitstream &bitstream)
+auto AtlasFrameTileInformation::decodeFrom(Common::InputBitstream &bitstream,
+                                           const std::vector<AtlasSequenceParameterSetRBSP> &aspsV)
     -> AtlasFrameTileInformation {
-  const auto afti_single_tile_in_atlas_frame_flag = bitstream.getFlag();
+  auto x = AtlasFrameTileInformation{};
+  const auto singleTileInAtlasFrameFlag = bitstream.getFlag();
+  x.afti_single_tile_in_atlas_frame_flag(singleTileInAtlasFrameFlag);
+  if (!singleTileInAtlasFrameFlag) {
+    const auto uniformPartitionSpacingFlag = bitstream.getFlag();
+    if (uniformPartitionSpacingFlag) {
+      const auto partitionColsWidthMinus1 = bitstream.getUExpGolomb<int32_t>();
+      const auto partitionRowsHeightMinus1 = bitstream.getUExpGolomb<int32_t>();
+      x.afti_uniform_partition_spacing_flag(uniformPartitionSpacingFlag)
+          .afti_partition_cols_width_minus1(partitionColsWidthMinus1)
+          .afti_partition_rows_height_minus1(partitionRowsHeightMinus1);
+    } else {
+      const auto numPartitionColumnsMinus1 = bitstream.getUExpGolomb<int32_t>();
+      const auto numPartitionRowsMinus1 = bitstream.getUExpGolomb<int32_t>();
+      auto partitionWidth = std::vector<int32_t>(numPartitionColumnsMinus1, 0);
+      auto paritionHeight = std::vector<int32_t>(numPartitionRowsMinus1, 0);
+      for (auto &element : partitionWidth) {
+        element = bitstream.getUExpGolomb<int32_t>();
+      }
+      for (auto &element : paritionHeight) {
+        element = bitstream.getUExpGolomb<int32_t>();
+      }
 
-  // NOTE(BK): The proposal is to restrict to afti_single_tile_in_atlas_frame_flag == 1, but for
-  // sake of being able to parse the provided V3C bitstream, this implementation accepts more
-  // as long as there is only a single partition and tile.
-  if (!afti_single_tile_in_atlas_frame_flag) {
-    const auto afti_uniform_partition_spacing_flag = bitstream.getFlag();
-    VERIFY_MIVBITSTREAM(!afti_uniform_partition_spacing_flag);
-
-    const auto afti_num_partition_columns_minus1 = bitstream.getUExpGolomb<size_t>();
-    VERIFY_MIVBITSTREAM(afti_num_partition_columns_minus1 == 0);
-
-    const auto afti_num_partition_rows_minus1 = bitstream.getUExpGolomb<size_t>();
-    VERIFY_MIVBITSTREAM(afti_num_partition_rows_minus1 == 0);
-
-    const auto afti_single_partition_per_tile_flag = bitstream.getFlag();
-
-    if (!afti_single_partition_per_tile_flag) {
-      const auto afti_num_tiles_in_atlas_frame_minus1 = bitstream.getUExpGolomb<size_t>();
-      VERIFY_MIVBITSTREAM(afti_num_tiles_in_atlas_frame_minus1 == 0);
+      x.afti_uniform_partition_spacing_flag(uniformPartitionSpacingFlag)
+          .afti_num_partition_columns_minus1(numPartitionColumnsMinus1)
+          .afti_num_partition_rows_minus1(numPartitionRowsMinus1);
+      x.afti_partition_column_width_minus1(std::move(partitionWidth))
+          .afti_partition_row_height_minus1(std::move(paritionHeight));
     }
+
+    const auto singlePartitionPerTileFlag = bitstream.getFlag();
+    PRECONDITION(singlePartitionPerTileFlag == true);
+    x.afti_single_partition_per_tile_flag(singlePartitionPerTileFlag);
+    if (!singlePartitionPerTileFlag) {
+      const auto numTilesInAtlasFrameMinus1 = bitstream.getUExpGolomb<int32_t>();
+      const auto numTilesInAtlasFrame = static_cast<int32_t>(numTilesInAtlasFrameMinus1 + 1);
+      auto topLeftPartitionIdx = std::vector<int32_t>(numTilesInAtlasFrame, 0);
+      auto bottomRightPartitionColumnOffset = std::vector<int32_t>(numTilesInAtlasFrame, 0);
+      auto bottomRightPartitionRowOffset = std::vector<int32_t>(numTilesInAtlasFrame, 0);
+      for (int32_t i = 0; i < numTilesInAtlasFrame; i++) {
+        topLeftPartitionIdx[i] = bitstream.getUExpGolomb<int32_t>();
+        bottomRightPartitionColumnOffset[i] = bitstream.getUExpGolomb<int32_t>();
+        bottomRightPartitionRowOffset[i] = bitstream.getUExpGolomb<int32_t>();
+      }
+      x.afti_num_tiles_in_atlas_frame_minus1(numTilesInAtlasFrameMinus1)
+          .afti_top_left_partition_idx(std::move(topLeftPartitionIdx))
+          .afti_bottom_right_partition_column_offset(std::move(bottomRightPartitionColumnOffset))
+          .afti_bottom_right_partition_row_offset(std::move(bottomRightPartitionRowOffset));
+    } else {
+      if (uniformPartitionSpacingFlag) {
+        int32_t partitionWidth = (x.afti_partition_cols_width_minus1() + 1) * 64;
+        int32_t partitionHeight = (x.afti_partition_rows_height_minus1() + 1) * 64;
+        auto numPartitionColumns = static_cast<int32_t>(
+            std::ceil(aspsV.front().asps_frame_width() * 1.0 / (partitionWidth)));
+        auto numPartitionRows = static_cast<int32_t>(
+            std::ceil(aspsV.front().asps_frame_height() * 1.0 / (partitionHeight)));
+        x.afti_num_tiles_in_atlas_frame_minus1(numPartitionColumns * numPartitionRows - 1);
+
+      } else {
+        int32_t numTilesInAtlasFrameMinus1 =
+            (x.afti_num_partition_columns_minus1() + 1) * (x.afti_num_partition_rows_minus1() + 1) -
+            1;
+        x.afti_num_tiles_in_atlas_frame_minus1(numTilesInAtlasFrameMinus1);
+      }
+    }
+  } else {
+    x.afti_num_tiles_in_atlas_frame_minus1(0);
   }
 
   const auto afti_signalled_tile_id_flag = bitstream.getFlag();
   VERIFY_MIVBITSTREAM(!afti_signalled_tile_id_flag);
 
-  return {};
+  return x;
 }
 
-void AtlasFrameTileInformation::encodeTo(Common::OutputBitstream &bitstream) {
-  constexpr auto afti_single_tile_in_atlas_frame_flag = true;
-  bitstream.putFlag(afti_single_tile_in_atlas_frame_flag);
+void AtlasFrameTileInformation::encodeTo(
+    Common::OutputBitstream &bitstream,
+    const std::vector<AtlasSequenceParameterSetRBSP> &aspsV) const {
+  PRECONDITION(!aspsV.empty());
+  bitstream.putFlag(afti_single_tile_in_atlas_frame_flag());
+  if (!afti_single_tile_in_atlas_frame_flag()) {
+    bitstream.putFlag(afti_uniform_partition_spacing_flag());
+    if (afti_uniform_partition_spacing_flag()) {
+      bitstream.putUExpGolomb(afti_partition_cols_width_minus1());
+      bitstream.putUExpGolomb(afti_partition_rows_height_minus1());
+    } else {
+      bitstream.putUExpGolomb(afti_num_partition_columns_minus1());
+      bitstream.putUExpGolomb(afti_num_partition_rows_minus1());
+      for (int32_t i = 0; i < afti_num_partition_columns_minus1(); i++) {
+        // the partition of the last column can be subtracted from the sum of the previous columns
+        // by the width of the atlas.
+        bitstream.putUExpGolomb(m_afti_partition_column_width_minus1[i]);
+      }
+      for (int32_t i = 0; i < afti_num_partition_rows_minus1(); i++) {
+        bitstream.putUExpGolomb(m_afti_partition_row_height_minus1[i]);
+      }
+    }
+
+    bitstream.putFlag(afti_single_partition_per_tile_flag());
+    if (!afti_single_partition_per_tile_flag()) {
+      bitstream.putUExpGolomb(afti_num_tiles_in_atlas_frame_minus1());
+      for (int32_t i = 0; i <= afti_num_tiles_in_atlas_frame_minus1(); i++) {
+        bitstream.putUExpGolomb(m_afti_top_left_partition_idx[i]);
+        bitstream.putUExpGolomb(m_afti_bottom_right_partition_column_offset[i]);
+        bitstream.putUExpGolomb(m_afti_bottom_right_partition_row_offset[i]);
+      }
+    }
+  }
 
   const auto afti_signalled_tile_id_flag = false;
   bitstream.putFlag(afti_signalled_tile_id_flag);
@@ -252,7 +368,7 @@ auto AtlasFrameParameterSetRBSP::decodeFrom(std::istream &stream,
   x.afps_atlas_sequence_parameter_set_id(bitstream.getUExpGolomb<uint8_t>());
   const auto &asps = aspsById(aspsV, x.afps_atlas_sequence_parameter_set_id());
 
-  x.atlas_frame_tile_information(AtlasFrameTileInformation::decodeFrom(bitstream));
+  x.atlas_frame_tile_information(AtlasFrameTileInformation::decodeFrom(bitstream, aspsV));
 
   x.afps_output_flag_present_flag(bitstream.getFlag());
 
@@ -298,7 +414,7 @@ void AtlasFrameParameterSetRBSP::encodeTo(
   bitstream.putUExpGolomb(afps_atlas_sequence_parameter_set_id());
   const auto &asps = aspsById(aspsV, afps_atlas_sequence_parameter_set_id());
 
-  atlas_frame_tile_information().encodeTo(bitstream);
+  atlas_frame_tile_information().encodeTo(bitstream, aspsV);
 
   bitstream.putFlag(afps_output_flag_present_flag());
 

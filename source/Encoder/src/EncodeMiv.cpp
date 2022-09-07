@@ -133,7 +133,10 @@ private:
       aau.asps.asps_atlas_sequence_parameter_set_id(k);
       aau.afps.afps_atlas_frame_parameter_set_id(k);
       aau.afps.afps_atlas_sequence_parameter_set_id(k);
-      aau.ath.ath_atlas_frame_parameter_set_id(k).ath_atlas_frm_order_cnt_lsb(m_frmOrderCntLsb);
+
+      for (auto &ath : aau.athList) {
+        ath.ath_atlas_frame_parameter_set_id(k).ath_atlas_frm_order_cnt_lsb(m_frmOrderCntLsb);
+      }
       atlasSubBitstream(k);
     }
 
@@ -403,25 +406,28 @@ private:
     const auto aspsV = std::vector<MivBitstream::AtlasSequenceParameterSetRBSP>{aau.asps};
     const auto afpsV = std::vector<MivBitstream::AtlasFrameParameterSetRBSP>{aau.afps};
     const auto nuh = m_state == State::nonIrap ? nuhTrail : nuhIdr;
-    writeNalUnit(asb, nuh, atlasTileLayer(atlasIdx), nuh, aspsV, afpsV);
+
+    for (size_t tileIdx = 0; tileIdx < aau.athList.size(); ++tileIdx) {
+      writeNalUnit(asb, nuh, atlasTileLayer(atlasIdx, tileIdx), nuh, aspsV, afpsV);
+    }
   }
 
-  [[nodiscard]] auto atlasTileLayer(uint8_t atlasIdx) const -> MivBitstream::AtlasTileLayerRBSP {
+  [[nodiscard]] auto atlasTileLayer(uint8_t atlasIdx, size_t tileIdx) const
+      -> MivBitstream::AtlasTileLayerRBSP {
     auto patchData = MivBitstream::AtlasTileDataUnit::Vector{};
-    patchData.reserve(m_params.patchParamsList.size());
+    patchData.reserve(m_params.tileParamsLists[atlasIdx][tileIdx].partitionPatchList().size());
 
     const auto &aau = m_params.atlas[atlasIdx];
     const auto atlasId = m_params.vps.vps_atlas_id(atlasIdx);
-
-    for (const auto &pp : m_params.patchParamsList) {
+    for (const auto &pp : m_params.tileParamsLists[atlasIdx][tileIdx].partitionPatchList()) {
       if (pp.atlasId() == atlasId) {
-        patchData.emplace_back(MivBitstream::AtduPatchMode::I_INTRA,
-                               pp.encodePdu(m_params.vps, atlasId, aau.asps, aau.afps, aau.ath));
+        patchData.emplace_back(
+            MivBitstream::AtduPatchMode::I_INTRA,
+            pp.encodePdu(m_params.vps, atlasId, aau.asps, aau.afps, aau.athList[tileIdx]));
       }
     }
-
     auto x = MivBitstream::AtlasTileLayerRBSP{};
-    x.atlas_tile_header() = aau.ath;
+    x.atlas_tile_header() = aau.athList[tileIdx];
     x.atlas_tile_data_unit() = MivBitstream::AtlasTileDataUnit{patchData};
     return x;
   }

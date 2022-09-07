@@ -37,11 +37,10 @@
 #include "DecodeAtlas.h"
 
 #include <TMIV/MivBitstream/AccessUnit.h>
-
 namespace TMIV::Decoder {
 void decodePatchParamsList(const MivBitstream::V3cParameterSet &vps,
                            MivBitstream::V3cUnitHeader vuh, const AtlasAccessUnit &au,
-                           MivBitstream::PatchParamsList &ppl);
+                           MivBitstream::TilePartition &tile, size_t tileIdx);
 
 auto decodeBlockToPatchMap(const MivBitstream::AtlasSequenceParameterSetRBSP &asps,
                            const MivBitstream::PatchParamsList &ppl)

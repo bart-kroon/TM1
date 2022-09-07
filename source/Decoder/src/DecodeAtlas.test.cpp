@@ -235,7 +235,7 @@ TEST_CASE("AtlasDecoder") {
     for (const auto foc : reference) {
       const auto actual = unitAtTest();
       REQUIRE(actual);
-      CHECK(actual->atl.atlas_tile_header().ath_atlas_frm_order_cnt_lsb() == foc % 16);
+      CHECK(actual->atlV.front().atlas_tile_header().ath_atlas_frm_order_cnt_lsb() == foc % 16);
       CHECK(actual->foc == foc);
     }
 

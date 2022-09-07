@@ -36,20 +36,175 @@
 #endif
 
 namespace TMIV::MivBitstream {
-constexpr auto AtlasFrameTileInformation::afti_single_tile_in_atlas_frame_flag() noexcept {
-  return true;
+constexpr auto AtlasFrameTileInformation::afti_single_tile_in_atlas_frame_flag() const noexcept {
+  return m_afti_single_tile_in_atlas_frame_flag;
 }
 
 constexpr auto AtlasFrameTileInformation::afti_signalled_tile_id_flag() noexcept { return false; }
 
-constexpr auto AtlasFrameTileInformation::operator==(
-    const AtlasFrameTileInformation & /* other */) const noexcept {
-  return true;
+constexpr auto AtlasFrameTileInformation::afti_uniform_partition_spacing_flag() const noexcept {
+  return m_afti_uniform_partition_spacing_flag;
 }
 
-constexpr auto AtlasFrameTileInformation::operator!=(
-    const AtlasFrameTileInformation & /* other */) const noexcept {
-  return false;
+constexpr auto AtlasFrameTileInformation::afti_partition_cols_width_minus1() const noexcept {
+  return m_afti_partition_cols_width_minus1;
+}
+
+constexpr auto AtlasFrameTileInformation::afti_partition_rows_height_minus1() const noexcept {
+  return m_afti_partition_rows_height_minus1;
+}
+
+constexpr auto AtlasFrameTileInformation::afti_num_partition_columns_minus1() const noexcept {
+  return m_afti_num_partition_columns_minus1;
+}
+constexpr auto AtlasFrameTileInformation::afti_num_partition_rows_minus1() const noexcept {
+  return m_afti_num_partition_rows_minus1;
+}
+
+inline auto AtlasFrameTileInformation::afti_partition_column_width_minus1() const
+    -> const std::vector<int32_t> & {
+  return m_afti_partition_column_width_minus1;
+}
+
+inline auto AtlasFrameTileInformation::afti_partition_row_height_minus1() const
+    -> const std::vector<int32_t> & {
+  return m_afti_partition_row_height_minus1;
+}
+
+constexpr auto AtlasFrameTileInformation::afti_num_tiles_in_atlas_frame_minus1() const noexcept {
+  return m_afti_num_tiles_in_atlas_frame_minus1;
+}
+
+constexpr auto AtlasFrameTileInformation::afti_single_partition_per_tile_flag() const noexcept {
+  return m_afti_single_partition_per_tile_flag;
+}
+
+inline auto AtlasFrameTileInformation::afti_top_left_partition_idx() const
+    -> const std::vector<int32_t> & {
+  return m_afti_top_left_partition_idx;
+}
+
+inline auto AtlasFrameTileInformation::afti_bottom_right_partition_column_offset() const
+    -> const std::vector<int32_t> & {
+  return m_afti_bottom_right_partition_column_offset;
+}
+
+inline auto AtlasFrameTileInformation::afti_bottom_right_partition_row_offset() const
+    -> const std::vector<int32_t> & {
+  return m_afti_bottom_right_partition_row_offset;
+}
+
+constexpr auto
+AtlasFrameTileInformation::afti_single_tile_in_atlas_frame_flag(const bool value) noexcept
+    -> AtlasFrameTileInformation & {
+  m_afti_single_tile_in_atlas_frame_flag = value;
+  return *this;
+}
+
+constexpr auto
+AtlasFrameTileInformation::afti_uniform_partition_spacing_flag(const bool value) noexcept
+    -> AtlasFrameTileInformation & {
+  m_afti_uniform_partition_spacing_flag = value;
+  return *this;
+}
+
+constexpr auto
+AtlasFrameTileInformation::afti_partition_cols_width_minus1(const int32_t value) noexcept
+    -> AtlasFrameTileInformation & {
+  m_afti_partition_cols_width_minus1 = value;
+  return *this;
+}
+
+constexpr auto
+AtlasFrameTileInformation::afti_partition_rows_height_minus1(const int32_t value) noexcept
+    -> AtlasFrameTileInformation & {
+  m_afti_partition_rows_height_minus1 = value;
+  return *this;
+}
+
+constexpr auto
+AtlasFrameTileInformation::afti_num_partition_columns_minus1(const int32_t value) noexcept
+    -> AtlasFrameTileInformation & {
+  m_afti_num_partition_columns_minus1 = value;
+  return *this;
+}
+
+constexpr auto
+AtlasFrameTileInformation::afti_num_partition_rows_minus1(const int32_t value) noexcept
+    -> AtlasFrameTileInformation & {
+  m_afti_num_partition_rows_minus1 = value;
+  return *this;
+}
+
+inline auto
+AtlasFrameTileInformation::afti_partition_column_width_minus1(std::vector<int32_t> values) noexcept
+    -> AtlasFrameTileInformation & {
+  m_afti_partition_column_width_minus1 = std::move(values);
+  return *this;
+}
+
+inline auto
+AtlasFrameTileInformation::afti_partition_row_height_minus1(std::vector<int32_t> values) noexcept
+    -> AtlasFrameTileInformation & {
+  m_afti_partition_row_height_minus1 = std::move(values);
+  return *this;
+}
+
+constexpr auto
+AtlasFrameTileInformation::afti_single_partition_per_tile_flag(const bool value) noexcept
+    -> AtlasFrameTileInformation & {
+  m_afti_single_partition_per_tile_flag = value;
+  return *this;
+}
+
+constexpr auto
+AtlasFrameTileInformation::afti_num_tiles_in_atlas_frame_minus1(const int32_t value) noexcept
+    -> AtlasFrameTileInformation & {
+  m_afti_num_tiles_in_atlas_frame_minus1 = value;
+  return *this;
+}
+
+inline auto
+AtlasFrameTileInformation::afti_top_left_partition_idx(std::vector<int32_t> values) noexcept
+    -> AtlasFrameTileInformation & {
+  m_afti_top_left_partition_idx = std::move(values);
+  return *this;
+}
+
+inline auto AtlasFrameTileInformation::afti_bottom_right_partition_column_offset(
+    std::vector<int32_t> values) noexcept -> AtlasFrameTileInformation & {
+  m_afti_bottom_right_partition_column_offset = std::move(values);
+  return *this;
+}
+
+inline auto AtlasFrameTileInformation::afti_bottom_right_partition_row_offset(
+    std::vector<int32_t> values) noexcept -> AtlasFrameTileInformation & {
+  m_afti_bottom_right_partition_row_offset = std::move(values);
+  return *this;
+}
+
+constexpr auto
+AtlasFrameTileInformation::operator==(const AtlasFrameTileInformation &other) const noexcept {
+  return m_afti_single_tile_in_atlas_frame_flag == other.m_afti_single_tile_in_atlas_frame_flag &&
+         m_afti_uniform_partition_spacing_flag == other.m_afti_uniform_partition_spacing_flag &&
+         m_afti_partition_cols_width_minus1 == other.m_afti_partition_cols_width_minus1 &&
+         m_afti_partition_rows_height_minus1 == other.m_afti_partition_rows_height_minus1 &&
+         m_afti_num_partition_columns_minus1 == other.m_afti_num_partition_columns_minus1 &&
+         m_afti_num_partition_rows_minus1 == other.m_afti_num_partition_rows_minus1 &&
+         m_afti_partition_column_width_minus1 == other.m_afti_partition_column_width_minus1 &&
+         m_afti_partition_row_height_minus1 == other.m_afti_partition_row_height_minus1 &&
+         m_afti_num_tiles_in_atlas_frame_minus1 == other.m_afti_num_tiles_in_atlas_frame_minus1 &&
+         m_afti_single_partition_per_tile_flag == other.m_afti_single_partition_per_tile_flag &&
+         m_afti_top_left_partition_idx == other.m_afti_top_left_partition_idx &&
+         m_afti_bottom_right_partition_row_offset ==
+             other.m_afti_bottom_right_partition_row_offset &&
+         m_afti_bottom_right_partition_column_offset ==
+             other.m_afti_bottom_right_partition_column_offset;
+}
+
+constexpr auto
+AtlasFrameTileInformation::operator!=(const AtlasFrameTileInformation &other) const noexcept {
+  return !operator==(other);
 }
 
 constexpr auto AfpsMivExtension::afme_inpaint_lod_enabled_flag() const noexcept {
@@ -87,7 +242,8 @@ constexpr auto AtlasFrameParameterSetRBSP::afps_atlas_sequence_parameter_set_id(
   return m_afps_atlas_sequence_parameter_set_id;
 }
 
-constexpr auto AtlasFrameParameterSetRBSP::atlas_frame_tile_information() const noexcept {
+inline auto AtlasFrameParameterSetRBSP::atlas_frame_tile_information() const
+    -> const AtlasFrameTileInformation & {
   return m_atlas_frame_tile_information;
 }
 
@@ -130,8 +286,9 @@ constexpr auto AtlasFrameParameterSetRBSP::afps_atlas_sequence_parameter_set_id(
   return *this;
 }
 
-constexpr auto AtlasFrameParameterSetRBSP::atlas_frame_tile_information(
-    const AtlasFrameTileInformation &value) noexcept -> auto & {
+inline auto
+AtlasFrameParameterSetRBSP::atlas_frame_tile_information(const AtlasFrameTileInformation &value)
+    -> auto & {
   m_atlas_frame_tile_information = value;
   return *this;
 }

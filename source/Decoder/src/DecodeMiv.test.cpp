@@ -137,10 +137,11 @@ auto commonAtlasFrame(int32_t foc) {
   return au;
 }
 
-auto atlasFrame(int32_t foc) {
+auto atlasFrame(int32_t foc, size_t atlSize) {
   using TMIV::Decoder::AtlasAccessUnit;
 
   auto au = AtlasAccessUnit{};
+  au.atlV.resize(atlSize);
   au.foc = foc;
   return au;
 }
@@ -184,7 +185,7 @@ auto atlasFrameCollection(const Pattern &pattern) {
   auto result = std::vector<AtlasAccessUnit>{};
   for (const auto &x : pattern) {
     if (0 <= x.atlasFoc) {
-      result.push_back(atlasFrame(x.atlasFoc));
+      result.push_back(atlasFrame(x.atlasFoc, 1));
     }
   }
   return result;
@@ -282,7 +283,7 @@ TEST_CASE("TMIV::Decoder::decodeMiv (1)") {
     const auto v3cUnitData = std::array{V3cUnit{V3cUnitHeader::vps(), vps}};
     const auto videoData = std::array{test::videoFrame(true)};
     const auto commonAtlasData = std::array{test::commonAtlasFrame(0)};
-    const auto atlasData = std::array{test::atlasFrame(0)};
+    const auto atlasData = std::array{test::atlasFrame(0, 1)};
 
     auto unit = decodeMiv(
         sourceFromIteratorPair(v3cUnitData.cbegin(), v3cUnitData.cend()),

@@ -207,8 +207,11 @@ auto AtlasTileHeader::decodeFrom(Common::InputBitstream &bitstream, const NalUni
 
   x.ath_atlas_adaptation_parameter_set_id(bitstream.getUExpGolomb<uint8_t>());
 
-  VERIFY_MIVBITSTREAM(afps.atlas_frame_tile_information().afti_single_tile_in_atlas_frame_flag());
-  x.ath_id(0);
+  if (afpsV.front().atlas_frame_tile_information().afti_single_tile_in_atlas_frame_flag()) {
+    x.ath_id(0);
+  } else {
+    x.ath_id(bitstream.getUExpGolomb<uint8_t>());
+  }
 
   x.ath_type(AthType(bitstream.getUExpGolomb<uint8_t>()));
   VERIFY_MIVBITSTREAM(x.ath_type() == AthType::I_TILE || x.ath_type() == AthType::SKIP_TILE);
@@ -268,8 +271,11 @@ void AtlasTileHeader::encodeTo(Common::OutputBitstream &bitstream, const NalUnit
 
   bitstream.putUExpGolomb(ath_atlas_adaptation_parameter_set_id());
 
-  PRECONDITION(afps.atlas_frame_tile_information().afti_single_tile_in_atlas_frame_flag());
-  PRECONDITION(ath_id() == 0);
+  if (afpsV.front().atlas_frame_tile_information().afti_single_tile_in_atlas_frame_flag()) {
+    PRECONDITION(ath_id() == 0);
+  } else {
+    bitstream.putUExpGolomb(ath_id());
+  }
 
   PRECONDITION(ath_type() == AthType::I_TILE || ath_type() == AthType::SKIP_TILE);
   bitstream.putUExpGolomb(ath_type());

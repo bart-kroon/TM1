@@ -76,6 +76,8 @@ private:
   int32_t m_intraPeriod{};
   Common::Vec2i m_blockSizeDepthQualityDependent;
   std::vector<Common::Vec2i> m_overrideAtlasFrameSizes{};
+  std::vector<std::vector<Common::Vec2i>> m_overrideTileFrameSizes{};
+
   uint32_t m_textureDilation{};
   uint32_t m_transparencyDynamic{};
 

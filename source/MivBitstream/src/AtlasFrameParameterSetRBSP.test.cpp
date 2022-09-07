@@ -38,10 +38,11 @@
 namespace TMIV::MivBitstream {
 TEST_CASE("atlas_frame_tile_information", "[Atlas Frame Parameter Set RBSP]") {
   const auto x = AtlasFrameTileInformation{};
+  const auto aspsV = std::vector<AtlasSequenceParameterSetRBSP>{{}};
   REQUIRE(toString(x) == R"(afti_single_tile_in_atlas_frame_flag=true
 afti_signalled_tile_id_flag=false
 )");
-  REQUIRE(bitCodingTest(x, 2));
+  REQUIRE(bitCodingTest(x, 2, aspsV));
 }
 
 TEST_CASE("atlas_frame_parameter_set_rbsp", "[Atlas Frame Parameter Set RBSP]") {

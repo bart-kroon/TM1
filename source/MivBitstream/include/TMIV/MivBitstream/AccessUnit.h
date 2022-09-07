@@ -41,6 +41,7 @@
 #include "GeometryUpscalingParameters.h"
 #include "PatchParamsList.h"
 #include "SequenceConfig.h"
+#include "Tile.h"
 #include "V3cParameterSet.h"
 #include "ViewParamsList.h"
 #include "ViewingSpace.h"
@@ -55,6 +56,7 @@ struct AtlasAccessUnit {
   AtlasFrameParameterSetRBSP afps;
   Common::Frame<Common::PatchIdx> blockToPatchMap;
   PatchParamsList patchParamsList;
+  std::vector<MivBitstream::TilePartition> tileParamsList;
 
   // ISO/IEC 23090-12 Annex 9
   Common::Frame<> decOccFrame;

@@ -178,10 +178,235 @@ void Encoder::Impl::correctColors() {
   }
 }
 
+void Encoder::Impl::setTiles() {
+  m_partitionArray.clear();
+  m_params.tileParamsLists.clear();
+  m_params.tileParamsLists.resize(m_params.atlas.size());
+  const auto numPartitionCol = m_config.numberPartitionCol;
+  const auto numPartitionRow = m_config.numberPartitionRow;
+  const auto singlePartitionPerTileFlag = m_config.singlePartitionPerTileFlag;
+  bool singleTileInAtlasFrameFlag = false;
+  if ((m_config.toolsetIdc) == (MivBitstream::PtlProfileToolsetIdc::MIV_Extended)) {
+    singleTileInAtlasFrameFlag = ((numPartitionCol == 1) && (numPartitionRow == 1));
+  } else {
+    singleTileInAtlasFrameFlag = true;
+  }
+
+  if (singleTileInAtlasFrameFlag) // one tile in atlas
+  {
+    for (size_t atlasIdx = 0; atlasIdx < m_params.atlas.size(); ++atlasIdx) {
+      MivBitstream::TilePartition t;
+      t.partitionHeight(m_params.atlas[atlasIdx].asps.asps_frame_height());
+      t.partitionWidth(m_params.atlas[atlasIdx].asps.asps_frame_width());
+      t.partitionPosX(0);
+      t.partitionPosY(0);
+      m_params.tileParamsLists[atlasIdx].emplace_back(t);
+
+      // setAtlasFrameTileInformationSnytax
+      auto afti = TMIV::MivBitstream::AtlasFrameTileInformation{};
+      afti.afti_single_tile_in_atlas_frame_flag(true).afti_num_tiles_in_atlas_frame_minus1(0);
+      m_params.atlas[atlasIdx].afps.atlas_frame_tile_information(afti);
+    }
+  } else {
+    bool uniformPartitionSpacingFlag = setPartition();
+
+    if (singlePartitionPerTileFlag) {
+      for (size_t atlasIdx = 0; atlasIdx < m_params.atlas.size(); ++atlasIdx) {
+        std::vector<MivBitstream::TilePartition> tileList;
+        for (size_t i = 0; i < m_partitionArray[1][atlasIdx].size(); ++i) {
+          for (size_t j = 0; j < m_partitionArray[0][atlasIdx].size(); ++j) {
+            MivBitstream::TilePartition t;
+            t.partitionWidth(m_partitionArray[0][atlasIdx][j]);
+            t.partitionHeight(m_partitionArray[1][atlasIdx][i]);
+            t.partitionPosX(m_partitionArray[2][atlasIdx][j]);
+            t.partitionPosY(m_partitionArray[3][atlasIdx][i]);
+            tileList.emplace_back(t);
+          }
+        }
+        m_params.tileParamsLists[atlasIdx] = tileList;
+      }
+    } else {
+      // TODO
+    }
+
+    setAtlasFrameTileInformationSnytax(uniformPartitionSpacingFlag, singlePartitionPerTileFlag);
+  }
+
+  for (size_t atlasIdx = 0; atlasIdx < m_params.tileParamsLists.size(); ++atlasIdx) {
+    setAtlasTileHeaderSnytax(atlasIdx);
+  }
+}
+
+auto Encoder::Impl::setPartition() -> bool {
+  const auto partitionWidth = m_config.partitionWidth;
+  const auto partitionHeight = m_config.partitionHeight;
+  const auto numPartitionCol = m_config.numberPartitionCol;
+  const auto numPartitionRow = m_config.numberPartitionRow;
+  bool uniformPartitionSpacingFlagWidth = true;
+  bool uniformPartitionSpacingFlagHeight = true;
+
+  int32_t widthSum = 0;
+  int32_t heightSum = 0;
+
+  for (const auto &w : partitionWidth) {
+    widthSum = widthSum + w;
+  }
+  for (const auto &h : partitionHeight) {
+    heightSum = heightSum + h;
+  }
+
+  VERIFY(widthSum == m_params.atlas.front().asps.asps_frame_width());
+  VERIFY(heightSum == m_params.atlas.front().asps.asps_frame_height());
+
+  for (size_t i = 0; i < partitionWidth.size() - 1; ++i) {
+    if (partitionWidth[0] != partitionWidth[i]) {
+      uniformPartitionSpacingFlagWidth = false;
+      break;
+    }
+  }
+  for (size_t j = 0; j < partitionHeight.size() - 1; ++j) {
+    if (partitionHeight[0] != partitionHeight[j]) {
+      uniformPartitionSpacingFlagHeight = false;
+      break;
+    }
+  }
+  std::vector<std::vector<int32_t>> partitionWidthList;
+  std::vector<std::vector<int32_t>> partitionHeightList;
+  std::vector<std::vector<int32_t>> partitionPosXList;
+  std::vector<std::vector<int32_t>> partitionPosYList;
+  for (size_t atlasIdx = 0; atlasIdx < m_params.atlas.size(); ++atlasIdx) {
+    std::vector<int32_t> widthList;
+    std::vector<int32_t> heightList;
+    std::vector<int32_t> posXList;
+    std::vector<int32_t> posYList;
+    int32_t widthTemp = 0;
+    int32_t heightTemp = 0;
+    for (int32_t j = 0; j < numPartitionCol; ++j) {
+      widthList.emplace_back(partitionWidth[j]);
+      posXList.emplace_back(widthTemp);
+      widthTemp += partitionWidth[j];
+    }
+    for (int32_t i = 0; i < numPartitionRow; ++i) {
+      heightList.emplace_back(partitionHeight[i]);
+      posYList.emplace_back(heightTemp);
+      heightTemp += partitionHeight[i];
+    }
+    partitionHeightList.emplace_back(heightList);
+    partitionPosXList.emplace_back(posXList);
+    partitionPosYList.emplace_back(posYList);
+    partitionWidthList.emplace_back(widthList);
+  }
+
+  m_partitionArray.emplace_back(partitionWidthList);
+  m_partitionArray.emplace_back(partitionHeightList);
+  m_partitionArray.emplace_back(partitionPosXList);
+  m_partitionArray.emplace_back(partitionPosYList);
+
+  return (uniformPartitionSpacingFlagWidth && uniformPartitionSpacingFlagHeight);
+}
+
+void Encoder::Impl::updateTile() {
+  size_t patchNum = m_params.patchParamsList.size();
+  size_t tilePatchNum = 0;
+  for (const auto &patch : m_params.patchParamsList) {
+    size_t atlasID = patch.atlasId().asInt();
+    auto patchPosX = patch.atlasPatch2dPosX();
+    auto patchPosY = patch.atlasPatch2dPosY();
+    auto patchSizeX = patch.atlasPatch2dSizeX();
+    auto patchSizeY = patch.atlasPatch2dSizeY();
+    for (auto &tile : m_params.tileParamsLists[atlasID]) {
+      auto tilePosX = tile.partitionPosX();
+      auto tilePosY = tile.partitionPosY();
+      auto tileSizeX = tile.partitionWidth();
+      auto tileSizeY = tile.partitionHeight();
+
+      if (patchPosX >= tilePosX && patchPosY >= tilePosY &&
+          (patchPosX + patchSizeX) <= (tilePosX + tileSizeX) &&
+          (patchPosY + patchSizeY) <= (tilePosY + tileSizeY)) {
+        tile.addPatchToTile(patch);
+        ++tilePatchNum;
+        break;
+      }
+    }
+  }
+
+  POSTCONDITION(tilePatchNum == patchNum);
+}
+
+void Encoder::Impl::setAtlasFrameTileInformationSnytax(bool uniformPartitionSpacingFlag,
+                                                       bool partitionPerTileFlag) {
+  for (size_t atlasIdx = 0; atlasIdx < m_params.atlas.size(); ++atlasIdx) {
+    auto afti = TMIV::MivBitstream::AtlasFrameTileInformation{};
+    afti.afti_single_tile_in_atlas_frame_flag(false);
+    afti.afti_uniform_partition_spacing_flag(uniformPartitionSpacingFlag);
+    afti.afti_single_partition_per_tile_flag(partitionPerTileFlag);
+    if (uniformPartitionSpacingFlag) {
+      int32_t partitionColsWidthMinus1 = m_config.partitionWidth[0] / 64 - 1;
+      VERIFY(m_config.partitionWidth[0] % 64 == 0);
+
+      int32_t partitionRowsHeightMinus1 = m_config.partitionHeight[0] / 64 - 1;
+      VERIFY(m_config.partitionHeight[0] % 64 == 0);
+
+      afti.afti_partition_cols_width_minus1(partitionColsWidthMinus1)
+          .afti_partition_rows_height_minus1(partitionRowsHeightMinus1);
+    } else {
+      const int32_t numPartitionColumnsMinus1 = m_config.numberPartitionCol - 1;
+      const int32_t numPartitionRowsMinus1 = m_config.numberPartitionRow - 1;
+      afti.afti_num_partition_columns_minus1(numPartitionColumnsMinus1)
+          .afti_num_partition_rows_minus1(numPartitionRowsMinus1);
+
+      auto partitionColumnWidthMinus1 = std::vector<int32_t>(numPartitionColumnsMinus1, 0);
+      auto partitionRowHeightMinus1 = std::vector<int32_t>(numPartitionRowsMinus1, 0);
+
+      for (int32_t j = 0; j < numPartitionColumnsMinus1; ++j) {
+        partitionColumnWidthMinus1[j] = m_partitionArray[0][atlasIdx][j] / 64 - 1;
+        VERIFY(m_partitionArray[0][atlasIdx][j] % 64 == 0);
+      }
+      for (int32_t j = 0; j < numPartitionRowsMinus1; ++j) {
+        partitionRowHeightMinus1[j] = m_partitionArray[1][atlasIdx][j] / 64 - 1;
+        VERIFY(m_partitionArray[1][atlasIdx][j] % 64 == 0);
+      }
+
+      afti.afti_partition_column_width_minus1(partitionColumnWidthMinus1)
+          .afti_partition_row_height_minus1(partitionRowHeightMinus1);
+    }
+    if (!partitionPerTileFlag) {
+      // TODO
+    }
+
+    m_params.atlas[atlasIdx].afps.atlas_frame_tile_information(afti);
+  }
+}
+
+void Encoder::Impl::setAtlasTileHeaderSnytax(size_t atlasIdx) {
+  uint8_t psqx = 0;
+  uint8_t psqy = 0;
+  if (m_params.atlas[atlasIdx].asps.asps_patch_size_quantizer_present_flag()) {
+    psqx = m_params.atlas[atlasIdx].athList[0].ath_patch_size_x_info_quantizer();
+    psqy = m_params.atlas[atlasIdx].athList[0].ath_patch_size_y_info_quantizer();
+  }
+  m_params.atlas[atlasIdx].athList.clear();
+  auto &atlas = m_params.atlas[atlasIdx];
+
+  for (uint8_t tileIdx = 0;
+       tileIdx < Common::downCast<uint8_t>(m_params.tileParamsLists[atlasIdx].size()); ++tileIdx) {
+    auto ath = MivBitstream::AtlasTileHeader{};
+    ath.ath_type(MivBitstream::AthType::I_TILE)
+        .ath_ref_atlas_frame_list_asps_flag(true)
+        .ath_pos_min_d_quantizer(atlas.asps.asps_geometry_3d_bit_depth_minus1() + 1);
+    if (atlas.asps.asps_patch_size_quantizer_present_flag()) {
+      ath.ath_patch_size_x_info_quantizer(psqx);
+      ath.ath_patch_size_y_info_quantizer(psqy);
+    }
+    ath.ath_id(tileIdx);
+
+    atlas.athList.push_back(ath);
+  }
+}
+
 auto Encoder::Impl::completeAccessUnit() -> const EncoderParams & {
   m_aggregator->completeAccessUnit();
   const auto &aggregatedMask = m_aggregator->getAggregatedMask();
-
   updateAggregationStatistics(aggregatedMask);
 
   if (m_config.dynamicDepthRange) {
@@ -192,11 +417,19 @@ auto Encoder::Impl::completeAccessUnit() -> const EncoderParams & {
     m_packer->updateAggregatedEntityMasks(m_aggregatedEntityMask);
   }
 
-  auto atlasSizes = Common::SizeVector(params().atlas.size());
-  std::transform(
-      params().atlas.cbegin(), params().atlas.cend(), atlasSizes.begin(), [](const auto &atlas) {
-        return Common::Vec2i{atlas.asps.asps_frame_width(), atlas.asps.asps_frame_height()};
-      });
+  setTiles();
+  m_packer->initialize(m_params.tileParamsLists);
+
+  auto atlasSizes = std::vector<Common::SizeVector>(params().atlas.size());
+  for (size_t atlasIdx = 0; atlasIdx < params().atlas.size(); ++atlasIdx) {
+    auto &tileSizes = atlasSizes[atlasIdx];
+    tileSizes = Common::SizeVector(m_params.tileParamsLists[atlasIdx].size());
+    for (size_t tileIdx = 0; tileIdx < m_params.tileParamsLists[atlasIdx].size(); ++tileIdx) {
+      tileSizes[tileIdx] =
+          Common::Vec2i{m_params.tileParamsLists[atlasIdx][tileIdx].partitionWidth(),
+                        m_params.tileParamsLists[atlasIdx][tileIdx].partitionHeight()};
+    }
+  }
 
   m_packer->initialize(atlasSizes, m_blockSize);
   m_params.patchParamsList =
@@ -219,6 +452,8 @@ auto Encoder::Impl::completeAccessUnit() -> const EncoderParams & {
   }
 
   constructVideoFrames();
+
+  updateTile();
 
   m_paramsQuantized = GeometryQuantizer::transformParams(params(), m_config.depthOccThresholdIfSet,
                                                          m_config.geoBitDepth);

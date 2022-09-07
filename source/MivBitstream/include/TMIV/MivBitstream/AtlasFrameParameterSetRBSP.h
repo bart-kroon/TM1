@@ -50,8 +50,54 @@ namespace TMIV::MivBitstream {
 //   * asps_auxiliary_video_enabled_flag == 0
 class AtlasFrameTileInformation {
 public:
-  [[nodiscard]] static constexpr auto afti_single_tile_in_atlas_frame_flag() noexcept;
+  [[nodiscard]] constexpr auto afti_single_tile_in_atlas_frame_flag() const noexcept;
   [[nodiscard]] static constexpr auto afti_signalled_tile_id_flag() noexcept;
+
+  [[nodiscard]] constexpr auto afti_uniform_partition_spacing_flag() const noexcept;
+  [[nodiscard]] constexpr auto afti_partition_cols_width_minus1() const noexcept;
+  [[nodiscard]] constexpr auto afti_partition_rows_height_minus1() const noexcept;
+  [[nodiscard]] constexpr auto afti_num_partition_columns_minus1() const noexcept;
+  [[nodiscard]] constexpr auto afti_num_partition_rows_minus1() const noexcept;
+  [[nodiscard]] inline auto afti_partition_column_width_minus1() const
+      -> const std::vector<int32_t> &;
+  [[nodiscard]] inline auto afti_partition_row_height_minus1() const
+      -> const std::vector<int32_t> &;
+
+  [[nodiscard]] constexpr auto afti_single_partition_per_tile_flag() const noexcept;
+  [[nodiscard]] constexpr auto afti_num_tiles_in_atlas_frame_minus1() const noexcept;
+  [[nodiscard]] inline auto afti_top_left_partition_idx() const -> const std::vector<int32_t> &;
+  [[nodiscard]] inline auto afti_bottom_right_partition_column_offset() const
+      -> const std::vector<int32_t> &;
+  [[nodiscard]] inline auto afti_bottom_right_partition_row_offset() const
+      -> const std::vector<int32_t> &;
+
+  constexpr auto afti_single_tile_in_atlas_frame_flag(bool value) noexcept
+      -> AtlasFrameTileInformation &;
+  constexpr auto afti_uniform_partition_spacing_flag(bool value) noexcept
+      -> AtlasFrameTileInformation &;
+  constexpr auto afti_partition_cols_width_minus1(int32_t value) noexcept
+      -> AtlasFrameTileInformation &;
+  constexpr auto afti_partition_rows_height_minus1(int32_t value) noexcept
+      -> AtlasFrameTileInformation &;
+  constexpr auto afti_num_partition_columns_minus1(int32_t value) noexcept
+      -> AtlasFrameTileInformation &;
+  constexpr auto afti_num_partition_rows_minus1(int32_t value) noexcept
+      -> AtlasFrameTileInformation &;
+  inline auto afti_partition_column_width_minus1(std::vector<int32_t> value) noexcept
+      -> AtlasFrameTileInformation &;
+  inline auto afti_partition_row_height_minus1(std::vector<int32_t> value) noexcept
+      -> AtlasFrameTileInformation &;
+
+  constexpr auto afti_single_partition_per_tile_flag(bool value) noexcept
+      -> AtlasFrameTileInformation &;
+  constexpr auto afti_num_tiles_in_atlas_frame_minus1(int32_t value) noexcept
+      -> AtlasFrameTileInformation &;
+  inline auto afti_top_left_partition_idx(std::vector<int32_t> value) noexcept
+      -> AtlasFrameTileInformation &;
+  inline auto afti_bottom_right_partition_column_offset(std::vector<int32_t> value) noexcept
+      -> AtlasFrameTileInformation &;
+  inline auto afti_bottom_right_partition_row_offset(std::vector<int32_t> value) noexcept
+      -> AtlasFrameTileInformation &;
 
   friend auto operator<<(std::ostream &stream, const AtlasFrameTileInformation &x)
       -> std::ostream &;
@@ -59,9 +105,28 @@ public:
   constexpr auto operator==(const AtlasFrameTileInformation & /*unused*/) const noexcept;
   constexpr auto operator!=(const AtlasFrameTileInformation & /*unused*/) const noexcept;
 
-  static auto decodeFrom(Common::InputBitstream &bitstream) -> AtlasFrameTileInformation;
+  static auto decodeFrom(Common::InputBitstream &bitstream,
+                         const std::vector<AtlasSequenceParameterSetRBSP> &aspsV)
+      -> AtlasFrameTileInformation;
 
-  static void encodeTo(Common::OutputBitstream &stream);
+  void encodeTo(Common::OutputBitstream &stream,
+                const std::vector<AtlasSequenceParameterSetRBSP> &aspsV) const;
+
+private:
+  bool m_afti_single_tile_in_atlas_frame_flag{true};
+  bool m_afti_uniform_partition_spacing_flag{};
+  int32_t m_afti_partition_cols_width_minus1{};
+  int32_t m_afti_partition_rows_height_minus1{};
+  int32_t m_afti_num_partition_columns_minus1{};
+  int32_t m_afti_num_partition_rows_minus1{};
+  std::vector<int32_t> m_afti_partition_column_width_minus1;
+  std::vector<int32_t> m_afti_partition_row_height_minus1;
+
+  bool m_afti_single_partition_per_tile_flag{true};
+  int32_t m_afti_num_tiles_in_atlas_frame_minus1{};
+  std::vector<int32_t> m_afti_top_left_partition_idx;
+  std::vector<int32_t> m_afti_bottom_right_partition_column_offset;
+  std::vector<int32_t> m_afti_bottom_right_partition_row_offset;
 };
 
 class AtlasFrameParameterSetRBSP;
@@ -98,7 +163,8 @@ class AtlasFrameParameterSetRBSP {
 public:
   [[nodiscard]] constexpr auto afps_atlas_frame_parameter_set_id() const noexcept;
   [[nodiscard]] constexpr auto afps_atlas_sequence_parameter_set_id() const noexcept;
-  [[nodiscard]] constexpr auto atlas_frame_tile_information() const noexcept;
+  [[nodiscard]] inline auto atlas_frame_tile_information() const
+      -> const AtlasFrameTileInformation &;
   [[nodiscard]] constexpr auto afps_output_flag_present_flag() const noexcept;
   [[nodiscard]] constexpr auto afps_num_ref_idx_default_active_minus1() const noexcept;
   [[nodiscard]] constexpr auto afps_additional_lt_afoc_lsb_len() const noexcept;
@@ -112,8 +178,7 @@ public:
 
   constexpr auto afps_atlas_frame_parameter_set_id(uint8_t value) -> auto &;
   constexpr auto afps_atlas_sequence_parameter_set_id(uint8_t value) -> auto &;
-  constexpr auto atlas_frame_tile_information(const AtlasFrameTileInformation &value) noexcept
-      -> auto &;
+  inline auto atlas_frame_tile_information(const AtlasFrameTileInformation &value) -> auto &;
   constexpr auto afps_output_flag_present_flag(bool value) noexcept -> auto &;
   constexpr auto afps_num_ref_idx_default_active_minus1(uint8_t value) noexcept -> auto &;
   constexpr auto afps_additional_lt_afoc_lsb_len(uint8_t value) noexcept -> auto &;

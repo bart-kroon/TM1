@@ -46,6 +46,12 @@ static constexpr auto maxIntraPeriod = 32;
 struct Configuration {
   explicit Configuration(const Common::Json &componentNode);
 
+  int32_t numberPartitionRow{};
+  int32_t numberPartitionCol{};
+  std::vector<int32_t> partitionWidth;
+  std::vector<int32_t> partitionHeight;
+  bool singlePartitionPerTileFlag{};
+
   // Main parameters
   int32_t intraPeriod;
   Common::Vec2i blockSizeDepthQualityDependent;
@@ -107,6 +113,7 @@ private:
   void queryProfileTierLevelParameters(const Common::Json &componentNode);
   void queryBitDepthParameters(const Common::Json &componentNode);
   void querySeiParameters(const Common::Json &componentNode);
+  void queryTileParameters(const Common::Json &componentNode);
   void verifyValid() const;
 };
 } // namespace TMIV::Encoder

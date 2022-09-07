@@ -50,9 +50,13 @@ struct AtlasAccessUnit {
   int32_t foc{};
   MivBitstream::AtlasSequenceParameterSetRBSP asps;
   MivBitstream::AtlasFrameParameterSetRBSP afps;
-  MivBitstream::AtlasTileLayerRBSP atl;
+  std::vector<MivBitstream::AtlasTileLayerRBSP> atlV;
+
   std::vector<MivBitstream::GeometryAssistance> ga;
 };
+
+void getTileNum(MivBitstream::AtlasSequenceParameterSetRBSP asps,
+                MivBitstream::AtlasFrameParameterSetRBSP &afps);
 
 auto decodeAtlas(Common::Source<MivBitstream::NalUnit> source,
                  const MivBitstream::V3cUnitHeader &vuh, MivBitstream::V3cParameterSet vps,

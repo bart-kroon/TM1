@@ -187,7 +187,7 @@ void Encoder::Impl::setTiles() {
   const auto singlePartitionPerTileFlag = m_config.singlePartitionPerTileFlag;
   bool singleTileInAtlasFrameFlag = false;
   if ((m_config.toolsetIdc) == (MivBitstream::PtlProfileToolsetIdc::MIV_Extended)) {
-    singleTileInAtlasFrameFlag = ((numPartitionCol == 1) && (numPartitionRow == 1));
+    singleTileInAtlasFrameFlag = ((numPartitionCol <= 1) && (numPartitionRow <= 1));
   } else {
     singleTileInAtlasFrameFlag = true;
   }

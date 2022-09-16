@@ -1,0 +1,8 @@
+{
+    "inputBitstreamPathFmt": "I{0}/{1}/TMIV_I{0}_{1}.bit",
+    "inputDirectory": ".",
+    "inputGeometryVideoSubBitstreamPathFmt": "I{0}/{1}/{2}/TMIV_I{0}_{1}_{2}_geo_c{3:02}.bit",
+    "inputTextureVideoSubBitstreamPathFmt": "I{0}/{1}/{2}/TMIV_I{0}_{1}_{2}_tex_c{3:02}.bit",
+    "outputBitstreamPathFmt": "I{0}/{1}/{2}/TMIV_I{0}_{1}_{2}.bit",
+    "outputDirectory": "."
+}

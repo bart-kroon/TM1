@@ -53,6 +53,7 @@ private:
   const std::string &m_contentId;
   int32_t m_numberOfInputFrames;
   int32_t m_startFrame;
+  int32_t m_interPeriod{};
   int32_t m_intraPeriod;
   static constexpr uint8_t m_vpsId = 0;
 
@@ -89,6 +90,13 @@ public:
     if (!m_outputBitstream.good()) {
       throw std::runtime_error(fmt::format("Failed to open {} for writing", m_outputBitstreamPath));
     }
+    if (const auto &node = json().optional("interPeriod")) {
+      m_interPeriod = node.as<int32_t>();
+    } else {
+      m_interPeriod = m_intraPeriod;
+    }
+
+    VERIFY(1 <= m_interPeriod && m_intraPeriod % m_interPeriod == 0);
 
     // Support experiments that use a subset of the source cameras
     if (const auto &node = json().optional("inputCameraNames")) {
@@ -108,9 +116,9 @@ public:
         m_inputSequenceConfig,
         IO::loadMultiviewFrame(json(), placeholders(), m_inputSequenceConfig, 0));
 
-    for (int32_t i = 0; i < m_numberOfInputFrames; i += m_intraPeriod) {
-      int32_t lastFrame = std::min(m_numberOfInputFrames, i + m_intraPeriod);
-      encodeIntraPeriod(i, lastFrame);
+    for (int32_t i = 0; i < m_numberOfInputFrames; i += m_interPeriod) {
+      int32_t lastFrame = std::min(m_numberOfInputFrames, i + m_interPeriod);
+      encodeInterPeriod(i, lastFrame);
     }
 
     m_sink(std::nullopt);
@@ -118,8 +126,8 @@ public:
   }
 
 private:
-  void encodeIntraPeriod(int32_t firstFrame, int32_t lastFrame) {
-    Common::logInfo("Intra period: [{}, {})", firstFrame, lastFrame);
+  void encodeInterPeriod(int32_t firstFrame, int32_t lastFrame) {
+    Common::logInfo("Inter period: [{}, {})", firstFrame, lastFrame);
     m_encoder.prepareAccessUnit();
     pushFrames(firstFrame, lastFrame);
     m_sink(m_encoder.completeAccessUnit());

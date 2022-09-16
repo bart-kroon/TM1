@@ -208,7 +208,8 @@ These parameters are in the root of the configuration file and may be accessed b
     * **embeddedOccupancy:** bool; with geometry video enabled and occupancy video disabled, indicate if occupancy is encoded in geometry (true) or if occupancy is only available at patch-level (false).
     * **geometryScaleEnabledFlag:** bool; when true geometry is downscaled by a factor of two in respect to the atlas frame size. Otherwise geometry is at full resolution.
 * Atlas frame size calculation and packing:
-    * **intraPeriod:** int; the intra patch frame period. This is the step in frame order count between consecutive frames that have an atlas tile layer of type I_TILE. The test model is not aware of the intra period of the video codec. This other intra period is configured independently.
+    * **intraPeriod:** int; the intra period as in video codecs, indicating the period between independent random access points (IRAP). This value dictates the intra period of the atlas bitstreams and common atlas bitstream. The video sub bitstreams need to have the same value.
+    * **interPeriod:** int; the period between inter-coded common atlas frames and atlas frames, counting both IRAP and non-IRAP frames. When omitted, the inter period will equal the intra period, such that all frames are IRAP frames.
     * **maxAtlases:** int; the maximum number of transmitted atlases in total.
     * **maxEntityId:** int; the maximum ID of entities, whereby the default "0" disables entity-based coding.
     * **maxLumaSamplerate:** float; the maximum number of luma samples per second counted over all atlases, groups and components. This parameter communicates the equally-named CTC constraint.

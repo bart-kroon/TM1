@@ -405,6 +405,8 @@ void Encoder::Impl::setAtlasTileHeaderSnytax(size_t atlasIdx) {
 }
 
 auto Encoder::Impl::completeAccessUnit() -> const EncoderParams & {
+  Common::logVerbose("completeAccessUnit: FOC is {}.", m_params.foc);
+
   m_aggregator->completeAccessUnit();
   const auto &aggregatedMask = m_aggregator->getAggregatedMask();
   updateAggregationStatistics(aggregatedMask);
@@ -457,6 +459,11 @@ auto Encoder::Impl::completeAccessUnit() -> const EncoderParams & {
 
   m_paramsQuantized = GeometryQuantizer::transformParams(params(), m_config.depthOccThresholdIfSet,
                                                          m_config.geoBitDepth);
+
+  m_params.foc += Common::downCast<int32_t>(m_videoFrameBuffer.size());
+  m_params.foc %= m_config.intraPeriod;
+  Common::logInfo("completeAccessUnit: Added {} frames. Updating FOC to {}.",
+                  m_videoFrameBuffer.size(), m_params.foc);
 
   if (m_config.framePacking) {
     return m_framePacker.setPackingInformation(m_paramsQuantized);

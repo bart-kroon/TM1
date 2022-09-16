@@ -128,6 +128,7 @@ class IntegrationTest:
 
         with concurrent.futures.ThreadPoolExecutor(max_workers=self.maxWorkers) as executor:
             futures = self.testMivAnchor(executor)
+            futures += self.testNonIrapFrames(executor)
             futures += self.testMivViewAnchor(executor)
             futures += self.testOneView(executor)
             futures += self.testMivDsdeAnchor(executor)
@@ -312,6 +313,144 @@ class IntegrationTest:
             [f3],
             ["{0}/bin/TmivNativeVideoDecoderTest", "{3}/A3/E/QP3/TMIV_A3_E_QP3.bit", "3", "2"],
             "{3}/A3/E/QP3/TMIV_A3_E_QP3.nvdt.log",
+            [],
+        )
+
+        return [f4_1, f4_2, f4_3, f2_5, f2_6]
+
+    def testNonIrapFrames(self, executor):
+        if not self.dryRun:
+            (self.testDir / "I3" / "E" / "QP3").mkdir(parents=True, exist_ok=True)
+
+        geometryResolution = Resolution(512, 512)
+        textureResolution = Resolution(1024, 1024)
+        renderResolution = Resolution(480, 270)
+
+        f1 = self.launchCommand(
+            executor,
+            [],
+            ["{0}/bin/TmivEncoder", "-c", "{1}/config/test/non_irap_frames/I_1_TMIV_encode.json"]
+            + ["-p", "configDirectory", "{1}/config", "-p", "inputDirectory", "{2}"]
+            + ["-p", "outputDirectory", "{3}", "-n", "3", "-s", "E", "-p", "intraPeriod", "2"]
+            + ["-p", "inputSequenceConfigPathFmt", "test/sequences/T{{1}}.json"]
+            + ["-p", "maxLumaPictureSize", "1048576", "-f", "0"]
+            + ["-V", "debug"],
+            "{3}/I3/E/TMIV_I3_E.log",
+            [
+                "I3/E/TMIV_I3_E.bit",
+                f"I3/E/TMIV_I3_E_geo_c00_{geometryResolution}_yuv420p10le.yuv",
+                f"I3/E/TMIV_I3_E_geo_c01_{geometryResolution}_yuv420p10le.yuv",
+                f"I3/E/TMIV_I3_E_tex_c00_{textureResolution}_yuv420p10le.yuv",
+                f"I3/E/TMIV_I3_E_tex_c01_{textureResolution}_yuv420p10le.yuv",
+            ],
+        )
+
+        f2_1 = self.launchCommand(
+            executor,
+            [f1],
+            ["{4}/bin/vvencFFapp", "-c", "{1}/config/test/miv_anchor/A_2_VVenC_encode_geo.cfg"]
+            + ["-i", f"{{3}}/I3/E/TMIV_I3_E_geo_c00_{geometryResolution}_yuv420p10le.yuv", "-b"]
+            + ["{3}/I3/E/QP3/TMIV_I3_E_QP3_geo_c00.bit", "-s", str(geometryResolution), "-q", "20"]
+            + ["-f", "3", "-fr", "30"],
+            "{3}/I3/E/QP3/TMIV_I3_E_QP3_geo_c00_vvenc.log",
+            ["I3/E/QP3/TMIV_I3_E_QP3_geo_c00.bit"],
+        )
+
+        f2_2 = self.launchCommand(
+            executor,
+            [f1],
+            ["{4}/bin/vvencFFapp", "-c", "{1}/config/test/miv_anchor/A_2_VVenC_encode_geo.cfg"]
+            + ["-i", f"{{3}}/I3/E/TMIV_I3_E_geo_c01_{geometryResolution}_yuv420p10le.yuv", "-b"]
+            + ["{3}/I3/E/QP3/TMIV_I3_E_QP3_geo_c01.bit", "-s", str(geometryResolution), "-q", "20"]
+            + ["-f", "3", "-fr", "30"],
+            "{3}/I3/E/QP3/TMIV_I3_E_QP3_geo_c01_vvenc.log",
+            ["I3/E/QP3/TMIV_I3_E_QP3_geo_c01.bit"],
+        )
+
+        f2_3 = self.launchCommand(
+            executor,
+            [f1],
+            ["{4}/bin/vvencFFapp", "-c", "{1}/config/test/miv_anchor/A_2_VVenC_encode_tex.cfg"]
+            + ["-i", f"{{3}}/I3/E/TMIV_I3_E_tex_c00_{textureResolution}_yuv420p10le.yuv", "-b"]
+            + ["{3}/I3/E/QP3/TMIV_I3_E_QP3_tex_c00.bit", "-s", str(textureResolution), "-q", "43"]
+            + ["-f", "3", "-fr", "30"],
+            "{3}/I3/E/QP3/TMIV_I3_E_QP3_tex_c00_vvenc.log",
+            ["I3/E/QP3/TMIV_I3_E_QP3_tex_c00.bit"],
+        )
+
+        f2_4 = self.launchCommand(
+            executor,
+            [f1],
+            ["{4}/bin/vvencFFapp", "-c", "{1}/config/test/miv_anchor/A_2_VVenC_encode_tex.cfg"]
+            + ["-i", f"{{3}}/I3/E/TMIV_I3_E_tex_c01_{textureResolution}_yuv420p10le.yuv", "-b"]
+            + ["{3}/I3/E/QP3/TMIV_I3_E_QP3_tex_c01.bit", "-s", str(textureResolution), "-q", "43"]
+            + ["-f", "3", "-fr", "30"],
+            "{3}/I3/E/QP3/TMIV_I3_E_QP3_tex_c01_vvenc.log",
+            ["I3/E/QP3/TMIV_I3_E_QP3_tex_c01.bit"],
+        )
+
+        f3 = self.launchCommand(
+            executor,
+            [f2_1, f2_2, f2_3, f2_4],
+            ["{0}/bin/TmivMultiplexer", "-c", "{1}/config/test/non_irap_frames/I_3_TMIV_mux.json"]
+            + ["-p", "inputDirectory", "{3}", "-p", "outputDirectory", "{3}"]
+            + ["-n", "3", "-s", "E", "-r", "QP3"]
+            + ["-V", "debug"],
+            "{3}/I3/E/QP3/TMIV_I3_E_QP3.log",
+            ["I3/E/QP3/TMIV_I3_E_QP3.bit"],
+        )
+
+        f2_5 = self.launchCommand(
+            executor,
+            [f3],
+            ["{0}/bin/TmivParser"]
+            + ["-b", "{3}/I3/E/QP3/TMIV_I3_E_QP3.bit"]
+            + ["-o", "{3}/I3/E/QP3/TMIV_I3_E_QP3.hls"],
+            None,
+            ["I3/E/QP3/TMIV_I3_E_QP3.hls"],
+        )
+
+        f2_6 = self.launchCommand(
+            executor,
+            [f3],
+            ["{0}/bin/TmivBitrateReport"]
+            + ["-b", "{3}/I3/E/QP3/TMIV_I3_E_QP3.bit"]
+            + ["-o", "{3}/I3/E/QP3/TMIV_I3_E_QP3.csv"],
+            None,
+            ["I3/E/QP3/TMIV_I3_E_QP3.csv"],
+        )
+
+        f4_1 = self.launchCommand(
+            executor,
+            [f3],
+            ["{0}/bin/TmivDecoder", "-c", "{1}/config/test/non_irap_frames/I_4_TMIV_decode.json"]
+            + ["-p", "configDirectory", "{1}/config", "-p", "inputDirectory", "{3}"]
+            + ["-p", "outputDirectory", "{3}", "-n", "3", "-N", "3", "-s", "E"]
+            + ["-r", "QP3", "-v", "v11", "-p", "outputLogPath", "{3}/I3/E/QP3/TMIV_I3_E_QP3.dec2"]
+            + ["-p", "inputViewportParamsPathFmt", "test/sequences/T{{1}}.json"]
+            + ["-V", "debug"],
+            "{3}/I3/E/QP3/I3_E_QP3_v11.log",
+            [
+                "I3/E/QP3/TMIV_I3_E_QP3.dec2",
+                f"I3/E/QP3/I3_E_QP3_v11_tex_{renderResolution}_yuv420p10le.yuv",
+            ],
+        )
+
+        f4_2 = self.launchCommand(
+            executor,
+            [f3],
+            ["{0}/bin/TmivDecoderLog"]
+            + ["-b", "{3}/I3/E/QP3/TMIV_I3_E_QP3.bit"]
+            + ["-o", "{3}/I3/E/QP3/TMIV_I3_E_QP3.dec"],
+            "{3}/I3/E/QP3/TMIV_I3_E_QP3.dec.log",
+            ["I3/E/QP3/TMIV_I3_E_QP3.dec"],
+        )
+
+        f4_3 = self.launchCommand(
+            executor,
+            [f3],
+            ["{0}/bin/TmivNativeVideoDecoderTest", "{3}/I3/E/QP3/TMIV_I3_E_QP3.bit", "3", "2"],
+            "{3}/I3/E/QP3/TMIV_I3_E_QP3.nvdt.log",
             [],
         )
 

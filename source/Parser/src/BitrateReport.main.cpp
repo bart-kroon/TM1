@@ -125,6 +125,9 @@ public:
         stream << vuh.vuh_atlas_id() << ',' << int32_t{vuh.vuh_map_index()} << ','
                << int32_t{vuh.vuh_attribute_index()};
         break;
+      case TMIV::MivBitstream::VuhUnitType::V3C_PVD:
+        stream << vuh.vuh_atlas_id() << ",,";
+        break;
       default:
         UNREACHABLE;
       }

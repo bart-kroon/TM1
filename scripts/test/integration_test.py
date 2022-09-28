@@ -735,7 +735,7 @@ class IntegrationTest:
             + ["-p", "configDirectory", "{1}/config", "-p", "inputDirectory", "{2}"]
             + ["-p", "outputDirectory", "{3}", "-n", "3", "-s", "M", "-p", "intraPeriod", "2"]
             + ["-p", "inputSequenceConfigPathFmt", "test/sequences/T{{1}}.json"]
-            + ["-p", "overrideAtlasFrameSizes", "[[ 1280, 1280 ]]"]
+            + ["-p", "overrideAtlasFrameSizes", "[[ 1280, 1280 ]]", "-f", "0"]
             + ["-V", "debug"],
             "{3}/M3/M/TMIV_M3_M.log",
             [

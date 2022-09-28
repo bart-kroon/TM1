@@ -51,6 +51,7 @@ private:
   MpiEncoder m_encoder;
   const std::string &m_contentId;
   int32_t m_numberOfInputFrames;
+  int32_t m_startFrame;
   int32_t m_intraPeriod;
 
   MivBitstream::SequenceConfig m_inputSequenceConfig;
@@ -64,6 +65,7 @@ private:
     auto x = IO::Placeholders{};
     x.contentId = m_contentId;
     x.numberOfInputFrames = m_numberOfInputFrames;
+    x.startFrame = m_startFrame;
     return x;
   }
 
@@ -72,10 +74,12 @@ public:
       : Common::Application{"MpiEncoder", std::move(argv),
                             Common::Application::Options{
                                 {"-s", "Content ID (e.g. B for Museum)", false},
-                                {"-n", "Number of input frames (e.g. 97)", false}}}
+                                {"-n", "Number of input frames (e.g. 97)", false},
+                                {"-f", "Input start frame (e.g. 23)", false}}}
       , m_encoder{json(), json().require("MpiEncoder")}
       , m_contentId{optionValues("-s"sv).front()}
       , m_numberOfInputFrames{std::stoi(optionValues("-n"sv).front())}
+      , m_startFrame{std::stoi(optionValues("-f"sv).front())}
       , m_intraPeriod{json().require("intraPeriod").as<int32_t>()}
       , m_inputSequenceConfig{IO::loadSequenceConfig(json(), placeholders(), 0)}
       , m_mpiPcsReader{json(), placeholders(), m_inputSequenceConfig}

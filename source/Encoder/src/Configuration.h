@@ -74,7 +74,6 @@ struct Configuration {
   bool textureOffsetFlag;
   uint32_t textureOffsetBitCount{};
   bool dqParamsPresentFlag{true};
-  bool colorCorrectionEnabledFlag;
   bool patchRedundancyRemoval;
   uint8_t numGroups;
   uint16_t maxEntityId;

@@ -14,7 +14,6 @@
         "transparencyDynamic": 4
     },
     "blockSizeDepthQualityDependent": [8, 8],
-    "colorCorrectionEnabledFlag": false,
     "configDirectory": "config",
     "depthLowQualityFlag": false,
     "dynamicDepthRange": false,

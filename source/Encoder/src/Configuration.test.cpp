@@ -173,7 +173,6 @@ TEST_CASE("TMIV::Encoder::Configuration") {
     "dynamicDepthRange": false,
     "dqParamsPresentFlag": false,
     "textureOffsetEnabledFlag": false,
-    "colorCorrectionEnabledFlag": false,
     "rewriteParameterSets": true,
     "patchRedundancyRemoval": false,
     "viewportCameraParametersSei": true,

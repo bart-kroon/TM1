@@ -26,7 +26,6 @@
     "bitDepthTextureVideo": 10,
     "blockSizeDepthQualityDependent": [16, 32],
     "codecGroupIdc": "VVC Main10",
-    "colorCorrectionEnabledFlag": false,
     "configDirectory": "config",
     "dqParamsPresentFlag": false,
     "dynamicDepthRange": false,

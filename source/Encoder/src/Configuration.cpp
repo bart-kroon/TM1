@@ -59,8 +59,6 @@ Configuration::Configuration(const Common::Json &componentNode)
     , dilationIter{componentNode.require("nonAggregatedMaskDilationIter").as<int32_t>()}
     , dynamicDepthRange{componentNode.require("dynamicDepthRange").as<bool>()}
     , textureOffsetFlag{haveTexture && componentNode.require("textureOffsetEnabledFlag").as<bool>()}
-    , colorCorrectionEnabledFlag{haveTexture &&
-                                 componentNode.require("colorCorrectionEnabledFlag").as<bool>()}
     , patchRedundancyRemoval{componentNode.require("patchRedundancyRemoval").as<bool>()}
     , numGroups{componentNode.require("numGroups").as<uint8_t>()}
     , maxEntityId{componentNode.require("maxEntityId").as<uint16_t>()}

@@ -51,9 +51,6 @@
 #include <memory>
 
 namespace TMIV::Encoder {
-auto assessColorConsistency(Common::DeepFrameList views, MivBitstream::ViewParamsList params)
-    -> std::vector<Common::Mat<Common::Vec3i>>;
-
 using TextureStats = Common::stack::Vec3<SampleStats>;
 using PatchTextureStats = std::vector<TextureStats>;
 
@@ -91,7 +88,6 @@ private:
   void scaleGeometryDynamicRange();
   void updateAggregationStatistics(const Common::FrameList<uint8_t> &aggregatedMask);
   void constructVideoFrames();
-  void correctColors();
   void encodePatchTextureOffset(const PatchTextureStats &stats);
   void applyPatchTextureOffset();
   [[nodiscard]] auto calculateBtpm() const -> std::vector<std::vector<std::vector<int32_t>>>;
@@ -150,7 +146,6 @@ private:
   std::vector<Common::FrameList<uint8_t>> m_aggregatedEntityMask;
   size_t m_maxLumaSamplesPerFrame{};
 
-  std::vector<std::vector<Common::Mat<Common::Vec3i>>> m_colorCorrectionMaps;
   std::vector<Common::Vec3i> m_patchColorCorrectionOffset;
 };
 } // namespace TMIV::Encoder

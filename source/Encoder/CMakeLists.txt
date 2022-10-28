@@ -8,7 +8,6 @@ create_tmiv_library(
         "src/EncodeMiv.cpp"
         "src/Encoder.cpp"
         "src/EncoderImpl.cpp"
-        "src/Encoder_assessColorConsistency.cpp"
         "src/Encoder_prepareSequence.cpp"
         "src/Encoder_prepareAccessUnit.cpp"
         "src/Encoder_pushFrame.cpp"
@@ -69,7 +68,6 @@ create_catch2_unit_test(
     TARGET
         EncoderTest
     SOURCES
-        "src/ColorConsistencyAssessor.test.cpp"
         "src/Configuration.test.cpp"
         "src/EncodeMiv.test.cpp"
         "src/Encoder_prepareSequence.test.cpp"

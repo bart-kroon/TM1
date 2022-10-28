@@ -127,57 +127,6 @@ void Encoder::Impl::scaleGeometryDynamicRange() {
   }
 }
 
-void Encoder::Impl::correctColors() {
-  for (const auto &patch : params().patchParamsList) {
-    int32_t sumErrY = 0;
-    int32_t sumErrU = 0;
-    int32_t sumErrV = 0;
-
-    int32_t cnt = 0;
-
-    Common::Vec3i ccOffset;
-
-    const auto w = patch.atlasPatch3dSizeU();
-    const auto h = patch.atlasPatch3dSizeV();
-    const auto xM = patch.atlasPatch3dOffsetU();
-    const auto yM = patch.atlasPatch3dOffsetV();
-
-    const auto viewIdx = params().viewParamsList.indexOf(patch.atlasPatchProjectionId());
-
-    for (size_t frame = 0; frame < m_transportViews.size(); frame++) {
-      const auto &view = m_transportViews[frame][viewIdx];
-      const auto &colorCorrectionMap = m_colorCorrectionMaps[frame][viewIdx];
-      const auto &textureViewMap = view.texture;
-
-      for (int32_t y = 0; y < h; y++) {
-        for (int32_t x = 0; x < w; x++) {
-          const Common::Vec2i pView = {xM + x, yM + y};
-
-          if (pView.y() >= textureViewMap.getHeight() || pView.x() >= textureViewMap.getWidth() ||
-              pView.y() < 0 || pView.x() < 0) {
-            continue;
-          }
-
-          cnt++;
-
-          if (colorCorrectionMap(pView.y(), pView.x()).x() != 0 &&
-              m_nonAggregatedMask[viewIdx](pView.y(), pView.x())[frame]) {
-            sumErrY += colorCorrectionMap(pView.y(), pView.x()).x();
-            sumErrU += colorCorrectionMap(pView.y(), pView.x()).y();
-            sumErrV += colorCorrectionMap(pView.y(), pView.x()).z();
-          }
-        }
-      }
-    }
-
-    ccOffset.x() = sumErrY / cnt;
-    ccOffset.y() = sumErrU / cnt;
-    ccOffset.z() = sumErrV / cnt;
-
-    m_patchColorCorrectionOffset.push_back(ccOffset);
-  }
-}
-
 void Encoder::Impl::setTiles() {
   m_partitionArray.clear();
   m_params.tileParamsLists.clear();
@@ -445,12 +394,8 @@ auto Encoder::Impl::completeAccessUnit() -> const EncoderParams & {
     pp.atlasPatch3dRangeD(Common::maxLevel(bitDepth));
   }
 
-  if (m_config.colorCorrectionEnabledFlag) {
-    correctColors();
-  } else {
-    for (size_t p = 0; p < params().patchParamsList.size(); p++) {
-      m_patchColorCorrectionOffset.emplace_back();
-    }
+  for (size_t p = 0; p < params().patchParamsList.size(); p++) {
+    m_patchColorCorrectionOffset.emplace_back();
   }
 
   constructVideoFrames();

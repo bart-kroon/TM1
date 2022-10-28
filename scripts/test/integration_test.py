@@ -126,6 +126,11 @@ class IntegrationTest:
 
         app.inspectEnvironment()
 
+        # Avoid CI running out of memory
+        with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
+            futures = self.testConformance(executor)
+            self.sync(futures)
+
         with concurrent.futures.ThreadPoolExecutor(max_workers=self.maxWorkers) as executor:
             futures = self.testMivAnchor(executor)
             futures += self.testNonIrapFrames(executor)
@@ -179,6 +184,54 @@ class IntegrationTest:
                         check=True,
                         stdout=target,
                     )
+
+    def testConformance(self, executor):
+        dir = self.testDir / "conformance"
+
+        if not self.dryRun:
+            dir.mkdir(parents=True, exist_ok=True)
+
+        fs = []
+
+        for id, file in {
+            "CB01": "CB01",
+            "CB02": "CB02",
+            "CB03": "CB03",
+            "CB04": "CB04",
+            "CB05_1": "TMIV_A3_C_QP3",
+            "CB05_2": "TMIV_A3_C_QP3",
+            "CB05_3": "TMIV_A3_C_QP3",
+            "CB06": "TMIV_V5_D_QP4",
+            "CB07_1": "TMIV_A3_E_QP3",
+            "CB07_2": "TMIV_A3_E_QP3",
+            "CB07_3": "TMIV_A3_E_QP3",
+            "CB08": "TMIV_M8_M_QP3",
+            "CB09": "CB09",
+            "CB10": "CB10",
+            "CB11": "CB11",
+            "CB12": "CB12",
+            "CB14": "CB14",
+            "CB15": "CB15",
+            "CB16": "CB16",
+            "CB17": "CB17",
+            "CB18": "CB18",
+            "CB19": "CB19",
+            "CB20": "CB20",
+        }.items():
+            fs.append(
+                self.launchCommand(
+                    executor,
+                    [],
+                    ["{0}/bin/TmivDecoderLog"]
+                    + ["-b", f"{{2}}/conformance/{id}/{file}.bit"]
+                    + ["-o", f"{{3}}/conformance/{id}.dec"],
+                    f"{{3}}/conformance/{id}.log",
+                    [f"conformance/{id}.dec"],
+                    f"conformance/{id}/{file}.dec",
+                )
+            )
+
+        return fs
 
     def testMivAnchor(self, executor):
         if not self.dryRun:
@@ -1183,10 +1236,12 @@ class IntegrationTest:
 
         return [f2_1, f2_2, f2_3]
 
-    def launchCommand(self, executor, futures, args, logFile, outputFiles):
-        return executor.submit(self.syncAndRunCommand, futures, args, logFile, outputFiles)
+    def launchCommand(self, executor, futures, args, logFile, outputFiles, referenceFile=None):
+        return executor.submit(
+            self.syncAndRunCommand, futures, args, logFile, outputFiles, referenceFile
+        )
 
-    def syncAndRunCommand(self, futures, args, logFile, outputFiles):
+    def syncAndRunCommand(self, futures, args, logFile, outputFiles, referenceFile):
         try:
             for future in concurrent.futures.as_completed(futures):
                 future.result()
@@ -1195,6 +1250,12 @@ class IntegrationTest:
 
             if not self.dryRun:
                 self.computeMd5Sums(outputFiles)
+
+                if referenceFile:
+                    self.checkConformanceLog(
+                        self.testDir / outputFiles[0], self.contentDir / referenceFile
+                    )
+
         except Exception as e:
             self.stop = True
             print(
@@ -1289,6 +1350,20 @@ class IntegrationTest:
             print("All MD5 sums are equal to the reference.")
 
         return int(haveDifferences)
+
+    def checkConformanceLog(self, outputFile: Path, referenceFile: Path):
+        with open(outputFile) as stream:
+            output = stream.readlines()
+
+        with open(referenceFile) as stream:
+            reference = stream.readlines()
+
+        if output == reference:
+            print(f"Decoder conformance check {outputFile.stem}: verified.")
+        else:
+            raise RuntimeError(
+                f"The actual decoder output log {outputFile} does not match with the reference decoder output log {referenceFile}."
+            )
 
 
 if __name__ == "__main__":

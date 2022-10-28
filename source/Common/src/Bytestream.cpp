@@ -82,11 +82,11 @@ void rbspTrailingBits(std::istream &stream) {
 
 void writeBytes(std::ostream &stream, uint64_t value, size_t bytes) {
   VERIFY_BITSTREAM(bytes <= 8);
-  if (bytes > 1) {
-    writeBytes(stream, value >> 8, bytes - 1);
-  }
-  if (bytes > 0) {
-    stream.put(static_cast<char>(value));
+  VERIFY_BITSTREAM(ceilLog2(value) <= 8 * bytes);
+
+  for (; 0 < bytes; --bytes) {
+    const auto shift = 8 * (bytes - 1);
+    stream.put(static_cast<char>(value >> shift));
   }
   VERIFY_BITSTREAM(stream.good());
 }

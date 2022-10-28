@@ -30,6 +30,7 @@
     "dqParamsPresentFlag": false,
     "dynamicDepthRange": false,
     "framePacking": false,
+    "geometryPacking": false,
     "haveGeometryVideo": false,
     "haveOccupancyVideo": false,
     "haveTextureVideo": true,

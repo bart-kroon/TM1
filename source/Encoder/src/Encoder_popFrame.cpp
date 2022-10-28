@@ -44,8 +44,9 @@ auto Encoder::Impl::popAtlas() -> Common::V3cFrameList {
         GeometryDownscaler::transformFrame(params().atlas, std::move(quantizedFrame));
     m_videoFrameBuffer.pop_front();
     if (m_config.framePacking) {
-      m_framePacker.packFrame(scaledFrame, m_config.pacBitDepth);
+      m_framePacker.packFrame(scaledFrame, m_config.pacBitDepth, m_config.geometryPacking);
     }
+
     return scaledFrame;
   }
 
@@ -55,8 +56,9 @@ auto Encoder::Impl::popAtlas() -> Common::V3cFrameList {
   }
   m_videoFrameBuffer.pop_front();
   if (m_config.framePacking) {
-    m_framePacker.packFrame(frame, m_config.pacBitDepth);
+    m_framePacker.packFrame(frame, m_config.pacBitDepth, m_config.geometryPacking);
   }
+
   return frame;
 }
 } // namespace TMIV::Encoder

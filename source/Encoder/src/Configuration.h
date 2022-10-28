@@ -63,6 +63,7 @@ struct Configuration {
   bool haveGeometry;
   bool haveOccupancy;
   bool framePacking;
+  bool geometryPacking;
   bool oneViewPerAtlasFlag;
   bool embeddedOccupancy{};
   std::vector<Common::Vec2i> overrideAtlasFrameSizes{};

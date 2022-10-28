@@ -11,7 +11,7 @@ Release build (GCC 12):
       cmake
       -G Ninja
       -DCMAKE_CXX_FLAGS="-Wall -Wextra -Wpedantic -Werror -Wfloat-conversion -Wno-maybe-uninitialized -Wold-style-cast -Wno-alloc-size-larger-than"
-      -DENABLE_CLANG_TIDY=OFF -DCMAKE_BUILD_TYPE=Release -DENABLE_M57419=ON
+      -DENABLE_CLANG_TIDY=OFF -DCMAKE_BUILD_TYPE=Release -DENABLE_M57419=ON -DENABLE_M59442=ON
       -DCMAKE_INSTALL_PREFIX=/builds/software/MPEG/MIV/RS/TM1/install
       -DBUILD_TAppEncoder=ON
       -DNO_INTERNET=ON

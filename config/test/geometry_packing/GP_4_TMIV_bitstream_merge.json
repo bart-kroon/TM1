@@ -1,0 +1,6 @@
+{
+    "inputBitstreamPathFmt": "{1}/TMIV_GP{0}_{1}.bit",
+    "inputDirectory": ".",
+    "outputBitstreamPathFmt": "{1}/TMIV_GPM{0}_{1}.bit",
+    "outputDirectory": "."
+}

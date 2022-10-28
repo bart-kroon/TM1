@@ -411,8 +411,9 @@ auto Encoder::Impl::completeAccessUnit() -> const EncoderParams & {
                   m_videoFrameBuffer.size(), m_params.foc);
 
   if (m_config.framePacking) {
-    return m_framePacker.setPackingInformation(m_paramsQuantized);
+    return m_framePacker.setPackingInformation(m_paramsQuantized, m_config.geometryPacking);
   }
+
   return m_paramsQuantized;
 }
 

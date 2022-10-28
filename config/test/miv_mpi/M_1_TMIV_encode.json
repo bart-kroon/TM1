@@ -18,6 +18,7 @@
     "depthLowQualityFlag": false,
     "dynamicDepthRange": false,
     "framePacking": false,
+    "geometryPacking": false,
     "geometryScaleEnabledFlag": false,
     "haveGeometryVideo": false,
     "haveOccupancyVideo": false,

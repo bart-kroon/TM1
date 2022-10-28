@@ -74,7 +74,8 @@ foreach(subdir
         PtlChecker
         GaInserter
         DepthQualityAssessor
-        MpiPcs)
+        MpiPcs
+        BitstreamMerger)
     add_subdirectory(source/${subdir})
 endforeach()
 

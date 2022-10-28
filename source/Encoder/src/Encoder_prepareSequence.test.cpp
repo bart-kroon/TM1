@@ -47,6 +47,7 @@ auto configuration1() {
     "bitDepthGeometryVideo": 10,
     "haveOccupancyVideo": false,
     "framePacking": false,
+    "geometryPacking": false,
     "oneViewPerAtlasFlag": false,
     "embeddedOccupancy": true,
     "dynamicDepthRange": false,

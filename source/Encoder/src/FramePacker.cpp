@@ -34,20 +34,29 @@
 #include "FramePacker.h"
 
 namespace TMIV::Encoder {
-void FramePacker::packFrame(Common::V3cFrameList &frame, uint32_t bitDepth) {
+void FramePacker::packFrame(Common::V3cFrameList &frame, uint32_t bitDepth, bool geometryPacking) {
   uint8_t atlasIdx{};
 
   for (auto &atlas : frame) {
-    atlas = packAtlasFrame(frame[atlasIdx], atlasIdx, bitDepth);
+    atlas = packAtlasFrame(frame[atlasIdx], atlasIdx, bitDepth, geometryPacking);
     atlasIdx++;
   }
 }
 
-auto FramePacker::packAtlasFrame(const Common::V3cFrame &frame, uint8_t atlasIdx,
-                                 uint32_t bitDepth) const -> Common::V3cFrame {
+auto FramePacker::packAtlasFrame(const Common::V3cFrame &frame, uint8_t atlasIdx, uint32_t bitDepth,
+                                 bool geometryPacking) const -> Common::V3cFrame {
   auto result = Common::V3cFrame{};
+
   result.packed = Common::Frame<>::yuv420(m_regionSizes[atlasIdx].pac, bitDepth);
   result.packed.fillNeutral();
+  if (geometryPacking) {
+    if (!frame.texture.empty()) {
+      result.texture = frame.texture;
+    }
+    if (!frame.transparency.empty()) {
+      result.transparency = frame.transparency;
+    }
+  }
 
   for (uint8_t regionIdx = 0; regionIdx <= m_packingInformation.pin_regions_count_minus1();
        ++regionIdx) {
@@ -59,42 +68,46 @@ auto FramePacker::packAtlasFrame(const Common::V3cFrame &frame, uint8_t atlasIdx
     const auto unpackTopLeftY = m_packingInformation.pin_region_unpack_top_left_y(regionIdx);
     const auto rotation = m_packingInformation.pin_region_rotation_flag(regionIdx);
 
-    for (int32_t i = 0; i < height; ++i) {
-      for (int32_t j = 0; j < width; ++j) {
-        const auto px = topLeftX + j;
-        const auto py = topLeftY + i;
+    for (int64_t i = 0; i < static_cast<int64_t>(width) * static_cast<int64_t>(height); ++i) {
+      const auto row = i / width;
+      const auto col = i % width;
+      const auto px = topLeftX + col;
+      const auto py = topLeftY + row;
 
-        const auto ux = unpackTopLeftX + (rotation ? i : j);
-        const auto uy = unpackTopLeftY + (rotation ? j : i);
+      const auto ux = unpackTopLeftX + (rotation ? row : col);
+      const auto uy = unpackTopLeftY + (rotation ? col : row);
 
-        switch (m_packingInformation.pinRegionTypeId(regionIdx)) {
-        case MivBitstream::VuhUnitType::V3C_OVD:
-          result.packed.getPlane(0)(py, px) = frame.occupancy.getPlane(0)(uy, ux);
-          break;
-        case MivBitstream::VuhUnitType::V3C_GVD:
-          result.packed.getPlane(0)(py, px) = frame.geometry.getPlane(0)(uy, ux);
-          break;
-        case MivBitstream::VuhUnitType::V3C_AVD: {
-          const auto attrIdx = m_packingInformation.pin_region_attr_index(regionIdx);
-          const auto attrTypeId = m_packingInformation.pin_attribute_type_id(attrIdx);
+      switch (m_packingInformation.pinRegionTypeId(regionIdx)) {
+      case MivBitstream::VuhUnitType::V3C_OVD:
+        result.packed.getPlane(0)(py, px) = frame.occupancy.getPlane(0)(uy, ux);
+        break;
+      case MivBitstream::VuhUnitType::V3C_GVD:
+        result.packed.getPlane(0)(py, px) = frame.geometry.getPlane(0)(uy, ux);
+        break;
+      case MivBitstream::VuhUnitType::V3C_AVD: {
+        const auto attrIdx = m_packingInformation.pin_region_attr_index(regionIdx);
+        const auto attrTypeId = m_packingInformation.pin_attribute_type_id(attrIdx);
 
-          switch (attrTypeId) {
-          case MivBitstream::AiAttributeTypeId::ATTR_TEXTURE:
+        switch (attrTypeId) {
+        case MivBitstream::AiAttributeTypeId::ATTR_TEXTURE:
+          if (!geometryPacking) {
             result.packed.getPlane(0)(py, px) = frame.texture.getPlane(0)(uy, ux);
             result.packed.getPlane(1)(py / 2, px / 2) = frame.texture.getPlane(1)(uy / 2, ux / 2);
             result.packed.getPlane(2)(py / 2, px / 2) = frame.texture.getPlane(2)(uy / 2, ux / 2);
-            break;
-          case MivBitstream::AiAttributeTypeId::ATTR_TRANSPARENCY:
-            result.packed.getPlane(0)(py, px) = frame.transparency.getPlane(0)(uy, ux);
-            break;
-          default:
-            UNREACHABLE;
           }
           break;
-        }
+        case MivBitstream::AiAttributeTypeId::ATTR_TRANSPARENCY:
+          if (!geometryPacking) {
+            result.packed.getPlane(0)(py, px) = frame.transparency.getPlane(0)(uy, ux);
+          }
+          break;
         default:
           UNREACHABLE;
         }
+        break;
+      }
+      default:
+        UNREACHABLE;
       }
     }
   }
@@ -102,14 +115,21 @@ auto FramePacker::packAtlasFrame(const Common::V3cFrame &frame, uint8_t atlasIdx
   return result;
 }
 
-void FramePacker::updateVideoPresentFlags(MivBitstream::AtlasId atlasId) {
+void FramePacker::updateVideoPresentFlags(MivBitstream::AtlasId atlasId, bool geometryPacking) {
   m_packingInformation
       .pin_occupancy_present_flag(m_params.vps.vps_occupancy_video_present_flag(atlasId))
-      .pin_geometry_present_flag(m_params.vps.vps_geometry_video_present_flag(atlasId))
-      .pin_attribute_present_flag(m_params.vps.vps_attribute_video_present_flag(atlasId));
+      .pin_geometry_present_flag(m_params.vps.vps_geometry_video_present_flag(atlasId));
   m_params.vps.vps_occupancy_video_present_flag(atlasId, false)
-      .vps_geometry_video_present_flag(atlasId, false)
-      .vps_attribute_video_present_flag(atlasId, false);
+      .vps_geometry_video_present_flag(atlasId, false);
+  if (geometryPacking) {
+    m_packingInformation.pin_attribute_present_flag(false);
+    m_params.vps.vps_attribute_video_present_flag(
+        atlasId, m_params.vps.vps_attribute_video_present_flag(atlasId));
+  } else {
+    m_packingInformation.pin_attribute_present_flag(
+        m_params.vps.vps_attribute_video_present_flag(atlasId));
+    m_params.vps.vps_attribute_video_present_flag(atlasId, false);
+  }
 }
 
 void FramePacker::updatePinOccupancyInformation(MivBitstream::AtlasId atlasId) {
@@ -121,7 +141,8 @@ void FramePacker::updatePinOccupancyInformation(MivBitstream::AtlasId atlasId) {
       m_params.vps.occupancy_information(atlasId).oi_lossy_occupancy_compression_threshold());
 }
 
-auto FramePacker::computeOccupancySizeAndRegionCount(size_t atlasIdx) -> uint8_t {
+auto FramePacker::computeOccupancySizeAndRegionCount(size_t atlasIdx, bool geometryPacking)
+    -> uint8_t {
   m_regionSizes[atlasIdx].occ = m_regionSizes[atlasIdx].frame;
   const auto &asmeAtlas = m_params.atlas[atlasIdx].asps.asps_miv_extension();
   const bool occScaled = asmeAtlas.asme_occupancy_scale_enabled_flag();
@@ -131,10 +152,14 @@ auto FramePacker::computeOccupancySizeAndRegionCount(size_t atlasIdx) -> uint8_t
     m_regionSizes[atlasIdx].occ.y() =
         m_regionSizes[atlasIdx].frame.y() / (asmeAtlas.asme_occupancy_scale_factor_y_minus1() + 1);
   }
-  return static_cast<uint8_t>(m_regionSizes[atlasIdx].frame.x() / m_regionSizes[atlasIdx].occ.x());
+  return geometryPacking ? static_cast<uint8_t>(m_regionSizes[atlasIdx].frame.y() /
+                                                m_regionSizes[atlasIdx].occ.y())
+                         : static_cast<uint8_t>(m_regionSizes[atlasIdx].frame.x() /
+                                                m_regionSizes[atlasIdx].occ.x());
 }
 
-auto FramePacker::computeGeometrySizeAndRegionCount(size_t atlasIdx) -> uint8_t {
+auto FramePacker::computeGeometrySizeAndRegionCount(size_t atlasIdx, bool geometryPacking)
+    -> uint8_t {
   m_regionSizes[atlasIdx].geo = m_regionSizes[atlasIdx].frame;
   const auto &asmeAtlas = m_params.atlas[atlasIdx].asps.asps_miv_extension();
   const bool geoScaled = asmeAtlas.asme_geometry_scale_enabled_flag();
@@ -144,7 +169,10 @@ auto FramePacker::computeGeometrySizeAndRegionCount(size_t atlasIdx) -> uint8_t 
     m_regionSizes[atlasIdx].geo.y() =
         m_regionSizes[atlasIdx].frame.y() / (asmeAtlas.asme_geometry_scale_factor_y_minus1() + 1);
   }
-  return static_cast<uint8_t>(m_regionSizes[atlasIdx].frame.x() / m_regionSizes[atlasIdx].geo.x());
+  return geometryPacking ? static_cast<uint8_t>(m_regionSizes[atlasIdx].frame.y() /
+                                                m_regionSizes[atlasIdx].geo.y())
+                         : static_cast<uint8_t>(m_regionSizes[atlasIdx].frame.x() /
+                                                m_regionSizes[atlasIdx].geo.x());
 }
 
 void FramePacker::updatePinGeometryInformation(MivBitstream::AtlasId atlasId) {
@@ -217,6 +245,20 @@ void FramePacker::setGeometryPinRegion(size_t i, size_t atlasIdx,
       (i - regionCounts.attr) * (m_regionSizes[atlasIdx].geo.y() / regionCounts.geo));
 }
 
+void FramePacker::setGeoPckGeometryPinRegion(size_t i, size_t atlasIdx,
+                                             const RegionCounts &regionCounts) {
+  m_pinRegion.pin_region_type_id_minus2 = static_cast<uint16_t>(1);
+  m_pinRegion.pin_region_top_left_x = 0;
+  m_pinRegion.pin_region_top_left_y =
+      static_cast<uint16_t>(m_regionSizes[atlasIdx].geo.y() * (i - regionCounts.attr));
+  m_pinRegion.pin_region_width_minus1 =
+      static_cast<uint16_t>(m_regionSizes[atlasIdx].geo.x() / regionCounts.geo - 1);
+  m_pinRegion.pin_region_height_minus1 = static_cast<uint16_t>(m_regionSizes[atlasIdx].geo.y() - 1);
+  m_pinRegion.pin_region_unpack_top_left_x = static_cast<uint16_t>(
+      (m_regionSizes[atlasIdx].geo.x() / regionCounts.geo) * (i - regionCounts.attr));
+  m_pinRegion.pin_region_unpack_top_left_y = 0;
+}
+
 void FramePacker::setOccupancyPinRegion(size_t i, size_t atlasIdx,
                                         const RegionCounts &regionCounts) {
   m_pinRegion.pin_region_type_id_minus2 = static_cast<uint16_t>(0);
@@ -239,7 +281,28 @@ void FramePacker::setOccupancyPinRegion(size_t i, size_t atlasIdx,
                             (m_regionSizes[atlasIdx].occ.y() / regionCounts.occ));
 }
 
-auto FramePacker::setPackingInformation(EncoderParams params) -> const EncoderParams & {
+void FramePacker::setGeoPckOccupancyPinRegion(size_t i, size_t atlasIdx,
+                                              const RegionCounts &regionCounts) {
+  m_pinRegion.pin_region_type_id_minus2 = static_cast<uint16_t>(0);
+  if (regionCounts.geo != 0) {
+    m_pinRegion.pin_region_top_left_x =
+        static_cast<uint16_t>(m_regionSizes[atlasIdx].geo.x() / regionCounts.geo);
+  } else {
+    m_pinRegion.pin_region_top_left_x = 0;
+  }
+  m_pinRegion.pin_region_top_left_y =
+      static_cast<uint16_t>(m_regionSizes[atlasIdx].occ.y() * (i - regionCounts.attr));
+
+  m_pinRegion.pin_region_width_minus1 =
+      static_cast<uint16_t>(m_regionSizes[atlasIdx].occ.x() / regionCounts.occ - 1);
+  m_pinRegion.pin_region_height_minus1 = static_cast<uint16_t>(m_regionSizes[atlasIdx].occ.y() - 1);
+  m_pinRegion.pin_region_unpack_top_left_x = static_cast<uint16_t>(
+      (m_regionSizes[atlasIdx].occ.x() / regionCounts.occ) * (i - regionCounts.attr));
+  m_pinRegion.pin_region_unpack_top_left_y = 0;
+}
+
+auto FramePacker::setPackingInformation(EncoderParams params, bool geometryPacking)
+    -> const EncoderParams & {
   // Current implementation is limited to texture attribute, geometry, and occupancy
   m_params = std::move(params);
 
@@ -248,29 +311,45 @@ auto FramePacker::setPackingInformation(EncoderParams params) -> const EncoderPa
   m_regionSizes.clear();
   for (size_t atlasIdx = 0; atlasIdx <= m_params.vps.vps_atlas_count_minus1(); atlasIdx++) {
     const auto atlasId = m_params.vps.vps_atlas_id(atlasIdx);
-    updateVideoPresentFlags(atlasId);
+    updateVideoPresentFlags(atlasId, geometryPacking);
 
     RegionCounts regionCounts{};
     m_regionSizes.push_back(RegionSizes{});
     m_regionSizes[atlasIdx].frame = {m_params.vps.vps_frame_width(atlasId),
                                      m_params.vps.vps_frame_height(atlasId)};
-    m_regionSizes[atlasIdx].pac.x() = m_regionSizes[atlasIdx].frame.x();
+
+    if (geometryPacking) {
+      m_regionSizes[atlasIdx].pac.y() = m_regionSizes[atlasIdx].frame.y();
+    } else {
+      m_regionSizes[atlasIdx].pac.x() = m_regionSizes[atlasIdx].frame.x();
+    }
+
     if (m_packingInformation.pin_occupancy_present_flag()) {
       updatePinOccupancyInformation(atlasId);
-      regionCounts.occ = computeOccupancySizeAndRegionCount(atlasIdx);
-      m_regionSizes[atlasIdx].pac.y() += m_regionSizes[atlasIdx].occ.y() / regionCounts.occ;
+      regionCounts.occ = computeOccupancySizeAndRegionCount(atlasIdx, geometryPacking);
+      if (geometryPacking) {
+        m_regionSizes[atlasIdx].pac.x() += m_regionSizes[atlasIdx].occ.x() / regionCounts.occ;
+      } else {
+        m_regionSizes[atlasIdx].pac.y() += m_regionSizes[atlasIdx].occ.y() / regionCounts.occ;
+      }
     }
 
     if (m_packingInformation.pin_geometry_present_flag()) {
       updatePinGeometryInformation(atlasId);
-      regionCounts.geo = computeGeometrySizeAndRegionCount(atlasIdx);
-      m_regionSizes[atlasIdx].pac.y() += m_regionSizes[atlasIdx].geo.y() / regionCounts.geo;
+      regionCounts.geo = computeGeometrySizeAndRegionCount(atlasIdx, geometryPacking);
+      if (geometryPacking) {
+        m_regionSizes[atlasIdx].pac.x() += m_regionSizes[atlasIdx].geo.x() / regionCounts.geo;
+      } else {
+        m_regionSizes[atlasIdx].pac.y() += m_regionSizes[atlasIdx].geo.y() / regionCounts.geo;
+      }
     }
 
     if (m_packingInformation.pin_attribute_present_flag()) {
       updatePinAttributeInformation(atlasId);
       regionCounts.attr = m_packingInformation.pin_attribute_count();
-      m_regionSizes[atlasIdx].pac.y() += m_regionSizes[atlasIdx].frame.y() * regionCounts.attr;
+      if (!geometryPacking) {
+        m_regionSizes[atlasIdx].pac.y() += m_regionSizes[atlasIdx].frame.y() * regionCounts.attr;
+      }
     }
 
     const uint8_t regionsCountMinus1 = regionCounts.attr + regionCounts.geo + regionCounts.occ - 1;
@@ -278,11 +357,21 @@ auto FramePacker::setPackingInformation(EncoderParams params) -> const EncoderPa
 
     for (size_t i = 0; i <= regionsCountMinus1; i++) {
       if (i < regionCounts.attr) {
-        setAttributePinRegion(i, m_regionSizes[atlasIdx].frame);
+        if (!geometryPacking) {
+          setAttributePinRegion(i, m_regionSizes[atlasIdx].frame);
+        }
       } else if (i >= regionCounts.attr && i < (regionCounts.attr + regionCounts.geo)) {
-        setGeometryPinRegion(i, atlasIdx, regionCounts);
+        if (geometryPacking) {
+          setGeoPckGeometryPinRegion(i, atlasIdx, regionCounts);
+        } else {
+          setGeometryPinRegion(i, atlasIdx, regionCounts);
+        }
       } else {
-        setOccupancyPinRegion(i, atlasIdx, regionCounts);
+        if (geometryPacking) {
+          setGeoPckOccupancyPinRegion(i, atlasIdx, regionCounts);
+        } else {
+          setOccupancyPinRegion(i, atlasIdx, regionCounts);
+        }
       }
 
       updatePinRegionInformation(i);

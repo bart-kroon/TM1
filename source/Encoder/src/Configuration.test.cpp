@@ -57,6 +57,7 @@ TEST_CASE("TMIV::Encoder::Configuration") {
     "haveOccupancyVideo": false,
     "embeddedOccupancy": true,
     "framePacking": false,
+    "geometryPacking": false,
     "oneViewPerAtlasFlag": false,
     "dynamicDepthRange": true,
     "halveDepthRange": true,
@@ -100,6 +101,7 @@ TEST_CASE("TMIV::Encoder::Configuration") {
     CHECK(unit.maxLumaSampleRate == 0.);
     CHECK(unit.maxLumaPictureSize == 0);
     CHECK_FALSE(unit.framePacking);
+    CHECK_FALSE(unit.geometryPacking);
     CHECK(unit.maxAtlases == 0);
     CHECK(unit.codecGroupIdc == PtlProfileCodecGroupIdc::HEVC_Main10);
     CHECK(unit.toolsetIdc == PtlProfileToolsetIdc::MIV_Main);
@@ -169,6 +171,7 @@ TEST_CASE("TMIV::Encoder::Configuration") {
     "haveGeometryVideo": false,
     "haveOccupancyVideo": false,
     "framePacking": false,
+    "geometryPacking": false,
     "oneViewPerAtlasFlag": true,
     "dynamicDepthRange": false,
     "dqParamsPresentFlag": false,
@@ -208,6 +211,7 @@ TEST_CASE("TMIV::Encoder::Configuration") {
     CHECK(unit.numGroups == 3);
     CHECK(unit.maxEntityId == 5);
     CHECK_FALSE(unit.framePacking);
+    CHECK_FALSE(unit.geometryPacking);
     CHECK(unit.codecGroupIdc == PtlProfileCodecGroupIdc::AVC_Progressive_High);
     CHECK(unit.toolsetIdc == PtlProfileToolsetIdc::MIV_Geometry_Absent);
     CHECK(unit.oneV3cFrameOnly);
@@ -260,6 +264,7 @@ TEST_CASE("TMIV::Encoder::Configuration") {
     "haveGeometryVideo": false,
     "haveOccupancyVideo": false,
     "framePacking": true,
+    "geometryPacking": false,
     "viewportCameraParametersSei": false,
     "viewportPositionSei": false,
     "oneViewPerAtlasFlag": true,
@@ -286,6 +291,47 @@ TEST_CASE("TMIV::Encoder::Configuration") {
     const auto unit = Configuration{root};
 
     CHECK(unit.framePacking);
+    CHECK_FALSE(unit.haveTexture);
+    CHECK_FALSE(unit.haveGeometry);
+    CHECK_FALSE(unit.geometryPacking);
+  }
+
+  SECTION("Enable Geometry Packing") {
+    const auto root = Json::parse(R"({
+    "intraPeriod": 13,
+    "blockSizeDepthQualityDependent": [8, 4],
+    "haveTextureVideo": false,
+    "haveGeometryVideo": false,
+    "haveOccupancyVideo": false,
+    "framePacking": true,
+    "geometryPacking": true,
+    "viewportCameraParametersSei": false,
+    "viewportPositionSei": false,
+    "oneViewPerAtlasFlag": true,
+    "dynamicDepthRange": false,
+    "dqParamsPresentFlag": false,
+    "textureOffsetEnabledFlag": false,
+    "rewriteParameterSets": true,
+    "patchRedundancyRemoval": true,
+    "numGroups": 3,
+    "maxEntityId": 5,
+    "entityEncodeRange": [0, 4],
+    "codecGroupIdc": "AVC Progressive High",
+    "toolsetIdc": "MIV Geometry Absent",
+    "reconstructionIdc": "Rec Unconstrained",
+    "levelIdc": "2.5",
+    "oneV3cFrameOnly": false,
+    "m57419_piecewiseDepthLinearScaling": false,
+    "m57419_intervalNumber": 16,
+    "m57419_edgeThreshold": 40,
+    "depthOccThresholdIfSet": 0.0625,
+    "nonAggregatedMaskDilationIter": 5
+})"sv);
+
+    const auto unit = Configuration{root};
+
+    CHECK(unit.framePacking);
+    CHECK(unit.geometryPacking);
     CHECK_FALSE(unit.haveTexture);
     CHECK_FALSE(unit.haveGeometry);
   }

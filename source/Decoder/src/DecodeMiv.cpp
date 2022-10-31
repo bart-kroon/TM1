@@ -77,7 +77,8 @@ auto decFrame(MivBitstream::V3cUnitHeader vuh, AAU &aau) -> auto & {
 
 // NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define MIVDECODER_CHECK(cond, err)                                                                \
-  if (!(cond)) {                                                                                   \
+  if ((cond)) {                                                                                    \
+  } else {                                                                                         \
     throw Exception(err, __FILE__, __LINE__);                                                      \
   }
 
@@ -174,8 +175,9 @@ private:
 
     void buffer() {
       if (!au && decoder) {
-        if ((au = decoder())) {
-        } else {
+        au = decoder();
+
+        if (!au) {
           decoder = nullptr;
         }
       }
@@ -267,7 +269,9 @@ private:
 
     const auto t0 = clockInSeconds();
 
-    if ((decoder.au = decoder.decoder())) {
+    decoder.au = decoder.decoder();
+
+    if (decoder.au) {
       if (decoder.au->irap) {
         MIVDECODER_CHECK(m_state == State::limbo || m_au.foc == 0, E::misaligned_video_irap);
         m_au.foc = 0;

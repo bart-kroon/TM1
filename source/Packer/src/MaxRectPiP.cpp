@@ -56,7 +56,7 @@ auto MaxRectPiP::Rectangle::split(int32_t w, int32_t h) const
 auto MaxRectPiP::Rectangle::remove(const Rectangle &r) const -> std::vector<MaxRectPiP::Rectangle> {
   std::vector<Rectangle> out;
 
-  if (!((r.m_x1 <= m_x0) || (m_x1 <= r.m_x0) || (r.m_y1 <= m_y0) || (m_y1 <= r.m_y0))) {
+  if ((r.m_x1 > m_x0) && (m_x1 > r.m_x0) && (r.m_y1 > m_y0) && (m_y1 > r.m_y0)) {
     // Left part
     if (m_x0 < r.m_x0) {
       out.emplace_back(m_x0, m_y0, r.m_x0 - 1, m_y1);

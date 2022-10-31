@@ -111,6 +111,7 @@ private:
     if (!m_seiJsons.empty() && m_vuh.value().vuh_unit_type() == MivBitstream::VuhUnitType::V3C_AD) {
       m_log << "*** inserting " << m_seiJsons.size() << " SEI messages\n";
       std::vector<MivBitstream::SeiMessage> seiMessages;
+      seiMessages.reserve(m_seiJsons.size());
       for (auto &seiJson : m_seiJsons) {
         seiMessages.emplace_back(
             MivBitstream::PayloadType::geometry_assistance,

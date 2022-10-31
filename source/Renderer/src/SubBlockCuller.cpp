@@ -131,11 +131,11 @@ auto choosePatch(const MivBitstream::PatchParams &patch,
       xy_v_ymin = i[1];
     }
   }
-  return !(xy_v_xmin > static_cast<float>(target.ci.projectionPlaneSize().x() + 64) ||
-           xy_v_xmax < -64 || xy_v_ymax < -64 ||
-           xy_v_ymin > static_cast<float>(target.ci.projectionPlaneSize().y() + 64) ||
-           (xy_v_xmin != xy_v_xmin && xy_v_xmax != xy_v_xmax && xy_v_ymin != xy_v_ymin &&
-            xy_v_ymax != xy_v_ymax));
+  return xy_v_xmin <= static_cast<float>(target.ci.projectionPlaneSize().x() + 64) &&
+         xy_v_xmax >= -64 && xy_v_ymax >= -64 &&
+         xy_v_ymin <= static_cast<float>(target.ci.projectionPlaneSize().y() + 64) &&
+         (xy_v_xmin == xy_v_xmin || xy_v_xmax == xy_v_xmax || xy_v_ymin == xy_v_ymin ||
+          xy_v_ymax == xy_v_ymax);
 }
 auto divideInBlocks(const MivBitstream::PatchParams &patch) {
   // The size of the sub-block is fixed for now

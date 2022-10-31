@@ -126,8 +126,8 @@ void AtlasObjectAssociation::prepareAoaParameters(size_t aoa_num_updates) {
     m_aoa_parameters.emplace(AtlasObjectAssociationUpdateParameters{});
   }
   for (size_t i = 0; i < aoa_num_updates; ++i) {
-    m_aoa_parameters->aoa_object_in_atlas.emplace_back(
-        std::vector<bool>(aoa_num_atlases_minus1() + 1U));
+    m_aoa_parameters->aoa_object_in_atlas.emplace_back().assign(aoa_num_atlases_minus1() + 1U,
+                                                                false);
   }
   m_aoa_parameters->aoa_object_idx = std::vector<uint8_t>(aoa_num_updates);
 }

@@ -44,10 +44,10 @@
 
 #if defined(__clang__) || defined(__GNUC__)
 // NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
-#define LIKELY(x) __builtin_expect(!!(x), 1)
+#define LIKELY(x) __builtin_expect(static_cast<bool>(x), 1)
 #else
 // NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
-#define LIKELY(x) (!!(x))
+#define LIKELY(x) (static_cast<bool>(x))
 #endif
 
 // Check that externally provided information (e.g. files, parameters, etc.) is correct

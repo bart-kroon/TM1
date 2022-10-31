@@ -3,6 +3,7 @@ Checks: '
 bugprone-*,
 -bugprone-easily-swappable-parameters,
 -bugprone-implicit-widening-of-multiplication-result,
+-bugprone-unchecked-optional-access,
 cppcoreguidelines-*,
 -cppcoreguidelines-avoid-magic-numbers,
 -cppcoreguidelines-prefer-member-initializer,
@@ -18,7 +19,10 @@ readability-*,
 
 HeaderFilterRegex: 'source/.*/include/TMIV/.*'
 
-WarningsAsErrors: '*'
+WarningsAsErrors: '
+*,
+-bugprone-exception-escape
+'
 
 FormatStyle: file
 

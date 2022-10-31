@@ -137,7 +137,9 @@ private:
     return [this](Common::Source<MivBitstream::VideoSubBitstream> source,
                   const MivBitstream::V3cParameterSet &vps,
                   MivBitstream::V3cUnitHeader vuh) -> Common::Source<Common::DecodedFrame> {
-      if ((source = Common::test(source))) {
+      source = Common::test(source);
+
+      if (source) {
         return decodeVideo(vps, decodeNalUnitStream(decodeVideoSubBitstream(std::move(source))));
       }
       return loadOutOfBandVideo(vuh);

@@ -103,7 +103,7 @@ template <typename... T>
 void MpiRasterizer<T...>::submit(const ImageVertexDescriptorList &vertices,
                                  AttributeMaps attributes,
                                  const TriangleDescriptorList &triangles) {
-  m_batches.push_back(Batch{vertices, move(attributes)});
+  m_batches.push_back(Batch{vertices, std::move(attributes)});
   for (auto &strip : m_strips) {
     strip.batches.emplace_back();
   }

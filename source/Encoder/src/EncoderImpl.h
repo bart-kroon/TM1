@@ -104,8 +104,7 @@ private:
   void setTiles();
   auto setPartition() -> bool;
   void updateTile();
-  void setAtlasFrameTileInformationSnytax(bool uniformPartitionSpacingFlag,
-                                          bool partitionPerTileFlag);
+  void setAtlasFrameTileInformation(bool uniformPartitionSpacingFlag, bool partitionPerTileFlag);
   void setAtlasTileHeaderSnytax(size_t atlasIdx);
   std::vector<std::vector<std::vector<int32_t>>> m_partitionArray;
 

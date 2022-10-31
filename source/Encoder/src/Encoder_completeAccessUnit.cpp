@@ -178,7 +178,7 @@ void Encoder::Impl::setTiles() {
       // TODO
     }
 
-    setAtlasFrameTileInformationSnytax(uniformPartitionSpacingFlag, singlePartitionPerTileFlag);
+    setAtlasFrameTileInformation(uniformPartitionSpacingFlag, singlePartitionPerTileFlag);
   }
 
   for (size_t atlasIdx = 0; atlasIdx < m_params.tileParamsLists.size(); ++atlasIdx) {
@@ -204,17 +204,25 @@ auto Encoder::Impl::setPartition() -> bool {
     heightSum = heightSum + h;
   }
 
-  VERIFY(widthSum == m_params.atlas.front().asps.asps_frame_width());
-  VERIFY(heightSum == m_params.atlas.front().asps.asps_frame_height());
+  if (widthSum != m_params.atlas.front().asps.asps_frame_width()) {
+    TMIV::Common::logWarning("the sum of tile width={}, the atlas width={}", widthSum,
+                             m_params.atlas.front().asps.asps_frame_width());
+    throw std::runtime_error("Atlas width should be equal to sum of tile width");
+  }
+  if (heightSum != m_params.atlas.front().asps.asps_frame_height()) {
+    TMIV::Common::logWarning("the sum of tile height={}, the atlas height={}", heightSum,
+                             m_params.atlas.front().asps.asps_frame_height());
+    throw std::runtime_error("Atlas height should be equal to sum of tile height");
+  }
 
   for (size_t i = 0; i < partitionWidth.size() - 1; ++i) {
-    if (partitionWidth[0] != partitionWidth[i]) {
+    if (partitionWidth[0] != partitionWidth[i] || partitionWidth[0] < partitionWidth.back()) {
       uniformPartitionSpacingFlagWidth = false;
       break;
     }
   }
   for (size_t j = 0; j < partitionHeight.size() - 1; ++j) {
-    if (partitionHeight[0] != partitionHeight[j]) {
+    if (partitionHeight[0] != partitionHeight[j] || partitionHeight[0] < partitionHeight.back()) {
       uniformPartitionSpacingFlagHeight = false;
       break;
     }
@@ -282,8 +290,8 @@ void Encoder::Impl::updateTile() {
   POSTCONDITION(tilePatchNum == patchNum);
 }
 
-void Encoder::Impl::setAtlasFrameTileInformationSnytax(bool uniformPartitionSpacingFlag,
-                                                       bool partitionPerTileFlag) {
+void Encoder::Impl::setAtlasFrameTileInformation(bool uniformPartitionSpacingFlag,
+                                                 bool partitionPerTileFlag) {
   for (size_t atlasIdx = 0; atlasIdx < m_params.atlas.size(); ++atlasIdx) {
     auto afti = TMIV::MivBitstream::AtlasFrameTileInformation{};
     afti.afti_single_tile_in_atlas_frame_flag(false);
@@ -309,11 +317,21 @@ void Encoder::Impl::setAtlasFrameTileInformationSnytax(bool uniformPartitionSpac
 
       for (int32_t j = 0; j < numPartitionColumnsMinus1; ++j) {
         partitionColumnWidthMinus1[j] = m_partitionArray[0][atlasIdx][j] / 64 - 1;
-        VERIFY(m_partitionArray[0][atlasIdx][j] % 64 == 0);
+        if (m_partitionArray[0][atlasIdx][j] % 64 != 0) {
+          TMIV::Common::logWarning("the width of the tile partition={}",
+                                   m_partitionArray[0][atlasIdx][j]);
+          throw std::runtime_error("the width of the tile partition should be in units of 64 "
+                                   "samples accoding to 23090-5 clause 8.3.6.2.2");
+        }
       }
       for (int32_t j = 0; j < numPartitionRowsMinus1; ++j) {
         partitionRowHeightMinus1[j] = m_partitionArray[1][atlasIdx][j] / 64 - 1;
-        VERIFY(m_partitionArray[1][atlasIdx][j] % 64 == 0);
+        if (m_partitionArray[1][atlasIdx][j] % 64 != 0) {
+          TMIV::Common::logWarning("the height of the tile partition={}",
+                                   m_partitionArray[1][atlasIdx][j]);
+          throw std::runtime_error("the height of the tile partition should be in units of 64 "
+                                   "samples accoding to 23090-5 clause 8.3.6.2.2");
+        }
       }
 
       afti.afti_partition_column_width_minus1(partitionColumnWidthMinus1)

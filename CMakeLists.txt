@@ -11,6 +11,15 @@ if (NOT CMAKE_CXX_STANDARD)
     set(CMAKE_CXX_STANDARD 17)
 endif()
 
+option(ENABLE_IPO "Enable interprocedural optimization (requires more resources) for all but debug builds" OFF)
+
+if (ENABLE_IPO)
+    include(CheckIPOSupported)
+    check_ipo_supported()
+    set(CMAKE_INTERPROCEDURAL_OPTIMIZATION ON)
+    set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_DEBUG OFF)
+endif()
+
 set(TMIV_BUILD_APP_LIST "" CACHE STRING "Build only the specified semicolon-separated list of applications. Empty to build all.")
 set(TMIV_BUILD_LIB_LIST "" CACHE STRING "Build only the specified semicolon-separated list of libraries. Empty to build all.")
 set(TMIV_BUILD_TEST_LIST "" CACHE STRING "Build only the specified semicolon-separated list of tests. Empty to build all.")

@@ -88,7 +88,9 @@ def parse_arguments():
     parser.add_argument("-n", "--coded-frame-count", type=int, default=97)
     parser.add_argument("-N", "--rendered-frame-count", type=int, default=300)
     parser.add_argument("-s", "--seq-ids", type=str, nargs="*", default=["F", "S", "W", "X"])
-    parser.add_argument("-r", "--rate-ids", type=str, nargs="*", default=["QP1", "QP3", "QP5"])
+    parser.add_argument(
+        "-r", "--rate-ids", type=str, nargs="*", default=["QP1", "QP2", "QP3", "QP4"]
+    )
     parser.add_argument(
         "-v",
         "--viewport-ids",
@@ -271,13 +273,12 @@ def qp(point: list) -> int:
 
 
 def tex_qp(point: list) -> int:
-    # The same QP's are used for CTC and VT encoder condition (no rate matching that way).
-    # The CTC encoder config is only added to study the difference with the VT config.
+    # The QP's are roughly tuned to target bit rates 40, 28, 17 and 5 Mb/s
     return {
-        "F": {"QP1": 28, "QP2": 35, "QP3": 40, "QP4": 43, "QP5": 45},
-        "S": {"QP1": 20, "QP2": 27, "QP3": 32, "QP4": 38, "QP5": 44},
-        "W": {"QP1": 23, "QP2": 29, "QP3": 36, "QP4": 42, "QP5": 49},
-        "X": {"QP1": 21, "QP2": 26, "QP3": 32, "QP4": 36, "QP5": 44},
+        "F": {"QP1": 21, "QP2": 25, "QP3": 30, "QP4": 41},
+        "S": {"QP1": 25, "QP2": 28, "QP3": 33, "QP4": 44},
+        "W": {"QP1": 21, "QP2": 24, "QP3": 29, "QP4": 42},
+        "X": {"QP1": 21, "QP2": 25, "QP3": 30, "QP4": 41},
     }[point[1]][point[2]]
 
 

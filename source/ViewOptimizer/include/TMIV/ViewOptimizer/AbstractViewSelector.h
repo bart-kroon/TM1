@@ -50,7 +50,7 @@ public:
       -> Common::DeepFrameList override;
 
 protected:
-  [[nodiscard]] virtual auto isBasicView() const -> std::vector<bool> = 0;
+  [[nodiscard]] virtual auto isBasicView(double weight) const -> std::vector<bool> = 0;
   [[nodiscard]] constexpr auto params() const noexcept -> auto & { return m_params; }
 
 private:
@@ -58,6 +58,7 @@ private:
   void printSummary() const;
 
   bool m_outputAdditionalViews;
+  double m_verticalInhomogenityCoefficient;
   ViewOptimizerParams m_params;
   std::vector<bool> m_isBasicView;
 };

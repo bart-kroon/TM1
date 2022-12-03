@@ -56,13 +56,13 @@ BasicViewAllocator::BasicViewAllocator(const Common::Json &rootNode,
   VERIFY(0. < m_maxBasicViewFraction && m_maxBasicViewFraction <= 1.);
 }
 
-auto BasicViewAllocator::isBasicView() const -> std::vector<bool> {
+auto BasicViewAllocator::isBasicView(double weight) const -> std::vector<bool> {
   const auto viewCount = params().viewParamsList.size();
   const auto count = basicViewCount();
   VERIFY(0 < count && count <= viewCount);
 
   const auto positions = viewPositions();
-  const auto cost = KMedoidsCost{sqDistanceMatrix(positions)};
+  const auto cost = KMedoidsCost{sqDistanceMatrix(positions, weight)};
   const auto first = forwardView(positions);
 
   auto centroids = selectInitialCentroids(cost, first, count);
@@ -166,12 +166,17 @@ auto BasicViewAllocator::forwardView(const Positions &pos) const -> size_t {
   return index;
 }
 
-auto BasicViewAllocator::sqDistanceMatrix(const Positions &pos) -> Common::Mat<double> {
+auto BasicViewAllocator::sqDistanceMatrix(const Positions &pos, double weight)
+    -> Common::Mat<double> {
   const auto N = pos.size();
   auto result = Common::Mat<double>({N, N});
   for (size_t i = 0; i < N; ++i) {
     for (size_t j = 0; j < N; ++j) {
-      result(i, j) = Common::norm2(pos[i] - pos[j]);
+      auto posi = pos[i];
+      auto posj = pos[j];
+      posi.z() *= weight;
+      posj.z() *= weight;
+      result(i, j) = Common::norm2(posi - posj);
     }
   }
   return result;

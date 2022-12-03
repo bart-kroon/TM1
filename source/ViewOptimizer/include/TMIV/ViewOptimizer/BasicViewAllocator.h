@@ -46,7 +46,7 @@ public:
   BasicViewAllocator(const Common::Json &rootNode, const Common::Json &componentNode);
 
 protected:
-  [[nodiscard]] auto isBasicView() const -> std::vector<bool> override;
+  [[nodiscard]] auto isBasicView(double weight) const -> std::vector<bool> override;
 
 private:
   // Calculate 'k'
@@ -56,7 +56,7 @@ private:
   // Prepare cost calculation
   [[nodiscard]] auto viewPositions() const -> Positions;
   [[nodiscard]] auto forwardView(const Positions &pos) const -> size_t;
-  static auto sqDistanceMatrix(const Positions &pos) -> Common::Mat<double>;
+  static auto sqDistanceMatrix(const Positions &pos, double weight) -> Common::Mat<double>;
 
   // Partitioning around medians [https://en.wikipedia.org/wiki/K-medoids#Algorithms]
   static auto selectInitialCentroids(const KMedoidsCost &cost, size_t first, size_t k) -> Centroids;

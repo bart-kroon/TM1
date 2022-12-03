@@ -40,7 +40,8 @@
         "BasicViewAllocator": {
             "maxBasicViewFraction": 0.5,
             "minNonCodedViews": 3,
-            "outputAdditionalViews": true
+            "outputAdditionalViews": true,
+            "verticalInhomogenityCoefficient": 0.4
         },
         "InpainterMethod": "PushPullInpainter",
         "PushPullInpainter": {},

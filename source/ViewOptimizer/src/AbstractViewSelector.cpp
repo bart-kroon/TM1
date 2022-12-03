@@ -39,11 +39,24 @@
 namespace TMIV::ViewOptimizer {
 AbstractViewSelector::AbstractViewSelector(const Common::Json & /* rootNode */,
                                            const Common::Json &componentNode)
-    : m_outputAdditionalViews{componentNode.require("outputAdditionalViews").as<bool>()} {}
+    : m_outputAdditionalViews{componentNode.require("outputAdditionalViews").as<bool>()} {
+  if (const auto &node = componentNode.optional("verticalInhomogenityCoefficient")) {
+    m_verticalInhomogenityCoefficient = node.as<double>();
+  } else {
+    m_verticalInhomogenityCoefficient = 1.;
+  }
+  VERIFY(0. < m_verticalInhomogenityCoefficient && m_verticalInhomogenityCoefficient <= 1.);
+}
 
 auto AbstractViewSelector::optimizeParams(const SourceParams &params) -> ViewOptimizerParams {
   m_params = {params.viewParamsList};
-  m_isBasicView = isBasicView();
+
+  double weight = 1.0;
+  if (params.viewParamsList[0].ci.ci_cam_type() == MivBitstream::CiCamType::equirectangular) {
+    weight = m_verticalInhomogenityCoefficient;
+  }
+
+  m_isBasicView = isBasicView(weight);
 
   for (size_t i = 0; i < m_params.viewParamsList.size(); ++i) {
     m_params.viewParamsList[i].isBasicView = m_isBasicView[i];

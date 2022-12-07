@@ -82,6 +82,7 @@ foreach(subdir
         Parser
         PtlChecker
         GaInserter
+        EgaInserter
         DepthQualityAssessor
         MpiPcs
         BitstreamMerger)

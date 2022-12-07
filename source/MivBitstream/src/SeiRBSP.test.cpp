@@ -76,6 +76,7 @@ TEST_CASE("PayloadType", "[Supplemental Enhancement Information RBSP]") {
     REQUIRE(131U == static_cast<uint32_t>(PayloadType::atlas_view_enabled));
     REQUIRE(132U == static_cast<uint32_t>(PayloadType::omaf_v1_compatible));
     REQUIRE(133U == static_cast<uint32_t>(PayloadType::geometry_assistance));
+    REQUIRE(134U == static_cast<uint32_t>(PayloadType::extended_geometry_assistance));
   }
 }
 

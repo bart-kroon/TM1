@@ -39,6 +39,7 @@
 #include <TMIV/MivBitstream/AtlasObjectAssociation.h>
 #include <TMIV/MivBitstream/AtlasViewEnabled.h>
 #include <TMIV/MivBitstream/DecodedAtlasInformationHash.h>
+#include <TMIV/MivBitstream/ExtendedGeometryAssistance.h>
 #include <TMIV/MivBitstream/GeometryAssistance.h>
 #include <TMIV/MivBitstream/GeometryUpscalingParameters.h>
 #include <TMIV/MivBitstream/PackedIndependentRegions.h>
@@ -83,7 +84,8 @@ enum class PayloadType : uint16_t {
   geometry_upscaling_parameters,
   atlas_view_enabled,
   omaf_v1_compatible,
-  geometry_assistance
+  geometry_assistance,
+  extended_geometry_assistance
 };
 
 auto operator<<(std::ostream &stream, PayloadType pt) -> std::ostream &;
@@ -96,7 +98,7 @@ struct SeiPayload {
                                AtlasObjectAssociation, ViewportCameraParameters, ViewportPosition,
                                PackedIndependentRegions, ViewingSpace, ViewingSpaceHandling,
                                GeometryUpscalingParameters, AtlasViewEnabled, GeometryAssistance,
-                               DecodedAtlasInformationHash>;
+                               ExtendedGeometryAssistance, DecodedAtlasInformationHash>;
 
   Payload payload;
 

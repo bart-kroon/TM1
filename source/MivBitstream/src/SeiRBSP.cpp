@@ -107,6 +107,8 @@ auto operator<<(std::ostream &stream, PayloadType pt) -> std::ostream & {
     return stream << "omaf_v1_compatible";
   case PayloadType::geometry_assistance:
     return stream << "geometry_assistance";
+  case PayloadType::extended_geometry_assistance:
+    return stream << "extended_geometry_assistance";
   default:
     return stream << "reserved_sei_message (" << static_cast<int32_t>(pt) << ")";
   }
@@ -160,6 +162,8 @@ auto SeiPayload::decodeFromString(const std::string &payload, PayloadType payloa
       return {AtlasViewEnabled::decodeFrom(bitstream)};
     case PayloadType::geometry_assistance:
       return {GeometryAssistance::decodeFrom(bitstream)};
+    case PayloadType::extended_geometry_assistance:
+      return {ExtendedGeometryAssistance::decodeFrom(bitstream)};
     default:
       std::ostringstream buffer;
       buffer << stream.rdbuf();
@@ -212,6 +216,9 @@ auto SeiPayload::encodeToString(PayloadType payloadType, NalUnitType nut) const 
       break;
     case PayloadType::geometry_assistance:
       std::get<GeometryAssistance>(payload).encodeTo(bitstream);
+      break;
+    case PayloadType::extended_geometry_assistance:
+      std::get<ExtendedGeometryAssistance>(payload).encodeTo(bitstream);
       break;
     default:
       const auto &payload_ = std::get_if<UnsupportedPayload>(&payload);

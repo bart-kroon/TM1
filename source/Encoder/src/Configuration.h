@@ -55,6 +55,7 @@ struct Configuration {
   // Main parameters
   int32_t intraPeriod;
   Common::Vec2i blockSizeDepthQualityDependent;
+  Common::Vec2d depthOccThresholdIfSet;
   std::optional<bool> depthLowQualityFlag;
   double maxLumaSampleRate{};
   int32_t maxLumaPictureSize{};
@@ -67,7 +68,6 @@ struct Configuration {
   bool oneViewPerAtlasFlag;
   bool embeddedOccupancy{};
   std::vector<Common::Vec2i> overrideAtlasFrameSizes{};
-  double depthOccThresholdIfSet{};
   bool geometryScaleEnabledFlag;
   int32_t dilationIter;
   Common::stack::Vec2<Common::SampleValue> entityEncRange;
@@ -97,6 +97,12 @@ struct Configuration {
   uint32_t geoBitDepth{};
   uint32_t texBitDepth{};
   uint32_t pacBitDepth{};
+
+  double depthOccThresholdAsymmetry{};
+
+  [[nodiscard]] auto occThreshold(bool depthLowQualityFlag_) const noexcept {
+    return depthOccThresholdIfSet[static_cast<int32_t>(depthLowQualityFlag_)];
+  }
 
 #if ENABLE_M57419
   bool m57419_piecewiseDepthLinearScaling;

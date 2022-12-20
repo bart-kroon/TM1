@@ -108,17 +108,20 @@ void Configuration::queryMainParameters(const Common::Json &componentNode) {
 
   if (haveGeometry && !haveOccupancy) {
     embeddedOccupancy = componentNode.require("embeddedOccupancy").as<bool>();
-    depthOccThresholdIfSet = componentNode.require("depthOccThresholdIfSet").as<double>();
-
-    if (!(0.0 < depthOccThresholdIfSet)) {
-      throw std::runtime_error("The depthOccThresholdIfSet parameter is only used when the encoder "
-                               "needs to use occupancy. The value 0 is not allowed.");
-    }
-    if (0.5 <= depthOccThresholdIfSet) {
-      throw std::runtime_error(
-          "The encoder takes a margin equal to the depth occupancy threshold, so "
-          "setting the threshold this high will make it impossible to encode depth. Note that "
-          "depthOccThresholdIfSet is normalized on the max. geometry sample value.");
+    depthOccThresholdAsymmetry = componentNode.require("depthOccThresholdAsymmetry").as<double>();
+    depthOccThresholdIfSet = componentNode.require("depthOccThresholdIfSet").asVec<double, 2>();
+    for (const auto i : {0, 1}) {
+      if (!(0.0 < depthOccThresholdIfSet[i])) {
+        throw std::runtime_error(
+            "The depthOccThresholdIfSet parameter is only used when the encoder "
+            "needs to use occupancy. The value 0 is not allowed.");
+      }
+      if (0.5 <= depthOccThresholdIfSet[i]) {
+        throw std::runtime_error(
+            "The encoder takes a margin equal to the depth occupancy threshold, so "
+            "setting the threshold this high will make it impossible to encode depth. Note that "
+            "depthOccThresholdIfSet is normalized on the max. geometry sample value.");
+      }
     }
   }
 

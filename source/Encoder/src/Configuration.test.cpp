@@ -78,7 +78,8 @@ TEST_CASE("TMIV::Encoder::Configuration") {
     "m57419_piecewiseDepthLinearScaling": false,
     "m57419_intervalNumber": 16,
     "m57419_edgeThreshold": 40,
-    "depthOccThresholdIfSet": 0.0625,
+    "depthOccThresholdIfSet": [0.00390625, 0.0625],
+    "depthOccThresholdAsymmetry": 1.5,
     "nonAggregatedMaskDilationIter": 0
 })"sv);
 
@@ -191,7 +192,8 @@ TEST_CASE("TMIV::Encoder::Configuration") {
     "m57419_piecewiseDepthLinearScaling": false,
     "m57419_intervalNumber": 16,
     "m57419_edgeThreshold": 40,
-    "depthOccThresholdIfSet": 0.0625,
+    "depthOccThresholdIfSet": [0.00390625, 0.0625],
+    "depthOccThresholdAsymmetry": 1.5,
     "nonAggregatedMaskDilationIter": 5
 })"sv);
 
@@ -284,7 +286,8 @@ TEST_CASE("TMIV::Encoder::Configuration") {
     "m57419_piecewiseDepthLinearScaling": false,
     "m57419_intervalNumber": 16,
     "m57419_edgeThreshold": 40,
-    "depthOccThresholdIfSet": 0.0625,
+    "depthOccThresholdIfSet": [0.00390625, 0.0625],
+    "depthOccThresholdAsymmetry": 1.5,
     "nonAggregatedMaskDilationIter": 5
 })"sv);
 
@@ -324,7 +327,8 @@ TEST_CASE("TMIV::Encoder::Configuration") {
     "m57419_piecewiseDepthLinearScaling": false,
     "m57419_intervalNumber": 16,
     "m57419_edgeThreshold": 40,
-    "depthOccThresholdIfSet": 0.0625,
+    "depthOccThresholdIfSet": [0.00390625, 0.0625],
+    "depthOccThresholdAsymmetry": 1.5,
     "nonAggregatedMaskDilationIter": 5
 })"sv);
 

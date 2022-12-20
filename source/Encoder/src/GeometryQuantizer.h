@@ -39,8 +39,8 @@
 
 namespace TMIV::Encoder::GeometryQuantizer {
 [[nodiscard]] auto transformParams(const EncoderParams &inParams, double depthOccThresholdIfSet,
-                                   uint32_t bitDepth) -> EncoderParams;
-
+                                   uint32_t bitDepth, double depthOccThresholdAsymmetry)
+    -> EncoderParams;
 [[nodiscard]] auto transformAtlases(const EncoderParams &inParams, const EncoderParams &outParams,
                                     const Common::DeepFrameList &inAtlases) -> Common::V3cFrameList;
 } // namespace TMIV::Encoder::GeometryQuantizer

@@ -55,7 +55,7 @@ SCENARIO("Geometry quantization") {
 
     WHEN("Modifying the depth range") {
       const auto codedParams =
-          TMIV::Encoder::GeometryQuantizer::transformParams(sourceParams, 37, 10);
+          TMIV::Encoder::GeometryQuantizer::transformParams(sourceParams, 37, 10, 1.5);
 
       THEN("The camera parameters are unmodified") {
         REQUIRE(codedParams.viewParamsList == sourceParams.viewParamsList);
@@ -70,7 +70,7 @@ SCENARIO("Geometry quantization") {
 
     WHEN("Modifying the depth range") {
       const auto codedSeqParams =
-          TMIV::Encoder::GeometryQuantizer::transformParams(sourceSeqParams, 37, 10);
+          TMIV::Encoder::GeometryQuantizer::transformParams(sourceSeqParams, 37, 10, 1.5);
       const auto &codedViewParams = codedSeqParams.viewParamsList.front();
 
       THEN("dq_depth_occ_threshold_default (T) >> 0") {

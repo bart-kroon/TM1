@@ -37,23 +37,32 @@
 
 namespace TMIV::Encoder::GeometryQuantizer {
 auto transformParams(const EncoderParams &inParams, double depthOccThresholdIfSet,
-                     uint32_t bitDepth) -> EncoderParams {
+                     uint32_t bitDepth, double depthOccThresholdAsymmetry) -> EncoderParams {
   auto outParams = inParams;
-
   if (outParams.vps.vps_miv_extension().vme_embedded_occupancy_enabled_flag()) {
     for (auto &x : outParams.viewParamsList) {
       if (x.hasOccupancy) {
         const auto depthOccThreshold = Common::downCast<uint32_t>(
             std::llround(std::ldexp(depthOccThresholdIfSet, Common::downCast<int32_t>(bitDepth))));
-
-        x.dq.dq_depth_occ_threshold_default(depthOccThreshold); // =T
         const auto nearLevel = static_cast<float>(Common::maxLevel(bitDepth));
         const auto farLevel = static_cast<float>(2 * depthOccThreshold);
-
         // Mapping is [2T, maxValue] --> [old far, near]. What is level 0? (the new far)
         x.dq.dq_norm_disp_low(x.dq.dq_norm_disp_low() +
                               (0.F - farLevel) / (nearLevel - farLevel) *
                                   (x.dq.dq_norm_disp_high() - x.dq.dq_norm_disp_low()));
+        auto limitocc = Common::downCast<uint32_t>(
+            std::llround(std::ldexp(1, Common::downCast<int32_t>(bitDepth))));
+
+        if (depthOccThreshold < limitocc) {
+          if (outParams.casps.casps_miv_extension().casme_depth_low_quality_flag()) {
+            x.dq.dq_depth_occ_threshold_default(depthOccThreshold); // = NC_T
+          } else {
+            x.dq.dq_depth_occ_threshold_default(
+                static_cast<uint32_t>(depthOccThreshold * depthOccThresholdAsymmetry)); // = CG_T
+          }
+        } else {
+          x.dq.dq_depth_occ_threshold_default(depthOccThreshold);
+        }
       }
     }
   }

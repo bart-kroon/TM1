@@ -419,10 +419,11 @@ auto Encoder::Impl::completeAccessUnit() -> const EncoderParams & {
   constructVideoFrames();
 
   updateTile();
-
-  m_paramsQuantized = GeometryQuantizer::transformParams(params(), m_config.depthOccThresholdIfSet,
-                                                         m_config.geoBitDepth);
-
+  bool occth_type = params().casps.casps_miv_extension().casme_depth_low_quality_flag();
+  double depthOccThresholdAsymmetry = m_config.depthOccThresholdAsymmetry;
+  m_paramsQuantized =
+      GeometryQuantizer::transformParams(params(), m_config.occThreshold(occth_type),
+                                         m_config.geoBitDepth, depthOccThresholdAsymmetry);
   m_params.foc += Common::downCast<int32_t>(m_videoFrameBuffer.size());
   m_params.foc %= m_config.intraPeriod;
   Common::logInfo("completeAccessUnit: Added {} frames. Updating FOC to {}.",

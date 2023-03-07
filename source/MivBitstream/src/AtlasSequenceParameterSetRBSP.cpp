@@ -35,8 +35,7 @@
 
 #include <TMIV/Common/Bitstream.h>
 #include <TMIV/Common/verify.h>
-
-#include <fmt/ostream.h>
+#include <TMIV/MivBitstream/Formatters.h>
 
 #include <ostream>
 #include <utility>

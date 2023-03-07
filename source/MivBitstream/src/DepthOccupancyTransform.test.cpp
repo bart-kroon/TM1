@@ -31,7 +31,9 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_approx.hpp>
+#include <catch2/catch_test_macros.hpp>
+#include <catch2/generators/catch_generators_range.hpp>
 
 #include <TMIV/MivBitstream/DepthOccupancyTransform.h>
 
@@ -240,7 +242,7 @@ TEST_CASE("DepthTransform") {
 
     const auto x = GENERATE(0, 1, 7, 0x100, 0x200, 0x3EE, 0x3FF);
 
-    REQUIRE(unit.expandDepth(x) * unit.expandNormDisp(x) == Approx(1.));
+    REQUIRE(unit.expandDepth(x) * unit.expandNormDisp(x) == Catch::Approx(1.));
   }
 
   SECTION("Expand a frame of 10-bit levels to depth [m]") {

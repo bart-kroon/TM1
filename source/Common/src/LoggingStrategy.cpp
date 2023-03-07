@@ -33,7 +33,7 @@
 
 #include <TMIV/Common/LoggingStrategyFmt.h>
 
-#include <fmt/ostream.h>
+#include <TMIV/Common/Formatters.h>
 
 #include <cassert>
 #include <chrono>

@@ -31,9 +31,11 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_test_macros.hpp>
 
 #include <TMIV/Common/LoggingStrategyFmt.h>
+
+#include <TMIV/Common/Formatters.h>
 
 using TMIV::Common::allLogLevels;
 using TMIV::Common::changeMaxLogLevel;

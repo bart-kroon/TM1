@@ -36,6 +36,7 @@
 
 #include "verify.h"
 
+#include <algorithm>
 #include <vector>
 
 namespace TMIV::Common {

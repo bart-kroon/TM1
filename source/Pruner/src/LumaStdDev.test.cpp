@@ -31,7 +31,8 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_approx.hpp>
+#include <catch2/catch_test_macros.hpp>
 
 #include "LumaStdDev.h"
 
@@ -72,7 +73,7 @@ SCENARIO("Luma standard deviation in pruning") {
     }
     WHEN("Calculating luma stdev") {
       const auto stdev = calculateLumaStdDev(views, viewParamsList, config, maxDepthError);
-      THEN("Luma stdev is 0") { REQUIRE(*stdev == Approx(0.0F)); }
+      THEN("Luma stdev is 0") { REQUIRE(*stdev == Catch::Approx(0.0F)); }
     }
   }
   GIVEN("Small color difference") {
@@ -89,7 +90,7 @@ SCENARIO("Luma standard deviation in pruning") {
     }
     WHEN("Calculating luma stdev") {
       const auto stdev = calculateLumaStdDev(views, viewParamsList, config, maxDepthError);
-      THEN("Luma stdev is non-zero") { REQUIRE(*stdev == Approx(0.35355F)); }
+      THEN("Luma stdev is non-zero") { REQUIRE(*stdev == Catch::Approx(0.35355F)); }
     }
   }
   GIVEN("Big color difference") {

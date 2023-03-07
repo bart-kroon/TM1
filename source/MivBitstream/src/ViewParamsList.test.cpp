@@ -31,7 +31,8 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_approx.hpp>
+#include <catch2/catch_test_macros.hpp>
 
 #include <TMIV/MivBitstream/ViewParamsList.h>
 
@@ -67,7 +68,7 @@ TEST_CASE("Pose") {
       REQUIRE(actualPose.position == unit.position);
 
       const auto approx = [](const auto x) {
-        return Approx(x).epsilon(0).margin(std::ldexp(1, -31));
+        return Catch::Approx(x).epsilon(0).margin(std::ldexp(1, -31));
       };
       REQUIRE(actualPose.orientation.x() == approx(unit.orientation.x()));
       REQUIRE(actualPose.orientation.y() == approx(unit.orientation.y()));
@@ -125,18 +126,18 @@ TEST_CASE("ViewParams") {
     CHECK(unit.ci.ci_projection_plane_width_minus1() + 1 == 2048);
     CHECK(unit.ci.ci_projection_plane_height_minus1() + 1 == 1048);
 
-    CHECK(unit.pose.position.x() == Approx(-0.2878679633140564));
-    CHECK(unit.pose.position.y() == Approx(-0.0878679633140564));
+    CHECK(unit.pose.position.x() == Catch::Approx(-0.2878679633140564));
+    CHECK(unit.pose.position.y() == Catch::Approx(-0.0878679633140564));
     CHECK(unit.pose.position.z() == 1.);
 
     const auto q = TMIV::Common::euler2quat(
         TMIV::Common::Vec3d{TMIV::Common::deg2rad(45.00000125223908), TMIV::Common::deg2rad(19.3),
                             TMIV::Common::deg2rad(4.3)});
 
-    CHECK(unit.pose.orientation.x() == Approx(q.x()));
-    CHECK(unit.pose.orientation.y() == Approx(q.y()));
-    CHECK(unit.pose.orientation.z() == Approx(q.z()));
-    CHECK(unit.pose.orientation.w() == Approx(q.w()));
+    CHECK(unit.pose.orientation.x() == Catch::Approx(q.x()));
+    CHECK(unit.pose.orientation.y() == Catch::Approx(q.y()));
+    CHECK(unit.pose.orientation.z() == Catch::Approx(q.z()));
+    CHECK(unit.pose.orientation.w() == Catch::Approx(q.w()));
 
     CHECK(unit.dq.dq_norm_disp_low() == 2e-3F);
     CHECK(unit.dq.dq_norm_disp_high() == 10.F);
@@ -163,10 +164,10 @@ TEST_CASE("ViewParams") {
     const auto unit = TMIV::MivBitstream::ViewParams{json};
 
     CHECK(unit.ci.ci_cam_type() == TMIV::MivBitstream::CiCamType::perspective);
-    CHECK(unit.ci.ci_perspective_center_hor() == Approx(980.168));
-    CHECK(unit.ci.ci_perspective_center_ver() == Approx(534.722));
-    CHECK(unit.ci.ci_perspective_focal_hor() == Approx(1346.74));
-    CHECK(unit.ci.ci_perspective_focal_ver() == Approx(1547.76));
+    CHECK(unit.ci.ci_perspective_center_hor() == Catch::Approx(980.168));
+    CHECK(unit.ci.ci_perspective_center_ver() == Catch::Approx(534.722));
+    CHECK(unit.ci.ci_perspective_focal_hor() == Catch::Approx(1346.74));
+    CHECK(unit.ci.ci_perspective_focal_ver() == Catch::Approx(1547.76));
 
     CHECK(unit.hasOccupancy);
   }
@@ -189,8 +190,8 @@ TEST_CASE("ViewParams") {
     const auto unit = TMIV::MivBitstream::ViewParams(json);
 
     CHECK(unit.ci.ci_cam_type() == TMIV::MivBitstream::CiCamType::perspective);
-    CHECK(unit.ci.ci_perspective_center_hor() == Approx(2088.0));
-    CHECK(unit.ci.ci_perspective_center_ver() == Approx(1012.0));
+    CHECK(unit.ci.ci_perspective_center_hor() == Catch::Approx(2088.0));
+    CHECK(unit.ci.ci_perspective_center_ver() == Catch::Approx(1012.0));
     CHECK(unit.nbMpiLayers == 423);
   }
 

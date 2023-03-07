@@ -232,10 +232,10 @@ TEST_CASE("TMIV::IO::loadViewportMetadata") {
     CHECK(result.viewParams.pose.position == Vec3f{1.1F, 2.2F, 3.3F});
 
     // The orientation of the viewport is ignored
-    CHECK(result.viewParams.pose.orientation.x() == Approx(std::sqrt(0.5)));
+    CHECK(result.viewParams.pose.orientation.x() == Catch::Approx(std::sqrt(0.5)));
     CHECK(result.viewParams.pose.orientation.y() == 0.0);
     CHECK(result.viewParams.pose.orientation.z() == 0.5);
-    CHECK(result.viewParams.pose.orientation.w() == Approx(0.5));
+    CHECK(result.viewParams.pose.orientation.w() == Catch::Approx(0.5));
   }
 }
 

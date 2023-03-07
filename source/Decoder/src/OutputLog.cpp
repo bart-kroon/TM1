@@ -34,8 +34,7 @@
 #include <TMIV/Decoder/OutputLog.h>
 
 #include <TMIV/Common/verify.h>
-
-#include <fmt/ostream.h>
+#include <TMIV/MivBitstream/Formatters.h>
 
 namespace TMIV::Decoder {
 namespace {

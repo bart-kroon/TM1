@@ -33,6 +33,7 @@
 #include <TMIV/Common/Application.h>
 #include <TMIV/Common/Factory.h>
 #include <TMIV/Common/LoggingStrategyFmt.h>
+#include <TMIV/MivBitstream/Formatters.h>
 #include <TMIV/MpiPcs/MpiPcs.h>
 
 #include <fstream>

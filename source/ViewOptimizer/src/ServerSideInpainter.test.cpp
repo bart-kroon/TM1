@@ -31,7 +31,9 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_approx.hpp>
+#include <catch2/catch_test_macros.hpp>
+#include <catch2/generators/catch_generators_range.hpp>
 
 #include <TMIV/ViewOptimizer/ServerSideInpainter.h>
 
@@ -351,10 +353,10 @@ TEST_CASE("ServerSideInpainter") {
       THEN("The added view is partial ERP") {
         REQUIRE(params.viewParamsList.back().ci.ci_cam_type() ==
                 TMIV::MivBitstream::CiCamType::equirectangular);
-        REQUIRE(params.viewParamsList.back().ci.ci_erp_phi_min() == Approx(-154.21486F));
-        REQUIRE(params.viewParamsList.back().ci.ci_erp_phi_max() == Approx(107.17455F));
+        REQUIRE(params.viewParamsList.back().ci.ci_erp_phi_min() == Catch::Approx(-154.21486F));
+        REQUIRE(params.viewParamsList.back().ci.ci_erp_phi_max() == Catch::Approx(107.17455F));
         REQUIRE(params.viewParamsList.back().ci.ci_erp_theta_min() == -90.F);
-        REQUIRE(params.viewParamsList.back().ci.ci_erp_theta_max() == Approx(41.28546F));
+        REQUIRE(params.viewParamsList.back().ci.ci_erp_theta_max() == Catch::Approx(41.28546F));
       }
     }
   }

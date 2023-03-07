@@ -34,6 +34,7 @@
 #include <TMIV/PtlChecker/PtlChecker.h>
 
 #include <TMIV/Common/LoggingStrategyFmt.h>
+#include <TMIV/MivBitstream/Formatters.h>
 
 namespace TMIV::PtlChecker {
 using Common::contains;

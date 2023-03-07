@@ -35,9 +35,8 @@
 
 #include <TMIV/Common/LoggingStrategy.h>
 #include <TMIV/Common/verify.h>
+#include <TMIV/MivBitstream/Formatters.h>
 #include <TMIV/MivBitstream/SequenceConfig.h>
-
-#include <fmt/ostream.h>
 
 namespace TMIV::Encoder {
 using MivBitstream::PtlLevelIdc;

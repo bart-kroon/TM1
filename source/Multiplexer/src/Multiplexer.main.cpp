@@ -34,12 +34,11 @@
 #include <TMIV/Common/Application.h>
 #include <TMIV/Decoder/DecodeV3cSampleStream.h>
 #include <TMIV/IO/IO.h>
+#include <TMIV/MivBitstream/Formatters.h>
 #include <TMIV/Multiplexer/DecodeAnnexBStream.h>
 #include <TMIV/Multiplexer/EncodeV3cSampleStream.h>
 #include <TMIV/Multiplexer/Multiplexer.h>
 #include <TMIV/VideoDecoder/Partition.h>
-
-#include <fmt/ostream.h>
 
 #include <filesystem>
 #include <fstream>

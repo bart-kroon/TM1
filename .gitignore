@@ -3,6 +3,7 @@ __pycache__/
 /.directory
 /.idea/
 /.kateproject
+/.venv/
 /.vs/
 /.vscode/
 /build/
@@ -15,6 +16,7 @@ __pycache__/
 /install.*/
 /out/
 /out.*/
+/venv/
 /doc/detailed_module_graph.svg
 /build.ninja
 .ninja_log

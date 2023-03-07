@@ -34,10 +34,8 @@
 #include <TMIV/BitstreamMerger/BitstreamMerger.h>
 #include <TMIV/Common/Bytestream.h>
 #include <TMIV/Common/LoggingStrategyFmt.h>
+#include <TMIV/MivBitstream/Formatters.h>
 #include <TMIV/MivBitstream/V3cUnit.h>
-
-#include <fmt/format.h>
-#include <fmt/ostream.h>
 
 #include <algorithm>
 #include <cctype>

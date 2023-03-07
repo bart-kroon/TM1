@@ -31,7 +31,9 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_test_macros.hpp>
+#include <catch2/generators/catch_generators_range.hpp>
+#include <catch2/matchers/catch_matchers_string.hpp>
 
 #include <TMIV/Decoder/V3cUnitBuffer.h>
 
@@ -129,7 +131,7 @@ TEST_CASE("TMIV::Decoder::V3cUnitBuffer") {
   }
 
   SECTION("The first unit has to be a VPS (for this decoder)") {
-    using Catch::Contains;
+    using Catch::Matchers::ContainsSubstring;
     using TMIV::Common::sourceFromIteratorPair;
 
     static constexpr auto vps = V3cUnitHeader::vps();
@@ -139,7 +141,8 @@ TEST_CASE("TMIV::Decoder::V3cUnitBuffer") {
         std::array{V3cUnit{ovd, VideoSubBitstream{}}, V3cUnit{vps, V3cParameterSet{}}};
     auto unit = V3cUnitBuffer{sourceFromIteratorPair(data.cbegin(), data.cend()), onVps};
 
-    REQUIRE_THROWS_WITH(unit(vps), Contains("Expected a VPS but found the following V3C unit"));
+    REQUIRE_THROWS_WITH(unit(vps),
+                        ContainsSubstring("Expected a VPS but found the following V3C unit"));
   }
 }
 

@@ -19,4 +19,6 @@ RUN apt-get update -qq \
     ninja-build \
     python3-pip
 
-RUN python3 -m pip install gcovr black pytest pyfakefs ninja
+COPY requirements.txt /requirements.txt
+RUN python3 -m pip install --upgrade pip
+RUN python3 -m pip install -r /requirements.txt

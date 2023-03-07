@@ -12,8 +12,7 @@ This software project provides:
 
 ## Build and installation instructions
 
-TMIV is a C++17 CMake project that is able to fetch all required (and optional, if requested) dependencies automatically.
-For further build and installation instructions, see [doc/building.md](doc/building.md)
+TMIV is a C++17 CMake project with prebuild script for its dependencies. For further build and installation instructions, see [doc/building.md](doc/building.md)
 
 ## Instructions to run TMIV
 
@@ -27,10 +26,10 @@ For details, see [doc/configuring.md](/doc/configuring.md).
 
 ## Instruction to use TMIV as a library
 
-In the `CMakeLists.txt` of the larger project, use the line:
+In the `CMakeLists.txt` of the larger project, use a line like:
 
 ```CMake
-find_package(TMIV 7.0.0 REQUIRED)
+find_package(TMIV)
 ```
 
 The `TMIV_DIR` variable needs to be set to the directory named `/Workspace/tmiv_install/lib/cmake/TMIV` or `/Workspace/tmiv_install/lib64/cmake/TMIV` depending on the platform. 

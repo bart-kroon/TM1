@@ -34,6 +34,7 @@
 #include <TMIV/Packer/Packer.h>
 
 #include <TMIV/Common/LoggingStrategyFmt.h>
+#include <TMIV/MivBitstream/Formatters.h>
 #include <TMIV/Packer/Retriever.h>
 
 #include "MaxRectPiP.h"
@@ -80,8 +81,6 @@ Packer::Packer(const Common::Json &rootNode, const Common::Json &componentNode) 
   if (const auto &node = componentNode.optional("prioritizeSSI")) {
     m_prioritizeSSI = node.as<bool>();
   }
-
-  Common::logVerbose("[VT prep] prioritizeSSI = {}", m_prioritizeSSI);
 
   switch (auto sortingMethod = componentNode.require("sortingMethod").as<int32_t>()) {
   case 0:

@@ -36,6 +36,7 @@
 #include <TMIV/Common/Common.h>
 #include <TMIV/Common/LinAlg.h>
 #include <TMIV/Common/LoggingStrategyFmt.h>
+#include <TMIV/MivBitstream/Formatters.h>
 
 #include <algorithm>
 #include <limits>

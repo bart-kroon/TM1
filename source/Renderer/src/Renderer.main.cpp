@@ -36,6 +36,7 @@
 #include <TMIV/Common/LoggingStrategyFmt.h>
 #include <TMIV/DepthQualityAssessor/IDepthQualityAssessor.h>
 #include <TMIV/IO/IO.h>
+#include <TMIV/MivBitstream/Formatters.h>
 #include <TMIV/MivBitstream/SequenceConfig.h>
 #include <TMIV/Renderer/Front/MultipleFrameRenderer.h>
 #include <TMIV/Renderer/Front/mapInputToOutputFrames.h>

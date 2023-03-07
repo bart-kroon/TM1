@@ -31,13 +31,15 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_test_macros.hpp>
+#include <catch2/generators/catch_generators_range.hpp>
+#include <catch2/matchers/catch_matchers_string.hpp>
 
 #include <TMIV/Renderer/RecoverPrunedViews.h>
 
 #include <random>
 
-using Catch::Contains;
+using Catch::Matchers::ContainsSubstring;
 using TMIV::Common::ColorFormat;
 using TMIV::Common::DefaultElement;
 using TMIV::Common::Frame;
@@ -95,7 +97,8 @@ TEST_CASE("TMIV::Renderer::recoverPrunedViews") {
     auto &atlas = frame.atlas.emplace_back();
 
     THEN("recovering pruned views fails because the BTPM is empty") {
-      REQUIRE_THROWS_WITH(recoverPrunedViews(frame), Contains("!atlas.blockToPatchMap.empty()"));
+      REQUIRE_THROWS_WITH(recoverPrunedViews(frame),
+                          ContainsSubstring("!atlas.blockToPatchMap.empty()"));
     }
 
     GIVEN("an empty BTPM") {
@@ -160,7 +163,8 @@ TEST_CASE("TMIV::Renderer::recoverPrunedViews") {
       atlas.texFrame = Frame<>::yuv444({atlasFrameWidth, atlasFrameHeight}, texBitDepth);
 
       THEN("recovering pruned views fails because the BTPM is empty") {
-        REQUIRE_THROWS_WITH(recoverPrunedViews(frame), Contains("!atlas.blockToPatchMap.empty()"));
+        REQUIRE_THROWS_WITH(recoverPrunedViews(frame),
+                            ContainsSubstring("!atlas.blockToPatchMap.empty()"));
       }
 
       GIVEN("an empty BTPM") {
@@ -213,14 +217,14 @@ TEST_CASE("TMIV::Renderer::recoverPrunedViews") {
 
           THEN("recovering pruned views fails because the BTPM does not match") {
             REQUIRE_THROWS_WITH(recoverPrunedViews(frame),
-                                Contains("== atlas.blockToPatchMap.getWidth()"));
+                                ContainsSubstring("== atlas.blockToPatchMap.getWidth()"));
           }
 
           GIVEN("a BTPM of the right size") {
             atlas.blockToPatchMap = Frame<>::lumaOnly({atlasFrameWidth, atlasFrameHeight});
 
             THEN("recovering pruned views fails because the patch index (0) is out of range") {
-              REQUIRE_THROWS_WITH(recoverPrunedViews(frame), Contains("patchIdx <"));
+              REQUIRE_THROWS_WITH(recoverPrunedViews(frame), ContainsSubstring("patchIdx <"));
             }
 
             GIVEN("the BTPM is initialized to unused patch idx") {

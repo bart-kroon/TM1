@@ -35,6 +35,7 @@
 
 #include <TMIV/Common/Bytestream.h>
 #include <TMIV/Common/Decoder.h>
+#include <TMIV/Common/Formatters.h>
 #include <TMIV/Common/Frame.h>
 #include <TMIV/Common/LoggingStrategyFmt.h>
 #include <TMIV/Common/verify.h>

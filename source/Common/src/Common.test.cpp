@@ -31,9 +31,10 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_test_macros.hpp>
+#include <catch2/matchers/catch_matchers_string.hpp>
 
-using Catch::Matchers::Contains;
+using Catch::Matchers::ContainsSubstring;
 
 #include <TMIV/Common/Application.h>
 #include <TMIV/Common/Common.h>
@@ -129,8 +130,8 @@ TEST_CASE("Parsing the command-line", "[Application]") {
       Fake app{"Fake", {"command"}, {}};
       REQUIRE(false);
     } catch (std::runtime_error &e) {
-      REQUIRE_THAT(e.what(), Contains("Usage"));
-      REQUIRE_THAT(e.what(), Contains("Fake"));
+      REQUIRE_THAT(e.what(), ContainsSubstring("Usage"));
+      REQUIRE_THAT(e.what(), ContainsSubstring("Fake"));
     }
   }
 

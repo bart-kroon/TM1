@@ -33,7 +33,7 @@
 
 #include <TMIV/MivBitstream/AccessUnit.h>
 
-#include <fmt/ostream.h>
+#include <TMIV/MivBitstream/Formatters.h>
 
 namespace TMIV::MivBitstream {
 auto AccessUnit::sequenceConfig() const -> SequenceConfig {

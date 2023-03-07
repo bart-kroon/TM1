@@ -31,7 +31,8 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_approx.hpp>
+#include <catch2/catch_test_macros.hpp>
 
 #include <TMIV/Renderer/MpiRasterizer.h>
 
@@ -92,34 +93,34 @@ SCENARIO("MPI rastering meshes with Common::Vec2f as attribute", "[Rasterizer]")
         return 0;
       });
       THEN("The blended color has known values") {
-        REQUIRE(blendedOutput(0, 0) == Approx(0.F));
-        REQUIRE(blendedOutput(1, 1) == Approx(10.F));
-        REQUIRE(blendedOutput(1, 2) == Approx(10.F));
-        REQUIRE(blendedOutput(1, 3) == Approx(10.F));
-        REQUIRE(blendedOutput(1, 4) == Approx(20.F));
-        REQUIRE(blendedOutput(1, 5) == Approx(20.F));
-        REQUIRE(blendedOutput(1, 6) == Approx(20.F));
-        REQUIRE(blendedOutput(2, 1) == Approx(40.F));
-        REQUIRE(blendedOutput(2, 2) == Approx(40.F));
-        REQUIRE(blendedOutput(2, 3) == Approx(40.F));
-        REQUIRE(blendedOutput(2, 4) == Approx(30.F));
-        REQUIRE(blendedOutput(2, 5) == Approx(30.F));
-        REQUIRE(blendedOutput(2, 6) == Approx(30.F));
+        REQUIRE(blendedOutput(0, 0) == Catch::Approx(0.F));
+        REQUIRE(blendedOutput(1, 1) == Catch::Approx(10.F));
+        REQUIRE(blendedOutput(1, 2) == Catch::Approx(10.F));
+        REQUIRE(blendedOutput(1, 3) == Catch::Approx(10.F));
+        REQUIRE(blendedOutput(1, 4) == Catch::Approx(20.F));
+        REQUIRE(blendedOutput(1, 5) == Catch::Approx(20.F));
+        REQUIRE(blendedOutput(1, 6) == Catch::Approx(20.F));
+        REQUIRE(blendedOutput(2, 1) == Catch::Approx(40.F));
+        REQUIRE(blendedOutput(2, 2) == Catch::Approx(40.F));
+        REQUIRE(blendedOutput(2, 3) == Catch::Approx(40.F));
+        REQUIRE(blendedOutput(2, 4) == Catch::Approx(30.F));
+        REQUIRE(blendedOutput(2, 5) == Catch::Approx(30.F));
+        REQUIRE(blendedOutput(2, 6) == Catch::Approx(30.F));
       }
       THEN("The blended depth has known values") {
-        REQUIRE(blendedDepth(0, 0) == Approx(-1.F));
-        REQUIRE(blendedDepth(1, 1) == Approx(16.6666F));
-        REQUIRE(blendedDepth(1, 2) == Approx(15.F));
-        REQUIRE(blendedDepth(1, 3) == Approx(16.6666F));
-        REQUIRE(blendedDepth(1, 4) == Approx(18.3333F));
-        REQUIRE(blendedDepth(1, 5) == Approx(20.F));
-        REQUIRE(blendedDepth(1, 6) == Approx(21.6666F));
-        REQUIRE(blendedDepth(2, 1) == Approx(31.6666F));
-        REQUIRE(blendedDepth(2, 2) == Approx(30.F));
-        REQUIRE(blendedDepth(2, 3) == Approx(28.3333F));
-        REQUIRE(blendedDepth(2, 4) == Approx(26.6666F));
-        REQUIRE(blendedDepth(2, 5) == Approx(25.F));
-        REQUIRE(blendedDepth(2, 6) == Approx(26.6666F));
+        REQUIRE(blendedDepth(0, 0) == Catch::Approx(-1.F));
+        REQUIRE(blendedDepth(1, 1) == Catch::Approx(16.6666F));
+        REQUIRE(blendedDepth(1, 2) == Catch::Approx(15.F));
+        REQUIRE(blendedDepth(1, 3) == Catch::Approx(16.6666F));
+        REQUIRE(blendedDepth(1, 4) == Catch::Approx(18.3333F));
+        REQUIRE(blendedDepth(1, 5) == Catch::Approx(20.F));
+        REQUIRE(blendedDepth(1, 6) == Catch::Approx(21.6666F));
+        REQUIRE(blendedDepth(2, 1) == Catch::Approx(31.6666F));
+        REQUIRE(blendedDepth(2, 2) == Catch::Approx(30.F));
+        REQUIRE(blendedDepth(2, 3) == Catch::Approx(28.3333F));
+        REQUIRE(blendedDepth(2, 4) == Catch::Approx(26.6666F));
+        REQUIRE(blendedDepth(2, 5) == Catch::Approx(25.F));
+        REQUIRE(blendedDepth(2, 6) == Catch::Approx(26.6666F));
       }
     }
   }

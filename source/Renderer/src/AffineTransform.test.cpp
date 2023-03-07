@@ -31,7 +31,8 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_approx.hpp>
+#include <catch2/catch_test_macros.hpp>
 
 #include <TMIV/Renderer/reprojectPoints.h>
 
@@ -80,8 +81,8 @@ TEST_CASE("AffineTransform") {
           const auto rn_x_ref = rotate(x, rotated.orientation);
 
           for (int32_t d = 0; d < 3; ++d) {
-            REQUIRE(nr(x)[d] == Approx(nr_x_ref[d]));
-            REQUIRE(rn(x)[d] == Approx(rn_x_ref[d]));
+            REQUIRE(nr(x)[d] == Catch::Approx(nr_x_ref[d]));
+            REQUIRE(rn(x)[d] == Catch::Approx(rn_x_ref[d]));
           }
         }
       }

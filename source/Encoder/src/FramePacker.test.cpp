@@ -31,12 +31,13 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_test_macros.hpp>
+#include <catch2/matchers/catch_matchers_contains.hpp>
 
 #include "FramePacker.h"
 
 using namespace std::string_view_literals;
-using Catch::Contains;
+using Catch::Matchers::Contains;
 using TMIV::Common::Json;
 
 TEST_CASE("TMIV::Encoder::FramePacker, 1 Atlas with texture and geometry") {

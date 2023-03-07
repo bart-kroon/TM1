@@ -2,25 +2,23 @@ cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
 
 create_tmiv_library(
     TARGET
-        ViewOptimizerLib
+    ViewOptimizerLib
     SOURCES
-        "src/AbstractViewSelector.cpp"
-        "src/BasicViewAllocator.cpp"
-        "src/KMedoidsCost.cpp"
-        "src/ServerSideInpainter.cpp"
+    "src/AbstractViewSelector.cpp"
+    "src/BasicViewAllocator.cpp"
+    "src/KMedoidsCost.cpp"
+    "src/ServerSideInpainter.cpp"
     PUBLIC
-        MivBitstreamLib
+    MivBitstreamLib
     PRIVATE
-        RendererLib
-    )
+    RendererLib)
 
 create_catch2_unit_test(
     TARGET
-        ViewOptimizerTest
+    ViewOptimizerTest
     SOURCES
-        "src/BasicViewAllocator.test.cpp"
-        "src/ServerSideInpainter.test.cpp"
+    "src/BasicViewAllocator.test.cpp"
+    "src/ServerSideInpainter.test.cpp"
     PRIVATE
-        ViewOptimizerLib
-        RendererLib
-    )
+    ViewOptimizerLib
+    RendererLib)

@@ -2,11 +2,13 @@
 
 import datetime
 from pathlib import Path
+import shutil
 import subprocess
 
 
 def main():
     workingDir = Path(__file__).parent
+    shutil.copy(workingDir.parent.parent.parent / "requirements.txt", workingDir)
     run(["docker", "build", "-t", tag(), "."], workingDir)
 
 

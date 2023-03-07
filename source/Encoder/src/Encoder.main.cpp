@@ -39,6 +39,7 @@
 #include <TMIV/Encoder/EncodeMiv.h>
 #include <TMIV/Encoder/V3cSampleSink.h>
 #include <TMIV/IO/IO.h>
+#include <TMIV/MivBitstream/Formatters.h>
 
 #include <fstream>
 

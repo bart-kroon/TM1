@@ -36,6 +36,7 @@
 #include <TMIV/Common/Decoder.h>
 #include <TMIV/Common/LoggingStrategyFmt.h>
 #include <TMIV/Common/verify.h>
+#include <TMIV/MivBitstream/Formatters.h>
 #include <TMIV/MivBitstream/SeiRBSP.h>
 
 #include "NalUnitSemantics.h"

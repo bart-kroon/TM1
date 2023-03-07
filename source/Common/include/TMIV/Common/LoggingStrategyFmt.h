@@ -36,7 +36,7 @@
 
 #include "LoggingStrategy.h"
 
-#include <fmt/ostream.h>
+#include <fmt/format.h>
 
 namespace TMIV::Common {
 // Provide a log message of specified log level.
@@ -45,7 +45,7 @@ namespace TMIV::Common {
 // `std::format` syntax which is similar to Python `str.format`:
 //
 //   * https://en.cppreference.com/w/cpp/utility/format/format
-//   * https://fmt.dev/8.1.1/syntax.html
+//   * https://fmt.dev/9.1.0/syntax.html
 //
 // The message is typically one but sometimes more lines and shall not be terminated by a new line
 // character. The message shall not include formatting relating to the log level, e.g. "ERROR:"

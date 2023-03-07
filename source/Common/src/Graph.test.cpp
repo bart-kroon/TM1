@@ -31,11 +31,10 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_test_macros.hpp>
 
+#include <TMIV/Common/Formatters.h>
 #include <TMIV/Common/Graph.h>
-
-#include <fmt/ostream.h>
 
 #include <sstream>
 

@@ -36,6 +36,7 @@
 #include <TMIV/Common/LoggingStrategyFmt.h>
 #include <TMIV/Common/Thread.h>
 #include <TMIV/MivBitstream/DepthOccupancyTransform.h>
+#include <TMIV/MivBitstream/Formatters.h>
 #include <TMIV/Renderer/reprojectPoints.h>
 
 namespace TMIV::DepthQualityAssessor {

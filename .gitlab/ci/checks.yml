@@ -1,6 +1,6 @@
 Python formatting:
   stage: formatting
-  image: tmiv-checks:20220715
+  image: tmiv-checks:20230306
   tags: [ linux-short ]
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
@@ -14,7 +14,7 @@ Python formatting:
 
 Python unit tests:
   stage: checks
-  image: tmiv-checks:20220715
+  image: tmiv-checks:20230306
   tags: [ linux-short ]
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
@@ -33,17 +33,33 @@ Python unit tests:
 
 C++ formatting:
   stage: formatting
-  image: tmiv-checks:20220715
+  image: tmiv-checks:20230306
   tags: [ linux-short ]
   script:
     - ./scripts/check/clang_format.py
     - git diff
-    - if [[ $(git diff) ]]; then echo "Formatting is wrong. Please see above."; return 1; fi
+    - if [[ $(git diff) ]]; then echo "C++ formatting is wrong. Please see above."; return 1; fi
+
+CMake formatting:
+  stage: formatting
+  image: tmiv-checks:20230306
+  tags: [ linux-short ]
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      changes:
+        - "**/*.cmake"
+        - "**/CMakeLists.txt"
+  script:
+    - ./scripts/check/cmake_format.py
+    - git diff
+    - if [[ $(git diff) ]]; then echo "CMake formatting is wrong. Please see above."; return 1; fi
 
 No multi-line commit messages:
   stage: checks
   image:
-    name: tmiv-checks:20220715
+    name: tmiv-checks:20230306
   tags: [ linux-short ]
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
@@ -55,7 +71,7 @@ No multi-line commit messages:
 
 Code quality rules:
   stage: checks
-  image: tmiv-checks:20220715
+  image: tmiv-checks:20230306
   tags: [ linux-short ]
   script:
     - ./scripts/check/code_quality_rules.py
@@ -64,7 +80,7 @@ Code quality rules:
 
 JSON formatting:
   stage: formatting
-  image: tmiv-checks:20220715
+  image: tmiv-checks:20230306
   tags: [ linux-short ]
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH

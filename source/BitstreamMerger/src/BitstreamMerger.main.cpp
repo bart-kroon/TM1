@@ -34,6 +34,7 @@
 #include <TMIV/BitstreamMerger/BitstreamMerger.h>
 #include <TMIV/Common/Application.h>
 #include <TMIV/IO/IO.h>
+#include <TMIV/MivBitstream/Formatters.h>
 
 #include <fmt/ostream.h>
 

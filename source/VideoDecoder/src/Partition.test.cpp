@@ -31,13 +31,13 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_test_macros.hpp>
+#include <catch2/generators/catch_generators_range.hpp>
 
 #include <TMIV/VideoDecoder/Partition.h>
 
 #include <TMIV/Common/Bitstream.h>
-
-#include <fmt/ostream.h>
+#include <TMIV/Common/Formatters.h>
 
 namespace test {
 namespace {

@@ -35,6 +35,7 @@
 
 #include <TMIV/Common/LoggingStrategyFmt.h>
 #include <TMIV/Common/verify.h>
+#include <TMIV/MivBitstream/Formatters.h>
 
 #include <fstream>
 #include <vector>

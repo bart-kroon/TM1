@@ -31,11 +31,12 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_test_macros.hpp>
 
 #include "FakeFilesystem.h"
 
 #include <TMIV/Common/Common.h>
+#include <TMIV/Common/Formatters.h>
 #include <TMIV/Common/LoggingStrategyFmt.h>
 
 namespace test {

@@ -34,6 +34,7 @@
 #include <TMIV/MpiPcs/MpiPcs.h>
 
 #include <TMIV/Common/LoggingStrategyFmt.h>
+#include <TMIV/MivBitstream/Formatters.h>
 
 #include <fstream>
 

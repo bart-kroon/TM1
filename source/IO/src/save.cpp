@@ -34,10 +34,11 @@
 #include <TMIV/IO/IO.h>
 
 #include <TMIV/Common/LoggingStrategyFmt.h>
-
-#include <fstream>
+#include <TMIV/MivBitstream/Formatters.h>
 
 #include "DependencyInjector.h"
+
+#include <fstream>
 
 using namespace std::string_literals;
 

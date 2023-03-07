@@ -1,0 +1,7 @@
+black==23.1.0
+cmake==3.25.2
+cmake-format==0.6.13
+gcovr==5.2
+ninja==1.11.1
+pyfakefs==5.1.0
+pytest==7.2.1

@@ -32,9 +32,9 @@
  */
 
 #include <TMIV/MivBitstream/CafMivExtension.h>
-#include <TMIV/MivBitstream/CommonAtlasSequenceParameterSetRBSP.h>
 
-#include <fmt/ostream.h>
+#include <TMIV/MivBitstream/CommonAtlasSequenceParameterSetRBSP.h>
+#include <TMIV/MivBitstream/Formatters.h>
 
 #include <cmath>
 

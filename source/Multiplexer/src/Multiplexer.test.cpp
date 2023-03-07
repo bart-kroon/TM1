@@ -31,13 +31,15 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_test_macros.hpp>
+#include <catch2/generators/catch_generators_range.hpp>
+#include <catch2/matchers/catch_matchers_string.hpp>
 
 #include <TMIV/Multiplexer/Multiplexer.h>
 
 using namespace std::string_literals;
 
-using Catch::Contains;
+using Catch::Matchers::ContainsSubstring;
 using TMIV::Common::Source;
 using TMIV::Common::sourceFromIteratorPair;
 using TMIV::MivBitstream::V3cParameterSet;
@@ -197,7 +199,7 @@ TEST_CASE("TMIV::Multiplexer::multiplex") {
 
     auto unitAtTest = multiplex(sourceFromIteratorPair(data.cbegin(), data.cend()), nullptr);
 
-    REQUIRE_THROWS_WITH(unitAtTest(), Contains("V3C_VPS"));
+    REQUIRE_THROWS_WITH(unitAtTest(), ContainsSubstring("V3C_VPS"));
   }
 
   SECTION("MIV requires at least one video sub-bitstream") {
@@ -205,7 +207,8 @@ TEST_CASE("TMIV::Multiplexer::multiplex") {
 
     auto unitAtTest = multiplex(sourceFromIteratorPair(data.cbegin(), data.cend()), nullptr);
 
-    REQUIRE_THROWS_WITH(unitAtTest(), Contains("MIV requires at least one video sub-bitstream"));
+    REQUIRE_THROWS_WITH(unitAtTest(),
+                        ContainsSubstring("MIV requires at least one video sub-bitstream"));
   }
 
   SECTION("For each IRAP in the CAD, a coded video sequence is copied to a new V3C unit of that "

@@ -31,14 +31,11 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <algorithm>
-//#define CATCH_CONFIG_ENABLE_BENCHMARKING // Uncomment me to run benchmarks
-// Alternatively, to control benchmark running from cmake, use
-// target_compile_definitions(${TEST_CREATOR_TARGET} PUBLIC CATCH_CONFIG_ENABLE_BENCHMARKING)
-// in test_creation.cmake, potentially in an if clause controlled by a cmake option
-#include <catch2/catch.hpp>
+#include <catch2/catch_approx.hpp>
+#include <catch2/catch_test_macros.hpp>
 
 #include <TMIV/Common/Matrix.h>
+
 namespace TMIV::Common {
 TEST_CASE("Stack Matrix 2x2 default constructor") {
   const Mat2x2f unit{};
@@ -50,7 +47,7 @@ TEST_CASE("Stack Matrix 2x2 default constructor") {
 
   for (size_t index = 0; index < 2; ++index) {
     std::for_each(unit.row_begin(index), unit.row_end(index),
-                  [](const auto element) { REQUIRE(element == Approx(0.0F)); });
+                  [](const auto element) { REQUIRE(element == Catch::Approx(0.0F)); });
   }
   REQUIRE(!unit.isRow());
   REQUIRE(!unit.isColumn());
@@ -79,17 +76,17 @@ TEST_CASE("Stack Matrix 3x3 with custom elements") {
     std::iota(unit.row_begin(index), unit.row_end(index), static_cast<float>(3 * index));
   }
 
-  REQUIRE(unit(0, 0) == Approx(0.0F));
-  REQUIRE(unit(0, 1) == Approx(1.0F));
-  REQUIRE(unit(0, 2) == Approx(2.0F));
+  REQUIRE(unit(0, 0) == Catch::Approx(0.0F));
+  REQUIRE(unit(0, 1) == Catch::Approx(1.0F));
+  REQUIRE(unit(0, 2) == Catch::Approx(2.0F));
 
-  REQUIRE(unit(1, 0) == Approx(3.0F));
-  REQUIRE(unit(1, 1) == Approx(4.0F));
-  REQUIRE(unit(1, 2) == Approx(5.0F));
+  REQUIRE(unit(1, 0) == Catch::Approx(3.0F));
+  REQUIRE(unit(1, 1) == Catch::Approx(4.0F));
+  REQUIRE(unit(1, 2) == Catch::Approx(5.0F));
 
-  REQUIRE(unit(2, 0) == Approx(6.0F));
-  REQUIRE(unit(2, 1) == Approx(7.0F));
-  REQUIRE(unit(2, 2) == Approx(8.0F));
+  REQUIRE(unit(2, 0) == Catch::Approx(6.0F));
+  REQUIRE(unit(2, 1) == Catch::Approx(7.0F));
+  REQUIRE(unit(2, 2) == Catch::Approx(8.0F));
 }
 
 TEST_CASE("Transpose 2x2 Heap Matrix") {

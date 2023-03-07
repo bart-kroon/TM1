@@ -40,6 +40,7 @@
 #include <TMIV/Common/Graph.h>
 #include <TMIV/Common/LoggingStrategyFmt.h>
 #include <TMIV/MivBitstream/DepthOccupancyTransform.h>
+#include <TMIV/MivBitstream/Formatters.h>
 #include <TMIV/Renderer/reprojectPoints.h>
 
 #include <algorithm>
@@ -175,7 +176,6 @@ public:
     if (const auto &node = nodeConfig.optional("skipInpaintViews")) {
       m_skipInpaintViews = node.as<bool>();
     }
-    Common::logVerbose("[VT prep] skipInpaintViews = {}", m_skipInpaintViews);
   }
 
   static void assignAdditionalViews(const Common::Mat<float> &overlap,

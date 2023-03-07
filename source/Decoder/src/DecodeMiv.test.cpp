@@ -31,13 +31,15 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_test_macros.hpp>
+#include <catch2/generators/catch_generators_range.hpp>
+#include <catch2/matchers/catch_matchers_string.hpp>
 
 #include <TMIV/Decoder/DecodeMiv.h>
 
-#include "FakeChecker.h"
+#include <TMIV/MivBitstream/Formatters.h>
 
-#include <fmt/ostream.h>
+#include "FakeChecker.h"
 
 using TMIV::Common::DecodedFrame;
 using TMIV::Common::emptySource;
@@ -194,7 +196,7 @@ auto atlasFrameCollection(const Pattern &pattern) {
 using TMIV::Decoder::ErrorCode;
 
 auto code(ErrorCode code) {
-  using Catch::Equals;
+  using Catch::Matchers::Equals;
   using TMIV::Decoder::errorStringFor;
 
   return Equals(errorStringFor(code));

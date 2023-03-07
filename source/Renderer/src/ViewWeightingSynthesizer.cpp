@@ -39,6 +39,7 @@
 #include <TMIV/Common/Thread.h>
 #include <TMIV/Common/verify.h>
 #include <TMIV/MivBitstream/DepthOccupancyTransform.h>
+#include <TMIV/MivBitstream/Formatters.h>
 #include <TMIV/Renderer/RecoverPrunedViews.h>
 #include <TMIV/Renderer/reprojectPoints.h>
 
@@ -191,8 +192,6 @@ public:
       m_filterReprojectedPrunedDepthMaps = FilterReprojectedPrunedDepthMapsParams{
           node.require("erodeCount").as<int32_t>(), node.require("dilateCount").as<int32_t>()};
     }
-    Common::logVerbose("[VT prep] filterReprojectedPrunedDepthMaps is {}",
-                       m_filterReprojectedPrunedDepthMaps.has_value());
   }
 
   auto renderFrame(const MivBitstream::AccessUnit &frame,

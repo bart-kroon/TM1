@@ -31,14 +31,15 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_test_macros.hpp>
+#include <catch2/matchers/catch_matchers_contains.hpp>
 
 #include "Configuration.h"
 
 using namespace std::string_view_literals;
 
 TEST_CASE("TMIV::Encoder::Configuration") {
-  using Catch::Contains;
+  using Catch::Matchers::Contains;
   using TMIV::Common::Json;
   using TMIV::Common::Vec2i;
   using TMIV::Encoder::Configuration;

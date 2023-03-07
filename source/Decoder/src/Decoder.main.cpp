@@ -41,14 +41,13 @@
 #include <TMIV/Decoder/OutputLog.h>
 #include <TMIV/Decoder/PreRenderer.h>
 #include <TMIV/IO/IO.h>
+#include <TMIV/MivBitstream/Formatters.h>
 #include <TMIV/MivBitstream/SequenceConfig.h>
 #include <TMIV/PtlChecker/PtlChecker.h>
 #include <TMIV/Renderer/Front/MultipleFrameRenderer.h>
 #include <TMIV/Renderer/Front/mapInputToOutputFrames.h>
 #include <TMIV/Renderer/RecoverPrunedViews.h>
 #include <TMIV/VideoDecoder/VideoDecoder.h>
-
-#include <fmt/ostream.h>
 
 #include <fstream>
 #include <memory>

@@ -33,6 +33,7 @@
 
 #include <TMIV/Common/Application.h>
 
+#include <TMIV/Common/Formatters.h>
 #include <TMIV/Common/LoggingStrategyFmt.h>
 #include <TMIV/Common/Thread.h>
 #include <TMIV/Common/Version.h>

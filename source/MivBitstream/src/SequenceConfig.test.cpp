@@ -31,12 +31,13 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_test_macros.hpp>
+#include <catch2/matchers/catch_matchers_string.hpp>
 
 #include <TMIV/MivBitstream/SequenceConfig.h>
 
 using namespace std::string_literals;
-using Catch::Matchers::Contains;
+using Catch::Matchers::ContainsSubstring;
 
 TEST_CASE("CameraConfig") {
   SECTION("Default construction with default values") {
@@ -406,7 +407,7 @@ TEST_CASE("SequenceConfig") {
 }
 )");
       REQUIRE_THROWS_AS(SequenceConfig{json}, std::runtime_error);
-      REQUIRE_THROWS_WITH(SequenceConfig{json}, Contains("Version"));
+      REQUIRE_THROWS_WITH(SequenceConfig{json}, ContainsSubstring("Version"));
     }
 
     SECTION("Minor versions cannot be written in scientific notation") {
@@ -422,7 +423,7 @@ TEST_CASE("SequenceConfig") {
 }
 )");
       REQUIRE_THROWS_AS(SequenceConfig{json}, std::runtime_error);
-      REQUIRE_THROWS_WITH(SequenceConfig{json}, Contains("Version"));
+      REQUIRE_THROWS_WITH(SequenceConfig{json}, ContainsSubstring("Version"));
     }
 
     SECTION("The minor version has to be specified, even when .0") {
@@ -438,7 +439,7 @@ TEST_CASE("SequenceConfig") {
 }
 )");
       REQUIRE_THROWS_AS(SequenceConfig{json}, std::runtime_error);
-      REQUIRE_THROWS_WITH(SequenceConfig{json}, Contains("Version"));
+      REQUIRE_THROWS_WITH(SequenceConfig{json}, ContainsSubstring("Version"));
     }
 
     SECTION("No support for previous versions due to inconsistent use of the Version key") {
@@ -454,7 +455,7 @@ TEST_CASE("SequenceConfig") {
 }
 )");
       REQUIRE_THROWS_AS(SequenceConfig{json}, std::runtime_error);
-      REQUIRE_THROWS_WITH(SequenceConfig{json}, Contains("version"));
+      REQUIRE_THROWS_WITH(SequenceConfig{json}, ContainsSubstring("version"));
     }
 
     SECTION("Future major versions are not backwards-compatible") {
@@ -470,7 +471,7 @@ TEST_CASE("SequenceConfig") {
 }
 )");
       REQUIRE_THROWS_AS(SequenceConfig{json}, std::runtime_error);
-      REQUIRE_THROWS_WITH(SequenceConfig{json}, Contains("version"));
+      REQUIRE_THROWS_WITH(SequenceConfig{json}, ContainsSubstring("version"));
     }
   }
 
@@ -518,7 +519,7 @@ TEST_CASE("SequenceConfig") {
 )");
 
       REQUIRE_THROWS_AS(SequenceConfig{json}, std::runtime_error);
-      REQUIRE_THROWS_WITH(SequenceConfig{json}, Contains("lengthsInMeters"));
+      REQUIRE_THROWS_WITH(SequenceConfig{json}, ContainsSubstring("lengthsInMeters"));
     }
 
     SECTION("Specify arbitrary scene units") {

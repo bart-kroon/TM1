@@ -31,7 +31,8 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_approx.hpp>
+#include <catch2/catch_test_macros.hpp>
 
 #include <TMIV/Common/Quaternion.h>
 
@@ -113,25 +114,25 @@ TEST_CASE("Quanternion<T>", "[quaternion]") {
     // SetPrecision[
     //    Euler2Quat[-0.4764713951, 0.0344346480, 0.0204419943], 16]
 
-    REQUIRE(quat.x() == Approx(0.0139933465964437));
-    REQUIRE(quat.y() == Approx(0.01431769616180822));
-    REQUIRE(quat.z() == Approx(-0.2361122181339085));
-    REQUIRE(quat.w() == Approx(0.9715195367443717));
+    REQUIRE(quat.x() == Catch::Approx(0.0139933465964437));
+    REQUIRE(quat.y() == Catch::Approx(0.01431769616180822));
+    REQUIRE(quat.z() == Catch::Approx(-0.2361122181339085));
+    REQUIRE(quat.w() == Catch::Approx(0.9715195367443717));
   }
 
   SECTION("Convert quaternion to Euler angles") {
     const auto euler = quat2euler(
         QuatD{0.0139933465964437, 0.01431769616180822, -0.2361122181339085, 0.9715195367443717});
 
-    CHECK(euler.x() == Approx(-0.4764713951)); // yaw [rad]
-    CHECK(euler.y() == Approx(0.0344346480));  // pitch [rad]
-    CHECK(euler.z() == Approx(0.0204419943));  // roll [rad]
+    CHECK(euler.x() == Catch::Approx(-0.4764713951)); // yaw [rad]
+    CHECK(euler.y() == Catch::Approx(0.0344346480));  // pitch [rad]
+    CHECK(euler.z() == Catch::Approx(0.0204419943));  // roll [rad]
 
     const auto euler2 = quat2euler(QuatD{-0.5, 0.5, 0.5, 0.5});
 
-    CHECK(euler2.x() == Approx(1.570796326794896558)); // yaw [rad]
-    CHECK(euler2.y() == Approx(1.570796326794896558)); // pitch [rad]
-    CHECK(euler2.z() == Approx(0));                    // roll [rad]
+    CHECK(euler2.x() == Catch::Approx(1.570796326794896558)); // yaw [rad]
+    CHECK(euler2.y() == Catch::Approx(1.570796326794896558)); // pitch [rad]
+    CHECK(euler2.z() == Catch::Approx(0));                    // roll [rad]
   }
 
   SECTION("Convert quaternion to rotation matrix") {
@@ -145,7 +146,7 @@ TEST_CASE("Quanternion<T>", "[quaternion]") {
                               static_cast<double>(i == 2)};
         const auto rotate_p_by_r = rotate(p2, conj(r));
         for (int32_t j = 0; j < 3; ++j) {
-          REQUIRE(R(i, j) == Approx(rotate_p_by_r[j]).margin(1E-6));
+          REQUIRE(R(i, j) == Catch::Approx(rotate_p_by_r[j]).margin(1E-6));
         }
       }
     }

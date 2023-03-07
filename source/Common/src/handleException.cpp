@@ -34,6 +34,7 @@
 #include <TMIV/Common/verify.h>
 
 #include <TMIV/Common/Application.h>
+#include <TMIV/Common/Formatters.h>
 #include <TMIV/Common/LoggingStrategyFmt.h>
 
 #include <functional>

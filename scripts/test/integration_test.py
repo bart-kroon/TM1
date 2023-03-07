@@ -132,7 +132,8 @@ class IntegrationTest:
             self.sync(futures)
 
         with concurrent.futures.ThreadPoolExecutor(max_workers=self.maxWorkers) as executor:
-            futures = self.testMivAnchor(executor)
+            futures = []
+            futures += self.testMivAnchor(executor)
             futures += self.testNonIrapFrames(executor)
             futures += self.testMivViewAnchor(executor)
             futures += self.testOneView(executor)
@@ -235,6 +236,7 @@ class IntegrationTest:
 
     def testMivAnchor(self, executor):
         if not self.dryRun:
+            (self.testDir / "A3" / "E" / "RP0").mkdir(parents=True, exist_ok=True)
             (self.testDir / "A3" / "E" / "QP3").mkdir(parents=True, exist_ok=True)
 
         geometryResolution = Resolution(512, 512)
@@ -244,29 +246,29 @@ class IntegrationTest:
         f1 = self.launchCommand(
             executor,
             [],
-            ["{0}/bin/TmivEncoder", "-c", "{1}/config/ctc/miv_anchor/A_1_TMIV_encode.json"]
+            ["{0}/bin/TmivEncoder", "-c", "{1}/config/ctc/miv_main_anchor/A_1_TMIV_encode.json"]
             + ["-p", "configDirectory", "{1}/config", "-p", "inputDirectory", "{2}"]
-            + ["-p", "outputDirectory", "{3}", "-n", "3", "-s", "E", "-p", "intraPeriod", "2"]
+            + ["-p", "outputDirectory", "{3}", "-n", "3", "-s", "E", "-p", "intraPeriod", "1"]
             + ["-p", "inputSequenceConfigPathFmt", "test/sequences/T{{1}}.json"]
             + ["-p", "maxLumaPictureSize", "1048576", "-f", "0"]
             + ["-V", "debug"],
-            "{3}/A3/E/TMIV_A3_E.log",
+            "{3}/A3/E/RP0/TMIV_A3_E_RP0.log",
             [
-                "A3/E/TMIV_A3_E.bit",
-                f"A3/E/TMIV_A3_E_geo_c00_{geometryResolution}_yuv420p10le.yuv",
-                f"A3/E/TMIV_A3_E_geo_c01_{geometryResolution}_yuv420p10le.yuv",
-                f"A3/E/TMIV_A3_E_tex_c00_{textureResolution}_yuv420p10le.yuv",
-                f"A3/E/TMIV_A3_E_tex_c01_{textureResolution}_yuv420p10le.yuv",
+                "A3/E/RP0/TMIV_A3_E_RP0.bit",
+                f"A3/E/RP0/TMIV_A3_E_RP0_geo_c00_{geometryResolution}_yuv420p10le.yuv",
+                f"A3/E/RP0/TMIV_A3_E_RP0_geo_c01_{geometryResolution}_yuv420p10le.yuv",
+                f"A3/E/RP0/TMIV_A3_E_RP0_tex_c00_{textureResolution}_yuv420p10le.yuv",
+                f"A3/E/RP0/TMIV_A3_E_RP0_tex_c01_{textureResolution}_yuv420p10le.yuv",
             ],
         )
 
         f2_1 = self.launchCommand(
             executor,
             [f1],
-            ["{4}/bin/vvencFFapp", "-c", "{1}/config/test/miv_anchor/A_2_VVenC_encode_geo.cfg"]
-            + ["-i", f"{{3}}/A3/E/TMIV_A3_E_geo_c00_{geometryResolution}_yuv420p10le.yuv", "-b"]
-            + ["{3}/A3/E/QP3/TMIV_A3_E_QP3_geo_c00.bit", "-s", str(geometryResolution), "-q", "20"]
-            + ["-f", "3", "-fr", "30"],
+            ["{4}/bin/vvencFFapp", "-c", "{1}/config/test/miv_main_anchor/A_2_VVenC_encode_geo.cfg"]
+            + ["-i", f"{{3}}/A3/E/RP0/TMIV_A3_E_RP0_geo_c00_{geometryResolution}_yuv420p10le.yuv"]
+            + ["-b", "{3}/A3/E/QP3/TMIV_A3_E_QP3_geo_c00.bit", "-s", str(geometryResolution)]
+            + ["-q", "20", "-f", "3", "-fr", "30"],
             "{3}/A3/E/QP3/TMIV_A3_E_QP3_geo_c00_vvenc.log",
             ["A3/E/QP3/TMIV_A3_E_QP3_geo_c00.bit"],
         )
@@ -274,10 +276,10 @@ class IntegrationTest:
         f2_2 = self.launchCommand(
             executor,
             [f1],
-            ["{4}/bin/vvencFFapp", "-c", "{1}/config/test/miv_anchor/A_2_VVenC_encode_geo.cfg"]
-            + ["-i", f"{{3}}/A3/E/TMIV_A3_E_geo_c01_{geometryResolution}_yuv420p10le.yuv", "-b"]
-            + ["{3}/A3/E/QP3/TMIV_A3_E_QP3_geo_c01.bit", "-s", str(geometryResolution), "-q", "20"]
-            + ["-f", "3", "-fr", "30"],
+            ["{4}/bin/vvencFFapp", "-c", "{1}/config/test/miv_main_anchor/A_2_VVenC_encode_geo.cfg"]
+            + ["-i", f"{{3}}/A3/E/RP0/TMIV_A3_E_RP0_geo_c01_{geometryResolution}_yuv420p10le.yuv"]
+            + ["-b", "{3}/A3/E/QP3/TMIV_A3_E_QP3_geo_c01.bit", "-s", str(geometryResolution)]
+            + ["-q", "20", "-f", "3", "-fr", "30"],
             "{3}/A3/E/QP3/TMIV_A3_E_QP3_geo_c01_vvenc.log",
             ["A3/E/QP3/TMIV_A3_E_QP3_geo_c01.bit"],
         )
@@ -285,10 +287,10 @@ class IntegrationTest:
         f2_3 = self.launchCommand(
             executor,
             [f1],
-            ["{4}/bin/vvencFFapp", "-c", "{1}/config/test/miv_anchor/A_2_VVenC_encode_tex.cfg"]
-            + ["-i", f"{{3}}/A3/E/TMIV_A3_E_tex_c00_{textureResolution}_yuv420p10le.yuv", "-b"]
-            + ["{3}/A3/E/QP3/TMIV_A3_E_QP3_tex_c00.bit", "-s", str(textureResolution), "-q", "43"]
-            + ["-f", "3", "-fr", "30"],
+            ["{4}/bin/vvencFFapp", "-c", "{1}/config/test/miv_main_anchor/A_2_VVenC_encode_tex.cfg"]
+            + ["-i", f"{{3}}/A3/E/RP0/TMIV_A3_E_RP0_tex_c00_{textureResolution}_yuv420p10le.yuv"]
+            + ["-b", "{3}/A3/E/QP3/TMIV_A3_E_QP3_tex_c00.bit", "-s", str(textureResolution)]
+            + ["-q", "43", "-f", "3", "-fr", "30"],
             "{3}/A3/E/QP3/TMIV_A3_E_QP3_tex_c00_vvenc.log",
             ["A3/E/QP3/TMIV_A3_E_QP3_tex_c00.bit"],
         )
@@ -296,10 +298,10 @@ class IntegrationTest:
         f2_4 = self.launchCommand(
             executor,
             [f1],
-            ["{4}/bin/vvencFFapp", "-c", "{1}/config/test/miv_anchor/A_2_VVenC_encode_tex.cfg"]
-            + ["-i", f"{{3}}/A3/E/TMIV_A3_E_tex_c01_{textureResolution}_yuv420p10le.yuv", "-b"]
-            + ["{3}/A3/E/QP3/TMIV_A3_E_QP3_tex_c01.bit", "-s", str(textureResolution), "-q", "43"]
-            + ["-f", "3", "-fr", "30"],
+            ["{4}/bin/vvencFFapp", "-c", "{1}/config/test/miv_main_anchor/A_2_VVenC_encode_tex.cfg"]
+            + ["-i", f"{{3}}/A3/E/RP0/TMIV_A3_E_RP0_tex_c01_{textureResolution}_yuv420p10le.yuv"]
+            + ["-b", "{3}/A3/E/QP3/TMIV_A3_E_QP3_tex_c01.bit", "-s", str(textureResolution)]
+            + ["-q", "43", "-f", "3", "-fr", "30"],
             "{3}/A3/E/QP3/TMIV_A3_E_QP3_tex_c01_vvenc.log",
             ["A3/E/QP3/TMIV_A3_E_QP3_tex_c01.bit"],
         )
@@ -307,7 +309,7 @@ class IntegrationTest:
         f3 = self.launchCommand(
             executor,
             [f2_1, f2_2, f2_3, f2_4],
-            ["{0}/bin/TmivMultiplexer", "-c", "{1}/config/test/miv_anchor/A_3_TMIV_mux.json"]
+            ["{0}/bin/TmivMultiplexer", "-c", "{1}/config/test/miv_main_anchor/A_3_TMIV_mux.json"]
             + ["-p", "inputDirectory", "{3}", "-p", "outputDirectory", "{3}"]
             + ["-n", "3", "-s", "E", "-r", "QP3"]
             + ["-V", "debug"],
@@ -338,7 +340,7 @@ class IntegrationTest:
         f4_1 = self.launchCommand(
             executor,
             [f3],
-            ["{0}/bin/TmivDecoder", "-c", "{1}/config/ctc/miv_anchor/A_4_TMIV_decode.json"]
+            ["{0}/bin/TmivDecoder", "-c", "{1}/config/ctc/miv_main_anchor/A_4_TMIV_decode.json"]
             + ["-p", "configDirectory", "{1}/config", "-p", "inputDirectory", "{3}"]
             + ["-p", "outputDirectory", "{3}", "-n", "3", "-N", "3", "-s", "E"]
             + ["-r", "QP3", "-v", "v11", "-p", "outputLogPath", "{3}/A3/E/QP3/TMIV_A3_E_QP3.dec2"]
@@ -384,7 +386,7 @@ class IntegrationTest:
             [],
             ["{0}/bin/TmivEncoder", "-c", "{1}/config/test/non_irap_frames/I_1_TMIV_encode.json"]
             + ["-p", "configDirectory", "{1}/config", "-p", "inputDirectory", "{2}"]
-            + ["-p", "outputDirectory", "{3}", "-n", "3", "-s", "E", "-p", "intraPeriod", "2"]
+            + ["-p", "outputDirectory", "{3}", "-n", "3", "-s", "E"]
             + ["-p", "inputSequenceConfigPathFmt", "test/sequences/T{{1}}.json"]
             + ["-p", "maxLumaPictureSize", "1048576", "-f", "0"]
             + ["-V", "debug"],
@@ -401,7 +403,7 @@ class IntegrationTest:
         f2_1 = self.launchCommand(
             executor,
             [f1],
-            ["{4}/bin/vvencFFapp", "-c", "{1}/config/test/miv_anchor/A_2_VVenC_encode_geo.cfg"]
+            ["{4}/bin/vvencFFapp", "-c", "{1}/config/ctc/miv_main_anchor/A_2_VVenC_encode_geo.cfg"]
             + ["-i", f"{{3}}/I3/E/TMIV_I3_E_geo_c00_{geometryResolution}_yuv420p10le.yuv", "-b"]
             + ["{3}/I3/E/QP3/TMIV_I3_E_QP3_geo_c00.bit", "-s", str(geometryResolution), "-q", "20"]
             + ["-f", "3", "-fr", "30"],
@@ -412,7 +414,7 @@ class IntegrationTest:
         f2_2 = self.launchCommand(
             executor,
             [f1],
-            ["{4}/bin/vvencFFapp", "-c", "{1}/config/test/miv_anchor/A_2_VVenC_encode_geo.cfg"]
+            ["{4}/bin/vvencFFapp", "-c", "{1}/config/ctc/miv_main_anchor/A_2_VVenC_encode_geo.cfg"]
             + ["-i", f"{{3}}/I3/E/TMIV_I3_E_geo_c01_{geometryResolution}_yuv420p10le.yuv", "-b"]
             + ["{3}/I3/E/QP3/TMIV_I3_E_QP3_geo_c01.bit", "-s", str(geometryResolution), "-q", "20"]
             + ["-f", "3", "-fr", "30"],
@@ -423,7 +425,7 @@ class IntegrationTest:
         f2_3 = self.launchCommand(
             executor,
             [f1],
-            ["{4}/bin/vvencFFapp", "-c", "{1}/config/test/miv_anchor/A_2_VVenC_encode_tex.cfg"]
+            ["{4}/bin/vvencFFapp", "-c", "{1}/config/ctc/miv_main_anchor/A_2_VVenC_encode_tex.cfg"]
             + ["-i", f"{{3}}/I3/E/TMIV_I3_E_tex_c00_{textureResolution}_yuv420p10le.yuv", "-b"]
             + ["{3}/I3/E/QP3/TMIV_I3_E_QP3_tex_c00.bit", "-s", str(textureResolution), "-q", "43"]
             + ["-f", "3", "-fr", "30"],
@@ -434,7 +436,7 @@ class IntegrationTest:
         f2_4 = self.launchCommand(
             executor,
             [f1],
-            ["{4}/bin/vvencFFapp", "-c", "{1}/config/test/miv_anchor/A_2_VVenC_encode_tex.cfg"]
+            ["{4}/bin/vvencFFapp", "-c", "{1}/config/ctc/miv_main_anchor/A_2_VVenC_encode_tex.cfg"]
             + ["-i", f"{{3}}/I3/E/TMIV_I3_E_tex_c01_{textureResolution}_yuv420p10le.yuv", "-b"]
             + ["{3}/I3/E/QP3/TMIV_I3_E_QP3_tex_c01.bit", "-s", str(textureResolution), "-q", "43"]
             + ["-f", "3", "-fr", "30"],
@@ -502,7 +504,7 @@ class IntegrationTest:
         f4_3 = self.launchCommand(
             executor,
             [f3],
-            ["{0}/bin/TmivNativeVideoDecoderTest", "{3}/I3/E/QP3/TMIV_I3_E_QP3.bit", "3", "2"],
+            ["{0}/bin/TmivNativeVideoDecoderTest", "{3}/I3/E/QP3/TMIV_I3_E_QP3.bit", "3", "32"],
             "{3}/I3/E/QP3/TMIV_I3_E_QP3.nvdt.log",
             [],
         )
@@ -511,7 +513,7 @@ class IntegrationTest:
 
     def testMivViewAnchor(self, executor):
         if not self.dryRun:
-            (self.testDir / "V1" / "D" / "R0").mkdir(parents=True, exist_ok=True)
+            (self.testDir / "V1" / "D" / "RP0").mkdir(parents=True, exist_ok=True)
 
         # maxLumaPictureSize is set to limit to 1:8 aspect ratio
         geometryResolution = Resolution(512, 4096)
@@ -522,7 +524,7 @@ class IntegrationTest:
         f1 = self.launchCommand(
             executor,
             [],
-            ["{0}/bin/TmivEncoder", "-c", "{1}/config/ctc/miv_view_anchor/V_1_TMIV_encode.json"]
+            ["{0}/bin/TmivEncoder", "-c", "{1}/config/test/full_views/V_1_TMIV_encode.json"]
             + ["-p", "configDirectory", "{1}/config", "-p", "inputDirectory", "{2}", "-p"]
             + ["outputDirectory", "{3}", "-n", "1", "-s", "D", "-p", "intraPeriod", "2"]
             + ["-p", "inputSequenceConfigPathFmt", "test/sequences/T{{1}}.json"]
@@ -542,7 +544,7 @@ class IntegrationTest:
         f2_1 = self.launchCommand(
             executor,
             [f1],
-            ["{0}/bin/TmivDecoder", "-c", "{1}/config/ctc/miv_view_anchor/V_4_TMIV_decode.json"]
+            ["{0}/bin/TmivDecoder", "-c", "{1}/config/test/full_views/V_4_TMIV_decode.json"]
             + ["-p", "configDirectory", "{1}/config", "-p", "inputDirectory", "{3}", "-p"]
             + ["outputDirectory", "{3}", "-p", "inputGeometryVideoFramePathFmt"]
             + ["V{{0}}/{{1}}/TMIV_V{{0}}_{{1}}_geo_c{{3:02}}_{{4}}x{{5}}_{{6}}.yuv"]
@@ -550,10 +552,10 @@ class IntegrationTest:
             + ["V{{0}}/{{1}}/TMIV_V{{0}}_{{1}}_tex_c{{3:02}}_{{4}}x{{5}}_{{6}}.yuv"]
             + ["-p", "inputBitstreamPathFmt", "V1/D/TMIV_V1_D.bit"]
             + ["-p", "inputViewportParamsPathFmt", "test/sequences/T{{1}}.json"]
-            + ["-n", "1", "-N", "3", "-s", "D", "-r", "R0", "-v", "v14"]
+            + ["-n", "1", "-N", "3", "-s", "D", "-r", "RP0", "-v", "v14"]
             + ["-V", "debug"],
-            "{3}/V1/D/R0/V1_D_R0_v14.log",
-            [f"V1/D/R0/V1_D_R0_v14_tex_{cameraRenderResolution}_yuv420p10le.yuv"],
+            "{3}/V1/D/RP0/V1_D_RP0_v14.log",
+            [f"V1/D/RP0/V1_D_RP0_v14_tex_{cameraRenderResolution}_yuv420p10le.yuv"],
         )
 
         f2_2 = self.launchCommand(
@@ -579,7 +581,7 @@ class IntegrationTest:
         f2_4 = self.launchCommand(
             executor,
             [f1],
-            ["{0}/bin/TmivDecoder", "-c", "{1}/config/ctc/miv_view_anchor/V_4_TMIV_decode.json"]
+            ["{0}/bin/TmivDecoder", "-c", "{1}/config/test/full_views/V_4_TMIV_decode.json"]
             + ["-p", "configDirectory", "{1}/config", "-p", "inputDirectory", "{3}"]
             + ["-p", "outputDirectory", "{3}", "-p", "inputGeometryVideoFramePathFmt"]
             + ["V{{0}}/{{1}}/TMIV_V{{0}}_{{1}}_geo_c{{3:02}}_{{4}}x{{5}}_{{6}}.yuv"]
@@ -587,17 +589,18 @@ class IntegrationTest:
             + ["V{{0}}/{{1}}/TMIV_V{{0}}_{{1}}_tex_c{{3:02}}_{{4}}x{{5}}_{{6}}.yuv"]
             + ["-p", "inputBitstreamPathFmt", "V1/D/TMIV_V1_D.bit"]
             + ["-p", "inputViewportParamsPathFmt", "test/sequences/T{{1}}.json"]
-            + ["-n", "1", "-N", "3", "-s", "D", "-r", "R0", "-P", "p02"]
+            + ["-n", "1", "-N", "3", "-s", "D", "-r", "RP0", "-P", "p02"]
+            + ["-p", "inputPoseTracePathFmt", "ctc/pose_traces/D01p02.csv"]
             + ["-V", "debug"],
-            "{3}/V1/D/R0/V1_D_R0_p02.log",
-            [f"V1/D/R0/V1_D_R0_p02_tex_{poseTraceRenderResolution}_yuv420p10le.yuv"],
+            "{3}/V1/D/RP0/V1_D_RP0_p02.log",
+            [f"V1/D/RP0/V1_D_RP0_p02_tex_{poseTraceRenderResolution}_yuv420p10le.yuv"],
         )
 
         return [f2_1, f2_2, f2_3, f2_4]
 
     def testOneView(self, executor):
         if not self.dryRun:
-            (self.testDir / "W3" / "D" / "R0").mkdir(parents=True, exist_ok=True)
+            (self.testDir / "W3" / "D" / "RP0").mkdir(parents=True, exist_ok=True)
 
         geometryResolution = Resolution(256, 136)
         textureResolution = Resolution(512, 272)
@@ -651,17 +654,18 @@ class IntegrationTest:
             + ["W{{0}}/{{1}}/TMIV_W{{0}}_{{1}}_tex_c{{3:02}}_{{4}}x{{5}}_{{6}}.yuv"]
             + ["-p", "inputBitstreamPathFmt", "W3/D/TMIV_W3_D.bit"]
             + ["-p", "inputViewportParamsPathFmt", "test/sequences/T{{1}}.json"]
-            + ["-n", "3", "-N", "3", "-s", "D", "-r", "R0", "-P", "p02"]
+            + ["-n", "3", "-N", "3", "-s", "D", "-r", "RP0", "-P", "p02"]
+            + ["-p", "inputPoseTracePathFmt", "ctc/pose_traces/D01p02.csv"]
             + ["-V", "debug"],
-            "{3}/W3/D/R0/W3_D_R0_p02.log",
-            [f"W3/D/R0/W3_D_R0_p02_tex_{poseTraceRenderResolution}_yuv420p10le.yuv"],
+            "{3}/W3/D/RP0/W3_D_RP0_p02.log",
+            [f"W3/D/RP0/W3_D_RP0_p02_tex_{poseTraceRenderResolution}_yuv420p10le.yuv"],
         )
 
         return [f2_1, f2_2, f2_3]
 
     def testMivDsdeAnchor(self, executor):
         if not self.dryRun:
-            (self.testDir / "G3" / "N" / "R0").mkdir(parents=True, exist_ok=True)
+            (self.testDir / "G3" / "N" / "RP0").mkdir(parents=True, exist_ok=True)
 
         textureResolution = Resolution(512, 1024)
         renderResolution = Resolution(512, 512)
@@ -675,13 +679,13 @@ class IntegrationTest:
             + ["-p", "inputSequenceConfigPathFmt", "test/sequences/T{{1}}.json"]
             + ["-p", "maxLumaPictureSize", "524288", "-f", "0"]
             + ["-V", "debug"],
-            "{3}/G3/N/TMIV_G3_N.log",
+            "{3}/G3/N/RP0/TMIV_G3_N_RP0.log",
             [
-                "G3/N/TMIV_G3_N.bit",
-                f"G3/N/TMIV_G3_N_tex_c00_{textureResolution}_yuv420p10le.yuv",
-                f"G3/N/TMIV_G3_N_tex_c01_{textureResolution}_yuv420p10le.yuv",
-                f"G3/N/TMIV_G3_N_tex_c02_{textureResolution}_yuv420p10le.yuv",
-                f"G3/N/TMIV_G3_N_tex_c03_{textureResolution}_yuv420p10le.yuv",
+                "G3/N/RP0/TMIV_G3_N_RP0.bit",
+                f"G3/N/RP0/TMIV_G3_N_RP0_tex_c00_{textureResolution}_yuv420p10le.yuv",
+                f"G3/N/RP0/TMIV_G3_N_RP0_tex_c01_{textureResolution}_yuv420p10le.yuv",
+                f"G3/N/RP0/TMIV_G3_N_RP0_tex_c02_{textureResolution}_yuv420p10le.yuv",
+                f"G3/N/RP0/TMIV_G3_N_RP0_tex_c03_{textureResolution}_yuv420p10le.yuv",
             ],
         )
 
@@ -689,20 +693,20 @@ class IntegrationTest:
             executor,
             [f1],
             ["{0}/bin/TmivParser"]
-            + ["-b", "{3}/G3/N/TMIV_G3_N.bit"]
-            + ["-o", "{3}/G3/N/TMIV_G3_N.hls"],
+            + ["-b", "{3}/G3/N/RP0/TMIV_G3_N_RP0.bit"]
+            + ["-o", "{3}/G3/N/RP0/TMIV_G3_N_RP0.hls"],
             None,
-            ["G3/N/TMIV_G3_N.hls"],
+            ["G3/N/RP0/TMIV_G3_N_RP0.hls"],
         )
 
         f2_2 = self.launchCommand(
             executor,
             [f1],
             ["{0}/bin/TmivBitrateReport"]
-            + ["-b", "{3}/G3/N/TMIV_G3_N.bit"]
-            + ["-o", "{3}/G3/N/TMIV_G3_N.csv"],
+            + ["-b", "{3}/G3/N/RP0/TMIV_G3_N_RP0.bit"]
+            + ["-o", "{3}/G3/N/RP0/TMIV_G3_N_RP0.csv"],
             None,
-            ["G3/N/TMIV_G3_N.csv"],
+            ["G3/N/RP0/TMIV_G3_N_RP0.csv"],
         )
 
         f2_3 = self.launchCommand(
@@ -710,23 +714,19 @@ class IntegrationTest:
             [f1],
             ["{0}/bin/TmivDecoder", "-c", "{1}/config/ctc/miv_dsde_anchor/G_4_TMIV_decode.json"]
             + ["-p", "configDirectory", "{1}/config", "-p", "inputDirectory", "{3}"]
-            + ["-p", "outputDirectory", "{3}", "-p", "inputGeometryVideoFramePathFmt"]
-            + ["G{{0}}/{{1}}/TMIV_G{{0}}_{{1}}_geo_c{{3:02}}_{{4}}x{{5}}_{{6}}.yuv"]
-            + ["-p", "inputTextureVideoFramePathFmt"]
-            + ["G{{0}}/{{1}}/TMIV_G{{0}}_{{1}}_tex_c{{3:02}}_{{4}}x{{5}}_{{6}}.yuv"]
-            + ["-p", "inputBitstreamPathFmt", "G3/N/TMIV_G3_N.bit"]
-            + ["-n", "3", "-N", "3", "-s", "N", "-r", "R0"]
+            + ["-p", "outputDirectory", "{3}"]
+            + ["-n", "3", "-N", "3", "-s", "N", "-r", "RP0"]
             + ["-V", "debug"],
-            "{3}/G3/N/R0/G3_N_R0_none.log",
+            "{3}/G3/N/RP0/G3_N_RP0_none.log",
             [
-                "G3/N/R0/TMIV_G3_N_R0_0000.json",
-                f"G3/N/R0/TMIV_G3_N_R0_tex_pv00_{renderResolution}_yuv420p10le.yuv",
-                f"G3/N/R0/TMIV_G3_N_R0_tex_pv01_{renderResolution}_yuv420p10le.yuv",
-                f"G3/N/R0/TMIV_G3_N_R0_tex_pv02_{renderResolution}_yuv420p10le.yuv",
-                f"G3/N/R0/TMIV_G3_N_R0_tex_pv03_{renderResolution}_yuv420p10le.yuv",
-                f"G3/N/R0/TMIV_G3_N_R0_tex_pv04_{renderResolution}_yuv420p10le.yuv",
-                f"G3/N/R0/TMIV_G3_N_R0_tex_pv05_{renderResolution}_yuv420p10le.yuv",
-                f"G3/N/R0/TMIV_G3_N_R0_tex_pv06_{renderResolution}_yuv420p10le.yuv",
+                "G3/N/RP0/TMIV_G3_N_RP0_0000.json",
+                f"G3/N/RP0/TMIV_G3_N_RP0_tex_pv00_{renderResolution}_yuv420p10le.yuv",
+                f"G3/N/RP0/TMIV_G3_N_RP0_tex_pv01_{renderResolution}_yuv420p10le.yuv",
+                f"G3/N/RP0/TMIV_G3_N_RP0_tex_pv02_{renderResolution}_yuv420p10le.yuv",
+                f"G3/N/RP0/TMIV_G3_N_RP0_tex_pv03_{renderResolution}_yuv420p10le.yuv",
+                f"G3/N/RP0/TMIV_G3_N_RP0_tex_pv04_{renderResolution}_yuv420p10le.yuv",
+                f"G3/N/RP0/TMIV_G3_N_RP0_tex_pv05_{renderResolution}_yuv420p10le.yuv",
+                f"G3/N/RP0/TMIV_G3_N_RP0_tex_pv06_{renderResolution}_yuv420p10le.yuv",
             ],
         )
 
@@ -734,7 +734,7 @@ class IntegrationTest:
 
     def testBestReference(self, executor):
         if not self.dryRun:
-            (self.testDir / "R3" / "O" / "R0").mkdir(parents=True, exist_ok=True)
+            (self.testDir / "R3" / "O" / "RP0").mkdir(parents=True, exist_ok=True)
 
         resolution = Resolution(480, 270)
 
@@ -743,16 +743,13 @@ class IntegrationTest:
             [],
             ["{0}/bin/TmivRenderer", "-c", "{1}/config/ctc/best_reference/R_1_TMIV_render.json"]
             + ["-p", "configDirectory", "{1}/config", "-p", "inputDirectory", "{2}"]
-            + ["-p", "outputDirectory", "{3}", "-n", "3", "-N", "3", "-s", "O", "-r", "R0"]
+            + ["-p", "outputDirectory", "{3}", "-n", "3", "-N", "3", "-s", "O", "-r", "RP0"]
             + ["-p", "inputSequenceConfigPathFmt", "test/sequences/T{{1}}.json"]
             + ["-p", "inputViewportParamsPathFmt", "test/sequences/T{{1}}.json"]
             + ["-v", "v01", "-f", "0"]
             + ["-V", "debug"],
-            "{3}/R3/O/R0/R3_O_R0_v01.log",
-            [
-                f"R3/O/R0/R3_O_R0_v01_geo_{resolution}_yuv420p16le.yuv",
-                f"R3/O/R0/R3_O_R0_v01_tex_{resolution}_yuv420p10le.yuv",
-            ],
+            "{3}/R3/O/RP0/R3_O_RP0_v01.log",
+            [f"R3/O/RP0/R3_O_RP0_v01_tex_{resolution}_yuv420p10le.yuv"],
         )
 
         f1_2 = self.launchCommand(
@@ -763,13 +760,11 @@ class IntegrationTest:
             + ["-p", "outputDirectory", "{3}", "-n", "3", "-N", "3", "-s", "O"]
             + ["-p", "inputSequenceConfigPathFmt", "test/sequences/T{{1}}.json"]
             + ["-p", "inputViewportParamsPathFmt", "test/sequences/T{{1}}.json"]
-            + ["-r", "R0", "-P", "p02", "-f", "0"]
+            + ["-r", "RP0", "-P", "p02", "-f", "0"]
+            + ["-p", "inputPoseTracePathFmt", "ctc/pose_traces/J04p02.csv"]
             + ["-V", "debug"],
-            "{3}/R3/O/R0/R3_O_R0_p02.log",
-            [
-                f"R3/O/R0/R3_O_R0_p02_geo_{resolution}_yuv420p16le.yuv",
-                f"R3/O/R0/R3_O_R0_p02_tex_{resolution}_yuv420p10le.yuv",
-            ],
+            "{3}/R3/O/RP0/R3_O_RP0_p02.log",
+            [f"R3/O/RP0/R3_O_RP0_p02_tex_{resolution}_yuv420p10le.yuv"],
         )
 
         return [f1_1, f1_2]
@@ -888,7 +883,7 @@ class IntegrationTest:
 
     def testFramePacking(self, executor):
         if not self.dryRun:
-            (self.testDir / "P3" / "E" / "R0").mkdir(parents=True, exist_ok=True)
+            (self.testDir / "P3" / "E" / "RP0").mkdir(parents=True, exist_ok=True)
 
         packedResolution = Resolution(1024, 1280)
         renderResolution = Resolution(480, 270)
@@ -920,10 +915,10 @@ class IntegrationTest:
             + ["P{{0}}/{{1}}/TMIV_P{{0}}_{{1}}_pac_c{{3:02}}_{{4}}x{{5}}_{{6}}.yuv"]
             + ["-p", "inputBitstreamPathFmt", "P3/E/TMIV_P3_E.bit"]
             + ["-p", "inputViewportParamsPathFmt", "test/sequences/T{{1}}.json"]
-            + ["-n", "3", "-N", "3", "-s", "E", "-r", "R0", "-v", "v11"]
+            + ["-n", "3", "-N", "3", "-s", "E", "-r", "RP0", "-v", "v11"]
             + ["-V", "debug"],
-            "{3}/P3/E/R0/P3_E_R0_v11.log",
-            [f"P3/E/R0/P3_E_R0_v11_tex_{renderResolution}_yuv420p10le.yuv"],
+            "{3}/P3/E/RP0/P3_E_RP0_v11.log",
+            [f"P3/E/RP0/P3_E_RP0_v11_tex_{renderResolution}_yuv420p10le.yuv"],
         )
 
         f2_2 = self.launchCommand(
@@ -950,7 +945,7 @@ class IntegrationTest:
 
     def testAdditiveSynthesizer(self, executor):
         if not self.dryRun:
-            (self.testDir / "S1" / "C" / "R0").mkdir(parents=True, exist_ok=True)
+            (self.testDir / "S1" / "C" / "RP0").mkdir(parents=True, exist_ok=True)
 
         renderResolution = Resolution(512, 512)
 
@@ -960,15 +955,16 @@ class IntegrationTest:
             ["{0}/bin/TmivRenderer", "-c"]
             + ["{1}/config/test/additive_synthesizer/S_1_TMIV_render.json"]
             + ["-p", "configDirectory", "{1}/config", "-p", "inputDirectory", "{2}"]
-            + ["-p", "outputDirectory", "{3}", "-n", "1", "-N", "1", "-s", "C", "-r", "R0"]
+            + ["-p", "outputDirectory", "{3}", "-n", "1", "-N", "1", "-s", "C", "-r", "RP0"]
             + ["-p", "inputSequenceConfigPathFmt", "test/sequences/T{{1}}.json"]
             + ["-p", "inputViewportParamsPathFmt", "test/sequences/T{{1}}.json"]
             + ["-P", "p03", "-f", "0"]
+            + ["-p", "inputPoseTracePathFmt", "ctc/pose_traces/C01p03.csv"]
             + ["-V", "debug"],
-            "{3}/S1/C/R0/S1_C_R0_p03.log",
+            "{3}/S1/C/RP0/S1_C_RP0_p03.log",
             [
-                f"S1/C/R0/S1_C_R0_p03_geo_{renderResolution}_yuv420p16le.yuv",
-                f"S1/C/R0/S1_C_R0_p03_tex_{renderResolution}_yuv420p10le.yuv",
+                f"S1/C/RP0/S1_C_RP0_p03_geo_{renderResolution}_yuv420p16le.yuv",
+                f"S1/C/RP0/S1_C_RP0_p03_tex_{renderResolution}_yuv420p10le.yuv",
             ],
         )
 
@@ -1068,6 +1064,7 @@ class IntegrationTest:
             + ["-p", "outputDirectory", "{3}"]
             + ["-p", "inputViewportParamsPathFmt", "test/sequences/T{{1}}.json"]
             + ["-n", "3", "-N", "3", "-s", "B", "-r", "QP3", "-P", "p01"]
+            + ["-p", "inputPoseTracePathFmt", "ctc/pose_traces/B01p01.csv"]
             + ["-p", "entityDecodeRange", "[10, 11]"]
             + ["-V", "debug"],
             "{3}/E3/B/QP3/E3_B_QP3_p01.log",
@@ -1166,7 +1163,7 @@ class IntegrationTest:
 
     def testExplicitOccupancy(self, executor):
         if not self.dryRun:
-            (self.testDir / "O3" / "N" / "R0").mkdir(parents=True, exist_ok=True)
+            (self.testDir / "O3" / "N" / "RP0").mkdir(parents=True, exist_ok=True)
 
         occupancyResolution = Resolution(32, 40)
         geometryResolution = Resolution(512, 640)
@@ -1208,10 +1205,11 @@ class IntegrationTest:
             + ["O{{0}}/{{1}}/TMIV_O{{0}}_{{1}}_tex_c{{3:02}}_{{4}}x{{5}}_{{6}}.yuv"]
             + ["-p", "inputBitstreamPathFmt", "O3/N/TMIV_O3_N.bit"]
             + ["-p", "inputViewportParamsPathFmt", "test/sequences/T{{1}}.json"]
-            + ["-n", "3", "-N", "3", "-s", "N", "-r", "R0", "-P", "p01"]
+            + ["-n", "3", "-N", "3", "-s", "N", "-r", "RP0", "-P", "p01"]
+            + ["-p", "inputPoseTracePathFmt", "ctc/pose_traces/B02p01.csv"]
             + ["-V", "debug"],
-            "{3}/O3/N/R0/O3_N_R0_p01.log",
-            [f"O3/N/R0/O3_N_R0_p01_tex_{renderResolution}_yuv420p10le.yuv"],
+            "{3}/O3/N/RP0/O3_N_RP0_p01.log",
+            [f"O3/N/RP0/O3_N_RP0_p01_tex_{renderResolution}_yuv420p10le.yuv"],
         )
 
         f2_2 = self.launchCommand(

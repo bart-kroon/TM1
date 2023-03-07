@@ -1,29 +1,15 @@
 cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
 
-create_tmiv_library(
-    TARGET
-        EgaInserterLib
-    SOURCES
-        "src/EgaInserter.cpp"
-    PUBLIC
-        MivBitstreamLib
-    )
+create_tmiv_library(TARGET EgaInserterLib SOURCES "src/EgaInserter.cpp" PUBLIC MivBitstreamLib)
 
 create_tmiv_executable(
     TARGET
-        EgaInserter
+    EgaInserter
     SOURCES
-        "src/EgaInserter.main.cpp"
+    "src/EgaInserter.main.cpp"
     PRIVATE
-        EgaInserterLib
-        fmt::fmt
-    )
+    EgaInserterLib
+    fmt::fmt)
 
-create_catch2_unit_test(
-    TARGET
-        EgaInserterTest
-    SOURCES
-        "src/EgaInserter.test.cpp"
-    PRIVATE
-        EgaInserterLib
-)
+create_catch2_unit_test(TARGET EgaInserterTest SOURCES "src/EgaInserter.test.cpp" PRIVATE
+                        EgaInserterLib)

@@ -35,6 +35,7 @@
 #include <TMIV/Decoder/DecodeAtlasSubBitstream.h>
 #include <TMIV/Decoder/DecodeMiv.h>
 #include <TMIV/Decoder/DecodeV3cSampleStream.h>
+#include <TMIV/MivBitstream/Formatters.h>
 #include <TMIV/PtlChecker/PtlChecker.h>
 
 #include "MockVideoDecoder.hpp"

@@ -33,7 +33,7 @@
 
 #include <TMIV/MivBitstream/DecodedAtlasInformationHash.h>
 
-#include <fmt/ostream.h>
+#include <TMIV/MivBitstream/Formatters.h>
 
 namespace TMIV::MivBitstream {
 auto operator<<(std::ostream &stream, const DecodedAtlasHash &x) -> std::ostream & {
@@ -81,7 +81,7 @@ auto operator<<(std::ostream &stream, const DecodedAtlasInformationHash &x) -> s
       fmt::print(stream, "daih_num_tiles_minus1={}\n", x.daih_num_tiles_minus1());
       fmt::print(stream, "daih_tile_id_len_minus1={}\n", x.daih_tile_id_len_minus1());
       for (uint8_t t = 0; t <= x.daih_num_tiles_minus1(); t++) {
-        fmt::print(stream, "daih_tile_id[ {} ]={}\n", x.daih_tile_id(t));
+        fmt::print(stream, "daih_tile_id[ {} ]={}\n", t, x.daih_tile_id(t));
       }
       if (x.daih_decoded_atlas_tiles_hash_present_flag()) {
         stream << x.decoded_atlas_tile_hash();

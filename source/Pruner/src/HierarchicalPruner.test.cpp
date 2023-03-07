@@ -31,13 +31,15 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_test_macros.hpp>
+#include <catch2/generators/catch_generators_range.hpp>
+#include <catch2/matchers/catch_matchers_string.hpp>
 
 #include <TMIV/Pruner/HierarchicalPruner.h>
 
 #include <fmt/format.h>
 
-using Catch::Contains;
+using Catch::Matchers::ContainsSubstring;
 using TMIV::Common::Json;
 using TMIV::Pruner::HierarchicalPruner;
 using TMIV::Pruner::PrunerParams;
@@ -84,7 +86,8 @@ TEST_CASE("TMIV::Pruner::HierarchicalPruner") {
       auto params = PrunerParams{};
 
       THEN("preparing the sequence fails because there are no view parameters") {
-        REQUIRE_THROWS_WITH(unit.prepareSequence(params), Contains("!viewParamsList.empty()"));
+        REQUIRE_THROWS_WITH(unit.prepareSequence(params),
+                            ContainsSubstring("!viewParamsList.empty()"));
       }
 
       GIVEN("default-initialized view parameters") {

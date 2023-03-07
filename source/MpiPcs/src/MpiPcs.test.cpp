@@ -31,9 +31,8 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <catch2/catch.hpp>
-
-using Catch::Matchers::Contains;
+#include <catch2/catch_test_macros.hpp>
+#include <catch2/matchers/catch_matchers_contains.hpp>
 
 #include <TMIV/Common/Frame.h>
 #include <TMIV/MpiPcs/MpiPcs.h>
@@ -43,6 +42,7 @@ using Catch::Matchers::Contains;
 #include <sstream>
 
 using namespace std::string_literals;
+using Catch::Matchers::Contains;
 
 namespace TMIV::MpiPcs {
 TEST_CASE("MpiPcs writer and reader") {

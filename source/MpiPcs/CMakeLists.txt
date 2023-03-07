@@ -2,29 +2,20 @@ cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
 
 create_tmiv_library(
     TARGET
-        MpiPcsLib
+    MpiPcsLib
     SOURCES
-        "src/Frame.cpp"
-        "src/MpiPcs.cpp"
+    "src/Frame.cpp"
+    "src/MpiPcs.cpp"
     PUBLIC
-        IOLib
-    )
+    IOLib)
 
-create_tmiv_executable(
-    TARGET
-        MpiPcs
-    SOURCES
-        "src/MpiPcs.main.cpp"
-    PRIVATE
-        MpiPcsLib
-    )
+create_tmiv_executable(TARGET MpiPcs SOURCES "src/MpiPcs.main.cpp" PRIVATE MpiPcsLib)
 
 create_catch2_unit_test(
     TARGET
-        MpiPcsTest
+    MpiPcsTest
     SOURCES
-        "src/MpiPcs.test.cpp"
-        "src/Frame.test.cpp"
+    "src/MpiPcs.test.cpp"
+    "src/Frame.test.cpp"
     PRIVATE
-        MpiPcsLib
-    )
+    MpiPcsLib)

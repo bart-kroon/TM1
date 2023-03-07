@@ -34,6 +34,7 @@
 #include <TMIV/Renderer/ViewingSpaceController.h>
 
 #include <TMIV/Common/LoggingStrategyFmt.h>
+#include <TMIV/MivBitstream/Formatters.h>
 #include <TMIV/ViewingSpace/ViewingSpaceEvaluator.h>
 
 #include <cmath>

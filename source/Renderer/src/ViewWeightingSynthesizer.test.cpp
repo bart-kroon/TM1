@@ -31,11 +31,12 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_test_macros.hpp>
+#include <catch2/matchers/catch_matchers_string.hpp>
 
 #include <TMIV/Renderer/ViewWeightingSynthesizer.h>
 
-using Catch::Contains;
+using Catch::Matchers::ContainsSubstring;
 using TMIV::Common::ColorFormat;
 using TMIV::Common::Json;
 using TMIV::MivBitstream::AccessUnit;
@@ -73,20 +74,20 @@ TEST_CASE("TMIV::Renderer::ViewWeightingSynthesizer") {
     auto cameraConfig = CameraConfig{};
 
     SECTION("Default-initialized input (runtime error)") {
-      REQUIRE_THROWS_WITH(unit.renderFrame(frame, cameraConfig), Contains("frame.casps"));
+      REQUIRE_THROWS_WITH(unit.renderFrame(frame, cameraConfig), ContainsSubstring("frame.casps"));
     }
 
     SECTION("Initialise only CASPS (runtime error)") {
       frame.casps = CommonAtlasSequenceParameterSetRBSP{};
       REQUIRE_THROWS_WITH(unit.renderFrame(frame, cameraConfig),
-                          Contains("casps_miv_extension_present_flag"));
+                          ContainsSubstring("casps_miv_extension_present_flag"));
     }
 
     SECTION("Initialise only CASME (runtime error)") {
       frame.casps = CommonAtlasSequenceParameterSetRBSP{};
       frame.casps->casps_miv_extension() = {};
       REQUIRE_THROWS_WITH(unit.renderFrame(frame, cameraConfig),
-                          Contains("Invalid normalized disparity range"));
+                          ContainsSubstring("Invalid normalized disparity range"));
     }
 
     SECTION("Initialize only CASME + disparity range (empty output)") {
@@ -122,7 +123,7 @@ TEST_CASE("TMIV::Renderer::ViewWeightingSynthesizer") {
       [[maybe_unused]] auto &view = frame.viewParamsList.emplace_back();
 
       REQUIRE_THROWS_WITH(unit.renderFrame(frame, cameraConfig),
-                          Contains("!prunedViews[sourceIdx].texture.empty()"));
+                          ContainsSubstring("!prunedViews[sourceIdx].texture.empty()"));
     }
   }
 }

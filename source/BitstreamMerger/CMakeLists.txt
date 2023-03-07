@@ -2,24 +2,22 @@ cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
 
 create_tmiv_library(
     TARGET
-        BitstreamMergerLib
+    BitstreamMergerLib
     SOURCES
-        "src/BitstreamMerger.cpp"
-    PUBLIC    
-        MivBitstreamLib
+    "src/BitstreamMerger.cpp"
+    PUBLIC
+    MivBitstreamLib
     PRIVATE
-        DecoderLib
-        fmt::fmt
-)
+    DecoderLib
+    fmt::fmt)
 
 create_tmiv_executable(
     TARGET
-        BitstreamMerger
+    BitstreamMerger
     SOURCES
-        "src/BitstreamMerger.main.cpp"
+    "src/BitstreamMerger.main.cpp"
     PRIVATE
-        BitstreamMergerLib
-        DecoderLib
-        IOLib
-        fmt::fmt
-)
+    BitstreamMergerLib
+    DecoderLib
+    IOLib
+    fmt::fmt)

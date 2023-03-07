@@ -37,8 +37,7 @@
 #include <TMIV/Common/Bytestream.h>
 #include <TMIV/Common/Common.h>
 #include <TMIV/Common/verify.h>
-
-#include <fmt/ostream.h>
+#include <TMIV/MivBitstream/Formatters.h>
 
 using TMIV::Common::overload;
 

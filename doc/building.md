@@ -60,6 +60,11 @@ This project has the following dependencies, with suitable versions listed in [b
 Obtain and build the project dependencies using the prebuild script provided by this project:
 
 ```shell
+pyhon -m venv /Workspace/tmiv/.venv              # Create a Python virtual environment
+/Workspace/tmiv/.venv/bin/activate               # on Linux
+/Workspace/tmiv/.venv\Scripts\activate           # on Windows
+pip install --upgrade pip                        # Upgrade the Python package manager
+pip install -r /Workspace/tmiv/requirements.txt  # Install Python dependencies incl. CMake and Ninja
 python /Workspace/tmiv/scripts/build/build_dependencies.py -i /Workspace/tmiv_install
 ```
 
@@ -69,15 +74,15 @@ For Visual Studio there is a batch-file that will prepare the environment for a 
 
 ```batch
 cd /Workspace/tmiv
-scripts/build/build_dependencies.bat -i out/install/x64-Release -c RelWithDebInfo
-scripts/build/build_dependencies.bat -i out/install/x64-Debug -c Debug
+scripts\build\build_dependencies.bat -i out/install/x64-Release -c RelWithDebInfo
+scripts\build\build_dependencies.bat -i out/install/x64-Debug -c Debug
 ```
 
 - Use `--help` to obtain a list of available arguments
 - Use `--build-type` to specify the [build type](https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html). By default, builds are performed using the `RelWithDebInfo` build type.
 - Use `--download-only` to download one one machine, copy the entire `/Workspace/tmiv` directory to another machine, and continue prebuild on that machine. This is useful for compute nodes with limited internet access.
 
-Use of the prebuild script is preferred but optional. Alternatively, prebuild the dependencies by means outside of the scope of these instructions.
+Use of the prebuild script is preferred. Other means to provide the dependencies are outside of the scope of this instruction.
 
 ## Project configuration
 

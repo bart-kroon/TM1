@@ -35,8 +35,7 @@
 
 #include <TMIV/Common/Bitstream.h>
 #include <TMIV/Common/verify.h>
-
-#include <fmt/ostream.h>
+#include <TMIV/MivBitstream/Formatters.h>
 
 namespace TMIV::MivBitstream {
 auto operator<<(std::ostream &stream, const AtlasFrameTileInformation &x) -> std::ostream & {

@@ -31,7 +31,8 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_approx.hpp>
+#include <catch2/catch_test_macros.hpp>
 
 #include <TMIV/Common/Json.h>
 #include <TMIV/Common/LoggingStrategy.h>
@@ -126,8 +127,8 @@ TEST_CASE("Json::Number is a sufficiently large floating-point number") {
 
 TEST_CASE("Json::as<T>() supports numeric conversion of floats") {
   auto json = Json{30.4F};
-  REQUIRE(json.as<float>() == Approx(30.4F));
-  REQUIRE(json.as<double>() == Approx(30.4));
+  REQUIRE(json.as<float>() == Catch::Approx(30.4F));
+  REQUIRE(json.as<double>() == Catch::Approx(30.4));
 
   SECTION("Converting a float to an integer is not allowed") {
     REQUIRE_THROWS(json.as<int32_t>());

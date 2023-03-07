@@ -35,6 +35,7 @@
 
 #include <TMIV/Common/LoggingStrategyFmt.h>
 #include <TMIV/MivBitstream/DepthOccupancyTransform.h>
+#include <TMIV/MivBitstream/Formatters.h>
 
 namespace TMIV::Decoder {
 PreRenderer::PreRenderer(const Common::Json &componentNode)
@@ -46,7 +47,6 @@ PreRenderer::PreRenderer(const Common::Json &componentNode)
     m_patchMargin = node.as<int32_t>();
     VERIFY(0 <= m_patchMargin);
   }
-  Common::logVerbose("[VT prep] patchMargin is {}", m_patchMargin);
 }
 
 void PreRenderer::preRenderFrame(MivBitstream::AccessUnit &frame) const {

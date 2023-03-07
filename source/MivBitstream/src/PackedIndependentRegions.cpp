@@ -33,7 +33,7 @@
 
 #include <TMIV/MivBitstream/PackedIndependentRegions.h>
 
-#include <fmt/ostream.h>
+#include <TMIV/MivBitstream/Formatters.h>
 
 namespace TMIV::MivBitstream {
 auto PackedIndependentRegions::pir_num_packed_frames_minus1() const -> uint8_t {

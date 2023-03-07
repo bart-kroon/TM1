@@ -2,85 +2,81 @@ cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
 
 create_tmiv_library(
     TARGET
-        EncoderLib
+    EncoderLib
     SOURCES
-        "src/Configuration.cpp"    
-        "src/EncodeMiv.cpp"
-        "src/Encoder.cpp"
-        "src/EncoderImpl.cpp"
-        "src/Encoder_prepareSequence.cpp"
-        "src/Encoder_prepareAccessUnit.cpp"
-        "src/Encoder_pushFrame.cpp"
-        "src/Encoder_completeAccessUnit.cpp"
-        "src/Encoder_popFrame.cpp"
-        "src/GeometryQuantizer.cpp"
-        "src/GeometryDownscaler.cpp"
-        "src/FramePacker.cpp"
-        "src/PiecewiseLinearDepthScaling.cpp"
-        "src/V3cSampleSink.cpp"
+    "src/Configuration.cpp"
+    "src/EncodeMiv.cpp"
+    "src/Encoder.cpp"
+    "src/EncoderImpl.cpp"
+    "src/Encoder_prepareSequence.cpp"
+    "src/Encoder_prepareAccessUnit.cpp"
+    "src/Encoder_pushFrame.cpp"
+    "src/Encoder_completeAccessUnit.cpp"
+    "src/Encoder_popFrame.cpp"
+    "src/GeometryQuantizer.cpp"
+    "src/GeometryDownscaler.cpp"
+    "src/FramePacker.cpp"
+    "src/PiecewiseLinearDepthScaling.cpp"
+    "src/V3cSampleSink.cpp"
     PUBLIC
-        MivBitstreamLib
+    MivBitstreamLib
     PRIVATE
-        AggregatorLib
-        DepthQualityAssessorLib
-        PackerLib
-        PrunerLib
-        RendererLib
-        ViewOptimizerLib
-    )
+    AggregatorLib
+    DepthQualityAssessorLib
+    PackerLib
+    PrunerLib
+    RendererLib
+    ViewOptimizerLib)
 
 create_tmiv_executable(
     TARGET
-        Encoder
+    Encoder
     SOURCES
-        "src/Encoder.main.cpp"
-        "src/registerComponents.cpp"
+    "src/Encoder.main.cpp"
+    "src/registerComponents.cpp"
     PRIVATE
-        EncoderLib
-        AggregatorLib
-        DepthQualityAssessorLib
-        PackerLib
-        PrunerLib
-        RendererLib
-        ViewOptimizerLib
-        IOLib
-    )
+    EncoderLib
+    AggregatorLib
+    DepthQualityAssessorLib
+    PackerLib
+    PrunerLib
+    RendererLib
+    ViewOptimizerLib
+    IOLib)
 
 create_tmiv_executable(
     TARGET
-        MpiEncoder
+    MpiEncoder
     SOURCES
-        "src/MpiEncoder.cpp"
-        "src/MpiEncoder.main.cpp"
-        "src/registerComponents.cpp"
+    "src/MpiEncoder.cpp"
+    "src/MpiEncoder.main.cpp"
+    "src/registerComponents.cpp"
     PRIVATE
-        EncoderLib
-        AggregatorLib
-        DepthQualityAssessorLib
-        PackerLib
-        PrunerLib
-        RendererLib
-        ViewOptimizerLib
-        MpiPcsLib
-    )
+    EncoderLib
+    AggregatorLib
+    DepthQualityAssessorLib
+    PackerLib
+    PrunerLib
+    RendererLib
+    ViewOptimizerLib
+    MpiPcsLib)
 
 create_catch2_unit_test(
     TARGET
-        EncoderTest
+    EncoderTest
     SOURCES
-        "src/Configuration.test.cpp"
-        "src/EncodeMiv.test.cpp"
-        "src/Encoder_prepareSequence.test.cpp"
-        "src/ExplicitOccupancy.test.cpp"
-        "src/FramePacker.test.cpp"
-        "src/GeometryQuantizer.test.cpp"
-        "src/PiecewiseLinearDepthScaling.test.cpp"
+    "src/Configuration.test.cpp"
+    "src/EncodeMiv.test.cpp"
+    "src/Encoder_prepareSequence.test.cpp"
+    "src/ExplicitOccupancy.test.cpp"
+    "src/FramePacker.test.cpp"
+    "src/GeometryQuantizer.test.cpp"
+    "src/PiecewiseLinearDepthScaling.test.cpp"
     PRIVATE
-        EncoderLib
-        AggregatorLib
-        DepthQualityAssessorLib
-        PackerLib
-        PrunerLib
-        RendererLib
-        ViewOptimizerLib
-    )
+    EncoderLib
+    AggregatorLib
+    DepthQualityAssessorLib
+    PackerLib
+    PrunerLib
+    RendererLib
+    ViewOptimizerLib)

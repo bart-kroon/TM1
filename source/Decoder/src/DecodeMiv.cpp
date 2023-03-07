@@ -45,6 +45,7 @@
 #include <TMIV/Decoder/DecodeViewParamsList.h>
 #include <TMIV/Decoder/V3cUnitBuffer.h>
 #include <TMIV/MivBitstream/AccessUnit.h>
+#include <TMIV/MivBitstream/Formatters.h>
 
 #include <ctime>
 

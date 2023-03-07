@@ -37,6 +37,7 @@
 #include "PiecewiseLinearDepthScaling.h"
 
 #include <TMIV/Common/LoggingStrategyFmt.h>
+#include <TMIV/MivBitstream/Formatters.h>
 
 namespace TMIV::Encoder {
 void Encoder::Impl::scaleGeometryDynamicRange() {

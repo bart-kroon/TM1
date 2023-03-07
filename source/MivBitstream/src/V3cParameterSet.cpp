@@ -34,8 +34,7 @@
 #include <TMIV/MivBitstream/V3cParameterSet.h>
 
 #include <TMIV/Common/verify.h>
-
-#include <fmt/ostream.h>
+#include <TMIV/MivBitstream/Formatters.h>
 
 #include <numeric>
 #include <sstream>

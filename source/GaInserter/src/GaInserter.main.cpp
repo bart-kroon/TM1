@@ -35,6 +35,7 @@
 
 #include <TMIV/Common/Json.h>
 #include <TMIV/Common/LoggingStrategyFmt.h>
+#include <TMIV/MivBitstream/Formatters.h>
 
 #include <fstream>
 #include <vector>

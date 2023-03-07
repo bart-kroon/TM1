@@ -3,8 +3,7 @@
 Configuration files for CTC conditions are available under [config/ctc/](/config/ctc):
 
 * *best_reference* renders from all source views without coding
-* *miv_anchor* is the MIV anchor with patches
-* *miv_view_anchor* is the MIV view anchor which codes a subset of views completely
+* *miv_main_anchor* is the MIV Main anchor with patches
 * *miv_dsde_anchor* is the MIV decoder-side depth estimating anchor
 
 In addition, there are other configurations available under [config/test/](/config/test) to illustrate different aspects of TMIV such as entity-based coding or multi-plane image (MPI) coding.
@@ -17,26 +16,38 @@ It is mandatory to have the same intraperiod value for both TMIV encoder and vid
 
 It is assumed that the reader has read the CTC document [[5]](/README.md#references) first. This description does not replace that document.
 
-Use the following steps to encode a bitstream and render a viewport:
+Use the following steps to encode bitstream and render viewports for a single sequence:
 
-* MIV anchor and MIV view anchor:
-    1. Run the TMIV encoder
-    1. Run the VVenC encoder on all video sub bitstreams
-    1. Run the VVdeC decoder on all video sub bitstreams
-    1. Run the TMIV decoder to decode the MIV bitstream to render a viewport
-* MIV decoder-side depth estimating anchor:
-    1. Run the TMIV encoder
-    1. Run the VVenC encoder on all video sub bitstreams
-    1. Run the VVdeC decoder on all video sub bitstreams
-    1. Run the TMIV decoder only to decode the bitstream
-    1. Run the Immersive Video Depth Estimator (IVDE)
-    1. Run the TMIV renderer to render a viewport
-* Best reference:
-    1. Run the TMIV renderer to render a viewport
+### MIV Main anchor
+
+1. Run the TMIV encoder
+2. For all rate points RP0 .. RP4:
+   1. If the rate point is not RP0:
+      1. Run the VVenC encoder on all video sub bitstreams
+      2. Run the TMIV multiplexer
+   2. For all viewports (source views and pose traces):
+      1. Run the TMIV decoder to decode the bitstream and render the viewport
+
+### MIV DSDE anchor
+
+ 1. Run the TMIV encoder
+ 2. For all rate points RP0 .. RP4:
+    1. If the rate point is not RP0:
+       1. Run the VVenC encoder on all video sub bitstreams
+       2. Run the TMIV multiplexer
+    2. Run the TMIV decoder to decode the bitstream and output the view parameters
+    3. Run the Immersive Video Depth Estimator (IVDE)
+    4. For all viewports (source views and pose traces):
+       1. Run the TMIV renderer to render a viewport
+
+### Best reference
+
+1. For all viewports (source views and pose traces):
+   1. Run the TMIV renderer to render a viewport
 
 ### Running the TMIV encoder
 
-For this example, we will be using the MIV anchor [A_1_TMIV_encode.json](/config/ctc/miv_anchor/A_1_TMIV_encode.json) configuration and [A.json](/config/ctc/sequences/A.json) sequence configuration on sequence A (ClassroomVideo) with 97 input frames starting from frame 23.
+For this example, we will be using the MIV anchor [A_1_TMIV_encode.json](/config/ctc/miv_main_anchor/A_1_TMIV_encode.json) configuration and [A.json](/config/ctc/sequences/A.json) sequence configuration on sequence A (ClassroomVideo) with 97 input frames starting from frame 23.
 
 1. Place the color and depth videos [[5]](/README.md#references) in a folder arbitrarily named `/Content` in this description.
     * Your organization or one of the maintainers of this repository may be able to provide the test sequences to you.
@@ -52,7 +63,7 @@ For this example, we will be using the MIV anchor [A_1_TMIV_encode.json](/config
 
 ```shell
 /Workspace/tmiv_install/bin/Encoder -n 97 -s A -f 23 \
-    -c /Workspace/tmiv/config/ctc/miv_anchor/A_1_TMIV_encode.json \
+    -c /Workspace/tmiv/config/ctc/miv_main_anchor/A_1_TMIV_encode.json \
     -p configDirectory /Workspace/tmiv/config \
     -p inputDirectory /Content \
     -p outputDirectory /Experiment
@@ -70,11 +81,11 @@ This will in general result in the following files under the `outputDirectory`:
 In this example the following files will be produced:
 
 ```
-/Experiment/A97/A/TMIV_A97_A.bit
-/Experiment/A97/A/TMIV_A97_A_geo_c00_2048x1088_yuv420p10le.yuv
-/Experiment/A97/A/TMIV_A97_A_geo_c01_2048x1088_yuv420p10le.yuv
-/Experiment/A97/A/TMIV_A97_A_tex_c00_4096x2176_yuv420p10le.yuv
-/Experiment/A97/A/TMIV_A97_A_tex_c01_4096x2176_yuv420p10le.yuv
+/Experiment/A97/A/RP0/TMIV_A97_A_RP0.bit
+/Experiment/A97/A/RP0/TMIV_A97_A_RP0_geo_c00_2048x1088_yuv420p10le.yuv
+/Experiment/A97/A/RP0/TMIV_A97_A_RP0_geo_c01_2048x1088_yuv420p10le.yuv
+/Experiment/A97/A/RP0/TMIV_A97_A_RP0_tex_c00_4096x2176_yuv420p10le.yuv
+/Experiment/A97/A/RP0/TMIV_A97_A_RP0_tex_c01_4096x2176_yuv420p10le.yuv
 ```
 
 ### Running the VVenC encoder
@@ -97,7 +108,7 @@ For example:
 
 ```shell
 /Workspace/tmiv_install/bin/vvencFFapp \
-  -c /Workspace/tmiv/config/ctc/miv_anchor/A_2_VVenC_encode_tex.cfg \
+  -c /Workspace/tmiv/config/ctc/miv_main_anchor/A_2_VVenC_encode_tex.cfg \
   -i /Experiment/A97/A/TMIV_A97_A_tex_c00_4096x2176_yuv420p10le.yuv \
   -b /Experiment/A97/A/QP3/TMIV_A97_A_QP3_tex_c00.bit \
   -s 4096x2176 -q 30 -f 97 -fr 30
@@ -161,7 +172,7 @@ Invoke the decoder with the following arguments:
 
 ```shell
 /Workspace/tmiv_install/bin/Decoder -n 97 -N 300 -s A -r QP3 -v v11 -P p02 \
-    -c /Workspace/tmiv/config/ctc/miv_anchor/A_4_TMIV_decode.json \
+    -c /Workspace/tmiv/config/ctc/miv_main_anchor/A_4_TMIV_decode.json \
     -p configDirectory /Workspace/tmiv/config \
     -p inputDirectory /Experiment \
     -p outputDirectory /Experiment

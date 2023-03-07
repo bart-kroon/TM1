@@ -37,6 +37,7 @@
 #include <TMIV/Common/LoggingStrategyFmt.h>
 #include <TMIV/Common/Thread.h>
 #include <TMIV/Common/verify.h>
+#include <TMIV/MivBitstream/Formatters.h>
 
 namespace TMIV::Encoder {
 namespace {

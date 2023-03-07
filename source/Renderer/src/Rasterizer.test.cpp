@@ -31,7 +31,8 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_approx.hpp>
+#include <catch2/catch_test_macros.hpp>
 
 #include <TMIV/Renderer/Rasterizer.h>
 
@@ -181,13 +182,13 @@ SCENARIO("Rastering meshes with 16-bit color as attribute", "[Rasterizer]") {
         const float w_normWeight2 = w_rayAngle2 * w_stretching2;
 
         REQUIRE(normWeight(0, 0) == 0.F);
-        REQUIRE(normWeight(1, 1) == Approx(w_normWeight2));
-        REQUIRE(normWeight(1, 5) == Approx(w_normWeight1));
+        REQUIRE(normWeight(1, 1) == Catch::Approx(w_normWeight2));
+        REQUIRE(normWeight(1, 5) == Catch::Approx(w_normWeight1));
         REQUIRE(normWeight(2, 7) == 0.F);
         REQUIRE(normWeight(3, 7) == 0.F);
 
         THEN("Points that intersect triangle edges are interpolated") {
-          REQUIRE(normWeight(1, 2) == Approx((w_normWeight2 + w_normWeight1) / 2));
+          REQUIRE(normWeight(1, 2) == Catch::Approx((w_normWeight2 + w_normWeight1) / 2));
         }
       }
       THEN("The color std::map has known values") {
@@ -273,10 +274,10 @@ SCENARIO("Rastering meshes with Vec2f as attribute", "[Rasterizer]") {
       THEN("The field std::map has known values") {
         auto field = rasterizer.attribute<0>();
         REQUIRE(field(0, 0) == Vec2f{});
-        REQUIRE(field(1, 1).x() == Approx(150.F));
-        REQUIRE(field(1, 1).y() == Approx(150.F));
-        REQUIRE(field(1, 5).x() == Approx(550.F));
-        REQUIRE(field(1, 5).y() == Approx(150.F));
+        REQUIRE(field(1, 1).x() == Catch::Approx(150.F));
+        REQUIRE(field(1, 1).y() == Catch::Approx(150.F));
+        REQUIRE(field(1, 5).x() == Catch::Approx(550.F));
+        REQUIRE(field(1, 5).y() == Catch::Approx(150.F));
         REQUIRE(field(2, 7) == Vec2f{});
         REQUIRE(field(3, 7) == Vec2f{});
 
@@ -287,10 +288,10 @@ SCENARIO("Rastering meshes with Vec2f as attribute", "[Rasterizer]") {
           THEN("This is cumulative") {
             auto field2 = rasterizer.attribute<0>();
             REQUIRE(field2(0, 0) == Vec2f{});
-            REQUIRE(field2(1, 1).x() == Approx(150.F));
-            REQUIRE(field2(1, 1).y() == Approx(150.F));
-            REQUIRE(field2(1, 5).x() == Approx(550.F));
-            REQUIRE(field2(1, 5).y() == Approx(150.F));
+            REQUIRE(field2(1, 1).x() == Catch::Approx(150.F));
+            REQUIRE(field2(1, 1).y() == Catch::Approx(150.F));
+            REQUIRE(field2(1, 5).x() == Catch::Approx(550.F));
+            REQUIRE(field2(1, 5).y() == Catch::Approx(150.F));
             REQUIRE(field2(2, 7) == Vec2f{});
             REQUIRE(field2(3, 7) == Vec2f{});
           }

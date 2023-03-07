@@ -1,5 +1,5 @@
 {
-    "inputBitstreamPathFmt": "G{0}/{1}/TMIV_G{0}_{1}.bit",
+    "inputBitstreamPathFmt": "G{0}/{1}/RP0/TMIV_G{0}_{1}.bit",
     "inputDirectory": ".",
     "inputTextureVideoSubBitstreamPathFmt": "G{0}/{1}/{2}/TMIV_G{0}_{1}_{2}_tex_c{3:02}.bit",
     "outputBitstreamPathFmt": "G{0}/{1}/{2}/TMIV_G{0}_{1}_{2}.bit",

@@ -38,6 +38,7 @@
 #include <TMIV/Decoder/DecodeV3cSampleStream.h>
 #include <TMIV/Decoder/DecodeVideoSubBitstream.h>
 #include <TMIV/Decoder/OutputLog.h>
+#include <TMIV/MivBitstream/Formatters.h>
 #include <TMIV/PtlChecker/PtlChecker.h>
 #include <TMIV/VideoDecoder/VideoDecoder.h>
 

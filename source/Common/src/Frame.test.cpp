@@ -31,7 +31,8 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_approx.hpp>
+#include <catch2/catch_test_macros.hpp>
 
 #include <TMIV/Common/Frame.h>
 
@@ -262,7 +263,7 @@ TEST_CASE("Expand texture with ones") {
 
   for (const auto &pixel : result) {
     for (const auto color_channel : pixel) {
-      REQUIRE(color_channel == Approx(0.000977517F).epsilon(1e-5F));
+      REQUIRE(color_channel == Catch::Approx(0.000977517F).epsilon(1e-5F));
     }
   }
 }
@@ -276,7 +277,7 @@ TEST_CASE("Expand luma with ones") {
   REQUIRE(result.height() == 2);
   REQUIRE(result.width() == 4);
   for (const auto &pixel : result) {
-    REQUIRE(pixel == Approx(98e-5F).epsilon(1e-2F));
+    REQUIRE(pixel == Catch::Approx(98e-5F).epsilon(1e-2F));
   }
 }
 

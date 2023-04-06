@@ -966,7 +966,9 @@ auto PackingInformation::printTo(std::ostream &stream, AtlasId j) const -> std::
     }
     if (pinRegionTypeId(i) == VuhUnitType::V3C_AVD) {
       fmt::print(stream, "pin_region_attr_index[ {} ][ {} ]={}\n", j, i, pin_region_attr_index(i));
-      if (pin_attribute_dimension_minus1(i) > 0) {
+      const auto k = pin_region_attr_index(i);
+
+      if (pin_attribute_dimension_minus1(k) > 0) {
         fmt::print(stream, "pin_region_attr_partition_index[ {} ][ {} ]={}\n", j, i,
                    pin_region_attr_partition_index(i));
       }

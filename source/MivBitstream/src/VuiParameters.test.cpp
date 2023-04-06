@@ -64,7 +64,7 @@ cas_left_sign=true
 cas_up_sign=true
 )");
 
-    REQUIRE(bitCodingTest(x, 6));
+    bitCodingTest(x, 6);
   }
 
   SECTION("Custom initialization") {
@@ -80,7 +80,7 @@ cas_left_sign=false
 cas_up_sign=false
 )");
 
-    REQUIRE(bitCodingTest(x, 6));
+    bitCodingTest(x, 6);
   }
 }
 
@@ -94,7 +94,7 @@ vui_unit_in_metres_flag=false
 vui_display_box_info_present_flag=false
 vui_anchor_point_present_flag=false
 )");
-    REQUIRE(bitCodingTest(x, 6, nullptr));
+    bitCodingTest(x, 6, nullptr);
   }
 
   SECTION("Enable flags") {
@@ -158,7 +158,7 @@ vui_anchor_point[ 2 ]=90
     auto asps = AtlasSequenceParameterSetRBSP{};
     asps.asps_geometry_3d_bit_depth_minus1(15);
 
-    REQUIRE(bitCodingTest(x, 259, &asps));
+    bitCodingTest(x, 259, &asps);
   }
 }
 } // namespace TMIV::MivBitstream

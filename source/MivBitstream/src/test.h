@@ -67,7 +67,9 @@ auto unitCodingTest(const Type &reference, int32_t size, Args &&...args) -> bool
 }
 
 template <typename Type, typename... Args>
-auto bitCodingTest(const Type &reference, int32_t bitsize, Args &&...args) -> bool {
+void bitCodingTest(const Type &reference, int32_t bitsize, Args &&...args) {
+  CAPTURE(reference);
+
   std::stringstream stream;
   TMIV::Common::OutputBitstream obitstream{stream};
   reference.encodeTo(obitstream, args...);
@@ -76,9 +78,10 @@ auto bitCodingTest(const Type &reference, int32_t bitsize, Args &&...args) -> bo
 
   TMIV::Common::InputBitstream ibitstream{stream};
   const auto actual = Type::decodeFrom(ibitstream, std::forward<Args>(args)...);
+  CAPTURE(actual);
   REQUIRE(bitsize == ibitstream.tellg());
 
-  return actual == reference;
+  REQUIRE((actual == reference));
 }
 
 template <typename Type> auto toString(const Type &metadata) -> std::string {

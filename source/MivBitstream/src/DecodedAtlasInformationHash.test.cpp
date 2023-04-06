@@ -41,7 +41,7 @@ TEST_CASE("decoded_atlas_information_hash", "[Decoded Atlas Information Hash SEI
     const DecodedAtlasInformationHash unit{};
     REQUIRE(toString(unit) == R"(daih_cancel_flag=true
 )");
-    REQUIRE(bitCodingTest(unit, 1));
+    bitCodingTest(unit, 1);
   }
 
   SECTION("md5 Hash Type") {
@@ -71,7 +71,7 @@ daih_decoded_atlas_tiles_hash_present_flag=false
 daih_decoded_atlas_tiles_b2p_hash_present_flag=false
 daih_atlas_md5=00112233445566778899aabbccddeeff
 )");
-    REQUIRE(bitCodingTest(unit, 144));
+    bitCodingTest(unit, 144);
   }
 
   SECTION("CRC Hash Type") {
@@ -99,7 +99,7 @@ daih_decoded_atlas_tiles_hash_present_flag=false
 daih_decoded_atlas_tiles_b2p_hash_present_flag=false
 daih_atlas_crc=1234
 )");
-    REQUIRE(bitCodingTest(unit, 32));
+    bitCodingTest(unit, 32);
   }
 
   SECTION("CheckSum Hash Type") {
@@ -127,7 +127,7 @@ daih_decoded_atlas_tiles_hash_present_flag=false
 daih_decoded_atlas_tiles_b2p_hash_present_flag=false
 daih_atlas_checksum=12345678
 )");
-    REQUIRE(bitCodingTest(unit, 48));
+    bitCodingTest(unit, 48);
   }
 }
 } // namespace TMIV::MivBitstream

@@ -43,7 +43,7 @@ casme_depth_quantization_params_present_flag=true
 casme_vui_params_present_flag=false
 )");
 
-    REQUIRE(bitCodingTest(unit, 3));
+    bitCodingTest(unit, 3);
   }
 
   SECTION("Include default VUI Parameters") {
@@ -62,7 +62,7 @@ vui_display_box_info_present_flag=false
 vui_anchor_point_present_flag=false
 )");
 
-    REQUIRE(bitCodingTest(unit, 9));
+    bitCodingTest(unit, 9);
   }
 }
 

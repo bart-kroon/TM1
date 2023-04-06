@@ -101,6 +101,7 @@ NumBytesInRbsp=2
 afps_atlas_frame_parameter_set_id=0
 afps_atlas_sequence_parameter_set_id=0
 afti_single_tile_in_atlas_frame_flag=true
+afti_num_tiles_in_atlas_frame_minus1=0
 afti_signalled_tile_id_flag=false
 afps_output_flag_present_flag=false
 afps_num_ref_idx_default_active_minus1=0

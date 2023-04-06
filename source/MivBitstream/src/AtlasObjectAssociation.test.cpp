@@ -48,7 +48,7 @@ aoa_num_updates=0
                                            + 1  // aoa_reset_flag
                                            + 6  // aoa_num_atlases_minus1
                                            + 1; // aoa_num_updates
-    REQUIRE(bitCodingTest(unit, expected_number_of_bits));
+    bitCodingTest(unit, expected_number_of_bits);
   }
 
   SECTION("Set all fields") {
@@ -83,7 +83,7 @@ aoa_object_in_atlas(2, 1)=true
                                            + 12 // aoa_atlas_id
                                            + 9  // aoa_object_idx
                                            + 6; // aoa_object_in_atlas
-    REQUIRE(bitCodingTest(unit, expected_number_of_bits));
+    bitCodingTest(unit, expected_number_of_bits);
   }
 }
 

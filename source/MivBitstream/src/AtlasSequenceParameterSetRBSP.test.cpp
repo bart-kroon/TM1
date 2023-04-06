@@ -45,7 +45,7 @@ TEST_CASE("ref_list_struct", "[Atlas Sequence Parameter Set RBSP]") {
     REQUIRE(x.num_ref_entries() == 0);
     REQUIRE(toString(x, uint8_t{7}) == R"(num_ref_entries( 7 )=0
 )");
-    REQUIRE(bitCodingTest(x, 1, asps));
+    bitCodingTest(x, 1, asps);
   }
 
   SECTION("Some values") {
@@ -63,7 +63,7 @@ DeltaAfocSt( 3, 4 )=1
 DeltaAfocSt( 3, 5 )=13
 DeltaAfocSt( 3, 6 )=32767
 )");
-    REQUIRE(bitCodingTest(x, 94, asps));
+    bitCodingTest(x, 94, asps);
   }
 }
 
@@ -80,7 +80,7 @@ TEST_CASE("asps_vpcc_extension", "[Atlas Sequence Parameter Set RBSP]") {
     REQUIRE(toString(x) == R"(asps_vpcc_remove_duplicate_point_enabled_flag=true
 )");
 
-    REQUIRE(bitCodingTest(x, 1, asps));
+    bitCodingTest(x, 1, asps);
   }
 }
 
@@ -96,7 +96,7 @@ asme_patch_texture_offset_enabled_flag=false
 asme_max_entity_id=0
 asme_inpaint_enabled_flag=false
 )");
-    REQUIRE(bitCodingTest(unit, 8));
+    bitCodingTest(unit, 8);
   }
 
   SECTION("Embedded Occupancy enabled") {
@@ -121,7 +121,7 @@ asme_patch_texture_offset_bit_depth_minus1=3
 asme_max_entity_id=15
 asme_inpaint_enabled_flag=true
 )");
-    REQUIRE(bitCodingTest(unit, 27));
+    bitCodingTest(unit, 27);
   }
 
   SECTION("Embedded occupancy disabled, occupancy scale enabled") {
@@ -141,7 +141,7 @@ asme_patch_texture_offset_enabled_flag=false
 asme_max_entity_id=0
 asme_inpaint_enabled_flag=false
 )");
-    REQUIRE(bitCodingTest(unit, 16));
+    bitCodingTest(unit, 16);
   }
 }
 

@@ -36,13 +36,92 @@
 #include <TMIV/MivBitstream/AtlasFrameParameterSetRBSP.h>
 
 namespace TMIV::MivBitstream {
-TEST_CASE("atlas_frame_tile_information", "[Atlas Frame Parameter Set RBSP]") {
+TEST_CASE("atlas_frame_tile_information 1", "[Atlas Frame Parameter Set RBSP]") {
   const auto x = AtlasFrameTileInformation{};
-  const auto aspsV = std::vector<AtlasSequenceParameterSetRBSP>{{}};
+  const auto asps = AtlasSequenceParameterSetRBSP{};
   REQUIRE(toString(x) == R"(afti_single_tile_in_atlas_frame_flag=true
+afti_num_tiles_in_atlas_frame_minus1=0
 afti_signalled_tile_id_flag=false
 )");
-  REQUIRE(bitCodingTest(x, 2, aspsV));
+  bitCodingTest(x, 2, asps);
+}
+
+TEST_CASE("atlas_frame_tile_information 2", "[Atlas Frame Parameter Set RBSP]") {
+  const auto asps = AtlasSequenceParameterSetRBSP{}.asps_frame_width(192).asps_frame_height(256);
+
+  const auto x = [&asps]() {
+    auto result = AtlasFrameTileInformation{}.afti_single_tile_in_atlas_frame_flag(false);
+    result.afti_num_tiles_in_atlas_frame_minus1(
+        Common::downCast<uint8_t>(result.numPartitionsInAtlasFrame(asps) - 1));
+    return result;
+  }();
+
+  REQUIRE(toString(x) == R"(afti_single_tile_in_atlas_frame_flag=false
+afti_uniform_partition_spacing_flag=true
+afti_partition_cols_width_minus1=0
+afti_partition_rows_height_minus1=0
+afti_single_partition_per_tile_flag=true
+afti_num_tiles_in_atlas_frame_minus1=11
+afti_signalled_tile_id_flag=false
+)");
+  bitCodingTest(x, 6, asps);
+}
+
+TEST_CASE("atlas_frame_tile_information 3", "[Atlas Frame Parameter Set RBSP]") {
+  const auto asps = AtlasSequenceParameterSetRBSP{};
+  const auto x = AtlasFrameTileInformation{}
+                     .afti_single_tile_in_atlas_frame_flag(false)
+                     .afti_uniform_partition_spacing_flag(false)
+                     .afti_num_partition_columns_minus1(3)
+                     .afti_num_partition_rows_minus1(2)
+                     .afti_partition_column_width_minus1(1, 6)
+                     .afti_partition_row_height_minus1(1, 5)
+                     .afti_num_tiles_in_atlas_frame_minus1(11);
+
+  REQUIRE(toString(x) == R"(afti_single_tile_in_atlas_frame_flag=false
+afti_uniform_partition_spacing_flag=false
+afti_num_partition_columns_minus1=3
+afti_num_partition_rows_minus1=2
+afti_partition_column_width_minus1[ 0 ]=0
+afti_partition_column_width_minus1[ 1 ]=6
+afti_partition_column_width_minus1[ 2 ]=0
+afti_partition_row_height_minus1[ 0 ]=0
+afti_partition_row_height_minus1[ 1 ]=5
+afti_single_partition_per_tile_flag=true
+afti_num_tiles_in_atlas_frame_minus1=11
+afti_signalled_tile_id_flag=false
+)");
+  bitCodingTest(x, 25, asps);
+}
+
+TEST_CASE("atlas_frame_tile_information 4", "[Atlas Frame Parameter Set RBSP]") {
+  static constexpr auto gridWidth = 13;
+  static constexpr auto gridHeight = 6;
+  static constexpr auto colsWidth = 2;
+  static constexpr auto rowsHeight = 3;
+  static constexpr auto frameWidth = gridWidth * colsWidth * 64;
+  static constexpr auto frameHeight = gridHeight * rowsHeight * 64;
+  static constexpr auto numTiles = gridWidth * gridHeight;
+
+  const auto asps =
+      AtlasSequenceParameterSetRBSP{}.asps_frame_width(frameWidth).asps_frame_height(frameHeight);
+
+  const auto x = AtlasFrameTileInformation{}
+                     .afti_single_tile_in_atlas_frame_flag(false)
+                     .afti_uniform_partition_spacing_flag(true)
+                     .afti_partition_cols_width_minus1(colsWidth - 1)
+                     .afti_partition_rows_height_minus1(rowsHeight - 1)
+                     .afti_num_tiles_in_atlas_frame_minus1(static_cast<uint8_t>(numTiles - 1));
+
+  REQUIRE(toString(x) == R"(afti_single_tile_in_atlas_frame_flag=false
+afti_uniform_partition_spacing_flag=true
+afti_partition_cols_width_minus1=1
+afti_partition_rows_height_minus1=2
+afti_single_partition_per_tile_flag=true
+afti_num_tiles_in_atlas_frame_minus1=77
+afti_signalled_tile_id_flag=false
+)");
+  bitCodingTest(x, 10, asps);
 }
 
 TEST_CASE("atlas_frame_parameter_set_rbsp", "[Atlas Frame Parameter Set RBSP]") {
@@ -51,6 +130,7 @@ TEST_CASE("atlas_frame_parameter_set_rbsp", "[Atlas Frame Parameter Set RBSP]") 
   REQUIRE(toString(x) == R"(afps_atlas_frame_parameter_set_id=0
 afps_atlas_sequence_parameter_set_id=0
 afti_single_tile_in_atlas_frame_flag=true
+afti_num_tiles_in_atlas_frame_minus1=0
 afti_signalled_tile_id_flag=false
 afps_output_flag_present_flag=false
 afps_num_ref_idx_default_active_minus1=0
@@ -66,6 +146,7 @@ afps_extension_present_flag=false
     REQUIRE(toString(x) == R"(afps_atlas_frame_parameter_set_id=0
 afps_atlas_sequence_parameter_set_id=0
 afti_single_tile_in_atlas_frame_flag=true
+afti_num_tiles_in_atlas_frame_minus1=0
 afti_signalled_tile_id_flag=false
 afps_output_flag_present_flag=false
 afps_num_ref_idx_default_active_minus1=0
@@ -100,6 +181,7 @@ afps_extension_present_flag=false
     REQUIRE(toString(x) == R"(afps_atlas_frame_parameter_set_id=63
 afps_atlas_sequence_parameter_set_id=63
 afti_single_tile_in_atlas_frame_flag=true
+afti_num_tiles_in_atlas_frame_minus1=0
 afti_signalled_tile_id_flag=false
 afps_output_flag_present_flag=true
 afps_num_ref_idx_default_active_minus1=14
@@ -138,6 +220,7 @@ afps_extension_data_flag=true
     REQUIRE(toString(x) == R"(afps_atlas_frame_parameter_set_id=63
 afps_atlas_sequence_parameter_set_id=63
 afti_single_tile_in_atlas_frame_flag=true
+afti_num_tiles_in_atlas_frame_minus1=0
 afti_signalled_tile_id_flag=false
 afps_output_flag_present_flag=true
 afps_num_ref_idx_default_active_minus1=14

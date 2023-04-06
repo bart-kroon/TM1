@@ -44,7 +44,7 @@ TEST_CASE("AtlasId", "[V3C Parameter Set]") {
     const auto j = AtlasId{};
     REQUIRE(toString(j) == "0");
     REQUIRE(j == j);
-    REQUIRE(bitCodingTest(j, 6));
+    bitCodingTest(j, 6);
   }
 
   SECTION("Explicit conversion constructor") {
@@ -52,6 +52,6 @@ TEST_CASE("AtlasId", "[V3C Parameter Set]") {
     REQUIRE(toString(j) == "42");
     REQUIRE(j == j);
     REQUIRE(j != AtlasId{});
-    REQUIRE(bitCodingTest(j, 6));
+    bitCodingTest(j, 6);
   }
 }

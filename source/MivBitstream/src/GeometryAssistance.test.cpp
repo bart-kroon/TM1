@@ -71,7 +71,7 @@ block y=0 x=1 gas_split_flag=1 gas_quad_split_flag=1 [gas_skip_flag=0,gas_zmin_d
 block y=1 x=0 gas_split_flag=0 [gas_skip_flag=0,gas_zmin_delta=88,gas_zmax_delta=213]
 block y=1 x=1 gas_split_flag=0 [gas_skip_flag=0,gas_ltmin_flag=0,gas_ltmax_flag=0,gas_zmin_delta=-4,gas_zmax_delta=-221]
 )");
-    REQUIRE(bitCodingTest(ga, 319));
+    bitCodingTest(ga, 319);
   }
 }
 } // namespace TMIV::MivBitstream

@@ -48,13 +48,13 @@ const auto viewportCameraParameters =
 } // namespace examples
 
 TEST_CASE("View camera parameters coding") {
-  REQUIRE(bitCodingTest(examples::viewportCameraParameters[0], 11));
-  REQUIRE(bitCodingTest(examples::viewportCameraParameters[1], 143));
-  REQUIRE(bitCodingTest(examples::viewportCameraParameters[2], 11));
-  REQUIRE(bitCodingTest(examples::viewportCameraParameters[3], 143));
-  REQUIRE(bitCodingTest(examples::viewportCameraParameters[4], 143));
-  REQUIRE(bitCodingTest(examples::viewportCameraParameters[5], 143));
-  REQUIRE(bitCodingTest(examples::viewportCameraParameters[6], 143));
+  bitCodingTest(examples::viewportCameraParameters[0], 11);
+  bitCodingTest(examples::viewportCameraParameters[1], 143);
+  bitCodingTest(examples::viewportCameraParameters[2], 11);
+  bitCodingTest(examples::viewportCameraParameters[3], 143);
+  bitCodingTest(examples::viewportCameraParameters[4], 143);
+  bitCodingTest(examples::viewportCameraParameters[5], 143);
+  bitCodingTest(examples::viewportCameraParameters[6], 143);
 }
 
 TEST_CASE("View camera parameters perspective") {
@@ -70,7 +70,7 @@ TEST_CASE("View camera parameters perspective") {
   vcp.vcp_perspective_horizontal_fov =
       std::clamp(static_cast<uint32_t>(std::round(fov * 65536.F)), 0U, 180U * 65536U - 1U);
 
-  REQUIRE(bitCodingTest(vcp, 143));
+  bitCodingTest(vcp, 143);
 }
 
 TEST_CASE("View camera parameters from view params") {
@@ -89,6 +89,6 @@ TEST_CASE("View camera parameters from view params") {
   auto vp = TMIV::MivBitstream::ViewParams(json);
   ViewportCameraParameters unit = ViewportCameraParameters::fromViewParams(vp);
 
-  REQUIRE(bitCodingTest(unit, 143));
+  bitCodingTest(unit, 143);
 }
 } // namespace TMIV::MivBitstream

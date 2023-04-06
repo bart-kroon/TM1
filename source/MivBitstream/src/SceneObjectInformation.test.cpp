@@ -59,7 +59,7 @@ soi_num_object_updates=0
     const size_t expected_number_of_bits = 1    // soi_persistence_flag
                                            + 1  // soi_reset_flag
                                            + 1; // soi_num_object_updates
-    REQUIRE(bitCodingTest(unit, expected_number_of_bits));
+    bitCodingTest(unit, expected_number_of_bits);
   }
 
   int32_t expected_number_of_bits = 1    // soi_persistence_flag
@@ -98,7 +98,7 @@ soi_object_cancel_flag(3)=false
                                   (3      // soi_object_idx
                                    + 1)); // soi_object_cancel_flag
 
-    REQUIRE(bitCodingTest(unit, expected_number_of_bits));
+    bitCodingTest(unit, expected_number_of_bits);
   }
 
   expected_number_of_bits += 3       // soi_num_object_updates
@@ -130,7 +130,7 @@ soi_object_cancel_flag(0)=false
 soi_object_idx=1
 soi_object_cancel_flag(1)=false
 )");
-    REQUIRE(bitCodingTest(unit, expected_number_of_bits));
+    bitCodingTest(unit, expected_number_of_bits);
   }
 
   expected_number_of_bits += 5       // soi_3d_bounding_box_scale_log2
@@ -189,7 +189,7 @@ soi_collision_shape_update_flag(1)=false
 soi_point_style_update_flag(1)=false
 soi_material_id_update_flag(1)=false
 )");
-    REQUIRE(bitCodingTest(unit, expected_number_of_bits));
+    bitCodingTest(unit, expected_number_of_bits);
   }
 
   SECTION("Custom fields, complex objects with all fields filled") {
@@ -287,7 +287,7 @@ soi_material_id(1)=6
                                        + 16    // soi_point_size
                                        + 16    // soi_material_id
                                    );
-    REQUIRE(bitCodingTest(unit, expected_number_of_bits));
+    bitCodingTest(unit, expected_number_of_bits);
   }
 }
 

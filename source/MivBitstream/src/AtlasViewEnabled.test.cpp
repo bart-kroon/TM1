@@ -41,7 +41,7 @@ TEST_CASE("atlas_view_enabled", "[Atlas view enabled SEI payload syntax]") {
     const auto x = AtlasViewEnabled{};
     REQUIRE(toString(x) == R"(ave_cancel_flag=true
 )");
-    REQUIRE(bitCodingTest(x, 1));
+    bitCodingTest(x, 1);
   }
 
   SECTION("1 Atlas - 5 Views where only 4 enabled and 2 of them are complete") {
@@ -76,7 +76,7 @@ ave_view_complete_in_atlas_flag[ 0 ][ 3 ]=true
 ave_view_enabled_in_atlas_flag[ 0 ][ 4 ]=true
 ave_view_complete_in_atlas_flag[ 0 ][ 4 ]=false
 )");
-    REQUIRE(bitCodingTest(x, 33));
+    bitCodingTest(x, 33);
   }
 
   SECTION("3 Atlases - 2 Views each where only views in 2nd atlas are complete") {
@@ -117,7 +117,7 @@ ave_atlas_id[ 2 ]=2
 ave_view_enabled_in_atlas_flag[ 2 ][ 0 ]=false
 ave_view_enabled_in_atlas_flag[ 2 ][ 1 ]=false
 )");
-    REQUIRE(bitCodingTest(x, 40));
+    bitCodingTest(x, 40);
   }
 }
 } // namespace TMIV::MivBitstream

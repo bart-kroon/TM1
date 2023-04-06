@@ -178,7 +178,7 @@ block y=0 x=1 bbgf_split_flag=1 bbgf_quad_split_flag=1 [ bbgf_split_flag=0 bbgf_
 block y=1 x=0 bbgf_split_flag=0 bbgf_skip_flag=0 bbgf_zmin_delta=88 bbgf_zmax_delta=213
 block y=1 x=1 bbgf_split_flag=0 bbgf_skip_flag=0 bbgf_ltmin_flag=0 bbgf_ltmax_flag=0 bbgf_zmin_delta=-4 bbgf_zmax_delta=-221
 )");
-    REQUIRE(bitCodingTest(ega, 374));
+    bitCodingTest(ega, 374);
   }
 }
 } // namespace TMIV::MivBitstream

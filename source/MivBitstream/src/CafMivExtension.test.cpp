@@ -51,7 +51,7 @@ ci_erp_theta_min[ 1 ]=0
 ci_erp_theta_max[ 1 ]=0
 )");
 
-    REQUIRE(bitCodingTest(unit, 168));
+    bitCodingTest(unit, 168);
   }
 
   SECTION("equirectangular custom") {
@@ -70,7 +70,7 @@ ci_erp_theta_min[ 1 ]=-1
 ci_erp_theta_max[ 1 ]=1
 )");
 
-    REQUIRE(bitCodingTest(unit, 168));
+    bitCodingTest(unit, 168);
   }
 
   SECTION("perspective") {
@@ -91,7 +91,7 @@ ci_perspective_center_hor[ 1 ]=10
 ci_perspective_center_ver[ 1 ]=5
 )");
 
-    REQUIRE(bitCodingTest(unit, 168));
+    bitCodingTest(unit, 168);
   }
 
   SECTION("orthographic") {
@@ -108,7 +108,7 @@ ci_ortho_width[ 1 ]=100
 ci_ortho_height[ 1 ]=50
 )");
 
-    REQUIRE(bitCodingTest(unit, 104));
+    bitCodingTest(unit, 104);
   }
 }
 
@@ -123,7 +123,7 @@ ce_view_quat_y[ 1 ]=0
 ce_view_quat_z[ 1 ]=0
 )");
 
-  REQUIRE(bitCodingTest(unit, 192));
+  bitCodingTest(unit, 192);
 
   SECTION("Example") {
     unit.ce_view_pos_x(3.F)
@@ -141,7 +141,7 @@ ce_view_quat_y[ 1 ]=-1239
 ce_view_quat_z[ 1 ]=0
 )");
 
-    REQUIRE(bitCodingTest(unit, 192));
+    bitCodingTest(unit, 192);
   }
 }
 
@@ -154,7 +154,7 @@ dq_norm_disp_high[ 7 ]=0
 dq_depth_occ_threshold_default[ 7 ]=0
 )");
 
-  REQUIRE(bitCodingTest(unit, 66));
+  bitCodingTest(unit, 66);
 
   SECTION("Example 2") {
     unit.dq_norm_disp_low(0.02F);
@@ -167,7 +167,7 @@ dq_norm_disp_high[ 2 ]=2
 dq_depth_occ_threshold_default[ 2 ]=200
 )");
 
-    REQUIRE(bitCodingTest(unit, 80));
+    bitCodingTest(unit, 80);
   }
 }
 
@@ -178,7 +178,7 @@ TEST_CASE("pruning_parent", "[Common Atlas Frame MIV Extension]") {
 )");
 
     const uint16_t mvp_num_views_minus1 = 10;
-    REQUIRE(bitCodingTest(unit, 1, mvp_num_views_minus1));
+    bitCodingTest(unit, 1, mvp_num_views_minus1);
   }
 
   SECTION("Example 2") {
@@ -192,7 +192,7 @@ pp_parent_idx[ 5 ][ 3 ]=8
 )");
 
     const uint16_t mvp_num_views_minus1 = 10;
-    REQUIRE(bitCodingTest(unit, 21, mvp_num_views_minus1));
+    bitCodingTest(unit, 21, mvp_num_views_minus1);
   }
 }
 
@@ -222,7 +222,7 @@ ci_erp_theta_max[ 0 ]=0
 mvp_pruning_graph_params_present_flag=false
 )");
 
-    REQUIRE(bitCodingTest(unit, 380, casps));
+    bitCodingTest(unit, 380, casps);
     REQUIRE(unit.mvp_view_id(0) == ViewId{});
   }
 
@@ -261,7 +261,7 @@ dq_depth_occ_threshold_default[ 0 ]=0
 mvp_pruning_graph_params_present_flag=false
 )");
 
-    REQUIRE(bitCodingTest(unit, 383, casps));
+    bitCodingTest(unit, 383, casps);
   }
 
   SECTION("Example 2") {
@@ -322,7 +322,7 @@ pp_is_root_flag[ 1 ]=true
 pp_is_root_flag[ 2 ]=true
 )");
 
-    REQUIRE(bitCodingTest(unit, 820, casps));
+    bitCodingTest(unit, 820, casps);
     REQUIRE(unit.mvp_view_id(0) == ViewId{0});
     REQUIRE(unit.mvp_view_id(2) == ViewId{1});
     REQUIRE(unit.mvp_view_id(1) == ViewId{2});
@@ -351,7 +351,7 @@ ci_erp_theta_max[ 0 ]=0
 mvp_pruning_graph_params_present_flag=false
 )");
 
-    REQUIRE(bitCodingTest(unit, 380, casps));
+    bitCodingTest(unit, 380, casps);
   }
 }
 
@@ -415,7 +415,7 @@ pp_is_root_flag[ 1 ]=true
 pp_is_root_flag[ 2 ]=true
 )");
 
-    REQUIRE(bitCodingTest(unit, 772, nalIdrCaf, casps));
+    bitCodingTest(unit, 772, nalIdrCaf, casps);
   }
 
   SECTION("Update extrinsics") {
@@ -447,7 +447,7 @@ ce_view_quat_y[ 0 ]=-32768
 ce_view_quat_z[ 0 ]=1
 )");
 
-    REQUIRE(bitCodingTest(unit, 227, nalCaf, casps));
+    bitCodingTest(unit, 227, nalCaf, casps);
   }
 
   SECTION("Update camera intrinsics") {
@@ -479,7 +479,7 @@ ci_erp_theta_min[ 0 ]=-1
 ci_erp_theta_max[ 0 ]=1
 )");
 
-    REQUIRE(bitCodingTest(unit, 203, nalCaf, casps));
+    bitCodingTest(unit, 203, nalCaf, casps);
   }
 
   SECTION("Update depth quantization") {
@@ -506,7 +506,7 @@ dq_norm_disp_high[ 0 ]=100
 dq_depth_occ_threshold_default[ 0 ]=64
 )");
 
-    REQUIRE(bitCodingTest(unit, 113, nalCaf, casps));
+    bitCodingTest(unit, 113, nalCaf, casps);
   }
 
   SECTION("came when casme_depth_quantization_params_present_flag=0") {
@@ -517,7 +517,7 @@ dq_depth_occ_threshold_default[ 0 ]=64
 came_update_intrinsics_flag=false
 )");
 
-    REQUIRE(bitCodingTest(unit, 2, nalCaf, casps));
+    bitCodingTest(unit, 2, nalCaf, casps);
   }
 }
 
@@ -545,7 +545,7 @@ ce_view_quat_y[ 0 ]=-1
 ce_view_quat_z[ 0 ]=0
 )");
 
-    REQUIRE(bitCodingTest(unit, 224));
+    bitCodingTest(unit, 224);
   }
   SECTION("Example 1: Test with 2 update.") {
     unit.mvpue_num_view_updates_minus1(1);
@@ -583,7 +583,7 @@ ce_view_quat_y[ 1 ]=6
 ce_view_quat_z[ 1 ]=9
 )");
 
-    REQUIRE(bitCodingTest(unit, 432));
+    bitCodingTest(unit, 432);
   }
 }
 
@@ -601,7 +601,7 @@ ci_erp_phi_max[ 0 ]=0
 ci_erp_theta_min[ 0 ]=0
 ci_erp_theta_max[ 0 ]=0
 )");
-    REQUIRE(bitCodingTest(unit, 200));
+    bitCodingTest(unit, 200);
   }
 
   SECTION("Example 1: Test with 1 update.") {
@@ -624,7 +624,7 @@ ci_erp_phi_max[ 0 ]=2
 ci_erp_theta_min[ 0 ]=-1
 ci_erp_theta_max[ 0 ]=1
 )");
-    REQUIRE(bitCodingTest(unit, 200));
+    bitCodingTest(unit, 200);
   }
 
   SECTION("Example 1: Test with 2 updates.") {
@@ -660,7 +660,7 @@ ci_projection_plane_height_minus1[ 1 ]=767
 ci_ortho_width[ 1 ]=100
 ci_ortho_height[ 1 ]=50
 )");
-    REQUIRE(bitCodingTest(unit, 320));
+    bitCodingTest(unit, 320);
   }
 }
 
@@ -682,7 +682,7 @@ dq_norm_disp_low[ 0 ]=1
 dq_norm_disp_high[ 0 ]=100
 dq_depth_occ_threshold_default[ 0 ]=64
 )");
-    REQUIRE(bitCodingTest(unit, 110));
+    bitCodingTest(unit, 110);
   }
 }
 } // namespace TMIV::MivBitstream

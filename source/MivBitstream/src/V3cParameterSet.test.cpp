@@ -54,7 +54,7 @@ ptl_toolset_constraints_present_flag=false
 
   CHECK(x.profile() == "AVC Progressive High V-PCC Basic Rec0");
 
-  REQUIRE(bitCodingTest(x, 72));
+  bitCodingTest(x, 72);
 
   SECTION("Example 1") {
     x.ptl_tier_flag(true)
@@ -84,7 +84,7 @@ ptl_toolset_constraints_present_flag=false
 
     CHECK(x.profile() == "HEVC Main10 V-PCC Extended");
 
-    REQUIRE(bitCodingTest(x, 200));
+    bitCodingTest(x, 200);
   }
 
   SECTION("Example 2") {
@@ -129,7 +129,7 @@ ptc_num_reserved_constraint_bytes=0
 
     CHECK(x.profile() == "HEVC Main10 V-PCC Extended Still");
 
-    REQUIRE(bitCodingTest(x, 240));
+    bitCodingTest(x, 240);
   }
 }
 
@@ -150,7 +150,7 @@ ptc_restricted_geometry_flag=false
 ptc_num_reserved_constraint_bytes=0
 )");
 
-  REQUIRE(bitCodingTest(x, 40));
+  bitCodingTest(x, 40);
 
   SECTION("Example 1") {
     x.ptc_one_v3c_frame_only_flag(true)
@@ -178,7 +178,7 @@ ptc_restricted_geometry_flag=false
 ptc_num_reserved_constraint_bytes=0
 )");
 
-    REQUIRE(bitCodingTest(x, 40));
+    bitCodingTest(x, 40);
   }
 }
 
@@ -191,7 +191,7 @@ oi_occupancy_2d_bit_depth_minus1[ 3 ]=0
 oi_occupancy_MSB_align_flag[ 3 ]=false
 )");
 
-  REQUIRE(bitCodingTest(x, 22));
+  bitCodingTest(x, 22);
 
   SECTION("Example") {
     x.oi_occupancy_codec_id(255)
@@ -205,7 +205,7 @@ oi_occupancy_2d_bit_depth_minus1[ 4 ]=31
 oi_occupancy_MSB_align_flag[ 4 ]=true
 )");
 
-    REQUIRE(bitCodingTest(x, 22));
+    bitCodingTest(x, 22);
   }
 }
 
@@ -222,7 +222,7 @@ gi_geometry_MSB_align_flag[ 0 ]=false
 gi_geometry_3d_coordinates_bit_depth_minus1[ 0 ]=0
 )");
 
-  REQUIRE(bitCodingTest(x, 19, vps, atlasId));
+  bitCodingTest(x, 19, vps, atlasId);
 
   SECTION("Example") {
     x.gi_geometry_codec_id(255)
@@ -236,7 +236,7 @@ gi_geometry_MSB_align_flag[ 0 ]=true
 gi_geometry_3d_coordinates_bit_depth_minus1[ 0 ]=31
 )");
 
-    REQUIRE(bitCodingTest(x, 19, vps, atlasId));
+    bitCodingTest(x, 19, vps, atlasId);
   }
 }
 
@@ -251,7 +251,7 @@ TEST_CASE("attribute_information", "[V3C Parameter Set]") {
     REQUIRE(toString(x, AtlasId{5}) == R"(ai_attribute_count[ 5 ]=0
 )");
 
-    REQUIRE(bitCodingTest(x, 7, vps, atlasId));
+    bitCodingTest(x, 7, vps, atlasId);
   }
   SECTION("Two attributes") {
     auto x = AttributeInformation{};
@@ -279,7 +279,7 @@ ai_attribute_2d_bit_depth_minus1[ 7 ][ 1 ]=12
 ai_attribute_MSB_align_flag[ 7 ][ 1 ]=true
 )");
 
-    REQUIRE(bitCodingTest(x, 67, vps, atlasId));
+    bitCodingTest(x, 67, vps, atlasId);
   }
 }
 
@@ -309,7 +309,7 @@ pin_region_unpack_top_left_y[ 4 ][ 0 ]=0
 pin_region_rotation_flag[ 4 ][ 0 ]=false
 )");
 
-    REQUIRE(bitCodingTest(unit, 133));
+    bitCodingTest(unit, 133);
   }
 
   SECTION("2 Regions: 1 Attribute + 1 Geometry") {
@@ -378,7 +378,7 @@ pin_region_map_index[ 3 ][ 1 ]=1
 pin_region_auxiliary_data_flag[ 3 ][ 1 ]=true
 )");
 
-    REQUIRE(bitCodingTest(unit, 280));
+    bitCodingTest(unit, 280);
   }
 
   SECTION("4 Regions: 1 Attribute + 2 Geometry + 1 Occupancy") {
@@ -487,7 +487,7 @@ pin_region_unpack_top_left_y[ 3 ][ 3 ]=0
 pin_region_rotation_flag[ 3 ][ 3 ]=false
 )");
 
-    REQUIRE(bitCodingTest(unit, 526));
+    bitCodingTest(unit, 526);
   }
 }
 
@@ -501,7 +501,7 @@ TEST_CASE("group_mapping", "[V3C Parameter Set]") {
     REQUIRE(unit.gm_group_count() == 0);
     REQUIRE(toString(unit) == R"(gm_group_count=0
 )");
-    REQUIRE(bitCodingTest(unit, 4, vps));
+    bitCodingTest(unit, 4, vps);
   }
 
   SECTION("Two groups") {
@@ -514,7 +514,7 @@ TEST_CASE("group_mapping", "[V3C Parameter Set]") {
 gm_group_id[ 0 ]=1
 gm_group_id[ 1 ]=0
 )");
-    REQUIRE(bitCodingTest(unit, 6, vps));
+    bitCodingTest(unit, 6, vps);
   }
 }
 

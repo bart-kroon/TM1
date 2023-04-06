@@ -52,13 +52,6 @@
         "resolution": [1024, 512],
         "segmentsPerEdge": 20
     },
-    "Tiling": {
-        "numberPartitionCol": 2,
-        "numberPartitionRow": 4,
-        "partitionHeight": [320, 320, 320, 64],
-        "partitionWidth": [512, 512],
-        "singlePartitionPerTileFlag": true
-    },
     "ViewOptimizerMethod": "ServerSideInpainter",
     "bitDepthGeometryVideo": 10,
     "bitDepthTextureVideo": 10,
@@ -97,6 +90,8 @@
     "outputDirectory": ".",
     "outputGeometryVideoDataPathFmt": "T{0}/{1}/TMIV_T{0}_{1}_geo_c{3:02}_{4}x{5}_{6}.yuv",
     "outputTextureVideoDataPathFmt": "T{0}/{1}/TMIV_T{0}_{1}_tex_c{3:02}_{4}x{5}_{6}.yuv",
+    "partitionHeight": [320, 320, 320, 64],
+    "partitionWidth": [512, 512],
     "patchRedundancyRemoval": true,
     "reconstructionIdc": "Rec Unconstrained",
     "rewriteParameterSets": false,

@@ -46,11 +46,12 @@ static constexpr auto maxIntraPeriod = 32;
 struct Configuration {
   explicit Configuration(const Common::Json &componentNode);
 
-  int32_t numberPartitionRow{};
-  int32_t numberPartitionCol{};
   std::vector<int32_t> partitionWidth;
   std::vector<int32_t> partitionHeight;
-  bool singlePartitionPerTileFlag{};
+
+  [[nodiscard]] auto singleTileInAtlas() const {
+    return partitionWidth.empty() && partitionHeight.empty();
+  }
 
   // Main parameters
   int32_t intraPeriod;

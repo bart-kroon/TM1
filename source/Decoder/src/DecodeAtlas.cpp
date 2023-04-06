@@ -73,9 +73,9 @@ protected:
 
     VERIFY_V3CBITSTREAM(isAcl(nut()));
 
-    const auto tileNumsMinus1 =
-        m_afpsV.front().atlas_frame_tile_information().afti_num_tiles_in_atlas_frame_minus1();
-    for (int32_t tileIdx = 0; tileIdx <= tileNumsMinus1; ++tileIdx) {
+    const auto &afti = au.afps.atlas_frame_tile_information();
+
+    for (uint8_t tileIdx = 0; tileIdx <= afti.afti_num_tiles_in_atlas_frame_minus1(); ++tileIdx) {
       decodeAclNalUnit(au, tileIdx);
       m_nu = pull();
     }

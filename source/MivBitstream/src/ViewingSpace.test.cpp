@@ -174,14 +174,14 @@ auto loadJson(const std::string &strNode, const std::string &strConfig) -> Type 
 } // namespace
 
 TEST_CASE("Viewing space coding") {
-  REQUIRE(bitCodingTest(examples::viewingSpace[0], 115));
-  REQUIRE(bitCodingTest(examples::viewingSpace[1], 199));
-  REQUIRE(bitCodingTest(examples::viewingSpace[2], 179));
-  REQUIRE(bitCodingTest(examples::viewingSpace[3], 195));
-  REQUIRE(bitCodingTest(examples::viewingSpace[4], 555));
-  REQUIRE(bitCodingTest(examples::viewingSpace[5], 115));
-  REQUIRE(bitCodingTest(examples::viewingSpace[6], 275));
-  REQUIRE(bitCodingTest(examples::viewingSpace[7], 83));
+  bitCodingTest(examples::viewingSpace[0], 115);
+  bitCodingTest(examples::viewingSpace[1], 199);
+  bitCodingTest(examples::viewingSpace[2], 179);
+  bitCodingTest(examples::viewingSpace[3], 195);
+  bitCodingTest(examples::viewingSpace[4], 555);
+  bitCodingTest(examples::viewingSpace[5], 115);
+  bitCodingTest(examples::viewingSpace[6], 275);
+  bitCodingTest(examples::viewingSpace[7], 83);
 }
 
 TEST_CASE("Viewing space JSON") {

@@ -41,7 +41,7 @@ TEST_CASE("viewing_space_handling", "[Viewing space handling SEI payload syntax]
     const auto x = ViewingSpaceHandling{};
     REQUIRE(toString(x) == R"(vs_handling_options_count=0
 )");
-    REQUIRE(bitCodingTest(x, 1));
+    bitCodingTest(x, 1);
   }
 
   SECTION("Example 1") {
@@ -52,7 +52,7 @@ vs_handling_device_class( 0 )=VHDC_ALL
 vs_handling_application_class( 0 )=VHAC_ALL
 vs_handling_method( 0 )=VHM_FADE
 )");
-    REQUIRE(bitCodingTest(x, 21));
+    bitCodingTest(x, 21);
   }
 
   SECTION("Example 2") {
@@ -71,7 +71,7 @@ vs_handling_device_class( 2 )=VHDC_ALL
 vs_handling_application_class( 2 )=VHAC_ALL
 vs_handling_method( 2 )=VHM_EXTRAP
 )");
-    REQUIRE(bitCodingTest(x, 59));
+    bitCodingTest(x, 59);
   }
 }
 } // namespace TMIV::MivBitstream

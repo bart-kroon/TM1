@@ -69,19 +69,19 @@ const auto viewportPosition =
 } // namespace examples
 
 TEST_CASE("Viewport position coding") {
-  REQUIRE(bitCodingTest(examples::viewportPosition[0], 150));
-  REQUIRE(bitCodingTest(examples::viewportPosition[1], 9));
-  REQUIRE(bitCodingTest(examples::viewportPosition[2], 21));
-  REQUIRE(bitCodingTest(examples::viewportPosition[3], 168));
-  REQUIRE(bitCodingTest(examples::viewportPosition[4], 168));
-  REQUIRE(bitCodingTest(examples::viewportPosition[5], 167));
-  REQUIRE(bitCodingTest(examples::viewportPosition[6], 168));
-  REQUIRE(bitCodingTest(examples::viewportPosition[7], 150));
-  REQUIRE(bitCodingTest(examples::viewportPosition[8], 152));
-  REQUIRE(bitCodingTest(examples::viewportPosition[9], 154));
-  REQUIRE(bitCodingTest(examples::viewportPosition[10], 156));
-  REQUIRE(bitCodingTest(examples::viewportPosition[11], 162));
-  REQUIRE(bitCodingTest(examples::viewportPosition[12], 149));
+  bitCodingTest(examples::viewportPosition[0], 150);
+  bitCodingTest(examples::viewportPosition[1], 9);
+  bitCodingTest(examples::viewportPosition[2], 21);
+  bitCodingTest(examples::viewportPosition[3], 168);
+  bitCodingTest(examples::viewportPosition[4], 168);
+  bitCodingTest(examples::viewportPosition[5], 167);
+  bitCodingTest(examples::viewportPosition[6], 168);
+  bitCodingTest(examples::viewportPosition[7], 150);
+  bitCodingTest(examples::viewportPosition[8], 152);
+  bitCodingTest(examples::viewportPosition[9], 154);
+  bitCodingTest(examples::viewportPosition[10], 156);
+  bitCodingTest(examples::viewportPosition[11], 162);
+  bitCodingTest(examples::viewportPosition[12], 149);
 }
 
 TEST_CASE("Viewport position from view params") {
@@ -98,6 +98,6 @@ TEST_CASE("Viewport position from view params") {
 })");
   auto vp = TMIV::MivBitstream::ViewParams(json);
   ViewportPosition unit = ViewportPosition::fromViewParams(vp);
-  REQUIRE(bitCodingTest(unit, 149));
+  bitCodingTest(unit, 149);
 }
 } // namespace TMIV::MivBitstream

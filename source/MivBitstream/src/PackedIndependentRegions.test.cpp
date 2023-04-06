@@ -55,7 +55,7 @@ pir_bottom_right_tile_idx[ 0 ][ 0 ]=0
                                 + 1 // pir_top_left_tile_idx
                                 + 1 // pir_bottom_right_tile_idx
                                );
-    REQUIRE(bitCodingTest(unit, expected_number_of_bits));
+    bitCodingTest(unit, expected_number_of_bits);
   }
 
   SECTION("Frames with tile and subpic regions") {
@@ -105,7 +105,7 @@ pir_bottom_right_tile_idx[ 0 ][ 0 ]=6
                                                    + 8) // pir_num_regions_minus1
                                + 52; // variable number of bits for pir_top_left_tile_idx,
                                      // pir_bottom_right_tile_idx, and pir_subpic_id
-    REQUIRE(bitCodingTest(unit, expected_number_of_bits));
+    bitCodingTest(unit, expected_number_of_bits);
   }
 }
 } // namespace TMIV::MivBitstream

@@ -334,15 +334,9 @@ Most of the parameters are defined in the root. The exception is:
 
 * **minAlpha:** float; Drives the blending process at shading stage.
 
+### Multiple tiles
 
-### Multi-tile
+By default there is only a single tile per atlas. By providing below parameters tiling is enabled. The test model is limited to a single partition per tile and it is also not possible to provide tile ID's.
 
-* **numberPartitionCols:** int; number of partition rows in a atlas, and it should be at least 1.
-* **numberPartitionRows:** int; number of partition columns in a atlas, and it should be at least 1.
-* **singlePartitionPerTileFlag:** bool; a tile includes multiple partitions. When true, tiles have only one partition. When false, a tile may include more than one partition. It shall be true in this project.
-* **partitionWidth:** int[numberPartitionCols]; the width of the partition in the ith row, i=0,1,..numberPartitionCols-1. And the sum of partitionWidth shall be equal to the width of atlas. The values of partitionWidth shall be a multiple of 64, except for the last element. For example, if numberPartitionCols=1 and the atlas width=1920, then partitionWidth=[1920].
-* **partitionHeight:** int[numberPartitionRows]; the height of the partition in the jth column (j=0,1,...numberPartitionRows-1). The sum height of partitionHeight shall be equal to the height of atlas. The values of partitionHeight shall a multiple of 64, except for the last element. For example, if numberPartitionRows=5 and the atlas height=4640, then partitionHeight=[1088,1088,1088,1088,288].
-
-* **toolsetIdc:** shall be "MIV Extended" if using multi-tile.
-
-
+* **partitionWidth:** int[]; the partition column widths for all atlases. The sum shall be equal to the nominal frame width of the atlases. The values shall be a multiple of 64, except for the last element.
+* **partitionHeight:** int[]; the partition row heights for all atlases. The sum shall be equal to the nominal frame height of the atlases. The values shall be a multiple of 64, except for the last element.

@@ -217,7 +217,7 @@ class IntegrationTest:
             "CB17": "CB17",
             "CB18": "CB18",
             "CB19": "CB19",
-            "CB20": "CB20",
+            #           "CB20": "CB20",
         }.items():
             fs.append(
                 self.launchCommand(

@@ -383,12 +383,14 @@ private:
     std::vector<int32_t> partitionWidthList;
     std::vector<int32_t> partitionHeightList;
     partitionArray.clear();
+
+    const auto &afti = atlas.afps.atlas_frame_tile_information();
+
     // width
     if (uniformPartitionFlag) {
-      int32_t partitionWidth =
-          (atlas.afps.atlas_frame_tile_information().afti_partition_cols_width_minus1() + 1) * 64;
-      numPartitionColumns =
-          static_cast<int32_t>(std::ceil(atlas.asps.asps_frame_width() / (partitionWidth * 1.0)));
+      const auto partitionWidth = (afti.afti_partition_cols_width_minus1() + 1) * 64;
+      VERIFY(atlas.asps.asps_frame_width() % partitionWidth == 0);
+      numPartitionColumns = atlas.asps.asps_frame_width() / partitionWidth;
       partitionPosXList.resize(numPartitionColumns);
       partitionWidthList.resize(numPartitionColumns);
 
@@ -399,20 +401,18 @@ private:
         partitionWidthList[i] = partitionWidth;
       }
     } else {
-      numPartitionColumns =
-          (atlas.afps.atlas_frame_tile_information().afti_num_partition_columns_minus1()) + 1;
-      const auto partitionColumnWidthMinus1 =
-          atlas.afps.atlas_frame_tile_information().afti_partition_column_width_minus1();
+      numPartitionColumns = afti.afti_num_partition_columns_minus1() + 1;
       partitionPosXList.resize(numPartitionColumns);
       partitionWidthList.resize(numPartitionColumns);
 
       partitionPosXList[0] = 0;
-      partitionWidthList[0] = (numPartitionColumns == 1) ? (atlas.asps.asps_frame_width())
-                                                         : (partitionColumnWidthMinus1[0] + 1) * 64;
+      partitionWidthList[0] = (numPartitionColumns == 1)
+                                  ? (atlas.asps.asps_frame_width())
+                                  : (afti.afti_partition_column_width_minus1(0) + 1) * 64;
 
-      for (int32_t i = 1; i < numPartitionColumns - 1; ++i) {
+      for (uint8_t i = 1; i < afti.afti_num_partition_columns_minus1(); ++i) {
         partitionPosXList[i] = partitionPosXList[i - 1] + partitionWidthList[i - 1];
-        partitionWidthList[i] = (partitionColumnWidthMinus1[i] + 1) * 64;
+        partitionWidthList[i] = (afti.afti_partition_column_width_minus1(i) + 1) * 64;
       }
     }
     if (numPartitionColumns > 1) {
@@ -424,34 +424,31 @@ private:
 
     // height
     if (uniformPartitionFlag) {
-      int32_t partitionHeight =
-          (atlas.afps.atlas_frame_tile_information().afti_partition_rows_height_minus1() + 1) * 64;
-      numPartitionRows =
-          static_cast<int32_t>(std::ceil(atlas.asps.asps_frame_height() / (partitionHeight * 1.0)));
+      const auto partitionHeight = (afti.afti_partition_rows_height_minus1() + 1) * 64;
+      VERIFY(atlas.asps.asps_frame_height() % partitionHeight == 0);
+      numPartitionRows = atlas.asps.asps_frame_height() / partitionHeight;
       partitionPosYList.resize(numPartitionRows);
       partitionHeightList.resize(numPartitionRows);
 
       partitionPosYList[0] = 0;
       partitionHeightList[0] = partitionHeight;
-      for (int32_t j = 1; j < numPartitionRows - 1; ++j) {
+      for (uint8_t j = 1; j + 1 < numPartitionRows; ++j) {
         partitionPosYList[j] = partitionPosYList[j - 1] + partitionHeightList[j - 1];
         partitionHeightList[j] = partitionHeight;
       }
     } else {
-      numPartitionRows =
-          atlas.afps.atlas_frame_tile_information().afti_num_partition_rows_minus1() + 1;
-      const auto partitionRowHeightMinus1 =
-          atlas.afps.atlas_frame_tile_information().afti_partition_row_height_minus1();
+      numPartitionRows = afti.afti_num_partition_rows_minus1() + 1;
       partitionPosYList.resize(numPartitionRows);
       partitionHeightList.resize(numPartitionRows);
 
       partitionPosYList[0] = 0;
-      partitionHeightList[0] = (numPartitionRows == 1) ? (atlas.asps.asps_frame_height())
-                                                       : (partitionRowHeightMinus1[0] + 1) * 64;
+      partitionHeightList[0] = (numPartitionRows == 1)
+                                   ? (atlas.asps.asps_frame_height())
+                                   : (afti.afti_partition_row_height_minus1(0) + 1) * 64;
 
-      for (int32_t j = 1; j < numPartitionRows - 1; ++j) {
+      for (uint8_t j = 1; j + 1 < numPartitionRows; ++j) {
         partitionPosYList[j] = partitionPosYList[j - 1] + partitionHeightList[j - 1];
-        partitionHeightList[j] = (partitionRowHeightMinus1[j] + 1) * 64;
+        partitionHeightList[j] = (afti.afti_partition_row_height_minus1(j) + 1) * 64;
       }
     }
     if (numPartitionRows > 1) {
@@ -471,18 +468,17 @@ private:
                                    bool singlePartitionPerTileFlag, int32_t numPartitionColumns,
                                    int32_t numPartitionRows) {
     atlas.tileParamsList.clear();
-    if (!singlePartitionPerTileFlag) {
-      // TODO
-    } else {
-      for (int32_t i = 0; i < numPartitionColumns; ++i) {
-        for (int32_t j = 0; j < numPartitionRows; ++j) {
-          MivBitstream::TilePartition tile;
-          tile.partitionPosX(partitionArray[0][i]);
-          tile.partitionPosY(partitionArray[1][j]);
-          tile.partitionWidth(partitionArray[2][i]);
-          tile.partitionHeight(partitionArray[3][j]);
-          atlas.tileParamsList.emplace_back(tile);
-        }
+
+    LIMITATION(singlePartitionPerTileFlag);
+
+    for (int32_t i = 0; i < numPartitionColumns; ++i) {
+      for (int32_t j = 0; j < numPartitionRows; ++j) {
+        MivBitstream::TilePartition tile;
+        tile.partitionPosX(partitionArray[0][i]);
+        tile.partitionPosY(partitionArray[1][j]);
+        tile.partitionWidth(partitionArray[2][i]);
+        tile.partitionHeight(partitionArray[3][j]);
+        atlas.tileParamsList.emplace_back(tile);
       }
     }
   }

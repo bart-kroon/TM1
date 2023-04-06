@@ -54,44 +54,47 @@ constexpr auto AtlasFrameTileInformation::afti_partition_rows_height_minus1() co
   return m_afti_partition_rows_height_minus1;
 }
 
-constexpr auto AtlasFrameTileInformation::afti_num_partition_columns_minus1() const noexcept {
-  return m_afti_num_partition_columns_minus1;
-}
-constexpr auto AtlasFrameTileInformation::afti_num_partition_rows_minus1() const noexcept {
-  return m_afti_num_partition_rows_minus1;
+inline auto AtlasFrameTileInformation::afti_num_partition_columns_minus1() const {
+  VERIFY_V3CBITSTREAM(!afti_uniform_partition_spacing_flag());
+  return Common::downCast<uint8_t>(m_afti_partition_column_width_minus1.size());
 }
 
-inline auto AtlasFrameTileInformation::afti_partition_column_width_minus1() const
-    -> const std::vector<int32_t> & {
-  return m_afti_partition_column_width_minus1;
+inline auto AtlasFrameTileInformation::afti_num_partition_rows_minus1() const {
+  VERIFY_V3CBITSTREAM(!afti_uniform_partition_spacing_flag());
+  return Common::downCast<uint8_t>(m_afti_partition_row_height_minus1.size());
 }
 
-inline auto AtlasFrameTileInformation::afti_partition_row_height_minus1() const
-    -> const std::vector<int32_t> & {
-  return m_afti_partition_row_height_minus1;
+inline auto AtlasFrameTileInformation::afti_partition_column_width_minus1(uint8_t i) const {
+  VERIFY_V3CBITSTREAM(i < afti_num_partition_columns_minus1());
+  return m_afti_partition_column_width_minus1[i];
 }
 
-constexpr auto AtlasFrameTileInformation::afti_num_tiles_in_atlas_frame_minus1() const noexcept {
-  return m_afti_num_tiles_in_atlas_frame_minus1;
+inline auto AtlasFrameTileInformation::afti_partition_row_height_minus1(uint8_t i) const {
+  VERIFY_V3CBITSTREAM(i < afti_num_partition_rows_minus1());
+  return m_afti_partition_row_height_minus1[i];
+}
+
+inline auto AtlasFrameTileInformation::afti_num_tiles_in_atlas_frame_minus1() const {
+  return Common::downCast<uint8_t>(m_tiles.size() - 1);
 }
 
 constexpr auto AtlasFrameTileInformation::afti_single_partition_per_tile_flag() const noexcept {
   return m_afti_single_partition_per_tile_flag;
 }
 
-inline auto AtlasFrameTileInformation::afti_top_left_partition_idx() const
-    -> const std::vector<int32_t> & {
-  return m_afti_top_left_partition_idx;
+inline auto AtlasFrameTileInformation::afti_top_left_partition_idx(uint8_t i) const {
+  VERIFY_V3CBITSTREAM(i <= afti_num_tiles_in_atlas_frame_minus1());
+  return m_tiles[i].afti_top_left_partition_idx;
 }
 
-inline auto AtlasFrameTileInformation::afti_bottom_right_partition_column_offset() const
-    -> const std::vector<int32_t> & {
-  return m_afti_bottom_right_partition_column_offset;
+inline auto AtlasFrameTileInformation::afti_bottom_right_partition_column_offset(uint8_t i) const {
+  VERIFY_V3CBITSTREAM(i <= afti_num_tiles_in_atlas_frame_minus1());
+  return m_tiles[i].afti_bottom_right_partition_column_offset;
 }
 
-inline auto AtlasFrameTileInformation::afti_bottom_right_partition_row_offset() const
-    -> const std::vector<int32_t> & {
-  return m_afti_bottom_right_partition_row_offset;
+inline auto AtlasFrameTileInformation::afti_bottom_right_partition_row_offset(uint8_t i) const {
+  VERIFY_V3CBITSTREAM(i <= afti_num_tiles_in_atlas_frame_minus1());
+  return m_tiles[i].afti_bottom_right_partition_row_offset;
 }
 
 constexpr auto
@@ -122,31 +125,33 @@ AtlasFrameTileInformation::afti_partition_rows_height_minus1(const int32_t value
   return *this;
 }
 
-constexpr auto
-AtlasFrameTileInformation::afti_num_partition_columns_minus1(const int32_t value) noexcept
+inline auto AtlasFrameTileInformation::afti_num_partition_columns_minus1(uint8_t value)
     -> AtlasFrameTileInformation & {
-  m_afti_num_partition_columns_minus1 = value;
+  VERIFY_V3CBITSTREAM(!afti_uniform_partition_spacing_flag());
+  m_afti_partition_column_width_minus1.resize(value);
   return *this;
 }
 
-constexpr auto
-AtlasFrameTileInformation::afti_num_partition_rows_minus1(const int32_t value) noexcept
+inline auto AtlasFrameTileInformation::afti_num_partition_rows_minus1(uint8_t value)
     -> AtlasFrameTileInformation & {
-  m_afti_num_partition_rows_minus1 = value;
+  VERIFY_V3CBITSTREAM(!afti_uniform_partition_spacing_flag());
+  m_afti_partition_row_height_minus1.resize(value);
   return *this;
 }
 
-inline auto
-AtlasFrameTileInformation::afti_partition_column_width_minus1(std::vector<int32_t> values) noexcept
+inline auto AtlasFrameTileInformation::afti_partition_column_width_minus1(uint8_t i, int32_t value)
     -> AtlasFrameTileInformation & {
-  m_afti_partition_column_width_minus1 = std::move(values);
+  VERIFY_V3CBITSTREAM(!afti_uniform_partition_spacing_flag());
+  VERIFY_V3CBITSTREAM(i < afti_num_partition_columns_minus1());
+  m_afti_partition_column_width_minus1[i] = value;
   return *this;
 }
 
-inline auto
-AtlasFrameTileInformation::afti_partition_row_height_minus1(std::vector<int32_t> values) noexcept
+inline auto AtlasFrameTileInformation::afti_partition_row_height_minus1(uint8_t i, int32_t value)
     -> AtlasFrameTileInformation & {
-  m_afti_partition_row_height_minus1 = std::move(values);
+  VERIFY_V3CBITSTREAM(!afti_uniform_partition_spacing_flag());
+  VERIFY_V3CBITSTREAM(i < afti_num_partition_rows_minus1());
+  m_afti_partition_row_height_minus1[i] = value;
   return *this;
 }
 
@@ -157,54 +162,65 @@ AtlasFrameTileInformation::afti_single_partition_per_tile_flag(const bool value)
   return *this;
 }
 
-constexpr auto
-AtlasFrameTileInformation::afti_num_tiles_in_atlas_frame_minus1(const int32_t value) noexcept
+inline auto AtlasFrameTileInformation::afti_num_tiles_in_atlas_frame_minus1(uint8_t value)
     -> AtlasFrameTileInformation & {
-  m_afti_num_tiles_in_atlas_frame_minus1 = value;
+  m_tiles.resize(value + size_t{1});
   return *this;
+}
+
+inline auto AtlasFrameTileInformation::afti_top_left_partition_idx(uint8_t i, uint8_t value)
+    -> AtlasFrameTileInformation & {
+  VERIFY_V3CBITSTREAM(i <= afti_num_tiles_in_atlas_frame_minus1());
+  m_tiles[i].afti_top_left_partition_idx = value;
+  return *this;
+}
+
+inline auto AtlasFrameTileInformation::afti_bottom_right_partition_column_offset(uint8_t i,
+                                                                                 int32_t value)
+    -> AtlasFrameTileInformation & {
+  VERIFY_V3CBITSTREAM(i <= afti_num_tiles_in_atlas_frame_minus1());
+  m_tiles[i].afti_bottom_right_partition_column_offset = value;
+  return *this;
+}
+
+inline auto AtlasFrameTileInformation::afti_bottom_right_partition_row_offset(uint8_t i,
+                                                                              int32_t value)
+    -> AtlasFrameTileInformation & {
+  VERIFY_V3CBITSTREAM(i <= afti_num_tiles_in_atlas_frame_minus1());
+  m_tiles[i].afti_bottom_right_partition_row_offset = value;
+  return *this;
+}
+
+inline auto AtlasFrameTileInformation::aftiSignalledTileIDBitCount() const -> uint8_t {
+  LIMITATION(!afti_signalled_tile_id_flag());
+  return Common::ceilLog2(afti_num_tiles_in_atlas_frame_minus1() + 1);
 }
 
 inline auto
-AtlasFrameTileInformation::afti_top_left_partition_idx(std::vector<int32_t> values) noexcept
-    -> AtlasFrameTileInformation & {
-  m_afti_top_left_partition_idx = std::move(values);
-  return *this;
+AtlasFrameTileInformation::numPartitionColumns(const AtlasSequenceParameterSetRBSP &asps) const {
+  if (afti_uniform_partition_spacing_flag()) {
+    const auto partitionWidth = (afti_partition_cols_width_minus1() + 1) * 64;
+    VERIFY_V3CBITSTREAM(0 < asps.asps_frame_width());
+    VERIFY_V3CBITSTREAM(asps.asps_frame_width() % partitionWidth == 0);
+    return Common::downCast<size_t>(asps.asps_frame_width() / partitionWidth);
+  }
+  return afti_num_partition_columns_minus1() + size_t{1};
 }
 
-inline auto AtlasFrameTileInformation::afti_bottom_right_partition_column_offset(
-    std::vector<int32_t> values) noexcept -> AtlasFrameTileInformation & {
-  m_afti_bottom_right_partition_column_offset = std::move(values);
-  return *this;
+inline auto
+AtlasFrameTileInformation::numPartitionRows(const AtlasSequenceParameterSetRBSP &asps) const {
+  if (afti_uniform_partition_spacing_flag()) {
+    const auto partitionHeight = (afti_partition_rows_height_minus1() + 1) * 64;
+    VERIFY_V3CBITSTREAM(0 < asps.asps_frame_height());
+    VERIFY_V3CBITSTREAM(asps.asps_frame_height() % partitionHeight == 0);
+    return Common::downCast<size_t>(asps.asps_frame_height() / partitionHeight);
+  }
+  return afti_num_partition_rows_minus1() + size_t{1};
 }
 
-inline auto AtlasFrameTileInformation::afti_bottom_right_partition_row_offset(
-    std::vector<int32_t> values) noexcept -> AtlasFrameTileInformation & {
-  m_afti_bottom_right_partition_row_offset = std::move(values);
-  return *this;
-}
-
-constexpr auto
-AtlasFrameTileInformation::operator==(const AtlasFrameTileInformation &other) const noexcept {
-  return m_afti_single_tile_in_atlas_frame_flag == other.m_afti_single_tile_in_atlas_frame_flag &&
-         m_afti_uniform_partition_spacing_flag == other.m_afti_uniform_partition_spacing_flag &&
-         m_afti_partition_cols_width_minus1 == other.m_afti_partition_cols_width_minus1 &&
-         m_afti_partition_rows_height_minus1 == other.m_afti_partition_rows_height_minus1 &&
-         m_afti_num_partition_columns_minus1 == other.m_afti_num_partition_columns_minus1 &&
-         m_afti_num_partition_rows_minus1 == other.m_afti_num_partition_rows_minus1 &&
-         m_afti_partition_column_width_minus1 == other.m_afti_partition_column_width_minus1 &&
-         m_afti_partition_row_height_minus1 == other.m_afti_partition_row_height_minus1 &&
-         m_afti_num_tiles_in_atlas_frame_minus1 == other.m_afti_num_tiles_in_atlas_frame_minus1 &&
-         m_afti_single_partition_per_tile_flag == other.m_afti_single_partition_per_tile_flag &&
-         m_afti_top_left_partition_idx == other.m_afti_top_left_partition_idx &&
-         m_afti_bottom_right_partition_row_offset ==
-             other.m_afti_bottom_right_partition_row_offset &&
-         m_afti_bottom_right_partition_column_offset ==
-             other.m_afti_bottom_right_partition_column_offset;
-}
-
-constexpr auto
-AtlasFrameTileInformation::operator!=(const AtlasFrameTileInformation &other) const noexcept {
-  return !operator==(other);
+inline auto AtlasFrameTileInformation::numPartitionsInAtlasFrame(
+    const AtlasSequenceParameterSetRBSP &asps) const {
+  return numPartitionColumns(asps) * numPartitionRows(asps);
 }
 
 constexpr auto AfpsMivExtension::afme_inpaint_lod_enabled_flag() const noexcept {

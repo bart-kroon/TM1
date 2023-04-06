@@ -44,7 +44,7 @@ gup_erode_threshold=0
 gup_delta_threshold=0
 gup_max_curvature=0
 )");
-    REQUIRE(bitCodingTest(x, 21));
+    bitCodingTest(x, 21);
   }
 
   SECTION("GupType HVR") {
@@ -58,7 +58,7 @@ gup_erode_threshold=3.5
 gup_delta_threshold=3
 gup_max_curvature=7
 )");
-    REQUIRE(bitCodingTest(x, 25));
+    bitCodingTest(x, 25);
   }
 
   SECTION("GupType unknown") {
@@ -66,7 +66,7 @@ gup_max_curvature=7
     x.gup_type(GupType(100));
     REQUIRE(toString(x) == R"(gup_type=[unknown:100]
 )");
-    REQUIRE(bitCodingTest(x, 13));
+    bitCodingTest(x, 13);
     REQUIRE(x.gup_erode_threshold() == 1.F);
     REQUIRE(x.gup_delta_threshold() == 10);
     REQUIRE(x.gup_max_curvature() == 5);

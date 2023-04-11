@@ -42,6 +42,12 @@ using uchar = std::make_unsigned_t<std::istream::char_type>;
 constexpr uint32_t charBits = std::numeric_limits<uchar>::digits;
 
 template <typename Integer> auto InputBitstream::readBits(uint32_t bits) -> Integer {
+  if constexpr (std::is_enum_v<Integer>) {
+    VERIFY_BITSTREAM(bits <= std::numeric_limits<std::underlying_type_t<Integer>>::digits);
+  } else {
+    VERIFY_BITSTREAM(bits <= std::numeric_limits<Integer>::digits);
+  }
+
   while (m_size < bits) {
     VERIFY_BITSTREAM(m_size + charBits <= std::numeric_limits<uint64_t>::digits);
     VERIFY_BITSTREAM(m_stream.good());

@@ -83,7 +83,7 @@ public:
   constexpr auto afti_single_partition_per_tile_flag(bool value) noexcept
       -> AtlasFrameTileInformation &;
   auto afti_num_tiles_in_atlas_frame_minus1(uint8_t value) -> AtlasFrameTileInformation &;
-  auto afti_top_left_partition_idx(uint8_t i, uint8_t value) -> AtlasFrameTileInformation &;
+  auto afti_top_left_partition_idx(uint8_t i, int32_t value) -> AtlasFrameTileInformation &;
   auto afti_bottom_right_partition_column_offset(uint8_t i, int32_t value)
       -> AtlasFrameTileInformation &;
   auto afti_bottom_right_partition_row_offset(uint8_t i, int32_t value)
@@ -120,7 +120,7 @@ private:
   bool m_afti_single_partition_per_tile_flag{true};
 
   struct Tile {
-    uint8_t afti_top_left_partition_idx{};
+    int32_t afti_top_left_partition_idx{};
     int32_t afti_bottom_right_partition_column_offset{};
     int32_t afti_bottom_right_partition_row_offset{};
   };

@@ -168,7 +168,7 @@ inline auto AtlasFrameTileInformation::afti_num_tiles_in_atlas_frame_minus1(uint
   return *this;
 }
 
-inline auto AtlasFrameTileInformation::afti_top_left_partition_idx(uint8_t i, uint8_t value)
+inline auto AtlasFrameTileInformation::afti_top_left_partition_idx(uint8_t i, int32_t value)
     -> AtlasFrameTileInformation & {
   VERIFY_V3CBITSTREAM(i <= afti_num_tiles_in_atlas_frame_minus1());
   m_tiles[i].afti_top_left_partition_idx = value;

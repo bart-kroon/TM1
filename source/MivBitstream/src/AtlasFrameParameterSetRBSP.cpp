@@ -184,7 +184,7 @@ auto AtlasFrameTileInformation::decodeFrom(Common::InputBitstream &bitstream,
 
       for (uint8_t i = 0; i <= x.afti_num_tiles_in_atlas_frame_minus1(); ++i) {
         x.afti_top_left_partition_idx(
-            i, bitstream.getUVar<uint8_t>(x.numPartitionsInAtlasFrame(asps)));
+            i, bitstream.getUVar<int32_t>(x.numPartitionsInAtlasFrame(asps)));
         x.afti_bottom_right_partition_column_offset(i, bitstream.getUExpGolomb<int32_t>());
         x.afti_bottom_right_partition_row_offset(i, bitstream.getUExpGolomb<int32_t>());
       }

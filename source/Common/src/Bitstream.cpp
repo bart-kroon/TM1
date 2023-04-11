@@ -75,12 +75,14 @@ auto ceilLog2(uint64_t range) -> uint8_t {
 auto InputBitstream::byteAligned() const -> bool { return m_size % 8 == 0; }
 
 void InputBitstream::byteAlignment() {
-  const auto alignment_bit_equal_to_one = getFlag();
-  VERIFY_BITSTREAM(alignment_bit_equal_to_one);
+  if (!getFlag()) {
+    Common::logWarning("alignment_bit_equal_to_one == 0");
+  }
 
   while (!byteAligned()) {
-    const auto alignment_bit_equal_to_zero = getFlag();
-    VERIFY_BITSTREAM(!alignment_bit_equal_to_zero);
+    if (getFlag()) {
+      Common::logWarning("alignment_bit_equal_to_one == 1");
+    }
   }
 }
 

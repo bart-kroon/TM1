@@ -37,13 +37,16 @@ CONFORMANCE_BITSTREAMS = [
 ]
 
 KNOWN_REASONS = {
+    "HEVCMain10_Basic_Rec0_CCMSEIJMHHVTM_MC2_INTERDIGITAL.bit": "ath_type != AthType::I_TILE && ath_type != SKIP_TILE",
     "HEVCMain10_Basic_Rec0_LOSSYOM_SAMSUNG_v1.bit": "vps_multiple_map_streams_present_flag",
     "HEVCMain10_Basic_Rec0_MTLINTRA_tileT2M2P21MC2_INTERDIGITAL.bit": "vps_multiple_map_streams_present_flag",
     "HEVCMain10_Basic_Rec0_MTLINTRA_tileT2M3P11MC2_INTERDIGITAL.bit": "vps_multiple_map_streams_present_flag",
     "HEVCMain10_Basic_Rec0_MTLINTRA_tileT2M3P21MC2_INTERDIGITAL.bit": "vps_multiple_map_streams_present_flag",
     "HEVCMain10_Basic_Rec0_MTLLRA_tileT2M2P21MC2_INTERDIGITAL.bit": "vps_multiple_map_streams_present_flag",
+    "HEVCMain10_Basic_Rec0_SEICCM_MC1_INTERDIGITAL.bit": "ath_type != AthType::I_TILE && ath_type != SKIP_TILE",
     "HEVCMain10_Basic_Rec0_SEICCM_MC2_INTERDIGITAL.bit": "vps_multiple_map_streams_present_flag",
     "HEVCMain10_Basic_Rec0_STLINTRA_MC2_INTERDIGITAL.bit": "vps_multiple_map_streams_present_flag",
+    "HEVCMain10_Basic_Rec0_STLLRA_MC1_INTERDIGITAL.bit": "ath_type != AthType::I_TILE && ath_type != SKIP_TILE",
     "HEVCMain10_Basic_Rec0_STLLRA_MC2_INTERDIGITAL.bit": "vps_multiple_map_streams_present_flag",
     "HEVCMain10_Basic_Rec1_ATTRSM_SAMSUNG_v1.bit": "vps_multiple_map_streams_present_flag",
     "HEVCMain10_Basic_Rec1_PDI_INTERDIGITAL.bit": "asps_pixel_deinterleaving_enabled_flag",
@@ -100,7 +103,7 @@ def main(args):
         if result.returncode == 0:
             print(f"{name}: OK.")
         elif name in KNOWN_REASONS:
-            print(f"{name}: excpected an error due to {KNOWN_REASONS[name]}")
+            print(f"{name}: known TMIV limitation: {KNOWN_REASONS[name]}")
         else:
             print(f"{name}: ERROR, see .err file for details.")
             success = False

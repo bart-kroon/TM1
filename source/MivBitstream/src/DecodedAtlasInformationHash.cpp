@@ -33,27 +33,328 @@
 
 #include <TMIV/MivBitstream/DecodedAtlasInformationHash.h>
 
+#include <TMIV/Common/LoggingStrategyFmt.h>
+#include <TMIV/Common/verify.h>
 #include <TMIV/MivBitstream/Formatters.h>
 
 namespace TMIV::MivBitstream {
-auto operator<<(std::ostream &stream, const DecodedAtlasHash &x) -> std::ostream & {
-  if (x.m_daih_atlas_md5.has_value()) {
-    stream << "daih_atlas_md5=";
-    for (uint8_t i = 0; i < 16; i++) {
-      stream << fmt::format(FMT_STRING("{:02x}"), x.daih_atlas_md5(i));
-    }
-    stream << "\n";
-  } else if (x.m_daih_atlas_crc.has_value()) {
-    stream << "daih_atlas_crc=" << fmt::format(FMT_STRING("{:04x}"), x.daih_atlas_crc()) << "\n";
-  } else if (x.m_daih_atlas_checksum.has_value()) {
-    stream << "daih_atlas_checksum=" << fmt::format(FMT_STRING("{:08x}"), x.daih_atlas_checksum())
-           << "\n";
+auto Hash::md5(uint8_t i) const -> uint8_t {
+  VERIFY_V3CBITSTREAM(m_md5.has_value());
+  return Common::at(*m_md5, i);
+}
+
+auto Hash::crc() const -> uint16_t {
+  VERIFY_V3CBITSTREAM(m_crc.has_value());
+  return *m_crc;
+}
+
+auto Hash::checksum() const -> uint32_t {
+  VERIFY_V3CBITSTREAM(m_checksum.has_value());
+  return *m_checksum;
+}
+
+auto Hash::md5(uint8_t i, uint8_t value) -> Hash & {
+  if (!m_md5.has_value()) {
+    m_md5 = std::array<uint8_t, 16>{};
   }
-  return stream;
+  Common::at(*m_md5, i) = value;
+  return *this;
+}
+
+auto Hash::crc(uint16_t value) -> Hash & {
+  m_crc = value;
+  return *this;
+}
+
+auto Hash::checksum(uint32_t value) -> Hash & {
+  m_checksum = value;
+  return *this;
+}
+
+void Hash::printTo(std::string_view prefix, std::string_view index, std::ostream &stream,
+                   uint8_t hashType) const {
+  switch (hashType) {
+  case 0:
+    fmt::print(stream, "{}_md5{}=", prefix, index);
+
+    for (uint8_t i = 0; i < 16; ++i) {
+      fmt::print(stream, "{:02x}", md5(i));
+    }
+    fmt::print(stream, " (hex)\n");
+    return;
+  case 1:
+    return fmt::print(stream, "{}_crc{}={:04x} (hex)\n", prefix, index, crc());
+  case 2:
+    return fmt::print(stream, "{}_checksum{}={:08x} (hex)\n", prefix, index, checksum());
+  }
+}
+
+auto Hash::operator==(const Hash &other) const noexcept -> bool {
+  return m_md5 == other.m_md5 && m_crc == other.m_crc && m_checksum == other.m_checksum;
+}
+
+auto Hash::decodeFrom(Common::InputBitstream &bitstream, uint8_t hashType) -> Hash {
+  auto x = Hash{};
+
+  switch (hashType) {
+  case 0: {
+    for (uint8_t i = 0; i < 16; ++i) {
+      x.md5(i, bitstream.getUint8());
+    }
+    break;
+  }
+  case 1:
+    x.crc(bitstream.getUint16());
+    break;
+  case 2:
+    x.checksum(bitstream.getUint32());
+    break;
+  default:
+    V3CBITSTREAM_ERROR("Unknown hashType");
+  }
+  return x;
+}
+
+void Hash::encodeTo(Common::OutputBitstream &bitstream, uint8_t hashType) const {
+  switch (hashType) {
+  case 0:
+    for (uint8_t i = 0; i < 16; ++i) {
+      bitstream.putUint8(md5(i));
+    }
+    return;
+  case 1:
+    return bitstream.putUint16(crc());
+  case 2:
+    return bitstream.putUint32(checksum());
+  default:
+    PRECONDITION("Unknown hashType");
+  }
+}
+
+void DecodedAtlasTileHash::printTo(std::ostream &stream, uint8_t hashType, uint8_t j) const {
+  return m_hash.printTo("daih_atlas_tile", fmt::format("[ {} ]", j), stream, hashType);
+}
+
+void DecodedAtlasTileB2pHash::printTo(std::ostream &stream, uint8_t hashType, uint8_t j) const {
+  return m_hash.printTo("daih_atlas_tile_b2p", fmt::format("[ {} ]", j), stream, hashType);
+}
+
+auto DecodedAtlasInformationHash::daih_cancel_flag() const -> bool { return m_daih_cancel_flag; }
+
+auto DecodedAtlasInformationHash::daih_persistence_flag() const -> bool {
+  VERIFY_V3CBITSTREAM(!daih_cancel_flag());
+  VERIFY_V3CBITSTREAM(m_daih_persistence_flag.has_value());
+  return *m_daih_persistence_flag;
+}
+
+auto DecodedAtlasInformationHash::daih_hash_type() const -> uint8_t {
+  VERIFY_V3CBITSTREAM(!daih_cancel_flag());
+  VERIFY_V3CBITSTREAM(m_daih_hash_type.has_value());
+  return *m_daih_hash_type;
+}
+
+auto DecodedAtlasInformationHash::daih_decoded_high_level_hash_present_flag() const -> bool {
+  VERIFY_V3CBITSTREAM(!daih_cancel_flag());
+  VERIFY_V3CBITSTREAM(m_daih_decoded_high_level_hash_present_flag.has_value());
+  return *m_daih_decoded_high_level_hash_present_flag;
+}
+
+auto DecodedAtlasInformationHash::daih_decoded_atlas_hash_present_flag() const -> bool {
+  VERIFY_V3CBITSTREAM(!daih_cancel_flag());
+  VERIFY_V3CBITSTREAM(m_daih_decoded_atlas_hash_present_flag.has_value());
+  return *m_daih_decoded_atlas_hash_present_flag;
+}
+
+auto DecodedAtlasInformationHash::daih_decoded_atlas_b2p_hash_present_flag() const -> bool {
+  VERIFY_V3CBITSTREAM(!daih_cancel_flag());
+  VERIFY_V3CBITSTREAM(m_daih_decoded_atlas_b2p_hash_present_flag.has_value());
+  return *m_daih_decoded_atlas_b2p_hash_present_flag;
+}
+
+auto DecodedAtlasInformationHash::daih_decoded_atlas_tiles_hash_present_flag() const -> bool {
+  VERIFY_V3CBITSTREAM(!daih_cancel_flag());
+  VERIFY_V3CBITSTREAM(m_daih_decoded_atlas_tiles_hash_present_flag.has_value());
+  return *m_daih_decoded_atlas_tiles_hash_present_flag;
+}
+
+auto DecodedAtlasInformationHash::daih_decoded_atlas_tiles_b2p_hash_present_flag() const -> bool {
+  VERIFY_V3CBITSTREAM(!daih_cancel_flag());
+  VERIFY_V3CBITSTREAM(m_daih_decoded_atlas_tiles_b2p_hash_present_flag.has_value());
+  return *m_daih_decoded_atlas_tiles_b2p_hash_present_flag;
+}
+
+auto DecodedAtlasInformationHash::decoded_high_level_hash() const -> const DecodedHighLevelHash & {
+  VERIFY_V3CBITSTREAM(daih_decoded_high_level_hash_present_flag());
+  VERIFY_V3CBITSTREAM(m_decoded_high_level_hash.has_value());
+  return *m_decoded_high_level_hash;
+}
+
+auto DecodedAtlasInformationHash::decoded_atlas_hash() const -> const DecodedAtlasHash & {
+  VERIFY_V3CBITSTREAM(daih_decoded_atlas_hash_present_flag());
+  VERIFY_V3CBITSTREAM(m_decoded_atlas_hash.has_value());
+  return *m_decoded_atlas_hash;
+}
+
+auto DecodedAtlasInformationHash::decoded_atlas_b2p_hash() const -> const DecodedAtlasB2pHash & {
+  VERIFY_V3CBITSTREAM(daih_decoded_atlas_b2p_hash_present_flag());
+  VERIFY_V3CBITSTREAM(m_decoded_atlas_b2p_hash.has_value());
+  return *m_decoded_atlas_b2p_hash;
+}
+
+auto DecodedAtlasInformationHash::daih_num_tiles_minus1() const -> uint8_t {
+  VERIFY_V3CBITSTREAM(daih_decoded_atlas_tiles_hash_present_flag() ||
+                      daih_decoded_atlas_tiles_b2p_hash_present_flag());
+  VERIFY_V3CBITSTREAM(m_daih_num_tiles_minus1.has_value());
+  return *m_daih_num_tiles_minus1;
+}
+
+auto DecodedAtlasInformationHash::daih_tile_id_len_minus1() const -> uint8_t {
+  VERIFY_V3CBITSTREAM(daih_decoded_atlas_tiles_hash_present_flag() ||
+                      daih_decoded_atlas_tiles_b2p_hash_present_flag());
+  VERIFY_V3CBITSTREAM(m_daih_tile_id_len_minus1.has_value());
+  return *m_daih_tile_id_len_minus1;
+}
+
+auto DecodedAtlasInformationHash::daih_tile_id(uint8_t t) const -> uint8_t {
+  VERIFY_V3CBITSTREAM(daih_decoded_atlas_tiles_hash_present_flag() ||
+                      daih_decoded_atlas_tiles_b2p_hash_present_flag());
+  VERIFY_V3CBITSTREAM(t < m_daih_tile_id.size());
+  return m_daih_tile_id[t];
+}
+
+auto DecodedAtlasInformationHash::decoded_atlas_tile_hash(uint8_t j) const
+    -> const DecodedAtlasTileHash & {
+  VERIFY_V3CBITSTREAM(daih_decoded_atlas_tiles_hash_present_flag());
+  VERIFY_V3CBITSTREAM(m_decoded_atlas_tile_hash.size() == daih_num_tiles_minus1() + size_t{1});
+  return m_decoded_atlas_tile_hash[indexOfTileId(j)];
+}
+
+auto DecodedAtlasInformationHash::decoded_atlas_tile_b2p_hash(uint8_t j) const
+    -> const DecodedAtlasTileB2pHash & {
+  VERIFY_V3CBITSTREAM(daih_decoded_atlas_tiles_b2p_hash_present_flag());
+  VERIFY_V3CBITSTREAM(m_decoded_atlas_tile_b2p_hash.size() == daih_num_tiles_minus1() + size_t{1});
+  return m_decoded_atlas_tile_b2p_hash[indexOfTileId(j)];
+}
+
+auto DecodedAtlasInformationHash::daih_cancel_flag(bool value) -> DecodedAtlasInformationHash & {
+  m_daih_cancel_flag = value;
+  return *this;
+}
+
+auto DecodedAtlasInformationHash::daih_persistence_flag(bool value)
+    -> DecodedAtlasInformationHash & {
+  daih_cancel_flag(false);
+  m_daih_persistence_flag = value;
+  return *this;
+}
+
+auto DecodedAtlasInformationHash::daih_hash_type(uint8_t value) -> DecodedAtlasInformationHash & {
+  daih_cancel_flag(false);
+  m_daih_hash_type = value;
+  return *this;
+}
+
+auto DecodedAtlasInformationHash::daih_decoded_high_level_hash_present_flag(bool value)
+    -> DecodedAtlasInformationHash & {
+  daih_cancel_flag(false);
+  m_daih_decoded_high_level_hash_present_flag = value;
+  return *this;
+}
+
+auto DecodedAtlasInformationHash::daih_decoded_atlas_hash_present_flag(bool value)
+    -> DecodedAtlasInformationHash & {
+  daih_cancel_flag(false);
+  m_daih_decoded_atlas_hash_present_flag = value;
+  return *this;
+}
+
+auto DecodedAtlasInformationHash::daih_decoded_atlas_b2p_hash_present_flag(bool value)
+    -> DecodedAtlasInformationHash & {
+  daih_cancel_flag(false);
+  m_daih_decoded_atlas_b2p_hash_present_flag = value;
+  return *this;
+}
+
+auto DecodedAtlasInformationHash::daih_decoded_atlas_tiles_hash_present_flag(bool value)
+    -> DecodedAtlasInformationHash & {
+  daih_cancel_flag(false);
+  m_daih_decoded_atlas_tiles_hash_present_flag = value;
+  return *this;
+}
+
+auto DecodedAtlasInformationHash::daih_decoded_atlas_tiles_b2p_hash_present_flag(bool value)
+    -> DecodedAtlasInformationHash & {
+  daih_cancel_flag(false);
+  m_daih_decoded_atlas_tiles_b2p_hash_present_flag = value;
+  return *this;
+}
+
+auto DecodedAtlasInformationHash::decoded_high_level_hash(const DecodedHighLevelHash &value)
+    -> DecodedAtlasInformationHash & {
+  daih_decoded_high_level_hash_present_flag(true);
+  m_decoded_high_level_hash = value;
+  return *this;
+}
+
+auto DecodedAtlasInformationHash::decoded_atlas_hash(const DecodedAtlasHash &value)
+    -> DecodedAtlasInformationHash & {
+  daih_decoded_atlas_hash_present_flag(true);
+  m_decoded_atlas_hash = value;
+  return *this;
+}
+
+auto DecodedAtlasInformationHash::decoded_atlas_b2p_hash(const DecodedAtlasB2pHash &value)
+    -> DecodedAtlasInformationHash & {
+  daih_decoded_atlas_b2p_hash_present_flag(true);
+  m_decoded_atlas_b2p_hash = value;
+  return *this;
+}
+
+auto DecodedAtlasInformationHash::daih_num_tiles_minus1(uint8_t value)
+    -> DecodedAtlasInformationHash & {
+  VERIFY_V3CBITSTREAM(daih_decoded_atlas_tiles_hash_present_flag() ||
+                      daih_decoded_atlas_tiles_b2p_hash_present_flag());
+  m_daih_num_tiles_minus1 = value;
+  return *this;
+}
+
+auto DecodedAtlasInformationHash::daih_tile_id_len_minus1(uint8_t value)
+    -> DecodedAtlasInformationHash & {
+  VERIFY_V3CBITSTREAM(daih_decoded_atlas_tiles_hash_present_flag() ||
+                      daih_decoded_atlas_tiles_b2p_hash_present_flag());
+  m_daih_tile_id_len_minus1 = value;
+  return *this;
+}
+
+auto DecodedAtlasInformationHash::daih_tile_id(uint8_t t, uint8_t value)
+    -> DecodedAtlasInformationHash & {
+  VERIFY_V3CBITSTREAM(t <= daih_num_tiles_minus1());
+  m_daih_tile_id.resize(daih_num_tiles_minus1() + size_t{1});
+  m_daih_tile_id[t] = value;
+  return *this;
+}
+
+auto DecodedAtlasInformationHash::decoded_atlas_tile_hash(uint8_t j,
+                                                          const DecodedAtlasTileHash &value)
+    -> DecodedAtlasInformationHash & {
+  daih_decoded_atlas_tiles_hash_present_flag(true);
+  m_decoded_atlas_tile_hash.resize(daih_num_tiles_minus1() + size_t{1});
+  m_decoded_atlas_tile_hash[indexOfTileId(j)] = value;
+  return *this;
+}
+
+auto DecodedAtlasInformationHash::decoded_atlas_tile_b2p_hash(uint8_t j,
+                                                              const DecodedAtlasTileB2pHash &value)
+    -> DecodedAtlasInformationHash & {
+  daih_decoded_atlas_tiles_b2p_hash_present_flag(true);
+  m_decoded_atlas_tile_b2p_hash.resize(daih_num_tiles_minus1() + size_t{1});
+  m_decoded_atlas_tile_b2p_hash[indexOfTileId(j)] = value;
+  return *this;
 }
 
 auto operator<<(std::ostream &stream, const DecodedAtlasInformationHash &x) -> std::ostream & {
   fmt::print(stream, "daih_cancel_flag={}\n", x.daih_cancel_flag());
+
   if (!x.daih_cancel_flag()) {
     fmt::print(stream, "daih_persistence_flag={}\n", x.daih_persistence_flag());
     fmt::print(stream, "daih_hash_type={}\n", x.daih_hash_type());
@@ -67,51 +368,37 @@ auto operator<<(std::ostream &stream, const DecodedAtlasInformationHash &x) -> s
                x.daih_decoded_atlas_tiles_hash_present_flag());
     fmt::print(stream, "daih_decoded_atlas_tiles_b2p_hash_present_flag={}\n",
                x.daih_decoded_atlas_tiles_b2p_hash_present_flag());
+
     if (x.daih_decoded_high_level_hash_present_flag()) {
-      stream << x.decoded_high_level_hash();
+      x.decoded_high_level_hash().printTo(stream, x.daih_hash_type());
     }
     if (x.daih_decoded_atlas_hash_present_flag()) {
-      stream << x.decoded_atlas_hash();
+      x.decoded_atlas_hash().printTo(stream, x.daih_hash_type());
     }
     if (x.daih_decoded_atlas_b2p_hash_present_flag()) {
-      stream << x.decoded_atlas_b2p_hash();
+      x.decoded_atlas_b2p_hash().printTo(stream, x.daih_hash_type());
     }
     if (x.daih_decoded_atlas_tiles_hash_present_flag() ||
         x.daih_decoded_atlas_tiles_b2p_hash_present_flag()) {
       fmt::print(stream, "daih_num_tiles_minus1={}\n", x.daih_num_tiles_minus1());
       fmt::print(stream, "daih_tile_id_len_minus1={}\n", x.daih_tile_id_len_minus1());
-      for (uint8_t t = 0; t <= x.daih_num_tiles_minus1(); t++) {
+
+      for (uint8_t t = 0; t <= x.daih_num_tiles_minus1(); ++t) {
         fmt::print(stream, "daih_tile_id[ {} ]={}\n", t, x.daih_tile_id(t));
       }
-      if (x.daih_decoded_atlas_tiles_hash_present_flag()) {
-        stream << x.decoded_atlas_tile_hash();
-      }
-      if (x.daih_decoded_atlas_tiles_b2p_hash_present_flag()) {
-        stream << x.decoded_atlas_tile_b2p_hash();
+      for (uint8_t t = 0; t <= x.daih_num_tiles_minus1(); ++t) {
+        const auto j = x.daih_tile_id(t);
+
+        if (x.daih_decoded_atlas_tiles_hash_present_flag()) {
+          x.decoded_atlas_tile_hash(j).printTo(stream, x.daih_hash_type(), j);
+        }
+        if (x.daih_decoded_atlas_tiles_b2p_hash_present_flag()) {
+          x.decoded_atlas_tile_b2p_hash(j).printTo(stream, x.daih_hash_type(), j);
+        }
       }
     }
   }
   return stream;
-}
-
-auto DecodedAtlasHash::operator==(const DecodedAtlasHash &other) const -> bool {
-  bool isEqual = true;
-  if (m_daih_atlas_md5.has_value()) {
-    for (uint8_t i = 0; i < 16; i++) {
-      if (daih_atlas_md5(i) != other.daih_atlas_md5(i)) {
-        isEqual = false;
-      }
-    }
-  } else if (m_daih_atlas_crc.has_value()) {
-    if (daih_atlas_crc() != other.daih_atlas_crc()) {
-      isEqual = false;
-    }
-  } else if (m_daih_atlas_checksum.has_value()) {
-    if (daih_atlas_checksum() != other.daih_atlas_checksum()) {
-      isEqual = false;
-    }
-  }
-  return isEqual;
 }
 
 auto DecodedAtlasInformationHash::operator==(const DecodedAtlasInformationHash &other) const
@@ -139,20 +426,9 @@ auto DecodedAtlasInformationHash::operator!=(const DecodedAtlasInformationHash &
   return !operator==(other);
 }
 
-void DecodedAtlasHash::encodeTo(Common::OutputBitstream &bitstream, uint8_t hashType) const {
-  if (hashType == 0) {
-    for (uint8_t i = 0; i < 16; i++) {
-      bitstream.writeBits(daih_atlas_md5(i), 8);
-    }
-  } else if (hashType == 1) {
-    bitstream.putUint16(daih_atlas_crc());
-  } else if (hashType == 2) {
-    bitstream.putUint32(daih_atlas_checksum());
-  }
-}
-
 void DecodedAtlasInformationHash::encodeTo(Common::OutputBitstream &bitstream) const {
   bitstream.putFlag(daih_cancel_flag());
+
   if (!daih_cancel_flag()) {
     bitstream.putFlag(daih_persistence_flag());
     bitstream.putUint8(daih_hash_type());
@@ -161,8 +437,10 @@ void DecodedAtlasInformationHash::encodeTo(Common::OutputBitstream &bitstream) c
     bitstream.putFlag(daih_decoded_atlas_b2p_hash_present_flag());
     bitstream.putFlag(daih_decoded_atlas_tiles_hash_present_flag());
     bitstream.putFlag(daih_decoded_atlas_tiles_b2p_hash_present_flag());
-    constexpr auto daih_reserved_zero_1bit = 0;
+
+    static constexpr auto daih_reserved_zero_1bit = 0;
     bitstream.writeBits(daih_reserved_zero_1bit, 1);
+
     if (daih_decoded_high_level_hash_present_flag()) {
       decoded_high_level_hash().encodeTo(bitstream, daih_hash_type());
     }
@@ -176,84 +454,84 @@ void DecodedAtlasInformationHash::encodeTo(Common::OutputBitstream &bitstream) c
         daih_decoded_atlas_tiles_b2p_hash_present_flag()) {
       bitstream.putUExpGolomb(daih_num_tiles_minus1());
       bitstream.putUExpGolomb(daih_tile_id_len_minus1());
-      for (uint8_t t = 0; t <= daih_num_tiles_minus1(); t++) {
-        bitstream.putUVar(daih_tile_id(t), daih_num_tiles_minus1() + 1);
+
+      for (uint8_t t = 0; t <= daih_num_tiles_minus1(); ++t) {
+        bitstream.writeBits(daih_tile_id(t), daih_tile_id_len_minus1() + 1);
       }
       bitstream.byteAlignment();
-      for (uint8_t t = 0; t <= daih_num_tiles_minus1(); t++) {
-        auto j = daih_tile_id(t);
+
+      for (uint8_t t = 0; t <= daih_num_tiles_minus1(); ++t) {
+        const auto j = daih_tile_id(t);
+
         if (daih_decoded_atlas_tiles_hash_present_flag()) {
-          decoded_atlas_tile_hash().encodeTo(bitstream, daih_hash_type(), j);
+          decoded_atlas_tile_hash(j).encodeTo(bitstream, daih_hash_type());
         }
         if (daih_decoded_atlas_tiles_b2p_hash_present_flag()) {
-          decoded_atlas_tile_b2p_hash().encodeTo(bitstream, daih_hash_type(), j);
+          decoded_atlas_tile_b2p_hash(j).encodeTo(bitstream, daih_hash_type());
         }
       }
     }
   }
-}
-
-auto DecodedAtlasHash::decodeFrom(Common::InputBitstream &bitstream, uint8_t hashType)
-    -> DecodedAtlasHash {
-  DecodedAtlasHash result{};
-  if (hashType == 0) {
-    for (uint8_t i = 0; i < 16; i++) {
-      result.daih_atlas_md5(i, bitstream.readBits<uint8_t>(8));
-    }
-  } else if (hashType == 1) {
-    result.daih_atlas_crc(bitstream.getUint16());
-  } else if (hashType == 2) {
-    result.daih_atlas_checksum(bitstream.getUint32());
-  }
-  return result;
 }
 
 auto DecodedAtlasInformationHash::decodeFrom(Common::InputBitstream &bitstream)
     -> DecodedAtlasInformationHash {
-  DecodedAtlasInformationHash result{};
-  result.daih_cancel_flag(bitstream.getFlag());
-  if (!result.daih_cancel_flag()) {
-    result.daih_persistence_flag(bitstream.getFlag());
-    result.daih_hash_type(bitstream.getUint8());
-    result.daih_decoded_high_level_hash_present_flag(bitstream.getFlag());
-    result.daih_decoded_atlas_hash_present_flag(bitstream.getFlag());
-    result.daih_decoded_atlas_b2p_hash_present_flag(bitstream.getFlag());
-    result.daih_decoded_atlas_tiles_hash_present_flag(bitstream.getFlag());
-    result.daih_decoded_atlas_tiles_b2p_hash_present_flag(bitstream.getFlag());
-    bitstream.readBits<uint8_t>(1);
-    if (result.daih_decoded_high_level_hash_present_flag()) {
-      result.m_decoded_high_level_hash =
-          DecodedHighLevelHash::decodeFrom(bitstream, result.daih_hash_type());
+  auto x = DecodedAtlasInformationHash{};
+
+  x.daih_cancel_flag(bitstream.getFlag());
+
+  if (!x.daih_cancel_flag()) {
+    x.daih_persistence_flag(bitstream.getFlag());
+    x.daih_hash_type(bitstream.getUint8());
+    x.daih_decoded_high_level_hash_present_flag(bitstream.getFlag());
+    x.daih_decoded_atlas_hash_present_flag(bitstream.getFlag());
+    x.daih_decoded_atlas_b2p_hash_present_flag(bitstream.getFlag());
+    x.daih_decoded_atlas_tiles_hash_present_flag(bitstream.getFlag());
+    x.daih_decoded_atlas_tiles_b2p_hash_present_flag(bitstream.getFlag());
+    [[maybe_unused]] const auto daih_reserved_zero_1bit = bitstream.readBits<uint8_t>(1);
+
+    if (x.daih_decoded_high_level_hash_present_flag()) {
+      x.decoded_high_level_hash(DecodedHighLevelHash::decodeFrom(bitstream, x.daih_hash_type()));
     }
-    if (result.daih_decoded_atlas_hash_present_flag()) {
-      result.m_decoded_atlas_hash =
-          DecodedAtlasHash::decodeFrom(bitstream, result.daih_hash_type());
+    if (x.daih_decoded_atlas_hash_present_flag()) {
+      x.decoded_atlas_hash(DecodedAtlasHash::decodeFrom(bitstream, x.daih_hash_type()));
     }
-    if (result.daih_decoded_atlas_b2p_hash_present_flag()) {
-      result.m_decoded_atlas_b2p_hash =
-          DecodedAtlasB2pHash::decodeFrom(bitstream, result.daih_hash_type());
+    if (x.daih_decoded_atlas_b2p_hash_present_flag()) {
+      x.decoded_atlas_b2p_hash(DecodedAtlasB2pHash::decodeFrom(bitstream, x.daih_hash_type()));
     }
-    if (result.daih_decoded_atlas_tiles_hash_present_flag() ||
-        result.daih_decoded_atlas_tiles_b2p_hash_present_flag()) {
-      result.daih_num_tiles_minus1(bitstream.getUExpGolomb<uint8_t>());
-      result.daih_tile_id_len_minus1(bitstream.getUExpGolomb<uint8_t>());
-      for (uint8_t t = 0; t <= result.daih_num_tiles_minus1(); t++) {
-        result.daih_tile_id(t, bitstream.getUVar<uint8_t>(result.daih_num_tiles_minus1() + 1));
+    if (x.daih_decoded_atlas_tiles_hash_present_flag() ||
+        x.daih_decoded_atlas_tiles_b2p_hash_present_flag()) {
+      x.daih_num_tiles_minus1(bitstream.getUExpGolomb<uint8_t>());
+      x.daih_tile_id_len_minus1(bitstream.getUExpGolomb<uint8_t>());
+
+      for (uint8_t t = 0; t <= x.daih_num_tiles_minus1(); ++t) {
+        x.daih_tile_id(t, bitstream.readBits<uint8_t>(x.daih_tile_id_len_minus1() + 1));
       }
       bitstream.byteAlignment();
-      for (uint8_t t = 0; t <= result.daih_num_tiles_minus1(); t++) {
-        auto j = result.daih_tile_id(t);
-        if (result.daih_decoded_atlas_tiles_hash_present_flag()) {
-          result.m_decoded_atlas_tile_hash =
-              DecodedAtlasTileHash::decodeFrom(bitstream, result.daih_hash_type(), j);
+
+      for (uint8_t t = 0; t <= x.daih_num_tiles_minus1(); ++t) {
+        const auto j = x.daih_tile_id(t);
+
+        if (x.daih_decoded_atlas_tiles_hash_present_flag()) {
+          x.decoded_atlas_tile_hash(
+              j, DecodedAtlasTileHash::decodeFrom(bitstream, x.daih_hash_type()));
         }
-        if (result.daih_decoded_atlas_tiles_b2p_hash_present_flag()) {
-          result.m_decoded_atlas_tile_b2p_hash =
-              DecodedAtlasTileB2pHash::decodeFrom(bitstream, result.daih_hash_type(), j);
+        if (x.daih_decoded_atlas_tiles_b2p_hash_present_flag()) {
+          x.decoded_atlas_tile_b2p_hash(
+              j, DecodedAtlasTileB2pHash::decodeFrom(bitstream, x.daih_hash_type()));
         }
       }
     }
   }
-  return result;
+  return x;
+}
+
+auto DecodedAtlasInformationHash::indexOfTileId(uint8_t j) const -> uint8_t {
+  for (uint8_t t = 0; t <= daih_num_tiles_minus1(); ++t) {
+    if (j == daih_tile_id(t)) {
+      return t;
+    }
+  }
+  V3CBITSTREAM_ERROR("Unknown tile ID");
 }
 } // namespace TMIV::MivBitstream

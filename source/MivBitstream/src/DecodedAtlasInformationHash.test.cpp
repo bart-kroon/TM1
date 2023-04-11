@@ -69,7 +69,7 @@ daih_decoded_atlas_hash_present_flag=true
 daih_decoded_atlas_b2p_hash_present_flag=false
 daih_decoded_atlas_tiles_hash_present_flag=false
 daih_decoded_atlas_tiles_b2p_hash_present_flag=false
-daih_atlas_md5=00112233445566778899aabbccddeeff
+daih_atlas_md5=00112233445566778899aabbccddeeff (hex)
 )");
     bitCodingTest(unit, 144);
   }
@@ -97,7 +97,7 @@ daih_decoded_atlas_hash_present_flag=true
 daih_decoded_atlas_b2p_hash_present_flag=false
 daih_decoded_atlas_tiles_hash_present_flag=false
 daih_decoded_atlas_tiles_b2p_hash_present_flag=false
-daih_atlas_crc=1234
+daih_atlas_crc=1234 (hex)
 )");
     bitCodingTest(unit, 32);
   }
@@ -125,7 +125,7 @@ daih_decoded_atlas_hash_present_flag=true
 daih_decoded_atlas_b2p_hash_present_flag=false
 daih_decoded_atlas_tiles_hash_present_flag=false
 daih_decoded_atlas_tiles_b2p_hash_present_flag=false
-daih_atlas_checksum=12345678
+daih_atlas_checksum=12345678 (hex)
 )");
     bitCodingTest(unit, 48);
   }

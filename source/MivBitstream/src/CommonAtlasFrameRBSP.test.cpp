@@ -59,7 +59,7 @@ caf_common_atlas_frm_order_cnt_lsb=0
 caf_extension_present_flag=false
 )");
 
-    REQUIRE(byteCodingTest(x, 2, nuhIdrCaf, caspsV, maxCommonAtlasFrmOrderCntLsb));
+    byteCodingTest(x, 2, nuhIdrCaf, caspsV, maxCommonAtlasFrmOrderCntLsb);
   }
 
   SECTION("Extension present, but no MIV extension") {
@@ -78,7 +78,7 @@ caf_extension_data_flag=true
 caf_extension_data_flag=false
 )");
 
-    REQUIRE(byteCodingTest(x, 3, nuhIdrCaf, caspsV, maxCommonAtlasFrmOrderCntLsb));
+    byteCodingTest(x, 3, nuhIdrCaf, caspsV, maxCommonAtlasFrmOrderCntLsb);
   }
 
   SECTION("MIV extension present") {
@@ -99,7 +99,7 @@ came_update_intrinsics_flag=false
 came_update_depth_quantization_flag=false
 )");
 
-    REQUIRE(byteCodingTest(x, 3, nuhCaf, caspsV, maxCommonAtlasFrmOrderCntLsb));
+    byteCodingTest(x, 3, nuhCaf, caspsV, maxCommonAtlasFrmOrderCntLsb);
   }
 }
 } // namespace TMIV::MivBitstream

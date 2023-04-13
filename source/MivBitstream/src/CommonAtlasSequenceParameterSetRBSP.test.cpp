@@ -75,7 +75,7 @@ TEST_CASE("common_atlas_sequence_parameter_set_rbsp",
 casps_log2_max_common_atlas_frame_order_cnt_lsb_minus4=0
 casps_extension_present_flag=false
 )");
-    REQUIRE(byteCodingTest(unit, 1));
+    byteCodingTest(unit, 1);
   }
 
   CommonAtlasSequenceParameterSetRBSP unit{};
@@ -87,7 +87,7 @@ casps_extension_present_flag=true
 casps_miv_extension_present_flag=false
 casps_extension_7bits=0
 )");
-    REQUIRE(byteCodingTest(unit, 2));
+    byteCodingTest(unit, 2);
   }
 
   SECTION("Extension present, MIV extension flag true") {
@@ -103,7 +103,7 @@ casme_depth_low_quality_flag=false
 casme_depth_quantization_params_present_flag=true
 casme_vui_params_present_flag=false
 )");
-    REQUIRE(byteCodingTest(unit, 3));
+    byteCodingTest(unit, 3);
   }
 
   SECTION("Extension present, casps_extension_7bits nonzero") {
@@ -120,7 +120,7 @@ casps_extension_data_flag=true
 casps_extension_data_flag=true
 casps_extension_data_flag=false
 )");
-    REQUIRE(byteCodingTest(unit, 3));
+    byteCodingTest(unit, 3);
   }
 }
 } // namespace TMIV::MivBitstream

@@ -213,7 +213,7 @@ asps_miv_extension_present_flag=false
 asps_extension_6bits=0
 )");
 
-    REQUIRE(byteCodingTest(x, 7, vuh, vps));
+    byteCodingTest(x, 7, vuh, vps);
   }
 
   SECTION("Example 2") {
@@ -307,7 +307,7 @@ asps_extension_data_flag=true
 asps_extension_data_flag=true
 )");
 
-    REQUIRE(byteCodingTest(x, 22, vuh, vps));
+    byteCodingTest(x, 22, vuh, vps);
   }
 }
 } // namespace TMIV::MivBitstream

@@ -120,6 +120,7 @@ auto minimalVps() {
   vps.vps_miv_extension() = {};
   vps.vps_frame_width({}, size.x()).vps_frame_height({}, size.y());
   vps.vps_geometry_video_present_flag({}, true).geometry_information({}) = {};
+  vps.calculateExtensionLengths();
   return vps;
 }
 
@@ -261,6 +262,7 @@ TEST_CASE("TMIV::Decoder::decodeMiv (1)") {
             .ptl_profile_toolset_idc(PtlProfileToolsetIdc::MIV_Main)
             .ptl_profile_reconstruction_idc(PtlProfileReconstructionIdc::Rec_Unconstrained);
         result.vps_miv_extension() = {};
+        result.calculateExtensionLengths();
         return result;
       }();
 

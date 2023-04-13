@@ -1480,6 +1480,18 @@ auto V3cParameterSet::vps_map_count_minus1(AtlasId j) const -> uint8_t {
   return atlas(j).vps_map_count_minus1;
 }
 
+auto V3cParameterSet::vps_multiple_map_streams_present_flag(AtlasId j) const -> bool {
+  return atlas(j).vps_multiple_map_streams_present_flag.value_or(false);
+}
+
+auto V3cParameterSet::vps_map_absolute_coding_enabled_flag(AtlasId j, uint8_t i) const -> bool {
+  return map(j, i).vps_map_absolute_coding_enabled_flag;
+}
+
+auto V3cParameterSet::vps_map_predictor_index_diff(AtlasId j, uint8_t i) const -> uint8_t {
+  return map(j, i).vps_map_predictor_index_diff;
+}
+
 auto V3cParameterSet::vps_auxiliary_video_present_flag(AtlasId j) const -> bool {
   return atlas(j).vps_auxiliary_video_present_flag;
 }
@@ -1603,6 +1615,26 @@ auto V3cParameterSet::vps_frame_height(AtlasId j, int32_t value) -> V3cParameter
 
 auto V3cParameterSet::vps_map_count_minus1(AtlasId j, uint8_t value) -> V3cParameterSet & {
   atlas(j).vps_map_count_minus1 = value;
+  atlas(j).m_vpsMaps.resize(value + size_t{1});
+  return *this;
+}
+
+auto V3cParameterSet::vps_multiple_map_streams_present_flag(AtlasId j, bool value)
+    -> V3cParameterSet & {
+  VERIFY_V3CBITSTREAM(vps_map_count_minus1(j) > 0);
+  atlas(j).vps_multiple_map_streams_present_flag = value;
+  return *this;
+}
+
+auto V3cParameterSet::vps_map_absolute_coding_enabled_flag(AtlasId j, uint8_t i, bool value)
+    -> V3cParameterSet & {
+  map(j, i).vps_map_absolute_coding_enabled_flag = value;
+  return *this;
+}
+
+auto V3cParameterSet::vps_map_predictor_index_diff(AtlasId j, uint8_t i, uint8_t value)
+    -> V3cParameterSet & {
+  map(j, i).vps_map_predictor_index_diff = value;
   return *this;
 }
 
@@ -1768,12 +1800,32 @@ auto operator<<(std::ostream &stream, const V3cParameterSet &x) -> std::ostream 
   stream << x.profile_tier_level();
   fmt::print(stream, "vps_v3c_parameter_set_id={}\n", x.vps_v3c_parameter_set_id());
   fmt::print(stream, "vps_atlas_count_minus1={}\n", x.vps_atlas_count_minus1());
+
   for (size_t k = 0; k <= x.vps_atlas_count_minus1(); ++k) {
     const auto j = x.vps_atlas_id(k);
     fmt::print(stream, "vps_atlas_id[ {} ]={}\n", k, j);
     fmt::print(stream, "vps_frame_width[ {} ]={}\n", j, x.vps_frame_width(j));
     fmt::print(stream, "vps_frame_height[ {} ]={}\n", j, x.vps_frame_height(j));
     fmt::print(stream, "vps_map_count_minus1[ {} ]={}\n", j, x.vps_map_count_minus1(j));
+
+    if (x.vps_map_count_minus1(j) > 0) {
+      fmt::print(stream, "vps_multiple_map_streams_present_flag[ {} ]={}\n", j,
+                 x.vps_multiple_map_streams_present_flag(j));
+    }
+    fmt::print(stream, "vps_map_absolute_coding_enabled_flag[ {} ][ 0 ]={}\n", j,
+               x.vps_map_absolute_coding_enabled_flag(j, 0));
+    fmt::print(stream, "vps_map_predictor_index_diff[ {} ][ 0 ]={}\n", j,
+               x.vps_map_predictor_index_diff(j, 0));
+
+    for (uint8_t i = 1; i <= x.vps_map_count_minus1(j); ++i) {
+      fmt::print(stream, "vps_map_absolute_coding_enabled_flag[ {} ][ {} ]={}\n", j, i,
+                 x.vps_map_absolute_coding_enabled_flag(j, i));
+
+      if (!x.vps_map_absolute_coding_enabled_flag(j, i)) {
+        fmt::print(stream, "vps_map_predictor_index_diff[ {} ][ {} ]={}\n", j, i,
+                   x.vps_map_predictor_index_diff(j, i));
+      }
+    }
     fmt::print(stream, "vps_auxiliary_video_present_flag[ {} ]={}\n", j,
                x.vps_auxiliary_video_present_flag(j));
     fmt::print(stream, "vps_occupancy_video_present_flag[ {} ]={}\n", j,
@@ -1868,34 +1920,92 @@ auto V3cParameterSet::summary() const -> std::string {
 }
 
 auto V3cParameterSet::operator==(const V3cParameterSet &other) const -> bool {
-  return m_profile_tier_level == other.m_profile_tier_level &&
-         m_vps_v3c_parameter_set_id == other.m_vps_v3c_parameter_set_id &&
-         m_vpsAtlases == other.m_vpsAtlases &&
-         m_vps_extension_count == other.m_vps_extension_count &&
-         m_vps_extensions_length_minus1 == other.m_vps_extensions_length_minus1 &&
-         m_vps_extension_type == other.m_vps_extension_type &&
-         m_vps_extension_length == other.m_vps_extension_length &&
-         m_vps_extension == other.m_vps_extension;
+  if (profile_tier_level() != other.profile_tier_level() ||
+      vps_v3c_parameter_set_id() != other.vps_v3c_parameter_set_id() ||
+      vps_atlas_count_minus1() != other.vps_atlas_count_minus1() ||
+      vps_extension_present_flag() != other.vps_extension_present_flag()) {
+    return false;
+  }
+  for (uint8_t k = 0; k <= vps_atlas_count_minus1(); ++k) {
+    if (vps_atlas_id(k) != other.vps_atlas_id(k)) {
+      return false;
+    }
+    const auto j = vps_atlas_id(k);
+
+    if (!isAtlasEqual(other, j)) {
+      return false;
+    }
+  }
+  return areExtensionsEqual(other);
 }
 
-auto V3cParameterSet::VpsAtlas::operator==(const VpsAtlas &other) const -> bool {
-  return vps_atlas_id == other.vps_atlas_id && vps_frame_width == other.vps_frame_width &&
-         vps_frame_height == other.vps_frame_height &&
-         vps_map_count_minus1 == other.vps_map_count_minus1 &&
-         vps_auxiliary_video_present_flag == other.vps_auxiliary_video_present_flag &&
-         vps_occupancy_video_present_flag == other.vps_occupancy_video_present_flag &&
-         vps_geometry_video_present_flag == other.vps_geometry_video_present_flag &&
-         vps_attribute_video_present_flag == other.vps_attribute_video_present_flag &&
-         occupancy_information == other.occupancy_information &&
-         geometry_information == other.geometry_information &&
-         attribute_information == other.attribute_information;
+auto V3cParameterSet::isAtlasEqual(const V3cParameterSet &other, AtlasId j) const -> bool {
+  if (vps_frame_width(j) != other.vps_frame_width(j) ||
+      vps_frame_height(j) != other.vps_frame_height(j) ||
+      vps_map_count_minus1(j) != other.vps_map_count_minus1(j) ||
+      vps_auxiliary_video_present_flag(j) != other.vps_auxiliary_video_present_flag(j) ||
+      vps_occupancy_video_present_flag(j) != other.vps_occupancy_video_present_flag(j) ||
+      vps_geometry_video_present_flag(j) != other.vps_geometry_video_present_flag(j) ||
+      vps_attribute_video_present_flag(j) != other.vps_attribute_video_present_flag(j)) {
+    return false;
+  }
+  if (vps_map_count_minus1(j) > 0) {
+    if (vps_multiple_map_streams_present_flag(j) !=
+        other.vps_multiple_map_streams_present_flag(j)) {
+      return false;
+    }
+  }
+  for (uint8_t i = 1; i <= vps_map_count_minus1(j); ++i) {
+    if (vps_map_absolute_coding_enabled_flag(j, i) !=
+        other.vps_map_absolute_coding_enabled_flag(j, i)) {
+      return false;
+    }
+    if (!vps_map_absolute_coding_enabled_flag(j, i)) {
+      if (vps_map_predictor_index_diff(j, i) != other.vps_map_predictor_index_diff(j, i)) {
+        return false;
+      }
+    }
+  }
+  if (vps_occupancy_video_present_flag(j)) {
+    if (occupancy_information(j) != other.occupancy_information(j)) {
+      return false;
+    }
+  }
+  if (vps_geometry_video_present_flag(j)) {
+    if (geometry_information(j) != other.geometry_information(j)) {
+      return false;
+    }
+  }
+  if (vps_attribute_video_present_flag(j)) {
+    if (attribute_information(j) != other.attribute_information(j)) {
+      return false;
+    }
+  }
+  return true;
+}
+
+auto V3cParameterSet::areExtensionsEqual(const V3cParameterSet &other) const -> bool {
+  if (vps_extension_present_flag()) {
+    if (vps_extension_count() != other.vps_extension_count()) {
+      return false;
+    }
+  }
+  if (vps_extension_count() != 0) {
+    if (vps_extensions_length_minus1() != other.vps_extensions_length_minus1()) {
+      return false;
+    }
+    for (uint8_t i = 0; i < vps_extension_count(); ++i) {
+      if (vps_extension_type(i) != other.vps_extension_type(i) ||
+          vps_extension_length(i) != other.vps_extension_length(i) ||
+          vps_extension(vps_extension_type(i)) != other.vps_extension(vps_extension_type(i))) {
+        return false;
+      }
+    }
+  }
+  return true;
 }
 
 auto V3cParameterSet::operator!=(const V3cParameterSet &other) const -> bool {
-  return !operator==(other);
-}
-
-auto V3cParameterSet::VpsAtlas::operator!=(const VpsAtlas &other) const -> bool {
   return !operator==(other);
 }
 
@@ -1916,10 +2026,21 @@ auto V3cParameterSet::decodeFrom(std::istream &stream) -> V3cParameterSet {
     x.vps_map_count_minus1(j, bitstream.readBits<uint8_t>(4));
 
     if (x.vps_map_count_minus1(j) > 0) {
-      const auto vps_multiple_map_streams_present_flag = bitstream.getFlag();
-      VERIFY_MIVBITSTREAM(!vps_multiple_map_streams_present_flag);
+      x.vps_multiple_map_streams_present_flag(j, bitstream.getFlag());
     }
+    x.vps_map_absolute_coding_enabled_flag(j, 0, true);
+    x.vps_map_predictor_index_diff(j, 0, 0);
 
+    for (uint8_t i = 1; i <= x.vps_map_count_minus1(j); ++i) {
+      if (x.vps_multiple_map_streams_present_flag(j)) {
+        x.vps_map_absolute_coding_enabled_flag(j, i, bitstream.getFlag());
+      } else {
+        x.vps_map_absolute_coding_enabled_flag(j, i, true);
+      }
+      if (!x.vps_map_absolute_coding_enabled_flag(j, i)) {
+        x.vps_map_predictor_index_diff(j, i, bitstream.getUExpGolomb<uint8_t>());
+      }
+    }
     x.vps_auxiliary_video_present_flag(j, bitstream.getFlag());
     x.vps_occupancy_video_present_flag(j, bitstream.getFlag());
     x.vps_geometry_video_present_flag(j, bitstream.getFlag());
@@ -1992,10 +2113,16 @@ void V3cParameterSet::encodeTo(std::ostream &stream) const {
     bitstream.writeBits(vps_map_count_minus1(j), 4);
 
     if (vps_map_count_minus1(j) > 0) {
-      const auto vps_multiple_map_streams_present_flag = false;
-      bitstream.putFlag(vps_multiple_map_streams_present_flag);
+      bitstream.putFlag(vps_multiple_map_streams_present_flag(j));
     }
-
+    for (uint8_t i = 1; i <= vps_map_count_minus1(j); ++i) {
+      if (vps_multiple_map_streams_present_flag(j)) {
+        bitstream.putFlag(vps_map_absolute_coding_enabled_flag(j, i));
+      }
+      if (!vps_map_absolute_coding_enabled_flag(j, i)) {
+        bitstream.putUExpGolomb(vps_map_predictor_index_diff(j, i));
+      }
+    }
     bitstream.putFlag(vps_auxiliary_video_present_flag(j));
     bitstream.putFlag(vps_occupancy_video_present_flag(j));
     bitstream.putFlag(vps_geometry_video_present_flag(j));
@@ -2011,13 +2138,11 @@ void V3cParameterSet::encodeTo(std::ostream &stream) const {
       attribute_information(j).encodeTo(bitstream, *this, j);
     }
   }
-
   bitstream.putFlag(vps_extension_present_flag());
 
   if (vps_extension_present_flag()) {
     bitstream.putUint8(vps_extension_count());
   }
-
   if (0 < vps_extension_count()) {
     VERIFY_V3CBITSTREAM(vps_extensions_length_minus1() + size_t{1} ==
                         std::accumulate(m_vps_extension_length.cbegin(),
@@ -2031,7 +2156,6 @@ void V3cParameterSet::encodeTo(std::ostream &stream) const {
       m_vps_extension[n].encodeTo(bitstream, vps_extension_type(n), vps_extension_length(n), *this);
     }
   }
-
   bitstream.byteAlignment();
 }
 
@@ -2041,5 +2165,17 @@ auto V3cParameterSet::atlas(AtlasId atlasId) const -> const VpsAtlas & {
 
 auto V3cParameterSet::atlas(AtlasId atlasId) -> VpsAtlas & {
   return m_vpsAtlases[indexOf(atlasId)];
+}
+
+auto V3cParameterSet::map(AtlasId atlasId, uint8_t mapIdx) const -> const VpsMap & {
+  const auto &atlas_ = atlas(atlasId);
+  VERIFY_V3CBITSTREAM(mapIdx < atlas_.m_vpsMaps.size());
+  return atlas_.m_vpsMaps[mapIdx];
+}
+
+auto V3cParameterSet::map(AtlasId atlasId, uint8_t mapIdx) -> VpsMap & {
+  auto &atlas_ = atlas(atlasId);
+  VERIFY_V3CBITSTREAM(mapIdx < atlas_.m_vpsMaps.size());
+  return atlas_.m_vpsMaps[mapIdx];
 }
 } // namespace TMIV::MivBitstream

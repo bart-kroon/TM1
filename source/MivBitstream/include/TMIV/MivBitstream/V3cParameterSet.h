@@ -636,9 +636,6 @@ private:
 };
 
 // 23090-5: v3c_parameter_set()
-//
-// 23090-12 restrictions:
-//   * vps_multiple_map_streams_present_flag[ ] == 0
 class V3cParameterSet {
 public:
   [[nodiscard]] auto profile_tier_level() const noexcept -> const ProfileTierLevel &;
@@ -649,6 +646,9 @@ public:
   [[nodiscard]] auto vps_frame_width(AtlasId j) const -> int32_t;
   [[nodiscard]] auto vps_frame_height(AtlasId j) const -> int32_t;
   [[nodiscard]] auto vps_map_count_minus1(AtlasId j) const -> uint8_t;
+  [[nodiscard]] auto vps_multiple_map_streams_present_flag(AtlasId j) const -> bool;
+  [[nodiscard]] auto vps_map_absolute_coding_enabled_flag(AtlasId j, uint8_t i) const -> bool;
+  [[nodiscard]] auto vps_map_predictor_index_diff(AtlasId j, uint8_t i) const -> uint8_t;
   [[nodiscard]] auto vps_auxiliary_video_present_flag(AtlasId j) const -> bool;
   [[nodiscard]] auto vps_occupancy_video_present_flag(AtlasId j) const -> bool;
   [[nodiscard]] auto vps_geometry_video_present_flag(AtlasId j) const -> bool;
@@ -680,6 +680,9 @@ public:
   auto vps_frame_width(AtlasId j, int32_t value) -> V3cParameterSet &;
   auto vps_frame_height(AtlasId j, int32_t value) -> V3cParameterSet &;
   auto vps_map_count_minus1(AtlasId j, uint8_t value) -> V3cParameterSet &;
+  auto vps_multiple_map_streams_present_flag(AtlasId j, bool value) -> V3cParameterSet &;
+  auto vps_map_absolute_coding_enabled_flag(AtlasId j, uint8_t i, bool value) -> V3cParameterSet &;
+  auto vps_map_predictor_index_diff(AtlasId j, uint8_t i, uint8_t value) -> V3cParameterSet &;
   auto vps_auxiliary_video_present_flag(AtlasId j, bool value) -> V3cParameterSet &;
   auto vps_occupancy_video_present_flag(AtlasId j, bool value) -> V3cParameterSet &;
   auto vps_geometry_video_present_flag(AtlasId j, bool value) -> V3cParameterSet &;
@@ -726,11 +729,18 @@ public:
   void encodeTo(std::ostream &stream) const;
 
 private:
+  struct VpsMap {
+    bool vps_map_absolute_coding_enabled_flag{true};
+    uint8_t vps_map_predictor_index_diff{};
+  };
+
   struct VpsAtlas {
     AtlasId vps_atlas_id{};
     int32_t vps_frame_width{};
     int32_t vps_frame_height{};
     uint8_t vps_map_count_minus1{};
+    std::optional<bool> vps_multiple_map_streams_present_flag{};
+    std::vector<VpsMap> m_vpsMaps{{}};
     bool vps_auxiliary_video_present_flag{};
     bool vps_occupancy_video_present_flag{};
     bool vps_geometry_video_present_flag{};
@@ -738,17 +748,18 @@ private:
     std::optional<OccupancyInformation> occupancy_information{};
     std::optional<GeometryInformation> geometry_information{};
     std::optional<AttributeInformation> attribute_information{};
-
-    auto operator==(const VpsAtlas &other) const -> bool;
-    auto operator!=(const VpsAtlas &other) const -> bool;
   };
 
   [[nodiscard]] auto atlas(AtlasId atlasId) const -> const VpsAtlas &;
   [[nodiscard]] auto atlas(AtlasId atlasId) -> VpsAtlas &;
+  [[nodiscard]] auto map(AtlasId atlasId, uint8_t mapIdx) const -> const VpsMap &;
+  [[nodiscard]] auto map(AtlasId atlasId, uint8_t mapIdx) -> VpsMap &;
+  [[nodiscard]] auto isAtlasEqual(const V3cParameterSet &other, AtlasId j) const -> bool;
+  [[nodiscard]] auto areExtensionsEqual(const V3cParameterSet &other) const -> bool;
 
   ProfileTierLevel m_profile_tier_level;
   uint8_t m_vps_v3c_parameter_set_id{};
-  std::vector<VpsAtlas> m_vpsAtlases{VpsAtlas{}};
+  std::vector<VpsAtlas> m_vpsAtlases{{}};
 
   uint8_t m_vps_extension_count{};
   std::optional<uint32_t> m_vps_extensions_length_minus1{};

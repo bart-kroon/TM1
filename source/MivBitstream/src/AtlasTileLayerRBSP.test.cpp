@@ -402,7 +402,7 @@ ath_type=SKIP_TILE
 ath_atlas_frm_order_cnt_lsb=0
 ath_ref_atlas_frame_list_asps_flag=true
 )");
-    REQUIRE(byteCodingTest(x, 3, nuh, aspsV, afpsV));
+    byteCodingTest(x, 3, nuh, aspsV, afpsV);
   }
 
   SECTION("I_TILE") {
@@ -477,7 +477,7 @@ pdu_lod_enabled_flag[ 0 ][ 2 ]=true
 pdu_lod_scale_x_minus1[ 0 ][ 2 ]=1
 pdu_lod_scale_y_idc[ 0 ][ 2 ]=3
 )");
-    REQUIRE(byteCodingTest(x, 16, nuh, aspsV, afpsV));
+    byteCodingTest(x, 16, nuh, aspsV, afpsV);
   }
 
   SECTION("I_TILE with quantizers") {
@@ -527,7 +527,7 @@ pdu_3d_range_d[ 0 ][ 0 ]=127
 pdu_projection_id[ 0 ][ 0 ]=0
 pdu_orientation_index[ 0 ][ 0 ]=FPO_NULL
 )");
-    REQUIRE(byteCodingTest(x, 12, nuh, aspsV, afpsV));
+    byteCodingTest(x, 12, nuh, aspsV, afpsV);
   }
 }
 } // namespace TMIV::MivBitstream

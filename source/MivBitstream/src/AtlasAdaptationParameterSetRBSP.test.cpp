@@ -44,7 +44,7 @@ aaps_log2_max_afoc_present_flag=false
 aaps_extension_present_flag=false
 )");
 
-  REQUIRE(byteCodingTest(x, 1));
+  byteCodingTest(x, 1);
 
   SECTION("Example 1") {
     x.aaps_atlas_adaptation_parameter_set_id(63)
@@ -63,7 +63,7 @@ aaps_vpcc_camera_parameters_present_flag=false
 aaps_extension_data_flag=true
 )");
 
-    REQUIRE(byteCodingTest(x, 5));
+    byteCodingTest(x, 5);
   }
 
   SECTION("Example 2") {
@@ -83,7 +83,7 @@ aaps_vpcc_camera_parameters_present_flag=false
 aaps_extension_data_flag=true
 )");
 
-    REQUIRE(byteCodingTest(x, 4));
+    byteCodingTest(x, 4);
   }
 }
 } // namespace TMIV::MivBitstream

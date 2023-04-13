@@ -545,6 +545,8 @@ vps_atlas_id[ 0 ]=0
 vps_frame_width[ 0 ]=1920
 vps_frame_height[ 0 ]=1080
 vps_map_count_minus1[ 0 ]=0
+vps_map_absolute_coding_enabled_flag[ 0 ][ 0 ]=true
+vps_map_predictor_index_diff[ 0 ][ 0 ]=0
 vps_auxiliary_video_present_flag[ 0 ]=false
 vps_occupancy_video_present_flag[ 0 ]=false
 vps_geometry_video_present_flag[ 0 ]=false
@@ -564,7 +566,7 @@ gm_group_count=0
   Atlas 0: 1920 x 1080
 , geometry scaling true, groups 0, embedded occupancy true, occupancy scaling false)");
 
-    REQUIRE(byteCodingTest(vps, 25));
+    byteCodingTest(vps, 25);
   }
 
   SECTION("Example 2") {
@@ -598,7 +600,11 @@ gm_group_count=0
         .vps_frame_width(j1, 2048)
         .vps_frame_height(j0, 1080)
         .vps_frame_height(j1, 2080)
+        .vps_map_count_minus1(j1, 3)
+        .vps_multiple_map_streams_present_flag(j1, true)
         .vps_map_count_minus1(j2, 15)
+        .vps_map_absolute_coding_enabled_flag(j2, 5, true)
+        .vps_map_predictor_index_diff(j2, 8, 3)
         .vps_auxiliary_video_present_flag(j0, false)
         .vps_occupancy_video_present_flag(j0, true)
         .occupancy_information(j0, {})
@@ -628,6 +634,8 @@ vps_atlas_id[ 0 ]=30
 vps_frame_width[ 30 ]=1920
 vps_frame_height[ 30 ]=1080
 vps_map_count_minus1[ 30 ]=0
+vps_map_absolute_coding_enabled_flag[ 30 ][ 0 ]=true
+vps_map_predictor_index_diff[ 30 ][ 0 ]=0
 vps_auxiliary_video_present_flag[ 30 ]=false
 vps_occupancy_video_present_flag[ 30 ]=true
 vps_geometry_video_present_flag[ 30 ]=false
@@ -639,7 +647,13 @@ oi_occupancy_MSB_align_flag[ 30 ]=false
 vps_atlas_id[ 1 ]=31
 vps_frame_width[ 31 ]=2048
 vps_frame_height[ 31 ]=2080
-vps_map_count_minus1[ 31 ]=0
+vps_map_count_minus1[ 31 ]=3
+vps_multiple_map_streams_present_flag[ 31 ]=true
+vps_map_absolute_coding_enabled_flag[ 31 ][ 0 ]=true
+vps_map_predictor_index_diff[ 31 ][ 0 ]=0
+vps_map_absolute_coding_enabled_flag[ 31 ][ 1 ]=true
+vps_map_absolute_coding_enabled_flag[ 31 ][ 2 ]=true
+vps_map_absolute_coding_enabled_flag[ 31 ][ 3 ]=true
 vps_auxiliary_video_present_flag[ 31 ]=false
 vps_occupancy_video_present_flag[ 31 ]=false
 vps_geometry_video_present_flag[ 31 ]=true
@@ -653,6 +667,24 @@ vps_atlas_id[ 2 ]=32
 vps_frame_width[ 32 ]=0
 vps_frame_height[ 32 ]=0
 vps_map_count_minus1[ 32 ]=15
+vps_multiple_map_streams_present_flag[ 32 ]=false
+vps_map_absolute_coding_enabled_flag[ 32 ][ 0 ]=true
+vps_map_predictor_index_diff[ 32 ][ 0 ]=0
+vps_map_absolute_coding_enabled_flag[ 32 ][ 1 ]=true
+vps_map_absolute_coding_enabled_flag[ 32 ][ 2 ]=true
+vps_map_absolute_coding_enabled_flag[ 32 ][ 3 ]=true
+vps_map_absolute_coding_enabled_flag[ 32 ][ 4 ]=true
+vps_map_absolute_coding_enabled_flag[ 32 ][ 5 ]=true
+vps_map_absolute_coding_enabled_flag[ 32 ][ 6 ]=true
+vps_map_absolute_coding_enabled_flag[ 32 ][ 7 ]=true
+vps_map_absolute_coding_enabled_flag[ 32 ][ 8 ]=true
+vps_map_absolute_coding_enabled_flag[ 32 ][ 9 ]=true
+vps_map_absolute_coding_enabled_flag[ 32 ][ 10 ]=true
+vps_map_absolute_coding_enabled_flag[ 32 ][ 11 ]=true
+vps_map_absolute_coding_enabled_flag[ 32 ][ 12 ]=true
+vps_map_absolute_coding_enabled_flag[ 32 ][ 13 ]=true
+vps_map_absolute_coding_enabled_flag[ 32 ][ 14 ]=true
+vps_map_absolute_coding_enabled_flag[ 32 ][ 15 ]=true
 vps_auxiliary_video_present_flag[ 32 ]=false
 vps_occupancy_video_present_flag[ 32 ]=false
 vps_geometry_video_present_flag[ 32 ]=false
@@ -711,7 +743,7 @@ vps_extension_data_byte=15
   Atlas 32: 0 x 0; [PIN: regions 1]
 , geometry scaling false, groups 0, embedded occupancy true, occupancy scaling false)");
 
-    REQUIRE(byteCodingTest(vps, 73));
+    byteCodingTest(vps, 73);
   }
 
   SECTION("Example 3 for mpi") {
@@ -777,6 +809,8 @@ vps_atlas_id[ 0 ]=20
 vps_frame_width[ 20 ]=4096
 vps_frame_height[ 20 ]=2048
 vps_map_count_minus1[ 20 ]=0
+vps_map_absolute_coding_enabled_flag[ 20 ][ 0 ]=true
+vps_map_predictor_index_diff[ 20 ][ 0 ]=0
 vps_auxiliary_video_present_flag[ 20 ]=false
 vps_occupancy_video_present_flag[ 20 ]=false
 vps_geometry_video_present_flag[ 20 ]=false
@@ -807,7 +841,7 @@ gm_group_count=0
   Atlas 20: 4096 x 2048; [AI: 2, ATTR_TEXTURE, codec 1, dims 3, 2D 10, align false, ATTR_TRANSPARENCY, codec 1, dims 1, 2D 10, align false]
 , geometry scaling false, groups 0, embedded occupancy true, occupancy scaling false)");
 
-    REQUIRE(byteCodingTest(vps, 39));
+    byteCodingTest(vps, 39);
 
     REQUIRE(vps.attrIdxOf(AtlasId{20}, AiAttributeTypeId::ATTR_TEXTURE) == 0);
     REQUIRE(vps.attrIdxOf(AtlasId{20}, AiAttributeTypeId::ATTR_TRANSPARENCY) == 1);

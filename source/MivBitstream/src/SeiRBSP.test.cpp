@@ -92,7 +92,7 @@ TEST_CASE("sei_message", "[Supplemental Enhancement Information RBSP]") {
     const auto message = SeiMessage{PayloadType::time_code, SeiPayload{"Tick tock"}};
     REQUIRE(toString(message) == R"(payloadType=time_code
 )");
-    REQUIRE(byteCodingTest(message, 11, NalUnitType::NAL_PREFIX_NSEI));
+    byteCodingTest(message, 11, NalUnitType::NAL_PREFIX_NSEI);
   }
 }
 
@@ -118,7 +118,7 @@ TEST_CASE("sei_rbsp", "[Supplemental Enhancement Information RBSP]") {
     REQUIRE(toString(x) == R"(payloadType=buffering_period
 payloadType=sei_manifest
 )");
-    REQUIRE(byteCodingTest(x, 23, NalUnitType::NAL_SUFFIX_NSEI));
+    byteCodingTest(x, 23, NalUnitType::NAL_SUFFIX_NSEI);
   }
 
   SECTION("Example 2") {
@@ -142,7 +142,7 @@ payloadType=user_data_unregistered
         computePayloadAndHeaderSizeFor(255) + computePayloadAndHeaderSizeFor(256) +
         computePayloadAndHeaderSizeFor(257) + computePayloadAndHeaderSizeFor(12) + trailing_byte;
 
-    REQUIRE(byteCodingTest(x, expected_number_of_bytes, NalUnitType::NAL_SUFFIX_NSEI));
+    byteCodingTest(x, expected_number_of_bytes, NalUnitType::NAL_SUFFIX_NSEI);
   }
 }
 } // namespace TMIV::MivBitstream

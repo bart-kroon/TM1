@@ -57,7 +57,7 @@ TEST_CASE("v3c_unit_header", "[V3C Unit]") {
     REQUIRE(toString(x) == R"(vuh_unit_type=V3C_VPS
 )");
 
-    REQUIRE(byteCodingTest(x, 4));
+    byteCodingTest(x, 4);
     REQUIRE(x.summary() == "V3C_VPS");
   }
 
@@ -69,7 +69,7 @@ vuh_v3c_parameter_set_id=0
 vuh_atlas_id=0
 )");
 
-    REQUIRE(byteCodingTest(x, 4));
+    byteCodingTest(x, 4);
     REQUIRE(x.summary() == "V3C_AD vps:0 atlas:0");
 
     SECTION("Example") {
@@ -80,7 +80,7 @@ vuh_v3c_parameter_set_id=1
 vuh_atlas_id=2
 )");
 
-      REQUIRE(byteCodingTest(x, 4));
+      byteCodingTest(x, 4);
       REQUIRE(x.summary() == "V3C_AD vps:1 atlas:2");
     }
   }
@@ -93,7 +93,7 @@ vuh_v3c_parameter_set_id=0
 vuh_atlas_id=0
 )");
 
-    REQUIRE(byteCodingTest(x, 4));
+    byteCodingTest(x, 4);
 
     SECTION("Example") {
       x = V3cUnitHeader::ovd(2, AtlasId{1});
@@ -103,7 +103,7 @@ vuh_v3c_parameter_set_id=2
 vuh_atlas_id=1
 )");
 
-      REQUIRE(byteCodingTest(x, 4));
+      byteCodingTest(x, 4);
       REQUIRE(x.summary() == "V3C_OVD vps:2 atlas:1");
     }
   }
@@ -118,7 +118,7 @@ vuh_map_index=0
 vuh_auxiliary_video_flag=false
 )");
 
-    REQUIRE(byteCodingTest(x, 4));
+    byteCodingTest(x, 4);
 
     SECTION("Example") {
       x = V3cUnitHeader::gvd(2, {}, 0, false);
@@ -130,7 +130,7 @@ vuh_map_index=0
 vuh_auxiliary_video_flag=false
 )");
 
-      REQUIRE(byteCodingTest(x, 4));
+      byteCodingTest(x, 4);
       REQUIRE(x.summary() == "V3C_GVD vps:2 atlas:0 map:0 aux:false");
     }
   }
@@ -147,7 +147,7 @@ vuh_map_index=0
 vuh_auxiliary_video_flag=false
 )");
 
-    REQUIRE(byteCodingTest(x, 4));
+    byteCodingTest(x, 4);
     REQUIRE(x.summary() == "V3C_AVD vps:0 atlas:0 attr:0 part:0 map:0 aux:false");
 
     SECTION("Example") {
@@ -162,7 +162,7 @@ vuh_map_index=0
 vuh_auxiliary_video_flag=false
 )");
 
-      REQUIRE(byteCodingTest(x, 4));
+      byteCodingTest(x, 4);
       REQUIRE(x.summary() == "V3C_AVD vps:2 atlas:2 attr:3 part:0 map:0 aux:false");
     }
   }
@@ -173,7 +173,7 @@ vuh_auxiliary_video_flag=false
 vuh_v3c_parameter_set_id=0
 )");
 
-    REQUIRE(byteCodingTest(unit, 4));
+    byteCodingTest(unit, 4);
     REQUIRE(unit.summary() == "V3C_CAD vps:0");
 
     SECTION("Example") {
@@ -183,7 +183,7 @@ vuh_v3c_parameter_set_id=0
 vuh_v3c_parameter_set_id=2
 )");
 
-      REQUIRE(byteCodingTest(unit, 4));
+      byteCodingTest(unit, 4);
       REQUIRE(unit.summary() == "V3C_CAD vps:2");
     }
   }
@@ -195,7 +195,7 @@ vuh_v3c_parameter_set_id=0
 vuh_atlas_id=0
 )");
 
-    REQUIRE(byteCodingTest(unit, 4));
+    byteCodingTest(unit, 4);
     REQUIRE(unit.summary() == "V3C_PVD vps:0 atlas:0");
 
     SECTION("Example") {
@@ -206,7 +206,7 @@ vuh_v3c_parameter_set_id=2
 vuh_atlas_id=0
 )");
 
-      REQUIRE(byteCodingTest(unit, 4));
+      byteCodingTest(unit, 4);
       REQUIRE(unit.summary() == "V3C_PVD vps:2 atlas:0");
     }
   }
@@ -232,6 +232,8 @@ vps_atlas_id[ 0 ]=0
 vps_frame_width[ 0 ]=640
 vps_frame_height[ 0 ]=480
 vps_map_count_minus1[ 0 ]=0
+vps_map_absolute_coding_enabled_flag[ 0 ][ 0 ]=true
+vps_map_predictor_index_diff[ 0 ][ 0 ]=0
 vps_auxiliary_video_present_flag[ 0 ]=false
 vps_occupancy_video_present_flag[ 0 ]=false
 vps_geometry_video_present_flag[ 0 ]=true
@@ -243,7 +245,7 @@ gi_geometry_3d_coordinates_bit_depth_minus1[ 0 ]=10
 vps_extension_present_flag=false
 )");
 
-    REQUIRE(byteCodingTest(x, 21, vuh));
+    byteCodingTest(x, 21, vuh);
   }
 
   SECTION("AD") {
@@ -253,7 +255,7 @@ vps_extension_present_flag=false
     REQUIRE(toString(x) == R"(ssnh_unit_size_precision_bytes_minus1=4
 )");
 
-    REQUIRE(byteCodingTest(x, 1, vuh));
+    byteCodingTest(x, 1, vuh);
   }
 
   SECTION("OVD") {
@@ -262,7 +264,7 @@ vps_extension_present_flag=false
 
     REQUIRE(toString(x).empty());
 
-    REQUIRE(byteCodingTest(x, 0, vuh));
+    byteCodingTest(x, 0, vuh);
   }
 
   SECTION("GVD") {
@@ -271,7 +273,7 @@ vps_extension_present_flag=false
 
     REQUIRE(toString(x).empty());
 
-    REQUIRE(byteCodingTest(x, 0, vuh));
+    byteCodingTest(x, 0, vuh);
   }
 
   SECTION("AVD") {
@@ -280,7 +282,7 @@ vps_extension_present_flag=false
 
     REQUIRE(toString(x).empty());
 
-    REQUIRE(byteCodingTest(x, 0, vuh));
+    byteCodingTest(x, 0, vuh);
   }
 }
 
@@ -305,6 +307,8 @@ vps_atlas_id[ 0 ]=0
 vps_frame_width[ 0 ]=640
 vps_frame_height[ 0 ]=480
 vps_map_count_minus1[ 0 ]=0
+vps_map_absolute_coding_enabled_flag[ 0 ][ 0 ]=true
+vps_map_predictor_index_diff[ 0 ][ 0 ]=0
 vps_auxiliary_video_present_flag[ 0 ]=false
 vps_occupancy_video_present_flag[ 0 ]=false
 vps_geometry_video_present_flag[ 0 ]=true

@@ -156,7 +156,7 @@ afps_raw_3d_offset_bit_count_explicit_mode_flag=false
 afps_extension_present_flag=false
 )");
 
-    REQUIRE(byteCodingTest(x, 2, aspsV));
+    byteCodingTest(x, 2, aspsV);
   }
 
   SECTION("Example 2") {
@@ -195,7 +195,7 @@ afps_extension_data_flag=false
 afps_extension_data_flag=true
 )");
 
-    REQUIRE(byteCodingTest(x, 8, aspsV));
+    byteCodingTest(x, 8, aspsV);
   }
 
   SECTION("Example 3") {
@@ -235,7 +235,7 @@ afme_inpaint_lod_scale_x_minus1=4
 afme_inpaint_lod_scale_y_idc=13
 )");
 
-    REQUIRE(byteCodingTest(x, 9, aspsV));
+    byteCodingTest(x, 9, aspsV);
   }
 }
 } // namespace TMIV::MivBitstream

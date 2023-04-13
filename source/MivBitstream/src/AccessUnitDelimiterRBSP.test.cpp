@@ -41,7 +41,7 @@ TEST_CASE("access_unit_delimiter_rbsp", "[Access Unit Delimiter RBSP]") {
 
   REQUIRE(toString(x) == R"(aframe_type=I_TILE
 )");
-  REQUIRE(byteCodingTest(x, 1));
+  byteCodingTest(x, 1);
 
   SECTION("Example 1") {
     x.aframe_type(AframeType::SKIP_P_and_I);
@@ -49,7 +49,7 @@ TEST_CASE("access_unit_delimiter_rbsp", "[Access Unit Delimiter RBSP]") {
     REQUIRE(toString(x) == R"(aframe_type=SKIP_TILE, P_TILE and I_TILE
 )");
 
-    REQUIRE(byteCodingTest(x, 1));
+    byteCodingTest(x, 1);
   }
 }
 } // namespace TMIV::MivBitstream

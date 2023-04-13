@@ -41,8 +41,8 @@ TEST_CASE("sample_stream_nal_header", "[NAL sample stream format]") {
       std::array{SampleStreamNalHeader{0}, SampleStreamNalHeader{7}};
 
   SECTION("encodeTo/decodeFrom") {
-    REQUIRE(byteCodingTest(sample_stream_nal_header[0], 1));
-    REQUIRE(byteCodingTest(sample_stream_nal_header[1], 1));
+    byteCodingTest(sample_stream_nal_header[0], 1);
+    byteCodingTest(sample_stream_nal_header[1], 1);
   }
   SECTION("operator <<") {
     REQUIRE(toString(sample_stream_nal_header[0]) == "ssnh_unit_size_precision_bytes_minus1=0\n");
@@ -57,8 +57,8 @@ TEST_CASE("sample_stream_nal_unit", "[NAL sample stream format]") {
       std::array{SampleStreamNalUnit{"Hello, World!"}, SampleStreamNalUnit{std::string(3, '\0')}};
 
   SECTION("encodeTo/decodeFrom") {
-    REQUIRE(byteCodingTest(sample_stream_nal_unit[0], 14, sample_stream_nal_header[0]));
-    REQUIRE(byteCodingTest(sample_stream_nal_unit[1], 11, sample_stream_nal_header[1]));
+    byteCodingTest(sample_stream_nal_unit[0], 14, sample_stream_nal_header[0]);
+    byteCodingTest(sample_stream_nal_unit[1], 11, sample_stream_nal_header[1]);
   }
   SECTION("operator <<") {
     REQUIRE(toString(sample_stream_nal_unit[0]) == "nal_unit(11)\n");

@@ -43,15 +43,18 @@
 
 namespace {
 template <typename Type, typename... Args>
-auto byteCodingTest(const Type &reference, int32_t size, Args &&...args) -> bool {
+void byteCodingTest(const Type &reference, int32_t size, Args &&...args) {
+  CAPTURE(reference);
+
   std::stringstream stream;
   reference.encodeTo(stream, args...);
   REQUIRE(size == stream.tellp());
 
   const auto actual = Type::decodeFrom(stream, std::forward<Args>(args)...);
+  CAPTURE(actual);
   REQUIRE(size == stream.tellg());
 
-  return actual == reference;
+  REQUIRE((actual == reference));
 }
 
 template <typename Type, typename... Args>

@@ -38,6 +38,81 @@
 #include <TMIV/MivBitstream/AtlasSequenceParameterSetRBSP.h>
 
 namespace TMIV::MivBitstream {
+TEST_CASE("max_coded_video_resolution", "[MIV VUI Params]") {
+  SECTION("Disable all flags") {
+    const auto x = MaxCodedVideoResolution{};
+
+    REQUIRE(toString(x) == R"(mcv_occupancy_resolution_present_flag=false
+mcv_geometry_resolution_present_flag=false
+mcv_attribute_resolution_present_flag=false
+)");
+
+    bitCodingTest(x, 3);
+  }
+
+  SECTION("Enable occupancy flag") {
+    const auto x = MaxCodedVideoResolution{}.mcv_occupancy_width(56).mcv_occupancy_height(78);
+
+    REQUIRE(toString(x) == R"(mcv_occupancy_resolution_present_flag=true
+mcv_geometry_resolution_present_flag=false
+mcv_attribute_resolution_present_flag=false
+mcv_occupancy_width=56
+mcv_occupancy_height=78
+)");
+
+    bitCodingTest(x, 27);
+  }
+
+  SECTION("Enable geometry flag") {
+    const auto x = MaxCodedVideoResolution{}.mcv_geometry_width(324).mcv_geometry_height(45243);
+
+    REQUIRE(toString(x) == R"(mcv_occupancy_resolution_present_flag=false
+mcv_geometry_resolution_present_flag=true
+mcv_attribute_resolution_present_flag=false
+mcv_geometry_width=324
+mcv_geometry_height=45243
+)");
+
+    bitCodingTest(x, 51);
+  }
+
+  SECTION("Enable attribute flag") {
+    const auto x = MaxCodedVideoResolution{}.mcv_attribute_width(34).mcv_attribute_height(56);
+
+    REQUIRE(toString(x) == R"(mcv_occupancy_resolution_present_flag=false
+mcv_geometry_resolution_present_flag=false
+mcv_attribute_resolution_present_flag=true
+mcv_attribute_width=34
+mcv_attribute_height=56
+)");
+
+    bitCodingTest(x, 25);
+  }
+
+  SECTION("Enable all flags") {
+    const auto x = MaxCodedVideoResolution{}
+                       .mcv_occupancy_width(3)
+                       .mcv_occupancy_height(4)
+                       .mcv_geometry_width(5)
+                       .mcv_geometry_height(6)
+                       .mcv_attribute_width(7)
+                       .mcv_attribute_height(8);
+
+    REQUIRE(toString(x) == R"(mcv_occupancy_resolution_present_flag=true
+mcv_geometry_resolution_present_flag=true
+mcv_attribute_resolution_present_flag=true
+mcv_occupancy_width=3
+mcv_occupancy_height=4
+mcv_geometry_width=5
+mcv_geometry_height=6
+mcv_attribute_width=7
+mcv_attribute_height=8
+)");
+
+    bitCodingTest(x, 37);
+  }
+}
+
 namespace {
 constexpr auto openGlCas() noexcept {
   auto x = CoordinateSystemParameters{};
@@ -88,13 +163,14 @@ TEST_CASE("vui_parameters", "[VUI Parameters]") {
   SECTION("Default construction") {
     constexpr auto x = VuiParameters{};
     REQUIRE(toString(x) == R"(vui_timing_info_present_flag=false
-vui_bitstream_restriction_present_flag=false
+vui_tiles_restriction_present_flag=false
+vui_max_coded_video_resolution_present_flag=false
 vui_coordinate_system_parameters_present_flag=false
 vui_unit_in_metres_flag=false
 vui_display_box_info_present_flag=false
 vui_anchor_point_present_flag=false
 )");
-    bitCodingTest(x, 6, nullptr);
+    bitCodingTest(x, 7, nullptr);
   }
 
   SECTION("Enable flags") {
@@ -106,10 +182,13 @@ vui_anchor_point_present_flag=false
         .vui_num_ticks_poc_diff_one_minus1(143)
         .vui_hrd_parameters_present_flag(false);
 
-    x.vui_tiles_fixed_structure_for_atlas_flag(true)
-        .vui_tiles_fixed_structure_for_video_substreams_flag(true)
+    x.vui_fixed_atlas_tile_structure_flag(true)
+        .vui_fixed_video_tile_structure_flag(true)
         .vui_constrained_tiles_across_v3c_components_idc(33)
         .vui_max_num_tiles_per_atlas_minus1(17);
+
+    x.max_coded_video_resolution() =
+        MaxCodedVideoResolution{}.mcv_geometry_width(100).mcv_geometry_height(200);
 
     x.coordinate_system_parameters() = openGlCas();
 
@@ -130,11 +209,17 @@ vui_time_scale=32521
 vui_poc_proportional_to_timing_flag=true
 vui_num_ticks_poc_diff_one_minus1=143
 vui_hrd_parameters_present_flag=false
-vui_bitstream_restriction_present_flag=true
-vui_tiles_fixed_structure_for_atlas_flag=true
-vui_tiles_fixed_structure_for_video_substreams_flag=true
+vui_tiles_restriction_present_flag=true
+vui_fixed_atlas_tile_structure_flag=true
+vui_fixed_video_tile_structure_flag=true
 vui_constrained_tiles_across_v3c_components_idc=33
 vui_max_num_tiles_per_atlas_minus1=17
+vui_max_coded_video_resolution_present_flag=true
+mcv_occupancy_resolution_present_flag=false
+mcv_geometry_resolution_present_flag=true
+mcv_attribute_resolution_present_flag=false
+mcv_geometry_width=100
+mcv_geometry_height=200
 vui_coordinate_system_parameters_present_flag=true
 cas_forward_axis=2
 cas_delta_left_axis_minus1=0
@@ -158,7 +243,7 @@ vui_anchor_point[ 2 ]=90
     auto asps = AtlasSequenceParameterSetRBSP{};
     asps.asps_geometry_3d_bit_depth_minus1(15);
 
-    bitCodingTest(x, 259, &asps);
+    bitCodingTest(x, 291, &asps);
   }
 }
 } // namespace TMIV::MivBitstream

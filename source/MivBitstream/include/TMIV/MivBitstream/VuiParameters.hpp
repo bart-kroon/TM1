@@ -102,10 +102,13 @@ constexpr auto VuiParameters::vui_timing_info_present_flag() const noexcept {
   return m_vui_timing_info_present_flag;
 }
 
-constexpr auto VuiParameters::vui_bitstream_restriction_present_flag() const noexcept {
-  return m_vui_bitstream_restriction_present_flag;
+constexpr auto VuiParameters::vui_tiles_restriction_present_flag() const noexcept {
+  return m_vui_tiles_restriction_present_flag;
 }
 
+constexpr auto VuiParameters::vui_max_coded_video_resolution_present_flag() const noexcept {
+  return m_vui_max_coded_video_resolution_present_flag;
+}
 constexpr auto VuiParameters::vui_coordinate_system_parameters_present_flag() const noexcept {
   return m_vui_coordinate_system_parameters_present_flag;
 }
@@ -127,9 +130,14 @@ constexpr auto VuiParameters::vui_timing_info_present_flag(bool value) noexcept 
   return *this;
 }
 
-constexpr auto VuiParameters::vui_bitstream_restriction_present_flag(bool value) noexcept
+constexpr auto VuiParameters::vui_tiles_restriction_present_flag(bool value) noexcept -> auto & {
+  m_vui_tiles_restriction_present_flag = value;
+  return *this;
+}
+
+constexpr auto VuiParameters::vui_max_coded_video_resolution_present_flag(bool value) noexcept
     -> auto & {
-  m_vui_bitstream_restriction_present_flag = value;
+  m_vui_max_coded_video_resolution_present_flag = value;
   return *this;
 }
 

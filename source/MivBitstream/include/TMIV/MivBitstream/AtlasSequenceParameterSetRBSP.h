@@ -36,6 +36,7 @@
 
 #include "V3cParameterSet.h"
 #include "V3cUnit.h"
+#include "VuiParameters.h"
 
 #include <TMIV/Common/Bitstream.h>
 
@@ -160,15 +161,6 @@ private:
 };
 
 // 23090-5: atlas_sequence_parameter_set_rbsp( )
-//
-// 23090-12 restrictions:
-//   * asps_pixel_deinterleaving_enabled_flag == 0
-//   * asps_eom_patch_enabled_flag == 0
-//   * asps_raw_patch_enabled_flag == 0
-//   * asps_plr_enabled_flag == 0
-//
-// Limitations of this implementation:
-//   * asps_vui_parameters_present_flag == 0
 class AtlasSequenceParameterSetRBSP {
 public:
   [[nodiscard]] constexpr auto asps_atlas_sequence_parameter_set_id() const noexcept;
@@ -199,6 +191,7 @@ public:
   [[nodiscard]] constexpr auto asps_vpcc_extension_present_flag() const noexcept;
   [[nodiscard]] constexpr auto asps_miv_extension_present_flag() const noexcept;
   [[nodiscard]] constexpr auto asps_extension_6bits() const noexcept;
+  [[nodiscard]] auto vui_parameters() const -> const VuiParameters &;
   [[nodiscard]] auto asps_vpcc_extension() const -> const AspsVpccExtension &;
   [[nodiscard]] auto asps_miv_extension() const -> const AspsMivExtension &;
   [[nodiscard]] auto aspsExtensionData() const -> const std::vector<bool> &;
@@ -236,6 +229,7 @@ public:
   auto aspsExtensionData(std::vector<bool> data) noexcept -> AtlasSequenceParameterSetRBSP &;
 
   [[nodiscard]] auto ref_list_struct(uint8_t rlsIdx) -> RefListStruct &;
+  [[nodiscard]] auto vui_parameters() noexcept -> VuiParameters &;
   [[nodiscard]] auto asps_vpcc_extension() noexcept -> AspsVpccExtension &;
   [[nodiscard]] auto asps_miv_extension() noexcept -> AspsMivExtension &;
 
@@ -278,6 +272,7 @@ private:
   std::optional<bool> m_asps_vpcc_extension_present_flag{};
   std::optional<bool> m_asps_miv_extension_present_flag{};
   std::optional<uint8_t> m_asps_extension_6bits{};
+  std::optional<VuiParameters> m_vui;
   std::optional<AspsVpccExtension> m_asve;
   std::optional<AspsMivExtension> m_asme;
   std::optional<std::vector<bool>> m_aspsExtensionData;

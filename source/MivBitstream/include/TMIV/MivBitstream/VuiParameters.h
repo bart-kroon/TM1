@@ -40,6 +40,50 @@
 #include <optional>
 
 namespace TMIV::MivBitstream {
+// 23090-5: max_coded_video_resolution( )
+class MaxCodedVideoResolution {
+public:
+  [[nodiscard]] auto mcv_occupancy_resolution_present_flag() const -> bool;
+  [[nodiscard]] auto mcv_geometry_resolution_present_flag() const -> bool;
+  [[nodiscard]] auto mcv_attribute_resolution_present_flag() const -> bool;
+  [[nodiscard]] auto mcv_occupancy_width() const -> int32_t;
+  [[nodiscard]] auto mcv_occupancy_height() const -> int32_t;
+  [[nodiscard]] auto mcv_geometry_width() const -> int32_t;
+  [[nodiscard]] auto mcv_geometry_height() const -> int32_t;
+  [[nodiscard]] auto mcv_attribute_width() const -> int32_t;
+  [[nodiscard]] auto mcv_attribute_height() const -> int32_t;
+
+  auto mcv_occupancy_resolution_present_flag(bool value) -> MaxCodedVideoResolution &;
+  auto mcv_geometry_resolution_present_flag(bool value) -> MaxCodedVideoResolution &;
+  auto mcv_attribute_resolution_present_flag(bool value) -> MaxCodedVideoResolution &;
+  auto mcv_occupancy_width(int32_t value) -> MaxCodedVideoResolution &;
+  auto mcv_occupancy_height(int32_t value) -> MaxCodedVideoResolution &;
+  auto mcv_geometry_width(int32_t value) -> MaxCodedVideoResolution &;
+  auto mcv_geometry_height(int32_t value) -> MaxCodedVideoResolution &;
+  auto mcv_attribute_width(int32_t value) -> MaxCodedVideoResolution &;
+  auto mcv_attribute_height(int32_t value) -> MaxCodedVideoResolution &;
+
+  friend auto operator<<(std::ostream &stream, const MaxCodedVideoResolution &x) -> std::ostream &;
+
+  auto operator==(const MaxCodedVideoResolution &other) const -> bool;
+  auto operator!=(const MaxCodedVideoResolution &other) const -> bool;
+
+  static auto decodeFrom(Common::InputBitstream &bitstream) -> MaxCodedVideoResolution;
+
+  void encodeTo(Common::OutputBitstream &bitstream) const;
+
+private:
+  bool m_mcv_occupancy_resolution_present_flag{};
+  bool m_mcv_geometry_resolution_present_flag{};
+  bool m_mcv_attribute_resolution_present_flag{};
+  std::optional<int32_t> m_mcv_occupancy_width;
+  std::optional<int32_t> m_mcv_occupancy_height;
+  std::optional<int32_t> m_mcv_geometry_width;
+  std::optional<int32_t> m_mcv_geometry_height;
+  std::optional<int32_t> m_mcv_attribute_width;
+  std::optional<int32_t> m_mcv_attribute_height;
+};
+
 // 23090-5: coordinate_system_parameters()
 class CoordinateSystemParameters {
 public:
@@ -90,11 +134,14 @@ public:
   [[nodiscard]] auto vui_num_ticks_poc_diff_one_minus1() const -> uint32_t;
   [[nodiscard]] auto vui_hrd_parameters_present_flag() const -> bool;
 
-  [[nodiscard]] constexpr auto vui_bitstream_restriction_present_flag() const noexcept;
-  [[nodiscard]] auto vui_tiles_fixed_structure_for_atlas_flag() const -> bool;
-  [[nodiscard]] auto vui_tiles_fixed_structure_for_video_substreams_flag() const -> bool;
+  [[nodiscard]] constexpr auto vui_tiles_restriction_present_flag() const noexcept;
+  [[nodiscard]] auto vui_fixed_atlas_tile_structure_flag() const -> bool;
+  [[nodiscard]] auto vui_fixed_video_tile_structure_flag() const -> bool;
   [[nodiscard]] auto vui_constrained_tiles_across_v3c_components_idc() const -> uint8_t;
   [[nodiscard]] auto vui_max_num_tiles_per_atlas_minus1() const -> uint32_t;
+
+  [[nodiscard]] constexpr auto vui_max_coded_video_resolution_present_flag() const noexcept;
+  [[nodiscard]] auto max_coded_video_resolution() const -> const MaxCodedVideoResolution &;
 
   [[nodiscard]] constexpr auto vui_coordinate_system_parameters_present_flag() const noexcept;
   [[nodiscard]] auto coordinate_system_parameters() const -> const CoordinateSystemParameters &;
@@ -115,11 +162,14 @@ public:
   auto vui_num_ticks_poc_diff_one_minus1(uint32_t value) noexcept -> VuiParameters &;
   auto vui_hrd_parameters_present_flag(bool value) noexcept -> VuiParameters &;
 
-  constexpr auto vui_bitstream_restriction_present_flag(bool value) noexcept -> auto &;
-  auto vui_tiles_fixed_structure_for_atlas_flag(bool value) noexcept -> VuiParameters &;
-  auto vui_tiles_fixed_structure_for_video_substreams_flag(bool value) noexcept -> VuiParameters &;
+  constexpr auto vui_tiles_restriction_present_flag(bool value) noexcept -> auto &;
+  auto vui_fixed_atlas_tile_structure_flag(bool value) noexcept -> VuiParameters &;
+  auto vui_fixed_video_tile_structure_flag(bool value) noexcept -> VuiParameters &;
   auto vui_constrained_tiles_across_v3c_components_idc(uint8_t value) noexcept -> VuiParameters &;
   auto vui_max_num_tiles_per_atlas_minus1(uint32_t value) noexcept -> VuiParameters &;
+
+  constexpr auto vui_max_coded_video_resolution_present_flag(bool value) noexcept -> auto &;
+  [[nodiscard]] auto max_coded_video_resolution() noexcept -> MaxCodedVideoResolution &;
 
   constexpr auto vui_coordinate_system_parameters_present_flag(bool value) noexcept -> auto &;
   [[nodiscard]] auto coordinate_system_parameters() noexcept -> CoordinateSystemParameters &;
@@ -152,11 +202,14 @@ private:
   std::optional<uint32_t> m_vui_num_ticks_poc_diff_one_minus1;
   std::optional<bool> m_vui_hrd_parameters_present_flag;
 
-  bool m_vui_bitstream_restriction_present_flag{};
-  std::optional<bool> m_vui_tiles_fixed_structure_for_atlas_flag;
-  std::optional<bool> m_vui_tiles_fixed_structure_for_video_substreams_flag;
+  bool m_vui_tiles_restriction_present_flag{};
+  std::optional<bool> m_vui_fixed_atlas_tile_structure_flag;
+  std::optional<bool> m_vui_fixed_video_tile_structure_flag;
   std::optional<uint8_t> m_vui_constrained_tiles_across_v3c_components_idc;
   std::optional<uint32_t> m_vui_max_num_tiles_per_atlas_minus1;
+
+  bool m_vui_max_coded_video_resolution_present_flag{};
+  std::optional<MaxCodedVideoResolution> m_max_coded_video_resolution;
 
   bool m_vui_coordinate_system_parameters_present_flag{};
   std::optional<CoordinateSystemParameters> m_coordinate_system_parameters;

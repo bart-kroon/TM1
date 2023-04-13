@@ -245,6 +245,7 @@ asps_extension_6bits=0
         .asps_patch_size_quantizer_present_flag(true)
         .asps_map_count_minus1(1)
         .asps_extension_6bits(63);
+    x.vui_parameters() = VuiParameters{}.vui_unit_in_metres_flag(true);
     x.asps_vpcc_extension().asps_vpcc_remove_duplicate_point_enabled_flag(true);
     x.asps_miv_extension()
         .asme_ancillary_atlas_flag(true)
@@ -278,7 +279,14 @@ asps_pixel_deinterleaving_enabled_flag=false
 asps_raw_patch_enabled_flag=false
 asps_eom_patch_enabled_flag=false
 asps_plr_enabled_flag=false
-asps_vui_parameters_present_flag=false
+asps_vui_parameters_present_flag=true
+vui_timing_info_present_flag=false
+vui_tiles_restriction_present_flag=false
+vui_max_coded_video_resolution_present_flag=false
+vui_coordinate_system_parameters_present_flag=false
+vui_unit_in_metres_flag=true
+vui_display_box_info_present_flag=false
+vui_anchor_point_present_flag=false
 asps_extension_present_flag=true
 asps_vpcc_extension_present_flag=true
 asps_miv_extension_present_flag=true
@@ -299,7 +307,7 @@ asps_extension_data_flag=true
 asps_extension_data_flag=true
 )");
 
-    REQUIRE(byteCodingTest(x, 21, vuh, vps));
+    REQUIRE(byteCodingTest(x, 22, vuh, vps));
   }
 }
 } // namespace TMIV::MivBitstream

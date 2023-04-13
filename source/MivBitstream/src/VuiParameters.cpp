@@ -33,10 +33,209 @@
 
 #include <TMIV/MivBitstream/VuiParameters.h>
 
+#include <TMIV/Common/Formatters.h>
 #include <TMIV/Common/verify.h>
 #include <TMIV/MivBitstream/AtlasSequenceParameterSetRBSP.h>
 
 namespace TMIV::MivBitstream {
+[[nodiscard]] auto MaxCodedVideoResolution::mcv_occupancy_resolution_present_flag() const -> bool {
+  return m_mcv_occupancy_resolution_present_flag;
+}
+
+[[nodiscard]] auto MaxCodedVideoResolution::mcv_geometry_resolution_present_flag() const -> bool {
+  return m_mcv_geometry_resolution_present_flag;
+}
+
+[[nodiscard]] auto MaxCodedVideoResolution::mcv_attribute_resolution_present_flag() const -> bool {
+  return m_mcv_attribute_resolution_present_flag;
+}
+
+[[nodiscard]] auto MaxCodedVideoResolution::mcv_occupancy_width() const -> int32_t {
+  VERIFY_V3CBITSTREAM(mcv_occupancy_resolution_present_flag());
+  VERIFY_V3CBITSTREAM(m_mcv_occupancy_width.has_value());
+  return *m_mcv_occupancy_width;
+}
+
+[[nodiscard]] auto MaxCodedVideoResolution::mcv_occupancy_height() const -> int32_t {
+  VERIFY_V3CBITSTREAM(mcv_occupancy_resolution_present_flag());
+  VERIFY_V3CBITSTREAM(m_mcv_occupancy_height.has_value());
+  return *m_mcv_occupancy_height;
+}
+
+[[nodiscard]] auto MaxCodedVideoResolution::mcv_geometry_width() const -> int32_t {
+  VERIFY_V3CBITSTREAM(mcv_geometry_resolution_present_flag());
+  VERIFY_V3CBITSTREAM(m_mcv_geometry_width.has_value());
+  return *m_mcv_geometry_width;
+}
+
+[[nodiscard]] auto MaxCodedVideoResolution::mcv_geometry_height() const -> int32_t {
+  VERIFY_V3CBITSTREAM(mcv_geometry_resolution_present_flag());
+  VERIFY_V3CBITSTREAM(m_mcv_geometry_height.has_value());
+  return *m_mcv_geometry_height;
+}
+
+[[nodiscard]] auto MaxCodedVideoResolution::mcv_attribute_width() const -> int32_t {
+  VERIFY_V3CBITSTREAM(mcv_attribute_resolution_present_flag());
+  VERIFY_V3CBITSTREAM(m_mcv_attribute_width.has_value());
+  return *m_mcv_attribute_width;
+}
+
+[[nodiscard]] auto MaxCodedVideoResolution::mcv_attribute_height() const -> int32_t {
+  VERIFY_V3CBITSTREAM(mcv_attribute_resolution_present_flag());
+  VERIFY_V3CBITSTREAM(m_mcv_attribute_height.has_value());
+  return *m_mcv_attribute_height;
+}
+
+auto MaxCodedVideoResolution::mcv_occupancy_resolution_present_flag(bool value)
+    -> MaxCodedVideoResolution & {
+  m_mcv_occupancy_resolution_present_flag = value;
+  return *this;
+}
+
+auto MaxCodedVideoResolution::mcv_geometry_resolution_present_flag(bool value)
+    -> MaxCodedVideoResolution & {
+  m_mcv_geometry_resolution_present_flag = value;
+  return *this;
+}
+
+auto MaxCodedVideoResolution::mcv_attribute_resolution_present_flag(bool value)
+    -> MaxCodedVideoResolution & {
+  m_mcv_attribute_resolution_present_flag = value;
+  return *this;
+}
+
+auto MaxCodedVideoResolution::mcv_occupancy_width(int32_t value) -> MaxCodedVideoResolution & {
+  mcv_occupancy_resolution_present_flag(true);
+  m_mcv_occupancy_width = value;
+  return *this;
+}
+
+auto MaxCodedVideoResolution::mcv_occupancy_height(int32_t value) -> MaxCodedVideoResolution & {
+  mcv_occupancy_resolution_present_flag(true);
+  m_mcv_occupancy_height = value;
+  return *this;
+}
+
+auto MaxCodedVideoResolution::mcv_geometry_width(int32_t value) -> MaxCodedVideoResolution & {
+  mcv_geometry_resolution_present_flag(true);
+  m_mcv_geometry_width = value;
+  return *this;
+}
+
+auto MaxCodedVideoResolution::mcv_geometry_height(int32_t value) -> MaxCodedVideoResolution & {
+  mcv_geometry_resolution_present_flag(true);
+  m_mcv_geometry_height = value;
+  return *this;
+}
+
+auto MaxCodedVideoResolution::mcv_attribute_width(int32_t value) -> MaxCodedVideoResolution & {
+  mcv_attribute_resolution_present_flag(true);
+  m_mcv_attribute_width = value;
+  return *this;
+}
+
+auto MaxCodedVideoResolution::mcv_attribute_height(int32_t value) -> MaxCodedVideoResolution & {
+  mcv_attribute_resolution_present_flag(true);
+  m_mcv_attribute_height = value;
+  return *this;
+}
+
+auto operator<<(std::ostream &stream, const MaxCodedVideoResolution &x) -> std::ostream & {
+  fmt::print(stream, "mcv_occupancy_resolution_present_flag={}\n",
+             x.mcv_occupancy_resolution_present_flag());
+  fmt::print(stream, "mcv_geometry_resolution_present_flag={}\n",
+             x.mcv_geometry_resolution_present_flag());
+  fmt::print(stream, "mcv_attribute_resolution_present_flag={}\n",
+             x.mcv_attribute_resolution_present_flag());
+
+  if (x.mcv_occupancy_resolution_present_flag()) {
+    fmt::print(stream, "mcv_occupancy_width={}\n", x.mcv_occupancy_width());
+    fmt::print(stream, "mcv_occupancy_height={}\n", x.mcv_occupancy_height());
+  }
+  if (x.mcv_geometry_resolution_present_flag()) {
+    fmt::print(stream, "mcv_geometry_width={}\n", x.mcv_geometry_width());
+    fmt::print(stream, "mcv_geometry_height={}\n", x.mcv_geometry_height());
+  }
+  if (x.mcv_attribute_resolution_present_flag()) {
+    fmt::print(stream, "mcv_attribute_width={}\n", x.mcv_attribute_width());
+    fmt::print(stream, "mcv_attribute_height={}\n", x.mcv_attribute_height());
+  }
+  return stream;
+}
+
+auto MaxCodedVideoResolution::operator==(const MaxCodedVideoResolution &other) const -> bool {
+  if (mcv_occupancy_resolution_present_flag() != other.mcv_occupancy_resolution_present_flag() ||
+      mcv_geometry_resolution_present_flag() != other.mcv_geometry_resolution_present_flag() ||
+      mcv_attribute_resolution_present_flag() != other.mcv_attribute_resolution_present_flag()) {
+    return false;
+  }
+  if (mcv_occupancy_resolution_present_flag()) {
+    if (mcv_occupancy_width() != other.mcv_occupancy_width() ||
+        mcv_occupancy_height() != other.mcv_occupancy_height()) {
+      return false;
+    }
+  }
+  if (mcv_geometry_resolution_present_flag()) {
+    if (mcv_geometry_width() != other.mcv_geometry_width() ||
+        mcv_geometry_height() != other.mcv_geometry_height()) {
+      return false;
+    }
+  }
+  if (mcv_attribute_resolution_present_flag()) {
+    if (mcv_attribute_width() != other.mcv_attribute_width() ||
+        mcv_attribute_height() != other.mcv_attribute_height()) {
+      return false;
+    }
+  }
+  return true;
+}
+
+auto MaxCodedVideoResolution::operator!=(const MaxCodedVideoResolution &other) const -> bool {
+  return !operator==(other);
+}
+
+auto MaxCodedVideoResolution::decodeFrom(Common::InputBitstream &bitstream)
+    -> MaxCodedVideoResolution {
+  auto x = MaxCodedVideoResolution{};
+
+  x.mcv_occupancy_resolution_present_flag(bitstream.getFlag());
+  x.mcv_geometry_resolution_present_flag(bitstream.getFlag());
+  x.mcv_attribute_resolution_present_flag(bitstream.getFlag());
+
+  if (x.mcv_occupancy_resolution_present_flag()) {
+    x.mcv_occupancy_width(bitstream.getUExpGolomb<int32_t>());
+    x.mcv_occupancy_height(bitstream.getUExpGolomb<int32_t>());
+  }
+  if (x.mcv_geometry_resolution_present_flag()) {
+    x.mcv_geometry_width(bitstream.getUExpGolomb<int32_t>());
+    x.mcv_geometry_height(bitstream.getUExpGolomb<int32_t>());
+  }
+  if (x.mcv_attribute_resolution_present_flag()) {
+    x.mcv_attribute_width(bitstream.getUExpGolomb<int32_t>());
+    x.mcv_attribute_height(bitstream.getUExpGolomb<int32_t>());
+  }
+  return x;
+}
+
+void MaxCodedVideoResolution::encodeTo(Common::OutputBitstream &bitstream) const {
+  bitstream.putFlag(mcv_occupancy_resolution_present_flag());
+  bitstream.putFlag(mcv_geometry_resolution_present_flag());
+  bitstream.putFlag(mcv_attribute_resolution_present_flag());
+
+  if (mcv_occupancy_resolution_present_flag()) {
+    bitstream.putUExpGolomb(mcv_occupancy_width());
+    bitstream.putUExpGolomb(mcv_occupancy_height());
+  }
+  if (mcv_geometry_resolution_present_flag()) {
+    bitstream.putUExpGolomb(mcv_geometry_width());
+    bitstream.putUExpGolomb(mcv_geometry_height());
+  }
+  if (mcv_attribute_resolution_present_flag()) {
+    bitstream.putUExpGolomb(mcv_attribute_width());
+    bitstream.putUExpGolomb(mcv_attribute_height());
+  }
+}
+
 auto operator<<(std::ostream &stream, const CoordinateSystemParameters &x) -> std::ostream & {
   stream << "cas_forward_axis=" << int32_t{x.cas_forward_axis()} << '\n';
   stream << "cas_delta_left_axis_minus1=" << int32_t{x.cas_delta_left_axis_minus1()} << '\n';
@@ -97,28 +296,34 @@ auto VuiParameters::vui_hrd_parameters_present_flag() const -> bool {
   return *m_vui_hrd_parameters_present_flag;
 }
 
-auto VuiParameters::vui_tiles_fixed_structure_for_atlas_flag() const -> bool {
-  VERIFY_V3CBITSTREAM(vui_bitstream_restriction_present_flag());
-  VERIFY_V3CBITSTREAM(m_vui_tiles_fixed_structure_for_atlas_flag.has_value());
-  return *m_vui_tiles_fixed_structure_for_atlas_flag;
+auto VuiParameters::vui_fixed_atlas_tile_structure_flag() const -> bool {
+  VERIFY_V3CBITSTREAM(vui_tiles_restriction_present_flag());
+  VERIFY_V3CBITSTREAM(m_vui_fixed_atlas_tile_structure_flag.has_value());
+  return *m_vui_fixed_atlas_tile_structure_flag;
 }
 
-auto VuiParameters::vui_tiles_fixed_structure_for_video_substreams_flag() const -> bool {
-  VERIFY_V3CBITSTREAM(vui_bitstream_restriction_present_flag());
-  VERIFY_V3CBITSTREAM(m_vui_tiles_fixed_structure_for_video_substreams_flag.has_value());
-  return *m_vui_tiles_fixed_structure_for_video_substreams_flag;
+auto VuiParameters::vui_fixed_video_tile_structure_flag() const -> bool {
+  VERIFY_V3CBITSTREAM(vui_tiles_restriction_present_flag());
+  VERIFY_V3CBITSTREAM(m_vui_fixed_video_tile_structure_flag.has_value());
+  return *m_vui_fixed_video_tile_structure_flag;
 }
 
 auto VuiParameters::vui_constrained_tiles_across_v3c_components_idc() const -> uint8_t {
-  VERIFY_V3CBITSTREAM(vui_bitstream_restriction_present_flag());
+  VERIFY_V3CBITSTREAM(vui_tiles_restriction_present_flag());
   VERIFY_V3CBITSTREAM(m_vui_constrained_tiles_across_v3c_components_idc.has_value());
   return *m_vui_constrained_tiles_across_v3c_components_idc;
 }
 
 auto VuiParameters::vui_max_num_tiles_per_atlas_minus1() const -> uint32_t {
-  VERIFY_V3CBITSTREAM(vui_bitstream_restriction_present_flag());
+  VERIFY_V3CBITSTREAM(vui_tiles_restriction_present_flag());
   VERIFY_V3CBITSTREAM(m_vui_max_num_tiles_per_atlas_minus1.has_value());
   return *m_vui_max_num_tiles_per_atlas_minus1;
+}
+
+auto VuiParameters::max_coded_video_resolution() const -> const MaxCodedVideoResolution & {
+  VERIFY_V3CBITSTREAM(vui_max_coded_video_resolution_present_flag());
+  VERIFY_V3CBITSTREAM(m_max_coded_video_resolution.has_value());
+  return *m_max_coded_video_resolution;
 }
 
 auto VuiParameters::coordinate_system_parameters() const -> const CoordinateSystemParameters & {
@@ -175,35 +380,43 @@ auto VuiParameters::vui_hrd_parameters_present_flag(bool value) noexcept -> VuiP
   return *this;
 }
 
-auto VuiParameters::vui_tiles_fixed_structure_for_atlas_flag(bool value) noexcept
-    -> VuiParameters & {
-  vui_bitstream_restriction_present_flag(true);
-  m_vui_tiles_fixed_structure_for_atlas_flag = value;
+auto VuiParameters::vui_fixed_atlas_tile_structure_flag(bool value) noexcept -> VuiParameters & {
+  vui_tiles_restriction_present_flag(true);
+  m_vui_fixed_atlas_tile_structure_flag = value;
   return *this;
 }
 
-auto VuiParameters::vui_tiles_fixed_structure_for_video_substreams_flag(bool value) noexcept
-    -> VuiParameters & {
-  vui_bitstream_restriction_present_flag(true);
-  m_vui_tiles_fixed_structure_for_video_substreams_flag = value;
+auto VuiParameters::vui_fixed_video_tile_structure_flag(bool value) noexcept -> VuiParameters & {
+  vui_tiles_restriction_present_flag(true);
+  m_vui_fixed_video_tile_structure_flag = value;
   return *this;
 }
 
 auto VuiParameters::vui_constrained_tiles_across_v3c_components_idc(uint8_t value) noexcept
     -> VuiParameters & {
-  vui_bitstream_restriction_present_flag(true);
+  vui_tiles_restriction_present_flag(true);
   m_vui_constrained_tiles_across_v3c_components_idc = value;
   return *this;
 }
 
 auto VuiParameters::vui_max_num_tiles_per_atlas_minus1(uint32_t value) noexcept -> VuiParameters & {
-  vui_bitstream_restriction_present_flag(true);
+  vui_tiles_restriction_present_flag(true);
   m_vui_max_num_tiles_per_atlas_minus1 = value;
   return *this;
 }
 
+auto VuiParameters::max_coded_video_resolution() noexcept -> MaxCodedVideoResolution & {
+  vui_max_coded_video_resolution_present_flag(true);
+
+  if (!m_max_coded_video_resolution) {
+    m_max_coded_video_resolution = MaxCodedVideoResolution{};
+  }
+  return *m_max_coded_video_resolution;
+}
+
 auto VuiParameters::coordinate_system_parameters() noexcept -> CoordinateSystemParameters & {
   vui_coordinate_system_parameters_present_flag(true);
+
   if (!m_coordinate_system_parameters) {
     m_coordinate_system_parameters = CoordinateSystemParameters{};
   }
@@ -212,6 +425,7 @@ auto VuiParameters::coordinate_system_parameters() noexcept -> CoordinateSystemP
 
 auto VuiParameters::vui_display_box_origin(int32_t d, uint32_t value) noexcept -> VuiParameters & {
   vui_display_box_info_present_flag(true);
+
   if (!m_vui_display_box_origin) {
     m_vui_display_box_origin = std::array<uint32_t, 3>{};
   }
@@ -221,6 +435,7 @@ auto VuiParameters::vui_display_box_origin(int32_t d, uint32_t value) noexcept -
 
 auto VuiParameters::vui_display_box_size(int32_t d, uint32_t value) noexcept -> VuiParameters & {
   vui_display_box_info_present_flag(true);
+
   if (!m_vui_display_box_size) {
     m_vui_display_box_size = std::array<uint32_t, 3>{};
   }
@@ -230,6 +445,7 @@ auto VuiParameters::vui_display_box_size(int32_t d, uint32_t value) noexcept -> 
 
 auto VuiParameters::vui_anchor_point(int32_t d, uint32_t value) noexcept -> VuiParameters & {
   vui_anchor_point_present_flag(true);
+
   if (!m_vui_anchor_point) {
     m_vui_anchor_point = std::array<uint32_t, 3>{};
   }
@@ -240,6 +456,7 @@ auto VuiParameters::vui_anchor_point(int32_t d, uint32_t value) noexcept -> VuiP
 auto operator<<(std::ostream &stream, const VuiParameters &x) -> std::ostream & {
   stream << "vui_timing_info_present_flag=" << std::boolalpha << x.vui_timing_info_present_flag()
          << '\n';
+
   if (x.vui_timing_info_present_flag()) {
     stream << "vui_num_units_in_tick=" << x.vui_num_units_in_tick() << '\n';
     stream << "vui_time_scale=" << x.vui_time_scale() << '\n';
@@ -254,38 +471,45 @@ auto operator<<(std::ostream &stream, const VuiParameters &x) -> std::ostream & 
     LIMITATION(!x.vui_hrd_parameters_present_flag());
   }
 
-  stream << "vui_bitstream_restriction_present_flag=" << std::boolalpha
-         << x.vui_bitstream_restriction_present_flag() << '\n';
-  if (x.vui_bitstream_restriction_present_flag()) {
-    stream << "vui_tiles_fixed_structure_for_atlas_flag=" << std::boolalpha
-           << x.vui_tiles_fixed_structure_for_atlas_flag() << '\n';
-    stream << "vui_tiles_fixed_structure_for_video_substreams_flag=" << std::boolalpha
-           << x.vui_tiles_fixed_structure_for_video_substreams_flag() << '\n';
+  stream << "vui_tiles_restriction_present_flag=" << std::boolalpha
+         << x.vui_tiles_restriction_present_flag() << '\n';
+
+  if (x.vui_tiles_restriction_present_flag()) {
+    stream << "vui_fixed_atlas_tile_structure_flag=" << std::boolalpha
+           << x.vui_fixed_atlas_tile_structure_flag() << '\n';
+    stream << "vui_fixed_video_tile_structure_flag=" << std::boolalpha
+           << x.vui_fixed_video_tile_structure_flag() << '\n';
     stream << "vui_constrained_tiles_across_v3c_components_idc="
            << int32_t{x.vui_constrained_tiles_across_v3c_components_idc()} << '\n';
     stream << "vui_max_num_tiles_per_atlas_minus1=" << x.vui_max_num_tiles_per_atlas_minus1()
            << '\n';
   }
+  fmt::print(stream, "vui_max_coded_video_resolution_present_flag={}\n",
+             x.vui_max_coded_video_resolution_present_flag());
 
+  if (x.vui_max_coded_video_resolution_present_flag()) {
+    stream << x.max_coded_video_resolution();
+  }
   stream << "vui_coordinate_system_parameters_present_flag=" << std::boolalpha
          << x.vui_coordinate_system_parameters_present_flag() << '\n';
+
   if (x.vui_coordinate_system_parameters_present_flag()) {
     stream << x.coordinate_system_parameters();
   }
-
   stream << "vui_unit_in_metres_flag=" << std::boolalpha << x.vui_unit_in_metres_flag() << '\n';
 
   stream << "vui_display_box_info_present_flag=" << std::boolalpha
          << x.vui_display_box_info_present_flag() << '\n';
+
   if (x.vui_display_box_info_present_flag()) {
     for (int32_t d = 0; d < 3; ++d) {
       stream << "vui_display_box_origin[ " << d << " ]=" << x.vui_display_box_origin(d) << '\n';
       stream << "vui_display_box_size[ " << d << " ]=" << x.vui_display_box_size(d) << '\n';
     }
   }
-
   stream << "vui_anchor_point_present_flag=" << std::boolalpha << x.vui_anchor_point_present_flag()
          << '\n';
+
   if (x.vui_anchor_point_present_flag()) {
     for (int32_t d = 0; d < 3; ++d) {
       stream << "vui_anchor_point[ " << d << " ]=" << x.vui_anchor_point(d) << '\n';
@@ -296,7 +520,9 @@ auto operator<<(std::ostream &stream, const VuiParameters &x) -> std::ostream & 
 
 auto VuiParameters::operator==(const VuiParameters &other) const -> bool {
   if (vui_timing_info_present_flag() != other.vui_timing_info_present_flag() ||
-      vui_bitstream_restriction_present_flag() != other.vui_bitstream_restriction_present_flag() ||
+      vui_tiles_restriction_present_flag() != other.vui_tiles_restriction_present_flag() ||
+      vui_max_coded_video_resolution_present_flag() !=
+          other.vui_max_coded_video_resolution_present_flag() ||
       vui_coordinate_system_parameters_present_flag() !=
           other.vui_coordinate_system_parameters_present_flag() ||
       vui_unit_in_metres_flag() != other.vui_unit_in_metres_flag() ||
@@ -304,9 +530,9 @@ auto VuiParameters::operator==(const VuiParameters &other) const -> bool {
       vui_anchor_point_present_flag() != other.vui_anchor_point_present_flag()) {
     return false;
   }
-
-  LIMITATION(!vui_timing_info_present_flag() || !vui_hrd_parameters_present_flag());
-
+  if (vui_timing_info_present_flag()) {
+    LIMITATION(!vui_hrd_parameters_present_flag());
+  }
   if (vui_timing_info_present_flag() &&
       (vui_num_units_in_tick() != other.vui_num_units_in_tick() ||
        vui_time_scale() != other.vui_time_scale() ||
@@ -314,28 +540,26 @@ auto VuiParameters::operator==(const VuiParameters &other) const -> bool {
        vui_hrd_parameters_present_flag() != other.vui_hrd_parameters_present_flag())) {
     return false;
   }
-
   if (vui_timing_info_present_flag() && vui_poc_proportional_to_timing_flag() &&
       vui_num_ticks_poc_diff_one_minus1() != other.vui_num_ticks_poc_diff_one_minus1()) {
     return false;
   }
-
-  if (vui_bitstream_restriction_present_flag() &&
-      (vui_tiles_fixed_structure_for_atlas_flag() !=
-           other.vui_tiles_fixed_structure_for_atlas_flag() ||
-       vui_tiles_fixed_structure_for_video_substreams_flag() !=
-           other.vui_tiles_fixed_structure_for_video_substreams_flag() ||
+  if (vui_tiles_restriction_present_flag() &&
+      (vui_fixed_atlas_tile_structure_flag() != other.vui_fixed_atlas_tile_structure_flag() ||
+       vui_fixed_video_tile_structure_flag() != other.vui_fixed_video_tile_structure_flag() ||
        vui_constrained_tiles_across_v3c_components_idc() !=
            other.vui_constrained_tiles_across_v3c_components_idc() ||
        vui_max_num_tiles_per_atlas_minus1() != other.vui_max_num_tiles_per_atlas_minus1())) {
     return false;
   }
-
+  if (vui_max_coded_video_resolution_present_flag() &&
+      max_coded_video_resolution() != other.max_coded_video_resolution()) {
+    return false;
+  }
   if (vui_coordinate_system_parameters_present_flag() &&
       coordinate_system_parameters() != other.coordinate_system_parameters()) {
     return false;
   }
-
   if (vui_display_box_info_present_flag()) {
     for (int32_t d = 0; d < 3; ++d) {
       if ((vui_display_box_origin(d) != other.vui_display_box_origin(d) ||
@@ -344,7 +568,6 @@ auto VuiParameters::operator==(const VuiParameters &other) const -> bool {
       }
     }
   }
-
   if (vui_anchor_point_present_flag()) {
     for (int32_t d = 0; d < 3; ++d) {
       if (vui_anchor_point(d) != other.vui_anchor_point(d)) {
@@ -364,35 +587,42 @@ auto VuiParameters::decodeFrom(Common::InputBitstream &bitstream,
   auto x = VuiParameters{};
 
   x.vui_timing_info_present_flag(bitstream.getFlag());
+
   if (x.vui_timing_info_present_flag()) {
     x.vui_num_units_in_tick(bitstream.getUint32());
     x.vui_time_scale(bitstream.getUint32());
     x.vui_poc_proportional_to_timing_flag(bitstream.getFlag());
+
     if (x.vui_poc_proportional_to_timing_flag()) {
       x.vui_num_ticks_poc_diff_one_minus1(bitstream.getUExpGolomb<uint32_t>());
     }
     x.vui_hrd_parameters_present_flag(bitstream.getFlag());
     LIMITATION(!x.vui_hrd_parameters_present_flag());
   }
+  x.vui_tiles_restriction_present_flag(bitstream.getFlag());
 
-  x.vui_bitstream_restriction_present_flag(bitstream.getFlag());
-  if (x.vui_bitstream_restriction_present_flag()) {
-    x.vui_tiles_fixed_structure_for_atlas_flag(bitstream.getFlag());
-    x.vui_tiles_fixed_structure_for_video_substreams_flag(bitstream.getFlag());
+  if (x.vui_tiles_restriction_present_flag()) {
+    x.vui_fixed_atlas_tile_structure_flag(bitstream.getFlag());
+    x.vui_fixed_video_tile_structure_flag(bitstream.getFlag());
     x.vui_constrained_tiles_across_v3c_components_idc(bitstream.getUExpGolomb<uint8_t>());
     x.vui_max_num_tiles_per_atlas_minus1(bitstream.getUExpGolomb<uint32_t>());
   }
+  x.vui_max_coded_video_resolution_present_flag(bitstream.getFlag());
 
+  if (x.vui_max_coded_video_resolution_present_flag()) {
+    x.max_coded_video_resolution() = MaxCodedVideoResolution::decodeFrom(bitstream);
+  }
   x.vui_coordinate_system_parameters_present_flag(bitstream.getFlag());
+
   if (x.vui_coordinate_system_parameters_present_flag()) {
     x.coordinate_system_parameters() = CoordinateSystemParameters::decodeFrom(bitstream);
   }
-
   x.vui_unit_in_metres_flag(bitstream.getFlag());
-
   x.vui_display_box_info_present_flag(bitstream.getFlag());
+
   if (x.vui_display_box_info_present_flag()) {
     VERIFY_MIVBITSTREAM(asps != nullptr);
+
     for (int32_t d = 0; d < 3; ++d) {
       x.vui_display_box_origin(
           d, bitstream.readBits<uint32_t>(asps->asps_geometry_3d_bit_depth_minus1() + 1));
@@ -402,57 +632,67 @@ auto VuiParameters::decodeFrom(Common::InputBitstream &bitstream,
   }
 
   x.vui_anchor_point_present_flag(bitstream.getFlag());
+
   if (x.vui_anchor_point_present_flag()) {
+    VERIFY_MIVBITSTREAM(asps != nullptr);
+
     for (int32_t d = 0; d < 3; ++d) {
       x.vui_anchor_point(
           d, bitstream.readBits<uint32_t>(asps->asps_geometry_3d_bit_depth_minus1() + 1));
     }
   }
-
   return x;
 }
 
 void VuiParameters::encodeTo(Common::OutputBitstream &bitstream,
                              const AtlasSequenceParameterSetRBSP *asps) const {
   bitstream.putFlag(vui_timing_info_present_flag());
+
   if (vui_timing_info_present_flag()) {
     bitstream.putUint32(vui_num_units_in_tick());
     bitstream.putUint32(vui_time_scale());
     bitstream.putFlag(vui_poc_proportional_to_timing_flag());
+
     if (vui_poc_proportional_to_timing_flag()) {
       bitstream.putUExpGolomb(vui_num_ticks_poc_diff_one_minus1());
     }
     bitstream.putFlag(vui_hrd_parameters_present_flag());
     LIMITATION(!vui_hrd_parameters_present_flag());
   }
+  bitstream.putFlag(vui_tiles_restriction_present_flag());
 
-  bitstream.putFlag(vui_bitstream_restriction_present_flag());
-  if (vui_bitstream_restriction_present_flag()) {
-    bitstream.putFlag(vui_tiles_fixed_structure_for_atlas_flag());
-    bitstream.putFlag(vui_tiles_fixed_structure_for_video_substreams_flag());
+  if (vui_tiles_restriction_present_flag()) {
+    bitstream.putFlag(vui_fixed_atlas_tile_structure_flag());
+    bitstream.putFlag(vui_fixed_video_tile_structure_flag());
     bitstream.putUExpGolomb(vui_constrained_tiles_across_v3c_components_idc());
     bitstream.putUExpGolomb(vui_max_num_tiles_per_atlas_minus1());
   }
+  bitstream.putFlag(vui_max_coded_video_resolution_present_flag());
 
+  if (vui_max_coded_video_resolution_present_flag()) {
+    max_coded_video_resolution().encodeTo(bitstream);
+  }
   bitstream.putFlag(vui_coordinate_system_parameters_present_flag());
+
   if (vui_coordinate_system_parameters_present_flag()) {
     coordinate_system_parameters().encodeTo(bitstream);
   }
-
   bitstream.putFlag(vui_unit_in_metres_flag());
-
   bitstream.putFlag(vui_display_box_info_present_flag());
+
   if (vui_display_box_info_present_flag()) {
     VERIFY_MIVBITSTREAM(asps != nullptr); // ASPS parsing dependency
+
     for (int32_t d = 0; d < 3; ++d) {
       bitstream.writeBits(vui_display_box_origin(d), asps->asps_geometry_3d_bit_depth_minus1() + 1);
       bitstream.writeBits(vui_display_box_size(d), asps->asps_geometry_3d_bit_depth_minus1() + 1);
     }
   }
-
   bitstream.putFlag(vui_anchor_point_present_flag());
+
   if (vui_anchor_point_present_flag()) {
     VERIFY_MIVBITSTREAM(asps != nullptr); // ASPS parsing dependency
+
     for (int32_t d = 0; d < 3; ++d) {
       bitstream.writeBits(vui_anchor_point(d), asps->asps_geometry_3d_bit_depth_minus1() + 1);
     }

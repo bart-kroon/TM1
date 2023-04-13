@@ -245,6 +245,12 @@ auto AtlasSequenceParameterSetRBSP::ref_list_struct(uint8_t rlsIdx) const -> con
   return m_ref_list_structs[rlsIdx];
 }
 
+auto AtlasSequenceParameterSetRBSP::vui_parameters() const -> const VuiParameters & {
+  VERIFY_V3CBITSTREAM(asps_vui_parameters_present_flag());
+  VERIFY_V3CBITSTREAM(m_vui.has_value());
+  return *m_vui;
+}
+
 auto AtlasSequenceParameterSetRBSP::asps_vpcc_extension() const -> const AspsVpccExtension & {
   VERIFY_V3CBITSTREAM(asps_vpcc_extension_present_flag());
   VERIFY_V3CBITSTREAM(m_asve.has_value());
@@ -324,6 +330,14 @@ auto AtlasSequenceParameterSetRBSP::asps_max_number_projections_minus1(
   return *this;
 }
 
+auto AtlasSequenceParameterSetRBSP::vui_parameters() noexcept -> VuiParameters & {
+  asps_vui_parameters_present_flag(true);
+  if (!m_vui) {
+    m_vui = VuiParameters{};
+  }
+  return *m_vui;
+}
+
 auto AtlasSequenceParameterSetRBSP::asps_vpcc_extension() noexcept -> AspsVpccExtension & {
   asps_vpcc_extension_present_flag(true);
   if (!m_asve) {
@@ -388,8 +402,13 @@ auto operator<<(std::ostream &stream, const AtlasSequenceParameterSetRBSP &x) ->
   stream << "asps_plr_enabled_flag=" << std::boolalpha << x.asps_plr_enabled_flag() << '\n';
   stream << "asps_vui_parameters_present_flag=" << std::boolalpha
          << x.asps_vui_parameters_present_flag() << '\n';
+
+  if (x.asps_vui_parameters_present_flag()) {
+    stream << x.vui_parameters();
+  }
   stream << "asps_extension_present_flag=" << std::boolalpha << x.asps_extension_present_flag()
          << '\n';
+
   if (x.asps_extension_present_flag()) {
     stream << "asps_vpcc_extension_present_flag=" << std::boolalpha
            << x.asps_vpcc_extension_present_flag() << '\n';
@@ -456,6 +475,9 @@ auto AtlasSequenceParameterSetRBSP::operator==(const AtlasSequenceParameterSetRB
       asps_vpcc_extension_present_flag() != other.asps_vpcc_extension_present_flag() ||
       asps_miv_extension_present_flag() != other.asps_miv_extension_present_flag() ||
       asps_extension_6bits() != other.asps_extension_6bits()) {
+    return false;
+  }
+  if (asps_vui_parameters_present_flag() && vui_parameters() != other.vui_parameters()) {
     return false;
   }
   if (asps_vpcc_extension_present_flag() && asps_vpcc_extension() != other.asps_vpcc_extension()) {
@@ -537,8 +559,10 @@ auto AtlasSequenceParameterSetRBSP::decodeFrom(std::istream &stream, const V3cUn
   VERIFY_MIVBITSTREAM(!x.asps_plr_enabled_flag());
 
   x.asps_vui_parameters_present_flag(bitstream.getFlag());
-  LIMITATION(!x.asps_vui_parameters_present_flag());
 
+  if (x.asps_vui_parameters_present_flag()) {
+    x.vui_parameters() = VuiParameters::decodeFrom(bitstream, &x);
+  }
   x.asps_extension_present_flag(bitstream.getFlag());
 
   if (x.asps_extension_present_flag()) {
@@ -624,9 +648,11 @@ void AtlasSequenceParameterSetRBSP::encodeTo(std::ostream &stream, const V3cUnit
   PRECONDITION(!asps_plr_enabled_flag());
   bitstream.putFlag(asps_plr_enabled_flag());
 
-  PRECONDITION(!asps_vui_parameters_present_flag());
   bitstream.putFlag(asps_vui_parameters_present_flag());
 
+  if (asps_vui_parameters_present_flag()) {
+    vui_parameters().encodeTo(bitstream, this);
+  }
   bitstream.putFlag(asps_extension_present_flag());
 
   if (asps_extension_present_flag()) {

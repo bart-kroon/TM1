@@ -55,14 +55,15 @@ casme_vui_params_present_flag=false
 casme_depth_quantization_params_present_flag=false
 casme_vui_params_present_flag=true
 vui_timing_info_present_flag=false
-vui_bitstream_restriction_present_flag=false
+vui_tiles_restriction_present_flag=false
+vui_max_coded_video_resolution_present_flag=false
 vui_coordinate_system_parameters_present_flag=false
 vui_unit_in_metres_flag=false
 vui_display_box_info_present_flag=false
 vui_anchor_point_present_flag=false
 )");
 
-    bitCodingTest(unit, 9);
+    bitCodingTest(unit, 10);
   }
 }
 

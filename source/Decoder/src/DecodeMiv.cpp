@@ -329,6 +329,7 @@ private:
       auto &atlas = m_au.atlas[m_au.vps.indexOf(vuh.vuh_atlas_id())];
       atlas.asps = decoder.au->asps;
       atlas.afps = decoder.au->afps;
+      decodeVui(atlas.asps, m_au.vui);
 
       const auto singleTileInAtlasFrameFlag =
           atlas.afps.atlas_frame_tile_information().afti_single_tile_in_atlas_frame_flag();
@@ -512,6 +513,14 @@ private:
         VERIFY_MIVBITSTREAM(!vui || *vui == casme.vui_parameters());
         vui = casme.vui_parameters();
       }
+    }
+  }
+
+  static void decodeVui(const MivBitstream::AtlasSequenceParameterSetRBSP &asps,
+                        std::optional<MivBitstream::VuiParameters> &vui) {
+    if (asps.asps_vui_parameters_present_flag()) {
+      VERIFY_MIVBITSTREAM(!vui || *vui == asps.vui_parameters());
+      vui = asps.vui_parameters();
     }
   }
 

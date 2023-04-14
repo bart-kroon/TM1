@@ -37,11 +37,6 @@ CONFORMANCE_BITSTREAMS = [
 ]
 
 KNOWN_REASONS = {
-    "HEVCMain10_Basic_Rec0_CCMSEIJMHHVTM_MC2_INTERDIGITAL.bit": "ath_type != AthType::I_TILE && ath_type != SKIP_TILE",
-    "HEVCMain10_Basic_Rec0_SEICCM_MC1_INTERDIGITAL.bit": "ath_type != AthType::I_TILE && ath_type != SKIP_TILE",
-    "HEVCMain10_Basic_Rec0_SEICCM_MC2_INTERDIGITAL.bit": "ath_type != AthType::I_TILE && ath_type != SKIP_TILE",
-    "HEVCMain10_Basic_Rec0_STLLRA_MC1_INTERDIGITAL.bit": "ath_type != AthType::I_TILE && ath_type != SKIP_TILE",
-    "HEVCMain10_Basic_Rec0_STLLRA_MC2_INTERDIGITAL.bit": "ath_type != AthType::I_TILE && ath_type != SKIP_TILE",
     "HEVCMain10_Basic_Rec1_PDI_INTERDIGITAL.bit": "asps_pixel_deinterleaving_enabled_flag",
     "HEVCMain10_Basic_Rec2_PLR_MC1PLR1_INTERDIGITAL.bit": "asps_plr_enabled_flag",
     "HEVCMain10_Basic_Rec2_PTRAW_INTERDIGITAL.bit": "asps_raw_patch_enabled_flag",
@@ -94,11 +89,12 @@ def main(args):
         )
         if result.returncode == 0:
             print(f"{name}: OK.")
-        elif name in KNOWN_REASONS:
-            print(f"{name}: known TMIV limitation: {KNOWN_REASONS[name]}")
         else:
-            print(f"{name}: ERROR, see .err file for details.")
-            success = False
+            if name in KNOWN_REASONS:
+                print(f"{name}: known TMIV limitation: {KNOWN_REASONS[name]}")
+            else:
+                print(f"{name}: ERROR, see .err file for details.")
+                success = False
 
             with open(error_file, mode="w") as stream:
                 stream.write(result.stdout)

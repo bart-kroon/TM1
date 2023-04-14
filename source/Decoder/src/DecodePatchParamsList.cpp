@@ -37,19 +37,24 @@ namespace TMIV::Decoder {
 void decodePatchParamsList(const MivBitstream::V3cParameterSet &vps,
                            MivBitstream::V3cUnitHeader vuh, const AtlasAccessUnit &au,
                            MivBitstream::TilePartition &tile, size_t tileIdx) {
-  if (au.atlV[tileIdx].atlas_tile_header().ath_type() == MivBitstream::AthType::I_TILE) {
-    VERIFY(tileIdx == au.atlV[tileIdx].atlas_tile_header().ath_id());
+  const auto &ath = au.atlV[tileIdx].atlas_tile_header();
+  LIMITATION(tileIdx == ath.ath_id());
 
-    MivBitstream::PatchParamsList ppl;
-    ppl.assign(au.atlV[tileIdx].atlas_tile_data_unit().atduTotalNumberOfPatches(), {});
+  VERIFY_MIVBITSTREAM(ath.ath_type() == MivBitstream::AthType::I_TILE ||
+                      ath.ath_type() == MivBitstream::AthType::SKIP_TILE);
 
-    au.atlV[tileIdx].atlas_tile_data_unit().visit(
-        [&](size_t p, MivBitstream::AtduPatchMode /* unused */,
-            const MivBitstream::PatchInformationData &pid) {
-          ppl[p] = MivBitstream::PatchParams::decodePdu(pid.patch_data_unit(), vps,
-                                                        vuh.vuh_atlas_id(), au.asps, au.afps,
-                                                        au.atlV[tileIdx].atlas_tile_header());
-        });
+  if (ath.ath_type() == MivBitstream::AthType::I_TILE) {
+    const auto &atdu = au.atlV[tileIdx].atlas_tile_data_unit();
+
+    auto ppl = MivBitstream::PatchParamsList{};
+    ppl.reserve(atdu.atduTotalNumberOfPatches());
+
+    for (size_t p = 0; p < atdu.atduTotalNumberOfPatches(); ++p) {
+      VERIFY_MIVBITSTREAM(atdu.atdu_patch_mode(p) == MivBitstream::AtduPatchMode::I_INTRA);
+      const auto &pdu = atdu.patch_information_data(p).patch_data_unit();
+      ppl.push_back(MivBitstream::PatchParams::decodePdu(pdu, vps, vuh.vuh_atlas_id(), au.asps,
+                                                         au.afps, ath));
+    }
     tile.partitionPatchList(ppl);
   }
 }

@@ -253,6 +253,85 @@ pdu_entity_id[ 12 ][ 102 ]=35
   }
 }
 
+TEST_CASE("inter_patch_data_unit", "[Atlas Tile Layer RBSP]") {
+  auto aspsV = std::vector<AtlasSequenceParameterSetRBSP>(1);
+  const auto afpsV = std::vector<AtlasFrameParameterSetRBSP>(1);
+  const auto ath = AtlasTileHeader{};
+
+  auto x = InterPatchDataUnit{};
+
+  SECTION("Default initialization") {
+    REQUIRE(toString(x, 8, 3) == R"(ipdu_patch_index[ 8 ][ 3 ]=0
+ipdu_2d_pos_x[ 8 ][ 3 ]=0
+ipdu_2d_pos_y[ 8 ][ 3 ]=0
+ipdu_2d_delta_size_x[ 8 ][ 3 ]=0
+ipdu_2d_delta_size_y[ 8 ][ 3 ]=0
+ipdu_3d_offset_u[ 8 ][ 3 ]=0
+ipdu_3d_offset_v[ 8 ][ 3 ]=0
+ipdu_3d_offset_d[ 8 ][ 3 ]=0
+)");
+
+    bitCodingTest(x, 8, aspsV, afpsV, ath);
+  }
+
+  SECTION("Set values") {
+    x.ipdu_patch_index(2)
+        .ipdu_2d_pos_x(-3)
+        .ipdu_2d_pos_y(4)
+        .ipdu_2d_delta_size_x(-5)
+        .ipdu_2d_delta_size_y(6)
+        .ipdu_3d_offset_u(7)
+        .ipdu_3d_offset_v(-8)
+        .ipdu_3d_offset_d(-1);
+
+    REQUIRE(toString(x, 3, 1) == R"(ipdu_patch_index[ 3 ][ 1 ]=2
+ipdu_2d_pos_x[ 3 ][ 1 ]=-3
+ipdu_2d_pos_y[ 3 ][ 1 ]=4
+ipdu_2d_delta_size_x[ 3 ][ 1 ]=-5
+ipdu_2d_delta_size_y[ 3 ][ 1 ]=6
+ipdu_3d_offset_u[ 3 ][ 1 ]=7
+ipdu_3d_offset_v[ 3 ][ 1 ]=-8
+ipdu_3d_offset_d[ 3 ][ 1 ]=-1
+)");
+
+    bitCodingTest(x, 50, aspsV, afpsV, ath);
+  }
+
+  SECTION("ipdu_ref_index") {
+    CHECK(x.ipdu_ref_index() == 0);
+    x.ipdu_ref_index(45);
+
+    REQUIRE(toString(x, 0, 0) == R"(ipdu_ref_index[ 0 ][ 0 ]=45
+ipdu_patch_index[ 0 ][ 0 ]=0
+ipdu_2d_pos_x[ 0 ][ 0 ]=0
+ipdu_2d_pos_y[ 0 ][ 0 ]=0
+ipdu_2d_delta_size_x[ 0 ][ 0 ]=0
+ipdu_2d_delta_size_y[ 0 ][ 0 ]=0
+ipdu_3d_offset_u[ 0 ][ 0 ]=0
+ipdu_3d_offset_v[ 0 ][ 0 ]=0
+ipdu_3d_offset_d[ 0 ][ 0 ]=0
+)");
+  }
+
+  SECTION("ipdu_3d_range_d") {
+    aspsV.front().asps_normal_axis_max_delta_value_enabled_flag(true);
+    x.ipdu_3d_range_d(43);
+
+    REQUIRE(toString(x, 9, 4) == R"(ipdu_patch_index[ 9 ][ 4 ]=0
+ipdu_2d_pos_x[ 9 ][ 4 ]=0
+ipdu_2d_pos_y[ 9 ][ 4 ]=0
+ipdu_2d_delta_size_x[ 9 ][ 4 ]=0
+ipdu_2d_delta_size_y[ 9 ][ 4 ]=0
+ipdu_3d_offset_u[ 9 ][ 4 ]=0
+ipdu_3d_offset_v[ 9 ][ 4 ]=0
+ipdu_3d_offset_d[ 9 ][ 4 ]=0
+ipdu_3d_range_d[ 9 ][ 4 ]=43
+)");
+
+    bitCodingTest(x, 21, aspsV, afpsV, ath);
+  }
+}
+
 TEST_CASE("patch_information_data", "[Atlas Tile Layer RBSP]") {
   auto aspsV = std::vector<AtlasSequenceParameterSetRBSP>(1);
   aspsV.front().asps_frame_width(4000).asps_frame_height(2000);
@@ -263,14 +342,13 @@ TEST_CASE("patch_information_data", "[Atlas Tile Layer RBSP]") {
 
   auto x = PatchInformationData{};
 
-  REQUIRE(toString(x, 0, 77) == R"([unknown]
-)");
+  REQUIRE(toString(x, 0, 77).empty());
 
   SECTION("Example skip_patch_data_unit") {
     auto ath = AtlasTileHeader{};
-    ath.ath_type(AthType::SKIP_TILE);
+    ath.ath_type(AthType::P_TILE);
     const auto patchMode = AtduPatchMode::P_SKIP;
-    x = PatchInformationData{SkipPatchDataUnit{}};
+    x.skip_patch_data_unit() = {};
 
     REQUIRE(toString(x, 77, 88).empty());
     bitCodingTest(x, 0, aspsV, afpsV, ath, patchMode);
@@ -280,7 +358,7 @@ TEST_CASE("patch_information_data", "[Atlas Tile Layer RBSP]") {
     auto ath = AtlasTileHeader{};
     ath.ath_type(AthType::I_TILE);
     const auto patchMode = AtduPatchMode::I_INTRA;
-    x = PatchInformationData{pdu};
+    x.patch_data_unit() = pdu;
 
     REQUIRE(toString(x, 13, 99) == R"(pdu_2d_pos_x[ 13 ][ 99 ]=0
 pdu_2d_pos_y[ 13 ][ 99 ]=0
@@ -301,8 +379,10 @@ TEST_CASE("atlas_tile_data_unit", "[Atlas Tile Layer RBSP]") {
     auto ath = AtlasTileHeader{};
     ath.ath_type(AthType::I_TILE);
 
-    const auto x = AtlasTileDataUnit{};
-    REQUIRE(toString(x, ath).empty());
+    const auto x = AtlasTileDataUnit{}.atdu_patch_mode(0, AtduPatchMode::I_END);
+    REQUIRE(toString(x, ath) == R"(atdu_patch_mode[ 0 ][ 0 ]=I_END
+AtduTotalNumPatches[ 0 ]=0
+)");
 
     const auto aspsV = std::vector<AtlasSequenceParameterSetRBSP>(1);
     const auto afpsV = std::vector<AtlasFrameParameterSetRBSP>(1);
@@ -311,20 +391,36 @@ TEST_CASE("atlas_tile_data_unit", "[Atlas Tile Layer RBSP]") {
   }
 
   SECTION("P_TILE") {
-    auto vec = AtlasTileDataUnit::Vector{
-        {AtduPatchMode::P_SKIP, PatchInformationData{SkipPatchDataUnit{}}},
-        {AtduPatchMode::P_SKIP, PatchInformationData{SkipPatchDataUnit{}}},
-        {AtduPatchMode::P_INTRA, PatchInformationData{PatchDataUnit{}}},
-        {AtduPatchMode::P_SKIP, PatchInformationData{SkipPatchDataUnit{}}}};
-
     auto ath = AtlasTileHeader{};
     ath.ath_type(AthType::P_TILE);
 
-    const auto x = AtlasTileDataUnit{vec};
+    const auto x = []() {
+      auto atdu = AtlasTileDataUnit{};
+      atdu.atdu_patch_mode(0, AtduPatchMode::P_SKIP);
+      atdu.atdu_patch_mode(1, AtduPatchMode::P_INTER);
+      atdu.atdu_patch_mode(2, AtduPatchMode::P_INTRA);
+      atdu.atdu_patch_mode(3, AtduPatchMode::P_SKIP);
+      atdu.atdu_patch_mode(4, AtduPatchMode::P_END);
 
-    REQUIRE(toString(x, ath) == R"(atdu_patch_mode[ 0 ]=P_SKIP
-atdu_patch_mode[ 1 ]=P_SKIP
-atdu_patch_mode[ 2 ]=P_INTRA
+      atdu.patch_information_data(0).skip_patch_data_unit() = {};
+      atdu.patch_information_data(1).inter_patch_data_unit() = {};
+      atdu.patch_information_data(2).patch_data_unit() = {};
+      atdu.patch_information_data(3).skip_patch_data_unit() = {};
+
+      return atdu;
+    }();
+
+    REQUIRE(toString(x, ath) == R"(atdu_patch_mode[ 0 ][ 0 ]=P_SKIP
+atdu_patch_mode[ 0 ][ 1 ]=P_INTER
+ipdu_patch_index[ 0 ][ 1 ]=0
+ipdu_2d_pos_x[ 0 ][ 1 ]=0
+ipdu_2d_pos_y[ 0 ][ 1 ]=0
+ipdu_2d_delta_size_x[ 0 ][ 1 ]=0
+ipdu_2d_delta_size_y[ 0 ][ 1 ]=0
+ipdu_3d_offset_u[ 0 ][ 1 ]=0
+ipdu_3d_offset_v[ 0 ][ 1 ]=0
+ipdu_3d_offset_d[ 0 ][ 1 ]=0
+atdu_patch_mode[ 0 ][ 2 ]=P_INTRA
 pdu_2d_pos_x[ 0 ][ 2 ]=0
 pdu_2d_pos_y[ 0 ][ 2 ]=0
 pdu_2d_size_x_minus1[ 0 ][ 2 ]=0
@@ -334,22 +430,37 @@ pdu_3d_offset_v[ 0 ][ 2 ]=0
 pdu_3d_offset_d[ 0 ][ 2 ]=0
 pdu_projection_id[ 0 ][ 2 ]=0
 pdu_orientation_index[ 0 ][ 2 ]=FPO_NULL
-atdu_patch_mode[ 3 ]=P_SKIP
+atdu_patch_mode[ 0 ][ 3 ]=P_SKIP
+atdu_patch_mode[ 0 ][ 4 ]=P_END
+AtduTotalNumPatches[ 0 ]=4
 )");
+
+    auto aspsV = std::vector<AtlasSequenceParameterSetRBSP>(1);
+    aspsV.front().asps_frame_width(4000).asps_frame_height(2000);
+
+    const auto afpsV = std::vector<AtlasFrameParameterSetRBSP>(1);
+
+    bitCodingTest(x, 36, aspsV, afpsV, ath);
   }
 
   SECTION("I_TILE") {
-    const auto pdu = PatchDataUnit{};
-
-    auto vec = AtlasTileDataUnit::Vector{{AtduPatchMode::I_INTRA, PatchInformationData{pdu}},
-                                         {AtduPatchMode::I_INTRA, PatchInformationData{pdu}}};
-
     auto ath = AtlasTileHeader{};
     ath.ath_type(AthType::I_TILE).ath_id(7);
 
-    const auto x = AtlasTileDataUnit{vec};
+    const auto x = []() {
+      auto atdu = AtlasTileDataUnit{};
 
-    REQUIRE(toString(x, ath) == R"(atdu_patch_mode[ 0 ]=I_INTRA
+      atdu.atdu_patch_mode(0, AtduPatchMode::I_INTRA);
+      atdu.atdu_patch_mode(1, AtduPatchMode::I_INTRA);
+      atdu.atdu_patch_mode(2, AtduPatchMode::I_END);
+
+      atdu.patch_information_data(0).patch_data_unit() = {};
+      atdu.patch_information_data(1).patch_data_unit() = {};
+
+      return atdu;
+    }();
+
+    REQUIRE(toString(x, ath) == R"(atdu_patch_mode[ 7 ][ 0 ]=I_INTRA
 pdu_2d_pos_x[ 7 ][ 0 ]=0
 pdu_2d_pos_y[ 7 ][ 0 ]=0
 pdu_2d_size_x_minus1[ 7 ][ 0 ]=0
@@ -359,7 +470,7 @@ pdu_3d_offset_v[ 7 ][ 0 ]=0
 pdu_3d_offset_d[ 7 ][ 0 ]=0
 pdu_projection_id[ 7 ][ 0 ]=0
 pdu_orientation_index[ 7 ][ 0 ]=FPO_NULL
-atdu_patch_mode[ 1 ]=I_INTRA
+atdu_patch_mode[ 7 ][ 1 ]=I_INTRA
 pdu_2d_pos_x[ 7 ][ 1 ]=0
 pdu_2d_pos_y[ 7 ][ 1 ]=0
 pdu_2d_size_x_minus1[ 7 ][ 1 ]=0
@@ -369,6 +480,8 @@ pdu_3d_offset_v[ 7 ][ 1 ]=0
 pdu_3d_offset_d[ 7 ][ 1 ]=0
 pdu_projection_id[ 7 ][ 1 ]=0
 pdu_orientation_index[ 7 ][ 1 ]=FPO_NULL
+atdu_patch_mode[ 7 ][ 2 ]=I_END
+AtduTotalNumPatches[ 7 ]=2
 )");
 
     auto aspsV = std::vector<AtlasSequenceParameterSetRBSP>(1);
@@ -394,6 +507,7 @@ TEST_CASE("atlas_tile_layer_rbsp", "[Atlas Tile Layer RBSP]") {
 
     auto x = AtlasTileLayerRBSP{};
     x.atlas_tile_header().ath_type(AthType::SKIP_TILE).ath_ref_atlas_frame_list_asps_flag(true);
+    x.atlas_tile_data_unit().skip_patch_data_unit() = {};
 
     REQUIRE(toString(x) == R"(ath_atlas_frame_parameter_set_id=0
 ath_atlas_adaptation_parameter_set_id=0
@@ -430,10 +544,20 @@ ath_ref_atlas_frame_list_asps_flag=true
 
     auto x = AtlasTileLayerRBSP{};
     x.atlas_tile_header().ath_type(AthType::I_TILE).ath_ref_atlas_frame_list_asps_flag(true);
-    x.atlas_tile_data_unit() =
-        AtlasTileDataUnit{std::pair{AtduPatchMode::I_INTRA, PatchInformationData{pdu1}},
-                          std::pair{AtduPatchMode::I_INTRA, PatchInformationData{pdu2}},
-                          std::pair{AtduPatchMode::I_INTRA, PatchInformationData{pdu3}}};
+    x.atlas_tile_data_unit() = [&]() {
+      auto atdu = AtlasTileDataUnit{};
+
+      atdu.atdu_patch_mode(0, AtduPatchMode::I_INTRA);
+      atdu.atdu_patch_mode(1, AtduPatchMode::I_INTRA);
+      atdu.atdu_patch_mode(2, AtduPatchMode::I_INTRA);
+      atdu.atdu_patch_mode(3, AtduPatchMode::I_END);
+
+      atdu.patch_information_data(0).patch_data_unit() = pdu1;
+      atdu.patch_information_data(1).patch_data_unit() = pdu2;
+      atdu.patch_information_data(2).patch_data_unit() = pdu3;
+
+      return atdu;
+    }();
 
     REQUIRE(toString(x) == R"(ath_atlas_frame_parameter_set_id=0
 ath_atlas_adaptation_parameter_set_id=0
@@ -441,7 +565,7 @@ ath_id=0
 ath_type=I_TILE
 ath_atlas_frm_order_cnt_lsb=0
 ath_ref_atlas_frame_list_asps_flag=true
-atdu_patch_mode[ 0 ]=I_INTRA
+atdu_patch_mode[ 0 ][ 0 ]=I_INTRA
 pdu_2d_pos_x[ 0 ][ 0 ]=0
 pdu_2d_pos_y[ 0 ][ 0 ]=0
 pdu_2d_size_x_minus1[ 0 ][ 0 ]=10
@@ -452,7 +576,7 @@ pdu_3d_offset_d[ 0 ][ 0 ]=0
 pdu_projection_id[ 0 ][ 0 ]=0
 pdu_orientation_index[ 0 ][ 0 ]=FPO_NULL
 pdu_lod_enabled_flag[ 0 ][ 0 ]=false
-atdu_patch_mode[ 1 ]=I_INTRA
+atdu_patch_mode[ 0 ][ 1 ]=I_INTRA
 pdu_2d_pos_x[ 0 ][ 1 ]=0
 pdu_2d_pos_y[ 0 ][ 1 ]=0
 pdu_2d_size_x_minus1[ 0 ][ 1 ]=30
@@ -463,7 +587,7 @@ pdu_3d_offset_d[ 0 ][ 1 ]=0
 pdu_projection_id[ 0 ][ 1 ]=0
 pdu_orientation_index[ 0 ][ 1 ]=FPO_NULL
 pdu_lod_enabled_flag[ 0 ][ 1 ]=false
-atdu_patch_mode[ 2 ]=I_INTRA
+atdu_patch_mode[ 0 ][ 2 ]=I_INTRA
 pdu_2d_pos_x[ 0 ][ 2 ]=0
 pdu_2d_pos_y[ 0 ][ 2 ]=0
 pdu_2d_size_x_minus1[ 0 ][ 2 ]=50
@@ -476,6 +600,8 @@ pdu_orientation_index[ 0 ][ 2 ]=FPO_NULL
 pdu_lod_enabled_flag[ 0 ][ 2 ]=true
 pdu_lod_scale_x_minus1[ 0 ][ 2 ]=1
 pdu_lod_scale_y_idc[ 0 ][ 2 ]=3
+atdu_patch_mode[ 0 ][ 3 ]=I_END
+AtduTotalNumPatches[ 0 ]=3
 )");
     byteCodingTest(x, 16, nuh, aspsV, afpsV);
   }
@@ -503,8 +629,17 @@ pdu_lod_scale_y_idc[ 0 ][ 2 ]=3
         .ath_ref_atlas_frame_list_asps_flag(true)
         .ath_pos_min_d_quantizer(7)
         .ath_pos_delta_max_d_quantizer(5);
-    x.atlas_tile_data_unit() =
-        AtlasTileDataUnit{std::pair{AtduPatchMode::I_INTRA, PatchInformationData{pdu1}}};
+
+    x.atlas_tile_data_unit() = [&pdu1]() {
+      auto atdu = AtlasTileDataUnit{};
+
+      atdu.atdu_patch_mode(0, AtduPatchMode::I_INTRA);
+      atdu.atdu_patch_mode(1, AtduPatchMode::I_END);
+
+      atdu.patch_information_data(0).patch_data_unit() = pdu1;
+
+      return atdu;
+    }();
 
     REQUIRE(toString(x) == R"(ath_no_output_of_prior_atlas_frames_flag=false
 ath_atlas_frame_parameter_set_id=0
@@ -515,7 +650,7 @@ ath_atlas_frm_order_cnt_lsb=0
 ath_ref_atlas_frame_list_asps_flag=true
 ath_pos_min_d_quantizer=7
 ath_pos_delta_max_d_quantizer=5
-atdu_patch_mode[ 0 ]=I_INTRA
+atdu_patch_mode[ 0 ][ 0 ]=I_INTRA
 pdu_2d_pos_x[ 0 ][ 0 ]=0
 pdu_2d_pos_y[ 0 ][ 0 ]=0
 pdu_2d_size_x_minus1[ 0 ][ 0 ]=10
@@ -526,6 +661,8 @@ pdu_3d_offset_d[ 0 ][ 0 ]=31
 pdu_3d_range_d[ 0 ][ 0 ]=127
 pdu_projection_id[ 0 ][ 0 ]=0
 pdu_orientation_index[ 0 ][ 0 ]=FPO_NULL
+atdu_patch_mode[ 0 ][ 1 ]=I_END
+AtduTotalNumPatches[ 0 ]=1
 )");
     byteCodingTest(x, 12, nuh, aspsV, afpsV);
   }

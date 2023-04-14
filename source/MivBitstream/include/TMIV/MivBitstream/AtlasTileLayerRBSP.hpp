@@ -334,14 +334,6 @@ constexpr auto PatchDataUnit::operator!=(const PatchDataUnit &other) const noexc
   return !operator==(other);
 }
 
-constexpr auto PatchInformationData::data() const noexcept -> auto & { return m_data; }
-
-template <typename Visitor> void AtlasTileDataUnit::visit(Visitor &&visitor) const {
-  for (size_t p = 0; p < m_vector.size(); ++p) {
-    visitor(p, m_vector[p].first, m_vector[p].second);
-  }
-}
-
 constexpr auto AtlasTileLayerRBSP::atlas_tile_header() const noexcept -> auto & {
   return m_atlas_tile_header;
 }

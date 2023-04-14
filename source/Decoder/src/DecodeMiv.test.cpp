@@ -60,6 +60,8 @@ using TMIV::PtlChecker::SharedChecker;
 namespace test {
 namespace {
 using TMIV::Common::Vec2i;
+using TMIV::MivBitstream::AtduPatchMode;
+using TMIV::MivBitstream::AthType;
 using TMIV::MivBitstream::AtlasFrameParameterSetRBSP;
 using TMIV::MivBitstream::AtlasSequenceParameterSetRBSP;
 using TMIV::MivBitstream::CommonAtlasSequenceParameterSetRBSP;
@@ -145,6 +147,11 @@ auto atlasFrame(int32_t foc, size_t atlSize) {
 
   auto au = AtlasAccessUnit{};
   au.atlV.resize(atlSize);
+
+  for (auto &atl : au.atlV) {
+    atl.atlas_tile_header().ath_type(AthType::I_TILE);
+    atl.atlas_tile_data_unit().atdu_patch_mode(0, AtduPatchMode::I_END);
+  }
   au.foc = foc;
   return au;
 }

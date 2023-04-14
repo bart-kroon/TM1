@@ -215,7 +215,6 @@ auto AtlasTileHeader::decodeFrom(Common::InputBitstream &bitstream, const NalUni
   }
 
   x.ath_type(bitstream.getUExpGolomb<AthType>());
-  VERIFY_MIVBITSTREAM(x.ath_type() == AthType::I_TILE || x.ath_type() == AthType::SKIP_TILE);
 
   if (afps.afps_output_flag_present_flag()) {
     x.ath_atlas_output_flag(bitstream.getFlag());
@@ -279,8 +278,6 @@ void AtlasTileHeader::encodeTo(Common::OutputBitstream &bitstream, const NalUnit
   } else {
     bitstream.writeBits(ath_id(), afti.aftiSignalledTileIDBitCount());
   }
-
-  PRECONDITION(ath_type() == AthType::I_TILE || ath_type() == AthType::SKIP_TILE);
   bitstream.putUExpGolomb(ath_type());
 
   if (afps.afps_output_flag_present_flag()) {
@@ -568,27 +565,227 @@ void PatchDataUnit::encodeTo(Common::OutputBitstream &bitstream,
   }
 }
 
-auto PatchInformationData::skip_patch_data_unit() const noexcept -> const SkipPatchDataUnit & {
-  PRECONDITION(std::holds_alternative<SkipPatchDataUnit>(m_data));
-  return *std::get_if<SkipPatchDataUnit>(&m_data);
+auto InterPatchDataUnit::ipdu_ref_index() const -> int32_t { return m_ipdu_ref_index.value_or(0); }
+
+auto InterPatchDataUnit::ipdu_patch_index() const -> int32_t { return m_ipdu_patch_index; }
+
+auto InterPatchDataUnit::ipdu_2d_pos_x() const -> int32_t { return m_ipdu_2d_pos_x; }
+
+auto InterPatchDataUnit::ipdu_2d_pos_y() const -> int32_t { return m_ipdu_2d_pos_y; }
+
+auto InterPatchDataUnit::ipdu_2d_delta_size_x() const -> int32_t { return m_ipdu_2d_delta_size_x; }
+
+auto InterPatchDataUnit::ipdu_2d_delta_size_y() const -> int32_t { return m_ipdu_2d_delta_size_y; }
+
+auto InterPatchDataUnit::ipdu_3d_offset_u() const -> int32_t { return m_ipdu_3d_offset_u; }
+
+auto InterPatchDataUnit::ipdu_3d_offset_v() const -> int32_t { return m_ipdu_3d_offset_v; }
+
+auto InterPatchDataUnit::ipdu_3d_offset_d() const -> int32_t { return m_ipdu_3d_offset_d; }
+
+auto InterPatchDataUnit::ipdu_3d_range_d() const -> int32_t {
+  VERIFY_V3CBITSTREAM(m_ipdu_3d_range_d.has_value());
+  return *m_ipdu_3d_range_d;
 }
 
-auto PatchInformationData::patch_data_unit() const noexcept -> const PatchDataUnit & {
-  PRECONDITION(std::holds_alternative<PatchDataUnit>(m_data));
-  return *std::get_if<PatchDataUnit>(&m_data);
+auto InterPatchDataUnit::ipdu_ref_index(int32_t value) -> InterPatchDataUnit & {
+  m_ipdu_ref_index = value;
+  return *this;
+}
+
+auto InterPatchDataUnit::ipdu_patch_index(int32_t value) -> InterPatchDataUnit & {
+  m_ipdu_patch_index = value;
+  return *this;
+}
+
+auto InterPatchDataUnit::ipdu_2d_pos_x(int32_t value) -> InterPatchDataUnit & {
+  m_ipdu_2d_pos_x = value;
+  return *this;
+}
+
+auto InterPatchDataUnit::ipdu_2d_pos_y(int32_t value) -> InterPatchDataUnit & {
+  m_ipdu_2d_pos_y = value;
+  return *this;
+}
+
+auto InterPatchDataUnit::ipdu_2d_delta_size_x(int32_t value) -> InterPatchDataUnit & {
+  m_ipdu_2d_delta_size_x = value;
+  return *this;
+}
+
+auto InterPatchDataUnit::ipdu_2d_delta_size_y(int32_t value) -> InterPatchDataUnit & {
+  m_ipdu_2d_delta_size_y = value;
+  return *this;
+}
+
+auto InterPatchDataUnit::ipdu_3d_offset_u(int32_t value) -> InterPatchDataUnit & {
+  m_ipdu_3d_offset_u = value;
+  return *this;
+}
+
+auto InterPatchDataUnit::ipdu_3d_offset_v(int32_t value) -> InterPatchDataUnit & {
+  m_ipdu_3d_offset_v = value;
+  return *this;
+}
+
+auto InterPatchDataUnit::ipdu_3d_offset_d(int32_t value) -> InterPatchDataUnit & {
+  m_ipdu_3d_offset_d = value;
+  return *this;
+}
+
+auto InterPatchDataUnit::ipdu_3d_range_d(int32_t value) -> InterPatchDataUnit & {
+  m_ipdu_3d_range_d = value;
+  return *this;
+}
+
+auto InterPatchDataUnit::printTo(std::ostream &stream, uint32_t tileId, size_t patchIdx) const
+    -> std::ostream & {
+  if (m_ipdu_ref_index) {
+    fmt::print(stream, "ipdu_ref_index[ {} ][ {} ]={}\n", tileId, patchIdx, *m_ipdu_ref_index);
+  }
+  fmt::print(stream, "ipdu_patch_index[ {} ][ {} ]={}\n", tileId, patchIdx, m_ipdu_patch_index);
+  fmt::print(stream, "ipdu_2d_pos_x[ {} ][ {} ]={}\n", tileId, patchIdx, m_ipdu_2d_pos_x);
+  fmt::print(stream, "ipdu_2d_pos_y[ {} ][ {} ]={}\n", tileId, patchIdx, m_ipdu_2d_pos_y);
+  fmt::print(stream, "ipdu_2d_delta_size_x[ {} ][ {} ]={}\n", tileId, patchIdx,
+             m_ipdu_2d_delta_size_x);
+  fmt::print(stream, "ipdu_2d_delta_size_y[ {} ][ {} ]={}\n", tileId, patchIdx,
+             m_ipdu_2d_delta_size_y);
+  fmt::print(stream, "ipdu_3d_offset_u[ {} ][ {} ]={}\n", tileId, patchIdx, m_ipdu_3d_offset_u);
+  fmt::print(stream, "ipdu_3d_offset_v[ {} ][ {} ]={}\n", tileId, patchIdx, m_ipdu_3d_offset_v);
+  fmt::print(stream, "ipdu_3d_offset_d[ {} ][ {} ]={}\n", tileId, patchIdx, m_ipdu_3d_offset_d);
+
+  if (m_ipdu_3d_range_d) {
+    fmt::print(stream, "ipdu_3d_range_d[ {} ][ {} ]={}\n", tileId, patchIdx, *m_ipdu_3d_range_d);
+  }
+  return stream;
+}
+
+auto InterPatchDataUnit::operator==(const InterPatchDataUnit &other) const -> bool {
+  return m_ipdu_ref_index == other.m_ipdu_ref_index &&
+         m_ipdu_patch_index == other.m_ipdu_patch_index &&
+         m_ipdu_2d_pos_x == other.m_ipdu_2d_pos_x && m_ipdu_2d_pos_y == other.m_ipdu_2d_pos_y &&
+         m_ipdu_2d_delta_size_x == other.m_ipdu_2d_delta_size_x &&
+         m_ipdu_2d_delta_size_y == other.m_ipdu_2d_delta_size_y &&
+         m_ipdu_3d_offset_u == other.m_ipdu_3d_offset_u &&
+         m_ipdu_3d_offset_v == other.m_ipdu_3d_offset_v &&
+         m_ipdu_3d_offset_d == other.m_ipdu_3d_offset_d &&
+         m_ipdu_3d_range_d == other.m_ipdu_3d_range_d;
+}
+
+auto InterPatchDataUnit::operator!=(const InterPatchDataUnit &other) const -> bool {
+  return !operator==(other);
+}
+
+auto InterPatchDataUnit::decodeFrom(Common::InputBitstream &bitstream,
+                                    const std::vector<AtlasSequenceParameterSetRBSP> &aspsV,
+                                    const std::vector<AtlasFrameParameterSetRBSP> &afpsV,
+                                    const AtlasTileHeader &ath) -> InterPatchDataUnit {
+  auto x = InterPatchDataUnit{};
+
+  const auto &afps = afpsById(afpsV, ath.ath_atlas_frame_parameter_set_id());
+  const auto &asps = aspsById(aspsV, afps.afps_atlas_sequence_parameter_set_id());
+
+  Common::logWarning("Assuming that NumRefIdxActive == 1");
+  // if (NumRefIdxActive > 1)
+  //   x.ipdu_ref_index(bitstream.getUExpGolomb<int32_t>());
+
+  x.ipdu_patch_index(bitstream.getSExpGolomb<int32_t>());
+  x.ipdu_2d_pos_x(bitstream.getSExpGolomb<int32_t>());
+  x.ipdu_2d_pos_y(bitstream.getSExpGolomb<int32_t>());
+  x.ipdu_2d_delta_size_x(bitstream.getSExpGolomb<int32_t>());
+  x.ipdu_2d_delta_size_y(bitstream.getSExpGolomb<int32_t>());
+  x.ipdu_3d_offset_u(bitstream.getSExpGolomb<int32_t>());
+  x.ipdu_3d_offset_v(bitstream.getSExpGolomb<int32_t>());
+  x.ipdu_3d_offset_d(bitstream.getSExpGolomb<int32_t>());
+
+  if (asps.asps_normal_axis_max_delta_value_enabled_flag()) {
+    x.ipdu_3d_range_d(bitstream.getSExpGolomb<int32_t>());
+  }
+  LIMITATION(!asps.asps_plr_enabled_flag());
+
+  return x;
+}
+
+void InterPatchDataUnit::encodeTo(Common::OutputBitstream &bitstream,
+                                  const std::vector<AtlasSequenceParameterSetRBSP> &aspsV,
+                                  const std::vector<AtlasFrameParameterSetRBSP> &afpsV,
+                                  const AtlasTileHeader &ath) const {
+  const auto &afps = afpsById(afpsV, ath.ath_atlas_frame_parameter_set_id());
+  const auto &asps = aspsById(aspsV, afps.afps_atlas_sequence_parameter_set_id());
+
+  Common::logWarning("Assuming that NumRefIdxActive == 1");
+  // if (NumRefIdxActive > 1)
+  //   x.ipdu_ref_index(bitstream.getUExpGolomb<int32_t>());
+
+  bitstream.putSExpGolomb(ipdu_patch_index());
+  bitstream.putSExpGolomb(ipdu_2d_pos_x());
+  bitstream.putSExpGolomb(ipdu_2d_pos_y());
+  bitstream.putSExpGolomb(ipdu_2d_delta_size_x());
+  bitstream.putSExpGolomb(ipdu_2d_delta_size_y());
+  bitstream.putSExpGolomb(ipdu_3d_offset_u());
+  bitstream.putSExpGolomb(ipdu_3d_offset_v());
+  bitstream.putSExpGolomb(ipdu_3d_offset_d());
+
+  if (asps.asps_normal_axis_max_delta_value_enabled_flag()) {
+    bitstream.putSExpGolomb(ipdu_3d_range_d());
+  }
+  LIMITATION(!asps.asps_plr_enabled_flag());
+}
+
+auto PatchInformationData::skip_patch_data_unit() const -> const SkipPatchDataUnit & {
+  VERIFY_V3CBITSTREAM(m_skip_patch_data_unit.has_value());
+  return *m_skip_patch_data_unit;
+}
+
+auto PatchInformationData::patch_data_unit() const -> const PatchDataUnit & {
+  VERIFY_V3CBITSTREAM(m_patch_data_unit.has_value());
+  return *m_patch_data_unit;
+}
+
+auto PatchInformationData::inter_patch_data_unit() const -> const InterPatchDataUnit & {
+  VERIFY_V3CBITSTREAM(m_inter_patch_data_unit.has_value());
+  return *m_inter_patch_data_unit;
+}
+
+auto PatchInformationData::skip_patch_data_unit() -> SkipPatchDataUnit & {
+  if (!m_skip_patch_data_unit) {
+    m_skip_patch_data_unit = SkipPatchDataUnit{};
+  }
+  return *m_skip_patch_data_unit;
+}
+
+auto PatchInformationData::patch_data_unit() -> PatchDataUnit & {
+  if (!m_patch_data_unit) {
+    m_patch_data_unit = PatchDataUnit{};
+  }
+  return *m_patch_data_unit;
+}
+
+auto PatchInformationData::inter_patch_data_unit() -> InterPatchDataUnit & {
+  if (!m_inter_patch_data_unit) {
+    m_inter_patch_data_unit = InterPatchDataUnit{};
+  }
+  return *m_inter_patch_data_unit;
 }
 
 auto PatchInformationData::printTo(std::ostream &stream, uint32_t tileId, size_t patchIdx) const
     -> std::ostream & {
-  visit(Common::overload([&](const std::monostate & /* unused */) { stream << "[unknown]\n"; },
-                         [&](const SkipPatchDataUnit &x) { stream << x; },
-                         [&](const PatchDataUnit &x) { x.printTo(stream, tileId, patchIdx); }),
-        m_data);
+  if (m_skip_patch_data_unit) {
+    stream << *m_skip_patch_data_unit;
+  }
+  if (m_patch_data_unit) {
+    m_patch_data_unit->printTo(stream, tileId, patchIdx);
+  }
+  if (m_inter_patch_data_unit) {
+    m_inter_patch_data_unit->printTo(stream, tileId, patchIdx);
+  }
   return stream;
 }
 
 auto PatchInformationData::operator==(const PatchInformationData &other) const noexcept -> bool {
-  return data() == other.data();
+  return m_skip_patch_data_unit == other.m_skip_patch_data_unit &&
+         m_patch_data_unit == other.m_patch_data_unit &&
+         m_inter_patch_data_unit == other.m_inter_patch_data_unit;
 }
 
 auto PatchInformationData::operator!=(const PatchInformationData &other) const noexcept -> bool {
@@ -596,63 +793,176 @@ auto PatchInformationData::operator!=(const PatchInformationData &other) const n
 }
 
 auto PatchInformationData::decodeFrom(Common::InputBitstream &bitstream,
-                                      const std::vector<AtlasSequenceParameterSetRBSP> &asps,
-                                      const std::vector<AtlasFrameParameterSetRBSP> &afps,
+                                      const std::vector<AtlasSequenceParameterSetRBSP> &aspsV,
+                                      const std::vector<AtlasFrameParameterSetRBSP> &afpsV,
                                       const AtlasTileHeader &ath, AtduPatchMode patchMode)
     -> PatchInformationData {
-  if (ath.ath_type() == AthType::I_TILE) {
-    VERIFY_V3CBITSTREAM(patchMode == AtduPatchMode::I_INTRA);
-    return PatchInformationData{PatchDataUnit::decodeFrom(bitstream, asps, afps, ath)};
+  auto x = PatchInformationData{};
+
+  if (ath.ath_type() == AthType::P_TILE) {
+    switch (patchMode) {
+    case AtduPatchMode::P_MERGE:
+      MIVBITSTREAM_ERROR("patchMode P_MERGE is not supported");
+    case AtduPatchMode::P_SKIP:
+      x.skip_patch_data_unit() = SkipPatchDataUnit::decodeFrom(bitstream);
+      break;
+    case AtduPatchMode::P_INTRA:
+      x.patch_data_unit() = PatchDataUnit::decodeFrom(bitstream, aspsV, afpsV, ath);
+      break;
+    case AtduPatchMode::P_INTER:
+      x.inter_patch_data_unit() = InterPatchDataUnit::decodeFrom(bitstream, aspsV, afpsV, ath);
+      break;
+    case AtduPatchMode::P_RAW:
+      MIVBITSTREAM_ERROR("patchMode P_RAW is not supported");
+    case AtduPatchMode::P_EOM:
+      MIVBITSTREAM_ERROR("patchMode P_EOM is not supported");
+    case AtduPatchMode::P_END:
+      UNREACHABLE;
+    }
+  } else if (ath.ath_type() == AthType::I_TILE) {
+    switch (patchMode) {
+    case AtduPatchMode::I_INTRA:
+      x.patch_data_unit() = PatchDataUnit::decodeFrom(bitstream, aspsV, afpsV, ath);
+      break;
+    case AtduPatchMode::I_RAW:
+      MIVBITSTREAM_ERROR("patchMode I_RAW is not supported");
+    case AtduPatchMode::I_EOM:
+      MIVBITSTREAM_ERROR("patchMode I_EOM is not supported");
+    case AtduPatchMode::I_END:
+      UNREACHABLE;
+    case AtduPatchMode::P_INTRA:
+    case AtduPatchMode::P_RAW:
+    case AtduPatchMode::P_EOM:
+      V3CBITSTREAM_ERROR("Unexpected patchMode");
+    }
   }
-  if (ath.ath_type() == AthType::SKIP_TILE) {
-    VERIFY_V3CBITSTREAM(patchMode == AtduPatchMode::P_SKIP);
-    return PatchInformationData{SkipPatchDataUnit::decodeFrom(bitstream)};
-  }
-  V3CBITSTREAM_ERROR("Unknown or unsupported tile/patch mode combination");
+  return x;
 }
 
 void PatchInformationData::encodeTo(Common::OutputBitstream &bitstream,
-                                    const std::vector<AtlasSequenceParameterSetRBSP> &asps,
-                                    const std::vector<AtlasFrameParameterSetRBSP> &afps,
+                                    const std::vector<AtlasSequenceParameterSetRBSP> &aspsV,
+                                    const std::vector<AtlasFrameParameterSetRBSP> &afpsV,
                                     const AtlasTileHeader &ath, AtduPatchMode patchMode) const {
-  if (ath.ath_type() == AthType::I_TILE) {
-    PRECONDITION(patchMode == AtduPatchMode::I_INTRA);
-    return patch_data_unit().encodeTo(bitstream, asps, afps, ath);
+  if (ath.ath_type() == AthType::P_TILE) {
+    switch (patchMode) {
+    case AtduPatchMode::P_MERGE:
+      MIVBITSTREAM_ERROR("patchMode P_MERGE is not supported");
+    case AtduPatchMode::P_SKIP:
+      skip_patch_data_unit().encodeTo(bitstream);
+      break;
+    case AtduPatchMode::P_INTRA:
+      patch_data_unit().encodeTo(bitstream, aspsV, afpsV, ath);
+      break;
+    case AtduPatchMode::P_INTER:
+      inter_patch_data_unit().encodeTo(bitstream, aspsV, afpsV, ath);
+      break;
+    case AtduPatchMode::P_RAW:
+      MIVBITSTREAM_ERROR("patchMode P_RAW is not supported");
+    case AtduPatchMode::P_EOM:
+      MIVBITSTREAM_ERROR("patchMode P_EOM is not supported");
+    case AtduPatchMode::P_END:
+      UNREACHABLE;
+    }
+  } else if (ath.ath_type() == AthType::I_TILE) {
+    switch (patchMode) {
+    case AtduPatchMode::I_INTRA:
+      patch_data_unit().encodeTo(bitstream, aspsV, afpsV, ath);
+      break;
+    case AtduPatchMode::I_RAW:
+      MIVBITSTREAM_ERROR("patchMode I_RAW is not supported");
+    case AtduPatchMode::I_EOM:
+      MIVBITSTREAM_ERROR("patchMode I_EOM is not supported");
+    case AtduPatchMode::I_END:
+      UNREACHABLE;
+    case AtduPatchMode::P_INTRA:
+    case AtduPatchMode::P_RAW:
+    case AtduPatchMode::P_EOM:
+      V3CBITSTREAM_ERROR("Unexpected patchMode");
+    }
   }
-  if (ath.ath_type() == AthType::SKIP_TILE) {
-    PRECONDITION(patchMode == AtduPatchMode::P_SKIP);
-    return skip_patch_data_unit().encodeTo(bitstream);
-  }
-  V3CBITSTREAM_ERROR("Unknown or unsupported tile/patch mode combination");
 }
 
-auto AtlasTileDataUnit::atduTotalNumberOfPatches() const noexcept -> size_t {
-  return m_vector.size();
+auto AtlasTileDataUnit::skip_patch_data_unit() const -> const SkipPatchDataUnit & {
+  VERIFY_V3CBITSTREAM(m_skip_patch_data_unit.has_value());
+  return *m_skip_patch_data_unit;
 }
 
 auto AtlasTileDataUnit::atdu_patch_mode(size_t p) const -> AtduPatchMode {
-  VERIFY_V3CBITSTREAM(p < m_vector.size());
-  return m_vector[p].first;
+  VERIFY_V3CBITSTREAM(p < m_atdu_patch_mode.size());
+  return m_atdu_patch_mode[p];
 }
 
 auto AtlasTileDataUnit::patch_information_data(size_t p) const -> const PatchInformationData & {
-  VERIFY_V3CBITSTREAM(p < m_vector.size());
-  return m_vector[p].second;
+  VERIFY_V3CBITSTREAM(p < m_patch_information_data.size());
+  return m_patch_information_data[p];
+}
+
+auto AtlasTileDataUnit::skip_patch_data_unit() -> SkipPatchDataUnit & {
+  if (!m_skip_patch_data_unit.has_value()) {
+    m_skip_patch_data_unit = SkipPatchDataUnit{};
+  }
+  return *m_skip_patch_data_unit;
+}
+
+auto AtlasTileDataUnit::atdu_patch_mode(size_t p, AtduPatchMode value) -> AtlasTileDataUnit & {
+  VERIFY_V3CBITSTREAM(!m_skip_patch_data_unit.has_value());
+  VERIFY_V3CBITSTREAM(p <= m_atdu_patch_mode.size());
+
+  if (p == m_atdu_patch_mode.size()) {
+    m_atdu_patch_mode.push_back(value);
+  }
+  return *this;
+}
+
+auto AtlasTileDataUnit::patch_information_data(size_t p) -> PatchInformationData & {
+  VERIFY_V3CBITSTREAM(!m_skip_patch_data_unit.has_value());
+  VERIFY_V3CBITSTREAM(p <= m_patch_information_data.size());
+
+  if (p == m_patch_information_data.size()) {
+    return m_patch_information_data.emplace_back();
+  }
+  return m_patch_information_data[p];
+}
+
+auto AtlasTileDataUnit::atduTotalNumberOfPatches() const -> size_t {
+  VERIFY_V3CBITSTREAM(!m_skip_patch_data_unit.has_value());
+  VERIFY_V3CBITSTREAM(m_atdu_patch_mode.size() == 1 + m_patch_information_data.size());
+  return m_patch_information_data.size();
 }
 
 auto AtlasTileDataUnit::printTo(std::ostream &stream, const AtlasTileHeader &ath) const
     -> std::ostream & {
-  visit([&](const auto p, const AtduPatchMode patch_mode,
-            const PatchInformationData &patch_information_data) {
-    stream << "atdu_patch_mode[ " << p << " ]=";
-    MivBitstream::printTo(stream, patch_mode, ath.ath_type()) << '\n';
-    patch_information_data.printTo(stream, ath.ath_id(), p);
-  });
+  if (ath.ath_type() == AthType::SKIP_TILE) {
+    // for( p = 0; p < RefAtduTotalNumPatches[ tileID ]; p++ )
+    stream << skip_patch_data_unit();
+  } else {
+    auto p = size_t{};
+    auto isEnd_ = bool{};
+    do {
+      fmt::print(stream, "atdu_patch_mode[ {} ][ {} ]=", ath.ath_id(), p);
+      MivBitstream::printTo(stream, atdu_patch_mode(p), ath.ath_type());
+      fmt::print(stream, "\n");
+      isEnd_ = isEnd(ath.ath_type(), atdu_patch_mode(p));
+
+      if (!isEnd_) {
+        patch_information_data(p).printTo(stream, ath.ath_id(), p);
+        ++p;
+      }
+    } while (!isEnd_);
+    fmt::print(stream, "AtduTotalNumPatches[ {} ]={}\n", ath.ath_id(), p);
+  }
   return stream;
 }
 
 auto AtlasTileDataUnit::operator==(const AtlasTileDataUnit &other) const -> bool {
-  return m_vector == other.m_vector;
+  if (m_skip_patch_data_unit != other.m_skip_patch_data_unit) {
+    return false;
+  }
+  if (m_skip_patch_data_unit) {
+    return true;
+  }
+  return m_atdu_patch_mode == other.m_atdu_patch_mode &&
+         m_patch_information_data == other.m_patch_information_data;
 }
 
 auto AtlasTileDataUnit::operator!=(const AtlasTileDataUnit &other) const -> bool {
@@ -660,43 +970,58 @@ auto AtlasTileDataUnit::operator!=(const AtlasTileDataUnit &other) const -> bool
 }
 
 auto AtlasTileDataUnit::decodeFrom(Common::InputBitstream &bitstream,
-                                   const std::vector<AtlasSequenceParameterSetRBSP> &asps,
-                                   const std::vector<AtlasFrameParameterSetRBSP> &afps,
+                                   const std::vector<AtlasSequenceParameterSetRBSP> &aspsV,
+                                   const std::vector<AtlasFrameParameterSetRBSP> &afpsV,
                                    const AtlasTileHeader &ath) -> AtlasTileDataUnit {
-  VERIFY_MIVBITSTREAM(ath.ath_type() == AthType::I_TILE || ath.ath_type() == AthType::SKIP_TILE);
+  auto x = AtlasTileDataUnit{};
 
   if (ath.ath_type() == AthType::SKIP_TILE) {
-    return {};
+    // for( p = 0; p < RefAtduTotalNumPatches[ tileID ]; p++ )
+    x.skip_patch_data_unit() = SkipPatchDataUnit::decodeFrom(bitstream);
+  } else {
+    auto p = size_t{};
+    auto isEnd_ = bool{};
+    do {
+      x.atdu_patch_mode(p, bitstream.getUExpGolomb<AtduPatchMode>());
+      isEnd_ = isEnd(ath.ath_type(), x.atdu_patch_mode(p));
+
+      if (!isEnd_) {
+        x.patch_information_data(p) =
+            PatchInformationData::decodeFrom(bitstream, aspsV, afpsV, ath, x.atdu_patch_mode(p));
+        ++p;
+      }
+    } while (!isEnd_);
+
+    VERIFY_V3CBITSTREAM(x.atduTotalNumberOfPatches() == p);
   }
-
-  auto x = AtlasTileDataUnit::Vector{};
-  auto patch_mode = bitstream.getUExpGolomb<AtduPatchMode>();
-
-  while (patch_mode != AtduPatchMode::I_END) {
-    x.emplace_back(patch_mode,
-                   PatchInformationData::decodeFrom(bitstream, asps, afps, ath, patch_mode));
-    VERIFY_MIVBITSTREAM(patch_mode == AtduPatchMode::I_INTRA);
-    patch_mode = bitstream.getUExpGolomb<AtduPatchMode>();
-  }
-
-  return AtlasTileDataUnit{x};
+  return x;
 }
 
 void AtlasTileDataUnit::encodeTo(Common::OutputBitstream &bitstream,
-                                 const std::vector<AtlasSequenceParameterSetRBSP> &asps,
-                                 const std::vector<AtlasFrameParameterSetRBSP> &afps,
+                                 const std::vector<AtlasSequenceParameterSetRBSP> &aspsV,
+                                 const std::vector<AtlasFrameParameterSetRBSP> &afpsV,
                                  const AtlasTileHeader &ath) const {
-  PRECONDITION(ath.ath_type() == AthType::I_TILE || ath.ath_type() == AthType::SKIP_TILE);
+  if (ath.ath_type() == AthType::SKIP_TILE) {
+    // for( p = 0; p < RefAtduTotalNumPatches[ tileID ]; p++ )
+    skip_patch_data_unit().encodeTo(bitstream);
+  } else {
+    auto p = size_t{};
+    auto isEnd_ = bool{};
+    do {
+      bitstream.putUExpGolomb(atdu_patch_mode(p));
+      isEnd_ = isEnd(ath.ath_type(), atdu_patch_mode(p));
 
-  if (ath.ath_type() == AthType::I_TILE) {
-    visit([&](const auto /* p */, const AtduPatchMode patch_mode,
-              const PatchInformationData &patch_information_data) {
-      bitstream.putUExpGolomb(patch_mode);
-      patch_information_data.encodeTo(bitstream, asps, afps, ath, patch_mode);
-    });
-
-    bitstream.putUExpGolomb(AtduPatchMode::I_END);
+      if (!isEnd_) {
+        patch_information_data(p).encodeTo(bitstream, aspsV, afpsV, ath, atdu_patch_mode(p));
+        ++p;
+      }
+    } while (!isEnd_);
   }
+}
+
+auto AtlasTileDataUnit::isEnd(AthType athType, AtduPatchMode patchMode) -> bool {
+  return (athType == AthType::P_TILE && patchMode == AtduPatchMode::P_END) ||
+         (athType == AthType::I_TILE && patchMode == AtduPatchMode::I_END);
 }
 
 auto operator<<(std::ostream &stream, const AtlasTileLayerRBSP &x) -> std::ostream & {

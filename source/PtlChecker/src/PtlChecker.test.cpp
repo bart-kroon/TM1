@@ -54,6 +54,7 @@ using TMIV::Common::downCast;
 using TMIV::Common::Frame;
 using TMIV::Common::Vec2i;
 using TMIV::MivBitstream::AccessUnit;
+using TMIV::MivBitstream::AtduPatchMode;
 using TMIV::MivBitstream::AthType;
 using TMIV::MivBitstream::AtlasFrameParameterSetRBSP;
 using TMIV::MivBitstream::AtlasId;
@@ -756,9 +757,6 @@ TEST_CASE("PtlChecker ISO/IEC 23090-12:2021 Table A-1") {
     }
   }
 
-  // NOTE(#517): The ai_attribute_dimension_partitions_minus1 constraint cannot be checked
-  // because there is no test model support for this syntax
-
   SECTION("ai_attribute_MSB_align_flag") {
     for (uint8_t k = 0; k <= vps.vps_atlas_count_minus1(); ++k) {
       const auto j = vps.vps_atlas_id(k);
@@ -916,9 +914,6 @@ TEST_CASE("PtlChecker ISO/IEC 23090-12:2021 Table A-1") {
     CHECK_THROWS_AS(unit.checkAfps(afps), test::Exception);
   }
 
-  // NOTE(#517): The afti_single_tile_in_atlas_frame_flag constraint cannot be checked because there
-  // is no test model support for this syntax
-
   SECTION("ath_type") {
     const auto type = GENERATE(AthType::I_TILE, AthType::P_TILE, AthType::SKIP_TILE);
 
@@ -928,6 +923,15 @@ TEST_CASE("PtlChecker ISO/IEC 23090-12:2021 Table A-1") {
     auto atl = AtlasTileLayerRBSP{};
     atl.atlas_tile_header().ath_type(type);
 
+    auto &atdu = atl.atlas_tile_data_unit();
+
+    if (type == AthType::I_TILE) {
+      atdu.atdu_patch_mode(0, AtduPatchMode::I_END);
+    } else if (type == AthType::P_TILE) {
+      atdu.atdu_patch_mode(0, AtduPatchMode::P_END);
+    } else {
+      atdu.skip_patch_data_unit() = {};
+    }
     CHECK_THROWS_IFF(unit.checkAtl(nuh, atl),
                      type != AthType::I_TILE && test::mivToolset(toolsetIdc));
   }
@@ -939,9 +943,20 @@ TEST_CASE("PtlChecker ISO/IEC 23090-12:2021 Table A-1") {
     auto atl = AtlasTileLayerRBSP{};
     atl.atlas_tile_header().ath_type(AthType::I_TILE);
 
-    const auto mode = GENERATE(APM::I_INTRA, APM::I_RAW, APM::I_EOM, APM::I_END);
-    atl.atlas_tile_data_unit() = AtlasTileDataUnit{std::pair{APM::I_INTRA, PatchInformationData{}},
-                                                   std::pair{mode, PatchInformationData{}}};
+    const auto mode = GENERATE(APM::I_INTRA, APM::I_RAW, APM::I_EOM);
+
+    atl.atlas_tile_data_unit() = [mode]() {
+      auto atdu = AtlasTileDataUnit{};
+
+      atdu.atdu_patch_mode(0, APM::I_INTRA);
+      atdu.atdu_patch_mode(1, mode);
+      atdu.atdu_patch_mode(2, APM::I_END);
+
+      atdu.patch_information_data(0) = PatchInformationData{};
+      atdu.patch_information_data(1) = PatchInformationData{};
+
+      return atdu;
+    }();
     CHECK_THROWS_IFF(unit.checkAtl(nuh, atl), mode != APM::I_INTRA && test::mivToolset(toolsetIdc));
   }
 }
@@ -1113,6 +1128,7 @@ TEST_CASE("PtlChecker ISO/IEC DIS 23090-5(2E):2021 A.6.1 FOC LSB") {
 
       auto atl = AtlasTileLayerRBSP{};
       atl.atlas_tile_header().ath_type(AthType::I_TILE);
+      atl.atlas_tile_data_unit().atdu_patch_mode(0, AtduPatchMode::I_END);
       CHECK_NOTHROW(unit.checkAtl(nuh, atl));
 
       atl.atlas_tile_header().ath_atlas_frm_order_cnt_lsb(1);
@@ -1128,6 +1144,7 @@ TEST_CASE("PtlChecker ISO/IEC DIS 23090-5(2E):2021 A.6.1 FOC LSB") {
 
       auto atl = AtlasTileLayerRBSP{};
       atl.atlas_tile_header().ath_type(AthType::I_TILE);
+      atl.atlas_tile_data_unit().atdu_patch_mode(0, AtduPatchMode::I_END);
       CHECK_NOTHROW(unit.checkAtl(nuh, atl));
 
       atl.atlas_tile_header().ath_atlas_frm_order_cnt_lsb(1);

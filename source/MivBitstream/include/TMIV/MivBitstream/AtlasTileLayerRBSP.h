@@ -49,7 +49,6 @@
 #include <cstdlib>
 #include <iosfwd>
 #include <optional>
-#include <variant>
 
 namespace TMIV::MivBitstream {
 enum class AthType : uint8_t { P_TILE, I_TILE, SKIP_TILE };
@@ -151,7 +150,7 @@ private:
   std::optional<uint8_t> m_ath_patch_size_y_info_quantizer{};
 };
 
-// 23090-5: skip_patch_data_unit( patchIdx )
+// 23090-5: skip_patch_data_unit( )
 class SkipPatchDataUnit {
 public:
   friend auto operator<<(std::ostream &stream, const SkipPatchDataUnit &x) -> std::ostream &;
@@ -195,10 +194,7 @@ private:
   std::optional<bool> m_pdu_inpaint_flag;
 };
 
-// 23090-12: patch_data_unit( patchIdx )
-//
-// 23090-12 limitations:
-//   * asps_plr_enabled_flag == 0
+// 23090-5: patch_data_unit( patchIdx )
 class PatchDataUnit {
 public:
   [[nodiscard]] constexpr auto pdu_2d_pos_x() const noexcept;
@@ -239,13 +235,13 @@ public:
   constexpr auto operator!=(const PatchDataUnit &other) const noexcept;
 
   static auto decodeFrom(Common::InputBitstream &bitstream,
-                         const std::vector<AtlasSequenceParameterSetRBSP> &aspsVector,
-                         const std::vector<AtlasFrameParameterSetRBSP> &afpsVector,
+                         const std::vector<AtlasSequenceParameterSetRBSP> &aspsV,
+                         const std::vector<AtlasFrameParameterSetRBSP> &afpsV,
                          const AtlasTileHeader &ath) -> PatchDataUnit;
 
   void encodeTo(Common::OutputBitstream &bitstream,
-                const std::vector<AtlasSequenceParameterSetRBSP> &aspsVector,
-                const std::vector<AtlasFrameParameterSetRBSP> &afpsVector,
+                const std::vector<AtlasSequenceParameterSetRBSP> &aspsV,
+                const std::vector<AtlasFrameParameterSetRBSP> &afpsV,
                 const AtlasTileHeader &ath) const;
 
 private:
@@ -265,26 +261,72 @@ private:
   std::optional<PduMivExtension> m_pdu_miv_extension;
 };
 
+// 23090-5: inter_patch_data_unit( patchIdx )
+class InterPatchDataUnit {
+public:
+  [[nodiscard]] auto ipdu_ref_index() const -> int32_t;
+  [[nodiscard]] auto ipdu_patch_index() const -> int32_t;
+  [[nodiscard]] auto ipdu_2d_pos_x() const -> int32_t;
+  [[nodiscard]] auto ipdu_2d_pos_y() const -> int32_t;
+  [[nodiscard]] auto ipdu_2d_delta_size_x() const -> int32_t;
+  [[nodiscard]] auto ipdu_2d_delta_size_y() const -> int32_t;
+  [[nodiscard]] auto ipdu_3d_offset_u() const -> int32_t;
+  [[nodiscard]] auto ipdu_3d_offset_v() const -> int32_t;
+  [[nodiscard]] auto ipdu_3d_offset_d() const -> int32_t;
+  [[nodiscard]] auto ipdu_3d_range_d() const -> int32_t;
+  // [[nodiscard]] auto plr_data() const -> const PlrData &;
+
+  auto ipdu_ref_index(int32_t value) -> InterPatchDataUnit &;
+  auto ipdu_patch_index(int32_t value) -> InterPatchDataUnit &;
+  auto ipdu_2d_pos_x(int32_t value) -> InterPatchDataUnit &;
+  auto ipdu_2d_pos_y(int32_t value) -> InterPatchDataUnit &;
+  auto ipdu_2d_delta_size_x(int32_t value) -> InterPatchDataUnit &;
+  auto ipdu_2d_delta_size_y(int32_t value) -> InterPatchDataUnit &;
+  auto ipdu_3d_offset_u(int32_t value) -> InterPatchDataUnit &;
+  auto ipdu_3d_offset_v(int32_t value) -> InterPatchDataUnit &;
+  auto ipdu_3d_offset_d(int32_t value) -> InterPatchDataUnit &;
+  auto ipdu_3d_range_d(int32_t value) -> InterPatchDataUnit &;
+  // [[nodiscard]] auto plr_data() -> PlrData &;
+
+  auto printTo(std::ostream &stream, uint32_t tileId, size_t patchIdx) const -> std::ostream &;
+
+  auto operator==(const InterPatchDataUnit &other) const -> bool;
+  auto operator!=(const InterPatchDataUnit &other) const -> bool;
+
+  static auto decodeFrom(Common::InputBitstream &bitstream,
+                         const std::vector<AtlasSequenceParameterSetRBSP> &aspsV,
+                         const std::vector<AtlasFrameParameterSetRBSP> &afpsV,
+                         const AtlasTileHeader &ath) -> InterPatchDataUnit;
+
+  void encodeTo(Common::OutputBitstream &bitstream,
+                const std::vector<AtlasSequenceParameterSetRBSP> &aspsV,
+                const std::vector<AtlasFrameParameterSetRBSP> &afpsV,
+                const AtlasTileHeader &ath) const;
+
+private:
+  std::optional<int32_t> m_ipdu_ref_index;
+  int32_t m_ipdu_patch_index{};
+  int32_t m_ipdu_2d_pos_x{};
+  int32_t m_ipdu_2d_pos_y{};
+  int32_t m_ipdu_2d_delta_size_x{};
+  int32_t m_ipdu_2d_delta_size_y{};
+  int32_t m_ipdu_3d_offset_u{};
+  int32_t m_ipdu_3d_offset_v{};
+  int32_t m_ipdu_3d_offset_d{};
+  std::optional<int32_t> m_ipdu_3d_range_d;
+  // std::optional<PlrData> m_plr_data;
+};
+
 // 23090-5: patch_information_data( )
-//
-// 23090-12 restrictions:
-//   * ath_type in { I_TILE, SKIP_TILE }
-//   * patchMode in { I_INTRA, I_END }
 class PatchInformationData {
 public:
-  using Data = std::variant<std::monostate, SkipPatchDataUnit, PatchDataUnit>;
+  [[nodiscard]] auto skip_patch_data_unit() const -> const SkipPatchDataUnit &;
+  [[nodiscard]] auto patch_data_unit() const -> const PatchDataUnit &;
+  [[nodiscard]] auto inter_patch_data_unit() const -> const InterPatchDataUnit &;
 
-  PatchInformationData() = default;
-
-  // NOTE(#488): SFINAE to preserve rule of zero [bugprone-forwarding-reference-overload]
-  template <typename Value,
-            typename = std::enable_if_t<!std::is_same_v<std::decay_t<Value>, PatchInformationData>>>
-  constexpr explicit PatchInformationData(Value &&value) : m_data{std::forward<Value>(value)} {}
-
-  [[nodiscard]] constexpr auto data() const noexcept -> auto &;
-
-  [[nodiscard]] auto skip_patch_data_unit() const noexcept -> const SkipPatchDataUnit &;
-  [[nodiscard]] auto patch_data_unit() const noexcept -> const PatchDataUnit &;
+  [[nodiscard]] auto skip_patch_data_unit() -> SkipPatchDataUnit &;
+  [[nodiscard]] auto patch_data_unit() -> PatchDataUnit &;
+  [[nodiscard]] auto inter_patch_data_unit() -> InterPatchDataUnit &;
 
   auto printTo(std::ostream &stream, uint32_t tileId, size_t patchIdx) const -> std::ostream &;
 
@@ -303,26 +345,23 @@ public:
                 AtduPatchMode patchMode) const;
 
 private:
-  Data m_data;
+  std::optional<SkipPatchDataUnit> m_skip_patch_data_unit;
+  std::optional<PatchDataUnit> m_patch_data_unit;
+  std::optional<InterPatchDataUnit> m_inter_patch_data_unit;
 };
 
 // 23090-5: atlas_tile_data_unit( )
 class AtlasTileDataUnit {
 public:
-  using Vector = std::vector<std::pair<AtduPatchMode, PatchInformationData>>;
-
-  AtlasTileDataUnit() = default;
-
-  template <typename... Args>
-  explicit AtlasTileDataUnit(Args &&...args) : m_vector{std::forward<Args>(args)...} {}
-
-  [[nodiscard]] auto atduTotalNumberOfPatches() const noexcept -> size_t;
+  [[nodiscard]] auto skip_patch_data_unit() const -> const SkipPatchDataUnit &;
   [[nodiscard]] auto atdu_patch_mode(size_t p) const -> AtduPatchMode;
   [[nodiscard]] auto patch_information_data(size_t p) const -> const PatchInformationData &;
 
-  // Visit all elements in the atlas tile data unit in ascending order. The expected signature of
-  // the visitor is: void(size_t p, AtduPatchMode, const PatchInformationData &)
-  template <typename Visitor> void visit(Visitor &&visitor) const;
+  [[nodiscard]] auto skip_patch_data_unit() -> SkipPatchDataUnit &;
+  auto atdu_patch_mode(size_t p, AtduPatchMode value) -> AtlasTileDataUnit &;
+  [[nodiscard]] auto patch_information_data(size_t p) -> PatchInformationData &;
+
+  [[nodiscard]] auto atduTotalNumberOfPatches() const -> size_t;
 
   auto printTo(std::ostream &stream, const AtlasTileHeader &ath) const -> std::ostream &;
 
@@ -340,7 +379,11 @@ public:
                 const AtlasTileHeader &ath) const;
 
 private:
-  Vector m_vector;
+  [[nodiscard]] static auto isEnd(AthType athType, AtduPatchMode patchMode) -> bool;
+
+  std::optional<SkipPatchDataUnit> m_skip_patch_data_unit;
+  std::vector<AtduPatchMode> m_atdu_patch_mode;
+  std::vector<PatchInformationData> m_patch_information_data;
 };
 
 // 23090-5: atlas_tile_layer_rbsp( )

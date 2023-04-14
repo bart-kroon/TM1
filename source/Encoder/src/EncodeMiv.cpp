@@ -414,21 +414,26 @@ private:
 
   [[nodiscard]] auto atlasTileLayer(uint8_t atlasIdx, size_t tileIdx) const
       -> MivBitstream::AtlasTileLayerRBSP {
-    auto patchData = MivBitstream::AtlasTileDataUnit::Vector{};
-    patchData.reserve(m_params.tileParamsLists[atlasIdx][tileIdx].partitionPatchList().size());
-
     const auto &aau = m_params.atlas[atlasIdx];
     const auto atlasId = m_params.vps.vps_atlas_id(atlasIdx);
+
+    auto x = MivBitstream::AtlasTileLayerRBSP{};
+
+    x.atlas_tile_header() = aau.athList[tileIdx];
+
+    auto &atdu = x.atlas_tile_data_unit();
+    auto patchIdx = size_t{};
+
     for (const auto &pp : m_params.tileParamsLists[atlasIdx][tileIdx].partitionPatchList()) {
       if (pp.atlasId() == atlasId) {
-        patchData.emplace_back(
-            MivBitstream::AtduPatchMode::I_INTRA,
-            pp.encodePdu(m_params.vps, atlasId, aau.asps, aau.afps, aau.athList[tileIdx]));
+        atdu.atdu_patch_mode(patchIdx, MivBitstream::AtduPatchMode::I_INTRA);
+        atdu.patch_information_data(patchIdx).patch_data_unit() =
+            pp.encodePdu(m_params.vps, atlasId, aau.asps, aau.afps, aau.athList[tileIdx]);
+        ++patchIdx;
       }
     }
-    auto x = MivBitstream::AtlasTileLayerRBSP{};
-    x.atlas_tile_header() = aau.athList[tileIdx];
-    x.atlas_tile_data_unit() = MivBitstream::AtlasTileDataUnit{patchData};
+    atdu.atdu_patch_mode(patchIdx, MivBitstream::AtduPatchMode::I_END);
+
     return x;
   }
 

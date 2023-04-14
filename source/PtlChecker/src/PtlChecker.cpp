@@ -541,9 +541,10 @@ struct PtlChecker::Impl {
   }
 
   void checkAtl(const MivBitstream::NalUnitHeader &nuh,
-                const MivBitstream::AtlasTileLayerRBSP &atl) {
+                const MivBitstream::AtlasTileLayerRBSP &atl) const {
     const auto &ath = atl.atlas_tile_header();
     const auto ath_type = ath.ath_type();
+    const auto &atdu = atl.atlas_tile_data_unit();
 
     switch (ptl_profile_toolset_idc()) {
     case TS::VPCC_Basic:
@@ -554,11 +555,9 @@ struct PtlChecker::Impl {
     case TS::MIV_Geometry_Absent:
       PTL_CHECK(mivSpec, "Table A-1", ath_type == MivBitstream::AthType::I_TILE);
 
-      atl.atlas_tile_data_unit().visit(
-          [this](size_t /* p */, APM atdu_patch_mode,
-                 const MivBitstream::PatchInformationData & /* pid */) {
-            PTL_CHECK(mivSpec, "Table A-1", atdu_patch_mode == APM::I_INTRA);
-          });
+      for (size_t p = 0; p < atdu.atduTotalNumberOfPatches(); ++p) {
+        PTL_CHECK(mivSpec, "Table A-1", atdu.atdu_patch_mode(p) == APM::I_INTRA);
+      }
       break;
     }
 

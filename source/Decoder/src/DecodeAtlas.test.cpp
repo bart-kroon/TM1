@@ -78,12 +78,22 @@ auto minimalAtl(const std::vector<AtlasSequenceParameterSetRBSP> &aspsV,
   using TMIV::MivBitstream::PatchInformationData;
 
   auto atl = AtlasTileLayerRBSP{};
+
   atl.atlas_tile_header()
       .ath_type(AthType::I_TILE)
       .ath_ref_atlas_frame_list_asps_flag(true)
       .ath_atlas_frm_order_cnt_lsb(static_cast<uint16_t>(foc % 16));
-  atl.atlas_tile_data_unit() =
-      AtlasTileDataUnit{std::pair{AtduPatchMode::I_INTRA, PatchInformationData{PatchDataUnit{}}}};
+
+  atl.atlas_tile_data_unit() = []() {
+    auto atdu = AtlasTileDataUnit{};
+
+    atdu.atdu_patch_mode(0, AtduPatchMode::I_INTRA);
+    atdu.atdu_patch_mode(1, AtduPatchMode::I_END);
+
+    atdu.patch_information_data(0).patch_data_unit() = {};
+
+    return atdu;
+  }();
 
   std::ostringstream buffer;
   const auto nuh =

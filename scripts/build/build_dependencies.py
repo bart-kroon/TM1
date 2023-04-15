@@ -100,10 +100,11 @@ def build_dependency(dep: dict, args: Namespace):
     source_dir = prepare_source_dir(dep, args)
     build_dir = args.build_dir / qualified_name(dep)
     install_dir = args.install_dir
+    thread_count_a = ["-j", args.thread_count] if args.thread_count else []
 
     cmake_configure(source_dir, build_dir, install_dir, args.build_type, dep["variables"])
-    run(["ninja", "-j", args.thread_count] if args.thread_count else ["ninja"], cwd=build_dir)
-    run(["ninja", "install"], cwd=build_dir)
+    run(["ninja", "-C", build_dir] + thread_count_a)
+    run(["ninja", "-C", build_dir, "install"])
 
 
 def prepare_source_dir(dep: dict, args: Namespace):
@@ -146,9 +147,12 @@ def cmake_configure(
     run(args)
 
 
-def run(args: list, cwd: Path = None, check: bool = True):
+def run(args: list, check: bool = True):
     print(f"> {' '.join(map(str, args))}")
-    subprocess.run(args, cwd=cwd, check=check)
+    result = subprocess.run(
+        args, check=check, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True
+    )
+    print(result.stdout)
 
 
 def print_prebuild_variables(args):

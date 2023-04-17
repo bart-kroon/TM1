@@ -1,0 +1,28 @@
+For the WD3 stage, this bitstream was provided by:
+
+Basel Salahieh
+Vimmerse Incorporation
+basel.salahieh@vimmerse.net
+
+
+This bitstream was replaced by a different bitstream that targets the same features:
+
+Bart Kroon
+Philips
+bart.kroon@philips.com
+
+
+TMIV 14.1
+VVenC 0.3.1.0
+VVdeC 1.0.1
+16 atlases
+3 groups
+5 frames
+rewrite parameter sets (atlas, video)
+3 IRAP AU's (frame 0, 2 and 4)
+MIV Main
+VVC Main10
+Level 3.5
+
+
+Updating to 37 frames with intra period 16

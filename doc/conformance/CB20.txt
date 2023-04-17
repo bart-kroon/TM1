@@ -1,0 +1,37 @@
+Codec group IDC    : VVC Main10
+Toolset IDC        : MIV Main
+Reconstruction IDC : Rec Unconstrained
+Features tested    : Multiple tiles
+Contact person     : Bart Kroon (bart.kroon@philips.com)
+MIV encoder        : TMIV 14.1
+Video encoder      : VVenC 0.3.1.0
+Compiler toolchain : GCC 11.1
+Encoding process   : Integration test T3 + 
+
+ bin\vvencFFapp -c share\config\vvenc\randomaccess_faster.cfg -s 512x512 -f 3 -fr 30 -q 30
+     --InputBitDepth=10 --InternalBitDepth=10 --VuiParametersPresent=1 --VideoSignalTypePresent=1
+     --VideoFullRange=0 --SEIDecodedPictureHash=1 -i T3\E\TMIV_T3_E_geo_c00_512x512_yuv420p10le.yuv
+     -b T3\E\R\TMIV_T3_E_R_geo_c00.bit -o T3\E\R\TMIV_T3_E_geo_c00_512x512_yuv420p10le.yuv
+ bin\vvencFFapp -c share\config\vvenc\randomaccess_faster.cfg -s 1024x1024 -f 3 -fr 30 -q 30
+     --InputBitDepth=10 --InternalBitDepth=10 --VuiParametersPresent=1 --VideoSignalTypePresent=1
+     --VideoFullRange=0 --SEIDecodedPictureHash=1 -i T3\E\TMIV_T3_E_tex_c00_1024x1024_yuv420p10le.yuv
+     -b T3\E\R\TMIV_T3_E_R_tex_c00.bit -o T3\E\R\TMIV_T3_E_tex_c00_1024x1024_yuv420p10le.yuv
+ bin\vvencFFapp -c share\config\vvenc\randomaccess_faster.cfg -s 512x512 -f 3 -fr 30 -q 30
+     --InputBitDepth=10 --InternalBitDepth=10 --VuiParametersPresent=1 --VideoSignalTypePresent=1
+     --VideoFullRange=0 --SEIDecodedPictureHash=1 -i T3\E\TMIV_T3_E_geo_c01_512x512_yuv420p10le.yuv
+     -b T3\E\R\TMIV_T3_E_R_geo_c01.bit -o T3\E\R\TMIV_T3_E_geo_c01_512x512_yuv420p10le.yuv
+ bin\vvencFFapp -c share\config\vvenc\randomaccess_faster.cfg -s 1024x1024 -f 3 -fr 30 -q 30
+     --InputBitDepth=10 --InternalBitDepth=10 --VuiParametersPresent=1 --VideoSignalTypePresent=1
+     --VideoFullRange=0 --SEIDecodedPictureHash=1 -i T3\E\TMIV_T3_E_tex_c01_1024x1024_yuv420p10le.yuv
+     -b T3\E\R\TMIV_T3_E_R_tex_c01.bit -o T3\E\R\TMIV_T3_E_tex_c01_1024x1024_yuv420p10le.yuv
+ bin\TmivMultiplexer -c share\config\test\multi-tile\T_3_TMIV_mux.json -V verbose -s E -n 3 -r R
+     -p outputBitstreamPathFmt CB20.bit
+ bin\TmivParser -b CB20.bit -o CB20.hls
+ bin\TmivBitrateReport -b CB20.bit -o CB20.csv
+ bin\TmivDecoderLog -b CB20.bit -o CB20.dec
+
+With randomaccess_faster.cfg modified to have intra period 2.
+
+
+
+Changed to 17 frames and intra period 16

@@ -1,0 +1,18 @@
+Codec group IDC    : VVC Main10
+Toolset IDC        : MIV Geometry absent
+Reconstruction IDC : Rec Unconstrained
+Features tested    : Anchor bitstream "G17 Cadillac" (with QP 30 and "faster" configuration)
+Contact person     : Bart Kroon (bart.kroon@philips.com)
+MIV encoder        : TMIV 14.1
+Video encoder      : VVenC 0.3.1.0
+Compiler toolchain : GCC 11.1
+Encoding process   :
+
+RUN G17/G/TMIV_G17_G.bit: bin/Encoder -c share/config/ctc/miv_dsde_anchor/G_1_TMIV_encode.json -s G -n 17 -f 0 -p inputDirectory /home/videssa/VR/MPEG/MIV -p configDirectory share/config -p outputBitstreamPathFmt intermediate.bit
+RUN G17/G/R/TMIV_G17_G_R_tex_c00.bit: bin/vvencFFapp -c share/config/vvenc/randomaccess_faster.cfg -s 1920x4640 -q 30 -i G17/G/TMIV_G17_G_tex_c00_1920x4640_yuv420p10le.yuv -b G17/G/R/TMIV_G17_G_R_tex_c00.bit -o G17/G/R/TMIV_G17_G_tex_c00_1920x4640_yuv420p10le.yuv -f 17 -fr 30 --InputBitDepth=10 --InternalBitDepth=10 --VuiParametersPresent=1 --VideoSignalTypePresent=1 --VideoFullRange=0 --SEIDecodedPictureHash=1
+RUN G17/G/R/TMIV_G17_G_R_tex_c01.bit: bin/vvencFFapp -c share/config/vvenc/randomaccess_faster.cfg -s 1920x4640 -q 30 -i G17/G/TMIV_G17_G_tex_c01_1920x4640_yuv420p10le.yuv -b G17/G/R/TMIV_G17_G_R_tex_c01.bit -o G17/G/R/TMIV_G17_G_tex_c01_1920x4640_yuv420p10le.yuv -f 17 -fr 30 --InputBitDepth=10 --InternalBitDepth=10 --VuiParametersPresent=1 --VideoSignalTypePresent=1 --VideoFullRange=0 --SEIDecodedPictureHash=1
+RUN G17/G/R/TMIV_G17_G_R_tex_c02.bit: bin/vvencFFapp -c share/config/vvenc/randomaccess_faster.cfg -s 1920x4640 -q 30 -i G17/G/TMIV_G17_G_tex_c02_1920x4640_yuv420p10le.yuv -b G17/G/R/TMIV_G17_G_R_tex_c02.bit -o G17/G/R/TMIV_G17_G_tex_c02_1920x4640_yuv420p10le.yuv -f 17 -fr 30 --InputBitDepth=10 --InternalBitDepth=10 --VuiParametersPresent=1 --VideoSignalTypePresent=1 --VideoFullRange=0 --SEIDecodedPictureHash=1
+RUN G17/G/R/TMIV_G17_G_R_tex_c03.bit: bin/vvencFFapp -c share/config/vvenc/randomaccess_faster.cfg -s 1920x4640 -q 30 -i G17/G/TMIV_G17_G_tex_c03_1920x4640_yuv420p10le.yuv -b G17/G/R/TMIV_G17_G_R_tex_c03.bit -o G17/G/R/TMIV_G17_G_tex_c03_1920x4640_yuv420p10le.yuv -f 17 -fr 30 --InputBitDepth=10 --InternalBitDepth=10 --VuiParametersPresent=1 --VideoSignalTypePresent=1 --VideoFullRange=0 --SEIDecodedPictureHash=1
+RUN G17/G/R/TMIV_G17_G_R.bit: bin/Multiplexer -c share/config/ctc/miv_dsde_anchor/G_3_TMIV_mux.json -s G -n 17 -r R -p inputBitstreamPathFmt intermediate.bit
+RUN G17/G/R/TMIV_G17_G_R.hls: bin/Parser -b G17/G/R/TMIV_G17_G_R.bit -o G17/G/R/TMIV_G17_G_R.hls
+RUN G17/G/R/TMIV_G17_G_R.dec: bin/Decoder -p outputLogPath G17/G/R/TMIV_G17_G_R.dec -p inputDirectory . -p outputDirectory . -s G -n 17 -N 17 -r R -p inputBitstreamPathFmt G17/G/R/TMIV_G17_G_R.bit

@@ -1,0 +1,9 @@
+Codec group IDC    : VVC Main10
+Toolset IDC        : MIV Main
+Reconstruction IDC : Rec Unconstrained
+Features tested    : Anchor bitstream "A17 ClassroomVideo" at QP3
+Contact person     : Bart Kroon (bart.kroon@philips.com)
+MIV encoder        : TMIV 14.1
+Video encoder      : VVenC 0.3.1.0
+Compiler toolchain : GCC 11.1.0
+Encoding process   : ISO/IEC JTC 1/SC 29/WG 4 N232 Common Test Conditions for MPEG Immersive video

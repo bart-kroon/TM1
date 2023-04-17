@@ -1,0 +1,26 @@
+Basel Salahieh
+Vimmerse Inc.
+basel.salahieh@vimmerse.net
+
+Updated to TMIV 14.1 by:
+
+Bart Kroon
+Philips
+bart.kroon@philips.com
+
+
+MIV Extended
+VVC Main10
+Level 5
+
+
+This conformance bitstream and decoder output log were created with a modified TMIV 14.1
+A diff patch is provided to show the modifications done on top of TMIV 14.1 to generate the bitstream.
+
+
+This conformance bitstream is composed of two atlases with occupancy being embedded in the first one and explicitly signaled in the second one
+Bitstream          : TMIV_O5_N_QP3.bit
+Decoder output log : TMIV_O5_N_QP3.dec 
+
+
+Please refer to MPEG contribution [JTC 1/SC 29/WG 04 m57765] for more details on the features tested in this conformance bitstream.

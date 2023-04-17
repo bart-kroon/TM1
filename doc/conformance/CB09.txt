@@ -1,0 +1,34 @@
+Codec group IDC    : HEVC Main10
+Toolset IDC        : MIV Main
+Reconstruction IDC : Rec Unconstrained
+Features tested    : Geometry scaling with scaling factors 1,2,3,4
+Contact person     : Bart Kroon (bart.kroon@philips.com)
+MIV encoder        : TMIV 14.1 + patch (see CB09.patch)
+Video encoder      : HM 16.16
+Compiler toolchain : GCC 11.1
+Encoding process   :
+
+ bin/TmivEncoder -c share/config/ctc/miv_view_anchor/V_1_TMIV_encode.json -V verbose -s P -n 3 -f 0
+     -p inputDirectory /home/videssa/VR/MPEG/MIV -p configDirectory share/config -p outputBitstreamPathFmt intermediate.bit
+ bin/TAppEncoder -c share/config/hm/encoder_randomaccess_main10.cfg -wdt 1920 -hgt 2320 -f 3 -fr 30
+     -q 30 --InputBitDepth=10 --InternalBitDepth=10 --VuiParametersPresent=1
+     --VideoSignalTypePresent=1 --VideoFullRange=0 --SEIDecodedPictureHash=1 -i V3/P/TMIV_V3_P_geo_c00_1920x2320_yuv420p10le.yuv
+     -b V3/P/R/TMIV_V3_P_R_geo_c00.bit -o V3/P/R/TMIV_V3_P_geo_c00_1920x2320_yuv420p10le.yuv
+ bin/TAppEncoder -c share/config/hm/encoder_randomaccess_main10.cfg -wdt 1920 -hgt 4640 -f 3 -fr 30
+     -q 30 --InputBitDepth=10 --InternalBitDepth=10 --VuiParametersPresent=1
+     --VideoSignalTypePresent=1 --VideoFullRange=0 --SEIDecodedPictureHash=1 -i V3/P/TMIV_V3_P_tex_c00_1920x4640_yuv420p10le.yuv
+     -b V3/P/R/TMIV_V3_P_R_tex_c00.bit -o V3/P/R/TMIV_V3_P_tex_c00_1920x4640_yuv420p10le.yuv
+ bin/TAppEncoder -c share/config/hm/encoder_randomaccess_main10.cfg -wdt 640 -hgt 1160 -f 3 -fr 30
+     -q 30 --InputBitDepth=10 --InternalBitDepth=10 --VuiParametersPresent=1
+     --VideoSignalTypePresent=1 --VideoFullRange=0 --SEIDecodedPictureHash=1 -i V3/P/TMIV_V3_P_geo_c01_640x1160_yuv420p10le.yuv
+     -b V3/P/R/TMIV_V3_P_R_geo_c01.bit -o V3/P/R/TMIV_V3_P_geo_c01_640x1160_yuv420p10le.yuv
+ bin/TAppEncoder -c share/config/hm/encoder_randomaccess_main10.cfg -wdt 1920 -hgt 4640 -f 3 -fr 30
+     -q 30 --InputBitDepth=10 --InternalBitDepth=10 --VuiParametersPresent=1
+     --VideoSignalTypePresent=1 --VideoFullRange=0 --SEIDecodedPictureHash=1 -i V3/P/TMIV_V3_P_tex_c01_1920x4640_yuv420p10le.yuv
+     -b V3/P/R/TMIV_V3_P_R_tex_c01.bit -o V3/P/R/TMIV_V3_P_tex_c01_1920x4640_yuv420p10le.yuv
+ bin/TmivMultiplexer -c share/config/ctc/miv_view_anchor/V_3_TMIV_mux.json -V verbose -s P -n 3 -r R
+     -p inputBitstreamPathFmt intermediate.bit -p outputBitstreamPathFmt CB09.bit
+ bin/TmivParser -b CB09.bit -o CB09.hls
+ bin/TmivBitrateReport -b CB09.bit -o CB09.csv
+ bin/TmivDecoderLog -b CB09.bit -o CB09.dec
+ cd deps/tmiv && git diff origin/main > CB09.patch

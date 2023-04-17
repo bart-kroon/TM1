@@ -1,0 +1,34 @@
+Codec group IDC    : VVC Main10
+Toolset IDC        : MIV Main
+Reconstruction IDC : Rec Unconstrained
+Features tested    : Inpaint patches
+Contact person     : Bart Kroon (bart.kroon@philips.com)
+MIV encoder        : TMIV 14.1 + patch (see CB11.patch)
+Video encoder      : VVenC 0.3.1.0
+Compiler toolchain : GCC 11.1
+Encoding process   :
+
+ bin/TmivEncoder -c share/config/ctc/miv_anchor/A_1_TMIV_encode.json -V verbose -s R -n 3 -f 0 -p inputDirectory /home/videssa/VR/MPEG/MIV
+     -p configDirectory share/config -p outputBitstreamPathFmt intermediate.bit
+ bin/vvencFFapp -c share/config/vvenc/randomaccess_faster.cfg -s 960x2320 -f 3 -fr 30 -q 30
+     --InputBitDepth=10 --InternalBitDepth=10 --VuiParametersPresent=1 --VideoSignalTypePresent=1
+     --VideoFullRange=0 --SEIDecodedPictureHash=1 -i A3/R/TMIV_A3_R_geo_c00_960x2320_yuv420p10le.yuv
+     -b A3/R/R/TMIV_A3_R_R_geo_c00.bit -o A3/R/R/TMIV_A3_R_geo_c00_960x2320_yuv420p10le.yuv
+ bin/vvencFFapp -c share/config/vvenc/randomaccess_faster.cfg -s 1920x4640 -f 3 -fr 30 -q 30
+     --InputBitDepth=10 --InternalBitDepth=10 --VuiParametersPresent=1 --VideoSignalTypePresent=1
+     --VideoFullRange=0 --SEIDecodedPictureHash=1 -i A3/R/TMIV_A3_R_tex_c00_1920x4640_yuv420p10le.yuv
+     -b A3/R/R/TMIV_A3_R_R_tex_c00.bit -o A3/R/R/TMIV_A3_R_tex_c00_1920x4640_yuv420p10le.yuv
+ bin/vvencFFapp -c share/config/vvenc/randomaccess_faster.cfg -s 960x2320 -f 3 -fr 30 -q 30
+     --InputBitDepth=10 --InternalBitDepth=10 --VuiParametersPresent=1 --VideoSignalTypePresent=1
+     --VideoFullRange=0 --SEIDecodedPictureHash=1 -i A3/R/TMIV_A3_R_geo_c01_960x2320_yuv420p10le.yuv
+     -b A3/R/R/TMIV_A3_R_R_geo_c01.bit -o A3/R/R/TMIV_A3_R_geo_c01_960x2320_yuv420p10le.yuv
+ bin/vvencFFapp -c share/config/vvenc/randomaccess_faster.cfg -s 1920x4640 -f 3 -fr 30 -q 30
+     --InputBitDepth=10 --InternalBitDepth=10 --VuiParametersPresent=1 --VideoSignalTypePresent=1
+     --VideoFullRange=0 --SEIDecodedPictureHash=1 -i A3/R/TMIV_A3_R_tex_c01_1920x4640_yuv420p10le.yuv
+     -b A3/R/R/TMIV_A3_R_R_tex_c01.bit -o A3/R/R/TMIV_A3_R_tex_c01_1920x4640_yuv420p10le.yuv
+ bin/TmivMultiplexer -c share/config/ctc/miv_anchor/A_3_TMIV_mux.json -V verbose -s R -n 3 -r R -p inputBitstreamPathFmt intermediate.bit
+     -p outputBitstreamPathFmt CB11.bit
+ bin/TmivParser -b CB11.bit -o CB11.hls
+ bin/TmivBitrateReport -b CB11.bit -o CB11.csv
+ bin/TmivDecoderLog -b CB11.bit -o CB11.dec
+ cd deps/tmiv && git diff origin/main > CB11.patch

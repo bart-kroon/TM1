@@ -1,0 +1,46 @@
+#########################
+## Contact information ##
+franck.thudor@interdigital.com
+
+
+####################################
+## Profile-tier-level information ##
+ptl_profile_codec_group_idc=VVC Main10
+ptl_profile_toolset_idc=MIV Main
+ptl_level_idc=3.5
+
+
+######################################################################################################
+## Description of the encoder, including version information, that was used to create the bitstream ##
+TMIV 14.1, branch = main, commit = aa8acb02
+Apply patch : ancillary_atlas.patch
+
+
+##############################################################################################
+## Version of the reference software decoder that was used to create the decoder output log ##
+TMIV 14.1, branch = main, commit = aa8acb02
+Apply patch : ancillary_atlas.patch
+
+
+############################################################################################
+## List of features of ISO/IEC 23090-12 that are specifically exercised by this bitstream ##
+asme_ancillary_atlas_flag (false for atlasId=0, true for atlasId=1)
+
+
+
+Encoding process:
+
+..\msvc\bin\TmivEncoder.exe -c .\config\ctc\miv_view_anchor\V_1_TMIV_encode.json -p configDirectory .\config\ -p inputDirectory E:\MPEG_3DoFplus_Content\ -p outputDirectory ..\..\OUTPUT\msvc\ -s D -n 5 -f 50 -p intraPeriod 2
+
+..\msvc\bin\vvencFFapp.exe -c .\config\test\miv_anchor\A_2_VVenC_encode_tex.cfg -i ..\..\OUTPUT\msvc\V5\D\TMIV_V5_D_tex_c00_2048x4352_yuv420p10le.yuv -b ..\..\OUTPUT\msvc\V5\D\QP4\TMIV_V5_D_QP4_tex_c00.bit -s 2048x4352 -q 42 -f 5 -fr 30
+..\msvc\bin\vvencFFapp.exe -c .\config\test\miv_anchor\A_2_VVenC_encode_tex.cfg -i ..\..\OUTPUT\msvc\V5\D\TMIV_V5_D_tex_c01_2048x4352_yuv420p10le.yuv -b ..\..\OUTPUT\msvc\V5\D\QP4\TMIV_V5_D_QP4_tex_c01.bit -s 2048x4352 -q 42 -f 5 -fr 30
+..\msvc\bin\vvencFFapp.exe -c .\config\test\miv_anchor\A_2_VVenC_encode_geo.cfg -i ..\..\OUTPUT\msvc\V5\D\TMIV_V5_D_geo_c00_1024x2176_yuv420p10le.yuv -b ..\..\OUTPUT\msvc\V5\D\QP4\TMIV_V5_D_QP4_geo_c00.bit -s 1024x2176 -q 19 -f 5 -fr 30
+..\msvc\bin\vvencFFapp.exe -c .\config\test\miv_anchor\A_2_VVenC_encode_geo.cfg -i ..\..\OUTPUT\msvc\V5\D\TMIV_V5_D_geo_c01_1024x2176_yuv420p10le.yuv -b ..\..\OUTPUT\msvc\V5\D\QP4\TMIV_V5_D_QP4_geo_c01.bit -s 1024x2176 -q 19 -f 5 -fr 30
+
+..\msvc\bin\TmivMultiplexer.exe -c .\config\ctc\miv_view_anchor\V_3_TMIV_mux.json -p configDirectory .\config\ -p inputDirectory ..\..\OUTPUT\msvc\ -p outputDirectory ..\..\OUTPUT\msvc\ -s D -n 5 -r QP4
+
+..\msvc\bin\TmivParser.exe -b ..\..\OUTPUT\msvc\V5\D\QP4\TMIV_V5_D_QP4.bit -o ..\..\OUTPUT\msvc\V5\D\QP4\TMIV_V5_D_QP4.hls
+
+..\msvc\bin\TmivBitrateReport.exe -b ..\..\OUTPUT\msvc\V5\D\QP4\TMIV_V5_D_QP4.bit -o ..\..\OUTPUT\msvc\V5\D\QP4\TMIV_V5_D_QP4.csv
+
+..\msvc\bin\TmivDecoder.exe -c .\config\ctc\miv_view_anchor\V_4_TMIV_decode.json -p configDirectory .\config\ -p inputDirectory ..\..\OUTPUT\msvc\ -p outputDirectory ..\..\OUTPUT\msvc\ -n 5 -N 5 -s D -r QP4 -v v5 -p outputLogPath ..\..\OUTPUT\msvc\V5\D\QP4\TMIV_V5_D_QP4.dec

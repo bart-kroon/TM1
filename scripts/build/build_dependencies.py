@@ -147,12 +147,19 @@ def cmake_configure(
     run(args)
 
 
-def run(args: list, check: bool = True):
-    print(f"> {' '.join(map(str, args))}")
-    result = subprocess.run(
-        args, check=check, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True
-    )
-    print(result.stdout)
+def run(args: list, cwd=None):
+    args_s = [str(arg) for arg in args]
+    cwd_s = f"cd {cwd} && " if cwd else ""
+    print(f"> {cwd_s}{' '.join(args_s)}", flush=True)
+
+    with subprocess.Popen(
+        args_s, cwd=cwd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True
+    ) as process:
+        print(process.stdout.read(), flush=True)
+        returncode = process.wait()
+
+        if returncode != 0:
+            raise RuntimeError(f"Sub-process exited with return code {returncode}")
 
 
 def print_prebuild_variables(args):
@@ -175,7 +182,7 @@ To configure and build this configuration of this project consider running:
 
 whereby \\ indicates line continuation and "{build_dir}" is a path that should be unique to this build configuration.
 
-Make sure to run these commands from the same evnironement as the pre-build, e.g. using a x64 Native Tools Command Prompt"""
+Make sure to run these commands from the same environment as the pre-build, e.g. using a x64 Native Tools Command Prompt"""
     )
 
 

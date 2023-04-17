@@ -253,7 +253,7 @@ void BitstreamMerger::updateAttributeInformation(
       for (uint8_t i = 0; i < packinginformation.pin_attribute_count(); i++) {
         packinginformation.pin_attribute_type_id(i, ai.ai_attribute_type_id(i))
             .pin_attribute_2d_bit_depth_minus1(i, ai.ai_attribute_2d_bit_depth_minus1(i))
-            .pin_attribute_MSB_align_flag(i, ai.ai_attribute_MSB_align_flag(i))
+            .pin_attribute_MSB_align_flag(i, ai.ai_attribute_msb_align_flag(i))
             .pin_attribute_map_absolute_coding_persistence_flag(i, false)
             .pin_attribute_dimension_minus1(i, ai.ai_attribute_dimension_minus1(i))
             .pin_attribute_dimension_partitions_minus1(i, 0);

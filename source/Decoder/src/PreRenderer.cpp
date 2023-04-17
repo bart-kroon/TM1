@@ -162,7 +162,7 @@ void PreRenderer::convertGeometryNominalFormat(const MivBitstream::V3cParameterS
   if (vps.vps_geometry_video_present_flag(atlasId)) {
     const auto &gi = vps.geometry_information(atlasId);
     geoBitDepthNF = gi.gi_geometry_2d_bit_depth_minus1() + 1U;
-    geoMSBAlignFlag = gi.gi_geometry_MSB_align_flag();
+    geoMSBAlignFlag = gi.gi_geometry_msb_align_flag();
   } else {
     const auto &pin = vps.packing_information(atlasId);
     geoBitDepthNF = pin.pin_geometry_2d_bit_depth_minus1() + 1U;
@@ -192,7 +192,7 @@ void PreRenderer::convertAttributeNominalFormat(const MivBitstream::V3cParameter
     if (vps.vps_attribute_video_present_flag(atlasId)) {
       const auto &ai = vps.attribute_information(atlasId);
       attrBitDepthNF = ai.ai_attribute_2d_bit_depth_minus1(attrIdx) + 1U;
-      attrMSBAlignFlag = ai.ai_attribute_MSB_align_flag(attrIdx);
+      attrMSBAlignFlag = ai.ai_attribute_msb_align_flag(attrIdx);
       attrDim = ai.ai_attribute_dimension_minus1(attrIdx) + 1U;
     } else {
       const auto &pin = vps.packing_information(atlasId);

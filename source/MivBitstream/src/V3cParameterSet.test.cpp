@@ -218,7 +218,7 @@ TEST_CASE("geometry_information", "[V3C Parameter Set]") {
 
   REQUIRE(toString(x, AtlasId{0}) == R"(gi_geometry_codec_id[ 0 ]=0
 gi_geometry_2d_bit_depth_minus1[ 0 ]=0
-gi_geometry_MSB_align_flag[ 0 ]=false
+gi_geometry_msb_align_flag[ 0 ]=false
 gi_geometry_3d_coordinates_bit_depth_minus1[ 0 ]=0
 )");
 
@@ -227,12 +227,12 @@ gi_geometry_3d_coordinates_bit_depth_minus1[ 0 ]=0
   SECTION("Example") {
     x.gi_geometry_codec_id(255)
         .gi_geometry_2d_bit_depth_minus1(31)
-        .gi_geometry_MSB_align_flag(true)
+        .gi_geometry_msb_align_flag(true)
         .gi_geometry_3d_coordinates_bit_depth_minus1(31);
 
     REQUIRE(toString(x, AtlasId{0}) == R"(gi_geometry_codec_id[ 0 ]=255
 gi_geometry_2d_bit_depth_minus1[ 0 ]=31
-gi_geometry_MSB_align_flag[ 0 ]=true
+gi_geometry_msb_align_flag[ 0 ]=true
 gi_geometry_3d_coordinates_bit_depth_minus1[ 0 ]=31
 )");
 
@@ -256,8 +256,8 @@ TEST_CASE("attribute_information", "[V3C Parameter Set]") {
   SECTION("Two attributes") {
     auto x = AttributeInformation{};
     x.ai_attribute_count(2)
-        .ai_attribute_MSB_align_flag(0, false)
-        .ai_attribute_MSB_align_flag(1, true)
+        .ai_attribute_msb_align_flag(0, false)
+        .ai_attribute_msb_align_flag(1, true)
         .ai_attribute_type_id(0, AiAttributeTypeId::ATTR_REFLECTANCE)
         .ai_attribute_codec_id(1, 255)
         .ai_attribute_dimension_minus1(0, 6)
@@ -270,13 +270,17 @@ TEST_CASE("attribute_information", "[V3C Parameter Set]") {
 ai_attribute_type_id[ 7 ][ 0 ]=ATTR_REFLECTANCE
 ai_attribute_codec_id[ 7 ][ 0 ]=0
 ai_attribute_dimension_minus1[ 7 ][ 0 ]=6
+ai_attribute_dimension_partitions_minus1[ 7 ][ 0 ]=0
+ai_attribute_partition_channels_minus1[ 7 ][ 0 ][ 0 ]=6
 ai_attribute_2d_bit_depth_minus1[ 7 ][ 0 ]=31
-ai_attribute_MSB_align_flag[ 7 ][ 0 ]=false
+ai_attribute_msb_align_flag[ 7 ][ 0 ]=false
 ai_attribute_type_id[ 7 ][ 1 ]=ATTR_TEXTURE
 ai_attribute_codec_id[ 7 ][ 1 ]=255
 ai_attribute_dimension_minus1[ 7 ][ 1 ]=1
+ai_attribute_dimension_partitions_minus1[ 7 ][ 1 ]=0
+ai_attribute_partition_channels_minus1[ 7 ][ 1 ][ 0 ]=1
 ai_attribute_2d_bit_depth_minus1[ 7 ][ 1 ]=12
-ai_attribute_MSB_align_flag[ 7 ][ 1 ]=true
+ai_attribute_msb_align_flag[ 7 ][ 1 ]=true
 )");
 
     bitCodingTest(x, 67, vps, atlasId);
@@ -660,7 +664,7 @@ vps_geometry_video_present_flag[ 31 ]=true
 vps_attribute_video_present_flag[ 31 ]=true
 gi_geometry_codec_id[ 31 ]=0
 gi_geometry_2d_bit_depth_minus1[ 31 ]=0
-gi_geometry_MSB_align_flag[ 31 ]=false
+gi_geometry_msb_align_flag[ 31 ]=false
 gi_geometry_3d_coordinates_bit_depth_minus1[ 31 ]=0
 ai_attribute_count[ 31 ]=0
 vps_atlas_id[ 2 ]=32
@@ -755,8 +759,8 @@ vps_extension_data_byte=15
 
     auto y = AttributeInformation{};
     y.ai_attribute_count(2)
-        .ai_attribute_MSB_align_flag(0, false)
-        .ai_attribute_MSB_align_flag(1, false)
+        .ai_attribute_msb_align_flag(0, false)
+        .ai_attribute_msb_align_flag(1, false)
         .ai_attribute_type_id(0, AiAttributeTypeId::ATTR_TEXTURE)
         .ai_attribute_type_id(1, AiAttributeTypeId::ATTR_TRANSPARENCY)
         .ai_attribute_codec_id(0, 1)
@@ -819,13 +823,17 @@ ai_attribute_count[ 20 ]=2
 ai_attribute_type_id[ 20 ][ 0 ]=ATTR_TEXTURE
 ai_attribute_codec_id[ 20 ][ 0 ]=1
 ai_attribute_dimension_minus1[ 20 ][ 0 ]=2
+ai_attribute_dimension_partitions_minus1[ 20 ][ 0 ]=0
+ai_attribute_partition_channels_minus1[ 20 ][ 0 ][ 0 ]=2
 ai_attribute_2d_bit_depth_minus1[ 20 ][ 0 ]=9
-ai_attribute_MSB_align_flag[ 20 ][ 0 ]=false
+ai_attribute_msb_align_flag[ 20 ][ 0 ]=false
 ai_attribute_type_id[ 20 ][ 1 ]=ATTR_TRANSPARENCY
 ai_attribute_codec_id[ 20 ][ 1 ]=1
 ai_attribute_dimension_minus1[ 20 ][ 1 ]=0
+ai_attribute_dimension_partitions_minus1[ 20 ][ 1 ]=0
+ai_attribute_partition_channels_minus1[ 20 ][ 1 ][ 0 ]=0
 ai_attribute_2d_bit_depth_minus1[ 20 ][ 1 ]=9
-ai_attribute_MSB_align_flag[ 20 ][ 1 ]=false
+ai_attribute_msb_align_flag[ 20 ][ 1 ]=false
 vps_extension_present_flag=true
 vps_extension_count=1
 vps_extensions_length_minus1=3
@@ -841,7 +849,7 @@ gm_group_count=0
   Atlas 20: 4096 x 2048; [AI: 2, ATTR_TEXTURE, codec 1, dims 3, 2D 10, align false, ATTR_TRANSPARENCY, codec 1, dims 1, 2D 10, align false]
 , geometry scaling false, groups 0, embedded occupancy true, occupancy scaling false)");
 
-    byteCodingTest(vps, 39);
+    byteCodingTest(vps, 38);
 
     REQUIRE(vps.attrIdxOf(AtlasId{20}, AiAttributeTypeId::ATTR_TEXTURE) == 0);
     REQUIRE(vps.attrIdxOf(AtlasId{20}, AiAttributeTypeId::ATTR_TRANSPARENCY) == 1);

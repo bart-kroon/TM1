@@ -343,7 +343,7 @@ struct PtlChecker::Impl {
   }
 
   void checkGeometryInformation(const MivBitstream::GeometryInformation &gi) const {
-    const auto gi_geometry_MSB_align_flag = gi.gi_geometry_MSB_align_flag();
+    const auto gi_geometry_msb_align_flag = gi.gi_geometry_msb_align_flag();
 
     switch (ptl_profile_toolset_idc()) {
     case TS::VPCC_Basic:
@@ -352,7 +352,7 @@ struct PtlChecker::Impl {
     case TS::MIV_Main:
     case TS::MIV_Extended:
     case TS::MIV_Geometry_Absent:
-      PTL_CHECK(mivSpec, "Table A-1", !gi_geometry_MSB_align_flag);
+      PTL_CHECK(mivSpec, "Table A-1", !gi_geometry_msb_align_flag);
       break;
     }
   }
@@ -395,7 +395,7 @@ struct PtlChecker::Impl {
                                  uint8_t attrIdx) const {
     const auto ai_attribute_type_id = ai.ai_attribute_type_id(attrIdx);
     const auto ai_attribute_dimension_minus1 = ai.ai_attribute_dimension_minus1(attrIdx);
-    const auto ai_attribute_MSB_align_flag = ai.ai_attribute_MSB_align_flag(attrIdx);
+    const auto ai_attribute_msb_align_flag = ai.ai_attribute_msb_align_flag(attrIdx);
 
     PTL_CHECK(v3cSpec, "8.4.4.5", ai_attribute_type_id != ATI::ATTR_UNSPECIFIED);
     PTL_CHECK(v3cSpec, "8.4.4.5",
@@ -410,7 +410,7 @@ struct PtlChecker::Impl {
     case TS::MIV_Main:
     case TS::MIV_Geometry_Absent:
       PTL_CHECK(mivSpec, "Table A-1", ai_attribute_type_id == ATI::ATTR_TEXTURE);
-      PTL_CHECK(mivSpec, "Table A-1", !ai_attribute_MSB_align_flag);
+      PTL_CHECK(mivSpec, "Table A-1", !ai_attribute_msb_align_flag);
 
       if (ai_attribute_type_id == ATI::ATTR_TEXTURE) {
         PTL_CHECK(mivSpec, "Table A-1", ai_attribute_dimension_minus1 == 2);
@@ -420,7 +420,7 @@ struct PtlChecker::Impl {
       PTL_CHECK(mivSpec, "Table A-1",
                 ai_attribute_type_id == ATI::ATTR_TEXTURE ||
                     ai_attribute_type_id == ATI::ATTR_TRANSPARENCY);
-      PTL_CHECK(mivSpec, "Table A-1", !ai_attribute_MSB_align_flag);
+      PTL_CHECK(mivSpec, "Table A-1", !ai_attribute_msb_align_flag);
 
       if (ai_attribute_type_id == ATI::ATTR_TEXTURE) {
         PTL_CHECK(mivSpec, "Table A-1", ai_attribute_dimension_minus1 == 2);

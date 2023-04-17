@@ -286,7 +286,7 @@ TEST_CASE("createEncoderParams sets multiple syntax elements to hard-coded value
       const auto &gi = params.vps.geometry_information(j);
       CHECK(gi.gi_geometry_codec_id() == 0);
       CHECK(gi.gi_geometry_2d_bit_depth_minus1() == 9);
-      CHECK_FALSE(gi.gi_geometry_MSB_align_flag());
+      CHECK_FALSE(gi.gi_geometry_msb_align_flag());
     }
     if (haveOccupancy) {
       const auto &oi = params.vps.occupancy_information(j);

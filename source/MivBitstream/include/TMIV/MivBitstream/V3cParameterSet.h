@@ -292,19 +292,18 @@ private:
 class V3cParameterSet;
 
 // 23090-5: geometry_information( atlasID )
-//
-// 23090-12 restrictions:
-//   * vps_auxiliary_video_present_flag[ ] == 0
 class GeometryInformation {
 public:
   [[nodiscard]] constexpr auto gi_geometry_codec_id() const noexcept;
+  [[nodiscard]] constexpr auto gi_auxiliary_geometry_codec_id() const noexcept;
   [[nodiscard]] constexpr auto gi_geometry_2d_bit_depth_minus1() const noexcept;
-  [[nodiscard]] constexpr auto gi_geometry_MSB_align_flag() const noexcept;
+  [[nodiscard]] constexpr auto gi_geometry_msb_align_flag() const noexcept;
   [[nodiscard]] constexpr auto gi_geometry_3d_coordinates_bit_depth_minus1() const noexcept;
 
   constexpr auto gi_geometry_codec_id(uint8_t value) noexcept -> auto &;
+  constexpr auto gi_auxiliary_geometry_codec_id(uint8_t value) noexcept -> auto &;
   constexpr auto gi_geometry_2d_bit_depth_minus1(uint8_t value) noexcept -> auto &;
-  constexpr auto gi_geometry_MSB_align_flag(bool value) noexcept -> auto &;
+  constexpr auto gi_geometry_msb_align_flag(bool value) noexcept -> auto &;
   constexpr auto gi_geometry_3d_coordinates_bit_depth_minus1(uint8_t value) noexcept -> auto &;
 
   auto printTo(std::ostream &stream, AtlasId atlasId) const -> std::ostream &;
@@ -320,35 +319,38 @@ public:
 
 private:
   uint8_t m_gi_geometry_codec_id{};
+  std::optional<uint8_t> m_gi_auxiliary_geometry_codec_id{};
   uint8_t m_gi_geometry_2d_bit_depth_minus1{};
   bool m_gi_geometry_MSB_align_flag{};
   uint8_t m_gi_geometry_3d_coordinates_bit_depth_minus1{};
 };
 
 // 23090-5: attribute_information( atlasId )
-//
-// 23090-12 restrictions:
-//   * vps_auxiliary_video_present_flag[ ] == 0
-//   * ai_attribute_dimension_partitions_minus1[ ][ ] == 0
 class AttributeInformation {
 public:
   [[nodiscard]] auto ai_attribute_count() const noexcept -> uint8_t;
-  [[nodiscard]] auto ai_attribute_type_id(uint8_t attrIdx) const -> AiAttributeTypeId;
-  [[nodiscard]] auto ai_attribute_codec_id(uint8_t attrIdx) const -> uint8_t;
-  [[nodiscard]] auto ai_attribute_map_absolute_coding_persistence_flag(uint8_t attrIdx) const
-      -> bool;
-  [[nodiscard]] auto ai_attribute_dimension_minus1(uint8_t attrIdx) const -> uint8_t;
-  [[nodiscard]] auto ai_attribute_2d_bit_depth_minus1(uint8_t attrIdx) const -> uint8_t;
-  [[nodiscard]] auto ai_attribute_MSB_align_flag(uint8_t attrIdx) const -> bool;
+  [[nodiscard]] auto ai_attribute_type_id(uint8_t i) const -> AiAttributeTypeId;
+  [[nodiscard]] auto ai_attribute_codec_id(uint8_t i) const -> uint8_t;
+  [[nodiscard]] auto ai_auxiliary_attribute_codec_id(uint8_t i) const -> uint8_t;
+  [[nodiscard]] auto ai_attribute_map_absolute_coding_persistence_flag(uint8_t i) const -> bool;
+  [[nodiscard]] auto ai_attribute_dimension_minus1(uint8_t i) const -> uint8_t;
+  [[nodiscard]] auto ai_attribute_dimension_partitions_minus1(uint8_t i) const -> uint8_t;
+  [[nodiscard]] auto ai_attribute_partition_channels_minus1(uint8_t i, uint8_t k) const -> uint8_t;
+  [[nodiscard]] auto ai_attribute_2d_bit_depth_minus1(uint8_t i) const -> uint8_t;
+  [[nodiscard]] auto ai_attribute_msb_align_flag(uint8_t i) const -> bool;
 
   auto ai_attribute_count(uint8_t value) -> AttributeInformation &;
-  auto ai_attribute_type_id(uint8_t attrIdx, AiAttributeTypeId value) -> AttributeInformation &;
-  auto ai_attribute_codec_id(uint8_t attrIdx, uint8_t value) -> AttributeInformation &;
-  auto ai_attribute_map_absolute_coding_persistence_flag(uint8_t attrIdx, bool value)
+  auto ai_attribute_type_id(uint8_t i, AiAttributeTypeId value) -> AttributeInformation &;
+  auto ai_attribute_codec_id(uint8_t i, uint8_t value) -> AttributeInformation &;
+  auto ai_auxiliary_attribute_codec_id(uint8_t i, uint8_t value) -> AttributeInformation &;
+  auto ai_attribute_map_absolute_coding_persistence_flag(uint8_t i, bool value)
       -> AttributeInformation &;
-  auto ai_attribute_dimension_minus1(uint8_t attrIdx, uint8_t value) -> AttributeInformation &;
-  auto ai_attribute_2d_bit_depth_minus1(uint8_t attrIdx, uint8_t value) -> AttributeInformation &;
-  auto ai_attribute_MSB_align_flag(uint8_t attrIdx, bool value) -> AttributeInformation &;
+  auto ai_attribute_dimension_minus1(uint8_t i, uint8_t value) -> AttributeInformation &;
+  auto ai_attribute_dimension_partitions_minus1(uint8_t i, uint8_t value) -> AttributeInformation &;
+  auto ai_attribute_partition_channels_minus1(uint8_t i, uint8_t k, uint8_t value)
+      -> AttributeInformation &;
+  auto ai_attribute_2d_bit_depth_minus1(uint8_t i, uint8_t value) -> AttributeInformation &;
+  auto ai_attribute_msb_align_flag(uint8_t i, bool value) -> AttributeInformation &;
 
   auto printTo(std::ostream &stream, AtlasId atlasId) const -> std::ostream &;
 
@@ -365,13 +367,18 @@ private:
   struct AiAttribute {
     AiAttributeTypeId ai_attribute_type_id{};
     uint8_t ai_attribute_codec_id{};
+    std::optional<uint8_t> ai_auxiliary_attribute_codec_id;
     std::optional<bool> ai_attribute_map_absolute_coding_persistence_flag{};
     uint8_t ai_attribute_dimension_minus1{};
+
+    // size: ai_attribute_dimension_partitions_minus1[ atlasID ][ i ] + 1
+    std::vector<uint8_t> ai_attribute_partition_channels_minus1{{}};
+
     uint8_t ai_attribute_2d_bit_depth_minus1{};
-    bool ai_attribute_MSB_align_flag{};
+    bool ai_attribute_msb_align_flag{};
   };
 
-  std::vector<AiAttribute> m_aiAttributes; // 23090-5: ai_attribute_count
+  std::vector<AiAttribute> m_aiAttributes; // size: ai_attribute_count
 };
 
 struct PinRegion {

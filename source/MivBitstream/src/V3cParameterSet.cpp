@@ -415,10 +415,15 @@ void OccupancyInformation::encodeTo(Common::OutputBitstream &bitstream) const {
 
 auto GeometryInformation::printTo(std::ostream &stream, AtlasId atlasId) const -> std::ostream & {
   fmt::print(stream, "gi_geometry_codec_id[ {} ]={}\n", atlasId, gi_geometry_codec_id());
+
+  if (m_gi_auxiliary_geometry_codec_id) {
+    fmt::print(stream, "gi_auxiliary_geometry_codec_id[ {} ]={}\n", atlasId,
+               gi_auxiliary_geometry_codec_id());
+  }
   fmt::print(stream, "gi_geometry_2d_bit_depth_minus1[ {} ]={}\n", atlasId,
              gi_geometry_2d_bit_depth_minus1());
-  fmt::print(stream, "gi_geometry_MSB_align_flag[ {} ]={}\n", atlasId,
-             gi_geometry_MSB_align_flag());
+  fmt::print(stream, "gi_geometry_msb_align_flag[ {} ]={}\n", atlasId,
+             gi_geometry_msb_align_flag());
   fmt::print(stream, "gi_geometry_3d_coordinates_bit_depth_minus1[ {} ]={}\n", atlasId,
              gi_geometry_3d_coordinates_bit_depth_minus1());
   return stream;
@@ -426,8 +431,9 @@ auto GeometryInformation::printTo(std::ostream &stream, AtlasId atlasId) const -
 
 auto GeometryInformation::operator==(const GeometryInformation &other) const noexcept -> bool {
   return gi_geometry_codec_id() == other.gi_geometry_codec_id() &&
+         gi_auxiliary_geometry_codec_id() == other.gi_auxiliary_geometry_codec_id() &&
          gi_geometry_2d_bit_depth_minus1() == other.gi_geometry_2d_bit_depth_minus1() &&
-         gi_geometry_MSB_align_flag() == other.gi_geometry_MSB_align_flag() &&
+         gi_geometry_msb_align_flag() == other.gi_geometry_msb_align_flag() &&
          gi_geometry_3d_coordinates_bit_depth_minus1() ==
              other.gi_geometry_3d_coordinates_bit_depth_minus1();
 }
@@ -440,57 +446,81 @@ auto GeometryInformation::decodeFrom(Common::InputBitstream &bitstream, const V3
                                      AtlasId atlasId) -> GeometryInformation {
   auto x = GeometryInformation{};
   x.gi_geometry_codec_id(bitstream.getUint8());
+
+  if (vps.vps_auxiliary_video_present_flag(atlasId)) {
+    x.gi_auxiliary_geometry_codec_id(bitstream.getUint8());
+  }
   x.gi_geometry_2d_bit_depth_minus1(bitstream.readBits<uint8_t>(5));
-  x.gi_geometry_MSB_align_flag(bitstream.getFlag());
+  x.gi_geometry_msb_align_flag(bitstream.getFlag());
   x.gi_geometry_3d_coordinates_bit_depth_minus1(bitstream.readBits<uint8_t>(5));
-  VERIFY_MIVBITSTREAM(!vps.vps_auxiliary_video_present_flag(atlasId));
   return x;
 }
 
 void GeometryInformation::encodeTo(Common::OutputBitstream &bitstream, const V3cParameterSet &vps,
                                    AtlasId atlasId) const {
   bitstream.putUint8(gi_geometry_codec_id());
+
+  if (vps.vps_auxiliary_video_present_flag(atlasId)) {
+    bitstream.putUint8(gi_auxiliary_geometry_codec_id());
+  }
   bitstream.writeBits(gi_geometry_2d_bit_depth_minus1(), 5);
-  bitstream.putFlag(gi_geometry_MSB_align_flag());
+  bitstream.putFlag(gi_geometry_msb_align_flag());
   bitstream.writeBits(gi_geometry_3d_coordinates_bit_depth_minus1(), 5);
-  PRECONDITION(!vps.vps_auxiliary_video_present_flag(atlasId));
 }
 
 auto AttributeInformation::ai_attribute_count() const noexcept -> uint8_t {
   return static_cast<uint8_t>(m_aiAttributes.size());
 }
 
-auto AttributeInformation::ai_attribute_type_id(uint8_t attrIdx) const -> AiAttributeTypeId {
-  VERIFY_V3CBITSTREAM(attrIdx < ai_attribute_count());
-  return m_aiAttributes[attrIdx].ai_attribute_type_id;
+auto AttributeInformation::ai_attribute_type_id(uint8_t i) const -> AiAttributeTypeId {
+  VERIFY_V3CBITSTREAM(i < ai_attribute_count());
+  return m_aiAttributes[i].ai_attribute_type_id;
 }
 
-auto AttributeInformation::ai_attribute_codec_id(uint8_t attrIdx) const -> uint8_t {
-  VERIFY_V3CBITSTREAM(attrIdx < ai_attribute_count());
-  return m_aiAttributes[attrIdx].ai_attribute_codec_id;
+auto AttributeInformation::ai_attribute_codec_id(uint8_t i) const -> uint8_t {
+  VERIFY_V3CBITSTREAM(i < ai_attribute_count());
+  return m_aiAttributes[i].ai_attribute_codec_id;
 }
 
-auto AttributeInformation::ai_attribute_dimension_minus1(uint8_t attrIdx) const -> uint8_t {
-  VERIFY_V3CBITSTREAM(attrIdx < ai_attribute_count());
-  return m_aiAttributes[attrIdx].ai_attribute_dimension_minus1;
+auto AttributeInformation::ai_auxiliary_attribute_codec_id(uint8_t i) const -> uint8_t {
+  VERIFY_V3CBITSTREAM(i < ai_attribute_count());
+  return m_aiAttributes[i].ai_auxiliary_attribute_codec_id.value_or(
+      m_aiAttributes[i].ai_attribute_codec_id);
 }
 
-auto AttributeInformation::ai_attribute_2d_bit_depth_minus1(uint8_t attrIdx) const -> uint8_t {
-  VERIFY_V3CBITSTREAM(attrIdx < ai_attribute_count());
-  return m_aiAttributes[attrIdx].ai_attribute_2d_bit_depth_minus1;
+auto AttributeInformation::ai_attribute_dimension_minus1(uint8_t i) const -> uint8_t {
+  VERIFY_V3CBITSTREAM(i < ai_attribute_count());
+  return m_aiAttributes[i].ai_attribute_dimension_minus1;
 }
 
-auto AttributeInformation::ai_attribute_MSB_align_flag(uint8_t attrIdx) const -> bool {
-  VERIFY_V3CBITSTREAM(attrIdx < ai_attribute_count());
-  return m_aiAttributes[attrIdx].ai_attribute_MSB_align_flag;
+auto AttributeInformation::ai_attribute_dimension_partitions_minus1(uint8_t i) const -> uint8_t {
+  VERIFY_V3CBITSTREAM(i < ai_attribute_count());
+  return Common::downCast<uint8_t>(m_aiAttributes[i].ai_attribute_partition_channels_minus1.size() -
+                                   1);
 }
 
-auto AttributeInformation::ai_attribute_map_absolute_coding_persistence_flag(uint8_t attrIdx) const
+auto AttributeInformation::ai_attribute_partition_channels_minus1(uint8_t i, uint8_t k) const
+    -> uint8_t {
+  VERIFY_V3CBITSTREAM(k <= ai_attribute_dimension_partitions_minus1(i));
+  return m_aiAttributes[i].ai_attribute_partition_channels_minus1[k];
+}
+
+auto AttributeInformation::ai_attribute_2d_bit_depth_minus1(uint8_t i) const -> uint8_t {
+  VERIFY_V3CBITSTREAM(i < ai_attribute_count());
+  return m_aiAttributes[i].ai_attribute_2d_bit_depth_minus1;
+}
+
+auto AttributeInformation::ai_attribute_msb_align_flag(uint8_t i) const -> bool {
+  VERIFY_V3CBITSTREAM(i < ai_attribute_count());
+  return m_aiAttributes[i].ai_attribute_msb_align_flag;
+}
+
+auto AttributeInformation::ai_attribute_map_absolute_coding_persistence_flag(uint8_t i) const
     -> bool {
-  VERIFY_V3CBITSTREAM(attrIdx < ai_attribute_count());
+  VERIFY_V3CBITSTREAM(i < ai_attribute_count());
   VERIFY_V3CBITSTREAM(
-      m_aiAttributes[attrIdx].ai_attribute_map_absolute_coding_persistence_flag.has_value());
-  return *m_aiAttributes[attrIdx].ai_attribute_map_absolute_coding_persistence_flag;
+      m_aiAttributes[i].ai_attribute_map_absolute_coding_persistence_flag.has_value());
+  return *m_aiAttributes[i].ai_attribute_map_absolute_coding_persistence_flag;
 }
 
 auto AttributeInformation::ai_attribute_count(uint8_t value) -> AttributeInformation & {
@@ -498,66 +528,101 @@ auto AttributeInformation::ai_attribute_count(uint8_t value) -> AttributeInforma
   return *this;
 }
 
-auto AttributeInformation::ai_attribute_type_id(uint8_t attrIdx, AiAttributeTypeId value)
+auto AttributeInformation::ai_attribute_type_id(uint8_t i, AiAttributeTypeId value)
     -> AttributeInformation & {
-  VERIFY_V3CBITSTREAM(attrIdx < ai_attribute_count());
-  m_aiAttributes[attrIdx].ai_attribute_type_id = value;
+  VERIFY_V3CBITSTREAM(i < ai_attribute_count());
+  m_aiAttributes[i].ai_attribute_type_id = value;
   return *this;
 }
 
-auto AttributeInformation::ai_attribute_codec_id(uint8_t attrIdx, uint8_t value)
+auto AttributeInformation::ai_attribute_codec_id(uint8_t i, uint8_t value)
     -> AttributeInformation & {
-  VERIFY_V3CBITSTREAM(attrIdx < ai_attribute_count());
-  m_aiAttributes[attrIdx].ai_attribute_codec_id = value;
+  VERIFY_V3CBITSTREAM(i < ai_attribute_count());
+  m_aiAttributes[i].ai_attribute_codec_id = value;
   return *this;
 }
 
-auto AttributeInformation::ai_attribute_map_absolute_coding_persistence_flag(uint8_t attrIdx,
-                                                                             bool value)
+auto AttributeInformation::ai_auxiliary_attribute_codec_id(uint8_t i, uint8_t value)
     -> AttributeInformation & {
-  VERIFY_V3CBITSTREAM(attrIdx < ai_attribute_count());
-  m_aiAttributes[attrIdx].ai_attribute_map_absolute_coding_persistence_flag = value;
+  VERIFY_V3CBITSTREAM(i < ai_attribute_count());
+  m_aiAttributes[i].ai_auxiliary_attribute_codec_id = value;
   return *this;
 }
 
-auto AttributeInformation::ai_attribute_dimension_minus1(uint8_t attrIdx, uint8_t value)
+auto AttributeInformation::ai_attribute_map_absolute_coding_persistence_flag(uint8_t i, bool value)
     -> AttributeInformation & {
-  VERIFY_V3CBITSTREAM(attrIdx < ai_attribute_count());
-  m_aiAttributes[attrIdx].ai_attribute_dimension_minus1 = value;
+  VERIFY_V3CBITSTREAM(i < ai_attribute_count());
+  m_aiAttributes[i].ai_attribute_map_absolute_coding_persistence_flag = value;
   return *this;
 }
 
-auto AttributeInformation::ai_attribute_2d_bit_depth_minus1(uint8_t attrIdx, uint8_t value)
+auto AttributeInformation::ai_attribute_dimension_minus1(uint8_t i, uint8_t value)
     -> AttributeInformation & {
-  VERIFY_V3CBITSTREAM(attrIdx < ai_attribute_count());
-  m_aiAttributes[attrIdx].ai_attribute_2d_bit_depth_minus1 = value;
+  VERIFY_V3CBITSTREAM(i < ai_attribute_count());
+  m_aiAttributes[i].ai_attribute_dimension_minus1 = value;
+  m_aiAttributes[i].ai_attribute_partition_channels_minus1 = {value};
   return *this;
 }
 
-auto AttributeInformation::ai_attribute_MSB_align_flag(uint8_t attrIdx, bool value)
+auto AttributeInformation::ai_attribute_dimension_partitions_minus1(uint8_t i, uint8_t value)
     -> AttributeInformation & {
-  VERIFY_V3CBITSTREAM(attrIdx < ai_attribute_count());
-  m_aiAttributes[attrIdx].ai_attribute_MSB_align_flag = value;
+  VERIFY_V3CBITSTREAM(i < ai_attribute_count());
+  m_aiAttributes[i].ai_attribute_partition_channels_minus1.resize(value + size_t{1});
+  return *this;
+}
+
+auto AttributeInformation::ai_attribute_partition_channels_minus1(uint8_t i, uint8_t k,
+                                                                  uint8_t value)
+    -> AttributeInformation & {
+  VERIFY_V3CBITSTREAM(k <= ai_attribute_dimension_partitions_minus1(i));
+  m_aiAttributes[i].ai_attribute_partition_channels_minus1[k] = value;
+  return *this;
+}
+
+auto AttributeInformation::ai_attribute_2d_bit_depth_minus1(uint8_t i, uint8_t value)
+    -> AttributeInformation & {
+  VERIFY_V3CBITSTREAM(i < ai_attribute_count());
+  m_aiAttributes[i].ai_attribute_2d_bit_depth_minus1 = value;
+  return *this;
+}
+
+auto AttributeInformation::ai_attribute_msb_align_flag(uint8_t i, bool value)
+    -> AttributeInformation & {
+  VERIFY_V3CBITSTREAM(i < ai_attribute_count());
+  m_aiAttributes[i].ai_attribute_msb_align_flag = value;
   return *this;
 }
 
 auto AttributeInformation::printTo(std::ostream &stream, AtlasId atlasId) const -> std::ostream & {
   fmt::print(stream, "ai_attribute_count[ {} ]={}\n", atlasId, ai_attribute_count());
+
   for (uint8_t i = 0; i < ai_attribute_count(); ++i) {
     fmt::print(stream, "ai_attribute_type_id[ {} ][ {} ]={}\n", atlasId, i,
                ai_attribute_type_id(i));
     fmt::print(stream, "ai_attribute_codec_id[ {} ][ {} ]={}\n", atlasId, i,
                ai_attribute_codec_id(i));
+
+    if (m_aiAttributes[i].ai_auxiliary_attribute_codec_id) {
+      fmt::print(stream, "ai_auxiliary_attribute_codec_id[ {} ][ {} ]={}\n", atlasId, i,
+                 ai_auxiliary_attribute_codec_id(i));
+    }
     if (m_aiAttributes[i].ai_attribute_map_absolute_coding_persistence_flag) {
       fmt::print(stream, "ai_attribute_map_absolute_coding_persistence_flag[ {} ][ {} ]={}\n",
-                 atlasId, i, *m_aiAttributes[i].ai_attribute_map_absolute_coding_persistence_flag);
+                 atlasId, i, ai_attribute_map_absolute_coding_persistence_flag(i));
     }
     fmt::print(stream, "ai_attribute_dimension_minus1[ {} ][ {} ]={}\n", atlasId, i,
                ai_attribute_dimension_minus1(i));
+    fmt::print(stream, "ai_attribute_dimension_partitions_minus1[ {} ][ {} ]={}\n", atlasId, i,
+               ai_attribute_dimension_partitions_minus1(i));
+
+    for (uint8_t k = 0; k <= ai_attribute_dimension_partitions_minus1(i); ++k) {
+      fmt::print(stream, "ai_attribute_partition_channels_minus1[ {} ][ {} ][ {} ]={}\n", atlasId,
+                 i, k, ai_attribute_partition_channels_minus1(i, k));
+    }
     fmt::print(stream, "ai_attribute_2d_bit_depth_minus1[ {} ][ {} ]={}\n", atlasId, i,
                ai_attribute_2d_bit_depth_minus1(i));
-    fmt::print(stream, "ai_attribute_MSB_align_flag[ {} ][ {} ]={}\n", atlasId, i,
-               ai_attribute_MSB_align_flag(i));
+    fmt::print(stream, "ai_attribute_msb_align_flag[ {} ][ {} ]={}\n", atlasId, i,
+               ai_attribute_msb_align_flag(i));
   }
   return stream;
 }
@@ -569,12 +634,21 @@ auto AttributeInformation::operator==(const AttributeInformation &other) const -
   for (uint8_t i = 0; i < ai_attribute_count(); ++i) {
     if (ai_attribute_type_id(i) != other.ai_attribute_type_id(i) ||
         ai_attribute_codec_id(i) != other.ai_attribute_codec_id(i) ||
+        ai_auxiliary_attribute_codec_id(i) != other.ai_auxiliary_attribute_codec_id(i) ||
         m_aiAttributes[i].ai_attribute_map_absolute_coding_persistence_flag !=
             other.m_aiAttributes[i].ai_attribute_map_absolute_coding_persistence_flag ||
         ai_attribute_dimension_minus1(i) != other.ai_attribute_dimension_minus1(i) ||
+        ai_attribute_dimension_partitions_minus1(i) !=
+            other.ai_attribute_dimension_partitions_minus1(i) ||
         ai_attribute_2d_bit_depth_minus1(i) != other.ai_attribute_2d_bit_depth_minus1(i) ||
-        ai_attribute_MSB_align_flag(i) != other.ai_attribute_MSB_align_flag(i)) {
+        ai_attribute_msb_align_flag(i) != other.ai_attribute_msb_align_flag(i)) {
       return false;
+    }
+    for (uint8_t k = 0; k <= ai_attribute_dimension_partitions_minus1(i); ++k) {
+      if (ai_attribute_partition_channels_minus1(i, k) !=
+          other.ai_attribute_partition_channels_minus1(i, k)) {
+        return false;
+      }
     }
   }
   return true;
@@ -588,23 +662,44 @@ auto AttributeInformation::decodeFrom(Common::InputBitstream &bitstream, const V
                                       AtlasId atlasId) -> AttributeInformation {
   auto x = AttributeInformation{};
   x.ai_attribute_count(bitstream.readBits<uint8_t>(7));
+
   for (uint8_t i = 0; i < x.ai_attribute_count(); ++i) {
     x.ai_attribute_type_id(i, bitstream.readBits<AiAttributeTypeId>(4));
     x.ai_attribute_codec_id(i, bitstream.getUint8());
 
-    VERIFY_MIVBITSTREAM(!vps.vps_auxiliary_video_present_flag(atlasId));
-
+    if (vps.vps_auxiliary_video_present_flag(atlasId)) {
+      x.ai_auxiliary_attribute_codec_id(i, bitstream.getUint8());
+    }
     if (vps.vps_map_count_minus1(atlasId) > 0) {
       x.ai_attribute_map_absolute_coding_persistence_flag(i, bitstream.getFlag());
     }
 
-    x.ai_attribute_dimension_minus1(i, bitstream.readBits<uint8_t>(6));
+    auto d = bitstream.readBits<uint8_t>(6);
+    x.ai_attribute_dimension_minus1(i, d);
 
-    const auto ai_attribute_dimension_partitions_minus1 = bitstream.readBits<uint8_t>(6);
-    VERIFY_MIVBITSTREAM(ai_attribute_dimension_partitions_minus1 == 0);
+    auto m = uint8_t{};
 
+    if (d == 0) {
+      x.ai_attribute_dimension_partitions_minus1(i, 0);
+      m = 0;
+    } else {
+      m = bitstream.readBits<uint8_t>(6);
+      x.ai_attribute_dimension_partitions_minus1(i, m);
+    }
+    for (uint8_t k = 0; k < m; ++k) {
+      auto n = uint8_t{};
+
+      if (k + d == m) {
+        x.ai_attribute_partition_channels_minus1(i, k, 0);
+        n = 0;
+      } else {
+        n = bitstream.getUExpGolomb<uint8_t>();
+      }
+      d -= n + 1;
+    }
+    x.ai_attribute_partition_channels_minus1(i, m, d);
     x.ai_attribute_2d_bit_depth_minus1(i, bitstream.readBits<uint8_t>(5));
-    x.ai_attribute_MSB_align_flag(i, bitstream.getFlag());
+    x.ai_attribute_msb_align_flag(i, bitstream.getFlag());
   }
   return x;
 }
@@ -616,19 +711,41 @@ void AttributeInformation::encodeTo(Common::OutputBitstream &bitstream, const V3
     bitstream.writeBits(ai_attribute_type_id(i), 4);
     bitstream.writeBits(ai_attribute_codec_id(i), 8);
 
+    if (vps.vps_auxiliary_video_present_flag(atlasId)) {
+      bitstream.writeBits(ai_auxiliary_attribute_codec_id(i), 8);
+    }
     if (vps.vps_map_count_minus1(atlasId) > 0) {
       bitstream.putFlag(ai_attribute_map_absolute_coding_persistence_flag(i));
     }
-
     VERIFY_V3CBITSTREAM(ai_attribute_dimension_minus1(i) < 64);
-    bitstream.writeBits(ai_attribute_dimension_minus1(i), 6);
+    auto d = ai_attribute_dimension_minus1(i);
+    bitstream.writeBits(d, 6);
 
-    constexpr auto ai_attribute_dimension_partitions_minus1 = 0;
-    bitstream.writeBits(ai_attribute_dimension_partitions_minus1, 6);
+    auto m = uint8_t{};
+
+    if (d == 0) {
+      VERIFY_V3CBITSTREAM(ai_attribute_dimension_partitions_minus1(i) == 0);
+      m = 0;
+    } else {
+      m = ai_attribute_dimension_partitions_minus1(i);
+      bitstream.writeBits(m, 6);
+    }
+    for (uint8_t k = 0; k < m; ++k) {
+      auto n = uint8_t{};
+
+      if (k + d == m) {
+        VERIFY_V3CBITSTREAM(ai_attribute_partition_channels_minus1(i, k) == 0);
+        n = 0;
+      } else {
+        n = ai_attribute_partition_channels_minus1(i, k);
+        d -= n + 1;
+      }
+    }
+    VERIFY_V3CBITSTREAM(ai_attribute_partition_channels_minus1(i, m) == d);
 
     VERIFY_V3CBITSTREAM(ai_attribute_2d_bit_depth_minus1(i) < 32);
     bitstream.writeBits(ai_attribute_2d_bit_depth_minus1(i), 5);
-    bitstream.putFlag(ai_attribute_MSB_align_flag(i));
+    bitstream.putFlag(ai_attribute_msb_align_flag(i));
   }
 }
 auto operator<<(std::ostream &stream, const ProfileToolsetConstraintsInformation &x)
@@ -1885,7 +2002,7 @@ auto V3cParameterSet::summary() const -> std::string {
     if (vps_geometry_video_present_flag(j)) {
       const auto &gi = geometry_information(j);
       fmt::print(stream, "; [GI: codec {}, 2D {}, algin {}, 3D {}]", gi.gi_geometry_codec_id(),
-                 gi.gi_geometry_2d_bit_depth_minus1() + 1, gi.gi_geometry_MSB_align_flag(),
+                 gi.gi_geometry_2d_bit_depth_minus1() + 1, gi.gi_geometry_msb_align_flag(),
                  gi.gi_geometry_3d_coordinates_bit_depth_minus1() + 1);
     }
 
@@ -1895,7 +2012,7 @@ auto V3cParameterSet::summary() const -> std::string {
       for (uint8_t i = 0; i < ai.ai_attribute_count(); ++i) {
         fmt::print(stream, ", {}, codec {}, dims {}, 2D {}, align {}", ai.ai_attribute_type_id(i),
                    ai.ai_attribute_codec_id(i), ai.ai_attribute_dimension_minus1(i) + 1,
-                   ai.ai_attribute_2d_bit_depth_minus1(i) + 1, ai.ai_attribute_MSB_align_flag(i));
+                   ai.ai_attribute_2d_bit_depth_minus1(i) + 1, ai.ai_attribute_msb_align_flag(i));
         if (i + 1 == ai.ai_attribute_count()) {
           fmt::print(stream, "]");
         }

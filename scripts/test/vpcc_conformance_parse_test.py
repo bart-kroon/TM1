@@ -41,7 +41,7 @@ KNOWN_REASONS = {
     "HEVCMain10_Basic_Rec2_PLR_MC1PLR1_INTERDIGITAL.bit": "asps_plr_enabled_flag",
     "HEVCMain10_Basic_Rec2_PTRAW_INTERDIGITAL.bit": "asps_raw_patch_enabled_flag",
     "HEVCMain10_Extended_Rec1_PTEOM_LOSGEO_INTERDIGITAL.bit": "asps_raw_patch_enabled_flag",
-    "HEVCMain10_Extended_Rec1_PTRAX_LOSGEO_INTERDIGITAL.bit": "vps_auxiliary_video_present_flag[ atlasId ]",
+    "HEVCMain10_Extended_Rec1_PTRAX_LOSGEO_INTERDIGITAL.bit": "asps_raw_patch_enabled_flag",
 }
 
 

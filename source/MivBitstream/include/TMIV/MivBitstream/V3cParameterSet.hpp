@@ -148,11 +148,15 @@ constexpr auto GeometryInformation::gi_geometry_codec_id() const noexcept {
   return m_gi_geometry_codec_id;
 }
 
+constexpr auto GeometryInformation::gi_auxiliary_geometry_codec_id() const noexcept {
+  return m_gi_auxiliary_geometry_codec_id.value_or(m_gi_geometry_codec_id);
+}
+
 constexpr auto GeometryInformation::gi_geometry_2d_bit_depth_minus1() const noexcept {
   return m_gi_geometry_2d_bit_depth_minus1;
 }
 
-constexpr auto GeometryInformation::gi_geometry_MSB_align_flag() const noexcept {
+constexpr auto GeometryInformation::gi_geometry_msb_align_flag() const noexcept {
   return m_gi_geometry_MSB_align_flag;
 }
 
@@ -165,13 +169,18 @@ constexpr auto GeometryInformation::gi_geometry_codec_id(uint8_t value) noexcept
   return *this;
 }
 
+constexpr auto GeometryInformation::gi_auxiliary_geometry_codec_id(uint8_t value) noexcept
+    -> auto & {
+  m_gi_auxiliary_geometry_codec_id = value;
+  return *this;
+}
 constexpr auto GeometryInformation::gi_geometry_2d_bit_depth_minus1(uint8_t value) noexcept
     -> auto & {
   m_gi_geometry_2d_bit_depth_minus1 = value;
   return *this;
 }
 
-constexpr auto GeometryInformation::gi_geometry_MSB_align_flag(bool value) noexcept -> auto & {
+constexpr auto GeometryInformation::gi_geometry_msb_align_flag(bool value) noexcept -> auto & {
   m_gi_geometry_MSB_align_flag = value;
   return *this;
 }

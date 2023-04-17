@@ -630,15 +630,15 @@ TEST_CASE("PtlChecker ISO/IEC 23090-12:2021 Table A-1") {
     }
   }
 
-  SECTION("gi_geometry_MSB_align_flag") {
+  SECTION("gi_geometry_msb_align_flag") {
     for (uint8_t k = 0; k <= vps.vps_atlas_count_minus1(); ++k) {
       const auto j = vps.vps_atlas_id(k);
 
       if (vps.vps_geometry_video_present_flag(j)) {
-        vps.geometry_information(j).gi_geometry_MSB_align_flag(true);
+        vps.geometry_information(j).gi_geometry_msb_align_flag(true);
         CHECK_THROWS_IFF(unit.checkAndActivateVps(vps), test::mivToolset(toolsetIdc));
 
-        vps.geometry_information(j).gi_geometry_MSB_align_flag(false);
+        vps.geometry_information(j).gi_geometry_msb_align_flag(false);
         CHECK_NOTHROW(unit.checkAndActivateVps(vps));
       }
     }
@@ -757,7 +757,7 @@ TEST_CASE("PtlChecker ISO/IEC 23090-12:2021 Table A-1") {
     }
   }
 
-  SECTION("ai_attribute_MSB_align_flag") {
+  SECTION("ai_attribute_msb_align_flag") {
     for (uint8_t k = 0; k <= vps.vps_atlas_count_minus1(); ++k) {
       const auto j = vps.vps_atlas_id(k);
 
@@ -765,10 +765,10 @@ TEST_CASE("PtlChecker ISO/IEC 23090-12:2021 Table A-1") {
         auto &ai = vps.attribute_information(j);
 
         for (uint8_t i = 0; i < ai.ai_attribute_count(); ++i) {
-          ai.ai_attribute_MSB_align_flag(i, true);
+          ai.ai_attribute_msb_align_flag(i, true);
           CHECK_THROWS_IFF(unit.checkAndActivateVps(vps), test::mivToolset(toolsetIdc));
 
-          ai.ai_attribute_MSB_align_flag(i, false);
+          ai.ai_attribute_msb_align_flag(i, false);
           CHECK_NOTHROW(unit.checkAndActivateVps(vps));
         }
       }

@@ -179,7 +179,7 @@ void FramePacker::updatePinGeometryInformation(MivBitstream::AtlasId atlasId) {
   m_packingInformation.pin_geometry_2d_bit_depth_minus1(
       m_params.vps.geometry_information(atlasId).gi_geometry_2d_bit_depth_minus1());
   m_packingInformation.pin_geometry_MSB_align_flag(
-      m_params.vps.geometry_information(atlasId).gi_geometry_MSB_align_flag());
+      m_params.vps.geometry_information(atlasId).gi_geometry_msb_align_flag());
   m_packingInformation.pin_geometry_3d_coordinates_bit_depth_minus1(
       m_params.vps.geometry_information(atlasId).gi_geometry_3d_coordinates_bit_depth_minus1());
 }
@@ -193,7 +193,7 @@ void FramePacker::updatePinAttributeInformation(MivBitstream::AtlasId atlasId) {
     m_packingInformation.pin_attribute_2d_bit_depth_minus1(
         i, m_params.vps.attribute_information(atlasId).ai_attribute_2d_bit_depth_minus1(i));
     m_packingInformation.pin_attribute_MSB_align_flag(
-        0, m_params.vps.attribute_information(atlasId).ai_attribute_MSB_align_flag(i));
+        0, m_params.vps.attribute_information(atlasId).ai_attribute_msb_align_flag(i));
     m_packingInformation.pin_attribute_map_absolute_coding_persistence_flag(i, false);
     m_packingInformation.pin_attribute_dimension_minus1(i, 2);
   }

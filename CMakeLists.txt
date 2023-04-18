@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
 project(
     TMIV
     DESCRIPTION "Test model for MPEG immersive video (TMIV)"
-    VERSION 15.0.0
+    VERSION 16.0.0
     LANGUAGES C CXX)
 
 if(NOT CMAKE_CXX_STANDARD)
@@ -91,7 +91,7 @@ endif()
 
 # To use TMIV as a sub project, clone, build and install. Then in the CMake GUI set TMIV_DIR to the
 # lib/cmake/TMIV directory of the TMIV installation. In the super project CMakeLists.txt use
-# find_package(TMIV 15.0.0 REQUIRED)
+# find_package(TMIV 16.0.0 REQUIRED)
 set(TMIV_CMAKE_CONFIG_DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/TMIV")
 
 install(

@@ -69,8 +69,15 @@ class ConformanceBitstreamEncoder:
         self.report_file = self.bitstream_file.with_suffix(".csv")
         self.decoder_file = self.bitstream_file.with_suffix(".dec")
         self.diff_file = self.bitstream_file.with_suffix(".diff")
+        self.doc_file = self.bitstream_file.with_suffix(".txt")
 
     def encode(self):
+        with open(
+            project_dir() / "doc" / "conformance" / self.doc_file.name, encoding="utf8"
+        ) as istream:
+            with open(self.doc_file, mode="w", encoding="utf8") as ostream:
+                ostream.write(istream.read())
+
         {
             "CB01": self.encode_cb01,
             "CB02": self.encode_cb02,
@@ -115,7 +122,7 @@ class ConformanceBitstreamEncoder:
 
         self.build_tmiv(patch=True)
         self.tmiv_encoder()
-        self.video_encoder()
+        self.encode_video_sub_bitstreams()
         self.tmiv_multiplexer()
 
     def encode_cb02(self):
@@ -127,7 +134,7 @@ class ConformanceBitstreamEncoder:
 
         self.build_tmiv(patch=True)
         self.tmiv_encoder()
-        self.video_encoder()
+        self.encode_video_sub_bitstreams()
         self.tmiv_multiplexer()
 
     def encode_cb03(self):
@@ -139,7 +146,7 @@ class ConformanceBitstreamEncoder:
 
         self.build_tmiv(patch=True)
         self.tmiv_encoder()
-        self.video_encoder()
+        self.encode_video_sub_bitstreams()
         self.tmiv_multiplexer()
 
     def encode_cb04(self):
@@ -151,7 +158,7 @@ class ConformanceBitstreamEncoder:
 
         self.build_tmiv(patch=True)
         self.tmiv_encoder()
-        self.video_encoder()
+        self.encode_video_sub_bitstreams()
         self.tmiv_multiplexer()
 
     def encode_cb05_1(self):
@@ -163,7 +170,7 @@ class ConformanceBitstreamEncoder:
 
         self.build_tmiv(patch=True)
         self.tmiv_encoder()
-        self.video_encoder()
+        self.encode_video_sub_bitstreams()
         self.tmiv_multiplexer()
 
     def encode_cb05_2(self):
@@ -175,7 +182,7 @@ class ConformanceBitstreamEncoder:
 
         self.build_tmiv(patch=True)
         self.tmiv_encoder()
-        self.video_encoder()
+        self.encode_video_sub_bitstreams()
         self.tmiv_multiplexer()
 
     def encode_cb05_3(self):
@@ -187,7 +194,7 @@ class ConformanceBitstreamEncoder:
 
         self.build_tmiv(patch=True)
         self.tmiv_encoder()
-        self.video_encoder()
+        self.encode_video_sub_bitstreams()
         self.tmiv_multiplexer()
 
     def encode_cb06(self):
@@ -199,7 +206,7 @@ class ConformanceBitstreamEncoder:
 
         self.build_tmiv(patch=True)
         self.tmiv_encoder()
-        self.video_encoder()
+        self.encode_video_sub_bitstreams()
         self.tmiv_multiplexer()
 
     def encode_cb07_1(self):
@@ -211,7 +218,7 @@ class ConformanceBitstreamEncoder:
 
         self.build_tmiv()
         self.tmiv_encoder()
-        self.video_encoder()
+        self.encode_video_sub_bitstreams()
         self.tmiv_multiplexer()
 
     def encode_cb07_2(self):
@@ -223,7 +230,7 @@ class ConformanceBitstreamEncoder:
 
         self.build_tmiv(patch=True)
         self.tmiv_encoder()
-        self.video_encoder()
+        self.encode_video_sub_bitstreams()
         self.tmiv_multiplexer()
 
     def encode_cb07_3(self):
@@ -235,7 +242,7 @@ class ConformanceBitstreamEncoder:
 
         self.build_tmiv(patch=True)
         self.tmiv_encoder()
-        self.video_encoder()
+        self.encode_video_sub_bitstreams()
         self.tmiv_multiplexer()
 
     def encode_cb08(self):
@@ -247,7 +254,7 @@ class ConformanceBitstreamEncoder:
 
         self.build_tmiv()
         self.tmiv_mpi_encoder()
-        self.video_encoder()
+        self.encode_video_sub_bitstreams()
         self.tmiv_multiplexer()
 
     def encode_cb09(self):
@@ -259,19 +266,19 @@ class ConformanceBitstreamEncoder:
 
         self.build_tmiv(patch=True)
         self.tmiv_encoder()
-        self.video_encoder()
+        self.encode_video_sub_bitstreams()
         self.tmiv_multiplexer()
 
     def encode_cb10(self):
-        self.encoder_config_file = "ctc/miv_main_anchor/A_1_TMIV_encode.json"
-        self.multiplexer_config_file = "ctc/miv_main_anchor/A_3_TMIV_mux.json"
-        self.condition_id = "A"
-        self.frame_count = 3
+        self.encoder_config_file = "test/non_irap_frames/I_1_TMIV_encode.json"
+        self.multiplexer_config_file = "test/non_irap_frames/I_3_TMIV_mux.json"
+        self.condition_id = "I"
+        self.frame_count = 5
         self.content_id = "C01"
 
         self.build_tmiv(patch=True)
         self.tmiv_encoder()
-        self.video_encoder()
+        self.encode_video_sub_bitstreams()
         self.tmiv_multiplexer()
 
     def encode_cb11(self):
@@ -283,7 +290,7 @@ class ConformanceBitstreamEncoder:
 
         self.build_tmiv(patch=True)
         self.tmiv_encoder()
-        self.video_encoder()
+        self.encode_video_sub_bitstreams()
         self.tmiv_multiplexer()
 
     def encode_cb12(self):
@@ -295,7 +302,7 @@ class ConformanceBitstreamEncoder:
 
         self.build_tmiv(patch=True)
         self.tmiv_encoder()
-        self.video_encoder()
+        self.encode_video_sub_bitstreams()
         self.tmiv_multiplexer()
 
     def encode_cb14(self):
@@ -307,7 +314,7 @@ class ConformanceBitstreamEncoder:
 
         self.build_tmiv()
         self.tmiv_encoder()
-        self.video_encoder()
+        self.encode_video_sub_bitstreams()
         self.tmiv_multiplexer()
 
     def encode_cb15(self):
@@ -319,7 +326,7 @@ class ConformanceBitstreamEncoder:
 
         self.build_tmiv()
         self.tmiv_encoder()
-        self.video_encoder()
+        self.encode_video_sub_bitstreams()
         self.tmiv_multiplexer()
 
     def encode_cb16(self):
@@ -331,7 +338,7 @@ class ConformanceBitstreamEncoder:
 
         self.build_tmiv()
         self.tmiv_encoder()
-        self.video_encoder()
+        self.encode_video_sub_bitstreams()
         self.tmiv_multiplexer()
 
     def encode_cb17(self):
@@ -343,7 +350,7 @@ class ConformanceBitstreamEncoder:
 
         self.build_tmiv()
         self.tmiv_encoder()
-        self.video_encoder()
+        self.encode_video_sub_bitstreams()
         self.tmiv_multiplexer()
 
     def encode_cb18(self):
@@ -355,7 +362,7 @@ class ConformanceBitstreamEncoder:
 
         self.build_tmiv()
         self.tmiv_encoder()
-        self.video_encoder()
+        self.encode_video_sub_bitstreams()
         self.tmiv_multiplexer()
 
     def encode_cb19(self):
@@ -367,7 +374,7 @@ class ConformanceBitstreamEncoder:
 
         self.build_tmiv()
         self.tmiv_encoder()
-        self.video_encoder()
+        self.encode_video_sub_bitstreams()
         self.tmiv_multiplexer()
 
     def encode_cb20(self):
@@ -379,7 +386,7 @@ class ConformanceBitstreamEncoder:
 
         self.build_tmiv(patch=True)
         self.tmiv_encoder()
-        self.video_encoder()
+        self.encode_video_sub_bitstreams()
         self.tmiv_multiplexer()
 
     def build_tmiv(self, patch: bool = False):
@@ -426,10 +433,6 @@ class ConformanceBitstreamEncoder:
         run(["ninja", "-C", self.tmiv_build_dir, "install"])
 
     def tmiv_encoder(self):
-        if self.intermediate_file.is_file() and 1 < self.intermediate_file.stat().st_size:
-            print(f"WARNING: Skipping TMIV encoder because {self.intermediate_file} already exists")
-            return
-
         run(
             ["bin/TmivEncoder"]
             + ["-c", f"share/config/{self.encoder_config_file}", "-V", "verbose", "-j", 1]
@@ -460,7 +463,7 @@ class ConformanceBitstreamEncoder:
             cwd=self.work_dir,
         )
 
-    def video_encoder(self, frame_rate: int = 30):
+    def encode_video_sub_bitstreams(self, frame_rate: int = 30):
         with open(self.work_dir / "intermediate.json", encoding="utf8") as stream:
             vsbs = json.load(stream)
 
@@ -474,17 +477,6 @@ class ConformanceBitstreamEncoder:
 
         codec_group_idc = encoder_config.get("codecGroupIdc", "HEVC Main10")
         codec = {"HEVC Main10": "HM", "VVC Main10": "VVenC"}[codec_group_idc]
-        intra_period = encoder_config["intraPeriod"]
-
-        gop_size = None
-        allowed_gop_size = {"HM": [16], "VVenC": [1, 16, 32]}[codec]
-
-        for candidate in allowed_gop_size:
-            if intra_period % candidate == 0:
-                gop_size = candidate
-
-        assert gop_size
-        assert intra_period == 1 or gop_size != 1
 
         for vsb in vsbs:
             vuh_atlas_id = vsb["vuh_atlas_id"]
@@ -499,7 +491,6 @@ class ConformanceBitstreamEncoder:
             else:
                 component_id = {2: "Occupancy", 3: "Geometry", 5: "Packed"}[vuh_unit_type]
 
-            full_range = int(component_id != "tex")
             video_format = "yuv420p" if bit_depth == 8 else f"yuv420p{bit_depth}le"
 
             input_file = self.work_dir / encoder_config[
@@ -513,41 +504,86 @@ class ConformanceBitstreamEncoder:
             ].format(self.frame_count, self.content_id, "R1", vuh_atlas_id)
             video_bitstream_file.parent.mkdir(exist_ok=True, parents=True)
 
-            recon_file = video_bitstream_file.parent / input_file.name
+            {"HM": self.hm_encoder, "VVenC": self.vvenc}[codec](
+                bit_depth=bit_depth,
+                width=width,
+                height=height,
+                frame_rate=frame_rate,
+                intra_period=encoder_config["intraPeriod"],
+                full_range=int(component_id != "tex"),
+                input_file=input_file,
+                video_bitstream_file=video_bitstream_file,
+                recon_file=video_bitstream_file.parent / input_file.name,
+            )
 
-            if codec == "HM":
-                run(
-                    ["bin/TAppEncoder"]
-                    + ["-c", "share/config/hm/encoder_randomaccess_main10.cfg"]
-                    + ["-wdt", width, "-hgt", height]
-                    + ["-f", self.frame_count, "-fr", frame_rate, "-q", 30]
-                    + [f"--InputBitDepth={bit_depth}"]
-                    + [f"--InternalBitDepth={bit_depth}"]
-                    + [f"--IntraPeriod={intra_period}"]
-                    + ["--SEIDecodedPictureHash=1"]
-                    + ["--VuiParametersPresent=1", "--VideoSignalTypePresent=1"]
-                    + [f"--VideoFullRange={full_range}"]
-                    + ["-i", input_file, "-b", video_bitstream_file, "-o", recon_file],
-                    cwd=self.work_dir,
-                )
-            elif codec == "VVenC":
-                vvenc_config_dir = project_dir() / ".deps" / "source" / "vvenc-v1.7.0" / "cfg"
-                vvenc_config_file = vvenc_config_dir / "randomaccess_faster.cfg"
-                run(
-                    ["bin/vvencFFapp"]
-                    + ["-c", vvenc_config_file]
-                    + ["-s", f"{width}x{height}"]
-                    + ["-f", self.frame_count, "-fr", frame_rate, "-q", 30]
-                    + [f"--InputBitDepth={bit_depth}"]
-                    + [f"--InternalBitDepth={bit_depth}"]
-                    + [f"--IntraPeriod={intra_period}"]
-                    + ["--SEIDecodedPictureHash=1"]
-                    + ["--VuiParametersPresent=1"]
-                    + [f"--VideoFullRange={full_range}"]
-                    + [f"--GOPSize={gop_size}"]
-                    + ["-i", input_file, "-b", video_bitstream_file, "-o", recon_file],
-                    cwd=self.work_dir,
-                )
+    def hm_encoder(
+        self,
+        bit_depth: int,
+        width: int,
+        height: int,
+        frame_rate: int,
+        intra_period: int,
+        full_range: bool,
+        input_file: Path,
+        video_bitstream_file: Path,
+        recon_file: Path,
+    ):
+        gop_params = {
+            2: [
+                "--IntraPeriod=2",
+                "--GOPSize=2",
+                "--Frame1=B 2 1  0.0    0.0    0 0 1.0 0 0 0 2 3 -2 -3 -4 0",
+                "--Frame2=B 1 1 -4.8848 0.2061 0 0 1.0 0 0 1 2 3 -1 -2  1 1 1 4 1 1 0 1",
+            ],
+            32: [],
+        }[intra_period]
+
+        run(
+            ["bin/TAppEncoder"]
+            + ["-c", "share/config/hm/encoder_randomaccess_main10.cfg"]
+            + ["-wdt", width, "-hgt", height]
+            + ["-f", self.frame_count, "-fr", frame_rate, "-q", 30]
+            + [f"--InputBitDepth={bit_depth}"]
+            + [f"--InternalBitDepth={bit_depth}"]
+            + gop_params
+            + ["--SEIDecodedPictureHash=1"]
+            + ["--VuiParametersPresent=1", "--VideoSignalTypePresent=1"]
+            + [f"--VideoFullRange={int(full_range)}"]
+            + ["-i", input_file, "-b", video_bitstream_file, "-o", recon_file],
+            cwd=self.work_dir,
+        )
+
+    def vvenc(
+        self,
+        bit_depth: int,
+        width: int,
+        height: int,
+        frame_rate: int,
+        intra_period: int,
+        full_range: bool,
+        input_file: Path,
+        video_bitstream_file: Path,
+        recon_file: Path,
+    ):
+        gop_size = intra_period
+
+        vvenc_config_dir = project_dir() / ".deps" / "source" / "vvenc-v1.7.0" / "cfg"
+        vvenc_config_file = vvenc_config_dir / "randomaccess_faster.cfg"
+        run(
+            ["bin/vvencFFapp"]
+            + ["-c", vvenc_config_file]
+            + ["-s", f"{width}x{height}"]
+            + ["-f", self.frame_count, "-fr", frame_rate, "-q", 30]
+            + [f"--InputBitDepth={bit_depth}"]
+            + [f"--InternalBitDepth={bit_depth}"]
+            + [f"--IntraPeriod={intra_period}"]
+            + [f"--GOPSize={gop_size}"]
+            + ["--SEIDecodedPictureHash=1"]
+            + ["--VuiParametersPresent=1"]
+            + [f"--VideoFullRange={int(full_range)}"]
+            + ["-i", input_file, "-b", video_bitstream_file, "-o", recon_file],
+            cwd=self.work_dir,
+        )
 
     def tmiv_multiplexer(self):
         run(

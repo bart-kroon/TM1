@@ -1,28 +1,28 @@
-For the WD3 stage, this bitstream was provided by:
+The original conformance bitstream was provided by:
 
 Basel Salahieh
 Vimmerse Incorporation
 basel.salahieh@vimmerse.net
 
 
-This bitstream was replaced by a different bitstream that targets the same features:
+Replaced by:
 
 Bart Kroon
 Philips
 bart.kroon@philips.com
+Contribution MPEG/M62529
 
 
-TMIV 14.1
-VVenC 0.3.1.0
-VVdeC 1.0.1
+Features:
+
+VVC Main10 MIV Main
+Level 3.5
 16 atlases
 3 groups
-5 frames
-rewrite parameter sets (atlas, video)
-3 IRAP AU's (frame 0, 2 and 4)
-MIV Main
-VVC Main10
-Level 3.5
+Rewrite parameter sets (atlas, video)
+3 IRAP AU's
 
 
-Updating to 37 frames with intra period 16
+Encoding process:
+
+scripts/test/encode_conformance_bitstream.py

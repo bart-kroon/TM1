@@ -1,33 +1,25 @@
-#########################
-## Contact information ##
+The original conformance bitstream was provided by:
+
+Franck Thudor
+Interdigital
 franck.thudor@interdigital.com
 
 
-####################################
-## Profile-tier-level information ##
-ptl_profile_codec_group_idc=VVC Main10
-ptl_profile_toolset_idc=MIV Main
-ptl_level_idc=3.5
+Replaced by:
+
+Bart Kroon
+Philips
+bart.kroon@philips.com
+Contribution MPEG/M62529
 
 
-######################################################################################################
-## Description of the encoder, including version information, that was used to create the bitstream ##
-TMIV 14.1, branch = main, commit = aa8acb02
-Apply patch : no_pruning_graph.patch
+Features:
 
-
-##############################################################################################
-## Version of the reference software decoder that was used to create the decoder output log ##
-TMIV 14.1, branch = main, commit = aa8acb02
-Apply patch : no_pruning_graph.patch
-
-
-############################################################################################
-## List of features of ISO/IEC 23090-12 that are specifically exercised by this bitstream ##
-mvp_pruning_graph_params_present_flag (false)
-
+VVC Main10 MIV Main
+Level 3.5
+No pruning graph
 
 
 Encoding process:
 
-python .\scripts\test\integration_test.py ..\msvc\ .\ E:\DATA_DOWNSCALED\ ..\..\OUTPUT\msvc\integration_tests\
+scripts/test/encode_conformance_bitstream.py

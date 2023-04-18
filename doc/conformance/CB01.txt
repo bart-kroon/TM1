@@ -1,41 +1,27 @@
+The original conformance bitstream was provided by:
+
 Basel Salahieh
 Vimmerse Incorporation
 basel.salahieh@vimmerse.net
+Contribution MPEG/M57765
 
-Updated to TMIV 14.1 by:
+
+Replaced by:
 
 Bart Kroon
 Philips
 bart.kroon@philips.com
+Contribution MPEG/M62529
 
 
+Features:
 
-MIV Extended
-HEVC Main10
-Level 5
-
-
-This conformance bitstream and decoder output log were created with using TMIV 14.1
-A diff patch is provided to show the config modifications done on top of TMIV 14.1 to generate the bitstream.
+HEVC Main10 MIV Extended
+Level 3.5
+Entity coding
+Frame packing
 
 
-This conformance bitstream is composed of one atlas generated with entity coding and frame packing and encoded in HM16.16.
-Bitstream          : TMIV_E5_B_QP3.bit
-Decoder output log : TMIV_E5_B_QP3.dec
+Encoding process:
 
-
-Please refer to MPEG contribution [JTC 1/SC 29/WG 04 m57765] for more details on the features tested in this conformance bitstream.
-
-
-Encoding process   :
-
- bin/TmivEncoder -c share/config/test/entity_based_coding/E_1_TMIV_encode.json -V verbose -s B -n 1
-     -f 0 -p inputDirectory /home/videssa/VR/MPEG/MIV -p configDirectory share/config -p outputBitstreamPathFmt intermediate.bit
- bin/TAppEncoder -c share/config/hm/encoder_randomaccess_main10.cfg -wdt 2048 -hgt 4160 -f 1 -fr 30
-     -q 30 --InputBitDepth=10 --InternalBitDepth=10 --VuiParametersPresent=1
-     --VideoSignalTypePresent=1 --VideoFullRange=0 --SEIDecodedPictureHash=1 -i E1/B/TMIV_E1_B_pac_c00_2048x4160_yuv420p10le.yuv
-     -b E1/B/R/TMIV_E1_B_R_pac_c00.bit -o E1/B/R/TMIV_E1_B_pac_c00_2048x4160_yuv420p10le.yuv
- bin/TmivMultiplexer -c share/config/test/entity_based_coding/E_3_TMIV_mux.json -V verbose -s B -n 1
-     -r R -p inputBitstreamPathFmt intermediate.bit -p outputBitstreamPathFmt CB01.bit
- bin/TmivParser -b CB01.bit -o CB01.hls
- bin/TmivBitrateReport -b CB01.bit -o CB01.csv
+scripts/test/encode_conformance_bitstream.py

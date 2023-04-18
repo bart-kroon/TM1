@@ -1,9 +1,25 @@
-Codec group IDC    : VVC Main10
-Toolset IDC        : MIV Main
-Reconstruction IDC : Rec Unconstrained
-Features tested    : Non-IRAP frames: NAL_CAF_TRIAL and NAL_TRAIL_N
-Contact person     : Bart Kroon (bart.kroon@philips.com)
-MIV encoder        : TMIV 14.1
-Video encoder      : VVenC 0.3.1.0
-Compiler toolchain : GCC 11.1
-Encoding process   : Integration test I3
+The original conformance bitstream was provided by:
+
+Bart Kroon
+Philips
+bart.kroon@philips.com
+
+
+Replaced by:
+
+Bart Kroon
+Philips
+bart.kroon@philips.com
+Contribution MPEG/M62529
+
+
+Features:
+
+VVC Main10 MIV Main
+Level 3.5
+Non-IRAP frames: NAL_CAF_TRIAL and NAL_TRAIL_N
+
+
+Encoding process:
+
+scripts/test/encode_conformance_bitstream.py

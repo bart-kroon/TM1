@@ -1,26 +1,27 @@
-Basel Salahieh
-Vimmerse Inc.
-basel.salahieh@vimmerse.net
+The original conformance bitstream was provided by:
 
-Updated to TMIV 14.1 by:
+Basel Salahieh
+Vimmerse Incorporation
+basel.salahieh@vimmerse.net
+Contribution MPEG/M57765
+
+
+Replaced by:
 
 Bart Kroon
 Philips
 bart.kroon@philips.com
+Contribution MPEG/M62529
 
 
-MIV Extended
-VVC Main10
-Level 5
+Features:
+
+VVC Main10 MIV Extended
+Level 3.5
+No embedded occupancy
+Occupancy video
 
 
-This conformance bitstream and decoder output log were created with a modified TMIV 14.1
-A diff patch is provided to show the modifications done on top of TMIV 14.1 to generate the bitstream.
+Encoding process:
 
-
-This conformance bitstream is composed of two atlases with occupancy being embedded in the first one and explicitly signaled in the second one
-Bitstream          : TMIV_O5_N_QP3.bit
-Decoder output log : TMIV_O5_N_QP3.dec 
-
-
-Please refer to MPEG contribution [JTC 1/SC 29/WG 04 m57765] for more details on the features tested in this conformance bitstream.
+scripts/test/encode_conformance_bitstream.py

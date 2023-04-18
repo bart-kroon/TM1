@@ -1,9 +1,27 @@
-Codec group IDC    : VVC Main10
-Toolset IDC        : MIV Main
-Reconstruction IDC : Rec Unconstrained
-Features tested    : Anchor bitstream "A17 ClassroomVideo" at QP3
-Contact person     : Bart Kroon (bart.kroon@philips.com)
-MIV encoder        : TMIV 14.1
-Video encoder      : VVenC 0.3.1.0
-Compiler toolchain : GCC 11.1.0
-Encoding process   : ISO/IEC JTC 1/SC 29/WG 4 N232 Common Test Conditions for MPEG Immersive video
+The original conformance bitstream was provided by:
+
+Bart Kroon
+Philips
+bart.kroon@philips.com
+ISO/IEC JTC 1/SC 29/WG 4 N232 Common Test Conditions for MPEG Immersive video
+
+
+Replaced by:
+
+Bart Kroon
+Philips
+bart.kroon@philips.com
+Contribution MPEG/M62529
+
+
+Features:
+
+VVC Main10 MIV Main
+Level 3.5
+Anchor-like bitstream "A17 ClassroomVideo"
+360-degree equirectangular projection
+
+
+Encoding process:
+
+scripts/test/encode_conformance_bitstream.py

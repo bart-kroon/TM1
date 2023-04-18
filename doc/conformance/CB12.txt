@@ -1,34 +1,25 @@
-Codec group IDC    : VVC Main10
-Toolset IDC        : MIV Main
-Reconstruction IDC : Rec Unconstrained
-Features tested    : Coordinate system parameters
-Contact person     : Bart Kroon (bart.kroon@philips.com)
-MIV encoder        : TMIV 14.1 + patch (see CB12.patch)
-Video encoder      : VVenC 0.3.0.1
-Compiler toolchain : GCC 11.1
-Encoding process   :
+The original conformance bitstream was provided by:
 
- bin/TmivEncoder -c share/config/ctc/miv_view_anchor/V_1_TMIV_encode.json -V verbose -s J -n 1 -f 0
-     -p inputDirectory /home/videssa/VR/MPEG/MIV -p configDirectory share/config -p outputBitstreamPathFmt intermediate.bit
- bin/vvencFFapp -c share/config/vvenc/randomaccess_faster.cfg -s 960x2320 -f 1 -fr 30 -q 30
-     --InputBitDepth=10 --InternalBitDepth=10 --VuiParametersPresent=1 --VideoSignalTypePresent=1
-     --VideoFullRange=0 --SEIDecodedPictureHash=1 -i V1/J/TMIV_V1_J_geo_c00_960x2320_yuv420p10le.yuv
-     -b V1/J/R/TMIV_V1_J_R_geo_c00.bit -o V1/J/R/TMIV_V1_J_geo_c00_960x2320_yuv420p10le.yuv
- bin/vvencFFapp -c share/config/vvenc/randomaccess_faster.cfg -s 1920x4640 -f 1 -fr 30 -q 30
-     --InputBitDepth=10 --InternalBitDepth=10 --VuiParametersPresent=1 --VideoSignalTypePresent=1
-     --VideoFullRange=0 --SEIDecodedPictureHash=1 -i V1/J/TMIV_V1_J_tex_c00_1920x4640_yuv420p10le.yuv
-     -b V1/J/R/TMIV_V1_J_R_tex_c00.bit -o V1/J/R/TMIV_V1_J_tex_c00_1920x4640_yuv420p10le.yuv
- bin/vvencFFapp -c share/config/vvenc/randomaccess_faster.cfg -s 960x2320 -f 1 -fr 30 -q 30
-     --InputBitDepth=10 --InternalBitDepth=10 --VuiParametersPresent=1 --VideoSignalTypePresent=1
-     --VideoFullRange=0 --SEIDecodedPictureHash=1 -i V1/J/TMIV_V1_J_geo_c01_960x2320_yuv420p10le.yuv
-     -b V1/J/R/TMIV_V1_J_R_geo_c01.bit -o V1/J/R/TMIV_V1_J_geo_c01_960x2320_yuv420p10le.yuv
- bin/vvencFFapp -c share/config/vvenc/randomaccess_faster.cfg -s 1920x4640 -f 1 -fr 30 -q 30
-     --InputBitDepth=10 --InternalBitDepth=10 --VuiParametersPresent=1 --VideoSignalTypePresent=1
-     --VideoFullRange=0 --SEIDecodedPictureHash=1 -i V1/J/TMIV_V1_J_tex_c01_1920x4640_yuv420p10le.yuv
-     -b V1/J/R/TMIV_V1_J_R_tex_c01.bit -o V1/J/R/TMIV_V1_J_tex_c01_1920x4640_yuv420p10le.yuv
- bin/TmivMultiplexer -c share/config/ctc/miv_view_anchor/V_3_TMIV_mux.json -V verbose -s J -n 1 -r R
-     -p inputBitstreamPathFmt intermediate.bit -p outputBitstreamPathFmt CB12.bit
- bin/TmivParser -b CB12.bit -o CB12.hls
- bin/TmivBitrateReport -b CB12.bit -o CB12.csv
- bin/TmivDecoderLog -b CB12.bit -o CB12.dec
- cd deps/tmiv && git diff origin/main > CB12.patch
+Bart Kroon
+Philips
+bart.kroon@philips.com
+
+
+Replaced by:
+
+Bart Kroon
+Philips
+bart.kroon@philips.com
+Contribution MPEG/M62529
+
+
+Features:
+
+VVC Main10 MIV Main
+Level 3.5
+Coordinate axis system SEI
+
+
+Encoding process:
+
+scripts/test/encode_conformance_bitstream.py

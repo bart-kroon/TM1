@@ -1,48 +1,25 @@
-#########################
-## Contact information ##
+The original conformance bitstream was provided by:
+
+Franck Thudor
+Interdigital
 franck.thudor@interdigital.com
 
 
-####################################
-## Profile-tier-level information ##
-ptl_profile_codec_group_idc=VVC Main10
-ptl_profile_toolset_idc=MIV Extended
-ptl_level_idc=3.5
+Replaced by:
+
+Bart Kroon
+Philips
+bart.kroon@philips.com
+Contribution MPEG/M62529
 
 
-######################################################################################################
-## Description of the encoder, including version information, that was used to create the bitstream ##
-TMIV 14.1, branch = main, commit = aa8acb02
-Apply patch : none.patch
+Features:
 
-
-##############################################################################################
-## Version of the reference software decoder that was used to create the decoder output log ##
-TMIV 14.1, branch = main, commit = aa8acb02
-Apply patch : none.patch
-
-
-############################################################################################
-## List of features of ISO/IEC 23090-12 that are specifically exercised by this bitstream ##
-•	asme_patch_constant_depth_flag  (false for atlasId=0, false for atlasId=1)
-
-
+VVC Main10 MIV Extended
+Level 3.5
+Geometry video
 
 
 Encoding process:
 
-..\msvc\bin\TmivEncoder.exe -c .\config\ctc\miv_anchor\A_1_TMIV_encode.json -p configDirectory .\config\ -p inputDirectory E:\MPEG_3DoFplus_Content\ -p outputDirectory ..\..\OUTPUT\msvc\ -s C -n 3 -f 0 -p intraPeriod 2 -p depthLowQualityFlag false -p maxLumaPictureSize 8388608
-
-..\msvc\bin\vvencFFapp.exe -c .\config\test\miv_anchor\A_2_VVenC_encode_tex.cfg -i ..\..\OUTPUT\msvc\A3\C\TMIV_A3_C_tex_c00_4096x2048_yuv420p10le.yuv -b ..\..\OUTPUT\msvc\A3\C\QP3\TMIV_A3_C_QP3_tex_c00.bit -s 4096x2048 -q 38 -f 3 -fr 30
-..\msvc\bin\vvencFFapp.exe -c .\config\test\miv_anchor\A_2_VVenC_encode_tex.cfg -i ..\..\OUTPUT\msvc\A3\C\TMIV_A3_C_tex_c01_4096x2048_yuv420p10le.yuv -b ..\..\OUTPUT\msvc\A3\C\QP3\TMIV_A3_C_QP3_tex_c01.bit -s 4096x2048 -q 38 -f 3 -fr 30
-..\msvc\bin\vvencFFapp.exe -c .\config\test\miv_anchor\A_2_VVenC_encode_geo.cfg -i ..\..\OUTPUT\msvc\A3\C\TMIV_A3_C_geo_c00_2048x1024_yuv420p10le.yuv -b ..\..\OUTPUT\msvc\A3\C\QP3\TMIV_A3_C_QP3_geo_c00.bit -s 2048x1024 -q 16 -f 3 -fr 30
-..\msvc\bin\vvencFFapp.exe -c .\config\test\miv_anchor\A_2_VVenC_encode_geo.cfg -i ..\..\OUTPUT\msvc\A3\C\TMIV_A3_C_geo_c01_2048x1024_yuv420p10le.yuv -b ..\..\OUTPUT\msvc\A3\C\QP3\TMIV_A3_C_QP3_geo_c01.bit -s 2048x1024 -q 16 -f 3 -fr 30
-
-..\msvc\bin\TmivMultiplexer.exe -c .\config\ctc\miv_anchor\A_3_TMIV_mux.json -p configDirectory .\config\ -p inputDirectory ..\..\OUTPUT\msvc\ -p outputDirectory ..\..\OUTPUT\msvc\ -s C -n 3 -r QP3
-
-
-..\msvc\bin\TmivParser.exe -b ..\..\OUTPUT\msvc\A3\C\QP3\TMIV_A3_C_QP3.bit -o ..\..\OUTPUT\msvc\A3\C\QP3\TMIV_A3_C_QP3.hls
-
-..\msvc\bin\TmivBitrateReport.exe -b ..\..\OUTPUT\msvc\A3\C\QP3\TMIV_A3_C_QP3.bit -o ..\..\OUTPUT\msvc\A3\C\QP3\TMIV_A3_C_QP3.csv
-
-..\msvc\bin\TmivDecoder.exe -c .\config\ctc\miv_anchor\A_4_TMIV_decode.json -p configDirectory .\config\ -p inputDirectory ..\..\OUTPUT\msvc\ -p outputDirectory ..\..\OUTPUT\msvc\ -n 3 -N 3 -s C -r QP3 -v v3 -p outputLogPath ..\..\OUTPUT\msvc\A3\C\QP3\TMIV_A3_C_QP3.dec
+scripts/test/encode_conformance_bitstream.py

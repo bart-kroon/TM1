@@ -67,7 +67,7 @@ TEST_CASE("Decoder::PreRenderer") {
     const auto unit = test::createUnit();
 
     frame.vui = TMIV::MivBitstream::VuiParameters{};
-    frame.vui->coordinate_system_parameters().cas_left_sign(false);
+    frame.vui->coordinate_system_parameters().csp_left_sign(false);
 
     REQUIRE_THROWS(unit.preRenderFrame(frame));
   }

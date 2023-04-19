@@ -237,11 +237,11 @@ void MaxCodedVideoResolution::encodeTo(Common::OutputBitstream &bitstream) const
 }
 
 auto operator<<(std::ostream &stream, const CoordinateSystemParameters &x) -> std::ostream & {
-  stream << "cas_forward_axis=" << int32_t{x.cas_forward_axis()} << '\n';
-  stream << "cas_delta_left_axis_minus1=" << int32_t{x.cas_delta_left_axis_minus1()} << '\n';
-  stream << "cas_forward_sign=" << std::boolalpha << x.cas_forward_sign() << '\n';
-  stream << "cas_left_sign=" << std::boolalpha << x.cas_left_sign() << '\n';
-  stream << "cas_up_sign=" << std::boolalpha << x.cas_up_sign() << '\n';
+  stream << "csp_forward_axis=" << int32_t{x.csp_forward_axis()} << '\n';
+  stream << "csp_delta_left_axis_minus1=" << int32_t{x.csp_delta_left_axis_minus1()} << '\n';
+  stream << "csp_forward_sign=" << std::boolalpha << x.csp_forward_sign() << '\n';
+  stream << "csp_left_sign=" << std::boolalpha << x.csp_left_sign() << '\n';
+  stream << "csp_up_sign=" << std::boolalpha << x.csp_up_sign() << '\n';
   return stream;
 }
 
@@ -249,21 +249,21 @@ auto CoordinateSystemParameters::decodeFrom(Common::InputBitstream &bitstream)
     -> CoordinateSystemParameters {
   auto x = CoordinateSystemParameters{};
 
-  x.cas_forward_axis(bitstream.readBits<uint8_t>(2))
-      .cas_delta_left_axis_minus1(bitstream.readBits<uint8_t>(1))
-      .cas_forward_sign(bitstream.getFlag())
-      .cas_left_sign(bitstream.getFlag())
-      .cas_up_sign(bitstream.getFlag());
+  x.csp_forward_axis(bitstream.readBits<uint8_t>(2))
+      .csp_delta_left_axis_minus1(bitstream.readBits<uint8_t>(1))
+      .csp_forward_sign(bitstream.getFlag())
+      .csp_left_sign(bitstream.getFlag())
+      .csp_up_sign(bitstream.getFlag());
 
   return x;
 }
 
 void CoordinateSystemParameters::encodeTo(Common::OutputBitstream &bitstream) const {
-  bitstream.writeBits(cas_forward_axis(), 2);
-  bitstream.writeBits(cas_delta_left_axis_minus1(), 1);
-  bitstream.putFlag(cas_forward_sign());
-  bitstream.putFlag(cas_left_sign());
-  bitstream.putFlag(cas_up_sign());
+  bitstream.writeBits(csp_forward_axis(), 2);
+  bitstream.writeBits(csp_delta_left_axis_minus1(), 1);
+  bitstream.putFlag(csp_forward_sign());
+  bitstream.putFlag(csp_left_sign());
+  bitstream.putFlag(csp_up_sign());
 }
 
 auto VuiParameters::vui_num_units_in_tick() const -> uint32_t {

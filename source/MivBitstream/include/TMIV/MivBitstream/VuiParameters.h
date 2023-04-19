@@ -87,17 +87,17 @@ private:
 // 23090-5: coordinate_system_parameters()
 class CoordinateSystemParameters {
 public:
-  [[nodiscard]] constexpr auto cas_forward_axis() const noexcept;
-  [[nodiscard]] constexpr auto cas_delta_left_axis_minus1() const noexcept;
-  [[nodiscard]] constexpr auto cas_forward_sign() const noexcept;
-  [[nodiscard]] constexpr auto cas_left_sign() const noexcept;
-  [[nodiscard]] constexpr auto cas_up_sign() const noexcept;
+  [[nodiscard]] constexpr auto csp_forward_axis() const noexcept;
+  [[nodiscard]] constexpr auto csp_delta_left_axis_minus1() const noexcept;
+  [[nodiscard]] constexpr auto csp_forward_sign() const noexcept;
+  [[nodiscard]] constexpr auto csp_left_sign() const noexcept;
+  [[nodiscard]] constexpr auto csp_up_sign() const noexcept;
 
-  constexpr auto cas_forward_axis(uint8_t value) noexcept -> auto &;
-  constexpr auto cas_delta_left_axis_minus1(uint8_t value) noexcept -> auto &;
-  constexpr auto cas_forward_sign(bool value) noexcept -> auto &;
-  constexpr auto cas_left_sign(bool value) noexcept -> auto &;
-  constexpr auto cas_up_sign(bool value) noexcept -> auto &;
+  constexpr auto csp_forward_axis(uint8_t value) noexcept -> auto &;
+  constexpr auto csp_delta_left_axis_minus1(uint8_t value) noexcept -> auto &;
+  constexpr auto csp_forward_sign(bool value) noexcept -> auto &;
+  constexpr auto csp_left_sign(bool value) noexcept -> auto &;
+  constexpr auto csp_up_sign(bool value) noexcept -> auto &;
 
   [[nodiscard]] constexpr auto isOmafCas() const noexcept;
 
@@ -112,11 +112,11 @@ public:
   void encodeTo(Common::OutputBitstream &bitstream) const;
 
 private:
-  uint8_t m_cas_forward_axis{};
-  uint8_t m_cas_delta_left_axis_minus1{};
-  bool m_cas_forward_sign{true};
-  bool m_cas_left_sign{true};
-  bool m_cas_up_sign{true};
+  uint8_t m_csp_forward_axis{};
+  uint8_t m_csp_delta_left_axis_minus1{};
+  bool m_csp_forward_sign{true};
+  bool m_csp_left_sign{true};
+  bool m_csp_up_sign{true};
 };
 
 class AtlasSequenceParameterSetRBSP;

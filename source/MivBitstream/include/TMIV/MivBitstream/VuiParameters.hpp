@@ -36,61 +36,61 @@
 #endif
 
 namespace TMIV::MivBitstream {
-constexpr auto CoordinateSystemParameters::cas_forward_axis() const noexcept {
-  return m_cas_forward_axis;
+constexpr auto CoordinateSystemParameters::csp_forward_axis() const noexcept {
+  return m_csp_forward_axis;
 }
 
-constexpr auto CoordinateSystemParameters::cas_delta_left_axis_minus1() const noexcept {
-  return m_cas_delta_left_axis_minus1;
+constexpr auto CoordinateSystemParameters::csp_delta_left_axis_minus1() const noexcept {
+  return m_csp_delta_left_axis_minus1;
 }
 
-constexpr auto CoordinateSystemParameters::cas_forward_sign() const noexcept {
-  return m_cas_forward_sign;
+constexpr auto CoordinateSystemParameters::csp_forward_sign() const noexcept {
+  return m_csp_forward_sign;
 }
 
-constexpr auto CoordinateSystemParameters::cas_left_sign() const noexcept {
-  return m_cas_left_sign;
+constexpr auto CoordinateSystemParameters::csp_left_sign() const noexcept {
+  return m_csp_left_sign;
 }
 
-constexpr auto CoordinateSystemParameters::cas_up_sign() const noexcept { return m_cas_up_sign; }
+constexpr auto CoordinateSystemParameters::csp_up_sign() const noexcept { return m_csp_up_sign; }
 
-constexpr auto CoordinateSystemParameters::cas_forward_axis(uint8_t value) noexcept -> auto & {
-  m_cas_forward_axis = value;
+constexpr auto CoordinateSystemParameters::csp_forward_axis(uint8_t value) noexcept -> auto & {
+  m_csp_forward_axis = value;
   return *this;
 }
 
-constexpr auto CoordinateSystemParameters::cas_delta_left_axis_minus1(uint8_t value) noexcept
+constexpr auto CoordinateSystemParameters::csp_delta_left_axis_minus1(uint8_t value) noexcept
     -> auto & {
-  m_cas_delta_left_axis_minus1 = value;
+  m_csp_delta_left_axis_minus1 = value;
   return *this;
 }
 
-constexpr auto CoordinateSystemParameters::cas_forward_sign(bool value) noexcept -> auto & {
-  m_cas_forward_sign = value;
+constexpr auto CoordinateSystemParameters::csp_forward_sign(bool value) noexcept -> auto & {
+  m_csp_forward_sign = value;
   return *this;
 }
 
-constexpr auto CoordinateSystemParameters::cas_left_sign(bool value) noexcept -> auto & {
-  m_cas_left_sign = value;
+constexpr auto CoordinateSystemParameters::csp_left_sign(bool value) noexcept -> auto & {
+  m_csp_left_sign = value;
   return *this;
 }
 
-constexpr auto CoordinateSystemParameters::cas_up_sign(bool value) noexcept -> auto & {
-  m_cas_up_sign = value;
+constexpr auto CoordinateSystemParameters::csp_up_sign(bool value) noexcept -> auto & {
+  m_csp_up_sign = value;
   return *this;
 }
 
 constexpr auto CoordinateSystemParameters::isOmafCas() const noexcept {
-  return cas_forward_axis() == 0 && cas_delta_left_axis_minus1() == 0 && cas_forward_sign() &&
-         cas_left_sign() && cas_up_sign();
+  return csp_forward_axis() == 0 && csp_delta_left_axis_minus1() == 0 && csp_forward_sign() &&
+         csp_left_sign() && csp_up_sign();
 }
 
 constexpr auto
 CoordinateSystemParameters::operator==(const CoordinateSystemParameters &other) const noexcept {
-  return cas_forward_axis() == other.cas_forward_axis() &&
-         cas_delta_left_axis_minus1() == other.cas_delta_left_axis_minus1() &&
-         cas_forward_sign() == other.cas_forward_sign() &&
-         cas_left_sign() == other.cas_left_sign() && cas_up_sign() == other.cas_up_sign();
+  return csp_forward_axis() == other.csp_forward_axis() &&
+         csp_delta_left_axis_minus1() == other.csp_delta_left_axis_minus1() &&
+         csp_forward_sign() == other.csp_forward_sign() &&
+         csp_left_sign() == other.csp_left_sign() && csp_up_sign() == other.csp_up_sign();
 }
 
 constexpr auto

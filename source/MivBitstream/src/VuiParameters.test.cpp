@@ -116,11 +116,11 @@ mcv_attribute_height=8
 namespace {
 constexpr auto openGlCas() noexcept {
   auto x = CoordinateSystemParameters{};
-  x.cas_forward_axis(2);           // -z points forward
-  x.cas_delta_left_axis_minus1(0); // -x points left
-  x.cas_forward_sign(false);       // z points back
-  x.cas_left_sign(false);          // x points right
-  x.cas_up_sign(false);            // y points down
+  x.csp_forward_axis(2);           // -z points forward
+  x.csp_delta_left_axis_minus1(0); // -x points left
+  x.csp_forward_sign(false);       // z points back
+  x.csp_left_sign(false);          // x points right
+  x.csp_up_sign(false);            // y points down
   return x;
 }
 } // namespace
@@ -132,11 +132,11 @@ TEST_CASE("coordinate_axis_system_params", "[MIV VUI Params]") {
     // Default construction corresponds to the OMAF coordinate axis system
     static_assert(x.isOmafCas());
 
-    REQUIRE(toString(x) == R"(cas_forward_axis=0
-cas_delta_left_axis_minus1=0
-cas_forward_sign=true
-cas_left_sign=true
-cas_up_sign=true
+    REQUIRE(toString(x) == R"(csp_forward_axis=0
+csp_delta_left_axis_minus1=0
+csp_forward_sign=true
+csp_left_sign=true
+csp_up_sign=true
 )");
 
     bitCodingTest(x, 6);
@@ -148,11 +148,11 @@ cas_up_sign=true
     // OpenGL uses a different convention than OMAF
     static_assert(!x.isOmafCas());
 
-    REQUIRE(toString(x) == R"(cas_forward_axis=2
-cas_delta_left_axis_minus1=0
-cas_forward_sign=false
-cas_left_sign=false
-cas_up_sign=false
+    REQUIRE(toString(x) == R"(csp_forward_axis=2
+csp_delta_left_axis_minus1=0
+csp_forward_sign=false
+csp_left_sign=false
+csp_up_sign=false
 )");
 
     bitCodingTest(x, 6);
@@ -221,11 +221,11 @@ mcv_attribute_resolution_present_flag=false
 mcv_geometry_width=100
 mcv_geometry_height=200
 vui_coordinate_system_parameters_present_flag=true
-cas_forward_axis=2
-cas_delta_left_axis_minus1=0
-cas_forward_sign=false
-cas_left_sign=false
-cas_up_sign=false
+csp_forward_axis=2
+csp_delta_left_axis_minus1=0
+csp_forward_sign=false
+csp_left_sign=false
+csp_up_sign=false
 vui_unit_in_metres_flag=true
 vui_display_box_info_present_flag=true
 vui_display_box_origin[ 0 ]=10

@@ -38,7 +38,7 @@
 namespace TMIV::Decoder {
 namespace {
 void decodeMvpl(const MivBitstream::MivViewParamsList &mvpl, bool dqParamsPresentFlag,
-                MivBitstream::ViewParamsList &vpl) {
+                bool csParamsPresentFlag, MivBitstream::ViewParamsList &vpl) {
   vpl.assign(mvpl.mvp_num_views_minus1() + size_t{1}, {});
 
   for (uint16_t viewIdx = 0; viewIdx <= mvpl.mvp_num_views_minus1(); ++viewIdx) {
@@ -49,6 +49,9 @@ void decodeMvpl(const MivBitstream::MivViewParamsList &mvpl, bool dqParamsPresen
     vp.ci = mvpl.camera_intrinsics(viewIdx);
     if (dqParamsPresentFlag) {
       vp.dq = mvpl.depth_quantization(viewIdx);
+    }
+    if (csParamsPresentFlag) {
+      vp.cs = mvpl.chroma_scaling(viewIdx);
     }
     if (mvpl.mvp_pruning_graph_params_present_flag()) {
       vp.pp = mvpl.pruning_parent(viewIdx);
@@ -79,18 +82,33 @@ void decodeMvpudq(const MivBitstream::MivViewParamsUpdateDepthQuantization &mvpu
     vpl[mvpudq.mvpudq_view_idx(i)].dq = mvpudq.depth_quantization(i);
   }
 }
+
+void decodeMvpucs(const MivBitstream::MivViewParamsUpdateChromaScaling &mvpucs,
+                  MivBitstream::ViewParamsList &vpl) {
+  for (uint16_t i = 0; i <= mvpucs.mvpucs_num_view_updates_minus1(); ++i) {
+    vpl[mvpucs.mvpucs_view_idx(i)].cs = mvpucs.chroma_scaling(i);
+  }
+}
 } // namespace
 
 void decodeViewParamsList(const CommonAtlasAccessUnit &au, MivBitstream::ViewParamsList &vpl) {
   if (au.caf.caf_extension_present_flag() && au.caf.caf_miv_extension_present_flag()) {
     const auto &came = au.caf.caf_miv_extension();
     bool dqParamsPresentFlag = true;
+    bool csParamsPresentFlag = true;
     if (au.casps.casps_extension_present_flag() && au.casps.casps_miv_extension_present_flag()) {
       dqParamsPresentFlag =
           au.casps.casps_miv_extension().casme_depth_quantization_params_present_flag();
     }
+#if ENABLE_M63397
+    if (au.casps.casps_extension_present_flag() && au.casps.casps_miv_extension_present_flag()) {
+      csParamsPresentFlag = au.casps.casps_miv_extension().casme_chroma_scaling_present_flag();
+    }
+#else
+    csParamsPresentFlag = false;
+#endif
     if (au.foc == 0) {
-      decodeMvpl(came.miv_view_params_list(), dqParamsPresentFlag, vpl);
+      decodeMvpl(came.miv_view_params_list(), dqParamsPresentFlag, csParamsPresentFlag, vpl);
     } else {
       if (came.came_update_extrinsics_flag()) {
         decodeMvpue(came.miv_view_params_update_extrinsics(), vpl);
@@ -102,6 +120,12 @@ void decodeViewParamsList(const CommonAtlasAccessUnit &au, MivBitstream::ViewPar
           came.came_update_depth_quantization_flag() && dqParamsPresentFlag) {
         decodeMvpudq(came.miv_view_params_update_depth_quantization(), vpl);
       }
+#if ENABLE_M63397
+      if (au.casps.casps_miv_extension().casme_chroma_scaling_present_flag() &&
+          came.came_update_chroma_scaling_flag() && csParamsPresentFlag) {
+        decodeMvpucs(came.miv_view_params_update_chroma_scaling(), vpl);
+      }
+#endif
     }
   }
 }

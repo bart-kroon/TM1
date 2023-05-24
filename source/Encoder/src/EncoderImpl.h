@@ -81,6 +81,7 @@ private:
 
   // Encoder_completeAccessUnit.cpp
   void scaleGeometryDynamicRange();
+  void scaleChromaDynamicRange();
   void updateAggregationStatistics(const Common::FrameList<uint8_t> &aggregatedMask);
   void constructVideoFrames();
   void encodePatchTextureOffset(const PatchTextureStats &stats);

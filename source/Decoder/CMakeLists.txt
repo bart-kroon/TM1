@@ -40,6 +40,10 @@ create_tmiv_executable(
     DecoderLib
     VideoDecoderLib)
 
+if(${ENABLE_M63397})
+    target_compile_definitions(MivBitstreamLib PUBLIC ENABLE_M63397)
+endif()
+
 create_catch2_unit_test(
     TARGET
     DecoderTest

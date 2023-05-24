@@ -39,6 +39,7 @@
     "bitDepthGeometryVideo": 10,
     "bitDepthTextureVideo": 10,
     "blockSizeDepthQualityDependent": [16, 32],
+    "chromaScaleEnabledFlag": false,
     "codecGroupIdc": "HEVC Main10",
     "configDirectory": "config",
     "depthOccThresholdAsymmetry": 1.5,

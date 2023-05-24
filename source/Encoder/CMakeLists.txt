@@ -61,6 +61,10 @@ create_tmiv_executable(
     ViewOptimizerLib
     MpiPcsLib)
 
+if(${ENABLE_M63397})
+    target_compile_definitions(MivBitstreamLib PUBLIC ENABLE_M63397)
+endif()
+
 create_catch2_unit_test(
     TARGET
     EncoderTest

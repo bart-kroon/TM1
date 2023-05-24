@@ -393,6 +393,8 @@ createAtlasSequenceParameterSet(const Configuration &config,
                                      depthLowQualityFlag);
 
   params.casps = createCommonAtlasSequenceParameterSet(config, sequenceConfig, depthLowQualityFlag);
+  params.casps.casps_miv_extension().casme_chroma_scaling_present_flag(
+      config.chromaScaleEnabledFlag);
 
   params.viewingSpace = config.viewingSpace;
 

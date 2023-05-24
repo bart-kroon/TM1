@@ -103,6 +103,7 @@ casps_miv_extension_present_flag=true
 casps_extension_7bits=0
 casme_depth_low_quality_flag=false
 casme_depth_quantization_params_present_flag=false
+casme_chroma_scaling_present_flag=false
 casme_vui_params_present_flag=false
 
 ----------------------------------------------------------------------------------------------------
@@ -134,6 +135,10 @@ ci_erp_theta_min[ 0 ]=0
 ci_erp_theta_max[ 0 ]=0
 mvp_pruning_graph_params_present_flag=true
 pp_is_root_flag[ 0 ]=true
+cs_u_min[ 0 ]=0
+cs_u_max[ 0 ]=0
+cs_v_min[ 0 ]=0
+cs_v_max[ 0 ]=0
 
 ====================================================================================================
 v3c_unit(51)

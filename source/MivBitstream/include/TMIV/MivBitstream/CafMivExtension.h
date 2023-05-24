@@ -50,6 +50,34 @@
 #include <vector>
 
 namespace TMIV::MivBitstream {
+class ChromaScaling {
+public:
+  [[nodiscard]] constexpr auto cs_u_min() const noexcept;
+  [[nodiscard]] constexpr auto cs_u_max() const noexcept;
+  [[nodiscard]] constexpr auto cs_v_min() const noexcept;
+  [[nodiscard]] constexpr auto cs_v_max() const noexcept;
+
+  constexpr auto cs_u_min(uint16_t value) noexcept -> auto &;
+  constexpr auto cs_u_max(uint16_t value) noexcept -> auto &;
+  constexpr auto cs_v_min(uint16_t value) noexcept -> auto &;
+  constexpr auto cs_v_max(uint16_t value) noexcept -> auto &;
+
+  auto printTo(std::ostream &stream, uint16_t viewIdx) const -> std::ostream &;
+
+  constexpr auto operator==(const ChromaScaling &other) const noexcept;
+  constexpr auto operator!=(const ChromaScaling &other) const noexcept;
+
+  static auto decodeFrom(Common::InputBitstream &bitstream) -> ChromaScaling;
+
+  void encodeTo(Common::OutputBitstream &bitstream) const;
+
+private:
+  uint16_t m_cs_u_min{};
+  uint16_t m_cs_u_max{};
+  uint16_t m_cs_v_min{};
+  uint16_t m_cs_v_max{};
+};
+
 // 23090-12: camera_extrinsics()
 class CameraExtrinsics {
 public:
@@ -253,6 +281,8 @@ public:
 
   [[nodiscard]] auto pruning_parent(uint16_t viewIdx) const -> const PruningParents &;
 
+  [[nodiscard]] auto chroma_scaling(uint16_t viewIdx = 0) const -> const ChromaScaling &;
+
   // Calling this function will allocate the camera extrinsics list
   auto mvp_num_views_minus1(uint16_t value) -> MivViewParamsList &;
 
@@ -273,6 +303,7 @@ public:
   [[nodiscard]] auto camera_intrinsics(uint16_t viewIdx = 0) noexcept -> CameraIntrinsics &;
   [[nodiscard]] auto depth_quantization(uint16_t viewIdx = 0) noexcept -> DepthQuantization &;
   [[nodiscard]] auto pruning_parent(uint16_t viewIdx) -> PruningParents &;
+  [[nodiscard]] auto chroma_scaling(uint16_t viewIdx) noexcept -> ChromaScaling &;
 
   friend auto operator<<(std::ostream &stream, const MivViewParamsList &x) -> std::ostream &;
 
@@ -296,6 +327,7 @@ private:
   std::vector<DepthQuantization> m_depth_quantization{{}};
   bool m_mvp_pruning_graph_params_present_flag{};
   std::vector<PruningParents> m_pruning_parent{};
+  std::vector<ChromaScaling> m_mvp_chroma_scaling_values{{}};
 };
 
 // 23090-12: miv_view_params_update_extrinsics
@@ -383,12 +415,40 @@ private:
   std::vector<DepthQuantization> m_depth_quantization;
 };
 
+class MivViewParamsUpdateChromaScaling {
+public:
+  [[nodiscard]] auto mvpucs_num_view_updates_minus1() const noexcept -> uint16_t;
+  [[nodiscard]] auto mvpucs_view_idx(uint16_t i) const -> uint16_t;
+  [[nodiscard]] auto chroma_scaling(uint16_t i) const -> const ChromaScaling &;
+  [[nodiscard]] auto chroma_scaling(uint16_t i) noexcept -> ChromaScaling &;
+
+  // Calling this function will allocate the depth quantization update list
+  auto mvpucs_num_view_updates_minus1(uint16_t value) -> MivViewParamsUpdateChromaScaling &;
+  auto mvpucs_view_idx(uint16_t i, uint16_t value) noexcept -> MivViewParamsUpdateChromaScaling &;
+
+  friend auto operator<<(std::ostream &stream, const MivViewParamsUpdateChromaScaling &x)
+      -> std::ostream &;
+
+  auto operator==(const MivViewParamsUpdateChromaScaling & /*other*/) const noexcept -> bool;
+  auto operator!=(const MivViewParamsUpdateChromaScaling & /*other*/) const noexcept -> bool;
+
+  static auto decodeFrom(Common::InputBitstream &bitstream) -> MivViewParamsUpdateChromaScaling;
+
+  void encodeTo(Common::OutputBitstream &bitstream) const;
+
+private:
+  uint16_t m_mvpucs_num_view_updates_minus1{};
+  std::vector<uint16_t> m_mvpucs_view_idx{};
+  std::vector<ChromaScaling> m_chroma_scaling;
+};
+
 // 23090-12: caf_miv_extension( )
 class CafMivExtension {
 public:
   [[nodiscard]] auto came_update_extrinsics_flag() const -> bool;
   [[nodiscard]] auto came_update_intrinsics_flag() const -> bool;
   [[nodiscard]] auto came_update_depth_quantization_flag() const -> bool;
+  [[nodiscard]] auto came_update_chroma_scaling_flag() const -> bool;
   [[nodiscard]] auto miv_view_params_list() const -> const MivViewParamsList &;
   [[nodiscard]] auto miv_view_params_update_extrinsics() const
       -> const MivViewParamsUpdateExtrinsics &;
@@ -396,10 +456,13 @@ public:
       -> const MivViewParamsUpdateIntrinsics &;
   [[nodiscard]] auto miv_view_params_update_depth_quantization() const
       -> const MivViewParamsUpdateDepthQuantization &;
+  [[nodiscard]] auto miv_view_params_update_chroma_scaling() const
+      -> const MivViewParamsUpdateChromaScaling &;
 
   auto came_update_extrinsics_flag(bool value) noexcept -> CafMivExtension &;
   auto came_update_intrinsics_flag(bool value) noexcept -> CafMivExtension &;
   auto came_update_depth_quantization_flag(bool value) noexcept -> CafMivExtension &;
+  auto came_update_chroma_scaling_flag(bool value) noexcept -> CafMivExtension &;
   [[nodiscard]] auto miv_view_params_list() noexcept -> MivViewParamsList &;
   [[nodiscard]] auto miv_view_params_update_extrinsics() noexcept
       -> MivViewParamsUpdateExtrinsics &;
@@ -407,6 +470,8 @@ public:
       -> MivViewParamsUpdateIntrinsics &;
   [[nodiscard]] auto miv_view_params_update_depth_quantization() noexcept
       -> MivViewParamsUpdateDepthQuantization &;
+  [[nodiscard]] auto miv_view_params_update_chroma_scaling() noexcept
+      -> MivViewParamsUpdateChromaScaling &;
 
   friend auto operator<<(std::ostream &stream, const CafMivExtension &x) -> std::ostream &;
 
@@ -423,10 +488,12 @@ private:
   std::optional<bool> m_came_update_extrinsics_flag{};
   std::optional<bool> m_came_update_intrinsics_flag{};
   std::optional<bool> m_came_update_depth_quantization_flag{};
+  std::optional<bool> m_came_update_chroma_scaling_flag{};
   std::optional<MivViewParamsList> m_miv_view_params_list{};
   std::optional<MivViewParamsUpdateExtrinsics> m_miv_view_params_update_extrinsics;
   std::optional<MivViewParamsUpdateIntrinsics> m_miv_view_params_update_intrinsics;
   std::optional<MivViewParamsUpdateDepthQuantization> m_miv_view_params_update_depth_quantization;
+  std::optional<MivViewParamsUpdateChromaScaling> m_miv_view_params_update_chroma_scaling;
 };
 } // namespace TMIV::MivBitstream
 

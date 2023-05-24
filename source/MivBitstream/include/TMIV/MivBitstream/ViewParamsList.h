@@ -62,12 +62,13 @@ struct ViewParams {
   CameraIntrinsics ci;
   Pose pose;
   DepthQuantization dq;
+  ChromaScaling cs;
   std::optional<PruningParents> pp;
 
   ViewParams() = default;
   ViewParams(const CameraIntrinsics &ci, const Pose &pose, const DepthQuantization &dq,
-             std::optional<PruningParents> pp, std::string name)
-      : ci{ci}, pose{pose}, dq{dq}, pp{std::move(pp)}, name{std::move(name)} {}
+             const ChromaScaling &cs, std::optional<PruningParents> pp, std::string name)
+      : ci{ci}, pose{pose}, dq{dq}, cs{cs}, pp{std::move(pp)}, name{std::move(name)} {}
 
   // Not in the specification. Just to improve screen output
   std::string name{};

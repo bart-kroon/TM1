@@ -144,6 +144,36 @@ constexpr auto CameraIntrinsics::operator!=(const CameraIntrinsics &other) const
   return !operator==(other);
 }
 
+constexpr auto ChromaScaling::cs_u_min() const noexcept { return m_cs_u_min; }
+constexpr auto ChromaScaling::cs_u_max() const noexcept { return m_cs_u_max; }
+constexpr auto ChromaScaling::cs_v_min() const noexcept { return m_cs_v_min; }
+constexpr auto ChromaScaling::cs_v_max() const noexcept { return m_cs_v_max; }
+
+constexpr auto ChromaScaling::cs_u_min(const uint16_t value) noexcept -> auto & {
+  m_cs_u_min = value;
+  return *this;
+}
+constexpr auto ChromaScaling::cs_u_max(const uint16_t value) noexcept -> auto & {
+  m_cs_u_max = value;
+  return *this;
+}
+constexpr auto ChromaScaling::cs_v_min(const uint16_t value) noexcept -> auto & {
+  m_cs_v_min = value;
+  return *this;
+}
+constexpr auto ChromaScaling::cs_v_max(const uint16_t value) noexcept -> auto & {
+  m_cs_v_max = value;
+  return *this;
+}
+constexpr auto ChromaScaling::operator==(const ChromaScaling &other) const noexcept {
+  return cs_u_min() == other.cs_u_min() && cs_u_max() == other.cs_u_max() &&
+         cs_v_min() == other.cs_v_min() && cs_v_max() == other.cs_v_max();
+}
+
+constexpr auto ChromaScaling::operator!=(const ChromaScaling &other) const noexcept {
+  return !operator==(other);
+}
+
 constexpr auto CameraExtrinsics::ce_view_pos_x() const noexcept { return m_ce_view_pos_x; }
 
 constexpr auto CameraExtrinsics::ce_view_pos_y() const noexcept { return m_ce_view_pos_y; }

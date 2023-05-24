@@ -312,6 +312,7 @@ private:
       if (vp.pp.has_value()) {
         mvpl.pruning_parent(i) = *vp.pp;
       }
+      mvpl.chroma_scaling(i) = vp.cs;
     }
 
     mvpl.mvp_num_views_minus1(static_cast<uint16_t>(m_params.viewParamsList.size() - 1));

@@ -107,6 +107,7 @@ auto ViewParams::printTo(std::ostream &stream, uint16_t viewIdx) const -> std::o
   pose.printTo(stream, viewIdx);
   ci.printTo(stream, viewIdx);
   dq.printTo(stream, viewIdx);
+  cs.printTo(stream, viewIdx);
 
   stream << "hasOccupancy[ " << viewIdx << "]=" << std::boolalpha << hasOccupancy
          << "  # encoder-internal\n";
@@ -120,7 +121,7 @@ auto ViewParams::printTo(std::ostream &stream, uint16_t viewIdx) const -> std::o
 }
 
 auto ViewParams::operator==(const ViewParams &other) const -> bool {
-  return ci == other.ci && pose == other.pose && dq == other.dq && pp == other.pp;
+  return ci == other.ci && pose == other.pose && dq == other.dq && pp == other.pp && cs == other.cs;
 }
 
 ViewParams::ViewParams(const Common::Json &node) {

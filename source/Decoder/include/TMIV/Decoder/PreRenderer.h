@@ -132,6 +132,9 @@ private:
       const MivBitstream::V3cParameterSet &vps, MivBitstream::AtlasId atlasId,
       const Common::Frame<> &decPckFrameNCF, MivBitstream::AtlasAccessUnit &atlas);
 
+  static void rescaleTexture(const MivBitstream::ViewParamsList &vpl,
+                             MivBitstream::AtlasAccessUnit &atlas);
+
   // ISO/IEC 23090-12 Annex H.2.2
   static void reconstructOccupancy(const MivBitstream::ViewParamsList &vpl,
                                    MivBitstream::AtlasAccessUnit &atlas);

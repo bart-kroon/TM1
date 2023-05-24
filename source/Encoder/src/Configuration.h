@@ -70,6 +70,7 @@ struct Configuration {
   bool embeddedOccupancy{};
   std::vector<Common::Vec2i> overrideAtlasFrameSizes{};
   bool geometryScaleEnabledFlag;
+  bool chromaScaleEnabledFlag;
   Common::stack::Vec2<Common::SampleValue> entityEncRange;
   bool dynamicDepthRange;
   bool textureOffsetFlag;

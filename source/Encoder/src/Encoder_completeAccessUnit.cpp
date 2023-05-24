@@ -570,9 +570,65 @@ void Encoder::Impl::encodePatchTextureOffset(const PatchTextureStats &stats) {
   }
 }
 
+void Encoder::Impl::scaleChromaDynamicRange() {
+  auto viewTextureStats = PatchTextureStats(params().viewParamsList.size());
+  const auto numOfFrames = m_transportViews.size();
+  const auto numOfViews = m_transportViews[0].size();
+  const auto maxValue = (1 << m_transportViews[0].front().texture.getBitDepth()) - 1;
+
+  for (size_t f = 0; f < numOfFrames; f++) {
+    for (size_t v = 0; v < numOfViews; v++) {
+      auto &frame = m_transportViews[f][v].texture;
+      const auto W = frame.getWidth() / 2;
+      const auto H = frame.getHeight() / 2;
+
+      for (int32_t c = 1; c < 3; ++c) {
+        for (int32_t h = 0; h < H; h++) {
+          for (int32_t w = 0; w < W; w++) {
+            const auto sample = frame.getPlane(c)(h, w);
+            viewTextureStats[v][c] << sample;
+          }
+        }
+      }
+    }
+  }
+
+  for (size_t v = 0; v < numOfViews; v++) {
+    m_params.viewParamsList[v].cs.cs_u_min(static_cast<uint16_t>(viewTextureStats[v][1].min()));
+    m_params.viewParamsList[v].cs.cs_u_max(static_cast<uint16_t>(viewTextureStats[v][1].max()));
+    m_params.viewParamsList[v].cs.cs_v_min(static_cast<uint16_t>(viewTextureStats[v][2].min()));
+    m_params.viewParamsList[v].cs.cs_v_max(static_cast<uint16_t>(viewTextureStats[v][2].max()));
+  }
+
+  for (size_t f = 0; f < numOfFrames; f++) {
+    for (size_t v = 0; v < numOfViews; v++) {
+      auto &frame = m_transportViews[f][v].texture;
+      const auto W = frame.getWidth() / 2;
+      const auto H = frame.getHeight() / 2;
+
+      for (int32_t c = 1; c < 3; ++c) {
+        for (int32_t h = 0; h < H; h++) {
+          for (int32_t w = 0; w < W; w++) {
+            const auto sample = frame.getPlane(c)(h, w);
+            frame.getPlane(c)(h, w) = static_cast<uint16_t>(
+                (static_cast<int64_t>(sample) - viewTextureStats[v][c].min()) * maxValue /
+                (viewTextureStats[v][c].max() - viewTextureStats[v][c].min()));
+          }
+        }
+      }
+    }
+  }
+}
+
 // NOLINTNEXTLINE(readability-function-cognitive-complexity,readability-function-size)
 void Encoder::Impl::constructVideoFrames() {
   const auto &vps = params().vps;
+
+#if ENABLE_M63397
+  if (m_config.chromaScaleEnabledFlag) {
+    scaleChromaDynamicRange();
+  }
+#endif
 
   auto patchTextureStats = PatchTextureStats(params().patchParamsList.size());
 

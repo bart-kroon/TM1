@@ -49,6 +49,38 @@ PreRenderer::PreRenderer(const Common::Json &componentNode)
   }
 }
 
+void PreRenderer::rescaleTexture(const MivBitstream::ViewParamsList &vpl,
+                                 MivBitstream::AtlasAccessUnit &atlas) {
+  // Pass-through with copy
+  auto &frame2 = atlas.texFrame;
+
+  if (!atlas.asps.asps_miv_extension_present_flag()) {
+    return;
+  }
+
+  const auto maxValue = static_cast<uint16_t>((1 << atlas.decAttrFrame[0].getBitDepth()) - 1);
+
+  for (int32_t i = 0; i < frame2.getHeight(); ++i) {
+    for (int32_t j = 0; j < frame2.getWidth(); ++j) {
+      const auto patchIdx = atlas.patchIdx(i, j);
+
+      if (patchIdx == Common::unusedPatchIdx) {
+        continue;
+      }
+      const auto &pp = atlas.patchParamsList[patchIdx];
+      const auto v = pp.atlasPatchProjectionId();
+
+      auto &valueU = frame2.getPlane(1)(i, j);
+      valueU =
+          valueU * (vpl[v].cs.cs_u_max() - vpl[v].cs.cs_u_min()) / maxValue + vpl[v].cs.cs_u_min();
+
+      auto &valueV = frame2.getPlane(2)(i, j);
+      valueV =
+          valueV * (vpl[v].cs.cs_v_max() - vpl[v].cs.cs_v_min()) / maxValue + vpl[v].cs.cs_v_min();
+    }
+  }
+}
+
 void PreRenderer::preRenderFrame(MivBitstream::AccessUnit &frame) const {
   // ISO/IEC 23090-12 Annex A: profiles, tiers and levels
   checkRestrictions(frame);
@@ -65,6 +97,14 @@ void PreRenderer::preRenderFrame(MivBitstream::AccessUnit &frame) const {
     offsetTexture(frame.vps, atlasId, atlas);
     scaleGeometryVideo(frame.gup, atlas);
     reconstructOccupancy(frame.viewParamsList, atlas);
+
+#if ENABLE_M63397
+    if (frame.casps.has_value() &&
+        frame.casps.value().casps_miv_extension().casme_chroma_scaling_present_flag()) {
+      rescaleTexture(frame.viewParamsList, atlas);
+    }
+#endif
+
     filterEntities(atlas);
 
     // Not specified

@@ -220,6 +220,32 @@ void CameraIntrinsics::encodeTo(Common::OutputBitstream &bitstream) const {
   }
 }
 
+auto ChromaScaling::printTo(std::ostream &stream, uint16_t viewIdx) const -> std::ostream & {
+  fmt::print(stream, "cs_u_min[ {} ]={}\n", viewIdx, cs_u_min());
+  fmt::print(stream, "cs_u_max[ {} ]={}\n", viewIdx, cs_u_max());
+  fmt::print(stream, "cs_v_min[ {} ]={}\n", viewIdx, cs_v_min());
+  fmt::print(stream, "cs_v_max[ {} ]={}\n", viewIdx, cs_v_max());
+  return stream;
+}
+
+auto ChromaScaling::decodeFrom(Common::InputBitstream &bitstream) -> ChromaScaling {
+  auto x = ChromaScaling{};
+
+  x.cs_u_min(bitstream.getUint16());
+  x.cs_u_max(bitstream.getUint16());
+  x.cs_v_min(bitstream.getUint16());
+  x.cs_v_max(bitstream.getUint16());
+
+  return x;
+}
+
+void ChromaScaling::encodeTo(Common::OutputBitstream &bitstream) const {
+  bitstream.putUint16(cs_u_min());
+  bitstream.putUint16(cs_u_max());
+  bitstream.putUint16(cs_v_min());
+  bitstream.putUint16(cs_v_max());
+}
+
 auto CameraExtrinsics::printTo(std::ostream &stream, uint16_t viewIdx) const -> std::ostream & {
   fmt::print(stream, "ce_view_pos_x[ {} ]={}\n", viewIdx, ce_view_pos_x());
   fmt::print(stream, "ce_view_pos_y[ {} ]={}\n", viewIdx, ce_view_pos_y());
@@ -422,6 +448,11 @@ auto MivViewParamsList::camera_intrinsics(uint16_t viewIdx) const -> const Camer
   return m_camera_intrinsics[viewIdx];
 }
 
+auto MivViewParamsList::chroma_scaling(uint16_t viewIdx) const -> const ChromaScaling & {
+  VERIFY_MIVBITSTREAM(viewIdx < m_mvp_chroma_scaling_values.size());
+  return m_mvp_chroma_scaling_values[viewIdx];
+}
+
 auto MivViewParamsList::depth_quantization(uint16_t viewIdx) const -> const DepthQuantization & {
   if (mvp_depth_quantization_params_equal_flag()) {
     viewIdx = 0; // Convenience
@@ -439,6 +470,7 @@ auto MivViewParamsList::pruning_parent(uint16_t viewIdx) const -> const PruningP
 auto MivViewParamsList::mvp_num_views_minus1(uint16_t value) -> MivViewParamsList & {
   m_camera_extrinsics.resize(value + size_t{1});
   m_mvpInpaintFlag.resize(value + size_t{1}, false);
+  m_mvp_chroma_scaling_values.resize(value + size_t{1});
   return *this;
 }
 
@@ -459,7 +491,6 @@ auto MivViewParamsList::mvp_view_id(uint16_t viewIdx, ViewId viewId) -> MivViewP
 
 auto MivViewParamsList::mvp_inpaint_flag(uint16_t viewIdx, bool value) -> MivViewParamsList & {
   PRECONDITION(viewIdx <= mvp_num_views_minus1());
-
   m_mvpInpaintFlag[viewIdx] = value;
   return *this;
 }
@@ -491,6 +522,11 @@ auto MivViewParamsList::camera_extrinsics(uint16_t viewIdx) noexcept -> CameraEx
 auto MivViewParamsList::camera_intrinsics(uint16_t viewIdx) noexcept -> CameraIntrinsics & {
   PRECONDITION(viewIdx < m_camera_intrinsics.size());
   return m_camera_intrinsics[viewIdx];
+}
+
+auto MivViewParamsList::chroma_scaling(uint16_t viewIdx) noexcept -> ChromaScaling & {
+  PRECONDITION(viewIdx < m_mvp_chroma_scaling_values.size());
+  return m_mvp_chroma_scaling_values[viewIdx];
 }
 
 auto MivViewParamsList::depth_quantization(uint16_t viewIdx) noexcept -> DepthQuantization & {
@@ -547,6 +583,13 @@ auto operator<<(std::ostream &stream, const MivViewParamsList &x) -> std::ostrea
       x.pruning_parent(v).printTo(stream, v);
     }
   }
+
+#if ENABLE_M63397
+  for (uint16_t v = 0; v <= x.mvp_num_views_minus1(); ++v) {
+    x.chroma_scaling(v).printTo(stream, v);
+  }
+#endif
+
   return stream;
 }
 
@@ -560,7 +603,8 @@ auto MivViewParamsList::operator==(const MivViewParamsList &other) const noexcep
              other.m_mvp_depth_quantization_params_equal_flag &&
          m_depth_quantization == other.m_depth_quantization &&
          m_mvp_pruning_graph_params_present_flag == other.m_mvp_pruning_graph_params_present_flag &&
-         m_pruning_parent == other.m_pruning_parent;
+         m_pruning_parent == other.m_pruning_parent &&
+         m_mvp_chroma_scaling_values == other.m_mvp_chroma_scaling_values;
 }
 
 auto MivViewParamsList::operator!=(const MivViewParamsList &other) const noexcept -> bool {
@@ -615,6 +659,15 @@ auto MivViewParamsList::decodeFrom(Common::InputBitstream &bitstream,
       x.pruning_parent(v) = PruningParents::decodeFrom(bitstream, x.mvp_num_views_minus1());
     }
   }
+
+#if ENABLE_M63397
+  if (casps.casps_miv_extension().casme_chroma_scaling_present_flag()) {
+    for (uint16_t v = 0; v <= x.mvp_num_views_minus1(); ++v) {
+      x.chroma_scaling(v) = ChromaScaling::decodeFrom(bitstream);
+    }
+  }
+#endif
+
   return x;
 }
 
@@ -662,6 +715,14 @@ void MivViewParamsList::encodeTo(Common::OutputBitstream &bitstream,
       pruning_parent(v).encodeTo(bitstream, mvp_num_views_minus1());
     }
   }
+
+#if ENABLE_M63397
+  if (casps.casps_miv_extension().casme_chroma_scaling_present_flag()) {
+    for (uint16_t v = 0; v <= mvp_num_views_minus1(); ++v) {
+      chroma_scaling(v).encodeTo(bitstream);
+    }
+  }
+#endif
 }
 
 auto CafMivExtension::came_update_extrinsics_flag() const -> bool {
@@ -676,6 +737,10 @@ auto CafMivExtension::came_update_intrinsics_flag() const -> bool {
 
 auto CafMivExtension::came_update_depth_quantization_flag() const -> bool {
   return m_came_update_depth_quantization_flag.value_or(false);
+}
+
+auto CafMivExtension::came_update_chroma_scaling_flag() const -> bool {
+  return m_came_update_chroma_scaling_flag.value_or(false);
 }
 
 auto CafMivExtension::miv_view_params_list() const -> const MivViewParamsList & {
@@ -702,6 +767,13 @@ auto CafMivExtension::miv_view_params_update_depth_quantization() const
   VERIFY_MIVBITSTREAM(came_update_depth_quantization_flag());
   VERIFY_MIVBITSTREAM(m_miv_view_params_update_depth_quantization.has_value());
   return *m_miv_view_params_update_depth_quantization;
+}
+
+auto CafMivExtension::miv_view_params_update_chroma_scaling() const
+    -> const MivViewParamsUpdateChromaScaling & {
+  VERIFY_MIVBITSTREAM(came_update_chroma_scaling_flag());
+  VERIFY_MIVBITSTREAM(m_miv_view_params_update_chroma_scaling.has_value());
+  return *m_miv_view_params_update_chroma_scaling;
 }
 
 auto CafMivExtension::miv_view_params_list() noexcept -> MivViewParamsList & {
@@ -738,6 +810,15 @@ auto CafMivExtension::miv_view_params_update_depth_quantization() noexcept
   return *m_miv_view_params_update_depth_quantization;
 }
 
+auto CafMivExtension::miv_view_params_update_chroma_scaling() noexcept
+    -> MivViewParamsUpdateChromaScaling & {
+  came_update_chroma_scaling_flag(true);
+  if (!m_miv_view_params_update_chroma_scaling) {
+    m_miv_view_params_update_chroma_scaling = MivViewParamsUpdateChromaScaling{};
+  }
+  return *m_miv_view_params_update_chroma_scaling;
+}
+
 auto CafMivExtension::came_update_extrinsics_flag(bool value) noexcept -> CafMivExtension & {
   m_came_update_extrinsics_flag = value;
   return *this;
@@ -754,6 +835,11 @@ auto CafMivExtension::came_update_depth_quantization_flag(bool value) noexcept
   return *this;
 }
 
+auto CafMivExtension::came_update_chroma_scaling_flag(bool value) noexcept -> CafMivExtension & {
+  m_came_update_chroma_scaling_flag = value;
+  return *this;
+}
+
 auto operator<<(std::ostream &stream, const CafMivExtension &x) -> std::ostream & {
   if (x.m_miv_view_params_list) {
     stream << "miv_view_params_list=" << x.miv_view_params_list();
@@ -766,6 +852,10 @@ auto operator<<(std::ostream &stream, const CafMivExtension &x) -> std::ostream 
       stream << "came_update_depth_quantization_flag=" << std::boolalpha
              << x.came_update_depth_quantization_flag() << '\n';
     }
+    if (x.m_came_update_chroma_scaling_flag) {
+      stream << "came_update_chroma_scaling_flag=" << std::boolalpha
+             << x.came_update_chroma_scaling_flag() << '\n';
+    }
     if (x.came_update_extrinsics_flag()) {
       stream << x.miv_view_params_update_extrinsics();
     }
@@ -774,6 +864,9 @@ auto operator<<(std::ostream &stream, const CafMivExtension &x) -> std::ostream 
     }
     if (x.m_came_update_depth_quantization_flag.value_or(false)) {
       stream << x.miv_view_params_update_depth_quantization();
+    }
+    if (x.m_came_update_chroma_scaling_flag.value_or(false)) {
+      stream << x.miv_view_params_update_chroma_scaling();
     }
   }
   return stream;
@@ -788,7 +881,8 @@ auto CafMivExtension::operator==(const CafMivExtension &other) const -> bool {
   }
   if (came_update_extrinsics_flag() != other.came_update_extrinsics_flag() ||
       came_update_intrinsics_flag() != other.came_update_intrinsics_flag() ||
-      m_came_update_depth_quantization_flag != other.m_came_update_depth_quantization_flag) {
+      m_came_update_depth_quantization_flag != other.m_came_update_depth_quantization_flag ||
+      m_came_update_chroma_scaling_flag != other.m_came_update_chroma_scaling_flag) {
     return false;
   }
   if (came_update_extrinsics_flag() &&
@@ -802,6 +896,10 @@ auto CafMivExtension::operator==(const CafMivExtension &other) const -> bool {
   if (m_came_update_depth_quantization_flag.value_or(false) &&
       miv_view_params_update_depth_quantization() !=
           other.miv_view_params_update_depth_quantization()) {
+    return false;
+  }
+  if (m_came_update_chroma_scaling_flag.value_or(false) &&
+      miv_view_params_update_chroma_scaling() != other.miv_view_params_update_chroma_scaling()) {
     return false;
   }
 
@@ -827,7 +925,11 @@ auto CafMivExtension::decodeFrom(Common::InputBitstream &bitstream, const NalUni
     if (casme.casme_depth_quantization_params_present_flag()) {
       x.came_update_depth_quantization_flag(bitstream.getFlag());
     }
-
+#if ENABLE_M63397
+    if (casme.casme_chroma_scaling_present_flag()) {
+      x.came_update_chroma_scaling_flag(bitstream.getFlag());
+    }
+#endif
     if (x.came_update_extrinsics_flag()) {
       x.miv_view_params_update_extrinsics() = MivViewParamsUpdateExtrinsics::decodeFrom(bitstream);
     }
@@ -837,6 +939,10 @@ auto CafMivExtension::decodeFrom(Common::InputBitstream &bitstream, const NalUni
     if (x.came_update_depth_quantization_flag()) {
       x.miv_view_params_update_depth_quantization() =
           MivViewParamsUpdateDepthQuantization::decodeFrom(bitstream);
+    }
+    if (x.came_update_chroma_scaling_flag()) {
+      x.miv_view_params_update_chroma_scaling() =
+          MivViewParamsUpdateChromaScaling::decodeFrom(bitstream);
     }
   }
 
@@ -854,6 +960,11 @@ void CafMivExtension::encodeTo(Common::OutputBitstream &bitstream, const NalUnit
     if (casps.casps_miv_extension().casme_depth_quantization_params_present_flag()) {
       bitstream.putFlag(came_update_depth_quantization_flag());
     }
+#if ENABLE_M63397
+    if (casps.casps_miv_extension().casme_chroma_scaling_present_flag()) {
+      bitstream.putFlag(came_update_chroma_scaling_flag());
+    }
+#endif
     if (came_update_extrinsics_flag()) {
       miv_view_params_update_extrinsics().encodeTo(bitstream);
     }
@@ -862,6 +973,9 @@ void CafMivExtension::encodeTo(Common::OutputBitstream &bitstream, const NalUnit
     }
     if (came_update_depth_quantization_flag()) {
       miv_view_params_update_depth_quantization().encodeTo(bitstream);
+    }
+    if (came_update_chroma_scaling_flag()) {
+      miv_view_params_update_chroma_scaling().encodeTo(bitstream);
     }
   }
 }
@@ -1098,4 +1212,80 @@ auto MivViewParamsUpdateDepthQuantization::operator!=(
     const MivViewParamsUpdateDepthQuantization &other) const noexcept -> bool {
   return !operator==(other);
 }
+
+auto MivViewParamsUpdateChromaScaling::mvpucs_num_view_updates_minus1() const noexcept -> uint16_t {
+  return m_mvpucs_num_view_updates_minus1;
+}
+
+auto MivViewParamsUpdateChromaScaling::mvpucs_view_idx(const uint16_t i) const -> uint16_t {
+  VERIFY_MIVBITSTREAM(i < m_mvpucs_view_idx.size());
+  return m_mvpucs_view_idx[i];
+}
+
+auto MivViewParamsUpdateChromaScaling::chroma_scaling(const uint16_t i) const
+    -> const ChromaScaling & {
+  VERIFY_MIVBITSTREAM(i < m_chroma_scaling.size());
+  return m_chroma_scaling[i];
+}
+
+auto MivViewParamsUpdateChromaScaling::chroma_scaling(const uint16_t i) noexcept
+    -> ChromaScaling & {
+  PRECONDITION(i < m_chroma_scaling.size());
+  return m_chroma_scaling[i];
+}
+
+auto MivViewParamsUpdateChromaScaling::mvpucs_num_view_updates_minus1(const uint16_t value)
+    -> MivViewParamsUpdateChromaScaling & {
+  m_mvpucs_num_view_updates_minus1 = value;
+  m_mvpucs_view_idx.resize(m_mvpucs_num_view_updates_minus1 + size_t{1});
+  m_chroma_scaling.resize(m_mvpucs_num_view_updates_minus1 + size_t{1});
+  return *this;
+}
+auto MivViewParamsUpdateChromaScaling::mvpucs_view_idx(const uint16_t i,
+                                                       const uint16_t value) noexcept
+    -> MivViewParamsUpdateChromaScaling & {
+  PRECONDITION(i < m_mvpucs_view_idx.size());
+  m_mvpucs_view_idx[i] = value;
+  return *this;
+}
+
+auto operator<<(std::ostream &stream, const MivViewParamsUpdateChromaScaling &x) -> std::ostream & {
+  stream << "mvpucs_num_view_updates_minus1=" << x.mvpucs_num_view_updates_minus1() << '\n';
+  for (uint16_t i = 0; i <= x.mvpucs_num_view_updates_minus1(); ++i) {
+    stream << "mvpucs_view_idx[ " << i << " ]=" << x.mvpucs_view_idx(i) << '\n';
+    x.chroma_scaling(i).printTo(stream, i);
+  }
+  return stream;
+}
+
+void MivViewParamsUpdateChromaScaling::encodeTo(Common::OutputBitstream &bitstream) const {
+  bitstream.putUint16(mvpucs_num_view_updates_minus1());
+  for (uint16_t i = 0; i <= mvpucs_num_view_updates_minus1(); ++i) {
+    bitstream.putUint16(mvpucs_view_idx(i));
+    chroma_scaling(i).encodeTo(bitstream);
+  }
+}
+
+auto MivViewParamsUpdateChromaScaling::decodeFrom(Common::InputBitstream &bitstream)
+    -> MivViewParamsUpdateChromaScaling {
+  auto x = MivViewParamsUpdateChromaScaling{};
+  x.mvpucs_num_view_updates_minus1(bitstream.getUint16());
+  for (uint16_t i = 0; i <= x.mvpucs_num_view_updates_minus1(); ++i) {
+    x.mvpucs_view_idx(i, bitstream.getUint16());
+    x.chroma_scaling(i) = ChromaScaling::decodeFrom(bitstream);
+  }
+  return x;
+}
+
+auto MivViewParamsUpdateChromaScaling::operator==(
+    const MivViewParamsUpdateChromaScaling &other) const noexcept -> bool {
+  return m_mvpucs_num_view_updates_minus1 == other.m_mvpucs_num_view_updates_minus1 &&
+         m_mvpucs_view_idx == other.m_mvpucs_view_idx && m_chroma_scaling == other.m_chroma_scaling;
+}
+
+auto MivViewParamsUpdateChromaScaling::operator!=(
+    const MivViewParamsUpdateChromaScaling &other) const noexcept -> bool {
+  return !operator==(other);
+}
+
 } // namespace TMIV::MivBitstream

@@ -26,6 +26,7 @@
     "ViewOptimizerMethod": "BasicViewAllocator",
     "bitDepthTextureVideo": 10,
     "blockSizeDepthQualityDependent": [16, 32],
+    "chromaScaleEnabledFlag": false,
     "codecGroupIdc": "VVC Main10",
     "configDirectory": "config",
     "dqParamsPresentFlag": false,

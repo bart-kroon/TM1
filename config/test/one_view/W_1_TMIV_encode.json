@@ -22,6 +22,7 @@
     "bitDepthGeometryVideo": 8,
     "bitDepthTextureVideo": 8,
     "blockSizeDepthQualityDependent": [16, 32],
+    "chromaScaleEnabledFlag": false,
     "codecGroupIdc": "VVC Main10",
     "configDirectory": "config",
     "depthOccThresholdAsymmetry": 1.5,

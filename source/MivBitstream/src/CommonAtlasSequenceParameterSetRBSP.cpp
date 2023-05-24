@@ -65,6 +65,9 @@ auto operator<<(std::ostream &stream, const CaspsMivExtension &x) -> std::ostrea
   putField(stream, "casme_depth_low_quality_flag", x.casme_depth_low_quality_flag());
   putField(stream, "casme_depth_quantization_params_present_flag",
            x.casme_depth_quantization_params_present_flag());
+#if ENABLE_M63397
+  putField(stream, "casme_chroma_scaling_present_flag", x.casme_chroma_scaling_present_flag());
+#endif
   putField(stream, "casme_vui_params_present_flag", x.casme_vui_params_present_flag());
   if (x.casme_vui_params_present_flag()) {
     stream << x.vui_parameters();
@@ -76,7 +79,8 @@ auto CaspsMivExtension::operator==(const CaspsMivExtension &other) const noexcep
   return casme_depth_low_quality_flag() == other.casme_depth_low_quality_flag() &&
          casme_depth_quantization_params_present_flag() ==
              other.casme_depth_quantization_params_present_flag() &&
-         casme_vui_params_present_flag() == other.casme_vui_params_present_flag();
+         casme_vui_params_present_flag() == other.casme_vui_params_present_flag() &&
+         casme_chroma_scaling_present_flag() == other.casme_chroma_scaling_present_flag();
 }
 
 auto CaspsMivExtension::operator!=(const CaspsMivExtension &other) const noexcept -> bool {
@@ -87,6 +91,9 @@ auto CaspsMivExtension::decodeFrom(Common::InputBitstream &bitstream) -> CaspsMi
   auto x = CaspsMivExtension{};
   x.casme_depth_low_quality_flag(bitstream.getFlag());
   x.casme_depth_quantization_params_present_flag(bitstream.getFlag());
+#if ENABLE_M63397
+  x.casme_chroma_scaling_present_flag(bitstream.getFlag());
+#endif
   x.casme_vui_params_present_flag(bitstream.getFlag());
   if (x.casme_vui_params_present_flag()) {
     x.vui_parameters(VuiParameters::decodeFrom(bitstream, nullptr));
@@ -97,6 +104,9 @@ auto CaspsMivExtension::decodeFrom(Common::InputBitstream &bitstream) -> CaspsMi
 void CaspsMivExtension::encodeTo(Common::OutputBitstream &bitstream) const {
   bitstream.putFlag(casme_depth_low_quality_flag());
   bitstream.putFlag(casme_depth_quantization_params_present_flag());
+#if ENABLE_M63397
+  bitstream.putFlag(casme_chroma_scaling_present_flag());
+#endif
   bitstream.putFlag(casme_vui_params_present_flag());
   if (casme_vui_params_present_flag()) {
     vui_parameters().encodeTo(bitstream, nullptr);

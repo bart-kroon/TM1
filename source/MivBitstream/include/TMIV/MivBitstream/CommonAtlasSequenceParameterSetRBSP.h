@@ -47,11 +47,13 @@ class CaspsMivExtension {
 public:
   [[nodiscard]] constexpr auto casme_depth_low_quality_flag() const noexcept;
   [[nodiscard]] constexpr auto casme_depth_quantization_params_present_flag() const noexcept;
+  [[nodiscard]] constexpr auto casme_chroma_scaling_present_flag() const noexcept;
   [[nodiscard]] constexpr auto casme_vui_params_present_flag() const noexcept;
   [[nodiscard]] auto vui_parameters() const -> const VuiParameters &;
 
   constexpr auto casme_depth_low_quality_flag(bool value) noexcept -> auto &;
   constexpr auto casme_depth_quantization_params_present_flag(bool value) noexcept -> auto &;
+  constexpr auto casme_chroma_scaling_present_flag(bool value) noexcept -> auto &;
   constexpr auto casme_vui_params_present_flag(bool value) noexcept -> auto &;
   auto vui_parameters(const VuiParameters &value) noexcept -> CaspsMivExtension &;
 
@@ -67,6 +69,7 @@ public:
 private:
   bool m_casme_depth_low_quality_flag{};
   bool m_casme_depth_quantization_params_present_flag{true};
+  bool m_casme_chroma_scaling_present_flag{false};
   bool m_casme_vui_params_present_flag{};
   std::optional<VuiParameters> m_vui_parameters;
 };

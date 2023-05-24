@@ -56,6 +56,7 @@ include(cmake/test_creation.cmake)
 # coordinators.
 
 option(ENABLE_M57419 "Enable experimental support for piecewise linear scaling [MPEG/M57419]" OFF)
+option(ENABLE_M63397 "Enable chroma scaling [MPEG/M63397]" ON)
 
 foreach(
     subdir

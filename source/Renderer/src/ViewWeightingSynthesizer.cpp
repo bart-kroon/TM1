@@ -178,6 +178,8 @@ private:
   float m_blendingFactor;
   float m_overloadFactor;
   int32_t m_filteringPass;
+  int32_t m_edgeBlurringBlockSize;
+  float m_edgeBlurringDepthThreshold;
   std::optional<FilterReprojectedPrunedDepthMapsParams> m_filterReprojectedPrunedDepthMaps;
 
 public:
@@ -187,7 +189,10 @@ public:
       , m_stretchFactor{componentNode.require("stretchFactor").as<float>()}
       , m_blendingFactor{componentNode.require("blendingFactor").as<float>()}
       , m_overloadFactor{componentNode.require("overloadFactor").as<float>()}
-      , m_filteringPass{componentNode.require("filteringPass").as<int32_t>()} {
+      , m_filteringPass{componentNode.require("filteringPass").as<int32_t>()}
+      , m_edgeBlurringBlockSize{componentNode.require("edgeBlurringBlockSize").as<int32_t>()}
+      , m_edgeBlurringDepthThreshold{
+            componentNode.require("edgeBlurringDepthThreshold").as<float>()} {
     if (const auto &node = componentNode.optional("filterReprojectedPrunedDepthMaps")) {
       m_filterReprojectedPrunedDepthMaps = FilterReprojectedPrunedDepthMapsParams{
           node.require("erodeCount").as<int32_t>(), node.require("dilateCount").as<int32_t>()};
@@ -250,6 +255,10 @@ public:
       }
     }
 
+    // 8.5) Depth-based texture blurring
+    blurEdges();
+
+    // 9) Quantization
     auto viewport = Common::RendererFrame{
         quantizeTexture(m_viewportColor, cameraConfig.bitDepthTexture),
         MivBitstream::DepthTransform{cameraConfig.viewParams.dq, cameraConfig.bitDepthGeometry}
@@ -264,6 +273,58 @@ private:
   }
 
   [[nodiscard]] auto hasInpaintedViews() const -> bool { return !m_inpaintedViews.empty(); }
+
+  void blurEdges() {
+    const auto halfWindowSize = m_edgeBlurringBlockSize / 2;
+
+    const auto W = m_viewportVisibility.width();
+    const auto H = m_viewportVisibility.height();
+
+    std::vector<float> out;
+
+    for (size_t i = 0U; i < m_viewportColor.size(); i++) {
+      const auto h = i / W;
+      const auto w = i % W;
+
+      auto cnt = 0;
+      auto sumY = 0.0F;
+      auto maxD = -65535.0F;
+      auto minD = 65535.0F;
+
+      for (int32_t hh = -halfWindowSize; hh <= halfWindowSize; hh++) {
+        for (int32_t ww = -halfWindowSize; ww <= halfWindowSize; ww++) {
+          if (static_cast<int32_t>(h) + hh < 0 || h + hh >= H || static_cast<int32_t>(w) + ww < 0 ||
+              w + ww >= W) {
+            continue;
+          }
+          const auto pixelPos = (h + hh) * W + (w + ww);
+          const auto valD = m_viewportVisibility[pixelPos];
+
+          if (std::isnan(valD) || valD == 0) {
+            continue;
+          }
+
+          maxD = std::max(maxD, valD);
+          minD = std::min(minD, valD);
+
+          const auto distToCenter = std::abs(hh) + std::abs(ww);
+          const auto weight = halfWindowSize + halfWindowSize + 1 - distToCenter;
+
+          cnt += weight;
+          sumY += static_cast<float>(weight) * m_viewportColor[pixelPos].x();
+        }
+      }
+
+      if (maxD - minD < m_edgeBlurringDepthThreshold) {
+        out.push_back(m_viewportColor[i].x());
+      } else {
+        out.push_back(sumY / static_cast<float>(cnt));
+      }
+    }
+    for (size_t i = 0U; i < m_viewportColor.size(); i++) {
+      m_viewportColor[i].x() = out[i];
+    }
+  }
 
   void findInpaintedView(const MivBitstream::AccessUnit &frame) {
     m_inpaintedViews.clear();

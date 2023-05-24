@@ -13,6 +13,8 @@
         "ViewWeightingSynthesizer": {
             "angularScaling": 1.5,
             "blendingFactor": 0.03,
+            "edgeBlurringBlockSize": 5,
+            "edgeBlurringDepthThreshold": 0.04,
             "filteringPass": 1,
             "minimalWeight": 2.5,
             "overloadFactor": 2.0,

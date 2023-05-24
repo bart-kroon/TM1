@@ -54,6 +54,8 @@ TEST_CASE("TMIV::Renderer::ViewWeightingSynthesizer") {
     "minimalWeight": 0.0,
     "stretchFactor": 0.0,
     "blendingFactor": 0.0,
+    "edgeBlurringBlockSize": 0,
+    "edgeBlurringDepthThreshold": 0.0,
     "overloadFactor": 0.0,
     "filteringPass": 0
 })"sv)};
@@ -64,6 +66,8 @@ TEST_CASE("TMIV::Renderer::ViewWeightingSynthesizer") {
 {
     "angularScaling": 1.5,
     "blendingFactor": 0.03,
+    "edgeBlurringBlockSize": 5,
+    "edgeBlurringDepthThreshold": 0.04,
     "filteringPass": 1,
     "minimalWeight": 2.5,
     "overloadFactor": 2.0,

@@ -56,7 +56,6 @@ Configuration::Configuration(const Common::Json &componentNode)
     , oneViewPerAtlasFlag{componentNode.require("oneViewPerAtlasFlag").as<bool>()}
     , geometryScaleEnabledFlag{haveGeometry && haveTexture &&
                                componentNode.require("geometryScaleEnabledFlag").as<bool>()}
-    , dilationIter{componentNode.require("nonAggregatedMaskDilationIter").as<int32_t>()}
     , dynamicDepthRange{componentNode.require("dynamicDepthRange").as<bool>()}
     , textureOffsetFlag{haveTexture && componentNode.require("textureOffsetEnabledFlag").as<bool>()}
     , patchRedundancyRemoval{componentNode.require("patchRedundancyRemoval").as<bool>()}

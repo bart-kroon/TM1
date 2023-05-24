@@ -169,7 +169,8 @@ auto Encoder::Impl::m57419_makeHistogram(int32_t piece_num, size_t numOfFrames, 
             geometryUnit[ki][kj] = m_transportViews[f][v].geometry.getPlane(0)(ui, uj);
           }
         }
-        if (m_nonAggregatedMask[v](i, j)[f] && m57419_edgeDetection(geometryUnit, line_thres)) {
+        if (m_aggregator->getAggregatedMask()[v].getPlane(0)(i, j) &&
+            m57419_edgeDetection(geometryUnit, line_thres)) {
           int32_t interval_idx =
               std::clamp(static_cast<int32_t>(
                              (static_cast<double>(geometryUnit[1][1] - minDepthVal)) / interval),

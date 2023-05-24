@@ -69,13 +69,8 @@ public:
 private:
   [[nodiscard]] auto config() const noexcept -> const Configuration & { return m_config; }
 
-  // Encoder_prepareAccessUnit.cpp
-  void resetNonAggregatedMask();
-
   // Encoder_pushFrame.cpp
   void pushSingleEntityFrame(Common::DeepFrameList sourceViews);
-  void updateNonAggregatedMask(const Common::DeepFrameList &transportViews,
-                               const Common::FrameList<uint8_t> &masks);
   void pushMultiEntityFrame(Common::DeepFrameList sourceViews);
   static auto entitySeparator(const Common::DeepFrameList &transportViews,
                               Common::SampleValue entityId) -> Common::DeepFrameList;
@@ -93,10 +88,10 @@ private:
   [[nodiscard]] auto calculateBtpm() const -> std::vector<std::vector<std::vector<int32_t>>>;
   void adaptBtpmToPatchCount(std::vector<std::vector<std::vector<int32_t>>> &btpm) const;
   [[nodiscard]] auto isRedundantBlock(Common::Vec2i topLeft, Common::Vec2i bottomRight,
-                                      uint16_t viewIdx, int32_t frameIdx) const -> bool;
+                                      uint16_t viewIdx) const -> bool;
   auto writePatchInAtlas(const MivBitstream::PatchParams &patchParams,
                          const Common::DeepFrame &view, Common::DeepFrameList &frame,
-                         int32_t frameIdx, size_t patchIdx) -> TextureStats;
+                         size_t patchIdx) -> TextureStats;
   void adaptAtlas(const MivBitstream::PatchParams &patchParams, Common::DeepFrame &atlas,
                   int32_t yOcc, int32_t xOcc, const Common::Vec2i &pView,
                   const Common::Vec2i &pAtlas) const;
@@ -140,8 +135,6 @@ private:
   [[nodiscard]] auto params() const noexcept -> const EncoderParams & { return m_params; }
 
   // Mask aggregation state
-  using NonAggregatedMask = Common::Mat<std::bitset<maxIntraPeriod>>;
-  std::vector<NonAggregatedMask> m_nonAggregatedMask;
   std::vector<Common::FrameList<uint8_t>> m_aggregatedEntityMask;
   size_t m_maxLumaSamplesPerFrame{};
 

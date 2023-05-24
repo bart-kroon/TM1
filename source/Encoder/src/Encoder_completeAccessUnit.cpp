@@ -572,8 +572,6 @@ void Encoder::Impl::encodePatchTextureOffset(const PatchTextureStats &stats) {
 
 // NOLINTNEXTLINE(readability-function-cognitive-complexity,readability-function-size)
 void Encoder::Impl::constructVideoFrames() {
-  int32_t frameIdx = 0;
-
   const auto &vps = params().vps;
 
   auto patchTextureStats = PatchTextureStats(params().patchParamsList.size());
@@ -633,13 +631,12 @@ void Encoder::Impl::constructVideoFrames() {
         Common::DeepFrameList tempViews;
         tempViews.push_back(view);
         const auto &entityViews = entitySeparator(tempViews, patch.atlasPatchEntityId());
-        patchTextureStats[p] += writePatchInAtlas(patch, entityViews[0], atlasList, frameIdx, p);
+        patchTextureStats[p] += writePatchInAtlas(patch, entityViews[0], atlasList, p);
       } else {
-        patchTextureStats[p] += writePatchInAtlas(patch, view, atlasList, frameIdx, p);
+        patchTextureStats[p] += writePatchInAtlas(patch, view, atlasList, p);
       }
     }
     m_videoFrameBuffer.push_back(std::move(atlasList));
-    ++frameIdx;
   }
 
   if (m_config.textureOffsetFlag) {
@@ -649,7 +646,7 @@ void Encoder::Impl::constructVideoFrames() {
 }
 
 auto Encoder::Impl::isRedundantBlock(Common::Vec2i topLeft, Common::Vec2i bottomRight,
-                                     uint16_t viewIdx, int32_t frameIdx) const -> bool {
+                                     uint16_t viewIdx) const -> bool {
   if (!m_config.patchRedundancyRemoval) {
     return false;
   }
@@ -658,7 +655,7 @@ auto Encoder::Impl::isRedundantBlock(Common::Vec2i topLeft, Common::Vec2i bottom
 
   for (int32_t y = topLeft.y(); y < bottomRight.y(); ++y) {
     for (int32_t x = topLeft.x(); x < bottomRight.x(); ++x) {
-      if (m_nonAggregatedMask[viewIdx](y, x)[frameIdx]) {
+      if (m_aggregator->getAggregatedMask()[viewIdx].getPlane(0)(y, x) != 0U) {
         return false;
       }
     }
@@ -687,7 +684,7 @@ void adaptPatchStatsToTexture(TextureStats &patchStats, const Common::DeepFrame 
 // NOLINTNEXTLINE(readability-function-cognitive-complexity,readability-function-size)
 auto Encoder::Impl::writePatchInAtlas(const MivBitstream::PatchParams &patchParams,
                                       const Common::DeepFrame &view, Common::DeepFrameList &frame,
-                                      int32_t frameIdx, size_t patchIdx) -> TextureStats {
+                                      size_t patchIdx) -> TextureStats {
   const auto k = params().vps.indexOf(patchParams.atlasId());
   auto &atlas = frame[k];
 
@@ -708,8 +705,8 @@ auto Encoder::Impl::writePatchInAtlas(const MivBitstream::PatchParams &patchPara
   for (int32_t vBlock = 0; vBlock < sizeV; vBlock += m_blockSize) {
     for (int32_t uBlock = 0; uBlock < sizeU; uBlock += m_blockSize) {
       const auto viewIdx = params().viewParamsList.indexOf(patchParams.atlasPatchProjectionId());
-      const auto redundant = isRedundantBlock({posU + uBlock, posV + vBlock},
-                                              {posU + sizeU, posV + sizeV}, viewIdx, frameIdx);
+      const auto redundant =
+          isRedundantBlock({posU + uBlock, posV + vBlock}, {posU + sizeU, posV + sizeV}, viewIdx);
       int32_t yOcc = 0;
       int32_t xOcc = 0;
       for (int32_t v = vBlock; v < vBlock + m_blockSize && v < sizeV; ++v) {

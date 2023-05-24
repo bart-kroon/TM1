@@ -71,8 +71,7 @@ auto configuration1() {
     "m57419_intervalNumber": 16,
     "m57419_piecewiseDepthLinearScaling": false,
     "depthOccThresholdIfSet": [0.00390625,0.0625],
-    "depthOccThresholdAsymmetry": 1.5,
-    "nonAggregatedMaskDilationIter": 0
+    "depthOccThresholdAsymmetry": 1.5
 })"sv)};
 }
 

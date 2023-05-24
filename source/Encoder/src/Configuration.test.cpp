@@ -80,8 +80,7 @@ TEST_CASE("TMIV::Encoder::Configuration") {
     "m57419_intervalNumber": 16,
     "m57419_edgeThreshold": 40,
     "depthOccThresholdIfSet": [0.00390625, 0.0625],
-    "depthOccThresholdAsymmetry": 1.5,
-    "nonAggregatedMaskDilationIter": 0
+    "depthOccThresholdAsymmetry": 1.5
 })"sv);
 
     const auto unit = Configuration{root};
@@ -110,7 +109,6 @@ TEST_CASE("TMIV::Encoder::Configuration") {
     CHECK(unit.reconstructionIdc == PtlProfileReconstructionIdc::Rec_Unconstrained);
     CHECK(unit.levelIdc == PtlLevelIdc::Level_2_5);
     CHECK_FALSE(unit.oneV3cFrameOnly);
-    CHECK(unit.dilationIter == 0);
     CHECK_FALSE(unit.viewingSpace.has_value());
     CHECK(unit.overrideAtlasFrameSizes.empty());
 
@@ -194,8 +192,7 @@ TEST_CASE("TMIV::Encoder::Configuration") {
     "m57419_intervalNumber": 16,
     "m57419_edgeThreshold": 40,
     "depthOccThresholdIfSet": [0.00390625, 0.0625],
-    "depthOccThresholdAsymmetry": 1.5,
-    "nonAggregatedMaskDilationIter": 5
+    "depthOccThresholdAsymmetry": 1.5
 })"sv);
 
     const auto unit = Configuration{root};
@@ -218,7 +215,6 @@ TEST_CASE("TMIV::Encoder::Configuration") {
     CHECK(unit.codecGroupIdc == PtlProfileCodecGroupIdc::AVC_Progressive_High);
     CHECK(unit.toolsetIdc == PtlProfileToolsetIdc::MIV_Geometry_Absent);
     CHECK(unit.oneV3cFrameOnly);
-    CHECK(unit.dilationIter == 5);
     CHECK_FALSE(unit.viewingSpace.has_value());
     CHECK(unit.overrideAtlasFrameSizes.empty());
     CHECK_FALSE(unit.depthLowQualityFlag.has_value());
@@ -288,8 +284,7 @@ TEST_CASE("TMIV::Encoder::Configuration") {
     "m57419_intervalNumber": 16,
     "m57419_edgeThreshold": 40,
     "depthOccThresholdIfSet": [0.00390625, 0.0625],
-    "depthOccThresholdAsymmetry": 1.5,
-    "nonAggregatedMaskDilationIter": 5
+    "depthOccThresholdAsymmetry": 1.5
 })"sv);
 
     const auto unit = Configuration{root};
@@ -329,8 +324,7 @@ TEST_CASE("TMIV::Encoder::Configuration") {
     "m57419_intervalNumber": 16,
     "m57419_edgeThreshold": 40,
     "depthOccThresholdIfSet": [0.00390625, 0.0625],
-    "depthOccThresholdAsymmetry": 1.5,
-    "nonAggregatedMaskDilationIter": 5
+    "depthOccThresholdAsymmetry": 1.5
 })"sv);
 
     const auto unit = Configuration{root};

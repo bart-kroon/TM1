@@ -48,7 +48,6 @@ void Encoder::Impl::pushFrame(Common::DeepFrameList sourceViews) {
 void Encoder::Impl::pushSingleEntityFrame(Common::DeepFrameList sourceViews) {
   auto transportViews = m_viewOptimizer->optimizeFrame(std::move(sourceViews));
   const auto masks = m_pruner->prune(m_transportParams.viewParamsList, transportViews);
-  updateNonAggregatedMask(transportViews, masks);
   m_transportViews.push_back(std::move(transportViews));
   m_aggregator->pushMask(masks);
 }
@@ -81,46 +80,7 @@ auto forNeighbors(int32_t i, int32_t j, std::array<size_t, 2> sizes, F f) -> boo
   }
   return true;
 }
-
-auto dilate(const Common::Mat<uint8_t> &mask) -> Common::Mat<uint8_t> {
-  Common::Mat<uint8_t> result{mask.sizes()};
-  forPixels(mask.sizes(), [&](int32_t i, int32_t j) {
-    result(i, j) =
-        forNeighbors(i, j, mask.sizes(), [&mask](int32_t n, int32_t m) { return mask(n, m) == 0; })
-            ? 0
-            : 255;
-  });
-  return result;
-}
 } // namespace
-
-void Encoder::Impl::updateNonAggregatedMask(const Common::DeepFrameList &transportViews,
-                                            const Common::FrameList<uint8_t> &masks) {
-  const auto frameIdx = m_transportViews.size();
-  Common::FrameList<uint8_t> dilatedMasks = masks; // Atlas dilation
-
-  // Atlas dilation
-  if (params().casps.casps_miv_extension().casme_depth_low_quality_flag()) {
-    for (size_t viewIdx = 0; viewIdx < masks.size(); ++viewIdx) {
-      for (int32_t n = 0; n < m_config.dilationIter; ++n) {
-        dilatedMasks[viewIdx].getPlane(0) = dilate(dilatedMasks[viewIdx].getPlane(0));
-      }
-    }
-  }
-
-  for (size_t viewIdx = 0; viewIdx < masks.size(); ++viewIdx) {
-    const auto height = transportViews[viewIdx].texture.getHeight();
-    const auto width = transportViews[viewIdx].texture.getWidth();
-
-    for (int32_t i = 0; i < height; i++) {
-      for (int32_t j = 0; j < width; j++) {
-        if (dilatedMasks[viewIdx].getPlane(0)(i, j) != 0) {
-          m_nonAggregatedMask[viewIdx](i, j)[frameIdx] = true;
-        }
-      }
-    }
-  }
-}
 
 void Encoder::Impl::pushMultiEntityFrame(Common::DeepFrameList sourceViews) {
   auto transportViews = m_viewOptimizer->optimizeFrame(std::move(sourceViews));
@@ -141,7 +101,6 @@ void Encoder::Impl::pushMultiEntityFrame(Common::DeepFrameList sourceViews) {
     mergeMasks(mergedMasks, masks);
   }
 
-  updateNonAggregatedMask(transportViews, mergedMasks);
   m_transportViews.push_back(std::move(transportViews));
   m_aggregator->pushMask(mergedMasks);
 }

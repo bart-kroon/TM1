@@ -35,18 +35,8 @@
 
 namespace TMIV::Encoder {
 void Encoder::Impl::prepareAccessUnit() {
-  resetNonAggregatedMask();
   m_transportViews.clear();
   m_aggregatedEntityMask.clear();
   m_aggregator->prepareAccessUnit();
-}
-
-void Encoder::Impl::resetNonAggregatedMask() {
-  m_nonAggregatedMask.clear();
-  for (const auto &viewParams : m_transportParams.viewParamsList) {
-    m_nonAggregatedMask.push_back(
-        NonAggregatedMask{{viewParams.ci.ci_projection_plane_height_minus1() + size_t{1},
-                           viewParams.ci.ci_projection_plane_width_minus1() + size_t{1}}});
-  }
 }
 } // namespace TMIV::Encoder

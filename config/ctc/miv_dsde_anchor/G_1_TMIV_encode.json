@@ -47,7 +47,6 @@
     "maxEntityId": 0,
     "maxLumaPictureSize": 8912896,
     "maxLumaSampleRate": 1069547520.0,
-    "nonAggregatedMaskDilationIter": 16,
     "numGroups": 0,
     "oneV3cFrameOnly": false,
     "oneViewPerAtlasFlag": false,

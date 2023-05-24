@@ -128,7 +128,9 @@ def main():
                 print(f"{CLANG_TIDY}: {result.file}", flush=True)
             else:
                 error_count += 1
-                what = result.stdout.decode().replace("/builds/software/MPEG/MIV/RS/TM1/", "")
+                what = result.stdout.decode().replace(
+                    "/builds/software/MPEG/Video/MIV/Software/TMIV/", ""
+                )
                 print(f"{CLANG_TIDY}: {result.file}:\n{what}", flush=True)
         except Exception as e:
             error_count += 1

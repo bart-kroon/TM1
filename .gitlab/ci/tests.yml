@@ -5,11 +5,11 @@ Integration test (GCC 12):
   script:
     - >
       python3 scripts/test/integration_test.py
-      /builds/software/MPEG/MIV/RS/TM1/install
-      /builds/software/MPEG/MIV/RS/TM1
+      /builds/software/MPEG/Video/MIV/Software/TMIV/install
+      /builds/software/MPEG/Video/MIV/Software/TMIV
       /tmiv_integration_test
-      /builds/software/MPEG/MIV/RS/TM1/integration_test
-      -r /builds/software/MPEG/MIV/RS/TM1/test/integration_test.md5
+      /builds/software/MPEG/Video/MIV/Software/TMIV/integration_test
+      -r /builds/software/MPEG/Video/MIV/Software/TMIV/test/integration_test.md5
       --deps-install-dir /dependencies/install/gcc-Release
   artifacts:
     when: always

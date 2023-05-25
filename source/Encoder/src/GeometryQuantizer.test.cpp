@@ -66,6 +66,7 @@ SCENARIO("Geometry quantization") {
   GIVEN("View parameters with invalid depth") {
     sourceViewParams.hasOccupancy = true;
     auto sourceSeqParams = TMIV::Encoder::EncoderParams{};
+    sourceSeqParams.vps.vps_miv_extension().vme_embedded_occupancy_enabled_flag(true);
     sourceSeqParams.viewParamsList.push_back(sourceViewParams);
 
     WHEN("Modifying the depth range") {

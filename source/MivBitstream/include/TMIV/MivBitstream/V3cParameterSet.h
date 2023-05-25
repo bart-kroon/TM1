@@ -585,7 +585,7 @@ public:
 
 private:
   bool m_vme_geometry_scale_enabled_flag{};
-  bool m_vme_embedded_occupancy_enabled_flag{true};
+  bool m_vme_embedded_occupancy_enabled_flag{};
   bool m_vme_occupancy_scale_enabled_flag{};
   GroupMapping m_group_mapping;
 };

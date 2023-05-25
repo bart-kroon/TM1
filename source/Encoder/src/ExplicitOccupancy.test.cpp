@@ -42,8 +42,7 @@ SCENARIO("Explicit occupancy") {
   sourceParams.vps.vps_atlas_count_minus1(1)
       .vps_atlas_id(0, TMIV::MivBitstream::AtlasId(0))
       .vps_atlas_id(1, TMIV::MivBitstream::AtlasId(1))
-      .vps_miv_extension()
-      .vme_embedded_occupancy_enabled_flag(false);
+      .vps_miv_extension() = {};
   sourceParams.casps.casps_miv_extension().casme_depth_low_quality_flag(true);
   sourceParams.atlas.emplace_back();
   sourceParams.atlas[0].asps.asps_frame_width(1920);

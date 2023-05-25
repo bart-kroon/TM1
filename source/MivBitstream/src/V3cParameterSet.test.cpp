@@ -618,7 +618,7 @@ gm_group_count=0
         .attribute_information(j1, {})
         .vps_packed_video_present_flag(j2, true)
         .packing_information(j2, packInfo)
-        .vps_miv_extension(VpsMivExtension{})
+        .vps_miv_extension(VpsMivExtension{}.vme_embedded_occupancy_enabled_flag(true))
         .vps_extension(static_cast<VpsExtensionType>(63))
         .vps_extension_data_byte() = {2, 250, 15};
     vps.calculateExtensionLengths();
@@ -783,7 +783,7 @@ vps_extension_data_byte=15
         .vps_occupancy_video_present_flag(j0, false)
         .vps_attribute_video_present_flag(j0, true)
         .attribute_information(j0, y)
-        .vps_miv_extension(VpsMivExtension{});
+        .vps_miv_extension(VpsMivExtension{}.vme_embedded_occupancy_enabled_flag(true));
     vps.calculateExtensionLengths();
 
     REQUIRE(toString(vps) == R"(ptl_tier_flag=false

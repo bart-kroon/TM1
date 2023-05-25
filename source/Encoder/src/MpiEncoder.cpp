@@ -190,8 +190,6 @@ void MpiEncoder::prepareSequence(const MivBitstream::SequenceConfig &sequenceCon
         .vps_frame_height(j, m_overrideAtlasFrameSizes[k].y())
         .vps_attribute_video_present_flag(j, true);
 
-    vps.vps_miv_extension().vme_embedded_occupancy_enabled_flag(false);
-
     vps.attribute_information(j).ai_attribute_count(2);
 
     static constexpr auto textureBitDepth = 10;

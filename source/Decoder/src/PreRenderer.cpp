@@ -71,12 +71,12 @@ void PreRenderer::rescaleTexture(const MivBitstream::ViewParamsList &vpl,
       const auto v = pp.atlasPatchProjectionId();
 
       auto &valueU = frame2.getPlane(1)(i, j);
-      valueU =
-          valueU * (vpl[v].cs.cs_u_max() - vpl[v].cs.cs_u_min()) / maxValue + vpl[v].cs.cs_u_min();
+      valueU = Common::downCast<Common::DefaultElement>(
+          valueU * (vpl[v].cs.cs_u_max() - vpl[v].cs.cs_u_min()) / maxValue + vpl[v].cs.cs_u_min());
 
       auto &valueV = frame2.getPlane(2)(i, j);
-      valueV =
-          valueV * (vpl[v].cs.cs_v_max() - vpl[v].cs.cs_v_min()) / maxValue + vpl[v].cs.cs_v_min();
+      valueV = Common::downCast<Common::DefaultElement>(
+          valueV * (vpl[v].cs.cs_v_max() - vpl[v].cs.cs_v_min()) / maxValue + vpl[v].cs.cs_v_min());
     }
   }
 }

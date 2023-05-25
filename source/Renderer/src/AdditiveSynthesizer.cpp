@@ -208,9 +208,9 @@ public:
 
       // Raster the mesh (asynchronously)
       runner = async(
-          [&rasterizer](auto mesh) {
-            rasterizer.submit(std::move(std::get<0>(mesh)), std::move(std::get<2>(mesh)),
-                              std::move(std::get<1>(mesh)));
+          [&rasterizer](auto mesh_) {
+            rasterizer.submit(std::move(std::get<0>(mesh_)), std::move(std::get<2>(mesh_)),
+                              std::move(std::get<1>(mesh_)));
             rasterizer.run();
           },
           std::move(mesh));

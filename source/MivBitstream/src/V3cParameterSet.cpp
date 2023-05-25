@@ -695,7 +695,7 @@ auto AttributeInformation::decodeFrom(Common::InputBitstream &bitstream, const V
       } else {
         n = bitstream.getUExpGolomb<uint8_t>();
       }
-      d -= n + 1;
+      d -= Common::downCast<uint8_t>(n + 1);
     }
     x.ai_attribute_partition_channels_minus1(i, m, d);
     x.ai_attribute_2d_bit_depth_minus1(i, bitstream.readBits<uint8_t>(5));
@@ -738,7 +738,7 @@ void AttributeInformation::encodeTo(Common::OutputBitstream &bitstream, const V3
         n = 0;
       } else {
         n = ai_attribute_partition_channels_minus1(i, k);
-        d -= n + 1;
+        d -= Common::downCast<uint8_t>(n + 1);
       }
     }
     VERIFY_V3CBITSTREAM(ai_attribute_partition_channels_minus1(i, m) == d);
@@ -1054,7 +1054,7 @@ auto PackingInformation::printTo(std::ostream &stream, AtlasId j) const -> std::
                      i, k, pin_attribute_partition_channels_minus1(i, k));
           n = pin_attribute_partition_channels_minus1(i, k);
         }
-        d -= n + 1;
+        d -= Common::downCast<uint8_t>(n + 1);
       }
     }
   }
@@ -1158,7 +1158,7 @@ auto PackingInformation::decodeFrom(Common::InputBitstream &bitstream) -> Packin
           result.pin_attribute_partition_channels_minus1(i, k, bitstream.getUExpGolomb<uint8_t>());
           n = result.pin_attribute_partition_channels_minus1(i, k);
         }
-        d -= n + 1;
+        d -= Common::downCast<uint8_t>(n + 1);
       }
       result.pin_attribute_partition_channels_minus1(i, m, d);
     }
@@ -1226,7 +1226,7 @@ void PackingInformation::encodeTo(Common::OutputBitstream &bitstream) const {
           bitstream.putUExpGolomb(pin_attribute_partition_channels_minus1(i, k));
           n = pin_attribute_partition_channels_minus1(i, k);
         }
-        d -= n + 1;
+        d -= Common::downCast<uint8_t>(n + 1);
       }
     }
   }

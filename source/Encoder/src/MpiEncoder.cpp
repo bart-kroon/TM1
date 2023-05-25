@@ -114,7 +114,7 @@ auto dilateTextureAtlas(Common::Frame<> &textureAtlas,
         }
       }
       if (0 < cnt) {
-        textureNext(row, col) = yuv / cnt;
+        textureNext(row, col) = yuv / static_cast<float>(cnt);
         transparencyNext(row, col) = 255;
       } else {
         textureNext(row, col) = texturePrev(row, col);
@@ -422,9 +422,9 @@ auto MpiEncoder::popAtlas() -> Common::V3cFrameList {
   Common::V3cFrameList atlasList;
 
   for (size_t k = 0; k <= m_params.vps.vps_atlas_count_minus1(); ++k) {
-    const auto j = m_params.vps.vps_atlas_id(k);
-    const auto frameWidth = m_params.vps.vps_frame_width(j);
-    const auto frameHeight = m_params.vps.vps_frame_height(j);
+    const auto atlasId = m_params.vps.vps_atlas_id(k);
+    const auto frameWidth = m_params.vps.vps_frame_width(atlasId);
+    const auto frameHeight = m_params.vps.vps_frame_height(atlasId);
 
     auto textureFrame = Common::Frame<>::yuv444({frameWidth, frameHeight}, 10);
     auto transparencyFrame = Common::Frame<uint8_t>::lumaOnly({frameWidth, frameHeight});

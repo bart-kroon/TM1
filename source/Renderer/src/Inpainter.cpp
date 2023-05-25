@@ -44,7 +44,7 @@ constexpr auto depthBlendingThreshold = 655.36; // 1% of bit depth
 
 enum class InpaintingType { horizontal, vertical, omnidirectional };
 
-// NOLINTNEXTLINE(readability-function-cognitive-complexity)
+// NOLINTNEXTLINE(readability-function-cognitive-complexity, readability-function-size)
 void perform2WayInpainting(Common::RendererFrame &yuvd, InpaintingType inpaintingType,
                            const Common::Mat<int32_t> &nonEmptyNeighbor1,
                            const Common::Mat<int32_t> &nonEmptyNeighbor2,
@@ -131,19 +131,27 @@ void perform2WayInpainting(Common::RendererFrame &yuvd, InpaintingType inpaintin
           const auto weight1 = dist2 / sumdist;
           const auto weight2 = dist1 / sumdist;
 
-          Y(h, w) = Common::assertDownCast<uint16_t>(static_cast<float>(Y(h1, w1)) * weight1);
-          U(h, w) = Common::assertDownCast<uint16_t>(static_cast<float>(U(h1, w1)) * weight1);
-          V(h, w) = Common::assertDownCast<uint16_t>(static_cast<float>(V(h1, w1)) * weight1);
-          D(h, w) = Common::assertDownCast<uint16_t>(static_cast<float>(D(h1, w1)) * weight1);
+          Y(h, w) = Common::assertDownCast<Common::DefaultElement>(static_cast<float>(Y(h1, w1)) *
+                                                                   weight1);
+          U(h, w) = Common::assertDownCast<Common::DefaultElement>(static_cast<float>(U(h1, w1)) *
+                                                                   weight1);
+          V(h, w) = Common::assertDownCast<Common::DefaultElement>(static_cast<float>(V(h1, w1)) *
+                                                                   weight1);
+          D(h, w) = Common::assertDownCast<Common::DefaultElement>(static_cast<float>(D(h1, w1)) *
+                                                                   weight1);
 
-          Y(h, w) += Common::assertDownCast<uint16_t>(static_cast<float>(Y(h2, w2)) * weight2);
-          U(h, w) += Common::assertDownCast<uint16_t>(static_cast<float>(U(h2, w2)) * weight2);
-          V(h, w) += Common::assertDownCast<uint16_t>(static_cast<float>(V(h2, w2)) * weight2);
-          D(h, w) += Common::assertDownCast<uint16_t>(static_cast<float>(D(h2, w2)) * weight2);
+          Y(h, w) += Common::assertDownCast<Common::DefaultElement>(static_cast<float>(Y(h2, w2)) *
+                                                                    weight2);
+          U(h, w) += Common::assertDownCast<Common::DefaultElement>(static_cast<float>(U(h2, w2)) *
+                                                                    weight2);
+          V(h, w) += Common::assertDownCast<Common::DefaultElement>(static_cast<float>(V(h2, w2)) *
+                                                                    weight2);
+          D(h, w) += Common::assertDownCast<Common::DefaultElement>(static_cast<float>(D(h2, w2)) *
+                                                                    weight2);
 
           if (D(h, w) == 0) {
-            D(h, w) = Common::assertDownCast<uint16_t>(static_cast<float>(D(h1, w1)) * weight1 +
-                                                       static_cast<float>(D(h2, w2)) * weight2);
+            D(h, w) = Common::assertDownCast<Common::DefaultElement>(
+                static_cast<float>(D(h1, w1)) * weight1 + static_cast<float>(D(h2, w2)) * weight2);
           }
         } else {
           Y(h, w) = Y(h1, w1);
@@ -179,10 +187,10 @@ void fillVerticalCracks(Common::RendererFrame &yuvd) {
   for (int32_t h = 0; h < height; h++) {
     for (int32_t w = 1; w < width - 1; w++) {
       if (D(h, w) == 0 && D(h, w - 1) != 0 && D(h, w + 1) != 0) {
-        Y(h, w) = (Y(h, w - 1) + Y(h, w + 1)) / 2;
-        U(h, w) = (U(h, w - 1) + U(h, w + 1)) / 2;
-        V(h, w) = (V(h, w - 1) + V(h, w + 1)) / 2;
-        D(h, w) = (D(h, w - 1) + D(h, w + 1)) / 2;
+        Y(h, w) = Common::assertDownCast<Common::DefaultElement>((Y(h, w - 1) + Y(h, w + 1)) / 2);
+        U(h, w) = Common::assertDownCast<Common::DefaultElement>((U(h, w - 1) + U(h, w + 1)) / 2);
+        V(h, w) = Common::assertDownCast<Common::DefaultElement>((V(h, w - 1) + V(h, w + 1)) / 2);
+        D(h, w) = Common::assertDownCast<Common::DefaultElement>((D(h, w - 1) + D(h, w + 1)) / 2);
       }
     }
   }

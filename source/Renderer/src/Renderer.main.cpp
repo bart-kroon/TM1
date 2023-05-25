@@ -128,8 +128,8 @@ private:
 
     std::transform(
         frame.cbegin(), frame.cend(), std::back_inserter(au.atlas),
-        [&vpl = au.viewParamsList, viewIdx = uint16_t{}](const Common::DeepFrame &frame) mutable {
-          return atlasAccessUnit(frame, vpl[viewIdx++].viewId);
+        [&vpl = au.viewParamsList, viewIdx = uint16_t{}](const Common::DeepFrame &frame_) mutable {
+          return atlasAccessUnit(frame_, vpl[viewIdx++].viewId);
         });
     return au;
   }

@@ -119,7 +119,7 @@ private:
   }
 
   struct LineBuffer {
-    LineBuffer(void *context) : context{context} {}
+    LineBuffer(void *context_) : context{context_} {}
 
     void *context{};
     Common::LogLevel level{Common::LogLevel::debug};

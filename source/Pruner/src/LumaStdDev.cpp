@@ -56,7 +56,7 @@ auto calculateCenterPosition(const MivBitstream::ViewParamsList &viewParamsList)
     }
   }
 
-  return (maxPos + minPos) / 2;
+  return (maxPos + minPos) / 2.F;
 }
 
 auto getDistanceToPosition(const MivBitstream::ViewParams &viewParams,

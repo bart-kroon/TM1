@@ -64,9 +64,11 @@ inline auto DepthTransform::quantizeNormDisp(const Common::Mat<float> &matrix,
     -> Common::Frame<> {
   auto frame = Common::Frame<>::lumaOnly(
       {static_cast<int32_t>(matrix.width()), static_cast<int32_t>(matrix.height())}, m_bitDepth);
-  std::transform(std::begin(matrix), std::end(matrix), std::begin(frame.getPlane(0)), [=](float x) {
-    return Common::assertDownCast<Common::DefaultElement>(quantizeNormDisp(x, minLevel));
-  });
+  std::transform(std::begin(matrix), std::end(matrix), std::begin(frame.getPlane(0)),
+                 [this, minLevel](float x) {
+                   return Common::assertDownCast<Common::DefaultElement>(
+                       quantizeNormDisp(x, minLevel));
+                 });
   return frame;
 }
 

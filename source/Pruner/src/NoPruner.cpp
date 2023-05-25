@@ -48,11 +48,11 @@ auto NoPruner::prune(const MivBitstream::ViewParamsList &viewParamsList,
   auto mask = Common::FrameList<uint8_t>(viewParamsList.size());
   transform(viewParamsList.cbegin(), viewParamsList.cend(), mask.begin(),
             [](const MivBitstream::ViewParams &vp) {
-              auto mask =
+              auto mask_ =
                   Common::Frame<uint8_t>::lumaOnly({vp.ci.ci_projection_plane_width_minus1() + 1,
                                                     vp.ci.ci_projection_plane_height_minus1() + 1});
-              mask.fillOne();
-              return mask;
+              mask_.fillOne();
+              return mask_;
             });
   return mask;
 }

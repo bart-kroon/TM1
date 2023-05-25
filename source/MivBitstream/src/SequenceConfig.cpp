@@ -144,7 +144,7 @@ SequenceConfig::SequenceConfig(const Common::Json &config) {
 
     cameras.resize(node.size());
     std::transform(node.cbegin(), node.cend(), cameras.begin(),
-                   [](const Common::Json &node) { return CameraConfig{node}; });
+                   [](const Common::Json &node_) { return CameraConfig{node_}; });
   }
 
   if (sourceCameraNames.empty()) {

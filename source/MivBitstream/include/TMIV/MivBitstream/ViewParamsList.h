@@ -66,9 +66,9 @@ struct ViewParams {
   std::optional<PruningParents> pp;
 
   ViewParams() = default;
-  ViewParams(const CameraIntrinsics &ci, const Pose &pose, const DepthQuantization &dq,
-             const ChromaScaling &cs, std::optional<PruningParents> pp, std::string name)
-      : ci{ci}, pose{pose}, dq{dq}, cs{cs}, pp{std::move(pp)}, name{std::move(name)} {}
+  ViewParams(const CameraIntrinsics &ci_, const Pose &pose_, const DepthQuantization &dq_,
+             const ChromaScaling &cs_, std::optional<PruningParents> pp_, std::string name_)
+      : ci{ci_}, pose{pose_}, dq{dq_}, cs{cs_}, pp{std::move(pp_)}, name{std::move(name_)} {}
 
   // Not in the specification. Just to improve screen output
   std::string name{};

@@ -95,7 +95,7 @@ Application::Application(const char *tool, std::vector<const char *> argv, Optio
       break;
     } else { // search for application-specific options
       auto o = std::find_if(m_options.begin(), m_options.end(),
-                            [option](const auto &o) { return o.option == option; });
+                            [option](const auto &o_) { return o_.option == option; });
       if (o == m_options.end()) {
         throw std::runtime_error(
             fmt::format("Stray argument or unknown option \"{}\" (try --help)", option));
@@ -140,7 +140,7 @@ auto Application::json() const -> const Json & {
 
 auto Application::optionValues(std::string_view option) const -> const std::vector<std::string> & {
   auto o = std::find_if(m_options.cbegin(), m_options.cend(),
-                        [=](const auto &o) { return o.option == option; });
+                        [=](const auto &o_) { return o_.option == option; });
   PRECONDITION(o != m_options.cend());
   return o->values;
 }

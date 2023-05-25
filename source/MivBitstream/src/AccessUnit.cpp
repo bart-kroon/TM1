@@ -49,9 +49,9 @@ auto AccessUnit::sequenceConfig() const -> SequenceConfig {
   x.cameras.resize(viewParamsList.size());
 
   std::transform(viewParamsList.cbegin(), viewParamsList.cend(), x.cameras.begin(),
-                 [this](const ViewParams &vp) {
+                 [this](const ViewParams &vp_) {
                    auto c = CameraConfig{};
-                   c.viewParams = vp;
+                   c.viewParams = vp_;
 
                    for (const auto &a : atlas) {
                      if (!a.texFrame.empty()) {
@@ -69,16 +69,17 @@ auto AccessUnit::sequenceConfig() const -> SequenceConfig {
   x.boundingBoxCenter =
       std::accumulate(viewParamsList.cbegin(), viewParamsList.cend(), Common::Vec3d{},
                       [Z = 1. / static_cast<double>(viewParamsList.size())](
-                          const Common::Vec3d &init, const ViewParams &vp) {
-                        return init + Z * Common::Vec3d{vp.pose.position};
+                          const Common::Vec3d &init, const ViewParams &vp_) {
+                        return init + Z * Common::Vec3d{vp_.pose.position};
                       });
 
   std::transform(viewParamsList.cbegin(), viewParamsList.cend(),
-                 std::inserter(x.sourceCameraNames, x.sourceCameraNames.end()), [](const auto &vp) {
-                   if (vp.name.empty()) {
+                 std::inserter(x.sourceCameraNames, x.sourceCameraNames.end()),
+                 [](const auto &vp_) {
+                   if (vp_.name.empty()) {
                      throw std::runtime_error("The decoder needs to assign view names");
                    }
-                   return vp.name;
+                   return vp_.name;
                  });
 
   return x;

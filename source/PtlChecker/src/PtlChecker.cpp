@@ -681,11 +681,11 @@ struct PtlChecker::Impl {
   [[nodiscard]] auto checkNumLumaSamples(const MivBitstream::AccessUnit &frame) const {
     auto result = int64_t{};
 
-    const auto count = [&result, this](const auto &frame) {
-      if (!frame.empty()) {
-        result +=
-            levelCheck(v3cSpec, "Table A-7", "MaxPictureSize", frame.getWidth() * frame.getHeight(),
-                       levelLimit(2'228'224, 8'912'896, 35'651'584, 142'606'336));
+    const auto count = [&result, this](const auto &frame_) {
+      if (!frame_.empty()) {
+        result += levelCheck(v3cSpec, "Table A-7", "MaxPictureSize",
+                             frame_.getWidth() * frame_.getHeight(),
+                             levelLimit(2'228'224, 8'912'896, 35'651'584, 142'606'336));
       }
     };
 

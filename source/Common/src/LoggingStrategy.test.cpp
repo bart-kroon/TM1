@@ -52,7 +52,7 @@ using namespace std::string_view_literals;
 
 namespace test {
 struct LogEntry {
-  LogEntry(LogLevel level, std::string what) : level{level}, what{std::move(what)} {}
+  LogEntry(LogLevel level_, std::string what_) : level{level_}, what{std::move(what_)} {}
 
   LogLevel level;
   std::string what;

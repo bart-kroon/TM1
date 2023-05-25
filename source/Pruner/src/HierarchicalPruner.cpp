@@ -916,18 +916,18 @@ private:
           }
         }
 
-        uint32_t information = 0;
+        uint32_t information_ = 0;
         if (m_maxDepthError >= modifiedMaxLumaError) {
           auto error =
               std::abs(lumaError) * m_maxDepthError / modifiedMaxLumaError + std::abs(depthError);
-          information = static_cast<uint32_t>(error * maxInformation);
+          information_ = static_cast<uint32_t>(error * maxInformation);
         } else {
           auto error =
               std::abs(depthError) * modifiedMaxLumaError / m_maxDepthError + std::abs(lumaError);
-          information = static_cast<uint32_t>(error * maxInformation);
+          information_ = static_cast<uint32_t>(error * maxInformation);
         }
 
-        *l = std::min(*l, information);
+        *l = std::min(*l, information_);
 
         if (std::abs(depthError) < m_maxDepthError && lumaError < modifiedMaxLumaError) {
           if (*k != 0) {

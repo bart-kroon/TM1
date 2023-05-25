@@ -173,7 +173,7 @@ private:
   }
 
   auto loadOutOfBandVideo(MivBitstream::V3cUnitHeader vuh) -> Common::Source<Common::DecodedFrame> {
-    return [=, frameIdx = int32_t{}]() mutable -> std::optional<Common::DecodedFrame> {
+    return [this, vuh, frameIdx = int32_t{}]() mutable -> std::optional<Common::DecodedFrame> {
       if (frameIdx < m_placeholders.numberOfInputFrames) {
         return IO::loadOutOfBandVideoFrame(json(), m_placeholders, vuh, frameIdx++);
       }

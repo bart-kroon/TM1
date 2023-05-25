@@ -352,7 +352,8 @@ auto FramePacker::setPackingInformation(EncoderParams params, bool geometryPacki
       }
     }
 
-    const uint8_t regionsCountMinus1 = regionCounts.attr + regionCounts.geo + regionCounts.occ - 1;
+    const auto regionsCountMinus1 =
+        Common::downCast<uint8_t>(regionCounts.attr + regionCounts.geo + regionCounts.occ - 1);
     m_packingInformation.pin_regions_count_minus1(regionsCountMinus1);
 
     for (size_t i = 0; i <= regionsCountMinus1; i++) {

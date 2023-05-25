@@ -375,11 +375,11 @@ auto Packer::pack(const std::vector<Common::SizeVector> &atlasSizes,
         ifEntityOrBasic(cluster);
         auto cc = cluster.split(clusteringMap[clusteringMap_viewId], m_overlap);
         const auto alignPatch = [&, &clusteringMapIndex = clusteringMapIndex](auto member,
-                                                                              auto clusteringMap) {
+                                                                              auto clusteringMap_) {
           if (m_minPatchSize * m_minPatchSize <= (cc.*member).getArea()) {
             // modification to align the imin,jmin to even values to help renderer
             Cluster c = Cluster::align((cc.*member), 2);
-            c.calculateInformationDensity(clusteringMap[clusteringMap_viewId],
+            c.calculateInformationDensity(clusteringMap_[clusteringMap_viewId],
                                           information[clusteringMap_viewId]);
             c.setPriority(cluster.getPriority());
             clusterToPack.push(c);

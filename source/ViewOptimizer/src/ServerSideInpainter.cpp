@@ -362,8 +362,8 @@ private:
 
     std::transform(
         frame.cbegin(), frame.cend(), std::back_inserter(inFrame.atlas),
-        [&vpl = inFrame.viewParamsList, viewIdx = uint16_t{}](const DeepFrame &frame) mutable {
-          return synthesizerInputAtlasAccessUnit(frame, vpl[viewIdx++].viewId);
+        [&vpl = inFrame.viewParamsList, viewIdx = uint16_t{}](const DeepFrame &frame_) mutable {
+          return synthesizerInputAtlasAccessUnit(frame_, vpl[viewIdx++].viewId);
         });
 
     // Transfer depth low quality flag
@@ -418,8 +418,8 @@ private:
     const auto blurred = Common::boxBlur<uint32_t>(frame.getPlane(0), m_blurKernel);
 
     std::transform(frame.getPlane(0).cbegin(), frame.getPlane(0).cend(), blurred.cbegin(),
-                   frame.getPlane(0).begin(), [this](auto orig, auto blurred) {
-                     if ((orig - blurred) > m_inpaintThreshold) {
+                   frame.getPlane(0).begin(), [this](auto orig, auto blurred_) {
+                     if ((orig - blurred_) > m_inpaintThreshold) {
                        return uint16_t{};
                      }
                      return orig;

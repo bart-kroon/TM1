@@ -150,7 +150,7 @@ void Pixel::push_back(const value_type &v) {
   if (m_size < m_capacity) {
     m_data.get()[m_size++] = v;
   } else {
-    m_capacity = 3 * (m_capacity + 1) / 2;
+    m_capacity = Common::downCast<size_type>(3 * (m_capacity + 1) / 2);
 
     auto data = std::make_unique<array_type>(m_capacity);
     std::copy(begin(), end(), data.get());

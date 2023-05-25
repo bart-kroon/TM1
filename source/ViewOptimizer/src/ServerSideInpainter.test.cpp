@@ -186,14 +186,14 @@ const auto inputFrame = [](const TMIV::ViewOptimizer::SourceParams &params) {
 
   std::transform(params.viewParamsList.cbegin(), params.viewParamsList.cend(),
                  std::back_inserter(frame), [](const TMIV::MivBitstream::ViewParams &vp) {
-                   auto frame = TMIV::Common::DeepFrame{};
-                   frame.texture.createYuv420({vp.ci.ci_projection_plane_width_minus1() + 1,
-                                               vp.ci.ci_projection_plane_height_minus1() + 1},
-                                              10);
-                   frame.geometry.createY({vp.ci.ci_projection_plane_width_minus1() + 1,
-                                           vp.ci.ci_projection_plane_height_minus1() + 1},
-                                          16);
-                   return frame;
+                   auto frame_ = TMIV::Common::DeepFrame{};
+                   frame_.texture.createYuv420({vp.ci.ci_projection_plane_width_minus1() + 1,
+                                                vp.ci.ci_projection_plane_height_minus1() + 1},
+                                               10);
+                   frame_.geometry.createY({vp.ci.ci_projection_plane_width_minus1() + 1,
+                                            vp.ci.ci_projection_plane_height_minus1() + 1},
+                                           16);
+                   return frame_;
                  });
   return frame;
 };

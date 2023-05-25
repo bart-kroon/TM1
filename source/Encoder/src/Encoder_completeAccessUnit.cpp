@@ -688,8 +688,8 @@ void Encoder::Impl::constructVideoFrames() {
         const auto texBitDepth = views.front().texture.getBitDepth();
 
         LIMITATION(std::all_of(views.cbegin(), views.cend(),
-                               [texBitDepth](const Common::DeepFrame &frame) {
-                                 return frame.texture.getBitDepth() == texBitDepth;
+                               [texBitDepth](const Common::DeepFrame &frame_) {
+                                 return frame_.texture.getBitDepth() == texBitDepth;
                                }));
 
         frame.texture.createYuv420({frameWidth, frameHeight}, texBitDepth);

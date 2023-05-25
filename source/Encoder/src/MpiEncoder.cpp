@@ -383,7 +383,7 @@ auto MpiEncoder::processAccessUnit(int32_t firstFrameId, int32_t lastFrameId)
                       [](auto x) { return (x > 0); });
 
     auto patchParamsListLayer = m_packer->pack(m_overrideTileFrameSizes, {aggregatedMask},
-                                               m_params.viewParamsList, m_blockSize);
+                                               m_params.viewParamsList, m_blockSize, {});
 
     for (auto &patchParams : patchParamsListLayer) {
       patchParams.atlasPatch3dOffsetD(layerId);

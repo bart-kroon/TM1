@@ -72,6 +72,10 @@ Configuration::Configuration(const Common::Json &componentNode)
   querySeiParameters(componentNode);
   queryTileParameters(componentNode);
 
+#if ENABLE_M63213
+  informationPruning = componentNode.require("informationPruning").as<bool>();
+#endif
+
 #if ENABLE_M57419
   m57419_piecewiseDepthLinearScaling =
       componentNode.require("m57419_piecewiseDepthLinearScaling").as<bool>();

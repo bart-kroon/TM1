@@ -41,6 +41,8 @@ auto NoPruner::prepareSequence(const PrunerParams & /* params */)
   return {};
 }
 
+auto NoPruner::getPixelInformation() -> Common::FrameList<uint32_t> { return {}; }
+
 auto NoPruner::prune(const MivBitstream::ViewParamsList &viewParamsList,
                      const Common::DeepFrameList & /* views */) -> Common::FrameList<uint8_t> {
   auto mask = Common::FrameList<uint8_t>(viewParamsList.size());

@@ -36,7 +36,11 @@
 namespace TMIV::Aggregator {
 Aggregator::Aggregator(const Common::Json & /*rootNode*/, const Common::Json & /*componentNode*/) {}
 
-void Aggregator::prepareAccessUnit() { m_aggregatedMask.clear(); }
+void Aggregator::prepareAccessUnit() {
+  m_frames = 0;
+  m_aggregatedMask.clear();
+  m_information.clear();
+}
 
 void Aggregator::pushMask(const Common::FrameList<uint8_t> &mask) {
   if (m_aggregatedMask.empty()) {
@@ -50,4 +54,25 @@ void Aggregator::pushMask(const Common::FrameList<uint8_t> &mask) {
   }
 }
 
+void Aggregator::pushInformation(const Common::FrameList<uint32_t> &information) {
+  m_frames += 1;
+  if (m_information.empty()) {
+    m_information = information;
+  } else {
+    for (size_t i = 0; i < m_information.size(); i++) {
+      std::transform(m_information[i].getPlane(0).begin(), m_information[i].getPlane(0).end(),
+                     information[i].getPlane(0).begin(), m_information[i].getPlane(0).begin(),
+                     [](uint16_t v1, uint16_t v2) { return v1 + v2; });
+    }
+  }
+}
+
+auto Aggregator::getMeanAggregatedInformation() -> Common::FrameList<uint32_t> & {
+  for (auto &informaiton : m_information) {
+    for (auto &value : informaiton.getPlanes()[0]) {
+      value = value / m_frames;
+    }
+  }
+  return m_information;
+}
 } // namespace TMIV::Aggregator

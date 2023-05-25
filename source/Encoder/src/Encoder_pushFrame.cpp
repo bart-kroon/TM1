@@ -48,8 +48,10 @@ void Encoder::Impl::pushFrame(Common::DeepFrameList sourceViews) {
 void Encoder::Impl::pushSingleEntityFrame(Common::DeepFrameList sourceViews) {
   auto transportViews = m_viewOptimizer->optimizeFrame(std::move(sourceViews));
   const auto masks = m_pruner->prune(m_transportParams.viewParamsList, transportViews);
+  const auto informtaion = m_pruner->getPixelInformation();
   m_transportViews.push_back(std::move(transportViews));
   m_aggregator->pushMask(masks);
+  m_aggregator->pushInformation(informtaion);
 }
 
 namespace {

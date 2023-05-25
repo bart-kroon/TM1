@@ -48,6 +48,7 @@ public:
 
   auto prepareSequence(const PrunerParams &params)
       -> std::vector<MivBitstream::PruningParents> override;
+  auto getPixelInformation() -> Common::FrameList<uint32_t> override;
   auto prune(const MivBitstream::ViewParamsList &viewParamsList, const Common::DeepFrameList &views)
       -> Common::FrameList<uint8_t> override;
 };

@@ -54,6 +54,7 @@ public:
       -> std::vector<MivBitstream::PruningParents> override;
   auto prune(const MivBitstream::ViewParamsList &viewParamsList, const Common::DeepFrameList &views)
       -> Common::FrameList<uint8_t> override;
+  auto getPixelInformation() -> Common::FrameList<uint32_t> override;
 
 private:
   class Impl;

@@ -111,6 +111,10 @@ struct Configuration {
   int32_t m57419_edgeThreshold;
 #endif
 
+#if ENABLE_M63213
+  bool informationPruning{true};
+#endif
+
   [[nodiscard]] auto blockSize(bool depthLowQualityFlag_) const noexcept {
     return blockSizeDepthQualityDependent[static_cast<int32_t>(depthLowQualityFlag_)];
   }

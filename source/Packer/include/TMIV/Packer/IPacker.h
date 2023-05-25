@@ -53,7 +53,8 @@ public:
   virtual void initialize(std::vector<std::vector<MivBitstream::TilePartition>> tileSizes) = 0;
   virtual auto pack(const std::vector<Common::SizeVector> &atlasSize,
                     const Common::FrameList<uint8_t> &masks,
-                    const MivBitstream::ViewParamsList &viewParamsList, int32_t blockSize)
+                    const MivBitstream::ViewParamsList &viewParamsList, int32_t blockSize,
+                    const Common::FrameList<uint32_t> &information)
       -> MivBitstream::PatchParamsList = 0;
   virtual void
   updateAggregatedEntityMasks(const std::vector<Common::FrameList<uint8_t>> &entityMasks) = 0;

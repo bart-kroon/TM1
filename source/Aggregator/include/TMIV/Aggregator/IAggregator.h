@@ -48,8 +48,10 @@ public:
 
   virtual void prepareAccessUnit() = 0;
   virtual void pushMask(const Common::FrameList<uint8_t> &mask) = 0;
+  virtual void pushInformation(const Common::FrameList<uint32_t> &information) = 0;
   virtual void completeAccessUnit() = 0;
-  [[nodiscard]] virtual auto getAggregatedMask() const -> const Common::FrameList<uint8_t> & = 0;
+  [[nodiscard]] virtual auto getAggregatedMask() -> Common::FrameList<uint8_t> & = 0;
+  [[nodiscard]] virtual auto getMeanAggregatedInformation() -> Common::FrameList<uint32_t> & = 0;
 };
 } // namespace TMIV::Aggregator
 

@@ -221,6 +221,92 @@ auto Cluster::splitCPatchVertically(const ClusteringMap &clusteringMap, std::vec
   return false;
 }
 
+auto Cluster::splitnUnevenInformationPatchVertically(const ClusteringMap &clusteringMap,
+                                                     std::vector<Cluster> &out, int32_t alignment,
+                                                     int32_t minPatchSize,
+                                                     const Common::FrameList<uint32_t> &information,
+                                                     uint32_t nonSplitInformation) const -> bool {
+  float maxInformation = 65535;
+  auto splitThresholdInformation = static_cast<int32_t>(0.3 * maxInformation);
+
+  const Cluster &c = (*this);
+  const auto &clusteringBuffer = clusteringMap.getPlane(0);
+  const auto &informationBuffer = information[c.getViewIdx()].getPlane(0);
+  int32_t H = c.height();
+  int32_t W = c.width();
+
+  std::vector<int32_t> numActivePixels;
+  std::vector<int64_t> valueInformations;
+
+  for (int32_t w = 0; w < W; w += alignment) {
+    int32_t activePixels = 0;
+    int64_t informationValue = 0;
+    for (int32_t hh = 0; hh < H; hh++) {
+      int32_t i = hh + c.imin();
+      for (int32_t ww = w; ww < std::min(w + alignment, W); ww++) {
+        int32_t j = ww + c.jmin();
+        if (clusteringBuffer(i, j) == c.getClusterId()) {
+          activePixels++;
+          informationValue += informationBuffer(i, j);
+        }
+      } // ww
+    }   // hh
+    numActivePixels.push_back(activePixels);
+    valueInformations.push_back(informationValue);
+  } // w
+
+  int32_t max_information_density_diff = 0;
+  int32_t bestSplitPos = 0;
+
+  for (size_t i = 1; i < valueInformations.size(); i++) {
+    auto left_information_density =
+        numActivePixels[i - 1] != 0
+            ? static_cast<int32_t>(valueInformations[i - 1] / numActivePixels[i - 1])
+            : 0;
+    auto right_information_density =
+        numActivePixels[i] != 0 ? static_cast<int32_t>(valueInformations[i] / numActivePixels[i])
+                                : 0;
+    int32_t information_density_diff =
+        std::abs(left_information_density - right_information_density);
+    int32_t max_information_density = std::max(left_information_density, right_information_density);
+    int32_t min_information_density = std::min(left_information_density, right_information_density);
+
+    if (max_information_density > static_cast<int32_t>(nonSplitInformation) &&
+        min_information_density < static_cast<int32_t>(nonSplitInformation) &&
+        information_density_diff > max_information_density_diff) {
+      max_information_density_diff = information_density_diff;
+      bestSplitPos = static_cast<int32_t>(i * alignment);
+    }
+  }
+
+  if (bestSplitPos != 0 && max_information_density_diff > splitThresholdInformation) {
+    Cluster c1(c.getViewIdx(), c.isBasicView(), c.getClusterId(), c.getEntityId());
+    Cluster c2(c.getViewIdx(), c.isBasicView(), c.getClusterId(), c.getEntityId());
+
+    for (int32_t i = c.imin(); i <= c.imax(); i++) {
+      for (int32_t j = c.jmin(); j < c.jmin() + bestSplitPos; j++) {
+        if (clusteringBuffer(i, j) == c.getClusterId()) {
+          c1.push(i, j);
+        }
+      }
+    }
+    for (int32_t i = c.imin(); i <= c.imax(); i++) {
+      for (int32_t j = c.jmin() + bestSplitPos; j <= c.jmax(); j++) {
+        if (clusteringBuffer(i, j) == c.getClusterId()) {
+          c2.push(i, j);
+        }
+      }
+    }
+
+    c1.recursiveInformationSplit(clusteringMap, out, alignment, minPatchSize, information,
+                                 nonSplitInformation);
+    c2.recursiveInformationSplit(clusteringMap, out, alignment, minPatchSize, information,
+                                 nonSplitInformation);
+    return true;
+  }
+  return false;
+}
+
 auto Cluster::splitCPatchHorizontally(const ClusteringMap &clusteringMap, std::vector<Cluster> &out,
                                       int32_t alignment, int32_t minPatchSize) const -> bool {
   double splitThresholdC = 0.3;
@@ -283,6 +369,121 @@ auto Cluster::splitCPatchHorizontally(const ClusteringMap &clusteringMap, std::v
 
     c1.recursiveSplit(clusteringMap, out, alignment, minPatchSize);
     c2.recursiveSplit(clusteringMap, out, alignment, minPatchSize);
+
+    return true;
+  }
+  return false;
+}
+
+void Cluster::calculateInformationDensity(const ClusteringMap &clusteringMap,
+                                          const Common::Frame<uint32_t> &informationMap) {
+  Cluster &c = (*this);
+  if (informationMap.empty()) {
+    c.information_density_ = 0;
+    return;
+  }
+  int64_t informationValue = 0;
+  int32_t activePixels = 0;
+  int32_t H = c.height();
+  int32_t W = c.width();
+  const auto &clusteringBuffer = clusteringMap.getPlane(0);
+  const auto &informationBuffer = informationMap.getPlane(0);
+  for (int32_t h = 0; h < H; h++) {
+    for (int32_t w = 0; w < W; w++) {
+      if (clusteringBuffer(h + c.imin(), w + c.jmin()) == c.getClusterId()) {
+        activePixels++;
+        informationValue += static_cast<int64_t>(informationBuffer(h + c.imin(), w + c.jmin()));
+      }
+    }
+  }
+  if (activePixels != 0) {
+    c.information_density_ = static_cast<int32_t>(informationValue / activePixels);
+  } else {
+    c.information_density_ = 0;
+  }
+}
+
+auto Cluster::splitUnevenInformationPatchHorizontally(
+    const ClusteringMap &clusteringMap, std::vector<Cluster> &out, int32_t alignment,
+    int32_t minPatchSize, const Common::FrameList<uint32_t> &information,
+    uint32_t nonSplitInformation) const -> bool {
+  float maxInformation = 65535;
+  auto splitThresholdInformation = static_cast<int32_t>(0.3 * maxInformation);
+
+  const Cluster &c = (*this);
+  const auto &clusteringBuffer = clusteringMap.getPlane(0);
+  const auto &informationBuffer = information[c.getViewIdx()].getPlane(0);
+
+  int32_t H = c.height();
+  int32_t W = c.width();
+
+  std::vector<int32_t> numActivePixels;
+  std::vector<int64_t> valueInformations;
+
+  for (int32_t h = 0; h < H; h += alignment) {
+    int32_t activePixels = 0;
+    int64_t informationValue = 0;
+    for (int32_t hh = h; hh < std::min(h + alignment, H); hh++) {
+      int32_t i = hh + c.imin();
+      for (int32_t ww = 0; ww < W; ww++) {
+        int32_t j = ww + c.jmin();
+        if (clusteringBuffer(i, j) == c.getClusterId()) {
+          activePixels++;
+          informationValue += informationBuffer(i, j);
+        }
+      } // ww
+    }   // hh
+    numActivePixels.push_back(activePixels);
+    valueInformations.push_back(informationValue);
+  } // h
+
+  int32_t max_information_density_diff = 0;
+  int32_t bestSplitPos = 0;
+
+  for (size_t i = 1; i < valueInformations.size(); i++) {
+    auto left_information_density =
+        numActivePixels[i - 1] != 0
+            ? static_cast<int32_t>(valueInformations[i - 1] / numActivePixels[i - 1])
+            : 0;
+    auto right_information_density =
+        numActivePixels[i] != 0 ? static_cast<int32_t>(valueInformations[i] / numActivePixels[i])
+                                : 0;
+    int32_t information_density_diff =
+        std::abs(left_information_density - right_information_density);
+    int32_t max_information_density = std::max(left_information_density, right_information_density);
+    int32_t min_information_density = std::min(left_information_density, right_information_density);
+
+    if (max_information_density > static_cast<int32_t>(nonSplitInformation) &&
+        min_information_density < static_cast<int32_t>(nonSplitInformation) &&
+        information_density_diff > max_information_density_diff) {
+      max_information_density_diff = information_density_diff;
+      bestSplitPos = static_cast<int32_t>(i * alignment);
+    }
+  }
+
+  if (bestSplitPos != 0 && max_information_density_diff > splitThresholdInformation) {
+    Cluster c1(c.getViewIdx(), c.isBasicView(), c.getClusterId(), c.getEntityId());
+    Cluster c2(c.getViewIdx(), c.isBasicView(), c.getClusterId(), c.getEntityId());
+
+    for (int32_t i = c.imin(); i < c.imin() + bestSplitPos; i++) {
+      for (int32_t j = c.jmin(); j <= c.jmax(); j++) {
+        if (clusteringBuffer(i, j) == c.getClusterId()) {
+          c1.push(i, j);
+        }
+      }
+    }
+    for (int32_t i = c.imin() + bestSplitPos; i <= c.imax(); i++) {
+      for (int32_t j = c.jmin(); j <= c.jmax(); j++) {
+        if (clusteringBuffer(i, j) == c.getClusterId()) {
+          c2.push(i, j);
+        }
+      }
+    }
+
+    c1.recursiveInformationSplit(clusteringMap, out, alignment, minPatchSize, information,
+                                 nonSplitInformation);
+    c2.recursiveInformationSplit(clusteringMap, out, alignment, minPatchSize, information,
+                                 nonSplitInformation);
 
     return true;
   }
@@ -366,6 +567,31 @@ void Cluster::recursiveSplit(const ClusteringMap &clusteringMap, std::vector<Clu
       if (!splitted) {
         splitted = splitCPatchHorizontally(clusteringMap, out, alignment, minPatchSize);
       }
+    }
+  }
+
+  if (!splitted) {
+    out.push_back(*this);
+  }
+}
+
+void Cluster::recursiveInformationSplit(const ClusteringMap &clusteringMap,
+                                        std::vector<Cluster> &out, int32_t alignment,
+                                        int32_t minPatchSize,
+                                        const Common::FrameList<uint32_t> &information,
+                                        uint32_t nonSplitInformation) const {
+  bool splitted = false;
+  const int32_t maxNonSplitTableSize = 64;
+
+  if (width() > height()) { // split vertically
+    if (width() > maxNonSplitTableSize) {
+      splitted = splitnUnevenInformationPatchVertically(clusteringMap, out, alignment, minPatchSize,
+                                                        information, nonSplitInformation);
+    }
+  } else { // split horizontally
+    if (height() > maxNonSplitTableSize) {
+      splitted = splitUnevenInformationPatchHorizontally(
+          clusteringMap, out, alignment, minPatchSize, information, nonSplitInformation);
     }
   }
 

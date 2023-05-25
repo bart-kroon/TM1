@@ -128,6 +128,41 @@ void Encoder::Impl::scaleGeometryDynamicRange() {
   }
 }
 
+void Encoder::Impl::pruningWithInformation(Common::FrameList<uint8_t> &aggregatedMask,
+                                           const Common::FrameList<uint32_t> &information) {
+  std::vector<uint32_t> informationList; // ee8: information list contains all unpruned pixels.
+  for (size_t i = 0; i < information.size(); i++) {
+    for (size_t j = 0; j < information[i].getPlanes()[0].size(); j++) {
+      if (aggregatedMask[i].getPlanes()[0][j] != 0) {
+        informationList.push_back(information[i].getPlanes()[0][j]);
+      }
+    }
+  }
+
+  auto pixelReservedCnt = static_cast<int32_t>(informationList.size());
+  int32_t pixelLimited = 0;
+  for (const auto &item : params().atlas) {
+    pixelLimited += item.asps.asps_frame_width() * item.asps.asps_frame_height();
+  }
+
+  if (pixelReservedCnt > pixelLimited) { // ee8: check use information or not
+
+    Common::logInfo("Reserved pixel count over atlas limit {}M and pruning with Information",
+                    1e-6 * static_cast<double>(pixelReservedCnt - pixelLimited));
+    std::sort(informationList.rbegin(), informationList.rend());
+    double information_threshold = informationList[pixelLimited];
+    for (size_t i = 0; i < information.size(); i++) {
+      for (size_t j = 0; j < information[i].getPlanes()[0].size(); j++) {
+        if (aggregatedMask[i].getPlanes()[0][j] != 0) {
+          if (information[i].getPlanes()[0][j] < information_threshold) {
+            aggregatedMask[i].getPlanes()[0][j] = static_cast<uint8_t>(0); // ee8: further pruning
+          }
+        }
+      }
+    }
+  }
+}
+
 void Encoder::Impl::setTiles() {
   m_partitionArray.clear();
   m_params.tileParamsLists.clear();
@@ -344,7 +379,15 @@ auto Encoder::Impl::completeAccessUnit() -> const EncoderParams & {
   Common::logVerbose("completeAccessUnit: FOC is {}.", m_params.foc);
 
   m_aggregator->completeAccessUnit();
-  const auto &aggregatedMask = m_aggregator->getAggregatedMask();
+  auto &aggregatedMask = m_aggregator->getAggregatedMask();
+  auto &information = m_aggregator->getMeanAggregatedInformation();
+
+#if ENABLE_M63213
+  if (m_config.informationPruning && !information.empty()) {
+    pruningWithInformation(aggregatedMask, information);
+  }
+#endif
+
   updateAggregationStatistics(aggregatedMask);
 
   if (m_config.dynamicDepthRange) {
@@ -370,8 +413,8 @@ auto Encoder::Impl::completeAccessUnit() -> const EncoderParams & {
   }
 
   m_packer->initialize(atlasSizes, m_blockSize);
-  m_params.patchParamsList =
-      m_packer->pack(atlasSizes, aggregatedMask, m_transportParams.viewParamsList, m_blockSize);
+  m_params.patchParamsList = m_packer->pack(
+      atlasSizes, aggregatedMask, m_transportParams.viewParamsList, m_blockSize, information);
 
   // NOTE(BK): There is no encoder support for per-patch D range
   for (auto &pp : m_params.patchParamsList) {

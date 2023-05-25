@@ -11,6 +11,7 @@
     "Packer": {
         "enableMerging": true,
         "enablePatchInPatch": true,
+        "enablePatchInformation": false,
         "enableRecursiveSplit": true,
         "minPatchSize": 16,
         "overlap": 1,
@@ -36,6 +37,7 @@
     "haveGeometryVideo": true,
     "haveOccupancyVideo": false,
     "haveTextureVideo": true,
+    "informationPruning": false,
     "inputDirectory": ".",
     "inputGeometryPathFmt": "{1}/{3}_depth_{4}x{5}_{6}.yuv",
     "inputSequenceConfigPathFmt": "ctc/sequences/{1}.json",

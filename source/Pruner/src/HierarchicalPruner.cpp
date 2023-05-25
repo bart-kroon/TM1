@@ -158,6 +158,7 @@ private:
   std::vector<Cluster> m_clusters;
   Common::FrameList<uint8_t> m_masks;
   Common::FrameList<uint8_t> m_status;
+  Common::FrameList<uint32_t> m_informations;
 
 public:
   explicit Impl(const Common::Json &nodeConfig)
@@ -434,6 +435,8 @@ public:
     return std::move(m_masks);
   }
 
+  auto getPixelInformation() -> Common::FrameList<uint32_t> { return std::move(m_informations); }
+
 private:
   void analyzeFillAndPruneAgain(const Common::DeepFrameList &views, int32_t nonPrunedArea,
                                 int32_t percentageRatio) {
@@ -488,6 +491,24 @@ private:
                    });
 
     m_status = m_masks;
+
+    m_informations.clear();
+    m_informations.reserve(views.size());
+    std::transform(std::cbegin(m_params.viewParamsList), std::cend(m_params.viewParamsList),
+                   std::cbegin(views), back_inserter(m_informations),
+                   [](const MivBitstream::ViewParams &viewParams, const Common::DeepFrame &view) {
+                     auto information = Common::Frame<uint32_t>::lumaOnly(
+                         {viewParams.ci.ci_projection_plane_width_minus1() + 1,
+                          viewParams.ci.ci_projection_plane_height_minus1() + 1});
+
+                     std::transform(std::cbegin(view.geometry.getPlane(0)),
+                                    std::cend(view.geometry.getPlane(0)),
+                                    std::begin(information.getPlane(0)),
+                                    [ot = MivBitstream::OccupancyTransform{viewParams}](auto x) {
+                                      return ot.occupant(x) ? uint32_t{65535} : uint32_t{};
+                                    });
+                     return information;
+                   });
   }
 
   void createSynthesizerPerPartialView(const Common::DeepFrameList &views) {
@@ -849,6 +870,7 @@ private:
   void updateMask(IncrementalSynthesizer &synthesizer) {
     auto &mask = m_masks[synthesizer.index].getPlane(0);
     auto &status = m_status[synthesizer.index].getPlane(0);
+    auto &information = m_informations[synthesizer.index].getPlane(0);
     Common::Mat<uint8_t> colorInconsistencyMask;
     Common::Mat<uint8_t>::iterator iColor;
     if (m_enable2ndPassPruner) {
@@ -866,12 +888,14 @@ private:
     auto j = std::begin(synthesizer.reference);
     auto jY = std::begin(synthesizer.referenceY);
     auto k = std::begin(status);
+    auto l = std::begin(information);
 
     int32_t pp = 0;
     const auto W = static_cast<int32_t>(synthesizer.reference.width());
     const auto H = static_cast<int32_t>(synthesizer.reference.height());
 
     auto modifiedMaxLumaError = m_maxLumaError * m_lumaStdDev.value();
+    float maxInformation = 65535.;
 
     synthesizer.rasterizer.visit([&](const Renderer::PixelValue<Common::Vec3f> &x) {
       if (x.normDisp > 0) {
@@ -892,6 +916,19 @@ private:
           }
         }
 
+        uint32_t information = 0;
+        if (m_maxDepthError >= modifiedMaxLumaError) {
+          auto error =
+              std::abs(lumaError) * m_maxDepthError / modifiedMaxLumaError + std::abs(depthError);
+          information = static_cast<uint32_t>(error * maxInformation);
+        } else {
+          auto error =
+              std::abs(depthError) * modifiedMaxLumaError / m_maxDepthError + std::abs(lumaError);
+          information = static_cast<uint32_t>(error * maxInformation);
+        }
+
+        *l = std::min(*l, information);
+
         if (std::abs(depthError) < m_maxDepthError && lumaError < modifiedMaxLumaError) {
           if (*k != 0) {
             *i = 0;
@@ -909,6 +946,7 @@ private:
       }
 
       i++;
+      l++;
       j++;
       jY++;
       k++;
@@ -945,5 +983,8 @@ auto HierarchicalPruner::prepareSequence(const PrunerParams &params)
 auto HierarchicalPruner::prune(const MivBitstream::ViewParamsList &viewParamsList,
                                const Common::DeepFrameList &views) -> Common::FrameList<uint8_t> {
   return m_impl->prune(viewParamsList, views);
+}
+auto HierarchicalPruner::getPixelInformation() -> Common::FrameList<uint32_t> {
+  return m_impl->getPixelInformation();
 }
 } // namespace TMIV::Pruner

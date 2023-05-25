@@ -61,7 +61,8 @@ public:
   void initialize(const std::vector<Common::SizeVector> &atlasSizes, int32_t blockSize) override;
   auto pack(const std::vector<Common::SizeVector> &atlasSize,
             const Common::FrameList<uint8_t> &masks,
-            const MivBitstream::ViewParamsList &viewParamsList, int32_t blockSize)
+            const MivBitstream::ViewParamsList &viewParamsList, int32_t blockSize,
+            const Common::FrameList<uint32_t> &information)
       -> MivBitstream::PatchParamsList override;
   void
   updateAggregatedEntityMasks(const std::vector<Common::FrameList<uint8_t>> &entityMasks) override;
@@ -71,6 +72,7 @@ private:
   int32_t m_overlap{};
   bool m_pip{};
   bool m_enableMerging{};
+  bool m_enablePatchInformation{true};
   bool m_prioritizeSSI{};
   SORTING_METHOD m_sortingMethod{};
   bool m_enableRecursiveSplit{true};
@@ -84,8 +86,14 @@ private:
   auto computeClusters(const Common::FrameList<uint8_t> &masks,
                        const MivBitstream::ViewParamsList &viewParamsList)
       -> std::tuple<ClusterList, ClusteringMapList, std::vector<int32_t>>;
-  auto computeClusterToPack(const MivBitstream::ViewParamsList &viewParamsList, int32_t m_blockSize,
-                            ClusterList &clusterList, const ClusteringMapList &clusteringMap) const;
+  auto computeClusterToPack(const std::vector<Common::SizeVector> &atlasSizes,
+                            const MivBitstream::ViewParamsList &viewParamsList, int32_t m_blockSize,
+                            ClusterList &clusterList, const ClusteringMapList &clusteringMap,
+                            const Common::FrameList<uint32_t> &information);
+  auto computeClusterToPackWithInformation(const MivBitstream::ViewParamsList &viewParamsList,
+                                           const ClusteringMapList &clusteringMap,
+                                           const Common::FrameList<uint32_t> &information,
+                                           std::vector<Cluster> out);
   [[nodiscard]] auto getViewId(const Cluster &cluster,
                                const std::vector<int32_t> &clusteringMapIndex) const -> int32_t;
   void ifEntityOrBasic(const Cluster &cluster) const;

@@ -77,6 +77,7 @@ Packer::Packer(const Common::Json &rootNode, const Common::Json &componentNode) 
   m_overlap = componentNode.require("overlap").as<int32_t>();
   m_pip = componentNode.require("enablePatchInPatch").as<bool>();
   m_enableMerging = componentNode.require("enableMerging").as<bool>();
+  m_enablePatchInformation = componentNode.require("enablePatchInformation").as<bool>();
 
   if (const auto &node = componentNode.optional("prioritizeSSI")) {
     m_prioritizeSSI = node.as<bool>();
@@ -111,9 +112,47 @@ void Packer::updateAggregatedEntityMasks(
   }
 }
 
-auto Packer::computeClusterToPack(const MivBitstream::ViewParamsList &viewParamsList,
+auto Packer::computeClusterToPackWithInformation(const MivBitstream::ViewParamsList &viewParamsList,
+                                                 const ClusteringMapList &clusteringMap,
+                                                 const Common::FrameList<uint32_t> &information,
+                                                 std::vector<Cluster> out) {
+  auto infortmation_density_comp = [this, &viewParamsList](const Cluster &p1,
+                                                           const Cluster &p2) -> bool {
+    if (viewParamsList[p1.getViewIdx()].isBasicView !=
+        viewParamsList[p2.getViewIdx()].isBasicView) {
+      return viewParamsList[p2.getViewIdx()].isBasicView;
+    }
+
+    // Give priority to the server-side-inpainted view
+    if (m_prioritizeSSI && viewParamsList[p1.getViewIdx()].viewInpaintFlag !=
+                               viewParamsList[p2.getViewIdx()].viewInpaintFlag) {
+      return viewParamsList[p2.getViewIdx()].viewInpaintFlag;
+    }
+    // ee8: sort with information density
+    if (p1.getInformationDensity() != p2.getInformationDensity()) {
+      return p1.getInformationDensity() < p2.getInformationDensity();
+    }
+
+    return p1.getClusterId() > p2.getClusterId();
+  };
+
+  std::priority_queue<Cluster, std::vector<Cluster>, decltype(infortmation_density_comp)>
+      clusterToPackWithInformation(infortmation_density_comp);
+
+  for (auto &cluster : out) {
+    cluster.calculateInformationDensity(clusteringMap[cluster.getViewIdx()],
+                                        information[cluster.getViewIdx()]);
+    clusterToPackWithInformation.push(cluster);
+  }
+
+  return clusterToPackWithInformation;
+}
+
+auto Packer::computeClusterToPack(const std::vector<Common::SizeVector> &atlasSizes,
+                                  const MivBitstream::ViewParamsList &viewParamsList,
                                   const int32_t m_blockSize, ClusterList &clusterList,
-                                  const ClusteringMapList &clusteringMap) const {
+                                  const ClusteringMapList &clusteringMap,
+                                  const Common::FrameList<uint32_t> &information) {
   auto comp = [this, &viewParamsList](const Cluster &p1, const Cluster &p2) -> bool {
     if (viewParamsList[p1.getViewIdx()].isBasicView !=
         viewParamsList[p2.getViewIdx()].isBasicView) {
@@ -126,8 +165,17 @@ auto Packer::computeClusterToPack(const MivBitstream::ViewParamsList &viewParams
       return viewParamsList[p2.getViewIdx()].viewInpaintFlag;
     }
 
-    // NOTE(FT): added for packing patches from MPI ==> reading in writePatchInAtlas is done in
-    // increasing mpiLayerId order
+    if (p1.getPriority() != p2.getPriority()) { // high priority means the cluster can be packed
+                                                // into altas, so just order by area or viewid
+      return p1.getPriority() < p2.getPriority();
+    }
+
+    if (p1.getPriority() == 0) { // not high priority means the cluster may be packed into
+                                 // altas, so order by information density
+      if (p1.getInformationDensity() != p2.getInformationDensity()) {
+        return p1.getInformationDensity() < p2.getInformationDensity();
+      }
+    }
     if (m_sortingMethod == AREA_DESCENDING) {
       if (p1.getArea() != p2.getArea()) {
         return p1.getArea() < p2.getArea();
@@ -140,27 +188,80 @@ auto Packer::computeClusterToPack(const MivBitstream::ViewParamsList &viewParams
     // NOTE(BK): Stable ordering
     return p1.getClusterId() > p2.getClusterId();
   };
-
   std::priority_queue<Cluster, std::vector<Cluster>, decltype(comp)> clusterToPack(comp);
-
   std::vector<Cluster> out{};
   for (const auto &cluster : clusterList) {
     if (m_maxEntityId > 0 || cluster.isBasicView()) {
       out.push_back(cluster);
+      continue;
+    }
+    if (m_enableRecursiveSplit) {
+      cluster.recursiveSplit(clusteringMap[cluster.getViewIdx()], out, m_blockSize, m_minPatchSize);
     } else {
-      if (m_enableRecursiveSplit) {
-        cluster.recursiveSplit(clusteringMap[cluster.getViewIdx()], out, m_blockSize,
-                               m_minPatchSize);
-      } else {
-        out.push_back(cluster);
-      }
+      out.push_back(cluster);
     }
   }
-
+  int32_t areaSum = 0;
   for (const auto &cluster : out) {
     // modification to align the imin,jmin to even values to help renderer
     Cluster c = Cluster::align(cluster, 2);
+    areaSum += c.getArea();
+  }
+  int32_t atlasLimited = 0;
+  for (const auto &atlasSize : atlasSizes) {
+    atlasLimited += atlasSize[0][0] * atlasSize[0][1];
+  }
+  if (!m_enablePatchInformation || information.empty() ||
+      areaSum < atlasLimited) { // check if patch will loss
+    for (const auto &cluster : out) {
+      clusterToPack.push(cluster);
+    }
+    return clusterToPack;
+  }
+  Common::logInfo("Reserved patch area over atlas limit {}M and packing with Information",
+                  1e-6 * static_cast<double>(areaSum - atlasLimited));
+  auto clusterToPackWithInformation =
+      computeClusterToPackWithInformation(viewParamsList, clusteringMap, information, out);
+  int32_t highInformationArea = 0;
+  while (highInformationArea < atlasLimited && !clusterToPackWithInformation.empty()) {
+    Cluster c = clusterToPackWithInformation.top();
+    highInformationArea += c.getArea();
+    c.setPriority(1); // ee8: add priority
     clusterToPack.push(c);
+    clusterToPackWithInformation.pop();
+  }
+  auto information_density_threshold = clusterToPackWithInformation.top().getInformationDensity();
+  while (!clusterToPackWithInformation.empty()) {
+    Cluster c = clusterToPackWithInformation.top();
+    clusterToPack.push(c);
+    clusterToPackWithInformation.pop();
+  }
+  if (!m_enableRecursiveSplit) {
+    return clusterToPack;
+  }
+  out.clear();
+  while (!clusterToPack.empty()) {
+    const auto &cluster = clusterToPack.top();
+    if (m_maxEntityId > 0 || cluster.isBasicView()) {
+      out.push_back(cluster);
+    } else {
+      cluster.recursiveInformationSplit(clusteringMap[cluster.getViewIdx()], out, m_blockSize,
+                                        m_minPatchSize, information, information_density_threshold);
+    }
+    clusterToPack.pop();
+  }
+  for (auto &cluster : out) {
+    Cluster c = Cluster::align(cluster, 2);
+    c.calculateInformationDensity(clusteringMap[c.getViewIdx()], information[cluster.getViewIdx()]);
+    clusterToPackWithInformation.push(c);
+  }
+  highInformationArea = 0;
+  while (!clusterToPackWithInformation.empty()) {
+    Cluster c = clusterToPackWithInformation.top();
+    highInformationArea += c.getArea();
+    highInformationArea < atlasLimited ? c.setPriority(1) : c.setPriority(0);
+    clusterToPack.push(c);
+    clusterToPackWithInformation.pop();
   }
   return clusterToPack;
 }
@@ -203,14 +304,16 @@ auto patchParamsFor(size_t atlasIdx, const MivBitstream::ViewParamsList &viewPar
 
 auto Packer::pack(const std::vector<Common::SizeVector> &atlasSizes,
                   const Common::FrameList<uint8_t> &masks,
-                  const MivBitstream::ViewParamsList &viewParamsList, const int32_t blockSize)
-    -> MivBitstream::PatchParamsList {
+                  const MivBitstream::ViewParamsList &viewParamsList, const int32_t blockSize,
+                  const Common::FrameList<uint32_t> &information) -> MivBitstream::PatchParamsList {
   for (const auto &atlassize : atlasSizes) {
     checkAtlasSize(atlassize, blockSize);
   }
+
   auto [clusterList, clusteringMap, clusteringMapIndex] = computeClusters(masks, viewParamsList);
 
-  auto clusterToPack = computeClusterToPack(viewParamsList, blockSize, clusterList, clusteringMap);
+  auto clusterToPack = computeClusterToPack(atlasSizes, viewParamsList, blockSize, clusterList,
+                                            clusteringMap, information);
 
   // Packing
   MivBitstream::PatchParamsList atlasParamsVector{};
@@ -222,7 +325,6 @@ auto Packer::pack(const std::vector<Common::SizeVector> &atlasSizes,
   int32_t numKeptClusterPixels{};
 
   auto clusterToPackCopy = clusterToPack;
-
   while (!clusterToPackCopy.empty()) {
     const Cluster &cluster = clusterToPackCopy.top();
     numTotalClusterPixels = numTotalClusterPixels + cluster.getNumActivePixels();
@@ -231,16 +333,12 @@ auto Packer::pack(const std::vector<Common::SizeVector> &atlasSizes,
 
   while (!clusterToPack.empty()) {
     const Cluster &cluster = clusterToPack.top();
-
     clusteringMap_viewId = getViewId(cluster, clusteringMapIndex);
-
     if (m_minPatchSize * m_minPatchSize <= cluster.getArea()) {
       bool packed = false;
-
       for (size_t atlasIdx = 0; atlasIdx < m_packerList.size(); ++atlasIdx) {
         for (size_t tileIdx = 0; tileIdx < m_packerList[atlasIdx].size(); ++tileIdx) {
           MaxRectPiP &packer = m_packerList[atlasIdx][tileIdx];
-
           packer.setIsPushInFreeSpace(false);
 
           if (packer.push(cluster, clusteringMap[clusteringMap_viewId], packerOutput)) {
@@ -248,10 +346,8 @@ auto Packer::pack(const std::vector<Common::SizeVector> &atlasSizes,
                                           m_tileList[atlasIdx][tileIdx].partitionPosY()};
             auto p = patchParamsFor(atlasIdx, viewParamsList, cluster, tilePosition, packerOutput,
                                     blockSize);
-
             adaptPatchParamsToMask(p, masks[cluster.getViewIdx()].getWidth(),
                                    masks[cluster.getViewIdx()].getHeight());
-
             if (m_maxEntityId > 0) {
               p.atlasPatchEntityId(cluster.getEntityId());
               Common::logInfo(
@@ -259,16 +355,12 @@ auto Packer::pack(const std::vector<Common::SizeVector> &atlasSizes,
                   patchIdx, p.atlasPatchEntityId(), p.atlasPatchProjectionId(),
                   cluster.getNumActivePixels(), p.atlasId());
             }
-
             if (packer.getIsPushInFreeSpace()) {
               packer.setAreaPatchPushedInFreeSpace((p.atlasPatch2dSizeX() * p.atlasPatch2dSizeY()));
             }
-
             atlasParamsVector.push_back(p);
             patchIdx++;
-
             numKeptClusterPixels = numKeptClusterPixels + cluster.getNumActivePixels();
-
             packed = true;
             break;
           }
@@ -282,18 +374,22 @@ auto Packer::pack(const std::vector<Common::SizeVector> &atlasSizes,
       if (!packed) {
         ifEntityOrBasic(cluster);
         auto cc = cluster.split(clusteringMap[clusteringMap_viewId], m_overlap);
-
-        const auto alignPatch = [&, &clusteringMapIndex = clusteringMapIndex](auto member) {
+        const auto alignPatch = [&, &clusteringMapIndex = clusteringMapIndex](auto member,
+                                                                              auto clusteringMap) {
           if (m_minPatchSize * m_minPatchSize <= (cc.*member).getArea()) {
             // modification to align the imin,jmin to even values to help renderer
             Cluster c = Cluster::align((cc.*member), 2);
+            c.calculateInformationDensity(clusteringMap[clusteringMap_viewId],
+                                          information[clusteringMap_viewId]);
+            c.setPriority(cluster.getPriority());
             clusterToPack.push(c);
             clusteringMapIndex.push_back(clusteringMap_viewId);
           }
         };
-
-        alignPatch(&decltype(cc)::first);
-        alignPatch(&decltype(cc)::second);
+        clusterToPack.pop();
+        alignPatch(&decltype(cc)::first, clusteringMap);
+        alignPatch(&decltype(cc)::second, clusteringMap);
+        continue;
       }
     }
 

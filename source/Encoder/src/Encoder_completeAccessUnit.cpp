@@ -87,7 +87,7 @@ void Encoder::Impl::scaleGeometryDynamicRange() {
           geometry = static_cast<Common::DefaultElement>(
               (static_cast<double>(geometry) - minDepthMapValWithinGOP) /
               (static_cast<double>(maxDepthMapValWithinGOP) - minDepthMapValWithinGOP) * maxValD);
-          if (lowDepthQuality) {
+          if (lowDepthQuality && config().halveDepthRange) {
             geometry /= 2;
           }
         }

@@ -37,6 +37,7 @@
 
 #include <TMIV/MivBitstream/DepthOccupancyTransform.h>
 
+using TMIV::Common::SampleValue;
 using TMIV::MivBitstream::DepthQuantization;
 using TMIV::MivBitstream::DepthTransform;
 using TMIV::MivBitstream::OccupancyTransform;
@@ -213,6 +214,10 @@ TEST_CASE("DepthTransform") {
     dq.dq_norm_disp_low(normDispLow);
     dq.dq_norm_disp_high(normDispHigh);
 
+    const auto bits = GENERATE(12U, 16U);
+
+    const auto reference = DepthTransform{dq, bits};
+
     const auto offsetD = GENERATE(0, 1, 100, 1000);
     const auto rangeD = GENERATE(0, 100, 1000);
 
@@ -220,13 +225,26 @@ TEST_CASE("DepthTransform") {
     pp.atlasPatch3dOffsetD(offsetD);
     pp.atlasPatch3dRangeD(rangeD);
 
-    const auto bits = 16U;
-    const auto maxLevel = 0xFFFF;
-
     const auto unit = DepthTransform{dq, pp, bits};
 
-    REQUIRE(unit.expandNormDisp(0) == unit.expandNormDisp(offsetD));
-    REQUIRE(unit.expandNormDisp(maxLevel) == unit.expandNormDisp(offsetD + rangeD));
+    const auto test = [&](SampleValue d, SampleValue n) {
+      REQUIRE(unit.expandNormDisp(d) == reference.expandNormDisp(offsetD + n));
+    };
+
+    SECTION("Test patch offset") {
+      test(0, 0);
+
+      if (0 < rangeD) {
+        test(1, 1);
+        test(rangeD / 2, rangeD / 2);
+        test(rangeD - 1, rangeD - 1);
+        test(rangeD, rangeD);
+      }
+    }
+    SECTION("Test patch range") {
+      test(rangeD + 1, rangeD);
+      test(std::numeric_limits<SampleValue>::max(), rangeD);
+    }
   }
 
   SECTION("Expand a level to depth [m]") {

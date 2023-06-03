@@ -113,8 +113,8 @@ private:
   float m_normDispHigh{};
   float m_minNormDisp{};
   uint32_t m_bitDepth{};
-  Common::SampleValue m_depthStart{};
-  Common::SampleValue m_depthEnd{std::numeric_limits<Common::SampleValue>::max()};
+  Common::SampleValue m_atlasPatch3dOffsetD{};
+  Common::SampleValue m_atlasPatch3dRangeD{std::numeric_limits<Common::SampleValue>::max()};
 
 #if ENABLE_M57419
   uint8_t m_viewPivotCount{};

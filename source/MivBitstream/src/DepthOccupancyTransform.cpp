@@ -80,12 +80,13 @@ DepthTransform::DepthTransform(const DepthQuantization &dq, uint32_t bitDepth)
 DepthTransform::DepthTransform(const DepthQuantization &dq, const PatchParams &patchParams,
                                uint32_t bitDepth)
     : DepthTransform{dq, bitDepth} {
-  m_depthStart = patchParams.atlasPatch3dOffsetD();
-  m_depthEnd = m_depthStart + patchParams.atlasPatch3dRangeD();
+  m_atlasPatch3dOffsetD = patchParams.atlasPatch3dOffsetD();
+  m_atlasPatch3dRangeD = patchParams.atlasPatch3dRangeD();
 }
 
 auto DepthTransform::expandNormDisp(Common::SampleValue x) const -> float {
-  const auto level = Common::expandValue(std::clamp(x, m_depthStart, m_depthEnd), m_bitDepth);
+  const auto level =
+      Common::expandValue(m_atlasPatch3dOffsetD + std::min(x, m_atlasPatch3dRangeD), m_bitDepth);
 
 #if ENABLE_M57419
   if (m_quantizationLaw == 2) {
@@ -151,7 +152,8 @@ auto DepthTransform::quantizeNormDisp(float x, Common::SampleValue minLevel) con
 #else
     const auto level = (x - m_normDispLow) / (m_normDispHigh - m_normDispLow);
 #endif
-    return std::max(minLevel, Common::quantizeValue(level, m_bitDepth));
+    return std::clamp(Common::quantizeValue(level, m_bitDepth) - m_atlasPatch3dOffsetD, minLevel,
+                      m_atlasPatch3dRangeD);
   }
   return 0;
 }

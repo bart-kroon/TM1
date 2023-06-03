@@ -216,7 +216,7 @@ private:
         const auto depthTransform = MivBitstream::DepthTransform{
             frame.viewParamsList[p.atlasPatchProjectionId()].dq, p, bits};
 
-        float d = depthTransform.expandDepth(p.atlasPatch3dOffsetD());
+        float d = depthTransform.expandDepth(0);
 
         patchAverageDepth.push_back(d);
         patchAtlasId.push_back(idx_atlas);

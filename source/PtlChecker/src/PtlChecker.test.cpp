@@ -95,7 +95,7 @@ auto unit() {
   return toolsetIdc == TS::VPCC_Basic || toolsetIdc == TS::VPCC_Extended;
 }
 
-[[nodiscard]] constexpr auto mivToolset(TS toolsetIdc) noexcept {
+[[nodiscard]] auto mivToolset(TS toolsetIdc) noexcept {
   return contains(mivToolsetProfileComponents, toolsetIdc);
 }
 
@@ -253,7 +253,6 @@ auto asps(const V3cParameterSet &vps, AtlasId atlasId) {
 } // namespace
 } // namespace test
 
-// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define CHECK_THROWS_IFF(expression, condition)                                                    \
   if ((condition)) {                                                                               \
     CHECK_THROWS_AS((expression), test::Exception);                                                \

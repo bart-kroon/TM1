@@ -195,21 +195,20 @@ public:
 
       // Full alpha blend
       return blendAccumulators(w_a, a, w_b, b);
-    } else { // NOLINT(readability-else-after-return)
-      // b is in front of a
-      const float w_b =
-          b.normWeight / (b.normWeight + a.normWeight * normDispWeight(a.normDisp - b.normDisp));
-      ASSERT(w_b >= 0.F);
-      const float w_a = 1.F - w_b;
-
-      // Optimization: No alpha blending when w_a is almost zero
-      if (w_a < 0.01F) {
-        return b;
-      }
-
-      // Full alpha blend
-      return blendAccumulators(w_a, a, w_b, b);
     }
+    // b is in front of a
+    const float w_b =
+        b.normWeight / (b.normWeight + a.normWeight * normDispWeight(a.normDisp - b.normDisp));
+    ASSERT(w_b >= 0.F);
+    const float w_a = 1.F - w_b;
+
+    // Optimization: No alpha blending when w_a is almost zero
+    if (w_a < 0.01F) {
+      return b;
+    }
+
+    // Full alpha blend
+    return blendAccumulators(w_a, a, w_b, b);
   }
 
   // Average a pixel

@@ -76,7 +76,6 @@ auto decFrame(MivBitstream::V3cUnitHeader vuh, AAU &aau) -> auto & {
   }
 }
 
-// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define MIVDECODER_CHECK(cond, err)                                                                \
   if ((cond)) {                                                                                    \
   } else {                                                                                         \

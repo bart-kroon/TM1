@@ -43,10 +43,8 @@
 #include <stdexcept>
 
 #if defined(__clang__) || defined(__GNUC__)
-// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define LIKELY(x) __builtin_expect(static_cast<bool>(x), 1)
 #else
-// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define LIKELY(x) (static_cast<bool>(x))
 #endif
 
@@ -57,8 +55,6 @@
 //  * When it is not clear from the context of a function if the cause is external or internal, then
 //    it is better to assume that the cause is external. (When in doubt use VERIFY over
 //    PRECONDITION.)
-//
-// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define VERIFY(condition)                                                                          \
   static_cast<void>(LIKELY(condition) ||                                                           \
                     (::TMIV::Common::runtimeError(#condition, __FILE__, __LINE__), false))
@@ -66,16 +62,13 @@
 // Like the assert macro from <cassert>. We cannot use that because the libc++ implementation
 // triggers cppcoreguidelines-pro-bounds-array-to-pointer-decay.
 #ifdef NDEBUG
-// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define ASSERT(condition) (static_cast<void>(0))
 #else
-// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define ASSERT(condition)                                                                          \
   static_cast<void>(!!(condition) ||                                                               \
                     (::TMIV::Common::assertionFailed(#condition, __FILE__, __LINE__), false))
 #endif
 
-// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define RUNTIME_ERROR(what) ::TMIV::Common::runtimeError(what, __FILE__, __LINE__)
 
 // Check bitstream against (draft) ISO/IEC 23090-5 V3C and V-PCC specification
@@ -85,13 +78,10 @@
 //  * When it is not clear from the context of a function if the cause is external or internal, then
 //    it is better to assume that the cause is external. (When in doubt use VERIFY_V3CBITSTREAM over
 //    PRECONDITION.)
-//
-// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define VERIFY_V3CBITSTREAM(condition)                                                             \
   static_cast<void>(LIKELY(condition) ||                                                           \
                     (::TMIV::Common::v3cBitstreamError(#condition, __FILE__, __LINE__), false))
 
-// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define V3CBITSTREAM_ERROR(what) ::TMIV::Common::v3cBitstreamError(what, __FILE__, __LINE__)
 
 // Check bitstream against (draft) ISO/IEC 23090-12 MIV specification
@@ -101,13 +91,10 @@
 //  * When it is not clear from the context of a function if the cause is external or internal, then
 //    it is better to assume that the cause is external. (When in doubt use VERIFY_MIVBITSTREAM over
 //    PRECONDITION.)
-//
-// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define VERIFY_MIVBITSTREAM(condition)                                                             \
   static_cast<void>(LIKELY(condition) ||                                                           \
                     (::TMIV::Common::mivBitstreamError(#condition, __FILE__, __LINE__), false))
 
-// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define MIVBITSTREAM_ERROR(what) ::TMIV::Common::mivBitstreamError(what, __FILE__, __LINE__)
 
 // Check against general bitstream conformance
@@ -117,21 +104,16 @@
 //  * When it is not clear from the context of a function if the cause is external or internal, then
 //    it is better to assume that the cause is external. (When in doubt use VERIFY_BITSTREAM over
 //    PRECONDITION.)
-//
-// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define VERIFY_BITSTREAM(condition)                                                                \
   static_cast<void>(LIKELY(condition) ||                                                           \
                     (::TMIV::Common::bitstreamError(#condition, __FILE__, __LINE__), false))
 
-// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define BITSTREAM_ERROR(what) ::TMIV::Common::bitstreamError(what, __FILE__, __LINE__)
 
 // Known limitation of the current implementation (not in line with ISO/IEC 23090-12)
 //
 // * When this triggers, this is always a bug in the test model.
 // * This is an internal error source and thus an abnormal program termination will be triggered.
-//
-// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define LIMITATION(condition)                                                                      \
   static_cast<void>((LIKELY(condition) ||                                                          \
                      (::TMIV::Common::assertionFailed(#condition, __FILE__, __LINE__), false)))
@@ -141,8 +123,6 @@
 //  * For hot inner loops use `ASSERT` from the <cassert> header instead.
 //  * When this triggers, this is always a bug in the test model.
 //  * This is an internal error source and thus an abnormal program termination will be triggered.
-//
-// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define PRECONDITION(condition)                                                                    \
   static_cast<void>((LIKELY(condition) ||                                                          \
                      (::TMIV::Common::assertionFailed(#condition, __FILE__, __LINE__), false)))
@@ -152,8 +132,6 @@
 //  * For hot inner loops use `ASSERT` from the <cassert> header instead.
 //  * When this triggers, this is always a bug in the test model.
 //  * This is an internal error source and thus an abnormal program termination will be triggered.
-//
-// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define POSTCONDITION(condition)                                                                   \
   static_cast<void>((LIKELY(condition) ||                                                          \
                      (::TMIV::Common::assertionFailed(#condition, __FILE__, __LINE__), false)))
@@ -162,8 +140,6 @@
 //
 //  * When this triggers, this is always a bug in the test model.
 //  * This is an internal error source and thus an abnormal program termination will be triggered.
-//
-// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define UNREACHABLE                                                                                \
   ::TMIV::Common::assertionFailed("This code was assumed to be unreachable", __FILE__, __LINE__)
 
@@ -171,8 +147,6 @@
 //
 //  * When this triggers, this is always a bug in the test model.
 //  * This is an internal error source and thus an abnormal program termination will be triggered.
-//
-// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define NOT_IMPLEMENTED ::TMIV::Common::assertionFailed("Not implemented", __FILE__, __LINE__)
 
 namespace TMIV::Common {

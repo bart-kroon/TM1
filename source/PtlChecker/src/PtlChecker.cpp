@@ -61,8 +61,6 @@ struct PtlChecker::Impl {
   }
 
   // A macro is used to capture the text of the condition. There is no reflection in C++17.
-  //
-  // NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define PTL_CHECK(document, numberedItem, condition)                                               \
   ptlCheck(condition, #condition, document, numberedItem)
 

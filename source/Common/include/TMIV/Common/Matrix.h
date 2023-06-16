@@ -112,6 +112,32 @@ template <typename T> auto transpose_type(heap::Matrix<T>) -> heap::Matrix<T>;
 template <typename Mat1, typename Mat2> auto transpose(const Mat1 &in, Mat2 &out) -> Mat2 &;
 template <typename Mat> auto transpose(const Mat &m) -> decltype(transpose_type(Mat()));
 
+// Visit all pixels in a bounded plane
+template <typename Visitor> void forPixels(std::array<size_t, 2> sizes, Visitor &&f) {
+  for (size_t i = 0; i < sizes[0]; ++i) {
+    for (size_t j = 0; j < sizes[1]; ++j) {
+      f(i, j);
+    }
+  }
+}
+
+// Visit all pixel neighbors (in between 3 and 8)
+template <typename Visitor>
+auto forNeighbors(size_t i, size_t j, std::array<size_t, 2> sizes, Visitor &&f) -> bool {
+  const auto n1 = std::max(size_t{1}, i) - 1;
+  const auto n2 = std::min(sizes[0], i + 2);
+  const auto m1 = std::max(size_t{1}, j) - 1;
+  const auto m2 = std::min(sizes[1], j + 2);
+
+  for (size_t n = n1; n < n2; ++n) {
+    for (size_t m = m1; m < m2; ++m) {
+      if (!f(n, m)) {
+        return false;
+      }
+    }
+  }
+  return true;
+}
 } // namespace TMIV::Common
 
 #include "Matrix.hpp"

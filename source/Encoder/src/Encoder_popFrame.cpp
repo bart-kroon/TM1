@@ -42,7 +42,7 @@ auto Encoder::Impl::popAtlas() -> Common::V3cFrameList {
                                                               m_videoFrameBuffer.front());
     auto scaledFrame =
         GeometryDownscaler::transformFrame(params().atlas, std::move(quantizedFrame));
-    m_videoFrameBuffer.pop_front();
+    m_videoFrameBuffer.erase(m_videoFrameBuffer.begin());
     if (m_config.framePacking) {
       m_framePacker.packFrame(scaledFrame, m_config.pacBitDepth, m_config.geometryPacking);
     }
@@ -54,7 +54,7 @@ auto Encoder::Impl::popAtlas() -> Common::V3cFrameList {
   for (size_t i = 0; i < frame.size(); ++i) {
     frame[i].texture = std::move(m_videoFrameBuffer.front()[i].texture);
   }
-  m_videoFrameBuffer.pop_front();
+  m_videoFrameBuffer.erase(m_videoFrameBuffer.begin());
   if (m_config.framePacking) {
     m_framePacker.packFrame(frame, m_config.pacBitDepth, m_config.geometryPacking);
   }

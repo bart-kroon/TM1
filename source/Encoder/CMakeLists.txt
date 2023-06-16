@@ -76,7 +76,6 @@ create_catch2_unit_test(
     "src/Configuration.test.cpp"
     "src/EncodeMiv.test.cpp"
     "src/Encoder_prepareSequence.test.cpp"
-    "src/ExplicitOccupancy.test.cpp"
     "src/FramePacker.test.cpp"
     "src/GeometryQuantizer.test.cpp"
     "src/PiecewiseLinearDepthScaling.test.cpp"

@@ -40,94 +40,6 @@
 #include <TMIV/MivBitstream/Formatters.h>
 
 namespace TMIV::Encoder {
-void Encoder::Impl::scaleGeometryDynamicRange() {
-  PRECONDITION(m_config.dynamicDepthRange);
-  const auto lowDepthQuality = params().casps.casps_miv_extension().casme_depth_low_quality_flag();
-  const auto numOfFrames = m_transportViews.size();
-  const auto numOfViews = m_transportViews[0].size();
-
-  LIMITATION(std::all_of(m_transportViews.cbegin(), m_transportViews.cend(), [](const auto &frame) {
-    return std::all_of(frame.cbegin(), frame.cend(), [](const auto &view) {
-      return view.geometry.getBitDepth() == Common::sampleBitDepth;
-    });
-  }));
-
-  static constexpr int32_t maxValue = Common::maxLevel(Common::sampleBitDepth);
-  static constexpr auto maxValD = static_cast<double>(maxValue);
-
-  for (size_t v = 0; v < numOfViews; v++) {
-    int32_t minDepthMapValWithinGOP = maxValue;
-    int32_t maxDepthMapValWithinGOP = 0;
-
-    for (size_t f = 0; f < numOfFrames; f++) {
-      for (const auto geometry : m_transportViews[f][v].geometry.getPlane(0)) {
-        if (geometry < minDepthMapValWithinGOP) {
-          minDepthMapValWithinGOP = geometry;
-        }
-        if (geometry > maxDepthMapValWithinGOP) {
-          maxDepthMapValWithinGOP = geometry;
-        }
-      }
-    }
-
-    if (maxDepthMapValWithinGOP == minDepthMapValWithinGOP) {
-      continue;
-    }
-
-#if ENABLE_M57419
-    std::vector<double> mapped_pivot;
-
-    if (m_config.m57419_piecewiseDepthLinearScaling) {
-      mapped_pivot = m57419_piecewiseLinearScaleGeometryDynamicRange(
-          numOfFrames, v, minDepthMapValWithinGOP, maxDepthMapValWithinGOP, lowDepthQuality);
-    } else {
-#endif
-      for (size_t f = 0; f < numOfFrames; f++) {
-        for (auto &geometry : m_transportViews[f][v].geometry.getPlane(0)) {
-          geometry = static_cast<Common::DefaultElement>(
-              (static_cast<double>(geometry) - minDepthMapValWithinGOP) /
-              (static_cast<double>(maxDepthMapValWithinGOP) - minDepthMapValWithinGOP) * maxValD);
-          if (lowDepthQuality && config().halveDepthRange) {
-            geometry /= 2;
-          }
-        }
-      }
-#if ENABLE_M57419
-    }
-#endif
-
-    const double normDispHighOrig = m_transportParams.viewParamsList[v].dq.dq_norm_disp_high();
-    const double normDispLowOrig = m_transportParams.viewParamsList[v].dq.dq_norm_disp_low();
-
-    double normDispHigh =
-        maxDepthMapValWithinGOP / maxValD * (normDispHighOrig - normDispLowOrig) + normDispLowOrig;
-    const double normDispLow =
-        minDepthMapValWithinGOP / maxValD * (normDispHighOrig - normDispLowOrig) + normDispLowOrig;
-
-    if (lowDepthQuality && config().halveDepthRange) {
-      normDispHigh = 2 * normDispHigh - normDispLow;
-    }
-
-    m_params.viewParamsList[v].dq.dq_norm_disp_high(static_cast<float>(normDispHigh));
-    m_params.viewParamsList[v].dq.dq_norm_disp_low(static_cast<float>(normDispLow));
-
-#if ENABLE_M57419
-    if (m_config.m57419_piecewiseDepthLinearScaling) {
-      const auto piece_num = m_config.m57419_intervalNumber;
-      m_params.viewParamsList[v].dq.dq_pivot_count_minus1(static_cast<uint8_t>(piece_num - 1));
-
-      m_params.viewParamsList[v].dq.dq_quantization_law(static_cast<uint8_t>(2));
-
-      for (int32_t i = 0; i < piece_num + 1; i++) {
-        double normDispMap =
-            mapped_pivot[i] / maxValD * (normDispHighOrig - normDispLowOrig) + normDispLowOrig;
-        m_params.viewParamsList[v].dq.dq_pivot_norm_disp(i, static_cast<float>(normDispMap));
-      }
-    }
-#endif
-  }
-}
-
 void Encoder::Impl::pruningWithInformation(Common::FrameList<uint8_t> &aggregatedMask,
                                            const Common::FrameList<uint32_t> &information) {
   std::vector<uint32_t> informationList; // ee8: information list contains all unpruned pixels.
@@ -375,6 +287,16 @@ void Encoder::Impl::setAtlasTileHeaderSnytax(size_t atlasIdx) {
   }
 }
 
+namespace {
+void assignFullPatchRanges(EncoderParams &params) {
+  for (auto &pp : params.patchParamsList) {
+    const auto atlasIdx = params.vps.indexOf(pp.atlasId());
+    const auto bitDepth = params.atlas[atlasIdx].asps.asps_geometry_2d_bit_depth_minus1() + 1U;
+    pp.atlasPatch3dOffsetD(0).atlasPatch3dRangeD(Common::maxLevel(bitDepth));
+  }
+}
+} // namespace
+
 auto Encoder::Impl::completeAccessUnit() -> const EncoderParams & {
   Common::logVerbose("completeAccessUnit: FOC is {}.", m_params.foc);
 
@@ -389,10 +311,6 @@ auto Encoder::Impl::completeAccessUnit() -> const EncoderParams & {
 #endif
 
   updateAggregationStatistics(aggregatedMask);
-
-  if (m_config.dynamicDepthRange) {
-    scaleGeometryDynamicRange();
-  }
 
   if (0 < m_config.maxEntityId) {
     m_packer->updateAggregatedEntityMasks(m_aggregatedEntityMask);
@@ -416,13 +334,7 @@ auto Encoder::Impl::completeAccessUnit() -> const EncoderParams & {
   m_params.patchParamsList = m_packer->pack(
       atlasSizes, aggregatedMask, m_transportParams.viewParamsList, m_blockSize, information);
 
-  // NOTE(BK): There is no encoder support for per-patch D range
-  for (auto &pp : m_params.patchParamsList) {
-    const auto atlasIdx = params().vps.indexOf(pp.atlasId());
-    const auto bitDepth = params().atlas[atlasIdx].asps.asps_geometry_2d_bit_depth_minus1() + 1U;
-    pp.atlasPatch3dOffsetD(0);
-    pp.atlasPatch3dRangeD(Common::maxLevel(bitDepth));
-  }
+  assignFullPatchRanges(m_params);
 
   for (size_t p = 0; p < params().patchParamsList.size(); p++) {
     m_patchColorCorrectionOffset.emplace_back();
@@ -431,11 +343,9 @@ auto Encoder::Impl::completeAccessUnit() -> const EncoderParams & {
   constructVideoFrames();
 
   updateTile();
-  bool occth_type = params().casps.casps_miv_extension().casme_depth_low_quality_flag();
-  double depthOccThresholdAsymmetry = m_config.depthOccThresholdAsymmetry;
-  m_paramsQuantized =
-      GeometryQuantizer::transformParams(params(), m_config.occThreshold(occth_type),
-                                         m_config.geoBitDepth, depthOccThresholdAsymmetry);
+
+  m_paramsQuantized = transformGeometryQuantizationParams(m_config, m_videoFrameBuffer, params());
+
   m_params.foc += Common::downCast<int32_t>(m_videoFrameBuffer.size());
   m_params.foc %= m_config.intraPeriod;
   Common::logInfo("completeAccessUnit: Added {} frames. Updating FOC to {}.",
@@ -684,6 +594,9 @@ void Encoder::Impl::constructVideoFrames() {
       const auto frameWidth = vps.vps_frame_width(j);
       const auto frameHeight = vps.vps_frame_height(j);
 
+      frame.patchIdx.createY({frameWidth, frameHeight});
+      frame.patchIdx.fillValue(Common::unusedPatchIdx);
+
       if (m_config.haveTexture) {
         const auto texBitDepth = views.front().texture.getBitDepth();
 
@@ -823,6 +736,8 @@ auto Encoder::Impl::writePatchInAtlas(const MivBitstream::PatchParams &patchPara
             yOcc = pAtlas.y();
             xOcc = pAtlas.x();
           }
+          atlas.patchIdx.getPlane(0)(pAtlas.y(), pAtlas.x()) =
+              Common::downCast<Common::DefaultElement>(patchIdx);
 
           if (redundant && m_config.haveGeometry) {
             adaptAtlas(patchParams, atlas, yOcc, xOcc, pView, pAtlas);

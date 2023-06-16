@@ -33,41 +33,162 @@
 
 #include "GeometryQuantizer.h"
 
+#include <TMIV/Common/LoggingStrategyFmt.h>
 #include <TMIV/MivBitstream/DepthOccupancyTransform.h>
+#include <TMIV/MivBitstream/Formatters.h>
 
-namespace TMIV::Encoder::GeometryQuantizer {
-auto transformParams(const EncoderParams &inParams, double depthOccThresholdIfSet,
-                     uint32_t bitDepth, double depthOccThresholdAsymmetry) -> EncoderParams {
-  auto outParams = inParams;
-  if (outParams.vps.vps_miv_extension().vme_embedded_occupancy_enabled_flag()) {
-    for (auto &x : outParams.viewParamsList) {
-      if (x.hasOccupancy) {
-        const auto depthOccThreshold = Common::downCast<uint32_t>(
-            std::llround(std::ldexp(depthOccThresholdIfSet, Common::downCast<int32_t>(bitDepth))));
-        const auto nearLevel = static_cast<float>(Common::maxLevel(bitDepth));
-        const auto farLevel = static_cast<float>(2 * depthOccThreshold);
-        // Mapping is [2T, maxValue] --> [old far, near]. What is level 0? (the new far)
-        x.dq.dq_norm_disp_low(x.dq.dq_norm_disp_low() +
-                              (0.F - farLevel) / (nearLevel - farLevel) *
-                                  (x.dq.dq_norm_disp_high() - x.dq.dq_norm_disp_low()));
-        auto limitocc = Common::downCast<uint32_t>(
-            std::llround(std::ldexp(1, Common::downCast<int32_t>(bitDepth))));
+#include <fmt/ostream.h>
 
-        if (depthOccThreshold < limitocc) {
-          if (outParams.casps.casps_miv_extension().casme_depth_low_quality_flag()) {
-            x.dq.dq_depth_occ_threshold_default(depthOccThreshold); // = NC_T
-          } else {
-            x.dq.dq_depth_occ_threshold_default(
-                static_cast<uint32_t>(depthOccThreshold * depthOccThresholdAsymmetry)); // = CG_T
+namespace TMIV::Encoder {
+void GeometryDistributions::report(const EncoderParams &params) const {
+  for (size_t viewIdx = 0; viewIdx < views.size(); ++viewIdx) {
+    if (views[viewIdx]) {
+      Common::logVerbose(
+          "GeometryRanges: view {} with ID {}: min={} median={} max={} (scene unit^-1)", viewIdx,
+          params.viewParamsList[viewIdx].viewId, min(views[viewIdx]), median(views[viewIdx]),
+          max(views[viewIdx]));
+    }
+  }
+  for (size_t patchIdx = 0; patchIdx < patches.size(); ++patchIdx) {
+    if (patches[patchIdx]) {
+      Common::logVerbose(
+          "GeometryRanges: patch {} with projection ID {}: min={} median={} max={} (scene unit^-1)",
+          patchIdx, params.patchParamsList[patchIdx].atlasPatchProjectionId(),
+          min(patches[patchIdx]), median(patches[patchIdx]), max(patches[patchIdx]));
+    }
+  }
+}
+
+auto GeometryDistributions::measure(const std::vector<Common::DeepFrameList> &videoFrameBuffer,
+                                    const EncoderParams &params) -> GeometryDistributions {
+  auto result = GeometryDistributions{};
+
+  result.views.resize(params.viewParamsList.size());
+  result.patches.resize(params.patchParamsList.size());
+
+  for (const auto &deepFrameList : videoFrameBuffer) {
+    for (const auto &deepFrame : deepFrameList) {
+      if (!deepFrame.geometry.empty()) {
+        Common::forPixels(deepFrame.texture.getPlane(0).sizes(), [&](size_t i, size_t j) {
+          const auto patchIdx = deepFrame.patchIdx.getPlane(0)(i, j);
+
+          if (patchIdx != Common::unusedPatchIdx) {
+            const auto &pp = params.patchParamsList[patchIdx];
+            const auto viewIdx = params.viewParamsList.indexOf(pp.atlasPatchProjectionId());
+            const auto &vp = params.viewParamsList[viewIdx];
+
+            const auto dt = MivBitstream::DepthTransform{vp.dq, Common::sampleBitDepth};
+            const auto ot = MivBitstream::OccupancyTransform{vp};
+
+            const auto geoSample = deepFrame.geometry.getPlane(0)(i, j);
+
+            if (ot.occupant(geoSample)) {
+              const auto normDisp = dt.expandNormDisp(geoSample);
+              result.patches[patchIdx].sample(normDisp);
+              result.views[viewIdx].sample(normDisp);
+            }
           }
-        } else {
-          x.dq.dq_depth_occ_threshold_default(depthOccThreshold);
-        }
+        });
       }
     }
   }
+  return result;
+}
 
-  return outParams;
+void GeometryQuantizer::determineDepthRange(const GeometryDistributions &distributions,
+                                            EncoderParams &params) const {
+  const auto vme_embedded_occupancy_enabled_flag =
+      params.vps.vps_miv_extension().vme_embedded_occupancy_enabled_flag();
+  const auto casme_depth_low_quality_flag =
+      params.casps.casps_miv_extension().casme_depth_low_quality_flag();
+
+  for (size_t viewIdx = 0; viewIdx < params.viewParamsList.size(); ++viewIdx) {
+    auto &vp = params.viewParamsList[viewIdx];
+    auto far = vp.dq.dq_norm_disp_low();
+    auto near = vp.dq.dq_norm_disp_high();
+    Common::logVerbose("determineDepthRange: viewIdx={}, far={}, near={} (input range)", viewIdx,
+                       far, near);
+
+#if ENABLE_M57419
+    if (m_config.m57419_piecewiseDepthLinearScaling) {
+      // TODO(BK): The existing code did not match with the specification meaning that there is
+      // anyhow work to be done. Because of that, and also in view of the MPEG 143 CE 2 schedule, I
+      // did not re-implement this proposal. However, I have prepared for it by gathering the full
+      // geometry distribution in the `distributions` argument and providing an `icdf` member
+      // function.
+      NOT_IMPLEMENTED;
+    }
+#endif
+    if (m_config.dynamicDepthRange && distributions.views[viewIdx]) {
+      far = min(distributions.views[viewIdx]);
+      near = max(distributions.views[viewIdx]);
+      Common::logVerbose("determineDepthRange: viewIdx={}, far:={}, near:={} (dynamic depth range)",
+                         viewIdx, far, near);
+    }
+    if (casme_depth_low_quality_flag && m_config.halveDepthRange) {
+      near = 2 * near - far;
+      Common::logVerbose("determineDepthRange: viewIdx={}, near:={} (halve depth range)", viewIdx,
+                         near);
+    }
+    if (vme_embedded_occupancy_enabled_flag && vp.hasOccupancy) {
+      const auto twoT = 2. * m_config.occThreshold(casme_depth_low_quality_flag);
+      Common::logVerbose("determineDepthRange: twoT={}", twoT);
+
+      // Affine map: 2T -> far, 1 -> near
+      // Solve for a0: a0 + 2T a1 == far && a0 + 1 a1 == near:
+      //   a0 == (far - 2T near) / (1 - 2T)
+      vp.dq.dq_norm_disp_low(static_cast<float>((far - twoT * near) / (1. - twoT)));
+      vp.dq.dq_norm_disp_high(near);
+    } else {
+      vp.dq.dq_norm_disp_low(far);
+      vp.dq.dq_norm_disp_high(near);
+    }
+    Common::logVerbose("determineDepthRange: dq_norm_disp_low={}, dq_norm_disp_high={} (result)",
+                       vp.dq.dq_norm_disp_low(), vp.dq.dq_norm_disp_high());
+  }
+  for (auto &pp : params.patchParamsList) {
+    const auto atlasIdx = params.vps.indexOf(pp.atlasId());
+    const auto bitDepth = params.atlas[atlasIdx].asps.asps_geometry_2d_bit_depth_minus1() + 1U;
+    pp.atlasPatch3dOffsetD(0);
+    pp.atlasPatch3dRangeD(Common::maxLevel(bitDepth));
+  }
+}
+
+void GeometryQuantizer::setDepthOccThreshold(EncoderParams &params) const {
+  const auto vme_embedded_occupancy_enabled_flag =
+      params.vps.vps_miv_extension().vme_embedded_occupancy_enabled_flag();
+  const auto casme_depth_low_quality_flag =
+      params.casps.casps_miv_extension().casme_depth_low_quality_flag();
+
+  if (vme_embedded_occupancy_enabled_flag) {
+    const auto maxValue = std::ldexp(1., static_cast<uint8_t>(m_config.geoBitDepth)) - 1.;
+    const auto baseThreshold = m_config.occThreshold(casme_depth_low_quality_flag) * maxValue;
+    const auto maxDecoderThreshold = std::floor(2. * baseThreshold);
+    PRECONDITION(0 < maxDecoderThreshold);
+    const auto asymmetry = casme_depth_low_quality_flag ? 1. : m_config.depthOccThresholdAsymmetry;
+    const auto decoderThreshold = std::clamp(asymmetry * baseThreshold, 1., maxDecoderThreshold);
+    const auto depthOccThreshold =
+        Common::downCast<Common::SampleValue>(std::llround(decoderThreshold));
+
+    for (auto &vp : params.viewParamsList) {
+      if (vp.hasOccupancy) {
+        vp.dq.dq_depth_occ_threshold_default(depthOccThreshold);
+      }
+    }
+  }
+}
+
+auto GeometryQuantizer::transformParams(const GeometryDistributions &distributions,
+                                        EncoderParams params) const -> EncoderParams {
+  for (size_t viewIdx = 0; viewIdx < params.viewParamsList.size(); ++viewIdx) {
+    Common::logVerbose("transformParams: viewIdx={}, dq_norm_disp_low={}, dq_norm_disp_high={}",
+                       viewIdx, params.viewParamsList[viewIdx].dq.dq_norm_disp_low(),
+                       params.viewParamsList[viewIdx].dq.dq_norm_disp_high());
+  }
+  determineDepthRange(distributions, params);
+  setDepthOccThreshold(params);
+
+  return params;
 }
 
 namespace {
@@ -134,8 +255,10 @@ auto transformAttributeFrame(const Common::Frame<> &inFrame, uint32_t bitDepth) 
 }
 } // namespace
 
-auto transformAtlases(const EncoderParams &inParams, const EncoderParams &outParams,
-                      const Common::DeepFrameList &inAtlases) -> Common::V3cFrameList {
+auto GeometryQuantizer::transformAtlases(const EncoderParams &inParams,
+                                         const EncoderParams &outParams,
+                                         const Common::DeepFrameList &inAtlases)
+    -> Common::V3cFrameList {
   auto outAtlases = Common::V3cFrameList(inAtlases.size());
 
   for (uint8_t k = 0; k <= outParams.vps.vps_atlas_count_minus1(); ++k) {
@@ -208,4 +331,13 @@ auto transformAtlases(const EncoderParams &inParams, const EncoderParams &outPar
   }
   return outAtlases;
 }
-} // namespace TMIV::Encoder::GeometryQuantizer
+
+auto transformGeometryQuantizationParams(const Configuration &config,
+                                         const std::vector<Common::DeepFrameList> &videoFrameBuffer,
+                                         const EncoderParams &params) -> EncoderParams {
+  const auto quantizer = GeometryQuantizer{config};
+  const auto distributions = GeometryDistributions::measure(videoFrameBuffer, params);
+  distributions.report(params);
+  return quantizer.transformParams(distributions, params);
+}
+} // namespace TMIV::Encoder

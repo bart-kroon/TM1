@@ -31,48 +31,79 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef TMIV_ENCODER_GEOMETRYQUANTIZER_H
-#define TMIV_ENCODER_GEOMETRYQUANTIZER_H
+#include <catch2/catch_approx.hpp>
+#include <catch2/catch_test_macros.hpp>
+#include <catch2/generators/catch_generators_range.hpp>
 
-#include "Configuration.h"
 #include <TMIV/Common/Distribution.h>
-#include <TMIV/Common/Frame.h>
-#include <TMIV/Encoder/EncoderParams.h>
 
-namespace TMIV::Encoder {
-// Measure the distribution of geometry samples (in scene units) over views and patches
-struct GeometryDistributions {
-  std::vector<Common::Distribution> views;
-  std::vector<Common::Distribution> patches;
+#include <cmath>
 
-  void report(const EncoderParams &params) const;
+TEST_CASE("Distribution") {
+  using TMIV::Common::Distribution;
 
-  static auto measure(const std::vector<Common::DeepFrameList> &videoFrameBuffer,
-                      const EncoderParams &params) -> GeometryDistributions;
-};
+  SECTION("No samples") {
+    const auto unit = Distribution{};
 
-class GeometryQuantizer {
-public:
-  explicit GeometryQuantizer(const Configuration &config) : m_config{config} {}
+    CHECK_FALSE(unit);
+    CHECK(unit.size() == 0);
+    CHECK(unit.count() == 0);
+  }
 
-  [[nodiscard]] auto transformParams(const GeometryDistributions &distributions,
-                                     EncoderParams params) const -> EncoderParams;
-  [[nodiscard]] static auto transformAtlases(const EncoderParams &inParams,
-                                             const EncoderParams &outParams,
-                                             const Common::DeepFrameList &inAtlases)
-      -> Common::V3cFrameList;
+  SECTION("Unique value") {
+    const auto value = GENERATE(0.01F, 1.F, 456.F);
+    const auto count = GENERATE(1U, 2U, 100U, 101U);
 
-private:
-  void determineDepthRange(const GeometryDistributions &distributions, EncoderParams &params) const;
-  void setDepthOccThreshold(EncoderParams &params) const;
+    auto unit = Distribution{};
 
-  Configuration m_config;
-};
+    for (auto i = 0U; i < count; ++i) {
+      unit.sample(value);
+    }
 
-[[nodiscard]] auto
-transformGeometryQuantizationParams(const Configuration &config,
-                                    const std::vector<Common::DeepFrameList> &videoFrameBuffer,
-                                    const EncoderParams &params) -> EncoderParams;
-} // namespace TMIV::Encoder
+    CHECK(unit);
+    CHECK(unit.count() == count);
+    CHECK(min(unit) == value);
+    CHECK(max(unit) == value);
+    CHECK(median(unit) == value);
+  }
 
-#endif
+  SECTION("Odd number of unique values") {
+    auto unit = Distribution{};
+    const auto count = GENERATE(1U, 2U, 3U);
+
+    CAPTURE(count);
+
+    for (const auto value : {0.4F, 0.1F, 100.F, 0.2F, 0.7F}) {
+      for (auto i = 0U; i < count; ++i) {
+        unit.sample(value);
+      }
+    }
+
+    CHECK(unit);
+    CHECK(unit.size() == 5);
+    CHECK(unit.count() == 5 * count);
+    CHECK(min(unit) == 0.1F);
+    CHECK(max(unit) == 100.F);
+    CHECK(median(unit) == 0.4F);
+  }
+
+  SECTION("Even number of unique values") {
+    auto unit = Distribution{};
+    const auto count = GENERATE(1U, 2U, 3U);
+
+    CAPTURE(count);
+
+    for (const auto value : {0.4F, 0.1F, 100.F, 0.2F, 0.7F, 0.3F}) {
+      for (auto i = 0U; i < count; ++i) {
+        unit.sample(value);
+      }
+    }
+
+    CHECK(unit);
+    CHECK(unit.size() == 6);
+    CHECK(unit.count() == 6 * count);
+    CHECK(min(unit) == 0.1F);
+    CHECK(max(unit) == 100.F);
+    CHECK(median(unit) == Catch::Approx(0.35F));
+  }
+}

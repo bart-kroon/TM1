@@ -31,48 +31,43 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef TMIV_ENCODER_GEOMETRYQUANTIZER_H
-#define TMIV_ENCODER_GEOMETRYQUANTIZER_H
-
-#include "Configuration.h"
 #include <TMIV/Common/Distribution.h>
-#include <TMIV/Common/Frame.h>
-#include <TMIV/Encoder/EncoderParams.h>
 
-namespace TMIV::Encoder {
-// Measure the distribution of geometry samples (in scene units) over views and patches
-struct GeometryDistributions {
-  std::vector<Common::Distribution> views;
-  std::vector<Common::Distribution> patches;
+#include <TMIV/Common/verify.h>
 
-  void report(const EncoderParams &params) const;
+#include <cmath>
+#include <numeric>
 
-  static auto measure(const std::vector<Common::DeepFrameList> &videoFrameBuffer,
-                      const EncoderParams &params) -> GeometryDistributions;
-};
+namespace TMIV::Common {
+auto Distribution::count() const -> size_t {
+  return std::accumulate(m_counts.cbegin(), m_counts.cend(), size_t{},
+                         [](size_t init, const auto &kvp) { return init + kvp.second; });
+}
 
-class GeometryQuantizer {
-public:
-  explicit GeometryQuantizer(const Configuration &config) : m_config{config} {}
+auto Distribution::icdf(float p) const -> float {
+  PRECONDITION(0.F <= p && p <= 1.F && *this);
 
-  [[nodiscard]] auto transformParams(const GeometryDistributions &distributions,
-                                     EncoderParams params) const -> EncoderParams;
-  [[nodiscard]] static auto transformAtlases(const EncoderParams &inParams,
-                                             const EncoderParams &outParams,
-                                             const Common::DeepFrameList &inAtlases)
-      -> Common::V3cFrameList;
+  const auto target = static_cast<double>(count()) * p;
+  auto subCount = size_t{};
+  auto lastValue = std::numeric_limits<float>::quiet_NaN();
 
-private:
-  void determineDepthRange(const GeometryDistributions &distributions, EncoderParams &params) const;
-  void setDepthOccThreshold(EncoderParams &params) const;
+  for (const auto &[value, count] : m_counts) {
+    if (!std::isnan(lastValue)) {
+      return 0.5F * (lastValue + value);
+    }
+    if (subCount += count; target < static_cast<double>(subCount)) {
+      return value;
+    }
+    if (target == static_cast<double>(subCount)) {
+      lastValue = value;
+    }
+  }
+  return lastValue;
+}
 
-  Configuration m_config;
-};
-
-[[nodiscard]] auto
-transformGeometryQuantizationParams(const Configuration &config,
-                                    const std::vector<Common::DeepFrameList> &videoFrameBuffer,
-                                    const EncoderParams &params) -> EncoderParams;
-} // namespace TMIV::Encoder
-
-#endif
+auto Distribution::sample(float value) -> Distribution & {
+  PRECONDITION(std::isfinite(value));
+  ++m_counts.emplace(value, size_t{}).first->second;
+  return *this;
+}
+} // namespace TMIV::Common

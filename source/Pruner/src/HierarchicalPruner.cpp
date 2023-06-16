@@ -595,49 +595,22 @@ private:
     }
   }
 
-  // Visit all pixels
-  template <typename F> static void forPixels(std::array<size_t, 2> sizes, F f) {
-    for (int32_t i = 0; i < static_cast<int32_t>(sizes[0]); ++i) {
-      for (int32_t j = 0; j < static_cast<int32_t>(sizes[1]); ++j) {
-        f(i, j);
-      }
-    }
-  }
-
-  // Visit all pixel neighbors (in between 3 and 8)
-  template <typename F>
-  static auto forNeighbors(int32_t i, int32_t j, std::array<size_t, 2> sizes, F f) -> bool {
-    const int32_t n1 = std::max(0, i - 1);
-    const int32_t n2 = std::min(static_cast<int32_t>(sizes[0]), i + 2);
-    const int32_t m1 = std::max(0, j - 1);
-    const int32_t m2 = std::min(static_cast<int32_t>(sizes[1]), j + 2);
-
-    for (int32_t n = n1; n < n2; ++n) {
-      for (int32_t m = m1; m < m2; ++m) {
-        if (!f(n, m)) {
-          return false;
-        }
-      }
-    }
-    return true;
-  }
-
   static auto erode(const Common::Mat<uint8_t> &mask) -> Common::Mat<uint8_t> {
     Common::Mat<uint8_t> result{mask.sizes()};
-    forPixels(mask.sizes(), [&](int32_t i, int32_t j) {
-      result(i, j) =
-          forNeighbors(i, j, mask.sizes(), [&mask](int32_t n, int32_t m) { return mask(n, m) > 0; })
-              ? 255
-              : 0;
+    Common::forPixels(mask.sizes(), [&](size_t i, size_t j) {
+      result(i, j) = Common::forNeighbors(i, j, mask.sizes(),
+                                          [&mask](size_t n, size_t m) { return mask(n, m) > 0; })
+                         ? 255
+                         : 0;
     });
     return result;
   }
 
   static auto dilate(const Common::Mat<uint8_t> &mask) -> Common::Mat<uint8_t> {
     Common::Mat<uint8_t> result{mask.sizes()};
-    forPixels(mask.sizes(), [&](int32_t i, int32_t j) {
-      result(i, j) = forNeighbors(i, j, mask.sizes(),
-                                  [&mask](int32_t n, int32_t m) { return mask(n, m) == 0; })
+    Common::forPixels(mask.sizes(), [&](size_t i, size_t j) {
+      result(i, j) = Common::forNeighbors(i, j, mask.sizes(),
+                                          [&mask](size_t n, size_t m) { return mask(n, m) == 0; })
                          ? 0
                          : 255;
     });

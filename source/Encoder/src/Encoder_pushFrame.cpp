@@ -54,36 +54,6 @@ void Encoder::Impl::pushSingleEntityFrame(Common::DeepFrameList sourceViews) {
   m_aggregator->pushInformation(informtaion);
 }
 
-namespace {
-// Atlas dilation
-// Visit all pixels
-template <typename F> void forPixels(std::array<size_t, 2> sizes, F f) {
-  for (int32_t i = 0; i < static_cast<int32_t>(sizes[0]); ++i) {
-    for (int32_t j = 0; j < static_cast<int32_t>(sizes[1]); ++j) {
-      f(i, j);
-    }
-  }
-}
-
-// Visit all pixel neighbors (in between 3 and 8)
-template <typename F>
-auto forNeighbors(int32_t i, int32_t j, std::array<size_t, 2> sizes, F f) -> bool {
-  const int32_t n1 = std::max(0, i - 1);
-  const int32_t n2 = std::min(static_cast<int32_t>(sizes[0]), i + 2);
-  const int32_t m1 = std::max(0, j - 1);
-  const int32_t m2 = std::min(static_cast<int32_t>(sizes[1]), j + 2);
-
-  for (int32_t n = n1; n < n2; ++n) {
-    for (int32_t m = m1; m < m2; ++m) {
-      if (!f(n, m)) {
-        return false;
-      }
-    }
-  }
-  return true;
-}
-} // namespace
-
 void Encoder::Impl::pushMultiEntityFrame(Common::DeepFrameList sourceViews) {
   auto transportViews = m_viewOptimizer->optimizeFrame(std::move(sourceViews));
 

@@ -210,6 +210,7 @@ struct DeepFrame {
   Frame<> entities{};
   Frame<bool> occupancy{};
   Frame<> transparency{};
+  Frame<> patchIdx{};
 };
 
 struct RendererFrame {

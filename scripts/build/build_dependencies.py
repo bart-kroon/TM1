@@ -153,22 +153,22 @@ def run(args: list, cwd=None):
     print(f"> {cwd_s}{' '.join(args_s)}", flush=True)
 
     with subprocess.Popen(
-        args_s, cwd=cwd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True
+        args_s, bufsize=1, cwd=cwd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True
     ) as process:
-        print(process.stdout.read(), flush=True)
+        for line in process.stdout:
+            print(line.rstrip(), flush=True)
+
         returncode = process.wait()
 
         if returncode != 0:
             raise RuntimeError(f"Sub-process exited with return code {returncode}")
 
+        print()
+
 
 def print_prebuild_variables(args):
     build_dir = f"build/{unique_name(args, 8)}"
-    print(
-        """
-To configure and build this configuration of this project consider running:
-"""
-    )
+    print("To configure and build this configuration of this project consider running:\n")
     print(
         f"    cmake -G Ninja -S . "
         f"-B {build_dir} "

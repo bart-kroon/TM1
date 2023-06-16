@@ -1255,10 +1255,11 @@ class IntegrationTest:
                     )
 
         except Exception as e:
-            self.stop = True
-            print(
-                f"EXCEPTION of type {type(e).__name__}, {e}, with args = {args}, and logFile = {logFile}."
-            )
+            if not self.stop:
+                self.stop = True
+                print(
+                    f"EXCEPTION of type {type(e).__name__}, {e}, with args = {args}, and logFile = {logFile}."
+                )
             sys.exit(1)
 
     def sync(self, futures):
@@ -1270,6 +1271,9 @@ class IntegrationTest:
                 raise exception
 
     def runCommand(self, args, logFile):
+        if self.stop:
+            return
+
         if not self.dryRun:
             print("+ {}".format(" ".join(args)), flush=True)
 

@@ -46,8 +46,6 @@
 #include <TMIV/ViewOptimizer/IViewOptimizer.h>
 
 #include <algorithm>
-#include <bitset>
-#include <deque>
 #include <memory>
 
 namespace TMIV::Encoder {
@@ -80,7 +78,6 @@ private:
   void aggregateEntityMasks(Common::FrameList<uint8_t> &masks, Common::SampleValue entityId);
 
   // Encoder_completeAccessUnit.cpp
-  void scaleGeometryDynamicRange();
   void scaleChromaDynamicRange();
   void pruningWithInformation(Common::FrameList<uint8_t> &aggregatedMask,
                               const Common::FrameList<uint32_t> &information);
@@ -132,7 +129,7 @@ private:
   int32_t m_blockSize{};
   EncoderParams m_params;          // Encoder output prior to geometry quantization and scaling
   EncoderParams m_paramsQuantized; // Encoder output prior to geometry scaling
-  std::deque<Common::DeepFrameList> m_videoFrameBuffer;
+  std::vector<Common::DeepFrameList> m_videoFrameBuffer;
 
   // Mark read-only access to encoder params to make mutable access more visible
   [[nodiscard]] auto params() const noexcept -> const EncoderParams & { return m_params; }

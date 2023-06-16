@@ -31,66 +31,197 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/generators/catch_generators_range.hpp>
 
 #include "GeometryQuantizer.h"
 
-#include <TMIV/Common/Common.h>
+#include <TMIV/MivBitstream/DepthOccupancyTransform.h>
 
-SCENARIO("Geometry quantization") {
-  auto sourceViewParams = TMIV::MivBitstream::ViewParams{};
-  sourceViewParams.ci.ci_projection_plane_width_minus1(1919)
-      .ci_projection_plane_height_minus1(1079)
-      .ci_cam_type(TMIV::MivBitstream::CiCamType::equirectangular)
-      .ci_erp_phi_min(-180.F)
-      .ci_erp_phi_max(180.F)
-      .ci_erp_theta_min(-90.F)
-      .ci_erp_theta_max(90.F);
-  sourceViewParams.dq.dq_norm_disp_low(0.2F).dq_norm_disp_high(2.2F);
+#include <array>
 
-  GIVEN("View parameters without invalid depth") {
-    auto sourceParams = TMIV::Encoder::EncoderParams{};
-    sourceParams.vps.vps_miv_extension().vme_embedded_occupancy_enabled_flag(true);
-    sourceParams.viewParamsList.push_back(sourceViewParams);
+namespace TMIV::Encoder::test {
+using namespace std::string_view_literals;
 
-    WHEN("Modifying the depth range") {
-      const auto codedParams =
-          TMIV::Encoder::GeometryQuantizer::transformParams(sourceParams, 37, 10, 1.5);
+using Common::at;
 
-      THEN("The camera parameters are unmodified") {
-        REQUIRE(codedParams.viewParamsList == sourceParams.viewParamsList);
-      }
-    }
+static constexpr auto patchViewIdx = std::array{size_t{}, size_t{1}, size_t{1}};
+static constexpr auto patchAtlasIdx = std::array{size_t{2}, size_t{}, size_t{}};
+static constexpr auto patchCount = patchViewIdx.size();
+static constexpr auto viewCount = size_t{3};
+static constexpr auto atlasCount = size_t{3};
+static constexpr auto patchNear = std::array{5.F, 1.F, 3.F};
+static constexpr auto patchFar = std::array{2.F, 0.5F, 2.F};
+static constexpr auto viewNear = std::array{10.F, 5.F, 3.F};
+static constexpr auto viewFar = std::array{1.F, 0.5F, 0.3F};
+static constexpr auto viewHasOccupancy = std::array{false, true, true};
+static constexpr auto geo2dBitDepth = 9U;
+
+[[nodiscard]] auto distributions() -> GeometryDistributions {
+  auto result = GeometryDistributions{};
+
+  result.views.resize(viewCount);
+  result.patches.resize(patchCount);
+
+  for (size_t patchIdx = 0; patchIdx < patchCount; ++patchIdx) {
+    const auto viewIdx = at(patchViewIdx, patchIdx);
+
+    result.patches[patchIdx].sample(at(patchNear, patchIdx));
+    result.patches[patchIdx].sample(at(patchFar, patchIdx));
+
+    result.views[viewIdx].sample(at(patchNear, patchIdx));
+    result.views[viewIdx].sample(at(patchFar, patchIdx));
   }
 
-  GIVEN("View parameters with invalid depth") {
-    sourceViewParams.hasOccupancy = true;
-    auto sourceSeqParams = TMIV::Encoder::EncoderParams{};
-    sourceSeqParams.vps.vps_miv_extension().vme_embedded_occupancy_enabled_flag(true);
-    sourceSeqParams.viewParamsList.push_back(sourceViewParams);
+  return result;
+}
 
-    WHEN("Modifying the depth range") {
-      const auto codedSeqParams =
-          TMIV::Encoder::GeometryQuantizer::transformParams(sourceSeqParams, 37, 10, 1.5);
-      const auto &codedViewParams = codedSeqParams.viewParamsList.front();
+[[nodiscard]] auto viewId(size_t viewIdx) {
+  static constexpr auto offset = size_t{100};
 
-      THEN("dq_depth_occ_threshold_default (T) >> 0") {
-        const auto T = codedViewParams.dq.dq_depth_occ_threshold_default();
-        REQUIRE(T >= 8);
+  return MivBitstream::ViewId{offset + viewIdx};
+}
 
-        THEN("Coded level 2T matches with source level 0") {
-          // Output level 2T .. 1023 --> [0.2, 2.2] => rate = 2/(1023 - 2T), move 2T levels
-          // down
-          const auto twoT = static_cast<float>(2 * T);
+[[nodiscard]] auto atlasId(size_t atlasIdx) { return MivBitstream::AtlasId{atlasIdx}; }
 
-          auto refViewParams = sourceViewParams;
-          refViewParams.dq.dq_depth_occ_threshold_default(T)
-              .dq_norm_disp_low(0.2F - twoT * 2.F / (1023.F - twoT))
-              .dq_norm_disp_high(2.2F);
+[[nodiscard]] auto params(bool vme_embedded_occupancy_enabled_flag,
+                          bool casme_depth_low_quality_flag) -> EncoderParams {
+  auto result = EncoderParams{};
 
-          REQUIRE(codedSeqParams.viewParamsList.front() == refViewParams);
-        }
-      }
-    }
+  result.vps.vps_miv_extension().vme_embedded_occupancy_enabled_flag(
+      vme_embedded_occupancy_enabled_flag);
+  result.casps.casps_miv_extension().casme_depth_low_quality_flag(casme_depth_low_quality_flag);
+
+  result.viewParamsList.resize(viewCount);
+
+  for (size_t viewIdx = 0; viewIdx < viewCount; ++viewIdx) {
+    auto &vp = result.viewParamsList[viewIdx];
+
+    vp.dq.dq_norm_disp_low(at(viewFar, viewIdx)).dq_norm_disp_high(at(viewNear, viewIdx));
+    vp.hasOccupancy = at(viewHasOccupancy, viewIdx);
+    vp.viewId = viewId(viewIdx);
+  }
+
+  result.viewParamsList.constructViewIdIndex();
+
+  result.patchParamsList.resize(patchCount);
+
+  for (size_t patchIdx = 0; patchIdx < patchCount; ++patchIdx) {
+    auto &pp = result.patchParamsList[patchIdx];
+
+    pp.atlasId(atlasId(at(patchAtlasIdx, patchIdx)))
+        .atlasPatchProjectionId(viewId(at(patchViewIdx, patchIdx)));
+  }
+
+  result.vps.vps_atlas_count_minus1(atlasCount - 1);
+  result.atlas.resize(atlasCount);
+
+  for (size_t atlasIdx = 0; atlasIdx < atlasCount; ++atlasIdx) {
+    result.atlas[atlasIdx].asps.asps_geometry_2d_bit_depth_minus1(
+        static_cast<uint8_t>(geo2dBitDepth - 1));
+
+    result.vps.vps_atlas_id(atlasIdx, atlasId(atlasIdx));
+  }
+
+  return result;
+}
+
+[[nodiscard]] auto config(bool dynamicDepthRange, bool halveDepthRange,
+                          double depthOccThresholdAsymmetry) -> Configuration {
+  auto result = Configuration{Common::Json::parse(R"({
+    "intraPeriod": 1,
+    "blockSizeDepthQualityDependent": [2, 4],
+    "haveTextureVideo": false,
+    "haveGeometryVideo": true,
+    "bitDepthGeometryVideo": 10,
+    "haveOccupancyVideo": false,
+    "embeddedOccupancy": true,
+    "chromaScaleEnabledFlag": true,
+    "framePacking": false,
+    "geometryPacking": false,
+    "informationPruning": true,
+    "oneViewPerAtlasFlag": false,
+    "dynamicDepthRange": true,
+    "halveDepthRange": true,
+    "rewriteParameterSets": false,
+    "patchRedundancyRemoval": true,
+    "viewportCameraParametersSei": false,
+    "viewportPositionSei": true,
+    "numGroups": 0,
+    "maxEntityId": 0,
+    "maxLumaSampleRate": 0,
+    "maxLumaPictureSize": 0,
+    "maxAtlases": 0,
+    "codecGroupIdc": "HEVC Main10",
+    "toolsetIdc": "MIV Main",
+    "reconstructionIdc": "Rec Unconstrained",
+    "levelIdc": "2.5",
+    "oneV3cFrameOnly": false,
+    "m57419_piecewiseDepthLinearScaling": false,
+    "m57419_intervalNumber": 16,
+    "m57419_edgeThreshold": 40,
+    "depthOccThresholdIfSet": [0.00390625, 0.0625],
+    "depthOccThresholdAsymmetry": 1.5
+})"sv)};
+
+  result.dynamicDepthRange = dynamicDepthRange;
+  result.halveDepthRange = halveDepthRange;
+  result.geoBitDepth = geo2dBitDepth;
+  result.depthOccThresholdAsymmetry = depthOccThresholdAsymmetry;
+
+  return result;
+}
+
+void checkDepthQuantization(const EncoderParams &actual) {
+  REQUIRE(actual.viewParamsList.size() == viewCount);
+  REQUIRE(actual.patchParamsList.size() == patchCount);
+  REQUIRE(actual.atlas.size() == atlasCount);
+
+  const auto embeddedOccupancy =
+      actual.vps.vps_miv_extension().vme_embedded_occupancy_enabled_flag();
+
+  for (size_t patchIdx = 0; patchIdx < patchCount; ++patchIdx) {
+    const auto &pp = actual.patchParamsList[patchIdx];
+    const auto &vp = actual.viewParamsList[pp.atlasPatchProjectionId()];
+
+    const auto dt = MivBitstream::DepthTransform{vp.dq, pp, geo2dBitDepth};
+    const auto threshold = vp.dq.dq_depth_occ_threshold_default();
+    LIMITATION(pp.atlasPatchDepthOccThreshold() == 0);
+
+    CHECK(dt.expandNormDisp(threshold) <= at(patchFar, patchIdx));
+    CHECK(at(patchNear, patchIdx) <= dt.expandNormDisp(pp.atlasPatch3dRangeD()));
+    CHECK((0 < threshold) == (vp.hasOccupancy && embeddedOccupancy));
+  }
+}
+} // namespace TMIV::Encoder::test
+
+namespace test = TMIV::Encoder::test;
+
+TEST_CASE("GeometryQuantizer::transformParams") {
+  using TMIV::Encoder::GeometryQuantizer;
+
+  TMIV::Common::replaceLoggingStrategy([](auto &&...) {});
+
+  SECTION("dq_quantization_law == 0") {
+    const auto embeddedOccupancy = GENERATE(false, true);
+    const auto depthLowQualityFlag = GENERATE(false, true);
+    const auto dynamicDepthRange = GENERATE(false, true);
+    const auto halveDepthRange = GENERATE(false, true);
+    const auto depthOccThresholdAsymmetry = GENERATE(0., 1.3, 2.);
+
+    CAPTURE(embeddedOccupancy, depthLowQualityFlag, dynamicDepthRange, halveDepthRange,
+            depthOccThresholdAsymmetry);
+
+    const auto distributions = test::distributions();
+    const auto params = test::params(embeddedOccupancy, depthLowQualityFlag);
+    const auto config =
+        test::config(dynamicDepthRange, halveDepthRange, depthOccThresholdAsymmetry);
+
+    const auto unit = GeometryQuantizer{config};
+
+    const auto actual = unit.transformParams(distributions, params);
+
+    test::checkDepthQuantization(actual);
   }
 }

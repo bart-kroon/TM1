@@ -601,6 +601,14 @@ constexpr auto VpsMivExtension::operator!=(const VpsMivExtension &other) const n
   return !operator==(other);
 }
 
+constexpr auto VpsMiv2Extension::operator==(const VpsMiv2Extension &other) const noexcept {
+  return vps_miv_extension == other.vps_miv_extension;
+}
+
+constexpr auto VpsMiv2Extension::operator!=(const VpsMiv2Extension &other) const noexcept {
+  return !operator==(other);
+}
+
 constexpr auto V3cParameterSet::vps_v3c_parameter_set_id() const noexcept {
   return m_vps_v3c_parameter_set_id;
 }

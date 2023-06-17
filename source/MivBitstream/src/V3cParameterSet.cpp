@@ -204,10 +204,12 @@ auto operator<<(std::ostream &stream, VpsExtensionType x) -> std::ostream & {
   switch (x) {
   case VpsExtensionType::VPS_EXT_UNSPECIFIED:
     return stream << "VPS_EXT_UNSPECIFIED";
-  case VpsExtensionType::VPS_EXT_MIV:
-    return stream << "VPS_EXT_MIV";
   case VpsExtensionType::VPS_EXT_PACKED:
     return stream << "VPS_EXT_PACKED";
+  case VpsExtensionType::VPS_EXT_MIV:
+    return stream << "VPS_EXT_MIV";
+  case VpsExtensionType::VPS_EXT_MIV_2:
+    return stream << "VPS_EXT_MIV_2";
   default:
     return stream << "[unknown:" << static_cast<int32_t>(x) << "]";
   }
@@ -1352,6 +1354,31 @@ void VpsMivExtension::encodeTo(Common::OutputBitstream &bitstream,
   group_mapping().encodeTo(bitstream, vps);
 }
 
+auto operator<<(std::ostream &stream, const VpsMiv2Extension &x) -> std::ostream & {
+  stream << x.vps_miv_extension;
+  return stream;
+}
+
+auto VpsMiv2Extension::decodeFrom(Common::InputBitstream &bitstream, const V3cParameterSet &vps)
+    -> VpsMiv2Extension {
+  auto x = VpsMiv2Extension{};
+
+  x.vps_miv_extension = VpsMivExtension::decodeFrom(bitstream, vps);
+
+  const auto vme_reserved_zero_8bits = bitstream.getUint8();
+  VERIFY_MIVBITSTREAM(vme_reserved_zero_8bits == 0);
+
+  return x;
+}
+
+void VpsMiv2Extension::encodeTo(Common::OutputBitstream &bitstream,
+                                const V3cParameterSet &vps) const {
+  vps_miv_extension.encodeTo(bitstream, vps);
+
+  static constexpr auto vme_reserved_zero_8bits = 0;
+  bitstream.putUint8(vme_reserved_zero_8bits);
+}
+
 auto VpsPackedVideoExtension::vps_packed_video_present_flag(AtlasId atlasId) const -> bool {
   if (m_packing_information.contains(atlasId)) {
     return m_packing_information[atlasId].has_value();
@@ -1435,65 +1462,52 @@ void VpsPackedVideoExtension::encodeTo(Common::OutputBitstream &stream,
   }
 }
 
-auto VpsExtension::vps_miv_extension() const -> const VpsMivExtension & {
-  VERIFY_V3CBITSTREAM(m_vps_miv_extension);
-  return *m_vps_miv_extension;
-}
-
 auto VpsExtension::vps_packed_video_extension() const -> const VpsPackedVideoExtension & {
-  VERIFY_V3CBITSTREAM(m_vps_packed_video_extension);
-  return *m_vps_packed_video_extension;
+  return std::get<VpsPackedVideoExtension>(m_extension);
 }
 
-auto VpsExtension::vps_extension_data_byte() const -> const std::vector<uint8_t> & {
-  VERIFY_V3CBITSTREAM(!m_vps_miv_extension);
-  VERIFY_V3CBITSTREAM(!m_vps_packed_video_extension);
-  return m_vps_extension_data_byte;
+auto VpsExtension::vps_miv_extension() const -> const VpsMivExtension & {
+  return std::get<VpsMivExtension>(m_extension);
 }
 
-auto VpsExtension::vps_miv_extension() -> VpsMivExtension & {
-  VERIFY_V3CBITSTREAM(!m_vps_packed_video_extension);
-  VERIFY_V3CBITSTREAM(m_vps_extension_data_byte.empty());
+auto VpsExtension::vps_miv_2_extension() const -> const VpsMiv2Extension & {
+  return std::get<VpsMiv2Extension>(m_extension);
+}
 
-  if (!m_vps_miv_extension) {
-    m_vps_miv_extension = VpsMivExtension{};
-  }
-  return *m_vps_miv_extension;
+auto VpsExtension::vps_extension_data_byte() const -> const VpsExtensionDataBytes & {
+  return std::get<VpsExtensionDataBytes>(m_extension);
 }
 
 auto VpsExtension::vps_packed_video_extension() -> VpsPackedVideoExtension & {
-  VERIFY_V3CBITSTREAM(!m_vps_miv_extension);
-  VERIFY_V3CBITSTREAM(m_vps_extension_data_byte.empty());
+  return Common::tryEmplace<VpsPackedVideoExtension>(m_extension);
+}
 
-  if (!m_vps_packed_video_extension) {
-    m_vps_packed_video_extension = VpsPackedVideoExtension{};
-  }
-  return *m_vps_packed_video_extension;
+auto VpsExtension::vps_miv_extension() -> VpsMivExtension & {
+  return Common::tryEmplace<VpsMivExtension>(m_extension);
+}
+
+auto VpsExtension::vps_miv_2_extension() -> VpsMiv2Extension & {
+  return Common::tryEmplace<VpsMiv2Extension>(m_extension);
 }
 
 auto VpsExtension::vps_extension_data_byte() -> std::vector<uint8_t> & {
-  VERIFY_V3CBITSTREAM(!m_vps_miv_extension);
-  VERIFY_V3CBITSTREAM(!m_vps_packed_video_extension);
-  return m_vps_extension_data_byte;
+  return Common::tryEmplace<VpsExtensionDataBytes>(m_extension);
 }
 
 auto operator<<(std::ostream &stream, const VpsExtension &x) -> std::ostream & {
-  if (x.m_vps_packed_video_extension) {
-    return stream << *x.m_vps_packed_video_extension;
-  }
-  if (x.m_vps_miv_extension) {
-    return stream << *x.m_vps_miv_extension;
-  }
-  for (int32_t byte : x.m_vps_extension_data_byte) {
-    fmt::print(stream, "vps_extension_data_byte={}\n", byte);
-  }
+  std::visit(Common::overload(
+                 [&stream](const VpsExtensionDataBytes &alternative) {
+                   for (int32_t byte : alternative) {
+                     fmt::print(stream, "vps_extension_data_byte={}\n", byte);
+                   }
+                 },
+                 [&stream](const auto &alternative) { stream << alternative; }),
+             x.m_extension);
   return stream;
 }
 
 auto VpsExtension::operator==(const VpsExtension &other) const -> bool {
-  return m_vps_packed_video_extension == other.m_vps_packed_video_extension &&
-         m_vps_miv_extension == other.m_vps_miv_extension &&
-         m_vps_extension_data_byte == other.m_vps_extension_data_byte;
+  return m_extension == other.m_extension;
 }
 
 auto VpsExtension::operator!=(const VpsExtension &other) const -> bool {
@@ -1508,14 +1522,16 @@ auto VpsExtension::decodeFrom(Common::InputBitstream &stream, VpsExtensionType e
   const auto endPosition = stream.tellg() + extensionLength * std::streampos{8};
 
   if (extensionType == VpsExtensionType::VPS_EXT_PACKED) {
-    x.m_vps_packed_video_extension = VpsPackedVideoExtension::decodeFrom(stream, vps);
+    x.m_extension = VpsPackedVideoExtension::decodeFrom(stream, vps);
   } else if (extensionType == VpsExtensionType::VPS_EXT_MIV) {
-    x.m_vps_miv_extension = VpsMivExtension::decodeFrom(stream, vps);
+    x.m_extension = VpsMivExtension::decodeFrom(stream, vps);
+  } else if (extensionType == VpsExtensionType::VPS_EXT_MIV_2) {
+    x.m_extension = VpsMiv2Extension::decodeFrom(stream, vps);
   } else {
-    x.m_vps_extension_data_byte.resize(extensionLength);
+    auto &extension = x.m_extension.emplace<VpsExtensionDataBytes>(extensionLength);
 
     for (uint16_t j = 0; j < extensionLength; ++j) {
-      x.m_vps_extension_data_byte[j] = stream.getUint8();
+      extension[j] = stream.getUint8();
     }
   }
 
@@ -1529,23 +1545,18 @@ auto VpsExtension::decodeFrom(Common::InputBitstream &stream, VpsExtensionType e
 }
 
 auto VpsExtension::extensionLength(const V3cParameterSet &vps) const -> uint16_t {
-  if (m_vps_packed_video_extension) {
-    std::ostringstream stream;
-    Common::OutputBitstream bitstream{stream};
-    m_vps_packed_video_extension->encodeTo(bitstream, vps);
-    bitstream.zeroAlign();
-    return Common::downCast<uint16_t>(std::streamoff{stream.tellp()});
-  }
-
-  if (m_vps_miv_extension) {
-    std::ostringstream stream;
-    Common::OutputBitstream bitstream{stream};
-    m_vps_miv_extension->encodeTo(bitstream, vps);
-    bitstream.zeroAlign();
-    return Common::downCast<uint16_t>(std::streamoff{stream.tellp()});
-  }
-
-  return Common::downCast<uint16_t>(m_vps_extension_data_byte.size());
+  return std::visit(Common::overload(
+                        [](const VpsExtensionDataBytes &alternative) {
+                          return Common::downCast<uint16_t>(alternative.size());
+                        },
+                        [&vps](const auto &alternative) {
+                          std::ostringstream stream;
+                          Common::OutputBitstream bitstream{stream};
+                          alternative.encodeTo(bitstream, vps);
+                          bitstream.zeroAlign();
+                          return Common::downCast<uint16_t>(std::streamoff{stream.tellp()});
+                        }),
+                    m_extension);
 }
 
 void VpsExtension::encodeTo(Common::OutputBitstream &stream, VpsExtensionType extensionType,
@@ -1553,13 +1564,13 @@ void VpsExtension::encodeTo(Common::OutputBitstream &stream, VpsExtensionType ex
   const auto endPosition = stream.tellp() + extensionLength * std::streampos{8};
 
   if (extensionType == VpsExtensionType::VPS_EXT_PACKED) {
-    VERIFY_V3CBITSTREAM(m_vps_packed_video_extension.has_value());
-    m_vps_packed_video_extension->encodeTo(stream, vps);
+    std::get<VpsPackedVideoExtension>(m_extension).encodeTo(stream, vps);
   } else if (extensionType == VpsExtensionType::VPS_EXT_MIV) {
-    VERIFY_V3CBITSTREAM(m_vps_miv_extension.has_value());
-    m_vps_miv_extension->encodeTo(stream, vps);
+    std::get<VpsMivExtension>(m_extension).encodeTo(stream, vps);
+  } else if (extensionType == VpsExtensionType::VPS_EXT_MIV_2) {
+    std::get<VpsMiv2Extension>(m_extension).encodeTo(stream, vps);
   } else {
-    for (uint8_t byte : m_vps_extension_data_byte) {
+    for (uint8_t byte : std::get<VpsExtensionDataBytes>(m_extension)) {
       stream.putUint8(byte);
     }
   }
@@ -1685,6 +1696,14 @@ auto V3cParameterSet::vpsMivExtensionPresentFlag() const -> bool {
   return Common::contains(m_vps_extension_type, VpsExtensionType::VPS_EXT_MIV);
 }
 
+auto V3cParameterSet::vpsMiv2ExtensionPresentFlag() const -> bool {
+  return Common::contains(m_vps_extension_type, VpsExtensionType::VPS_EXT_MIV_2);
+}
+
+auto V3cParameterSet::vpsMivOrMiv2ExtensionPresentFlag() const -> bool {
+  return vpsMivExtensionPresentFlag() || vpsMiv2ExtensionPresentFlag();
+}
+
 auto V3cParameterSet::vps_packed_video_present_flag(AtlasId j) const -> bool {
   return vpsPackingInformationPresentFlag() ? vps_extension(VpsExtensionType::VPS_EXT_PACKED)
                                                   .vps_packed_video_extension()
@@ -1700,8 +1719,16 @@ auto V3cParameterSet::packing_information(AtlasId j) const -> const PackingInfor
 }
 
 auto V3cParameterSet::vps_miv_extension() const -> const VpsMivExtension & {
+  if (vpsMiv2ExtensionPresentFlag()) {
+    return vps_miv_2_extension().vps_miv_extension;
+  }
   VERIFY_V3CBITSTREAM(vpsMivExtensionPresentFlag());
   return vps_extension(VpsExtensionType::VPS_EXT_MIV).vps_miv_extension();
+}
+
+auto V3cParameterSet::vps_miv_2_extension() const -> const VpsMiv2Extension & {
+  VERIFY_V3CBITSTREAM(vpsMiv2ExtensionPresentFlag());
+  return vps_extension(VpsExtensionType::VPS_EXT_MIV_2).vps_miv_2_extension();
 }
 
 auto V3cParameterSet::profile_tier_level(ProfileTierLevel value) noexcept -> V3cParameterSet & {
@@ -1801,6 +1828,13 @@ auto V3cParameterSet::vps_extension(VpsExtensionType vet) -> VpsExtension & {
   PRECONDITION(m_vps_extension_count == m_vps_extension_length.size());
   PRECONDITION(m_vps_extension_count == m_vps_extension.size());
 
+  // Detect incompatible extensions
+  if (vet == VpsExtensionType::VPS_EXT_MIV) {
+    PRECONDITION(!vpsMiv2ExtensionPresentFlag());
+  } else if (vet == VpsExtensionType::VPS_EXT_MIV_2) {
+    PRECONDITION(!vpsMivExtensionPresentFlag());
+  }
+
   const auto i = std::find(m_vps_extension_type.cbegin(), m_vps_extension_type.cend(), vet);
 
   if (i == m_vps_extension_type.cend()) {
@@ -1842,6 +1876,11 @@ auto V3cParameterSet::vps_miv_extension(const VpsMivExtension &value) -> V3cPara
   return *this;
 }
 
+auto V3cParameterSet::vps_miv_2_extension(const VpsMiv2Extension &value) -> V3cParameterSet & {
+  vps_miv_2_extension() = value;
+  return *this;
+}
+
 void V3cParameterSet::removeVpsExtension(VpsExtensionType vet) {
   for (uint8_t n = 0; n < m_vps_extension_count; ++n) {
     if (m_vps_extension_type[n] == vet) {
@@ -1879,7 +1918,14 @@ auto V3cParameterSet::attribute_information(AtlasId j) -> AttributeInformation &
 }
 
 auto V3cParameterSet::vps_miv_extension() -> VpsMivExtension & {
+  if (vpsMiv2ExtensionPresentFlag()) {
+    return vps_miv_2_extension().vps_miv_extension;
+  }
   return vps_extension(VpsExtensionType::VPS_EXT_MIV).vps_miv_extension();
+}
+
+auto V3cParameterSet::vps_miv_2_extension() -> VpsMiv2Extension & {
+  return vps_extension(VpsExtensionType::VPS_EXT_MIV_2).vps_miv_2_extension();
 }
 
 auto V3cParameterSet::indexOf(AtlasId atlasId) const -> size_t {
@@ -2025,7 +2071,7 @@ auto V3cParameterSet::summary() const -> std::string {
     }
   }
 
-  if (vpsMivExtensionPresentFlag()) {
+  if (vpsMivOrMiv2ExtensionPresentFlag()) {
     const auto &vme = vps_miv_extension();
     fmt::print(stream,
                "\n, geometry scaling {}, groups {}, embedded occupancy {}, occupancy scaling {}",

@@ -268,26 +268,30 @@ struct PtlChecker::Impl {
 
     PTL_CHECK(v3cSpec, "?", !ptl_tier_flag());
 
-    const auto vpsMivExtensionPresentFlag = vps.vpsMivExtensionPresentFlag();
     const auto vpsPackingInformationPresentFlag = vps.vpsPackingInformationPresentFlag();
+    const auto vpsMivExtensionPresentFlag = vps.vpsMivExtensionPresentFlag();
+    const auto vpsMiv2ExtensionPresentFlag = vps.vpsMiv2ExtensionPresentFlag();
     const auto vps_atlas_count_minus1 = vps.vps_atlas_count_minus1();
 
     switch (ptl_profile_toolset_idc()) {
     case TS::VPCC_Basic:
     case TS::VPCC_Extended:
       PTL_CHECK(v3cSpec, "Table H-3", !vpsMivExtensionPresentFlag);
+      PTL_CHECK(v3cSpec, "Table H-3", !vpsMiv2ExtensionPresentFlag);
       PTL_CHECK(v3cSpec, "Table H-3", !vpsPackingInformationPresentFlag);
       PTL_CHECK(v3cSpec, "Table H-3", vps_atlas_count_minus1 == 0);
       break;
     case TS::MIV_Main:
       PTL_CHECK(mivSpec, "Table A-1", ptl_profile_reconstruction_idc() == RC::Rec_Unconstrained);
       PTL_CHECK(mivSpec, "Table A-1", vpsMivExtensionPresentFlag);
+      PTL_CHECK(mivSpec, "Table A-1", !vpsMiv2ExtensionPresentFlag);
       PTL_CHECK(mivSpec, "Table A-1", !vpsPackingInformationPresentFlag);
       break;
     case TS::MIV_Extended:
     case TS::MIV_Geometry_Absent:
       PTL_CHECK(mivSpec, "Table A-1", ptl_profile_reconstruction_idc() == RC::Rec_Unconstrained);
       PTL_CHECK(mivSpec, "Table A-1", vpsMivExtensionPresentFlag);
+      PTL_CHECK(mivSpec, "Table A-1", !vpsMiv2ExtensionPresentFlag);
       break;
     }
   }

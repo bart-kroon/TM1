@@ -484,7 +484,7 @@ private:
   }
 
   void checkCapabilities() const {
-    MIVDECODER_CHECK(m_au.vps.vpsMivExtensionPresentFlag(), E::expected_miv_extension);
+    MIVDECODER_CHECK(m_au.vps.vpsMivOrMiv2ExtensionPresentFlag(), E::expected_miv_extension);
     MIVDECODER_CHECK(m_au.vps.vps_extension_count() ==
                          (m_au.vps.vpsPackingInformationPresentFlag() ? 2 : 1),
                      E::unsupported_vps_extension);

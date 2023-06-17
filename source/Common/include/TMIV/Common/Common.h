@@ -43,6 +43,7 @@
 #include <cmath>
 #include <cstdint>
 #include <limits>
+#include <variant>
 
 namespace TMIV::Common {
 // http://open-std.org/JTC1/SC22/WG21/docs/papers/2018/p0051r3.pdf
@@ -53,6 +54,14 @@ template <typename... Ts> struct Overload : public Ts... {
 template <typename... Ts>
 auto overload(Ts &&...values) -> Overload<std::remove_reference_t<Ts>...> {
   return {std::forward<Ts>(values)...};
+}
+
+template <typename T, typename... Types, typename... Args>
+auto tryEmplace(std::variant<Types...> &x, Args &&...args) -> T & {
+  if (auto *result = std::get_if<T>(&x)) {
+    return *result;
+  }
+  return x.template emplace<T>(std::forward<Args>(args)...);
 }
 
 // ISO/IEC 23090-5 supports upto 32-bit video data (depending on video codec support) but to save on

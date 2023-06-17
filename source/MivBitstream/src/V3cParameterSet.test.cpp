@@ -595,6 +595,12 @@ gm_group_count=0
         .pin_attribute_dimension_minus1(1, 0)
         .pin_attribute_dimension_partitions_minus1(1, 0);
 
+    const auto vme2 = []() {
+      auto result = VpsMiv2Extension{};
+      result.vps_miv_extension.vme_embedded_occupancy_enabled_flag(true);
+      return result;
+    }();
+
     vps.vps_v3c_parameter_set_id(15)
         .vps_atlas_count_minus1(2)
         .vps_atlas_id(0, j0)
@@ -618,7 +624,7 @@ gm_group_count=0
         .attribute_information(j1, {})
         .vps_packed_video_present_flag(j2, true)
         .packing_information(j2, packInfo)
-        .vps_miv_extension(VpsMivExtension{}.vme_embedded_occupancy_enabled_flag(true))
+        .vps_miv_2_extension(vme2)
         .vps_extension(static_cast<VpsExtensionType>(63))
         .vps_extension_data_byte() = {2, 250, 15};
     vps.calculateExtensionLengths();
@@ -695,7 +701,7 @@ vps_geometry_video_present_flag[ 32 ]=false
 vps_attribute_video_present_flag[ 32 ]=false
 vps_extension_present_flag=true
 vps_extension_count=3
-vps_extensions_length_minus1=35
+vps_extensions_length_minus1=36
 vps_extension_type[ 0 ]=VPS_EXT_PACKED
 vps_extension_length[ 0 ]=23
 vps_packed_video_present_flag[ 30 ]=false
@@ -729,8 +735,8 @@ pin_region_height_minus1[ 32 ][ 0 ]=0
 pin_region_unpack_top_left_x[ 32 ][ 0 ]=0
 pin_region_unpack_top_left_y[ 32 ][ 0 ]=0
 pin_region_rotation_flag[ 32 ][ 0 ]=false
-vps_extension_type[ 1 ]=VPS_EXT_MIV
-vps_extension_length[ 1 ]=1
+vps_extension_type[ 1 ]=VPS_EXT_MIV_2
+vps_extension_length[ 1 ]=2
 vme_geometry_scale_enabled_flag=false
 vme_embedded_occupancy_enabled_flag=true
 gm_group_count=0
@@ -747,7 +753,7 @@ vps_extension_data_byte=15
   Atlas 32: 0 x 0; [PIN: regions 1]
 , geometry scaling false, groups 0, embedded occupancy true, occupancy scaling false)");
 
-    byteCodingTest(vps, 73);
+    byteCodingTest(vps, 74);
   }
 
   SECTION("Example 3 for mpi") {
@@ -860,9 +866,10 @@ TEST_CASE("MivBitstream::VpsExtensionType") {
   using TMIV::MivBitstream::VpsExtensionType;
 
   CHECK(toString(VpsExtensionType::VPS_EXT_UNSPECIFIED) == "VPS_EXT_UNSPECIFIED"s);
-  CHECK(toString(VpsExtensionType::VPS_EXT_MIV) == "VPS_EXT_MIV"s);
   CHECK(toString(VpsExtensionType::VPS_EXT_PACKED) == "VPS_EXT_PACKED"s);
-  CHECK(toString(static_cast<VpsExtensionType>(3)) == "[unknown:3]"s);
+  CHECK(toString(VpsExtensionType::VPS_EXT_MIV) == "VPS_EXT_MIV"s);
+  CHECK(toString(VpsExtensionType::VPS_EXT_MIV_2) == "VPS_EXT_MIV_2"s);
+  CHECK(toString(static_cast<VpsExtensionType>(4)) == "[unknown:4]"s);
   CHECK(toString(static_cast<VpsExtensionType>(255)) == "[unknown:255]"s);
 }
 } // namespace TMIV::MivBitstream

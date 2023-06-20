@@ -48,6 +48,7 @@ using ATI = TMIV::MivBitstream::AiAttributeTypeId;
 using ASPS = TMIV::MivBitstream::AtlasSequenceParameterSetRBSP;
 using APM = TMIV::MivBitstream::AtduPatchMode;
 using VET = TMIV::MivBitstream::VpsExtensionType;
+using CASPS = TMIV::MivBitstream::CommonAtlasSequenceParameterSetRBSP;
 
 using TMIV::Common::contains;
 using TMIV::Common::downCast;
@@ -62,7 +63,6 @@ using TMIV::MivBitstream::AtlasTileDataUnit;
 using TMIV::MivBitstream::AtlasTileLayerRBSP;
 using TMIV::MivBitstream::AttributeInformation;
 using TMIV::MivBitstream::CommonAtlasFrameRBSP;
-using TMIV::MivBitstream::CommonAtlasSequenceParameterSetRBSP;
 using TMIV::MivBitstream::mivToolsetProfileComponents;
 using TMIV::MivBitstream::NalUnitHeader;
 using TMIV::MivBitstream::NalUnitType;
@@ -234,6 +234,18 @@ auto vps(TS toolsetIdc, bool restrictedGeometry = false) {
   return vps(CG::HEVC444, toolsetIdc, restrictedGeometry);
 }
 
+auto casps(const V3cParameterSet &vps) {
+  auto result = CASPS{};
+
+  const auto &ptl = vps.profile_tier_level();
+
+  if (mivToolset(ptl.ptl_profile_toolset_idc())) {
+    result.casps_miv_extension() = {};
+  }
+
+  return result;
+}
+
 // Create an example ASPS that is within PTL constraints
 auto asps(const V3cParameterSet &vps, AtlasId atlasId) {
   auto result = ASPS{}
@@ -266,7 +278,7 @@ TEST_CASE("By default the PtlChecker logs warnings") {
   CHECK_NOTHROW(unit.checkNuh(nuh));
 }
 
-TEST_CASE("PtlChecker ISO/IEC DIS 23090-5(2E):2021 A.1") {
+TEST_CASE("PtlChecker ISO/IEC 23090-5 A.1") {
   auto unit = test::unit();
 
   SECTION("The temporal ID of an atlas sub-bitstream shall be equal to 0") {
@@ -278,7 +290,7 @@ TEST_CASE("PtlChecker ISO/IEC DIS 23090-5(2E):2021 A.1") {
   }
 }
 
-TEST_CASE("PtlChecker ISO/IEC DIS 23090-5(2E):2021 Table A-1") {
+TEST_CASE("PtlChecker ISO/IEC 23090-5 Table A-1") {
   auto unit = test::unit();
 
   CHECK_NOTHROW(unit.checkAndActivateVps(test::vps(CG::AVC_Progressive_High)));
@@ -289,7 +301,7 @@ TEST_CASE("PtlChecker ISO/IEC DIS 23090-5(2E):2021 Table A-1") {
   CHECK_THROWS_AS(unit.checkAndActivateVps(test::vps(static_cast<CG>(33))), test::Exception);
 }
 
-TEST_CASE("PtlChecker ISO/IEC DIS 23090-5(2E):2021 Table A-2") {
+TEST_CASE("PtlChecker ISO/IEC 23090-5 Table A-2") {
   auto unit = test::unit();
 
   const auto mono8 = Frame<>::lumaOnly(test::size, 8);
@@ -301,9 +313,14 @@ TEST_CASE("PtlChecker ISO/IEC DIS 23090-5(2E):2021 Table A-2") {
   const auto setup = [&](CG codecGroupIdc) -> ASPS {
     auto vps = test::vps(codecGroupIdc);
     unit.checkAndActivateVps(vps);
+
+    const auto casps = test::casps(vps);
+    unit.checkAndActivateCasps(casps);
+
     const auto atlasId = vps.vps_atlas_id(0);
     auto asps = test::asps(vps, atlasId);
     unit.checkAsps(atlasId, asps);
+
     return asps;
   };
 
@@ -377,7 +394,7 @@ TEST_CASE("PtlChecker ISO/IEC DIS 23090-5(2E):2021 Table A-2") {
   }
 }
 
-TEST_CASE("PtlChecker ISO/IEC DIS 23090-5(2E):2021 Table A-3") {
+TEST_CASE("PtlChecker ISO/IEC 23090-5 Table A-3") {
   auto unit = test::unit();
 
   CHECK_NOTHROW(unit.checkAndActivateVps(test::vps(TS::VPCC_Basic)));
@@ -388,7 +405,7 @@ TEST_CASE("PtlChecker ISO/IEC DIS 23090-5(2E):2021 Table A-3") {
   CHECK_THROWS_AS(unit.checkAndActivateVps(test::vps(static_cast<TS>(33))), test::Exception);
 }
 
-TEST_CASE("PtlChecker ISO/IEC 23090-12:2021 A.4.1") {
+TEST_CASE("PtlChecker ISO/IEC 23090-12 A.4.1") {
   auto unit = test::unit();
 
   const auto testFrameSizeCheck = [&](VUT vut, const ASPS &asps, int32_t width, int32_t height) {
@@ -470,7 +487,7 @@ TEST_CASE("PtlChecker ISO/IEC 23090-12:2021 A.4.1") {
   }
 }
 
-TEST_CASE("PtlChecker ISO/IEC 23090-12:2021 Table A-1") {
+TEST_CASE("PtlChecker ISO/IEC 23090-12 Table A-1") {
   auto unit = test::unit();
 
   const auto toolsetIdc = GENERATE(TS::VPCC_Basic, TS::VPCC_Extended, TS::MIV_Main,
@@ -533,6 +550,18 @@ TEST_CASE("PtlChecker ISO/IEC 23090-12:2021 Table A-1") {
     } else if (test::mivToolset(toolsetIdc)) {
       CHECK_THROWS_IFF(unit.checkAndActivateVps(vps), !vmePresent);
     }
+  }
+
+  SECTION("vpsMiv2ExtensionPresentFlag") {
+    const auto vme2Present = GENERATE(false, true);
+    CAPTURE(vme2Present);
+
+    if (vme2Present) {
+      vps.removeVpsExtension(VET::VPS_EXT_MIV);
+      [[maybe_unused]] auto &vme2 = vps.vps_miv_2_extension();
+    }
+
+    CHECK_THROWS_IFF(unit.checkAndActivateVps(vps), vme2Present);
   }
 
   SECTION("vpsPackingInformationPresentFlag") {
@@ -891,7 +920,6 @@ TEST_CASE("PtlChecker ISO/IEC 23090-12:2021 Table A-1") {
     for (uint8_t k = 0; k <= vps.vps_atlas_count_minus1(); ++k) {
       const auto j = vps.vps_atlas_id(k);
 
-      // This is not a restriction in view of the vps_packing_information_present_flag restriction
       vps.vps_packed_video_present_flag(j, true);
       CHECK_NOTHROW(unit.checkAndActivateVps(vps));
       vps.vps_packed_video_present_flag(j, false);
@@ -911,6 +939,43 @@ TEST_CASE("PtlChecker ISO/IEC 23090-12:2021 Table A-1") {
 
     afps.afps_raw_3d_offset_bit_count_explicit_mode_flag(true);
     CHECK_THROWS_AS(unit.checkAfps(afps), test::Exception);
+  }
+
+  SECTION("miv_view_params_list") {
+    if (test::mivToolset(toolsetIdc)) {
+      const auto casps = test::casps(vps);
+      unit.checkAndActivateCasps(casps);
+
+      const auto nuh = NalUnitHeader{NalUnitType::NAL_CAF_IDR, 0, 1};
+      auto caf = CommonAtlasFrameRBSP{};
+
+      auto &mvpl = caf.caf_miv_extension().miv_view_params_list();
+
+      mvpl.mvp_num_views_minus1(7);
+      mvpl.mvp_depth_quantization_params_equal_flag(false);
+      CHECK_NOTHROW(unit.checkCaf(nuh, caf));
+
+      mvpl.depth_quantization(5).dq_quantization_law(2);
+      CHECK_THROWS_AS(unit.checkCaf(nuh, caf), test::Exception);
+    }
+  }
+
+  SECTION("miv_view_params_update_depth_quantization") {
+    if (test::mivToolset(toolsetIdc)) {
+      const auto casps = test::casps(vps);
+      unit.checkAndActivateCasps(casps);
+
+      const auto nuh = NalUnitHeader{NalUnitType::NAL_CAF_TRIAL, 0, 1};
+      auto caf = CommonAtlasFrameRBSP{};
+
+      auto &mvpudq = caf.caf_miv_extension().miv_view_params_update_depth_quantization();
+
+      mvpudq.mvpudq_num_view_updates_minus1(4);
+      CHECK_NOTHROW(unit.checkCaf(nuh, caf));
+
+      mvpudq.depth_quantization(3).dq_quantization_law(2);
+      CHECK_THROWS_AS(unit.checkCaf(nuh, caf), test::Exception);
+    }
   }
 
   SECTION("ath_type") {
@@ -960,7 +1025,7 @@ TEST_CASE("PtlChecker ISO/IEC 23090-12:2021 Table A-1") {
   }
 }
 
-TEST_CASE("PtlChecker ISO/IEC 23090-12:2021 A.4.2") {
+TEST_CASE("PtlChecker ISO/IEC 23090-12 A.4.2") {
   SECTION("MIV Extended with restricted geometry has texture + transparency per atlas") {
     auto unit = test::unit();
 
@@ -988,7 +1053,7 @@ TEST_CASE("PtlChecker ISO/IEC 23090-12:2021 A.4.2") {
   }
 }
 
-TEST_CASE("PtlChecker ISO/IEC 23090-12(2E) A.4.3") {
+TEST_CASE("PtlChecker ISO/IEC 23090-12 A.4.3") {
   SECTION("ptc_only_one_v3c_frame_flag") {
     const auto ptc_one_v3c_frame_only_flag = GENERATE(false, true);
     const auto ptl_level_idc = GENERATE(LV::Level_1_0, LV::Level_4_5, LV::Level_8_5);
@@ -1021,7 +1086,7 @@ TEST_CASE("PtlChecker tier") {
   CHECK_THROWS_AS(unit.checkAndActivateVps(vps), test::Exception);
 }
 
-TEST_CASE("PtlChecker ISO/IEC DIS 23090-5(2E):2021 A.6.1 level limits") {
+TEST_CASE("PtlChecker ISO/IEC 23090-5 A.6.1 level limits") {
   auto unit = test::unit();
 
   SECTION("Unknown level IDC values") {
@@ -1110,7 +1175,7 @@ TEST_CASE("PtlChecker ISO/IEC DIS 23090-5(2E):2021 A.6.1 level limits") {
   // NOTE(MPEG/MIV/Specs/23090-12#435): NumProjPoints is 0 for embedded occupancy
 }
 
-TEST_CASE("PtlChecker ISO/IEC DIS 23090-5(2E):2021 A.6.1 FOC LSB") {
+TEST_CASE("PtlChecker ISO/IEC 23090-5 A.6.1 FOC LSB") {
   auto unit = test::unit();
 
   SECTION("ath_atlas_frm_order_cnt_lsb") {
@@ -1155,8 +1220,11 @@ TEST_CASE("PtlChecker ISO/IEC DIS 23090-5(2E):2021 A.6.1 FOC LSB") {
   }
 
   SECTION("caf_common_atlas_frm_order_cnt_lsb") {
-    auto vps = test::vps(TS::MIV_Main, false);
+    const auto vps = test::vps(TS::MIV_Main, false);
     unit.checkAndActivateVps(vps);
+
+    const auto casps = test::casps(vps);
+    unit.checkAndActivateCasps(casps);
 
     // NOTE(MPEG/PCC/Specs/23090-5#498): Missing term `IRAP coded common atlas`
     SECTION("IRAP coded common atlas") {
@@ -1186,7 +1254,7 @@ TEST_CASE("PtlChecker ISO/IEC DIS 23090-5(2E):2021 A.6.1 FOC LSB") {
   }
 }
 
-TEST_CASE("PtlChecker ISO/IEC 23090-5(2E)/Amd.1 A.6.2") {
+TEST_CASE("PtlChecker ISO/IEC 23090-5 A.6.2") {
   auto unit = test::unit();
 
   SECTION("Frame rate for level checks") {
@@ -1195,8 +1263,10 @@ TEST_CASE("PtlChecker ISO/IEC 23090-5(2E)/Amd.1 A.6.2") {
     SECTION("The frame rate may be provided in the VUI") {
       const auto ratio = GENERATE(std::tuple{1, 15}, std::tuple{3, 40});
 
-      unit.activateCasps([=]() {
-        auto casps = CommonAtlasSequenceParameterSetRBSP{};
+      unit.checkAndActivateVps(test::vps(TS::MIV_Main));
+
+      unit.checkAndActivateCasps([=]() {
+        auto casps = CASPS{};
         casps.casps_miv_extension().vui_parameters(VuiParameters{}
                                                        .vui_num_units_in_tick(std::get<0>(ratio))
                                                        .vui_time_scale(std::get<1>(ratio)));
@@ -1240,8 +1310,8 @@ TEST_CASE("PtlChecker ISO/IEC 23090-5(2E)/Amd.1 A.6.2") {
     // Avoid triggering the MaxNumProjPatches check by increasing the frame rate above 64
     static constexpr auto frameRate = 65;
 
-    unit.activateCasps([=]() {
-      auto casps = CommonAtlasSequenceParameterSetRBSP{};
+    unit.checkAndActivateCasps([=]() {
+      auto casps = CASPS{};
       casps.casps_miv_extension().vui_parameters(
           VuiParameters{}.vui_num_units_in_tick(1).vui_time_scale(frameRate));
       return casps;

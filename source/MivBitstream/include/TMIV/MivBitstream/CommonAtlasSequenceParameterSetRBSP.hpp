@@ -44,10 +44,6 @@ constexpr auto CaspsMivExtension::casme_depth_quantization_params_present_flag()
   return m_casme_depth_quantization_params_present_flag;
 }
 
-constexpr auto CaspsMivExtension::casme_chroma_scaling_present_flag() const noexcept {
-  return m_casme_chroma_scaling_present_flag;
-}
-
 constexpr auto CaspsMivExtension::casme_vui_params_present_flag() const noexcept {
   return m_casme_vui_params_present_flag;
 }
@@ -63,13 +59,28 @@ constexpr auto CaspsMivExtension::casme_depth_quantization_params_present_flag(b
   return *this;
 }
 
-constexpr auto CaspsMivExtension::casme_chroma_scaling_present_flag(bool value) noexcept -> auto & {
-  m_casme_chroma_scaling_present_flag = value;
+constexpr auto CaspsMivExtension::casme_vui_params_present_flag(bool value) noexcept -> auto & {
+  m_casme_vui_params_present_flag = value;
   return *this;
 }
 
-constexpr auto CaspsMivExtension::casme_vui_params_present_flag(bool value) noexcept -> auto & {
-  m_casme_vui_params_present_flag = value;
+constexpr auto CaspsMiv2Extension::casme_decoder_side_depth_estimation_flag() const noexcept {
+  return m_casme_decoder_side_depth_estimation_flag;
+}
+
+constexpr auto CaspsMiv2Extension::casme_chroma_scaling_present_flag() const noexcept {
+  return m_casme_chroma_scaling_present_flag;
+}
+
+constexpr auto CaspsMiv2Extension::casme_decoder_side_depth_estimation_flag(bool value) noexcept
+    -> auto & {
+  m_casme_decoder_side_depth_estimation_flag = value;
+  return *this;
+}
+
+constexpr auto CaspsMiv2Extension::casme_chroma_scaling_present_flag(bool value) noexcept
+    -> auto & {
+  m_casme_chroma_scaling_present_flag = value;
   return *this;
 }
 

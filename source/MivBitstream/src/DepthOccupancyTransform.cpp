@@ -54,7 +54,6 @@ DepthTransform::DepthTransform(const DepthQuantization &dq, uint32_t bitDepth)
   m_minNormDisp = far + (near - far) * (lowestLevel / maxLevel);
   ASSERT(0 < m_minNormDisp);
 
-#if ENABLE_M57419
   m_viewPivotCount = dq.dq_pivot_count_minus1() + 1;
   m_quantizationLaw = dq.dq_quantization_law();
 
@@ -74,7 +73,6 @@ DepthTransform::DepthTransform(const DepthQuantization &dq, uint32_t bitDepth)
     m_normDispInterval =
         (m_normDispMax - m_normDispMap[0]) / static_cast<float>(m_viewPivotCount + 1);
   }
-#endif
 }
 
 DepthTransform::DepthTransform(const DepthQuantization &dq, const PatchParams &patchParams,
@@ -88,7 +86,6 @@ auto DepthTransform::expandNormDisp(Common::SampleValue x) const -> float {
   const auto level =
       Common::expandValue(m_atlasPatch3dOffsetD + std::min(x, m_atlasPatch3dRangeD), m_bitDepth);
 
-#if ENABLE_M57419
   if (m_quantizationLaw == 2) {
     float normDisp = m_normDispLow + (m_normDispHigh - m_normDispLow) * level;
 
@@ -105,7 +102,6 @@ auto DepthTransform::expandNormDisp(Common::SampleValue x) const -> float {
     }
     return normDisp;
   }
-#endif
 
   return std::max(m_minNormDisp, m_normDispLow + (m_normDispHigh - m_normDispLow) * level);
 }
@@ -130,7 +126,6 @@ auto DepthTransform::expandDepth(const Common::Frame<> &frame) const -> Common::
 auto DepthTransform::quantizeNormDisp(float x, Common::SampleValue minLevel) const
     -> Common::SampleValue {
   if (x > 0.F) {
-#if ENABLE_M57419
     float level{};
 
     if (m_quantizationLaw == 0) {
@@ -149,9 +144,6 @@ auto DepthTransform::quantizeNormDisp(float x, Common::SampleValue minLevel) con
                      static_cast<double>(m_normDispMap[m_viewPivotCount + 1]));
       level = static_cast<float>((normDisp - m_normDispLow) / (m_normDispHigh - m_normDispLow));
     }
-#else
-    const auto level = (x - m_normDispLow) / (m_normDispHigh - m_normDispLow);
-#endif
     return std::clamp(Common::quantizeValue(level, m_bitDepth) - m_atlasPatch3dOffsetD, minLevel,
                       m_atlasPatch3dRangeD);
   }

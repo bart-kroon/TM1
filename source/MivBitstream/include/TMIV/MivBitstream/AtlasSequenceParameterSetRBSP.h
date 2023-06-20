@@ -34,7 +34,6 @@
 #ifndef TMIV_MIVBITSTREAM_ATLASSEQUENCEPARAMETERSETRBSP_H
 #define TMIV_MIVBITSTREAM_ATLASSEQUENCEPARAMETERSETRBSP_H
 
-#include "V3cParameterSet.h"
 #include "V3cUnit.h"
 #include "VuiParameters.h"
 
@@ -239,10 +238,9 @@ public:
   auto operator==(const AtlasSequenceParameterSetRBSP &other) const -> bool;
   auto operator!=(const AtlasSequenceParameterSetRBSP &other) const -> bool;
 
-  static auto decodeFrom(std::istream &stream, const V3cUnitHeader &vuh, const V3cParameterSet &vps)
-      -> AtlasSequenceParameterSetRBSP;
+  static auto decodeFrom(std::istream &stream) -> AtlasSequenceParameterSetRBSP;
 
-  void encodeTo(std::ostream &stream, const V3cUnitHeader &vuh, const V3cParameterSet &vps) const;
+  void encodeTo(std::ostream &stream) const;
 
 private:
   uint8_t m_asps_atlas_sequence_parameter_set_id{};

@@ -158,9 +158,7 @@ static constexpr auto geo2dBitDepth = 9U;
     "reconstructionIdc": "Rec Unconstrained",
     "levelIdc": "2.5",
     "oneV3cFrameOnly": false,
-    "m57419_piecewiseDepthLinearScaling": false,
-    "m57419_intervalNumber": 16,
-    "m57419_edgeThreshold": 40,
+    "piecewiseDepthLinearScaling": false,
     "depthOccThresholdIfSet": [0.00390625, 0.0625],
     "depthOccThresholdAsymmetry": 1.5
 })"sv)};

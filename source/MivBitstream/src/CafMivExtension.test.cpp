@@ -227,7 +227,6 @@ TEST_CASE("miv_view_params_list", "[Common Atlas Frame MIV Extension]") {
   auto unit = MivViewParamsList{};
   auto casps = CommonAtlasSequenceParameterSetRBSP{};
   casps.casps_miv_extension().casme_depth_quantization_params_present_flag(false);
-  casps.casps_miv_extension().casme_chroma_scaling_present_flag(false);
 
   SECTION("Default constructor") {
     REQUIRE(toString(unit) == R"(mvp_num_views_minus1=0
@@ -260,7 +259,7 @@ cs_v_max[ 0 ]=0
 
   SECTION("Example 1") {
     casps.casps_miv_extension().casme_depth_quantization_params_present_flag(true);
-    casps.casps_miv_extension().casme_chroma_scaling_present_flag(true);
+    casps.casps_miv_2_extension().casme_chroma_scaling_present_flag(true);
     unit.mvp_num_views_minus1(0)
         .mvp_explicit_view_id_flag(false)
         .mvp_intrinsic_params_equal_flag(false)
@@ -304,7 +303,7 @@ cs_v_max[ 0 ]=400
 
   SECTION("Example 2") {
     casps.casps_miv_extension().casme_depth_quantization_params_present_flag(true);
-    casps.casps_miv_extension().casme_chroma_scaling_present_flag(false);
+    casps.casps_miv_2_extension().casme_chroma_scaling_present_flag(false);
     unit.mvp_num_views_minus1(2)
         .mvp_view_id(0, ViewId{})
         .mvp_view_id(1, ViewId{2})
@@ -381,7 +380,6 @@ cs_v_max[ 2 ]=0
 
   SECTION("mvp when casme_depth_quantization_params_present_flag=0") {
     casps.casps_miv_extension().casme_depth_quantization_params_present_flag(false);
-    casps.casps_miv_extension().casme_chroma_scaling_present_flag(false);
 
     REQUIRE(toString(unit) == R"(mvp_num_views_minus1=0
 mvp_explicit_view_id_flag=false
@@ -420,7 +418,6 @@ TEST_CASE("caf_miv_extension", "[Common Atlas Frame MIV Extension]") {
 
   SECTION("Initialize view parameters") {
     casps.casps_miv_extension().casme_depth_quantization_params_present_flag(true);
-    casps.casps_miv_extension().casme_chroma_scaling_present_flag(false);
     unit.miv_view_params_list()
         .mvp_num_views_minus1(2)
         .mvp_explicit_view_id_flag(false)
@@ -489,7 +486,7 @@ cs_v_max[ 2 ]=0
 
   SECTION("Update extrinsics") {
     casps.casps_miv_extension().casme_depth_quantization_params_present_flag(true);
-    casps.casps_miv_extension().casme_chroma_scaling_present_flag(true);
+    casps.casps_miv_2_extension().casme_chroma_scaling_present_flag(true);
     unit.came_update_depth_quantization_flag(false)
         .came_update_intrinsics_flag(false)
         .came_update_extrinsics_flag(true)
@@ -524,7 +521,7 @@ ce_view_quat_z[ 0 ]=1
 
   SECTION("Update camera intrinsics") {
     casps.casps_miv_extension().casme_depth_quantization_params_present_flag(true);
-    casps.casps_miv_extension().casme_chroma_scaling_present_flag(true);
+    casps.casps_miv_2_extension().casme_chroma_scaling_present_flag(true);
     unit.came_update_depth_quantization_flag(false)
         .came_update_intrinsics_flag(true)
         .came_update_extrinsics_flag(false)
@@ -559,7 +556,7 @@ ci_erp_theta_max[ 0 ]=1
 
   SECTION("Update depth quantization") {
     casps.casps_miv_extension().casme_depth_quantization_params_present_flag(true);
-    casps.casps_miv_extension().casme_chroma_scaling_present_flag(true);
+    casps.casps_miv_2_extension().casme_chroma_scaling_present_flag(true);
     unit.came_update_depth_quantization_flag(true)
         .came_update_extrinsics_flag(false)
         .came_update_intrinsics_flag(false)
@@ -589,7 +586,7 @@ dq_depth_occ_threshold_default[ 0 ]=64
 
   SECTION("Update chroma scaling") {
     casps.casps_miv_extension().casme_depth_quantization_params_present_flag(true);
-    casps.casps_miv_extension().casme_chroma_scaling_present_flag(true);
+    casps.casps_miv_2_extension().casme_chroma_scaling_present_flag(true);
     unit.came_update_depth_quantization_flag(false)
         .came_update_extrinsics_flag(false)
         .came_update_intrinsics_flag(false)
@@ -620,7 +617,6 @@ cs_v_max[ 0 ]=303
 
   SECTION("came when casme_depth_quantization_params_present_flag=0") {
     casps.casps_miv_extension().casme_depth_quantization_params_present_flag(false);
-    casps.casps_miv_extension().casme_chroma_scaling_present_flag(false);
     unit.came_update_intrinsics_flag(false).came_update_extrinsics_flag(false);
 
     REQUIRE(toString(unit) == R"(came_update_extrinsics_flag=false

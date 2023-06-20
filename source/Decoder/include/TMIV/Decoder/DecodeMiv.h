@@ -46,12 +46,10 @@ using VideoDecoderFactory =
                            const MivBitstream::V3cParameterSet &, MivBitstream::V3cUnitHeader>;
 
 using CommonAtlasDecoderFactory =
-    Common::DecoderFactory<MivBitstream::AtlasSubBitstream, CommonAtlasAccessUnit,
-                           const MivBitstream::V3cParameterSet &>;
+    Common::DecoderFactory<MivBitstream::AtlasSubBitstream, CommonAtlasAccessUnit>;
 
-using AtlasDecoderFactory =
-    Common::DecoderFactory<MivBitstream::AtlasSubBitstream, AtlasAccessUnit,
-                           const MivBitstream::V3cParameterSet &, MivBitstream::V3cUnitHeader>;
+using AtlasDecoderFactory = Common::DecoderFactory<MivBitstream::AtlasSubBitstream, AtlasAccessUnit,
+                                                   MivBitstream::V3cUnitHeader>;
 
 auto decodeMiv(Common::Source<MivBitstream::V3cUnit> source,
                VideoDecoderFactory videoDecoderFactory, PtlChecker::SharedChecker checker,

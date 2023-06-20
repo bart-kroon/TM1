@@ -39,16 +39,13 @@
 #include <vector>
 
 namespace TMIV::Encoder {
-#if ENABLE_M57419
-auto m57419_edgeDetection(std::vector<std::vector<int32_t>> geometryUnit, double line_thres)
-    -> bool;
-auto m57419_normalizeHistogram(const std::vector<int32_t> &histEdge, int32_t piece_num,
-                               bool lowDepthQuality, int32_t minDepthVal, int32_t maxDepthVal)
+auto plsEdgeDetection(std::vector<std::vector<int32_t>> geometryUnit, double line_thres) -> bool;
+auto plsNormalizeHistogram(const std::vector<int32_t> &histEdge, int32_t piece_num,
+                           bool lowDepthQuality, int32_t minDepthVal, int32_t maxDepthVal)
     -> std::vector<double>;
-auto m57419_depthMapping(int32_t minDepthVal, int32_t maxDepthVal, int32_t piece_num,
-                         uint16_t inGeometry, const std::vector<double> &mapped_pivot,
-                         bool lowDepthQuality) -> uint16_t;
-#endif
+auto plsDepthMapping(int32_t minDepthVal, int32_t maxDepthVal, int32_t piece_num,
+                     uint16_t inGeometry, const std::vector<double> &mapped_pivot,
+                     bool lowDepthQuality) -> uint16_t;
 } // namespace TMIV::Encoder
 
 #endif

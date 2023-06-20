@@ -187,10 +187,10 @@ casps_common_atlas_sequence_parameter_set_id=0
 casps_log2_max_common_atlas_frame_order_cnt_lsb_minus4=0
 casps_extension_present_flag=true
 casps_miv_extension_present_flag=true
-casps_extension_7bits=0
+casps_miv_2_extension_present_flag=false
+casps_extension_6bits=0
 casme_depth_low_quality_flag=false
 casme_depth_quantization_params_present_flag=false
-casme_chroma_scaling_present_flag=false
 casme_vui_params_present_flag=false
 
 ----------------------------------------------------------------------------------------------------

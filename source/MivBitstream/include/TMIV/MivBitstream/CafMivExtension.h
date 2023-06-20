@@ -36,7 +36,6 @@
 
 #include "CommonAtlasSequenceParameterSetRBSP.h"
 #include "NalUnit.h"
-#include "V3cParameterSet.h"
 #include "ViewId.h"
 
 #include <TMIV/Common/Bitstream.h>
@@ -199,13 +198,11 @@ public:
   constexpr auto dq_norm_disp_high(float value) noexcept -> auto &;
   constexpr auto dq_depth_occ_threshold_default(uint32_t value) noexcept -> auto &;
 
-#if ENABLE_M57419
   [[nodiscard]] constexpr auto dq_pivot_count_minus1() const noexcept;
   [[nodiscard]] auto dq_pivot_norm_disp(int32_t i) const noexcept -> float;
 
   constexpr auto dq_pivot_count_minus1(uint8_t value) noexcept -> auto &;
   auto dq_pivot_norm_disp(int32_t i, float value) noexcept -> DepthQuantization &;
-#endif
 
   auto printTo(std::ostream &stream, uint16_t viewIdx) const -> std::ostream &;
 
@@ -222,10 +219,8 @@ private:
   float m_dq_norm_disp_high{};
   uint32_t m_dq_depth_occ_threshold_default{};
 
-#if ENABLE_M57419
   uint8_t m_dq_pivot_count_minus1{};
   std::vector<float> m_dq_pivot_norm_disp;
-#endif
 };
 
 // 23090-12: pruning_parents()
@@ -245,8 +240,8 @@ public:
 
   auto printTo(std::ostream &stream, uint16_t viewIdx) const -> std::ostream &;
 
-  auto operator==(const PruningParents & /*other*/) const noexcept -> bool;
-  auto operator!=(const PruningParents & /*other*/) const noexcept -> bool;
+  auto operator==(const PruningParents &other) const noexcept -> bool;
+  auto operator!=(const PruningParents &other) const noexcept -> bool;
 
   static auto decodeFrom(Common::InputBitstream &bitstream, uint16_t mvp_num_views_minus1)
       -> PruningParents;
@@ -268,6 +263,7 @@ public:
   [[nodiscard]] constexpr auto mvp_intrinsic_params_equal_flag() const noexcept;
   [[nodiscard]] auto mvp_depth_quantization_params_equal_flag() const -> bool;
   [[nodiscard]] constexpr auto mvp_pruning_graph_params_present_flag() const noexcept;
+  [[nodiscard]] constexpr auto mvp_depth_reprojection_flag() const noexcept;
 
   [[nodiscard]] auto camera_extrinsics(uint16_t viewIdx) const -> const CameraExtrinsics &;
 
@@ -285,6 +281,7 @@ public:
 
   // Calling this function will allocate the camera extrinsics list
   auto mvp_num_views_minus1(uint16_t value) -> MivViewParamsList &;
+  constexpr auto mvp_depth_reprojection_flag(bool value) noexcept -> auto &;
 
   auto mvp_explicit_view_id_flag(bool value) noexcept -> MivViewParamsList &;
   auto mvp_view_id(uint16_t viewIdx, ViewId viewId) -> MivViewParamsList &;
@@ -307,8 +304,8 @@ public:
 
   friend auto operator<<(std::ostream &stream, const MivViewParamsList &x) -> std::ostream &;
 
-  auto operator==(const MivViewParamsList & /*other*/) const noexcept -> bool;
-  auto operator!=(const MivViewParamsList & /*other*/) const noexcept -> bool;
+  auto operator==(const MivViewParamsList &other) const noexcept -> bool;
+  auto operator!=(const MivViewParamsList &other) const noexcept -> bool;
 
   static auto decodeFrom(Common::InputBitstream &bitstream,
                          const CommonAtlasSequenceParameterSetRBSP &casps) -> MivViewParamsList;
@@ -328,6 +325,7 @@ private:
   bool m_mvp_pruning_graph_params_present_flag{};
   std::vector<PruningParents> m_pruning_parent{};
   std::vector<ChromaScaling> m_mvp_chroma_scaling_values{{}};
+  std::optional<bool> m_mvp_depth_reprojection_flag{};
 };
 
 // 23090-12: miv_view_params_update_extrinsics
@@ -345,8 +343,8 @@ public:
   friend auto operator<<(std::ostream &stream, const MivViewParamsUpdateExtrinsics &x)
       -> std::ostream &;
 
-  auto operator==(const MivViewParamsUpdateExtrinsics & /*other*/) const noexcept -> bool;
-  auto operator!=(const MivViewParamsUpdateExtrinsics & /*other*/) const noexcept -> bool;
+  auto operator==(const MivViewParamsUpdateExtrinsics &other) const noexcept -> bool;
+  auto operator!=(const MivViewParamsUpdateExtrinsics &other) const noexcept -> bool;
 
   static auto decodeFrom(Common::InputBitstream &bitstream) -> MivViewParamsUpdateExtrinsics;
 
@@ -373,8 +371,8 @@ public:
   friend auto operator<<(std::ostream &stream, const MivViewParamsUpdateIntrinsics &x)
       -> std::ostream &;
 
-  auto operator==(const MivViewParamsUpdateIntrinsics & /*other*/) const noexcept -> bool;
-  auto operator!=(const MivViewParamsUpdateIntrinsics & /*other*/) const noexcept -> bool;
+  auto operator==(const MivViewParamsUpdateIntrinsics &other) const noexcept -> bool;
+  auto operator!=(const MivViewParamsUpdateIntrinsics &other) const noexcept -> bool;
 
   static auto decodeFrom(Common::InputBitstream &bitstream) -> MivViewParamsUpdateIntrinsics;
 
@@ -402,8 +400,8 @@ public:
   friend auto operator<<(std::ostream &stream, const MivViewParamsUpdateDepthQuantization &x)
       -> std::ostream &;
 
-  auto operator==(const MivViewParamsUpdateDepthQuantization & /*other*/) const noexcept -> bool;
-  auto operator!=(const MivViewParamsUpdateDepthQuantization & /*other*/) const noexcept -> bool;
+  auto operator==(const MivViewParamsUpdateDepthQuantization &other) const noexcept -> bool;
+  auto operator!=(const MivViewParamsUpdateDepthQuantization &other) const noexcept -> bool;
 
   static auto decodeFrom(Common::InputBitstream &bitstream) -> MivViewParamsUpdateDepthQuantization;
 
@@ -429,8 +427,8 @@ public:
   friend auto operator<<(std::ostream &stream, const MivViewParamsUpdateChromaScaling &x)
       -> std::ostream &;
 
-  auto operator==(const MivViewParamsUpdateChromaScaling & /*other*/) const noexcept -> bool;
-  auto operator!=(const MivViewParamsUpdateChromaScaling & /*other*/) const noexcept -> bool;
+  auto operator==(const MivViewParamsUpdateChromaScaling &other) const noexcept -> bool;
+  auto operator!=(const MivViewParamsUpdateChromaScaling &other) const noexcept -> bool;
 
   static auto decodeFrom(Common::InputBitstream &bitstream) -> MivViewParamsUpdateChromaScaling;
 
@@ -475,8 +473,8 @@ public:
 
   friend auto operator<<(std::ostream &stream, const CafMivExtension &x) -> std::ostream &;
 
-  auto operator==(const CafMivExtension & /*other*/) const -> bool;
-  auto operator!=(const CafMivExtension & /*other*/) const -> bool;
+  auto operator==(const CafMivExtension &other) const -> bool;
+  auto operator!=(const CafMivExtension &other) const -> bool;
 
   static auto decodeFrom(Common::InputBitstream &bitstream, const NalUnitHeader &nuh,
                          const CommonAtlasSequenceParameterSetRBSP &casps) -> CafMivExtension;

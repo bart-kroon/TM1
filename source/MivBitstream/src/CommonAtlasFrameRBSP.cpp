@@ -162,7 +162,6 @@ void CommonAtlasFrameRBSP::encodeTo(std::ostream &stream, const NalUnitHeader &n
   bitstream.rbspTrailingBits();
 }
 
-#if ENABLE_M57419
 auto DepthQuantization::dq_pivot_norm_disp(int32_t index) const noexcept -> float {
   return m_dq_pivot_norm_disp[index];
 }
@@ -175,5 +174,4 @@ auto DepthQuantization::dq_pivot_norm_disp(int32_t index, float value) noexcept
   m_dq_pivot_norm_disp[index] = value;
   return *this;
 }
-#endif
 } // namespace TMIV::MivBitstream

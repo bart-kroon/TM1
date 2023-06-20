@@ -58,8 +58,7 @@ struct CommonAtlasAccessUnit {
 };
 
 auto decodeCommonAtlas(Common::Source<MivBitstream::NalUnit> source,
-                       MivBitstream::V3cParameterSet vps, PtlChecker::SharedChecker checker)
-    -> Common::Source<CommonAtlasAccessUnit>;
+                       PtlChecker::SharedChecker checker) -> Common::Source<CommonAtlasAccessUnit>;
 } // namespace TMIV::Decoder
 
 #endif

@@ -81,12 +81,11 @@ auto unreachableVideoDecoderFactory() {
 }
 
 auto unreachableCommonAtlasDecoderFactory() {
-  return unreachableFactory<AtlasSubBitstream, CommonAtlasAccessUnit, const V3cParameterSet &>();
+  return unreachableFactory<AtlasSubBitstream, CommonAtlasAccessUnit>();
 }
 
 auto unreachableAtlasDecoderFactory() {
-  return unreachableFactory<AtlasSubBitstream, AtlasAccessUnit, const V3cParameterSet &,
-                            V3cUnitHeader>();
+  return unreachableFactory<AtlasSubBitstream, AtlasAccessUnit, V3cUnitHeader>();
 }
 
 template <typename I, typename A, typename B, typename... Args>
@@ -103,13 +102,12 @@ template <typename I> auto videoDecoderFactoryFromIteratorPair(I first, I last) 
 }
 
 template <typename I> auto commonAtlasDecoderFactoryFromIteratorPair(I first, I last) {
-  return decoderFactoryFromIteratorPair<I, AtlasSubBitstream, CommonAtlasAccessUnit,
-                                        const V3cParameterSet &>(first, last);
+  return decoderFactoryFromIteratorPair<I, AtlasSubBitstream, CommonAtlasAccessUnit>(first, last);
 }
 
 template <typename I> auto atlasDecoderFactoryFromIteratorPair(I first, I last) {
-  return decoderFactoryFromIteratorPair<I, AtlasSubBitstream, AtlasAccessUnit,
-                                        const V3cParameterSet &, V3cUnitHeader>(first, last);
+  return decoderFactoryFromIteratorPair<I, AtlasSubBitstream, AtlasAccessUnit, V3cUnitHeader>(first,
+                                                                                              last);
 }
 
 constexpr auto size = Vec2i{64, 32};
@@ -146,6 +144,7 @@ auto atlasFrame(int32_t foc, size_t atlSize) {
   using TMIV::Decoder::AtlasAccessUnit;
 
   auto au = AtlasAccessUnit{};
+  au.asps.asps_frame_width(size.x()).asps_frame_height(size.y());
   au.atlV.resize(atlSize);
 
   for (auto &atl : au.atlV) {

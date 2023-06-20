@@ -234,11 +234,9 @@ constexpr auto DepthQuantization::dq_norm_disp_low() const noexcept { return m_d
 
 constexpr auto DepthQuantization::dq_norm_disp_high() const noexcept { return m_dq_norm_disp_high; }
 
-#if ENABLE_M57419
 constexpr auto DepthQuantization::dq_pivot_count_minus1() const noexcept {
   return m_dq_pivot_count_minus1;
 }
-#endif
 
 constexpr auto DepthQuantization::dq_depth_occ_threshold_default() const noexcept {
   return m_dq_depth_occ_threshold_default;
@@ -265,12 +263,10 @@ constexpr auto DepthQuantization::dq_depth_occ_threshold_default(uint32_t value)
   return *this;
 }
 
-#if ENABLE_M57419
 constexpr auto DepthQuantization::dq_pivot_count_minus1(const uint8_t value) noexcept -> auto & {
   m_dq_pivot_count_minus1 = value;
   return *this;
 }
-#endif
 
 constexpr auto DepthQuantization::operator==(const DepthQuantization &other) const noexcept {
   if (dq_quantization_law() != other.dq_quantization_law() ||
@@ -283,14 +279,12 @@ constexpr auto DepthQuantization::operator==(const DepthQuantization &other) con
     return false;
   }
 
-#if ENABLE_M57419
   if (dq_quantization_law() == 2 && (dq_norm_disp_low() != other.dq_norm_disp_low() ||
                                      dq_norm_disp_high() != other.dq_norm_disp_high() ||
                                      m_dq_pivot_count_minus1 != other.m_dq_pivot_count_minus1 ||
                                      m_dq_pivot_norm_disp != other.m_dq_pivot_norm_disp)) {
     return false;
   }
-#endif
 
   return true;
 }
@@ -309,5 +303,14 @@ constexpr auto MivViewParamsList::mvp_intrinsic_params_equal_flag() const noexce
 
 constexpr auto MivViewParamsList::mvp_pruning_graph_params_present_flag() const noexcept {
   return m_mvp_pruning_graph_params_present_flag;
+}
+
+constexpr auto MivViewParamsList::mvp_depth_reprojection_flag() const noexcept {
+  return m_mvp_depth_reprojection_flag.value_or(false);
+}
+
+constexpr auto MivViewParamsList::mvp_depth_reprojection_flag(bool value) noexcept -> auto & {
+  m_mvp_depth_reprojection_flag = value;
+  return *this;
 }
 } // namespace TMIV::MivBitstream

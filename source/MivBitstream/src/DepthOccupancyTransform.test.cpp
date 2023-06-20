@@ -158,7 +158,6 @@ TEST_CASE("DepthTransform") {
     }
   }
 
-#if ENABLE_M57419
   SECTION("Expand a level to normalized disparity [m^-1], PLS method") {
     const auto normDispLow = GENERATE(-2.F, 0.F, 10.F);
     const auto normDispHigh = GENERATE(-1.F, 0.F, 100.F);
@@ -204,7 +203,6 @@ TEST_CASE("DepthTransform") {
       }
     }
   }
-#endif
 
   SECTION("Expand a level to normalized disparity [m^-1], per-patch depth transform") {
     const auto normDispLow = GENERATE(-2.F, 3.F);
@@ -339,7 +337,6 @@ TEST_CASE("DepthTransform") {
     }
   }
 
-#if ENABLE_M57419
   SECTION("Quantize normalized disparity [m^-1] to a level, PLS method") {
     const auto normDispLow = GENERATE(-2.F, 3.F);
     const auto normDispHigh = GENERATE(5.F, 7.F);
@@ -386,7 +383,6 @@ TEST_CASE("DepthTransform") {
       REQUIRE(unit.quantizeNormDisp(x, 100) <= maxLevel);
     }
   }
-#endif
 
   SECTION("(Implementation-defined) minimum normalized disparity") {
     const auto normDispLow = GENERATE(-2.F, 1E-4F, 1E-3F, 0.01F, 3.F);

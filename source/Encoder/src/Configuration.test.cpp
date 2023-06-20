@@ -78,9 +78,9 @@ TEST_CASE("TMIV::Encoder::Configuration") {
     "reconstructionIdc": "Rec Unconstrained",
     "levelIdc": "2.5",
     "oneV3cFrameOnly": false,
-    "m57419_piecewiseDepthLinearScaling": false,
-    "m57419_intervalNumber": 16,
-    "m57419_edgeThreshold": 40,
+    "piecewiseDepthLinearScaling": true,
+    "pldsIntervalNumber": 16,
+    "pldsEdgeThreshold": 40,
     "depthOccThresholdIfSet": [0.00390625, 0.0625],
     "depthOccThresholdAsymmetry": 1.5
 })"sv);
@@ -114,11 +114,9 @@ TEST_CASE("TMIV::Encoder::Configuration") {
     CHECK_FALSE(unit.viewingSpace.has_value());
     CHECK(unit.overrideAtlasFrameSizes.empty());
 
-#if ENABLE_M57419
-    CHECK_FALSE(unit.m57419_piecewiseDepthLinearScaling);
-    CHECK(unit.m57419_intervalNumber == 16);
-    CHECK(unit.m57419_edgeThreshold == 40);
-#endif
+    CHECK(unit.piecewiseDepthLinearScaling);
+    CHECK(unit.pldsIntervalNumber == 16);
+    CHECK(unit.pldsEdgeThreshold == 40);
 
     SECTION("Add viewing space") {
       root.update(Json::parse(R"({
@@ -192,9 +190,7 @@ TEST_CASE("TMIV::Encoder::Configuration") {
     "reconstructionIdc": "Rec Unconstrained",
     "levelIdc": "2.5",
     "oneV3cFrameOnly": true,
-    "m57419_piecewiseDepthLinearScaling": false,
-    "m57419_intervalNumber": 16,
-    "m57419_edgeThreshold": 40,
+    "piecewiseDepthLinearScaling": false,
     "depthOccThresholdIfSet": [0.00390625, 0.0625],
     "depthOccThresholdAsymmetry": 1.5
 })"sv);
@@ -223,11 +219,9 @@ TEST_CASE("TMIV::Encoder::Configuration") {
     CHECK(unit.overrideAtlasFrameSizes.empty());
     CHECK_FALSE(unit.depthLowQualityFlag.has_value());
 
-#if ENABLE_M57419
-    CHECK_FALSE(unit.m57419_piecewiseDepthLinearScaling);
-    CHECK(unit.m57419_intervalNumber == 16);
-    CHECK(unit.m57419_edgeThreshold == 40);
-#endif
+    CHECK_FALSE(unit.piecewiseDepthLinearScaling);
+    CHECK(unit.pldsIntervalNumber == 0);
+    CHECK(unit.pldsEdgeThreshold == 0);
 
     SECTION("Override atlas frame sizes") {
       root.update(Json::parse(R"({ "overrideAtlasFrameSizes": [ [4, 5], [6, 7] ] })"));
@@ -286,9 +280,7 @@ TEST_CASE("TMIV::Encoder::Configuration") {
     "reconstructionIdc": "Rec Unconstrained",
     "levelIdc": "2.5",
     "oneV3cFrameOnly": false,
-    "m57419_piecewiseDepthLinearScaling": false,
-    "m57419_intervalNumber": 16,
-    "m57419_edgeThreshold": 40,
+    "piecewiseDepthLinearScaling": false,
     "depthOccThresholdIfSet": [0.00390625, 0.0625],
     "depthOccThresholdAsymmetry": 1.5
 })"sv);
@@ -328,9 +320,7 @@ TEST_CASE("TMIV::Encoder::Configuration") {
     "reconstructionIdc": "Rec Unconstrained",
     "levelIdc": "2.5",
     "oneV3cFrameOnly": false,
-    "m57419_piecewiseDepthLinearScaling": false,
-    "m57419_intervalNumber": 16,
-    "m57419_edgeThreshold": 40,
+    "piecewiseDepthLinearScaling": false,
     "depthOccThresholdIfSet": [0.00390625, 0.0625],
     "depthOccThresholdAsymmetry": 1.5
 })"sv);

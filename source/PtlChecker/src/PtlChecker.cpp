@@ -49,6 +49,7 @@ struct PtlChecker::Impl {
 
   Logger m_logger{&defaultLogger};
   std::optional<MivBitstream::V3cParameterSet> m_vps;
+  std::optional<MivBitstream::CommonAtlasSequenceParameterSetRBSP> m_casps;
   bool m_haveV3cFrame{};
   double m_frameRate{30.};
   std::vector<V3cFrameVariables> m_window;
@@ -78,8 +79,8 @@ struct PtlChecker::Impl {
     return value;
   }
 
-  static constexpr auto v3cSpec = "ISO/IEC 23090-5(2E)/Amd.1";
-  static constexpr auto mivSpec = "ISO/IEC 23090-12/Amd.1";
+  static constexpr auto v3cSpec = "ISO/IEC 23090-5";
+  static constexpr auto mivSpec = "ISO/IEC 23090-12";
 
   using CF = Common::ColorFormat;
   using CG = MivBitstream::PtlProfileCodecGroupIdc;
@@ -454,7 +455,24 @@ struct PtlChecker::Impl {
     }
   }
 
-  void activateCasps(const MivBitstream::CommonAtlasSequenceParameterSetRBSP &casps) {
+  void checkAndActivateCasps(const MivBitstream::CommonAtlasSequenceParameterSetRBSP &casps) {
+    PRECONDITION(m_vps.has_value());
+
+    m_casps = casps;
+
+    switch (ptl_profile_toolset_idc()) {
+    case TS::VPCC_Basic:
+    case TS::VPCC_Extended:
+      PTL_CHECK(v3cSpec, "Table H-3", !m_casps->casps_extension_present_flag());
+      PTL_CHECK(v3cSpec, "Table H-3", !m_casps->casps_miv_extension_present_flag());
+      break;
+    case TS::MIV_Main:
+    case TS::MIV_Extended:
+    case TS::MIV_Geometry_Absent:
+      PTL_CHECK(mivSpec, "Table A-1", !m_casps->casps_miv_2_extension_present_flag());
+      break;
+    }
+
     if (casps.casps_miv_extension_present_flag()) {
       const auto &casme = casps.casps_miv_extension();
 
@@ -573,9 +591,54 @@ struct PtlChecker::Impl {
 
   void checkCaf(const MivBitstream::NalUnitHeader &nuh,
                 const MivBitstream::CommonAtlasFrameRBSP &caf) const {
+    PRECONDITION(m_casps.has_value());
+
     const auto irapCodedCommonAtlas = nuh.nal_unit_type() == NUT::NAL_CAF_IDR;
     PTL_CHECK(v3cSpec, "A.6.1",
               !irapCodedCommonAtlas || caf.caf_common_atlas_frm_order_cnt_lsb() == 0);
+
+    switch (ptl_profile_toolset_idc()) {
+    case TS::VPCC_Basic:
+    case TS::VPCC_Extended:
+      PTL_CHECK(v3cSpec, "Table H-3", caf.caf_extension_present_flag() == 0);
+      PTL_CHECK(v3cSpec, "Table H-3", caf.caf_miv_extension_present_flag() == 0);
+      break;
+    case TS::MIV_Main:
+    case TS::MIV_Extended:
+    case TS::MIV_Geometry_Absent:
+      break;
+    }
+
+    if (caf.caf_miv_extension_present_flag()) {
+      checkCame(nuh, caf.caf_miv_extension());
+    }
+  }
+
+  void checkCame(const MivBitstream::NalUnitHeader &nuh,
+                 const MivBitstream::CafMivExtension &came) const {
+    if (m_casps->casps_miv_extension().casme_depth_quantization_params_present_flag()) {
+      if (nuh.nal_unit_type() == NUT::NAL_CAF_IDR) {
+        checkMvpl(came.miv_view_params_list());
+      } else if (came.came_update_depth_quantization_flag()) {
+        checkMvpudq(came.miv_view_params_update_depth_quantization());
+      }
+    }
+  }
+
+  void checkMvpl(const MivBitstream::MivViewParamsList &mvpl) const {
+    for (uint16_t v = 0; v <= mvpl.mvp_num_views_minus1(); ++v) {
+      checkDepthQuantization(mvpl.depth_quantization(v));
+    }
+  }
+
+  void checkMvpudq(const MivBitstream::MivViewParamsUpdateDepthQuantization &mvpudq) const {
+    for (uint16_t i = 0; i <= mvpudq.mvpudq_num_view_updates_minus1(); ++i) {
+      checkDepthQuantization(mvpudq.depth_quantization(i));
+    }
+  }
+
+  void checkDepthQuantization(const MivBitstream::DepthQuantization &dq) const {
+    PTL_CHECK(mivSpec, "Table A-1", dq.dq_quantization_law() == 0);
   }
 
   void checkVideoFrame(VUT vut, const MivBitstream::AtlasSequenceParameterSetRBSP &asps,
@@ -764,8 +827,9 @@ void PtlChecker::checkAndActivateVps(const MivBitstream::V3cParameterSet &vps) {
   m_impl->checkAndActivateVps(vps);
 }
 
-void PtlChecker::activateCasps(const MivBitstream::CommonAtlasSequenceParameterSetRBSP &casps) {
-  m_impl->activateCasps(casps);
+void PtlChecker::checkAndActivateCasps(
+    const MivBitstream::CommonAtlasSequenceParameterSetRBSP &casps) {
+  m_impl->checkAndActivateCasps(casps);
 }
 
 void PtlChecker::checkAsps(MivBitstream::AtlasId atlasId,

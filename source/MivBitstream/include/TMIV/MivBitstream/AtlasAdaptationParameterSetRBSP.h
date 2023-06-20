@@ -34,7 +34,6 @@
 #ifndef TMIV_MIVBITSTREAM_ATLASADAPTATIONPARAMETERSETRBSP_H
 #define TMIV_MIVBITSTREAM_ATLASADAPTATIONPARAMETERSETRBSP_H
 
-#include "V3cParameterSet.h"
 #include "VuiParameters.h"
 
 #include <iosfwd>

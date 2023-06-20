@@ -109,8 +109,7 @@ void GeometryQuantizer::determineDepthRange(const GeometryDistributions &distrib
     Common::logVerbose("determineDepthRange: viewIdx={}, far={}, near={} (input range)", viewIdx,
                        far, near);
 
-#if ENABLE_M57419
-    if (m_config.m57419_piecewiseDepthLinearScaling) {
+    if (m_config.piecewiseDepthLinearScaling) {
       // TODO(BK): The existing code did not match with the specification meaning that there is
       // anyhow work to be done. Because of that, and also in view of the MPEG 143 CE 2 schedule, I
       // did not re-implement this proposal. However, I have prepared for it by gathering the full
@@ -118,7 +117,6 @@ void GeometryQuantizer::determineDepthRange(const GeometryDistributions &distrib
       // function.
       NOT_IMPLEMENTED;
     }
-#endif
     if (m_config.dynamicDepthRange && distributions.views[viewIdx]) {
       far = min(distributions.views[viewIdx]);
       near = max(distributions.views[viewIdx]);

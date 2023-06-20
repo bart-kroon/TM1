@@ -93,10 +93,8 @@ auto createTestNalUnit(const NalUnitHeader &nuh, const Rbps &rbps,
 }
 
 auto createTestAspsNalUnit() {
-  const auto vps = createVps();
-  const auto vuh = V3cUnitHeader::ad(0, {});
   const auto asps = AtlasSequenceParameterSetRBSP{};
-  return createTestNalUnit(NalUnitHeader{NalUnitType::NAL_ASPS, 0, 1}, asps, vuh, vps);
+  return createTestNalUnit(NalUnitHeader{NalUnitType::NAL_ASPS, 0, 1}, asps);
 }
 
 auto createTestAfpsNalUnit() {

@@ -94,21 +94,16 @@ void decodeMvpucs(const MivBitstream::MivViewParamsUpdateChromaScaling &mvpucs,
 void decodeViewParamsList(const CommonAtlasAccessUnit &au, MivBitstream::ViewParamsList &vpl) {
   if (au.caf.caf_extension_present_flag() && au.caf.caf_miv_extension_present_flag()) {
     const auto &came = au.caf.caf_miv_extension();
-    bool dqParamsPresentFlag = true;
-    bool csParamsPresentFlag = true;
-    if (au.casps.casps_extension_present_flag() && au.casps.casps_miv_extension_present_flag()) {
-      dqParamsPresentFlag =
-          au.casps.casps_miv_extension().casme_depth_quantization_params_present_flag();
-    }
-#if ENABLE_M63397
-    if (au.casps.casps_extension_present_flag() && au.casps.casps_miv_extension_present_flag()) {
-      csParamsPresentFlag = au.casps.casps_miv_extension().casme_chroma_scaling_present_flag();
-    }
-#else
-    csParamsPresentFlag = false;
-#endif
+    const auto casme_depth_quantization_params_present_flag =
+        au.casps.casps_miv_extension_present_flag() &&
+        au.casps.casps_miv_extension().casme_depth_quantization_params_present_flag();
+    const auto casme_chroma_scaling_present_flag =
+        au.casps.casps_miv_2_extension_present_flag() &&
+        au.casps.casps_miv_2_extension().casme_chroma_scaling_present_flag();
+
     if (au.foc == 0) {
-      decodeMvpl(came.miv_view_params_list(), dqParamsPresentFlag, csParamsPresentFlag, vpl);
+      decodeMvpl(came.miv_view_params_list(), casme_depth_quantization_params_present_flag,
+                 casme_chroma_scaling_present_flag, vpl);
     } else {
       if (came.came_update_extrinsics_flag()) {
         decodeMvpue(came.miv_view_params_update_extrinsics(), vpl);
@@ -117,15 +112,13 @@ void decodeViewParamsList(const CommonAtlasAccessUnit &au, MivBitstream::ViewPar
         decodeMvpui(came.miv_view_params_update_intrinsics(), vpl);
       }
       if (au.casps.casps_miv_extension().casme_depth_quantization_params_present_flag() &&
-          came.came_update_depth_quantization_flag() && dqParamsPresentFlag) {
+          came.came_update_depth_quantization_flag() &&
+          casme_depth_quantization_params_present_flag) {
         decodeMvpudq(came.miv_view_params_update_depth_quantization(), vpl);
       }
-#if ENABLE_M63397
-      if (au.casps.casps_miv_extension().casme_chroma_scaling_present_flag() &&
-          came.came_update_chroma_scaling_flag() && csParamsPresentFlag) {
+      if (casme_chroma_scaling_present_flag && came.came_update_chroma_scaling_flag()) {
         decodeMvpucs(came.miv_view_params_update_chroma_scaling(), vpl);
       }
-#endif
     }
   }
 }

@@ -36,7 +36,6 @@
 
 #include "AtlasFrameParameterSetRBSP.h"
 #include "AtlasSequenceParameterSetRBSP.h"
-#include "V3cParameterSet.h"
 #include "V3cUnit.h"
 #include "ViewId.h"
 

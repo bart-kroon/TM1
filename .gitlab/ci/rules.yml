@@ -28,6 +28,16 @@ Release build (GCC 12):
 Debug build and static analysis (Clang 14):
   <<: *cpp_rules_definition
 
+Decoder conformance test (GCC 12):
+  <<: *cpp_rules_definition
+  dependencies:
+    - Release build (GCC 12)
+
+Parser test on V-PCC conformance bitstreams (GCC 12):
+  <<: *cpp_rules_definition
+  dependencies:
+    - Release build (GCC 12)
+
 Integration test (GCC 12):
   <<: *cpp_rules_definition
   dependencies:

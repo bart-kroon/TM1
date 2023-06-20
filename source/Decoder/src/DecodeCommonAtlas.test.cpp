@@ -210,7 +210,7 @@ TEST_CASE("TMIV::Decoder::decodeCommonAtlas") {
   SECTION("Empty NAL unit source") {
     using TMIV::Common::emptySource;
 
-    auto unit = decodeCommonAtlas(emptySource<NalUnit>(), vps, checker);
+    auto unit = decodeCommonAtlas(emptySource<NalUnit>(), checker);
 
     REQUIRE_FALSE(unit());
     REQUIRE(checker->checkVuh_callCount == 1);
@@ -224,7 +224,7 @@ TEST_CASE("TMIV::Decoder::decodeCommonAtlas") {
 
     const auto data = std::array{nuCasps, nuCafIdr};
 
-    auto unit = decodeCommonAtlas(sourceFromIteratorPair(data.cbegin(), data.cend()), vps, checker);
+    auto unit = decodeCommonAtlas(sourceFromIteratorPair(data.cbegin(), data.cend()), checker);
 
     const auto au = unit();
     REQUIRE(au);
@@ -242,7 +242,7 @@ TEST_CASE("TMIV::Decoder::decodeCommonAtlas") {
 
   SECTION("VUI") {
     const auto data = test::arrayOfNalUnitsWithVuiAndFd();
-    auto unit = decodeCommonAtlas(sourceFromIteratorPair(data.cbegin(), data.cend()), vps, checker);
+    auto unit = decodeCommonAtlas(sourceFromIteratorPair(data.cbegin(), data.cend()), checker);
 
     const auto au = unit();
     REQUIRE(au);
@@ -259,7 +259,7 @@ TEST_CASE("TMIV::Decoder::decodeCommonAtlas") {
 
     const auto data = std::array{nuCasps, test::prefixSei(), nuCafIdr, test::suffixSei()};
 
-    auto unit = decodeCommonAtlas(sourceFromIteratorPair(data.cbegin(), data.cend()), vps, checker);
+    auto unit = decodeCommonAtlas(sourceFromIteratorPair(data.cbegin(), data.cend()), checker);
 
     const auto au = unit();
     REQUIRE(au);
@@ -296,7 +296,7 @@ TEST_CASE("TMIV::Decoder::decodeCommonAtlas") {
                                  nuCasps2, nuCafIdr2, nuCafTrial3, nuCafTrial4};
 
     auto unitAtTest =
-        decodeCommonAtlas(sourceFromIteratorPair(data.cbegin(), data.cend()), vps, checker);
+        decodeCommonAtlas(sourceFromIteratorPair(data.cbegin(), data.cend()), checker);
 
     const auto reference = std::array{0, 1, 5, 0, 4, 18};
 
@@ -320,7 +320,7 @@ TEST_CASE("TMIV::Decoder::decodeCommonAtlas") {
 
     const auto data = std::array{nuAud, nuCasps, nuCafIdr, nuEos, nuEob};
 
-    auto unit = decodeCommonAtlas(sourceFromIteratorPair(data.cbegin(), data.cend()), vps, checker);
+    auto unit = decodeCommonAtlas(sourceFromIteratorPair(data.cbegin(), data.cend()), checker);
 
     const auto au = unit();
     REQUIRE(au);

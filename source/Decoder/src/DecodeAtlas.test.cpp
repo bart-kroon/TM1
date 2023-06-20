@@ -52,11 +52,11 @@ using TMIV::MivBitstream::AtlasSequenceParameterSetRBSP;
 using TMIV::MivBitstream::NalUnitHeader;
 using TMIV::MivBitstream::NalUnitType;
 
-auto minimalAsps(const V3cUnitHeader &vuh, const V3cParameterSet &vps) {
+auto minimalAsps() {
   auto asps = AtlasSequenceParameterSetRBSP{}.asps_num_ref_atlas_frame_lists_in_asps(1);
 
   std::ostringstream buffer;
-  asps.encodeTo(buffer, vuh, vps);
+  asps.encodeTo(buffer);
   return std::tuple{asps, NalUnit{NalUnitHeader{NalUnitType::NAL_ASPS, 0, 1}, buffer.str()}};
 }
 
@@ -161,7 +161,7 @@ TEST_CASE("AtlasDecoder") {
   SECTION("Empty NAL unit source") {
     using TMIV::Common::emptySource;
 
-    auto unit = decodeAtlas(emptySource<NalUnit>(), vuh, vps, checker);
+    auto unit = decodeAtlas(emptySource<NalUnit>(), vuh, checker);
 
     REQUIRE_FALSE(unit());
     REQUIRE(checker->checkVuh_callCount == 1);
@@ -171,7 +171,7 @@ TEST_CASE("AtlasDecoder") {
   SECTION("Minimal functional example") {
     using TMIV::Common::sourceFromIteratorPair;
 
-    const auto [asps, nuAsps] = test::minimalAsps(vuh, vps);
+    const auto [asps, nuAsps] = test::minimalAsps();
     const auto aspsV = std::vector{asps};
     const auto [afps, nuAfps] = test::minimalAfps(aspsV);
     auto afpsV = std::vector{afps};
@@ -179,7 +179,7 @@ TEST_CASE("AtlasDecoder") {
 
     const auto data = std::array{nuAsps, nuAfps, nuAtlIdr};
 
-    auto unit = decodeAtlas(sourceFromIteratorPair(data.cbegin(), data.cend()), vuh, vps, checker);
+    auto unit = decodeAtlas(sourceFromIteratorPair(data.cbegin(), data.cend()), vuh, checker);
 
     const auto au = unit();
     REQUIRE(au);
@@ -197,7 +197,7 @@ TEST_CASE("AtlasDecoder") {
   }
 
   SECTION("SEI") {
-    const auto [asps, nuAsps] = test::minimalAsps(vuh, vps);
+    const auto [asps, nuAsps] = test::minimalAsps();
     const auto aspsV = std::vector{asps};
     const auto [afps, nuAfps] = test::minimalAfps(aspsV);
     auto afpsV = std::vector{afps};
@@ -205,8 +205,8 @@ TEST_CASE("AtlasDecoder") {
 
     const auto data = std::array{nuAsps, nuAfps, test::prefixSei(), nuAtlIdr, test::suffixSei()};
 
-    auto unit = decodeAtlas(sourceFromIteratorPair(data.cbegin(), data.cend()), test::vuhAd(), vps,
-                            checker);
+    auto unit =
+        decodeAtlas(sourceFromIteratorPair(data.cbegin(), data.cend()), test::vuhAd(), checker);
 
     const auto au = unit();
     REQUIRE(au);
@@ -214,7 +214,7 @@ TEST_CASE("AtlasDecoder") {
   }
 
   SECTION("Frame order count, repeat CASPS") {
-    const auto [asps1, nuAsps1] = test::minimalAsps(vuh, vps);
+    const auto [asps1, nuAsps1] = test::minimalAsps();
     const auto aspsV1 = std::vector{asps1};
     const auto [afps1, nuAfps1] = test::minimalAfps(aspsV1);
     auto afpsV1 = std::vector{afps1};
@@ -222,7 +222,7 @@ TEST_CASE("AtlasDecoder") {
     const auto [atlTrial1, nuAtlTrial1] = test::minimalAtl(aspsV1, afpsV1, 1);
     const auto [atlTrial2, nuAtlTrial2] = test::minimalAtl(aspsV1, afpsV1, 5);
 
-    const auto [asps2, nuAsps2] = test::minimalAsps(vuh, vps);
+    const auto [asps2, nuAsps2] = test::minimalAsps();
     const auto aspsV2 = std::vector{asps2};
     const auto [afps2, nuAfps2] = test::minimalAfps(aspsV2);
     auto afpsV2 = std::vector{afps2};
@@ -237,8 +237,8 @@ TEST_CASE("AtlasDecoder") {
     const auto data = std::array{nuAsps1, nuAfps1, nuAtlIdr1, nuAtlTrial1, nuAtlTrial2,
                                  nuAsps2, nuAfps2, nuAtlIdr2, nuAtlTrial3, nuAtlTrial4};
 
-    auto unitAtTest = decodeAtlas(sourceFromIteratorPair(data.cbegin(), data.cend()), test::vuhAd(),
-                                  vps, checker);
+    auto unitAtTest =
+        decodeAtlas(sourceFromIteratorPair(data.cbegin(), data.cend()), test::vuhAd(), checker);
 
     const auto reference = std::array{0, 1, 5, 0, 4, 18};
 
@@ -256,7 +256,7 @@ TEST_CASE("AtlasDecoder") {
     const auto nuAud = test::aud();
     const auto nuEos = test::eos();
     const auto nuEob = test::eob();
-    const auto [asps, nuAsps] = test::minimalAsps(vuh, vps);
+    const auto [asps, nuAsps] = test::minimalAsps();
     const auto aspsV = std::vector{asps};
     const auto [afps, nuAfps] = test::minimalAfps(aspsV);
     auto afpsV = std::vector{afps};
@@ -264,8 +264,8 @@ TEST_CASE("AtlasDecoder") {
 
     const auto data = std::array{nuAud, nuAsps, nuAfps, nuAtlIdr, nuEos, nuEob};
 
-    auto unit = decodeAtlas(sourceFromIteratorPair(data.cbegin(), data.cend()), test::vuhAd(), vps,
-                            checker);
+    auto unit =
+        decodeAtlas(sourceFromIteratorPair(data.cbegin(), data.cend()), test::vuhAd(), checker);
 
     const auto au = unit();
     REQUIRE(au);

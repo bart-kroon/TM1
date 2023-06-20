@@ -59,8 +59,8 @@ void getTileNum(MivBitstream::AtlasSequenceParameterSetRBSP asps,
                 MivBitstream::AtlasFrameParameterSetRBSP &afps);
 
 auto decodeAtlas(Common::Source<MivBitstream::NalUnit> source,
-                 const MivBitstream::V3cUnitHeader &vuh, MivBitstream::V3cParameterSet vps,
-                 PtlChecker::SharedChecker checker) -> Common::Source<AtlasAccessUnit>;
+                 const MivBitstream::V3cUnitHeader &vuh, PtlChecker::SharedChecker checker)
+    -> Common::Source<AtlasAccessUnit>;
 } // namespace TMIV::Decoder
 
 #endif

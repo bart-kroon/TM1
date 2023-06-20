@@ -281,11 +281,7 @@ void CameraExtrinsics::encodeTo(Common::OutputBitstream &bitstream) const {
 }
 
 auto DepthQuantization::printTo(std::ostream &stream, uint16_t viewIdx) const -> std::ostream & {
-#if ENABLE_M57419
   VERIFY_MIVBITSTREAM(dq_quantization_law() == 0 || dq_quantization_law() == 2);
-#else
-  VERIFY_MIVBITSTREAM(dq_quantization_law() == 0);
-#endif
 
   stream << "dq_quantization_law[ " << viewIdx << " ]=" << int32_t{dq_quantization_law()}
          << "\ndq_norm_disp_low[ " << viewIdx << " ]=" << dq_norm_disp_low()
@@ -305,7 +301,6 @@ auto DepthQuantization::decodeFrom(Common::InputBitstream &bitstream) -> DepthQu
     x.dq_norm_disp_high(bitstream.getFloat32());
   }
 
-#if ENABLE_M57419
   VERIFY_MIVBITSTREAM(x.dq_quantization_law() == 0 || x.dq_quantization_law() == 2);
 
   if (x.dq_quantization_law() == 2) {
@@ -317,9 +312,6 @@ auto DepthQuantization::decodeFrom(Common::InputBitstream &bitstream) -> DepthQu
       x.dq_pivot_norm_disp(i, bitstream.getFloat32());
     }
   }
-#else
-  VERIFY_MIVBITSTREAM(x.dq_quantization_law() == 0);
-#endif
 
   x.dq_depth_occ_threshold_default(bitstream.getUExpGolomb<uint32_t>());
 
@@ -334,7 +326,6 @@ void DepthQuantization::encodeTo(Common::OutputBitstream &bitstream) const {
     bitstream.putFloat32(dq_norm_disp_high());
   }
 
-#if ENABLE_M57419
   if (dq_quantization_law() == 2) {
     bitstream.putFloat32(dq_norm_disp_low());
     bitstream.putFloat32(dq_norm_disp_high());
@@ -344,7 +335,6 @@ void DepthQuantization::encodeTo(Common::OutputBitstream &bitstream) const {
       bitstream.putFloat32(dq_pivot_norm_disp(i));
     }
   }
-#endif
 
   bitstream.putUExpGolomb(dq_depth_occ_threshold_default());
 }
@@ -540,12 +530,12 @@ auto MivViewParamsList::pruning_parent(uint16_t viewIdx) -> PruningParents & {
 }
 
 auto operator<<(std::ostream &stream, const MivViewParamsList &x) -> std::ostream & {
-  stream << "mvp_num_views_minus1=" << x.mvp_num_views_minus1() << '\n';
-  stream << "mvp_explicit_view_id_flag=" << std::boolalpha << x.mvp_explicit_view_id_flag() << '\n';
+  fmt::print(stream, "mvp_num_views_minus1={}\n", x.mvp_num_views_minus1());
+  fmt::print(stream, "mvp_explicit_view_id_flag={}\n", x.mvp_explicit_view_id_flag());
 
   if (x.mvp_explicit_view_id_flag()) {
     for (uint16_t v = 0; v <= x.mvp_num_views_minus1(); ++v) {
-      stream << "mvp_view_id[ " << v << " ]=" << x.mvp_view_id(v) << '\n';
+      fmt::print(stream, "mvp_view_id[ {} ]={}\n", v, x.mvp_view_id(v));
     }
   }
 
@@ -554,8 +544,8 @@ auto operator<<(std::ostream &stream, const MivViewParamsList &x) -> std::ostrea
     fmt::print(stream, "mvp_inpaint_flag[ {} ]={}\n", v, x.mvp_inpaint_flag(v));
   }
 
-  stream << "mvp_intrinsic_params_equal_flag=" << std::boolalpha
-         << x.mvp_intrinsic_params_equal_flag() << '\n';
+  fmt::print(stream, "mvp_intrinsic_params_equal_flag={}\n", x.mvp_intrinsic_params_equal_flag());
+
   if (x.mvp_intrinsic_params_equal_flag()) {
     x.camera_intrinsics(0).printTo(stream, 0);
   } else {
@@ -565,8 +555,9 @@ auto operator<<(std::ostream &stream, const MivViewParamsList &x) -> std::ostrea
   }
 
   if (x.m_mvp_depth_quantization_params_equal_flag) {
-    stream << "mvp_depth_quantization_params_equal_flag=" << std::boolalpha
-           << x.mvp_depth_quantization_params_equal_flag() << '\n';
+    fmt::print(stream, "mvp_depth_quantization_params_equal_flag={}\n",
+               x.mvp_depth_quantization_params_equal_flag());
+
     if (x.mvp_depth_quantization_params_equal_flag()) {
       x.depth_quantization(0).printTo(stream, 0);
     } else {
@@ -575,20 +566,22 @@ auto operator<<(std::ostream &stream, const MivViewParamsList &x) -> std::ostrea
       }
     }
   }
+  fmt::print(stream, "mvp_pruning_graph_params_present_flag={}\n",
+             x.mvp_pruning_graph_params_present_flag());
 
-  stream << "mvp_pruning_graph_params_present_flag=" << std::boolalpha
-         << x.mvp_pruning_graph_params_present_flag() << '\n';
   if (x.mvp_pruning_graph_params_present_flag()) {
     for (uint16_t v = 0; v <= x.mvp_num_views_minus1(); ++v) {
       x.pruning_parent(v).printTo(stream, v);
     }
   }
 
-#if ENABLE_M63397
+  if (x.m_mvp_depth_reprojection_flag) {
+    fmt::print(stream, "mvp_depth_reprojection_flag={}\n", x.mvp_depth_reprojection_flag());
+  }
+
   for (uint16_t v = 0; v <= x.mvp_num_views_minus1(); ++v) {
     x.chroma_scaling(v).printTo(stream, v);
   }
-#endif
 
   return stream;
 }
@@ -604,7 +597,8 @@ auto MivViewParamsList::operator==(const MivViewParamsList &other) const noexcep
          m_depth_quantization == other.m_depth_quantization &&
          m_mvp_pruning_graph_params_present_flag == other.m_mvp_pruning_graph_params_present_flag &&
          m_pruning_parent == other.m_pruning_parent &&
-         m_mvp_chroma_scaling_values == other.m_mvp_chroma_scaling_values;
+         m_mvp_chroma_scaling_values == other.m_mvp_chroma_scaling_values &&
+         m_mvp_depth_reprojection_flag == other.m_mvp_depth_reprojection_flag;
 }
 
 auto MivViewParamsList::operator!=(const MivViewParamsList &other) const noexcept -> bool {
@@ -660,13 +654,17 @@ auto MivViewParamsList::decodeFrom(Common::InputBitstream &bitstream,
     }
   }
 
-#if ENABLE_M63397
-  if (casps.casps_miv_extension().casme_chroma_scaling_present_flag()) {
+  if (casps.casps_miv_2_extension_present_flag() &&
+      casps.casps_miv_2_extension().casme_decoder_side_depth_estimation_flag()) {
+    x.mvp_depth_reprojection_flag(bitstream.getFlag());
+  }
+
+  if (casps.casps_miv_2_extension_present_flag() &&
+      casps.casps_miv_2_extension().casme_chroma_scaling_present_flag()) {
     for (uint16_t v = 0; v <= x.mvp_num_views_minus1(); ++v) {
       x.chroma_scaling(v) = ChromaScaling::decodeFrom(bitstream);
     }
   }
-#endif
 
   return x;
 }
@@ -716,13 +714,17 @@ void MivViewParamsList::encodeTo(Common::OutputBitstream &bitstream,
     }
   }
 
-#if ENABLE_M63397
-  if (casps.casps_miv_extension().casme_chroma_scaling_present_flag()) {
+  if (casps.casps_miv_2_extension_present_flag() &&
+      casps.casps_miv_2_extension().casme_decoder_side_depth_estimation_flag()) {
+    bitstream.putFlag(mvp_depth_reprojection_flag());
+  }
+
+  if (casps.casps_miv_2_extension_present_flag() &&
+      casps.casps_miv_2_extension().casme_chroma_scaling_present_flag()) {
     for (uint16_t v = 0; v <= mvp_num_views_minus1(); ++v) {
       chroma_scaling(v).encodeTo(bitstream);
     }
   }
-#endif
 }
 
 auto CafMivExtension::came_update_extrinsics_flag() const -> bool {
@@ -920,16 +922,14 @@ auto CafMivExtension::decodeFrom(Common::InputBitstream &bitstream, const NalUni
   } else {
     x.came_update_extrinsics_flag(bitstream.getFlag());
     x.came_update_intrinsics_flag(bitstream.getFlag());
-    const auto &casme = casps.casps_miv_extension();
 
-    if (casme.casme_depth_quantization_params_present_flag()) {
+    if (casps.casps_miv_extension().casme_depth_quantization_params_present_flag()) {
       x.came_update_depth_quantization_flag(bitstream.getFlag());
     }
-#if ENABLE_M63397
-    if (casme.casme_chroma_scaling_present_flag()) {
+    if (casps.casps_miv_2_extension_present_flag() &&
+        casps.casps_miv_2_extension().casme_chroma_scaling_present_flag()) {
       x.came_update_chroma_scaling_flag(bitstream.getFlag());
     }
-#endif
     if (x.came_update_extrinsics_flag()) {
       x.miv_view_params_update_extrinsics() = MivViewParamsUpdateExtrinsics::decodeFrom(bitstream);
     }
@@ -960,11 +960,10 @@ void CafMivExtension::encodeTo(Common::OutputBitstream &bitstream, const NalUnit
     if (casps.casps_miv_extension().casme_depth_quantization_params_present_flag()) {
       bitstream.putFlag(came_update_depth_quantization_flag());
     }
-#if ENABLE_M63397
-    if (casps.casps_miv_extension().casme_chroma_scaling_present_flag()) {
+    if (casps.casps_miv_2_extension_present_flag() &&
+        casps.casps_miv_2_extension().casme_chroma_scaling_present_flag()) {
       bitstream.putFlag(came_update_chroma_scaling_flag());
     }
-#endif
     if (came_update_extrinsics_flag()) {
       miv_view_params_update_extrinsics().encodeTo(bitstream);
     }

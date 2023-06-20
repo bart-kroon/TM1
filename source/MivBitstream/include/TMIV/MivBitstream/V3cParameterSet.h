@@ -599,7 +599,11 @@ private:
 // 23090-12: vps_miv_2_extension()
 class VpsMiv2Extension {
 public:
-  VpsMivExtension vps_miv_extension;
+  [[nodiscard]] constexpr auto vps_miv_extension() const noexcept -> const auto &;
+  [[nodiscard]] constexpr auto vme_decoder_side_depth_estimation_flag() const noexcept;
+
+  [[nodiscard]] constexpr auto vps_miv_extension() noexcept -> auto &;
+  constexpr auto vme_decoder_side_depth_estimation_flag(bool value) noexcept -> auto &;
 
   friend auto operator<<(std::ostream &stream, const VpsMiv2Extension &x) -> std::ostream &;
 
@@ -609,6 +613,10 @@ public:
   static auto decodeFrom(Common::InputBitstream &bitstream, const V3cParameterSet &vps)
       -> VpsMiv2Extension;
   void encodeTo(Common::OutputBitstream &bitstream, const V3cParameterSet &vps) const;
+
+private:
+  VpsMivExtension m_vps_miv_extension;
+  bool m_vme_decoder_side_depth_estimation_flag{};
 };
 
 // 23090-5 + m59327: vps_packed_video_extension( )

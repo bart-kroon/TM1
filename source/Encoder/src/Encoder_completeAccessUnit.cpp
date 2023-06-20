@@ -304,11 +304,9 @@ auto Encoder::Impl::completeAccessUnit() -> const EncoderParams & {
   auto &aggregatedMask = m_aggregator->getAggregatedMask();
   auto &information = m_aggregator->getMeanAggregatedInformation();
 
-#if ENABLE_M63213
   if (m_config.informationPruning && !information.empty()) {
     pruningWithInformation(aggregatedMask, information);
   }
-#endif
 
   updateAggregationStatistics(aggregatedMask);
 
@@ -577,11 +575,9 @@ void Encoder::Impl::scaleChromaDynamicRange() {
 void Encoder::Impl::constructVideoFrames() {
   const auto &vps = params().vps;
 
-#if ENABLE_M63397
   if (m_config.chromaScaleEnabledFlag) {
     scaleChromaDynamicRange();
   }
-#endif
 
   auto patchTextureStats = PatchTextureStats(params().patchParamsList.size());
 

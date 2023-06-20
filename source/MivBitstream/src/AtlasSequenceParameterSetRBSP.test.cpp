@@ -174,10 +174,6 @@ asps_extension_present_flag=false
 )");
 
   SECTION("Example 1") {
-    const auto vuh = V3cUnitHeader::ad(0, {});
-    auto vps = V3cParameterSet{};
-    vps.vps_frame_width({}, 1).vps_frame_height({}, 1);
-
     x.asps_frame_width(1)
         .asps_frame_height(1)
         .asps_num_ref_atlas_frame_lists_in_asps(2)
@@ -213,20 +209,10 @@ asps_miv_extension_present_flag=false
 asps_extension_6bits=0
 )");
 
-    byteCodingTest(x, 7, vuh, vps);
+    byteCodingTest(x, 7);
   }
 
   SECTION("Example 2") {
-    const auto vuh = V3cUnitHeader::ad(0, {});
-    auto vps = V3cParameterSet{};
-    vps.vps_atlas_id(0, {})
-        .vps_frame_width({}, 0xFFFF)
-        .vps_frame_height({}, 0xFFFF)
-        .vps_map_count_minus1({}, 1)
-        .vps_miv_extension()
-        .vme_geometry_scale_enabled_flag(true)
-        .vme_embedded_occupancy_enabled_flag(true);
-
     x.asps_atlas_sequence_parameter_set_id(63)
         .asps_frame_width(0xFFFF)
         .asps_frame_height(0xFFFF)
@@ -307,7 +293,7 @@ asps_extension_data_flag=true
 asps_extension_data_flag=true
 )");
 
-    byteCodingTest(x, 22, vuh, vps);
+    byteCodingTest(x, 22);
   }
 }
 } // namespace TMIV::MivBitstream

@@ -1,6 +1,6 @@
 Release build (GCC 12):
   stage: release build
-  image: tmiv-ci:20230216
+  image: tmiv-ci:20230619
   tags: [ linux-long ]
   before_script:
     - export CXX=g++-12
@@ -12,7 +12,7 @@ Release build (GCC 12):
       -G Ninja
       -DCMAKE_CXX_FLAGS="-Wall -Wextra -Wpedantic -Werror -Wconversion -Wshadow -Wno-maybe-uninitialized -Wold-style-cast -Wno-alloc-size-larger-than"
       -DCMAKE_CXX_STANDARD=23 -DCMAKE_CXX_EXTENSIONS=OFF
-      -DCMAKE_BUILD_TYPE=Release -DENABLE_M57419=ON -DENABLE_M59442=ON -DENABLE_M63213=ON
+      -DCMAKE_BUILD_TYPE=Release
       -DCMAKE_INSTALL_PREFIX=/builds/software/MPEG/Video/MIV/Software/TMIV/install
       -DCatch2_DIR=/dependencies/install/gcc-Release/lib/cmake/Catch2
       -DFMT_DIR=/dependencies/install/gcc-Release/lib/cmake/fmt
@@ -31,7 +31,7 @@ Release build (GCC 12):
 
 Debug build and static analysis (Clang 14):
   stage: static analysis
-  image: tmiv-ci:20230216
+  image: tmiv-ci:20230619
   tags: [ linux-long ]
   before_script:
     - export CXX=clang++-14
@@ -74,7 +74,7 @@ Debug build and static analysis (Clang 14):
 
 Full static analysis (Clang 14):
   stage: static analysis
-  image: tmiv-ci:20230216
+  image: tmiv-ci:20230619
   tags: [ linux-long ]
   before_script:
     - export CXX=clang++-14

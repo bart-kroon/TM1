@@ -49,8 +49,8 @@ public:
   using Base = Common::Decoder<MivBitstream::NalUnit, CommonAtlasAccessUnit>;
 
   CommonAtlasDecoder(Common::Source<MivBitstream::NalUnit> source,
-                     MivBitstream::V3cParameterSet vps, PtlChecker::SharedChecker checker)
-      : Base{std::move(source)}, m_vps{std::move(vps)}, m_checker{std::move(checker)} {}
+                     PtlChecker::SharedChecker checker)
+      : Base{std::move(source)}, m_checker{std::move(checker)} {}
 
 protected:
   auto decodeSome() -> bool final {
@@ -124,8 +124,6 @@ private:
     au.caf = MivBitstream::CommonAtlasFrameRBSP::decodeFrom(
         stream, m_nu->nal_unit_header(), m_caspsV, m_maxCommonAtlasFrmOrderCntLsb);
 
-    m_checker->checkCaf(m_nu->nal_unit_header(), au.caf);
-
     const auto focLsb = au.caf.caf_common_atlas_frm_order_cnt_lsb();
     const auto irap = nut() == MivBitstream::NalUnitType::NAL_CAF_IDR;
 
@@ -141,6 +139,9 @@ private:
 
     au.foc = m_foc;
     au.casps = caspsById(m_caspsV, au.caf.caf_common_atlas_sequence_parameter_set_id());
+
+    m_checker->checkAndActivateCasps(au.casps);
+    m_checker->checkCaf(m_nu->nal_unit_header(), au.caf);
   }
 
   void decodeSuffixNalUnit(CommonAtlasAccessUnit &au) {
@@ -214,7 +215,6 @@ private:
     au.ave = payload;
   }
 
-  MivBitstream::V3cParameterSet m_vps;
   PtlChecker::SharedChecker m_checker;
 
   std::optional<MivBitstream::NalUnit> m_nu;
@@ -225,9 +225,9 @@ private:
 } // namespace
 
 auto decodeCommonAtlas(Common::Source<MivBitstream::NalUnit> source,
-                       MivBitstream::V3cParameterSet vps, PtlChecker::SharedChecker checker)
-    -> Common::Source<CommonAtlasAccessUnit> {
-  return [decoder = std::make_shared<CommonAtlasDecoder>(
-              std::move(source), std::move(vps), std::move(checker))]() { return (*decoder)(); };
+                       PtlChecker::SharedChecker checker) -> Common::Source<CommonAtlasAccessUnit> {
+  return [decoder = std::make_shared<CommonAtlasDecoder>(std::move(source), std::move(checker))]() {
+    return (*decoder)();
+  };
 }
 } // namespace TMIV::Decoder

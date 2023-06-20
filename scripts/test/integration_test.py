@@ -126,11 +126,6 @@ class IntegrationTest:
 
         app.inspectEnvironment()
 
-        # Avoid CI running out of memory
-        with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
-            futures = self.testConformance(executor)
-            self.sync(futures)
-
         with concurrent.futures.ThreadPoolExecutor(max_workers=self.maxWorkers) as executor:
             futures = []
             futures += self.testMivAnchor(executor)
@@ -185,54 +180,6 @@ class IntegrationTest:
                         check=True,
                         stdout=target,
                     )
-
-    def testConformance(self, executor):
-        dir = self.testDir / "conformance"
-
-        if not self.dryRun:
-            dir.mkdir(parents=True, exist_ok=True)
-
-        fs = []
-
-        for id, file in {
-            # "CB01": "CB01",
-            # "CB02": "CB02",
-            # "CB03": "CB03",
-            # "CB04": "CB04",
-            # "CB05_1": "TMIV_A3_C_QP3",
-            # "CB05_2": "TMIV_A3_C_QP3",
-            # "CB05_3": "TMIV_A3_C_QP3",
-            # "CB06": "TMIV_V5_D_QP4",
-            # "CB07_1": "TMIV_A3_E_QP3",
-            # "CB07_2": "TMIV_A3_E_QP3",
-            # "CB07_3": "TMIV_A3_E_QP3",
-            # "CB08": "TMIV_M8_M_QP3",
-            # "CB09": "CB09",
-            # "CB10": "CB10",
-            # "CB11": "CB11",
-            # "CB12": "CB12",
-            # "CB14": "CB14",
-            # "CB15": "CB15",
-            # "CB16": "CB16",
-            # "CB17": "CB17",
-            # "CB18": "CB18",
-            # "CB19": "CB19",
-            # "CB20": "CB20",
-        }.items():
-            fs.append(
-                self.launchCommand(
-                    executor,
-                    [],
-                    ["{0}/bin/TmivDecoderLog"]
-                    + ["-b", f"{{2}}/conformance/{id}/{file}.bit"]
-                    + ["-o", f"{{3}}/conformance/{id}.dec"],
-                    f"{{3}}/conformance/{id}.log",
-                    [f"conformance/{id}.dec"],
-                    f"conformance/{id}/{file}.dec",
-                )
-            )
-
-        return fs
 
     def testMivAnchor(self, executor):
         if not self.dryRun:
@@ -343,12 +290,12 @@ class IntegrationTest:
             ["{0}/bin/TmivDecoder", "-c", "{1}/config/ctc/miv_main_anchor/A_4_TMIV_decode.json"]
             + ["-p", "configDirectory", "{1}/config", "-p", "inputDirectory", "{3}"]
             + ["-p", "outputDirectory", "{3}", "-n", "3", "-N", "3", "-s", "E"]
-            + ["-r", "QP3", "-v", "v11", "-p", "outputLogPath", "{3}/A3/E/QP3/TMIV_A3_E_QP3.dec2"]
+            + ["-r", "QP3", "-v", "v11", "-p", "outputLogPath", "{3}/A3/E/QP3/TMIV_A3_E_QP3.dec"]
             + ["-p", "inputViewportParamsPathFmt", "test/sequences/T{{1}}.json"]
             + ["-V", "debug"],
             "{3}/A3/E/QP3/A3_E_QP3_v11.log",
             [
-                "A3/E/QP3/TMIV_A3_E_QP3.dec2",
+                "A3/E/QP3/TMIV_A3_E_QP3.dec",
                 f"A3/E/QP3/A3_E_QP3_v11_tex_{renderResolution}_yuv420p10le.yuv",
             ],
         )
@@ -356,22 +303,12 @@ class IntegrationTest:
         f4_2 = self.launchCommand(
             executor,
             [f3],
-            ["{0}/bin/TmivDecoderLog"]
-            + ["-b", "{3}/A3/E/QP3/TMIV_A3_E_QP3.bit"]
-            + ["-o", "{3}/A3/E/QP3/TMIV_A3_E_QP3.dec"],
-            "{3}/A3/E/QP3/TMIV_A3_E_QP3.dec.log",
-            ["A3/E/QP3/TMIV_A3_E_QP3.dec"],
-        )
-
-        f4_3 = self.launchCommand(
-            executor,
-            [f3],
             ["{0}/bin/TmivNativeVideoDecoderTest", "{3}/A3/E/QP3/TMIV_A3_E_QP3.bit", "3", "2"],
             "{3}/A3/E/QP3/TMIV_A3_E_QP3.nvdt.log",
             [],
         )
 
-        return [f4_1, f4_2, f4_3, f2_5, f2_6]
+        return [f4_1, f4_2, f2_5, f2_6]
 
     def testNonIrapFrames(self, executor):
         if not self.dryRun:
@@ -481,12 +418,12 @@ class IntegrationTest:
             ["{0}/bin/TmivDecoder", "-c", "{1}/config/test/non_irap_frames/I_4_TMIV_decode.json"]
             + ["-p", "configDirectory", "{1}/config", "-p", "inputDirectory", "{3}"]
             + ["-p", "outputDirectory", "{3}", "-n", "3", "-N", "3", "-s", "E"]
-            + ["-r", "QP3", "-v", "v11", "-p", "outputLogPath", "{3}/I3/E/QP3/TMIV_I3_E_QP3.dec2"]
+            + ["-r", "QP3", "-v", "v11", "-p", "outputLogPath", "{3}/I3/E/QP3/TMIV_I3_E_QP3.dec"]
             + ["-p", "inputViewportParamsPathFmt", "test/sequences/T{{1}}.json"]
             + ["-V", "debug"],
             "{3}/I3/E/QP3/I3_E_QP3_v11.log",
             [
-                "I3/E/QP3/TMIV_I3_E_QP3.dec2",
+                "I3/E/QP3/TMIV_I3_E_QP3.dec",
                 f"I3/E/QP3/I3_E_QP3_v11_tex_{renderResolution}_yuv420p10le.yuv",
             ],
         )
@@ -494,22 +431,12 @@ class IntegrationTest:
         f4_2 = self.launchCommand(
             executor,
             [f3],
-            ["{0}/bin/TmivDecoderLog"]
-            + ["-b", "{3}/I3/E/QP3/TMIV_I3_E_QP3.bit"]
-            + ["-o", "{3}/I3/E/QP3/TMIV_I3_E_QP3.dec"],
-            "{3}/I3/E/QP3/TMIV_I3_E_QP3.dec.log",
-            ["I3/E/QP3/TMIV_I3_E_QP3.dec"],
-        )
-
-        f4_3 = self.launchCommand(
-            executor,
-            [f3],
             ["{0}/bin/TmivNativeVideoDecoderTest", "{3}/I3/E/QP3/TMIV_I3_E_QP3.bit", "3", "32"],
             "{3}/I3/E/QP3/TMIV_I3_E_QP3.nvdt.log",
             [],
         )
 
-        return [f4_1, f4_2, f4_3, f2_5, f2_6]
+        return [f4_1, f4_2, f2_5, f2_6]
 
     def testMivViewAnchor(self, executor):
         if not self.dryRun:
@@ -855,23 +782,16 @@ class IntegrationTest:
             + ["-p", "configDirectory", "{1}/config", "-p", "inputDirectory", "{3}"]
             + ["-p", "inputViewportParamsPathFmt", "test/sequences/T{{1}}.json"]
             + ["-p", "outputDirectory", "{3}", "-n", "3", "-N", "3", "-s", "M", "-r", "QP3"]
-            + ["-v", "viewport"]
+            + ["-v", "viewport", "-p", "outputLogPath", "{3}/M3/M/QP3/TMIV_M3_M_QP3.dec"]
             + ["-V", "debug"],
             "{3}/M3/M/QP3/M3_M_QP3_viewport.log",
-            [f"M3/M/QP3/M3_M_QP3_viewport_tex_{renderResolution}_yuv420p10le.yuv"],
+            [
+                "M3/M/QP3/TMIV_M3_M_QP3.dec",
+                f"M3/M/QP3/M3_M_QP3_viewport_tex_{renderResolution}_yuv420p10le.yuv",
+            ],
         )
 
         f4_4 = self.launchCommand(
-            executor,
-            [f3],
-            ["{0}/bin/TmivDecoderLog"]
-            + ["-b", "{3}/M3/M/QP3/TMIV_M3_M_QP3.bit"]
-            + ["-o", "{3}/M3/M/QP3/TMIV_M3_M_QP3.dec"],
-            "{3}/M3/M/QP3/TMIV_M3_M_QP3.dec.log",
-            ["M3/M/QP3/TMIV_M3_M_QP3.dec"],
-        )
-
-        f4_5 = self.launchCommand(
             executor,
             [f3],
             ["{0}/bin/TmivNativeVideoDecoderTest", "{3}/M3/M/QP3/TMIV_M3_M_QP3.bit", "3", "2"],
@@ -879,7 +799,7 @@ class IntegrationTest:
             [],
         )
 
-        return [f4_1, f4_2, f4_3, f4_4, f4_5]
+        return [f4_1, f4_2, f4_3, f4_4]
 
     def testFramePacking(self, executor):
         if not self.dryRun:
@@ -1066,22 +986,16 @@ class IntegrationTest:
             + ["-n", "3", "-N", "3", "-s", "B", "-r", "QP3", "-P", "p01"]
             + ["-p", "inputPoseTracePathFmt", "ctc/pose_traces/B01p01.csv"]
             + ["-p", "entityDecodeRange", "[10, 11]"]
+            + ["-p", "outputLogPath", "{3}/E3/B/QP3/TMIV_E3_B_QP3.dec"]
             + ["-V", "debug"],
             "{3}/E3/B/QP3/E3_B_QP3_p01.log",
-            ["E3/B/QP3/E3_B_QP3_p01_tex_512x512_yuv420p10le.yuv"],
+            [
+                "E3/B/QP3/TMIV_E3_B_QP3.dec",
+                "E3/B/QP3/E3_B_QP3_p01_tex_512x512_yuv420p10le.yuv",
+            ],
         )
 
         f4_4 = self.launchCommand(
-            executor,
-            [f3],
-            ["{0}/bin/TmivDecoderLog"]
-            + ["-b", "{3}/E3/B/QP3/TMIV_E3_B_QP3.bit"]
-            + ["-o", "{3}/E3/B/QP3/TMIV_E3_B_QP3.dec"],
-            "{3}/E3/B/QP3/TMIV_E3_B_QP3.dec.log",
-            ["E3/B/QP3/TMIV_E3_B_QP3.dec"],
-        )
-
-        f4_5 = self.launchCommand(
             executor,
             [f3],
             ["{0}/bin/TmivNativeVideoDecoderTest", "{3}/E3/B/QP3/TMIV_E3_B_QP3.bit", "3", "2"],
@@ -1089,7 +1003,7 @@ class IntegrationTest:
             [],
         )
 
-        return [f4_1, f4_2, f4_3, f4_4, f4_5]
+        return [f4_1, f4_2, f4_3, f4_4]
 
     def testMultiTile(self, executor):
         if not self.dryRun:

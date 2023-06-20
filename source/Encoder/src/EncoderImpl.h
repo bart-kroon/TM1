@@ -103,14 +103,11 @@ private:
   void setAtlasTileHeaderSnytax(size_t atlasIdx);
   std::vector<std::vector<std::vector<int32_t>>> m_partitionArray;
 
-#if ENABLE_M57419
-  auto m57419_makeHistogram(int32_t piece_num, size_t numOfFrames, size_t v, int32_t minDepthVal,
-                            int32_t maxDepthVal) -> std::vector<int32_t>;
-  auto m57419_piecewiseLinearScaleGeometryDynamicRange(size_t numOfFrames, size_t v,
-                                                       int32_t minDepthMapValWithinGOP,
-                                                       int32_t maxDepthMapValWithinGOP,
-                                                       bool lowDepthQuality) -> std::vector<double>;
-#endif
+  auto plsMakeHistogram(int32_t piece_num, size_t numOfFrames, size_t v, int32_t minDepthVal,
+                        int32_t maxDepthVal) -> std::vector<int32_t>;
+  auto plsGeometryDynamicRange(size_t numOfFrames, size_t v, int32_t minDepthMapValWithinGOP,
+                               int32_t maxDepthMapValWithinGOP, bool lowDepthQuality)
+      -> std::vector<double>;
 
   // Encoder sub-components
   std::unique_ptr<DepthQualityAssessor::IDepthQualityAssessor> m_depthQualityAssessor;

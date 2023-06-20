@@ -136,13 +136,12 @@ public:
     }
 
     if (m_au.foc == 0) {
-      stopAndStartDecoders(m_cad, commonAtlasVuhs(m_au.vps),
-                           [this](MivBitstream::V3cUnitHeader vuh) {
-                             return m_commonAtlasDecoderFactory(
-                                 atlasSubBitstreamSource(m_inputBuffer, vuh), m_au.vps);
-                           });
+      stopAndStartDecoders(
+          m_cad, commonAtlasVuhs(m_au.vps), [this](MivBitstream::V3cUnitHeader vuh) {
+            return m_commonAtlasDecoderFactory(atlasSubBitstreamSource(m_inputBuffer, vuh));
+          });
       stopAndStartDecoders(m_ad, atlasVuhs(m_au.vps), [this](MivBitstream::V3cUnitHeader vuh) {
-        return m_atlasDecoderFactory(atlasSubBitstreamSource(m_inputBuffer, vuh), m_au.vps, vuh);
+        return m_atlasDecoderFactory(atlasSubBitstreamSource(m_inputBuffer, vuh), vuh);
       });
       stopAndStartDecoders(m_vd, videoVuhs(m_au.vps), [this](MivBitstream::V3cUnitHeader vuh) {
         return m_videoDecoderFactory(videoSubBitstreamSource(m_inputBuffer, vuh), m_au.vps, vuh);
@@ -157,6 +156,7 @@ public:
       m_checker->checkVideoFrame(vuh.vuh_unit_type(), atlas.asps, decFrame(vuh, atlas));
     }
 
+    checkBitstreamRequirements(m_au);
     m_checker->checkV3cFrame(m_au);
     return m_au;
   }
@@ -520,6 +520,27 @@ private:
     if (asps.asps_vui_parameters_present_flag()) {
       VERIFY_MIVBITSTREAM(!vui || *vui == asps.vui_parameters());
       vui = asps.vui_parameters();
+    }
+  }
+
+  static void checkBitstreamRequirements(const MivBitstream::AccessUnit &au) {
+    const auto vme_decoder_side_depth_estimation_flag =
+        au.vps.vpsMiv2ExtensionPresentFlag() &&
+        au.vps.vps_miv_2_extension().vme_decoder_side_depth_estimation_flag();
+
+    const auto casme_decoder_side_depth_estimation_flag =
+        au.casps && au.casps->casps_miv_2_extension_present_flag() &&
+        au.casps->casps_miv_2_extension().casme_decoder_side_depth_estimation_flag();
+
+    VERIFY_MIVBITSTREAM(vme_decoder_side_depth_estimation_flag ==
+                        casme_decoder_side_depth_estimation_flag);
+
+    for (uint8_t k = 0; k <= au.vps.vps_atlas_count_minus1(); ++k) {
+      const auto j = au.vps.vps_atlas_id(k);
+      const auto &atlas = au.atlas[k];
+      VERIFY_V3CBITSTREAM(au.vps.vps_frame_width(j) == atlas.asps.asps_frame_width());
+      VERIFY_V3CBITSTREAM(au.vps.vps_frame_height(j) == atlas.asps.asps_frame_height());
+      VERIFY_V3CBITSTREAM(au.vps.vps_map_count_minus1(j) == atlas.asps.asps_map_count_minus1());
     }
   }
 

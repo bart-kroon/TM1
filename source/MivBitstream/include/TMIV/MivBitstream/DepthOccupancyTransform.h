@@ -116,13 +116,11 @@ private:
   Common::SampleValue m_atlasPatch3dOffsetD{};
   Common::SampleValue m_atlasPatch3dRangeD{std::numeric_limits<Common::SampleValue>::max()};
 
-#if ENABLE_M57419
   uint8_t m_viewPivotCount{};
   uint8_t m_quantizationLaw{};
   std::vector<float> m_normDispMap;
   float m_normDispInterval{};
   float m_normDispMax{};
-#endif
 };
 
 } // namespace TMIV::MivBitstream

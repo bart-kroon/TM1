@@ -94,6 +94,8 @@ private:
   void encode(EncoderParams params) {
     m_params = std::move(params);
 
+    checkBitstreamRequirements();
+
     switch (m_state) {
     case State::initial:
       VERIFY(m_params.foc == 0);
@@ -399,7 +401,7 @@ private:
     if (writeParameterSets()) {
       VERIFY_MIVBITSTREAM(m_log2MaxFrmOrderCntLsbMinus4 ==
                           aau.asps.asps_log2_max_atlas_frame_order_cnt_lsb_minus4());
-      writeNalUnit(asb, nuhAsps, aau.asps, vuh, m_params.vps);
+      writeNalUnit(asb, nuhAsps, aau.asps);
       writeNalUnit(asb, nuhAfps, aau.afps,
                    std::vector<MivBitstream::AtlasSequenceParameterSetRBSP>{aau.asps});
     }
@@ -479,6 +481,28 @@ private:
     if (!seiMessages.empty()) {
       MivBitstream::SeiRBSP seiRbsp{std::move(seiMessages)};
       encodeSeiRbspToAsb(asb, seiRbsp, nuhSuffixNsei);
+    }
+  }
+
+  void checkBitstreamRequirements() {
+    const auto vme_decoder_side_depth_estimation_flag =
+        m_params.vps.vpsMiv2ExtensionPresentFlag() &&
+        m_params.vps.vps_miv_2_extension().vme_decoder_side_depth_estimation_flag();
+
+    const auto casme_decoder_side_depth_estimation_flag =
+        m_params.casps.casps_miv_2_extension_present_flag() &&
+        m_params.casps.casps_miv_2_extension().casme_decoder_side_depth_estimation_flag();
+
+    PRECONDITION(vme_decoder_side_depth_estimation_flag ==
+                 casme_decoder_side_depth_estimation_flag);
+
+    for (uint8_t k = 0; k <= m_params.vps.vps_atlas_count_minus1(); ++k) {
+      const auto j = m_params.vps.vps_atlas_id(k);
+      const auto &atlas = m_params.atlas[k];
+      VERIFY_V3CBITSTREAM(m_params.vps.vps_frame_width(j) == atlas.asps.asps_frame_width());
+      VERIFY_V3CBITSTREAM(m_params.vps.vps_frame_height(j) == atlas.asps.asps_frame_height());
+      VERIFY_V3CBITSTREAM(m_params.vps.vps_map_count_minus1(j) ==
+                          atlas.asps.asps_map_count_minus1());
     }
   }
 

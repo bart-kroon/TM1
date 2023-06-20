@@ -1,6 +1,39 @@
+Decoder conformance test (GCC 12):
+  stage: integration tests
+  image: tmiv-ci:20230619
+  tags: [ linux-long ]
+  script:
+    - >
+      python3 scripts/test/decoder_conformance_test.py
+      --bitstreams-dir /tmiv_integration_test/conformance
+      --output-dir decoder_conformance_test
+      --tmiv-dir /builds/software/MPEG/Video/MIV/Software/TMIV/install
+  artifacts:
+    when: always
+    paths:
+      - decoder_conformance_test/**/*.dec
+
+
+Parser test on V-PCC conformance bitstreams (GCC 12):
+  stage: integration tests
+  image: tmiv-ci:20230619
+  tags: [ linux-long ]
+  script:
+    - >
+      python3 scripts/test/vpcc_conformance_parse_test.py
+      --bitstreams-dir /tmiv_integration_test/vpcc_conformance
+      --output-dir vpcc_conformance_parse_test
+      --tmiv-dir /builds/software/MPEG/Video/MIV/Software/TMIV/install
+  artifacts:
+    when: always
+    paths:
+      - vpcc_conformance_parse_test/**/*.hls
+      - vpcc_conformance_parse_test/**/*.err
+
+
 Integration test (GCC 12):
   stage: integration tests
-  image: tmiv-ci:20230216
+  image: tmiv-ci:20230619
   tags: [ linux-long ]
   script:
     - >

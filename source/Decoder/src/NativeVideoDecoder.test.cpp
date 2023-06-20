@@ -94,19 +94,17 @@ private:
   }
 
   auto commonAtlasDecoderFactory() -> CommonAtlasDecoderFactory {
-    return [checker = m_checker](
-               Common::Source<MivBitstream::AtlasSubBitstream> source,
-               const MivBitstream::V3cParameterSet &vps) -> Common::Source<CommonAtlasAccessUnit> {
-      return decodeCommonAtlas(decodeAtlasSubBitstream(std::move(source)), vps, checker);
+    return [checker = m_checker](Common::Source<MivBitstream::AtlasSubBitstream> source)
+               -> Common::Source<CommonAtlasAccessUnit> {
+      return decodeCommonAtlas(decodeAtlasSubBitstream(std::move(source)), checker);
     };
   }
 
   auto atlasDecoderFactory() -> AtlasDecoderFactory {
     return
         [checker = m_checker](Common::Source<MivBitstream::AtlasSubBitstream> source,
-                              const MivBitstream::V3cParameterSet &vps,
                               MivBitstream::V3cUnitHeader vuh) -> Common::Source<AtlasAccessUnit> {
-          return decodeAtlas(decodeAtlasSubBitstream(std::move(source)), vuh, vps, checker);
+          return decodeAtlas(decodeAtlasSubBitstream(std::move(source)), vuh, checker);
         };
   }
 };

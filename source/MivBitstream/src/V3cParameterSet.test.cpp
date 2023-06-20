@@ -597,7 +597,8 @@ gm_group_count=0
 
     const auto vme2 = []() {
       auto result = VpsMiv2Extension{};
-      result.vps_miv_extension.vme_embedded_occupancy_enabled_flag(true);
+      result.vps_miv_extension().vme_embedded_occupancy_enabled_flag(true);
+      result.vme_decoder_side_depth_estimation_flag(true);
       return result;
     }();
 
@@ -740,6 +741,7 @@ vps_extension_length[ 1 ]=2
 vme_geometry_scale_enabled_flag=false
 vme_embedded_occupancy_enabled_flag=true
 gm_group_count=0
+vme_decoder_side_depth_estimation_flag=true
 vps_extension_type[ 2 ]=[unknown:63]
 vps_extension_length[ 2 ]=3
 vps_extension_data_byte=2

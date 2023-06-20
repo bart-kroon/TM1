@@ -68,9 +68,7 @@ auto configuration1() {
     "reconstructionIdc": "Rec Unconstrained",
     "levelIdc": "3.5",
     "oneV3cFrameOnly": false,
-    "m57419_edgeThreshold": 40,
-    "m57419_intervalNumber": 16,
-    "m57419_piecewiseDepthLinearScaling": false,
+    "piecewiseDepthLinearScaling": false,
     "depthOccThresholdIfSet": [0.00390625,0.0625],
     "depthOccThresholdAsymmetry": 1.5
 })"sv)};

@@ -75,6 +75,8 @@ def tmiv_parser(args):
 def main(args):
     success = True
 
+    args.output_dir.mkdir(parents=True, exist_ok=True)
+
     for name in CONFORMANCE_BITSTREAMS:
         error_file = (args.output_dir / name).with_suffix(".err")
         error_file.unlink(missing_ok=True)

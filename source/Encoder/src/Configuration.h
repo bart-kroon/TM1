@@ -105,15 +105,10 @@ struct Configuration {
     return depthOccThresholdIfSet[static_cast<int32_t>(depthLowQualityFlag_)];
   }
 
-#if ENABLE_M57419
-  bool m57419_piecewiseDepthLinearScaling;
-  int32_t m57419_intervalNumber;
-  int32_t m57419_edgeThreshold;
-#endif
-
-#if ENABLE_M63213
-  bool informationPruning{true};
-#endif
+  bool piecewiseDepthLinearScaling;
+  int32_t pldsIntervalNumber{};
+  int32_t pldsEdgeThreshold{};
+  bool informationPruning;
 
   [[nodiscard]] auto blockSize(bool depthLowQualityFlag_) const noexcept {
     return blockSizeDepthQualityDependent[static_cast<int32_t>(depthLowQualityFlag_)];

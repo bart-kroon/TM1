@@ -1355,7 +1355,9 @@ void VpsMivExtension::encodeTo(Common::OutputBitstream &bitstream,
 }
 
 auto operator<<(std::ostream &stream, const VpsMiv2Extension &x) -> std::ostream & {
-  stream << x.vps_miv_extension;
+  stream << x.vps_miv_extension();
+  fmt::print(stream, "vme_decoder_side_depth_estimation_flag={}\n",
+             x.vme_decoder_side_depth_estimation_flag());
   return stream;
 }
 
@@ -1363,20 +1365,24 @@ auto VpsMiv2Extension::decodeFrom(Common::InputBitstream &bitstream, const V3cPa
     -> VpsMiv2Extension {
   auto x = VpsMiv2Extension{};
 
-  x.vps_miv_extension = VpsMivExtension::decodeFrom(bitstream, vps);
+  x.vps_miv_extension() = VpsMivExtension::decodeFrom(bitstream, vps);
 
   const auto vme_reserved_zero_8bits = bitstream.getUint8();
   VERIFY_MIVBITSTREAM(vme_reserved_zero_8bits == 0);
+
+  x.vme_decoder_side_depth_estimation_flag(bitstream.getFlag());
 
   return x;
 }
 
 void VpsMiv2Extension::encodeTo(Common::OutputBitstream &bitstream,
                                 const V3cParameterSet &vps) const {
-  vps_miv_extension.encodeTo(bitstream, vps);
+  vps_miv_extension().encodeTo(bitstream, vps);
 
   static constexpr auto vme_reserved_zero_8bits = 0;
   bitstream.putUint8(vme_reserved_zero_8bits);
+
+  bitstream.putFlag(vme_decoder_side_depth_estimation_flag());
 }
 
 auto VpsPackedVideoExtension::vps_packed_video_present_flag(AtlasId atlasId) const -> bool {
@@ -1720,7 +1726,7 @@ auto V3cParameterSet::packing_information(AtlasId j) const -> const PackingInfor
 
 auto V3cParameterSet::vps_miv_extension() const -> const VpsMivExtension & {
   if (vpsMiv2ExtensionPresentFlag()) {
-    return vps_miv_2_extension().vps_miv_extension;
+    return vps_miv_2_extension().vps_miv_extension();
   }
   VERIFY_V3CBITSTREAM(vpsMivExtensionPresentFlag());
   return vps_extension(VpsExtensionType::VPS_EXT_MIV).vps_miv_extension();
@@ -1919,7 +1925,7 @@ auto V3cParameterSet::attribute_information(AtlasId j) -> AttributeInformation &
 
 auto V3cParameterSet::vps_miv_extension() -> VpsMivExtension & {
   if (vpsMiv2ExtensionPresentFlag()) {
-    return vps_miv_2_extension().vps_miv_extension;
+    return vps_miv_2_extension().vps_miv_extension();
   }
   return vps_extension(VpsExtensionType::VPS_EXT_MIV).vps_miv_extension();
 }

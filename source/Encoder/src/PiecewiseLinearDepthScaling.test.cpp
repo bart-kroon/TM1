@@ -37,14 +37,13 @@
 
 using namespace std::string_view_literals;
 
-#if ENABLE_M57419
 TEST_CASE("edge detection for piecwise linear scaling") {
   std::vector<std::vector<int32_t>> geometryUnit(3, std::vector(3, 0));
   geometryUnit[0] = {0, 10, 100};
   geometryUnit[1] = {0, 10, 100};
   geometryUnit[2] = {0, 10, 100};
 
-  CHECK(TMIV::Encoder::m57419_edgeDetection(geometryUnit, 40));
+  CHECK(TMIV::Encoder::plsEdgeDetection(geometryUnit, 40));
 }
 
 TEST_CASE("histogram normalization in PLS, for CG seq") {
@@ -62,8 +61,8 @@ TEST_CASE("histogram normalization in PLS, for CG seq") {
   int32_t maxDepthVal = 5000;
 
   std::vector<double> mapped_pivot;
-  mapped_pivot = TMIV::Encoder::m57419_normalizeHistogram(histEdge, piece_num, lowDepthQuality,
-                                                          minDepthVal, maxDepthVal);
+  mapped_pivot = TMIV::Encoder::plsNormalizeHistogram(histEdge, piece_num, lowDepthQuality,
+                                                      minDepthVal, maxDepthVal);
 
   CHECK(static_cast<int32_t>(mapped_pivot[0]) == 1000);
   CHECK(static_cast<int32_t>(mapped_pivot[1]) == 1866);
@@ -87,8 +86,8 @@ TEST_CASE("histogram normalization in PLS, for NC sequences") {
   int32_t maxDepthVal = 5000;
 
   std::vector<double> mapped_pivot;
-  mapped_pivot = TMIV::Encoder::m57419_normalizeHistogram(histEdge, piece_num, lowDepthQuality,
-                                                          minDepthVal, maxDepthVal);
+  mapped_pivot = TMIV::Encoder::plsNormalizeHistogram(histEdge, piece_num, lowDepthQuality,
+                                                      minDepthVal, maxDepthVal);
 
   CHECK(static_cast<int32_t>(mapped_pivot[0]) == 1000);
   CHECK(static_cast<int32_t>(mapped_pivot[1]) == 1562);
@@ -106,8 +105,8 @@ TEST_CASE("calculation remapped geometry value in PLS, for CG sequences") {
   std::vector<double> mapped_pivot = {1000, 1500, 4000, 4500, 5000};
   bool lowDepthQuality = false;
 
-  geometry = TMIV::Encoder::m57419_depthMapping(minDepthVal, maxDepthVal, piece_num, geometry,
-                                                mapped_pivot, lowDepthQuality);
+  geometry = TMIV::Encoder::plsDepthMapping(minDepthVal, maxDepthVal, piece_num, geometry,
+                                            mapped_pivot, lowDepthQuality);
 
   CHECK(geometry == 8200);
 }
@@ -121,9 +120,8 @@ TEST_CASE("calculation remapped geometry value in PLS, for NC sequences") {
   std::vector<double> mapped_pivot = {1000, 1500, 4000, 4500, 5000};
   bool lowDepthQuality = true;
 
-  geometry = TMIV::Encoder::m57419_depthMapping(minDepthVal, maxDepthVal, piece_num, geometry,
-                                                mapped_pivot, lowDepthQuality);
+  geometry = TMIV::Encoder::plsDepthMapping(minDepthVal, maxDepthVal, piece_num, geometry,
+                                            mapped_pivot, lowDepthQuality);
 
   CHECK(geometry == 4100);
 }
-#endif

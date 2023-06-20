@@ -98,12 +98,10 @@ void PreRenderer::preRenderFrame(MivBitstream::AccessUnit &frame) const {
     scaleGeometryVideo(frame.gup, atlas);
     reconstructOccupancy(frame.viewParamsList, atlas);
 
-#if ENABLE_M63397
-    if (frame.casps.has_value() &&
-        frame.casps.value().casps_miv_extension().casme_chroma_scaling_present_flag()) {
+    if (frame.casps && frame.casps->casps_miv_2_extension_present_flag() &&
+        frame.casps->casps_miv_2_extension().casme_chroma_scaling_present_flag()) {
       rescaleTexture(frame.viewParamsList, atlas);
     }
-#endif
 
     filterEntities(atlas);
 

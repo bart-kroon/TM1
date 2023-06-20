@@ -178,8 +178,7 @@ private:
   }
 
   void parseAsps(std::istream &stream) {
-    const auto asps =
-        MivBitstream::AtlasSequenceParameterSetRBSP::decodeFrom(stream, *m_vuh, m_vps);
+    const auto asps = MivBitstream::AtlasSequenceParameterSetRBSP::decodeFrom(stream);
     m_log << asps;
     for (auto &x : m_aspsV) {
       if (x.asps_atlas_sequence_parameter_set_id() == asps.asps_atlas_sequence_parameter_set_id()) {

@@ -40,9 +40,7 @@
 #include <numeric>
 
 namespace TMIV::Encoder {
-#if ENABLE_M57419
-auto m57419_edgeDetection(std::vector<std::vector<int32_t>> geometryUnit, double line_thres)
-    -> bool {
+auto plsEdgeDetection(std::vector<std::vector<int32_t>> geometryUnit, double line_thres) -> bool {
   bool isEdgeSample = false;
 
   int32_t gv = abs(2 * geometryUnit[1][1] - geometryUnit[0][1] - geometryUnit[2][1]);
@@ -64,8 +62,8 @@ auto m57419_edgeDetection(std::vector<std::vector<int32_t>> geometryUnit, double
   return isEdgeSample;
 }
 
-auto m57419_normalizeHistogram(const std::vector<int32_t> &histEdge, int32_t piece_num,
-                               bool lowDepthQuality, int32_t minDepthVal, int32_t maxDepthVal)
+auto plsNormalizeHistogram(const std::vector<int32_t> &histEdge, int32_t piece_num,
+                           bool lowDepthQuality, int32_t minDepthVal, int32_t maxDepthVal)
     -> std::vector<double> {
   double total_histEdge = std::accumulate(histEdge.begin(), histEdge.end(), 0);
 
@@ -121,9 +119,9 @@ auto m57419_normalizeHistogram(const std::vector<int32_t> &histEdge, int32_t pie
   return mapped_pivot;
 }
 
-auto m57419_depthMapping(int32_t minDepthVal, int32_t maxDepthVal, int32_t piece_num,
-                         uint16_t inGeometry, const std::vector<double> &mapped_pivot,
-                         bool lowDepthQuality) -> uint16_t {
+auto plsDepthMapping(int32_t minDepthVal, int32_t maxDepthVal, int32_t piece_num,
+                     uint16_t inGeometry, const std::vector<double> &mapped_pivot,
+                     bool lowDepthQuality) -> uint16_t {
   static constexpr int32_t maxValue = Common::maxLevel(Common::sampleBitDepth);
   static constexpr auto maxValD = static_cast<double>(maxValue);
 
@@ -146,10 +144,10 @@ auto m57419_depthMapping(int32_t minDepthVal, int32_t maxDepthVal, int32_t piece
   return outGeometry;
 }
 
-auto Encoder::Impl::m57419_makeHistogram(int32_t piece_num, size_t numOfFrames, size_t v,
-                                         int32_t minDepthVal, int32_t maxDepthVal)
+auto Encoder::Impl::plsMakeHistogram(int32_t piece_num, size_t numOfFrames, size_t v,
+                                     int32_t minDepthVal, int32_t maxDepthVal)
     -> std::vector<int32_t> {
-  double line_thres = m_config.m57419_edgeThreshold;
+  double line_thres = m_config.pldsEdgeThreshold;
   double interval = static_cast<double>(maxDepthVal - minDepthVal) / piece_num;
 
   std::vector<int32_t> histEdge;
@@ -169,8 +167,8 @@ auto Encoder::Impl::m57419_makeHistogram(int32_t piece_num, size_t numOfFrames, 
             geometryUnit[ki][kj] = m_transportViews[f][v].geometry.getPlane(0)(ui, uj);
           }
         }
-        if (m_aggregator->getAggregatedMask()[v].getPlane(0)(i, j) &&
-            m57419_edgeDetection(geometryUnit, line_thres)) {
+        if (m_aggregator->getAggregatedMask()[v].getPlane(0)(i, j) != 0 &&
+            plsEdgeDetection(geometryUnit, line_thres)) {
           int32_t interval_idx =
               std::clamp(static_cast<int32_t>(
                              (static_cast<double>(geometryUnit[1][1] - minDepthVal)) / interval),
@@ -183,28 +181,26 @@ auto Encoder::Impl::m57419_makeHistogram(int32_t piece_num, size_t numOfFrames, 
   return histEdge;
 }
 
-auto Encoder::Impl::m57419_piecewiseLinearScaleGeometryDynamicRange(size_t numOfFrames, size_t v,
-                                                                    int32_t minDepthMapValWithinGOP,
-                                                                    int32_t maxDepthMapValWithinGOP,
-                                                                    bool lowDepthQuality)
+auto Encoder::Impl::plsGeometryDynamicRange(size_t numOfFrames, size_t v,
+                                            int32_t minDepthMapValWithinGOP,
+                                            int32_t maxDepthMapValWithinGOP, bool lowDepthQuality)
     -> std::vector<double> {
-  int32_t piece_num = m_config.m57419_intervalNumber;
+  int32_t piece_num = m_config.pldsIntervalNumber;
   VERIFY(0 < piece_num);
 
   std::vector<int32_t> histEdge;
   std::vector<double> mapped_pivot;
-  histEdge = m57419_makeHistogram(piece_num, numOfFrames, v, minDepthMapValWithinGOP,
-                                  maxDepthMapValWithinGOP);
-  mapped_pivot = m57419_normalizeHistogram(histEdge, piece_num, lowDepthQuality,
-                                           minDepthMapValWithinGOP, maxDepthMapValWithinGOP);
+  histEdge =
+      plsMakeHistogram(piece_num, numOfFrames, v, minDepthMapValWithinGOP, maxDepthMapValWithinGOP);
+  mapped_pivot = plsNormalizeHistogram(histEdge, piece_num, lowDepthQuality,
+                                       minDepthMapValWithinGOP, maxDepthMapValWithinGOP);
   for (size_t f = 0; f < numOfFrames; f++) {
     for (auto &geometry : m_transportViews[f][v].geometry.getPlane(0)) {
       uint16_t inGeometry = geometry;
-      geometry = m57419_depthMapping(minDepthMapValWithinGOP, maxDepthMapValWithinGOP, piece_num,
-                                     inGeometry, mapped_pivot, lowDepthQuality);
+      geometry = plsDepthMapping(minDepthMapValWithinGOP, maxDepthMapValWithinGOP, piece_num,
+                                 inGeometry, mapped_pivot, lowDepthQuality);
     }
   }
   return mapped_pivot;
 }
-#endif
 } // namespace TMIV::Encoder

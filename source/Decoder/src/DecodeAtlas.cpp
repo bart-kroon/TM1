@@ -50,8 +50,8 @@ public:
   using Base = Common::Decoder<MivBitstream::NalUnit, AtlasAccessUnit>;
 
   AtlasDecoder(Common::Source<MivBitstream::NalUnit> source, const MivBitstream::V3cUnitHeader &vuh,
-               MivBitstream::V3cParameterSet vps, PtlChecker::SharedChecker checker)
-      : Base{std::move(source)}, m_vuh{vuh}, m_vps{std::move(vps)}, m_checker{std::move(checker)} {}
+               PtlChecker::SharedChecker checker)
+      : Base{std::move(source)}, m_vuh{vuh}, m_checker{std::move(checker)} {}
 
 protected:
   auto decodeSome() -> bool final {
@@ -164,7 +164,7 @@ private:
   }
 
   void decodeAsps(std::istream &stream) {
-    auto asps = MivBitstream::AtlasSequenceParameterSetRBSP::decodeFrom(stream, m_vuh, m_vps);
+    auto asps = MivBitstream::AtlasSequenceParameterSetRBSP::decodeFrom(stream);
 
     m_checker->checkAsps(m_vuh.vuh_atlas_id(), asps);
 
@@ -212,7 +212,6 @@ private:
   }
 
   MivBitstream::V3cUnitHeader m_vuh;
-  MivBitstream::V3cParameterSet m_vps;
   PtlChecker::SharedChecker m_checker;
 
   std::optional<MivBitstream::NalUnit> m_nu;
@@ -224,9 +223,10 @@ private:
 } // namespace
 
 auto decodeAtlas(Common::Source<MivBitstream::NalUnit> source,
-                 const MivBitstream::V3cUnitHeader &vuh, MivBitstream::V3cParameterSet vps,
-                 PtlChecker::SharedChecker checker) -> Common::Source<AtlasAccessUnit> {
-  return [decoder = std::make_shared<AtlasDecoder>(std::move(source), vuh, std::move(vps),
-                                                   std::move(checker))]() { return (*decoder)(); };
+                 const MivBitstream::V3cUnitHeader &vuh, PtlChecker::SharedChecker checker)
+    -> Common::Source<AtlasAccessUnit> {
+  return [decoder = std::make_shared<AtlasDecoder>(std::move(source), vuh, std::move(checker))]() {
+    return (*decoder)();
+  };
 }
 } // namespace TMIV::Decoder

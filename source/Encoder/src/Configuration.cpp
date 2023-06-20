@@ -72,16 +72,13 @@ Configuration::Configuration(const Common::Json &componentNode)
   querySeiParameters(componentNode);
   queryTileParameters(componentNode);
 
-#if ENABLE_M63213
   informationPruning = componentNode.require("informationPruning").as<bool>();
-#endif
+  piecewiseDepthLinearScaling = componentNode.require("piecewiseDepthLinearScaling").as<bool>();
 
-#if ENABLE_M57419
-  m57419_piecewiseDepthLinearScaling =
-      componentNode.require("m57419_piecewiseDepthLinearScaling").as<bool>();
-  m57419_intervalNumber = componentNode.require("m57419_intervalNumber").as<int32_t>();
-  m57419_edgeThreshold = componentNode.require("m57419_edgeThreshold").as<int32_t>();
-#endif
+  if (piecewiseDepthLinearScaling) {
+    pldsIntervalNumber = componentNode.require("pldsIntervalNumber").as<int32_t>();
+    pldsEdgeThreshold = componentNode.require("pldsEdgeThreshold").as<int32_t>();
+  }
 
   verifyValid();
 }

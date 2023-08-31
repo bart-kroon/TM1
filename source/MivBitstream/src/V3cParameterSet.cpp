@@ -52,6 +52,8 @@ auto operator<<(std::ostream &stream, PtlProfileCodecGroupIdc x) -> std::ostream
     return stream << "HEVC444";
   case PtlProfileCodecGroupIdc::VVC_Main10:
     return stream << "VVC Main10";
+  case PtlProfileCodecGroupIdc::HEVC_Main:
+    return stream << "HEVC Main";
   case PtlProfileCodecGroupIdc::MP4RA:
     return stream << "MP4RA";
   default:

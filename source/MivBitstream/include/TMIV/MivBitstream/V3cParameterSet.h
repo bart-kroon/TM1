@@ -54,12 +54,16 @@ enum class PtlProfileCodecGroupIdc : uint8_t {
   HEVC_Main10,
   HEVC444,
   VVC_Main10,
+  HEVC_Main,
   MP4RA = 127
 };
 
 static constexpr auto knownCodecGroupIdcs =
-    std::array{PtlProfileCodecGroupIdc::AVC_Progressive_High, PtlProfileCodecGroupIdc::HEVC_Main10,
-               PtlProfileCodecGroupIdc::HEVC444, PtlProfileCodecGroupIdc::VVC_Main10,
+    std::array{PtlProfileCodecGroupIdc::AVC_Progressive_High,
+               PtlProfileCodecGroupIdc::HEVC_Main10,
+               PtlProfileCodecGroupIdc::HEVC444,
+               PtlProfileCodecGroupIdc::VVC_Main10,
+               PtlProfileCodecGroupIdc::HEVC_Main,
                PtlProfileCodecGroupIdc::MP4RA};
 
 enum class PtlProfileToolsetIdc : uint8_t {

@@ -58,7 +58,7 @@ ptl_toolset_constraints_present_flag=false
 
   SECTION("Example 1") {
     x.ptl_tier_flag(true)
-        .ptl_profile_codec_group_idc(PtlProfileCodecGroupIdc::HEVC_Main10)
+        .ptl_profile_codec_group_idc(PtlProfileCodecGroupIdc::HEVC_Main)
         .ptl_profile_toolset_idc(PtlProfileToolsetIdc::VPCC_Extended)
         .ptl_profile_reconstruction_idc(PtlProfileReconstructionIdc::Rec_Unconstrained)
         .ptl_max_decodes_idc(PtlMaxDecodesIdc::max_4)
@@ -70,7 +70,7 @@ ptl_toolset_constraints_present_flag=false
         .ptl_toolset_constraints_present_flag(false);
 
     REQUIRE(toString(x) == R"(ptl_tier_flag=true
-ptl_profile_codec_group_idc=HEVC Main10
+ptl_profile_codec_group_idc=HEVC Main
 ptl_profile_toolset_idc=V-PCC Extended
 ptl_profile_reconstruction_idc=Rec Unconstrained
 ptl_max_decodes_idc=max_4
@@ -82,7 +82,7 @@ ptl_sub_profile_idc[ 1 ]=18446744073709551615
 ptl_toolset_constraints_present_flag=false
 )");
 
-    CHECK(x.profile() == "HEVC Main10 V-PCC Extended");
+    CHECK(x.profile() == "HEVC Main V-PCC Extended");
 
     bitCodingTest(x, 200);
   }

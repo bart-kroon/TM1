@@ -571,6 +571,173 @@ void Encoder::Impl::scaleChromaDynamicRange() {
   }
 }
 
+void Encoder::Impl::clearPatchMargins(size_t f, size_t a, Common::Frame<> &tmpTex,
+                                      Common::Frame<> &tmpGeo, Common::Frame<> &tmpTmp) {
+  auto &atlas = m_videoFrameBuffer[f][a];
+
+  tmpTex.createYuv420(atlas.texture.getSize(), atlas.texture.getBitDepth());
+  tmpGeo.createY(atlas.geometry.getSize(), atlas.geometry.getBitDepth());
+  tmpTmp.createY(atlas.geometry.getSize(), 8);
+
+  tmpTex.fillNeutral();
+  tmpGeo.fillZero();
+  tmpTmp.fillOne();
+
+  for (const auto &patch : params().patchParamsList) {
+    const auto k = params().vps.indexOf(patch.atlasId());
+    if (k != a) {
+      continue;
+    }
+
+    auto x1 = patch.atlasPatch2dPosX();
+    auto y1 = patch.atlasPatch2dPosY();
+    auto x2 = patch.atlasPatch2dPosX() + patch.atlasPatch2dSizeX();
+    auto y2 = patch.atlasPatch2dPosY() + patch.atlasPatch2dSizeY();
+
+    for (int32_t y = y1; y < y2; ++y) {
+      for (int32_t x = x1; x < x2; ++x) {
+        tmpTex.getPlane(0)(y, x) = 0;
+        tmpTex.getPlane(1)(y / 2, x / 2) = 0;
+        tmpTex.getPlane(2)(y / 2, x / 2) = 0;
+        tmpGeo.getPlane(0)(y, x) = 0;
+        tmpTmp.getPlane(0)(y, x) = 0;
+      }
+    }
+
+    x1 += patch.isRotated() ? patch.atlasPatch2dMarginV() : patch.atlasPatch2dMarginU();
+    y1 += patch.isRotated() ? patch.atlasPatch2dMarginU() : patch.atlasPatch2dMarginV();
+    x2 -= patch.isRotated() ? patch.atlasPatch2dMarginV() : patch.atlasPatch2dMarginU();
+    y2 -= patch.isRotated() ? patch.atlasPatch2dMarginU() : patch.atlasPatch2dMarginV();
+
+    for (int32_t y = y1; y < y2; ++y) {
+      for (int32_t x = x1; x < x2; ++x) {
+        tmpTex.getPlane(0)(y, x) = atlas.texture.getPlane(0)(y, x);
+        tmpTex.getPlane(1)(y / 2, x / 2) = atlas.texture.getPlane(1)(y / 2, x / 2);
+        tmpTex.getPlane(2)(y / 2, x / 2) = atlas.texture.getPlane(2)(y / 2, x / 2);
+        tmpGeo.getPlane(0)(y, x) = atlas.geometry.getPlane(0)(y, x);
+        tmpTmp.getPlane(0)(y, x) = 1;
+      }
+    }
+  }
+
+  atlas.texture.getPlane(0) = tmpTex.getPlane(0);
+}
+
+void Encoder::Impl::inpaintPatchMargins(size_t f, size_t a, Common::Frame<> &tmpTex,
+                                        Common::Frame<> &tmpGeo, Common::Frame<> &tmpTmp) {
+  auto &atlas = m_videoFrameBuffer[f][a];
+
+  const auto W = tmpTex.getWidth();
+  const auto H = tmpTex.getHeight();
+  const auto depthLowQualityFlag =
+      params().casps.casps_miv_extension().casme_depth_low_quality_flag();
+
+  for (int32_t i = 0; i < 32; i++) {
+    for (auto h = 0; h < H; h++) {
+      for (auto w = 0; w < W; w++) {
+        tmpTex.getPlane(0)(h, w) = 0;
+        int32_t valY = 0;
+        int32_t valU = 0;
+        int32_t valV = 0;
+        int32_t valD = 0;
+        int32_t cnt = 0;
+        auto m = i;
+        if (atlas.texture.getPlane(0)(h, w) != 0U) {
+          continue;
+        }
+        for (auto hh = std::max(0, h - m); hh <= std::min(h + m, H - 1); hh++) {
+          for (auto ww = std::max(0, w - m); ww <= std::min(w + m, W - 1); ww++) {
+            if (atlas.texture.getPlane(0)(hh, ww) != 0U) {
+              valY += static_cast<int32_t>(atlas.texture.getPlane(0)(hh, ww));
+              valU += static_cast<int32_t>(atlas.texture.getPlane(1)(hh / 2, ww / 2));
+              valV += static_cast<int32_t>(atlas.texture.getPlane(2)(hh / 2, ww / 2));
+              valD += static_cast<int32_t>(atlas.geometry.getPlane(0)(hh, ww));
+              cnt++;
+            }
+          }
+        }
+        if (cnt != 0U) {
+          tmpTex.getPlane(0)(h, w) = static_cast<uint16_t>(valY / cnt);
+          tmpTex.getPlane(1)(h / 2, w / 2) = static_cast<uint16_t>(valU / cnt);
+          tmpTex.getPlane(2)(h / 2, w / 2) = static_cast<uint16_t>(valV / cnt);
+          tmpGeo.getPlane(0)(h, w) = static_cast<uint16_t>(valD / cnt);
+          tmpTmp.getPlane(0)(h, w) = static_cast<uint16_t>(m + 1);
+        }
+      }
+    }
+    for (auto h = 0; h < H; h++) {
+      for (auto w = 0; w < W; w++) {
+        if (tmpTex.getPlane(0)(h, w) != 0U && atlas.texture.getPlane(0)(h, w) == 0U) {
+          atlas.texture.getPlane(0)(h, w) = tmpTex.getPlane(0)(h, w);
+          atlas.texture.getPlane(1)(h / 2, w / 2) = tmpTex.getPlane(1)(h / 2, w / 2);
+          atlas.texture.getPlane(2)(h / 2, w / 2) = tmpTex.getPlane(2)(h / 2, w / 2);
+          if (depthLowQualityFlag) {
+            atlas.geometry.getPlane(0)(h, w) = tmpGeo.getPlane(0)(h, w);
+          }
+        }
+      }
+    }
+  }
+}
+
+void Encoder::Impl::blurPatchMargins(size_t f, size_t a, Common::Frame<> &tmpTex,
+                                     Common::Frame<> &tmpGeo, Common::Frame<> &tmpTmp) {
+  auto &atlas = m_videoFrameBuffer[f][a];
+
+  const auto W = tmpTex.getWidth();
+  const auto H = tmpTex.getHeight();
+  const auto depthLowQualityFlag =
+      params().casps.casps_miv_extension().casme_depth_low_quality_flag();
+
+  for (auto h = 0; h < H; h++) {
+    for (auto w = 0; w < W; w++) {
+      int32_t valY = 0;
+      int32_t valU = 0;
+      int32_t valV = 0;
+      int32_t valD = 0;
+      int32_t cnt = 0;
+      int32_t m = tmpTmp.getPlane(0)(h, w) - 1;
+      for (auto hh = std::max(0, h - m); hh <= std::min(h + m, H - 1); hh++) {
+        for (auto ww = std::max(0, w - m); ww <= std::min(w + m, W - 1); ww++) {
+          valY += static_cast<int32_t>(atlas.texture.getPlane(0)(hh, ww));
+          valU += static_cast<int32_t>(atlas.texture.getPlane(1)(hh / 2, ww / 2));
+          valV += static_cast<int32_t>(atlas.texture.getPlane(2)(hh / 2, ww / 2));
+          valD += static_cast<int32_t>(atlas.geometry.getPlane(0)(hh, ww));
+          cnt++;
+        }
+      }
+      tmpTex.getPlane(0)(h, w) = static_cast<uint16_t>(valY / cnt);
+      tmpTex.getPlane(1)(h / 2, w / 2) = static_cast<uint16_t>(valU / cnt);
+      tmpTex.getPlane(2)(h / 2, w / 2) = static_cast<uint16_t>(valV / cnt);
+      tmpGeo.getPlane(0)(h, w) = static_cast<uint16_t>(valD / cnt);
+    }
+  }
+  for (auto h = 0; h < H; h++) {
+    for (auto w = 0; w < W; w++) {
+      atlas.texture.getPlane(0)(h, w) = tmpTex.getPlane(0)(h, w);
+      atlas.texture.getPlane(1)(h / 2, w / 2) = tmpTex.getPlane(1)(h / 2, w / 2);
+      atlas.texture.getPlane(2)(h / 2, w / 2) = tmpTex.getPlane(2)(h / 2, w / 2);
+      if (depthLowQualityFlag) {
+        atlas.geometry.getPlane(0)(h, w) = tmpGeo.getPlane(0)(h, w);
+      }
+    }
+  }
+}
+
+void Encoder::Impl::filterPatchMargins() {
+  Common::Frame tmpTex;
+  Common::Frame tmpGeo;
+  Common::Frame tmpTmp;
+
+  for (auto f = 0U; f < m_videoFrameBuffer.size(); ++f) {
+    for (auto a = 0U; a < m_videoFrameBuffer[f].size(); ++a) {
+      clearPatchMargins(f, a, tmpTex, tmpGeo, tmpTmp);
+      inpaintPatchMargins(f, a, tmpTex, tmpGeo, tmpTmp);
+      blurPatchMargins(f, a, tmpTex, tmpGeo, tmpTmp);
+    }
+  }
+}
+
 // NOLINTNEXTLINE(readability-function-cognitive-complexity,readability-function-size)
 void Encoder::Impl::constructVideoFrames() {
   const auto &vps = params().vps;
@@ -650,6 +817,10 @@ void Encoder::Impl::constructVideoFrames() {
   if (m_config.textureOffsetFlag) {
     encodePatchTextureOffset(patchTextureStats);
     applyPatchTextureOffset();
+  }
+
+  if (m_config.patchMarginFlag) {
+    filterPatchMargins();
   }
 }
 

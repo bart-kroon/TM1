@@ -90,6 +90,7 @@
     "outputPackedVideoDataPathFmt": "P{0}/{1}/TMIV_P{0}_{1}_pac_c{3:02}_{4}x{5}_{6}.yuv",
     "partitionHeight": [576, 448],
     "partitionWidth": [960, 64],
+    "patchMarginEnabledFlag": false,
     "patchRedundancyRemoval": true,
     "piecewiseDepthLinearScaling": false,
     "reconstructionIdc": "Rec Unconstrained",

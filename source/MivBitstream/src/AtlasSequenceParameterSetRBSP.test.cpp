@@ -206,7 +206,8 @@ asps_vui_parameters_present_flag=false
 asps_extension_present_flag=true
 asps_vpcc_extension_present_flag=false
 asps_miv_extension_present_flag=false
-asps_extension_6bits=0
+asps_miv_2_extension_present_flag=false
+asps_extension_5bits=0
 )");
 
     byteCodingTest(x, 7);
@@ -230,7 +231,7 @@ asps_extension_6bits=0
         .asps_patch_precedence_order_flag(true)
         .asps_patch_size_quantizer_present_flag(true)
         .asps_map_count_minus1(1)
-        .asps_extension_6bits(63);
+        .asps_extension_5bits(31);
     x.vui_parameters() = VuiParameters{}.vui_unit_in_metres_flag(true);
     x.asps_vpcc_extension().asps_vpcc_remove_duplicate_point_enabled_flag(true);
     x.asps_miv_extension()
@@ -276,7 +277,8 @@ vui_anchor_point_present_flag=false
 asps_extension_present_flag=true
 asps_vpcc_extension_present_flag=true
 asps_miv_extension_present_flag=true
-asps_extension_6bits=63
+asps_miv_2_extension_present_flag=false
+asps_extension_5bits=31
 asps_vpcc_remove_duplicate_point_enabled_flag=true
 asme_ancillary_atlas_flag=true
 asme_embedded_occupancy_enabled_flag=true

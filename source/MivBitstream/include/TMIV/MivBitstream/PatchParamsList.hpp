@@ -53,6 +53,10 @@ constexpr auto PatchParams::atlasPatch2dSizeX() const noexcept { return m_atlasP
 
 constexpr auto PatchParams::atlasPatch2dSizeY() const noexcept { return m_atlasPatch2dSizeY; }
 
+constexpr auto PatchParams::atlasPatch2dMarginU() const noexcept { return m_atlasPatch2dMarginU; }
+
+constexpr auto PatchParams::atlasPatch2dMarginV() const noexcept { return m_atlasPatch2dMarginV; }
+
 constexpr auto PatchParams::atlasPatch3dOffsetU() const noexcept { return m_atlasPatch3dOffsetU; }
 
 constexpr auto PatchParams::atlasPatch3dOffsetV() const noexcept { return m_atlasPatch3dOffsetV; }
@@ -108,6 +112,16 @@ constexpr auto PatchParams::atlasPatch2dSizeX(int32_t value) noexcept -> PatchPa
 
 constexpr auto PatchParams::atlasPatch2dSizeY(int32_t value) noexcept -> PatchParams & {
   m_atlasPatch2dSizeY = value;
+  return *this;
+}
+
+constexpr auto PatchParams::atlasPatch2dMarginU(uint16_t value) noexcept -> PatchParams & {
+  m_atlasPatch2dMarginU = value;
+  return *this;
+}
+
+constexpr auto PatchParams::atlasPatch2dMarginV(uint16_t value) noexcept -> PatchParams & {
+  m_atlasPatch2dMarginV = value;
   return *this;
 }
 

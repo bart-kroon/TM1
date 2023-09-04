@@ -180,6 +180,12 @@ auto PatchParams::decodePdu(const PatchDataUnit &pdu, const V3cParameterSet &vps
     }
   }
 
+  if (vps.vpsMiv2ExtensionPresentFlag() &&
+      vps.vps_miv_2_extension().vme_patch_margin_enabled_flag()) {
+    pp.atlasPatch2dMarginU(pdu.pdu_miv_extension().pdu_2d_margin_u());
+    pp.atlasPatch2dMarginV(pdu.pdu_miv_extension().pdu_2d_margin_v());
+  }
+
   return pp;
 }
 
@@ -257,6 +263,12 @@ auto PatchParams::encodePdu(const V3cParameterSet &vps, AtlasId atlasId,
     if (asme.asme_inpaint_enabled_flag()) {
       pdu.pdu_miv_extension().pdu_inpaint_flag(atlasPatchInpaintFlag());
     }
+  }
+
+  if (vps.vpsMiv2ExtensionPresentFlag() &&
+      vps.vps_miv_2_extension().vme_patch_margin_enabled_flag()) {
+    pdu.pdu_miv_extension().pdu_2d_margin_u(atlasPatch2dMarginU());
+    pdu.pdu_miv_extension().pdu_2d_margin_v(atlasPatch2dMarginV());
   }
 
   return pdu;

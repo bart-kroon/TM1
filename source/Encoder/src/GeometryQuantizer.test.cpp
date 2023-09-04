@@ -145,6 +145,7 @@ static constexpr auto geo2dBitDepth = 9U;
     "dynamicDepthRange": true,
     "halveDepthRange": true,
     "rewriteParameterSets": false,
+    "patchMarginEnabledFlag": false,
     "patchRedundancyRemoval": true,
     "viewportCameraParametersSei": false,
     "viewportPositionSei": true,

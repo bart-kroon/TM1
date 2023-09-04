@@ -633,10 +633,31 @@ void PreRenderer::constructPixelToPatchMap(MivBitstream::AtlasAccessUnit &atlas)
   atlas.pixelToPatchMap.fillValue(Common::unusedPatchIdx);
 
   for (const auto &pp : atlas.patchParamsList) {
-    const auto x1 = pp.atlasPatch2dPosX() + m_patchMargin;
-    const auto y1 = pp.atlasPatch2dPosY() + m_patchMargin;
-    const auto x2 = pp.atlasPatch2dPosX() + pp.atlasPatch2dSizeX() - m_patchMargin;
-    const auto y2 = pp.atlasPatch2dPosY() + pp.atlasPatch2dSizeY() - m_patchMargin;
+    auto marginX = std::max(m_patchMargin, static_cast<int32_t>(pp.atlasPatch2dMarginU()));
+    auto marginY = std::max(m_patchMargin, static_cast<int32_t>(pp.atlasPatch2dMarginV()));
+
+    if (pp.isRotated()) {
+      marginX = std::max(m_patchMargin, static_cast<int32_t>(pp.atlasPatch2dMarginV()));
+      marginY = std::max(m_patchMargin, static_cast<int32_t>(pp.atlasPatch2dMarginU()));
+    }
+
+    const auto x1 = pp.atlasPatch2dPosX() + marginX;
+    const auto y1 = pp.atlasPatch2dPosY() + marginY;
+    const auto x2 = pp.atlasPatch2dPosX() + pp.atlasPatch2dSizeX() - marginX;
+    const auto y2 = pp.atlasPatch2dPosY() + pp.atlasPatch2dSizeY() - marginY;
+
+    const auto x3 = std::max(0, pp.atlasPatch2dPosX() - m_patchMargin);
+    const auto y3 = std::max(0, pp.atlasPatch2dPosY() - m_patchMargin);
+    const auto x4 = std::min(pp.atlasPatch2dPosX() + pp.atlasPatch2dSizeX() + m_patchMargin,
+                             atlas.pixelToPatchMap.getWidth() - 1);
+    const auto y4 = std::min(pp.atlasPatch2dPosY() + pp.atlasPatch2dSizeY() + m_patchMargin,
+                             atlas.pixelToPatchMap.getHeight() - 1);
+
+    for (int32_t y = y3; y < y4; ++y) {
+      for (int32_t x = x3; x < x4; ++x) {
+        atlas.pixelToPatchMap.getPlane(0)(y, x) = Common::unusedPatchIdx;
+      }
+    }
 
     for (int32_t y = y1; y < y2; ++y) {
       for (int32_t x = x1; x < x2; ++x) {

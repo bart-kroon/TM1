@@ -609,6 +609,10 @@ constexpr auto VpsMiv2Extension::vme_decoder_side_depth_estimation_flag() const 
   return m_vme_decoder_side_depth_estimation_flag;
 }
 
+constexpr auto VpsMiv2Extension::vme_patch_margin_enabled_flag() const noexcept {
+  return m_vme_patch_margin_enabled_flag;
+}
+
 constexpr auto VpsMiv2Extension::vps_miv_extension() noexcept -> auto & {
   return m_vps_miv_extension;
 }
@@ -619,9 +623,16 @@ constexpr auto VpsMiv2Extension::vme_decoder_side_depth_estimation_flag(bool val
   return *this;
 }
 
+constexpr auto VpsMiv2Extension::vme_patch_margin_enabled_flag(bool value) noexcept -> auto & {
+  m_vme_patch_margin_enabled_flag = value;
+  return *this;
+}
+
 constexpr auto VpsMiv2Extension::operator==(const VpsMiv2Extension &other) const noexcept {
   return vps_miv_extension() == other.vps_miv_extension() &&
-         vme_decoder_side_depth_estimation_flag() == other.vme_decoder_side_depth_estimation_flag();
+         vme_decoder_side_depth_estimation_flag() ==
+             other.vme_decoder_side_depth_estimation_flag() &&
+         vme_patch_margin_enabled_flag() == other.vme_patch_margin_enabled_flag();
 }
 
 constexpr auto VpsMiv2Extension::operator!=(const VpsMiv2Extension &other) const noexcept {

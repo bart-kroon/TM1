@@ -60,6 +60,8 @@ public:
   [[nodiscard]] constexpr auto atlasPatch2dPosY() const noexcept;
   [[nodiscard]] constexpr auto atlasPatch2dSizeX() const noexcept;
   [[nodiscard]] constexpr auto atlasPatch2dSizeY() const noexcept;
+  [[nodiscard]] constexpr auto atlasPatch2dMarginU() const noexcept;
+  [[nodiscard]] constexpr auto atlasPatch2dMarginV() const noexcept;
   [[nodiscard]] constexpr auto atlasPatch3dOffsetU() const noexcept;
   [[nodiscard]] constexpr auto atlasPatch3dOffsetV() const noexcept;
   [[nodiscard]] constexpr auto atlasPatch3dOffsetD() const noexcept;
@@ -78,6 +80,8 @@ public:
   constexpr auto atlasPatch2dPosY(int32_t value) noexcept -> PatchParams &;
   constexpr auto atlasPatch2dSizeX(int32_t value) noexcept -> PatchParams &;
   constexpr auto atlasPatch2dSizeY(int32_t value) noexcept -> PatchParams &;
+  constexpr auto atlasPatch2dMarginU(uint16_t value) noexcept -> PatchParams &;
+  constexpr auto atlasPatch2dMarginV(uint16_t value) noexcept -> PatchParams &;
   constexpr auto atlasPatch3dOffsetU(int32_t value) noexcept -> PatchParams &;
   constexpr auto atlasPatch3dOffsetV(int32_t value) noexcept -> PatchParams &;
   constexpr auto atlasPatch3dOffsetD(Common::SampleValue value) noexcept -> PatchParams &;
@@ -137,6 +141,8 @@ private:
   int32_t m_atlasPatch2dPosY{};
   int32_t m_atlasPatch2dSizeX{};
   int32_t m_atlasPatch2dSizeY{};
+  uint16_t m_atlasPatch2dMarginU{};
+  uint16_t m_atlasPatch2dMarginV{};
   int32_t m_atlasPatch3dOffsetU{};
   int32_t m_atlasPatch3dOffsetV{};
   Common::SampleValue m_atlasPatch3dOffsetD{};

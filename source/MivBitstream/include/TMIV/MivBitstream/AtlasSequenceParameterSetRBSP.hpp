@@ -219,6 +219,15 @@ constexpr auto AspsMivExtension::operator!=(const AspsMivExtension &other) const
   return !operator==(other);
 }
 
+constexpr auto AspsMiv2Extension::asme_patch_margin_enabled_flag() const noexcept {
+  return m_asme_patch_margin_enabled_flag;
+}
+
+constexpr auto AspsMiv2Extension::asme_patch_margin_enabled_flag(bool value) noexcept -> auto & {
+  m_asme_patch_margin_enabled_flag = value;
+  return *this;
+}
+
 constexpr auto
 AtlasSequenceParameterSetRBSP::asps_atlas_sequence_parameter_set_id() const noexcept {
   return m_asps_atlas_sequence_parameter_set_id;
@@ -324,8 +333,12 @@ constexpr auto AtlasSequenceParameterSetRBSP::asps_miv_extension_present_flag() 
   return m_asps_miv_extension_present_flag.value_or(false);
 }
 
-constexpr auto AtlasSequenceParameterSetRBSP::asps_extension_6bits() const noexcept {
-  return m_asps_extension_6bits.value_or(0);
+constexpr auto AtlasSequenceParameterSetRBSP::asps_miv_2_extension_present_flag() const noexcept {
+  return m_asps_miv_2_extension_present_flag.value_or(false);
+}
+
+constexpr auto AtlasSequenceParameterSetRBSP::asps_extension_5bits() const noexcept {
+  return m_asps_extension_5bits.value_or(0);
 }
 
 constexpr auto

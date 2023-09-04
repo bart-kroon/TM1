@@ -605,9 +605,11 @@ class VpsMiv2Extension {
 public:
   [[nodiscard]] constexpr auto vps_miv_extension() const noexcept -> const auto &;
   [[nodiscard]] constexpr auto vme_decoder_side_depth_estimation_flag() const noexcept;
+  [[nodiscard]] constexpr auto vme_patch_margin_enabled_flag() const noexcept;
 
   [[nodiscard]] constexpr auto vps_miv_extension() noexcept -> auto &;
   constexpr auto vme_decoder_side_depth_estimation_flag(bool value) noexcept -> auto &;
+  constexpr auto vme_patch_margin_enabled_flag(bool value) noexcept -> auto &;
 
   friend auto operator<<(std::ostream &stream, const VpsMiv2Extension &x) -> std::ostream &;
 
@@ -621,6 +623,7 @@ public:
 private:
   VpsMivExtension m_vps_miv_extension;
   bool m_vme_decoder_side_depth_estimation_flag{};
+  bool m_vme_patch_margin_enabled_flag{};
 };
 
 // 23090-5 + m59327: vps_packed_video_extension( )

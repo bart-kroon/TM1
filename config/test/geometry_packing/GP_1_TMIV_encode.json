@@ -92,6 +92,7 @@
     "outputTextureVideoDataPathFmt": "{1}/TMIV_GP{0}_{1}_tex_c{3:02}_{4}x{5}_yuv420p10le.yuv",
     "partitionHeight": [2176, 1088, 1088, 288],
     "partitionWidth": [1920],
+    "patchMarginEnabledFlag": false,
     "patchRedundancyRemoval": true,
     "piecewiseDepthLinearScaling": false,
     "reconstructionIdc": "Rec Unconstrained",

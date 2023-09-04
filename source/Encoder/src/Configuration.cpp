@@ -64,6 +64,7 @@ Configuration::Configuration(const Common::Json &componentNode)
     , numGroups{componentNode.require("numGroups").as<uint8_t>()}
     , maxEntityId{componentNode.require("maxEntityId").as<uint16_t>()}
     , halveDepthRange{dynamicDepthRange && componentNode.require("halveDepthRange").as<bool>()}
+    , patchMarginFlag{componentNode.require("patchMarginEnabledFlag").as<bool>()}
     , viewportCameraParametersSei{componentNode.require("viewportCameraParametersSei").as<bool>()}
     , viewportPositionSei{componentNode.require("viewportPositionSei").as<bool>()} {
   queryMainParameters(componentNode);

@@ -53,6 +53,7 @@
     "outputBitstreamPathFmt": "G{0}/{1}/RP0/TMIV_G{0}_{1}_RP0.bit",
     "outputDirectory": ".",
     "outputTextureVideoDataPathFmt": "G{0}/{1}/RP0/TMIV_G{0}_{1}_RP0_tex_c{3:02}_{4}x{5}_{6}.yuv",
+    "patchMarginEnabledFlag": false,
     "patchRedundancyRemoval": true,
     "piecewiseDepthLinearScaling": false,
     "reconstructionIdc": "Rec Unconstrained",

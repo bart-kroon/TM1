@@ -170,6 +170,14 @@ constexpr auto PduMivExtension::pdu_inpaint_flag() const noexcept {
   return m_pdu_inpaint_flag.value_or(false);
 }
 
+constexpr auto PduMivExtension::pdu_2d_margin_u() const noexcept {
+  return m_pdu_2d_margin_u.value_or(0);
+}
+
+constexpr auto PduMivExtension::pdu_2d_margin_v() const noexcept {
+  return m_pdu_2d_margin_v.value_or(0);
+}
+
 constexpr auto PduMivExtension::pdu_entity_id(Common::SampleValue value) noexcept -> auto & {
   m_pdu_entity_id = value;
   return *this;
@@ -192,6 +200,16 @@ inline auto PduMivExtension::pdu_texture_offset(uint8_t c, Common::SampleValue v
 
 constexpr auto PduMivExtension::pdu_inpaint_flag(bool value) noexcept -> auto & {
   m_pdu_inpaint_flag = value;
+  return *this;
+}
+
+constexpr auto PduMivExtension::pdu_2d_margin_u(uint16_t value) noexcept -> auto & {
+  m_pdu_2d_margin_u = value;
+  return *this;
+}
+
+constexpr auto PduMivExtension::pdu_2d_margin_v(uint16_t value) noexcept -> auto & {
+  m_pdu_2d_margin_v = value;
   return *this;
 }
 

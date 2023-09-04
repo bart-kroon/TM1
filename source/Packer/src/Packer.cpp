@@ -287,13 +287,30 @@ auto patchParamsFor(size_t atlasIdx, const MivBitstream::ViewParamsList &viewPar
                     const Cluster &cluster, Common::Vec2i tilePosition,
                     MaxRectPiP::Output &packerOutput, int32_t blockSize)
     -> MivBitstream::PatchParams {
+  int32_t marginW = (Common::align(cluster.width(), blockSize) - cluster.width()) / 2;
+  int32_t marginH = (Common::align(cluster.height(), blockSize) - cluster.height()) / 2;
+  auto oU = cluster.jmin();
+  auto oV = cluster.imin();
+
+  if (cluster.jmin() - marginW < 0) {
+    marginW = cluster.jmin();
+  }
+  if (cluster.imin() - marginH < 0) {
+    marginH = cluster.imin();
+  }
+
+  oU -= marginW;
+  oV -= marginH;
+
   return MivBitstream::PatchParams{}
       .atlasId(MivBitstream::AtlasId{static_cast<uint8_t>(atlasIdx)})
       .atlasPatchProjectionId(viewParamsList[cluster.getViewIdx()].viewId)
       .atlasPatch2dPosX(packerOutput.x() + tilePosition[0])
       .atlasPatch2dPosY(packerOutput.y() + tilePosition[1])
-      .atlasPatch3dOffsetU(cluster.jmin())
-      .atlasPatch3dOffsetV(cluster.imin())
+      .atlasPatch2dMarginU(static_cast<uint16_t>(marginW))
+      .atlasPatch2dMarginV(static_cast<uint16_t>(marginH))
+      .atlasPatch3dOffsetU(oU)
+      .atlasPatch3dOffsetV(oV)
       .atlasPatchOrientationIndex(packerOutput.isRotated()
                                       ? MivBitstream::FlexiblePatchOrientation::FPO_ROT270
                                       : MivBitstream::FlexiblePatchOrientation::FPO_NULL)

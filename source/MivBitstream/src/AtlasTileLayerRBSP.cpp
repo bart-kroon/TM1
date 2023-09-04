@@ -348,6 +348,12 @@ auto PduMivExtension::printTo(std::ostream &stream, uint32_t tileId, size_t patc
   if (m_pdu_inpaint_flag) {
     fmt::print(stream, "pdu_inpaint_flag[ {} ][ {} ]={}\n", tileId, patchIdx, pdu_inpaint_flag());
   }
+  if (m_pdu_2d_margin_u) {
+    fmt::print(stream, "pdu_2d_margin_u[ {} ][ {} ]={}\n", tileId, patchIdx, pdu_2d_margin_u());
+  }
+  if (m_pdu_2d_margin_v) {
+    fmt::print(stream, "pdu_2d_margin_v[ {} ][ {} ]={}\n", tileId, patchIdx, pdu_2d_margin_v());
+  }
   return stream;
 }
 
@@ -355,7 +361,9 @@ auto PduMivExtension::operator==(const PduMivExtension &other) const -> bool {
   return pdu_entity_id() == other.pdu_entity_id() &&
          m_pdu_depth_occ_threshold == other.m_pdu_depth_occ_threshold &&
          m_pdu_texture_offset == other.m_pdu_texture_offset &&
-         pdu_inpaint_flag() == other.pdu_inpaint_flag();
+         pdu_inpaint_flag() == other.pdu_inpaint_flag() &&
+         m_pdu_2d_margin_u == other.m_pdu_2d_margin_u &&
+         m_pdu_2d_margin_v == other.m_pdu_2d_margin_v;
 }
 
 auto PduMivExtension::operator!=(const PduMivExtension &other) const -> bool {
@@ -384,6 +392,12 @@ auto PduMivExtension::decodeFrom(Common::InputBitstream &bitstream,
   if (asme.asme_inpaint_enabled_flag()) {
     x.pdu_inpaint_flag(bitstream.getFlag());
   }
+  if (asps.asps_miv_2_extension_present_flag() &&
+      asps.asps_miv_2_extension().asme_patch_margin_enabled_flag()) {
+    const auto bits = asps.asps_log2_patch_packing_block_size() - 1;
+    x.pdu_2d_margin_u(bitstream.readBits<uint16_t>(bits));
+    x.pdu_2d_margin_v(bitstream.readBits<uint16_t>(bits));
+  }
   return x;
 }
 
@@ -410,6 +424,12 @@ void PduMivExtension::encodeTo(Common::OutputBitstream &bitstream,
   if (asme.asme_inpaint_enabled_flag()) {
     PRECONDITION(m_pdu_inpaint_flag.has_value());
     bitstream.putFlag(pdu_inpaint_flag());
+  }
+  if (asps.asps_miv_2_extension_present_flag() &&
+      asps.asps_miv_2_extension().asme_patch_margin_enabled_flag()) {
+    const auto bits = asps.asps_log2_patch_packing_block_size() - 1;
+    bitstream.writeBits(pdu_2d_margin_u(), bits);
+    bitstream.writeBits(pdu_2d_margin_v(), bits);
   }
 }
 

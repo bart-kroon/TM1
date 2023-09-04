@@ -74,6 +74,7 @@
     "outputDirectory": ".",
     "outputGeometryVideoDataPathFmt": "E{0}/{1}/TMIV_E{0}_{1}_geo_c{3:02}_{4}x{5}_{6}.yuv",
     "outputTextureVideoDataPathFmt": "E{0}/{1}/TMIV_E{0}_{1}_tex_c{3:02}_{4}x{5}_{6}.yuv",
+    "patchMarginEnabledFlag": false,
     "patchRedundancyRemoval": true,
     "piecewiseDepthLinearScaling": false,
     "reconstructionIdc": "Rec Unconstrained",

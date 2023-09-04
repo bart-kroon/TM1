@@ -100,6 +100,25 @@ private:
   bool m_asps_vpcc_remove_duplicate_point_enabled_flag{};
 };
 
+class AspsMiv2Extension {
+public:
+  [[nodiscard]] constexpr auto asme_patch_margin_enabled_flag() const noexcept;
+
+  constexpr auto asme_patch_margin_enabled_flag(bool value) noexcept -> auto &;
+
+  friend auto operator<<(std::ostream &stream, const AspsMiv2Extension & /*x*/) -> std::ostream &;
+
+  auto operator==(const AspsMiv2Extension &other) const noexcept -> bool;
+  auto operator!=(const AspsMiv2Extension &other) const noexcept -> bool;
+
+  static auto decodeFrom(Common::InputBitstream &bitstream) -> AspsMiv2Extension;
+
+  void encodeTo(Common::OutputBitstream &bitstream) const;
+
+private:
+  bool m_asme_patch_margin_enabled_flag{};
+};
+
 // 23090-12: asps_miv_extension( )
 class AspsMivExtension {
 public:
@@ -189,10 +208,12 @@ public:
   [[nodiscard]] constexpr auto asps_extension_present_flag() const noexcept;
   [[nodiscard]] constexpr auto asps_vpcc_extension_present_flag() const noexcept;
   [[nodiscard]] constexpr auto asps_miv_extension_present_flag() const noexcept;
-  [[nodiscard]] constexpr auto asps_extension_6bits() const noexcept;
+  [[nodiscard]] constexpr auto asps_miv_2_extension_present_flag() const noexcept;
+  [[nodiscard]] constexpr auto asps_extension_5bits() const noexcept;
   [[nodiscard]] auto vui_parameters() const -> const VuiParameters &;
   [[nodiscard]] auto asps_vpcc_extension() const -> const AspsVpccExtension &;
   [[nodiscard]] auto asps_miv_extension() const -> const AspsMivExtension &;
+  [[nodiscard]] auto asps_miv_2_extension() const -> const AspsMiv2Extension &;
   [[nodiscard]] auto aspsExtensionData() const -> const std::vector<bool> &;
 
   constexpr auto asps_atlas_sequence_parameter_set_id(uint8_t value) -> auto &;
@@ -224,13 +245,15 @@ public:
   constexpr auto asps_extension_present_flag(bool value) noexcept -> auto &;
   auto asps_vpcc_extension_present_flag(bool value) noexcept -> AtlasSequenceParameterSetRBSP &;
   auto asps_miv_extension_present_flag(bool value) noexcept -> AtlasSequenceParameterSetRBSP &;
-  auto asps_extension_6bits(uint8_t value) noexcept -> AtlasSequenceParameterSetRBSP &;
+  auto asps_miv_2_extension_present_flag(bool value) noexcept -> AtlasSequenceParameterSetRBSP &;
+  auto asps_extension_5bits(uint8_t value) noexcept -> AtlasSequenceParameterSetRBSP &;
   auto aspsExtensionData(std::vector<bool> data) noexcept -> AtlasSequenceParameterSetRBSP &;
 
   [[nodiscard]] auto ref_list_struct(uint8_t rlsIdx) -> RefListStruct &;
   [[nodiscard]] auto vui_parameters() noexcept -> VuiParameters &;
   [[nodiscard]] auto asps_vpcc_extension() noexcept -> AspsVpccExtension &;
   [[nodiscard]] auto asps_miv_extension() noexcept -> AspsMivExtension &;
+  [[nodiscard]] auto asps_miv_2_extension() noexcept -> AspsMiv2Extension &;
 
   friend auto operator<<(std::ostream &stream, const AtlasSequenceParameterSetRBSP &x)
       -> std::ostream &;
@@ -269,10 +292,12 @@ private:
   bool m_asps_extension_present_flag{};
   std::optional<bool> m_asps_vpcc_extension_present_flag{};
   std::optional<bool> m_asps_miv_extension_present_flag{};
-  std::optional<uint8_t> m_asps_extension_6bits{};
+  std::optional<bool> m_asps_miv_2_extension_present_flag{};
+  std::optional<uint8_t> m_asps_extension_5bits{};
   std::optional<VuiParameters> m_vui;
   std::optional<AspsVpccExtension> m_asve;
   std::optional<AspsMivExtension> m_asme;
+  std::optional<AspsMiv2Extension> m_asme2;
   std::optional<std::vector<bool>> m_aspsExtensionData;
 };
 

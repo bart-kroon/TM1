@@ -202,9 +202,10 @@ calculateNominalAtlasFrameSizes(const Configuration &config,
   return gm;
 }
 
-[[nodiscard]] auto createVpsMivExtension(const Configuration &config,
-                                         const Common::SizeVector &atlasFrameSizes) {
-  auto vme = MivBitstream::VpsMivExtension{};
+[[nodiscard]] auto createVpsMiv2Extension(const Configuration &config,
+                                          const Common::SizeVector &atlasFrameSizes) {
+  auto vme2 = MivBitstream::VpsMiv2Extension{};
+  auto &vme = vme2.vps_miv_extension();
   vme.vme_geometry_scale_enabled_flag(config.geometryScaleEnabledFlag)
       .vme_embedded_occupancy_enabled_flag(config.embeddedOccupancy)
       .group_mapping() = createGroupMapping(config.numGroups, atlasFrameSizes);
@@ -212,7 +213,8 @@ calculateNominalAtlasFrameSizes(const Configuration &config,
   if (!config.embeddedOccupancy) {
     vme.vme_occupancy_scale_enabled_flag(config.haveOccupancy);
   }
-  return vme;
+  vme2.vme_patch_margin_enabled_flag(true);
+  return vme2;
 }
 
 [[nodiscard]] auto createV3cParameterSet(const Configuration &config,
@@ -233,7 +235,7 @@ calculateNominalAtlasFrameSizes(const Configuration &config,
         .vps_geometry_video_present_flag(j, config.haveGeometry)
         .vps_occupancy_video_present_flag(j, config.haveOccupancy)
         .vps_attribute_video_present_flag(j, config.haveTexture)
-        .vps_miv_extension(createVpsMivExtension(config, atlasFrameSizes));
+        .vps_miv_2_extension(createVpsMiv2Extension(config, atlasFrameSizes));
 
     if (config.haveOccupancy) {
       vps.occupancy_information(j, createOccupancyInformation(config.occBitDepth));
@@ -321,6 +323,13 @@ createCommonAtlasSequenceParameterSet(const Configuration &config,
   return asme;
 }
 
+[[nodiscard]] auto createAspsMiv2Extension(const Configuration &config) {
+  auto asme2 = MivBitstream::AspsMiv2Extension{};
+  asme2.asme_patch_margin_enabled_flag(config.patchMarginFlag);
+
+  return asme2;
+}
+
 [[nodiscard]] auto
 createAtlasSequenceParameterSet(const Configuration &config,
                                 const MivBitstream::V3cParameterSet &vps,
@@ -341,6 +350,7 @@ createAtlasSequenceParameterSet(const Configuration &config,
       .asps_num_ref_atlas_frame_lists_in_asps(1)
       .asps_patch_size_quantizer_present_flag(psq.x() != blockSize || psq.y() != blockSize)
       .asps_miv_extension() = createAspsMivExtension(config, vps, blockSize, j);
+  asps.asps_miv_2_extension() = createAspsMiv2Extension(config);
 
   if (vps.vps_geometry_video_present_flag(j)) {
     const auto &gi = vps.geometry_information(j);

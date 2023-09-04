@@ -80,6 +80,7 @@ struct Configuration {
   uint8_t numGroups;
   uint16_t maxEntityId;
   bool halveDepthRange;
+  bool patchMarginFlag;
 
   // SEI-related parameters
   bool viewportCameraParametersSei;

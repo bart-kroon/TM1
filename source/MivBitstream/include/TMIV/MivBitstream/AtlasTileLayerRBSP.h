@@ -169,11 +169,15 @@ public:
   [[nodiscard]] auto pdu_depth_occ_threshold() const -> Common::SampleValue;
   [[nodiscard]] auto pdu_texture_offset(uint8_t c) const -> Common::SampleValue;
   [[nodiscard]] constexpr auto pdu_inpaint_flag() const noexcept;
+  [[nodiscard]] constexpr auto pdu_2d_margin_u() const noexcept;
+  [[nodiscard]] constexpr auto pdu_2d_margin_v() const noexcept;
 
   constexpr auto pdu_entity_id(Common::SampleValue value) noexcept -> auto &;
   constexpr auto pdu_depth_occ_threshold(Common::SampleValue value) noexcept -> auto &;
   auto pdu_texture_offset(uint8_t c, Common::SampleValue value) noexcept -> auto &;
   constexpr auto pdu_inpaint_flag(bool value) noexcept -> auto &;
+  constexpr auto pdu_2d_margin_u(uint16_t value) noexcept -> auto &;
+  constexpr auto pdu_2d_margin_v(uint16_t value) noexcept -> auto &;
 
   auto printTo(std::ostream &stream, uint32_t tileId, size_t patchIdx) const -> std::ostream &;
 
@@ -191,6 +195,8 @@ private:
   std::optional<Common::SampleValue> m_pdu_depth_occ_threshold;
   std::optional<Common::Vec3sv> m_pdu_texture_offset;
   std::optional<bool> m_pdu_inpaint_flag;
+  std::optional<uint16_t> m_pdu_2d_margin_u;
+  std::optional<uint16_t> m_pdu_2d_margin_v;
 };
 
 // 23090-5: patch_data_unit( patchIdx )

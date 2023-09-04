@@ -55,6 +55,7 @@ auto configuration1() {
     "dynamicDepthRange": false,
     "halveDepthRange": true,
     "rewriteParameterSets": false,
+    "patchMarginEnabledFlag": true,
     "patchRedundancyRemoval": true,
     "viewportCameraParametersSei": false,
     "viewportPositionSei": false,

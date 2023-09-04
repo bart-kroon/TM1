@@ -599,6 +599,7 @@ gm_group_count=0
       auto result = VpsMiv2Extension{};
       result.vps_miv_extension().vme_embedded_occupancy_enabled_flag(true);
       result.vme_decoder_side_depth_estimation_flag(true);
+      result.vme_patch_margin_enabled_flag(true);
       return result;
     }();
 
@@ -742,6 +743,7 @@ vme_geometry_scale_enabled_flag=false
 vme_embedded_occupancy_enabled_flag=true
 gm_group_count=0
 vme_decoder_side_depth_estimation_flag=true
+vme_patch_margin_enabled_flag=true
 vps_extension_type[ 2 ]=[unknown:63]
 vps_extension_length[ 2 ]=3
 vps_extension_data_byte=2

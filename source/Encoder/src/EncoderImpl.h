@@ -83,6 +83,7 @@ private:
                               const Common::FrameList<uint32_t> &information);
   void updateAggregationStatistics(const Common::FrameList<uint8_t> &aggregatedMask);
   void constructVideoFrames();
+  void filterPatchMargins();
   void encodePatchTextureOffset(const PatchTextureStats &stats);
   void applyPatchTextureOffset();
   [[nodiscard]] auto calculateBtpm() const -> std::vector<std::vector<std::vector<int32_t>>>;

@@ -43,8 +43,9 @@ auto NoPruner::prepareSequence(const PrunerParams & /* params */)
 
 auto NoPruner::getPixelInformation() -> Common::FrameList<uint32_t> { return {}; }
 
-auto NoPruner::prune(const MivBitstream::ViewParamsList &viewParamsList,
-                     const Common::DeepFrameList & /* views */) -> Common::FrameList<uint8_t> {
+auto NoPruner::prune(MivBitstream::ViewParamsList &viewParamsList,
+                     const Common::DeepFrameList & /* views */, int32_t /*semiBasicCount*/)
+    -> Common::FrameList<uint8_t> {
   auto mask = Common::FrameList<uint8_t>(viewParamsList.size());
   transform(viewParamsList.cbegin(), viewParamsList.cend(), mask.begin(),
             [](const MivBitstream::ViewParams &vp) {

@@ -46,11 +46,12 @@ using TMIV::Packer::ClusteringMap;
 TEST_CASE("TMIV::Packer::Cluster::push and accessors") {
   const auto viewIdx = GENERATE(3, 100);
   const auto isBasicView = GENERATE(false, true);
+  const auto isSemiBasicView = GENERATE(false, false);
   const auto clusterId = GENERATE(0, 81);
   const auto entityId = GENERATE(0, 4);
   CAPTURE(viewIdx, isBasicView, clusterId, entityId);
 
-  auto cluster = Cluster{viewIdx, isBasicView, clusterId, entityId};
+  auto cluster = Cluster{viewIdx, isBasicView, isSemiBasicView, clusterId, entityId};
 
   std::mt19937 rnd{2};
 

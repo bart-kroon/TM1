@@ -96,7 +96,7 @@ private:
                                            std::vector<Cluster> out);
   [[nodiscard]] auto getViewId(const Cluster &cluster,
                                const std::vector<int32_t> &clusteringMapIndex) const -> int32_t;
-  void ifEntityOrBasic(const Cluster &cluster) const;
+  void ifEntityOrBasicOrSemiBasic(const Cluster &cluster) const;
 };
 
 } // namespace TMIV::Packer

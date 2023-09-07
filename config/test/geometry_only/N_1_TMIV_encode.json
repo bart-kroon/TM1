@@ -2,6 +2,7 @@
     "Aggregator": {},
     "AggregatorMethod": "Aggregator",
     "BasicViewAllocator": {
+        "enableSemiBasicViews": false,
         "maxBasicViewFraction": 0.5,
         "minNonCodedViews": 3,
         "outputAdditionalViews": true

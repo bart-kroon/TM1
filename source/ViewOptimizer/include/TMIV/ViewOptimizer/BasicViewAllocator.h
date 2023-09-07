@@ -46,11 +46,12 @@ public:
   BasicViewAllocator(const Common::Json &rootNode, const Common::Json &componentNode);
 
 protected:
-  [[nodiscard]] auto isBasicView(double weight) const -> std::vector<bool> override;
+  [[nodiscard]] auto isBasicView(double weight, int32_t &semiBasicCount) const
+      -> std::vector<bool> override;
 
 private:
   // Calculate 'k'
-  [[nodiscard]] auto basicViewCount() const -> size_t;
+  [[nodiscard]] auto basicViewCount() const -> ViewCount;
   [[nodiscard]] auto lumaSamplesPerSourceViewSortedDesc() const -> std::vector<size_t>;
 
   // Prepare cost calculation
@@ -68,6 +69,7 @@ private:
   int32_t m_maxAtlases{};
   int32_t m_minNonCodedViews{}; // for evaluation purposes
   double m_maxBasicViewFraction{};
+  bool m_enableSemiBasicViews{};
 };
 } // namespace TMIV::ViewOptimizer
 

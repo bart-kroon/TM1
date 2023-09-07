@@ -186,19 +186,18 @@ class IntegrationTest:
             (self.testDir / "A3" / "E" / "RP0").mkdir(parents=True, exist_ok=True)
             (self.testDir / "A3" / "E" / "QP3").mkdir(parents=True, exist_ok=True)
 
-        geometryResolution = Resolution(512, 512)
-        textureResolution = Resolution(1024, 1024)
+        geometryResolution = Resolution(240, 1088)
+        textureResolution = Resolution(480, 2176)
         renderResolution = Resolution(480, 270)
 
         f1 = self.launchCommand(
             executor,
             [],
-            ["{0}/bin/TmivEncoder", "-c", "{1}/config/ctc/miv_main_anchor/A_1_TMIV_encode.json"]
+            ["{0}/bin/TmivEncoder", "-c", "{1}/config/test/miv_main_anchor/A_1_TMIV_encode.json"]
             + ["-p", "configDirectory", "{1}/config", "-p", "inputDirectory", "{2}"]
             + ["-p", "outputDirectory", "{3}", "-n", "3", "-s", "E", "-p", "intraPeriod", "1"]
             + ["-p", "inputSequenceConfigPathFmt", "test/sequences/T{{1}}.json"]
-            + ["-p", "maxLumaPictureSize", "1048576", "-f", "0"]
-            + ["-V", "debug"],
+            + ["-f", "0", "-V", "debug"],
             "{3}/A3/E/RP0/TMIV_A3_E_RP0.log",
             [
                 "A3/E/RP0/TMIV_A3_E_RP0.bit",
@@ -314,8 +313,8 @@ class IntegrationTest:
         if not self.dryRun:
             (self.testDir / "I3" / "E" / "QP3").mkdir(parents=True, exist_ok=True)
 
-        geometryResolution = Resolution(512, 512)
-        textureResolution = Resolution(1024, 1024)
+        geometryResolution = Resolution(240, 1088)
+        textureResolution = Resolution(480, 2176)
         renderResolution = Resolution(480, 270)
 
         f1 = self.launchCommand(
@@ -325,8 +324,7 @@ class IntegrationTest:
             + ["-p", "configDirectory", "{1}/config", "-p", "inputDirectory", "{2}"]
             + ["-p", "outputDirectory", "{3}", "-n", "3", "-s", "E"]
             + ["-p", "inputSequenceConfigPathFmt", "test/sequences/T{{1}}.json"]
-            + ["-p", "maxLumaPictureSize", "1048576", "-f", "0"]
-            + ["-V", "debug"],
+            + ["-f", "0", "-V", "debug"],
             "{3}/I3/E/TMIV_I3_E.log",
             [
                 "I3/E/TMIV_I3_E.bit",

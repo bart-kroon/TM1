@@ -275,6 +275,7 @@ private:
     vp.name = "s0"s;
     vp.viewInpaintFlag = true;
     vp.isBasicView = false;
+    vp.isSemiBasicView = false;
 
     // Assign the first available view ID
     for (uint16_t v = 0;; ++v) {

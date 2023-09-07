@@ -38,8 +38,13 @@ auto roundToAlignment(int32_t val, int32_t alignment) -> int32_t {
 }
 
 namespace TMIV::Packer {
-Cluster::Cluster(int32_t viewIdx, bool isBasicView, int32_t clusterId, int32_t entityId)
-    : viewIdx_(viewIdx), m_isBasicView{isBasicView}, clusterId_(clusterId), entityId_(entityId) {}
+Cluster::Cluster(int32_t viewIdx, bool isBasicView, bool isSemiBasicView, int32_t clusterId,
+                 int32_t entityId)
+    : viewIdx_(viewIdx)
+    , m_isBasicView{isBasicView}
+    , m_isSemiBasicView{isSemiBasicView}
+    , clusterId_(clusterId)
+    , entityId_(entityId) {}
 
 void Cluster::push(int32_t i, int32_t j) {
   if (i < imin_) {
@@ -59,7 +64,7 @@ void Cluster::push(int32_t i, int32_t j) {
 }
 
 auto Cluster::setEntityId(const Cluster &c, int32_t entityId) -> Cluster {
-  Cluster d(c.viewIdx_, c.isBasicView(), c.clusterId_, entityId);
+  Cluster d(c.viewIdx_, c.isBasicView(), c.isSemiBasicView(), c.clusterId_, entityId);
   d.imin_ = c.imin_;
   d.imax_ = c.imax_;
   d.jmin_ = c.jmin_;
@@ -69,7 +74,7 @@ auto Cluster::setEntityId(const Cluster &c, int32_t entityId) -> Cluster {
 }
 
 auto Cluster::align(const Cluster &c, int32_t alignment) -> Cluster {
-  Cluster d(c.viewIdx_, c.isBasicView(), c.clusterId_, c.entityId_);
+  Cluster d(c.viewIdx_, c.isBasicView(), c.isSemiBasicView(), c.clusterId_, c.entityId_);
 
   d.imin_ = c.imin_ - (c.imin_ % alignment);
   d.imax_ = c.imax_; // modification to align the imin,jmin to even values to
@@ -85,7 +90,7 @@ auto Cluster::align(const Cluster &c, int32_t alignment) -> Cluster {
 }
 
 auto Cluster::merge(const Cluster &c1, const Cluster &c2) -> Cluster {
-  Cluster c(c1.viewIdx_, false, c1.clusterId_, c1.entityId_);
+  Cluster c(c1.viewIdx_, false, false, c1.clusterId_, c1.entityId_);
 
   c.imin_ = std::min(c1.imin_, c2.imin_);
   c.imax_ = std::max(c1.imax_, c2.imax_);
@@ -127,8 +132,10 @@ auto Cluster::splitLPatchHorizontally(const ClusteringMap &clusteringMap, std::v
   }
 
   if ((bestSplitPos != 0) && static_cast<double>(minArea) / alignedImsize < splitThresholdL) {
-    Cluster c1(c.getViewIdx(), c.isBasicView(), c.getClusterId(), c.getEntityId());
-    Cluster c2(c.getViewIdx(), c.isBasicView(), c.getClusterId(), c.getEntityId());
+    Cluster c1(c.getViewIdx(), c.isBasicView(), c.isSemiBasicView(), c.getClusterId(),
+               c.getEntityId());
+    Cluster c2(c.getViewIdx(), c.isBasicView(), c.isSemiBasicView(), c.getClusterId(),
+               c.getEntityId());
 
     for (int32_t i = c.imin(); i < c.imin() + bestSplitPos + 1; i++) {
       for (int32_t j = c.jmin(); j <= c.jmax(); j++) {
@@ -195,8 +202,10 @@ auto Cluster::splitCPatchVertically(const ClusteringMap &clusteringMap, std::vec
       splitThresholdC) {
     int32_t bestSplitPos = roundToAlignment(W / 2, alignment);
 
-    Cluster c1(c.getViewIdx(), c.isBasicView(), c.getClusterId(), c.getEntityId());
-    Cluster c2(c.getViewIdx(), c.isBasicView(), c.getClusterId(), c.getEntityId());
+    Cluster c1(c.getViewIdx(), c.isBasicView(), c.isSemiBasicView(), c.getClusterId(),
+               c.getEntityId());
+    Cluster c2(c.getViewIdx(), c.isBasicView(), c.isSemiBasicView(), c.getClusterId(),
+               c.getEntityId());
 
     for (int32_t i = c.imin(); i <= c.imax(); i++) {
       for (int32_t j = c.jmin(); j < c.jmin() + bestSplitPos + 1; j++) {
@@ -280,8 +289,10 @@ auto Cluster::splitnUnevenInformationPatchVertically(const ClusteringMap &cluste
   }
 
   if (bestSplitPos != 0 && max_information_density_diff > splitThresholdInformation) {
-    Cluster c1(c.getViewIdx(), c.isBasicView(), c.getClusterId(), c.getEntityId());
-    Cluster c2(c.getViewIdx(), c.isBasicView(), c.getClusterId(), c.getEntityId());
+    Cluster c1(c.getViewIdx(), c.isBasicView(), c.isSemiBasicView(), c.getClusterId(),
+               c.getEntityId());
+    Cluster c2(c.getViewIdx(), c.isBasicView(), c.isSemiBasicView(), c.getClusterId(),
+               c.getEntityId());
 
     for (int32_t i = c.imin(); i <= c.imax(); i++) {
       for (int32_t j = c.jmin(); j < c.jmin() + bestSplitPos; j++) {
@@ -349,8 +360,10 @@ auto Cluster::splitCPatchHorizontally(const ClusteringMap &clusteringMap, std::v
       splitThresholdC) {
     int32_t bestSplitPos = roundToAlignment(H / 2, alignment);
 
-    Cluster c1(c.getViewIdx(), c.isBasicView(), c.getClusterId(), c.getEntityId());
-    Cluster c2(c.getViewIdx(), c.isBasicView(), c.getClusterId(), c.getEntityId());
+    Cluster c1(c.getViewIdx(), c.isBasicView(), c.isSemiBasicView(), c.getClusterId(),
+               c.getEntityId());
+    Cluster c2(c.getViewIdx(), c.isBasicView(), c.isSemiBasicView(), c.getClusterId(),
+               c.getEntityId());
 
     for (int32_t i = c.imin(); i < c.imin() + bestSplitPos + 1; i++) {
       for (int32_t j = c.jmin(); j <= c.jmax(); j++) {
@@ -462,8 +475,10 @@ auto Cluster::splitUnevenInformationPatchHorizontally(
   }
 
   if (bestSplitPos != 0 && max_information_density_diff > splitThresholdInformation) {
-    Cluster c1(c.getViewIdx(), c.isBasicView(), c.getClusterId(), c.getEntityId());
-    Cluster c2(c.getViewIdx(), c.isBasicView(), c.getClusterId(), c.getEntityId());
+    Cluster c1(c.getViewIdx(), c.isBasicView(), c.isSemiBasicView(), c.getClusterId(),
+               c.getEntityId());
+    Cluster c2(c.getViewIdx(), c.isBasicView(), c.isSemiBasicView(), c.getClusterId(),
+               c.getEntityId());
 
     for (int32_t i = c.imin(); i < c.imin() + bestSplitPos; i++) {
       for (int32_t j = c.jmin(); j <= c.jmax(); j++) {
@@ -519,8 +534,10 @@ auto Cluster::splitLPatchVertically(const ClusteringMap &clusteringMap, std::vec
   }
 
   if ((bestSplitPos != 0) && static_cast<double>(minArea) / alignedImsize < splitThresholdL) {
-    Cluster c1(c.getViewIdx(), c.isBasicView(), c.getClusterId(), c.getEntityId());
-    Cluster c2(c.getViewIdx(), c.isBasicView(), c.getClusterId(), c.getEntityId());
+    Cluster c1(c.getViewIdx(), c.isBasicView(), c.isSemiBasicView(), c.getClusterId(),
+               c.getEntityId());
+    Cluster c2(c.getViewIdx(), c.isBasicView(), c.isSemiBasicView(), c.getClusterId(),
+               c.getEntityId());
 
     for (int32_t i = c.imin(); i <= c.imax(); i++) {
       for (int32_t j = c.jmin(); j < c.jmin() + bestSplitPos + 1; j++) {
@@ -668,8 +685,9 @@ auto Cluster::split(const ClusteringMap &clusteringMap, int32_t overlap) const
   const auto &clusteringBuffer = clusteringMap.getPlane(0);
   const Cluster &c = *this;
   PRECONDITION(!c.isBasicView());
-  Cluster c1(c.getViewIdx(), false, c.getClusterId(), c.getEntityId());
-  Cluster c2(c.getViewIdx(), false, c.getClusterId(), c.getEntityId());
+  PRECONDITION(!c.isSemiBasicView());
+  Cluster c1(c.getViewIdx(), false, false, c.getClusterId(), c.getEntityId());
+  Cluster c2(c.getViewIdx(), false, false, c.getClusterId(), c.getEntityId());
 
   if (c.width() < c.height()) {
     int32_t imid = (c.imin() + c.imax()) / 2;

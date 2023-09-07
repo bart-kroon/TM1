@@ -409,9 +409,24 @@ public:
     return pruningParents;
   }
 
-  auto prune(const MivBitstream::ViewParamsList &viewParamsList, const Common::DeepFrameList &views)
-      -> Common::FrameList<uint8_t> {
+  auto prune(MivBitstream::ViewParamsList &viewParamsList, const Common::DeepFrameList &views,
+             int32_t semiBasicCount) -> Common::FrameList<uint8_t> {
     m_params.viewParamsList = viewParamsList;
+
+    size_t s = 0;
+    auto remainingSemiBasicViews = semiBasicCount;
+    while (remainingSemiBasicViews > 0) {
+      for (const auto &cluster : m_clusters) {
+        if (remainingSemiBasicViews <= 0) {
+          break;
+        }
+        if (s < cluster.pruningOrder.size()) {
+          viewParamsList[cluster.pruningOrder[s]].isSemiBasicView = true;
+        }
+        remainingSemiBasicViews--;
+      }
+      s++;
+    }
 
     bool isItFirstFrame = false;
     if (!m_lumaStdDev.has_value()) {
@@ -953,9 +968,10 @@ auto HierarchicalPruner::prepareSequence(const PrunerParams &params)
   return m_impl->prepareSequence(params);
 }
 
-auto HierarchicalPruner::prune(const MivBitstream::ViewParamsList &viewParamsList,
-                               const Common::DeepFrameList &views) -> Common::FrameList<uint8_t> {
-  return m_impl->prune(viewParamsList, views);
+auto HierarchicalPruner::prune(MivBitstream::ViewParamsList &viewParamsList,
+                               const Common::DeepFrameList &views, int32_t semiBasicCount)
+    -> Common::FrameList<uint8_t> {
+  return m_impl->prune(viewParamsList, views, semiBasicCount);
 }
 auto HierarchicalPruner::getPixelInformation() -> Common::FrameList<uint32_t> {
   return m_impl->getPixelInformation();

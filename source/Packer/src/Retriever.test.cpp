@@ -51,13 +51,13 @@ void addRectangle(Common::Frame<uint8_t> &mask, Common::Vec2i topLeft, Common::V
 SCENARIO("Cluster retrieving") {
   const int32_t viewIdx = 0;
   const int32_t firstClusterId = 0;
-  bool isBasicView{};
+  std::pair<bool, bool> isBasicOrSemiBasicView{};
   bool enableMerging{};
   GIVEN("a 0x0 mask") {
     const auto mask = Common::Frame<uint8_t>::lumaOnly({});
     WHEN("retrieving clusters") {
-      const auto [clusterList, clusteringMap] =
-          retrieveClusters(viewIdx, mask, firstClusterId, isBasicView, enableMerging, true);
+      const auto [clusterList, clusteringMap] = retrieveClusters(
+          viewIdx, mask, firstClusterId, isBasicOrSemiBasicView, enableMerging, true);
       THEN("return empty cluster list and map") {
         REQUIRE(clusterList.empty());
         REQUIRE(clusteringMap.getNumberOfPlanes() == 1);
@@ -71,8 +71,8 @@ SCENARIO("Cluster retrieving") {
     Common::Frame<uint8_t> mask{};
     mask.createY({2, 2});
     WHEN("retrieving clusters") {
-      const auto [clusterList, clusteringMap] =
-          retrieveClusters(viewIdx, mask, firstClusterId, isBasicView, enableMerging, false);
+      const auto [clusterList, clusteringMap] = retrieveClusters(
+          viewIdx, mask, firstClusterId, isBasicOrSemiBasicView, enableMerging, false);
       THEN("return empty cluster list and map with max value") {
         REQUIRE(clusterList.empty());
         REQUIRE(clusteringMap.getNumberOfPlanes() == 1);
@@ -91,8 +91,8 @@ SCENARIO("Cluster retrieving") {
     mask.getPlane(0)(0, 0) = 1;
     mask.getPlane(0)(1, 1) = 1;
     WHEN("retrieving clusters") {
-      const auto [clusterList, clusteringMap] =
-          retrieveClusters(viewIdx, mask, firstClusterId, isBasicView, enableMerging, false);
+      const auto [clusterList, clusteringMap] = retrieveClusters(
+          viewIdx, mask, firstClusterId, isBasicOrSemiBasicView, enableMerging, false);
       THEN("return one cluster and map with zeroes on the diagonal") {
         REQUIRE(clusterList.size() == 1);
         REQUIRE(!clusterList[0].isBasicView());
@@ -118,8 +118,8 @@ SCENARIO("Cluster retrieving") {
     mask.createY({5, 5});
     addRectangle(mask, {1, 1}, {3, 3});
     WHEN("retrieving clusters") {
-      const auto [clusterList, clusteringMap] =
-          retrieveClusters(viewIdx, mask, firstClusterId, isBasicView, enableMerging, false);
+      const auto [clusterList, clusteringMap] = retrieveClusters(
+          viewIdx, mask, firstClusterId, isBasicOrSemiBasicView, enableMerging, false);
       THEN("return one cluster and map with zeroes on the diagonal") {
         REQUIRE(clusterList.size() == 1);
         REQUIRE(!clusterList[0].isBasicView());
@@ -144,8 +144,8 @@ SCENARIO("Cluster retrieving") {
     addRectangle(mask, {1, 1}, {2, 2});
     addRectangle(mask, {6, 6}, {7, 7});
     WHEN("retrieving clusters") {
-      const auto [clusterList, clusteringMap] =
-          retrieveClusters(viewIdx, mask, firstClusterId, isBasicView, enableMerging, false);
+      const auto [clusterList, clusteringMap] = retrieveClusters(
+          viewIdx, mask, firstClusterId, isBasicOrSemiBasicView, enableMerging, false);
       THEN("return two clusters") {
         REQUIRE(clusterList.size() == 2);
         REQUIRE(!clusterList[0].isBasicView());
@@ -164,8 +164,8 @@ SCENARIO("Cluster retrieving") {
     addRectangle(mask, {1, 4}, {3, 10});
     addRectangle(mask, {6, 6}, {7, 7});
     WHEN("retrieving clusters") {
-      const auto [clusterList, clusteringMap] =
-          retrieveClusters(viewIdx, mask, firstClusterId, isBasicView, enableMerging, false);
+      const auto [clusterList, clusteringMap] = retrieveClusters(
+          viewIdx, mask, firstClusterId, isBasicOrSemiBasicView, enableMerging, false);
       THEN("return one cluster") { REQUIRE(clusterList.size() == 1); }
     }
   }
@@ -174,7 +174,7 @@ SCENARIO("Cluster retrieving") {
 SCENARIO("Cluster retrieving for basic view") {
   const int32_t viewIdx = 0;
   const int32_t firstClusterId = 0;
-  bool isBasicView{true};
+  auto isBasicOrSemiBasicView = std::make_pair(true, false);
   bool enableMerging{};
 
   GIVEN("a 4x4 mask with two clusters") {
@@ -183,8 +183,8 @@ SCENARIO("Cluster retrieving for basic view") {
     addRectangle(mask, {0, 0}, {1, 1});
     addRectangle(mask, {0, 3}, {3, 3});
     WHEN("retrieving clusters") {
-      const auto [clusterList, clusteringMap] =
-          retrieveClusters(viewIdx, mask, firstClusterId, isBasicView, enableMerging, false);
+      const auto [clusterList, clusteringMap] = retrieveClusters(
+          viewIdx, mask, firstClusterId, isBasicOrSemiBasicView, enableMerging, false);
       THEN("return one cluster") {
         REQUIRE(clusterList.size() == 1);
         REQUIRE(clusterList[0].isBasicView());

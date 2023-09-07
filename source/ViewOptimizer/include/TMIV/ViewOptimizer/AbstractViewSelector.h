@@ -50,7 +50,8 @@ public:
       -> Common::DeepFrameList override;
 
 protected:
-  [[nodiscard]] virtual auto isBasicView(double weight) const -> std::vector<bool> = 0;
+  [[nodiscard]] virtual auto isBasicView(double weight, int32_t &semiBasicCount) const
+      -> std::vector<bool> = 0;
   [[nodiscard]] constexpr auto params() const noexcept -> auto & { return m_params; }
 
 private:
@@ -61,6 +62,7 @@ private:
   double m_verticalInhomogenityCoefficient;
   ViewOptimizerParams m_params;
   std::vector<bool> m_isBasicView;
+  int32_t m_semiBasicCount;
 };
 } // namespace TMIV::ViewOptimizer
 

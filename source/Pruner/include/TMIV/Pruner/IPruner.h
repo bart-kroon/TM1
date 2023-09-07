@@ -55,8 +55,9 @@ public:
 
   [[nodiscard]] virtual auto prepareSequence(const PrunerParams &params)
       -> std::vector<MivBitstream::PruningParents> = 0;
-  virtual auto prune(const MivBitstream::ViewParamsList &viewParamsList,
-                     const Common::DeepFrameList &views) -> Common::FrameList<uint8_t> = 0;
+  virtual auto prune(MivBitstream::ViewParamsList &viewParamsList,
+                     const Common::DeepFrameList &views, int32_t semiBasicCount)
+      -> Common::FrameList<uint8_t> = 0;
   virtual auto getPixelInformation() -> Common::FrameList<uint32_t> = 0;
 };
 } // namespace TMIV::Pruner

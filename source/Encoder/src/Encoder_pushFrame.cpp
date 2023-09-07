@@ -47,7 +47,8 @@ void Encoder::Impl::pushFrame(Common::DeepFrameList sourceViews) {
 
 void Encoder::Impl::pushSingleEntityFrame(Common::DeepFrameList sourceViews) {
   auto transportViews = m_viewOptimizer->optimizeFrame(std::move(sourceViews));
-  const auto masks = m_pruner->prune(m_transportParams.viewParamsList, transportViews);
+  const auto masks = m_pruner->prune(m_transportParams.viewParamsList, transportViews,
+                                     m_transportParams.semiBasicCount);
   const auto informtaion = m_pruner->getPixelInformation();
   m_transportViews.push_back(std::move(transportViews));
   m_aggregator->pushMask(masks);
@@ -67,7 +68,8 @@ void Encoder::Impl::pushMultiEntityFrame(Common::DeepFrameList sourceViews) {
     Common::logInfo("Processing entity {}", entityId);
 
     const auto transportEntityViews = entitySeparator(transportViews, entityId);
-    auto masks = m_pruner->prune(m_transportParams.viewParamsList, transportEntityViews);
+    auto masks = m_pruner->prune(m_transportParams.viewParamsList, transportEntityViews,
+                                 m_transportParams.semiBasicCount);
     updateMasks(transportEntityViews, masks);
     aggregateEntityMasks(masks, entityId);
     mergeMasks(mergedMasks, masks);

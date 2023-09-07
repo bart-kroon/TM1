@@ -41,6 +41,7 @@
             "stretchingParameter": 3
         },
         "BasicViewAllocator": {
+            "enableSemiBasicViews": true,
             "maxBasicViewFraction": 0.5,
             "minNonCodedViews": 3,
             "outputAdditionalViews": true,
@@ -59,7 +60,7 @@
     "ViewOptimizerMethod": "ServerSideInpainter",
     "bitDepthGeometryVideo": 10,
     "bitDepthTextureVideo": 10,
-    "blockSizeDepthQualityDependent": [64, 128],
+    "blockSizeDepthQualityDependent": [64, 64],
     "chromaScaleEnabledFlag": true,
     "codecGroupIdc": "VVC Main10",
     "configDirectory": "config",

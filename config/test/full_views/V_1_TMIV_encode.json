@@ -26,6 +26,7 @@
             "stretchingParameter": 3
         },
         "BasicViewAllocator": {
+            "enableSemiBasicViews": false,
             "maxBasicViewFraction": 1.0,
             "minNonCodedViews": 3,
             "outputAdditionalViews": false,

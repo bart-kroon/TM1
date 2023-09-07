@@ -45,6 +45,7 @@ AbstractViewSelector::AbstractViewSelector(const Common::Json & /* rootNode */,
   } else {
     m_verticalInhomogenityCoefficient = 1.;
   }
+  m_semiBasicCount = 0;
   VERIFY(0. < m_verticalInhomogenityCoefficient && m_verticalInhomogenityCoefficient <= 1.);
 }
 
@@ -56,11 +57,12 @@ auto AbstractViewSelector::optimizeParams(const SourceParams &params) -> ViewOpt
     weight = m_verticalInhomogenityCoefficient;
   }
 
-  m_isBasicView = isBasicView(weight);
+  m_isBasicView = isBasicView(weight, m_semiBasicCount);
 
   for (size_t i = 0; i < m_params.viewParamsList.size(); ++i) {
     m_params.viewParamsList[i].isBasicView = m_isBasicView[i];
   }
+  m_params.semiBasicCount = m_semiBasicCount;
 
   printSummary();
 

@@ -85,6 +85,7 @@ TEST_CASE("TMIV::ViewOptimizer::BasicViewAllocator") {
 })"sv);
     const auto config2 = Json::parse(R"(
 {
+    "enableSemiBasicViews": false,
     "verticalInhomogenityCoefficient": 0.4,
     "outputAdditionalViews": true,
     "minNonCodedViews": 3,
@@ -117,6 +118,7 @@ TEST_CASE("TMIV::ViewOptimizer::BasicViewAllocator") {
 })"sv);
     const auto config2 = Json::parse(R"(
 {
+    "enableSemiBasicViews": false,
     "verticalInhomogenityCoefficient": 0.4,
     "outputAdditionalViews": false,
     "minNonCodedViews": 0,

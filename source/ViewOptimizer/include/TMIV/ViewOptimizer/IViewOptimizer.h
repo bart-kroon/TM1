@@ -38,6 +38,11 @@
 #include <TMIV/MivBitstream/ViewParamsList.h>
 
 namespace TMIV::ViewOptimizer {
+struct ViewCount {
+  int32_t basicViewCount{};
+  int32_t semiBasicViewCount{};
+};
+
 struct SourceParams {
   MivBitstream::ViewParamsList viewParamsList;
   bool depthLowQualityFlag{};
@@ -45,6 +50,7 @@ struct SourceParams {
 
 struct ViewOptimizerParams {
   MivBitstream::ViewParamsList viewParamsList;
+  int32_t semiBasicCount{};
 };
 
 class IViewOptimizer {

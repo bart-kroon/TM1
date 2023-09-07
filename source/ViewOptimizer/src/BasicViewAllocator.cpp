@@ -50,23 +50,30 @@ BasicViewAllocator::BasicViewAllocator(const Common::Json &rootNode,
     , m_maxLumaPictureSize{rootNode.require("maxLumaPictureSize").as<int32_t>()}
     , m_maxAtlases{rootNode.require("maxAtlases").as<int32_t>()}
     , m_minNonCodedViews{componentNode.require("minNonCodedViews").as<int32_t>()}
-    , m_maxBasicViewFraction{componentNode.require("maxBasicViewFraction").as<double>()} {
+    , m_maxBasicViewFraction{componentNode.require("maxBasicViewFraction").as<double>()}
+    , m_enableSemiBasicViews{componentNode.require("enableSemiBasicViews").as<bool>()} {
   VERIFY(m_numGroups <= m_maxAtlases);
   VERIFY(0 < m_maxLumaPictureSize);
   VERIFY(0 <= m_minNonCodedViews);
   VERIFY(0. < m_maxBasicViewFraction && m_maxBasicViewFraction <= 1.);
 }
 
-auto BasicViewAllocator::isBasicView(double weight) const -> std::vector<bool> {
-  const auto viewCount = params().viewParamsList.size();
-  const auto count = basicViewCount();
-  VERIFY(0 < count && count <= viewCount);
+auto BasicViewAllocator::isBasicView(double weight, int32_t &semiBasicCount) const
+    -> std::vector<bool> {
+  const auto viewTotalCount = params().viewParamsList.size();
+  const auto viewCount = basicViewCount();
+  const auto basicCount = static_cast<size_t>(viewCount.basicViewCount);
+  semiBasicCount = viewCount.semiBasicViewCount;
+  if (!m_enableSemiBasicViews) {
+    semiBasicCount = 0;
+  }
+  VERIFY(0 < basicCount && basicCount <= viewTotalCount);
 
   const auto positions = viewPositions();
   const auto cost = KMedoidsCost{sqDistanceMatrix(positions, weight)};
   const auto first = forwardView(positions);
 
-  auto centroids = selectInitialCentroids(cost, first, count);
+  auto centroids = selectInitialCentroids(cost, first, basicCount);
   std::ostringstream what;
   what << "Initial centroids:";
   for (auto i : centroids) {
@@ -93,14 +100,28 @@ auto BasicViewAllocator::isBasicView(double weight) const -> std::vector<bool> {
   return result;
 }
 
-auto BasicViewAllocator::basicViewCount() const -> size_t {
+auto BasicViewAllocator::basicViewCount() const -> ViewCount {
   const auto numAtlases = m_maxAtlases / std::max(1, m_numGroups);
   const auto maxSamples =
       static_cast<size_t>(m_maxBasicViewFraction * numAtlases * m_maxLumaPictureSize);
 
-  size_t count = 0;
+  size_t basicCount = 0;
   size_t samplesInTotal = 0;
   size_t samplesInAtlas0 = 0;
+
+  size_t tmpCnt = 0;
+  size_t tmpSum = 0;
+
+  for (auto samplesInView : lumaSamplesPerSourceViewSortedDesc()) {
+    if (basicCount % numAtlases == 0) {
+      tmpSum += samplesInView;
+      if (tmpSum > static_cast<size_t>(m_maxLumaPictureSize)) {
+        break;
+      }
+    }
+    tmpCnt++;
+  }
+  tmpCnt *= 2;
 
   for (auto samplesInView : lumaSamplesPerSourceViewSortedDesc()) {
     samplesInTotal += samplesInView;
@@ -109,7 +130,7 @@ auto BasicViewAllocator::basicViewCount() const -> size_t {
       break;
     }
 
-    if (count % numAtlases == 0) {
+    if (basicCount % numAtlases == 0) {
       samplesInAtlas0 += samplesInView;
       if (samplesInAtlas0 > static_cast<size_t>(m_maxLumaPictureSize)) {
         Common::logInfo("Basic view count is limited by maximum luma picture size.");
@@ -117,14 +138,21 @@ auto BasicViewAllocator::basicViewCount() const -> size_t {
       }
     }
 
-    if (++count + m_minNonCodedViews >= params().viewParamsList.size()) {
+    if (++basicCount + m_minNonCodedViews >= params().viewParamsList.size()) {
       Common::logInfo("Basic view count is limited by minimum non-coded view count.");
       break;
     }
   }
 
-  VERIFY(0 < count && count <= params().viewParamsList.size());
-  return count;
+  VERIFY(0 < basicCount && basicCount <= params().viewParamsList.size());
+
+  auto semiBasicCount = static_cast<int32_t>(tmpCnt - basicCount);
+
+  ViewCount viewCount;
+  viewCount.basicViewCount = static_cast<int32_t>(basicCount);
+  viewCount.semiBasicViewCount = semiBasicCount;
+
+  return viewCount;
 }
 
 auto BasicViewAllocator::lumaSamplesPerSourceViewSortedDesc() const -> std::vector<size_t> {

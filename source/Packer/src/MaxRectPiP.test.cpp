@@ -46,11 +46,12 @@ using TMIV::Packer::MaxRectPiP;
 TEST_CASE("TMIV::Packer::MaxRectPiP") {
   const auto viewIdx = 100;
   const auto isBasicView = GENERATE(false, true);
+  const auto isSemiBasicView = GENERATE(false, false);
   const auto clusterId = 81;
   const auto entityId = 4;
   CAPTURE(isBasicView);
 
-  auto cluster = Cluster{viewIdx, isBasicView, clusterId, entityId};
+  auto cluster = Cluster{viewIdx, isBasicView, isSemiBasicView, clusterId, entityId};
 
   std::mt19937 rnd{2};
 
@@ -80,7 +81,7 @@ TEST_CASE("TMIV::Packer::MaxRectPiP") {
 
   SECTION("Second smaller cluster") {
     const auto clusterId2 = clusterId + 3;
-    cluster = Cluster{viewIdx, isBasicView, clusterId2, entityId};
+    cluster = Cluster{viewIdx, isBasicView, isSemiBasicView, clusterId2, entityId};
 
     const auto height2 = 10U;
     const auto width2 = 30U;

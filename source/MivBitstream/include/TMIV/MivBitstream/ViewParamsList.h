@@ -83,6 +83,7 @@ struct ViewParams {
 
   // Is this a basic view or an additional view?
   bool isBasicView{true};
+  bool isSemiBasicView{false};
 
   // Is this view a regular view (e.g. captured by a camera) or the result of an inpainting process?
   bool viewInpaintFlag{};

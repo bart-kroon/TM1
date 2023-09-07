@@ -49,7 +49,8 @@ using ClusterList = std::vector<Cluster>;
 class Cluster {
 public:
   Cluster() = default;
-  Cluster(int32_t viewIdx, bool isBasicView, int32_t clusterId, int32_t entityId);
+  Cluster(int32_t viewIdx, bool isBasicView, bool isSemiBasicView, int32_t clusterId,
+          int32_t entityId);
   Cluster(const Cluster &) = default;
   Cluster(Cluster &&) = default;
   auto operator=(const Cluster &) -> Cluster & = default;
@@ -75,6 +76,7 @@ public:
   [[nodiscard]] auto split(const ClusteringMap &clusteringMap, int32_t overlap) const
       -> std::pair<Cluster, Cluster>;
   [[nodiscard]] constexpr auto isBasicView() const noexcept { return m_isBasicView; }
+  [[nodiscard]] constexpr auto isSemiBasicView() const noexcept { return m_isSemiBasicView; }
   auto numActivePixels() -> int32_t & { return numActivePixels_; }
   void setPriority(int32_t priority) { information_priority_ = priority; }
   void calculateInformationDensity(const ClusteringMap &clusteringMap,
@@ -132,6 +134,7 @@ private:
 
   int32_t viewIdx_ = 0;
   bool m_isBasicView{};
+  bool m_isSemiBasicView{};
   int32_t clusterId_ = 0;
   int32_t entityId_ = 0;
   int32_t numActivePixels_ = 0;

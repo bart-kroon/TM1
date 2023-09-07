@@ -151,10 +151,10 @@ void MaxRectPiP::updateOccupancyMap(const Cluster &c, const ClusteringMap &clust
 
   // Step #1 (in projection)
   Common::Vec2i p0 = {c.jmin(), c.imin()};
-  if (patchOverflow.x() > 0) {
+  if (patchOverflow.x() > 0 && !c.isSemiBasicView()) {
     p0.x() -= patchOverflow.x();
   }
-  if (patchOverflow.y() > 0) {
+  if (patchOverflow.y() > 0 && !c.isSemiBasicView()) {
     p0.y() -= patchOverflow.y();
   }
   int32_t xMin = std::max(0, p0.x());

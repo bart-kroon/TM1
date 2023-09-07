@@ -158,6 +158,10 @@ auto Packer::computeClusterToPack(const std::vector<Common::SizeVector> &atlasSi
         viewParamsList[p2.getViewIdx()].isBasicView) {
       return viewParamsList[p2.getViewIdx()].isBasicView;
     }
+    if (viewParamsList[p1.getViewIdx()].isSemiBasicView !=
+        viewParamsList[p2.getViewIdx()].isSemiBasicView) {
+      return viewParamsList[p2.getViewIdx()].isSemiBasicView;
+    }
 
     // Give priority to the server-side-inpainted view
     if (m_prioritizeSSI && viewParamsList[p1.getViewIdx()].viewInpaintFlag !=
@@ -170,20 +174,17 @@ auto Packer::computeClusterToPack(const std::vector<Common::SizeVector> &atlasSi
       return p1.getPriority() < p2.getPriority();
     }
 
-    if (p1.getPriority() == 0) { // not high priority means the cluster may be packed into
-                                 // altas, so order by information density
-      if (p1.getInformationDensity() != p2.getInformationDensity()) {
-        return p1.getInformationDensity() < p2.getInformationDensity();
-      }
+    if (p1.getPriority() == 0 && (p1.getInformationDensity() != p2.getInformationDensity())) {
+      // not high priority means the cluster may be packed into altas, so order by information
+      // density
+      return p1.getInformationDensity() < p2.getInformationDensity();
     }
     if (m_sortingMethod == AREA_DESCENDING) {
       if (p1.getArea() != p2.getArea()) {
         return p1.getArea() < p2.getArea();
       }
-    } else if (m_sortingMethod == VIEW_ID_ASCENDING) {
-      if (p1.getViewIdx() != p2.getViewIdx()) {
-        return p1.getViewIdx() > p2.getViewIdx();
-      }
+    } else if (m_sortingMethod == VIEW_ID_ASCENDING && p1.getViewIdx() != p2.getViewIdx()) {
+      return p1.getViewIdx() > p2.getViewIdx();
     }
     // NOTE(BK): Stable ordering
     return p1.getClusterId() > p2.getClusterId();
@@ -191,7 +192,7 @@ auto Packer::computeClusterToPack(const std::vector<Common::SizeVector> &atlasSi
   std::priority_queue<Cluster, std::vector<Cluster>, decltype(comp)> clusterToPack(comp);
   std::vector<Cluster> out{};
   for (const auto &cluster : clusterList) {
-    if (m_maxEntityId > 0 || cluster.isBasicView()) {
+    if (m_maxEntityId > 0 || cluster.isBasicView() || cluster.isSemiBasicView()) {
       out.push_back(cluster);
       continue;
     }
@@ -389,7 +390,7 @@ auto Packer::pack(const std::vector<Common::SizeVector> &atlasSizes,
       }
 
       if (!packed) {
-        ifEntityOrBasic(cluster);
+        ifEntityOrBasicOrSemiBasic(cluster);
         auto cc = cluster.split(clusteringMap[clusteringMap_viewId], m_overlap);
         const auto alignPatch = [&, &clusteringMapIndex = clusteringMapIndex](auto member,
                                                                               auto clusteringMap_) {
@@ -440,12 +441,15 @@ auto Packer::getViewId(const Cluster &cluster, const std::vector<int32_t> &clust
   return cluster.getViewIdx();
 }
 
-void Packer::ifEntityOrBasic(const Cluster &cluster) const {
+void Packer::ifEntityOrBasicOrSemiBasic(const Cluster &cluster) const {
   if (m_maxEntityId > 0) {
     Common::logInfo("Spliting cluster {}", cluster.getClusterId());
   }
   if (cluster.isBasicView()) {
     throw std::runtime_error("Failed to pack basic view");
+  }
+  if (cluster.isSemiBasicView()) {
+    throw std::runtime_error("Failed to pack semi-basic view");
   }
 }
 
@@ -457,6 +461,8 @@ auto Packer::computeClusters(const Common::FrameList<uint8_t> &masks,
   std::vector<int32_t> clusteringMapIndex{};
   int32_t index = 0;
   for (auto viewIdx = 0; viewIdx < static_cast<int32_t>(masks.size()); viewIdx++) {
+    auto isBasicOrSemiBasicView = std::make_pair(viewParamsList[viewIdx].isBasicView,
+                                                 viewParamsList[viewIdx].isSemiBasicView);
     if (m_maxEntityId > 0) {
       for (int32_t entityId = m_entityEncodeRange[0]; entityId < m_entityEncodeRange[1];
            entityId++) {
@@ -464,9 +470,9 @@ auto Packer::computeClusters(const Common::FrameList<uint8_t> &masks,
         Common::Frame<uint8_t> mask =
             m_aggregatedEntityMasks[entityId - m_entityEncodeRange[0]][viewIdx];
 
-        auto clusteringOutput = retrieveClusters(
-            viewIdx, mask, static_cast<int32_t>(clusterList.size()),
-            viewParamsList[viewIdx].isBasicView, m_enableMerging, m_maxEntityId > 0);
+        auto clusteringOutput =
+            retrieveClusters(viewIdx, mask, static_cast<int32_t>(clusterList.size()),
+                             isBasicOrSemiBasicView, m_enableMerging, m_maxEntityId > 0);
 
         for (auto &cluster : clusteringOutput.first) {
           cluster = Cluster::setEntityId(cluster, entityId);
@@ -489,7 +495,7 @@ auto Packer::computeClusters(const Common::FrameList<uint8_t> &masks,
     } else {
       auto clusteringOutput =
           retrieveClusters(viewIdx, masks[viewIdx], static_cast<int32_t>(clusterList.size()),
-                           viewParamsList[viewIdx].isBasicView, m_enableMerging, m_maxEntityId > 0);
+                           isBasicOrSemiBasicView, m_enableMerging, m_maxEntityId > 0);
 
       std::move(clusteringOutput.first.begin(), clusteringOutput.first.end(),
                 back_inserter(clusterList));

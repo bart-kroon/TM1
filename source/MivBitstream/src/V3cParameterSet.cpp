@@ -1263,9 +1263,10 @@ void PackingInformation::encodeTo(Common::OutputBitstream &bitstream) const {
 }
 
 auto GroupMapping::gm_group_id(size_t i) const -> uint8_t {
-  VERIFY_MIVBITSTREAM(0 < gm_group_count());
-  VERIFY_MIVBITSTREAM(i < m_gm_group_id.size());
-  return m_gm_group_id[i];
+  if (i < m_gm_group_id.size()) {
+    return m_gm_group_id[i];
+  }
+  return 0;
 }
 
 auto GroupMapping::gm_group_id(size_t i, uint8_t value) -> GroupMapping & {

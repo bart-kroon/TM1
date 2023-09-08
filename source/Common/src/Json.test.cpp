@@ -174,7 +174,7 @@ TEST_CASE("Converting assignment operator with numeric promotion") {
   REQUIRE(json.as<Json::Array>().empty());
 }
 
-TEST_CASE("Represent infinity as \"inf\" in JSON") {
+TEST_CASE("Represent infinity as inf in JSON") {
   SECTION("Json::as<T>() for floating-point type T converts \"inf\" to infinity") {
     REQUIRE(Json{"inf"}.as<float>() == std::numeric_limits<float>::infinity());
     REQUIRE(Json{"inf"}.as<double>() == std::numeric_limits<double>::infinity());

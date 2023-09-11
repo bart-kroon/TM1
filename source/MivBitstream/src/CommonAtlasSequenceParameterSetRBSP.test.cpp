@@ -75,9 +75,10 @@ TEST_CASE("casps_miv_2_extension") {
 
     REQUIRE(toString(unit) == R"(casme_decoder_side_depth_estimation_flag=false
 casme_chroma_scaling_present_flag=false
+casme_capture_device_information_present_flag=false
 )");
 
-    bitCodingTest(unit, 10);
+    bitCodingTest(unit, 11);
   }
 
   SECTION("Example 1") {
@@ -86,9 +87,10 @@ casme_chroma_scaling_present_flag=false
 
     REQUIRE(toString(unit) == R"(casme_decoder_side_depth_estimation_flag=true
 casme_chroma_scaling_present_flag=false
+casme_capture_device_information_present_flag=false
 )");
 
-    bitCodingTest(unit, 10);
+    bitCodingTest(unit, 11);
   }
 
   SECTION("Example 2") {
@@ -97,9 +99,10 @@ casme_chroma_scaling_present_flag=false
 
     REQUIRE(toString(unit) == R"(casme_decoder_side_depth_estimation_flag=false
 casme_chroma_scaling_present_flag=true
+casme_capture_device_information_present_flag=false
 )");
 
-    bitCodingTest(unit, 10);
+    bitCodingTest(unit, 11);
   }
 }
 
@@ -160,6 +163,7 @@ casme_depth_quantization_params_present_flag=true
 casme_vui_params_present_flag=false
 casme_decoder_side_depth_estimation_flag=true
 casme_chroma_scaling_present_flag=false
+casme_capture_device_information_present_flag=false
 )");
       byteCodingTest(unit, 4);
     }

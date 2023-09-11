@@ -1362,6 +1362,7 @@ auto operator<<(std::ostream &stream, const VpsMiv2Extension &x) -> std::ostream
   fmt::print(stream, "vme_decoder_side_depth_estimation_flag={}\n",
              x.vme_decoder_side_depth_estimation_flag());
   fmt::print(stream, "vme_patch_margin_enabled_flag={}\n", x.vme_patch_margin_enabled_flag());
+  fmt::print(stream, "vme_capture_device_information_present_flag=false\n");
   return stream;
 }
 
@@ -1371,11 +1372,18 @@ auto VpsMiv2Extension::decodeFrom(Common::InputBitstream &bitstream, const V3cPa
 
   x.vps_miv_extension() = VpsMivExtension::decodeFrom(bitstream, vps);
 
+  x.vme_decoder_side_depth_estimation_flag(bitstream.getFlag());
+  x.vme_patch_margin_enabled_flag(bitstream.getFlag());
+
+  const auto vme_capture_device_information_present_flag = bitstream.getFlag();
+
+  if (vme_capture_device_information_present_flag) {
+    NOT_IMPLEMENTED;
+  }
+
   const auto vme_reserved_zero_8bits = bitstream.getUint8();
   VERIFY_MIVBITSTREAM(vme_reserved_zero_8bits == 0);
 
-  x.vme_decoder_side_depth_estimation_flag(bitstream.getFlag());
-  x.vme_patch_margin_enabled_flag(bitstream.getFlag());
   return x;
 }
 
@@ -1383,11 +1391,14 @@ void VpsMiv2Extension::encodeTo(Common::OutputBitstream &bitstream,
                                 const V3cParameterSet &vps) const {
   vps_miv_extension().encodeTo(bitstream, vps);
 
-  static constexpr auto vme_reserved_zero_8bits = 0;
-  bitstream.putUint8(vme_reserved_zero_8bits);
-
   bitstream.putFlag(vme_decoder_side_depth_estimation_flag());
   bitstream.putFlag(vme_patch_margin_enabled_flag());
+
+  static constexpr auto vme_capture_device_information_present_flag = false;
+  bitstream.putFlag(vme_capture_device_information_present_flag);
+
+  static constexpr auto vme_reserved_zero_8bits = 0;
+  bitstream.putUint8(vme_reserved_zero_8bits);
 }
 
 auto VpsPackedVideoExtension::vps_packed_video_present_flag(AtlasId atlasId) const -> bool {

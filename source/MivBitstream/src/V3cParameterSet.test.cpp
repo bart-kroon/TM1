@@ -703,7 +703,7 @@ vps_geometry_video_present_flag[ 32 ]=false
 vps_attribute_video_present_flag[ 32 ]=false
 vps_extension_present_flag=true
 vps_extension_count=3
-vps_extensions_length_minus1=36
+vps_extensions_length_minus1=37
 vps_extension_type[ 0 ]=VPS_EXT_PACKED
 vps_extension_length[ 0 ]=23
 vps_packed_video_present_flag[ 30 ]=false
@@ -738,12 +738,13 @@ pin_region_unpack_top_left_x[ 32 ][ 0 ]=0
 pin_region_unpack_top_left_y[ 32 ][ 0 ]=0
 pin_region_rotation_flag[ 32 ][ 0 ]=false
 vps_extension_type[ 1 ]=VPS_EXT_MIV_2
-vps_extension_length[ 1 ]=2
+vps_extension_length[ 1 ]=3
 vme_geometry_scale_enabled_flag=false
 vme_embedded_occupancy_enabled_flag=true
 gm_group_count=0
 vme_decoder_side_depth_estimation_flag=true
 vme_patch_margin_enabled_flag=true
+vme_capture_device_information_present_flag=false
 vps_extension_type[ 2 ]=[unknown:63]
 vps_extension_length[ 2 ]=3
 vps_extension_data_byte=2
@@ -757,7 +758,7 @@ vps_extension_data_byte=15
   Atlas 32: 0 x 0; [PIN: regions 1]
 , geometry scaling false, groups 0, embedded occupancy true, occupancy scaling false)");
 
-    byteCodingTest(vps, 74);
+    byteCodingTest(vps, 75);
   }
 
   SECTION("Example 3 for mpi") {

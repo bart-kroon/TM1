@@ -101,6 +101,8 @@ auto operator<<(std::ostream &stream, const CaspsMiv2Extension &x) -> std::ostre
              x.casme_decoder_side_depth_estimation_flag());
   fmt::print(stream, "casme_chroma_scaling_present_flag={}\n",
              x.casme_chroma_scaling_present_flag());
+  fmt::print(stream, "casme_capture_device_information_present_flag=false\n");
+
   return stream;
 }
 
@@ -117,21 +119,30 @@ auto CaspsMiv2Extension::operator!=(const CaspsMiv2Extension &other) const noexc
 auto CaspsMiv2Extension::decodeFrom(Common::InputBitstream &bitstream) -> CaspsMiv2Extension {
   auto x = CaspsMiv2Extension{};
 
-  const auto casme_reserved_zero_8bits = bitstream.getUint8();
-  VERIFY_MIVBITSTREAM(casme_reserved_zero_8bits == 0);
-
   x.casme_decoder_side_depth_estimation_flag(bitstream.getFlag());
   x.casme_chroma_scaling_present_flag(bitstream.getFlag());
+
+  const auto casme_capture_device_information_present_flag = bitstream.getFlag();
+
+  if (casme_capture_device_information_present_flag) {
+    NOT_IMPLEMENTED;
+  }
+
+  const auto casme_reserved_zero_8bits = bitstream.getUint8();
+  VERIFY_MIVBITSTREAM(casme_reserved_zero_8bits == 0);
 
   return x;
 }
 
 void CaspsMiv2Extension::encodeTo(Common::OutputBitstream &bitstream) const {
-  static constexpr auto casme_reserved_zero_8bits = 0;
-
-  bitstream.putUint8(casme_reserved_zero_8bits);
   bitstream.putFlag(casme_decoder_side_depth_estimation_flag());
   bitstream.putFlag(casme_chroma_scaling_present_flag());
+
+  static constexpr auto casme_capture_device_information_present_flag = false;
+  bitstream.putFlag(casme_capture_device_information_present_flag);
+
+  static constexpr auto casme_reserved_zero_8bits = 0;
+  bitstream.putUint8(casme_reserved_zero_8bits);
 }
 
 auto CommonAtlasSequenceParameterSetRBSP::casps_miv_extension_present_flag() const -> bool {

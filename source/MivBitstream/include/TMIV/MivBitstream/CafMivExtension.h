@@ -49,6 +49,8 @@
 #include <vector>
 
 namespace TMIV::MivBitstream {
+class MivViewParamsList;
+
 class ChromaScaling {
 public:
   [[nodiscard]] constexpr auto cs_u_min() const noexcept;
@@ -66,9 +68,10 @@ public:
   constexpr auto operator==(const ChromaScaling &other) const noexcept;
   constexpr auto operator!=(const ChromaScaling &other) const noexcept;
 
-  static auto decodeFrom(Common::InputBitstream &bitstream) -> ChromaScaling;
+  static auto decodeFrom(Common::InputBitstream &bitstream, const MivViewParamsList &mvpl)
+      -> ChromaScaling;
 
-  void encodeTo(Common::OutputBitstream &bitstream) const;
+  void encodeTo(Common::OutputBitstream &bitstream, const MivViewParamsList &mvpl) const;
 
 private:
   uint16_t m_cs_u_min{};
@@ -264,6 +267,7 @@ public:
   [[nodiscard]] auto mvp_depth_quantization_params_equal_flag() const -> bool;
   [[nodiscard]] constexpr auto mvp_pruning_graph_params_present_flag() const noexcept;
   [[nodiscard]] constexpr auto mvp_depth_reprojection_flag() const noexcept;
+  [[nodiscard]] auto mvp_chroma_scaling_bit_depth_minus1() const -> uint8_t;
 
   [[nodiscard]] auto camera_extrinsics(uint16_t viewIdx) const -> const CameraExtrinsics &;
 
@@ -296,6 +300,8 @@ public:
   // Calling this function will allocate the pruning graph list
   auto mvp_pruning_graph_params_present_flag(bool value) -> MivViewParamsList &;
 
+  auto mvp_chroma_scaling_bit_depth_minus1(uint8_t value) -> MivViewParamsList &;
+
   [[nodiscard]] auto camera_extrinsics(uint16_t viewIdx) noexcept -> CameraExtrinsics &;
   [[nodiscard]] auto camera_intrinsics(uint16_t viewIdx = 0) noexcept -> CameraIntrinsics &;
   [[nodiscard]] auto depth_quantization(uint16_t viewIdx = 0) noexcept -> DepthQuantization &;
@@ -326,6 +332,7 @@ private:
   std::vector<PruningParents> m_pruning_parent{};
   std::vector<ChromaScaling> m_mvp_chroma_scaling_values{{}};
   std::optional<bool> m_mvp_depth_reprojection_flag{};
+  std::optional<uint8_t> m_mvp_chroma_scaling_bit_depth_minus1{};
 };
 
 // 23090-12: miv_view_params_update_extrinsics
@@ -430,9 +437,10 @@ public:
   auto operator==(const MivViewParamsUpdateChromaScaling &other) const noexcept -> bool;
   auto operator!=(const MivViewParamsUpdateChromaScaling &other) const noexcept -> bool;
 
-  static auto decodeFrom(Common::InputBitstream &bitstream) -> MivViewParamsUpdateChromaScaling;
+  static auto decodeFrom(Common::InputBitstream &bitstream, const MivViewParamsList &mvpl)
+      -> MivViewParamsUpdateChromaScaling;
 
-  void encodeTo(Common::OutputBitstream &bitstream) const;
+  void encodeTo(Common::OutputBitstream &bitstream, const MivViewParamsList &mvpl) const;
 
 private:
   uint16_t m_mvpucs_num_view_updates_minus1{};

@@ -174,13 +174,15 @@ dq_depth_occ_threshold_default[ 2 ]=200
 TEST_CASE("chroma_scaling", "[Common Atlas Frame MIV Extension]") {
   auto unit = ChromaScaling{};
 
+  const auto mvpl = MivViewParamsList{}.mvp_chroma_scaling_bit_depth_minus1(9);
+
   REQUIRE(toString(unit, uint16_t{7}) == R"(cs_u_min[ 7 ]=0
 cs_u_max[ 7 ]=0
 cs_v_min[ 7 ]=0
 cs_v_max[ 7 ]=0
 )");
 
-  bitCodingTest(unit, 64);
+  bitCodingTest(unit, 40, mvpl);
 
   SECTION("Example 2") {
     unit.cs_u_min(100);
@@ -194,7 +196,7 @@ cs_v_min[ 2 ]=440
 cs_v_max[ 2 ]=640
 )");
 
-    bitCodingTest(unit, 64);
+    bitCodingTest(unit, 40, mvpl);
   }
 }
 
@@ -269,6 +271,7 @@ cs_v_max[ 0 ]=0
         .ci_cam_type(CiCamType::orthographic)
         .ci_ortho_width(4.F)
         .ci_ortho_height(3.F);
+    unit.mvp_chroma_scaling_bit_depth_minus1(9);
     unit.chroma_scaling(0).cs_u_min(10).cs_u_max(300).cs_v_min(111).cs_v_max(400);
 
     REQUIRE(toString(unit) == R"(mvp_num_views_minus1=0
@@ -298,7 +301,7 @@ cs_v_min[ 0 ]=111
 cs_v_max[ 0 ]=400
 )");
 
-    bitCodingTest(unit, 447, casps);
+    bitCodingTest(unit, 428, casps);
   }
 
   SECTION("Example 2") {
@@ -418,12 +421,14 @@ TEST_CASE("caf_miv_extension", "[Common Atlas Frame MIV Extension]") {
 
   SECTION("Initialize view parameters") {
     casps.casps_miv_extension().casme_depth_quantization_params_present_flag(true);
+    casps.casps_miv_2_extension().casme_chroma_scaling_present_flag(true);
     unit.miv_view_params_list()
         .mvp_num_views_minus1(2)
         .mvp_explicit_view_id_flag(false)
         .mvp_intrinsic_params_equal_flag(true)
         .mvp_depth_quantization_params_equal_flag(true)
         .mvp_pruning_graph_params_present_flag(true)
+        .mvp_chroma_scaling_bit_depth_minus1(9)
         .camera_intrinsics(0)
         .ci_cam_type(CiCamType::orthographic)
         .ci_ortho_width(4.F)
@@ -481,7 +486,7 @@ cs_v_min[ 2 ]=0
 cs_v_max[ 2 ]=0
 )");
 
-    bitCodingTest(unit, 772, nalIdrCaf, casps);
+    bitCodingTest(unit, 897, nalIdrCaf, casps);
   }
 
   SECTION("Update extrinsics") {
@@ -584,36 +589,7 @@ dq_depth_occ_threshold_default[ 0 ]=64
     bitCodingTest(unit, 114, nalCaf, casps);
   }
 
-  SECTION("Update chroma scaling") {
-    casps.casps_miv_extension().casme_depth_quantization_params_present_flag(true);
-    casps.casps_miv_2_extension().casme_chroma_scaling_present_flag(true);
-    unit.came_update_depth_quantization_flag(false)
-        .came_update_extrinsics_flag(false)
-        .came_update_intrinsics_flag(false)
-        .came_update_chroma_scaling_flag(true)
-        .miv_view_params_update_chroma_scaling()
-        .mvpucs_num_view_updates_minus1(0)
-        .mvpucs_view_idx(0, 6)
-        .chroma_scaling(0)
-        .cs_u_min(100)
-        .cs_u_max(200)
-        .cs_v_min(1)
-        .cs_v_max(303);
-
-    REQUIRE(toString(unit) == R"(came_update_extrinsics_flag=false
-came_update_intrinsics_flag=false
-came_update_depth_quantization_flag=false
-came_update_chroma_scaling_flag=true
-mvpucs_num_view_updates_minus1=0
-mvpucs_view_idx[ 0 ]=6
-cs_u_min[ 0 ]=100
-cs_u_max[ 0 ]=200
-cs_v_min[ 0 ]=1
-cs_v_max[ 0 ]=303
-)");
-
-    bitCodingTest(unit, 100, nalCaf, casps);
-  }
+  // TODO SECTION("Update chroma scaling")
 
   SECTION("came when casme_depth_quantization_params_present_flag=0") {
     casps.casps_miv_extension().casme_depth_quantization_params_present_flag(false);

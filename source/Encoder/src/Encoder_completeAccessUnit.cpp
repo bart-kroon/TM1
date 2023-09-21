@@ -116,7 +116,7 @@ void Encoder::Impl::setTiles() {
   }
 
   for (size_t atlasIdx = 0; atlasIdx < m_params.tileParamsLists.size(); ++atlasIdx) {
-    setAtlasTileHeaderSnytax(atlasIdx);
+    repeatAtlasTileHeaders(atlasIdx);
   }
 }
 
@@ -184,16 +184,16 @@ auto Encoder::Impl::setPartition() -> bool {
   return uniform;
 }
 
-void Encoder::Impl::updateTile() {
-  size_t patchNum = m_params.patchParamsList.size();
+void Encoder::Impl::assignPatchesToTiles(EncoderParams &params) {
+  size_t patchNum = params.patchParamsList.size();
   size_t tilePatchNum = 0;
-  for (const auto &patch : m_params.patchParamsList) {
+  for (const auto &patch : params.patchParamsList) {
     size_t atlasID = patch.atlasId().asInt();
     auto patchPosX = patch.atlasPatch2dPosX();
     auto patchPosY = patch.atlasPatch2dPosY();
     auto patchSizeX = patch.atlasPatch2dSizeX();
     auto patchSizeY = patch.atlasPatch2dSizeY();
-    for (auto &tile : m_params.tileParamsLists[atlasID]) {
+    for (auto &tile : params.tileParamsLists[atlasID]) {
       auto tilePosX = tile.partitionPosX();
       auto tilePosY = tile.partitionPosY();
       auto tileSizeX = tile.partitionWidth();
@@ -261,29 +261,12 @@ void Encoder::Impl::setAtlasFrameTileInformation(bool uniformPartitionSpacingFla
   }
 }
 
-void Encoder::Impl::setAtlasTileHeaderSnytax(size_t atlasIdx) {
-  uint8_t psqx = 0;
-  uint8_t psqy = 0;
-  if (m_params.atlas[atlasIdx].asps.asps_patch_size_quantizer_present_flag()) {
-    psqx = m_params.atlas[atlasIdx].athList[0].ath_patch_size_x_info_quantizer();
-    psqy = m_params.atlas[atlasIdx].athList[0].ath_patch_size_y_info_quantizer();
-  }
-  m_params.atlas[atlasIdx].athList.clear();
+void Encoder::Impl::repeatAtlasTileHeaders(size_t atlasIdx) {
   auto &atlas = m_params.atlas[atlasIdx];
+  atlas.athList.assign(m_params.tileParamsLists[atlasIdx].size(), atlas.athList.front());
 
-  for (uint8_t tileIdx = 0;
-       tileIdx < Common::downCast<uint8_t>(m_params.tileParamsLists[atlasIdx].size()); ++tileIdx) {
-    auto ath = MivBitstream::AtlasTileHeader{};
-    ath.ath_type(MivBitstream::AthType::I_TILE)
-        .ath_ref_atlas_frame_list_asps_flag(true)
-        .ath_pos_min_d_quantizer(atlas.asps.asps_geometry_3d_bit_depth_minus1() + 1);
-    if (atlas.asps.asps_patch_size_quantizer_present_flag()) {
-      ath.ath_patch_size_x_info_quantizer(psqx);
-      ath.ath_patch_size_y_info_quantizer(psqy);
-    }
-    ath.ath_id(tileIdx);
-
-    atlas.athList.push_back(ath);
+  for (size_t tileIdx = 0; tileIdx < atlas.athList.size(); ++tileIdx) {
+    atlas.athList[tileIdx].ath_id(Common::downCast<uint8_t>(tileIdx));
   }
 }
 
@@ -340,9 +323,8 @@ auto Encoder::Impl::completeAccessUnit() -> const EncoderParams & {
 
   constructVideoFrames();
 
-  updateTile();
-
   m_paramsQuantized = transformGeometryQuantizationParams(m_config, m_videoFrameBuffer, params());
+  assignPatchesToTiles(m_paramsQuantized);
 
   m_params.foc += Common::downCast<int32_t>(m_videoFrameBuffer.size());
   m_params.foc %= m_config.intraPeriod;

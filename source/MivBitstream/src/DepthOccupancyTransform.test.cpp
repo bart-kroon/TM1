@@ -104,7 +104,7 @@ TEST_CASE("OccupancyTransform") {
 
 TEST_CASE("DepthTransform") {
   SECTION("Constructor for per-view depth transform signalling (source)") {
-    REQUIRE_THROWS(DepthTransform{DepthQuantization{}, 0});
+    REQUIRE_THROWS(DepthTransform{DepthQuantization{}, 1});
   }
 
   SECTION("The constructor checks the normalized disparity range") {
@@ -119,17 +119,17 @@ TEST_CASE("DepthTransform") {
     dq1.dq_norm_disp_low(-1.F);
     dq1.dq_norm_disp_high(-2.F);
 
-    REQUIRE_THROWS(DepthTransform{dq1, 0});
+    REQUIRE_THROWS(DepthTransform{dq1, 1});
 
     auto dq2 = DepthQuantization{};
     dq2.dq_norm_disp_low(1.F);
     dq2.dq_norm_disp_high(NAN);
 
-    REQUIRE_THROWS(DepthTransform{dq2, 0});
+    REQUIRE_THROWS(DepthTransform{dq2, 1});
   }
 
   SECTION("Constructor for per-view depth transform signalling (codec)") {
-    REQUIRE_THROWS(DepthTransform{DepthQuantization{}, PatchParams{}, 0});
+    REQUIRE_THROWS(DepthTransform{DepthQuantization{}, PatchParams{}, 1});
   }
 
   SECTION("Expand a level to normalized disparity [m^-1], per-view depth transform") {

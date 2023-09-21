@@ -208,6 +208,16 @@ class IntegrationTest:
             ],
         )
 
+        f2_0 = self.launchCommand(
+            executor,
+            [f1],
+            ["{0}/bin/TmivParser"]
+            + ["-b", "{3}/A3/E/RP0/TMIV_A3_E_RP0.bit"]
+            + ["-o", "{3}/A3/E/RP0/TMIV_A3_E_RP0.hls"],
+            None,
+            ["A3/E/RP0/TMIV_A3_E_RP0.hls"],
+        )
+
         f2_1 = self.launchCommand(
             executor,
             [f1],
@@ -254,7 +264,7 @@ class IntegrationTest:
 
         f3 = self.launchCommand(
             executor,
-            [f2_1, f2_2, f2_3, f2_4],
+            [f2_0, f2_1, f2_2, f2_3, f2_4],
             ["{0}/bin/TmivMultiplexer", "-c", "{1}/config/test/miv_main_anchor/A_3_TMIV_mux.json"]
             + ["-p", "inputDirectory", "{3}", "-p", "outputDirectory", "{3}"]
             + ["-n", "3", "-s", "E", "-r", "QP3"]
@@ -1210,6 +1220,7 @@ class IntegrationTest:
                 args,
                 shell=False,
                 cwd=self.testDir,
+                bufsize=1,
                 stdout=(open(logFile, "w") if logFile else None),
                 stderr=subprocess.STDOUT,
             )

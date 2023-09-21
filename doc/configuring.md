@@ -219,6 +219,15 @@ These parameters are in the root of the configuration file and may be accessed b
         * 0: No grouping, each atlas is independently useful for rendering (as with the MIV view anchor)
         * 1: Single group, all atlases are needed for rendering (as with the MIV anchor)
         * 2: _N_ groups, with the group-based encoder, partitions views to independently encode multiple groups of atlases.
+    * **occupancyScale:** int[2]; the downscale factor of occupancy maps applied across all atlases when occupancy is signaled explicitly.
+* Geometry quantization:
+  * **geoBitDepth:** int; bit depth of geometry samples (the logical range may exceed that when applying per-patch offsets and ranges)
+  * **dynamicDepthRange:** bool; optimize the normalized disparity range of views based on the patches in the intra period
+  * **dynamicPatchRange:** bool; choose the normalized disparity range of a view based on the patch with the largest normalized disparity range (requires *dynamicDepthRange*)
+  * **dynamicPatchOffset:** bool; center the used geometry sample range of each patch (requires *dynamicDepthRange*)
+  * **halveDepthRange:** bool; use half of the available geometry resolution when depth quality is low
+  * **depthOccThresholdIfSet:** float; the value of the depth-occupancy map threshold times 2<sup>-geoBitDepth</sup>, in case occupancy information is encoded in the geometry video data of a specific view.
+  * **depthOccThresholdAsymmetry:** float; decoder threshold asymmetry `a` in (0, 2). The encoder places the first depth value at level `2T`. The decoder threshold is `aT`. a = 1 is symmetric.
 * Metadata:
     * **dqParamsPresentFlag:** bool; optional parameter, when false the depth quantization parameters are not written to the bitstream.
     * **randomAccess:** bool; when true complete MIV metadata (inclding VPS, CAD, AD V3C units) are written per IRAP to the bitstream such that there is no dependency when parsing metadata between different IRAPs.
@@ -230,24 +239,6 @@ These parameters are in the root of the configuration file and may be accessed b
   value of collocated pixel or any of its neighbors in the target view.
 * **maxOutlierRatio:** float; pixel outlier threshold above which the geometry
   quality is judged to be low.
-
-### Encoder
-
-Most of the parameters are defined in the root. The exception is:
-
-* **dilate:** int; number of dilation steps on the aggregated pruning mask.
-  This parameter is only in effect for low depth quality.
-
-### Geometry quantizer
-
-* **depthOccThresholdIfSet:** float; the value of the depth-occupancy map
-  threshold times 2<sup>-geoBitDepth</sup>, in case occupancy information is encoded in the geometry video data of
-  a specific view.
-
-### Explicit occupancy
-
-* **occupancyScale:** int[2]; the downscale factor of occupancy maps applied
-  across all atlases when occupancy is signaled explicitly.
 
 ### Hierarchical pruner
 

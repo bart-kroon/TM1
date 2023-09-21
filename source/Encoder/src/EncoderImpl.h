@@ -105,9 +105,9 @@ private:
 
   void setTiles();
   auto setPartition() -> bool;
-  void updateTile();
+  static void assignPatchesToTiles(EncoderParams &params);
   void setAtlasFrameTileInformation(bool uniformPartitionSpacingFlag);
-  void setAtlasTileHeaderSnytax(size_t atlasIdx);
+  void repeatAtlasTileHeaders(size_t atlasIdx);
   std::vector<std::vector<std::vector<int32_t>>> m_partitionArray;
 
   auto plsMakeHistogram(int32_t piece_num, size_t numOfFrames, size_t v, int32_t minDepthVal,

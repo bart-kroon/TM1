@@ -41,7 +41,10 @@ namespace TMIV::MivBitstream {
 DepthTransform::DepthTransform(const DepthQuantization &dq, uint32_t bitDepth)
     : m_normDispLow{dq.dq_norm_disp_low()}
     , m_normDispHigh{dq.dq_norm_disp_high()}
-    , m_bitDepth{bitDepth} {
+    , m_bitDepth{bitDepth}
+    , m_maxSampleValue{Common::maxLevel(bitDepth)} {
+  PRECONDITION(0 < m_bitDepth);
+
   if (!std::isfinite(m_normDispLow) || !std::isfinite(m_normDispHigh) ||
       m_normDispLow == m_normDispHigh || std::max(m_normDispLow, m_normDispHigh) <= 0.F) {
     throw std::runtime_error(
@@ -83,8 +86,8 @@ DepthTransform::DepthTransform(const DepthQuantization &dq, const PatchParams &p
 }
 
 auto DepthTransform::expandNormDisp(Common::SampleValue x) const -> float {
-  const auto level =
-      Common::expandValue(m_atlasPatch3dOffsetD + std::min(x, m_atlasPatch3dRangeD), m_bitDepth);
+  const auto level = static_cast<float>(m_atlasPatch3dOffsetD + std::min(x, m_atlasPatch3dRangeD)) /
+                     static_cast<float>(m_maxSampleValue);
 
   if (m_quantizationLaw == 2) {
     float normDisp = m_normDispLow + (m_normDispHigh - m_normDispLow) * level;
@@ -144,8 +147,9 @@ auto DepthTransform::quantizeNormDisp(float x, Common::SampleValue minLevel) con
                      static_cast<double>(m_normDispMap[m_viewPivotCount + 1]));
       level = static_cast<float>((normDisp - m_normDispLow) / (m_normDispHigh - m_normDispLow));
     }
-    return std::clamp(Common::quantizeValue(level, m_bitDepth) - m_atlasPatch3dOffsetD, minLevel,
-                      m_atlasPatch3dRangeD);
+    const auto quantized =
+        std::max(Common::quantizeValue(level, m_bitDepth), m_atlasPatch3dOffsetD);
+    return std::clamp(quantized - m_atlasPatch3dOffsetD, minLevel, m_atlasPatch3dRangeD);
   }
   return 0;
 }

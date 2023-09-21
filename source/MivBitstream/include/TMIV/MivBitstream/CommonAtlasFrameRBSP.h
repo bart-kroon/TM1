@@ -46,7 +46,7 @@
 #include <vector>
 
 namespace TMIV::MivBitstream {
-// 23090-12: common_atlas_frame_rbsp( )
+// 23090-5: common_atlas_frame_rbsp( )
 class CommonAtlasFrameRBSP {
 public:
   [[nodiscard]] constexpr auto caf_common_atlas_sequence_parameter_set_id() const noexcept;

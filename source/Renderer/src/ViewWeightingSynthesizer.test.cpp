@@ -77,6 +77,8 @@ TEST_CASE("TMIV::Renderer::ViewWeightingSynthesizer") {
     auto frame = AccessUnit{};
     auto cameraConfig = CameraConfig{};
 
+    cameraConfig.bitDepthGeometry = 1;
+
     SECTION("Default-initialized input (runtime error)") {
       REQUIRE_THROWS_WITH(unit.renderFrame(frame, cameraConfig), ContainsSubstring("frame.casps"));
     }
@@ -104,7 +106,7 @@ TEST_CASE("TMIV::Renderer::ViewWeightingSynthesizer") {
       REQUIRE(actual.geometry.getNumberOfPlanes() == 1);
       CHECK(actual.geometry.getWidth() == 1);
       CHECK(actual.geometry.getHeight() == 1);
-      CHECK(actual.geometry.getBitDepth() == 0);
+      CHECK(actual.geometry.getBitDepth() == 1);
       CHECK(actual.geometry.getPlane(0)(0, 0) == 0);
 
       // Texture: 4:4:4 image of size 1 x 1 filled with the neutral value

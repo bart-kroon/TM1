@@ -288,7 +288,7 @@ void setTile(EncoderParams &params) {
   }
 }
 
-void updateTile(EncoderParams &params) {
+void assignPatchesToTiles(EncoderParams &params) {
   size_t patchNum = params.patchParamsList.size();
   size_t tilePatchNum = 0;
   for (const auto &patch : params.patchParamsList) {
@@ -402,7 +402,7 @@ auto MpiEncoder::processAccessUnit(int32_t firstFrameId, int32_t lastFrameId)
   m_maxLumaSamplesPerFrame = std::max(m_maxLumaSamplesPerFrame, nbActivePixels);
 
   Common::logInfo("Packing done with nb of patches = {}", m_params.patchParamsList.size());
-  updateTile(m_params);
+  assignPatchesToTiles(m_params);
   m_blockToPatchMapPerAtlas.clear();
 
   for (size_t k = 0; k <= m_params.vps.vps_atlas_count_minus1(); ++k) {

@@ -24,10 +24,12 @@ Release build (GCC 12):
     - ninja -j $(nproc) install
     - ccache -s
   artifacts:
+    when: always
     expire_in: 1 day
     paths:
       - install/bin
       - install/include/TMIV/Decoder/DecodeMiv.h
+      - build/Testing/Temporary/LastTest.log
 
 Debug build and static analysis (Clang 14):
   stage: static analysis
@@ -62,6 +64,7 @@ Debug build and static analysis (Clang 14):
     - ccache -s
   coverage: /^\s*lines:\s*\d+.\d+\%/
   artifacts:
+    when: always
     reports:
       coverage_report:
         coverage_format: cobertura
@@ -69,6 +72,7 @@ Debug build and static analysis (Clang 14):
     paths:
       - coverage_html/
       - build/compile_commands.json
+      - build/Testing/Temporary/LastTest.log
     expire_in: 5 days
 
 

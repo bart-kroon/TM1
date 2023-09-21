@@ -113,6 +113,7 @@ private:
   float m_normDispHigh{};
   float m_minNormDisp{};
   uint32_t m_bitDepth{};
+  Common::SampleValue m_maxSampleValue{};
   Common::SampleValue m_atlasPatch3dOffsetD{};
   Common::SampleValue m_atlasPatch3dRangeD{std::numeric_limits<Common::SampleValue>::max()};
 

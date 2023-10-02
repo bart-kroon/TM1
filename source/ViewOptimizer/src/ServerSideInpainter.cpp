@@ -40,9 +40,10 @@
 #include <TMIV/Common/Quaternion.h>
 #include <TMIV/MivBitstream/AccessUnit.h>
 #include <TMIV/MivBitstream/DepthOccupancyTransform.h>
+#include <TMIV/Renderer/AffineTransform.h>
 #include <TMIV/Renderer/IInpainter.h>
 #include <TMIV/Renderer/ISynthesizer.h>
-#include <TMIV/Renderer/reprojectPoints.h>
+#include <TMIV/Renderer/Projector.h>
 
 #include <cstring>
 #include <numeric>
@@ -157,11 +158,16 @@ auto calcCameraFrustum(const MivBitstream::ViewParams &viewParams, int32_t segme
   const auto depthNear = depthTransform.expandDepth(Common::maxLevel(depthBitDepth));
   const auto depthFar = 1.F / depthTransform.minNormDisp();
 
-  CameraFrustum<Vec3f> frustumInCameraCoordinates;
-  for (const auto &loc : projectionPlaneBoundary) {
-    frustumInCameraCoordinates.planeNear.push_back(Renderer::unprojectVertex(loc, depthNear, ci));
-    frustumInCameraCoordinates.planeFar.push_back(Renderer::unprojectVertex(loc, depthFar, ci));
-  }
+  auto frustumInCameraCoordinates = CameraFrustum<Vec3f>{};
+
+  ci.dispatch([&](auto camType) {
+    const auto unprojector = Renderer::Projector<camType>{ci};
+
+    for (const auto &loc : projectionPlaneBoundary) {
+      frustumInCameraCoordinates.planeNear.push_back(unprojector.unprojectVertex(loc, depthNear));
+      frustumInCameraCoordinates.planeFar.push_back(unprojector.unprojectVertex(loc, depthFar));
+    }
+  });
 
   return frustumInCameraCoordinates;
 }

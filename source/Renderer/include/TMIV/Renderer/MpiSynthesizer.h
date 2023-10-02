@@ -34,17 +34,13 @@
 #ifndef TMIV_RENDERER_MPISYNTHESIZER_H
 #define TMIV_RENDERER_MPISYNTHESIZER_H
 
-#include "Engine.h"
 #include "ISynthesizer.h"
 
 namespace TMIV::Renderer {
 class MpiSynthesizer : public ISynthesizer {
-private:
-  class Impl;
-  mutable std::unique_ptr<Impl> m_impl;
-
 public:
   MpiSynthesizer(const Common::Json & /*unused*/, const Common::Json & /*componentNode*/);
+
   MpiSynthesizer(float minAlpha);
   MpiSynthesizer(const MpiSynthesizer &) = delete;
   MpiSynthesizer(MpiSynthesizer &&) = default;
@@ -53,11 +49,16 @@ public:
   ~MpiSynthesizer() override;
 
   // Render from a texture atlas to a viewport
-  auto renderFrame(const MivBitstream::AccessUnit &frame,
-                   const MivBitstream::CameraConfig &cameraConfig) const
+  [[nodiscard]] auto renderFrame(const MivBitstream::AccessUnit &frame,
+                                 const MivBitstream::CameraConfig &cameraConfig) const
       -> Common::RendererFrame override;
 
-  auto isOptimizedForRestrictedGeometry() const -> bool override { return true; }
+  [[nodiscard]] auto isOptimizedForRestrictedGeometry() const -> bool override { return true; }
+
+private:
+  class Impl;
+
+  std::unique_ptr<Impl> m_impl;
 };
 } // namespace TMIV::Renderer
 

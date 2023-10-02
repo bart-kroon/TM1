@@ -38,7 +38,6 @@
 #include <TMIV/MivBitstream/Formatters.h>
 #include <TMIV/ViewingSpace/SignedDistance.h>
 
-#include <cassert>
 #include <fstream>
 
 namespace TMIV::ViewingSpace {

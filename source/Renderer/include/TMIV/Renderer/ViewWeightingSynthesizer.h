@@ -38,12 +38,9 @@
 
 namespace TMIV::Renderer {
 class ViewWeightingSynthesizer : public ISynthesizer {
-private:
-  class Impl;
-  mutable std::unique_ptr<Impl> m_impl;
-
 public:
   ViewWeightingSynthesizer(const Common::Json & /* unused */, const Common::Json &componentNode);
+
   ViewWeightingSynthesizer(const ViewWeightingSynthesizer &) = delete;
   ViewWeightingSynthesizer(ViewWeightingSynthesizer &&) = default;
   auto operator=(const ViewWeightingSynthesizer &) -> ViewWeightingSynthesizer & = delete;
@@ -51,9 +48,14 @@ public:
   ~ViewWeightingSynthesizer() override;
 
   // Render from a texture atlas to a viewport
-  auto renderFrame(const MivBitstream::AccessUnit &frame,
-                   const MivBitstream::CameraConfig &cameraConfig) const
+  [[nodiscard]] auto renderFrame(const MivBitstream::AccessUnit &frame,
+                                 const MivBitstream::CameraConfig &cameraConfig) const
       -> Common::RendererFrame override;
+
+private:
+  class Impl;
+
+  std::unique_ptr<Impl> m_impl;
 };
 } // namespace TMIV::Renderer
 

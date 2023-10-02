@@ -35,8 +35,6 @@
 #error "Include the .h, not the .hpp"
 #endif
 
-#include <cassert>
-
 namespace TMIV::MivBitstream {
 constexpr auto PatchParams::atlasId() const noexcept { return m_atlasId; }
 

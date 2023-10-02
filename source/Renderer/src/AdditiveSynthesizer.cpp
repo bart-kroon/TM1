@@ -35,9 +35,9 @@
 
 #include <TMIV/Common/LinAlg.h>
 #include <TMIV/MivBitstream/DepthOccupancyTransform.h>
-#include <TMIV/Renderer/Engine.h>
+#include <TMIV/Renderer/AffineTransform.h>
+#include <TMIV/Renderer/Projector.h>
 #include <TMIV/Renderer/Rasterizer.h>
-#include <TMIV/Renderer/reprojectPoints.h>
 
 #include <cmath>
 #include <future>
@@ -114,11 +114,15 @@ public:
         auto level = atlas.geoFrame.getPlane(0)(i_atlas, j_atlas);
         const auto d = depthTransform[patchIdx].expandDepth(level);
 
-        // Reproject and calculate ray angle
-        const auto &R_t = transformList[viewIdx];
-        const auto xyz = R_t(unprojectVertex(uv + Common::Vec2f({0.5F, 0.5F}), d, viewParams.ci));
-        const auto rayAngle = angle(xyz, xyz - R_t.translation());
-        result.push_back({xyz, rayAngle});
+        viewParams.ci.dispatch([&](auto camType) {
+          const auto projector = Projector<camType>{viewParams.ci};
+
+          // Reproject and calculate ray angle
+          const auto &R_t = transformList[viewIdx];
+          const auto xyz = R_t(projector.unprojectVertex(uv + Common::Vec2f({0.5F, 0.5F}), d));
+          const auto rayAngle = angle(xyz, xyz - R_t.translation());
+          result.push_back({xyz, rayAngle});
+        });
       }
     }
 
@@ -173,16 +177,71 @@ public:
                              const MivBitstream::AtlasAccessUnit &atlas,
                              const MivBitstream::ViewParams &viewportParams) {
     return std::tuple{atlasVertices(frame, atlas, viewportParams), atlasTriangles(atlas),
-                      std::tuple{atlasColors(atlas)}};
+                      atlasColors(atlas)};
+  }
+
+  // Project mesh to target view (equirectangular projection)
+  static auto project(const Projector<MivBitstream::CiCamType::equirectangular> &projector,
+                      const SceneVertexDescriptorList &sceneVertices,
+                      TriangleDescriptorList triangles, std::vector<Common::Vec3f> color) {
+    ImageVertexDescriptorList imageVertices;
+    imageVertices.reserve(sceneVertices.size());
+    for (const SceneVertexDescriptor &v : sceneVertices) {
+      imageVertices.push_back(projector.projectVertex(v));
+    }
+
+    // Weighted sphere compensation of stretching
+    for (auto &triangle : triangles) {
+      auto v = 0.F;
+      for (auto index : triangle.indices) {
+        v += imageVertices[index].position.y() / 3.F;
+      }
+      triangle.area /= projector.weightedSphere(v);
+    }
+
+    return std::tuple{std::move(imageVertices), std::move(triangles), std::move(color)};
+  }
+
+  // Project mesh to target view (perspective projection)
+  static auto project(const Projector<MivBitstream::CiCamType::perspective> &projector,
+                      const SceneVertexDescriptorList &sceneVertices,
+                      TriangleDescriptorList triangles, std::vector<Common::Vec3f> color) {
+    ImageVertexDescriptorList imageVertices;
+    imageVertices.reserve(sceneVertices.size());
+    for (const SceneVertexDescriptor &v : sceneVertices) {
+      imageVertices.push_back(projector.projectVertex(v));
+    }
+    return std::tuple{std::move(imageVertices), std::move(triangles), std::move(color)};
+  }
+
+  // Project mesh to target view (orthographic projection)
+  static auto project(const Projector<MivBitstream::CiCamType::orthographic> &projector,
+                      const SceneVertexDescriptorList &sceneVertices,
+                      TriangleDescriptorList triangles, std::vector<Common::Vec3f> color) {
+    ImageVertexDescriptorList imageVertices;
+    imageVertices.reserve(sceneVertices.size());
+    for (const SceneVertexDescriptor &v : sceneVertices) {
+      imageVertices.push_back(projector.projectVertex(v));
+    }
+    return std::tuple{std::move(imageVertices), std::move(triangles), std::move(color)};
+  }
+
+  // Project mesh to target view (dispatch on projection type)
+  static auto project(SceneVertexDescriptorList vertices, TriangleDescriptorList triangles,
+                      std::vector<Common::Vec3f> color,
+                      const MivBitstream::CameraIntrinsics &target) {
+    return target.dispatch([&](auto camType) {
+      Projector<camType> projector{target};
+      return project(projector, std::move(vertices), std::move(triangles), std::move(color));
+    });
   }
 
   [[nodiscard]] auto rasterFrame(const MivBitstream::AccessUnit &frame,
                                  const MivBitstream::ViewParams &viewportParams,
-                                 float compensation) const -> Rasterizer<Common::Vec3f> {
+                                 float compensation) const -> Rasterizer {
     // Incremental view synthesis and blending
-    Rasterizer<Common::Vec3f> rasterizer{
-        {m_rayAngleParam, m_depthParam, m_stretchingParam, m_maxStretching},
-        viewportParams.ci.projectionPlaneSize()};
+    Rasterizer rasterizer{{m_rayAngleParam, m_depthParam, m_stretchingParam, m_maxStretching},
+                          viewportParams.ci.projectionPlaneSize()};
 
     // Pipeline mesh generation and rasterization
     std::future<void> runner = std::async(std::launch::deferred, []() {});
@@ -194,9 +253,9 @@ public:
       }
 
       // Generate a reprojected mesh
-      auto [vertices, triangles, attributes] = unprojectAtlas(frame, atlas, viewportParams);
-      auto mesh = project(std::move(vertices), std::move(triangles), std::move(attributes),
-                          viewportParams.ci);
+      auto [vertices, triangles, color] = unprojectAtlas(frame, atlas, viewportParams);
+      auto mesh =
+          project(std::move(vertices), std::move(triangles), std::move(color), viewportParams.ci);
 
       // Compensate for resolution difference between source and target view
       for (auto &triangle : std::get<1>(mesh)) {
@@ -261,7 +320,7 @@ public:
     const auto depthTransform =
         MivBitstream::DepthTransform{cameraConfig.viewParams.dq, cameraConfig.bitDepthGeometry};
     auto viewport = Common::RendererFrame{
-        Common::quantizeTexture(rasterizer.attribute<0>(), cameraConfig.bitDepthTexture),
+        Common::quantizeTexture(rasterizer.color(), cameraConfig.bitDepthTexture),
         depthTransform.quantizeNormDisp(rasterizer.normDisp(), 1)};
     viewport.texture.fillInvalidWithNeutral(viewport.geometry);
 

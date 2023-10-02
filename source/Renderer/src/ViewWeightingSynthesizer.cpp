@@ -40,8 +40,8 @@
 #include <TMIV/Common/verify.h>
 #include <TMIV/MivBitstream/DepthOccupancyTransform.h>
 #include <TMIV/MivBitstream/Formatters.h>
+#include <TMIV/Renderer/ProjectionHelper.h>
 #include <TMIV/Renderer/RecoverPrunedViews.h>
-#include <TMIV/Renderer/reprojectPoints.h>
 
 #include <algorithm>
 #include <cmath>

@@ -34,7 +34,7 @@
 #include "PrunedMesh.h"
 
 #include <TMIV/MivBitstream/DepthOccupancyTransform.h>
-#include <TMIV/Renderer/reprojectPoints.h>
+#include <TMIV/Renderer/AffineTransform.h>
 
 namespace TMIV::Pruner {
 auto unprojectPrunedView(const Common::DeepFrame &view, const MivBitstream::ViewParams &viewParams,
@@ -49,7 +49,7 @@ auto unprojectPrunedView(const Common::DeepFrame &view, const MivBitstream::View
     auto &triangles = std::get<1>(mesh);
     auto &attributes = std::get<2>(mesh);
 
-    Renderer::Engine<camType> engine{viewParams.ci};
+    Renderer::Projector<camType> projector{viewParams.ci};
     const auto size = viewParams.ci.projectionPlaneSize();
     const auto numPixels = size.x() * size.y();
 
@@ -77,7 +77,7 @@ auto unprojectPrunedView(const Common::DeepFrame &view, const MivBitstream::View
         if (mask(y, x) > 0) {
           const auto uv = Common::Vec2f{static_cast<float>(x) + 0.5F, static_cast<float>(y) + 0.5F};
           const auto d = depthTransform.expandDepth(D_yx);
-          vertices.push_back({engine.unprojectVertex(uv, d), NAN});
+          vertices.push_back({projector.unprojectVertex(uv, d), NAN});
           attributes.emplace_back(Common::Vec3f{Common::expandValue(Y(y, x), 10U),
                                                 Common::expandValue(U(y / 2, x / 2), 10U),
                                                 Common::expandValue(V(y / 2, x / 2), 10U)});
@@ -121,13 +121,13 @@ auto project(const Renderer::SceneVertexDescriptorList &vertices,
     -> Renderer::ImageVertexDescriptorList {
   return target.ci.dispatch([&](auto camType) {
     Renderer::ImageVertexDescriptorList result;
-    Renderer::Engine<camType.value> engine{target.ci};
+    Renderer::Projector<camType.value> projector{target.ci};
     const auto R_t = Renderer::AffineTransform{source.pose, target.pose};
     result.reserve(result.size());
     std::transform(std::begin(vertices), std::end(vertices), back_inserter(result),
                    [&](Renderer::SceneVertexDescriptor v) {
                      const auto p = R_t(v.position);
-                     return engine.projectVertex({p, Common::angle(p, p - R_t.translation())});
+                     return projector.projectVertex({p, Common::angle(p, p - R_t.translation())});
                    });
     return result;
   });
@@ -137,14 +137,14 @@ void weightedSphere(const MivBitstream::CameraIntrinsics &ci,
                     const Renderer::ImageVertexDescriptorList &vertices,
                     Renderer::TriangleDescriptorList &triangles) {
   if (ci.ci_cam_type() == MivBitstream::CiCamType::equirectangular) {
-    Renderer::Engine<MivBitstream::CiCamType::equirectangular> engine{ci};
+    Renderer::Projector<MivBitstream::CiCamType::equirectangular> projector{ci};
+
     for (auto &triangle : triangles) {
       auto v = 0.F;
       for (auto index : triangle.indices) {
         v += vertices[index].position.y() / 3.F;
       }
-      const auto theta = engine.theta0 + engine.dtheta_dv * v;
-      triangle.area = 0.5F / std::cos(theta);
+      triangle.area = 0.5F / projector.weightedSphere(v);
     }
   }
 }

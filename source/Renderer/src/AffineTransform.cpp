@@ -31,51 +31,24 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <catch2/catch_test_macros.hpp>
-#include <catch2/generators/catch_generators_range.hpp>
-#include <catch2/matchers/catch_matchers_floating_point.hpp>
+#include <TMIV/Renderer/AffineTransform.h>
 
-#include <TMIV/Renderer/Engine.h>
+#include <TMIV/Common/LinAlg.h>
 
-using Catch::Matchers::WithinAbs;
-using TMIV::Common::Vec2f;
-using TMIV::Common::Vec3f;
-using TMIV::MivBitstream::CameraIntrinsics;
-using TMIV::MivBitstream::CiCamType;
-using TMIV::Renderer::SceneVertexDescriptor;
+namespace TMIV::Renderer {
+AffineTransform::AffineTransform(const MivBitstream::Pose &source,
+                                 const MivBitstream::Pose &target) {
+  const auto r1 = Common::QuatD(source.orientation);
+  const auto r2 = Common::QuatD(target.orientation);
+  const auto t1 = Common::Vec3d(source.position);
+  const auto t2 = Common::Vec3d(target.position);
 
-TEST_CASE("Engine<orthographic>") {
-  const auto unit = []() {
-    auto ci = CameraIntrinsics{};
-    ci.ci_cam_type(CiCamType::orthographic)
-        .ci_projection_plane_width_minus1(999)
-        .ci_projection_plane_height_minus1(499)
-        .ci_ortho_width(5.F)
-        .ci_ortho_height(2.F);
-    return TMIV::Renderer::Engine<TMIV::MivBitstream::CiCamType::orthographic>{ci};
-  }();
+  const auto r = conj(r2) * r1;
+  const auto t = rotate(t1 - t2, conj(r2));
 
-  SECTION("Reprojection accuracy test") {
-    const auto depth = GENERATE(0.1F, 10.F);
-    int32_t count = 0;
-
-    for (int32_t i = 0; i < 500; ++i) {
-      for (int32_t j = 0; j < 1000; ++j) {
-        if (i * j % 1547 == 0) {
-          const auto position =
-              Vec2f{0.5F + static_cast<float>(j), 0.5F + static_cast<float>(i) + 0.5F};
-          const auto p = unit.unprojectVertex(position, depth);
-          const auto q = unit.projectVertex(SceneVertexDescriptor{p, 0.F});
-
-          REQUIRE(q.depth == depth);
-          REQUIRE_THAT(q.position.x(), WithinAbs(position.x(), 1E-4));
-          REQUIRE_THAT(q.position.y(), WithinAbs(position.y(), 5E-5));
-
-          ++count;
-        }
-      }
-    }
-
-    REQUIRE(count == 3103);
-  }
+  m_R = Common::Mat3x3f{Common::floatCast, rotationMatrix(r)};
+  m_t = Common::Vec3f{Common::floatCast, t};
 }
+
+auto AffineTransform::operator()(Common::Vec3f x) const -> Common::Vec3f { return m_R * x + m_t; }
+} // namespace TMIV::Renderer

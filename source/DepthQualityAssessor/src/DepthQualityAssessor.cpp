@@ -37,7 +37,7 @@
 #include <TMIV/Common/Thread.h>
 #include <TMIV/MivBitstream/DepthOccupancyTransform.h>
 #include <TMIV/MivBitstream/Formatters.h>
-#include <TMIV/Renderer/reprojectPoints.h>
+#include <TMIV/Renderer/ProjectionHelper.h>
 
 namespace TMIV::DepthQualityAssessor {
 namespace {

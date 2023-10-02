@@ -4,17 +4,21 @@ create_tmiv_library(
     TARGET
     RendererLib
     SOURCES
-    "src/Renderer.cpp"
-    "src/Inpainter.cpp"
-    "src/SubBlockCuller.cpp"
+    "src/AccumulatingPixel.cpp"
     "src/AdditiveSynthesizer.cpp"
-    "src/ViewingSpaceController.cpp"
-    "src/Rasterizer.cpp"
-    "src/reprojectPoints.cpp"
-    "src/ViewWeightingSynthesizer.cpp"
+    "src/AffineTransform.cpp"
+    "src/Inpainter.cpp"
+    "src/MpiRasterizer.cpp"
     "src/MpiSynthesizer.cpp"
+    "src/ProjectionHelper.cpp"
+    "src/Projector.cpp"
     "src/PushPullInpainter.cpp"
+    "src/Rasterizer.cpp"
     "src/RecoverPrunedViews.cpp"
+    "src/Renderer.cpp"
+    "src/SubBlockCuller.cpp"
+    "src/ViewingSpaceController.cpp"
+    "src/ViewWeightingSynthesizer.cpp"
     PUBLIC
     MivBitstreamLib
     PRIVATE
@@ -50,13 +54,11 @@ create_catch2_unit_test(
     SOURCES
     "test/AccumulatingPixel_test.cpp"
     "test/AffineTransform_test.cpp"
-    "test/Engine_equirectangular_test.cpp"
-    "test/Engine_perspective_test.cpp"
-    "test/Engine_orthographic_test.cpp"
     "test/MpiRasterizer_test.cpp"
-    "test/Rasterizer_test.cpp"
+    "test/Projector_test.cpp"
     "test/PushPull_test.cpp"
     "test/PushPullInpainter_test.cpp"
+    "test/Rasterizer_test.cpp"
     "test/RecoverPrunedViews_test.cpp"
     "test/ViewWeightingSynthesizer_test.cpp"
     PRIVATE

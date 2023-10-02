@@ -36,12 +36,12 @@
 #include "IncrementalSynthesizer.h"
 #include "LumaStdDev.h"
 #include "PrunedMesh.h"
+#include "computeOverlappingMatrix.h"
 
 #include <TMIV/Common/Graph.h>
 #include <TMIV/Common/LoggingStrategyFmt.h>
 #include <TMIV/MivBitstream/DepthOccupancyTransform.h>
 #include <TMIV/MivBitstream/Formatters.h>
-#include <TMIV/Renderer/reprojectPoints.h>
 
 #include <algorithm>
 #include <cmath>
@@ -143,7 +143,7 @@ private:
   bool m_enable2ndPassPruner;
   int32_t m_sampleSize;
   float m_maxColorError;
-  Renderer::AccumulatingPixel<Common::Vec3f> m_config;
+  Renderer::AccumulatingPixel m_config;
   bool m_skipInpaintViews{};
   int32_t m_reviveRatio{100};
   std::optional<float> m_lumaStdDev{};
@@ -863,11 +863,11 @@ private:
     Common::Mat<uint8_t>::iterator iColor;
     if (m_enable2ndPassPruner) {
       if (m_sampleSize == 0) {
-        colorInconsistencyMask = getColorInconsistencyMask(
-            synthesizer.referenceYUV, synthesizer.rasterizer.attribute<0>(), mask);
+        colorInconsistencyMask = getColorInconsistencyMask(synthesizer.referenceYUV,
+                                                           synthesizer.rasterizer.color(), mask);
       } else {
         colorInconsistencyMask = getColorInconsistencyMaskSampled(
-            synthesizer.referenceYUV, synthesizer.rasterizer.attribute<0>(), mask);
+            synthesizer.referenceYUV, synthesizer.rasterizer.color(), mask);
       }
       iColor = std::begin(colorInconsistencyMask);
     }
@@ -885,10 +885,10 @@ private:
     auto modifiedMaxLumaError = m_maxLumaError * m_lumaStdDev.value();
     float maxInformation = 65535.;
 
-    synthesizer.rasterizer.visit([&](const Renderer::PixelValue<Common::Vec3f> &x) {
+    synthesizer.rasterizer.visit([&](const Renderer::PixelValue &x) {
       if (x.normDisp > 0) {
         const auto depthError = (x.depth() / *j - 1.F);
-        auto lumaError = std::abs(std::get<0>(x.attributes()).x() - *(jY));
+        auto lumaError = std::abs(x.color.x() - *(jY));
 
         const auto h = pp / W;
         const auto w = pp % W;
@@ -899,8 +899,7 @@ private:
               continue;
             }
             const auto offset = hh * W + ww;
-            lumaError =
-                std::min(lumaError, std::abs(std::get<0>(x.attributes()).x() - *(jY + offset)));
+            lumaError = std::min(lumaError, std::abs(x.color.x() - *(jY + offset)));
           }
         }
 

@@ -35,8 +35,6 @@
 
 #include <fmt/format.h>
 
-#include <cassert>
-
 namespace TMIV::MivBitstream {
 DepthTransform::DepthTransform(const DepthQuantization &dq, uint32_t bitDepth)
     : m_normDispLow{dq.dq_norm_disp_low()}

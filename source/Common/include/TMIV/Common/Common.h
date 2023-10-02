@@ -39,7 +39,6 @@
 #include "verify.h"
 
 #include <algorithm>
-#include <cassert>
 #include <cmath>
 #include <cstdint>
 #include <limits>

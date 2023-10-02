@@ -31,9 +31,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef TMIV_RENDERER_MPIRASTERIZER_H
-#error "Include the .h, not the .hpp"
-#endif
+#include <TMIV/Renderer/MpiRasterizer.h>
 
 #include <TMIV/Common/Common.h>
 #include <TMIV/Common/Thread.h>
@@ -81,12 +79,10 @@ inline auto MpiFetchAttributes(int32_t /* index */, const std::tuple<> &
 }
 } // namespace detail
 
-template <typename... T>
-MpiRasterizer<T...>::MpiRasterizer(Common::Vec2i size)
+MpiRasterizer::MpiRasterizer(Common::Vec2i size)
     : MpiRasterizer{size, detail::MpiNumStrips(size.y())} {}
 
-template <typename... T>
-MpiRasterizer<T...>::MpiRasterizer(Common::Vec2i size, int32_t numStrips)
+MpiRasterizer::MpiRasterizer(Common::Vec2i size, int32_t numStrips)
     : m_size{static_cast<size_t>(size.y()), static_cast<size_t>(size.x())} {
   PRECONDITION(size.x() >= 0 && size.y() >= 0);
   PRECONDITION(numStrips > 0);
@@ -99,10 +95,8 @@ MpiRasterizer<T...>::MpiRasterizer(Common::Vec2i size, int32_t numStrips)
   m_dk_di = static_cast<float>(numStrips) / static_cast<float>(size.y());
 }
 
-template <typename... T>
-void MpiRasterizer<T...>::submit(const ImageVertexDescriptorList &vertices,
-                                 AttributeMaps attributes,
-                                 const TriangleDescriptorList &triangles) {
+void MpiRasterizer::submit(const ImageVertexDescriptorList &vertices, AttributeMaps attributes,
+                           const TriangleDescriptorList &triangles) {
   m_batches.push_back(Batch{vertices, std::move(attributes)});
   for (auto &strip : m_strips) {
     strip.batches.emplace_back();
@@ -112,7 +106,7 @@ void MpiRasterizer<T...>::submit(const ImageVertexDescriptorList &vertices,
   }
 }
 
-template <typename... T> void MpiRasterizer<T...>::run(const FragmentShader &fragmentShader) {
+void MpiRasterizer::run(const FragmentShader &fragmentShader) {
   std::vector<std::future<void>> work;
   work.reserve(m_strips.size());
 
@@ -137,8 +131,7 @@ template <typename... T> void MpiRasterizer<T...>::run(const FragmentShader &fra
   clearBatches();
 }
 
-template <typename... T>
-void MpiRasterizer<T...>::submitTriangle(TriangleDescriptor descriptor, const Batch &batch) {
+void MpiRasterizer::submitTriangle(TriangleDescriptor descriptor, const Batch &batch) {
   const auto K = static_cast<int32_t>(m_strips.size());
   auto k1 = K;
   auto k2 = 0;
@@ -187,9 +180,8 @@ inline void swap_vec2fp(Vec2fp &p1, Vec2fp &p2) {
 }
 } // namespace mpi_fixed_point
 
-template <typename... T>
-void MpiRasterizer<T...>::rasterTriangle(TriangleDescriptor descriptor, const Batch &batch,
-                                         Strip &strip, const FragmentShader &fragmentShader) {
+void MpiRasterizer::rasterTriangle(TriangleDescriptor descriptor, const Batch &batch, Strip &strip,
+                                   const FragmentShader &fragmentShader) {
   using std::ldexp;
   using std::max;
   using std::min;
@@ -273,7 +265,7 @@ void MpiRasterizer<T...>::rasterTriangle(TriangleDescriptor descriptor, const Ba
   }
 }
 
-template <typename... T> void MpiRasterizer<T...>::clearBatches() {
+void MpiRasterizer::clearBatches() {
   for (auto &strip : m_strips) {
     strip.batches.clear();
   }

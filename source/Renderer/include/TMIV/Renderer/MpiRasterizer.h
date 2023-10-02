@@ -34,20 +34,30 @@
 #ifndef TMIV_RENDERER_MPIRASTERIZER_H
 #define TMIV_RENDERER_MPIRASTERIZER_H
 
-#include "Engine.h"
+#include "Projector.h"
 
 #include <array>
 
 namespace TMIV::Renderer {
-template <typename... T> using PixelAttributes = std::tuple<T...>;
+using PixelAttributes = std::tuple<Common::Vec2f, float, uint32_t, uint32_t>;
 
-template <typename... T> class MpiRasterizer {
+using SceneVertexDescriptorList = std::vector<SceneVertexDescriptor>;
+using TriangleDescriptorList = std::vector<TriangleDescriptor>;
+using ImageVertexDescriptorList = std::vector<ImageVertexDescriptor>;
+
+struct ViewportPosition2D {
+  ViewportPosition2D(int32_t _x, int32_t _y) : x{_x}, y{_y} {}
+  int32_t x{}, y{};
+};
+
+class MpiRasterizer {
 public:
   using Exception = std::logic_error;
-  using AttributeMaps = std::tuple<std::vector<T>...>;
+  using AttributeMaps = std::tuple<std::vector<Common::Vec2f>, std::vector<float>,
+                                   std::vector<uint32_t>, std::vector<uint32_t>>;
   using FragmentShader =
       std::function<void(const ViewportPosition2D &, const std::array<float, 3> &,
-                         const std::array<PixelAttributes<T...>, 3> &)>;
+                         const std::array<PixelAttributes, 3> &)>;
 
   // Construct a rasterizer with specified size.
   // The number of strips for concurrent processing is
@@ -92,8 +102,8 @@ private:
   using Size = Common::Mat<float>::tuple_type;
 
   void submitTriangle(TriangleDescriptor descriptor, const Batch &batch);
-  void rasterTriangle(TriangleDescriptor descriptor, const Batch &batch, Strip &strip,
-                      const FragmentShader &fragmentShader);
+  static void rasterTriangle(TriangleDescriptor descriptor, const Batch &batch, Strip &strip,
+                             const FragmentShader &fragmentShader);
   void clearBatches();
 
   const Size m_size{};
@@ -102,7 +112,5 @@ private:
   std::vector<Batch> m_batches;
 };
 } // namespace TMIV::Renderer
-
-#include "MpiRasterizer.hpp"
 
 #endif

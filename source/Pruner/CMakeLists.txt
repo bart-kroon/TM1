@@ -4,10 +4,11 @@ create_tmiv_library(
     TARGET
     PrunerLib
     SOURCES
+    "src/computeOverlappingMatrix.cpp"
     "src/HierarchicalPruner.cpp"
     "src/LumaStdDev.cpp"
-    "src/PrunedMesh.cpp"
     "src/NoPruner.cpp"
+    "src/PrunedMesh.cpp"
     PRIVATE
     RendererLib
     fmt::fmt)

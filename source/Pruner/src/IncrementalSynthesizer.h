@@ -34,13 +34,12 @@
 #ifndef TMIV_PRUNER_INCREMENTAL_SYNTHESIZER_H
 #define TMIV_PRUNER_INCREMENTAL_SYNTHESIZER_H
 
-#include <TMIV/Renderer/AccumulatingPixel.h>
 #include <TMIV/Renderer/Rasterizer.h>
 
 namespace TMIV::Pruner {
 struct IncrementalSynthesizer {
-  IncrementalSynthesizer(const Renderer::AccumulatingPixel<Common::Vec3f> &config,
-                         Common::Vec2i size, size_t index_, Common::Mat<float> reference_,
+  IncrementalSynthesizer(const Renderer::AccumulatingPixel &config, Common::Vec2i size,
+                         size_t index_, Common::Mat<float> reference_,
                          Common::Mat<float> referenceY_, Common::Mat<Common::Vec3f> referenceYUV_)
       : rasterizer{config, size}
       , index{index_}
@@ -48,7 +47,7 @@ struct IncrementalSynthesizer {
       , referenceY{std::move(referenceY_)}
       , referenceYUV{std::move(referenceYUV_)} {}
 
-  Renderer::Rasterizer<Common::Vec3f> rasterizer;
+  Renderer::Rasterizer rasterizer;
   const size_t index;
   float maskAverage{0.F};
   const Common::Mat<float> reference;

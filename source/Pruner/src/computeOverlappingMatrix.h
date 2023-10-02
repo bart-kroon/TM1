@@ -31,46 +31,14 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef TMIV_RENDERER_ENGINE_H
-#error "Include the .h, not the .hpp"
+#ifndef TMIV_PRUNER_COMPUTEOVERLAPPINGMATRIX_H
+#define TMIV_PRUNER_COMPUTEOVERLAPPINGMATRIX_H
+
+#include <TMIV/Renderer/ProjectionHelper.h>
+
+namespace TMIV::Pruner {
+auto computeOverlappingMatrix(const Renderer::ProjectionHelperList &sourceHelperList)
+    -> Common::Mat<float>;
+} // namespace TMIV::Pruner
+
 #endif
-
-#include <TMIV/Common/Common.h>
-
-namespace TMIV::Renderer {
-template <> struct Engine<MivBitstream::CiCamType::orthographic> {
-  const float ow;
-  const float oh;
-  const float ppw;
-  const float pph;
-
-  explicit Engine(const MivBitstream::CameraIntrinsics &ci)
-      : ow{ci.ci_ortho_width()}
-      , oh{ci.ci_ortho_height()}
-      , ppw{static_cast<float>(ci.ci_projection_plane_width_minus1() + 1)}
-      , pph{static_cast<float>(ci.ci_projection_plane_height_minus1() + 1)} {}
-
-  // Unprojection equation
-  [[nodiscard]] auto unprojectVertex(Common::Vec2f uv, float depth) const -> Common::Vec3f {
-    return {depth, ow * (uv.x() / ppw - 0.5F), oh * (uv.y() / pph - 0.5F)};
-  }
-
-  // Projection equation
-  [[nodiscard]] auto projectVertex(const SceneVertexDescriptor &v) const -> ImageVertexDescriptor {
-    return {Common::Vec2f{ppw * (0.5F + v.position.y() / ow), pph * (0.5F + v.position.z() / oh)},
-            v.position.x(), v.rayAngle};
-  }
-
-  // Project mesh to target view
-  template <typename... T>
-  auto project(const SceneVertexDescriptorList &sceneVertices,
-               const TriangleDescriptorList &triangles, std::tuple<std::vector<T>...> attributes) {
-    ImageVertexDescriptorList imageVertices;
-    imageVertices.reserve(sceneVertices.size());
-    for (const SceneVertexDescriptor &v : sceneVertices) {
-      imageVertices.push_back(projectVertex(v));
-    }
-    return std::tuple{std::move(imageVertices), triangles, attributes};
-  }
-};
-} // namespace TMIV::Renderer

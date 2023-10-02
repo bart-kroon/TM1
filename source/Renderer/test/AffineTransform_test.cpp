@@ -34,7 +34,7 @@
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 
-#include <TMIV/Renderer/reprojectPoints.h>
+#include <TMIV/Renderer/AffineTransform.h>
 
 using TMIV::Common::Vec3f;
 using TMIV::Renderer::AffineTransform;

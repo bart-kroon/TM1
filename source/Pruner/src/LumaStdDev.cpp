@@ -93,7 +93,7 @@ auto findCentralBasicView(const MivBitstream::ViewParamsList &viewParamsList) ->
 
 auto initSynthesizersForFrameAnalysis(const Common::DeepFrameList &views,
                                       const MivBitstream::ViewParamsList &viewParamsList,
-                                      Renderer::AccumulatingPixel<Common::Vec3f> config)
+                                      Renderer::AccumulatingPixel config)
     -> std::vector<std::unique_ptr<IncrementalSynthesizer>> {
   std::vector<std::unique_ptr<IncrementalSynthesizer>> synthesizers{};
   for (size_t i = 0; i < viewParamsList.size(); ++i) {
@@ -181,8 +181,8 @@ auto calculateStdDev(const std::vector<int32_t> &differenceHistogram) -> std::op
 
 auto calculateLumaStdDev(const Common::DeepFrameList &views,
                          const MivBitstream::ViewParamsList &viewParamsList,
-                         const Renderer::AccumulatingPixel<Common::Vec3f> &config,
-                         float maxDepthError) -> std::optional<float> {
+                         const Renderer::AccumulatingPixel &config, float maxDepthError)
+    -> std::optional<float> {
   const int32_t numBins = 512;
   std::vector<int32_t> differenceHistogram(numBins, 0);
   const int32_t numBins2 = numBins / 2U;
@@ -216,15 +216,15 @@ auto calculateLumaStdDev(const Common::DeepFrameList &views,
 
     int32_t pixelIdx = 0;
 
-    s->rasterizer.visit([&](const Renderer::PixelValue<Common::Vec3f> &x) {
+    s->rasterizer.visit([&](const Renderer::PixelValue &x) {
       if (x.normDisp > 0) {
         const auto depthError = x.depth() / *j - 1.F;
 
         const auto relativeErrorThreshold = 0.1F;
         if (std::abs(depthError) < (maxDepthError * relativeErrorThreshold)) {
-          const auto middleVal = std::get<0>(x.attributes()).x();
+          const auto middleVal = x.color.x();
           if (isAnyNeighboringPixelSimilar(H, W, pixelIdx, numBins2, middleVal, jY)) {
-            const auto lumaError = std::get<0>(x.attributes()).x() - *(jY);
+            const auto lumaError = x.color.x() - *(jY);
             const auto binIdx = std::clamp<size_t>(
                 static_cast<size_t>(numBins2) +
                     static_cast<size_t>(lroundf(lumaError * static_cast<float>(numBins2))),

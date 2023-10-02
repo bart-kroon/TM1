@@ -37,8 +37,6 @@
 #include "Matrix.h"
 #include "Vector.h"
 
-#include <cassert>
-
 namespace TMIV::Common {
 template <typename ElementSum, typename Element>
 auto integralImage(const Mat<Element> &in) -> Mat<ElementSum> {

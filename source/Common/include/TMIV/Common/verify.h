@@ -36,7 +36,6 @@
 
 #include "LoggingStrategy.h"
 
-#include <cassert>
 #include <cstdlib>
 #include <limits>
 #include <sstream>

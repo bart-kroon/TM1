@@ -36,26 +36,26 @@
 #include <TMIV/Renderer/AccumulatingPixel.h>
 
 SCENARIO("Pixel can be blended", "[AccumulatingPixel]") {
-  using Pixel = TMIV::Renderer::AccumulatingPixel<TMIV::Common::Vec3f>;
-  using Acc = TMIV::Renderer::PixelAccumulator<TMIV::Common::Vec3f>;
-  using Value = TMIV::Renderer::PixelValue<TMIV::Common::Vec3f>;
+  using Pixel = TMIV::Renderer::AccumulatingPixel;
+  using Acc = TMIV::Renderer::PixelAccumulator;
+  using Value = TMIV::Renderer::PixelValue;
 
   GIVEN("A default-constructed accumulator") {
     Acc acc;
     Pixel pixel{1.F, 1.F, 1.F, 10.F};
 
     THEN("The attributes are zero")
-    REQUIRE(std::get<0>(acc.attributes()).x() == 0.F);
-    REQUIRE(std::get<0>(acc.attributes()).y() == 0.F);
-    REQUIRE(std::get<0>(acc.attributes()).z() == 0.F);
+    REQUIRE(acc.color.x() == 0.F);
+    REQUIRE(acc.color.y() == 0.F);
+    REQUIRE(acc.color.z() == 0.F);
 
     WHEN("Averaging") {
       auto val = pixel.average(acc);
 
       THEN("The attributes are zero") {
-        REQUIRE(std::get<0>(val.attributes()).x() == 0.F);
-        REQUIRE(std::get<0>(val.attributes()).y() == 0.F);
-        REQUIRE(std::get<0>(val.attributes()).z() == 0.F);
+        REQUIRE(val.color.x() == 0.F);
+        REQUIRE(val.color.y() == 0.F);
+        REQUIRE(val.color.z() == 0.F);
       }
     }
   }
@@ -74,15 +74,15 @@ SCENARIO("Pixel can be blended", "[AccumulatingPixel]") {
 
     Value reference{{{0.3F, 0.7F, 0.1F}}, 0.53F, ray_angle_weight * stretching_weight, stretching};
 
-    Acc accum = pixel.construct(reference.attributes(), reference.normDisp, ray_angle, stretching);
+    Acc accum = pixel.construct(reference.color, reference.normDisp, ray_angle, stretching);
 
     WHEN("The pixel value is directly computed") {
       Value actual = pixel.average(accum);
 
       THEN("The average is the pixel value") {
-        REQUIRE(std::get<0>(actual.attributes())[0] == std::get<0>(reference.attributes())[0]);
-        REQUIRE(std::get<0>(actual.attributes())[1] == std::get<0>(reference.attributes())[1]);
-        REQUIRE(std::get<0>(actual.attributes())[2] == std::get<0>(reference.attributes())[2]);
+        REQUIRE(actual.color[0] == reference.color[0]);
+        REQUIRE(actual.color[1] == reference.color[1]);
+        REQUIRE(actual.color[2] == reference.color[2]);
         REQUIRE(actual.normDisp == reference.normDisp);
         REQUIRE(actual.normWeight == reference.normWeight);
       }
@@ -93,22 +93,22 @@ SCENARIO("Pixel can be blended", "[AccumulatingPixel]") {
       Value actual = pixel.average(accum2);
 
       THEN("The average is the same but with double quality") {
-        REQUIRE(std::get<0>(actual.attributes())[0] == std::get<0>(reference.attributes())[0]);
-        REQUIRE(std::get<0>(actual.attributes())[1] == std::get<0>(reference.attributes())[1]);
-        REQUIRE(std::get<0>(actual.attributes())[2] == std::get<0>(reference.attributes())[2]);
+        REQUIRE(actual.color[0] == reference.color[0]);
+        REQUIRE(actual.color[1] == reference.color[1]);
+        REQUIRE(actual.color[2] == reference.color[2]);
         REQUIRE(actual.normDisp == reference.normDisp);
         REQUIRE(actual.normWeight == 2 * reference.normWeight);
       }
     }
 
     WHEN("The pixel is blended with another pixel that has invalid depth") {
-      Acc accumInvalid = pixel.construct(reference.attributes(), 0.F, ray_angle, stretching);
+      Acc accumInvalid = pixel.construct(reference.color, 0.F, ray_angle, stretching);
       Value actual = pixel.average(pixel.blend(accum, accumInvalid));
 
       THEN("It is af the pixel has not been blended") {
-        REQUIRE(std::get<0>(actual.attributes())[0] == std::get<0>(reference.attributes())[0]);
-        REQUIRE(std::get<0>(actual.attributes())[1] == std::get<0>(reference.attributes())[1]);
-        REQUIRE(std::get<0>(actual.attributes())[2] == std::get<0>(reference.attributes())[2]);
+        REQUIRE(actual.color[0] == reference.color[0]);
+        REQUIRE(actual.color[1] == reference.color[1]);
+        REQUIRE(actual.color[2] == reference.color[2]);
         REQUIRE(actual.normDisp == reference.normDisp);
         REQUIRE(actual.normWeight == reference.normWeight);
       }

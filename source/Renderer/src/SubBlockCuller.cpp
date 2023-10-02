@@ -35,9 +35,8 @@
 
 #include <TMIV/Common/Factory.h>
 #include <TMIV/MivBitstream/DepthOccupancyTransform.h>
-
-#include "TMIV/Renderer/Engine.h"
-#include <TMIV/Renderer/reprojectPoints.h>
+#include <TMIV/Renderer/AffineTransform.h>
+#include <TMIV/Renderer/Projector.h>
 
 namespace TMIV::Renderer {
 SubBlockCuller::SubBlockCuller(const Common::Json & /*rootNode*/,
@@ -85,31 +84,33 @@ auto choosePatch(const MivBitstream::PatchParams &patch,
                                                      modified_depth_z * modified_depth_z));
   }
 
-  for (int32_t i = 0; i < 4; i++) {
-    const auto xyz = R_t(unprojectVertex(Common::at(uv, i), patch_dep_near, camera.ci));
-    const auto rayAngle = Common::angle(xyz, xyz - R_t.translation());
-    SceneVertexDescriptor v;
-    v.position = xyz;
-    v.rayAngle = rayAngle;
-    auto pix = target.ci.dispatch([&](auto camType) {
-      Engine<camType> engine{target.ci};
-      return engine.projectVertex(v);
-    });
-    Common::at(xy_v, i) = pix.position;
-  }
+  camera.ci.dispatch([&](auto sourceCamType) {
+    const auto unprojector = Projector<sourceCamType>{camera.ci};
 
-  for (int32_t i = 0; i < 4; i++) {
-    const auto xyz = R_t(unprojectVertex(Common::at(uv, i), patch_dep_far_mod, camera.ci));
-    const auto rayAngle = Common::angle(xyz, xyz - R_t.translation());
-    SceneVertexDescriptor v;
-    v.position = xyz;
-    v.rayAngle = rayAngle;
-    auto pix = target.ci.dispatch([&](auto camType) {
-      Engine<camType> engine{target.ci};
-      return engine.projectVertex(v);
+    target.ci.dispatch([&](auto targetCamType) {
+      const auto projector = Projector<targetCamType>{target.ci};
+
+      for (int32_t i = 0; i < 4; i++) {
+        const auto xyz = R_t(unprojector.unprojectVertex(Common::at(uv, i), patch_dep_near));
+        const auto rayAngle = Common::angle(xyz, xyz - R_t.translation());
+        SceneVertexDescriptor v;
+        v.position = xyz;
+        v.rayAngle = rayAngle;
+        const auto pix = projector.projectVertex(v);
+        Common::at(xy_v, i) = pix.position;
+      }
+
+      for (int32_t i = 0; i < 4; i++) {
+        const auto xyz = R_t(unprojector.unprojectVertex(Common::at(uv, i), patch_dep_far_mod));
+        const auto rayAngle = Common::angle(xyz, xyz - R_t.translation());
+        SceneVertexDescriptor v;
+        v.position = xyz;
+        v.rayAngle = rayAngle;
+        const auto pix = projector.projectVertex(v);
+        at(xy_v, i + 4) = pix.position;
+      }
     });
-    at(xy_v, i + 4) = pix.position;
-  }
+  });
 
   float xy_v_xmax = -1000;
   float xy_v_xmin = 65536;

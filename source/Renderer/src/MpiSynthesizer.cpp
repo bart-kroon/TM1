@@ -35,7 +35,7 @@
 
 #include <TMIV/MivBitstream/DepthOccupancyTransform.h>
 #include <TMIV/Renderer/MpiRasterizer.h>
-#include <TMIV/Renderer/reprojectPoints.h>
+#include <TMIV/Renderer/ProjectionHelper.h>
 
 #include <array>
 
@@ -80,8 +80,8 @@ auto getPatchPackingWidth(const MivBitstream::PatchParams &patch) -> int32_t {
 
 class MpiSynthesizer::Impl {
 public:
-  using PixelAttribute = Renderer::PixelAttributes<Common::Vec2f, float, uint32_t, uint32_t>;
-  using MpiRasterizer = Renderer::MpiRasterizer<Common::Vec2f, float, uint32_t, uint32_t>;
+  using PixelAttribute = Renderer::PixelAttributes;
+  using MpiRasterizer = Renderer::MpiRasterizer;
 
 private:
   float m_minAlpha = 0.20F;
@@ -468,7 +468,7 @@ private:
       }
     }
   }
-}; // namespace TMIV::Renderer
+};
 
 MpiSynthesizer::MpiSynthesizer(const Common::Json & /*rootNode*/, const Common::Json &componentNode)
     : m_impl(new Impl(componentNode)) {}

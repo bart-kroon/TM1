@@ -31,62 +31,27 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef TMIV_RENDERER_ENGINE_H
-#define TMIV_RENDERER_ENGINE_H
+#ifndef TMIV_RENDERER_AFFINETRANSFORM_H
+#define TMIV_RENDERER_AFFINETRANSFORM_H
 
-#include <TMIV/Common/LinAlg.h>
 #include <TMIV/MivBitstream/ViewParamsList.h>
 
 namespace TMIV::Renderer {
-struct SceneVertexDescriptor {
-  Common::Vec3f position; // m, scene point in target reference frame
-  float rayAngle{};       // rad, ray angle from: cos a = <v, w>/|v||w|
-};
-
-using SceneVertexDescriptorList = std::vector<SceneVertexDescriptor>;
-
-struct TriangleDescriptor {
-  std::array<int32_t, 3> indices; // indices into vertex lists
-  float area;                     // px�, area before unprojection
-};
-
-using TriangleDescriptorList = std::vector<TriangleDescriptor>;
-
-struct ImageVertexDescriptor {
-  Common::Vec2f position; // px, position in image (x right, y down)
-  float depth{};          // m, depth as defined in the target projection
-  float rayAngle{};       // rad, ray angle from: cos a = <v, w>/|v||w|
-};
-
-using ImageVertexDescriptorList = std::vector<ImageVertexDescriptor>;
-
-// The rendering engine is the part that is specalized per projection type
-template <MivBitstream::CiCamType camType> struct Engine {};
-struct ViewportPosition2D {
-  ViewportPosition2D(int32_t _x, int32_t _y) : x{_x}, y{_y} {}
-  int32_t x{}, y{};
-};
-} // namespace TMIV::Renderer
-
-#include "Engine_ERP.hpp"
-#include "Engine_Orthographic.hpp"
-#include "Engine_Perspective.hpp"
-
-namespace TMIV::Renderer {
-// Project the data that is already in the reference frame of the
-// target camera.
+// Change the reference frame from a source camera to a target camera
 //
-// This method is designed to allow for specialization per target camera
-// projection. The interface allows for culling and splitting triangles.
-template <typename... T>
-auto project(SceneVertexDescriptorList vertices, TriangleDescriptorList triangles,
-             std::tuple<std::vector<T>...> attributes,
-             const MivBitstream::CameraIntrinsics &target) {
-  return target.dispatch([&](auto camType) {
-    Engine<camType> engine{target};
-    return engine.project(std::move(vertices), std::move(triangles), std::move(attributes));
-  });
-}
+// This corresponds to the affine transformation: x -> Rx + t with rotation matrix R and translation
+// vector t.
+class AffineTransform {
+public:
+  AffineTransform(const MivBitstream::Pose &source, const MivBitstream::Pose &target);
+
+  [[nodiscard]] auto translation() const -> auto & { return m_t; }
+  auto operator()(Common::Vec3f x) const -> Common::Vec3f;
+
+private:
+  Common::Mat3x3f m_R;
+  Common::Vec3f m_t;
+};
 } // namespace TMIV::Renderer
 
 #endif

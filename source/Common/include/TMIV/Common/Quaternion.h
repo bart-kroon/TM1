@@ -39,7 +39,6 @@
 #include "Vector.h"
 #include "verify.h"
 
-#include <cassert>
 #include <type_traits>
 
 namespace TMIV::Common {

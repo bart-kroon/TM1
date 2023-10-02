@@ -38,7 +38,6 @@
 
 #include <TMIV/Common/Frame.h>
 #include <TMIV/MivBitstream/ViewParamsList.h>
-#include <TMIV/Renderer/AccumulatingPixel.h>
 
 #include <memory>
 #include <optional>
@@ -47,8 +46,8 @@
 namespace TMIV::Pruner {
 auto calculateLumaStdDev(const Common::DeepFrameList &views,
                          const MivBitstream::ViewParamsList &viewParamsList,
-                         const Renderer::AccumulatingPixel<Common::Vec3f> &config,
-                         float maxDepthError) -> std::optional<float>;
+                         const Renderer::AccumulatingPixel &config, float maxDepthError)
+    -> std::optional<float>;
 } // namespace TMIV::Pruner
 
 #endif // TMIV_PRUNER_LUMA_STD_DEV_H

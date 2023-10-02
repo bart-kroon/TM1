@@ -31,53 +31,44 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef TMIV_RENDERER_ENGINE_H
-#error "Include the .h, not the .hpp"
-#endif
+#ifndef TMIV_RENDERER_PROJECTIONHELPER_H
+#define TMIV_RENDERER_PROJECTIONHELPER_H
 
-#include <TMIV/Common/Common.h>
+#include "Projector.h"
 
 namespace TMIV::Renderer {
-template <> struct Engine<MivBitstream::CiCamType::perspective> {
-  const float f_x;
-  const float f_y;
-  const float c_x;
-  const float c_y;
+constexpr auto isValidDepth(float d) -> bool { return 0.F < d; }
 
-  explicit Engine(const MivBitstream::CameraIntrinsics &ci)
-      : f_x{ci.ci_perspective_focal_hor()}
-      , f_y{ci.ci_perspective_focal_ver()}
-      , c_x{ci.ci_perspective_center_hor()}
-      , c_y{ci.ci_perspective_center_ver()} {}
+class ProjectionHelper {
+private:
+  MivBitstream::ViewParams m_viewParams;
+  std::unique_ptr<IProjector> m_projector;
+  Common::QuatF m_rotation{Common::neutralOrientationF};
 
-  // Unprojection equation
-  [[nodiscard]] auto unprojectVertex(Common::Vec2f uv, float depth) const -> Common::Vec3f {
-    if (depth > 0.F) {
-      return {depth, -(depth / f_x) * (uv.x() - c_x), -(depth / f_y) * (uv.y() - c_y)};
-    }
-    return {NAN, NAN, NAN};
-  }
+public:
+  explicit ProjectionHelper(const MivBitstream::ViewParams &viewParams);
 
-  // Projection equation
-  [[nodiscard]] auto projectVertex(const SceneVertexDescriptor &v) const -> ImageVertexDescriptor {
-    if (v.position.x() > 0.F) {
-      auto uv = Common::Vec2f{-f_x * v.position.y() / v.position.x() + c_x,
-                              -f_y * v.position.z() / v.position.x() + c_y};
-      return {uv, v.position.x(), v.rayAngle};
-    }
-    return {{NAN, NAN}, NAN, NAN};
-  }
+  ProjectionHelper(const ProjectionHelper &) = delete;
+  ProjectionHelper(ProjectionHelper &&) = default;
+  auto operator=(const ProjectionHelper &) -> ProjectionHelper & = delete;
+  auto operator=(ProjectionHelper &&) -> ProjectionHelper & = default;
+  ~ProjectionHelper() = default;
 
-  // Project mesh to target view
-  template <typename... T>
-  auto project(const SceneVertexDescriptorList &sceneVertices,
-               const TriangleDescriptorList &triangles, std::tuple<std::vector<T>...> attributes) {
-    ImageVertexDescriptorList imageVertices;
-    imageVertices.reserve(sceneVertices.size());
-    for (const SceneVertexDescriptor &v : sceneVertices) {
-      imageVertices.push_back(projectVertex(v));
-    }
-    return std::tuple{std::move(imageVertices), triangles, attributes};
-  }
+  [[nodiscard]] auto getViewParams() const -> const auto & { return m_viewParams; }
+  [[nodiscard]] auto getViewingPosition() const -> Common::Vec3f;
+  [[nodiscard]] auto getViewingDirection() const -> Common::Vec3f;
+  [[nodiscard]] auto doProjection(const Common::Vec3f &P) const -> std::pair<Common::Vec2f, float>;
+  [[nodiscard]] auto doUnprojection(const Common::Vec2f &p, float d) const -> Common::Vec3f;
+  [[nodiscard]] auto isStrictlyInsideViewport(const Common::Vec2f &p) const -> bool;
+  [[nodiscard]] auto isInsideViewport(const Common::Vec2f &p) const -> bool;
+  [[nodiscard]] auto isValidDepth(float d) const -> bool;
+  [[nodiscard]] auto getAngularResolution() const -> float;
+};
+
+class ProjectionHelperList : public std::vector<ProjectionHelper> {
+public:
+  ProjectionHelperList(const MivBitstream::ViewParamsList &viewParamsList);
 };
 } // namespace TMIV::Renderer
+
+#endif

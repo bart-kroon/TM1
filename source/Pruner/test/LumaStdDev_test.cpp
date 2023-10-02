@@ -39,7 +39,7 @@
 namespace TMIV::Pruner {
 SCENARIO("Luma standard deviation in pruning") {
   const float maxDepthError = 0.1F;
-  const Renderer::AccumulatingPixel<Common::Vec3f> &config{10.0F, 50.0F, 3.0F, 5};
+  const Renderer::AccumulatingPixel &config{10.0F, 50.0F, 3.0F, 5};
 
   const int32_t numOfCams = 2;
   const int32_t W = 10;

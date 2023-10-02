@@ -47,7 +47,7 @@ using TMIV::Renderer::ViewportPosition2D;
 
 SCENARIO("MPI rastering meshes with Common::Vec2f as attribute", "[Rasterizer]") {
   GIVEN("A new MPI rasterizer") {
-    MpiRasterizer<Vec2f, float, uint32_t, uint32_t> rasterizer(Vec2i{8, 4});
+    MpiRasterizer rasterizer(Vec2i{8, 4});
     Mat<float> atlasColor({2, 2});
     std::fill(atlasColor.begin(), atlasColor.end(), 0.F);
     atlasColor(0, 0) = 10.F;
@@ -75,11 +75,10 @@ SCENARIO("MPI rastering meshes with Common::Vec2f as attribute", "[Rasterizer]")
       // Attribute #3 -> Atlas ID
       std::vector<uint32_t> as3{0U, 0U, 0U, 0U};
       auto as = std::tuple{as0, as1, as2, as3};
-      using PixelAttribute = PixelAttributes<Vec2f, float, uint32_t, uint32_t>;
 
       rasterizer.submit(vs, as, ts);
       rasterizer.run([&](const ViewportPosition2D &viewport, const std::array<float, 3> &weights,
-                         const std::array<PixelAttribute, 3> &pixelAttributes) {
+                         const std::array<PixelAttributes, 3> &pixelAttributes) {
         auto texCoord = weights[0] * std::get<0>(pixelAttributes[0]) +
                         weights[1] * std::get<0>(pixelAttributes[1]) +
                         weights[2] * std::get<0>(pixelAttributes[2]);

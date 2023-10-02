@@ -35,7 +35,7 @@
 #define TMIV_PRUNER_PRUNED_MESH_H
 
 #include <TMIV/Common/Frame.h>
-#include <TMIV/Renderer/Engine.h>
+#include <TMIV/Renderer/Rasterizer.h>
 
 namespace TMIV::Pruner {
 // Unproject a pruned (masked) view, resulting in a mesh in the reference
@@ -50,8 +50,7 @@ auto project(const Renderer::SceneVertexDescriptorList &vertices,
              const MivBitstream::ViewParams &source, const MivBitstream::ViewParams &target)
     -> Renderer::ImageVertexDescriptorList;
 
-// Weighted sphere compensation of stretching as performed by
-// Engine<ErpParams>::project
+// Weighted sphere compensation of stretching
 void weightedSphere(const MivBitstream::CameraIntrinsics &ci,
                     const Renderer::ImageVertexDescriptorList &vertices,
                     Renderer::TriangleDescriptorList &triangles);

@@ -41,7 +41,6 @@
 #include <TMIV/Common/Quaternion.h>
 #include <TMIV/Common/Vector.h>
 
-#include <cassert>
 #include <iosfwd>
 #include <optional>
 #include <variant>

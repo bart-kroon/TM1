@@ -35,7 +35,6 @@
 
 #include <TMIV/Common/Formatters.h>
 
-#include <cassert>
 #include <chrono>
 #include <ostream>
 

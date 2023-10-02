@@ -35,32 +35,31 @@
 #define TMIV_RENDERER_RASTERIZER_H
 
 #include "AccumulatingPixel.h"
-#include "Engine.h"
+#include "Projector.h"
 
 namespace TMIV::Renderer {
-template <typename... T> class Rasterizer {
+using SceneVertexDescriptorList = std::vector<SceneVertexDescriptor>;
+using TriangleDescriptorList = std::vector<TriangleDescriptor>;
+using ImageVertexDescriptorList = std::vector<ImageVertexDescriptor>;
+
+class Rasterizer {
 public:
   using Exception = std::logic_error;
-  using Pixel = AccumulatingPixel<T...>;
-  using Attributes = PixelAttributes<T...>;
-  using Accumulator = PixelAccumulator<T...>;
-  using Value = PixelValue<T...>;
-  using AttributeMaps = std::tuple<std::vector<T>...>;
 
   // Construct a rasterizer with specified blender and a frame buffer of
   // specified size. The number of strips for concurrent processing is
   // chosen based on image size and hardware concurrency.
-  Rasterizer(Pixel pixel, Common::Vec2i size);
+  Rasterizer(AccumulatingPixel pixel, Common::Vec2i size);
 
   // Construct a rasterizer with specified blender and a frame buffer of
   // specified size, and specify the number of strips for concurrent processing.
-  Rasterizer(Pixel pixel, Common::Vec2i size, int32_t numStrips);
+  Rasterizer(AccumulatingPixel pixel, Common::Vec2i size, int32_t numStrips);
 
   // Submit a batch of triangles
   //
   // The batch is stored within the Rasterizer for later processing.
   // Multiple batches may be submitted sequentially.
-  void submit(const ImageVertexDescriptorList &vertices, AttributeMaps attributes,
+  void submit(const ImageVertexDescriptorList &vertices, std::vector<Common::Vec3f> colors,
               const TriangleDescriptorList &triangles);
 
   // Raster all submitted batches
@@ -87,14 +86,33 @@ public:
   // Output the quality estimate (in a.u.)
   [[nodiscard]] auto normWeight() const -> Common::Mat<float>;
 
-  // Output attribute map I (e.g. color)
-  template <size_t I> auto attribute() const -> Common::Mat<std::tuple_element_t<I, Attributes>>;
+  // Output color map
+  [[nodiscard]] auto color() const -> Common::Mat<Common::Vec3f> {
+    Common::Mat<Common::Vec3f> matrix(m_size);
+    auto i_matrix = std::begin(matrix);
+    visit([&i_matrix](const PixelValue &x) {
+      *i_matrix++ = x.color;
+      return true;
+    });
+    POSTCONDITION(i_matrix == std::end(matrix));
+    return matrix;
+  }
 
   // Visit each pixel in row-major order
   //
-  // Signature: bool(const Value& value)
+  // Signature: bool(const PixelValue& value)
   // Return false to stop visiting
-  template <class Visitor> void visit(Visitor visitor) const;
+  template <class Visitor> void visit(Visitor visitor) const {
+    PRECONDITION(m_batches.empty());
+
+    for (const auto &strip : m_strips) {
+      for (const auto &accumulator : strip.matrix) {
+        if (!visitor(m_pixel.average(accumulator))) {
+          return;
+        }
+      }
+    }
+  }
 
 private:
   struct Strip {
@@ -109,7 +127,7 @@ private:
     std::vector<TriangleDescriptorList> batches;
 
     // The strip of pixels with intermediate blending state
-    std::vector<Accumulator> matrix;
+    std::vector<PixelAccumulator> matrix;
   };
 
   // Information of each batch that is shared between strips
@@ -117,7 +135,7 @@ private:
   // Note that m_batches.size() == m_strips[].batches.size()
   struct Batch {
     ImageVertexDescriptorList vertices;
-    AttributeMaps attributes;
+    std::vector<Common::Vec3f> color;
   };
 
   using Size = Common::Mat<float>::tuple_type;
@@ -126,14 +144,12 @@ private:
   void rasterTriangle(TriangleDescriptor descriptor, const Batch &batch, Strip &strip);
   void clearBatches();
 
-  const Pixel m_pixel;
-  const Size m_size{};
+  AccumulatingPixel m_pixel;
+  Size m_size{};
   float m_dk_di{}; // i for row, j for column and k for strip index
   std::vector<Strip> m_strips;
   std::vector<Batch> m_batches;
 };
 } // namespace TMIV::Renderer
-
-#include "Rasterizer.hpp"
 
 #endif

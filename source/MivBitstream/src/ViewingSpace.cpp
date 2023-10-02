@@ -38,7 +38,6 @@
 #include <TMIV/Common/verify.h>
 
 #include <algorithm>
-#include <cassert>
 
 namespace TMIV::MivBitstream {
 using Common::Half;

@@ -39,7 +39,6 @@
 #include "Vector.h"
 
 #include <array>
-#include <cassert>
 #include <cstdint>
 #include <istream>
 #include <ostream>

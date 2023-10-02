@@ -31,41 +31,31 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef TMIV_RENDERER_BLEND_H
-#define TMIV_RENDERER_BLEND_H
-
-#include <tuple>
+#include <TMIV/Renderer/Projector.h>
 
 namespace TMIV::Renderer {
-// Blend two arithmetic tensors of fixed size
-template <typename T> static auto blendValues(float w_a, T a, float w_b, T b) -> T;
+namespace {
+template <MivBitstream::CiCamType camType> class ProjectorImpl final : public IProjector {
+public:
+  ProjectorImpl(const MivBitstream::CameraIntrinsics &ci) : m_projector{ci} {}
 
-// Blend three arithmetic tensors of fixed size
-template <typename T> auto blendValues(float w_a, T a, float w_b, T b, float w_c, T c) -> T;
+  [[nodiscard]] auto unprojectVertex(Common::Vec2f uv, float depth) const -> Common::Vec3f final {
+    return m_projector.unprojectVertex(uv, depth);
+  }
+  [[nodiscard]] auto projectVertex(const SceneVertexDescriptor &v) const
+      -> ImageVertexDescriptor final {
+    return m_projector.projectVertex(v);
+  }
 
-// Blend the attributes of two pixels
-template <typename T0, typename... T>
-auto blendAttributes(float w_a, const std::tuple<T0, T...> &a, float w_b,
-                     const std::tuple<T0, T...> &b) -> std::tuple<T0, T...>;
+private:
+  Projector<camType> m_projector;
+};
+} // namespace
 
-inline auto blendAttributes(float /* w_a */, const std::tuple<> & /* a */, float /* w_b */,
-                            const std::tuple<> & /* b */) {
-  return std::tuple{};
-}
-
-// Blend the attributes of three pixels
-template <typename T0, typename... T>
-auto blendAttributes(float w_a, const std::tuple<T0, T...> &a, float w_b,
-                     const std::tuple<T0, T...> &b, float w_c, const std::tuple<T0, T...> &c)
-    -> std::tuple<T0, T...>;
-
-inline auto blendAttributes(float /* w_a */, const std::tuple<> & /* a */, float /* w_b */,
-                            const std::tuple<> & /* b */, float /* w_c */,
-                            const std::tuple<> & /* c */) {
-  return std::tuple{};
+[[nodiscard]] auto makeProjector(const MivBitstream::CameraIntrinsics &ci)
+    -> std::unique_ptr<IProjector> {
+  return ci.dispatch([&](auto camType) -> std::unique_ptr<IProjector> {
+    return std::make_unique<ProjectorImpl<camType>>(ci);
+  });
 }
 } // namespace TMIV::Renderer
-
-#include "blend.hpp"
-
-#endif

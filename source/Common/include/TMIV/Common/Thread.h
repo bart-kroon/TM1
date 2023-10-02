@@ -34,6 +34,8 @@
 #ifndef TMIV_COMMON_THREAD_H
 #define TMIV_COMMON_THREAD_H
 
+#include <algorithm>
+#include <atomic>
 #include <functional>
 #include <future>
 #include <vector>
@@ -45,59 +47,30 @@ inline auto threadCount() -> auto & {
   return singletonValue;
 }
 
-inline void parallel_for(size_t nbIter, std::function<void(size_t)> fun) {
-  auto segment_execute = [&](size_t first, size_t last) {
-    for (auto id = first; id < last; id++) {
-      fun(id);
-    }
-  };
+template <typename Fun, typename = std::enable_if_t<std::is_invocable_v<Fun, size_t>>>
+void parallelFor(size_t size, Fun &&fun) {
+  auto next = std::atomic<size_t>{};
+  auto threads = std::vector<std::thread>(std::min(size, size_t{threadCount()}));
 
-  const auto chunkSize = threadCount() < nbIter ? nbIter / threadCount() : 1;
-  std::vector<std::future<void>> threadList;
-
-  for (size_t id = 0; id < nbIter; id += chunkSize) {
-    threadList.push_back(std::async(segment_execute, id, std::min(id + chunkSize, nbIter)));
+  for (auto &thread : threads) {
+    thread = std::thread{[&next, size, fun]() {
+      for (auto idx = next++; idx < size; idx = next++) {
+        fun(idx);
+      }
+    }};
   }
-
-  for (auto &thread : threadList) {
-    thread.wait();
+  for (auto &thread : threads) {
+    thread.join();
   }
 }
 
-inline void parallel_for(size_t w, size_t h, std::function<void(size_t, size_t)> fun) {
-  size_t nbIter = w * h;
-
-  if (nbIter == 0) {
-    return;
-  }
-
-  auto segment_execute = [&](size_t first, size_t last) {
-    size_t i0 = first / w;
-    size_t i1 = std::max(i0 + 1, last / w);
-
-    for (size_t i = i0; i < i1; i++) {
-      for (size_t j = 0; j < w; j++) {
-        fun(i, j);
-      }
+template <typename Fun, typename = std::enable_if_t<std::is_invocable_v<Fun, size_t, size_t>>>
+void parallelFor(size_t columns, size_t rows, Fun &&fun) {
+  parallelFor(rows, [columns, fun](size_t i) {
+    for (size_t j = 0; j < columns; ++j) {
+      fun(i, j);
     }
-  };
-
-  std::vector<std::future<void>> threadList;
-  auto chunkSize = threadCount() < nbIter ? nbIter / threadCount() : 1;
-
-  size_t misalignment = (chunkSize % w);
-
-  if (0 < misalignment) {
-    chunkSize = chunkSize + (w - misalignment);
-  }
-
-  for (size_t id = 0; id < nbIter; id += chunkSize) {
-    threadList.push_back(std::async(segment_execute, id, std::min(id + chunkSize, nbIter)));
-  }
-
-  for (auto &thread : threadList) {
-    thread.wait();
-  }
+  });
 }
 } // namespace TMIV::Common
 

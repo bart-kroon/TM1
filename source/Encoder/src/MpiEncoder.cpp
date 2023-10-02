@@ -98,7 +98,7 @@ auto dilateTextureAtlas(Common::Frame<> &textureAtlas,
     std::swap(transparencyPrev, transparencyNext);
     std::swap(texturePrev, textureNext);
 
-    Common::parallel_for(w, h, [&](size_t row, size_t col) {
+    Common::parallelFor(w, h, [&](size_t row, size_t col) {
       int32_t cnt = 0;
       Common::Vec3f yuv{};
       if (transparencyPrev(row, col) == 0) {
@@ -361,7 +361,7 @@ auto MpiEncoder::processAccessUnit(int32_t firstFrameId, int32_t lastFrameId)
       const auto &frame = m_mpiFrameBuffer[frameBufferIdx];
       auto &pixelLayerIndices = pixelLayerIndicesPerFrame[frameBufferIdx];
 
-      Common::parallel_for(frame.getPixelList().size(), [&](size_t pixelId) {
+      Common::parallelFor(frame.getPixelList().size(), [&](size_t pixelId) {
         const auto &pixel = frame.getPixelList()[pixelId];
         auto &pixelLayerIdx = pixelLayerIndices.getPlane(0)[pixelId];
 
@@ -432,7 +432,7 @@ auto MpiEncoder::popAtlas() -> Common::V3cFrameList {
 
     const auto &blockToPatchMap = m_blockToPatchMapPerAtlas[k];
 
-    Common::parallel_for(frameWidth, frameHeight, [&](size_t i, size_t j) {
+    Common::parallelFor(frameWidth, frameHeight, [&](size_t i, size_t j) {
       if (auto patchIdx = blockToPatchMap.getPlane(0)(i, j); patchIdx != Common::unusedPatchIdx) {
         const auto &patch = ppl[patchIdx];
         auto posInView = patch.atlasToView({static_cast<int32_t>(j), static_cast<int32_t>(i)});

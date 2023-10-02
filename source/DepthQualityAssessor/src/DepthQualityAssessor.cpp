@@ -78,7 +78,7 @@ auto isLowQuality(float blendingFactor, float maxOutlierRatio,
   const auto &secondUnprojection = sourceUnprojectionList[secondId];
   std::atomic<size_t> outliers = 0U;
 
-  Common::parallel_for(
+  Common::parallelFor(
       secondUnprojection.width(), secondUnprojection.height(), [&](size_t y, size_t x) {
         const auto &P = secondUnprojection(y, x);
 
@@ -137,7 +137,7 @@ auto isLowDepthQuality(const MivBitstream::ViewParamsList &vpl,
     Common::Mat<Common::Vec3f> sourceUnprojection(
         {sourceDepthExpanded.height(), sourceDepthExpanded.width()});
 
-    Common::parallel_for(
+    Common::parallelFor(
         sourceUnprojection.width(), sourceUnprojection.height(), [&](size_t y, size_t x) {
           float z = sourceDepthExpanded(y, x);
           if (sourceHelper.isValidDepth(z)) {

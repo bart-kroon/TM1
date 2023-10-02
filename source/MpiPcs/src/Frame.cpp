@@ -176,7 +176,7 @@ void Frame::appendLayer(Attribute::GeometryValue layerId, const TextureTranspare
 
   const auto &a_plane = transparencyLayer.getPlane(0);
 
-  Common::parallel_for(y_plane.size(), [&](size_t k) {
+  Common::parallelFor(y_plane.size(), [&](size_t k) {
     if (0 < a_plane[k]) {
       m_pixelList[k].push_back(Attribute{
           Attribute::TextureValue{y_plane[k], u_plane[k], v_plane[k]}, layerId, a_plane[k]});
@@ -190,7 +190,7 @@ auto Frame::getLayer(Attribute::GeometryValue layerId) const -> TextureTranspare
 
   textureFrame.fillNeutral();
 
-  Common::parallel_for(m_pixelList.size(), [&](size_t k) {
+  Common::parallelFor(m_pixelList.size(), [&](size_t k) {
     const auto &pixel = m_pixelList[k];
     auto *const iter =
         std::lower_bound(pixel.begin(), pixel.end(), layerId,

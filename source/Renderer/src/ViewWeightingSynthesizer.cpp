@@ -653,7 +653,7 @@ private:
         continue;
       }
 
-      Common::parallel_for(
+      Common::parallelFor(
           atlas.asps.asps_frame_width(), atlas.asps.asps_frame_height(), [&](size_t Y, size_t X) {
             const auto patchIdx =
                 atlas.filteredPatchIdx(static_cast<int32_t>(Y), static_cast<int32_t>(X));
@@ -729,7 +729,7 @@ private:
   void warpPrunedSourceOnResetViewports(const MivBitstream::AccessUnit &frame) {
     auto visibleSourceId = getEnabledIdList(m_cameraVisibility);
 
-    Common::parallel_for(visibleSourceId.size(), [&](size_t id) {
+    Common::parallelFor(visibleSourceId.size(), [&](size_t id) {
       const auto viewIdx = Common::downCast<uint16_t>(visibleSourceId[id]);
       const auto viewId = frame.viewParamsList[viewIdx].viewId;
 
@@ -951,7 +951,7 @@ private:
       const auto pruningOrderId = pruningGraph.getDescendingOrderId();
 
       // Recovery
-      Common::parallel_for(
+      Common::parallelFor(
           targetHelper.getViewParams().ci.projectionPlaneSize().x(),
           targetHelper.getViewParams().ci.projectionPlaneSize().y(), [&](size_t y, size_t x) {
             for (auto prunedNodeId : pruningOrderId) {
@@ -1050,7 +1050,7 @@ private:
     m_viewportVisibility.resize(targetHelper.getViewParams().ci.projectionPlaneSize().y(),
                                 targetHelper.getViewParams().ci.projectionPlaneSize().x());
 
-    Common::parallel_for(
+    Common::parallelFor(
         m_viewportVisibility.width(), m_viewportVisibility.height(), [&](size_t y, size_t x) {
           auto stack = std::vector<Common::Vec2f>{};
 
@@ -1112,7 +1112,7 @@ private:
       const auto &firstDepth = firstWrapper.get();
       auto &secondDepth = secondWrapper.get();
 
-      Common::parallel_for(w, h, [&](size_t y, size_t x) {
+      Common::parallelFor(w, h, [&](size_t y, size_t x) {
         auto depthBuffer = std::array<float, 9>{};
 
         for (size_t i = 0; i < depthBuffer.size(); i++) {
@@ -1242,7 +1242,7 @@ private:
 
     const auto viewportVisibility = m_viewportVisibility;
 
-    Common::parallel_for(
+    Common::parallelFor(
         m_viewportVisibility.width(), m_viewportVisibility.height(), [&](size_t y, size_t x) {
           if (!isValidDepth(m_viewportVisibility(y, x)) && hasInpaintedViews()) {
             computeShadingMapWithInpaintedPixels(x, y, sourceHelperList, targetHelper);

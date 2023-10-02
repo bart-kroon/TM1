@@ -34,7 +34,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_contains.hpp>
 
-#include "Configuration.h"
+#include "../src/Configuration.h"
 
 using namespace std::string_view_literals;
 

@@ -33,9 +33,9 @@ create_catch2_unit_test(
     TARGET
     IOTest
     SOURCES
-    "src/IO.test.cpp"
-    "src/load.test.cpp"
-    "src/save.test.cpp"
-    "src/FakeFilesystem.cpp"
+    "test/IO_test.cpp"
+    "test/load_test.cpp"
+    "test/save_test.cpp"
+    "test/FakeFilesystem.cpp"
     PRIVATE
     IOLib)

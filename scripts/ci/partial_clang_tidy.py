@@ -86,7 +86,7 @@ def runClangTidy(file: Path, compile_commands: dict):
 
         cmd = [CLANG_TIDY, "--use-color", "--quiet"]
 
-        if str(file).endswith(".test.cpp"):
+        if str(file).endswith("_test.cpp"):
             cmd.append(
                 "-checks=-readability-function-size,"
                 "-readability-magic-numbers,"

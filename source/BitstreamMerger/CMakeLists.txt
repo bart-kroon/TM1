@@ -15,7 +15,7 @@ create_tmiv_executable(
     TARGET
     BitstreamMerger
     SOURCES
-    "src/BitstreamMerger.main.cpp"
+    "app/BitstreamMerger_main.cpp"
     PRIVATE
     BitstreamMergerLib
     DecoderLib

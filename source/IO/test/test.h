@@ -31,73 +31,62 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators_range.hpp>
 
-#include "MaxRectPiP.h"
+#include <TMIV/IO/IO.h>
 
-#include <random>
+#include "../src/DependencyInjector.h"
+#include "FakeFilesystem.h"
 
+using namespace std::string_literals;
+using namespace std::string_view_literals;
+
+namespace test {
+using TMIV::Common::assertDownCast;
+using TMIV::Common::ColorFormat;
 using TMIV::Common::DefaultElement;
-using TMIV::Packer::Cluster;
-using TMIV::Packer::ClusteringMap;
-using TMIV::Packer::MaxRectPiP;
+using TMIV::Common::Frame;
+using TMIV::Common::Vec2i;
+using TMIV::IO::DependencyInjector;
+using TMIV::IO::Placeholders;
 
-TEST_CASE("TMIV::Packer::MaxRectPiP") {
-  const auto viewIdx = 100;
-  const auto isBasicView = GENERATE(false, true);
-  const auto isSemiBasicView = GENERATE(false, false);
-  const auto clusterId = 81;
-  const auto entityId = 4;
-  CAPTURE(isBasicView);
-
-  auto cluster = Cluster{viewIdx, isBasicView, isSemiBasicView, clusterId, entityId};
-
-  std::mt19937 rnd{2};
-
-  const auto height = 100U;
-  const auto width = 150U;
-
-  auto map = ClusteringMap::lumaOnly({width, height});
-
-  for (int32_t n = 0; n < 1000; ++n) {
-    const auto i = static_cast<int32_t>(rnd() % height);
-    const auto j = static_cast<int32_t>(rnd() % width);
-    cluster.push(i, j);
-    map.getPlane(0)(i, j) = clusterId;
-  }
-
-  const auto pip = GENERATE(false, true);
-  CAPTURE(pip);
-
-  auto unit = MaxRectPiP{2 * width, 2 * height, 4, pip};
-
-  auto output = MaxRectPiP::Output{};
-  CHECK(unit.push(cluster, map, output));
-
-  CHECK(output.x() == 0);
-  CHECK(output.y() == 0);
-  CHECK(output.isRotated() != isBasicView);
-
-  SECTION("Second smaller cluster") {
-    const auto clusterId2 = clusterId + 3;
-    cluster = Cluster{viewIdx, isBasicView, isSemiBasicView, clusterId2, entityId};
-
-    const auto height2 = 10U;
-    const auto width2 = 30U;
-
-    for (int32_t n = 0; n < 10; ++n) {
-      const auto i = static_cast<int32_t>(rnd() % height2);
-      const auto j = static_cast<int32_t>(rnd() % width2);
-      cluster.push(i, j);
-      map.getPlane(0)(i, j) = clusterId2;
-    }
-
-    auto output2 = MaxRectPiP::Output{};
-    CHECK(unit.push(cluster, map, output2));
-
-    CHECK(output2.x() == 0);
-    CHECK(output2.y() == (isBasicView ? 100 : 152));
-    CHECK(output2.isRotated() != isBasicView);
-  }
+template <typename... Args>
+auto injectFakeFilesystem(Args &&...args) -> std::shared_ptr<FakeFilesystem> {
+  auto &injector = DependencyInjector::getInstance();
+  auto filesystem = std::make_shared<FakeFilesystem>(std::forward<Args>(args)...);
+  injector.filesystem(filesystem);
+  return filesystem;
 }
+
+inline auto placeholders() {
+  auto result = Placeholders{};
+
+  result.contentId = "seq";
+  result.numberOfInputFrames = 7;
+  result.numberOfOutputFrames = 11;
+  result.startFrame = 19;
+  result.testId = "rate";
+
+  return result;
+}
+
+inline auto frame(Vec2i size, ColorFormat colorFormat, uint32_t bitDepth) {
+  auto frame = Frame<>{size, bitDepth, colorFormat};
+
+  static constexpr auto exampleData = "The quick brown fox jumps over the lazy dog"sv;
+
+  for (auto &plane : frame.getPlanes()) {
+    const auto n = std::min(exampleData.size(), plane.size());
+
+    std::transform(exampleData.cbegin(), exampleData.cbegin() + n, plane.begin(),
+                   [](auto sample) { return assertDownCast<DefaultElement>(sample); });
+  }
+
+  return frame;
+}
+
+inline auto dir1() { return std::filesystem::path("fake"); }
+inline auto dir2() { return std::filesystem::path("mirage"); }
+} // namespace test

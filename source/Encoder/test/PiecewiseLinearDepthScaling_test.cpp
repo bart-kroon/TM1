@@ -33,7 +33,7 @@
 
 #include <catch2/catch_test_macros.hpp>
 
-#include "PiecewiseLinearDepthScaling.h"
+#include "../src/PiecewiseLinearDepthScaling.h"
 
 using namespace std::string_view_literals;
 

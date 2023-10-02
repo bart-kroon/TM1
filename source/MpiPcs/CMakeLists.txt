@@ -9,13 +9,13 @@ create_tmiv_library(
     PUBLIC
     IOLib)
 
-create_tmiv_executable(TARGET MpiPcs SOURCES "src/MpiPcs.main.cpp" PRIVATE MpiPcsLib)
+create_tmiv_executable(TARGET MpiPcs SOURCES "app/MpiPcs_main.cpp" PRIVATE MpiPcsLib)
 
 create_catch2_unit_test(
     TARGET
     MpiPcsTest
     SOURCES
-    "src/MpiPcs.test.cpp"
-    "src/Frame.test.cpp"
+    "test/MpiPcs_test.cpp"
+    "test/Frame_test.cpp"
     PRIVATE
     MpiPcsLib)

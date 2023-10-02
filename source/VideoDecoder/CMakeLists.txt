@@ -52,8 +52,8 @@ if(TARGET VideoDecoderLib)
         TARGET
         VideoDecoderTest
         SOURCES
-        "src/Partition.test.cpp"
-        "src/VideoDecoder.test.cpp"
+        "test/Partition_test.cpp"
+        "test/VideoDecoder_test.cpp"
         PRIVATE
         VideoDecoderLib)
 endif()

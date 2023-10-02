@@ -59,7 +59,7 @@ Debug build and static analysis (Clang 14):
     - python3 scripts/ci/partial_clang_tidy.py
     - mkdir coverage_html
     - >
-      gcovr build --gcov-executable 'llvm-cov-14 gcov' -f 'source/' -e '.*\.test\.cpp' -e '.*\.main\.cpp' -e '.*registerComponents.cpp'
+      gcovr build --gcov-executable 'llvm-cov-14 gcov' -f 'source/'
       --xml coverage.xml --xml-pretty --exclude-unreachable-branches --sort-uncovered --html-details coverage_html/index.html --print-summary
     - ccache -s
   coverage: /^\s*lines:\s*\d+.\d+\%/

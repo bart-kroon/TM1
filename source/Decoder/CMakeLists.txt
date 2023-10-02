@@ -24,8 +24,8 @@ create_tmiv_executable(
     TARGET
     Decoder
     SOURCES
-    "src/Decoder.main.cpp"
-    "src/registerComponents.cpp"
+    "app/Decoder_main.cpp"
+    "app/registerComponents.cpp"
     PRIVATE
     DecoderLib
     VideoDecoderLib
@@ -35,7 +35,7 @@ create_tmiv_executable(
     TARGET
     DecoderLog
     SOURCES
-    "src/DecoderLog.main.cpp"
+    "app/DecoderLog_main.cpp"
     PRIVATE
     DecoderLib
     VideoDecoderLib)
@@ -44,20 +44,20 @@ create_catch2_unit_test(
     TARGET
     DecoderTest
     SOURCES
-    "src/DecodeAtlas.test.cpp"
-    "src/DecodeAtlasSubBitstream.test.cpp"
-    "src/DecodeCommonAtlas.test.cpp"
-    "src/DecodeMiv.test.cpp"
-    "src/DecodeNalUnitStream.test.cpp"
-    "src/DecodeV3cSampleStream.test.cpp"
-    "src/DecodeVideoSubBitstream.test.cpp"
-    "src/PreRenderer.test.cpp"
-    "src/OutputLog.test.cpp"
-    "src/V3cUnitBuffer.test.cpp"
+    "test/DecodeAtlas_test.cpp"
+    "test/DecodeAtlasSubBitstream_test.cpp"
+    "test/DecodeCommonAtlas_test.cpp"
+    "test/DecodeMiv_test.cpp"
+    "test/DecodeNalUnitStream_test.cpp"
+    "test/DecodeV3cSampleStream_test.cpp"
+    "test/DecodeVideoSubBitstream_test.cpp"
+    "test/PreRenderer_test.cpp"
+    "test/OutputLog_test.cpp"
+    "test/V3cUnitBuffer_test.cpp"
     PRIVATE
     DecoderLib)
 
-create_tmiv_executable(TARGET NativeVideoDecoderTest SOURCES "src/NativeVideoDecoder.test.cpp"
+create_tmiv_executable(TARGET NativeVideoDecoderTest SOURCES "src/NativeVideoDecoder_test.cpp"
                        PRIVATE DecoderLib)
 if(TARGET TmivNativeVideoDecoderTest)
     set_property(TARGET TmivNativeVideoDecoderTest PROPERTY FOLDER "TMIV tests")

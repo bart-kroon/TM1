@@ -34,7 +34,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators_range.hpp>
 
-#include "PushPull.h"
+#include "../src/PushPull.h"
 
 #include <TMIV/Common/Bitstream.h>
 

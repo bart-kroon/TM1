@@ -35,7 +35,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators_range.hpp>
 
-#include "GeometryQuantizer.h"
+#include "../src/GeometryQuantizer.h"
 
 #include <TMIV/MivBitstream/DepthOccupancyTransform.h>
 

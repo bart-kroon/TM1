@@ -32,8 +32,8 @@ create_tmiv_executable(
     TARGET
     Encoder
     SOURCES
-    "src/Encoder.main.cpp"
-    "src/registerComponents.cpp"
+    "app/Encoder_main.cpp"
+    "app/registerComponents.cpp"
     PRIVATE
     EncoderLib
     AggregatorLib
@@ -49,8 +49,8 @@ create_tmiv_executable(
     MpiEncoder
     SOURCES
     "src/MpiEncoder.cpp"
-    "src/MpiEncoder.main.cpp"
-    "src/registerComponents.cpp"
+    "app/MpiEncoder_main.cpp"
+    "app/registerComponents.cpp"
     PRIVATE
     EncoderLib
     AggregatorLib
@@ -65,12 +65,12 @@ create_catch2_unit_test(
     TARGET
     EncoderTest
     SOURCES
-    "src/Configuration.test.cpp"
-    "src/EncodeMiv.test.cpp"
-    "src/Encoder_prepareSequence.test.cpp"
-    "src/FramePacker.test.cpp"
-    "src/GeometryQuantizer.test.cpp"
-    "src/PiecewiseLinearDepthScaling.test.cpp"
+    "test/Configuration_test.cpp"
+    "test/EncodeMiv_test.cpp"
+    "test/Encoder_prepareSequence_test.cpp"
+    "test/FramePacker_test.cpp"
+    "test/GeometryQuantizer_test.cpp"
+    "test/PiecewiseLinearDepthScaling_test.cpp"
     PRIVATE
     EncoderLib
     AggregatorLib

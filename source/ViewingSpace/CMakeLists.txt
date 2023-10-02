@@ -9,5 +9,5 @@ create_tmiv_library(
     PUBLIC
     MivBitstreamLib)
 
-create_catch2_unit_test(TARGET ViewingSpaceTest SOURCES "src/ViewingSpace.test.cpp" PRIVATE
+create_catch2_unit_test(TARGET ViewingSpaceTest SOURCES "test/ViewingSpace_test.cpp" PRIVATE
                         ViewingSpaceLib)

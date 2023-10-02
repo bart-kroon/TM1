@@ -34,7 +34,7 @@
 #ifndef TMIV_IO_TEST_FAKE_FILESYSTEM_H
 #define TMIV_IO_TEST_FAKE_FILESYSTEM_H
 
-#include "AbstractFilesystem.h"
+#include "../src/AbstractFilesystem.h"
 
 #include <TMIV/Common/FlatMap.h>
 

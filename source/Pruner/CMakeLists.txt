@@ -16,8 +16,8 @@ create_catch2_unit_test(
     TARGET
     PrunerTest
     SOURCES
-    "src/LumaStdDev.test.cpp"
-    "src/HierarchicalPruner.test.cpp"
+    "test/LumaStdDev_test.cpp"
+    "test/HierarchicalPruner_test.cpp"
     PRIVATE
     PrunerLib
     RendererLib)

@@ -37,8 +37,8 @@ create_tmiv_executable(
     TARGET
     Renderer
     SOURCES
-    "src/Renderer.main.cpp"
-    "src/registerComponents.cpp"
+    "app/Renderer_main.cpp"
+    "app/registerComponents.cpp"
     PRIVATE
     RendererFrontLib
     DepthQualityAssessorLib
@@ -48,17 +48,17 @@ create_catch2_unit_test(
     TARGET
     RendererTest
     SOURCES
-    "src/AccumulatingPixel.test.cpp"
-    "src/AffineTransform.test.cpp"
-    "src/Engine_equirectangular.test.cpp"
-    "src/Engine_perspective.test.cpp"
-    "src/Engine_orthographic.test.cpp"
-    "src/MpiRasterizer.test.cpp"
-    "src/Rasterizer.test.cpp"
-    "src/PushPull.test.cpp"
-    "src/PushPullInpainter.test.cpp"
-    "src/RecoverPrunedViews.test.cpp"
-    "src/ViewWeightingSynthesizer.test.cpp"
+    "test/AccumulatingPixel_test.cpp"
+    "test/AffineTransform_test.cpp"
+    "test/Engine_equirectangular_test.cpp"
+    "test/Engine_perspective_test.cpp"
+    "test/Engine_orthographic_test.cpp"
+    "test/MpiRasterizer_test.cpp"
+    "test/Rasterizer_test.cpp"
+    "test/PushPull_test.cpp"
+    "test/PushPullInpainter_test.cpp"
+    "test/RecoverPrunedViews_test.cpp"
+    "test/ViewWeightingSynthesizer_test.cpp"
     PRIVATE
     RendererLib)
 
@@ -66,7 +66,7 @@ create_catch2_unit_test(
     TARGET
     RendererFrontTest
     SOURCES
-    "src/Front/mapInputToOutputFrames.test.cpp"
-    "src/Front/MultipleFrameRenderer.test.cpp"
+    "test/Front/mapInputToOutputFrames_test.cpp"
+    "test/Front/MultipleFrameRenderer_test.cpp"
     PRIVATE
     RendererFrontLib)

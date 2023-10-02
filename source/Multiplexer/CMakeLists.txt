@@ -17,9 +17,9 @@ create_catch2_unit_test(
     TARGET
     MultiplexerTest
     SOURCES
-    "src/DecodeAnnexBStream.test.cpp"
-    "src/EncodeV3cSampleStream.test.cpp"
-    "src/Multiplexer.test.cpp"
+    "test/DecodeAnnexBStream_test.cpp"
+    "test/EncodeV3cSampleStream_test.cpp"
+    "test/Multiplexer_test.cpp"
     PRIVATE
     MultiplexerLib)
 
@@ -27,7 +27,7 @@ create_tmiv_executable(
     TARGET
     Multiplexer
     SOURCES
-    "src/Multiplexer.main.cpp"
+    "app/Multiplexer_main.cpp"
     PRIVATE
     MultiplexerLib
     DecoderLib

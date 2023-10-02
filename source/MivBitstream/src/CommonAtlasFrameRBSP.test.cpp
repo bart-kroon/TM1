@@ -54,7 +54,7 @@ TEST_CASE("common_atlas_frame_rbsp", "[Common Atlas Frame RBSP]") {
   }();
 
   SECTION("Default constructor") {
-    REQUIRE(toString(x) == R"(caf_common_atlas_sequence_parameter_set_id=0
+    REQUIRE(toString(x, caspsV) == R"(caf_common_atlas_sequence_parameter_set_id=0
 caf_common_atlas_frm_order_cnt_lsb=0
 caf_extension_present_flag=false
 )");
@@ -69,7 +69,7 @@ caf_extension_present_flag=false
         .caf_extension_7bits(127)
         .cafExtensionData({true, false});
 
-    REQUIRE(toString(x) == R"(caf_common_atlas_sequence_parameter_set_id=15
+    REQUIRE(toString(x, caspsV) == R"(caf_common_atlas_sequence_parameter_set_id=15
 caf_common_atlas_frm_order_cnt_lsb=31
 caf_extension_present_flag=true
 caf_miv_extension_present_flag=false
@@ -89,7 +89,7 @@ caf_extension_data_flag=false
         .came_update_intrinsics_flag(false)
         .came_update_depth_quantization_flag(false);
 
-    REQUIRE(toString(x) == R"(caf_common_atlas_sequence_parameter_set_id=14
+    REQUIRE(toString(x, caspsV) == R"(caf_common_atlas_sequence_parameter_set_id=14
 caf_common_atlas_frm_order_cnt_lsb=30
 caf_extension_present_flag=true
 caf_miv_extension_present_flag=true

@@ -313,4 +313,114 @@ constexpr auto MivViewParamsList::mvp_depth_reprojection_flag(bool value) noexce
   m_mvp_depth_reprojection_flag = value;
   return *this;
 }
+
+constexpr auto SensorExtrinsics::se_sensor_pos_x() const noexcept { return m_se_sensor_pos_x; }
+constexpr auto SensorExtrinsics::se_sensor_pos_y() const noexcept { return m_se_sensor_pos_y; }
+constexpr auto SensorExtrinsics::se_sensor_pos_z() const noexcept { return m_se_sensor_pos_z; }
+constexpr auto SensorExtrinsics::se_sensor_quat_x() const noexcept { return m_se_sensor_quat_x; }
+constexpr auto SensorExtrinsics::se_sensor_quat_y() const noexcept { return m_se_sensor_quat_y; }
+constexpr auto SensorExtrinsics::se_sensor_quat_z() const noexcept { return m_se_sensor_quat_z; }
+
+constexpr auto SensorExtrinsics::se_sensor_pos_x(const float value) noexcept -> auto & {
+  m_se_sensor_pos_x = value;
+  return *this;
+}
+constexpr auto SensorExtrinsics::se_sensor_pos_y(const float value) noexcept -> auto & {
+  m_se_sensor_pos_y = value;
+  return *this;
+}
+constexpr auto SensorExtrinsics::se_sensor_pos_z(const float value) noexcept -> auto & {
+  m_se_sensor_pos_z = value;
+  return *this;
+}
+constexpr auto SensorExtrinsics::se_sensor_quat_x(const int32_t value) noexcept -> auto & {
+  m_se_sensor_quat_x = value;
+  return *this;
+}
+constexpr auto SensorExtrinsics::se_sensor_quat_y(const int32_t value) noexcept -> auto & {
+  m_se_sensor_quat_y = value;
+  return *this;
+}
+constexpr auto SensorExtrinsics::se_sensor_quat_z(const int32_t value) noexcept -> auto & {
+  m_se_sensor_quat_z = value;
+  return *this;
+}
+constexpr auto SensorExtrinsics::operator==(const SensorExtrinsics &other) const noexcept {
+  return se_sensor_pos_x() == other.se_sensor_pos_x() &&
+         se_sensor_pos_y() == other.se_sensor_pos_y() &&
+         se_sensor_pos_z() == other.se_sensor_pos_z() &&
+         se_sensor_quat_x() == other.se_sensor_quat_x() &&
+         se_sensor_quat_y() == other.se_sensor_quat_y() &&
+         se_sensor_quat_z() == other.se_sensor_quat_z();
+}
+
+constexpr auto SensorExtrinsics::operator!=(const SensorExtrinsics &other) const noexcept {
+  return !operator==(other);
+}
+constexpr auto LightSourceExtrinsics::lse_light_source_pos_x() const noexcept {
+  return m_lse_light_source_pos_x;
+}
+constexpr auto LightSourceExtrinsics::lse_light_source_pos_y() const noexcept {
+  return m_lse_light_source_pos_y;
+}
+constexpr auto LightSourceExtrinsics::lse_light_source_pos_z() const noexcept {
+  return m_lse_light_source_pos_z;
+}
+constexpr auto LightSourceExtrinsics::lse_light_source_quat_x() const noexcept {
+  return m_lse_light_source_quat_x;
+}
+constexpr auto LightSourceExtrinsics::lse_light_source_quat_y() const noexcept {
+  return m_lse_light_source_quat_y;
+}
+constexpr auto LightSourceExtrinsics::lse_light_source_quat_z() const noexcept {
+  return m_lse_light_source_quat_z;
+}
+constexpr auto LightSourceExtrinsics::lse_light_source_pos_x(const float value) noexcept -> auto & {
+  m_lse_light_source_pos_x = value;
+  return *this;
+}
+constexpr auto LightSourceExtrinsics::lse_light_source_pos_y(const float value) noexcept -> auto & {
+  m_lse_light_source_pos_y = value;
+  return *this;
+}
+constexpr auto LightSourceExtrinsics::lse_light_source_pos_z(const float value) noexcept -> auto & {
+  m_lse_light_source_pos_z = value;
+  return *this;
+}
+constexpr auto LightSourceExtrinsics::lse_light_source_quat_x(const int32_t value) noexcept
+    -> auto & {
+  m_lse_light_source_quat_x = value;
+  return *this;
+}
+constexpr auto LightSourceExtrinsics::lse_light_source_quat_y(const int32_t value) noexcept
+    -> auto & {
+  m_lse_light_source_quat_y = value;
+  return *this;
+}
+constexpr auto LightSourceExtrinsics::lse_light_source_quat_z(const int32_t value) noexcept
+    -> auto & {
+  m_lse_light_source_quat_z = value;
+  return *this;
+}
+constexpr auto
+LightSourceExtrinsics::operator==(const LightSourceExtrinsics &other) const noexcept {
+  return lse_light_source_pos_x() == other.lse_light_source_pos_x() &&
+         lse_light_source_pos_y() == other.lse_light_source_pos_y() &&
+         lse_light_source_pos_z() == other.lse_light_source_pos_z() &&
+         lse_light_source_quat_x() == other.lse_light_source_quat_x() &&
+         lse_light_source_quat_y() == other.lse_light_source_quat_y() &&
+         lse_light_source_quat_z() == other.lse_light_source_quat_z();
+}
+constexpr auto
+LightSourceExtrinsics::operator!=(const LightSourceExtrinsics &other) const noexcept {
+  return !operator==(other);
+}
+
+constexpr auto DistortionParameters::dp_model_id() const noexcept { return m_dp_model_id; }
+constexpr auto DistortionParameters::operator==(const DistortionParameters &other) const noexcept {
+  return dp_model_id() == other.dp_model_id() && m_dp_coefficient == other.m_dp_coefficient;
+}
+constexpr auto DistortionParameters::operator!=(const DistortionParameters &other) const noexcept {
+  return !operator==(other);
+}
 } // namespace TMIV::MivBitstream

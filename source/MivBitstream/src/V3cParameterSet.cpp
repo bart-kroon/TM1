@@ -1357,12 +1357,30 @@ void VpsMivExtension::encodeTo(Common::OutputBitstream &bitstream,
   group_mapping().encodeTo(bitstream, vps);
 }
 
+auto VpsMiv2Extension::capture_device_information() const -> const CaptureDeviceInformation & {
+  VERIFY_MIVBITSTREAM(vme_capture_device_information_present_flag());
+  VERIFY_MIVBITSTREAM(m_capture_device_information.has_value());
+  return *m_capture_device_information;
+}
+
+auto VpsMiv2Extension::capture_device_information() -> CaptureDeviceInformation & {
+  vme_capture_device_information_present_flag(true);
+  if (!m_capture_device_information) {
+    m_capture_device_information = CaptureDeviceInformation{};
+  }
+  return *m_capture_device_information;
+}
+
 auto operator<<(std::ostream &stream, const VpsMiv2Extension &x) -> std::ostream & {
   stream << x.vps_miv_extension();
   fmt::print(stream, "vme_decoder_side_depth_estimation_flag={}\n",
              x.vme_decoder_side_depth_estimation_flag());
   fmt::print(stream, "vme_patch_margin_enabled_flag={}\n", x.vme_patch_margin_enabled_flag());
-  fmt::print(stream, "vme_capture_device_information_present_flag=false\n");
+  fmt::print(stream, "vme_capture_device_information_present_flag={}\n",
+             x.vme_capture_device_information_present_flag());
+  if (x.vme_capture_device_information_present_flag()) {
+    stream << x.capture_device_information();
+  }
   return stream;
 }
 
@@ -1374,11 +1392,10 @@ auto VpsMiv2Extension::decodeFrom(Common::InputBitstream &bitstream, const V3cPa
 
   x.vme_decoder_side_depth_estimation_flag(bitstream.getFlag());
   x.vme_patch_margin_enabled_flag(bitstream.getFlag());
+  x.vme_capture_device_information_present_flag(bitstream.getFlag());
 
-  const auto vme_capture_device_information_present_flag = bitstream.getFlag();
-
-  if (vme_capture_device_information_present_flag) {
-    NOT_IMPLEMENTED;
+  if (x.vme_capture_device_information_present_flag()) {
+    x.m_capture_device_information = CaptureDeviceInformation::decodeFrom(bitstream);
   }
 
   const auto vme_reserved_zero_8bits = bitstream.getUint8();
@@ -1393,9 +1410,11 @@ void VpsMiv2Extension::encodeTo(Common::OutputBitstream &bitstream,
 
   bitstream.putFlag(vme_decoder_side_depth_estimation_flag());
   bitstream.putFlag(vme_patch_margin_enabled_flag());
+  bitstream.putFlag(vme_capture_device_information_present_flag());
 
-  static constexpr auto vme_capture_device_information_present_flag = false;
-  bitstream.putFlag(vme_capture_device_information_present_flag);
+  if (vme_capture_device_information_present_flag()) {
+    capture_device_information().encodeTo(bitstream);
+  }
 
   static constexpr auto vme_reserved_zero_8bits = 0;
   bitstream.putUint8(vme_reserved_zero_8bits);

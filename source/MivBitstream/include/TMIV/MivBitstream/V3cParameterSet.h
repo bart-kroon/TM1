@@ -38,6 +38,7 @@
 
 #include <TMIV/Common/Common.h>
 #include <TMIV/Common/FlatMap.h>
+#include <TMIV/MivBitstream/CaptureDeviceInformation.h>
 
 #include <array>
 #include <cstdint>
@@ -606,10 +607,14 @@ public:
   [[nodiscard]] constexpr auto vps_miv_extension() const noexcept -> const auto &;
   [[nodiscard]] constexpr auto vme_decoder_side_depth_estimation_flag() const noexcept;
   [[nodiscard]] constexpr auto vme_patch_margin_enabled_flag() const noexcept;
+  [[nodiscard]] constexpr auto vme_capture_device_information_present_flag() const noexcept;
+  [[nodiscard]] auto capture_device_information() const -> const CaptureDeviceInformation &;
 
   [[nodiscard]] constexpr auto vps_miv_extension() noexcept -> auto &;
   constexpr auto vme_decoder_side_depth_estimation_flag(bool value) noexcept -> auto &;
   constexpr auto vme_patch_margin_enabled_flag(bool value) noexcept -> auto &;
+  constexpr auto vme_capture_device_information_present_flag(bool value) noexcept -> auto &;
+  auto capture_device_information() -> CaptureDeviceInformation &;
 
   friend auto operator<<(std::ostream &stream, const VpsMiv2Extension &x) -> std::ostream &;
 
@@ -624,6 +629,8 @@ private:
   VpsMivExtension m_vps_miv_extension;
   bool m_vme_decoder_side_depth_estimation_flag{};
   bool m_vme_patch_margin_enabled_flag{};
+  bool m_vme_capture_device_information_present_flag{};
+  std::optional<CaptureDeviceInformation> m_capture_device_information;
 };
 
 // 23090-5 + m59327: vps_packed_video_extension( )

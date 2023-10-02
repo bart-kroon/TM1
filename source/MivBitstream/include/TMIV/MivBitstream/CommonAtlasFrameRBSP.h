@@ -65,7 +65,9 @@ public:
   constexpr auto caf_extension_7bits(uint8_t value) noexcept -> CommonAtlasFrameRBSP &;
   auto cafExtensionData(std::vector<bool> value) noexcept -> CommonAtlasFrameRBSP &;
 
-  friend auto operator<<(std::ostream &stream, const CommonAtlasFrameRBSP &x) -> std::ostream &;
+  auto printTo(std::ostream &stream,
+               const std::vector<CommonAtlasSequenceParameterSetRBSP> &caspsV) const
+      -> std::ostream &;
 
   auto operator==(const CommonAtlasFrameRBSP & /*other*/) const -> bool;
   auto operator!=(const CommonAtlasFrameRBSP & /*other*/) const -> bool;

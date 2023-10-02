@@ -96,20 +96,40 @@ void CaspsMivExtension::encodeTo(Common::OutputBitstream &bitstream) const {
   }
 }
 
+auto CaspsMiv2Extension::capture_device_information() const -> const CaptureDeviceInformation & {
+  VERIFY_MIVBITSTREAM(casme_capture_device_information_present_flag());
+  VERIFY_MIVBITSTREAM(m_capture_device_information.has_value());
+  return *m_capture_device_information;
+}
+
+auto CaspsMiv2Extension::capture_device_information() -> CaptureDeviceInformation & {
+  casme_capture_device_information_present_flag(true);
+  if (!m_capture_device_information) {
+    m_capture_device_information = CaptureDeviceInformation{};
+  }
+  return *m_capture_device_information;
+}
+
 auto operator<<(std::ostream &stream, const CaspsMiv2Extension &x) -> std::ostream & {
   fmt::print(stream, "casme_decoder_side_depth_estimation_flag={}\n",
              x.casme_decoder_side_depth_estimation_flag());
   fmt::print(stream, "casme_chroma_scaling_present_flag={}\n",
              x.casme_chroma_scaling_present_flag());
-  fmt::print(stream, "casme_capture_device_information_present_flag=false\n");
-
+  fmt::print(stream, "casme_capture_device_information_present_flag={}\n",
+             x.casme_capture_device_information_present_flag());
+  if (x.casme_capture_device_information_present_flag()) {
+    stream << x.capture_device_information();
+  }
   return stream;
 }
 
 auto CaspsMiv2Extension::operator==(const CaspsMiv2Extension &other) const noexcept -> bool {
   return casme_decoder_side_depth_estimation_flag() ==
              other.casme_decoder_side_depth_estimation_flag() &&
-         casme_chroma_scaling_present_flag() == other.casme_chroma_scaling_present_flag();
+         casme_chroma_scaling_present_flag() == other.casme_chroma_scaling_present_flag() &&
+         casme_capture_device_information_present_flag() ==
+             other.casme_capture_device_information_present_flag() &&
+         m_capture_device_information == other.m_capture_device_information;
 }
 
 auto CaspsMiv2Extension::operator!=(const CaspsMiv2Extension &other) const noexcept -> bool {
@@ -121,13 +141,10 @@ auto CaspsMiv2Extension::decodeFrom(Common::InputBitstream &bitstream) -> CaspsM
 
   x.casme_decoder_side_depth_estimation_flag(bitstream.getFlag());
   x.casme_chroma_scaling_present_flag(bitstream.getFlag());
-
-  const auto casme_capture_device_information_present_flag = bitstream.getFlag();
-
-  if (casme_capture_device_information_present_flag) {
-    NOT_IMPLEMENTED;
+  x.casme_capture_device_information_present_flag(bitstream.getFlag());
+  if (x.casme_capture_device_information_present_flag()) {
+    x.capture_device_information() = CaptureDeviceInformation::decodeFrom(bitstream);
   }
-
   const auto casme_reserved_zero_8bits = bitstream.getUint8();
   VERIFY_MIVBITSTREAM(casme_reserved_zero_8bits == 0);
 
@@ -137,10 +154,10 @@ auto CaspsMiv2Extension::decodeFrom(Common::InputBitstream &bitstream) -> CaspsM
 void CaspsMiv2Extension::encodeTo(Common::OutputBitstream &bitstream) const {
   bitstream.putFlag(casme_decoder_side_depth_estimation_flag());
   bitstream.putFlag(casme_chroma_scaling_present_flag());
-
-  static constexpr auto casme_capture_device_information_present_flag = false;
-  bitstream.putFlag(casme_capture_device_information_present_flag);
-
+  bitstream.putFlag(casme_capture_device_information_present_flag());
+  if (casme_capture_device_information_present_flag()) {
+    capture_device_information().encodeTo(bitstream);
+  }
   static constexpr auto casme_reserved_zero_8bits = 0;
   bitstream.putUint8(casme_reserved_zero_8bits);
 }

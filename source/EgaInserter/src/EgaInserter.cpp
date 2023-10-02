@@ -239,7 +239,7 @@ private:
     const auto caf = MivBitstream::CommonAtlasFrameRBSP::decodeFrom(stream, nuh, m_caspsV,
                                                                     m_maxCommonAtlasFrmOrderCntLsb);
     m_caf = caf;
-    m_log << caf;
+    caf.printTo(m_log, m_caspsV);
   }
 
   std::ostream &m_log;

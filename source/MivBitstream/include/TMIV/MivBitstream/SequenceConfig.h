@@ -85,6 +85,12 @@ struct SequenceConfig {
   auto operator==(const SequenceConfig &other) const noexcept -> bool;
   auto operator!=(const SequenceConfig &other) const noexcept -> bool;
 };
+
+struct SourceUnit {
+  SequenceConfig sequenceConfig;
+  Common::DeepFrameList deepFrameList;
+  bool depthLowQualityFlag{};
+};
 } // namespace TMIV::MivBitstream
 
 #endif

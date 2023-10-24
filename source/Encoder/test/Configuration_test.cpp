@@ -219,7 +219,6 @@ TEST_CASE("TMIV::Encoder::Configuration") {
     CHECK(unit.oneV3cFrameOnly);
     CHECK_FALSE(unit.viewingSpace.has_value());
     CHECK(unit.overrideAtlasFrameSizes.empty());
-    CHECK_FALSE(unit.depthLowQualityFlag.has_value());
 
     CHECK_FALSE(unit.piecewiseDepthLinearScaling);
     CHECK(unit.pldsIntervalNumber == 0);
@@ -243,15 +242,6 @@ TEST_CASE("TMIV::Encoder::Configuration") {
 
       CHECK(unit2.textureOffsetFlag);
       CHECK(unit2.textureOffsetBitCount == 1);
-    }
-
-    SECTION("Depth low quality flag") {
-      root.update(Json::parse(R"({ "depthLowQualityFlag": true })"));
-
-      const auto unit2 = Configuration{root};
-
-      REQUIRE(unit2.depthLowQualityFlag.has_value());
-      CHECK(*unit2.depthLowQualityFlag);
     }
   }
 

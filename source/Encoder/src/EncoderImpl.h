@@ -39,7 +39,6 @@
 #include "SampleStats.h"
 
 #include <TMIV/Aggregator/IAggregator.h>
-#include <TMIV/DepthQualityAssessor/IDepthQualityAssessor.h>
 #include <TMIV/Encoder/Encoder.h>
 #include <TMIV/Packer/IPacker.h>
 #include <TMIV/Pruner/IPruner.h>
@@ -56,8 +55,7 @@ class Encoder::Impl {
 public:
   explicit Impl(const Common::Json &componentNode);
 
-  void prepareSequence(const MivBitstream::SequenceConfig &sequenceConfig,
-                       const Common::DeepFrameList &firstFrame);
+  void prepareSequence(const MivBitstream::SourceUnit &unit);
   void prepareAccessUnit();
   void pushFrame(Common::DeepFrameList sourceViews);
   auto completeAccessUnit() -> const EncoderParams &;
@@ -117,7 +115,6 @@ private:
       -> std::vector<double>;
 
   // Encoder sub-components
-  std::unique_ptr<DepthQualityAssessor::IDepthQualityAssessor> m_depthQualityAssessor;
   std::unique_ptr<ViewOptimizer::IViewOptimizer> m_viewOptimizer;
   std::unique_ptr<Pruner::IPruner> m_pruner;
   std::unique_ptr<Aggregator::IAggregator> m_aggregator;

@@ -142,10 +142,6 @@ void Configuration::queryMainParameters(const Common::Json &componentNode) {
   if (0 < maxEntityId) {
     entityEncRange = componentNode.require("entityEncodeRange").asVec<Common::SampleValue, 2>();
   }
-
-  if (const auto &node = componentNode.optional("depthLowQualityFlag")) {
-    depthLowQualityFlag = node.as<bool>();
-  }
 }
 
 namespace {

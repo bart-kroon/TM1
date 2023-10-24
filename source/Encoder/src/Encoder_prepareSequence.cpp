@@ -41,20 +41,6 @@
 #include <numeric>
 
 namespace TMIV::Encoder {
-[[nodiscard]] auto
-assessDepthQuality(const Configuration &config,
-                   const DepthQualityAssessor::IDepthQualityAssessor &depthQualityAssessor,
-                   const MivBitstream::SequenceConfig &sequenceConfig,
-                   const Common::DeepFrameList &firstFrame) -> bool {
-  if (config.depthLowQualityFlag) {
-    return *config.depthLowQualityFlag;
-  }
-  if (config.haveGeometry) {
-    return depthQualityAssessor.isLowDepthQuality(sequenceConfig.sourceViewParams(), firstFrame);
-  }
-  return false;
-}
-
 namespace {
 [[nodiscard]] auto createProfileTierLevel(const Configuration &config) {
   auto ptl = MivBitstream::ProfileTierLevel{}
@@ -441,20 +427,17 @@ namespace {
 }
 } // namespace
 
-void Encoder::Impl::prepareSequence(const MivBitstream::SequenceConfig &sequenceConfig,
-                                    const Common::DeepFrameList &firstFrame) {
-  const auto depthLowQualityFlag =
-      assessDepthQuality(m_config, *m_depthQualityAssessor, sequenceConfig, firstFrame);
-  m_blockSize = m_config.blockSize(depthLowQualityFlag);
+void Encoder::Impl::prepareSequence(const MivBitstream::SourceUnit &unit) {
+  m_blockSize = m_config.blockSize(unit.depthLowQualityFlag);
 
-  m_transportParams =
-      m_viewOptimizer->optimizeParams({sequenceConfig.sourceViewParams(), depthLowQualityFlag});
+  m_transportParams = m_viewOptimizer->optimizeParams(
+      {unit.sequenceConfig.sourceViewParams(), unit.depthLowQualityFlag});
 
-  m_params = createEncoderParams(m_config, sequenceConfig, m_transportParams.viewParamsList,
-                                 depthLowQualityFlag);
+  m_params = createEncoderParams(m_config, unit.sequenceConfig, m_transportParams.viewParamsList,
+                                 unit.depthLowQualityFlag);
 
   const auto pruningParents = m_pruner->prepareSequence(
-      {params().viewParamsList, depthLowQualityFlag, sampleBudget(params().vps)});
+      {params().viewParamsList, unit.depthLowQualityFlag, sampleBudget(params().vps)});
 
   for (size_t viewIdx = 0; viewIdx < pruningParents.size(); ++viewIdx) {
     m_params.viewParamsList[viewIdx].pp = pruningParents[viewIdx];

@@ -36,6 +36,7 @@
 #include <TMIV/Common/Application.h>
 #include <TMIV/Common/Factory.h>
 #include <TMIV/Common/LoggingStrategyFmt.h>
+#include <TMIV/DepthQualityAssessor/Stage.h>
 #include <TMIV/Encoder/EncodeMiv.h>
 #include <TMIV/Encoder/V3cSampleSink.h>
 #include <TMIV/IO/IO.h>
@@ -50,6 +51,7 @@ void registerComponents();
 
 class Application : public Common::Application, private Common::IStageSink<CodableUnit> {
 private:
+  DepthQualityAssessor::Stage m_assessor;
   Encoder m_encoder;
   const std::string &m_contentId;
   int32_t m_numberOfInputFrames;
@@ -77,6 +79,7 @@ public:
                                 {"-s", "Content ID (e.g. B for Museum)", false},
                                 {"-n", "Number of input frames (e.g. 97)", false},
                                 {"-f", "Input start frame (e.g. 23)", false}}}
+      , m_assessor{json(), json()}
       , m_encoder{json()}
       , m_contentId{optionValues("-s"sv).front()}
       , m_numberOfInputFrames{std::stoi(optionValues("-n"sv).front())}
@@ -102,18 +105,19 @@ public:
       m_inputSequenceConfig.sourceCameraIds = node.asVector<uint16_t>();
     }
 
-    // Receive the encoder output
+    // Connect stages
+    m_assessor.source.connectTo(m_encoder);
     m_encoder.source.connectTo(*this);
   }
 
   void run() override {
     for (int32_t i = 0; i < m_numberOfInputFrames; ++i) {
-      m_encoder.encode(m_inputSequenceConfig,
-                       IO::loadMultiviewFrame(json(), placeholders(), m_inputSequenceConfig, i));
+      m_assessor.encode(m_inputSequenceConfig,
+                        IO::loadMultiviewFrame(json(), placeholders(), m_inputSequenceConfig, i));
     }
 
     Common::logInfo("Flushing encoder");
-    m_encoder.flush();
+    m_assessor.flush();
 
     reportSummary(m_outputBitstream.tellp());
   }

@@ -57,7 +57,6 @@ struct Configuration {
   int32_t intraPeriod;
   Common::Vec2i blockSizeDepthQualityDependent;
   Common::Vec2d depthOccThresholdIfSet;
-  std::optional<bool> depthLowQualityFlag;
   double maxLumaSampleRate{};
   int32_t maxLumaPictureSize{};
   int32_t maxAtlases{};

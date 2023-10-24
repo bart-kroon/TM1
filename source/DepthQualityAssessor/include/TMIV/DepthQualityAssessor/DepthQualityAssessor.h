@@ -36,8 +36,6 @@
 
 #include "IDepthQualityAssessor.h"
 
-#include <TMIV/Common/Frame.h>
-
 namespace TMIV::DepthQualityAssessor {
 class DepthQualityAssessor : public IDepthQualityAssessor {
 public:

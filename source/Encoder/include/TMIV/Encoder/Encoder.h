@@ -43,10 +43,7 @@
 #include <memory>
 
 namespace TMIV::Encoder {
-struct SourceUnit {
-  MivBitstream::SequenceConfig sequenceConfig;
-  Common::DeepFrameList deepFrameList;
-};
+using SourceUnit = MivBitstream::SourceUnit;
 
 struct CodableUnit {
   EncoderParams encoderParams;

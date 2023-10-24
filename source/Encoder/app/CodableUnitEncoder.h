@@ -31,52 +31,41 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "EncoderImpl.h"
+#ifndef TMIV_ENCODER_APP_CODABLEUNITENCODER_H
+#define TMIV_ENCODER_APP_CODABLEUNITENCODER_H
+
+#include <TMIV/Common/LoggingStrategyFmt.h>
+#include <TMIV/Common/Sink.h>
+#include <TMIV/Encoder/Encoder.h>
+#include <TMIV/IO/IO.h>
+#include <TMIV/MivBitstream/Formatters.h>
 
 namespace TMIV::Encoder {
-Encoder::Encoder(const Common::Json &componentNode) : m_impl{new Impl{componentNode}} {
-  if (const auto &node = componentNode.optional("interPeriod")) {
-    m_interPeriod = node.as<int32_t>();
-  } else {
-    m_interPeriod = componentNode.require("intraPeriod").as<int32_t>();
-  }
-}
+class CodableUnitEncoder : public Common::IStageSink<CodableUnit> {
+public:
+  CodableUnitEncoder(const Common::Json &config, IO::Placeholders placeholders);
 
-Encoder::~Encoder() = default;
+protected:
+  void push(CodableUnit frame) override;
 
-void Encoder::push(MivBitstream::SourceUnit unit) {
-  if (m_once) {
-    m_impl->prepareSequence(unit);
-    m_once = false;
-  }
-  if (m_frameCount == 0) {
-    m_impl->prepareAccessUnit();
-  }
-  m_impl->pushFrame(std::move(unit.deepFrameList));
-  ++m_frameCount;
+private:
+  auto saveV3cFrameList(const Common::V3cFrameList &v3cFrameList) const -> Common::Json::Array;
+  auto saveAtlasFrame(MivBitstream::AtlasId atlasId, int32_t frameIdx,
+                      const Common::V3cFrame &frame) const -> Common::Json::Array;
 
-  if (m_frameCount % m_interPeriod == 0) {
-    completeAccessUnit();
-  }
-}
+public:
+  void flush() override;
 
-void Encoder::flush() {
-  if (0 < m_frameCount) {
-    completeAccessUnit();
-  }
-  source.flush();
-}
+  [[nodiscard]] auto bytesWritten() { return m_outputBitstream.tellp(); }
 
-void Encoder::completeAccessUnit() {
-  auto encoderParams = m_impl->completeAccessUnit();
-  auto hasAcl = true;
-
-  while (0 < m_frameCount) {
-    source.encode(encoderParams, hasAcl, m_impl->popAtlas());
-    hasAcl = false;
-    --m_frameCount;
-  }
-}
-
-auto Encoder::maxLumaSamplesPerFrame() const -> size_t { return m_impl->maxLumaSamplesPerFrame(); }
+private:
+  const Common::Json &m_config;
+  IO::Placeholders m_placeholders;
+  std::filesystem::path m_outputBitstreamPath;
+  std::ofstream m_outputBitstream;
+  Common::Sink<EncoderParams> m_mivEncoder;
+  int32_t m_outputFrameIdx{};
+};
 } // namespace TMIV::Encoder
+
+#endif

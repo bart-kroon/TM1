@@ -32,6 +32,7 @@ create_tmiv_executable(
     TARGET
     Encoder
     SOURCES
+    "app/CodableUnitEncoder.cpp"
     "app/Encoder_main.cpp"
     "app/registerComponents.cpp"
     PRIVATE

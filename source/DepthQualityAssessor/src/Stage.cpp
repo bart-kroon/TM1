@@ -31,52 +31,31 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "EncoderImpl.h"
+#include <TMIV/DepthQualityAssessor/Stage.h>
 
-namespace TMIV::Encoder {
-Encoder::Encoder(const Common::Json &componentNode) : m_impl{new Impl{componentNode}} {
-  if (const auto &node = componentNode.optional("interPeriod")) {
-    m_interPeriod = node.as<int32_t>();
+#include <TMIV/Common/Factory.h>
+
+namespace TMIV::DepthQualityAssessor {
+Stage::Stage(const Common::Json &rootNode, const Common::Json &componentNode) {
+  if (const auto &node = componentNode.optional("depthLowQualityFlag")) {
+    m_depthLowQualityFlag = node.as<bool>();
+  } else if (rootNode.require("haveGeometryVideo").as<bool>()) {
+    m_assessor =
+        Common::create<IDepthQualityAssessor>("DepthQualityAssessor", rootNode, componentNode);
   } else {
-    m_interPeriod = componentNode.require("intraPeriod").as<int32_t>();
+    m_depthLowQualityFlag = false;
   }
 }
 
-Encoder::~Encoder() = default;
+void Stage::push(MivBitstream::SourceUnit unit) {
+  if (!m_depthLowQualityFlag) {
+    m_depthLowQualityFlag =
+        m_assessor->isLowDepthQuality(unit.sequenceConfig.sourceViewParams(), unit.deepFrameList);
+  }
 
-void Encoder::push(MivBitstream::SourceUnit unit) {
-  if (m_once) {
-    m_impl->prepareSequence(unit);
-    m_once = false;
-  }
-  if (m_frameCount == 0) {
-    m_impl->prepareAccessUnit();
-  }
-  m_impl->pushFrame(std::move(unit.deepFrameList));
-  ++m_frameCount;
-
-  if (m_frameCount % m_interPeriod == 0) {
-    completeAccessUnit();
-  }
+  unit.depthLowQualityFlag = *m_depthLowQualityFlag;
+  source.encode(std::move(unit));
 }
 
-void Encoder::flush() {
-  if (0 < m_frameCount) {
-    completeAccessUnit();
-  }
-  source.flush();
-}
-
-void Encoder::completeAccessUnit() {
-  auto encoderParams = m_impl->completeAccessUnit();
-  auto hasAcl = true;
-
-  while (0 < m_frameCount) {
-    source.encode(encoderParams, hasAcl, m_impl->popAtlas());
-    hasAcl = false;
-    --m_frameCount;
-  }
-}
-
-auto Encoder::maxLumaSamplesPerFrame() const -> size_t { return m_impl->maxLumaSamplesPerFrame(); }
-} // namespace TMIV::Encoder
+void Stage::flush() { source.flush(); }
+} // namespace TMIV::DepthQualityAssessor

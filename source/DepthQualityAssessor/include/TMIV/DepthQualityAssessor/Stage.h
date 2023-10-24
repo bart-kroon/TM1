@@ -42,30 +42,13 @@
 namespace TMIV::DepthQualityAssessor {
 class Stage : public Common::Stage<MivBitstream::SourceUnit, MivBitstream::SourceUnit> {
 public:
-  Stage(const Common::Json &rootNode, const Common::Json &componentNode) {
-    if (const auto &node = componentNode.optional("depthLowQualityFlag")) {
-      m_depthLowQualityFlag = node.as<bool>();
-    } else if (rootNode.require("haveGeometryVideo").as<bool>()) {
-      m_assessor =
-          Common::create<IDepthQualityAssessor>("DepthQualityAssessor", rootNode, componentNode);
-    } else {
-      m_depthLowQualityFlag = false;
-    }
-  }
+  Stage(const Common::Json &rootNode, const Common::Json &componentNode);
 
 protected:
-  void push(MivBitstream::SourceUnit unit) override {
-    if (!m_depthLowQualityFlag) {
-      m_depthLowQualityFlag =
-          m_assessor->isLowDepthQuality(unit.sequenceConfig.sourceViewParams(), unit.deepFrameList);
-    }
-
-    unit.depthLowQualityFlag = *m_depthLowQualityFlag;
-    source.encode(std::move(unit));
-  }
+  void push(MivBitstream::SourceUnit unit) override;
 
 public:
-  void flush() override { source.flush(); }
+  void flush() override;
 
 private:
   std::optional<bool> m_depthLowQualityFlag;

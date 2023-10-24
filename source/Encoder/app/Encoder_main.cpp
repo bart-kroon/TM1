@@ -34,44 +34,19 @@
 #include <TMIV/Encoder/Encoder.h>
 
 #include <TMIV/Common/Application.h>
-#include <TMIV/Common/Factory.h>
 #include <TMIV/Common/LoggingStrategyFmt.h>
 #include <TMIV/DepthQualityAssessor/Stage.h>
-#include <TMIV/Encoder/EncodeMiv.h>
-#include <TMIV/Encoder/V3cSampleSink.h>
 #include <TMIV/IO/IO.h>
 #include <TMIV/MivBitstream/Formatters.h>
 
-#include <fstream>
+#include "CodableUnitEncoder.h"
 
 using namespace std::string_view_literals;
 
 namespace TMIV::Encoder {
 void registerComponents();
 
-class Application : public Common::Application, private Common::IStageSink<CodableUnit> {
-private:
-  DepthQualityAssessor::Stage m_assessor;
-  Encoder m_encoder;
-  const std::string &m_contentId;
-  int32_t m_numberOfInputFrames;
-  int32_t m_startFrame;
-  int32_t m_outputFrameIdx{};
-  static constexpr uint8_t m_vpsId = 0;
-
-  MivBitstream::SequenceConfig m_inputSequenceConfig;
-  std::filesystem::path m_outputBitstreamPath;
-  std::ofstream m_outputBitstream;
-  Common::Sink<EncoderParams> m_sink;
-
-  [[nodiscard]] auto placeholders() const {
-    auto x = IO::Placeholders{};
-    x.contentId = m_contentId;
-    x.numberOfInputFrames = m_numberOfInputFrames;
-    x.startFrame = m_startFrame;
-    return x;
-  }
-
+class Application : public Common::Application {
 public:
   explicit Application(std::vector<const char *> argv)
       : Common::Application{"Encoder", std::move(argv),
@@ -79,21 +54,40 @@ public:
                                 {"-s", "Content ID (e.g. B for Museum)", false},
                                 {"-n", "Number of input frames (e.g. 97)", false},
                                 {"-f", "Input start frame (e.g. 23)", false}}}
+      , m_placeholders{placeholders()}
+      , m_inputSequenceConfig{IO::loadSequenceConfig(json(), m_placeholders, 0)}
       , m_assessor{json(), json()}
       , m_encoder{json()}
-      , m_contentId{optionValues("-s"sv).front()}
-      , m_numberOfInputFrames{std::stoi(optionValues("-n"sv).front())}
-      , m_startFrame{std::stoi(optionValues("-f"sv).front())}
-      , m_inputSequenceConfig{IO::loadSequenceConfig(json(), placeholders(), 0)}
-      , m_outputBitstreamPath{IO::outputBitstreamPath(json(), placeholders())}
-      , m_outputBitstream{m_outputBitstreamPath, std::ios::binary}
-      , m_sink{encodeMiv(v3cSampleSink(m_outputBitstream),
-                         json().require("rewriteParameterSets").as<bool>())} {
-    if (!m_outputBitstream.good()) {
-      throw std::runtime_error(fmt::format("Failed to open {} for writing", m_outputBitstreamPath));
+      , m_codableUnitEncoder{json(), m_placeholders} {
+    supportExperimentsThatUseASubsetOfTheCameras();
+
+    // Connect encoding stages
+    m_assessor.source.connectTo(m_encoder);
+    m_encoder.source.connectTo(m_codableUnitEncoder);
+  }
+
+  void run() override {
+    for (int32_t i = 0; i < m_placeholders.numberOfInputFrames; ++i) {
+      m_assessor.encode(m_inputSequenceConfig,
+                        IO::loadMultiviewFrame(json(), m_placeholders, m_inputSequenceConfig, i));
     }
 
-    // Support experiments that use a subset of the source cameras
+    Common::logInfo("Flushing encoder");
+    m_assessor.flush();
+
+    reportSummary(m_codableUnitEncoder.bytesWritten());
+  }
+
+private:
+  [[nodiscard]] auto placeholders() const -> IO::Placeholders {
+    auto x = IO::Placeholders{};
+    x.contentId = optionValues("-s"sv).front();
+    x.numberOfInputFrames = std::stoi(optionValues("-n"sv).front());
+    x.startFrame = std::stoi(optionValues("-f"sv).front());
+    return x;
+  }
+
+  void supportExperimentsThatUseASubsetOfTheCameras() {
     if (const auto &node = json().optional("inputCameraNames")) {
       Common::logWarning(
           "Source camera names are derived from the sequence configuration. This "
@@ -104,91 +98,25 @@ public:
     if (const auto &node = json().optional("sourceCameraIds")) {
       m_inputSequenceConfig.sourceCameraIds = node.asVector<uint16_t>();
     }
-
-    // Connect stages
-    m_assessor.source.connectTo(m_encoder);
-    m_encoder.source.connectTo(*this);
   }
-
-  void run() override {
-    for (int32_t i = 0; i < m_numberOfInputFrames; ++i) {
-      m_assessor.encode(m_inputSequenceConfig,
-                        IO::loadMultiviewFrame(json(), placeholders(), m_inputSequenceConfig, i));
-    }
-
-    Common::logInfo("Flushing encoder");
-    m_assessor.flush();
-
-    reportSummary(m_outputBitstream.tellp());
-  }
-
-private:
-  void push(CodableUnit frame) override {
-    Common::logInfo("Coding frame {}", m_outputFrameIdx);
-
-    if (frame.hasAcl) {
-      m_sink(std::move(frame.encoderParams));
-    }
-    if (m_outputFrameIdx == 0) {
-      IO::saveOutOfBandMetadata(json(), placeholders(), saveV3cFrameList(frame.v3cFrameList));
-    } else {
-      saveV3cFrameList(frame.v3cFrameList);
-    }
-    ++m_outputFrameIdx;
-  }
-
-  auto saveV3cFrameList(const Common::V3cFrameList &v3cFrameList) const -> Common::Json::Array {
-    auto metadata = Common::Json::Array{};
-
-    for (size_t atlasIdx = 0; atlasIdx < v3cFrameList.size(); ++atlasIdx) {
-      const auto atlasId = MivBitstream::AtlasId{atlasIdx};
-      const auto sub = saveAtlasFrame(atlasId, m_outputFrameIdx, v3cFrameList[atlasIdx]);
-      metadata.insert(metadata.end(), sub.cbegin(), sub.cend());
-    }
-    return metadata;
-  }
-
-  auto saveAtlasFrame(MivBitstream::AtlasId atlasId, int32_t frameIdx,
-                      const Common::V3cFrame &frame) const -> Common::Json::Array {
-    using VUH = MivBitstream::V3cUnitHeader;
-    using VUT = MivBitstream::VuhUnitType;
-    using ATI = MivBitstream::AiAttributeTypeId;
-
-    auto metadata = Common::Json::Array{};
-    uint8_t attrIdx{};
-
-    const auto save = [this, frameIdx, &metadata,
-                       &attrIdx](const Common::Frame<> &component, VUH vuh,
-                                 ATI attrTypeId = ATI::ATTR_UNSPECIFIED) {
-      if (!component.empty()) {
-        metadata.emplace_back(IO::saveOutOfBandVideoFrame(json(), placeholders(), yuv420(component),
-                                                          vuh, frameIdx, attrTypeId));
-        if (vuh.vuh_unit_type() == VUT::V3C_AVD) {
-          ++attrIdx;
-        }
-      }
-    };
-
-    save(frame.occupancy, VUH::ovd(m_vpsId, atlasId));
-    save(frame.geometry, VUH::gvd(m_vpsId, atlasId));
-    save(frame.texture, VUH::avd(m_vpsId, atlasId, attrIdx), ATI::ATTR_TEXTURE);
-    save(frame.transparency, VUH::avd(m_vpsId, atlasId, attrIdx), ATI::ATTR_TRANSPARENCY);
-    save(frame.packed, VUH::pvd(m_vpsId, atlasId));
-    return metadata;
-  }
-
-  void flush() override { m_sink(std::nullopt); }
 
   void reportSummary(std::streampos bytesWritten) const {
     Common::logInfo("Maximum luma samples per frame is {}", m_encoder.maxLumaSamplesPerFrame());
     Common::logInfo("Total size is {} B ({} kb)", bytesWritten,
                     8e-3 * static_cast<double>(bytesWritten));
-    Common::logInfo("Frame count is {}", m_numberOfInputFrames);
+    Common::logInfo("Frame count is {}", m_placeholders.numberOfInputFrames);
     Common::logInfo("Frame rate is {} Hz", m_inputSequenceConfig.frameRate);
     Common::logInfo("Total bitrate is {} kbps", 8e-3 * static_cast<double>(bytesWritten) *
                                                     m_inputSequenceConfig.frameRate /
-                                                    m_numberOfInputFrames);
+                                                    m_placeholders.numberOfInputFrames);
   }
+
+  IO::Placeholders m_placeholders;
+  MivBitstream::SequenceConfig m_inputSequenceConfig;
+
+  DepthQualityAssessor::Stage m_assessor;
+  Encoder m_encoder;
+  CodableUnitEncoder m_codableUnitEncoder;
 };
 } // namespace TMIV::Encoder
 

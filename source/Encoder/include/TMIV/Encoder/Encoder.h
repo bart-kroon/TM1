@@ -43,15 +43,13 @@
 #include <memory>
 
 namespace TMIV::Encoder {
-using SourceUnit = MivBitstream::SourceUnit;
-
 struct CodableUnit {
   EncoderParams encoderParams;
   bool hasAcl{};
   Common::V3cFrameList v3cFrameList;
 };
 
-class Encoder : public Common::Stage<SourceUnit, CodableUnit> {
+class Encoder : public Common::Stage<MivBitstream::SourceUnit, CodableUnit> {
 public:
   explicit Encoder(const Common::Json &componentNode);
 
@@ -62,7 +60,7 @@ public:
   ~Encoder() override;
 
 protected:
-  void push(SourceUnit unit) override;
+  void push(MivBitstream::SourceUnit unit) override;
 
 public:
   void flush() override;

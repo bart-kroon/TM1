@@ -34,24 +34,49 @@
 #include "EncoderImpl.h"
 
 namespace TMIV::Encoder {
-Encoder::Encoder(const Common::Json &componentNode) : m_impl{new Impl{componentNode}} {}
+Encoder::Encoder(const Common::Json &componentNode) : m_impl{new Impl{componentNode}} {
+  if (const auto &node = componentNode.optional("interPeriod")) {
+    m_interPeriod = node.as<int32_t>();
+  } else {
+    m_interPeriod = componentNode.require("intraPeriod").as<int32_t>();
+  }
+}
 
 Encoder::~Encoder() = default;
 
-void Encoder::prepareSequence(const MivBitstream::SequenceConfig &sequenceConfig,
-                              const Common::DeepFrameList &firstFrame) {
-  m_impl->prepareSequence(sequenceConfig, firstFrame);
+void Encoder::push(SourceUnit unit) {
+  if (m_once) {
+    m_impl->prepareSequence(unit.sequenceConfig, unit.deepFrameList);
+    m_once = false;
+  }
+  if (m_frameCount == 0) {
+    m_impl->prepareAccessUnit();
+  }
+  m_impl->pushFrame(std::move(unit.deepFrameList));
+  ++m_frameCount;
+
+  if (m_frameCount % m_interPeriod == 0) {
+    completeAccessUnit();
+  }
 }
 
-void Encoder::prepareAccessUnit() { m_impl->prepareAccessUnit(); }
-
-void Encoder::pushFrame(Common::DeepFrameList sourceViews) {
-  m_impl->pushFrame(std::move(sourceViews));
+void Encoder::flush() {
+  if (0 < m_frameCount) {
+    completeAccessUnit();
+  }
+  source.flush();
 }
 
-auto Encoder::completeAccessUnit() -> const EncoderParams & { return m_impl->completeAccessUnit(); }
+void Encoder::completeAccessUnit() {
+  auto encoderParams = m_impl->completeAccessUnit();
+  auto hasAcl = true;
 
-auto Encoder::popAtlas() -> Common::V3cFrameList { return m_impl->popAtlas(); }
+  while (0 < m_frameCount) {
+    source.encode(encoderParams, hasAcl, m_impl->popAtlas());
+    hasAcl = false;
+    --m_frameCount;
+  }
+}
 
 auto Encoder::maxLumaSamplesPerFrame() const -> size_t { return m_impl->maxLumaSamplesPerFrame(); }
 } // namespace TMIV::Encoder

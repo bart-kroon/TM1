@@ -37,29 +37,48 @@
 #include "EncoderParams.h"
 
 #include <TMIV/Common/Frame.h>
+#include <TMIV/Common/Stage.h>
 #include <TMIV/MivBitstream/SequenceConfig.h>
 
 #include <memory>
 
 namespace TMIV::Encoder {
-class Encoder {
+struct SourceUnit {
+  MivBitstream::SequenceConfig sequenceConfig;
+  Common::DeepFrameList deepFrameList;
+};
+
+struct CodableUnit {
+  EncoderParams encoderParams;
+  bool hasAcl{};
+  Common::V3cFrameList v3cFrameList;
+};
+
+class Encoder : public Common::Stage<SourceUnit, CodableUnit> {
 public:
   explicit Encoder(const Common::Json &componentNode);
-  Encoder(const Encoder &) = delete;
-  Encoder(Encoder &&) = default;
-  auto operator=(const Encoder &) -> Encoder & = delete;
-  auto operator=(Encoder &&) -> Encoder & = default;
-  ~Encoder();
 
-  void prepareSequence(const MivBitstream::SequenceConfig &sequenceConfig,
-                       const Common::DeepFrameList &firstFrame);
-  void prepareAccessUnit();
-  void pushFrame(Common::DeepFrameList sourceViews);
-  auto completeAccessUnit() -> const EncoderParams &;
-  auto popAtlas() -> Common::V3cFrameList;
+  Encoder(const Encoder &) = delete;
+  Encoder(Encoder &&) = delete;
+  auto operator=(const Encoder &) -> Encoder & = delete;
+  auto operator=(Encoder &&) -> Encoder & = delete;
+  ~Encoder() override;
+
+protected:
+  void push(SourceUnit unit) override;
+
+public:
+  void flush() override;
+
   [[nodiscard]] auto maxLumaSamplesPerFrame() const -> size_t;
 
 private:
+  void completeAccessUnit();
+
+  int32_t m_interPeriod{};
+  bool m_once{true};
+  int32_t m_frameCount{};
+
   class Impl;
   std::unique_ptr<Impl> m_impl;
 };

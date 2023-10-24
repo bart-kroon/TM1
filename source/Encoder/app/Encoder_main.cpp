@@ -48,14 +48,13 @@ using namespace std::string_view_literals;
 namespace TMIV::Encoder {
 void registerComponents();
 
-class Application : public Common::Application {
+class Application : public Common::Application, private Common::IStageSink<CodableUnit> {
 private:
   Encoder m_encoder;
   const std::string &m_contentId;
   int32_t m_numberOfInputFrames;
   int32_t m_startFrame;
-  int32_t m_interPeriod{};
-  int32_t m_intraPeriod;
+  int32_t m_outputFrameIdx{};
   static constexpr uint8_t m_vpsId = 0;
 
   MivBitstream::SequenceConfig m_inputSequenceConfig;
@@ -82,7 +81,6 @@ public:
       , m_contentId{optionValues("-s"sv).front()}
       , m_numberOfInputFrames{std::stoi(optionValues("-n"sv).front())}
       , m_startFrame{std::stoi(optionValues("-f"sv).front())}
-      , m_intraPeriod{json().require("intraPeriod").as<int32_t>()}
       , m_inputSequenceConfig{IO::loadSequenceConfig(json(), placeholders(), 0)}
       , m_outputBitstreamPath{IO::outputBitstreamPath(json(), placeholders())}
       , m_outputBitstream{m_outputBitstreamPath, std::ios::binary}
@@ -91,13 +89,6 @@ public:
     if (!m_outputBitstream.good()) {
       throw std::runtime_error(fmt::format("Failed to open {} for writing", m_outputBitstreamPath));
     }
-    if (const auto &node = json().optional("interPeriod")) {
-      m_interPeriod = node.as<int32_t>();
-    } else {
-      m_interPeriod = m_intraPeriod;
-    }
-
-    VERIFY(1 <= m_interPeriod && m_intraPeriod % m_interPeriod == 0);
 
     // Support experiments that use a subset of the source cameras
     if (const auto &node = json().optional("inputCameraNames")) {
@@ -110,55 +101,51 @@ public:
     if (const auto &node = json().optional("sourceCameraIds")) {
       m_inputSequenceConfig.sourceCameraIds = node.asVector<uint16_t>();
     }
+
+    // Receive the encoder output
+    m_encoder.source.connectTo(*this);
   }
 
   void run() override {
-    m_encoder.prepareSequence(
-        m_inputSequenceConfig,
-        IO::loadMultiviewFrame(json(), placeholders(), m_inputSequenceConfig, 0));
-
-    for (int32_t i = 0; i < m_numberOfInputFrames; i += m_interPeriod) {
-      int32_t lastFrame = std::min(m_numberOfInputFrames, i + m_interPeriod);
-      encodeInterPeriod(i, lastFrame);
+    for (int32_t i = 0; i < m_numberOfInputFrames; ++i) {
+      m_encoder.encode(m_inputSequenceConfig,
+                       IO::loadMultiviewFrame(json(), placeholders(), m_inputSequenceConfig, i));
     }
 
-    m_sink(std::nullopt);
+    Common::logInfo("Flushing encoder");
+    m_encoder.flush();
+
     reportSummary(m_outputBitstream.tellp());
   }
 
 private:
-  void encodeInterPeriod(int32_t firstFrame, int32_t lastFrame) {
-    Common::logInfo("Inter period: [{}, {})", firstFrame, lastFrame);
-    m_encoder.prepareAccessUnit();
-    pushFrames(firstFrame, lastFrame);
-    m_sink(m_encoder.completeAccessUnit());
-    popAtlases(firstFrame, lastFrame);
+  void push(CodableUnit frame) override {
+    Common::logInfo("Coding frame {}", m_outputFrameIdx);
+
+    if (frame.hasAcl) {
+      m_sink(std::move(frame.encoderParams));
+    }
+    if (m_outputFrameIdx == 0) {
+      IO::saveOutOfBandMetadata(json(), placeholders(), saveV3cFrameList(frame.v3cFrameList));
+    } else {
+      saveV3cFrameList(frame.v3cFrameList);
+    }
+    ++m_outputFrameIdx;
   }
 
-  void pushFrames(int32_t firstFrame, int32_t lastFrame) {
-    for (int32_t i = firstFrame; i < lastFrame; ++i) {
-      m_encoder.pushFrame(IO::loadMultiviewFrame(json(), placeholders(), m_inputSequenceConfig, i));
+  auto saveV3cFrameList(const Common::V3cFrameList &v3cFrameList) const -> Common::Json::Array {
+    auto metadata = Common::Json::Array{};
+
+    for (size_t atlasIdx = 0; atlasIdx < v3cFrameList.size(); ++atlasIdx) {
+      const auto atlasId = MivBitstream::AtlasId{atlasIdx};
+      const auto sub = saveAtlasFrame(atlasId, m_outputFrameIdx, v3cFrameList[atlasIdx]);
+      metadata.insert(metadata.end(), sub.cbegin(), sub.cend());
     }
-  }
-
-  void popAtlases(int32_t firstFrame, int32_t lastFrame) {
-    for (int32_t frameIdx = firstFrame; frameIdx < lastFrame; ++frameIdx) {
-      const auto frame = m_encoder.popAtlas();
-
-      auto metadata = Common::Json::Array{};
-
-      for (size_t atlasIdx = 0; atlasIdx < frame.size(); ++atlasIdx) {
-        const auto sub = saveAtlasFrame(MivBitstream::AtlasId{atlasIdx}, frameIdx, frame[atlasIdx]);
-        metadata.insert(metadata.end(), sub.cbegin(), sub.cend());
-      }
-      if (frameIdx == 0) {
-        IO::saveOutOfBandMetadata(json(), placeholders(), metadata);
-      }
-    }
+    return metadata;
   }
 
   auto saveAtlasFrame(MivBitstream::AtlasId atlasId, int32_t frameIdx,
-                      const Common::V3cFrame &frame) -> Common::Json::Array {
+                      const Common::V3cFrame &frame) const -> Common::Json::Array {
     using VUH = MivBitstream::V3cUnitHeader;
     using VUT = MivBitstream::VuhUnitType;
     using ATI = MivBitstream::AiAttributeTypeId;
@@ -185,6 +172,8 @@ private:
     save(frame.packed, VUH::pvd(m_vpsId, atlasId));
     return metadata;
   }
+
+  void flush() override { m_sink(std::nullopt); }
 
   void reportSummary(std::streampos bytesWritten) const {
     Common::logInfo("Maximum luma samples per frame is {}", m_encoder.maxLumaSamplesPerFrame());

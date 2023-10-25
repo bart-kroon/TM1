@@ -63,8 +63,6 @@ struct Configuration {
   bool haveTexture;
   bool haveGeometry;
   bool haveOccupancy;
-  bool framePacking;
-  bool geometryPacking;
   bool oneViewPerAtlasFlag;
   bool embeddedOccupancy{};
   std::vector<Common::Vec2i> overrideAtlasFrameSizes{};
@@ -97,7 +95,6 @@ struct Configuration {
   uint32_t occBitDepth{};
   uint32_t geoBitDepth{};
   uint32_t texBitDepth{};
-  uint32_t pacBitDepth{};
 
   double depthOccThresholdAsymmetry{};
 

@@ -39,7 +39,7 @@ namespace TMIV::ViewOptimizer {
 Stage::Stage(const Common::Json &rootNode, const Common::Json &componentNode)
     : m_optimizer{Common::create<IViewOptimizer>("ViewOptimizer", rootNode, componentNode)} {}
 
-void Stage::encode(MivBitstream::SourceUnit unit) {
+void Stage::encode(SourceUnit unit) {
   if (!m_params) {
     m_params = m_optimizer->optimizeParams({unit.viewParamsList, unit.depthLowQualityFlag});
   }

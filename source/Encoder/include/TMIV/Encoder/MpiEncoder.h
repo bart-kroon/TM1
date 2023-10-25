@@ -34,9 +34,8 @@
 #ifndef TMIV_ENCODER_MPIENCODER_H
 #define TMIV_ENCODER_MPIENCODER_H
 
-#include "EncoderParams.h"
-
 #include <TMIV/Common/Json.h>
+#include <TMIV/MivBitstream/EncoderParams.h>
 #include <TMIV/MivBitstream/SequenceConfig.h>
 #include <TMIV/MpiPcs/Frame.h>
 #include <TMIV/Packer/IPacker.h>
@@ -45,6 +44,8 @@
 #include <memory>
 
 namespace TMIV::Encoder {
+using MivBitstream::EncoderParams;
+
 class MpiEncoder {
 public:
   MpiEncoder(const Common::Json &rootNode, const Common::Json &componentNode);

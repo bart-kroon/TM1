@@ -35,7 +35,6 @@
 #define TMIV_ENCODER_ENCODER_IMPL_H
 
 #include "Configuration.h"
-#include "FramePacker.h"
 #include "SampleStats.h"
 
 #include <TMIV/Aggregator/IAggregator.h>
@@ -49,12 +48,13 @@
 namespace TMIV::Encoder {
 using TextureStats = Common::stack::Vec3<SampleStats>;
 using PatchTextureStats = std::vector<TextureStats>;
+using MivBitstream::EncoderParams;
 
 class Encoder::Impl {
 public:
   explicit Impl(const Common::Json &componentNode);
 
-  void prepareSequence(const MivBitstream::SourceUnit &unit);
+  void prepareSequence(const SourceUnit &unit);
   void prepareAccessUnit();
   void pushFrame(Common::DeepFrameList transportViews);
   auto completeAccessUnit() -> const EncoderParams &;
@@ -117,7 +117,6 @@ private:
   std::unique_ptr<Pruner::IPruner> m_pruner;
   std::unique_ptr<Aggregator::IAggregator> m_aggregator;
   std::unique_ptr<Packer::IPacker> m_packer;
-  FramePacker m_framePacker;
 
   Configuration m_config;
 

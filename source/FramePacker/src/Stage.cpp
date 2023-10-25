@@ -31,42 +31,23 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef TMIV_ENCODER_ENCODERPARAMS_H
-#define TMIV_ENCODER_ENCODERPARAMS_H
+#include <TMIV/FramePacker/Stage.h>
 
-#include <TMIV/MivBitstream/AtlasTileLayerRBSP.h>
-#include <TMIV/MivBitstream/CommonAtlasFrameRBSP.h>
-#include <TMIV/MivBitstream/CommonAtlasSequenceParameterSetRBSP.h>
-#include <TMIV/MivBitstream/PatchParamsList.h>
-#include <TMIV/MivBitstream/Tile.h>
-#include <TMIV/MivBitstream/V3cParameterSet.h>
-#include <TMIV/MivBitstream/ViewParamsList.h>
-#include <TMIV/MivBitstream/ViewingSpace.h>
-#include <TMIV/MivBitstream/ViewportCameraParameters.h>
-#include <TMIV/MivBitstream/ViewportPosition.h>
+namespace TMIV::FramePacker {
+Stage::Stage(const Common::Json &componentNode)
+    : m_framePacking{componentNode.require("framePacking").as<bool>()}
+    , m_geometryPacking{m_framePacking && componentNode.require("geometryPacking").as<bool>()} {}
 
-namespace TMIV::Encoder {
-struct EncoderAtlasParams {
-  MivBitstream::AtlasSequenceParameterSetRBSP asps;
-  MivBitstream::AtlasFrameParameterSetRBSP afps;
-  MivBitstream::AtlasTileHeaderList athList;
-};
+void Stage::encode(CodableUnit unit) {
+  if (m_framePacking) {
+    if (unit.hasAcl) {
+      m_encoderParams = m_framePacker.setPackingInformation(unit.encoderParams, m_geometryPacking);
+    }
+    unit.encoderParams = m_encoderParams;
+    m_framePacker.packFrame(unit.v3cFrameList, m_geometryPacking);
+  }
 
-struct EncoderParams {
-  int32_t foc{};
+  source.encode(std::move(unit));
+}
 
-  MivBitstream::V3cParameterSet vps;
-  MivBitstream::CommonAtlasSequenceParameterSetRBSP casps;
-
-  MivBitstream::ViewParamsList viewParamsList;
-  MivBitstream::PatchParamsList patchParamsList;
-  MivBitstream::TileParamsList tileParamsLists;
-  std::vector<EncoderAtlasParams> atlas;
-
-  std::optional<MivBitstream::ViewingSpace> viewingSpace{};
-  std::optional<MivBitstream::ViewportCameraParameters> viewportCameraParameters{};
-  std::optional<MivBitstream::ViewportPosition> viewportPosition{};
-};
-} // namespace TMIV::Encoder
-
-#endif
+} // namespace TMIV::FramePacker

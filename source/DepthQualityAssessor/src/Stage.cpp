@@ -47,7 +47,7 @@ Stage::Stage(const Common::Json &rootNode, const Common::Json &componentNode) {
   }
 }
 
-void Stage::encode(MivBitstream::SourceUnit unit) {
+void Stage::encode(SourceUnit unit) {
   if (!m_depthLowQualityFlag) {
     m_depthLowQualityFlag = m_assessor->isLowDepthQuality(unit.viewParamsList, unit.deepFrameList);
   }

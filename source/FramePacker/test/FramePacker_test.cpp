@@ -34,14 +34,14 @@
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_contains.hpp>
 
-#include "../src/FramePacker.h"
+#include <TMIV/FramePacker/FramePacker.h>
 
 using namespace std::string_view_literals;
 using Catch::Matchers::Contains;
 using TMIV::Common::Json;
 
-TEST_CASE("TMIV::Encoder::FramePacker, 1 Atlas with texture and geometry") {
-  auto params = TMIV::Encoder::EncoderParams{};
+TEST_CASE("TMIV::FramePacker::FramePacker, 1 Atlas with texture and geometry") {
+  auto params = TMIV::FramePacker::EncoderParams{};
   params.vps.vps_atlas_count_minus1(0);
   const auto atlasId = params.vps.vps_atlas_id(0);
   params.vps.vps_geometry_video_present_flag(atlasId, true)
@@ -52,7 +52,7 @@ TEST_CASE("TMIV::Encoder::FramePacker, 1 Atlas with texture and geometry") {
       .ai_attribute_count(1);
   params.vps.vps_extension(TMIV::MivBitstream::VpsExtensionType::VPS_EXT_MIV).vps_miv_extension();
 
-  params.atlas.push_back(TMIV::Encoder::EncoderAtlasParams{});
+  params.atlas.push_back(TMIV::MivBitstream::EncoderAtlasParams{});
   auto &asmeAtlas = params.atlas[0].asps.asps_miv_extension();
 
   auto frame = TMIV::Common::V3cFrameList{};
@@ -64,8 +64,8 @@ TEST_CASE("TMIV::Encoder::FramePacker, 1 Atlas with texture and geometry") {
     atlas.geometry.createY({32, 64}, 10);
     frame.push_back(atlas);
 
-    TMIV::Encoder::FramePacker unit{};
-    const auto outParams = unit.setPackingInformation(params);
+    TMIV::FramePacker::FramePacker unit{};
+    const auto outParams = unit.setPackingInformation(params, false);
     CHECK(outParams.vps.vps_attribute_video_present_flag(atlasId) == false);
     CHECK(outParams.vps.vps_geometry_video_present_flag(atlasId) == false);
     CHECK(outParams.vps.vps_packed_video_present_flag(atlasId) == true);
@@ -85,7 +85,7 @@ TEST_CASE("TMIV::Encoder::FramePacker, 1 Atlas with texture and geometry") {
     CHECK(outParams.vps.packing_information(atlasId).pin_region_height_minus1(1) == 63);
     CHECK(outParams.vps.packing_information(atlasId).pin_region_unpack_top_left_x(1) == 0);
     CHECK(outParams.vps.packing_information(atlasId).pin_region_unpack_top_left_y(1) == 0);
-    unit.packFrame(frame, 10);
+    unit.packFrame(frame, false);
     CHECK(frame[0].packed.getWidth() == 32);
     CHECK(frame[0].packed.getHeight() == 128);
   }
@@ -96,8 +96,8 @@ TEST_CASE("TMIV::Encoder::FramePacker, 1 Atlas with texture and geometry") {
     atlas.geometry.createY({16, 32}, 10);
     frame.push_back(atlas);
 
-    TMIV::Encoder::FramePacker unit{};
-    auto outParams = unit.setPackingInformation(params);
+    TMIV::FramePacker::FramePacker unit{};
+    auto outParams = unit.setPackingInformation(params, false);
     CHECK(outParams.vps.vps_attribute_video_present_flag(atlasId) == false);
     CHECK(outParams.vps.vps_geometry_video_present_flag(atlasId) == false);
     CHECK(outParams.vps.vps_packed_video_present_flag(atlasId) == true);
@@ -124,7 +124,7 @@ TEST_CASE("TMIV::Encoder::FramePacker, 1 Atlas with texture and geometry") {
     CHECK(outParams.vps.packing_information(atlasId).pin_region_height_minus1(2) == 15);
     CHECK(outParams.vps.packing_information(atlasId).pin_region_unpack_top_left_x(2) == 0);
     CHECK(outParams.vps.packing_information(atlasId).pin_region_unpack_top_left_y(2) == 16);
-    unit.packFrame(frame, 10);
+    unit.packFrame(frame, false);
     CHECK(frame[0].packed.getWidth() == 32);
     CHECK(frame[0].packed.getHeight() == 80);
   }
@@ -135,8 +135,8 @@ TEST_CASE("TMIV::Encoder::FramePacker, 1 Atlas with texture and geometry") {
     atlas.geometry.createY({8, 64}, 10);
     frame.push_back(atlas);
 
-    TMIV::Encoder::FramePacker unit{};
-    const auto outParams = unit.setPackingInformation(params);
+    TMIV::FramePacker::FramePacker unit{};
+    const auto outParams = unit.setPackingInformation(params, false);
     CHECK(outParams.vps.vps_attribute_video_present_flag(atlasId) == false);
     CHECK(outParams.vps.vps_geometry_video_present_flag(atlasId) == false);
     CHECK(outParams.vps.vps_packed_video_present_flag(atlasId) == true);
@@ -177,14 +177,14 @@ TEST_CASE("TMIV::Encoder::FramePacker, 1 Atlas with texture and geometry") {
     CHECK(outParams.vps.packing_information(atlasId).pin_region_height_minus1(4) == 15);
     CHECK(outParams.vps.packing_information(atlasId).pin_region_unpack_top_left_x(4) == 0);
     CHECK(outParams.vps.packing_information(atlasId).pin_region_unpack_top_left_y(4) == 48);
-    unit.packFrame(frame, 10);
+    unit.packFrame(frame, false);
     CHECK(frame[0].packed.getWidth() == 32);
     CHECK(frame[0].packed.getHeight() == 80);
   }
 }
 
 TEST_CASE("TMIV::Encoder::FramePacker, 1 Atlas with texture, geometry, and occupancy") {
-  auto params = TMIV::Encoder::EncoderParams{};
+  auto params = TMIV::FramePacker::EncoderParams{};
   params.vps.vps_atlas_count_minus1(0);
   TMIV::MivBitstream::AtlasId atlasId = params.vps.vps_atlas_id(0);
   params.vps.vps_occupancy_video_present_flag(atlasId, true)
@@ -196,7 +196,7 @@ TEST_CASE("TMIV::Encoder::FramePacker, 1 Atlas with texture, geometry, and occup
       .ai_attribute_count(1);
   params.vps.vps_extension(TMIV::MivBitstream::VpsExtensionType::VPS_EXT_MIV).vps_miv_extension();
 
-  params.atlas.push_back(TMIV::Encoder::EncoderAtlasParams{});
+  params.atlas.push_back(TMIV::MivBitstream::EncoderAtlasParams{});
   auto &asmeAtlas = params.atlas[0].asps.asps_miv_extension();
 
   auto frame = TMIV::Common::V3cFrameList{};
@@ -209,8 +209,8 @@ TEST_CASE("TMIV::Encoder::FramePacker, 1 Atlas with texture, geometry, and occup
     atlas.occupancy.createY({32, 64}, 10);
     frame.push_back(atlas);
 
-    TMIV::Encoder::FramePacker unit{};
-    const auto outParams = unit.setPackingInformation(params);
+    TMIV::FramePacker::FramePacker unit{};
+    const auto outParams = unit.setPackingInformation(params, false);
     CHECK(outParams.vps.vps_attribute_video_present_flag(atlasId) == false);
     CHECK(outParams.vps.vps_geometry_video_present_flag(atlasId) == false);
     CHECK(outParams.vps.vps_occupancy_video_present_flag(atlasId) == false);
@@ -242,7 +242,7 @@ TEST_CASE("TMIV::Encoder::FramePacker, 1 Atlas with texture, geometry, and occup
 }
 
 TEST_CASE("TMIV::Encoder::FramePacker, 1 Atlas with attribute and occupancy only") {
-  auto params = TMIV::Encoder::EncoderParams{};
+  auto params = TMIV::FramePacker::EncoderParams{};
   params.vps.vps_atlas_count_minus1(0);
   TMIV::MivBitstream::AtlasId atlasId = params.vps.vps_atlas_id(0);
   params.vps.vps_occupancy_video_present_flag(atlasId, true)
@@ -254,7 +254,7 @@ TEST_CASE("TMIV::Encoder::FramePacker, 1 Atlas with attribute and occupancy only
       .ai_attribute_count(1);
   params.vps.vps_extension(TMIV::MivBitstream::VpsExtensionType::VPS_EXT_MIV).vps_miv_extension();
 
-  params.atlas.push_back(TMIV::Encoder::EncoderAtlasParams{});
+  params.atlas.push_back(TMIV::MivBitstream::EncoderAtlasParams{});
   auto &asmeAtlas = params.atlas[0].asps.asps_miv_extension();
 
   auto frame = TMIV::Common::V3cFrameList{};
@@ -266,8 +266,8 @@ TEST_CASE("TMIV::Encoder::FramePacker, 1 Atlas with attribute and occupancy only
     atlas.occupancy.createY({16, 32}, 10);
     frame.push_back(atlas);
 
-    TMIV::Encoder::FramePacker unit{};
-    const auto outParams = unit.setPackingInformation(params);
+    TMIV::FramePacker::FramePacker unit{};
+    const auto outParams = unit.setPackingInformation(params, false);
     CHECK(outParams.vps.vps_attribute_video_present_flag(atlasId) == false);
     CHECK(outParams.vps.vps_geometry_video_present_flag(atlasId) == false);
     CHECK(outParams.vps.vps_occupancy_video_present_flag(atlasId) == false);

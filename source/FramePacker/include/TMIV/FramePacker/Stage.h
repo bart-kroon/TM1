@@ -31,40 +31,29 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef TMIV_ENCODER_APP_CODABLEUNITENCODER_H
-#define TMIV_ENCODER_APP_CODABLEUNITENCODER_H
+#ifndef TMIV_ENCODER_FRAMEPACKING_STAGE_H
+#define TMIV_ENCODER_FRAMEPACKING_STAGE_H
 
-#include <TMIV/Common/LoggingStrategyFmt.h>
-#include <TMIV/Common/Sink.h>
-#include <TMIV/Encoder/Encoder.h>
-#include <TMIV/IO/IO.h>
-#include <TMIV/MivBitstream/Formatters.h>
+#include <TMIV/Common/Stage.h>
+#include <TMIV/MivBitstream/CodableUnit.h>
 
-namespace TMIV::Encoder {
-using MivBitstream::EncoderParams;
+#include "FramePacker.h"
 
-class CodableUnitEncoder : public Common::IStageSink<CodableUnit> {
+namespace TMIV::FramePacker {
+using MivBitstream::CodableUnit;
+
+class Stage : public Common::Stage<CodableUnit, CodableUnit> {
 public:
-  CodableUnitEncoder(const Common::Json &config, IO::Placeholders placeholders);
+  Stage(const Common::Json &componentNode);
 
-  void encode(CodableUnit frame) override;
-
-  auto saveV3cFrameList(const Common::V3cFrameList &v3cFrameList) const -> Common::Json::Array;
-  auto saveAtlasFrame(MivBitstream::AtlasId atlasId, int32_t frameIdx,
-                      const Common::V3cFrame &frame) const -> Common::Json::Array;
-
-  void flush() override;
-
-  [[nodiscard]] auto bytesWritten() { return m_outputBitstream.tellp(); }
+  void encode(CodableUnit unit) override;
 
 private:
-  const Common::Json &m_config;
-  IO::Placeholders m_placeholders;
-  std::filesystem::path m_outputBitstreamPath;
-  std::ofstream m_outputBitstream;
-  Common::Sink<EncoderParams> m_mivEncoder;
-  int32_t m_outputFrameIdx{};
+  bool m_framePacking;
+  bool m_geometryPacking;
+  FramePacker m_framePacker;
+  EncoderParams m_encoderParams;
 };
-} // namespace TMIV::Encoder
+} // namespace TMIV::FramePacker
 
 #endif

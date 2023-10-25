@@ -368,7 +368,7 @@ createAtlasSequenceParameterSet(const Configuration &config,
                                             const MivBitstream::V3cParameterSet &vps,
                                             const MivBitstream::ViewParamsList &viewParamsList,
                                             bool depthLowQualityFlag, MivBitstream::AtlasId j) {
-  auto atlas = EncoderAtlasParams{};
+  auto atlas = MivBitstream::EncoderAtlasParams{};
   atlas.asps = createAtlasSequenceParameterSet(config, vps, viewParamsList, depthLowQualityFlag, j);
   atlas.athList.push_back(
       createAtlasTileHeader(config, atlas.asps, viewParamsList, depthLowQualityFlag));
@@ -427,7 +427,7 @@ namespace {
 }
 } // namespace
 
-void Encoder::Impl::prepareSequence(const MivBitstream::SourceUnit &unit) {
+void Encoder::Impl::prepareSequence(const SourceUnit &unit) {
   m_blockSize = m_config.blockSize(unit.depthLowQualityFlag);
 
   m_transportViewParams = unit.viewParamsList;

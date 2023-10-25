@@ -31,18 +31,19 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef TMIV_ENCODER_FRAMEPACK_H
-#define TMIV_ENCODER_FRAMEPACK_H
+#ifndef TMIV_ENCODER_FRAMEPACKER_H
+#define TMIV_ENCODER_FRAMEPACKER_H
 
 #include <TMIV/Common/Frame.h>
-#include <TMIV/Encoder/EncoderParams.h>
+#include <TMIV/MivBitstream/EncoderParams.h>
 
-namespace TMIV::Encoder {
+namespace TMIV::FramePacker {
+using MivBitstream::EncoderParams;
+
 class FramePacker {
 public:
-  auto setPackingInformation(EncoderParams params, bool geometryPacking = false)
-      -> const EncoderParams &;
-  void packFrame(Common::V3cFrameList &frame, uint32_t bitDepth, bool geometryPacking = false);
+  auto setPackingInformation(EncoderParams params, bool geometryPacking) -> const EncoderParams &;
+  void packFrame(Common::V3cFrameList &frame, bool geometryPacking);
 
 private:
   struct RegionCounts {
@@ -57,16 +58,14 @@ private:
     Common::Vec2i occ{0, 0};
     Common::Vec2i pac{0, 0};
   };
-  [[nodiscard]] auto packAtlasFrame(const Common::V3cFrame &frame, uint8_t atlasIdx,
-                                    uint32_t bitDepth, bool geometryPacking = false) const
-      -> Common::V3cFrame;
 
-  void combinePlanes(size_t atlasIdx, const Common::Frame<> &atlasTexture);
-  void extractScaledGeometry(size_t atlasIdx, const Common::heap::Matrix<uint16_t> &planeDepth);
+  [[nodiscard]] auto packAtlasFrame(const Common::V3cFrame &frame, uint8_t atlasIdx,
+                                    bool geometryPacking) const -> Common::V3cFrame;
+
   void updatePinOccupancyInformation(MivBitstream::AtlasId atlasId);
-  void updateVideoPresentFlags(MivBitstream::AtlasId atlasId, bool geometryPacking = false);
-  auto computeOccupancySizeAndRegionCount(size_t atlasIdx, bool geometryPacking = false) -> uint8_t;
-  auto computeGeometrySizeAndRegionCount(size_t atlasIdx, bool geometryPacking = false) -> uint8_t;
+  void updateVideoPresentFlags(MivBitstream::AtlasId atlasId, bool geometryPacking);
+  auto computeOccupancySizeAndRegionCount(size_t atlasIdx, bool geometryPacking) -> uint8_t;
+  auto computeGeometrySizeAndRegionCount(size_t atlasIdx, bool geometryPacking) -> uint8_t;
   void updatePinGeometryInformation(MivBitstream::AtlasId atlasId);
   void updatePinAttributeInformation(MivBitstream::AtlasId atlasId);
   void setAttributePinRegion(size_t i, const Common::Vec2i &frameSize);
@@ -75,11 +74,12 @@ private:
   void updatePinRegionInformation(size_t i);
   void setGeoPckGeometryPinRegion(size_t i, size_t atlasIdx, const RegionCounts &regionCounts);
   void setGeoPckOccupancyPinRegion(size_t i, size_t atlasIdx, const RegionCounts &regionCounts);
+
   std::vector<RegionSizes> m_regionSizes{};
   EncoderParams m_params;
   MivBitstream::PackingInformation m_packingInformation{};
   MivBitstream::PinRegion m_pinRegion{};
 };
-} // namespace TMIV::Encoder
+} // namespace TMIV::FramePacker
 
 #endif

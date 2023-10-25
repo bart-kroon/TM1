@@ -331,10 +331,6 @@ auto Encoder::Impl::completeAccessUnit() -> const EncoderParams & {
   Common::logInfo("completeAccessUnit: Added {} frames. Updating FOC to {}.",
                   m_videoFrameBuffer.size(), m_params.foc);
 
-  if (m_config.framePacking) {
-    return m_framePacker.setPackingInformation(m_paramsQuantized, m_config.geometryPacking);
-  }
-
   return m_paramsQuantized;
 }
 

@@ -66,6 +66,7 @@ foreach(
     Pruner
     Aggregator
     Packer
+    FramePacker
     Renderer
     ViewingSpace
     VideoDecoder

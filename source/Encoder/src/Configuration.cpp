@@ -51,8 +51,6 @@ Configuration::Configuration(const Common::Json &componentNode)
     , haveTexture{componentNode.require("haveTextureVideo").as<bool>()}
     , haveGeometry{componentNode.require("haveGeometryVideo").as<bool>()}
     , haveOccupancy{componentNode.require("haveOccupancyVideo").as<bool>()}
-    , framePacking{componentNode.require("framePacking").as<bool>()}
-    , geometryPacking{componentNode.require("geometryPacking").as<bool>()}
     , oneViewPerAtlasFlag{componentNode.require("oneViewPerAtlasFlag").as<bool>()}
     , geometryScaleEnabledFlag{haveGeometry && haveTexture &&
                                componentNode.require("geometryScaleEnabledFlag").as<bool>()}
@@ -180,10 +178,6 @@ void Configuration::queryBitDepthParameters(const Common::Json &componentNode) {
 
   if (haveTexture) {
     texBitDepth = componentNode.require("bitDepthTextureVideo").as<uint32_t>();
-  }
-
-  if (framePacking) {
-    pacBitDepth = std::max({occBitDepth, geoBitDepth, texBitDepth});
   }
 }
 

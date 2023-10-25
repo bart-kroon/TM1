@@ -40,11 +40,13 @@
 #include "IViewOptimizer.h"
 
 namespace TMIV::ViewOptimizer {
-class Stage : public Common::Stage<MivBitstream::SourceUnit, MivBitstream::SourceUnit> {
+using MivBitstream::SourceUnit;
+
+class Stage : public Common::Stage<SourceUnit, SourceUnit> {
 public:
   Stage(const Common::Json &rootNode, const Common::Json &componentNode);
 
-  void encode(MivBitstream::SourceUnit unit) override;
+  void encode(SourceUnit unit) override;
 
 private:
   std::unique_ptr<IViewOptimizer> m_optimizer;

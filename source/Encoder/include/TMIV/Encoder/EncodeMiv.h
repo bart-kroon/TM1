@@ -34,12 +34,13 @@
 #ifndef TMIV_ENCODER_ENCODEMIV_H
 #define TMIV_ENCODER_ENCODEMIV_H
 
-#include "EncoderParams.h"
-
 #include <TMIV/Common/Sink.h>
+#include <TMIV/MivBitstream/EncoderParams.h>
 #include <TMIV/MivBitstream/V3cUnit.h>
 
 namespace TMIV::Encoder {
+using MivBitstream::EncoderParams;
+
 auto encodeMiv(Common::Sink<MivBitstream::V3cUnit> sink, bool rewriteParameterSets)
     -> Common::Sink<EncoderParams>;
 } // namespace TMIV::Encoder

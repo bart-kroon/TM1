@@ -36,6 +36,7 @@
 #include <TMIV/Common/Application.h>
 #include <TMIV/Common/LoggingStrategyFmt.h>
 #include <TMIV/DepthQualityAssessor/Stage.h>
+#include <TMIV/FramePacker/Stage.h>
 #include <TMIV/IO/IO.h>
 #include <TMIV/MivBitstream/Formatters.h>
 #include <TMIV/ViewOptimizer/Stage.h>
@@ -61,11 +62,13 @@ public:
       , m_assessor{json(), json()}
       , m_optimizer{json(), json()}
       , m_encoder{json()}
+      , m_framePacker{json()}
       , m_codableUnitEncoder{json(), m_placeholders} {
     m_sourceUnitLoader.connectTo(m_assessor);
     m_assessor.source.connectTo(m_optimizer);
     m_optimizer.source.connectTo(m_encoder);
-    m_encoder.source.connectTo(m_codableUnitEncoder);
+    m_encoder.source.connectTo(m_framePacker);
+    m_framePacker.source.connectTo(m_codableUnitEncoder);
   }
 
   void run() override {
@@ -99,6 +102,7 @@ private:
   DepthQualityAssessor::Stage m_assessor;
   ViewOptimizer::Stage m_optimizer;
   Encoder m_encoder;
+  FramePacker::Stage m_framePacker;
   CodableUnitEncoder m_codableUnitEncoder;
 };
 } // namespace TMIV::Encoder

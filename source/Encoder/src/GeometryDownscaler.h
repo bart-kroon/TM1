@@ -35,9 +35,11 @@
 #define TMIV_ENCODER_GEOMETRYDOWNSCALER_H
 
 #include <TMIV/Common/Frame.h>
-#include <TMIV/Encoder/EncoderParams.h>
+#include <TMIV/MivBitstream/EncoderParams.h>
 
 namespace TMIV::Encoder::GeometryDownscaler {
+using MivBitstream::EncoderAtlasParams;
+
 [[nodiscard]] auto transformFrame(const std::vector<EncoderAtlasParams> &atlas,
                                   Common::V3cFrameList frame) -> Common::V3cFrameList;
 } // namespace TMIV::Encoder::GeometryDownscaler

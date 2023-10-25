@@ -34,22 +34,17 @@
 #ifndef TMIV_ENCODER_ENCODER_H
 #define TMIV_ENCODER_ENCODER_H
 
-#include "EncoderParams.h"
-
-#include <TMIV/Common/Frame.h>
 #include <TMIV/Common/Stage.h>
+#include <TMIV/MivBitstream/CodableUnit.h>
 #include <TMIV/MivBitstream/SourceUnit.h>
 
 #include <memory>
 
 namespace TMIV::Encoder {
-struct CodableUnit {
-  EncoderParams encoderParams;
-  bool hasAcl{};
-  Common::V3cFrameList v3cFrameList;
-};
+using MivBitstream::CodableUnit;
+using MivBitstream::SourceUnit;
 
-class Encoder : public Common::Stage<MivBitstream::SourceUnit, CodableUnit> {
+class Encoder : public Common::Stage<SourceUnit, CodableUnit> {
 public:
   explicit Encoder(const Common::Json &componentNode);
 
@@ -59,7 +54,7 @@ public:
   auto operator=(Encoder &&) -> Encoder & = delete;
   ~Encoder() override;
 
-  void encode(MivBitstream::SourceUnit unit) override;
+  void encode(SourceUnit unit) override;
   void flush() override;
 
   [[nodiscard]] auto maxLumaSamplesPerFrame() const -> size_t;

@@ -39,7 +39,9 @@
 #include <TMIV/MivBitstream/SequenceConfig.h>
 
 namespace TMIV::Encoder {
-class SourceUnitLoader : public Common::StageSource<MivBitstream::SourceUnit> {
+using MivBitstream::SourceUnit;
+
+class SourceUnitLoader : public Common::StageSource<SourceUnit> {
 public:
   SourceUnitLoader(const Common::Json &config, IO::Placeholders placeholders);
 

@@ -58,8 +58,6 @@ TEST_CASE("TMIV::Encoder::Configuration") {
     "haveOccupancyVideo": false,
     "embeddedOccupancy": true,
     "chromaScaleEnabledFlag": true,
-    "framePacking": false,
-    "geometryPacking": false,
     "informationPruning": true,
     "oneViewPerAtlasFlag": false,
     "dynamicDepthRange": true,
@@ -104,8 +102,6 @@ TEST_CASE("TMIV::Encoder::Configuration") {
     CHECK(unit.maxEntityId == 0);
     CHECK(unit.maxLumaSampleRate == 0.);
     CHECK(unit.maxLumaPictureSize == 0);
-    CHECK_FALSE(unit.framePacking);
-    CHECK_FALSE(unit.geometryPacking);
     CHECK(unit.maxAtlases == 0);
     CHECK(unit.codecGroupIdc == PtlProfileCodecGroupIdc::HEVC_Main10);
     CHECK(unit.toolsetIdc == PtlProfileToolsetIdc::MIV_Main);
@@ -171,9 +167,7 @@ TEST_CASE("TMIV::Encoder::Configuration") {
     "bitDepthTextureVideo": 10,
     "haveGeometryVideo": false,
     "haveOccupancyVideo": false,
-    "framePacking": false,
     "informationPruning": false,
-    "geometryPacking": false,
     "chromaScaleEnabledFlag": false,
     "oneViewPerAtlasFlag": true,
     "dynamicDepthRange": false,
@@ -212,8 +206,6 @@ TEST_CASE("TMIV::Encoder::Configuration") {
     CHECK_FALSE(unit.viewportPositionSei);
     CHECK(unit.numGroups == 3);
     CHECK(unit.maxEntityId == 5);
-    CHECK_FALSE(unit.framePacking);
-    CHECK_FALSE(unit.geometryPacking);
     CHECK(unit.codecGroupIdc == PtlProfileCodecGroupIdc::AVC_Progressive_High);
     CHECK(unit.toolsetIdc == PtlProfileToolsetIdc::MIV_Geometry_Absent);
     CHECK(unit.oneV3cFrameOnly);
@@ -252,9 +244,7 @@ TEST_CASE("TMIV::Encoder::Configuration") {
     "haveTextureVideo": false,
     "haveGeometryVideo": false,
     "haveOccupancyVideo": false,
-    "framePacking": true,
     "informationPruning": true,
-    "geometryPacking": false,
     "viewportCameraParametersSei": false,
     "viewportPositionSei": false,
     "oneViewPerAtlasFlag": true,
@@ -280,10 +270,8 @@ TEST_CASE("TMIV::Encoder::Configuration") {
 
     const auto unit = Configuration{root};
 
-    CHECK(unit.framePacking);
     CHECK_FALSE(unit.haveTexture);
     CHECK_FALSE(unit.haveGeometry);
-    CHECK_FALSE(unit.geometryPacking);
   }
 
   SECTION("Enable Geometry Packing") {
@@ -293,9 +281,7 @@ TEST_CASE("TMIV::Encoder::Configuration") {
     "haveTextureVideo": false,
     "haveGeometryVideo": false,
     "haveOccupancyVideo": false,
-    "framePacking": true,
     "informationPruning": true,
-    "geometryPacking": true,
     "viewportCameraParametersSei": false,
     "viewportPositionSei": false,
     "oneViewPerAtlasFlag": true,
@@ -321,8 +307,6 @@ TEST_CASE("TMIV::Encoder::Configuration") {
 
     const auto unit = Configuration{root};
 
-    CHECK(unit.framePacking);
-    CHECK(unit.geometryPacking);
     CHECK_FALSE(unit.haveTexture);
     CHECK_FALSE(unit.haveGeometry);
   }

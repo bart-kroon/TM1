@@ -34,12 +34,15 @@
 #ifndef TMIV_ENCODER_GEOMETRYQUANTIZER_H
 #define TMIV_ENCODER_GEOMETRYQUANTIZER_H
 
-#include "Configuration.h"
 #include <TMIV/Common/Distribution.h>
 #include <TMIV/Common/Frame.h>
-#include <TMIV/Encoder/EncoderParams.h>
+#include <TMIV/MivBitstream/EncoderParams.h>
+
+#include "Configuration.h"
 
 namespace TMIV::Encoder {
+using MivBitstream::EncoderParams;
+
 // Measure the distribution of geometry samples (in scene units) over views and patches
 struct GeometryDistributions {
   std::vector<Common::Distribution> views;

@@ -15,7 +15,6 @@ create_tmiv_library(
     "src/Encoder_popFrame.cpp"
     "src/GeometryQuantizer.cpp"
     "src/GeometryDownscaler.cpp"
-    "src/FramePacker.cpp"
     "src/PiecewiseLinearDepthScaling.cpp"
     "src/V3cSampleSink.cpp"
     PUBLIC
@@ -40,6 +39,7 @@ create_tmiv_executable(
     EncoderLib
     AggregatorLib
     DepthQualityAssessorLib
+    FramePackerLib
     PackerLib
     PrunerLib
     RendererLib
@@ -70,7 +70,6 @@ create_catch2_unit_test(
     "test/Configuration_test.cpp"
     "test/EncodeMiv_test.cpp"
     "test/Encoder_prepareSequence_test.cpp"
-    "test/FramePacker_test.cpp"
     "test/GeometryQuantizer_test.cpp"
     "test/PiecewiseLinearDepthScaling_test.cpp"
     PRIVATE

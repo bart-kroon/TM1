@@ -44,7 +44,7 @@ Encoder::Encoder(const Common::Json &componentNode) : m_impl{new Impl{componentN
 
 Encoder::~Encoder() = default;
 
-void Encoder::encode(MivBitstream::SourceUnit unit) {
+void Encoder::encode(SourceUnit unit) {
   if (m_once) {
     m_impl->prepareSequence(unit);
     m_once = false;

@@ -31,21 +31,43 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "FramePacker.h"
+#include <TMIV/FramePacker/FramePacker.h>
 
-namespace TMIV::Encoder {
-void FramePacker::packFrame(Common::V3cFrameList &frame, uint32_t bitDepth, bool geometryPacking) {
+namespace TMIV::FramePacker {
+void FramePacker::packFrame(Common::V3cFrameList &frame, bool geometryPacking) {
   uint8_t atlasIdx{};
 
   for (auto &atlas : frame) {
-    atlas = packAtlasFrame(frame[atlasIdx], atlasIdx, bitDepth, geometryPacking);
+    atlas = packAtlasFrame(frame[atlasIdx], atlasIdx, geometryPacking);
     atlasIdx++;
   }
 }
 
-auto FramePacker::packAtlasFrame(const Common::V3cFrame &frame, uint8_t atlasIdx, uint32_t bitDepth,
+namespace {
+auto packedVideoBitDepth(const Common::V3cFrame &frame) -> uint32_t {
+  auto bitDepth = uint32_t{1};
+
+  if (!frame.occupancy.empty()) {
+    bitDepth = std::max(bitDepth, frame.occupancy.getBitDepth());
+  }
+  if (!frame.geometry.empty()) {
+    bitDepth = std::max(bitDepth, frame.geometry.getBitDepth());
+  }
+  if (!frame.texture.empty()) {
+    bitDepth = std::max(bitDepth, frame.texture.getBitDepth());
+  }
+  if (!frame.transparency.empty()) {
+    bitDepth = std::max(bitDepth, frame.transparency.getBitDepth());
+  }
+  return bitDepth;
+}
+} // namespace
+
+auto FramePacker::packAtlasFrame(const Common::V3cFrame &frame, uint8_t atlasIdx,
                                  bool geometryPacking) const -> Common::V3cFrame {
   auto result = Common::V3cFrame{};
+
+  const auto bitDepth = packedVideoBitDepth(frame);
 
   result.packed = Common::Frame<>::yuv420(m_regionSizes[atlasIdx].pac, bitDepth);
   result.packed.fillNeutral();
@@ -382,4 +404,4 @@ auto FramePacker::setPackingInformation(EncoderParams params, bool geometryPacki
   }
   return m_params;
 }
-} // namespace TMIV::Encoder
+} // namespace TMIV::FramePacker

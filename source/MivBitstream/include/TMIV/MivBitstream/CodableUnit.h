@@ -31,40 +31,18 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef TMIV_ENCODER_APP_CODABLEUNITENCODER_H
-#define TMIV_ENCODER_APP_CODABLEUNITENCODER_H
+#ifndef TMIV_MIVBITSTREAM_CODABLEUNIT_H
+#define TMIV_MIVBITSTREAM_CODABLEUNIT_H
 
-#include <TMIV/Common/LoggingStrategyFmt.h>
-#include <TMIV/Common/Sink.h>
-#include <TMIV/Encoder/Encoder.h>
-#include <TMIV/IO/IO.h>
-#include <TMIV/MivBitstream/Formatters.h>
+#include <TMIV/Common/Frame.h>
+#include <TMIV/MivBitstream/EncoderParams.h>
 
-namespace TMIV::Encoder {
-using MivBitstream::EncoderParams;
-
-class CodableUnitEncoder : public Common::IStageSink<CodableUnit> {
-public:
-  CodableUnitEncoder(const Common::Json &config, IO::Placeholders placeholders);
-
-  void encode(CodableUnit frame) override;
-
-  auto saveV3cFrameList(const Common::V3cFrameList &v3cFrameList) const -> Common::Json::Array;
-  auto saveAtlasFrame(MivBitstream::AtlasId atlasId, int32_t frameIdx,
-                      const Common::V3cFrame &frame) const -> Common::Json::Array;
-
-  void flush() override;
-
-  [[nodiscard]] auto bytesWritten() { return m_outputBitstream.tellp(); }
-
-private:
-  const Common::Json &m_config;
-  IO::Placeholders m_placeholders;
-  std::filesystem::path m_outputBitstreamPath;
-  std::ofstream m_outputBitstream;
-  Common::Sink<EncoderParams> m_mivEncoder;
-  int32_t m_outputFrameIdx{};
+namespace TMIV::MivBitstream {
+struct CodableUnit {
+  EncoderParams encoderParams;
+  bool hasAcl{};
+  Common::V3cFrameList v3cFrameList;
 };
-} // namespace TMIV::Encoder
+} // namespace TMIV::MivBitstream
 
 #endif

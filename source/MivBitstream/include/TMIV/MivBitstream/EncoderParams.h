@@ -31,40 +31,42 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef TMIV_ENCODER_APP_CODABLEUNITENCODER_H
-#define TMIV_ENCODER_APP_CODABLEUNITENCODER_H
+#ifndef TMIV_MIVBITSTREAM_ENCODERPARAMS_H
+#define TMIV_MIVBITSTREAM_ENCODERPARAMS_H
 
-#include <TMIV/Common/LoggingStrategyFmt.h>
-#include <TMIV/Common/Sink.h>
-#include <TMIV/Encoder/Encoder.h>
-#include <TMIV/IO/IO.h>
-#include <TMIV/MivBitstream/Formatters.h>
+#include "AtlasTileLayerRBSP.h"
+#include "CommonAtlasFrameRBSP.h"
+#include "CommonAtlasSequenceParameterSetRBSP.h"
+#include "PatchParamsList.h"
+#include "Tile.h"
+#include "V3cParameterSet.h"
+#include "ViewParamsList.h"
+#include "ViewingSpace.h"
+#include "ViewportCameraParameters.h"
+#include "ViewportPosition.h"
 
-namespace TMIV::Encoder {
-using MivBitstream::EncoderParams;
-
-class CodableUnitEncoder : public Common::IStageSink<CodableUnit> {
-public:
-  CodableUnitEncoder(const Common::Json &config, IO::Placeholders placeholders);
-
-  void encode(CodableUnit frame) override;
-
-  auto saveV3cFrameList(const Common::V3cFrameList &v3cFrameList) const -> Common::Json::Array;
-  auto saveAtlasFrame(MivBitstream::AtlasId atlasId, int32_t frameIdx,
-                      const Common::V3cFrame &frame) const -> Common::Json::Array;
-
-  void flush() override;
-
-  [[nodiscard]] auto bytesWritten() { return m_outputBitstream.tellp(); }
-
-private:
-  const Common::Json &m_config;
-  IO::Placeholders m_placeholders;
-  std::filesystem::path m_outputBitstreamPath;
-  std::ofstream m_outputBitstream;
-  Common::Sink<EncoderParams> m_mivEncoder;
-  int32_t m_outputFrameIdx{};
+namespace TMIV::MivBitstream {
+struct EncoderAtlasParams {
+  MivBitstream::AtlasSequenceParameterSetRBSP asps;
+  MivBitstream::AtlasFrameParameterSetRBSP afps;
+  MivBitstream::AtlasTileHeaderList athList;
 };
-} // namespace TMIV::Encoder
+
+struct EncoderParams {
+  int32_t foc{};
+
+  MivBitstream::V3cParameterSet vps;
+  MivBitstream::CommonAtlasSequenceParameterSetRBSP casps;
+
+  MivBitstream::ViewParamsList viewParamsList;
+  MivBitstream::PatchParamsList patchParamsList;
+  MivBitstream::TileParamsList tileParamsLists;
+  std::vector<EncoderAtlasParams> atlas;
+
+  std::optional<MivBitstream::ViewingSpace> viewingSpace{};
+  std::optional<MivBitstream::ViewportCameraParameters> viewportCameraParameters{};
+  std::optional<MivBitstream::ViewportPosition> viewportPosition{};
+};
+} // namespace TMIV::MivBitstream
 
 #endif

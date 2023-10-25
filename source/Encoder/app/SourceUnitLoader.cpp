@@ -37,14 +37,14 @@ namespace TMIV::Encoder {
 SourceUnitLoader::SourceUnitLoader(const Common::Json &config, IO::Placeholders placeholders)
     : m_config{config}
     , m_placeholders{std::move(placeholders)}
-    , m_inputSequenceConfig{IO::loadSequenceConfig(config, m_placeholders, 0)} {
+    , m_sequenceConfig{IO::loadSequenceConfig(config, m_placeholders, 0)} {
   supportExperimentsThatUseASubsetOfTheCameras();
 }
 
 void SourceUnitLoader::loadAll() {
   for (int32_t i = 0; i < m_placeholders.numberOfInputFrames; ++i) {
-    encode(m_inputSequenceConfig,
-           IO::loadMultiviewFrame(m_config, m_placeholders, m_inputSequenceConfig, i));
+    encode({m_sequenceConfig, m_sequenceConfig.sourceViewParams(),
+            IO::loadMultiviewFrame(m_config, m_placeholders, m_sequenceConfig, i)});
   }
 
   Common::logInfo("Flushing encoder.");
@@ -57,10 +57,10 @@ void SourceUnitLoader::supportExperimentsThatUseASubsetOfTheCameras() {
         "Source camera names are derived from the sequence configuration. This "
         "functionality to override source camera names is only for internal testing, "
         "e.g. to test with a subset of views.");
-    m_inputSequenceConfig.sourceCameraNames = node.asVector<std::string>();
+    m_sequenceConfig.sourceCameraNames = node.asVector<std::string>();
   }
   if (const auto &node = m_config.optional("sourceCameraIds")) {
-    m_inputSequenceConfig.sourceCameraIds = node.asVector<uint16_t>();
+    m_sequenceConfig.sourceCameraIds = node.asVector<uint16_t>();
   }
 }
 } // namespace TMIV::Encoder

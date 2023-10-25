@@ -430,10 +430,10 @@ namespace {
 void Encoder::Impl::prepareSequence(const MivBitstream::SourceUnit &unit) {
   m_blockSize = m_config.blockSize(unit.depthLowQualityFlag);
 
-  m_transportParams = m_viewOptimizer->optimizeParams(
-      {unit.sequenceConfig.sourceViewParams(), unit.depthLowQualityFlag});
+  m_transportViewParams = unit.viewParamsList;
+  m_semiBasicViewCount = unit.semiBasicViewCount;
 
-  m_params = createEncoderParams(m_config, unit.sequenceConfig, m_transportParams.viewParamsList,
+  m_params = createEncoderParams(m_config, unit.sequenceConfig, m_transportViewParams,
                                  unit.depthLowQualityFlag);
 
   const auto pruningParents = m_pruner->prepareSequence(

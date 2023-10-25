@@ -31,28 +31,22 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/DepthQualityAssessor/Stage.h>
+#ifndef TMIV_MIVBITSTREAM_SOURCEUNIT_H
+#define TMIV_MIVBITSTREAM_SOURCEUNIT_H
 
-#include <TMIV/Common/Factory.h>
+#include <TMIV/Common/Frame.h>
+#include <TMIV/MivBitstream/SequenceConfig.h>
 
-namespace TMIV::DepthQualityAssessor {
-Stage::Stage(const Common::Json &rootNode, const Common::Json &componentNode) {
-  if (const auto &node = componentNode.optional("depthLowQualityFlag")) {
-    m_depthLowQualityFlag = node.as<bool>();
-  } else if (rootNode.require("haveGeometryVideo").as<bool>()) {
-    m_assessor =
-        Common::create<IDepthQualityAssessor>("DepthQualityAssessor", rootNode, componentNode);
-  } else {
-    m_depthLowQualityFlag = false;
-  }
-}
+#include <functional>
 
-void Stage::encode(MivBitstream::SourceUnit unit) {
-  if (!m_depthLowQualityFlag) {
-    m_depthLowQualityFlag = m_assessor->isLowDepthQuality(unit.viewParamsList, unit.deepFrameList);
-  }
+namespace TMIV::MivBitstream {
+struct SourceUnit {
+  std::reference_wrapper<const SequenceConfig> sequenceConfig;
+  ViewParamsList viewParamsList;
+  Common::DeepFrameList deepFrameList;
+  bool depthLowQualityFlag{};
+  int32_t semiBasicViewCount{};
+};
+} // namespace TMIV::MivBitstream
 
-  unit.depthLowQualityFlag = *m_depthLowQualityFlag;
-  source.encode(std::move(unit));
-}
-} // namespace TMIV::DepthQualityAssessor
+#endif

@@ -38,6 +38,7 @@
 #include <TMIV/DepthQualityAssessor/Stage.h>
 #include <TMIV/IO/IO.h>
 #include <TMIV/MivBitstream/Formatters.h>
+#include <TMIV/ViewOptimizer/Stage.h>
 
 #include "CodableUnitEncoder.h"
 #include "SourceUnitLoader.h"
@@ -58,10 +59,12 @@ public:
       , m_placeholders{placeholders()}
       , m_sourceUnitLoader{json(), m_placeholders}
       , m_assessor{json(), json()}
+      , m_optimizer{json(), json()}
       , m_encoder{json()}
       , m_codableUnitEncoder{json(), m_placeholders} {
     m_sourceUnitLoader.connectTo(m_assessor);
-    m_assessor.source.connectTo(m_encoder);
+    m_assessor.source.connectTo(m_optimizer);
+    m_optimizer.source.connectTo(m_encoder);
     m_encoder.source.connectTo(m_codableUnitEncoder);
   }
 
@@ -84,15 +87,17 @@ private:
     Common::logInfo("Total size is {} B ({} kb)", bytesWritten,
                     8e-3 * static_cast<double>(bytesWritten));
     Common::logInfo("Frame count is {}", m_placeholders.numberOfInputFrames);
-    Common::logInfo("Frame rate is {} Hz", m_sourceUnitLoader.frameRate());
+
+    const auto frameRate = m_sourceUnitLoader.sequenceConfig().frameRate;
+    Common::logInfo("Frame rate is {} Hz", frameRate);
     Common::logInfo("Total bitrate is {} kbps", 8e-3 * static_cast<double>(bytesWritten) *
-                                                    m_sourceUnitLoader.frameRate() /
-                                                    m_placeholders.numberOfInputFrames);
+                                                    frameRate / m_placeholders.numberOfInputFrames);
   }
 
   IO::Placeholders m_placeholders;
   SourceUnitLoader m_sourceUnitLoader;
   DepthQualityAssessor::Stage m_assessor;
+  ViewOptimizer::Stage m_optimizer;
   Encoder m_encoder;
   CodableUnitEncoder m_codableUnitEncoder;
 };

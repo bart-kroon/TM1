@@ -45,14 +45,16 @@ public:
 
   void loadAll();
 
-  [[nodiscard]] auto frameRate() const { return m_inputSequenceConfig.frameRate; }
+  [[nodiscard]] auto sequenceConfig() const -> const MivBitstream::SequenceConfig & {
+    return m_sequenceConfig;
+  }
 
 private:
   void supportExperimentsThatUseASubsetOfTheCameras();
 
   const Common::Json &m_config;
   IO::Placeholders m_placeholders;
-  MivBitstream::SequenceConfig m_inputSequenceConfig;
+  MivBitstream::SequenceConfig m_sequenceConfig;
 };
 } // namespace TMIV::Encoder
 

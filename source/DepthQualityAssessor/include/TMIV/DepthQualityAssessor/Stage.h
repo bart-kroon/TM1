@@ -37,18 +37,14 @@
 #include "IDepthQualityAssessor.h"
 
 #include <TMIV/Common/Stage.h>
-#include <TMIV/MivBitstream/SequenceConfig.h>
+#include <TMIV/MivBitstream/SourceUnit.h>
 
 namespace TMIV::DepthQualityAssessor {
 class Stage : public Common::Stage<MivBitstream::SourceUnit, MivBitstream::SourceUnit> {
 public:
   Stage(const Common::Json &rootNode, const Common::Json &componentNode);
 
-protected:
-  void push(MivBitstream::SourceUnit unit) override;
-
-public:
-  void flush() override;
+  void encode(MivBitstream::SourceUnit unit) override;
 
 private:
   std::optional<bool> m_depthLowQualityFlag;

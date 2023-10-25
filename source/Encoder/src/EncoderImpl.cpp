@@ -38,12 +38,10 @@
 using TMIV::Aggregator::IAggregator;
 using TMIV::Packer::IPacker;
 using TMIV::Pruner::IPruner;
-using TMIV::ViewOptimizer::IViewOptimizer;
 
 namespace TMIV::Encoder {
 Encoder::Impl::Impl(const Common::Json &componentNode)
-    : m_viewOptimizer{Common::create<IViewOptimizer>("ViewOptimizer", componentNode, componentNode)}
-    , m_pruner{Common::create<Pruner::IPruner>("Pruner", componentNode, componentNode)}
+    : m_pruner{Common::create<Pruner::IPruner>("Pruner", componentNode, componentNode)}
     , m_aggregator{Common::create<IAggregator>("Aggregator", componentNode, componentNode)}
     , m_packer{Common::create<IPacker>("Packer", componentNode, componentNode)}
     , m_config(componentNode) {}

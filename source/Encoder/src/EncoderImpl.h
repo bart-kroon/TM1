@@ -42,7 +42,6 @@
 #include <TMIV/Encoder/Encoder.h>
 #include <TMIV/Packer/IPacker.h>
 #include <TMIV/Pruner/IPruner.h>
-#include <TMIV/ViewOptimizer/IViewOptimizer.h>
 
 #include <algorithm>
 #include <memory>
@@ -57,7 +56,7 @@ public:
 
   void prepareSequence(const MivBitstream::SourceUnit &unit);
   void prepareAccessUnit();
-  void pushFrame(Common::DeepFrameList sourceViews);
+  void pushFrame(Common::DeepFrameList transportViews);
   auto completeAccessUnit() -> const EncoderParams &;
   auto popAtlas() -> Common::V3cFrameList;
   [[nodiscard]] auto maxLumaSamplesPerFrame() const -> size_t;
@@ -66,8 +65,8 @@ private:
   [[nodiscard]] auto config() const noexcept -> const Configuration & { return m_config; }
 
   // Encoder_pushFrame.cpp
-  void pushSingleEntityFrame(Common::DeepFrameList sourceViews);
-  void pushMultiEntityFrame(Common::DeepFrameList sourceViews);
+  void pushSingleEntityFrame(Common::DeepFrameList transportViews);
+  void pushMultiEntityFrame(Common::DeepFrameList transportViews);
   static auto entitySeparator(const Common::DeepFrameList &transportViews,
                               Common::SampleValue entityId) -> Common::DeepFrameList;
   static auto yuvSampler(const Common::FrameList<> &in) -> Common::FrameList<>;
@@ -115,7 +114,6 @@ private:
       -> std::vector<double>;
 
   // Encoder sub-components
-  std::unique_ptr<ViewOptimizer::IViewOptimizer> m_viewOptimizer;
   std::unique_ptr<Pruner::IPruner> m_pruner;
   std::unique_ptr<Aggregator::IAggregator> m_aggregator;
   std::unique_ptr<Packer::IPacker> m_packer;
@@ -124,7 +122,8 @@ private:
   Configuration m_config;
 
   // View-optimized encoder input
-  ViewOptimizer::ViewOptimizerParams m_transportParams;
+  MivBitstream::ViewParamsList m_transportViewParams;
+  int32_t m_semiBasicViewCount{};
   std::vector<Common::DeepFrameList> m_transportViews;
 
   int32_t m_blockSize{};

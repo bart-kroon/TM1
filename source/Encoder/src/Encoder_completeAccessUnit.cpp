@@ -312,8 +312,8 @@ auto Encoder::Impl::completeAccessUnit() -> const EncoderParams & {
   }
 
   m_packer->initialize(atlasSizes, m_blockSize);
-  m_params.patchParamsList = m_packer->pack(
-      atlasSizes, aggregatedMask, m_transportParams.viewParamsList, m_blockSize, information);
+  m_params.patchParamsList =
+      m_packer->pack(atlasSizes, aggregatedMask, m_transportViewParams, m_blockSize, information);
 
   assignFullPatchRanges(m_params);
 
@@ -854,7 +854,7 @@ auto Encoder::Impl::writePatchInAtlas(const MivBitstream::PatchParams &patchPara
   const auto posU = patchParams.atlasPatch3dOffsetU();
   const auto posV = patchParams.atlasPatch3dOffsetV();
 
-  const auto &inViewParams = m_transportParams.viewParamsList[patchParams.atlasPatchProjectionId()];
+  const auto &inViewParams = m_transportViewParams[patchParams.atlasPatchProjectionId()];
   const auto &outViewParams = params().viewParamsList[patchParams.atlasPatchProjectionId()];
 
   auto textureStats = TextureStats{};

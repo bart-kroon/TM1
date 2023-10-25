@@ -49,7 +49,7 @@ CodableUnitEncoder::CodableUnitEncoder(const Common::Json &config, IO::Placehold
   }
 }
 
-void CodableUnitEncoder::push(CodableUnit frame) {
+void CodableUnitEncoder::encode(CodableUnit frame) {
   Common::logInfo("Saving frame {}.", m_outputFrameIdx);
 
   if (frame.hasAcl) {

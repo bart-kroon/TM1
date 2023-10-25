@@ -45,15 +45,12 @@ class CodableUnitEncoder : public Common::IStageSink<CodableUnit> {
 public:
   CodableUnitEncoder(const Common::Json &config, IO::Placeholders placeholders);
 
-protected:
-  void push(CodableUnit frame) override;
+  void encode(CodableUnit frame) override;
 
-private:
   auto saveV3cFrameList(const Common::V3cFrameList &v3cFrameList) const -> Common::Json::Array;
   auto saveAtlasFrame(MivBitstream::AtlasId atlasId, int32_t frameIdx,
                       const Common::V3cFrame &frame) const -> Common::Json::Array;
 
-public:
   void flush() override;
 
   [[nodiscard]] auto bytesWritten() { return m_outputBitstream.tellp(); }

@@ -38,7 +38,7 @@
 
 #include <TMIV/Common/Frame.h>
 #include <TMIV/Common/Stage.h>
-#include <TMIV/MivBitstream/SequenceConfig.h>
+#include <TMIV/MivBitstream/SourceUnit.h>
 
 #include <memory>
 
@@ -59,10 +59,7 @@ public:
   auto operator=(Encoder &&) -> Encoder & = delete;
   ~Encoder() override;
 
-protected:
-  void push(MivBitstream::SourceUnit unit) override;
-
-public:
+  void encode(MivBitstream::SourceUnit unit) override;
   void flush() override;
 
   [[nodiscard]] auto maxLumaSamplesPerFrame() const -> size_t;

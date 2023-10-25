@@ -31,28 +31,21 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/DepthQualityAssessor/Stage.h>
+#include <TMIV/ViewOptimizer/Stage.h>
 
 #include <TMIV/Common/Factory.h>
 
-namespace TMIV::DepthQualityAssessor {
-Stage::Stage(const Common::Json &rootNode, const Common::Json &componentNode) {
-  if (const auto &node = componentNode.optional("depthLowQualityFlag")) {
-    m_depthLowQualityFlag = node.as<bool>();
-  } else if (rootNode.require("haveGeometryVideo").as<bool>()) {
-    m_assessor =
-        Common::create<IDepthQualityAssessor>("DepthQualityAssessor", rootNode, componentNode);
-  } else {
-    m_depthLowQualityFlag = false;
-  }
-}
+namespace TMIV::ViewOptimizer {
+Stage::Stage(const Common::Json &rootNode, const Common::Json &componentNode)
+    : m_optimizer{Common::create<IViewOptimizer>("ViewOptimizer", rootNode, componentNode)} {}
 
 void Stage::encode(MivBitstream::SourceUnit unit) {
-  if (!m_depthLowQualityFlag) {
-    m_depthLowQualityFlag = m_assessor->isLowDepthQuality(unit.viewParamsList, unit.deepFrameList);
+  if (!m_params) {
+    m_params = m_optimizer->optimizeParams({unit.viewParamsList, unit.depthLowQualityFlag});
   }
-
-  unit.depthLowQualityFlag = *m_depthLowQualityFlag;
-  source.encode(std::move(unit));
+  unit.viewParamsList = m_params->viewParamsList;
+  unit.deepFrameList = m_optimizer->optimizeFrame(std::move(unit.deepFrameList));
+  unit.semiBasicViewCount = m_params->semiBasicCount;
+  source.encode(unit);
 }
-} // namespace TMIV::DepthQualityAssessor
+} // namespace TMIV::ViewOptimizer

@@ -31,28 +31,25 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/DepthQualityAssessor/Stage.h>
+#ifndef TMIV_VIEWOPTIMIZER_STAGE_H
+#define TMIV_VIEWOPTIMIZER_STAGE_H
 
-#include <TMIV/Common/Factory.h>
+#include <TMIV/Common/Stage.h>
+#include <TMIV/MivBitstream/SourceUnit.h>
 
-namespace TMIV::DepthQualityAssessor {
-Stage::Stage(const Common::Json &rootNode, const Common::Json &componentNode) {
-  if (const auto &node = componentNode.optional("depthLowQualityFlag")) {
-    m_depthLowQualityFlag = node.as<bool>();
-  } else if (rootNode.require("haveGeometryVideo").as<bool>()) {
-    m_assessor =
-        Common::create<IDepthQualityAssessor>("DepthQualityAssessor", rootNode, componentNode);
-  } else {
-    m_depthLowQualityFlag = false;
-  }
-}
+#include "IViewOptimizer.h"
 
-void Stage::encode(MivBitstream::SourceUnit unit) {
-  if (!m_depthLowQualityFlag) {
-    m_depthLowQualityFlag = m_assessor->isLowDepthQuality(unit.viewParamsList, unit.deepFrameList);
-  }
+namespace TMIV::ViewOptimizer {
+class Stage : public Common::Stage<MivBitstream::SourceUnit, MivBitstream::SourceUnit> {
+public:
+  Stage(const Common::Json &rootNode, const Common::Json &componentNode);
 
-  unit.depthLowQualityFlag = *m_depthLowQualityFlag;
-  source.encode(std::move(unit));
-}
-} // namespace TMIV::DepthQualityAssessor
+  void encode(MivBitstream::SourceUnit unit) override;
+
+private:
+  std::unique_ptr<IViewOptimizer> m_optimizer;
+  std::optional<ViewOptimizerParams> m_params;
+};
+} // namespace TMIV::ViewOptimizer
+
+#endif

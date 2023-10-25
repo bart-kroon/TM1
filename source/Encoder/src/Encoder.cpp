@@ -44,7 +44,7 @@ Encoder::Encoder(const Common::Json &componentNode) : m_impl{new Impl{componentN
 
 Encoder::~Encoder() = default;
 
-void Encoder::push(MivBitstream::SourceUnit unit) {
+void Encoder::encode(MivBitstream::SourceUnit unit) {
   if (m_once) {
     m_impl->prepareSequence(unit);
     m_once = false;
@@ -72,7 +72,7 @@ void Encoder::completeAccessUnit() {
   auto hasAcl = true;
 
   while (0 < m_frameCount) {
-    source.encode(encoderParams, hasAcl, m_impl->popAtlas());
+    source.encode({encoderParams, hasAcl, m_impl->popAtlas()});
     hasAcl = false;
     --m_frameCount;
   }

@@ -38,15 +38,6 @@
 #include <utility>
 
 namespace TMIV::Common {
-template <typename In> class IStageSink;
-template <typename Out> class StageSource;
-
-// An encoding stage has an input stage interface and an output stage
-template <typename In, typename Out> class Stage : public IStageSink<In> {
-public:
-  StageSource<Out> source;
-};
-
 // Interface of the input side of an encoding stage
 template <typename In> class IStageSink {
 public:
@@ -63,13 +54,8 @@ public:
   virtual ~IStageSink() = default;
 
   // Input is pushed into this stage using this method
-  template <typename... Args> void encode(Args &&...args) { push(In{std::forward<Args>(args)...}); }
+  virtual void encode(In unit) = 0;
 
-protected:
-  // Push a value into this stage
-  virtual void push(In value) = 0;
-
-public:
   // End of input is signalled using this method
   virtual void flush() = 0;
 };
@@ -85,9 +71,9 @@ public:
   void connectTo(IStageSink<Out> &sink) { m_sink = &sink; }
 
   // If connected send a value to the next encoding stage
-  template <typename... Args> void encode(Args &&...value) const {
+  void encode(Out unit) const {
     if (m_sink != nullptr) {
-      m_sink->encode(std::forward<Args>(value)...);
+      m_sink->encode(std::move(unit));
     }
   }
 
@@ -100,6 +86,14 @@ public:
 
 private:
   IStageSink<Out> *m_sink = nullptr;
+};
+
+// An encoding stage has an input stage interface and an output stage
+template <typename In, typename Out> class Stage : public IStageSink<In> {
+public:
+  StageSource<Out> source;
+
+  void flush() override { source.flush(); }
 };
 } // namespace TMIV::Common
 

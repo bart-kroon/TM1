@@ -162,12 +162,6 @@ TEST_CASE("createEncoderParams sets multiple syntax elements to hard-coded value
     return;
   }
 
-  const auto geometryScaleEnabledFlag = GENERATE(false, true);
-
-  if (!haveGeometry && geometryScaleEnabledFlag) {
-    return;
-  }
-
   if ((!haveGeometry || haveOccupancy) && embeddedOccupancy) {
     return;
   }
@@ -175,7 +169,6 @@ TEST_CASE("createEncoderParams sets multiple syntax elements to hard-coded value
   const auto config = [=]() {
     auto x = test::configuration1();
     x.haveGeometry = haveGeometry;
-    x.geometryScaleEnabledFlag = geometryScaleEnabledFlag;
     x.haveOccupancy = haveOccupancy;
     x.haveTexture = haveTexture;
     x.embeddedOccupancy = embeddedOccupancy;
@@ -234,13 +227,6 @@ TEST_CASE("createEncoderParams sets multiple syntax elements to hard-coded value
     CHECK(atlas.asps.asps_extended_projection_enabled_flag());
     CHECK(atlas.asps.asps_normal_axis_limits_quantization_enabled_flag());
     CHECK(atlas.asps.asps_num_ref_atlas_frame_lists_in_asps() == 1);
-
-    const auto &asme = atlas.asps.asps_miv_extension();
-
-    if (geometryScaleEnabledFlag) {
-      CHECK(asme.asme_geometry_scale_factor_x_minus1() == 1);
-      CHECK(asme.asme_geometry_scale_factor_y_minus1() == 1);
-    }
 
     for (const auto &ath : atlas.athList) {
       CHECK(ath.ath_type() == TMIV::MivBitstream::AthType::I_TILE);

@@ -66,6 +66,7 @@ foreach(
     Pruner
     Aggregator
     Packer
+    Downscaler
     FramePacker
     Renderer
     ViewingSpace

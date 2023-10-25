@@ -31,23 +31,24 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "EncoderImpl.h"
-#include "GeometryQuantizer.h"
+#ifndef TMIV_DOWNSCALER_STAGE_H
+#define TMIV_DOWNSCALER_STAGE_H
 
-namespace TMIV::Encoder {
-auto Encoder::Impl::popAtlas() -> Common::V3cFrameList {
-  if (m_config.haveGeometry) {
-    auto quantizedFrame = GeometryQuantizer::transformAtlases(params(), m_paramsQuantized,
-                                                              m_videoFrameBuffer.front());
-    m_videoFrameBuffer.erase(m_videoFrameBuffer.begin());
-    return quantizedFrame;
-  }
+#include <TMIV/Common/Stage.h>
+#include <TMIV/MivBitstream/CodableUnit.h>
 
-  auto frame = Common::V3cFrameList(m_videoFrameBuffer.front().size());
-  for (size_t i = 0; i < frame.size(); ++i) {
-    frame[i].texture = std::move(m_videoFrameBuffer.front()[i].texture);
-  }
-  m_videoFrameBuffer.erase(m_videoFrameBuffer.begin());
-  return frame;
-}
-} // namespace TMIV::Encoder
+namespace TMIV::Downscaler {
+using MivBitstream::CodableUnit;
+
+class Stage : public Common::Stage<CodableUnit, CodableUnit> {
+public:
+  Stage(const Common::Json &componentNode);
+
+  void encode(CodableUnit unit) override;
+
+private:
+  bool m_geometryScaleEnabledFlag;
+};
+} // namespace TMIV::Downscaler
+
+#endif

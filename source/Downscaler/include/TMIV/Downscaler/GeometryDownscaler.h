@@ -31,17 +31,17 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef TMIV_ENCODER_GEOMETRYDOWNSCALER_H
-#define TMIV_ENCODER_GEOMETRYDOWNSCALER_H
+#ifndef TMIV_DOWNSCALER_GEOMETRYDOWNSCALER_H
+#define TMIV_DOWNSCALER_GEOMETRYDOWNSCALER_H
 
 #include <TMIV/Common/Frame.h>
 #include <TMIV/MivBitstream/EncoderParams.h>
 
-namespace TMIV::Encoder::GeometryDownscaler {
+namespace TMIV::Downscaler {
 using MivBitstream::EncoderAtlasParams;
 
-[[nodiscard]] auto transformFrame(const std::vector<EncoderAtlasParams> &atlas,
-                                  Common::V3cFrameList frame) -> Common::V3cFrameList;
-} // namespace TMIV::Encoder::GeometryDownscaler
+[[nodiscard]] auto downscaleGeometry(const std::vector<EncoderAtlasParams> &atlas,
+                                     Common::V3cFrameList frame) -> Common::V3cFrameList;
+} // namespace TMIV::Downscaler
 
 #endif

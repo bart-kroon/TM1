@@ -14,18 +14,15 @@ create_tmiv_library(
     "src/Encoder_completeAccessUnit.cpp"
     "src/Encoder_popFrame.cpp"
     "src/GeometryQuantizer.cpp"
-    "src/GeometryDownscaler.cpp"
     "src/PiecewiseLinearDepthScaling.cpp"
     "src/V3cSampleSink.cpp"
     PUBLIC
     MivBitstreamLib
     PRIVATE
     AggregatorLib
-    DepthQualityAssessorLib
     PackerLib
     PrunerLib
-    RendererLib
-    ViewOptimizerLib)
+    RendererLib)
 
 create_tmiv_executable(
     TARGET
@@ -39,6 +36,7 @@ create_tmiv_executable(
     EncoderLib
     AggregatorLib
     DepthQualityAssessorLib
+    DownscalerLib
     FramePackerLib
     PackerLib
     PrunerLib

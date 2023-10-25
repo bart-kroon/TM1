@@ -192,9 +192,8 @@ calculateNominalAtlasFrameSizes(const Configuration &config,
                                           const Common::SizeVector &atlasFrameSizes) {
   auto vme2 = MivBitstream::VpsMiv2Extension{};
   auto &vme = vme2.vps_miv_extension();
-  vme.vme_geometry_scale_enabled_flag(config.geometryScaleEnabledFlag)
-      .vme_embedded_occupancy_enabled_flag(config.embeddedOccupancy)
-      .group_mapping() = createGroupMapping(config.numGroups, atlasFrameSizes);
+  vme.vme_embedded_occupancy_enabled_flag(config.embeddedOccupancy).group_mapping() =
+      createGroupMapping(config.numGroups, atlasFrameSizes);
 
   if (!config.embeddedOccupancy) {
     vme.vme_occupancy_scale_enabled_flag(config.haveOccupancy);
@@ -291,9 +290,6 @@ createCommonAtlasSequenceParameterSet(const Configuration &config,
       .asme_patch_texture_offset_enabled_flag(config.textureOffsetFlag)
       .asme_max_entity_id(config.maxEntityId);
 
-  if (config.geometryScaleEnabledFlag) {
-    asme.asme_geometry_scale_factor_x_minus1(1).asme_geometry_scale_factor_y_minus1(1);
-  }
   if (config.haveOccupancy) {
     const auto occFrameSizeX = std::lcm(2, vps.vps_frame_width(j) / blockSize);
     const auto occFrameSizeY = std::lcm(2, vps.vps_frame_height(j) / blockSize);

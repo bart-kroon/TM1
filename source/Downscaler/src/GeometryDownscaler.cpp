@@ -31,23 +31,52 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "EncoderImpl.h"
-#include "GeometryQuantizer.h"
+#include <TMIV/Downscaler/GeometryDownscaler.h>
 
-namespace TMIV::Encoder {
-auto Encoder::Impl::popAtlas() -> Common::V3cFrameList {
-  if (m_config.haveGeometry) {
-    auto quantizedFrame = GeometryQuantizer::transformAtlases(params(), m_paramsQuantized,
-                                                              m_videoFrameBuffer.front());
-    m_videoFrameBuffer.erase(m_videoFrameBuffer.begin());
-    return quantizedFrame;
+namespace TMIV::Downscaler {
+namespace {
+auto maxPool(const Common::Frame<> &frame, Common::Vec2i frameSize) -> Common::Frame<> {
+  auto result = Common::Frame<>::lumaOnly(frameSize, frame.getBitDepth());
+
+  for (int32_t y = 0; y < frameSize.y(); ++y) {
+    const int32_t i1 = y * frame.getHeight() / frameSize.y();
+    const int32_t i2 = (y + 1) * frame.getHeight() / frameSize.y();
+
+    for (int32_t x = 0; x < frameSize.x(); ++x) {
+      const int32_t j1 = x * frame.getWidth() / frameSize.x();
+      const int32_t j2 = (x + 1) * frame.getWidth() / frameSize.x();
+
+      auto maximum = uint16_t{};
+
+      for (int32_t i = i1; i < i2; ++i) {
+        for (int32_t j = j1; j < j2; ++j) {
+          maximum = std::max(maximum, frame.getPlane(0)(i, j));
+        }
+      }
+
+      result.getPlane(0)(y, x) = maximum;
+    }
   }
 
-  auto frame = Common::V3cFrameList(m_videoFrameBuffer.front().size());
-  for (size_t i = 0; i < frame.size(); ++i) {
-    frame[i].texture = std::move(m_videoFrameBuffer.front()[i].texture);
+  return result;
+}
+} // namespace
+
+auto downscaleGeometry(const std::vector<EncoderAtlasParams> &atlas, Common::V3cFrameList frame)
+    -> Common::V3cFrameList {
+  for (size_t k = 0; k < atlas.size(); ++k) {
+    const auto &asps = atlas[k].asps;
+
+    auto frameSize = Common::Vec2i{asps.asps_frame_width(), asps.asps_frame_height()};
+    const auto &asme = asps.asps_miv_extension();
+
+    if (asme.asme_geometry_scale_enabled_flag()) {
+      frameSize.x() /= asme.asme_geometry_scale_factor_x_minus1() + 1;
+      frameSize.y() /= asme.asme_geometry_scale_factor_y_minus1() + 1;
+    }
+
+    frame[k].geometry = maxPool(frame[k].geometry, frameSize);
   }
-  m_videoFrameBuffer.erase(m_videoFrameBuffer.begin());
   return frame;
 }
-} // namespace TMIV::Encoder
+} // namespace TMIV::Downscaler

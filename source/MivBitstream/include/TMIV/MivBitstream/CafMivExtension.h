@@ -196,11 +196,15 @@ public:
   [[nodiscard]] constexpr auto dq_norm_disp_low() const noexcept;
   [[nodiscard]] constexpr auto dq_norm_disp_high() const noexcept;
   [[nodiscard]] constexpr auto dq_depth_occ_threshold_default() const noexcept;
+  [[nodiscard]] constexpr auto dq_norm_linear_near() const noexcept;
+  [[nodiscard]] constexpr auto dq_norm_linear_far() const noexcept;
 
   constexpr auto dq_quantization_law(uint8_t value) noexcept -> auto &;
   constexpr auto dq_norm_disp_low(float value) noexcept -> auto &;
   constexpr auto dq_norm_disp_high(float value) noexcept -> auto &;
   constexpr auto dq_depth_occ_threshold_default(uint32_t value) noexcept -> auto &;
+  constexpr auto dq_norm_linear_near(float value) noexcept -> auto &;
+  constexpr auto dq_norm_linear_far(float value) noexcept -> auto &;
 
   [[nodiscard]] constexpr auto dq_pivot_count_minus1() const noexcept;
   [[nodiscard]] auto dq_pivot_norm_disp(int32_t i) const noexcept -> float;
@@ -222,6 +226,8 @@ private:
   float m_dq_norm_disp_low{};
   float m_dq_norm_disp_high{};
   uint32_t m_dq_depth_occ_threshold_default{};
+  float m_dq_norm_linear_near{};
+  float m_dq_norm_linear_far{};
 
   uint8_t m_dq_pivot_count_minus1{};
   std::vector<float> m_dq_pivot_norm_disp;

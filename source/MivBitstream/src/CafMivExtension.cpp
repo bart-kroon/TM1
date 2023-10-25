@@ -287,13 +287,22 @@ void CameraExtrinsics::encodeTo(Common::OutputBitstream &bitstream) const {
 }
 
 auto DepthQuantization::printTo(std::ostream &stream, uint16_t viewIdx) const -> std::ostream & {
-  VERIFY_MIVBITSTREAM(dq_quantization_law() == 0 || dq_quantization_law() == 2);
+  VERIFY_MIVBITSTREAM(dq_quantization_law() == 0 || dq_quantization_law() == 2 ||
+                      dq_quantization_law() == 4);
 
-  stream << "dq_quantization_law[ " << viewIdx << " ]=" << int32_t{dq_quantization_law()}
-         << "\ndq_norm_disp_low[ " << viewIdx << " ]=" << dq_norm_disp_low()
-         << "\ndq_norm_disp_high[ " << viewIdx << " ]=" << dq_norm_disp_high()
-         << "\ndq_depth_occ_threshold_default[ " << viewIdx
-         << " ]=" << dq_depth_occ_threshold_default() << '\n';
+  if (dq_quantization_law() == 0 || dq_quantization_law() == 2) {
+    stream << "dq_quantization_law[ " << viewIdx << " ]=" << int32_t{dq_quantization_law()}
+           << "\ndq_norm_disp_low[ " << viewIdx << " ]=" << dq_norm_disp_low()
+           << "\ndq_norm_disp_high[ " << viewIdx << " ]=" << dq_norm_disp_high()
+           << "\ndq_depth_occ_threshold_default[ " << viewIdx
+           << " ]=" << dq_depth_occ_threshold_default() << '\n';
+  } else if (dq_quantization_law() == 4) {
+    stream << "dq_quantization_law[ " << viewIdx << " ]=" << int32_t{dq_quantization_law()}
+           << "\ndq_norm_linear_near[ " << viewIdx << " ]=" << dq_norm_linear_near()
+           << "\ndq_norm_linear_far[ " << viewIdx << " ]=" << dq_norm_linear_far()
+           << "\ndq_depth_occ_threshold_default[ " << viewIdx
+           << " ]=" << dq_depth_occ_threshold_default() << '\n';
+  }
   return stream;
 }
 
@@ -302,12 +311,13 @@ auto DepthQuantization::decodeFrom(Common::InputBitstream &bitstream) -> DepthQu
 
   x.dq_quantization_law(bitstream.getUExpGolomb<uint8_t>());
 
+  VERIFY_MIVBITSTREAM(x.dq_quantization_law() == 0 || x.dq_quantization_law() == 2 ||
+                      x.dq_quantization_law() == 4);
+
   if (x.dq_quantization_law() == 0) {
     x.dq_norm_disp_low(bitstream.getFloat32());
     x.dq_norm_disp_high(bitstream.getFloat32());
   }
-
-  VERIFY_MIVBITSTREAM(x.dq_quantization_law() == 0 || x.dq_quantization_law() == 2);
 
   if (x.dq_quantization_law() == 2) {
     x.dq_norm_disp_low(bitstream.getFloat32());
@@ -317,6 +327,11 @@ auto DepthQuantization::decodeFrom(Common::InputBitstream &bitstream) -> DepthQu
     for (int32_t i = 0; i <= x.dq_pivot_count_minus1(); i++) {
       x.dq_pivot_norm_disp(i, bitstream.getFloat32());
     }
+  }
+
+  if (x.dq_quantization_law() == 4) {
+    x.dq_norm_linear_near(bitstream.getFloat32());
+    x.dq_norm_linear_far(bitstream.getFloat32());
   }
 
   x.dq_depth_occ_threshold_default(bitstream.getUExpGolomb<uint32_t>());
@@ -340,6 +355,11 @@ void DepthQuantization::encodeTo(Common::OutputBitstream &bitstream) const {
     for (int32_t i = 0; i <= dq_pivot_count_minus1(); i++) {
       bitstream.putFloat32(dq_pivot_norm_disp(i));
     }
+  }
+
+  if (dq_quantization_law() == 4) {
+    bitstream.putFloat32(dq_norm_linear_near());
+    bitstream.putFloat32(dq_norm_linear_far());
   }
 
   bitstream.putUExpGolomb(dq_depth_occ_threshold_default());

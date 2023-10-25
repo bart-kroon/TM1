@@ -40,6 +40,7 @@
 #include <TMIV/MivBitstream/Formatters.h>
 
 #include "CodableUnitEncoder.h"
+#include "SourceUnitLoader.h"
 
 using namespace std::string_view_literals;
 
@@ -55,26 +56,17 @@ public:
                                 {"-n", "Number of input frames (e.g. 97)", false},
                                 {"-f", "Input start frame (e.g. 23)", false}}}
       , m_placeholders{placeholders()}
-      , m_inputSequenceConfig{IO::loadSequenceConfig(json(), m_placeholders, 0)}
+      , m_sourceUnitLoader{json(), m_placeholders}
       , m_assessor{json(), json()}
       , m_encoder{json()}
       , m_codableUnitEncoder{json(), m_placeholders} {
-    supportExperimentsThatUseASubsetOfTheCameras();
-
-    // Connect encoding stages
+    m_sourceUnitLoader.connectTo(m_assessor);
     m_assessor.source.connectTo(m_encoder);
     m_encoder.source.connectTo(m_codableUnitEncoder);
   }
 
   void run() override {
-    for (int32_t i = 0; i < m_placeholders.numberOfInputFrames; ++i) {
-      m_assessor.encode(m_inputSequenceConfig,
-                        IO::loadMultiviewFrame(json(), m_placeholders, m_inputSequenceConfig, i));
-    }
-
-    Common::logInfo("Flushing encoder");
-    m_assessor.flush();
-
+    m_sourceUnitLoader.loadAll();
     reportSummary(m_codableUnitEncoder.bytesWritten());
   }
 
@@ -87,33 +79,19 @@ private:
     return x;
   }
 
-  void supportExperimentsThatUseASubsetOfTheCameras() {
-    if (const auto &node = json().optional("inputCameraNames")) {
-      Common::logWarning(
-          "Source camera names are derived from the sequence configuration. This "
-          "functionality to override source camera names is only for internal testing, "
-          "e.g. to test with a subset of views.");
-      m_inputSequenceConfig.sourceCameraNames = node.asVector<std::string>();
-    }
-    if (const auto &node = json().optional("sourceCameraIds")) {
-      m_inputSequenceConfig.sourceCameraIds = node.asVector<uint16_t>();
-    }
-  }
-
   void reportSummary(std::streampos bytesWritten) const {
     Common::logInfo("Maximum luma samples per frame is {}", m_encoder.maxLumaSamplesPerFrame());
     Common::logInfo("Total size is {} B ({} kb)", bytesWritten,
                     8e-3 * static_cast<double>(bytesWritten));
     Common::logInfo("Frame count is {}", m_placeholders.numberOfInputFrames);
-    Common::logInfo("Frame rate is {} Hz", m_inputSequenceConfig.frameRate);
+    Common::logInfo("Frame rate is {} Hz", m_sourceUnitLoader.frameRate());
     Common::logInfo("Total bitrate is {} kbps", 8e-3 * static_cast<double>(bytesWritten) *
-                                                    m_inputSequenceConfig.frameRate /
+                                                    m_sourceUnitLoader.frameRate() /
                                                     m_placeholders.numberOfInputFrames);
   }
 
   IO::Placeholders m_placeholders;
-  MivBitstream::SequenceConfig m_inputSequenceConfig;
-
+  SourceUnitLoader m_sourceUnitLoader;
   DepthQualityAssessor::Stage m_assessor;
   Encoder m_encoder;
   CodableUnitEncoder m_codableUnitEncoder;

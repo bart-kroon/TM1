@@ -35,6 +35,7 @@ create_tmiv_executable(
     "app/CodableUnitEncoder.cpp"
     "app/Encoder_main.cpp"
     "app/registerComponents.cpp"
+    "app/SourceUnitLoader.cpp"
     PRIVATE
     EncoderLib
     AggregatorLib

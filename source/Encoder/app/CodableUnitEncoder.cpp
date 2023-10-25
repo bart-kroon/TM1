@@ -45,12 +45,12 @@ CodableUnitEncoder::CodableUnitEncoder(const Common::Json &config, IO::Placehold
     , m_mivEncoder{encodeMiv(v3cSampleSink(m_outputBitstream),
                              config.require("rewriteParameterSets").as<bool>())} {
   if (!m_outputBitstream.good()) {
-    throw std::runtime_error(fmt::format("Failed to open {} for writing", m_outputBitstreamPath));
+    throw std::runtime_error(fmt::format("Failed to open {} for writing.", m_outputBitstreamPath));
   }
 }
 
 void CodableUnitEncoder::push(CodableUnit frame) {
-  Common::logInfo("Coding frame {}", m_outputFrameIdx);
+  Common::logInfo("Saving frame {}.", m_outputFrameIdx);
 
   if (frame.hasAcl) {
     m_mivEncoder(std::move(frame.encoderParams));

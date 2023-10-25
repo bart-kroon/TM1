@@ -108,11 +108,14 @@ private:
 };
 
 template <typename ClusterBufferType>
-auto mergePatches(ClusterList &clusterList, int32_t A, int32_t B, const Cluster &cluster,
-                  std::queue<Vec2i> candidates, ClusterBufferType &clusteringBuffer) -> int32_t {
-  SubRegionGrower<ClusterBufferType> growSubRegion{clusterList, A,          B,
+auto mergePatches(ClusterList &clusterList, std::pair<int32_t, int32_t> AB, Cluster &cluster,
+                  std::queue<Vec2i> candidates, ClusterBufferType &clusteringBuffer,
+                  const TMIV::Common::Mat<uint32_t> &infomationBuffer) -> int32_t {
+  SubRegionGrower<ClusterBufferType> growSubRegion{clusterList, AB.first,   AB.second,
                                                    cluster,     candidates, clusteringBuffer};
 
+  auto A = AB.first;
+  auto B = AB.second;
   const auto i_top = cluster.imin();
   const auto i_bottom = cluster.imax();
   const auto j_left = cluster.jmin();
@@ -146,12 +149,20 @@ auto mergePatches(ClusterList &clusterList, int32_t A, int32_t B, const Cluster 
       }
     }
   }
+
   if (!cluster.isBasicView()) {
+    if (!infomationBuffer.empty()) {
+      cluster.calculateInformationDensityWithBuffer(clusteringBuffer, infomationBuffer);
+    }
     const auto clusterId = static_cast<uint16_t>(cluster.getClusterId());
     for (int32_t i_inter = i_top; i_inter <= i_bottom; i_inter++) {
       for (int32_t j_inter = j_left; j_inter <= j_right; j_inter++) {
         if (clusteringBuffer(i_inter, j_inter) == ACTIVE) {
-          clusteringBuffer(i_inter, j_inter) = clusterId;
+          float diff = static_cast<float>(infomationBuffer(i_inter, j_inter)) -
+                       static_cast<float>(cluster.getInformationDensity());
+          if (infomationBuffer.empty() || std::abs(diff) < 0.2 * cluster.getInformationDensity()) {
+            clusteringBuffer(i_inter, j_inter) = clusterId;
+          }
         }
       }
     }
@@ -260,15 +271,17 @@ void updateOutput(const bool isBasicView, const Cluster &cluster, const int32_t 
 } // namespace
 
 auto retrieveClusters(const int32_t viewIdx, const Common::Frame<uint8_t> &maskMap,
-                      const int32_t firstClusterId,
-                      const std::pair<bool, bool> isBasicOrSemiBasicView, const bool enableMerging,
-                      const bool multiEntity) -> std::pair<ClusterList, ClusteringMap> {
+                      const Common::Frame<uint32_t> &informationMap, const int32_t firstClusterId,
+                      const std::pair<bool, bool> isBasicOrSemiBasicView, flags m_flags)
+    -> std::pair<ClusterList, ClusteringMap> {
   std::pair<ClusterList, ClusteringMap> out(
       ClusterList(), ClusteringMap::lumaOnly({maskMap.getWidth(), maskMap.getHeight()}));
   ClusterList &clusterList = out.first;
   auto &clusteringBuffer = out.second.getPlane(0);
 
   const auto &maskBuffer = maskMap.getPlane(0);
+  const auto &informationBuffer =
+      !informationMap.empty() ? informationMap.getPlane(0) : TMIV::Common::Mat<uint32_t>();
   const auto A = static_cast<int32_t>(maskBuffer.m());
   const auto B = static_cast<int32_t>(maskBuffer.n());
 
@@ -282,7 +295,7 @@ auto retrieveClusters(const int32_t viewIdx, const Common::Frame<uint8_t> &maskM
   auto iter_seed = activeList.begin();
   // NOTE(FT): a basic view is packed as a single patch, hence no need for any clustering, except
   // when entities are present.
-  if (isBasicView && !multiEntity) {
+  if (isBasicView && !m_flags.multiEntity) {
     Cluster cluster(viewIdx, isBasicView, isSemiBasicView, clusterId, 0);
     for (size_t i = 0; i < maskBuffer.size(); i++) {
       if (0 < maskBuffer[i]) {
@@ -313,8 +326,9 @@ auto retrieveClusters(const int32_t viewIdx, const Common::Frame<uint8_t> &maskM
       auto candidates = getInitialCandidates(clusteringBuffer, A, B, clusterId, cluster, dv);
 
       const auto subClusterId = [&]() {
-        if (enableMerging) {
-          return mergePatches(clusterList, A, B, cluster, std::move(candidates), clusteringBuffer);
+        if (m_flags.enableMerging) {
+          return mergePatches(clusterList, std::make_pair(A, B), cluster, std::move(candidates),
+                              clusteringBuffer, informationBuffer);
         }
         return clusterId;
       }();

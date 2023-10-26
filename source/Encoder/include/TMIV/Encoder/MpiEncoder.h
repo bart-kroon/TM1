@@ -52,7 +52,7 @@ public:
 
   void prepareSequence(const MivBitstream::SequenceConfig &config);
   auto processAccessUnit(int32_t firstFrameId, int32_t lastFrameId) -> const EncoderParams &;
-  auto popAtlas() -> Common::V3cFrameList;
+  auto popAtlas() -> Common::DeepFrameList;
   [[nodiscard]] auto maxLumaSamplesPerFrame() const -> size_t { return m_maxLumaSamplesPerFrame; }
 
   using MpiPcsFrameReader = std::function<MpiPcs::Frame(int32_t)>;

@@ -52,31 +52,31 @@ CodableUnitEncoder::CodableUnitEncoder(const Common::Json &config, IO::Placehold
 void CodableUnitEncoder::encode(CodableUnit frame) {
   Common::logInfo("Saving frame {}.", m_outputFrameIdx);
 
-  if (frame.hasAcl) {
+  if (frame.type != MivBitstream::CodableUnitType::SKIP) {
     m_mivEncoder(std::move(frame.encoderParams));
   }
   if (m_outputFrameIdx == 0) {
-    IO::saveOutOfBandMetadata(m_config, m_placeholders, saveV3cFrameList(frame.v3cFrameList));
+    IO::saveOutOfBandMetadata(m_config, m_placeholders, saveV3cFrameList(frame.deepFrameList));
   } else {
-    saveV3cFrameList(frame.v3cFrameList);
+    saveV3cFrameList(frame.deepFrameList);
   }
   ++m_outputFrameIdx;
 }
 
-auto CodableUnitEncoder::saveV3cFrameList(const Common::V3cFrameList &v3cFrameList) const
+auto CodableUnitEncoder::saveV3cFrameList(const Common::DeepFrameList &deepFrameList) const
     -> Common::Json::Array {
   auto metadata = Common::Json::Array{};
 
-  for (size_t atlasIdx = 0; atlasIdx < v3cFrameList.size(); ++atlasIdx) {
+  for (size_t atlasIdx = 0; atlasIdx < deepFrameList.size(); ++atlasIdx) {
     const auto atlasId = MivBitstream::AtlasId{atlasIdx};
-    const auto sub = saveAtlasFrame(atlasId, m_outputFrameIdx, v3cFrameList[atlasIdx]);
+    const auto sub = saveAtlasFrame(atlasId, m_outputFrameIdx, deepFrameList[atlasIdx]);
     metadata.insert(metadata.end(), sub.cbegin(), sub.cend());
   }
   return metadata;
 }
 
 auto CodableUnitEncoder::saveAtlasFrame(MivBitstream::AtlasId atlasId, int32_t frameIdx,
-                                        const Common::V3cFrame &frame) const
+                                        const Common::DeepFrame &frame) const
     -> Common::Json::Array {
   using VUH = MivBitstream::V3cUnitHeader;
   using VUT = MivBitstream::VuhUnitType;

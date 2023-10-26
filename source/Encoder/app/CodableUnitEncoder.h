@@ -49,9 +49,9 @@ public:
 
   void encode(CodableUnit frame) override;
 
-  auto saveV3cFrameList(const Common::V3cFrameList &v3cFrameList) const -> Common::Json::Array;
+  auto saveV3cFrameList(const Common::DeepFrameList &deepFrameList) const -> Common::Json::Array;
   auto saveAtlasFrame(MivBitstream::AtlasId atlasId, int32_t frameIdx,
-                      const Common::V3cFrame &frame) const -> Common::Json::Array;
+                      const Common::DeepFrame &frame) const -> Common::Json::Array;
 
   void flush() override;
 

@@ -58,7 +58,7 @@ public:
   void prepareAccessUnit();
   void pushFrame(Common::DeepFrameList transportViews);
   auto completeAccessUnit() -> const EncoderParams &;
-  auto popAtlas() -> Common::V3cFrameList;
+  auto popAtlas() -> Common::DeepFrameList;
   [[nodiscard]] auto maxLumaSamplesPerFrame() const -> size_t;
 
 private:

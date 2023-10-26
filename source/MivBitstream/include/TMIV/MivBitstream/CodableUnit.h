@@ -38,10 +38,12 @@
 #include <TMIV/MivBitstream/EncoderParams.h>
 
 namespace TMIV::MivBitstream {
+enum class CodableUnitType { IDR, TRIAL, SKIP };
+
 struct CodableUnit {
   EncoderParams encoderParams;
-  bool hasAcl{};
-  Common::V3cFrameList v3cFrameList;
+  Common::DeepFrameList deepFrameList;
+  CodableUnitType type;
 };
 } // namespace TMIV::MivBitstream
 

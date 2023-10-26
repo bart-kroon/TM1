@@ -41,7 +41,7 @@ namespace TMIV::Downscaler {
 using MivBitstream::EncoderAtlasParams;
 
 [[nodiscard]] auto downscaleGeometry(const std::vector<EncoderAtlasParams> &atlas,
-                                     Common::V3cFrameList frame) -> Common::V3cFrameList;
+                                     Common::DeepFrameList frame) -> Common::DeepFrameList;
 } // namespace TMIV::Downscaler
 
 #endif

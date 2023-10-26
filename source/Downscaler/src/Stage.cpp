@@ -51,7 +51,7 @@ void Stage::encode(CodableUnit unit) {
           .asme_geometry_scale_factor_y_minus1(1);
     }
 
-    unit.v3cFrameList = downscaleGeometry(unit.encoderParams.atlas, std::move(unit.v3cFrameList));
+    unit.deepFrameList = downscaleGeometry(unit.encoderParams.atlas, std::move(unit.deepFrameList));
   }
 
   source.encode(unit);

@@ -63,7 +63,7 @@ public:
   [[nodiscard]] static auto transformAtlases(const EncoderParams &inParams,
                                              const EncoderParams &outParams,
                                              const Common::DeepFrameList &inAtlases)
-      -> Common::V3cFrameList;
+      -> Common::DeepFrameList;
 
 private:
   void determineDepthRange(const GeometryDistributions &distributions, EncoderParams &params) const;

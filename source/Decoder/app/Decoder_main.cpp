@@ -219,7 +219,7 @@ private:
     }
   }
 
-  void optionalSavePrunedFrame(int32_t frameIdx, const Common::V3cFrameList &frame) const {
+  void optionalSavePrunedFrame(int32_t frameIdx, const Common::DeepFrameList &frame) const {
     uint16_t viewIdx{};
 
     for (const auto &view : frame) {

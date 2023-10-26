@@ -35,7 +35,7 @@
 #include "GeometryQuantizer.h"
 
 namespace TMIV::Encoder {
-auto Encoder::Impl::popAtlas() -> Common::V3cFrameList {
+auto Encoder::Impl::popAtlas() -> Common::DeepFrameList {
   if (m_config.haveGeometry) {
     auto quantizedFrame = GeometryQuantizer::transformAtlases(params(), m_paramsQuantized,
                                                               m_videoFrameBuffer.front());
@@ -43,7 +43,7 @@ auto Encoder::Impl::popAtlas() -> Common::V3cFrameList {
     return quantizedFrame;
   }
 
-  auto frame = Common::V3cFrameList(m_videoFrameBuffer.front().size());
+  auto frame = Common::DeepFrameList(m_videoFrameBuffer.front().size());
   for (size_t i = 0; i < frame.size(); ++i) {
     frame[i].texture = std::move(m_videoFrameBuffer.front()[i].texture);
   }

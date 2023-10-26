@@ -62,8 +62,8 @@ auto maxPool(const Common::Frame<> &frame, Common::Vec2i frameSize) -> Common::F
 }
 } // namespace
 
-auto downscaleGeometry(const std::vector<EncoderAtlasParams> &atlas, Common::V3cFrameList frame)
-    -> Common::V3cFrameList {
+auto downscaleGeometry(const std::vector<EncoderAtlasParams> &atlas, Common::DeepFrameList frame)
+    -> Common::DeepFrameList {
   for (size_t k = 0; k < atlas.size(); ++k) {
     const auto &asps = atlas[k].asps;
 

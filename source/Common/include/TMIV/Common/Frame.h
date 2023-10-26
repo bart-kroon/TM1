@@ -195,20 +195,13 @@ public:
 using PatchIdx = uint16_t;
 static constexpr auto unusedPatchIdx = UINT16_MAX;
 
-struct V3cFrame {
-  Frame<> texture;
-  Frame<> geometry;
-  Frame<> occupancy;
-  Frame<> transparency;
-  Frame<> packed;
-};
-
 struct DeepFrame {
   Frame<> texture;
   Frame<> geometry;
   Frame<> entities{};
-  Frame<bool> occupancy{};
+  Frame<> occupancy{};
   Frame<> transparency{};
+  Frame<> packed{};
   Frame<> patchIdx{};
 };
 
@@ -226,7 +219,6 @@ struct DecodedFrame : public Common::Frame<> {
 };
 
 template <typename Element = DefaultElement> using FrameList = std::vector<Frame<Element>>;
-using V3cFrameList = std::vector<V3cFrame>;
 using DeepFrameList = std::vector<DeepFrame>;
 
 // Expand a YUV 4:4:4 texture to packed 4:4:4 32-bit float texture with linear transfer and nearest

@@ -190,7 +190,7 @@ auto GeometryQuantizer::transformParams(const GeometryDistributions &distributio
 }
 
 namespace {
-void padGeometryFromLeft(const EncoderParams &outParams, Common::V3cFrameList &atlases) noexcept {
+void padGeometryFromLeft(const EncoderParams &outParams, Common::DeepFrameList &atlases) noexcept {
   for (uint8_t i = 0; i <= outParams.vps.vps_atlas_count_minus1(); ++i) {
     const auto j = outParams.vps.vps_atlas_id(i);
     if (outParams.vps.vps_occupancy_video_present_flag(j)) {
@@ -218,7 +218,7 @@ void padGeometryFromLeft(const EncoderParams &outParams, Common::V3cFrameList &a
   }
 }
 
-auto transformOccupancyFrame(const Common::Frame<bool> &in, unsigned bitDepth) -> Common::Frame<> {
+auto transformOccupancyFrame(const Common::Frame<> &in, unsigned bitDepth) -> Common::Frame<> {
   auto result = Common::Frame<>::lumaOnly(in.getSize(), bitDepth);
 
   // The occupancy threshold is set to the mid value (512 for 10b), and the non-occupant (low) and
@@ -228,7 +228,7 @@ auto transformOccupancyFrame(const Common::Frame<bool> &in, unsigned bitDepth) -
   const auto high = Common::assertDownCast<uint16_t>(3U << (bitDepth - 2));
 
   std::transform(in.getPlane(0).cbegin(), in.getPlane(0).cend(), result.getPlane(0).begin(),
-                 [=](auto x) { return x ? high : low; });
+                 [=](auto x) { return 0 < x ? high : low; });
   return result;
 }
 
@@ -256,8 +256,8 @@ auto transformAttributeFrame(const Common::Frame<> &inFrame, uint32_t bitDepth) 
 auto GeometryQuantizer::transformAtlases(const EncoderParams &inParams,
                                          const EncoderParams &outParams,
                                          const Common::DeepFrameList &inAtlases)
-    -> Common::V3cFrameList {
-  auto outAtlases = Common::V3cFrameList(inAtlases.size());
+    -> Common::DeepFrameList {
+  auto outAtlases = Common::DeepFrameList(inAtlases.size());
 
   for (uint8_t k = 0; k <= outParams.vps.vps_atlas_count_minus1(); ++k) {
     const auto atlasId = outParams.vps.vps_atlas_id(k);

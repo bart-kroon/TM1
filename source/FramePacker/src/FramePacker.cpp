@@ -34,7 +34,7 @@
 #include <TMIV/FramePacker/FramePacker.h>
 
 namespace TMIV::FramePacker {
-void FramePacker::packFrame(Common::V3cFrameList &frame, bool geometryPacking) {
+void FramePacker::packFrame(Common::DeepFrameList &frame, bool geometryPacking) {
   uint8_t atlasIdx{};
 
   for (auto &atlas : frame) {
@@ -44,7 +44,7 @@ void FramePacker::packFrame(Common::V3cFrameList &frame, bool geometryPacking) {
 }
 
 namespace {
-auto packedVideoBitDepth(const Common::V3cFrame &frame) -> uint32_t {
+auto packedVideoBitDepth(const Common::DeepFrame &frame) -> uint32_t {
   auto bitDepth = uint32_t{1};
 
   if (!frame.occupancy.empty()) {
@@ -63,9 +63,9 @@ auto packedVideoBitDepth(const Common::V3cFrame &frame) -> uint32_t {
 }
 } // namespace
 
-auto FramePacker::packAtlasFrame(const Common::V3cFrame &frame, uint8_t atlasIdx,
-                                 bool geometryPacking) const -> Common::V3cFrame {
-  auto result = Common::V3cFrame{};
+auto FramePacker::packAtlasFrame(const Common::DeepFrame &frame, uint8_t atlasIdx,
+                                 bool geometryPacking) const -> Common::DeepFrame {
+  auto result = Common::DeepFrame{};
 
   const auto bitDepth = packedVideoBitDepth(frame);
 

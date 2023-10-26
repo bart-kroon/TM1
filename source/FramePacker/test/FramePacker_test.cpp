@@ -55,8 +55,8 @@ TEST_CASE("TMIV::FramePacker::FramePacker, 1 Atlas with texture and geometry") {
   params.atlas.push_back(TMIV::MivBitstream::EncoderAtlasParams{});
   auto &asmeAtlas = params.atlas[0].asps.asps_miv_extension();
 
-  auto frame = TMIV::Common::V3cFrameList{};
-  auto atlas = TMIV::Common::V3cFrame{};
+  auto frame = TMIV::Common::DeepFrameList{};
+  auto atlas = TMIV::Common::DeepFrame{};
 
   SECTION("Full-Scale Geoemtry") {
     asmeAtlas.asme_geometry_scale_enabled_flag(false);
@@ -199,8 +199,8 @@ TEST_CASE("TMIV::Encoder::FramePacker, 1 Atlas with texture, geometry, and occup
   params.atlas.push_back(TMIV::MivBitstream::EncoderAtlasParams{});
   auto &asmeAtlas = params.atlas[0].asps.asps_miv_extension();
 
-  auto frame = TMIV::Common::V3cFrameList{};
-  auto atlas = TMIV::Common::V3cFrame{};
+  auto frame = TMIV::Common::DeepFrameList{};
+  auto atlas = TMIV::Common::DeepFrame{};
 
   SECTION("Full-Scale Geoemtry & Full-Scale Occupancy") {
     asmeAtlas.asme_geometry_scale_enabled_flag(false).asme_occupancy_scale_enabled_flag(false);
@@ -257,8 +257,8 @@ TEST_CASE("TMIV::Encoder::FramePacker, 1 Atlas with attribute and occupancy only
   params.atlas.push_back(TMIV::MivBitstream::EncoderAtlasParams{});
   auto &asmeAtlas = params.atlas[0].asps.asps_miv_extension();
 
-  auto frame = TMIV::Common::V3cFrameList{};
-  auto atlas = TMIV::Common::V3cFrame{};
+  auto frame = TMIV::Common::DeepFrameList{};
+  auto atlas = TMIV::Common::DeepFrame{};
 
   SECTION("Downscaled Occupancy [2 2]") {
     asmeAtlas.asme_occupancy_scale_factor_x_minus1(1).asme_occupancy_scale_factor_y_minus1(1);

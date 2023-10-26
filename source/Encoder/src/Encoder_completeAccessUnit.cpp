@@ -378,7 +378,7 @@ void Encoder::Impl::applyPatchTextureOffset() {
                     .isBasicView)) {
             continue;
           }
-          if (!atlas.occupancy.getPlane(0)(y / occScaleY, x / occScaleX)) {
+          if (atlas.occupancy.getPlane(0)(y / occScaleY, x / occScaleX) == 0) {
             continue;
           }
           const auto &pp = params().patchParamsList[patchIdx];
@@ -766,9 +766,9 @@ void Encoder::Impl::constructVideoFrames() {
           occFrameWidth /= asme.asme_occupancy_scale_factor_x_minus1() + 1;
           occFrameHeight /= asme.asme_occupancy_scale_factor_y_minus1() + 1;
         }
-        frame.occupancy.createY({occFrameWidth, occFrameHeight});
+        frame.occupancy.createY({occFrameWidth, occFrameHeight}, 1);
       } else {
-        frame.occupancy.createY({frameWidth, frameHeight});
+        frame.occupancy.createY({frameWidth, frameHeight}, 1);
       }
 
       frame.occupancy.fillZero();
@@ -897,7 +897,7 @@ auto Encoder::Impl::writePatchInAtlas(const MivBitstream::PatchParams &patchPara
           if (m_config.haveGeometry) {
             auto depth = view.geometry.getPlane(0)(pView.y(), pView.x());
 
-            atlas.occupancy.getPlane(0)(yOcc, xOcc) = true;
+            atlas.occupancy.getPlane(0)(yOcc, xOcc) = 1;
 
             if (depth == 0 && !inViewParams.hasOccupancy && outViewParams.hasOccupancy &&
                 asme.asme_max_entity_id() == 0) {
@@ -905,13 +905,13 @@ auto Encoder::Impl::writePatchInAtlas(const MivBitstream::PatchParams &patchPara
             }
 
             if (depth == 0 && inViewParams.hasOccupancy) {
-              atlas.occupancy.getPlane(0)(yOcc, xOcc) = false;
+              atlas.occupancy.getPlane(0)(yOcc, xOcc) = 0;
             }
 
             atlas.geometry.getPlane(0)(pAtlas.y(), pAtlas.x()) = depth;
 
             if (depth > 0 && params().vps.vps_occupancy_video_present_flag(patchParams.atlasId())) {
-              atlas.occupancy.getPlane(0)(yOcc, xOcc) = true;
+              atlas.occupancy.getPlane(0)(yOcc, xOcc) = 1;
             }
           }
         }
@@ -928,7 +928,7 @@ void Encoder::Impl::adaptAtlas(const MivBitstream::PatchParams &patchParams,
   atlas.geometry.getPlane(0)(pAtlas.y(), pAtlas.x()) = 0;
 
   if (params().vps.vps_occupancy_video_present_flag(patchParams.atlasId())) {
-    atlas.occupancy.getPlane(0)(yOcc, xOcc) = false;
+    atlas.occupancy.getPlane(0)(yOcc, xOcc) = 0;
   }
   if (m_config.haveTexture) {
     const auto textureMedVal = Common::medLevel<uint16_t>(atlas.texture.getBitDepth());

@@ -414,10 +414,10 @@ auto MpiEncoder::processAccessUnit(int32_t firstFrameId, int32_t lastFrameId)
   return m_params;
 }
 
-auto MpiEncoder::popAtlas() -> Common::V3cFrameList {
+auto MpiEncoder::popAtlas() -> Common::DeepFrameList {
   const auto &ppl = m_params.patchParamsList;
   const auto &mpiFrame = m_mpiFrameBuffer.front();
-  Common::V3cFrameList atlasList;
+  Common::DeepFrameList atlasList;
 
   for (size_t k = 0; k <= m_params.vps.vps_atlas_count_minus1(); ++k) {
     const auto atlasId = m_params.vps.vps_atlas_id(k);

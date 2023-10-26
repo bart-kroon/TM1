@@ -43,7 +43,7 @@ using MivBitstream::EncoderParams;
 class FramePacker {
 public:
   auto setPackingInformation(EncoderParams params, bool geometryPacking) -> const EncoderParams &;
-  void packFrame(Common::V3cFrameList &frame, bool geometryPacking);
+  void packFrame(Common::DeepFrameList &frame, bool geometryPacking);
 
 private:
   struct RegionCounts {
@@ -59,8 +59,8 @@ private:
     Common::Vec2i pac{0, 0};
   };
 
-  [[nodiscard]] auto packAtlasFrame(const Common::V3cFrame &frame, uint8_t atlasIdx,
-                                    bool geometryPacking) const -> Common::V3cFrame;
+  [[nodiscard]] auto packAtlasFrame(const Common::DeepFrame &frame, uint8_t atlasIdx,
+                                    bool geometryPacking) const -> Common::DeepFrame;
 
   void updatePinOccupancyInformation(MivBitstream::AtlasId atlasId);
   void updateVideoPresentFlags(MivBitstream::AtlasId atlasId, bool geometryPacking);

@@ -34,34 +34,36 @@
 #include "EncoderImpl.h"
 
 namespace TMIV::Encoder {
-Encoder::Encoder(const Common::Json &componentNode) : m_impl{new Impl{componentNode}} {
+Encoder::Encoder(const Common::Json &componentNode)
+    : m_intraPeriod{componentNode.require("intraPeriod").as<int32_t>()}
+    , m_interPeriod{m_intraPeriod}
+    , m_impl{new Impl{componentNode}} {
   if (const auto &node = componentNode.optional("interPeriod")) {
     m_interPeriod = node.as<int32_t>();
-  } else {
-    m_interPeriod = componentNode.require("intraPeriod").as<int32_t>();
   }
+  VERIFY(0 < m_intraPeriod && 0x100 % m_intraPeriod == 0);
+  VERIFY(0 < m_interPeriod && m_intraPeriod % m_interPeriod == 0);
 }
 
 Encoder::~Encoder() = default;
 
 void Encoder::encode(SourceUnit unit) {
-  if (m_once) {
+  if (m_frameIdx == 0) {
     m_impl->prepareSequence(unit);
-    m_once = false;
   }
-  if (m_frameCount == 0) {
+  if (m_frameIdx % m_interPeriod == 0) {
     m_impl->prepareAccessUnit();
   }
   m_impl->pushFrame(std::move(unit.deepFrameList));
-  ++m_frameCount;
+  ++m_frameIdx;
 
-  if (m_frameCount % m_interPeriod == 0) {
+  if (m_frameIdx % m_interPeriod == 0) {
     completeAccessUnit();
   }
 }
 
 void Encoder::flush() {
-  if (0 < m_frameCount) {
+  if (m_frameIdx % m_interPeriod != 0) {
     completeAccessUnit();
   }
   source.flush();
@@ -69,12 +71,17 @@ void Encoder::flush() {
 
 void Encoder::completeAccessUnit() {
   auto encoderParams = m_impl->completeAccessUnit();
-  auto hasAcl = true;
 
-  while (0 < m_frameCount) {
-    source.encode({encoderParams, hasAcl, m_impl->popAtlas()});
-    hasAcl = false;
-    --m_frameCount;
+  const auto frameCount = 1 + (m_frameIdx + m_interPeriod - 1) % m_interPeriod;
+
+  auto type = m_frameIdx % m_intraPeriod == 0 ? MivBitstream::CodableUnitType::IDR
+                                              : MivBitstream::CodableUnitType::TRIAL;
+
+  for (int32_t i = 0; i < frameCount; ++i) {
+    source.encode({encoderParams, m_impl->popAtlas(), type});
+    type = MivBitstream::CodableUnitType::SKIP;
+    // Pattern for intraPeriod=8 and interPeriod=4:
+    // IDR SKIP SKIP SKIP TRIAL SKIP SKIP SKIP IDR ...
   }
 }
 

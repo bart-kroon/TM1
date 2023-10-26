@@ -40,11 +40,11 @@ Stage::Stage(const Common::Json &componentNode)
 
 void Stage::encode(CodableUnit unit) {
   if (m_framePacking) {
-    if (unit.hasAcl) {
+    if (unit.type != MivBitstream::CodableUnitType::SKIP) {
       m_encoderParams = m_framePacker.setPackingInformation(unit.encoderParams, m_geometryPacking);
     }
     unit.encoderParams = m_encoderParams;
-    m_framePacker.packFrame(unit.v3cFrameList, m_geometryPacking);
+    m_framePacker.packFrame(unit.deepFrameList, m_geometryPacking);
   }
 
   source.encode(std::move(unit));

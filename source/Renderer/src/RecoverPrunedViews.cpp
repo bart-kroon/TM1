@@ -52,7 +52,7 @@ void forEachNonAncillaryAtlas(const MivBitstream::AccessUnit &inFrame, Function 
 
 template <typename InComponent, typename OutComponent>
 void initializePrunedViewComponent(const MivBitstream::AccessUnit &inFrame,
-                                   Common::V3cFrameList &outFrame, InComponent &&inComponent,
+                                   Common::DeepFrameList &outFrame, InComponent &&inComponent,
                                    OutComponent &&outComponent, uint32_t bitDepth) {
   outFrame.resize(inFrame.viewParamsList.size());
 
@@ -91,7 +91,7 @@ void initializePrunedViewComponent(const MivBitstream::AccessUnit &inFrame,
   }
 }
 
-auto blitPixel(const MivBitstream::AccessUnit &inFrame, Common::V3cFrameList &outFrame,
+auto blitPixel(const MivBitstream::AccessUnit &inFrame, Common::DeepFrameList &outFrame,
                const MivBitstream::AtlasAccessUnit &atlas, int32_t i, int32_t j) {
   // Fetch patch index
   const auto patchIdx = atlas.filteredPatchIdx(i, j);
@@ -146,9 +146,9 @@ auto blitPixel(const MivBitstream::AccessUnit &inFrame, Common::V3cFrameList &ou
 
 // NOTE(BK): This new implementation relies on the block to patch map. There is no assumption on
 // patch ordering anymore.
-auto recoverPrunedViews(const MivBitstream::AccessUnit &inFrame) -> Common::V3cFrameList {
+auto recoverPrunedViews(const MivBitstream::AccessUnit &inFrame) -> Common::DeepFrameList {
   // Initialize
-  auto outFrame = Common::V3cFrameList(inFrame.viewParamsList.size());
+  auto outFrame = Common::DeepFrameList(inFrame.viewParamsList.size());
 
   initializePrunedViewComponent(
       inFrame, outFrame, [](const auto &aau) { return aau.occFrame; },

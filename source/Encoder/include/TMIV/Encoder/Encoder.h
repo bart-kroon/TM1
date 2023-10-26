@@ -62,9 +62,9 @@ public:
 private:
   void completeAccessUnit();
 
-  int32_t m_interPeriod{};
-  bool m_once{true};
-  int32_t m_frameCount{};
+  int32_t m_intraPeriod;
+  int32_t m_interPeriod;
+  int32_t m_frameIdx{};
 
   class Impl;
   std::unique_ptr<Impl> m_impl;

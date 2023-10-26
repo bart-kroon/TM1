@@ -38,7 +38,7 @@
 #include <TMIV/MivBitstream/AccessUnit.h>
 
 namespace TMIV::Renderer {
-auto recoverPrunedViews(const MivBitstream::AccessUnit &frame) -> Common::V3cFrameList;
+auto recoverPrunedViews(const MivBitstream::AccessUnit &frame) -> Common::DeepFrameList;
 } // namespace TMIV::Renderer
 
 #endif

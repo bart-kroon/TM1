@@ -44,7 +44,7 @@ namespace TMIV::Encoder {
 using MivBitstream::CodableUnit;
 using MivBitstream::SourceUnit;
 
-class Encoder : public Common::Stage<SourceUnit, CodableUnit> {
+class Encoder : public Common::BufferingStage<SourceUnit, CodableUnit> {
 public:
   explicit Encoder(const Common::Json &componentNode);
 
@@ -54,18 +54,14 @@ public:
   auto operator=(Encoder &&) -> Encoder & = delete;
   ~Encoder() override;
 
-  void encode(SourceUnit unit) override;
-  void flush() override;
-
   [[nodiscard]] auto maxLumaSamplesPerFrame() const -> size_t;
 
+protected:
+  [[nodiscard]] auto isStart(const SourceUnit &unit) -> bool override;
+
+  void process(std::vector<SourceUnit> buffer) override;
+
 private:
-  void completeAccessUnit();
-
-  int32_t m_intraPeriod;
-  int32_t m_interPeriod;
-  int32_t m_frameIdx{};
-
   class Impl;
   std::unique_ptr<Impl> m_impl;
 };

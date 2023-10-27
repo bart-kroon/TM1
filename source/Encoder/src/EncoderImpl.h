@@ -54,14 +54,17 @@ class Encoder::Impl {
 public:
   explicit Impl(const Common::Json &componentNode);
 
-  void prepareSequence(const SourceUnit &unit);
-  void prepareAccessUnit();
-  void pushFrame(Common::DeepFrameList transportViews);
-  auto completeAccessUnit() -> const EncoderParams &;
-  auto popAtlas() -> Common::DeepFrameList;
+  [[nodiscard]] auto isStart(const SourceUnit &unit) -> bool;
+  void process(std::vector<SourceUnit> buffer, const Common::StageSource<CodableUnit> &source_);
+
   [[nodiscard]] auto maxLumaSamplesPerFrame() const -> size_t;
 
 private:
+  void prepareSequence(const SourceUnit &unit);
+  void prepareAccessUnit();
+  void pushFrame(Common::DeepFrameList transportViews);
+  auto completeAccessUnit() -> EncoderParams;
+
   [[nodiscard]] auto config() const noexcept -> const Configuration & { return m_config; }
 
   // Encoder_pushFrame.cpp
@@ -125,8 +128,10 @@ private:
   std::vector<Common::DeepFrameList> m_transportViews;
 
   int32_t m_blockSize{};
-  EncoderParams m_params;          // Encoder output prior to geometry quantization and scaling
-  EncoderParams m_paramsQuantized; // Encoder output prior to geometry scaling
+  EncoderParams m_params;
+  int32_t m_firstIdx{};
+  int32_t m_lastIdx{};
+
   std::vector<Common::DeepFrameList> m_videoFrameBuffer;
 
   // Mark read-only access to encoder params to make mutable access more visible

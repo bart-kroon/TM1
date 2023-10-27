@@ -34,56 +34,15 @@
 #include "EncoderImpl.h"
 
 namespace TMIV::Encoder {
-Encoder::Encoder(const Common::Json &componentNode)
-    : m_intraPeriod{componentNode.require("intraPeriod").as<int32_t>()}
-    , m_interPeriod{m_intraPeriod}
-    , m_impl{new Impl{componentNode}} {
-  if (const auto &node = componentNode.optional("interPeriod")) {
-    m_interPeriod = node.as<int32_t>();
-  }
-  VERIFY(0 < m_intraPeriod && 0x100 % m_intraPeriod == 0);
-  VERIFY(0 < m_interPeriod && m_intraPeriod % m_interPeriod == 0);
-}
+Encoder::Encoder(const Common::Json &componentNode) : m_impl{new Impl{componentNode}} {}
 
 Encoder::~Encoder() = default;
 
-void Encoder::encode(SourceUnit unit) {
-  if (m_frameIdx == 0) {
-    m_impl->prepareSequence(unit);
-  }
-  if (m_frameIdx % m_interPeriod == 0) {
-    m_impl->prepareAccessUnit();
-  }
-  m_impl->pushFrame(std::move(unit.deepFrameList));
-  ++m_frameIdx;
-
-  if (m_frameIdx % m_interPeriod == 0) {
-    completeAccessUnit();
-  }
-}
-
-void Encoder::flush() {
-  if (m_frameIdx % m_interPeriod != 0) {
-    completeAccessUnit();
-  }
-  source.flush();
-}
-
-void Encoder::completeAccessUnit() {
-  auto encoderParams = m_impl->completeAccessUnit();
-
-  const auto frameCount = 1 + (m_frameIdx + m_interPeriod - 1) % m_interPeriod;
-
-  auto type = m_frameIdx % m_intraPeriod == 0 ? MivBitstream::CodableUnitType::IDR
-                                              : MivBitstream::CodableUnitType::TRIAL;
-
-  for (int32_t i = 0; i < frameCount; ++i) {
-    source.encode({encoderParams, m_impl->popAtlas(), type});
-    type = MivBitstream::CodableUnitType::SKIP;
-    // Pattern for intraPeriod=8 and interPeriod=4:
-    // IDR SKIP SKIP SKIP TRIAL SKIP SKIP SKIP IDR ...
-  }
-}
-
 auto Encoder::maxLumaSamplesPerFrame() const -> size_t { return m_impl->maxLumaSamplesPerFrame(); }
+
+auto Encoder::isStart(const SourceUnit &unit) -> bool { return m_impl->isStart(unit); }
+
+void Encoder::process(std::vector<SourceUnit> buffer) {
+  m_impl->process(std::move(buffer), source);
+}
 } // namespace TMIV::Encoder

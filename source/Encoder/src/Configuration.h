@@ -55,6 +55,7 @@ struct Configuration {
 
   // Main parameters
   int32_t intraPeriod;
+  int32_t interPeriod;
   Common::Vec2i blockSizeDepthQualityDependent;
   Common::Vec2d depthOccThresholdIfSet;
   double maxLumaSampleRate{};

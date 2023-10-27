@@ -240,7 +240,7 @@ void assignFullPatchRanges(EncoderParams &params) {
 }
 } // namespace
 
-auto Encoder::Impl::completeAccessUnit() -> const EncoderParams & {
+auto Encoder::Impl::completeAccessUnit() -> EncoderParams {
   Common::logVerbose("completeAccessUnit: FOC is {}.", m_params.foc);
 
   m_aggregator->completeAccessUnit();
@@ -284,14 +284,14 @@ auto Encoder::Impl::completeAccessUnit() -> const EncoderParams & {
 
   constructVideoFrames();
 
-  m_paramsQuantized = transformGeometryQuantizationParams(m_config, m_videoFrameBuffer, params());
+  auto params_ = transformGeometryQuantizationParams(m_config, m_videoFrameBuffer, params());
 
   m_params.foc += Common::downCast<int32_t>(m_videoFrameBuffer.size());
   m_params.foc %= m_config.intraPeriod;
   Common::logInfo("completeAccessUnit: Added {} frames. Updating FOC to {}.",
                   m_videoFrameBuffer.size(), m_params.foc);
 
-  return m_paramsQuantized;
+  return params_;
 }
 
 void Encoder::Impl::updateAggregationStatistics(const Common::FrameList<uint8_t> &aggregatedMask) {

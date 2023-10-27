@@ -12,7 +12,6 @@ create_tmiv_library(
     "src/Encoder_prepareAccessUnit.cpp"
     "src/Encoder_pushFrame.cpp"
     "src/Encoder_completeAccessUnit.cpp"
-    "src/Encoder_popFrame.cpp"
     "src/GeometryQuantizer.cpp"
     "src/PiecewiseLinearDepthScaling.cpp"
     "src/V3cSampleSink.cpp"

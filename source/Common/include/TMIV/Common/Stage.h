@@ -36,6 +36,7 @@
 
 #include <type_traits>
 #include <utility>
+#include <vector>
 
 namespace TMIV::Common {
 // Interface of the input side of an encoding stage
@@ -94,6 +95,36 @@ public:
   StageSource<Out> source;
 
   void flush() override { source.flush(); }
+};
+
+// An abstract stage that buffers units until a special unit arrives or the stage is flushed
+template <typename In, typename Out> class BufferingStage : public Stage<In, Out> {
+public:
+  void encode(In unit) override {
+    if (!m_buffer.empty() && isStart(unit)) {
+      process(std::move(m_buffer));
+      m_buffer = {};
+    }
+    m_buffer.push_back(std::move(unit));
+  }
+
+  void flush() override {
+    if (!m_buffer.empty()) {
+      process(std::move(m_buffer));
+      m_buffer = {};
+    }
+    this->source.flush();
+  }
+
+protected:
+  // Is this unit the start of a new segment of units?
+  [[nodiscard]] virtual auto isStart(const In &unit) -> bool = 0;
+
+  // Process all units in this segment, calling source.encode() multiple times
+  virtual void process(std::vector<In> buffer) = 0;
+
+private:
+  std::vector<In> m_buffer;
 };
 } // namespace TMIV::Common
 

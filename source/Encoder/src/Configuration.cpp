@@ -46,6 +46,7 @@ using MivBitstream::PtlProfileToolsetIdc;
 
 Configuration::Configuration(const Common::Json &componentNode)
     : intraPeriod{componentNode.require("intraPeriod").as<int32_t>()}
+    , interPeriod{intraPeriod}
     , blockSizeDepthQualityDependent{componentNode.require("blockSizeDepthQualityDependent")
                                          .asVec<int32_t, 2>()}
     , haveTexture{componentNode.require("haveTextureVideo").as<bool>()}
@@ -65,6 +66,13 @@ Configuration::Configuration(const Common::Json &componentNode)
     , patchMarginFlag{componentNode.require("patchMarginEnabledFlag").as<bool>()}
     , viewportCameraParametersSei{componentNode.require("viewportCameraParametersSei").as<bool>()}
     , viewportPositionSei{componentNode.require("viewportPositionSei").as<bool>()} {
+  VERIFY(0 < intraPeriod);
+
+  if (const auto &node = componentNode.optional("interPeriod")) {
+    interPeriod = node.as<int32_t>();
+    VERIFY(0 < interPeriod && intraPeriod % interPeriod == 0);
+  }
+
   queryMainParameters(componentNode);
   queryProfileTierLevelParameters(componentNode);
   queryBitDepthParameters(componentNode);

@@ -47,6 +47,7 @@ create_catch2_unit_test(
     "test/Matrix_test.cpp"
     "test/Quaternion_test.cpp"
     "test/Source_test.cpp"
+    "test/Stage_test.cpp"
     "test/verify_test.cpp"
     PRIVATE
     CommonLib)

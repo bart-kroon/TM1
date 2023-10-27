@@ -47,6 +47,13 @@
 #include <vector>
 
 namespace TMIV::MivBitstream {
+struct TilePartition {
+  int32_t partitionPosX{};
+  int32_t partitionPosY{};
+  int32_t partitionWidth{};
+  int32_t partitionHeight{};
+};
+
 // PatchParams is the in-memory representation of PatchDataUnit (PDU). The PDU is not suitable for
 // in-memory use because of the delta coding and quantization of some of the fields.
 class PatchParams {
@@ -124,12 +131,12 @@ public:
 
   static auto decodePdu(const PatchDataUnit &pdu, const V3cParameterSet &vps, AtlasId atlasId,
                         const AtlasSequenceParameterSetRBSP &asps,
-                        const AtlasFrameParameterSetRBSP &afps, const AtlasTileHeader &ath)
-      -> PatchParams;
+                        const AtlasFrameParameterSetRBSP &afps, const AtlasTileHeader &ath,
+                        TilePartition tilePartition) -> PatchParams;
   [[nodiscard]] auto encodePdu(const V3cParameterSet &vps, AtlasId atlasId,
                                const AtlasSequenceParameterSetRBSP &asps,
-                               const AtlasFrameParameterSetRBSP &afps,
-                               const AtlasTileHeader &ath) const -> PatchDataUnit;
+                               const AtlasFrameParameterSetRBSP &afps, const AtlasTileHeader &ath,
+                               TilePartition tilePartition) const -> PatchDataUnit;
 
   auto operator==(const PatchParams &other) const -> bool;
   auto operator!=(const PatchParams &other) const -> bool { return !operator==(other); };
@@ -158,6 +165,8 @@ private:
 };
 
 using PatchParamsList = std::vector<PatchParams>;
+
+[[nodiscard]] inline auto isWithin(const PatchParams &pp, TilePartition tilePartition) -> bool;
 } // namespace TMIV::MivBitstream
 
 #include "PatchParamsList.hpp"

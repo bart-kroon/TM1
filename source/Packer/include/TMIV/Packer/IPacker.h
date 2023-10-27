@@ -36,7 +36,6 @@
 
 #include <TMIV/Common/Frame.h>
 #include <TMIV/MivBitstream/PatchParamsList.h>
-#include <TMIV/MivBitstream/Tile.h>
 #include <TMIV/MivBitstream/ViewParamsList.h>
 
 namespace TMIV::Packer {

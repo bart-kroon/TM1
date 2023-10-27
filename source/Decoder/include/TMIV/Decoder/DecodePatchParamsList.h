@@ -40,7 +40,8 @@
 namespace TMIV::Decoder {
 void decodePatchParamsList(const MivBitstream::V3cParameterSet &vps,
                            MivBitstream::V3cUnitHeader vuh, const AtlasAccessUnit &au,
-                           MivBitstream::TilePartition &tile, size_t tileIdx);
+                           size_t tileIdx, MivBitstream::TilePartition tilePartition,
+                           MivBitstream::PatchParamsList &ppl);
 
 auto decodeBlockToPatchMap(const MivBitstream::AtlasSequenceParameterSetRBSP &asps,
                            const MivBitstream::PatchParamsList &ppl)

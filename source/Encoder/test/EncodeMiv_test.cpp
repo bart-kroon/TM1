@@ -53,10 +53,8 @@ TEST_CASE("Encoder::MivEncoder") {
       atlas.asps.asps_frame_width(frameWidth)
           .asps_frame_height(frameHeight)
           .asps_num_ref_atlas_frame_lists_in_asps(1);
-
-      for (auto &ath : atlas.athList) {
-        ath.ath_type(TMIV::MivBitstream::AthType::I_TILE).ath_ref_atlas_frame_list_asps_flag(true);
-      }
+      atlas.athTemplate.ath_type(TMIV::MivBitstream::AthType::I_TILE)
+          .ath_ref_atlas_frame_list_asps_flag(true);
 
       [[maybe_unused]] auto &vp = result.viewParamsList.emplace_back();
       [[maybe_unused]] auto &casme = result.casps.casps_miv_extension();

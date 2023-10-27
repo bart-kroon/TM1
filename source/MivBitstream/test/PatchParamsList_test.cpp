@@ -122,7 +122,7 @@ auto atlasToView(const PatchParams &pp, Vec2i xy) -> Vec2i {
 TEST_CASE("TMIV::MivBitstream::PatchParams") {
   SECTION("Decode patch data unit") {
     SECTION("Minimal example") {
-      const auto unit = PatchParams::decodePdu({}, {}, {}, {}, {}, {});
+      const auto unit = PatchParams::decodePdu({}, {}, {}, {}, {}, {}, {});
 
       REQUIRE(unit.atlasPatch2dPosX() == 0);
       REQUIRE(unit.atlasPatch2dPosY() == 0);
@@ -164,7 +164,7 @@ TEST_CASE("TMIV::MivBitstream::PatchParams") {
           .asps_geometry_2d_bit_depth_minus1(4)
           .asps_geometry_3d_bit_depth_minus1(5);
 
-      const auto unit = PatchParams::decodePdu(pdu, {}, {}, asps, {}, {});
+      const auto unit = PatchParams::decodePdu(pdu, {}, {}, asps, {}, {}, {});
 
       REQUIRE(unit.atlasPatch2dPosX() == 8);
       REQUIRE(unit.atlasPatch2dPosY() == 16);
@@ -236,7 +236,7 @@ TEST_CASE("TMIV::MivBitstream::PatchParams") {
           .ath_patch_size_x_info_quantizer(2)
           .ath_patch_size_y_info_quantizer(1);
 
-      const auto unit = PatchParams::decodePdu(pdu, vps, atlasId, asps, {}, ath);
+      const auto unit = PatchParams::decodePdu(pdu, vps, atlasId, asps, {}, ath, {});
 
       REQUIRE(unit.atlasPatch2dPosX() == 8);
       REQUIRE(unit.atlasPatch2dPosY() == 16);
@@ -270,7 +270,7 @@ TEST_CASE("TMIV::MivBitstream::PatchParams") {
     auto afps = AtlasFrameParameterSetRBSP{};
     afps.afps_miv_extension().afme_inpaint_lod_scale_x_minus1(3).afme_inpaint_lod_scale_y_idc(3);
 
-    const auto unit = PatchParams::decodePdu(pdu, {}, {}, asps, afps, {});
+    const auto unit = PatchParams::decodePdu(pdu, {}, {}, asps, afps, {}, {});
 
     REQUIRE(unit.atlasPatchLoDScaleX() == 4);
     REQUIRE(unit.atlasPatchLoDScaleY() == 4);
@@ -285,7 +285,7 @@ TEST_CASE("TMIV::MivBitstream::PatchParams") {
           .atlasPatchOrientationIndex(FlexiblePatchOrientation::FPO_NULL)
           .atlasPatch3dRangeD(1);
 
-      const auto pdu = unit.encodePdu({}, {}, {}, {}, {});
+      const auto pdu = unit.encodePdu({}, {}, {}, {}, {}, {});
 
       REQUIRE(pdu.pdu_2d_pos_x() == 0);
       REQUIRE(pdu.pdu_2d_pos_y() == 0);
@@ -329,7 +329,7 @@ TEST_CASE("TMIV::MivBitstream::PatchParams") {
           .atlasPatchLoDScaleY(3)
           .atlasPatchOrientationIndex(FlexiblePatchOrientation::FPO_ROT270);
 
-      const auto pdu = unit.encodePdu({}, {}, asps, afps, {});
+      const auto pdu = unit.encodePdu({}, {}, asps, afps, {}, {});
 
       REQUIRE(pdu.pdu_2d_pos_x() == 1);
       REQUIRE(pdu.pdu_2d_pos_y() == 2);
@@ -395,7 +395,7 @@ TEST_CASE("TMIV::MivBitstream::PatchParams") {
           .ath_patch_size_x_info_quantizer(2)
           .ath_patch_size_y_info_quantizer(1);
 
-      const auto pdu = unit.encodePdu(vps, atlasId, asps, afps, ath);
+      const auto pdu = unit.encodePdu(vps, atlasId, asps, afps, ath, {});
 
       REQUIRE(pdu.pdu_2d_pos_x() == 1);
       REQUIRE(pdu.pdu_2d_pos_y() == 2);
@@ -429,7 +429,7 @@ TEST_CASE("TMIV::MivBitstream::PatchParams") {
       auto afps = AtlasFrameParameterSetRBSP{};
       afps.afps_miv_extension().afme_inpaint_lod_scale_x_minus1(3).afme_inpaint_lod_scale_y_idc(3);
 
-      const auto pdu = unit.encodePdu({}, {}, asps, afps, {});
+      const auto pdu = unit.encodePdu({}, {}, asps, afps, {}, {});
 
       REQUIRE(pdu.pdu_miv_extension().pdu_inpaint_flag());
     }

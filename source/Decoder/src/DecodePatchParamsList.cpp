@@ -36,7 +36,8 @@
 namespace TMIV::Decoder {
 void decodePatchParamsList(const MivBitstream::V3cParameterSet &vps,
                            MivBitstream::V3cUnitHeader vuh, const AtlasAccessUnit &au,
-                           MivBitstream::TilePartition &tile, size_t tileIdx) {
+                           size_t tileIdx, MivBitstream::TilePartition tilePartition,
+                           MivBitstream::PatchParamsList &ppl) {
   const auto &ath = au.atlV[tileIdx].atlas_tile_header();
   LIMITATION(tileIdx == ath.ath_id());
 
@@ -46,16 +47,12 @@ void decodePatchParamsList(const MivBitstream::V3cParameterSet &vps,
   if (ath.ath_type() == MivBitstream::AthType::I_TILE) {
     const auto &atdu = au.atlV[tileIdx].atlas_tile_data_unit();
 
-    auto ppl = MivBitstream::PatchParamsList{};
-    ppl.reserve(atdu.atduTotalNumberOfPatches());
-
     for (size_t p = 0; p < atdu.atduTotalNumberOfPatches(); ++p) {
       VERIFY_MIVBITSTREAM(atdu.atdu_patch_mode(p) == MivBitstream::AtduPatchMode::I_INTRA);
       const auto &pdu = atdu.patch_information_data(p).patch_data_unit();
       ppl.push_back(MivBitstream::PatchParams::decodePdu(pdu, vps, vuh.vuh_atlas_id(), au.asps,
-                                                         au.afps, ath));
+                                                         au.afps, ath, tilePartition));
     }
-    tile.partitionPatchList(ppl);
   }
 }
 

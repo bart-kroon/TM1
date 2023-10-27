@@ -38,7 +38,6 @@
 #include "CommonAtlasFrameRBSP.h"
 #include "CommonAtlasSequenceParameterSetRBSP.h"
 #include "PatchParamsList.h"
-#include "Tile.h"
 #include "V3cParameterSet.h"
 #include "ViewParamsList.h"
 #include "ViewingSpace.h"
@@ -49,7 +48,8 @@ namespace TMIV::MivBitstream {
 struct EncoderAtlasParams {
   MivBitstream::AtlasSequenceParameterSetRBSP asps;
   MivBitstream::AtlasFrameParameterSetRBSP afps;
-  MivBitstream::AtlasTileHeaderList athList;
+  MivBitstream::AtlasTileHeader athTemplate;
+  std::vector<TilePartition> tilePartitions;
 };
 
 struct EncoderParams {
@@ -60,7 +60,6 @@ struct EncoderParams {
 
   MivBitstream::ViewParamsList viewParamsList;
   MivBitstream::PatchParamsList patchParamsList;
-  MivBitstream::TileParamsList tileParamsLists;
   std::vector<EncoderAtlasParams> atlas;
 
   std::optional<MivBitstream::ViewingSpace> viewingSpace{};

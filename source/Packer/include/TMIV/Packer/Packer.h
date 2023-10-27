@@ -38,7 +38,6 @@
 #include "IPacker.h"
 
 #include <TMIV/Common/Json.h>
-#include <TMIV/MivBitstream/Tile.h>
 
 #include <tuple>
 

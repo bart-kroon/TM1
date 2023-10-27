@@ -228,10 +228,8 @@ TEST_CASE("createEncoderParams sets multiple syntax elements to hard-coded value
     CHECK(atlas.asps.asps_normal_axis_limits_quantization_enabled_flag());
     CHECK(atlas.asps.asps_num_ref_atlas_frame_lists_in_asps() == 1);
 
-    for (const auto &ath : atlas.athList) {
-      CHECK(ath.ath_type() == TMIV::MivBitstream::AthType::I_TILE);
-      CHECK(ath.ath_ref_atlas_frame_list_asps_flag());
-    }
+    CHECK(atlas.athTemplate.ath_type() == TMIV::MivBitstream::AthType::I_TILE);
+    CHECK(atlas.athTemplate.ath_ref_atlas_frame_list_asps_flag());
   }
 }
 
@@ -394,10 +392,10 @@ TEST_CASE("createEncoderParams sets patch size quantizers when necessary") {
     } else {
       REQUIRE(atlas.asps.asps_patch_size_quantizer_present_flag());
 
-      for (const auto &ath : atlas.athList) {
-        CHECK(ath.ath_patch_size_x_info_quantizer() == TMIV::Common::ceilLog2(sizeQuantizer));
-        CHECK(ath.ath_patch_size_y_info_quantizer() == TMIV::Common::ceilLog2(sizeQuantizer));
-      }
+      CHECK(atlas.athTemplate.ath_patch_size_x_info_quantizer() ==
+            TMIV::Common::ceilLog2(sizeQuantizer));
+      CHECK(atlas.athTemplate.ath_patch_size_y_info_quantizer() ==
+            TMIV::Common::ceilLog2(sizeQuantizer));
     }
   }
 }

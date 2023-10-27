@@ -109,15 +109,21 @@ auto texture2dBitDepthMinus1(const V3cParameterSet &vps, AtlasId atlasId) {
 }
 } // namespace
 
+// NOLINTNEXTLINE(readability-function-size)
 auto PatchParams::decodePdu(const PatchDataUnit &pdu, const V3cParameterSet &vps, AtlasId atlasId,
                             const AtlasSequenceParameterSetRBSP &asps,
-                            const AtlasFrameParameterSetRBSP &afps, const AtlasTileHeader &ath)
-    -> PatchParams {
+                            const AtlasFrameParameterSetRBSP &afps, const AtlasTileHeader &ath,
+                            TilePartition tilePartition) -> PatchParams {
   auto pp = PatchParams{};
 
+  // TODO(#785): Are tile offsets applied to patch bounding boxes?
+  tilePartition = {};
+
   const auto patchPackingBlockSize = 1U << asps.asps_log2_patch_packing_block_size();
-  pp.atlasPatch2dPosX(Common::verifyDownCast<int32_t>(pdu.pdu_2d_pos_x() * patchPackingBlockSize));
-  pp.atlasPatch2dPosY(Common::verifyDownCast<int32_t>(pdu.pdu_2d_pos_y() * patchPackingBlockSize));
+  pp.atlasPatch2dPosX(Common::verifyDownCast<int32_t>(pdu.pdu_2d_pos_x() * patchPackingBlockSize) +
+                      tilePartition.partitionPosX);
+  pp.atlasPatch2dPosY(Common::verifyDownCast<int32_t>(pdu.pdu_2d_pos_y() * patchPackingBlockSize) +
+                      tilePartition.partitionPosY);
 
   pp.atlasPatch3dOffsetU(Common::verifyDownCast<int32_t>(pdu.pdu_3d_offset_u()));
   pp.atlasPatch3dOffsetV(Common::verifyDownCast<int32_t>(pdu.pdu_3d_offset_v()));
@@ -189,17 +195,21 @@ auto PatchParams::decodePdu(const PatchDataUnit &pdu, const V3cParameterSet &vps
   return pp;
 }
 
+// NOLINTNEXTLINE(readability-function-size)
 auto PatchParams::encodePdu(const V3cParameterSet &vps, AtlasId atlasId,
                             const AtlasSequenceParameterSetRBSP &asps,
-                            const AtlasFrameParameterSetRBSP &afps,
-                            const AtlasTileHeader &ath) const -> MivBitstream::PatchDataUnit {
+                            const AtlasFrameParameterSetRBSP &afps, const AtlasTileHeader &ath,
+                            TilePartition tilePartition) const -> MivBitstream::PatchDataUnit {
   auto pdu = MivBitstream::PatchDataUnit{};
+
+  // TODO(#785): Are tile offsets applied to patch bounding boxes?
+  tilePartition = {};
 
   const auto patchPackingBlockSize = 1U << asps.asps_log2_patch_packing_block_size();
   VERIFY_MIVBITSTREAM(atlasPatch2dPosX() % patchPackingBlockSize == 0);
   VERIFY_MIVBITSTREAM(atlasPatch2dPosY() % patchPackingBlockSize == 0);
-  pdu.pdu_2d_pos_x(atlasPatch2dPosX() / patchPackingBlockSize);
-  pdu.pdu_2d_pos_y(atlasPatch2dPosY() / patchPackingBlockSize);
+  pdu.pdu_2d_pos_x((atlasPatch2dPosX() - tilePartition.partitionPosX) / patchPackingBlockSize);
+  pdu.pdu_2d_pos_y((atlasPatch2dPosY() - tilePartition.partitionPosY) / patchPackingBlockSize);
 
   pdu.pdu_3d_offset_u(atlasPatch3dOffsetU());
   pdu.pdu_3d_offset_v(atlasPatch3dOffsetV());

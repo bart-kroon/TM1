@@ -257,63 +257,24 @@ void MpiEncoder::prepareSequence(const MivBitstream::SequenceConfig &sequenceCon
 
 namespace {
 void setTile(EncoderParams &params) {
-  params.tileParamsLists.clear();
-  params.tileParamsLists.resize(params.atlas.size());
-  // const bool singleTileInAtlasFrameFlag = true;
-  for (size_t atlasIdx = 0; atlasIdx < params.atlas.size(); ++atlasIdx) {
-    MivBitstream::TilePartition t;
-    t.partitionHeight(params.atlas[atlasIdx].asps.asps_frame_height());
-    t.partitionWidth(params.atlas[atlasIdx].asps.asps_frame_width());
-    t.partitionPosX(0);
-    t.partitionPosY(0);
-    params.tileParamsLists[atlasIdx].emplace_back(t);
+  for (auto &atlas : params.atlas) {
+    atlas.tilePartitions.clear();
+    auto &tilePartition = atlas.tilePartitions.emplace_back();
 
-    auto afti = TMIV::MivBitstream::AtlasFrameTileInformation{};
-    afti.afti_single_tile_in_atlas_frame_flag(true).afti_num_tiles_in_atlas_frame_minus1(0);
-    params.atlas[atlasIdx].afps.atlas_frame_tile_information(afti);
+    tilePartition.partitionPosX = 0;
+    tilePartition.partitionPosY = 0;
+    tilePartition.partitionWidth = atlas.asps.asps_frame_width();
+    tilePartition.partitionHeight = atlas.asps.asps_frame_height();
+
+    atlas.afps.atlas_frame_tile_information(TMIV::MivBitstream::AtlasFrameTileInformation{}
+                                                .afti_single_tile_in_atlas_frame_flag(true)
+                                                .afti_num_tiles_in_atlas_frame_minus1(0));
+
+    atlas.athTemplate = MivBitstream::AtlasTileHeader{}
+                            .ath_type(MivBitstream::AthType::I_TILE)
+                            .ath_ref_atlas_frame_list_asps_flag(true)
+                            .ath_pos_min_d_quantizer(uint8_t{});
   }
-  // set ATH
-  for (size_t atlasIdx = 0; atlasIdx < params.tileParamsLists.size(); ++atlasIdx) {
-    for (uint8_t tileIdx = 0;
-         tileIdx < Common::downCast<uint8_t>(params.tileParamsLists[atlasIdx].size()); ++tileIdx) {
-      params.atlas[atlasIdx].athList.clear();
-      auto &atlas = params.atlas[atlasIdx];
-      auto ath = MivBitstream::AtlasTileHeader{};
-      ath.ath_type(MivBitstream::AthType::I_TILE)
-          .ath_ref_atlas_frame_list_asps_flag(true)
-          .ath_pos_min_d_quantizer(uint8_t{});
-      ath.ath_id(tileIdx);
-      atlas.athList.push_back(ath);
-    }
-  }
-}
-
-void assignPatchesToTiles(EncoderParams &params) {
-  size_t patchNum = params.patchParamsList.size();
-  size_t tilePatchNum = 0;
-  for (const auto &patch : params.patchParamsList) {
-    size_t atlasID = (patch.atlasId() == TMIV::MivBitstream::AtlasId(0)) ? 0 : 1;
-    auto patchPosX = patch.atlasPatch2dPosX();
-    auto patchPosY = patch.atlasPatch2dPosY();
-    auto patchSizeX = patch.atlasPatch2dSizeX();
-    auto patchSizeY = patch.atlasPatch2dSizeY();
-    for (auto &tile : params.tileParamsLists[atlasID]) {
-      auto tilePosX = tile.partitionPosX();
-      auto tilePosY = tile.partitionPosY();
-      auto tileSizeX = tile.partitionWidth();
-      auto tileSizeY = tile.partitionHeight();
-
-      if (patchPosX >= tilePosX && patchPosY >= tilePosY &&
-          (patchPosX + patchSizeX) <= (tilePosX + tileSizeX) &&
-          (patchPosY + patchSizeY) <= (tilePosY + tileSizeY)) {
-        tile.addPatchToTile(patch);
-        ++tilePatchNum;
-        break;
-      }
-    }
-  }
-
-  POSTCONDITION(tilePatchNum == patchNum);
 }
 } // namespace
 
@@ -340,18 +301,21 @@ auto MpiEncoder::processAccessUnit(int32_t firstFrameId, int32_t lastFrameId)
   size_t nbActivePixels{};
 
   setTile(m_params);
-  m_packer->initialize(m_params.tileParamsLists);
-  m_overrideTileFrameSizes = std::vector<Common::SizeVector>(m_params.atlas.size());
-  for (size_t atlasIdx = 0; atlasIdx < m_params.atlas.size(); ++atlasIdx) {
-    auto &tileSizes = m_overrideTileFrameSizes[atlasIdx];
-    tileSizes = Common::SizeVector(m_params.tileParamsLists[atlasIdx].size());
-    for (size_t tileIdx = 0; tileIdx < m_params.tileParamsLists[atlasIdx].size(); ++tileIdx) {
-      tileSizes[tileIdx] =
-          Common::Vec2i{m_params.tileParamsLists[atlasIdx][tileIdx].partitionWidth(),
-                        m_params.tileParamsLists[atlasIdx][tileIdx].partitionHeight()};
+
+  auto tilePartitions = std::vector<std::vector<MivBitstream::TilePartition>>{};
+  auto tileSizes = std::vector<Common::SizeVector>{};
+
+  for (const auto &atlas : m_params.atlas) {
+    tilePartitions.push_back(atlas.tilePartitions);
+    auto &sizes = tileSizes.emplace_back();
+
+    for (const auto &tilePartition : atlas.tilePartitions) {
+      sizes.push_back({tilePartition.partitionWidth, tilePartition.partitionHeight});
     }
   }
-  m_packer->initialize(m_overrideTileFrameSizes, m_blockSize);
+
+  m_packer->initialize(tilePartitions);
+  m_packer->initialize(tileSizes, m_blockSize);
 
   for (auto layerId = 0; layerId < mpiViewParams.nbMpiLayers; ++layerId) {
     aggregatedMask.fillZero();
@@ -380,8 +344,8 @@ auto MpiEncoder::processAccessUnit(int32_t firstFrameId, int32_t lastFrameId)
         std::count_if(aggregatedMask.getPlane(0).begin(), aggregatedMask.getPlane(0).end(),
                       [](auto x) { return (x > 0); });
 
-    auto patchParamsListLayer = m_packer->pack(m_overrideTileFrameSizes, {aggregatedMask},
-                                               m_params.viewParamsList, m_blockSize, {});
+    auto patchParamsListLayer =
+        m_packer->pack(tileSizes, {aggregatedMask}, m_params.viewParamsList, m_blockSize, {});
 
     for (auto &patchParams : patchParamsListLayer) {
       patchParams.atlasPatch3dOffsetD(layerId);
@@ -402,7 +366,6 @@ auto MpiEncoder::processAccessUnit(int32_t firstFrameId, int32_t lastFrameId)
   m_maxLumaSamplesPerFrame = std::max(m_maxLumaSamplesPerFrame, nbActivePixels);
 
   Common::logInfo("Packing done with nb of patches = {}", m_params.patchParamsList.size());
-  assignPatchesToTiles(m_params);
   m_blockToPatchMapPerAtlas.clear();
 
   for (size_t k = 0; k <= m_params.vps.vps_atlas_count_minus1(); ++k) {

@@ -366,8 +366,8 @@ createAtlasSequenceParameterSet(const Configuration &config,
                                             bool depthLowQualityFlag, MivBitstream::AtlasId j) {
   auto atlas = MivBitstream::EncoderAtlasParams{};
   atlas.asps = createAtlasSequenceParameterSet(config, vps, viewParamsList, depthLowQualityFlag, j);
-  atlas.athList.push_back(
-      createAtlasTileHeader(config, atlas.asps, viewParamsList, depthLowQualityFlag));
+  atlas.athTemplate =
+      createAtlasTileHeader(config, atlas.asps, viewParamsList, depthLowQualityFlag);
 
   return atlas;
 }

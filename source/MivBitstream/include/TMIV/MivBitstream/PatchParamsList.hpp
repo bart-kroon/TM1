@@ -252,4 +252,11 @@ inline auto PatchParams::viewToAtlas(Common::Vec2i uv, const Common::Mat3x3i &m)
   LIMITATION(m(2, 2) == 1);
   return atlasToView(uv, m);
 }
+
+inline auto isWithin(const PatchParams &pp, TilePartition tilePartition) -> bool {
+  return tilePartition.partitionPosX <= pp.atlasPatch2dPosX() &&
+         tilePartition.partitionPosY <= pp.atlasPatch2dPosY() &&
+         pp.atlasPatch2dPosX() < tilePartition.partitionPosX + tilePartition.partitionWidth &&
+         pp.atlasPatch2dPosY() < tilePartition.partitionPosY + tilePartition.partitionHeight;
+}
 } // namespace TMIV::MivBitstream

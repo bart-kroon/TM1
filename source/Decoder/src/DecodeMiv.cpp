@@ -333,15 +333,14 @@ private:
       const auto singleTileInAtlasFrameFlag =
           atlas.afps.atlas_frame_tile_information().afti_single_tile_in_atlas_frame_flag();
 
-      // getTile
       if (singleTileInAtlasFrameFlag) {
-        atlas.tileParamsList.clear();
-        MivBitstream::TilePartition tile;
-        tile.partitionPosX(0);
-        tile.partitionPosY(0);
-        tile.partitionWidth(atlas.asps.asps_frame_width());
-        tile.partitionHeight(atlas.asps.asps_frame_height());
-        atlas.tileParamsList.emplace_back(tile);
+        atlas.tilePartitions.clear();
+
+        auto &tilePartition = atlas.tilePartitions.emplace_back();
+        tilePartition.partitionPosX = 0;
+        tilePartition.partitionPosY = 0;
+        tilePartition.partitionWidth = atlas.asps.asps_frame_width();
+        tilePartition.partitionHeight = atlas.asps.asps_frame_height();
       } else {
         const auto uniformPartitionFlag =
             atlas.afps.atlas_frame_tile_information().afti_uniform_partition_spacing_flag();
@@ -354,16 +353,13 @@ private:
                                     numPartitionRows);
       }
 
-      for (size_t tileIdx = 0; tileIdx < atlas.tileParamsList.size(); ++tileIdx) {
-        auto &tile = atlas.tileParamsList[tileIdx];
-        decodePatchParamsList(m_au.vps, vuh, *decoder.au, tile, tileIdx);
-      }
       atlas.patchParamsList.clear();
-      for (const auto &tile : atlas.tileParamsList) {
-        for (auto patch : tile.partitionPatchList()) {
-          atlas.patchParamsList.emplace_back(patch);
-        }
+
+      for (size_t tileIdx = 0; tileIdx < atlas.tilePartitions.size(); ++tileIdx) {
+        decodePatchParamsList(m_au.vps, vuh, *decoder.au, tileIdx, atlas.tilePartitions[tileIdx],
+                              atlas.patchParamsList);
       }
+
       requireAllPatchesWithinProjectionPlaneBounds(m_au.viewParamsList, atlas.patchParamsList);
       requireAllPatchesWithinAtlasFrameBounds(atlas.patchParamsList, atlas.asps);
       atlas.blockToPatchMap = decodeBlockToPatchMap(atlas.asps, atlas.patchParamsList);
@@ -467,18 +463,17 @@ private:
   void getAtlasFameTileInformation(MivBitstream::AtlasAccessUnit &atlas,
                                    bool singlePartitionPerTileFlag, int32_t numPartitionColumns,
                                    int32_t numPartitionRows) {
-    atlas.tileParamsList.clear();
-
     LIMITATION(singlePartitionPerTileFlag);
+
+    atlas.tilePartitions.clear();
 
     for (int32_t i = 0; i < numPartitionColumns; ++i) {
       for (int32_t j = 0; j < numPartitionRows; ++j) {
-        MivBitstream::TilePartition tile;
-        tile.partitionPosX(partitionArray[0][i]);
-        tile.partitionPosY(partitionArray[1][j]);
-        tile.partitionWidth(partitionArray[2][i]);
-        tile.partitionHeight(partitionArray[3][j]);
-        atlas.tileParamsList.emplace_back(tile);
+        auto &tilePartition = atlas.tilePartitions.emplace_back();
+        tilePartition.partitionPosX = partitionArray[0][i];
+        tilePartition.partitionPosY = partitionArray[1][j];
+        tilePartition.partitionWidth = partitionArray[2][i];
+        tilePartition.partitionHeight = partitionArray[3][j];
       }
     }
   }

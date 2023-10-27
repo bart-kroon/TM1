@@ -360,8 +360,8 @@ auto Packer::pack(const std::vector<Common::SizeVector> &atlasSizes,
           packer.setIsPushInFreeSpace(false);
 
           if (packer.push(cluster, clusteringMap[clusteringMap_viewId], packerOutput)) {
-            Common::Vec2i tilePosition = {m_tileList[atlasIdx][tileIdx].partitionPosX(),
-                                          m_tileList[atlasIdx][tileIdx].partitionPosY()};
+            Common::Vec2i tilePosition = {m_tileList[atlasIdx][tileIdx].partitionPosX,
+                                          m_tileList[atlasIdx][tileIdx].partitionPosY};
             auto p = patchParamsFor(atlasIdx, viewParamsList, cluster, tilePosition, packerOutput,
                                     blockSize);
             adaptPatchParamsToMask(p, masks[cluster.getViewIdx()].getWidth(),

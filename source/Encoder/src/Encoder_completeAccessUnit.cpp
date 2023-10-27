@@ -77,46 +77,43 @@ void Encoder::Impl::pruningWithInformation(Common::FrameList<uint8_t> &aggregate
 
 void Encoder::Impl::setTiles() {
   m_partitionArray.clear();
-  m_params.tileParamsLists.clear();
-  m_params.tileParamsLists.resize(m_params.atlas.size());
+
+  for (auto &atlas : m_params.atlas) {
+    atlas.tilePartitions.clear();
+  }
 
   if (m_config.singleTileInAtlas()) {
-    for (size_t atlasIdx = 0; atlasIdx < m_params.atlas.size(); ++atlasIdx) {
-      MivBitstream::TilePartition t;
-      t.partitionHeight(m_params.atlas[atlasIdx].asps.asps_frame_height());
-      t.partitionWidth(m_params.atlas[atlasIdx].asps.asps_frame_width());
-      t.partitionPosX(0);
-      t.partitionPosY(0);
-      m_params.tileParamsLists[atlasIdx].emplace_back(t);
+    for (auto &atlas : m_params.atlas) {
+      auto &tilePartition = atlas.tilePartitions.emplace_back();
 
-      m_params.atlas[atlasIdx].afps.atlas_frame_tile_information(
-          MivBitstream::AtlasFrameTileInformation{}
-              .afti_single_tile_in_atlas_frame_flag(true)
-              .afti_num_tiles_in_atlas_frame_minus1(0));
+      tilePartition.partitionPosX = 0;
+      tilePartition.partitionPosY = 0;
+      tilePartition.partitionHeight = atlas.asps.asps_frame_height();
+      tilePartition.partitionWidth = atlas.asps.asps_frame_width();
+
+      atlas.afps.atlas_frame_tile_information(MivBitstream::AtlasFrameTileInformation{}
+                                                  .afti_single_tile_in_atlas_frame_flag(true)
+                                                  .afti_num_tiles_in_atlas_frame_minus1(0));
     }
   } else {
     const auto uniformPartitionSpacingFlag = setPartition();
 
     for (size_t atlasIdx = 0; atlasIdx < m_params.atlas.size(); ++atlasIdx) {
-      std::vector<MivBitstream::TilePartition> tileList;
+      auto &atlas = m_params.atlas[atlasIdx];
+
       for (size_t i = 0; i < m_partitionArray[1][atlasIdx].size(); ++i) {
         for (size_t j = 0; j < m_partitionArray[0][atlasIdx].size(); ++j) {
-          MivBitstream::TilePartition t;
-          t.partitionWidth(m_partitionArray[0][atlasIdx][j]);
-          t.partitionHeight(m_partitionArray[1][atlasIdx][i]);
-          t.partitionPosX(m_partitionArray[2][atlasIdx][j]);
-          t.partitionPosY(m_partitionArray[3][atlasIdx][i]);
-          tileList.emplace_back(t);
+          auto &tilePartition = atlas.tilePartitions.emplace_back();
+
+          tilePartition.partitionWidth = m_partitionArray[0][atlasIdx][j];
+          tilePartition.partitionHeight = m_partitionArray[1][atlasIdx][i];
+          tilePartition.partitionPosX = m_partitionArray[2][atlasIdx][j];
+          tilePartition.partitionPosY = m_partitionArray[3][atlasIdx][i];
         }
       }
-      m_params.tileParamsLists[atlasIdx] = tileList;
     }
 
     setAtlasFrameTileInformation(uniformPartitionSpacingFlag);
-  }
-
-  for (size_t atlasIdx = 0; atlasIdx < m_params.tileParamsLists.size(); ++atlasIdx) {
-    repeatAtlasTileHeaders(atlasIdx);
   }
 }
 
@@ -184,34 +181,6 @@ auto Encoder::Impl::setPartition() -> bool {
   return uniform;
 }
 
-void Encoder::Impl::assignPatchesToTiles(EncoderParams &params) {
-  size_t patchNum = params.patchParamsList.size();
-  size_t tilePatchNum = 0;
-  for (const auto &patch : params.patchParamsList) {
-    size_t atlasID = patch.atlasId().asInt();
-    auto patchPosX = patch.atlasPatch2dPosX();
-    auto patchPosY = patch.atlasPatch2dPosY();
-    auto patchSizeX = patch.atlasPatch2dSizeX();
-    auto patchSizeY = patch.atlasPatch2dSizeY();
-    for (auto &tile : params.tileParamsLists[atlasID]) {
-      auto tilePosX = tile.partitionPosX();
-      auto tilePosY = tile.partitionPosY();
-      auto tileSizeX = tile.partitionWidth();
-      auto tileSizeY = tile.partitionHeight();
-
-      if (patchPosX >= tilePosX && patchPosY >= tilePosY &&
-          (patchPosX + patchSizeX) <= (tilePosX + tileSizeX) &&
-          (patchPosY + patchSizeY) <= (tilePosY + tileSizeY)) {
-        tile.addPatchToTile(patch);
-        ++tilePatchNum;
-        break;
-      }
-    }
-  }
-
-  POSTCONDITION(tilePatchNum == patchNum);
-}
-
 void Encoder::Impl::setAtlasFrameTileInformation(bool uniformPartitionSpacingFlag) {
   for (size_t atlasIdx = 0; atlasIdx < m_params.atlas.size(); ++atlasIdx) {
     auto afti = TMIV::MivBitstream::AtlasFrameTileInformation{};
@@ -261,15 +230,6 @@ void Encoder::Impl::setAtlasFrameTileInformation(bool uniformPartitionSpacingFla
   }
 }
 
-void Encoder::Impl::repeatAtlasTileHeaders(size_t atlasIdx) {
-  auto &atlas = m_params.atlas[atlasIdx];
-  atlas.athList.assign(m_params.tileParamsLists[atlasIdx].size(), atlas.athList.front());
-
-  for (size_t tileIdx = 0; tileIdx < atlas.athList.size(); ++tileIdx) {
-    atlas.athList[tileIdx].ath_id(Common::downCast<uint8_t>(tileIdx));
-  }
-}
-
 namespace {
 void assignFullPatchRanges(EncoderParams &params) {
   for (auto &pp : params.patchParamsList) {
@@ -298,22 +258,23 @@ auto Encoder::Impl::completeAccessUnit() -> const EncoderParams & {
   }
 
   setTiles();
-  m_packer->initialize(m_params.tileParamsLists);
 
-  auto atlasSizes = std::vector<Common::SizeVector>(params().atlas.size());
-  for (size_t atlasIdx = 0; atlasIdx < params().atlas.size(); ++atlasIdx) {
-    auto &tileSizes = atlasSizes[atlasIdx];
-    tileSizes = Common::SizeVector(m_params.tileParamsLists[atlasIdx].size());
-    for (size_t tileIdx = 0; tileIdx < m_params.tileParamsLists[atlasIdx].size(); ++tileIdx) {
-      tileSizes[tileIdx] =
-          Common::Vec2i{m_params.tileParamsLists[atlasIdx][tileIdx].partitionWidth(),
-                        m_params.tileParamsLists[atlasIdx][tileIdx].partitionHeight()};
+  auto tilePartitions = std::vector<std::vector<MivBitstream::TilePartition>>{};
+  auto tileSizes = std::vector<Common::SizeVector>{};
+
+  for (const auto &atlas : params().atlas) {
+    tilePartitions.push_back(atlas.tilePartitions);
+    auto &sizes = tileSizes.emplace_back();
+
+    for (const auto &tilePartition : atlas.tilePartitions) {
+      sizes.push_back({tilePartition.partitionWidth, tilePartition.partitionHeight});
     }
   }
 
-  m_packer->initialize(atlasSizes, m_blockSize);
+  m_packer->initialize(tilePartitions);
+  m_packer->initialize(tileSizes, m_blockSize);
   m_params.patchParamsList =
-      m_packer->pack(atlasSizes, aggregatedMask, m_transportViewParams, m_blockSize, information);
+      m_packer->pack(tileSizes, aggregatedMask, m_transportViewParams, m_blockSize, information);
 
   assignFullPatchRanges(m_params);
 
@@ -324,7 +285,6 @@ auto Encoder::Impl::completeAccessUnit() -> const EncoderParams & {
   constructVideoFrames();
 
   m_paramsQuantized = transformGeometryQuantizationParams(m_config, m_videoFrameBuffer, params());
-  assignPatchesToTiles(m_paramsQuantized);
 
   m_params.foc += Common::downCast<int32_t>(m_videoFrameBuffer.size());
   m_params.foc %= m_config.intraPeriod;

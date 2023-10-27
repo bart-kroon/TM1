@@ -63,7 +63,7 @@ private:
   void prepareSequence(const SourceUnit &unit);
   void prepareAccessUnit();
   void pushFrame(Common::DeepFrameList transportViews);
-  auto completeAccessUnit() -> EncoderParams;
+  void completeAccessUnit();
 
   [[nodiscard]] auto config() const noexcept -> const Configuration & { return m_config; }
 

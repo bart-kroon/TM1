@@ -35,13 +35,13 @@
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators_range.hpp>
 
-#include "../src/GeometryQuantizer.h"
+#include <TMIV/Quantizer/GeometryQuantizer.h>
 
 #include <TMIV/MivBitstream/DepthOccupancyTransform.h>
 
 #include <array>
 
-namespace TMIV::Encoder::test {
+namespace TMIV::Quantizer::test {
 using namespace std::string_view_literals;
 
 using Common::at;
@@ -193,12 +193,12 @@ void checkDepthQuantization(const EncoderParams &actual) {
     CHECK((0 < threshold) == (vp.hasOccupancy && embeddedOccupancy));
   }
 }
-} // namespace TMIV::Encoder::test
+} // namespace TMIV::Quantizer::test
 
-namespace test = TMIV::Encoder::test;
+namespace test = TMIV::Quantizer::test;
 
 TEST_CASE("GeometryQuantizer::transformParams") {
-  using TMIV::Encoder::GeometryQuantizer;
+  using TMIV::Quantizer::GeometryQuantizer;
 
   TMIV::Common::replaceLoggingStrategy([](auto &&...) {});
 

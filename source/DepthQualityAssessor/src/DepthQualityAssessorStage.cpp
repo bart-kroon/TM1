@@ -31,21 +31,32 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef TMIV_ENCODER_PIECEWISE_LINEAR_DEPTH_SCALING_H
-#define TMIV_ENCODER_PIECEWISE_LINEAR_DEPTH_SCALING_H
+#include <TMIV/DepthQualityAssessor/DepthQualityAssessorStage.h>
 
-#include <stdint.h>
+#include <TMIV/Common/Factory.h>
+#include <TMIV/Common/LoggingStrategy.h>
 
-#include <vector>
+namespace TMIV::DepthQualityAssessor {
+DepthQualityAssessorStage::DepthQualityAssessorStage(const Common::Json &rootNode,
+                                                     const Common::Json &componentNode) {
+  if (const auto &node = componentNode.optional("depthLowQualityFlag")) {
+    m_depthLowQualityFlag = node.as<bool>();
+  } else if (rootNode.require("haveGeometryVideo").as<bool>()) {
+    m_assessor =
+        Common::create<IDepthQualityAssessor>("DepthQualityAssessor", rootNode, componentNode);
+  } else {
+    m_depthLowQualityFlag = false;
+  }
+}
 
-namespace TMIV::Encoder {
-auto plsEdgeDetection(std::vector<std::vector<int32_t>> geometryUnit, double line_thres) -> bool;
-auto plsNormalizeHistogram(const std::vector<int32_t> &histEdge, int32_t piece_num,
-                           bool lowDepthQuality, int32_t minDepthVal, int32_t maxDepthVal)
-    -> std::vector<double>;
-auto plsDepthMapping(int32_t minDepthVal, int32_t maxDepthVal, int32_t piece_num,
-                     uint16_t inGeometry, const std::vector<double> &mapped_pivot,
-                     bool lowDepthQuality) -> uint16_t;
-} // namespace TMIV::Encoder
+void DepthQualityAssessorStage::encode(SourceUnit unit) {
+  Common::logDebug("Depth quality assessor stage");
 
-#endif
+  if (!m_depthLowQualityFlag) {
+    m_depthLowQualityFlag = m_assessor->isLowDepthQuality(unit.viewParamsList, unit.deepFrameList);
+  }
+
+  unit.depthLowQualityFlag = *m_depthLowQualityFlag;
+  source.encode(std::move(unit));
+}
+} // namespace TMIV::DepthQualityAssessor

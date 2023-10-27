@@ -34,7 +34,7 @@
 #ifndef TMIV_ENCODER_APP_SOURCEUNITLOADER_H
 #define TMIV_ENCODER_APP_SOURCEUNITLOADER_H
 
-#include <TMIV/DepthQualityAssessor/Stage.h>
+#include <TMIV/DepthQualityAssessor/DepthQualityAssessorStage.h>
 #include <TMIV/IO/IO.h>
 #include <TMIV/MivBitstream/SequenceConfig.h>
 

@@ -57,12 +57,10 @@ Configuration::Configuration(const Common::Json &componentNode)
                                componentNode.require("geometryScaleEnabledFlag").as<bool>()}
     , chromaScaleEnabledFlag{haveTexture &&
                              componentNode.require("chromaScaleEnabledFlag").as<bool>()}
-    , dynamicDepthRange{componentNode.require("dynamicDepthRange").as<bool>()}
     , textureOffsetFlag{haveTexture && componentNode.require("textureOffsetEnabledFlag").as<bool>()}
     , patchRedundancyRemoval{componentNode.require("patchRedundancyRemoval").as<bool>()}
     , numGroups{componentNode.require("numGroups").as<uint8_t>()}
     , maxEntityId{componentNode.require("maxEntityId").as<uint16_t>()}
-    , halveDepthRange{dynamicDepthRange && componentNode.require("halveDepthRange").as<bool>()}
     , patchMarginFlag{componentNode.require("patchMarginEnabledFlag").as<bool>()}
     , viewportCameraParametersSei{componentNode.require("viewportCameraParametersSei").as<bool>()}
     , viewportPositionSei{componentNode.require("viewportPositionSei").as<bool>()} {
@@ -80,12 +78,6 @@ Configuration::Configuration(const Common::Json &componentNode)
   queryTileParameters(componentNode);
 
   informationPruning = componentNode.require("informationPruning").as<bool>();
-  piecewiseDepthLinearScaling = componentNode.require("piecewiseDepthLinearScaling").as<bool>();
-
-  if (piecewiseDepthLinearScaling) {
-    pldsIntervalNumber = componentNode.require("pldsIntervalNumber").as<int32_t>();
-    pldsEdgeThreshold = componentNode.require("pldsEdgeThreshold").as<int32_t>();
-  }
 
   verifyValid();
 }
@@ -119,21 +111,6 @@ void Configuration::queryMainParameters(const Common::Json &componentNode) {
 
   if (haveGeometry && !haveOccupancy) {
     embeddedOccupancy = componentNode.require("embeddedOccupancy").as<bool>();
-    depthOccThresholdAsymmetry = componentNode.require("depthOccThresholdAsymmetry").as<double>();
-    depthOccThresholdIfSet = componentNode.require("depthOccThresholdIfSet").asVec<double, 2>();
-    for (const auto i : {0, 1}) {
-      if (!(0.0 < depthOccThresholdIfSet[i])) {
-        throw std::runtime_error(
-            "The depthOccThresholdIfSet parameter is only used when the encoder "
-            "needs to use occupancy. The value 0 is not allowed.");
-      }
-      if (0.5 <= depthOccThresholdIfSet[i]) {
-        throw std::runtime_error(
-            "The encoder takes a margin equal to the depth occupancy threshold, so "
-            "setting the threshold this high will make it impossible to encode depth. Note that "
-            "depthOccThresholdIfSet is normalized on the max. geometry sample value.");
-      }
-    }
   }
 
   if (!haveGeometry) {

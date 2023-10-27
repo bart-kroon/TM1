@@ -5,6 +5,6 @@ create_tmiv_library(
     DepthQualityAssessorLib
     SOURCES
     "src/DepthQualityAssessor.cpp"
-    "src/Stage.cpp"
+    "src/DepthQualityAssessorStage.cpp"
     PRIVATE
     RendererLib)

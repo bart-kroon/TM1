@@ -70,14 +70,12 @@ struct Configuration {
   bool geometryScaleEnabledFlag;
   bool chromaScaleEnabledFlag;
   Common::stack::Vec2<Common::SampleValue> entityEncRange;
-  bool dynamicDepthRange;
   bool textureOffsetFlag;
   uint32_t textureOffsetBitCount{};
   bool dqParamsPresentFlag{true};
   bool patchRedundancyRemoval;
   uint8_t numGroups;
   uint16_t maxEntityId;
-  bool halveDepthRange;
   bool patchMarginFlag;
 
   // SEI-related parameters
@@ -97,15 +95,10 @@ struct Configuration {
   uint32_t geoBitDepth{};
   uint32_t texBitDepth{};
 
-  double depthOccThresholdAsymmetry{};
-
   [[nodiscard]] auto occThreshold(bool depthLowQualityFlag_) const noexcept {
     return depthOccThresholdIfSet[static_cast<int32_t>(depthLowQualityFlag_)];
   }
 
-  bool piecewiseDepthLinearScaling;
-  int32_t pldsIntervalNumber{};
-  int32_t pldsEdgeThreshold{};
   bool informationPruning;
 
   [[nodiscard]] auto blockSize(bool depthLowQualityFlag_) const noexcept {

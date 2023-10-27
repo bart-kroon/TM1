@@ -50,6 +50,7 @@ CodableUnitEncoder::CodableUnitEncoder(const Common::Json &config, IO::Placehold
 }
 
 void CodableUnitEncoder::encode(CodableUnit frame) {
+  Common::logDebug("Codable unit encoder stage");
   Common::logInfo("Saving frame {}.", m_outputFrameIdx);
 
   if (frame.type != MivBitstream::CodableUnitType::SKIP) {
@@ -105,5 +106,9 @@ auto CodableUnitEncoder::saveAtlasFrame(MivBitstream::AtlasId atlasId, int32_t f
   return metadata;
 }
 
-void CodableUnitEncoder::flush() { m_mivEncoder(std::nullopt); }
+void CodableUnitEncoder::flush() {
+  Common::logDebug("Codable unit encoder stage");
+
+  m_mivEncoder(std::nullopt);
+}
 } // namespace TMIV::Encoder

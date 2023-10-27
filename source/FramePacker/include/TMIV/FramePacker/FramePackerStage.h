@@ -31,28 +31,29 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/DepthQualityAssessor/Stage.h>
+#ifndef TMIV_ENCODER_FRAMEPACKER_FRAMEPACKERSTAGE_H
+#define TMIV_ENCODER_FRAMEPACKER_FRAMEPACKERSTAGE_H
 
-#include <TMIV/Common/Factory.h>
+#include <TMIV/Common/Stage.h>
+#include <TMIV/MivBitstream/CodableUnit.h>
 
-namespace TMIV::DepthQualityAssessor {
-Stage::Stage(const Common::Json &rootNode, const Common::Json &componentNode) {
-  if (const auto &node = componentNode.optional("depthLowQualityFlag")) {
-    m_depthLowQualityFlag = node.as<bool>();
-  } else if (rootNode.require("haveGeometryVideo").as<bool>()) {
-    m_assessor =
-        Common::create<IDepthQualityAssessor>("DepthQualityAssessor", rootNode, componentNode);
-  } else {
-    m_depthLowQualityFlag = false;
-  }
-}
+#include "FramePacker.h"
 
-void Stage::encode(SourceUnit unit) {
-  if (!m_depthLowQualityFlag) {
-    m_depthLowQualityFlag = m_assessor->isLowDepthQuality(unit.viewParamsList, unit.deepFrameList);
-  }
+namespace TMIV::FramePacker {
+using MivBitstream::CodableUnit;
 
-  unit.depthLowQualityFlag = *m_depthLowQualityFlag;
-  source.encode(std::move(unit));
-}
-} // namespace TMIV::DepthQualityAssessor
+class FramePackerStage : public Common::Stage<CodableUnit, CodableUnit> {
+public:
+  FramePackerStage(const Common::Json &componentNode);
+
+  void encode(CodableUnit unit) override;
+
+private:
+  bool m_framePacking;
+  bool m_geometryPacking;
+  FramePacker m_framePacker;
+  EncoderParams m_encoderParams;
+};
+} // namespace TMIV::FramePacker
+
+#endif

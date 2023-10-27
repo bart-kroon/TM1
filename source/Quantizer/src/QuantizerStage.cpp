@@ -31,27 +31,48 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef TMIV_VIEWOPTIMIZER_STAGE_H
-#define TMIV_VIEWOPTIMIZER_STAGE_H
+#include <TMIV/Quantizer/QuantizerStage.h>
 
-#include <TMIV/Common/Stage.h>
-#include <TMIV/MivBitstream/SourceUnit.h>
+#include <TMIV/Common/LoggingStrategyFmt.h>
+#include <TMIV/MivBitstream/Formatters.h>
 
-#include "IViewOptimizer.h"
+namespace TMIV::Quantizer {
+QuantizerStage::QuantizerStage(const Common::Json &componentNode) {
+  if (componentNode.require("haveGeometryVideo").as<bool>()) {
+    m_geometryQuantizer.emplace(Configuration{componentNode});
+  }
+}
 
-namespace TMIV::ViewOptimizer {
-using MivBitstream::SourceUnit;
+[[nodiscard]] auto QuantizerStage::isStart(const CodableUnit &unit) -> bool {
+  return !m_geometryQuantizer || unit.type != CodableUnitType::SKIP;
+}
 
-class Stage : public Common::Stage<SourceUnit, SourceUnit> {
-public:
-  Stage(const Common::Json &rootNode, const Common::Json &componentNode);
+void QuantizerStage::process(std::vector<CodableUnit> buffer) {
+  Common::logDebug("Quantizer stage, processing {} source units", buffer.size());
 
-  void encode(SourceUnit unit) override;
+  const auto outParams = [&]() {
+    if (m_geometryQuantizer) {
+      const auto distributions = GeometryDistributions::measure(buffer);
+      distributions.report(buffer.front().encoderParams);
+      return m_geometryQuantizer->transformParams(distributions, buffer.front().encoderParams);
+    }
+    return buffer.front().encoderParams;
+  }();
 
-private:
-  std::unique_ptr<IViewOptimizer> m_optimizer;
-  std::optional<ViewOptimizerParams> m_params;
-};
-} // namespace TMIV::ViewOptimizer
+  for (auto &unit : buffer) {
+    if (m_geometryQuantizer) {
+      unit.deepFrameList =
+          GeometryQuantizer::transformAtlases(unit.encoderParams, outParams, unit.deepFrameList);
+    } else {
+      for (auto &deepFrame : unit.deepFrameList) {
+        deepFrame.occupancy.clear();
+        deepFrame.geometry.clear();
+      }
+    }
 
-#endif
+    unit.encoderParams = outParams;
+
+    source.encode(std::move(unit));
+  }
+}
+} // namespace TMIV::Quantizer

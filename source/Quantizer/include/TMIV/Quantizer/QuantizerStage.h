@@ -31,27 +31,25 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef TMIV_DEPTHQUALITYASSESSOR_STAGE_H
-#define TMIV_DEPTHQUALITYASSESSOR_STAGE_H
-
-#include "IDepthQualityAssessor.h"
+#ifndef TMIV_QUANTIZER_QUANTIZERSTAGE_H
+#define TMIV_QUANTIZER_QUANTIZERSTAGE_H
 
 #include <TMIV/Common/Stage.h>
-#include <TMIV/MivBitstream/SourceUnit.h>
+#include <TMIV/Quantizer/GeometryQuantizer.h>
 
-namespace TMIV::DepthQualityAssessor {
-using MivBitstream::SourceUnit;
-
-class Stage : public Common::Stage<SourceUnit, SourceUnit> {
+namespace TMIV::Quantizer {
+class QuantizerStage : public Common::BufferingStage<CodableUnit, CodableUnit> {
 public:
-  Stage(const Common::Json &rootNode, const Common::Json &componentNode);
+  QuantizerStage(const Common::Json &componentNode);
 
-  void encode(SourceUnit unit) override;
+protected:
+  [[nodiscard]] auto isStart(const CodableUnit &unit) -> bool override;
+
+  void process(std::vector<CodableUnit> buffer) override;
 
 private:
-  std::optional<bool> m_depthLowQualityFlag;
-  std::unique_ptr<IDepthQualityAssessor> m_assessor;
+  std::optional<GeometryQuantizer> m_geometryQuantizer;
 };
-} // namespace TMIV::DepthQualityAssessor
+} // namespace TMIV::Quantizer
 
 #endif

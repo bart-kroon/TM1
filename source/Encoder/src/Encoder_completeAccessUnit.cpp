@@ -32,9 +32,6 @@
  */
 
 #include "EncoderImpl.h"
-#include "GeometryQuantizer.h"
-
-#include "PiecewiseLinearDepthScaling.h"
 
 #include <TMIV/Common/LoggingStrategyFmt.h>
 #include <TMIV/MivBitstream/Formatters.h>
@@ -240,7 +237,7 @@ void assignFullPatchRanges(EncoderParams &params) {
 }
 } // namespace
 
-auto Encoder::Impl::completeAccessUnit() -> EncoderParams {
+void Encoder::Impl::completeAccessUnit() {
   Common::logVerbose("completeAccessUnit: FOC is {}.", m_params.foc);
 
   m_aggregator->completeAccessUnit();
@@ -281,17 +278,6 @@ auto Encoder::Impl::completeAccessUnit() -> EncoderParams {
   for (size_t p = 0; p < params().patchParamsList.size(); p++) {
     m_patchColorCorrectionOffset.emplace_back();
   }
-
-  constructVideoFrames();
-
-  auto params_ = transformGeometryQuantizationParams(m_config, m_videoFrameBuffer, params());
-
-  m_params.foc += Common::downCast<int32_t>(m_videoFrameBuffer.size());
-  m_params.foc %= m_config.intraPeriod;
-  Common::logInfo("completeAccessUnit: Added {} frames. Updating FOC to {}.",
-                  m_videoFrameBuffer.size(), m_params.foc);
-
-  return params_;
 }
 
 void Encoder::Impl::updateAggregationStatistics(const Common::FrameList<uint8_t> &aggregatedMask) {

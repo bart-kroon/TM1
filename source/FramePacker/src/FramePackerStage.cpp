@@ -31,29 +31,27 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef TMIV_ENCODER_FRAMEPACKING_STAGE_H
-#define TMIV_ENCODER_FRAMEPACKING_STAGE_H
+#include <TMIV/FramePacker/FramePackerStage.h>
 
-#include <TMIV/Common/Stage.h>
-#include <TMIV/MivBitstream/CodableUnit.h>
-
-#include "FramePacker.h"
+#include <TMIV/Common/LoggingStrategy.h>
 
 namespace TMIV::FramePacker {
-using MivBitstream::CodableUnit;
+FramePackerStage::FramePackerStage(const Common::Json &componentNode)
+    : m_framePacking{componentNode.require("framePacking").as<bool>()}
+    , m_geometryPacking{m_framePacking && componentNode.require("geometryPacking").as<bool>()} {}
 
-class Stage : public Common::Stage<CodableUnit, CodableUnit> {
-public:
-  Stage(const Common::Json &componentNode);
+void FramePackerStage::encode(CodableUnit unit) {
+  Common::logDebug("Frame packer stage");
 
-  void encode(CodableUnit unit) override;
+  if (m_framePacking) {
+    if (unit.type != MivBitstream::CodableUnitType::SKIP) {
+      m_encoderParams = m_framePacker.setPackingInformation(unit.encoderParams, m_geometryPacking);
+    }
+    unit.encoderParams = m_encoderParams;
+    m_framePacker.packFrame(unit.deepFrameList, m_geometryPacking);
+  }
 
-private:
-  bool m_framePacking;
-  bool m_geometryPacking;
-  FramePacker m_framePacker;
-  EncoderParams m_encoderParams;
-};
+  source.encode(std::move(unit));
+}
+
 } // namespace TMIV::FramePacker
-
-#endif

@@ -31,24 +31,25 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef TMIV_DOWNSCALER_STAGE_H
-#define TMIV_DOWNSCALER_STAGE_H
+#include <TMIV/ViewOptimizer/ViewOptimizerStage.h>
 
-#include <TMIV/Common/Stage.h>
-#include <TMIV/MivBitstream/CodableUnit.h>
+#include <TMIV/Common/Factory.h>
+#include <TMIV/Common/LoggingStrategy.h>
 
-namespace TMIV::Downscaler {
-using MivBitstream::CodableUnit;
+namespace TMIV::ViewOptimizer {
+ViewOptimizerStage::ViewOptimizerStage(const Common::Json &rootNode,
+                                       const Common::Json &componentNode)
+    : m_optimizer{Common::create<IViewOptimizer>("ViewOptimizer", rootNode, componentNode)} {}
 
-class Stage : public Common::Stage<CodableUnit, CodableUnit> {
-public:
-  Stage(const Common::Json &componentNode);
+void ViewOptimizerStage::encode(SourceUnit unit) {
+  Common::logDebug("View optimizer stage");
 
-  void encode(CodableUnit unit) override;
-
-private:
-  bool m_geometryScaleEnabledFlag;
-};
-} // namespace TMIV::Downscaler
-
-#endif
+  if (!m_params) {
+    m_params = m_optimizer->optimizeParams({unit.viewParamsList, unit.depthLowQualityFlag});
+  }
+  unit.viewParamsList = m_params->viewParamsList;
+  unit.deepFrameList = m_optimizer->optimizeFrame(std::move(unit.deepFrameList));
+  unit.semiBasicViewCount = m_params->semiBasicCount;
+  source.encode(unit);
+}
+} // namespace TMIV::ViewOptimizer

@@ -35,12 +35,13 @@
 
 #include <TMIV/Common/Application.h>
 #include <TMIV/Common/LoggingStrategyFmt.h>
-#include <TMIV/DepthQualityAssessor/Stage.h>
-#include <TMIV/Downscaler/Stage.h>
-#include <TMIV/FramePacker/Stage.h>
+#include <TMIV/DepthQualityAssessor/DepthQualityAssessorStage.h>
+#include <TMIV/Downscaler/DownscalerStage.h>
+#include <TMIV/FramePacker/FramePackerStage.h>
 #include <TMIV/IO/IO.h>
 #include <TMIV/MivBitstream/Formatters.h>
-#include <TMIV/ViewOptimizer/Stage.h>
+#include <TMIV/Quantizer/QuantizerStage.h>
+#include <TMIV/ViewOptimizer/ViewOptimizerStage.h>
 
 #include "CodableUnitEncoder.h"
 #include "SourceUnitLoader.h"
@@ -63,13 +64,15 @@ public:
       , m_assessor{json(), json()}
       , m_optimizer{json(), json()}
       , m_encoder{json()}
+      , m_quantizer{json()}
       , m_downscaler{json()}
       , m_framePacker{json()}
       , m_codableUnitEncoder{json(), m_placeholders} {
     m_sourceUnitLoader.connectTo(m_assessor);
     m_assessor.source.connectTo(m_optimizer);
     m_optimizer.source.connectTo(m_encoder);
-    m_encoder.source.connectTo(m_downscaler);
+    m_encoder.source.connectTo(m_quantizer);
+    m_quantizer.source.connectTo(m_downscaler);
     m_downscaler.source.connectTo(m_framePacker);
     m_framePacker.source.connectTo(m_codableUnitEncoder);
   }
@@ -102,11 +105,12 @@ private:
 
   IO::Placeholders m_placeholders;
   SourceUnitLoader m_sourceUnitLoader;
-  DepthQualityAssessor::Stage m_assessor;
-  ViewOptimizer::Stage m_optimizer;
+  DepthQualityAssessor::DepthQualityAssessorStage m_assessor;
+  ViewOptimizer::ViewOptimizerStage m_optimizer;
   Encoder m_encoder;
-  Downscaler::Stage m_downscaler;
-  FramePacker::Stage m_framePacker;
+  Quantizer::QuantizerStage m_quantizer;
+  Downscaler::DownscalerStage m_downscaler;
+  FramePacker::FramePackerStage m_framePacker;
   CodableUnitEncoder m_codableUnitEncoder;
 };
 } // namespace TMIV::Encoder

@@ -12,8 +12,6 @@ create_tmiv_library(
     "src/Encoder_prepareAccessUnit.cpp"
     "src/Encoder_pushFrame.cpp"
     "src/Encoder_completeAccessUnit.cpp"
-    "src/GeometryQuantizer.cpp"
-    "src/PiecewiseLinearDepthScaling.cpp"
     "src/V3cSampleSink.cpp"
     PUBLIC
     MivBitstreamLib
@@ -39,6 +37,7 @@ create_tmiv_executable(
     FramePackerLib
     PackerLib
     PrunerLib
+    QuantizerLib
     RendererLib
     ViewOptimizerLib
     IOLib)
@@ -67,8 +66,6 @@ create_catch2_unit_test(
     "test/Configuration_test.cpp"
     "test/EncodeMiv_test.cpp"
     "test/Encoder_prepareSequence_test.cpp"
-    "test/GeometryQuantizer_test.cpp"
-    "test/PiecewiseLinearDepthScaling_test.cpp"
     PRIVATE
     EncoderLib
     AggregatorLib

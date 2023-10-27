@@ -31,29 +31,24 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/Downscaler/Stage.h>
+#ifndef TMIV_DOWNSCALER_DOWNSCALERSTAGE_H
+#define TMIV_DOWNSCALER_DOWNSCALERSTAGE_H
 
-#include <TMIV/Downscaler/GeometryDownscaler.h>
+#include <TMIV/Common/Stage.h>
+#include <TMIV/MivBitstream/CodableUnit.h>
 
 namespace TMIV::Downscaler {
-Stage::Stage(const Common::Json &componentNode)
-    : m_geometryScaleEnabledFlag{componentNode.require("haveGeometryVideo").as<bool>() &&
-                                 componentNode.require("haveTextureVideo").as<bool>() &&
-                                 componentNode.require("geometryScaleEnabledFlag").as<bool>()} {}
+using MivBitstream::CodableUnit;
 
-void Stage::encode(CodableUnit unit) {
-  if (m_geometryScaleEnabledFlag) {
-    unit.encoderParams.vps.vps_miv_extension().vme_geometry_scale_enabled_flag(true);
+class DownscalerStage : public Common::Stage<CodableUnit, CodableUnit> {
+public:
+  DownscalerStage(const Common::Json &componentNode);
 
-    for (auto &atlas : unit.encoderParams.atlas) {
-      atlas.asps.asps_miv_extension()
-          .asme_geometry_scale_factor_x_minus1(1)
-          .asme_geometry_scale_factor_y_minus1(1);
-    }
+  void encode(CodableUnit unit) override;
 
-    unit.deepFrameList = downscaleGeometry(unit.encoderParams.atlas, std::move(unit.deepFrameList));
-  }
-
-  source.encode(unit);
-}
+private:
+  bool m_geometryScaleEnabledFlag;
+};
 } // namespace TMIV::Downscaler
+
+#endif

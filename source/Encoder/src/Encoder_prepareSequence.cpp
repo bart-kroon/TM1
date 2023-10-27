@@ -32,7 +32,6 @@
  */
 
 #include "EncoderImpl.h"
-#include "GeometryQuantizer.h"
 
 #include <TMIV/Common/LoggingStrategyFmt.h>
 #include <TMIV/Common/verify.h>

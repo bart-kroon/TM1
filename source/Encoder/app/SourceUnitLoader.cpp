@@ -33,6 +33,8 @@
 
 #include "SourceUnitLoader.h"
 
+#include <TMIV/Common/LoggingStrategy.h>
+
 namespace TMIV::Encoder {
 SourceUnitLoader::SourceUnitLoader(const Common::Json &config, IO::Placeholders placeholders)
     : m_config{config}
@@ -42,6 +44,8 @@ SourceUnitLoader::SourceUnitLoader(const Common::Json &config, IO::Placeholders 
 }
 
 void SourceUnitLoader::loadAll() {
+  Common::logDebug("Source unit loader");
+
   for (int32_t i = 0; i < m_placeholders.numberOfInputFrames; ++i) {
     encode({m_sequenceConfig, m_sequenceConfig.sourceViewParams(),
             IO::loadMultiviewFrame(m_config, m_placeholders, m_sequenceConfig, i)});

@@ -35,8 +35,6 @@
 
 #include <TMIV/Common/Factory.h>
 
-#include "GeometryQuantizer.h"
-
 using TMIV::Aggregator::IAggregator;
 using TMIV::Packer::IPacker;
 using TMIV::Pruner::IPruner;
@@ -56,12 +54,11 @@ auto Encoder::Impl::isStart(const SourceUnit & /* unit */) -> bool {
 
 void Encoder::Impl::process(std::vector<SourceUnit> buffer,
                             const Common::StageSource<CodableUnit> &source_) {
-  auto type = m_firstIdx % m_config.intraPeriod == 0 ? MivBitstream::CodableUnitType::IDR
-                                                     : MivBitstream::CodableUnitType::TRIAL;
-
   if (m_firstIdx == 0) {
     prepareSequence(buffer.front());
   }
+
+  m_params.foc = m_firstIdx % m_config.intraPeriod;
 
   prepareAccessUnit();
 
@@ -69,23 +66,19 @@ void Encoder::Impl::process(std::vector<SourceUnit> buffer,
     pushFrame(std::move(sourceUnit.deepFrameList));
   }
 
-  const auto encoderParams = completeAccessUnit();
+  completeAccessUnit();
+  constructVideoFrames();
+
+  auto type = m_firstIdx % m_config.intraPeriod == 0 ? MivBitstream::CodableUnitType::IDR
+                                                     : MivBitstream::CodableUnitType::TRIAL;
 
   for (auto &deepFrameList : m_videoFrameBuffer) {
-    if (m_config.haveGeometry) {
-      deepFrameList = GeometryQuantizer::transformAtlases(params(), encoderParams, deepFrameList);
-    } else {
-      for (auto &deepFrame : deepFrameList) {
-        deepFrame.occupancy.clear();
-        deepFrame.geometry.clear();
-      }
-    }
-
-    source_.encode({encoderParams, std::move(deepFrameList), type});
+    source_.encode({m_params, std::move(deepFrameList), type});
 
     type = MivBitstream::CodableUnitType::SKIP;
     // Pattern for intraPeriod=8 and interPeriod=4:
-    // IDR SKIP SKIP SKIP TRIAL SKIP SKIP SKIP IDR ...
+    //    IDR SKIP SKIP SKIP TRIAL SKIP SKIP SKIP IDR ...
+    // FOC=0   1    2    3    4     5    6    7    0  ...
   }
 
   m_videoFrameBuffer.clear();

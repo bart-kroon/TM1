@@ -60,8 +60,6 @@ TEST_CASE("TMIV::Encoder::Configuration") {
     "chromaScaleEnabledFlag": true,
     "informationPruning": true,
     "oneViewPerAtlasFlag": false,
-    "dynamicDepthRange": true,
-    "halveDepthRange": true,
     "rewriteParameterSets": false,
     "patchMarginEnabledFlag": true,
     "patchRedundancyRemoval": true,
@@ -76,12 +74,7 @@ TEST_CASE("TMIV::Encoder::Configuration") {
     "toolsetIdc": "MIV Main",
     "reconstructionIdc": "Rec Unconstrained",
     "levelIdc": "2.5",
-    "oneV3cFrameOnly": false,
-    "piecewiseDepthLinearScaling": true,
-    "pldsIntervalNumber": 16,
-    "pldsEdgeThreshold": 40,
-    "depthOccThresholdIfSet": [0.00390625, 0.0625],
-    "depthOccThresholdAsymmetry": 1.5
+    "oneV3cFrameOnly": false
 })"sv);
 
     const auto unit = Configuration{root};
@@ -92,8 +85,6 @@ TEST_CASE("TMIV::Encoder::Configuration") {
     CHECK(unit.haveGeometry);
     CHECK_FALSE(unit.haveOccupancy);
     CHECK_FALSE(unit.oneViewPerAtlasFlag);
-    CHECK(unit.dynamicDepthRange);
-    CHECK(unit.halveDepthRange);
     CHECK(unit.dqParamsPresentFlag);
     CHECK(unit.patchRedundancyRemoval);
     CHECK_FALSE(unit.viewportCameraParametersSei);
@@ -110,10 +101,6 @@ TEST_CASE("TMIV::Encoder::Configuration") {
     CHECK_FALSE(unit.oneV3cFrameOnly);
     CHECK_FALSE(unit.viewingSpace.has_value());
     CHECK(unit.overrideAtlasFrameSizes.empty());
-
-    CHECK(unit.piecewiseDepthLinearScaling);
-    CHECK(unit.pldsIntervalNumber == 16);
-    CHECK(unit.pldsEdgeThreshold == 40);
 
     SECTION("Add viewing space") {
       root.update(Json::parse(R"({
@@ -170,7 +157,6 @@ TEST_CASE("TMIV::Encoder::Configuration") {
     "informationPruning": false,
     "chromaScaleEnabledFlag": false,
     "oneViewPerAtlasFlag": true,
-    "dynamicDepthRange": false,
     "dqParamsPresentFlag": false,
     "textureOffsetEnabledFlag": false,
     "rewriteParameterSets": true,
@@ -185,10 +171,7 @@ TEST_CASE("TMIV::Encoder::Configuration") {
     "toolsetIdc": "MIV Geometry Absent",
     "reconstructionIdc": "Rec Unconstrained",
     "levelIdc": "2.5",
-    "oneV3cFrameOnly": true,
-    "piecewiseDepthLinearScaling": false,
-    "depthOccThresholdIfSet": [0.00390625, 0.0625],
-    "depthOccThresholdAsymmetry": 1.5
+    "oneV3cFrameOnly": true
 })"sv);
 
     const auto unit = Configuration{root};
@@ -199,7 +182,6 @@ TEST_CASE("TMIV::Encoder::Configuration") {
     CHECK_FALSE(unit.haveGeometry);
     CHECK_FALSE(unit.haveOccupancy);
     CHECK(unit.oneViewPerAtlasFlag);
-    CHECK_FALSE(unit.dynamicDepthRange);
     CHECK_FALSE(unit.dqParamsPresentFlag);
     CHECK_FALSE(unit.patchRedundancyRemoval);
     CHECK(unit.viewportCameraParametersSei);
@@ -211,10 +193,6 @@ TEST_CASE("TMIV::Encoder::Configuration") {
     CHECK(unit.oneV3cFrameOnly);
     CHECK_FALSE(unit.viewingSpace.has_value());
     CHECK(unit.overrideAtlasFrameSizes.empty());
-
-    CHECK_FALSE(unit.piecewiseDepthLinearScaling);
-    CHECK(unit.pldsIntervalNumber == 0);
-    CHECK(unit.pldsEdgeThreshold == 0);
 
     SECTION("Override atlas frame sizes") {
       root.update(Json::parse(R"({ "overrideAtlasFrameSizes": [ [4, 5], [6, 7] ] })"));
@@ -248,7 +226,6 @@ TEST_CASE("TMIV::Encoder::Configuration") {
     "viewportCameraParametersSei": false,
     "viewportPositionSei": false,
     "oneViewPerAtlasFlag": true,
-    "dynamicDepthRange": false,
     "dqParamsPresentFlag": false,
     "textureOffsetEnabledFlag": false,
     "rewriteParameterSets": true,
@@ -262,10 +239,7 @@ TEST_CASE("TMIV::Encoder::Configuration") {
     "toolsetIdc": "MIV Geometry Absent",
     "reconstructionIdc": "Rec Unconstrained",
     "levelIdc": "2.5",
-    "oneV3cFrameOnly": false,
-    "piecewiseDepthLinearScaling": false,
-    "depthOccThresholdIfSet": [0.00390625, 0.0625],
-    "depthOccThresholdAsymmetry": 1.5
+    "oneV3cFrameOnly": false
 })"sv);
 
     const auto unit = Configuration{root};
@@ -285,7 +259,6 @@ TEST_CASE("TMIV::Encoder::Configuration") {
     "viewportCameraParametersSei": false,
     "viewportPositionSei": false,
     "oneViewPerAtlasFlag": true,
-    "dynamicDepthRange": false,
     "dqParamsPresentFlag": false,
     "chromaScaleEnabledFlag": false,
     "textureOffsetEnabledFlag": false,
@@ -299,10 +272,7 @@ TEST_CASE("TMIV::Encoder::Configuration") {
     "toolsetIdc": "MIV Geometry Absent",
     "reconstructionIdc": "Rec Unconstrained",
     "levelIdc": "2.5",
-    "oneV3cFrameOnly": false,
-    "piecewiseDepthLinearScaling": false,
-    "depthOccThresholdIfSet": [0.00390625, 0.0625],
-    "depthOccThresholdAsymmetry": 1.5
+    "oneV3cFrameOnly": false
 })"sv);
 
     const auto unit = Configuration{root};

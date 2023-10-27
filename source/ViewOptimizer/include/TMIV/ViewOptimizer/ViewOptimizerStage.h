@@ -31,21 +31,27 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/ViewOptimizer/Stage.h>
+#ifndef TMIV_VIEWOPTIMIZER_VIEWOPTIMIZERSTAGE_H
+#define TMIV_VIEWOPTIMIZER_VIEWOPTIMIZERSTAGE_H
 
-#include <TMIV/Common/Factory.h>
+#include <TMIV/Common/Stage.h>
+#include <TMIV/MivBitstream/SourceUnit.h>
+
+#include "IViewOptimizer.h"
 
 namespace TMIV::ViewOptimizer {
-Stage::Stage(const Common::Json &rootNode, const Common::Json &componentNode)
-    : m_optimizer{Common::create<IViewOptimizer>("ViewOptimizer", rootNode, componentNode)} {}
+using MivBitstream::SourceUnit;
 
-void Stage::encode(SourceUnit unit) {
-  if (!m_params) {
-    m_params = m_optimizer->optimizeParams({unit.viewParamsList, unit.depthLowQualityFlag});
-  }
-  unit.viewParamsList = m_params->viewParamsList;
-  unit.deepFrameList = m_optimizer->optimizeFrame(std::move(unit.deepFrameList));
-  unit.semiBasicViewCount = m_params->semiBasicCount;
-  source.encode(unit);
-}
+class ViewOptimizerStage : public Common::Stage<SourceUnit, SourceUnit> {
+public:
+  ViewOptimizerStage(const Common::Json &rootNode, const Common::Json &componentNode);
+
+  void encode(SourceUnit unit) override;
+
+private:
+  std::unique_ptr<IViewOptimizer> m_optimizer;
+  std::optional<ViewOptimizerParams> m_params;
+};
 } // namespace TMIV::ViewOptimizer
+
+#endif

@@ -31,7 +31,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "GeometryQuantizer.h"
+#include <TMIV/Quantizer/GeometryQuantizer.h>
 
 #include <TMIV/Common/LoggingStrategyFmt.h>
 #include <TMIV/MivBitstream/DepthOccupancyTransform.h>
@@ -39,7 +39,7 @@
 
 #include <fmt/ostream.h>
 
-namespace TMIV::Encoder {
+namespace TMIV::Quantizer {
 void GeometryDistributions::report(const EncoderParams &params) const {
   for (size_t viewIdx = 0; viewIdx < views.size(); ++viewIdx) {
     if (views[viewIdx]) {
@@ -59,15 +59,17 @@ void GeometryDistributions::report(const EncoderParams &params) const {
   }
 }
 
-auto GeometryDistributions::measure(const std::vector<Common::DeepFrameList> &videoFrameBuffer,
-                                    const EncoderParams &params) -> GeometryDistributions {
+auto GeometryDistributions::measure(const std::vector<CodableUnit> &buffer)
+    -> GeometryDistributions {
   auto result = GeometryDistributions{};
+
+  const auto &params = buffer.front().encoderParams;
 
   result.views.resize(params.viewParamsList.size());
   result.patches.resize(params.patchParamsList.size());
 
-  for (const auto &deepFrameList : videoFrameBuffer) {
-    for (const auto &deepFrame : deepFrameList) {
+  for (const auto &unit : buffer) {
+    for (const auto &deepFrame : unit.deepFrameList) {
       if (!deepFrame.geometry.empty()) {
         Common::forPixels(deepFrame.texture.getPlane(0).sizes(), [&](size_t i, size_t j) {
           const auto patchIdx = deepFrame.patchIdx.getPlane(0)(i, j);
@@ -95,6 +97,45 @@ auto GeometryDistributions::measure(const std::vector<Common::DeepFrameList> &vi
   return result;
 }
 
+Configuration::Configuration(const Common::Json &componentNode) {
+  PRECONDITION(componentNode.require("haveGeometryVideo").as<bool>());
+
+  dynamicDepthRange = componentNode.require("dynamicDepthRange").as<bool>();
+  halveDepthRange = dynamicDepthRange && componentNode.require("halveDepthRange").as<bool>();
+  geoBitDepth = componentNode.require("bitDepthGeometryVideo").as<uint32_t>();
+
+  const auto haveOccupancyVideo = componentNode.require("haveOccupancyVideo").as<bool>();
+  const auto embeddedOccupancy =
+      !haveOccupancyVideo && componentNode.require("embeddedOccupancy").as<bool>();
+
+  if (embeddedOccupancy) {
+    depthOccThresholdAsymmetry = componentNode.require("depthOccThresholdAsymmetry").as<double>();
+    depthOccThresholdIfSet = componentNode.require("depthOccThresholdIfSet").asVec<double, 2>();
+    for (const auto i : {0, 1}) {
+      if (!(0.0 < depthOccThresholdIfSet[i])) {
+        throw std::runtime_error(
+            "The depthOccThresholdIfSet parameter is only used when the encoder "
+            "needs to use occupancy. The value 0 is not allowed.");
+      }
+      if (0.5 <= depthOccThresholdIfSet[i]) {
+        throw std::runtime_error(
+            "The encoder takes a margin equal to the depth occupancy threshold, so "
+            "setting the threshold this high will make it impossible to encode depth. Note that "
+            "depthOccThresholdIfSet is normalized on the max. geometry sample value.");
+      }
+    }
+  }
+
+  if (componentNode.require("piecewiseDepthLinearScaling").as<bool>()) {
+    // TODO(BK): The existing code did not match with the specification meaning that there is
+    // anyhow work to be done. Because of that, and also in view of the MPEG 143 CE 2 schedule, I
+    // did not re-implement this proposal. However, I have prepared for it by gathering the full
+    // geometry distribution in the `distributions` argument and providing an `icdf` member
+    // function.
+    NOT_IMPLEMENTED;
+  }
+}
+
 void GeometryQuantizer::determineDepthRange(const GeometryDistributions &distributions,
                                             EncoderParams &params) const {
   const auto vme_embedded_occupancy_enabled_flag =
@@ -109,14 +150,6 @@ void GeometryQuantizer::determineDepthRange(const GeometryDistributions &distrib
     Common::logVerbose("determineDepthRange: viewIdx={}, far={}, near={} (input range)", viewIdx,
                        far, near);
 
-    if (m_config.piecewiseDepthLinearScaling) {
-      // TODO(BK): The existing code did not match with the specification meaning that there is
-      // anyhow work to be done. Because of that, and also in view of the MPEG 143 CE 2 schedule, I
-      // did not re-implement this proposal. However, I have prepared for it by gathering the full
-      // geometry distribution in the `distributions` argument and providing an `icdf` member
-      // function.
-      NOT_IMPLEMENTED;
-    }
     if (m_config.dynamicDepthRange && distributions.views[viewIdx]) {
       far = min(distributions.views[viewIdx]);
       near = max(distributions.views[viewIdx]);
@@ -329,13 +362,4 @@ auto GeometryQuantizer::transformAtlases(const EncoderParams &inParams,
   }
   return outAtlases;
 }
-
-auto transformGeometryQuantizationParams(const Configuration &config,
-                                         const std::vector<Common::DeepFrameList> &videoFrameBuffer,
-                                         const EncoderParams &params) -> EncoderParams {
-  const auto quantizer = GeometryQuantizer{config};
-  const auto distributions = GeometryDistributions::measure(videoFrameBuffer, params);
-  distributions.report(params);
-  return quantizer.transformParams(distributions, params);
-}
-} // namespace TMIV::Encoder
+} // namespace TMIV::Quantizer

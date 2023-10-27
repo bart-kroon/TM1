@@ -31,23 +31,27 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/FramePacker/Stage.h>
+#ifndef TMIV_DEPTHQUALITYASSESSOR_DEPTHQUALITYASSESSORSTAGE_H
+#define TMIV_DEPTHQUALITYASSESSOR_DEPTHQUALITYASSESSORSTAGE_H
 
-namespace TMIV::FramePacker {
-Stage::Stage(const Common::Json &componentNode)
-    : m_framePacking{componentNode.require("framePacking").as<bool>()}
-    , m_geometryPacking{m_framePacking && componentNode.require("geometryPacking").as<bool>()} {}
+#include "IDepthQualityAssessor.h"
 
-void Stage::encode(CodableUnit unit) {
-  if (m_framePacking) {
-    if (unit.type != MivBitstream::CodableUnitType::SKIP) {
-      m_encoderParams = m_framePacker.setPackingInformation(unit.encoderParams, m_geometryPacking);
-    }
-    unit.encoderParams = m_encoderParams;
-    m_framePacker.packFrame(unit.deepFrameList, m_geometryPacking);
-  }
+#include <TMIV/Common/Stage.h>
+#include <TMIV/MivBitstream/SourceUnit.h>
 
-  source.encode(std::move(unit));
-}
+namespace TMIV::DepthQualityAssessor {
+using MivBitstream::SourceUnit;
 
-} // namespace TMIV::FramePacker
+class DepthQualityAssessorStage : public Common::Stage<SourceUnit, SourceUnit> {
+public:
+  DepthQualityAssessorStage(const Common::Json &rootNode, const Common::Json &componentNode);
+
+  void encode(SourceUnit unit) override;
+
+private:
+  std::optional<bool> m_depthLowQualityFlag;
+  std::unique_ptr<IDepthQualityAssessor> m_assessor;
+};
+} // namespace TMIV::DepthQualityAssessor
+
+#endif

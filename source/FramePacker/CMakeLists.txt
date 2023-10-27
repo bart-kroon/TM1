@@ -5,7 +5,7 @@ create_tmiv_library(
     FramePackerLib
     SOURCES
     "src/FramePacker.cpp"
-    "src/Stage.cpp"
+    "src/FramePackerStage.cpp"
     PUBLIC
     MivBitstreamLib)
 

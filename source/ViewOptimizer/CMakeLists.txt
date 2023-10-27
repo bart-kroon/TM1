@@ -8,7 +8,7 @@ create_tmiv_library(
     "src/BasicViewAllocator.cpp"
     "src/KMedoidsCost.cpp"
     "src/ServerSideInpainter.cpp"
-    "src/Stage.cpp"
+    "src/ViewOptimizerStage.cpp"
     PUBLIC
     MivBitstreamLib
     PRIVATE

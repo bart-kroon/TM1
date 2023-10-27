@@ -31,16 +31,17 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef TMIV_ENCODER_GEOMETRYQUANTIZER_H
-#define TMIV_ENCODER_GEOMETRYQUANTIZER_H
+#ifndef TMIV_QUANTIZER_GEOMETRYQUANTIZER_H
+#define TMIV_QUANTIZER_GEOMETRYQUANTIZER_H
 
 #include <TMIV/Common/Distribution.h>
 #include <TMIV/Common/Frame.h>
+#include <TMIV/MivBitstream/CodableUnit.h>
 #include <TMIV/MivBitstream/EncoderParams.h>
 
-#include "Configuration.h"
-
-namespace TMIV::Encoder {
+namespace TMIV::Quantizer {
+using MivBitstream::CodableUnit;
+using MivBitstream::CodableUnitType;
 using MivBitstream::EncoderParams;
 
 // Measure the distribution of geometry samples (in scene units) over views and patches
@@ -50,8 +51,21 @@ struct GeometryDistributions {
 
   void report(const EncoderParams &params) const;
 
-  static auto measure(const std::vector<Common::DeepFrameList> &videoFrameBuffer,
-                      const EncoderParams &params) -> GeometryDistributions;
+  static auto measure(const std::vector<CodableUnit> &buffer) -> GeometryDistributions;
+};
+
+struct Configuration {
+  Configuration(const Common::Json &componentNode);
+
+  bool dynamicDepthRange{};
+  bool halveDepthRange{};
+  uint32_t geoBitDepth{};
+  double depthOccThresholdAsymmetry{};
+  Common::Vec2d depthOccThresholdIfSet{};
+
+  [[nodiscard]] auto occThreshold(bool depthLowQualityFlag) const -> double {
+    return depthOccThresholdIfSet[static_cast<size_t>(depthLowQualityFlag)];
+  }
 };
 
 class GeometryQuantizer {
@@ -71,11 +85,6 @@ private:
 
   Configuration m_config;
 };
-
-[[nodiscard]] auto
-transformGeometryQuantizationParams(const Configuration &config,
-                                    const std::vector<Common::DeepFrameList> &videoFrameBuffer,
-                                    const EncoderParams &params) -> EncoderParams;
-} // namespace TMIV::Encoder
+} // namespace TMIV::Quantizer
 
 #endif

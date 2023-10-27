@@ -5,6 +5,6 @@ create_tmiv_library(
     DownscalerLib
     SOURCES
     "src/GeometryDownscaler.cpp"
-    "src/Stage.cpp"
+    "src/DownscalerStage.cpp"
     PUBLIC
     MivBitstreamLib)

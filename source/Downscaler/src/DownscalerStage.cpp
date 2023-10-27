@@ -31,23 +31,32 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "EncoderImpl.h"
+#include <TMIV/Downscaler/DownscalerStage.h>
 
-#include <TMIV/Common/LoggingStrategyFmt.h>
-#include <TMIV/MivBitstream/Formatters.h>
+#include <TMIV/Common/LoggingStrategy.h>
+#include <TMIV/Downscaler/GeometryDownscaler.h>
 
-namespace TMIV::Encoder {
-Encoder::Encoder(const Common::Json &componentNode) : m_impl{new Impl{componentNode}} {}
+namespace TMIV::Downscaler {
+DownscalerStage::DownscalerStage(const Common::Json &componentNode)
+    : m_geometryScaleEnabledFlag{componentNode.require("haveGeometryVideo").as<bool>() &&
+                                 componentNode.require("haveTextureVideo").as<bool>() &&
+                                 componentNode.require("geometryScaleEnabledFlag").as<bool>()} {}
 
-Encoder::~Encoder() = default;
+void DownscalerStage::encode(CodableUnit unit) {
+  Common::logDebug("Downscaler stage");
 
-auto Encoder::maxLumaSamplesPerFrame() const -> size_t { return m_impl->maxLumaSamplesPerFrame(); }
+  if (m_geometryScaleEnabledFlag) {
+    unit.encoderParams.vps.vps_miv_extension().vme_geometry_scale_enabled_flag(true);
 
-auto Encoder::isStart(const SourceUnit &unit) -> bool { return m_impl->isStart(unit); }
+    for (auto &atlas : unit.encoderParams.atlas) {
+      atlas.asps.asps_miv_extension()
+          .asme_geometry_scale_factor_x_minus1(1)
+          .asme_geometry_scale_factor_y_minus1(1);
+    }
 
-void Encoder::process(std::vector<SourceUnit> buffer) {
-  Common::logDebug("Encoder stage, processing {} source units", buffer.size());
+    unit.deepFrameList = downscaleGeometry(unit.encoderParams.atlas, std::move(unit.deepFrameList));
+  }
 
-  m_impl->process(std::move(buffer), source);
+  source.encode(unit);
 }
-} // namespace TMIV::Encoder
+} // namespace TMIV::Downscaler

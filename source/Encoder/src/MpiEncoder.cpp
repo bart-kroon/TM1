@@ -41,6 +41,13 @@
 
 namespace TMIV::Encoder {
 namespace {
+void touchKeys(const Common::Json &rootNode) {
+  rootNode.optional("depthLowQualityFlag");
+  rootNode.optional("ViewingSpace");
+  rootNode.require("viewportCameraParametersSei");
+  rootNode.require("viewportPositionSei");
+}
+
 auto createBlockToPatchMap(size_t k, EncoderParams &params) -> Common::Frame<Common::PatchIdx> {
   const auto &asps = params.atlas[k].asps;
   const auto &ppl = params.patchParamsList;
@@ -163,6 +170,7 @@ MpiEncoder::MpiEncoder(const Common::Json &rootNode, const Common::Json &compone
   for (const auto &subnode : node.as<Common::Json::Array>()) {
     m_overrideAtlasFrameSizes.push_back(subnode.asVec<int32_t, 2>());
   }
+  touchKeys(rootNode);
 }
 
 void MpiEncoder::prepareSequence(const MivBitstream::SequenceConfig &sequenceConfig) {

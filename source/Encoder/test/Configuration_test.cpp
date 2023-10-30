@@ -57,10 +57,8 @@ TEST_CASE("TMIV::Encoder::Configuration") {
     "bitDepthGeometryVideo": 10,
     "haveOccupancyVideo": false,
     "embeddedOccupancy": true,
-    "chromaScaleEnabledFlag": true,
     "informationPruning": true,
     "oneViewPerAtlasFlag": false,
-    "rewriteParameterSets": false,
     "patchMarginEnabledFlag": true,
     "patchRedundancyRemoval": true,
     "viewportCameraParametersSei": false,
@@ -78,6 +76,8 @@ TEST_CASE("TMIV::Encoder::Configuration") {
 })"sv);
 
     const auto unit = Configuration{root};
+
+    root.checkForUnusedKeys();
 
     CHECK(unit.intraPeriod == 1);
     CHECK(unit.blockSizeDepthQualityDependent == Vec2i{2, 4});
@@ -121,6 +121,8 @@ TEST_CASE("TMIV::Encoder::Configuration") {
 
       const auto unit2 = Configuration{root};
 
+      root.checkForUnusedKeys();
+
       CHECK(unit2.viewingSpace.has_value());
     }
 
@@ -132,6 +134,9 @@ TEST_CASE("TMIV::Encoder::Configuration") {
     SECTION("AVC Progressive High") {
       root.update(Json::parse(R"({ "codecGroupIdc": "AVC Progressive High" })"));
       const auto unit2 = Configuration{root};
+
+      root.checkForUnusedKeys();
+
       CHECK(unit2.codecGroupIdc == PtlProfileCodecGroupIdc::AVC_Progressive_High);
     }
 
@@ -159,7 +164,6 @@ TEST_CASE("TMIV::Encoder::Configuration") {
     "oneViewPerAtlasFlag": true,
     "dqParamsPresentFlag": false,
     "textureOffsetEnabledFlag": false,
-    "rewriteParameterSets": true,
     "patchMarginEnabledFlag": false,
     "patchRedundancyRemoval": false,
     "viewportCameraParametersSei": true,
@@ -175,6 +179,8 @@ TEST_CASE("TMIV::Encoder::Configuration") {
 })"sv);
 
     const auto unit = Configuration{root};
+
+    root.checkForUnusedKeys();
 
     CHECK(unit.intraPeriod == 13);
     CHECK(unit.blockSizeDepthQualityDependent == Vec2i{8, 4});
@@ -199,6 +205,8 @@ TEST_CASE("TMIV::Encoder::Configuration") {
 
       const auto unit2 = Configuration{root};
 
+      root.checkForUnusedKeys();
+
       CHECK(unit2.overrideAtlasFrameSizes == std::vector{Vec2i{4, 5}, Vec2i{6, 7}});
     }
 
@@ -209,6 +217,8 @@ TEST_CASE("TMIV::Encoder::Configuration") {
 })"));
 
       const auto unit2 = Configuration{root};
+
+      root.checkForUnusedKeys();
 
       CHECK(unit2.textureOffsetFlag);
       CHECK(unit2.textureOffsetBitCount == 1);
@@ -227,11 +237,8 @@ TEST_CASE("TMIV::Encoder::Configuration") {
     "viewportPositionSei": false,
     "oneViewPerAtlasFlag": true,
     "dqParamsPresentFlag": false,
-    "textureOffsetEnabledFlag": false,
-    "rewriteParameterSets": true,
     "patchMarginEnabledFlag": false,
     "patchRedundancyRemoval": true,
-    "chromaScaleEnabledFlag": false,
     "numGroups": 3,
     "maxEntityId": 5,
     "entityEncodeRange": [0, 4],
@@ -243,6 +250,8 @@ TEST_CASE("TMIV::Encoder::Configuration") {
 })"sv);
 
     const auto unit = Configuration{root};
+
+    root.checkForUnusedKeys();
 
     CHECK_FALSE(unit.haveTexture);
     CHECK_FALSE(unit.haveGeometry);
@@ -260,9 +269,6 @@ TEST_CASE("TMIV::Encoder::Configuration") {
     "viewportPositionSei": false,
     "oneViewPerAtlasFlag": true,
     "dqParamsPresentFlag": false,
-    "chromaScaleEnabledFlag": false,
-    "textureOffsetEnabledFlag": false,
-    "rewriteParameterSets": true,
     "patchMarginEnabledFlag": false,
     "patchRedundancyRemoval": true,
     "numGroups": 3,
@@ -276,6 +282,8 @@ TEST_CASE("TMIV::Encoder::Configuration") {
 })"sv);
 
     const auto unit = Configuration{root};
+
+    root.checkForUnusedKeys();
 
     CHECK_FALSE(unit.haveTexture);
     CHECK_FALSE(unit.haveGeometry);

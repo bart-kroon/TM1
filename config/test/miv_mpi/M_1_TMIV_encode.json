@@ -1,5 +1,4 @@
 {
-    "EncoderMethod": "MpiEncoder",
     "MpiEncoder": {
         "Packer": {
             "enableMerging": true,
@@ -15,34 +14,16 @@
         "transparencyDynamic": 4
     },
     "blockSizeDepthQualityDependent": [8, 8],
-    "chromaScaleEnabledFlag": false,
     "configDirectory": "config",
-    "depthLowQualityFlag": false,
-    "dynamicDepthRange": false,
-    "framePacking": false,
-    "geometryPacking": false,
-    "geometryScaleEnabledFlag": false,
-    "haveGeometryVideo": false,
-    "haveOccupancyVideo": false,
-    "haveTextureVideo": true,
-    "informationPruning": false,
     "inputDirectory": ".",
     "inputMpiPcsPathFmt": "{1}/{3}.pcs",
     "inputSequenceConfigPathFmt": "ctc/sequences/{1}.json",
     "intraPeriod": 32,
-    "maxAtlases": 1,
-    "oneViewPerAtlasFlag": false,
     "outputBitstreamPathFmt": "M{0}/{1}/TMIV_M{0}_{1}.bit",
     "outputDirectory": ".",
     "outputTextureVideoDataPathFmt": "M{0}/{1}/TMIV_M{0}_{1}_tex_c{3:02}_{4}x{5}_{6}.yuv",
     "outputTransparencyVideoDataPathFmt": "M{0}/{1}/TMIV_M{0}_{1}_tra_c{3:02}_{4}x{5}_{6}.yuv",
     "overrideAtlasFrameSizes": [[4096, 4096]],
-    "patchMarginEnabledFlag": false,
-    "patchRedundancyRemoval": true,
-    "piecewiseDepthLinearScaling": false,
-    "rewriteParameterSets": false,
-    "textureOffsetBitCount": 10,
-    "textureOffsetEnabledFlag": true,
     "viewportCameraParametersSei": false,
     "viewportPositionSei": false
 }

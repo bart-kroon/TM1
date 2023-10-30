@@ -64,7 +64,6 @@
     "configDirectory": "config",
     "dynamicDepthRange": true,
     "framePacking": false,
-    "geometryPacking": false,
     "geometryScaleEnabledFlag": true,
     "halveDepthRange": true,
     "haveGeometryVideo": true,

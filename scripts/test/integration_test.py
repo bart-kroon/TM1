@@ -648,7 +648,7 @@ class IntegrationTest:
             executor,
             [f1],
             ["{0}/bin/TmivDecoder", "-c", "{1}/config/ctc/miv_dsde_anchor/G_4_TMIV_decode.json"]
-            + ["-p", "configDirectory", "{1}/config", "-p", "inputDirectory", "{3}"]
+            + ["-p", "inputDirectory", "{3}"]
             + ["-p", "outputDirectory", "{3}"]
             + ["-n", "3", "-N", "3", "-s", "N", "-r", "RP0"]
             + ["-V", "debug"],
@@ -756,7 +756,7 @@ class IntegrationTest:
             executor,
             [f2_1, f2_2],
             ["{0}/bin/TmivMultiplexer", "-c", "{1}/config/test/miv_mpi/M_3_TMIV_mux.json"]
-            + ["-p", "configDirectory", "{1}/config", "-p", "inputDirectory", "{3}"]
+            + ["-p", "inputDirectory", "{3}"]
             + ["-p", "outputDirectory", "{3}", "-n", "3", "-s", "M", "-r", "QP3"]
             + ["-V", "debug"],
             "{3}/M3/M/QP3/TMIV_M3_M_QP3.log",
@@ -953,7 +953,6 @@ class IntegrationTest:
             [f2_1, f2_2],
             ["{0}/bin/TmivMultiplexer", "-c"]
             + ["{1}/config/test/entity_based_coding/E_3_TMIV_mux.json"]
-            + ["-p", "configDirectory", "{1}/config"]
             + ["-p", "inputDirectory", "{3}"]
             + ["-p", "outputDirectory", "{3}"]
             + ["-n", "3", "-s", "B", "-r", "QP3"]
@@ -1100,7 +1099,6 @@ class IntegrationTest:
             + ["-p", "outputDirectory", "{3}", "-n", "3", "-s", "N", "-p", "intraPeriod", "2"]
             + ["-p", "inputSequenceConfigPathFmt", "test/sequences/T{{1}}.json"]
             + ["-p", "maxLumaPictureSize", "1310720", "-f", "0"]
-            + ["-p", "inputBitstreamPathFmt", "O{0}/{1}/TMIV_O{0}_{1}.bit"]
             + ["-V", "debug"],
             "{3}/O3/N/TMIV_O3_N.log",
             [

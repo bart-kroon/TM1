@@ -37,6 +37,34 @@
 #include <TMIV/Encoder/V3cSampleSink.h>
 
 namespace TMIV::Encoder {
+namespace {
+void touchKeys(const Common::Json &config) {
+  using VUT = MivBitstream::VuhUnitType;
+  using ATI = MivBitstream::AiAttributeTypeId;
+
+  IO::touchSaveOutOfBandMetadataKeys(config);
+
+  if (config.require("framePacking").as<bool>()) {
+    IO::touchSaveOutOfBandVideoFrameKeys(config, VUT::V3C_PVD);
+  } else {
+    if (config.require("haveOccupancyVideo").as<bool>()) {
+      IO::touchSaveOutOfBandVideoFrameKeys(config, VUT::V3C_OVD);
+    }
+    if (config.require("haveGeometryVideo").as<bool>()) {
+      IO::touchSaveOutOfBandVideoFrameKeys(config, VUT::V3C_GVD);
+    }
+    if (config.require("haveTextureVideo").as<bool>()) {
+      IO::touchSaveOutOfBandVideoFrameKeys(config, VUT::V3C_AVD, ATI::ATTR_TEXTURE);
+    }
+    if (const auto &node = config.optional("haveTransparancyVideo")) {
+      if (node.as<bool>()) {
+        IO::touchSaveOutOfBandVideoFrameKeys(config, VUT::V3C_AVD, ATI::ATTR_TRANSPARENCY);
+      }
+    }
+  }
+}
+} // namespace
+
 CodableUnitEncoder::CodableUnitEncoder(const Common::Json &config, IO::Placeholders placeholders)
     : m_config{config}
     , m_placeholders{std::move(placeholders)}
@@ -47,6 +75,8 @@ CodableUnitEncoder::CodableUnitEncoder(const Common::Json &config, IO::Placehold
   if (!m_outputBitstream.good()) {
     throw std::runtime_error(fmt::format("Failed to open {} for writing.", m_outputBitstreamPath));
   }
+
+  touchKeys(config);
 }
 
 void CodableUnitEncoder::encode(CodableUnit frame) {

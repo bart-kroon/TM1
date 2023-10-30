@@ -95,6 +95,11 @@ void saveOutOfBandMetadata(const Common::Json &config, const Placeholders &place
   *stream << '\n';
 }
 
+void touchSaveOutOfBandMetadataKeys(const Common::Json &config) {
+  config.require("outputDirectory");
+  config.require("outputBitstreamPathFmt");
+}
+
 namespace {
 auto irapFrameIndices(const Common::Json &config, const Placeholders &placeholders)
     -> Common::Json::Array {
@@ -160,6 +165,12 @@ auto saveOutOfBandVideoFrame(const Common::Json &config, const Placeholders &pla
   return obj;
 }
 
+void touchSaveOutOfBandVideoFrameKeys(const Common::Json &config, MivBitstream::VuhUnitType vut,
+                                      MivBitstream::AiAttributeTypeId attrTypeId) {
+  config.require("outputDirectory");
+  config.require(fmt::format("output{}VideoDataPathFmt", videoComponentName(vut, attrTypeId)));
+}
+
 void saveViewport(const Common::Json &config, const Placeholders &placeholders, int32_t frameIdx,
                   const std::string &name, const Common::DeepFrame &frame) {
   const auto outputDir = config.require("outputDirectory").as<std::filesystem::path>();
@@ -191,6 +202,12 @@ void saveViewport(const Common::Json &config, const Placeholders &placeholders, 
   }
 }
 
+void touchSaveViewportKeys(const Common::Json &config) {
+  config.require("outputDirectory");
+  config.optional("outputViewportTexturePathFmt");
+  config.optional("outputViewportGeometryPathFmt");
+}
+
 void optionalSaveBlockToPatchMaps(const Common::Json &config, const Placeholders &placeholders,
                                   int32_t frameIdx, const MivBitstream::AccessUnit &frame) {
   const auto outputDir = config.require("outputDirectory").as<std::filesystem::path>();
@@ -205,6 +222,11 @@ void optionalSaveBlockToPatchMaps(const Common::Json &config, const Placeholders
                 btpm, frameIdx);
     }
   }
+}
+
+void touchOptionalSaveBlockToPatchMapsKeys(const Common::Json &config) {
+  config.require("outputDirectory");
+  config.optional("outputBlockToPatchMapPathFmt");
 }
 
 void optionalSavePrunedFrame(const Common::Json &config, const Placeholders &placeholders,
@@ -228,6 +250,12 @@ void optionalSavePrunedFrame(const Common::Json &config, const Placeholders &pla
   }
 }
 
+void touchOptionalSavePrunedFrameKeys(const Common::Json &config, MivBitstream::VuhUnitType vut,
+                                      MivBitstream::AiAttributeTypeId attrTypeId) {
+  config.require("outputDirectory");
+  config.optional(fmt::format("outputMultiview{}PathFmt", videoComponentName(vut, attrTypeId)));
+}
+
 void optionalSaveSequenceConfig(const Common::Json &config, const Placeholders &placeholders,
                                 int32_t frameIdx, const MivBitstream::SequenceConfig &seqConfig) {
   if (const auto &node = config.optional("outputSequenceConfigPathFmt")) {
@@ -247,6 +275,11 @@ void optionalSaveSequenceConfig(const Common::Json &config, const Placeholders &
   }
 }
 
+void touchOptionalSaveSequenceConfigKeys(const Common::Json &config) {
+  config.require("outputDirectory");
+  config.optional("outputSequenceConfigPathFmt");
+}
+
 auto outputBitstreamPath(const Common::Json &config, const Placeholders &placeholders)
     -> std::filesystem::path {
   auto &filesystem = DependencyInjector::getInstance().filesystem();
@@ -259,5 +292,10 @@ auto outputBitstreamPath(const Common::Json &config, const Placeholders &placeho
   filesystem.create_directories(path.parent_path());
 
   return path;
+}
+
+void touchOutputBitstreamPathKeys(const Common::Json &config) {
+  config.require("outputDirectory");
+  config.require("outputBitstreamPathFmt");
 }
 } // namespace TMIV::IO

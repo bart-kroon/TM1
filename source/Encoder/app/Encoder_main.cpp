@@ -78,6 +78,7 @@ public:
   }
 
   void run() override {
+    json().checkForUnusedKeys();
     m_sourceUnitLoader.loadAll();
     reportSummary(m_codableUnitEncoder.bytesWritten());
   }

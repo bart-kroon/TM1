@@ -77,6 +77,7 @@ public:
       , m_bitstreamMerger{std::make_unique<BitstreamMerger>()} {}
 
   void run() override {
+    json().checkForUnusedKeys();
     readInputBitstream();
     readOutOfBandMetadata();
     updatePackingInformation();

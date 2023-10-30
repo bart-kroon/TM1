@@ -85,6 +85,8 @@ public:
     }
   }
   void run() override {
+    json().checkForUnusedKeys();
+
     switch (m_conversionMode) {
     case ConversionMode::RawToPcs:
       doRawToPcsConversion();

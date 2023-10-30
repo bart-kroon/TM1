@@ -55,6 +55,7 @@ private:
   // checking to runtime. This creates a class invariant and thus m_node had to be made private and
   // we need to have many constructors (instead of almost none).
   std::any m_node;
+  mutable bool m_wasAccessed{};
 
 public:
   using Object = std::map<std::string, Json>;
@@ -146,12 +147,12 @@ public:
   // Access a JSON object by key
   //  * When a key is missing, returns `null`.
   //  * When this node is not a JSON object, throws a `std::runtime_error`.
-  [[nodiscard]] auto optional(const std::string &key) const -> const Json &;
+  auto optional(const std::string &key) const -> const Json &;
 
   // Access a JSON object by key
   //  * When a key is missing, throws a `std::runtime_error`.
   //  * When this node is not a JSON object, throws a `std::runtime_error`.
-  [[nodiscard]] auto require(const std::string &key) const -> const Json &;
+  auto require(const std::string &key) const -> const Json &;
 
   // Copy JSON array of unknown length to std::vector<T> for given type T
   //  * When this node is not a JSON array, throws a `std::runtime_error`.
@@ -160,6 +161,10 @@ public:
   // Copy JSON array of known length M to a stack::Vector<T, M> for given type T and M
   //  * When this node is not a JSON array, throws a `std::runtime_error`.
   template <typename T, size_t M> [[nodiscard]] auto asVec() const -> stack::Vector<T, M>;
+
+  [[nodiscard]] auto wasAccessed() const -> bool { return m_wasAccessed; }
+
+  void checkForUnusedKeys(const std::string &here = {}) const;
 };
 } // namespace TMIV::Common
 

@@ -34,8 +34,8 @@
 #include <TMIV/Common/Json.h>
 
 #include <TMIV/Common/Common.h>
-
-#include <fmt/format.h>
+#include <TMIV/Common/Formatters.h>
+#include <TMIV/Common/LoggingStrategyFmt.h>
 
 #include <regex>
 #include <sstream>
@@ -410,6 +410,20 @@ auto Json::update(const Json &other) -> Json & {
 void Json::mergeObject(Json::Object &first, const Json::Object &second) {
   for (const auto &[key, value] : second) {
     first[key].update(value);
+  }
+}
+
+void Json::checkForUnusedKeys(const std::string &here) const {
+  if (!wasAccessed()) {
+    throw std::runtime_error(
+        fmt::format("The parameter {} has no part in this configuration.", here));
+  }
+
+  if (const auto *object = std::any_cast<Object>(&m_node)) {
+    for (const auto &kvp : *object) {
+      kvp.second.checkForUnusedKeys(here.empty() ? kvp.first
+                                                 : fmt::format("{}.{}", here, kvp.first));
+    }
   }
 }
 } // namespace TMIV::Common

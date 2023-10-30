@@ -49,9 +49,19 @@ using namespace std::string_view_literals;
 namespace TMIV::Renderer {
 void registerComponents();
 
+namespace {
+void touchKeys(const Common::Json &config) {
+  IO::touchLoadSequenceConfigKeys(config);
+  IO::touchLoadMultiviewFrameKeys(config);
+  IO::touchLoadViewportMetadataKeys(config);
+  IO::touchSaveViewportKeys(config);
+}
+} // namespace
+
 class RenderApplication : public Common::Application {
 private:
   IO::Placeholders m_placeholders;
+  std::unique_ptr<DepthQualityAssessor::IDepthQualityAssessor> m_assessor;
   Renderer::Front::MultipleFrameRenderer m_renderer;
   std::multimap<int32_t, int32_t> m_inputToOutputFrameIdMap;
   std::optional<bool> m_depthLowQualityFlag;
@@ -72,15 +82,20 @@ public:
                        std::stoi(optionValues("-n"sv).front()),
                        std::stoi(optionValues("-N"sv).front()),
                        std::stoi(optionValues("-f"sv).front())}
+      , m_assessor{Common::create<DepthQualityAssessor::IDepthQualityAssessor>(
+            "DepthQualityAssessor", json(), json())}
       , m_renderer{json(), optionValues("-v"), optionValues("-P"), m_placeholders}
       , m_inputToOutputFrameIdMap{Renderer::Front::mapInputToOutputFrames(
             m_placeholders.numberOfInputFrames, m_placeholders.numberOfOutputFrames)} {
     if (const auto &node = json().optional("depthLowQualityFlag")) {
       m_depthLowQualityFlag = node.as<bool>();
     }
+    touchKeys(json());
   }
 
   void run() override {
+    json().checkForUnusedKeys();
+
     for (int32_t frameIdx = 0;; ++frameIdx) {
       // Check which frames to render if we would
       const auto range = m_inputToOutputFrameIdMap.equal_range(frameIdx);
@@ -94,7 +109,7 @@ public:
       const auto inputViewParamsList = m_inputSequenceConfig.sourceViewParams();
 
       if (!m_depthLowQualityFlag) {
-        m_depthLowQualityFlag = isDepthLowQuality(frame, inputViewParamsList);
+        m_depthLowQualityFlag = m_assessor->isLowDepthQuality(inputViewParamsList, frame);
       }
 
       // Make up an access unit
@@ -174,13 +189,6 @@ private:
               uint16_t{});
 
     return aau;
-  }
-
-  auto isDepthLowQuality(const Common::DeepFrameList &frame,
-                         const MivBitstream::ViewParamsList &vpl) -> bool {
-    const auto assessor = Common::create<DepthQualityAssessor::IDepthQualityAssessor>(
-        "DepthQualityAssessor", json(), json());
-    return assessor->isLowDepthQuality(vpl, frame);
   }
 };
 } // namespace TMIV::Renderer

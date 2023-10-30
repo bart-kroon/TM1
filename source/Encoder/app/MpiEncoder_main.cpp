@@ -47,6 +47,17 @@ using namespace std::string_view_literals;
 namespace TMIV::Encoder {
 void registerComponents();
 
+namespace {
+void touchKeys(const Common::Json &config) {
+  using VUT = MivBitstream::VuhUnitType;
+  using ATI = MivBitstream::AiAttributeTypeId;
+
+  IO::touchSaveOutOfBandMetadataKeys(config);
+  IO::touchSaveOutOfBandVideoFrameKeys(config, VUT::V3C_AVD, ATI::ATTR_TEXTURE);
+  IO::touchSaveOutOfBandVideoFrameKeys(config, VUT::V3C_AVD, ATI::ATTR_TRANSPARENCY);
+}
+} // namespace
+
 class Application : public Common::Application {
 private:
   MpiEncoder m_encoder;
@@ -100,9 +111,13 @@ public:
     }
 
     m_sink = encodeMiv(v3cSampleSink(m_outputBitstream), false);
+
+    touchKeys(json());
   }
 
   void run() override {
+    json().checkForUnusedKeys();
+
     if (1 < m_inputSequenceConfig.sourceViewParams().size()) {
       throw std::runtime_error("Only one input MPI camera is allowed with current version of MPI "
                                "encoder. Please change inputCameraNames field in json !!!");

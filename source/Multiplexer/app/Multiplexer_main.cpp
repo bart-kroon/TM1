@@ -48,6 +48,14 @@
 using namespace std::string_view_literals;
 
 namespace TMIV::Multiplexer {
+namespace {
+void touchKeys(const Common::Json &config) {
+  IO::touchInputBitstreamPathKeys(config);
+  IO::touchInputVideoSubBitstreamPathKeys(config);
+  IO::touchOutputBitstreamPathKeys(config);
+}
+} // namespace
+
 class MultiplexerApplication : public Common::Application {
 private:
   const std::string &m_contentId;
@@ -75,6 +83,9 @@ public:
       , m_testId{optionValues("-r").front()} {}
 
   void run() override {
+    touchKeys(json());
+    json().checkForUnusedKeys();
+
     requireUnequalBitstreamPaths();
     auto stream = openOutputBitstream();
     encodeV3cSampleStream(multiplex(openInputBitstream(), codedVideoSequenceSourceFactory()),

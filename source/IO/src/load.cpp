@@ -156,6 +156,19 @@ auto requantize(Common::Frame<> frame) {
 }
 } // namespace
 
+void touchLoadMultiviewFrameKeys(const Common::Json &config) {
+  using VUT = MivBitstream::VuhUnitType;
+  using ATI = MivBitstream::AiAttributeTypeId;
+
+  config.require("inputDirectory");
+  config.optional(fmt::format("input{}PathFmt", videoComponentName(VUT::V3C_GVD)));
+  config.optional(
+      fmt::format("input{}PathFmt", videoComponentName(VUT::V3C_AVD, ATI::ATTR_TEXTURE)));
+  config.optional(
+      fmt::format("input{}PathFmt", videoComponentName(VUT::V3C_AVD, ATI::ATTR_TRANSPARENCY)));
+  config.optional("inputEntityPathFmt");
+}
+
 auto loadMultiviewFrame(const Common::Json &config, const Placeholders &placeholders,
                         const MivBitstream::SequenceConfig &sc, int32_t frameIdx)
     -> Common::DeepFrameList {
@@ -300,6 +313,12 @@ auto loadViewportMetadata(const Common::Json &config, const Placeholders &placeh
   return result;
 }
 
+void touchLoadViewportMetadataKeys(const Common::Json &config) {
+  config.require("configDirectory");
+  config.require("inputViewportParamsPathFmt");
+  config.optional("inputPoseTracePathFmt");
+}
+
 namespace {
 auto loadVuhFromJson(const Common::Json &node) -> MivBitstream::V3cUnitHeader {
   const auto vuh_unit_type = node.require("vuh_unit_type").as<MivBitstream::VuhUnitType>();
@@ -394,6 +413,19 @@ auto loadOutOfBandVideoFrame(const Common::Json &config, const Placeholders &pla
           Common::contains(metadata.irapFrameIndices, frameIdx)};
 }
 
+void touchLoadOutOfBandVideoFrameKeys(const Common::Json &config) {
+  config.require("inputDirectory");
+  config.require("inputBitstreamPathFmt");
+  config.optional("inputOccupancyVideoFramePathFmt");
+  config.optional("inputGeometryVideoFramePathFmt");
+  config.optional("inputPackedVideoFramePathFmt");
+  config.optional("inputTextureVideoFramePathFmt");
+  config.optional("inputTransparencyVideoFramePathFmt");
+  config.optional("inputMaterialIdVideoFramePathFmt");
+  config.optional("inputReflectanceVideoFramePathFmt");
+  config.optional("inputNormalVideoFramePathFmt");
+}
+
 namespace {
 template <bool allowNullopt>
 auto tryLoadSequenceConfig_(const Common::Json &config, const Placeholders &placeholders,
@@ -438,11 +470,22 @@ auto tryLoadSequenceConfig(const Common::Json &config, const Placeholders &place
   return tryLoadSequenceConfig_<true>(config, placeholders, frameIdx);
 }
 
+void touchLoadSequenceConfigKeys(const Common::Json &config) {
+  config.require("inputSequenceConfigPathFmt");
+  config.require("inputDirectory");
+  config.require("configDirectory");
+}
+
 auto inputBitstreamPath(const Common::Json &config, const Placeholders &placeholders)
     -> std::filesystem::path {
   return config.require("inputDirectory").as<std::filesystem::path>() /
          fmt::format(fmt::runtime(config.require("inputBitstreamPathFmt").as<std::string>()),
                      placeholders.numberOfInputFrames, placeholders.contentId, placeholders.testId);
+}
+
+void touchInputBitstreamPathKeys(const Common::Json &config) {
+  config.require("inputDirectory");
+  config.require("inputBitstreamPathFmt");
 }
 
 auto inputVideoSubBitstreamPath(const Common::Json &config, const Placeholders &placeholders,
@@ -460,5 +503,17 @@ auto inputVideoSubBitstreamPath(const Common::Json &config, const Placeholders &
          fmt::format(fmt::runtime(config.require(configKey).as<std::string>()),
                      placeholders.numberOfInputFrames, placeholders.contentId, placeholders.testId,
                      vuh.vuh_atlas_id().asInt(), attrIdx);
+}
+
+void touchInputVideoSubBitstreamPathKeys(const Common::Json &config) {
+  config.require("inputDirectory");
+  config.optional("inputOccupancyVideoSubBitstreamPathFmt");
+  config.optional("inputGeometryVideoSubBitstreamPathFmt");
+  config.optional("inputPackedVideoSubBitstreamPathFmt");
+  config.optional("inputTextureVideoSubBitstreamPathFmt");
+  config.optional("inputTransparencyVideoSubBitstreamPathFmt");
+  config.optional("inputMaterialIdVideoSubBitstreamPathFmt");
+  config.optional("inputReflectanceVideoSubBitstreamPathFmt");
+  config.optional("inputNormalVideoSubBitstreamPathFmt");
 }
 } // namespace TMIV::IO

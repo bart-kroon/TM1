@@ -8,11 +8,6 @@
         "outputAdditionalViews": false,
         "verticalInhomogenityCoefficient": 0.4
     },
-    "DepthQualityAssessor": {
-        "blendingFactor": 0.03,
-        "maxOutlierRatio": 0.001
-    },
-    "DepthQualityAssessorMethod": "DepthQualityAssessor",
     "NoPruner": {},
     "Packer": {
         "enableMerging": true,
@@ -32,9 +27,7 @@
     "codecGroupIdc": "VVC Main10",
     "configDirectory": "config",
     "dqParamsPresentFlag": false,
-    "dynamicDepthRange": false,
     "framePacking": false,
-    "geometryPacking": false,
     "haveGeometryVideo": false,
     "haveOccupancyVideo": false,
     "haveTextureVideo": true,
@@ -56,7 +49,6 @@
     "outputTextureVideoDataPathFmt": "G{0}/{1}/RP0/TMIV_G{0}_{1}_RP0_tex_c{3:02}_{4}x{5}_{6}.yuv",
     "patchMarginEnabledFlag": false,
     "patchRedundancyRemoval": true,
-    "piecewiseDepthLinearScaling": false,
     "reconstructionIdc": "Rec Unconstrained",
     "rewriteParameterSets": false,
     "textureOffsetEnabledFlag": false,

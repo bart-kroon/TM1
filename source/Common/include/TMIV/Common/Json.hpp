@@ -130,6 +130,7 @@ template <typename T, typename> inline auto Json::operator=(const T &value) -> J
 }
 
 template <typename T> auto Json::as() const -> decltype(auto) {
+  m_wasAccessed = true;
   try {
     if constexpr (std::is_same_v<T, bool>) {
       return std::any_cast<bool>(m_node);
@@ -173,6 +174,7 @@ inline auto Json::optional(const std::string &key) const -> const Json & {
   if (kvp == object.cend()) {
     return null;
   }
+  kvp->second.m_wasAccessed = true;
   return std::get<1>(*kvp);
 }
 

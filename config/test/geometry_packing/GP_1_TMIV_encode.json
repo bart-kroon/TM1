@@ -67,7 +67,6 @@
     "dynamicDepthRange": true,
     "embeddedOccupancy": true,
     "framePacking": true,
-    "geometryPacking": true,
     "geometryScaleEnabledFlag": true,
     "halveDepthRange": true,
     "haveGeometryVideo": true,

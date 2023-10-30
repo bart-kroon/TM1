@@ -41,6 +41,7 @@ SourceUnitLoader::SourceUnitLoader(const Common::Json &config, IO::Placeholders 
     , m_placeholders{std::move(placeholders)}
     , m_sequenceConfig{IO::loadSequenceConfig(config, m_placeholders, 0)} {
   supportExperimentsThatUseASubsetOfTheCameras();
+  IO::touchLoadMultiviewFrameKeys(config);
 }
 
 void SourceUnitLoader::loadAll() {

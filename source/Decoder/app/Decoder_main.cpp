@@ -58,6 +58,26 @@ using namespace std::string_literals;
 namespace TMIV::Decoder {
 void registerComponents();
 
+namespace {
+void touchKeys(const Common::Json &config, bool hasViewports) {
+  using VUT = MivBitstream::VuhUnitType;
+  using ATI = MivBitstream::AiAttributeTypeId;
+
+  IO::touchLoadOutOfBandVideoFrameKeys(config);
+  IO::touchOptionalSaveBlockToPatchMapsKeys(config);
+  IO::touchOptionalSaveSequenceConfigKeys(config);
+  IO::touchOptionalSavePrunedFrameKeys(config, VUT::V3C_OVD);
+  IO::touchOptionalSavePrunedFrameKeys(config, VUT::V3C_GVD);
+  IO::touchOptionalSavePrunedFrameKeys(config, VUT::V3C_AVD, ATI::ATTR_TEXTURE);
+  IO::touchOptionalSavePrunedFrameKeys(config, VUT::V3C_AVD, ATI::ATTR_TRANSPARENCY);
+
+  if (hasViewports) {
+    IO::touchLoadViewportMetadataKeys(config);
+    IO::touchSaveViewportKeys(config);
+  }
+}
+} // namespace
+
 class Application : public Common::Application {
 private:
   PreRenderer m_preRenderer;
@@ -93,9 +113,12 @@ public:
       , m_checker{std::make_shared<PtlChecker::PtlChecker>()}
       , m_mivDecoder{decodeMiv()} {
     tryOpenOutputLog();
+    touchKeys(json(), !optionValues("-v").empty() || !optionValues("-P").empty());
   }
 
   void run() override {
+    json().checkForUnusedKeys();
+
     for (int32_t inputFrameIdx = 0; inputFrameIdx < m_placeholders.numberOfInputFrames;
          ++inputFrameIdx) {
       if (auto frame = m_mivDecoder()) {

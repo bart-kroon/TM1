@@ -50,7 +50,6 @@
     "embeddedOccupancy": true,
     "entityEncodeRange": [8, 16],
     "framePacking": false,
-    "geometryPacking": false,
     "geometryScaleEnabledFlag": true,
     "halveDepthRange": true,
     "haveGeometryVideo": true,

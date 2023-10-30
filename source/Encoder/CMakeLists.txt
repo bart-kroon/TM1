@@ -7,11 +7,6 @@ create_tmiv_library(
     "src/Configuration.cpp"
     "src/EncodeMiv.cpp"
     "src/Encoder.cpp"
-    "src/EncoderImpl.cpp"
-    "src/Encoder_prepareSequence.cpp"
-    "src/Encoder_prepareAccessUnit.cpp"
-    "src/Encoder_pushFrame.cpp"
-    "src/Encoder_completeAccessUnit.cpp"
     "src/FilterPatchMarginStage.cpp"
     "src/V3cSampleSink.cpp"
     PUBLIC
@@ -66,7 +61,6 @@ create_catch2_unit_test(
     SOURCES
     "test/Configuration_test.cpp"
     "test/EncodeMiv_test.cpp"
-    "test/Encoder_prepareSequence_test.cpp"
     PRIVATE
     EncoderLib
     AggregatorLib

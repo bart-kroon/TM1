@@ -31,63 +31,20 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "EncoderImpl.h"
-
-#include <TMIV/Common/Factory.h>
-
-using TMIV::Aggregator::IAggregator;
-using TMIV::Packer::IPacker;
-using TMIV::Pruner::IPruner;
+#include <TMIV/Common/Json.h>
+#include <TMIV/Common/Stage.h>
+#include <TMIV/MivBitstream/CodableUnit.h>
 
 namespace TMIV::Encoder {
-Encoder::Impl::Impl(const Common::Json &componentNode)
-    : m_pruner{Common::create<Pruner::IPruner>("Pruner", componentNode, componentNode)}
-    , m_aggregator{Common::create<IAggregator>("Aggregator", componentNode, componentNode)}
-    , m_packer{Common::create<IPacker>("Packer", componentNode, componentNode)}
-    , m_config(componentNode) {}
+using MivBitstream::CodableUnit;
 
-auto Encoder::Impl::maxLumaSamplesPerFrame() const -> size_t { return m_maxLumaSamplesPerFrame; }
+class FilterPatchMarginStage : public Common::Stage<CodableUnit, CodableUnit> {
+public:
+  FilterPatchMarginStage(const Common::Json &componentNode);
 
-auto Encoder::Impl::isStart(const SourceUnit & /* unit */) -> bool {
-  return ++m_lastIdx % m_config.interPeriod == 0;
-}
+  void encode(CodableUnit unit) override;
 
-void Encoder::Impl::process(std::vector<SourceUnit> buffer,
-                            const Common::StageSource<CodableUnit> &source_) {
-  if (m_firstIdx == 0) {
-    prepareSequence(buffer.front());
-  }
-
-  m_params.foc = m_firstIdx % m_config.intraPeriod;
-
-  prepareAccessUnit();
-
-  for (auto &sourceUnit : buffer) {
-    pushFrame(std::move(sourceUnit.deepFrameList));
-  }
-
-  completeAccessUnit();
-
-  if (m_config.chromaScaleEnabledFlag) {
-    scaleChromaDynamicRange();
-  }
-
-  constructVideoFrames();
-
-  auto type = m_firstIdx % m_config.intraPeriod == 0 ? MivBitstream::CodableUnitType::IDR
-                                                     : MivBitstream::CodableUnitType::TRIAL;
-
-  for (auto &deepFrameList : m_videoFrameBuffer) {
-    source_.encode({m_params, std::move(deepFrameList), type});
-
-    type = MivBitstream::CodableUnitType::SKIP;
-    // Pattern for intraPeriod=8 and interPeriod=4:
-    //    IDR SKIP SKIP SKIP TRIAL SKIP SKIP SKIP IDR ...
-    // FOC=0   1    2    3    4     5    6    7    0  ...
-  }
-
-  m_videoFrameBuffer.clear();
-
-  m_firstIdx = m_lastIdx;
-}
+private:
+  bool m_patchMarginEnabledFlag;
+};
 } // namespace TMIV::Encoder

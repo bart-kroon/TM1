@@ -12,6 +12,7 @@ create_tmiv_library(
     "src/Encoder_prepareAccessUnit.cpp"
     "src/Encoder_pushFrame.cpp"
     "src/Encoder_completeAccessUnit.cpp"
+    "src/FilterPatchMarginStage.cpp"
     "src/V3cSampleSink.cpp"
     PUBLIC
     MivBitstreamLib

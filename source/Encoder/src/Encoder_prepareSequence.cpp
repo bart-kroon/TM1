@@ -304,13 +304,6 @@ createCommonAtlasSequenceParameterSet(const Configuration &config,
   return asme;
 }
 
-[[nodiscard]] auto createAspsMiv2Extension(const Configuration &config) {
-  auto asme2 = MivBitstream::AspsMiv2Extension{};
-  asme2.asme_patch_margin_enabled_flag(config.patchMarginFlag);
-
-  return asme2;
-}
-
 [[nodiscard]] auto
 createAtlasSequenceParameterSet(const Configuration &config,
                                 const MivBitstream::V3cParameterSet &vps,
@@ -331,7 +324,7 @@ createAtlasSequenceParameterSet(const Configuration &config,
       .asps_num_ref_atlas_frame_lists_in_asps(1)
       .asps_patch_size_quantizer_present_flag(psq.x() != blockSize || psq.y() != blockSize)
       .asps_miv_extension() = createAspsMivExtension(config, vps, blockSize, j);
-  asps.asps_miv_2_extension() = createAspsMiv2Extension(config);
+  asps.asps_miv_2_extension() = {};
 
   if (vps.vps_geometry_video_present_flag(j)) {
     const auto &gi = vps.geometry_information(j);

@@ -84,13 +84,6 @@ private:
   void updateAggregationStatistics(const Common::FrameList<uint8_t> &aggregatedMask);
   auto allocateAtlasList(uint32_t texBitDepth) const -> Common::DeepFrameList;
   void constructVideoFrames();
-  void filterPatchMargins();
-  void clearPatchMargins(size_t f, size_t a, Common::Frame<> &tmpTex, Common::Frame<> &tmpGeo,
-                         Common::Frame<> &tmpTmp);
-  void inpaintPatchMargins(size_t f, size_t a, Common::Frame<> &tmpTex, Common::Frame<> &tmpGeo,
-                           Common::Frame<> &tmpTmp);
-  void blurPatchMargins(size_t f, size_t a, Common::Frame<> &tmpTex, Common::Frame<> &tmpGeo,
-                        Common::Frame<> &tmpTmp);
   void encodePatchTextureOffset(const PatchTextureStats &stats);
   void applyPatchTextureOffset();
   [[nodiscard]] auto calculateBtpm() const -> std::vector<std::vector<std::vector<int32_t>>>;

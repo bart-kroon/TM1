@@ -67,8 +67,16 @@ void Encoder::Impl::process(std::vector<SourceUnit> buffer,
   }
 
   completeAccessUnit();
+
+  if (m_config.chromaScaleEnabledFlag) {
+    scaleChromaDynamicRange();
+  }
+
   constructVideoFrames();
 
+  if (m_config.patchMarginFlag) {
+    filterPatchMargins();
+  }
   auto type = m_firstIdx % m_config.intraPeriod == 0 ? MivBitstream::CodableUnitType::IDR
                                                      : MivBitstream::CodableUnitType::TRIAL;
 

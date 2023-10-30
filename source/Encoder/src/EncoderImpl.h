@@ -82,6 +82,7 @@ private:
   void pruningWithInformation(Common::FrameList<uint8_t> &aggregatedMask,
                               const Common::FrameList<uint32_t> &information);
   void updateAggregationStatistics(const Common::FrameList<uint8_t> &aggregatedMask);
+  auto allocateAtlasList(uint32_t texBitDepth) const -> Common::DeepFrameList;
   void constructVideoFrames();
   void filterPatchMargins();
   void clearPatchMargins(size_t f, size_t a, Common::Frame<> &tmpTex, Common::Frame<> &tmpGeo,
@@ -96,24 +97,32 @@ private:
   void adaptBtpmToPatchCount(std::vector<std::vector<std::vector<int32_t>>> &btpm) const;
   [[nodiscard]] auto isRedundantBlock(Common::Vec2i topLeft, Common::Vec2i bottomRight,
                                       uint16_t viewIdx) const -> bool;
-  auto writePatchInAtlas(const MivBitstream::PatchParams &patchParams,
+
+  template <typename Invocable>
+  void visitPatch(const MivBitstream::PatchParams &patchParams, Invocable &&visit) const;
+
+  auto writeSampleInPatchIdxMap(const MivBitstream::PatchParams &patchParams,
+                                Common::DeepFrameList &frame, size_t patchIdx) const;
+  auto writeOccupancySampleInAtlas(const MivBitstream::PatchParams &patchParams,
+                                   const Common::DeepFrame &view,
+                                   Common::DeepFrameList &frame) const;
+  auto writeGeometrySampleInAtlas(const MivBitstream::PatchParams &patchParams,
+                                  const Common::DeepFrame &view,
+                                  Common::DeepFrameList &frame) const;
+  auto writeTextureSampleInAtlas(const MivBitstream::PatchParams &patchParams,
+                                 const Common::DeepFrame &view, Common::DeepFrameList &frame) const;
+
+  void writePatchInAtlas(const MivBitstream::PatchParams &patchParams,
                          const Common::DeepFrame &view, Common::DeepFrameList &frame,
-                         size_t patchIdx) -> TextureStats;
-  void adaptAtlas(const MivBitstream::PatchParams &patchParams, Common::DeepFrame &atlas,
-                  int32_t yOcc, int32_t xOcc, const Common::Vec2i &pView,
-                  const Common::Vec2i &pAtlas) const;
+                         size_t patchIdx);
+  auto collectPatchTextureStats(const MivBitstream::PatchParams &patchParams,
+                                const Common::DeepFrameList &frame) -> TextureStats;
 
   void setTiles();
   auto setPartition() -> bool;
   void setAtlasFrameTileInformation(bool uniformPartitionSpacingFlag);
 
   std::vector<std::vector<std::vector<int32_t>>> m_partitionArray;
-
-  auto plsMakeHistogram(int32_t piece_num, size_t numOfFrames, size_t v, int32_t minDepthVal,
-                        int32_t maxDepthVal) -> std::vector<int32_t>;
-  auto plsGeometryDynamicRange(size_t numOfFrames, size_t v, int32_t minDepthMapValWithinGOP,
-                               int32_t maxDepthMapValWithinGOP, bool lowDepthQuality)
-      -> std::vector<double>;
 
   // Encoder sub-components
   std::unique_ptr<Pruner::IPruner> m_pruner;
@@ -140,8 +149,6 @@ private:
   // Mask aggregation state
   std::vector<Common::FrameList<uint8_t>> m_aggregatedEntityMask;
   size_t m_maxLumaSamplesPerFrame{};
-
-  std::vector<Common::Vec3i> m_patchColorCorrectionOffset;
 };
 } // namespace TMIV::Encoder
 

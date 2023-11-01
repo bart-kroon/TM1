@@ -155,12 +155,12 @@ void FramePacker::updateVideoPresentFlags(MivBitstream::AtlasId atlasId, bool ge
 }
 
 void FramePacker::updatePinOccupancyInformation(MivBitstream::AtlasId atlasId) {
-  m_packingInformation.pin_occupancy_2d_bit_depth_minus1(
-      m_params.vps.occupancy_information(atlasId).oi_occupancy_2d_bit_depth_minus1());
-  m_packingInformation.pin_occupancy_MSB_align_flag(
-      m_params.vps.occupancy_information(atlasId).oi_occupancy_MSB_align_flag());
+  const auto &oi = m_params.vps.occupancy_information(atlasId);
+
+  m_packingInformation.pin_occupancy_2d_bit_depth_minus1(oi.oi_occupancy_2d_bit_depth_minus1());
+  m_packingInformation.pin_occupancy_MSB_align_flag(oi.oi_occupancy_MSB_align_flag());
   m_packingInformation.pin_lossy_occupancy_compression_threshold(
-      m_params.vps.occupancy_information(atlasId).oi_lossy_occupancy_compression_threshold());
+      oi.oi_lossy_occupancy_compression_threshold());
 }
 
 auto FramePacker::computeOccupancySizeAndRegionCount(size_t atlasIdx, bool geometryPacking)
@@ -198,26 +198,26 @@ auto FramePacker::computeGeometrySizeAndRegionCount(size_t atlasIdx, bool geomet
 }
 
 void FramePacker::updatePinGeometryInformation(MivBitstream::AtlasId atlasId) {
-  m_packingInformation.pin_geometry_2d_bit_depth_minus1(
-      m_params.vps.geometry_information(atlasId).gi_geometry_2d_bit_depth_minus1());
-  m_packingInformation.pin_geometry_MSB_align_flag(
-      m_params.vps.geometry_information(atlasId).gi_geometry_msb_align_flag());
+  const auto &gi = m_params.vps.geometry_information(atlasId);
+
+  m_packingInformation.pin_geometry_2d_bit_depth_minus1(gi.gi_geometry_2d_bit_depth_minus1());
+  m_packingInformation.pin_geometry_MSB_align_flag(gi.gi_geometry_msb_align_flag());
   m_packingInformation.pin_geometry_3d_coordinates_bit_depth_minus1(
-      m_params.vps.geometry_information(atlasId).gi_geometry_3d_coordinates_bit_depth_minus1());
+      gi.gi_geometry_3d_coordinates_bit_depth_minus1());
 }
 
 void FramePacker::updatePinAttributeInformation(MivBitstream::AtlasId atlasId) {
-  m_packingInformation.pin_attribute_count(
-      m_params.vps.attribute_information(atlasId).ai_attribute_count());
+  const auto &ai = m_params.vps.attribute_information(atlasId);
 
-  for (uint8_t i = 0; i < m_params.vps.attribute_information(atlasId).ai_attribute_count(); i++) {
-    m_packingInformation.pin_attribute_type_id(i, MivBitstream::AiAttributeTypeId::ATTR_TEXTURE);
-    m_packingInformation.pin_attribute_2d_bit_depth_minus1(
-        i, m_params.vps.attribute_information(atlasId).ai_attribute_2d_bit_depth_minus1(i));
-    m_packingInformation.pin_attribute_MSB_align_flag(
-        0, m_params.vps.attribute_information(atlasId).ai_attribute_msb_align_flag(i));
+  m_packingInformation.pin_attribute_count(ai.ai_attribute_count());
+
+  for (uint8_t i = 0; i < ai.ai_attribute_count(); i++) {
+    m_packingInformation.pin_attribute_type_id(i, ai.ai_attribute_type_id(i));
+    m_packingInformation.pin_attribute_2d_bit_depth_minus1(i,
+                                                           ai.ai_attribute_2d_bit_depth_minus1(i));
+    m_packingInformation.pin_attribute_MSB_align_flag(0, ai.ai_attribute_msb_align_flag(i));
     m_packingInformation.pin_attribute_map_absolute_coding_persistence_flag(i, false);
-    m_packingInformation.pin_attribute_dimension_minus1(i, 2);
+    m_packingInformation.pin_attribute_dimension_minus1(i, ai.ai_attribute_dimension_minus1(i));
   }
 }
 
@@ -238,7 +238,7 @@ void FramePacker::updatePinRegionInformation(size_t i) {
     m_packingInformation.pin_region_auxiliary_data_flag(i, false);
   }
   if (m_pinRegion.pinRegionTypeId() == MivBitstream::VuhUnitType::V3C_AVD) {
-    m_packingInformation.pin_region_attr_index(i, 0);
+    m_packingInformation.pin_region_attr_index(i, m_pinRegion.pin_region_attr_index.value());
   }
 }
 
@@ -250,6 +250,7 @@ void FramePacker::setAttributePinRegion(size_t i, const Common::Vec2i &frameSize
   m_pinRegion.pin_region_height_minus1 = static_cast<uint16_t>(frameSize.y() - 1);
   m_pinRegion.pin_region_unpack_top_left_x = 0;
   m_pinRegion.pin_region_unpack_top_left_y = 0;
+  m_pinRegion.pin_region_attr_index = static_cast<uint8_t>(i);
 }
 
 void FramePacker::setGeometryPinRegion(size_t i, size_t atlasIdx,

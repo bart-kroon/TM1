@@ -62,7 +62,14 @@ Configuration::Configuration(const Common::Json &componentNode)
     , numGroups{componentNode.require("numGroups").as<uint8_t>()}
     , maxEntityId{componentNode.require("maxEntityId").as<uint16_t>()}
     , viewportCameraParametersSei{componentNode.require("viewportCameraParametersSei").as<bool>()}
-    , viewportPositionSei{componentNode.require("viewportPositionSei").as<bool>()} {
+    , viewportPositionSei{componentNode.require("viewportPositionSei").as<bool>()}
+    , codecGroupIdc{queryEnum(componentNode, "codecGroupIdc", "codec group",
+                              MivBitstream::knownCodecGroupIdcs)}
+    , toolsetIdc{queryEnum(componentNode, "toolsetIdc", "toolset", MivBitstream::knownToolsetIdcs)}
+    , reconstructionIdc{queryEnum(componentNode, "reconstructionIdc", "reconstruction",
+                                  MivBitstream::knownReconstructionIdcs)}
+    , levelIdc{queryEnum(componentNode, "levelIdc", "level", MivBitstream::knownLevelIdcs)}
+    , oneV3cFrameOnly{componentNode.require("oneV3cFrameOnly").as<bool>()} {
   VERIFY(0 < intraPeriod);
 
   if (const auto &node = componentNode.optional("interPeriod")) {
@@ -71,7 +78,6 @@ Configuration::Configuration(const Common::Json &componentNode)
   }
 
   queryMainParameters(componentNode);
-  queryProfileTierLevelParameters(componentNode);
   queryBitDepthParameters(componentNode);
   querySeiParameters(componentNode);
   queryTileParameters(componentNode);
@@ -128,8 +134,8 @@ void Configuration::queryMainParameters(const Common::Json &componentNode) {
 
 namespace {
 template <typename Idc, size_t N>
-auto queryIdc(const Common::Json &node, const std::string &key, const std::string &name,
-              const std::array<Idc, N> &known) {
+auto queryEnum(const Common::Json &node, const std::string &key, const std::string &name,
+               const std::array<Idc, N> &known) {
   const auto text = node.require(key).as<std::string>();
 
   for (auto i : known) {
@@ -140,16 +146,6 @@ auto queryIdc(const Common::Json &node, const std::string &key, const std::strin
   throw std::runtime_error(fmt::format("The configured {} IDC {} is unknown", name, text));
 }
 } // namespace
-
-void Configuration::queryProfileTierLevelParameters(const Common::Json &componentNode) {
-  codecGroupIdc =
-      queryIdc(componentNode, "codecGroupIdc", "codec group", MivBitstream::knownCodecGroupIdcs);
-  toolsetIdc = queryIdc(componentNode, "toolsetIdc", "toolset", MivBitstream::knownToolsetIdcs);
-  reconstructionIdc = queryIdc(componentNode, "reconstructionIdc", "reconstruction",
-                               MivBitstream::knownReconstructionIdcs);
-  levelIdc = queryIdc(componentNode, "levelIdc", "level", MivBitstream::knownLevelIdcs);
-  oneV3cFrameOnly = componentNode.require("oneV3cFrameOnly").as<bool>();
-}
 
 void Configuration::queryBitDepthParameters(const Common::Json &componentNode) {
   if (haveOccupancy) {

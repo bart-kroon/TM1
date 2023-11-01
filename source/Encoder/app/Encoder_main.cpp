@@ -45,7 +45,6 @@
 #include <TMIV/ViewOptimizer/ViewOptimizerStage.h>
 
 #include "CodableUnitEncoder.h"
-#include "SourceUnitLoader.h"
 
 using namespace std::string_view_literals;
 
@@ -61,7 +60,7 @@ public:
                                 {"-n", "Number of input frames (e.g. 97)", false},
                                 {"-f", "Input start frame (e.g. 23)", false}}}
       , m_placeholders{placeholders()}
-      , m_sourceUnitLoader{json(), m_placeholders}
+      , m_sequenceConfig{IO::loadSequenceConfig(json(), m_placeholders, 0)}
       , m_assessor{json(), json()}
       , m_optimizer{json(), json()}
       , m_encoder{json()}
@@ -70,7 +69,8 @@ public:
       , m_downscaler{json()}
       , m_framePacker{json()}
       , m_codableUnitEncoder{json(), m_placeholders} {
-    m_sourceUnitLoader.connectTo(m_assessor);
+    supportExperimentsThatUseASubsetOfTheCameras();
+
     m_assessor.source.connectTo(m_optimizer);
     m_optimizer.source.connectTo(m_encoder);
     m_encoder.source.connectTo(m_patchMarginFilter);
@@ -78,11 +78,20 @@ public:
     m_quantizer.source.connectTo(m_downscaler);
     m_downscaler.source.connectTo(m_framePacker);
     m_framePacker.source.connectTo(m_codableUnitEncoder);
+
+    IO::touchLoadMultiviewFrameKeys(json());
   }
 
   void run() override {
     json().checkForUnusedKeys();
-    m_sourceUnitLoader.loadAll();
+
+    for (int32_t i = 0; i < m_placeholders.numberOfInputFrames; ++i) {
+      m_assessor.encode({m_sequenceConfig, m_sequenceConfig.sourceViewParams(),
+                         IO::loadMultiviewFrame(json(), m_placeholders, m_sequenceConfig, i)});
+    }
+
+    m_assessor.flush();
+
     reportSummary(m_codableUnitEncoder.bytesWritten());
   }
 
@@ -95,20 +104,33 @@ private:
     return x;
   }
 
+  void supportExperimentsThatUseASubsetOfTheCameras() {
+    if (const auto &node = json().optional("inputCameraNames")) {
+      Common::logWarning(
+          "Source camera names are derived from the sequence configuration. This "
+          "functionality to override source camera names is only for internal testing, "
+          "e.g. to test with a subset of views.");
+      m_sequenceConfig.sourceCameraNames = node.asVector<std::string>();
+    }
+    if (const auto &node = json().optional("sourceCameraIds")) {
+      m_sequenceConfig.sourceCameraIds = node.asVector<uint16_t>();
+    }
+  }
+
   void reportSummary(std::streampos bytesWritten) const {
     Common::logInfo("Maximum luma samples per frame is {}", m_encoder.maxLumaSamplesPerFrame());
     Common::logInfo("Total size is {} B ({} kb)", bytesWritten,
                     8e-3 * static_cast<double>(bytesWritten));
     Common::logInfo("Frame count is {}", m_placeholders.numberOfInputFrames);
 
-    const auto frameRate = m_sourceUnitLoader.sequenceConfig().frameRate;
+    const auto frameRate = m_sequenceConfig.frameRate;
     Common::logInfo("Frame rate is {} Hz", frameRate);
     Common::logInfo("Total bitrate is {} kbps", 8e-3 * static_cast<double>(bytesWritten) *
                                                     frameRate / m_placeholders.numberOfInputFrames);
   }
 
   IO::Placeholders m_placeholders;
-  SourceUnitLoader m_sourceUnitLoader;
+  MivBitstream::SequenceConfig m_sequenceConfig;
   DepthQualityAssessor::DepthQualityAssessorStage m_assessor;
   ViewOptimizer::ViewOptimizerStage m_optimizer;
   Encoder m_encoder;

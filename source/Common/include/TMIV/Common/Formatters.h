@@ -34,6 +34,7 @@
 #ifndef TMIV_COMMON_FORMATTERS_H
 #define TMIV_COMMON_FORMATTERS_H
 
+#include "Json.h"
 #include "LoggingStrategy.h"
 #include "Vector.h"
 
@@ -47,5 +48,20 @@ template <> struct formatter<std::filesystem::path> : ostream_formatter {};
 template <typename T, size_t N>
 struct formatter<TMIV::Common::stack::Vector<T, N>> : ostream_formatter {};
 } // namespace fmt
+
+namespace TMIV::Common {
+template <typename Idc, size_t N>
+auto queryEnum(const Json &node, const std::string &key, const std::string &name,
+               const std::array<Idc, N> &known) {
+  const auto text = node.require(key).as<std::string>();
+
+  for (auto i : known) {
+    if (fmt::format("{}", i) == text) {
+      return i;
+    }
+  }
+  throw std::runtime_error(fmt::format("The configured {} IDC {} is unknown", name, text));
+}
+} // namespace TMIV::Common
 
 #endif

@@ -56,7 +56,7 @@ void touchKeys(const Common::Json &config) {
     if (config.require("haveTextureVideo").as<bool>()) {
       IO::touchSaveOutOfBandVideoFrameKeys(config, VUT::V3C_AVD, ATI::ATTR_TEXTURE);
     }
-    if (const auto &node = config.optional("haveTransparancyVideo")) {
+    if (const auto &node = config.optional("haveTransparencyVideo")) {
       if (node.as<bool>()) {
         IO::touchSaveOutOfBandVideoFrameKeys(config, VUT::V3C_AVD, ATI::ATTR_TRANSPARENCY);
       }

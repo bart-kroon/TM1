@@ -24,7 +24,6 @@ create_tmiv_executable(
     "app/CodableUnitEncoder.cpp"
     "app/Encoder_main.cpp"
     "app/registerComponents.cpp"
-    "app/SourceUnitLoader.cpp"
     PRIVATE
     EncoderLib
     AggregatorLib
@@ -43,17 +42,13 @@ create_tmiv_executable(
     MpiEncoder
     SOURCES
     "src/MpiEncoder.cpp"
+    "app/CodableUnitEncoder.cpp"
     "app/MpiEncoder_main.cpp"
-    "app/registerComponents.cpp"
     PRIVATE
     EncoderLib
-    AggregatorLib
-    DepthQualityAssessorLib
-    PackerLib
-    PrunerLib
-    RendererLib
-    ViewOptimizerLib
-    MpiPcsLib)
+    FramePackerLib
+    MpiPcsLib
+    PackerLib)
 
 create_catch2_unit_test(
     TARGET

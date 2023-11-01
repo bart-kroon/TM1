@@ -136,6 +136,7 @@ class IntegrationTest:
             futures += self.testBestReference(executor)
             futures += self.testAdditiveSynthesizer(executor)
             futures += self.testMivMpi(executor)
+            futures += self.testMivPackedMpi(executor)
             futures += self.testFramePacking(executor)
             futures += self.testEntityCoding(executor)
             futures += self.testExplicitOccupancy(executor)
@@ -718,7 +719,7 @@ class IntegrationTest:
             + ["-p", "configDirectory", "{1}/config", "-p", "inputDirectory", "{2}"]
             + ["-p", "outputDirectory", "{3}", "-n", "3", "-s", "M", "-p", "intraPeriod", "2"]
             + ["-p", "inputSequenceConfigPathFmt", "test/sequences/T{{1}}.json"]
-            + ["-p", "overrideAtlasFrameSizes", "[[ 1280, 1280 ]]", "-f", "0"]
+            + ["-p", "atlasFrameSizes", "[[ 1280, 1280 ]]", "-f", "0"]
             + ["-V", "debug"],
             "{3}/M3/M/TMIV_M3_M.log",
             [
@@ -804,6 +805,105 @@ class IntegrationTest:
             [f3],
             ["{0}/bin/TmivNativeVideoDecoderTest", "{3}/M3/M/QP3/TMIV_M3_M_QP3.bit", "3", "2"],
             "{3}/M3/M/QP3/TMIV_M3_M_QP3.nvdt.log",
+            [],
+        )
+
+        return [f4_1, f4_2, f4_3, f4_4]
+
+    def testMivPackedMpi(self, executor):
+        if not self.dryRun:
+            (self.testDir / "Q3" / "M" / "QP3").mkdir(parents=True, exist_ok=True)
+
+        atlasResolution = Resolution(1280, 1280)
+        packedResolution = Resolution(1280, 2560)
+        renderResolution = Resolution(480, 270)
+
+        f1 = self.launchCommand(
+            executor,
+            [],
+            ["{0}/bin/TmivMpiEncoder", "-c", "{1}/config/test/miv_packed_mpi/Q_1_TMIV_encode.json"]
+            + ["-p", "configDirectory", "{1}/config", "-p", "inputDirectory", "{2}"]
+            + ["-p", "outputDirectory", "{3}", "-n", "3", "-s", "M"]
+            + ["-p", "inputSequenceConfigPathFmt", "test/sequences/T{{1}}.json"]
+            + ["-p", "atlasFrameSizes", "[[ 1280, 1280 ]]", "-f", "0"]
+            + ["-V", "debug"],
+            "{3}/Q3/M/TMIV_Q3_M.log",
+            ["Q3/M/TMIV_Q3_M.bit", f"Q3/M/TMIV_Q3_M_pac_c00_{packedResolution}_yuv420p10le.yuv"],
+        )
+
+        f2_1 = self.launchCommand(
+            executor,
+            [f1],
+            ["{4}/bin/vvencFFapp", "-c", "{1}/config/test/miv_packed_mpi/Q_2_VVenC_encode_pac.cfg"]
+            + ["-i", f"{{3}}/Q3/M/TMIV_Q3_M_pac_c00_{packedResolution}_yuv420p10le.yuv"]
+            + ["-b", "{3}/Q3/M/QP3/TMIV_Q3_M_QP3_pac_c00.bit", "-s", str(packedResolution)]
+            + ["-q", "40", "-f", "3", "-fr", "30"],
+            "{3}/Q3/M/QP3/TMIV_Q3_M_QP3_pac_c00_vvenc.log",
+            ["Q3/M/QP3/TMIV_Q3_M_QP3_pac_c00.bit"],
+        )
+
+        f2_2 = self.launchCommand(
+            executor,
+            [f1],
+            ["{0}/bin/TmivParser"]
+            + ["-b", "{3}/Q3/M/TMIV_Q3_M.bit"]
+            + ["-o", "{3}/Q3/M/TMIV_Q3_M.hls"],
+            None,
+            ["Q3/M/TMIV_Q3_M.hls"],
+        )
+
+        f3 = self.launchCommand(
+            executor,
+            [f2_1, f2_2],
+            ["{0}/bin/TmivMultiplexer", "-c", "{1}/config/test/miv_packed_mpi/Q_3_TMIV_mux.json"]
+            + ["-p", "inputDirectory", "{3}"]
+            + ["-p", "outputDirectory", "{3}", "-n", "3", "-s", "M", "-r", "QP3"]
+            + ["-V", "debug"],
+            "{3}/Q3/M/QP3/TMIV_Q3_M_QP3.log",
+            ["Q3/M/QP3/TMIV_Q3_M_QP3.bit"],
+        )
+
+        f4_1 = self.launchCommand(
+            executor,
+            [f3],
+            ["{0}/bin/TmivParser"]
+            + ["-b", "{3}/Q3/M/QP3/TMIV_Q3_M_QP3.bit"]
+            + ["-o", "{3}/Q3/M/QP3/TMIV_Q3_M_QP3.hls"],
+            None,
+            ["Q3/M/QP3/TMIV_Q3_M_QP3.hls"],
+        )
+
+        f4_2 = self.launchCommand(
+            executor,
+            [f3],
+            ["{0}/bin/TmivBitrateReport"]
+            + ["-b", "{3}/Q3/M/QP3/TMIV_Q3_M_QP3.bit"]
+            + ["-o", "{3}/Q3/M/QP3/TMIV_Q3_M_QP3.csv"],
+            None,
+            ["Q3/M/QP3/TMIV_Q3_M_QP3.csv"],
+        )
+
+        f4_3 = self.launchCommand(
+            executor,
+            [f3],
+            ["{0}/bin/TmivDecoder", "-c", "{1}/config/test/miv_packed_mpi/Q_4_TMIV_decode.json"]
+            + ["-p", "configDirectory", "{1}/config", "-p", "inputDirectory", "{3}"]
+            + ["-p", "inputViewportParamsPathFmt", "test/sequences/T{{1}}.json"]
+            + ["-p", "outputDirectory", "{3}", "-n", "3", "-N", "3", "-s", "M", "-r", "QP3"]
+            + ["-v", "viewport", "-p", "outputLogPath", "{3}/Q3/M/QP3/TMIV_Q3_M_QP3.dec"]
+            + ["-V", "debug"],
+            "{3}/Q3/M/QP3/Q3_M_QP3_viewport.log",
+            [
+                "Q3/M/QP3/TMIV_Q3_M_QP3.dec",
+                f"Q3/M/QP3/Q3_M_QP3_viewport_tex_{renderResolution}_yuv420p10le.yuv",
+            ],
+        )
+
+        f4_4 = self.launchCommand(
+            executor,
+            [f3],
+            ["{0}/bin/TmivNativeVideoDecoderTest", "{3}/Q3/M/QP3/TMIV_Q3_M_QP3.bit", "3", "32"],
+            "{3}/Q3/M/QP3/TMIV_Q3_M_QP3.nvdt.log",
             [],
         )
 

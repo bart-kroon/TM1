@@ -37,50 +37,19 @@
 #include <TMIV/Encoder/EncodeMiv.h>
 #include <TMIV/Encoder/MpiEncoder.h>
 #include <TMIV/Encoder/V3cSampleSink.h>
+#include <TMIV/FramePacker/FramePackerStage.h>
 #include <TMIV/MivBitstream/Formatters.h>
 #include <TMIV/MpiPcs/MpiPcs.h>
+#include <TMIV/Packer/Packer.h>
+
+#include "CodableUnitEncoder.h"
 
 #include <fstream>
 
 using namespace std::string_view_literals;
 
 namespace TMIV::Encoder {
-void registerComponents();
-
-namespace {
-void touchKeys(const Common::Json &config) {
-  using VUT = MivBitstream::VuhUnitType;
-  using ATI = MivBitstream::AiAttributeTypeId;
-
-  IO::touchSaveOutOfBandMetadataKeys(config);
-  IO::touchSaveOutOfBandVideoFrameKeys(config, VUT::V3C_AVD, ATI::ATTR_TEXTURE);
-  IO::touchSaveOutOfBandVideoFrameKeys(config, VUT::V3C_AVD, ATI::ATTR_TRANSPARENCY);
-}
-} // namespace
-
 class Application : public Common::Application {
-private:
-  MpiEncoder m_encoder;
-  const std::string &m_contentId;
-  int32_t m_numberOfInputFrames;
-  int32_t m_startFrame;
-  int32_t m_intraPeriod;
-
-  MivBitstream::SequenceConfig m_inputSequenceConfig;
-  MpiPcs::Reader m_mpiPcsReader;
-  std::filesystem::path m_outputBitstreamPath;
-  std::ofstream m_outputBitstream;
-  Common::Sink<EncoderParams> m_sink;
-  static constexpr uint8_t m_vpsId = 0;
-
-  [[nodiscard]] auto placeholders() const {
-    auto x = IO::Placeholders{};
-    x.contentId = m_contentId;
-    x.numberOfInputFrames = m_numberOfInputFrames;
-    x.startFrame = m_startFrame;
-    return x;
-  }
-
 public:
   explicit Application(std::vector<const char *> argv)
       : Common::Application{"MpiEncoder", std::move(argv),
@@ -88,96 +57,65 @@ public:
                                 {"-s", "Content ID (e.g. B for Museum)", false},
                                 {"-n", "Number of input frames (e.g. 97)", false},
                                 {"-f", "Input start frame (e.g. 23)", false}}}
-      , m_encoder{json(), json().require("MpiEncoder")}
-      , m_contentId{optionValues("-s"sv).front()}
-      , m_numberOfInputFrames{std::stoi(optionValues("-n"sv).front())}
-      , m_startFrame{std::stoi(optionValues("-f"sv).front())}
-      , m_intraPeriod{json().require("intraPeriod").as<int32_t>()}
-      , m_inputSequenceConfig{IO::loadSequenceConfig(json(), placeholders(), 0)}
-      , m_mpiPcsReader{json(), placeholders(), m_inputSequenceConfig}
-      , m_outputBitstreamPath{IO::outputBitstreamPath(json(), placeholders())}
-      , m_outputBitstream{m_outputBitstreamPath, std::ios::binary} {
-    if (!m_outputBitstream.good()) {
-      throw std::runtime_error(fmt::format("Failed to open {} for writing", m_outputBitstreamPath));
-    }
-
-    // Support experiments that use a subset of the source cameras
-    if (const auto &node = json().optional("inputCameraNames")) {
-      Common::logWarning(
-          "Source camera names are derived from the sequence configuration. This "
-          "functionality to override source camera names is only for internal testing, "
-          "e.g. to test with a subset of views.");
-      m_inputSequenceConfig.sourceCameraNames = node.asVector<std::string>();
-    }
-
-    m_sink = encodeMiv(v3cSampleSink(m_outputBitstream), false);
-
-    touchKeys(json());
+      , m_placeholders{placeholders()}
+      , m_sequenceConfig{IO::loadSequenceConfig(json(), placeholders(), 0)}
+      , m_mpiPcsReader{json(), placeholders(), m_sequenceConfig}
+      , m_encoder{json()}
+      , m_framePacker{json()}
+      , m_codableUnitEncoder{json(), placeholders()} {
+    m_encoder.source.connectTo(m_framePacker);
+    m_framePacker.source.connectTo(m_codableUnitEncoder);
   }
 
   void run() override {
     json().checkForUnusedKeys();
 
-    if (1 < m_inputSequenceConfig.sourceViewParams().size()) {
+    if (1 < m_sequenceConfig.sourceViewParams().size()) {
       throw std::runtime_error("Only one input MPI camera is allowed with current version of MPI "
                                "encoder. Please change inputCameraNames field in json !!!");
     }
 
-    m_encoder.setMpiPcsFrameReader(
-        [&](int32_t frameIdx) -> MpiPcs::Frame { return m_mpiPcsReader.read(frameIdx); });
-
-    m_encoder.prepareSequence(m_inputSequenceConfig);
-
-    for (int32_t i = 0; i < m_numberOfInputFrames; i += m_intraPeriod) {
-      int32_t lastFrame = std::min(m_numberOfInputFrames, i + m_intraPeriod);
-      encodeIntraPeriod(i, lastFrame);
+    for (int32_t i = 0; i < m_placeholders.numberOfInputFrames; ++i) {
+      m_encoder.encode({m_sequenceConfig, m_mpiPcsReader.read(i)});
     }
 
-    m_sink(std::nullopt);
-    reportSummary(m_outputBitstream.tellp());
+    m_encoder.flush();
+
+    reportSummary(m_codableUnitEncoder.bytesWritten());
   }
 
 private:
-  void encodeIntraPeriod(int32_t firstFrame, int32_t lastFrame) {
-    Common::logInfo("Access unit: [{}, {})", firstFrame, lastFrame);
-    m_sink(m_encoder.processAccessUnit(firstFrame, lastFrame));
-    popAtlases(firstFrame, lastFrame);
-  }
-
-  void popAtlases(int32_t firstFrame, int32_t lastFrame) {
-    for (int32_t frameIdx = firstFrame; frameIdx < lastFrame; ++frameIdx) {
-      const auto frame = m_encoder.popAtlas();
-
-      auto metadata = Common::Json::Array{};
-
-      for (size_t atlasIdx = 0; atlasIdx < frame.size(); ++atlasIdx) {
-        const auto atlasId = MivBitstream::AtlasId{atlasIdx};
-        metadata.emplace_back(
-            IO::saveOutOfBandVideoFrame(json(), placeholders(), frame[atlasIdx].texture,
-                                        MivBitstream::V3cUnitHeader::avd(m_vpsId, atlasId, 0),
-                                        frameIdx, MivBitstream::AiAttributeTypeId::ATTR_TEXTURE));
-        metadata.emplace_back(IO::saveOutOfBandVideoFrame(
-            json(), placeholders(), yuv420(frame[atlasIdx].transparency),
-            MivBitstream::V3cUnitHeader::avd(m_vpsId, atlasId, 1), frameIdx,
-            MivBitstream::AiAttributeTypeId::ATTR_TRANSPARENCY));
-      }
-      if (frameIdx == 0) {
-        IO::saveOutOfBandMetadata(json(), placeholders(), metadata);
-      }
-    }
+  [[nodiscard]] auto placeholders() const -> IO::Placeholders {
+    auto x = IO::Placeholders{};
+    x.contentId = optionValues("-s"sv).front();
+    x.numberOfInputFrames = std::stoi(optionValues("-n"sv).front());
+    x.startFrame = std::stoi(optionValues("-f"sv).front());
+    return x;
   }
 
   void reportSummary(std::streampos bytesWritten) const {
     Common::logInfo("Maximum luma samples per frame is {}", m_encoder.maxLumaSamplesPerFrame());
     Common::logInfo("Total size is {} B ({} kb)", bytesWritten,
                     8e-3 * static_cast<double>(bytesWritten));
-    Common::logInfo("Frame count is {}", m_numberOfInputFrames);
-    Common::logInfo("Frame rate is {} Hz", m_inputSequenceConfig.frameRate);
+    Common::logInfo("Frame count is {}", m_placeholders.numberOfInputFrames);
+    Common::logInfo("Frame rate is {} Hz", m_sequenceConfig.frameRate);
     Common::logInfo("Total bitrate is {} kbps", 8e-3 * static_cast<double>(bytesWritten) *
-                                                    m_inputSequenceConfig.frameRate /
-                                                    m_numberOfInputFrames);
+                                                    m_sequenceConfig.frameRate /
+                                                    m_placeholders.numberOfInputFrames);
   }
+
+  IO::Placeholders m_placeholders;
+  MivBitstream::SequenceConfig m_sequenceConfig;
+  MpiPcs::Reader m_mpiPcsReader;
+  MpiEncoder m_encoder;
+  FramePacker::FramePackerStage m_framePacker;
+  CodableUnitEncoder m_codableUnitEncoder;
 };
+
+void registerComponents() {
+  auto &packers = Common::Factory<Packer::IPacker>::getInstance();
+  packers.registerAs<Packer::Packer>("Packer");
+}
 } // namespace TMIV::Encoder
 
 auto main(int argc, char *argv[]) -> int32_t {

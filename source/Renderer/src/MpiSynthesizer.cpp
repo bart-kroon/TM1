@@ -272,14 +272,11 @@ private:
 
     auto maxValue = 0.F;
 
-    for (uint8_t attrIdx = 0;
-         attrIdx <= frame.vps.attribute_information(atlasId).ai_attribute_count(); attrIdx++) {
-      if (frame.vps.attribute_information(atlasId).ai_attribute_type_id(attrIdx) ==
+    for (uint8_t attrIdx = 0; attrIdx <= frame.vps.attrCount(atlasId); attrIdx++) {
+      if (frame.vps.attrTypeId(atlasId, attrIdx) ==
           MivBitstream::AiAttributeTypeId::ATTR_TRANSPARENCY) {
         maxValue = static_cast<float>(
-            (1U << static_cast<uint32_t>(frame.vps.attribute_information(atlasId)
-                                             .ai_attribute_2d_bit_depth_minus1(attrIdx) +
-                                         1)) -
+            (1U << static_cast<uint32_t>(frame.vps.attr2dBitDepthMinus1(atlasId, attrIdx) + 1)) -
             1U);
         break;
       }

@@ -38,7 +38,8 @@
 namespace TMIV::FramePacker {
 FramePackerStage::FramePackerStage(const Common::Json &componentNode)
     : m_framePacking{componentNode.require("framePacking").as<bool>()}
-    , m_geometryPacking{m_framePacking && componentNode.require("geometryPacking").as<bool>()} {}
+    , m_geometryPacking{m_framePacking && componentNode.require("haveGeometryVideo").as<bool>() &&
+                        componentNode.require("geometryPacking").as<bool>()} {}
 
 void FramePackerStage::encode(CodableUnit unit) {
   Common::logDebug("Frame packer stage");

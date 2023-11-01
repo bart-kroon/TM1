@@ -106,7 +106,6 @@ struct Configuration {
 
 private:
   void queryMainParameters(const Common::Json &componentNode);
-  void queryProfileTierLevelParameters(const Common::Json &componentNode);
   void queryBitDepthParameters(const Common::Json &componentNode);
   void querySeiParameters(const Common::Json &componentNode);
   void queryTileParameters(const Common::Json &componentNode);

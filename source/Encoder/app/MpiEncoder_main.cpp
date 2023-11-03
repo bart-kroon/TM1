@@ -72,11 +72,13 @@ private:
 
 public:
   explicit Application(std::vector<const char *> argv)
-      : Common::Application{"MpiEncoder", std::move(argv),
+      : Common::Application{"MpiEncoder",
+                            std::move(argv),
                             Common::Application::Options{
                                 {"-s", "Content ID (e.g. B for Museum)", false},
                                 {"-n", "Number of input frames (e.g. 97)", false},
-                                {"-f", "Input start frame (e.g. 23)", false}}}
+                                {"-f", "Input start frame (e.g. 23)", false}},
+                            {}}
       , m_encoder{json(), json().require("MpiEncoder")}
       , m_contentId{optionValues("-s"sv).front()}
       , m_numberOfInputFrames{std::stoi(optionValues("-n"sv).front())}

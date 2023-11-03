@@ -39,6 +39,7 @@
 #include <TMIV/Multiplexer/EncodeV3cSampleStream.h>
 #include <TMIV/Multiplexer/Multiplexer.h>
 #include <TMIV/VideoDecoder/Partition.h>
+#include <TMIV/VideoDecoder/Versions.h>
 
 #include <filesystem>
 #include <fstream>
@@ -69,7 +70,8 @@ public:
                             Common::Application::Options{
                                 {"-s", "Content ID (e.g. B for Museum)", false},
                                 {"-n", "Number of input frames (e.g. 97)", false},
-                                {"-r", "Test point (e.g. QP3 or R0)", false}}}
+                                {"-r", "Test point (e.g. QP3 or R0)", false}},
+                            VideoDecoder::versions()}
       , m_contentId{optionValues("-s").front()}
       , m_numberOfInputFrames{std::stoi(optionValues("-n"sv).front())}
       , m_testId{optionValues("-r").front()} {}

@@ -48,6 +48,15 @@ if(TARGET VideoDecoderLib)
         target_compile_definitions(VideoDecoderLib PUBLIC HAVE_VVDEC)
     endif()
 
+    configure_file(include/TMIV/VideoDecoder/Versions.h.in include/TMIV/VideoDecoder/Versions.h
+                   @ONLY)
+    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/include/TMIV/VideoDecoder/Versions.h
+            DESTINATION include/TMIV/VideoDecoder)
+
+    target_include_directories(
+        VideoDecoderLib PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
+                               "$<INSTALL_INTERFACE:include>")
+
     create_catch2_unit_test(
         TARGET
         VideoDecoderTest

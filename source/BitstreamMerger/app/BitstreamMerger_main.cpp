@@ -66,11 +66,13 @@ private:
 
 public:
   explicit BitstreamMergerApplication(std::vector<const char *> argv)
-      : Common::Application{"BitstreamMerger", std::move(argv),
+      : Common::Application{"BitstreamMerger",
+                            std::move(argv),
                             Common::Application::Options{
                                 {"-s", "Content ID (e.g. B for Museum)", false},
                                 {"-n", "Number of input frames (e.g. 97)", false},
-                                {"-r", "Test point (e.g. QP3 or R0)", false}}}
+                                {"-r", "Test point (e.g. QP3 or R0)", false}},
+                            {}}
       , m_contentId{optionValues("-s").front()}
       , m_numberOfInputFrames{std::stoi(optionValues("-n"sv).front())}
       , m_testId{optionValues("-r").front()}

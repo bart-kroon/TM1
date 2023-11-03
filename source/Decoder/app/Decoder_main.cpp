@@ -47,6 +47,7 @@
 #include <TMIV/Renderer/Front/MultipleFrameRenderer.h>
 #include <TMIV/Renderer/Front/mapInputToOutputFrames.h>
 #include <TMIV/Renderer/RecoverPrunedViews.h>
+#include <TMIV/VideoDecoder/Versions.h>
 #include <TMIV/VideoDecoder/VideoDecoder.h>
 
 #include <fstream>
@@ -80,7 +81,8 @@ public:
                                 {"-N", "Number of output frames (e.g. 300)", false},
                                 {"-r", "Test point (e.g. QP3 or R0)", false},
                                 {"-v", "Source view to render (e.g. v11)", true},
-                                {"-P", "Pose trace to render (e.g. p02)", true}}}
+                                {"-P", "Pose trace to render (e.g. p02)", true}},
+                            VideoDecoder::versions()}
       , m_preRenderer{json()}
       , m_placeholders{optionValues("-s").front(), optionValues("-r").front(),
                        std::stoi(optionValues("-n"sv).front()),

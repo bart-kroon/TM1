@@ -59,7 +59,8 @@ private:
 
 public:
   explicit RenderApplication(std::vector<const char *> argv)
-      : Common::Application{"Renderer", std::move(argv),
+      : Common::Application{"Renderer",
+                            std::move(argv),
                             Common::Application::Options{
                                 {"-s", "Content ID (e.g. B for Museum)", false},
                                 {"-n", "Number of input frames (e.g. 97)", false},
@@ -67,7 +68,8 @@ public:
                                 {"-f", "Input start frame (e.g. 23)", false},
                                 {"-r", "Test point (e.g. QP3 or R0)", false},
                                 {"-v", "Source view to render (e.g. v11)", true},
-                                {"-P", "Pose trace to render (e.g. p02)", true}}}
+                                {"-P", "Pose trace to render (e.g. p02)", true}},
+                            {}}
       , m_placeholders{optionValues("-s").front(), optionValues("-r").front(),
                        std::stoi(optionValues("-n"sv).front()),
                        std::stoi(optionValues("-N"sv).front()),

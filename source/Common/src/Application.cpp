@@ -48,7 +48,8 @@
 using namespace std::string_view_literals;
 
 namespace TMIV::Common {
-Application::Application(const char *tool, std::vector<const char *> argv, Options options)
+Application::Application(const char *tool, std::vector<const char *> argv, Options options,
+                         const std::vector<std::string_view> &versions)
     : m_options{std::move(options)} {
   auto take = [&argv]() {
     if (argv.empty()) {
@@ -88,7 +89,11 @@ Application::Application(const char *tool, std::vector<const char *> argv, Optio
         throw std::runtime_error(fmt::format("Unknown log level {}", arg));
       }();
     } else if ("--version"sv == option) {
-      Common::logInfo("TMIV {} version {}", tool, version);
+      Common::logInfo("TMIV {} {}", tool, version);
+
+      for (const auto v : versions) {
+        Common::logInfo(v);
+      }
       exit(0);
     } else if ("--help"sv == option) {
       m_json = Json{};

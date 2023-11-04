@@ -298,9 +298,8 @@ auto DepthQuantization::printTo(std::ostream &stream, uint16_t viewIdx) const ->
            << " ]=" << dq_depth_occ_threshold_default() << '\n';
   } else if (dq_quantization_law() == 4) {
     stream << "dq_quantization_law[ " << viewIdx << " ]=" << int32_t{dq_quantization_law()}
-           << "\ndq_norm_linear_near[ " << viewIdx << " ]=" << dq_norm_linear_near()
-           << "\ndq_norm_linear_far[ " << viewIdx << " ]=" << dq_norm_linear_far()
-           << "\ndq_depth_occ_threshold_default[ " << viewIdx
+           << "\ndq_linear_near[ " << viewIdx << " ]=" << dq_linear_near() << "\ndq_linear_far[ "
+           << viewIdx << " ]=" << dq_linear_far() << "\ndq_depth_occ_threshold_default[ " << viewIdx
            << " ]=" << dq_depth_occ_threshold_default() << '\n';
   }
   return stream;
@@ -330,8 +329,8 @@ auto DepthQuantization::decodeFrom(Common::InputBitstream &bitstream) -> DepthQu
   }
 
   if (x.dq_quantization_law() == 4) {
-    x.dq_norm_linear_near(bitstream.getFloat32());
-    x.dq_norm_linear_far(bitstream.getFloat32());
+    x.dq_linear_near(bitstream.getFloat32());
+    x.dq_linear_far(bitstream.getFloat32());
   }
 
   x.dq_depth_occ_threshold_default(bitstream.getUExpGolomb<uint32_t>());
@@ -358,8 +357,8 @@ void DepthQuantization::encodeTo(Common::OutputBitstream &bitstream) const {
   }
 
   if (dq_quantization_law() == 4) {
-    bitstream.putFloat32(dq_norm_linear_near());
-    bitstream.putFloat32(dq_norm_linear_far());
+    bitstream.putFloat32(dq_linear_near());
+    bitstream.putFloat32(dq_linear_far());
   }
 
   bitstream.putUExpGolomb(dq_depth_occ_threshold_default());

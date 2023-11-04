@@ -177,13 +177,13 @@ TEST_CASE("depth_quantization linear", "[Common Atlas Frame MIV Extension]") {
 
   SECTION("Example 2") {
     unit.dq_quantization_law(4);
-    unit.dq_norm_linear_near(0.02F);
-    unit.dq_norm_linear_far(2.F);
+    unit.dq_linear_near(0.02F);
+    unit.dq_linear_far(2.F);
     unit.dq_depth_occ_threshold_default(200);
 
     REQUIRE(toString(unit, uint16_t{2}) == R"(dq_quantization_law[ 2 ]=4
-dq_norm_linear_near[ 2 ]=0.02
-dq_norm_linear_far[ 2 ]=2
+dq_linear_near[ 2 ]=0.02
+dq_linear_far[ 2 ]=2
 dq_depth_occ_threshold_default[ 2 ]=200
 )");
 

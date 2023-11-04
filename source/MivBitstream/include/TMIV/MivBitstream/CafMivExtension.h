@@ -279,6 +279,7 @@ public:
   [[nodiscard]] constexpr auto mvp_pruning_graph_params_present_flag() const noexcept;
   [[nodiscard]] constexpr auto mvp_depth_reprojection_flag() const noexcept;
   [[nodiscard]] auto mvp_chroma_scaling_bit_depth_minus1() const -> uint8_t;
+  [[nodiscard]] auto mvp_view_background_flag(uint16_t viewIdx) const -> bool;
 
   [[nodiscard]] auto camera_extrinsics(uint16_t viewIdx) const -> const CameraExtrinsics &;
 
@@ -320,6 +321,8 @@ public:
 
   auto mvp_chroma_scaling_bit_depth_minus1(uint8_t value) -> MivViewParamsList &;
 
+  auto mvp_view_background_flag(uint16_t viewIdx, bool value) -> MivViewParamsList &;
+
   [[nodiscard]] auto camera_extrinsics(uint16_t viewIdx) noexcept -> CameraExtrinsics &;
   [[nodiscard]] auto camera_intrinsics(uint16_t viewIdx = 0) noexcept -> CameraIntrinsics &;
   [[nodiscard]] auto depth_quantization(uint16_t viewIdx = 0) noexcept -> DepthQuantization &;
@@ -346,6 +349,7 @@ private:
   bool m_mvp_explicit_view_id_flag{};
   std::vector<ViewId> m_mvp_view_id;
   std::vector<bool> m_mvpInpaintFlag{false};
+  std::vector<bool> m_mvpViewBackgroundFlag{false};
   std::vector<CameraExtrinsics> m_camera_extrinsics{{}};
   bool m_mvp_intrinsic_params_equal_flag{};
   std::vector<CameraIntrinsics> m_camera_intrinsics{{}};

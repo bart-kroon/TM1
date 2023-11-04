@@ -273,6 +273,7 @@ cs_u_min[ 0 ]=0
 cs_u_max[ 0 ]=0
 cs_v_min[ 0 ]=0
 cs_v_max[ 0 ]=0
+mvp_view_background_flag[ 0 ]=false
 )");
 
     bitCodingTest(unit, 380, casps);
@@ -319,6 +320,7 @@ cs_u_min[ 0 ]=10
 cs_u_max[ 0 ]=300
 cs_v_min[ 0 ]=111
 cs_v_max[ 0 ]=400
+mvp_view_background_flag[ 0 ]=false
 )");
 
     bitCodingTest(unit, 428, casps);
@@ -393,6 +395,9 @@ cs_u_min[ 2 ]=0
 cs_u_max[ 2 ]=0
 cs_v_min[ 2 ]=0
 cs_v_max[ 2 ]=0
+mvp_view_background_flag[ 0 ]=false
+mvp_view_background_flag[ 1 ]=false
+mvp_view_background_flag[ 2 ]=false
 )");
 
     bitCodingTest(unit, 820, casps);
@@ -426,6 +431,7 @@ cs_u_min[ 0 ]=0
 cs_u_max[ 0 ]=0
 cs_v_min[ 0 ]=0
 cs_v_max[ 0 ]=0
+mvp_view_background_flag[ 0 ]=false
 )");
 
     bitCodingTest(unit, 380, casps);
@@ -498,7 +504,9 @@ TEST_CASE("caf_miv_extension", "[Common Atlas Frame MIV Extension]") {
 
   SECTION("Initialize view parameters") {
     casps.casps_miv_extension().casme_depth_quantization_params_present_flag(true);
-    casps.casps_miv_2_extension().casme_chroma_scaling_present_flag(true);
+    casps.casps_miv_2_extension()
+        .casme_chroma_scaling_present_flag(true)
+        .casme_background_separation_enable_flag(true);
     unit.miv_view_params_list()
         .mvp_num_views_minus1(2)
         .mvp_explicit_view_id_flag(false)
@@ -506,6 +514,8 @@ TEST_CASE("caf_miv_extension", "[Common Atlas Frame MIV Extension]") {
         .mvp_depth_quantization_params_equal_flag(true)
         .mvp_pruning_graph_params_present_flag(true)
         .mvp_chroma_scaling_bit_depth_minus1(9)
+        .mvp_view_background_flag(1, true)
+        .mvp_view_background_flag(2, true)
         .camera_intrinsics(0)
         .ci_cam_type(CiCamType::orthographic)
         .ci_ortho_width(4.F)
@@ -561,9 +571,12 @@ cs_u_min[ 2 ]=0
 cs_u_max[ 2 ]=0
 cs_v_min[ 2 ]=0
 cs_v_max[ 2 ]=0
+mvp_view_background_flag[ 0 ]=false
+mvp_view_background_flag[ 1 ]=true
+mvp_view_background_flag[ 2 ]=true
 )");
 
-    bitCodingTest(unit, 897, nalIdrCaf, casps);
+    bitCodingTest(unit, 900, nalIdrCaf, casps);
   }
 
   SECTION("Update extrinsics") {

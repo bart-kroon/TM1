@@ -451,6 +451,10 @@ auto MivViewParamsList::mvp_inpaint_flag(uint16_t viewIdx) const -> bool {
   return m_mvpInpaintFlag[viewIdx];
 }
 
+auto MivViewParamsList::mvp_view_background_flag(uint16_t viewIdx) const -> bool {
+  return m_mvpViewBackgroundFlag[viewIdx];
+}
+
 auto MivViewParamsList::camera_extrinsics(uint16_t viewIdx) const -> const CameraExtrinsics & {
   VERIFY_MIVBITSTREAM(viewIdx < m_camera_extrinsics.size());
   return m_camera_extrinsics[viewIdx];
@@ -517,10 +521,11 @@ auto MivViewParamsList::mvp_num_views_minus1(uint16_t value) -> MivViewParamsLis
   m_camera_extrinsics.resize(value + size_t{1});
   m_mvpInpaintFlag.resize(value + size_t{1}, false);
   m_mvp_chroma_scaling_values.resize(value + size_t{1});
-  m_mvp_device_model_id.resize(value + 1);
-  m_sensor_extrinsics.resize(value + 1);
-  m_distortion_parameters.resize(value + 1);
-  m_light_source_extrinsics.resize(value + 1);
+  m_mvp_device_model_id.resize(value + size_t{1});
+  m_sensor_extrinsics.resize(value + size_t{1});
+  m_distortion_parameters.resize(value + size_t{1});
+  m_light_source_extrinsics.resize(value + size_t{1});
+  m_mvpViewBackgroundFlag.resize(value + size_t{1});
   return *this;
 }
 
@@ -542,6 +547,13 @@ auto MivViewParamsList::mvp_view_id(uint16_t viewIdx, ViewId viewId) -> MivViewP
 auto MivViewParamsList::mvp_inpaint_flag(uint16_t viewIdx, bool value) -> MivViewParamsList & {
   PRECONDITION(viewIdx <= mvp_num_views_minus1());
   m_mvpInpaintFlag[viewIdx] = value;
+  return *this;
+}
+
+auto MivViewParamsList::mvp_view_background_flag(uint16_t viewIdx, bool value)
+    -> MivViewParamsList & {
+  PRECONDITION(viewIdx <= mvp_num_views_minus1());
+  m_mvpViewBackgroundFlag[viewIdx] = value;
   return *this;
 }
 
@@ -637,6 +649,7 @@ auto MivViewParamsList::printTo(std::ostream &stream,
   }
 
   CaptureDeviceInformation::Semantics cdi_semantics;
+
   if (casps.casps_miv_2_extension_present_flag() &&
       casps.casps_miv_2_extension().casme_capture_device_information_present_flag()) {
     casps.casps_miv_2_extension().capture_device_information().applySemantics(cdi_semantics);
@@ -650,6 +663,7 @@ auto MivViewParamsList::printTo(std::ostream &stream,
         casps.casps_miv_2_extension().casme_capture_device_information_present_flag()) {
       fmt::print(stream, "mvp_device_model_id[ {} ]={}\n", v, mvp_device_model_id(v));
       auto i = mvp_device_model_id(v);
+
       for (uint16_t s = 0; s < cdi_semantics.sensorCount[i]; s++) {
         if (cdi_semantics.intraSensorParallaxFlag[i]) {
           sensor_extrinsics(v, s).printTo(stream, v, s);
@@ -701,6 +715,10 @@ auto MivViewParamsList::printTo(std::ostream &stream,
     chroma_scaling(v).printTo(stream, v);
   }
 
+  for (uint16_t v = 0; v <= mvp_num_views_minus1(); ++v) {
+    fmt::print(stream, "mvp_view_background_flag[ {} ]={}\n", v, mvp_view_background_flag(v));
+  }
+
   return stream;
 }
 
@@ -719,7 +737,8 @@ auto MivViewParamsList::operator==(const MivViewParamsList &other) const noexcep
       m_mvp_chroma_scaling_values == other.m_mvp_chroma_scaling_values &&
       m_mvp_depth_reprojection_flag == other.m_mvp_depth_reprojection_flag &&
       m_mvp_chroma_scaling_bit_depth_minus1 == other.m_mvp_chroma_scaling_bit_depth_minus1 &&
-      m_mvp_device_model_id == other.m_mvp_device_model_id;
+      m_mvp_device_model_id == other.m_mvp_device_model_id &&
+      m_mvpViewBackgroundFlag == other.m_mvpViewBackgroundFlag;
 
   for (uint16_t i = 0; i <= mvp_num_views_minus1() && result; i++) {
     result = m_sensor_extrinsics[i] == other.m_sensor_extrinsics[i] &&
@@ -817,6 +836,13 @@ auto MivViewParamsList::decodeFrom(Common::InputBitstream &bitstream,
     }
   }
 
+  if (casps.casps_miv_2_extension_present_flag() &&
+      casps.casps_miv_2_extension().casme_background_separation_enable_flag()) {
+    for (uint16_t v = 0; v <= x.mvp_num_views_minus1(); ++v) {
+      x.mvp_view_background_flag(v, bitstream.getFlag());
+    }
+  }
+
   return x;
 }
 
@@ -896,6 +922,13 @@ void MivViewParamsList::encodeTo(Common::OutputBitstream &bitstream,
 
     for (uint16_t v = 0; v <= mvp_num_views_minus1(); ++v) {
       chroma_scaling(v).encodeTo(bitstream, *this);
+    }
+  }
+
+  if (casps.casps_miv_2_extension_present_flag() &&
+      casps.casps_miv_2_extension().casme_background_separation_enable_flag()) {
+    for (uint16_t v = 0; v <= mvp_num_views_minus1(); ++v) {
+      bitstream.putFlag(mvp_view_background_flag(v));
     }
   }
 }

@@ -78,6 +78,9 @@ struct ViewParams {
   // Not in the specification. Just to improve screen output
   std::string name{};
 
+  // Is this a background view or not?
+  bool backgroundViewFlag{false};
+
   // Not part of the bitstream. Does the depth map have invalid/non-occupied?
   bool hasOccupancy{};
 

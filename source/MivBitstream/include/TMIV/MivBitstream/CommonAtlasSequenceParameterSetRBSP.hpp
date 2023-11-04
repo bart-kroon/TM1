@@ -72,6 +72,10 @@ constexpr auto CaspsMiv2Extension::casme_chroma_scaling_present_flag() const noe
   return m_casme_chroma_scaling_present_flag;
 }
 
+constexpr auto CaspsMiv2Extension::casme_background_separation_enable_flag() const noexcept {
+  return m_casme_background_separation_enable_flag;
+}
+
 constexpr auto CaspsMiv2Extension::casme_capture_device_information_present_flag() const noexcept {
   return m_casme_capture_device_information_present_flag;
 }
@@ -85,6 +89,12 @@ constexpr auto CaspsMiv2Extension::casme_decoder_side_depth_estimation_flag(bool
 constexpr auto CaspsMiv2Extension::casme_chroma_scaling_present_flag(bool value) noexcept
     -> auto & {
   m_casme_chroma_scaling_present_flag = value;
+  return *this;
+}
+
+constexpr auto CaspsMiv2Extension::casme_background_separation_enable_flag(bool value) noexcept
+    -> auto & {
+  m_casme_background_separation_enable_flag = value;
   return *this;
 }
 

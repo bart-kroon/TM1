@@ -319,6 +319,7 @@ private:
       const auto &vp = vpl[i];
       mvpl.camera_extrinsics(i) = vp.pose.encodeToCameraExtrinsics();
       mvpl.mvp_inpaint_flag(i, vp.viewInpaintFlag);
+      mvpl.mvp_view_background_flag(i, vp.backgroundViewFlag);
 
       if (i == 0 || !mvpl.mvp_intrinsic_params_equal_flag()) {
         mvpl.camera_intrinsics(i) = vp.ci;

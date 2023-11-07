@@ -52,11 +52,13 @@ namespace TMIV::Encoder {
 class Application : public Common::Application {
 public:
   explicit Application(std::vector<const char *> argv)
-      : Common::Application{"MpiEncoder", std::move(argv),
+      : Common::Application{"MpiEncoder",
+                            std::move(argv),
                             Common::Application::Options{
                                 {"-s", "Content ID (e.g. B for Museum)", false},
                                 {"-n", "Number of input frames (e.g. 97)", false},
-                                {"-f", "Input start frame (e.g. 23)", false}}}
+                                {"-f", "Input start frame (e.g. 23)", false}},
+                            {}}
       , m_placeholders{placeholders()}
       , m_sequenceConfig{IO::loadSequenceConfig(json(), placeholders(), 0)}
       , m_mpiPcsReader{json(), placeholders(), m_sequenceConfig}

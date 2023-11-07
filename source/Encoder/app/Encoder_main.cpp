@@ -54,11 +54,13 @@ void registerComponents();
 class Application : public Common::Application {
 public:
   explicit Application(std::vector<const char *> argv)
-      : Common::Application{"Encoder", std::move(argv),
+      : Common::Application{"Encoder",
+                            std::move(argv),
                             Common::Application::Options{
                                 {"-s", "Content ID (e.g. B for Museum)", false},
                                 {"-n", "Number of input frames (e.g. 97)", false},
-                                {"-f", "Input start frame (e.g. 23)", false}}}
+                                {"-f", "Input start frame (e.g. 23)", false}},
+                            {}}
       , m_placeholders{placeholders()}
       , m_sequenceConfig{IO::loadSequenceConfig(json(), m_placeholders, 0)}
       , m_assessor{json(), json()}

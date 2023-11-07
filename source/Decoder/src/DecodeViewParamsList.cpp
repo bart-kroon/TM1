@@ -46,6 +46,7 @@ void decodeMvpl(const MivBitstream::MivViewParamsList &mvpl, bool dqParamsPresen
     vp.viewId = mvpl.mvp_view_id(viewIdx);
     vp.pose = MivBitstream::Pose::decodeFrom(mvpl.camera_extrinsics(viewIdx));
     vp.viewInpaintFlag = mvpl.mvp_inpaint_flag(viewIdx);
+    vp.backgroundViewFlag = mvpl.mvp_view_background_flag(viewIdx);
     vp.ci = mvpl.camera_intrinsics(viewIdx);
     if (dqParamsPresentFlag) {
       vp.dq = mvpl.depth_quantization(viewIdx);

@@ -115,7 +115,7 @@ namespace {
 class Fake : public Application {
 public:
   explicit Fake(char const *tool, std::vector<const char *> argv, Options options)
-      : Application{tool, std::move(argv), std::move(options)} {}
+      : Application{tool, std::move(argv), std::move(options), {}} {}
 
   using Application::json;
   using Application::optionValues;

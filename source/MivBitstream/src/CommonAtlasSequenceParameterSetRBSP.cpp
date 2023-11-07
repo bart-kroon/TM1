@@ -120,6 +120,8 @@ auto operator<<(std::ostream &stream, const CaspsMiv2Extension &x) -> std::ostre
   if (x.casme_capture_device_information_present_flag()) {
     stream << x.capture_device_information();
   }
+  fmt::print(stream, "casme_background_separation_enable_flag={}\n",
+             x.casme_background_separation_enable_flag());
   return stream;
 }
 
@@ -129,7 +131,9 @@ auto CaspsMiv2Extension::operator==(const CaspsMiv2Extension &other) const noexc
          casme_chroma_scaling_present_flag() == other.casme_chroma_scaling_present_flag() &&
          casme_capture_device_information_present_flag() ==
              other.casme_capture_device_information_present_flag() &&
-         m_capture_device_information == other.m_capture_device_information;
+         m_capture_device_information == other.m_capture_device_information &&
+         casme_background_separation_enable_flag() ==
+             other.casme_background_separation_enable_flag();
 }
 
 auto CaspsMiv2Extension::operator!=(const CaspsMiv2Extension &other) const noexcept -> bool {
@@ -145,6 +149,7 @@ auto CaspsMiv2Extension::decodeFrom(Common::InputBitstream &bitstream) -> CaspsM
   if (x.casme_capture_device_information_present_flag()) {
     x.capture_device_information() = CaptureDeviceInformation::decodeFrom(bitstream);
   }
+  x.casme_background_separation_enable_flag(bitstream.getFlag());
   const auto casme_reserved_zero_8bits = bitstream.getUint8();
   VERIFY_MIVBITSTREAM(casme_reserved_zero_8bits == 0);
 
@@ -158,6 +163,7 @@ void CaspsMiv2Extension::encodeTo(Common::OutputBitstream &bitstream) const {
   if (casme_capture_device_information_present_flag()) {
     capture_device_information().encodeTo(bitstream);
   }
+  bitstream.putFlag(casme_background_separation_enable_flag());
   static constexpr auto casme_reserved_zero_8bits = 0;
   bitstream.putUint8(casme_reserved_zero_8bits);
 }

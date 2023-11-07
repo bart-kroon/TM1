@@ -238,6 +238,10 @@ constexpr auto DepthQuantization::dq_pivot_count_minus1() const noexcept {
   return m_dq_pivot_count_minus1;
 }
 
+constexpr auto DepthQuantization::dq_linear_near() const noexcept { return m_dq_linear_near; }
+
+constexpr auto DepthQuantization::dq_linear_far() const noexcept { return m_dq_linear_far; }
+
 constexpr auto DepthQuantization::dq_depth_occ_threshold_default() const noexcept {
   return m_dq_depth_occ_threshold_default;
 }
@@ -268,6 +272,16 @@ constexpr auto DepthQuantization::dq_pivot_count_minus1(const uint8_t value) noe
   return *this;
 }
 
+constexpr auto DepthQuantization::dq_linear_near(const float value) noexcept -> auto & {
+  m_dq_linear_near = value;
+  return *this;
+}
+
+constexpr auto DepthQuantization::dq_linear_far(const float value) noexcept -> auto & {
+  m_dq_linear_far = value;
+  return *this;
+}
+
 constexpr auto DepthQuantization::operator==(const DepthQuantization &other) const noexcept {
   if (dq_quantization_law() != other.dq_quantization_law() ||
       dq_depth_occ_threshold_default() != other.dq_depth_occ_threshold_default()) {
@@ -283,6 +297,11 @@ constexpr auto DepthQuantization::operator==(const DepthQuantization &other) con
                                      dq_norm_disp_high() != other.dq_norm_disp_high() ||
                                      m_dq_pivot_count_minus1 != other.m_dq_pivot_count_minus1 ||
                                      m_dq_pivot_norm_disp != other.m_dq_pivot_norm_disp)) {
+    return false;
+  }
+
+  if (dq_quantization_law() == 4 &&
+      (dq_linear_near() != other.dq_linear_near() || dq_linear_far() != other.dq_linear_far())) {
     return false;
   }
 

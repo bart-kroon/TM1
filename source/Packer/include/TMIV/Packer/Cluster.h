@@ -46,6 +46,10 @@ using ClusteringMapList = std::vector<ClusteringMap>;
 class Cluster;
 using ClusterList = std::vector<Cluster>;
 
+using InformationCompType = std::function<bool(const Cluster &, const Cluster &)>;
+using ClusterInformationPriorityQueue =
+    std::priority_queue<Cluster, std::vector<Cluster>, InformationCompType>;
+
 class Cluster {
 public:
   Cluster() = default;
@@ -81,14 +85,23 @@ public:
   void setPriority(int32_t priority) { information_priority_ = priority; }
   void calculateInformationDensity(const ClusteringMap &clusteringMap,
                                    const Common::Frame<uint32_t> &informationMap);
-
+  void calculateInformationDensityWithBuffer(
+      const TMIV::Common::Mat<TMIV::Common::DefaultElement> &clusteringBuffer,
+      const TMIV::Common::Mat<uint32_t> &informationBuffer);
   void recursiveSplit(const ClusteringMap &clusteringMap, std::vector<Cluster> &out,
                       int32_t alignment, int32_t minPatchSize) const;
-
+  struct InformationSplitReference {
+    const Common::FrameList<uint32_t> &information;
+    ClusterInformationPriorityQueue &clustertopackWithInformation;
+    int32_t &space;
+    bool order;
+    InformationSplitReference(const Common::FrameList<uint32_t> &info,
+                              ClusterInformationPriorityQueue &queue, int32_t &sp, bool ord)
+        : information(info), clustertopackWithInformation(queue), space(sp), order(ord) {}
+  };
   void recursiveInformationSplit(const ClusteringMap &clusteringMap, std::vector<Cluster> &out,
                                  int32_t alignment, int32_t minPatchSize,
-                                 const Common::FrameList<uint32_t> &information,
-                                 uint32_t nonSplitInformation) const;
+                                 InformationSplitReference &reference);
 
   static auto Empty() -> Cluster {
     Cluster out;
@@ -118,13 +131,11 @@ private:
   auto splitnUnevenInformationPatchVertically(const ClusteringMap &clusteringMap,
                                               std::vector<Cluster> &out, int32_t alignment,
                                               int32_t minPatchSize,
-                                              const Common::FrameList<uint32_t> &information,
-                                              uint32_t nonSplitInformation) const -> bool;
+                                              InformationSplitReference &reference) const -> bool;
   auto splitUnevenInformationPatchHorizontally(const ClusteringMap &clusteringMap,
                                                std::vector<Cluster> &out, int32_t alignment,
                                                int32_t minPatchSize,
-                                               const Common::FrameList<uint32_t> &information,
-                                               uint32_t nonSplitInformation) const -> bool;
+                                               InformationSplitReference &reference) const -> bool;
   [[nodiscard]] auto createAggregatedQueues(const ClusteringMap &clusteringMap,
                                             bool aggregateHorizontally) const
       -> std::tuple<std::array<std::deque<int32_t>, 2>, std::array<std::deque<int32_t>, 2>>;

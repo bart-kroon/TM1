@@ -62,7 +62,7 @@ void Aggregator::pushInformation(const Common::FrameList<uint32_t> &information)
     for (size_t i = 0; i < m_information.size(); i++) {
       std::transform(m_information[i].getPlane(0).begin(), m_information[i].getPlane(0).end(),
                      information[i].getPlane(0).begin(), m_information[i].getPlane(0).begin(),
-                     [](uint16_t v1, uint16_t v2) { return v1 + v2; });
+                     [](uint32_t v1, uint32_t v2) { return v1 + v2; });
     }
   }
 }

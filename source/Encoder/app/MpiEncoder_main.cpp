@@ -52,7 +52,8 @@ namespace TMIV::Encoder {
 class Application : public Common::Application {
 public:
   explicit Application(std::vector<const char *> argv)
-      : Common::Application{"MpiEncoder", std::move(argv),
+      : Common::Application{"MpiEncoder",
+                            std::move(argv),
                             Common::Application::Options{
                                 {"-s", "Content ID (e.g. B for Museum)", false},
                                 {"-n", "Number of input frames (e.g. 97)", false},

@@ -39,10 +39,12 @@ namespace TMIV::Packer {
 namespace {
 const uint16_t INVALID = (1 << 16) - 1;
 
-void addRectangle(Common::Frame<uint8_t> &mask, Common::Vec2i topLeft, Common::Vec2i bottomRight) {
+void addRectangle(Common::Frame<uint8_t> &mask, Common::Frame<uint32_t> &information,
+                  Common::Vec2i topLeft, Common::Vec2i bottomRight) {
   for (int32_t x = topLeft.x(); x <= bottomRight.x(); ++x) {
     for (int32_t y = topLeft.y(); y <= bottomRight.y(); ++y) {
       mask.getPlane(0)(y, x) = 1;
+      information.getPlane(0)(y, x) = 65535;
     }
   }
 }
@@ -55,9 +57,11 @@ SCENARIO("Cluster retrieving") {
   bool enableMerging{};
   GIVEN("a 0x0 mask") {
     const auto mask = Common::Frame<uint8_t>::lumaOnly({});
+    const auto information = Common::Frame<uint32_t>::lumaOnly({});
     WHEN("retrieving clusters") {
+      flags m_flags = {enableMerging, true};
       const auto [clusterList, clusteringMap] = retrieveClusters(
-          viewIdx, mask, firstClusterId, isBasicOrSemiBasicView, enableMerging, true);
+          viewIdx, mask, information, firstClusterId, isBasicOrSemiBasicView, m_flags);
       THEN("return empty cluster list and map") {
         REQUIRE(clusterList.empty());
         REQUIRE(clusteringMap.getNumberOfPlanes() == 1);
@@ -69,10 +73,13 @@ SCENARIO("Cluster retrieving") {
 
   GIVEN("a 2x2 mask with only zeroes") {
     Common::Frame<uint8_t> mask{};
+    Common::Frame<uint32_t> information{};
     mask.createY({2, 2});
+    information.createY({2, 2});
     WHEN("retrieving clusters") {
+      flags m_flags = {enableMerging, false};
       const auto [clusterList, clusteringMap] = retrieveClusters(
-          viewIdx, mask, firstClusterId, isBasicOrSemiBasicView, enableMerging, false);
+          viewIdx, mask, information, firstClusterId, isBasicOrSemiBasicView, m_flags);
       THEN("return empty cluster list and map with max value") {
         REQUIRE(clusterList.empty());
         REQUIRE(clusteringMap.getNumberOfPlanes() == 1);
@@ -87,12 +94,17 @@ SCENARIO("Cluster retrieving") {
 
   GIVEN("a 2x2 mask with nonzero values on the diagonal") {
     Common::Frame<uint8_t> mask{};
+    Common::Frame<uint32_t> information{};
     mask.createY({2, 2});
+    information.createY({2, 2});
     mask.getPlane(0)(0, 0) = 1;
     mask.getPlane(0)(1, 1) = 1;
+    information.getPlane(0)(0, 0) = 65535;
+    information.getPlane(0)(1, 1) = 65535;
     WHEN("retrieving clusters") {
+      flags m_flags = {enableMerging, false};
       const auto [clusterList, clusteringMap] = retrieveClusters(
-          viewIdx, mask, firstClusterId, isBasicOrSemiBasicView, enableMerging, false);
+          viewIdx, mask, information, firstClusterId, isBasicOrSemiBasicView, m_flags);
       THEN("return one cluster and map with zeroes on the diagonal") {
         REQUIRE(clusterList.size() == 1);
         REQUIRE(!clusterList[0].isBasicView());
@@ -115,11 +127,14 @@ SCENARIO("Cluster retrieving") {
         "enabled") {
     enableMerging = true;
     Common::Frame<uint8_t> mask{};
+    Common::Frame<uint32_t> information{};
     mask.createY({5, 5});
-    addRectangle(mask, {1, 1}, {3, 3});
+    information.createY({5, 5});
+    addRectangle(mask, information, {1, 1}, {3, 3});
     WHEN("retrieving clusters") {
+      flags m_flags = {enableMerging, false};
       const auto [clusterList, clusteringMap] = retrieveClusters(
-          viewIdx, mask, firstClusterId, isBasicOrSemiBasicView, enableMerging, false);
+          viewIdx, mask, information, firstClusterId, isBasicOrSemiBasicView, m_flags);
       THEN("return one cluster and map with zeroes on the diagonal") {
         REQUIRE(clusterList.size() == 1);
         REQUIRE(!clusterList[0].isBasicView());
@@ -140,12 +155,15 @@ SCENARIO("Cluster retrieving") {
 
   GIVEN("a 10x10 mask with two clusters") {
     Common::Frame<uint8_t> mask{};
+    Common::Frame<uint32_t> information{};
     mask.createY({10, 10});
-    addRectangle(mask, {1, 1}, {2, 2});
-    addRectangle(mask, {6, 6}, {7, 7});
+    information.createY({10, 10});
+    addRectangle(mask, information, {1, 1}, {2, 2});
+    addRectangle(mask, information, {6, 6}, {7, 7});
     WHEN("retrieving clusters") {
+      flags m_flags = {enableMerging, false};
       const auto [clusterList, clusteringMap] = retrieveClusters(
-          viewIdx, mask, firstClusterId, isBasicOrSemiBasicView, enableMerging, false);
+          viewIdx, mask, information, firstClusterId, isBasicOrSemiBasicView, m_flags);
       THEN("return two clusters") {
         REQUIRE(clusterList.size() == 2);
         REQUIRE(!clusterList[0].isBasicView());
@@ -159,13 +177,16 @@ SCENARIO("Cluster retrieving") {
   GIVEN("a 20x20 mask with two overlapping clusters and merging enabled") {
     enableMerging = true;
     Common::Frame<uint8_t> mask{};
+    Common::Frame<uint32_t> information{};
     mask.createY({20, 20});
-    addRectangle(mask, {1, 1}, {10, 3});
-    addRectangle(mask, {1, 4}, {3, 10});
-    addRectangle(mask, {6, 6}, {7, 7});
+    information.createY({20, 20});
+    addRectangle(mask, information, {1, 1}, {10, 3});
+    addRectangle(mask, information, {1, 4}, {3, 10});
+    addRectangle(mask, information, {6, 6}, {7, 7});
     WHEN("retrieving clusters") {
+      flags m_flags = {enableMerging, false};
       const auto [clusterList, clusteringMap] = retrieveClusters(
-          viewIdx, mask, firstClusterId, isBasicOrSemiBasicView, enableMerging, false);
+          viewIdx, mask, information, firstClusterId, isBasicOrSemiBasicView, m_flags);
       THEN("return one cluster") { REQUIRE(clusterList.size() == 1); }
     }
   }
@@ -179,12 +200,15 @@ SCENARIO("Cluster retrieving for basic view") {
 
   GIVEN("a 4x4 mask with two clusters") {
     Common::Frame<uint8_t> mask{};
+    Common::Frame<uint32_t> information{};
     mask.createY({4, 4});
-    addRectangle(mask, {0, 0}, {1, 1});
-    addRectangle(mask, {0, 3}, {3, 3});
+    information.createY({4, 4});
+    addRectangle(mask, information, {0, 0}, {1, 1});
+    addRectangle(mask, information, {0, 3}, {3, 3});
     WHEN("retrieving clusters") {
+      flags m_flags = {enableMerging, false};
       const auto [clusterList, clusteringMap] = retrieveClusters(
-          viewIdx, mask, firstClusterId, isBasicOrSemiBasicView, enableMerging, false);
+          viewIdx, mask, information, firstClusterId, isBasicOrSemiBasicView, m_flags);
       THEN("return one cluster") {
         REQUIRE(clusterList.size() == 1);
         REQUIRE(clusterList[0].isBasicView());

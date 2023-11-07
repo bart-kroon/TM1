@@ -31,58 +31,29 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef TMIV_COMMON_APPLICATION_H
-#define TMIV_COMMON_APPLICATION_H
+#ifndef TMIV_VIDEODECODER_VERSIONS_H
+#define TMIV_VIDEODECODER_VERSIONS_H
 
-#include "Factory.h"
-#include "Json.h"
-
-#include <ctime>
 #include <string_view>
+#include <vector>
 
-namespace TMIV::Common {
-class Usage : public std::runtime_error {
-  using std::runtime_error::runtime_error;
-};
+namespace TMIV::VideoDecoder {
+static constexpr bool found_hm = 0 < @HM_FOUND@;
+static constexpr bool found_vvdec = 0 < @vvdec_FOUND@;
+static constexpr std::string_view hm_version = "HEVC Model (HM) @HM_VERSION@";
+static constexpr std::string_view vvdec_version = "Fraunhofer VVdeC @vvdec_VERSION@";
 
-class Application {
-public:
-  struct Option {
-    std::string_view option;
-    std::string_view description;
-    bool multiple{};
-    std::vector<std::string> values{};
-  };
-  using Options = std::vector<Option>;
+[[nodiscard]] inline auto versions() -> std::vector<std::string_view> {
+  auto result = std::vector<std::string_view>{};
 
-  // Parse command-line arguments
-  Application(char const *tool, std::vector<const char *> argv, Options options,
-              const std::vector<std::string_view> &versions);
+  if constexpr (found_hm) {
+    result.push_back(hm_version);
+  }
+  if constexpr (found_vvdec) {
+    result.push_back(vvdec_version);
+  }
+  return result;
+}
+} // namespace TMIV::VideoDecoder
 
-  Application(const Application &other) = delete;
-  Application(Application &&other) = default;
-  auto operator=(const Application &other) -> Application & = delete;
-  auto operator=(Application &&other) -> Application & = default;
-  virtual ~Application() = default;
-  void startTime();
-  void printTime() const;
-  virtual void run() = 0;
-
-protected:
-  [[nodiscard]] auto json() const -> const Json &;
-
-  [[nodiscard]] auto optionValues(std::string_view option) const
-      -> const std::vector<std::string> &;
-
-private:
-  void add_file(const std::filesystem::path &path);
-  void add_parameter(std::string key, std::string_view value);
-  void add_stream(std::istream &stream);
-
-  Json m_json;
-  clock_t m_startTime{};
-  Options m_options;
-};
-} // namespace TMIV::Common
-
-#endif
+#endif // TMIV_VIDEODECODER_VERSIONS_H

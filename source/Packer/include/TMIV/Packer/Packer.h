@@ -83,7 +83,8 @@ private:
   std::vector<std::vector<MaxRectPiP>> m_packerList;
 
   auto computeClusters(const Common::FrameList<uint8_t> &masks,
-                       const MivBitstream::ViewParamsList &viewParamsList)
+                       const MivBitstream::ViewParamsList &viewParamsList,
+                       const Common::FrameList<uint32_t> &information)
       -> std::tuple<ClusterList, ClusteringMapList, std::vector<int32_t>>;
   auto computeClusterToPack(const std::vector<Common::SizeVector> &atlasSizes,
                             const MivBitstream::ViewParamsList &viewParamsList, int32_t m_blockSize,
@@ -92,10 +93,17 @@ private:
   auto computeClusterToPackWithInformation(const MivBitstream::ViewParamsList &viewParamsList,
                                            const ClusteringMapList &clusteringMap,
                                            const Common::FrameList<uint32_t> &information,
-                                           std::vector<Cluster> out);
+                                           std::vector<Cluster> &out, bool greater)
+      -> ClusterInformationPriorityQueue;
   [[nodiscard]] auto getViewId(const Cluster &cluster,
                                const std::vector<int32_t> &clusteringMapIndex) const -> int32_t;
   void ifEntityOrBasicOrSemiBasic(const Cluster &cluster) const;
+  auto splitClustersWithInformation(ClusterInformationPriorityQueue &clusterToPackWithInformation,
+                                    int32_t atlasLimited,
+                                    const MivBitstream::ViewParamsList &viewParamsList,
+                                    const ClusteringMapList &clusteringMap,
+                                    const Common::FrameList<uint32_t> &information,
+                                    int32_t m_blockSize) -> std::vector<Cluster>;
 };
 
 } // namespace TMIV::Packer

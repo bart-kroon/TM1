@@ -64,12 +64,14 @@ private:
 
 public:
   explicit Application(std::vector<const char *> argv)
-      : Common::Application{"MpiPcs", std::move(argv),
+      : Common::Application{"MpiPcs",
+                            std::move(argv),
                             Common::Application::Options{
                                 {"-s", "Content ID (e.g. B for Museum)", false},
                                 {"-n", "Number of input frames (e.g. 97)", false},
                                 {"-f", "Input start frame (e.g. 23)", false},
-                                {"-x", "Conversion mode (raw2pcs or pcs2raw)", false}}}
+                                {"-x", "Conversion mode (raw2pcs or pcs2raw)", false}},
+                            {}}
       , m_contentId{optionValues("-s"sv).front()}
       , m_numberOfInputFrames{std::stoi(optionValues("-n"sv).front())}
       , m_startFrame{std::stoi(optionValues("-f"sv).front())}

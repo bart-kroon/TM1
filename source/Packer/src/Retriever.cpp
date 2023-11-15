@@ -158,9 +158,10 @@ auto mergePatches(ClusterList &clusterList, std::pair<int32_t, int32_t> AB, Clus
     for (int32_t i_inter = i_top; i_inter <= i_bottom; i_inter++) {
       for (int32_t j_inter = j_left; j_inter <= j_right; j_inter++) {
         if (clusteringBuffer(i_inter, j_inter) == ACTIVE) {
-          float diff = static_cast<float>(infomationBuffer(i_inter, j_inter)) -
-                       static_cast<float>(cluster.getInformationDensity());
-          if (infomationBuffer.empty() || std::abs(diff) < 0.2 * cluster.getInformationDensity()) {
+          if (infomationBuffer.empty() ||
+              std::abs(static_cast<float>(infomationBuffer(i_inter, j_inter)) -
+                       static_cast<float>(cluster.getInformationDensity())) <
+                  0.2 * cluster.getInformationDensity()) {
             clusteringBuffer(i_inter, j_inter) = clusterId;
           }
         }

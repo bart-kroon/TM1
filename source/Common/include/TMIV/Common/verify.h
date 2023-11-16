@@ -58,18 +58,6 @@
   static_cast<void>(LIKELY(condition) ||                                                           \
                     (::TMIV::Common::runtimeError(#condition, __FILE__, __LINE__), false))
 
-// Like the assert macro from <cassert>. We cannot use that because the libc++ implementation
-// triggers cppcoreguidelines-pro-bounds-array-to-pointer-decay.
-#ifdef NDEBUG
-#define ASSERT(condition) (static_cast<void>(0))
-#else
-#define ASSERT(condition)                                                                          \
-  static_cast<void>(!!(condition) ||                                                               \
-                    (::TMIV::Common::assertionFailed(#condition, __FILE__, __LINE__), false))
-#endif
-
-#define RUNTIME_ERROR(what) ::TMIV::Common::runtimeError(what, __FILE__, __LINE__)
-
 // Check bitstream against (draft) ISO/IEC 23090-5 V3C and V-PCC specification
 //
 //  * The bitstream is an external error source and thus an exception of type
@@ -117,9 +105,17 @@
   static_cast<void>((LIKELY(condition) ||                                                          \
                      (::TMIV::Common::assertionFailed(#condition, __FILE__, __LINE__), false)))
 
+// Check an assumption. Unlike the assert macro from <cassert>, which shall not be used in this
+// project, assumptions are checked regardless of the build type. This is a test model and
+// correctness is more important than efficiency.
+#define ASSERT(condition)                                                                          \
+  static_cast<void>(LIKELY(condition) ||                                                           \
+                    (::TMIV::Common::assertionFailed(#condition, __FILE__, __LINE__), false))
+
+#define RUNTIME_ERROR(what) ::TMIV::Common::runtimeError(what, __FILE__, __LINE__)
+
 // Check for a precondition on an operation that will start (assumptions on the input)
 //
-//  * For hot inner loops use `ASSERT` from the <cassert> header instead.
 //  * When this triggers, this is always a bug in the test model.
 //  * This is an internal error source and thus an abnormal program termination will be triggered.
 #define PRECONDITION(condition)                                                                    \
@@ -128,7 +124,6 @@
 
 // Check for a postcondition on an operation that just took place (assumptions on the output)
 //
-//  * For hot inner loops use `ASSERT` from the <cassert> header instead.
 //  * When this triggers, this is always a bug in the test model.
 //  * This is an internal error source and thus an abnormal program termination will be triggered.
 #define POSTCONDITION(condition)                                                                   \

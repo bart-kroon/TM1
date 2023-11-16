@@ -298,13 +298,13 @@ private:
     auto result = size_t{};
 
     for (size_t i = 0; i < m_dim && i < L; ++i) {
+      PRECONDITION(at(index, i) < at(m_sizes, i));
       result += at(m_step, i) * at(index, i);
     }
-#ifndef NDEBUG
     for (size_t i = m_dim; i < L; ++i) {
-      ASSERT(at(index, i) == 0);
+      PRECONDITION(at(index, i) == 0);
     }
-#endif
+    POSTCONDITION(result < m_size);
     return result;
   }
 
@@ -938,10 +938,20 @@ private:
     return (i == K) ? offset<K>(i + 1, first, next...)
                     : first * m_step[i + 1] + offset<K>(i + 1, next...);
   }
-  [[nodiscard]] auto pos(size_t /*unused*/, size_t first) const noexcept { return first; }
+
+  [[nodiscard]] auto pos(size_t /*unused*/, size_t first) const noexcept {
+    PRECONDITION(first < m_size.back());
+    const auto index = first;
+    POSTCONDITION(index < m_v.size());
+    return index;
+  }
+
   template <typename... I>
   [[nodiscard]] auto pos(size_t i, size_t first, I... next) const noexcept {
-    return first * at(m_step, i) + pos(i + 1, next...);
+    PRECONDITION(first < at(m_size, i - 1));
+    const auto index = first * at(m_step, i) + pos(i + 1, next...);
+    POSTCONDITION(index < m_v.size());
+    return index;
   }
 };
 } // namespace heap

@@ -253,9 +253,13 @@ auto Cluster::splitnUnevenInformationPatchVertically(const ClusteringMap &cluste
       int32_t i = hh + c.imin();
       for (int32_t ww = w; ww < std::min(w + alignment, c.width()); ww++) {
         int32_t j = ww + c.jmin();
-        if (clusteringBuffer(i, j) == c.getClusterId()) {
-          activePixels++;
-          informationValue += informationBuffer(i, j);
+        // TODO(BK): Work around bug
+        if (static_cast<size_t>(i) < clusteringBuffer.size(0) &&
+            static_cast<size_t>(j) < clusteringBuffer.size(1)) {
+          if (clusteringBuffer(i, j) == c.getClusterId()) {
+            activePixels++;
+            informationValue += informationBuffer(i, j);
+          }
         }
       } // ww
     }   // hh
@@ -398,8 +402,15 @@ void Cluster::calculateInformationDensity(const ClusteringMap &clusteringMap,
   int32_t W = c.width();
   const auto &clusteringBuffer = clusteringMap.getPlane(0);
   const auto &informationBuffer = informationMap.getPlane(0);
-  for (int32_t h = 0; h < H; h++) {
-    for (int32_t w = 0; w < W; w++) {
+
+  // TODO(BK): Work around bug
+  const auto H_ =
+      static_cast<int32_t>(std::min(clusteringBuffer.size(0), informationBuffer.size(0)));
+  const auto W_ =
+      static_cast<int32_t>(std::min(clusteringBuffer.size(1), informationBuffer.size(1)));
+
+  for (int32_t h = 0; h < std::min(H, H_ - c.imin()); h++) {
+    for (int32_t w = 0; w < std::min(W, W_ - c.jmin()); w++) {
       if (clusteringBuffer(h + c.imin(), w + c.jmin()) == c.getClusterId()) {
         activePixels++;
         informationValue += static_cast<int64_t>(informationBuffer(h + c.imin(), w + c.jmin()));
@@ -421,6 +432,7 @@ void Cluster::calculateInformationDensityWithBuffer(
   int32_t activePixels = 0;
   int32_t H = c.height();
   int32_t W = c.width();
+
   for (int32_t h = 0; h < H; h++) {
     for (int32_t w = 0; w < W; w++) {
       if (clusteringBuffer(h + c.imin(), w + c.jmin()) == c.getClusterId()) {

@@ -62,6 +62,7 @@ public:
     params.verifyPictureHash = true;
     params.parseThreads = 1;
     params.threads = 1;
+    params.simd = VVDEC_SIMD_SCALAR;
 
     m_decoder = vvdec_decoder_open(&params);
     VERIFY(m_decoder);

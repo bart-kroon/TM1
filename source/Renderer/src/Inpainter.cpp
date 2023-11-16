@@ -362,7 +362,7 @@ void inpaintPerspectiveView(Common::RendererFrame &yuvd) {
       nonEmptyNeighborB(h, w) = h;
 
       if (D(h, w) == 0) {
-        if (h < height - 1) {
+        if (w < width - 1) {
           nonEmptyNeighborB(h, w) = nonEmptyNeighborB(h, w + 1);
         } else {
           nonEmptyNeighborB(h, w) = -1;

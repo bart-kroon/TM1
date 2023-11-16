@@ -36,6 +36,7 @@
 #include <TMIV/Common/Formatters.h>
 
 #include <chrono>
+#include <cstdio>
 #include <ostream>
 
 using namespace std::string_view_literals;
@@ -88,15 +89,10 @@ struct LoggerSingleton {
     }();
 
     circumventLogger("{:013.6f}  {:7}  {}{}\n", duration.count(), level, prefix, what);
+    std::fflush(stdout);
   };
 
-  LogLevel maxLevel =
-#ifdef NDEBUG
-      LogLevel::info
-#else
-      LogLevel::debug
-#endif
-      ;
+  LogLevel maxLevel = LogLevel::info;
 };
 } // namespace
 

@@ -123,7 +123,7 @@ TEST_CASE("TMIV::Packer::Cluster::push and accessors") {
       return; // Splitting of basic views is out of contract
     }
 
-    auto map = ClusteringMap::lumaOnly({cluster.imax() + 1, cluster.jmax() + 1});
+    auto map = ClusteringMap::lumaOnly({cluster.jmax() + 1, cluster.imax() + 1});
     map.fillNeutral();
 
     for (int32_t i = 0; i < map.getHeight(); ++i) {
@@ -138,7 +138,7 @@ TEST_CASE("TMIV::Packer::Cluster::push and accessors") {
     CHECK(c1.getViewIdx() == viewIdx);
     CHECK(c1.getClusterId() == clusterId);
     CHECK(c1.getEntityId() == entityId);
-    CHECK(c1.getNumActivePixels() == 985);
+    CHECK(c1.getNumActivePixels() == 970);
     CHECK(c1.imin() == 13);
     CHECK(c1.jmin() == 16);
     CHECK(c1.imax() == 112);
@@ -152,7 +152,7 @@ TEST_CASE("TMIV::Packer::Cluster::push and accessors") {
     CHECK(c2.getViewIdx() == viewIdx);
     CHECK(c2.getClusterId() == clusterId);
     CHECK(c2.getEntityId() == entityId);
-    CHECK(c2.getNumActivePixels() == 981);
+    CHECK(c2.getNumActivePixels() == 1036);
     CHECK(c1.imin() == 13);
     CHECK(c1.jmin() == 16);
     CHECK(c1.imax() == 112);
@@ -168,7 +168,7 @@ TEST_CASE("TMIV::Packer::Cluster::push and accessors") {
       CHECK(c3.getViewIdx() == viewIdx);
       CHECK(c3.getClusterId() == clusterId);
       CHECK(c3.getEntityId() == entityId);
-      CHECK(c3.getNumActivePixels() == 1966);
+      CHECK(c3.getNumActivePixels() == 2006);
       CHECK(c3.imin() == 13);
       CHECK(c3.jmin() == 16);
       CHECK(c3.imax() == 112);

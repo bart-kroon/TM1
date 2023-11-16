@@ -222,7 +222,8 @@ class IntegrationTest:
         f2_1 = self.launchCommand(
             executor,
             [f1],
-            ["{4}/bin/vvencFFapp", "-c", "{1}/config/test/miv_main_anchor/A_2_VVenC_encode_geo.cfg"]
+            ["{4}/bin/vvencFFapp", "--SIMD", "SCALAR"]
+            + ["-c", "{1}/config/test/miv_main_anchor/A_2_VVenC_encode_geo.cfg"]
             + ["-i", f"{{3}}/A3/E/RP0/TMIV_A3_E_RP0_geo_c00_{geometryResolution}_yuv420p10le.yuv"]
             + ["-b", "{3}/A3/E/QP3/TMIV_A3_E_QP3_geo_c00.bit", "-s", str(geometryResolution)]
             + ["-q", "20", "-f", "3", "-fr", "30"],
@@ -233,7 +234,8 @@ class IntegrationTest:
         f2_2 = self.launchCommand(
             executor,
             [f1],
-            ["{4}/bin/vvencFFapp", "-c", "{1}/config/test/miv_main_anchor/A_2_VVenC_encode_geo.cfg"]
+            ["{4}/bin/vvencFFapp", "--SIMD", "SCALAR"]
+            + ["-c", "{1}/config/test/miv_main_anchor/A_2_VVenC_encode_geo.cfg"]
             + ["-i", f"{{3}}/A3/E/RP0/TMIV_A3_E_RP0_geo_c01_{geometryResolution}_yuv420p10le.yuv"]
             + ["-b", "{3}/A3/E/QP3/TMIV_A3_E_QP3_geo_c01.bit", "-s", str(geometryResolution)]
             + ["-q", "20", "-f", "3", "-fr", "30"],
@@ -244,7 +246,8 @@ class IntegrationTest:
         f2_3 = self.launchCommand(
             executor,
             [f1],
-            ["{4}/bin/vvencFFapp", "-c", "{1}/config/test/miv_main_anchor/A_2_VVenC_encode_tex.cfg"]
+            ["{4}/bin/vvencFFapp", "--SIMD", "SCALAR"]
+            + ["-c", "{1}/config/test/miv_main_anchor/A_2_VVenC_encode_tex.cfg"]
             + ["-i", f"{{3}}/A3/E/RP0/TMIV_A3_E_RP0_tex_c00_{textureResolution}_yuv420p10le.yuv"]
             + ["-b", "{3}/A3/E/QP3/TMIV_A3_E_QP3_tex_c00.bit", "-s", str(textureResolution)]
             + ["-q", "43", "-f", "3", "-fr", "30"],
@@ -255,7 +258,8 @@ class IntegrationTest:
         f2_4 = self.launchCommand(
             executor,
             [f1],
-            ["{4}/bin/vvencFFapp", "-c", "{1}/config/test/miv_main_anchor/A_2_VVenC_encode_tex.cfg"]
+            ["{4}/bin/vvencFFapp", "--SIMD", "SCALAR"]
+            + ["-c", "{1}/config/test/miv_main_anchor/A_2_VVenC_encode_tex.cfg"]
             + ["-i", f"{{3}}/A3/E/RP0/TMIV_A3_E_RP0_tex_c01_{textureResolution}_yuv420p10le.yuv"]
             + ["-b", "{3}/A3/E/QP3/TMIV_A3_E_QP3_tex_c01.bit", "-s", str(textureResolution)]
             + ["-q", "43", "-f", "3", "-fr", "30"],
@@ -349,7 +353,8 @@ class IntegrationTest:
         f2_1 = self.launchCommand(
             executor,
             [f1],
-            ["{4}/bin/vvencFFapp", "-c", "{1}/config/ctc/miv_main_anchor/A_2_VVenC_encode_geo.cfg"]
+            ["{4}/bin/vvencFFapp", "--SIMD", "SCALAR"]
+            + ["-c", "{1}/config/ctc/miv_main_anchor/A_2_VVenC_encode_geo.cfg"]
             + ["-i", f"{{3}}/I3/E/TMIV_I3_E_geo_c00_{geometryResolution}_yuv420p10le.yuv", "-b"]
             + ["{3}/I3/E/QP3/TMIV_I3_E_QP3_geo_c00.bit", "-s", str(geometryResolution), "-q", "20"]
             + ["-f", "3", "-fr", "30"],
@@ -360,7 +365,8 @@ class IntegrationTest:
         f2_2 = self.launchCommand(
             executor,
             [f1],
-            ["{4}/bin/vvencFFapp", "-c", "{1}/config/ctc/miv_main_anchor/A_2_VVenC_encode_geo.cfg"]
+            ["{4}/bin/vvencFFapp", "--SIMD", "SCALAR"]
+            + ["-c", "{1}/config/ctc/miv_main_anchor/A_2_VVenC_encode_geo.cfg"]
             + ["-i", f"{{3}}/I3/E/TMIV_I3_E_geo_c01_{geometryResolution}_yuv420p10le.yuv", "-b"]
             + ["{3}/I3/E/QP3/TMIV_I3_E_QP3_geo_c01.bit", "-s", str(geometryResolution), "-q", "20"]
             + ["-f", "3", "-fr", "30"],
@@ -371,7 +377,8 @@ class IntegrationTest:
         f2_3 = self.launchCommand(
             executor,
             [f1],
-            ["{4}/bin/vvencFFapp", "-c", "{1}/config/ctc/miv_main_anchor/A_2_VVenC_encode_tex.cfg"]
+            ["{4}/bin/vvencFFapp", "--SIMD", "SCALAR"]
+            + ["-c", "{1}/config/ctc/miv_main_anchor/A_2_VVenC_encode_tex.cfg"]
             + ["-i", f"{{3}}/I3/E/TMIV_I3_E_tex_c00_{textureResolution}_yuv420p10le.yuv", "-b"]
             + ["{3}/I3/E/QP3/TMIV_I3_E_QP3_tex_c00.bit", "-s", str(textureResolution), "-q", "43"]
             + ["-f", "3", "-fr", "30"],
@@ -382,7 +389,8 @@ class IntegrationTest:
         f2_4 = self.launchCommand(
             executor,
             [f1],
-            ["{4}/bin/vvencFFapp", "-c", "{1}/config/ctc/miv_main_anchor/A_2_VVenC_encode_tex.cfg"]
+            ["{4}/bin/vvencFFapp", "--SIMD", "SCALAR"]
+            + ["-c", "{1}/config/ctc/miv_main_anchor/A_2_VVenC_encode_tex.cfg"]
             + ["-i", f"{{3}}/I3/E/TMIV_I3_E_tex_c01_{textureResolution}_yuv420p10le.yuv", "-b"]
             + ["{3}/I3/E/QP3/TMIV_I3_E_QP3_tex_c01.bit", "-s", str(textureResolution), "-q", "43"]
             + ["-f", "3", "-fr", "30"],
@@ -834,7 +842,8 @@ class IntegrationTest:
         f2_1 = self.launchCommand(
             executor,
             [f1],
-            ["{4}/bin/vvencFFapp", "-c", "{1}/config/test/miv_packed_mpi/Q_2_VVenC_encode_pac.cfg"]
+            ["{4}/bin/vvencFFapp", "--SIMD", "SCALAR"]
+            + ["-c", "{1}/config/test/miv_packed_mpi/Q_2_VVenC_encode_pac.cfg"]
             + ["-i", f"{{3}}/Q3/M/TMIV_Q3_M_pac_c00_{packedResolution}_yuv420p10le.yuv"]
             + ["-b", "{3}/Q3/M/QP3/TMIV_Q3_M_QP3_pac_c00.bit", "-s", str(packedResolution)]
             + ["-q", "40", "-f", "3", "-fr", "30"],

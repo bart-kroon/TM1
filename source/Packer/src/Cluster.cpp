@@ -470,9 +470,13 @@ auto Cluster::splitUnevenInformationPatchHorizontally(const ClusteringMap &clust
       int32_t i = hh + c.imin();
       for (int32_t ww = 0; ww < c.width(); ww++) {
         int32_t j = ww + c.jmin();
-        if (clusteringBuffer(i, j) == c.getClusterId()) {
-          activePixels++;
-          informationValue += informationBuffer(i, j);
+        // TODO(BK): Work around bug
+        if (static_cast<size_t>(i) < clusteringBuffer.size(0) &&
+            static_cast<size_t>(j) < clusteringBuffer.size(1)) {
+          if (clusteringBuffer(i, j) == c.getClusterId()) {
+            activePixels++;
+            informationValue += informationBuffer(i, j);
+          }
         }
       } // ww
     }   // hh

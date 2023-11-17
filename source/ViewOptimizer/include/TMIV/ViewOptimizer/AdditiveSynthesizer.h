@@ -31,17 +31,16 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef TMIV_RENDERER_ADDITIVESYNTHESIZER_H
-#define TMIV_RENDERER_ADDITIVESYNTHESIZER_H
+#ifndef TMIV_VIEWOPTIMIZER_ADDITIVESYNTHESIZER_H
+#define TMIV_VIEWOPTIMIZER_ADDITIVESYNTHESIZER_H
 
-#include "ISynthesizer.h"
+#include "IViewSynthesizer.h"
 
-namespace TMIV::Renderer {
-class AdditiveSynthesizer : public ISynthesizer {
+namespace TMIV::ViewOptimizer {
+class AdditiveSynthesizer final : public IViewSynthesizer {
 public:
-  AdditiveSynthesizer(const Common::Json & /*unused*/, const Common::Json & /*componentNode*/);
-  AdditiveSynthesizer(float rayAngleParam, float depthParam, float stretchingParam,
-                      float maxStretching);
+  explicit AdditiveSynthesizer(const Common::Json &rootNode, const Common::Json &componentNode);
+
   AdditiveSynthesizer(const AdditiveSynthesizer &) = delete;
   AdditiveSynthesizer(AdditiveSynthesizer &&) = default;
   auto operator=(const AdditiveSynthesizer &) -> AdditiveSynthesizer & = delete;
@@ -49,7 +48,7 @@ public:
   ~AdditiveSynthesizer() override;
 
   // Render from a texture atlas to a viewport
-  [[nodiscard]] auto renderFrame(const MivBitstream::AccessUnit &frame,
+  [[nodiscard]] auto renderFrame(const SourceParams &params, const Common::DeepFrameList &frame,
                                  const MivBitstream::CameraConfig &cameraConfig) const
       -> Common::RendererFrame override;
 
@@ -58,6 +57,6 @@ private:
 
   std::unique_ptr<Impl> m_impl;
 };
-} // namespace TMIV::Renderer
+} // namespace TMIV::ViewOptimizer
 
 #endif

@@ -39,7 +39,7 @@
 
 #include <TMIV/Common/Factory.h>
 #include <TMIV/Renderer/IInpainter.h>
-#include <TMIV/Renderer/ISynthesizer.h>
+#include <TMIV/ViewOptimizer/IViewSynthesizer.h>
 
 #include <cstring>
 
@@ -74,7 +74,7 @@ private:
   TMIV::ViewOptimizer::ViewOptimizerParams m_params;
 };
 
-class FakeSynthesizer : public TMIV::Renderer::ISynthesizer {
+class FakeSynthesizer final : public TMIV::ViewOptimizer::IViewSynthesizer {
 public:
   FakeSynthesizer(const TMIV::Common::Json & /* rootNode */,
                   const TMIV::Common::Json & /* componentNode */) {
@@ -84,15 +84,17 @@ public:
   // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
   static inline bool constructed = false;
 
-  static inline std::function<void(const TMIV::MivBitstream::AccessUnit &frame,
+  static inline std::function<void(const TMIV::ViewOptimizer::SourceParams &params,
+                                   const TMIV::Common::DeepFrameList &frame,
                                    const TMIV::MivBitstream::CameraConfig &viewportParams)>
       inspect_renderFrame_input; // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
 
-  [[nodiscard]] auto renderFrame(const TMIV::MivBitstream::AccessUnit &frame,
+  [[nodiscard]] auto renderFrame(const TMIV::ViewOptimizer::SourceParams &params,
+                                 const TMIV::Common::DeepFrameList &frame,
                                  const TMIV::MivBitstream::CameraConfig &viewportParams) const
-      -> TMIV::Common::RendererFrame override {
+      -> TMIV::Common::RendererFrame final {
     if (inspect_renderFrame_input) {
-      inspect_renderFrame_input(frame, viewportParams);
+      inspect_renderFrame_input(params, frame, viewportParams);
     }
 
     auto output = TMIV::Common::RendererFrame{};
@@ -205,8 +207,8 @@ TEST_CASE("ServerSideInpainter") {
       .registerAs<TMIV::ViewOptimizer::ServerSideInpainter>("ServerSideInpainter"s);
   TMIV::Common::Factory<TMIV::ViewOptimizer::IViewOptimizer>::getInstance()
       .registerAs<FakeOptimizer>("FakeOptimizer"s);
-  TMIV::Common::Factory<TMIV::Renderer::ISynthesizer>::getInstance().registerAs<FakeSynthesizer>(
-      "FakeSynthesizer"s);
+  TMIV::Common::Factory<TMIV::ViewOptimizer::IViewSynthesizer>::getInstance()
+      .registerAs<FakeSynthesizer>("FakeSynthesizer"s);
   TMIV::Common::Factory<TMIV::Renderer::IInpainter>::getInstance().registerAs<FakeInpainter>(
       "FakeInpainter"s);
 
@@ -362,13 +364,15 @@ TEST_CASE("ServerSideInpainter") {
   }
 
   GIVEN("An interceptable renderFrame call") {
-    auto renderParameters = std::optional<
-        std::tuple<TMIV::MivBitstream::AccessUnit, TMIV::MivBitstream::CameraConfig>>{};
+    auto renderParameters =
+        std::optional<std::tuple<TMIV::ViewOptimizer::SourceParams, TMIV::Common::DeepFrameList,
+                                 TMIV::MivBitstream::CameraConfig>>{};
 
     FakeSynthesizer::inspect_renderFrame_input =
-        [&renderParameters](const TMIV::MivBitstream::AccessUnit &frame,
+        [&renderParameters](const TMIV::ViewOptimizer::SourceParams &params,
+                            const TMIV::Common::DeepFrameList &frame,
                             const TMIV::MivBitstream::CameraConfig &viewportParams) {
-          renderParameters = std::tuple{frame, viewportParams};
+          renderParameters = std::tuple{params, frame, viewportParams};
         };
 
     WHEN("Using typical inputs for the server-side inpainter") {
@@ -393,100 +397,18 @@ TEST_CASE("ServerSideInpainter") {
 
           REQUIRE(outFrame.back().texture.getPlane(0)[0] == 456);
         }
-
-        AND_THEN("The access unit that is input to the synthesizer has one patch per atlas") {
-          for (const auto &atlas : renderFrame.atlas) {
-            REQUIRE(atlas.patchParamsList.size() == 1);
-          }
-        }
-
-        AND_THEN("The patch in the access unit corresponds to a full view") {
-          for (size_t i = 0; i < renderFrame.atlas.size(); ++i) {
-            const auto &pp = renderFrame.atlas[i].patchParamsList.front();
-            REQUIRE(TMIV::MivBitstream::ViewId{i} == pp.atlasPatchProjectionId());
-            REQUIRE(pp.atlasPatchOrientationIndex() ==
-                    TMIV::MivBitstream::FlexiblePatchOrientation::FPO_NULL);
-            REQUIRE(pp.atlasPatch2dPosX() == 0);
-            REQUIRE(pp.atlasPatch2dPosY() == 0);
-            REQUIRE(pp.atlasPatch2dSizeX() ==
-                    inParams.viewParamsList[i].ci.ci_projection_plane_width_minus1() + 1);
-            REQUIRE(pp.atlasPatch2dSizeY() ==
-                    inParams.viewParamsList[i].ci.ci_projection_plane_height_minus1() + 1);
-            REQUIRE(pp.atlasPatch3dOffsetU() == 0);
-            REQUIRE(pp.atlasPatch3dOffsetV() == 0);
-            REQUIRE(pp.atlasPatch3dOffsetD() == 0);
-            REQUIRE(pp.atlasPatch3dRangeD() == 1023);
-            REQUIRE_FALSE(pp.asme_depth_occ_threshold_flag());
-            REQUIRE(pp.atlasPatchDepthOccThreshold() == 0);
-          }
-        }
-
-        AND_THEN("Set the atlas frame size in the ASPS") {
-          for (const auto &atlas : renderFrame.atlas) {
-            REQUIRE(atlas.asps.asps_frame_width() == atlas.texFrame.getWidth());
-            REQUIRE(atlas.asps.asps_frame_height() == atlas.texFrame.getHeight());
-          }
-        }
-
-        AND_THEN("The block to patch map uniformly points to patch 0") {
-          for (const auto &atlas : renderFrame.atlas) {
-            const auto ppbs = 1 << atlas.asps.asps_log2_patch_packing_block_size();
-            REQUIRE(atlas.blockToPatchMap.getWidth() * ppbs == atlas.texFrame.getWidth());
-            REQUIRE(atlas.blockToPatchMap.getHeight() * ppbs == atlas.texFrame.getHeight());
-            REQUIRE(std::all_of(atlas.blockToPatchMap.getPlane(0).cbegin(),
-                                atlas.blockToPatchMap.getPlane(0).cend(),
-                                [](auto value) { return value == 0; }));
-          }
-        }
-
-        AND_THEN("The occupancy map is uniform 1") {
-          for (const auto &atlas : renderFrame.atlas) {
-            REQUIRE(atlas.occFrame.getSize() == atlas.texFrame.getSize());
-            REQUIRE(std::all_of(atlas.occFrame.getPlane(0).cbegin(),
-                                atlas.occFrame.getPlane(0).cend(),
-                                [](auto value) { return value == 1; }));
-          }
-        }
       }
     }
-  }
-
-  SECTION("The depth is converted from 16-bit to 10-bit range prior to synthesis") {
-    const auto inParams = sourceParams();
-    auto inFrame = inputFrame(inParams);
-
-    inFrame.front().geometry.getPlane(0)[0] = 0xFFFF;
-    inFrame.front().geometry.getPlane(0)[1] = 0xFFF;
-    inFrame.front().geometry.getPlane(0)[2] = 0xFF;
-    inFrame.front().geometry.getPlane(0)[3] = 0xF;
-    inFrame.front().geometry.getPlane(0)[4] = 0;
-
-    FakeSynthesizer::inspect_renderFrame_input =
-        [](const TMIV::MivBitstream::AccessUnit &frame,
-           const TMIV::MivBitstream::CameraConfig & /* viewportParams */) {
-          REQUIRE(frame.atlas.front().geoFrame.getPlane(0)[0] == 0x3FF);
-          REQUIRE(frame.atlas.front().geoFrame.getPlane(0)[1] == 0x40);
-          REQUIRE(frame.atlas.front().geoFrame.getPlane(0)[2] == 0x4);
-          REQUIRE(frame.atlas.front().geoFrame.getPlane(0)[3] == 0);
-          REQUIRE(frame.atlas.front().geoFrame.getPlane(0)[4] == 0);
-        };
-
-    auto ssi = construct();
-    auto params = ssi.optimizeParams(inParams);
-    auto frame = ssi.optimizeFrame(inFrame);
-
-    FakeSynthesizer::inspect_renderFrame_input = nullptr;
   }
 
   SECTION("Pass the depth low quality flag to the synthesizer") {
     const auto dlqf = GENERATE(false, true);
 
     FakeSynthesizer::inspect_renderFrame_input =
-        [dlqf](const TMIV::MivBitstream::AccessUnit &frame,
+        [dlqf](const TMIV::ViewOptimizer::SourceParams &params,
+               const TMIV::Common::DeepFrameList & /* frame */,
                const TMIV::MivBitstream::CameraConfig & /* viewportParams */) {
-          REQUIRE(frame.casps.has_value());
-          REQUIRE(frame.casps->casps_miv_extension_present_flag());
-          REQUIRE(frame.casps->casps_miv_extension().casme_depth_low_quality_flag() == dlqf);
+          REQUIRE(params.depthLowQualityFlag == dlqf);
         };
 
     auto ssi = construct();

@@ -31,7 +31,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/Renderer/AdditiveSynthesizer.h>
+#include <TMIV/ViewOptimizer/AdditiveSynthesizer.h>
 
 #include <TMIV/Common/LinAlg.h>
 #include <TMIV/MivBitstream/DepthOccupancyTransform.h>
@@ -43,7 +43,15 @@
 #include <future>
 #include <numeric>
 
-namespace TMIV::Renderer {
+namespace TMIV::ViewOptimizer {
+using Renderer::AffineTransform;
+using Renderer::ImageVertexDescriptorList;
+using Renderer::Projector;
+using Renderer::Rasterizer;
+using Renderer::SceneVertexDescriptor;
+using Renderer::SceneVertexDescriptorList;
+using Renderer::TriangleDescriptorList;
+
 class AdditiveSynthesizer::Impl {
 public:
   Impl(float rayAngleParam, float depthParam, float stretchingParam, float maxStretching)
@@ -68,81 +76,56 @@ public:
     return result;
   }
 
-  static auto atlasVertices(const MivBitstream::AccessUnit &frame,
-                            const MivBitstream::AtlasAccessUnit &atlas,
+  static auto atlasVertices(const SourceParams &params, size_t viewIdx,
+                            const Common::DeepFrame &frame,
                             const MivBitstream::ViewParams &viewportParams) {
     SceneVertexDescriptorList result;
-    const auto rows = atlas.texFrame.getHeight();
-    const auto cols = atlas.texFrame.getWidth();
+    const auto rows = frame.texture.getHeight();
+    const auto cols = frame.texture.getWidth();
     result.reserve(rows * cols);
 
-    const auto transformList = affineTransformList(frame.viewParamsList, viewportParams.pose);
+    const auto &viewParams = params.viewParamsList[viewIdx];
+    const auto R_t = AffineTransform{viewParams.pose, viewportParams.pose};
+    const auto depthTransform =
+        MivBitstream::DepthTransform{viewParams.dq, frame.geometry.getBitDepth()};
+    const auto occupancyTransform = MivBitstream::OccupancyTransform{viewParams};
 
-    std::vector<MivBitstream::DepthTransform> depthTransform;
-    depthTransform.reserve(atlas.patchParamsList.size());
+    // Specialize on projection type
+    viewParams.ci.dispatch([&](auto camType) {
+      const auto projector = Projector<camType>{viewParams.ci};
 
-    for (const auto &patch : atlas.patchParamsList) {
-      const auto geoBitDepth = atlas.geoFrame.getBitDepth();
-      depthTransform.emplace_back(frame.viewParamsList[patch.atlasPatchProjectionId()].dq, patch,
-                                  geoBitDepth);
-    }
+      // For each used pixel in the atlas...
+      for (int32_t i = 0; i < rows; ++i) {
+        for (int32_t j = 0; j < cols; ++j) {
+          // Look up depth value and affine parameters
+          const auto uv = Common::Vec2f{Common::floatCast, Common::Vec2i{j, i}};
+          const auto level = frame.geometry.getPlane(0)(i, j);
 
-    // For each used pixel in the atlas...
-    for (int32_t i_atlas = 0; i_atlas < rows; ++i_atlas) {
-      for (int32_t j_atlas = 0; j_atlas < cols; ++j_atlas) {
-        const auto patchIdx = atlas.filteredPatchIdx(i_atlas, j_atlas);
-
-        // Push dummy vertices to keep indexing simple
-        if (patchIdx == Common::unusedPatchIdx) {
-          result.emplace_back();
-          continue;
-        }
-
-        // Exclude non-occupant pixels
-        if (!atlas.occFrame.getPlane(0)(i_atlas, j_atlas)) {
-          result.emplace_back();
-          continue;
-        }
-
-        // Look up metadata
-        const auto &patch = atlas.patchParamsList[patchIdx];
-        const auto viewIdx = frame.viewParamsList.indexOf(patch.atlasPatchProjectionId());
-        const auto &viewParams = frame.viewParamsList[viewIdx];
-
-        // Look up depth value and affine parameters
-        const auto uv = Common::Vec2f{Common::floatCast, patch.atlasToView({j_atlas, i_atlas})};
-        auto level = atlas.geoFrame.getPlane(0)(i_atlas, j_atlas);
-        const auto d = depthTransform[patchIdx].expandDepth(level);
-
-        viewParams.ci.dispatch([&](auto camType) {
-          const auto projector = Projector<camType>{viewParams.ci};
+          // Skip non-occupant samples
+          if (!occupancyTransform.occupant(level)) {
+            continue;
+          }
 
           // Reproject and calculate ray angle
-          const auto &R_t = transformList[viewIdx];
+          const auto d = depthTransform.expandDepth(level);
           const auto xyz = R_t(projector.unprojectVertex(uv + Common::Vec2f({0.5F, 0.5F}), d));
           const auto rayAngle = angle(xyz, xyz - R_t.translation());
           result.push_back({xyz, rayAngle});
-        });
+        }
       }
-    }
+    });
 
     return result;
   }
 
-  static auto atlasTriangles(const MivBitstream::AtlasAccessUnit &atlas) {
+  static auto atlasTriangles(const Common::Vec2i &frameSize) {
     TriangleDescriptorList result;
-    const auto rows = atlas.texFrame.getHeight();
-    const auto cols = atlas.texFrame.getWidth();
+    const auto rows = frameSize.y();
+    const auto cols = frameSize.x();
     const int32_t size = 2 * (rows - 1) * (cols - 1);
     result.reserve(size);
 
     auto addTriangle = [&](Common::Vec2i v0, Common::Vec2i v1, Common::Vec2i v2) {
-      const int32_t patchIdx = atlas.filteredPatchIdx(v0.y(), v0.x());
-      if (patchIdx == Common::unusedPatchIdx ||
-          patchIdx != atlas.filteredPatchIdx(v1.y(), v1.x()) ||
-          patchIdx != atlas.filteredPatchIdx(v2.y(), v2.x())) {
-        return;
-      }
       const auto vertexId0 = v0.y() * cols + v0.x();
       const auto vertexId1 = v1.y() * cols + v1.x();
       const auto vertexId2 = v2.y() * cols + v2.x();
@@ -165,19 +148,19 @@ public:
     return result;
   }
 
-  static auto atlasColors(const MivBitstream::AtlasAccessUnit &atlas) {
+  static auto atlasColors(const Common::Frame<> &frame) {
     std::vector<Common::Vec3f> result;
-    auto yuv444 = expandTexture(atlas.texFrame);
+    auto expandedFrame = expandTexture(yuv444(frame));
     result.reserve(distance(std::begin(result), std::end(result)));
-    std::copy(std::begin(yuv444), std::end(yuv444), back_inserter(result));
+    std::copy(std::begin(expandedFrame), std::end(expandedFrame), back_inserter(result));
     return result;
   }
 
-  static auto unprojectAtlas(const MivBitstream::AccessUnit &frame,
-                             const MivBitstream::AtlasAccessUnit &atlas,
-                             const MivBitstream::ViewParams &viewportParams) {
-    return std::tuple{atlasVertices(frame, atlas, viewportParams), atlasTriangles(atlas),
-                      atlasColors(atlas)};
+  static auto unprojectView(const SourceParams &params, size_t viewIdx,
+                            const Common::DeepFrame &frame,
+                            const MivBitstream::ViewParams &viewportParams) {
+    return std::tuple{atlasVertices(params, viewIdx, frame, viewportParams),
+                      atlasTriangles(frame.texture.getSize()), atlasColors(frame.texture)};
   }
 
   // Project mesh to target view (equirectangular projection)
@@ -236,7 +219,7 @@ public:
     });
   }
 
-  [[nodiscard]] auto rasterFrame(const MivBitstream::AccessUnit &frame,
+  [[nodiscard]] auto rasterFrame(const SourceParams &params, const Common::DeepFrameList &frame,
                                  const MivBitstream::ViewParams &viewportParams,
                                  float compensation) const -> Rasterizer {
     // Incremental view synthesis and blending
@@ -246,14 +229,10 @@ public:
     // Pipeline mesh generation and rasterization
     std::future<void> runner = std::async(std::launch::deferred, []() {});
 
-    for (const auto &atlas : frame.atlas) {
-      if (atlas.asps.asps_miv_extension_present_flag() &&
-          atlas.asps.asps_miv_extension().asme_ancillary_atlas_flag()) {
-        continue;
-      }
-
+    for (size_t viewIdx = 0; viewIdx < frame.size(); ++viewIdx) {
       // Generate a reprojected mesh
-      auto [vertices, triangles, color] = unprojectAtlas(frame, atlas, viewportParams);
+      auto [vertices, triangles, color] =
+          unprojectView(params, viewIdx, frame[viewIdx], viewportParams);
       auto mesh =
           project(std::move(vertices), std::move(triangles), std::move(color), viewportParams.ci);
 
@@ -299,23 +278,23 @@ public:
     return Common::sqr(viewParams.ci.projectionPlaneSizeF().x() / xFoV(viewParams));
   }
 
-  static auto resolutionRatio(const MivBitstream::AccessUnit &frame,
+  static auto resolutionRatio(const SourceParams &params,
                               const MivBitstream::ViewParams &viewportParams) -> float {
     auto sum = 0.;
     auto count = 0.;
 
-    for (const auto &viewParams : frame.viewParamsList) {
+    for (const auto &viewParams : params.viewParamsList) {
       sum += resolution(viewParams);
       count += 1.;
     }
     return static_cast<float>(resolution(viewportParams) * count / sum);
   }
 
-  [[nodiscard]] auto renderFrame(const MivBitstream::AccessUnit &frame,
+  [[nodiscard]] auto renderFrame(const SourceParams &params, const Common::DeepFrameList &frame,
                                  const MivBitstream::CameraConfig &cameraConfig) const
       -> Common::RendererFrame {
-    auto rasterizer = rasterFrame(frame, cameraConfig.viewParams,
-                                  resolutionRatio(frame, cameraConfig.viewParams));
+    auto rasterizer = rasterFrame(params, frame, cameraConfig.viewParams,
+                                  resolutionRatio(params, cameraConfig.viewParams));
 
     const auto depthTransform =
         MivBitstream::DepthTransform{cameraConfig.viewParams.dq, cameraConfig.bitDepthGeometry};
@@ -334,22 +313,19 @@ private:
   float m_maxStretching;
 }; // namespace TMIV::Renderer
 
-AdditiveSynthesizer::AdditiveSynthesizer(const Common::Json & /*rootNode*/,
+AdditiveSynthesizer::AdditiveSynthesizer(const Common::Json & /* rootNode */,
                                          const Common::Json &componentNode)
     : m_impl(new Impl(componentNode.require("rayAngleParameter").as<float>(),
                       componentNode.require("depthParameter").as<float>(),
                       componentNode.require("stretchingParameter").as<float>(),
                       componentNode.require("maxStretching").as<float>())) {}
 
-AdditiveSynthesizer::AdditiveSynthesizer(float rayAngleParam, float depthParam,
-                                         float stretchingParam, float maxStretching)
-    : m_impl(new Impl(rayAngleParam, depthParam, stretchingParam, maxStretching)) {}
-
 AdditiveSynthesizer::~AdditiveSynthesizer() = default;
 
-auto AdditiveSynthesizer::renderFrame(const MivBitstream::AccessUnit &frame,
+auto AdditiveSynthesizer::renderFrame(const SourceParams &params,
+                                      const Common::DeepFrameList &frame,
                                       const MivBitstream::CameraConfig &cameraConfig) const
     -> Common::RendererFrame {
-  return m_impl->renderFrame(frame, cameraConfig);
+  return m_impl->renderFrame(params, frame, cameraConfig);
 }
-} // namespace TMIV::Renderer
+} // namespace TMIV::ViewOptimizer

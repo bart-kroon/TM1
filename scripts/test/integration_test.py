@@ -134,7 +134,6 @@ class IntegrationTest:
             futures += self.testOneView(executor)
             futures += self.testMivDsdeAnchor(executor)
             futures += self.testBestReference(executor)
-            futures += self.testAdditiveSynthesizer(executor)
             futures += self.testMivMpi(executor)
             futures += self.testMivPackedMpi(executor)
             futures += self.testFramePacking(executor)
@@ -979,33 +978,6 @@ class IntegrationTest:
         )
 
         return [f2_1, f2_2, f2_3]
-
-    def testAdditiveSynthesizer(self, executor):
-        if not self.dryRun:
-            (self.testDir / "S1" / "C" / "RP0").mkdir(parents=True, exist_ok=True)
-
-        renderResolution = Resolution(512, 512)
-
-        f1 = self.launchCommand(
-            executor,
-            [],
-            ["{0}/bin/TmivRenderer", "-c"]
-            + ["{1}/config/test/additive_synthesizer/S_1_TMIV_render.json"]
-            + ["-p", "configDirectory", "{1}/config", "-p", "inputDirectory", "{2}"]
-            + ["-p", "outputDirectory", "{3}", "-n", "1", "-N", "1", "-s", "C", "-r", "RP0"]
-            + ["-p", "inputSequenceConfigPathFmt", "test/sequences/T{{1}}.json"]
-            + ["-p", "inputViewportParamsPathFmt", "test/sequences/T{{1}}.json"]
-            + ["-P", "p03", "-f", "0"]
-            + ["-p", "inputPoseTracePathFmt", "ctc/pose_traces/C01p03.csv"]
-            + ["-V", "debug"],
-            "{3}/S1/C/RP0/S1_C_RP0_p03.log",
-            [
-                f"S1/C/RP0/S1_C_RP0_p03_geo_{renderResolution}_yuv420p16le.yuv",
-                f"S1/C/RP0/S1_C_RP0_p03_tex_{renderResolution}_yuv420p10le.yuv",
-            ],
-        )
-
-        return [f1]
 
     def testEntityCoding(self, executor):
         if not self.dryRun:

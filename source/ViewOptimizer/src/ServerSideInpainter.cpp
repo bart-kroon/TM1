@@ -42,8 +42,8 @@
 #include <TMIV/MivBitstream/DepthOccupancyTransform.h>
 #include <TMIV/Renderer/AffineTransform.h>
 #include <TMIV/Renderer/IInpainter.h>
-#include <TMIV/Renderer/ISynthesizer.h>
 #include <TMIV/Renderer/Projector.h>
+#include <TMIV/ViewOptimizer/IViewSynthesizer.h>
 
 #include <cstring>
 #include <numeric>
@@ -67,7 +67,6 @@ using MivBitstream::ViewId;
 using MivBitstream::ViewParams;
 using MivBitstream::ViewParamsList;
 using Renderer::IInpainter;
-using Renderer::ISynthesizer;
 
 template <typename V> struct CameraFrustum {
   std::vector<V> planeNear;
@@ -197,7 +196,7 @@ private:
   const int32_t m_projectionPlaneWidth;
   const int32_t m_projectionPlaneHeight;
   std::unique_ptr<IViewOptimizer> m_optimizer;
-  std::unique_ptr<ISynthesizer> m_synthesizer;
+  std::unique_ptr<IViewSynthesizer> m_synthesizer;
   std::unique_ptr<IInpainter> m_inpainter;
   int32_t m_blurKernel;
   int32_t m_inpaintThreshold;
@@ -217,7 +216,7 @@ public:
                                     .at(1)
                                     .as<int32_t>()}
       , m_optimizer{Common::create<IViewOptimizer>("Sub"s, rootNode, componentNode)}
-      , m_synthesizer{Common::create<ISynthesizer>("Synthesizer"s, rootNode, componentNode)}
+      , m_synthesizer{Common::create<IViewSynthesizer>("Synthesizer"s, rootNode, componentNode)}
       , m_inpainter{Common::create<IInpainter>("Inpainter"s, rootNode, componentNode)}
       , m_blurKernel{componentNode.require("blurRadius").as<int32_t>()}
       , m_inpaintThreshold{componentNode.require("inpaintThreshold").as<int32_t>()}
@@ -245,7 +244,7 @@ public:
           std::max(viewportParams.bitDepthGeometry, view.geometry.getBitDepth());
     }
 
-    auto synthFrame = m_synthesizer->renderFrame(synthesizerInputFrame(frame), viewportParams);
+    auto synthFrame = m_synthesizer->renderFrame(m_sourceParams, frame, viewportParams);
     filterDepthFrame(synthFrame.geometry);
     m_inpainter->inplaceInpaint(synthFrame, viewportParams.viewParams);
     frame = m_optimizer->optimizeFrame(std::move(frame));
@@ -361,64 +360,6 @@ private:
     }
 
     return {minPhi, minTheta, maxPhi, maxTheta};
-  }
-
-  [[nodiscard]] auto synthesizerInputFrame(const DeepFrameList &frame) const -> AccessUnit {
-    auto inFrame = AccessUnit{};
-    inFrame.viewParamsList = m_sourceParams.viewParamsList;
-
-    std::transform(
-        frame.cbegin(), frame.cend(), std::back_inserter(inFrame.atlas),
-        [&vpl = inFrame.viewParamsList, viewIdx = uint16_t{}](const DeepFrame &frame_) mutable {
-          return synthesizerInputAtlasAccessUnit(frame_, vpl[viewIdx++].viewId);
-        });
-
-    // Transfer depth low quality flag
-    inFrame.casps = CommonAtlasSequenceParameterSetRBSP{};
-    inFrame.casps->casps_miv_extension().casme_depth_low_quality_flag(
-        m_sourceParams.depthLowQualityFlag);
-
-    return inFrame;
-  }
-
-  static auto synthesizerInputAtlasAccessUnit(const DeepFrame &frame, ViewId viewId)
-      -> AtlasAccessUnit {
-    auto aau = AtlasAccessUnit();
-
-    const auto w = frame.texture.getWidth();
-    const auto h = frame.texture.getHeight();
-
-    aau.asps.asps_frame_width(static_cast<uint16_t>(w));
-    aau.asps.asps_frame_height(static_cast<uint16_t>(h));
-
-    aau.texFrame = Common::yuv444(frame.texture);
-
-    aau.geoFrame.createY({w, h}, 10);
-    const auto maxInValue = Common::maxLevel(frame.geometry.getBitDepth());
-    const auto maxOutValue = Common::maxLevel(aau.geoFrame.getBitDepth());
-    std::transform(frame.geometry.getPlane(0).cbegin(), frame.geometry.getPlane(0).cend(),
-                   aau.geoFrame.getPlane(0).begin(), [=](uint16_t value) {
-                     return static_cast<uint16_t>((value * maxOutValue + maxInValue / 2) /
-                                                  maxInValue);
-                   });
-
-    aau.occFrame.createY({w, h});
-    aau.occFrame.fillOne();
-
-    auto &pp = aau.patchParamsList.emplace_back();
-    pp.atlasPatchProjectionId(viewId);
-    pp.atlasPatchOrientationIndex(MivBitstream::FlexiblePatchOrientation::FPO_NULL);
-    pp.atlasPatch2dSizeX(frame.texture.getWidth());
-    pp.atlasPatch2dSizeY(frame.texture.getHeight());
-    pp.atlasPatch3dRangeD(Common::maxLevel(aau.geoFrame.getBitDepth()));
-
-    const auto ppbs = std::gcd(128, std::gcd(w, h));
-    aau.asps.asps_log2_patch_packing_block_size(Common::ceilLog2(ppbs));
-    aau.blockToPatchMap.createY({w / ppbs, h / ppbs});
-    std::fill(aau.blockToPatchMap.getPlane(0).begin(), aau.blockToPatchMap.getPlane(0).end(),
-              uint16_t{});
-
-    return aau;
   }
 
   void filterDepthFrame(Common::Frame<> &frame) const noexcept {

@@ -33,7 +33,6 @@
 
 #include <TMIV/Common/Factory.h>
 #include <TMIV/DepthQualityAssessor/DepthQualityAssessor.h>
-#include <TMIV/Renderer/AdditiveSynthesizer.h>
 #include <TMIV/Renderer/Inpainter.h>
 #include <TMIV/Renderer/NoCuller.h>
 #include <TMIV/Renderer/NoInpainter.h>
@@ -60,7 +59,6 @@ void registerComponents() {
   renderers.registerAs<Renderer>("Renderer");
 
   auto &synthesizers = Common::Factory<ISynthesizer>::getInstance();
-  synthesizers.registerAs<AdditiveSynthesizer>("AdditiveSynthesizer");
   synthesizers.registerAs<ViewWeightingSynthesizer>("ViewWeightingSynthesizer");
 
   auto &viewingSpaceControllers = Common::Factory<IViewingSpaceController>::getInstance();

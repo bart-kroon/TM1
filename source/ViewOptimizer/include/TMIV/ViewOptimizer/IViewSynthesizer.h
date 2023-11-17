@@ -31,38 +31,30 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/Common/Factory.h>
-#include <TMIV/Renderer/Inpainter.h>
-#include <TMIV/Renderer/MpiSynthesizer.h>
-#include <TMIV/Renderer/NoCuller.h>
-#include <TMIV/Renderer/NoInpainter.h>
-#include <TMIV/Renderer/PushPullInpainter.h>
-#include <TMIV/Renderer/Renderer.h>
-#include <TMIV/Renderer/SubBlockCuller.h>
-#include <TMIV/Renderer/ViewWeightingSynthesizer.h>
-#include <TMIV/Renderer/ViewingSpaceController.h>
+#ifndef TMIV_VIEWOPTIMIZER_IVIEWSYNTHESIZER_H
+#define TMIV_VIEWOPTIMIZER_IVIEWSYNTHESIZER_H
 
-namespace TMIV::Decoder {
-void registerComponents() {
-  using Common::Factory;
+#include <TMIV/Common/Frame.h>
+#include <TMIV/MivBitstream/SequenceConfig.h>
+#include <TMIV/ViewOptimizer/IViewOptimizer.h>
 
-  auto &cullers = Common::Factory<Renderer::ICuller>::getInstance();
-  cullers.registerAs<Renderer::NoCuller>("NoCuller");
-  cullers.registerAs<Renderer::SubBlockCuller>("SubBlockCuller");
+namespace TMIV::ViewOptimizer {
+class IViewSynthesizer {
+public:
+  IViewSynthesizer() = default;
 
-  auto &inpainters = Common::Factory<Renderer::IInpainter>::getInstance();
-  inpainters.registerAs<Renderer::Inpainter>("Inpainter");
-  inpainters.registerAs<Renderer::NoInpainter>("NoInpainter");
-  inpainters.registerAs<Renderer::PushPullInpainter>("PushPullInpainter");
+  IViewSynthesizer(const IViewSynthesizer &) = delete;
+  IViewSynthesizer(IViewSynthesizer &&) = default;
+  auto operator=(const IViewSynthesizer &) -> IViewSynthesizer & = delete;
+  auto operator=(IViewSynthesizer &&) -> IViewSynthesizer & = default;
+  virtual ~IViewSynthesizer() = default;
 
-  auto &renderers = Common::Factory<Renderer::IRenderer>::getInstance();
-  renderers.registerAs<Renderer::Renderer>("Renderer");
+  // Render from a texture atlas to a viewport
+  [[nodiscard]] virtual auto renderFrame(const SourceParams &params,
+                                         const Common::DeepFrameList &frame,
+                                         const MivBitstream::CameraConfig &cameraConfig) const
+      -> Common::RendererFrame = 0;
+};
+} // namespace TMIV::ViewOptimizer
 
-  auto &synthesizers = Common::Factory<Renderer::ISynthesizer>::getInstance();
-  synthesizers.registerAs<Renderer::ViewWeightingSynthesizer>("ViewWeightingSynthesizer");
-  synthesizers.registerAs<Renderer::MpiSynthesizer>("MpiSynthesizer");
-
-  auto &viewingSpaceControllers = Common::Factory<Renderer::IViewingSpaceController>::getInstance();
-  viewingSpaceControllers.registerAs<Renderer::ViewingSpaceController>("ViewingSpaceController");
-}
-} // namespace TMIV::Decoder
+#endif

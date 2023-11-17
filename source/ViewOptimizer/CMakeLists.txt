@@ -5,6 +5,7 @@ create_tmiv_library(
     ViewOptimizerLib
     SOURCES
     "src/AbstractViewSelector.cpp"
+    "src/AdditiveSynthesizer.cpp"
     "src/BasicViewAllocator.cpp"
     "src/KMedoidsCost.cpp"
     "src/ServerSideInpainter.cpp"

@@ -5,7 +5,6 @@ create_tmiv_library(
     RendererLib
     SOURCES
     "src/AccumulatingPixel.cpp"
-    "src/AdditiveSynthesizer.cpp"
     "src/AffineTransform.cpp"
     "src/Inpainter.cpp"
     "src/MpiRasterizer.cpp"

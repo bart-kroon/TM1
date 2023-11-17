@@ -51,7 +51,7 @@ TEST_CASE("TMIV::Encoder::Configuration") {
   SECTION("MIV Main example") {
     auto root = Json::parse(R"({
     "intraPeriod": 1,
-    "blockSizeDepthQualityDependent": [2, 4],
+    "blockSize": 2,
     "haveTextureVideo": false,
     "haveGeometryVideo": true,
     "bitDepthGeometryVideo": 10,
@@ -79,7 +79,7 @@ TEST_CASE("TMIV::Encoder::Configuration") {
     root.checkForUnusedKeys();
 
     CHECK(unit.intraPeriod == 1);
-    CHECK(unit.blockSizeDepthQualityDependent == Vec2i{2, 4});
+    CHECK(unit.blockSize == 2);
     CHECK_FALSE(unit.haveTexture);
     CHECK(unit.haveGeometry);
     CHECK_FALSE(unit.haveOccupancy);
@@ -153,7 +153,7 @@ TEST_CASE("TMIV::Encoder::Configuration") {
   SECTION("MIV Geometry Absent example") {
     auto root = Json::parse(R"({
     "intraPeriod": 13,
-    "blockSizeDepthQualityDependent": [8, 4],
+    "blockSize": 8,
     "haveTextureVideo": true,
     "bitDepthTextureVideo": 10,
     "haveGeometryVideo": false,
@@ -181,7 +181,7 @@ TEST_CASE("TMIV::Encoder::Configuration") {
     root.checkForUnusedKeys();
 
     CHECK(unit.intraPeriod == 13);
-    CHECK(unit.blockSizeDepthQualityDependent == Vec2i{8, 4});
+    CHECK(unit.blockSize == 8);
     CHECK(unit.haveTexture);
     CHECK_FALSE(unit.haveGeometry);
     CHECK_FALSE(unit.haveOccupancy);
@@ -226,7 +226,7 @@ TEST_CASE("TMIV::Encoder::Configuration") {
   SECTION("Enable Frame Packing") {
     const auto root = Json::parse(R"({
     "intraPeriod": 13,
-    "blockSizeDepthQualityDependent": [8, 4],
+    "blockSize": 8,
     "haveTextureVideo": false,
     "haveGeometryVideo": false,
     "haveOccupancyVideo": false,
@@ -257,7 +257,7 @@ TEST_CASE("TMIV::Encoder::Configuration") {
   SECTION("Enable Geometry Packing") {
     const auto root = Json::parse(R"({
     "intraPeriod": 13,
-    "blockSizeDepthQualityDependent": [8, 4],
+    "blockSize": 8,
     "haveTextureVideo": false,
     "haveGeometryVideo": false,
     "haveOccupancyVideo": false,

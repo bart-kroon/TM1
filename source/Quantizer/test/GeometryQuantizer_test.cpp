@@ -131,7 +131,7 @@ static constexpr auto geo2dBitDepth = 9U;
                           double depthOccThresholdAsymmetry) -> Configuration {
   auto result = Configuration{Common::Json::parse(R"({
     "intraPeriod": 1,
-    "blockSizeDepthQualityDependent": [2, 4],
+    "blockSize": 4,
     "haveTextureVideo": false,
     "haveGeometryVideo": true,
     "bitDepthGeometryVideo": 10,

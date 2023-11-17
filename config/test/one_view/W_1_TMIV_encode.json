@@ -22,7 +22,7 @@
     "ViewOptimizerMethod": "NoViewOptimizer",
     "bitDepthGeometryVideo": 8,
     "bitDepthTextureVideo": 8,
-    "blockSizeDepthQualityDependent": [16, 32],
+    "blockSize": 16,
     "chromaScaleEnabledFlag": false,
     "codecGroupIdc": "VVC Main10",
     "configDirectory": "config",

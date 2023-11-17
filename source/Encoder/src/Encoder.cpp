@@ -136,12 +136,11 @@ private:
 
   [[nodiscard]] static auto
   calculateViewGridSize(const Configuration &config,
-                        const MivBitstream::ViewParamsList &viewParamsList,
-                        bool depthLowQualityFlag) {
+                        const MivBitstream::ViewParamsList &viewParamsList) {
     int32_t x{};
     int32_t y{};
 
-    const auto blockSize = config.blockSize(depthLowQualityFlag);
+    const auto blockSize = config.blockSize;
 
     for (const auto &viewParams : viewParamsList) {
       x = std::max(x, (viewParams.ci.ci_projection_plane_width_minus1() + blockSize) / blockSize);
@@ -153,7 +152,7 @@ private:
   [[nodiscard]] static auto
   calculateNominalAtlasFrameSizes(const Configuration &config,
                                   const MivBitstream::ViewParamsList &viewParamsList,
-                                  double frameRate, bool depthLowQualityFlag) {
+                                  double frameRate) {
     if (config.oneViewPerAtlasFlag) {
       // No constraints: one atlas per transport view
       auto result = Common::SizeVector(viewParamsList.size());
@@ -172,7 +171,7 @@ private:
         (config.haveGeometry ? (config.geometryScaleEnabledFlag ? 0.25 : 1.) : 0.);
     const auto numGroups = std::max(1.F, static_cast<float>(config.numGroups));
 
-    const auto blockSize = config.blockSize(depthLowQualityFlag);
+    const auto blockSize = config.blockSize;
     const auto maxBlockRate =
         config.maxLumaSampleRate / (numGroups * lumaSamplesPerAtlasSample * Common::sqr(blockSize));
 
@@ -197,7 +196,7 @@ private:
     }
 
     // Take the smallest reasonable width
-    const auto viewGridSize = calculateViewGridSize(config, viewParamsList, depthLowQualityFlag);
+    const auto viewGridSize = calculateViewGridSize(config, viewParamsList);
     const auto atlasGridWidth = viewGridSize.x();
     const auto atlasGridHeight = maxBlocksPerAtlas2 / atlasGridWidth;
 
@@ -275,10 +274,8 @@ private:
 
   [[nodiscard]] static auto
   createV3cParameterSet(const Configuration &config,
-                        const MivBitstream::ViewParamsList &viewParamsList, double frameRate,
-                        bool depthLowQualityFlag) {
-    const auto atlasFrameSizes =
-        calculateNominalAtlasFrameSizes(config, viewParamsList, frameRate, depthLowQualityFlag);
+                        const MivBitstream::ViewParamsList &viewParamsList, double frameRate) {
+    const auto atlasFrameSizes = calculateNominalAtlasFrameSizes(config, viewParamsList, frameRate);
 
     auto vps = MivBitstream::V3cParameterSet{};
     vps.profile_tier_level(createProfileTierLevel(config))
@@ -342,10 +339,10 @@ private:
     return casps;
   }
 
-  [[nodiscard]] static auto patchSizeQuantizers(const Configuration &config,
-                                                const MivBitstream::ViewParamsList &viewParamsList,
-                                                bool depthLowQualityFlag) {
-    auto quantizer = config.blockSize(depthLowQualityFlag);
+  [[nodiscard]] static auto
+  patchSizeQuantizers(const Configuration &config,
+                      const MivBitstream::ViewParamsList &viewParamsList) {
+    auto quantizer = config.blockSize;
 
     for (const auto &vp : viewParamsList) {
       quantizer = std::gcd(quantizer, vp.ci.ci_projection_plane_width_minus1() + 1);
@@ -379,13 +376,11 @@ private:
     return asme;
   }
 
-  [[nodiscard]] static auto
-  createAtlasSequenceParameterSet(const Configuration &config,
-                                  const MivBitstream::V3cParameterSet &vps,
-                                  const MivBitstream::ViewParamsList &viewParamsList,
-                                  bool depthLowQualityFlag, MivBitstream::AtlasId j) {
-    const auto blockSize = config.blockSize(depthLowQualityFlag);
-    const auto psq = patchSizeQuantizers(config, viewParamsList, depthLowQualityFlag);
+  [[nodiscard]] static auto createAtlasSequenceParameterSet(
+      const Configuration &config, const MivBitstream::V3cParameterSet &vps,
+      const MivBitstream::ViewParamsList &viewParamsList, MivBitstream::AtlasId j) {
+    const auto blockSize = config.blockSize;
+    const auto psq = patchSizeQuantizers(config, viewParamsList);
 
     auto asps = MivBitstream::AtlasSequenceParameterSetRBSP{};
     asps.asps_frame_width(vps.vps_frame_width(j))
@@ -409,16 +404,17 @@ private:
     return asps;
   }
 
-  [[nodiscard]] static auto createAtlasTileHeader(
-      const Configuration &config, const MivBitstream::AtlasSequenceParameterSetRBSP &asps,
-      const MivBitstream::ViewParamsList &viewParamsList, bool depthLowQualityFlag) {
+  [[nodiscard]] static auto
+  createAtlasTileHeader(const Configuration &config,
+                        const MivBitstream::AtlasSequenceParameterSetRBSP &asps,
+                        const MivBitstream::ViewParamsList &viewParamsList) {
     auto ath = MivBitstream::AtlasTileHeader{};
     ath.ath_type(MivBitstream::AthType::I_TILE)
         .ath_ref_atlas_frame_list_asps_flag(true)
         .ath_pos_min_d_quantizer(asps.asps_geometry_3d_bit_depth_minus1() + 1);
 
     if (asps.asps_patch_size_quantizer_present_flag()) {
-      const auto psq = patchSizeQuantizers(config, viewParamsList, depthLowQualityFlag);
+      const auto psq = patchSizeQuantizers(config, viewParamsList);
 
       ath.ath_patch_size_x_info_quantizer(Common::ceilLog2(psq.x()));
       ath.ath_patch_size_y_info_quantizer(Common::ceilLog2(psq.y()));
@@ -429,12 +425,10 @@ private:
   [[nodiscard]] static auto
   createEncoderAtlasParams(const Configuration &config, const MivBitstream::V3cParameterSet &vps,
                            const MivBitstream::ViewParamsList &viewParamsList,
-                           bool depthLowQualityFlag, MivBitstream::AtlasId j) {
+                           MivBitstream::AtlasId j) {
     auto atlas = MivBitstream::EncoderAtlasParams{};
-    atlas.asps =
-        createAtlasSequenceParameterSet(config, vps, viewParamsList, depthLowQualityFlag, j);
-    atlas.athTemplate =
-        createAtlasTileHeader(config, atlas.asps, viewParamsList, depthLowQualityFlag);
+    atlas.asps = createAtlasSequenceParameterSet(config, vps, viewParamsList, j);
+    atlas.athTemplate = createAtlasTileHeader(config, atlas.asps, viewParamsList);
 
     return atlas;
   }
@@ -447,8 +441,7 @@ private:
 
     params.viewParamsList = adaptViewParamsList(config, viewParamsList);
 
-    params.vps = createV3cParameterSet(config, params.viewParamsList, sequenceConfig.frameRate,
-                                       depthLowQualityFlag);
+    params.vps = createV3cParameterSet(config, params.viewParamsList, sequenceConfig.frameRate);
 
     params.casps =
         createCommonAtlasSequenceParameterSet(config, sequenceConfig, depthLowQualityFlag);
@@ -474,7 +467,7 @@ private:
 
     for (uint8_t k = 0; k <= params.vps.vps_atlas_count_minus1(); ++k) {
       params.atlas[k] = createEncoderAtlasParams(config, params.vps, params.viewParamsList,
-                                                 depthLowQualityFlag, params.vps.vps_atlas_id(k));
+                                                 params.vps.vps_atlas_id(k));
     }
     return params;
   }
@@ -489,8 +482,6 @@ private:
   }
 
   void prepareSequence(const SourceUnit &unit) {
-    m_blockSize = m_config.blockSize(unit.depthLowQualityFlag);
-
     m_transportViewParams = unit.viewParamsList;
     m_semiBasicViewCount = unit.semiBasicViewCount;
 
@@ -877,9 +868,9 @@ private:
     }
 
     m_packer->initialize(tilePartitions);
-    m_packer->initialize(tileSizes, m_blockSize);
-    m_params.patchParamsList =
-        m_packer->pack(tileSizes, aggregatedMask, m_transportViewParams, m_blockSize, information);
+    m_packer->initialize(tileSizes, m_config.blockSize);
+    m_params.patchParamsList = m_packer->pack(tileSizes, aggregatedMask, m_transportViewParams,
+                                              m_config.blockSize, information);
 
     assignFullPatchRanges(m_params);
   }
@@ -899,8 +890,8 @@ private:
     std::vector<std::vector<std::vector<int32_t>>> btpm;
     for (uint8_t k = 0; k <= m_params.vps.vps_atlas_count_minus1(); ++k) {
       const auto &currentAtlas = m_videoFrameBuffer[0][k];
-      int32_t AH = currentAtlas.texture.getHeight() / m_blockSize;
-      int32_t AW = currentAtlas.texture.getWidth() / m_blockSize;
+      int32_t AH = currentAtlas.texture.getHeight() / m_config.blockSize;
+      int32_t AW = currentAtlas.texture.getWidth() / m_config.blockSize;
       std::vector<std::vector<int32_t>> tmphw;
       for (int32_t h = 0; h < AH; h++) {
         std::vector<int32_t> tmpw;
@@ -939,7 +930,7 @@ private:
 
         for (int32_t y = 0; y < atlas.texture.getHeight(); ++y) {
           for (int32_t x = 0; x < atlas.texture.getWidth(); ++x) {
-            const auto patchIdx = btpm[k][y / m_blockSize][x / m_blockSize];
+            const auto patchIdx = btpm[k][y / m_config.blockSize][x / m_config.blockSize];
 
             if (patchIdx == Common::unusedPatchIdx ||
                 (atlas.geometry.getPlane(0)(y, x) == 0 &&
@@ -977,26 +968,26 @@ private:
       size_t atlasId = m_params.vps.indexOf(patch.atlasId());
 
       const auto &currentAtlas = m_videoFrameBuffer[0][atlasId];
-      int32_t AH = currentAtlas.texture.getHeight() / m_blockSize;
-      int32_t AW = currentAtlas.texture.getWidth() / m_blockSize;
+      int32_t AH = currentAtlas.texture.getHeight() / m_config.blockSize;
+      int32_t AW = currentAtlas.texture.getWidth() / m_config.blockSize;
 
       int32_t w = patch.atlasPatch3dSizeU();
       int32_t h = patch.atlasPatch3dSizeV();
       int32_t xM = patch.atlasPatch3dOffsetU();
       int32_t yM = patch.atlasPatch3dOffsetV();
 
-      for (int32_t dyAligned = 0; dyAligned < h; dyAligned += m_blockSize) {
-        for (int32_t dxAligned = 0; dxAligned < w; dxAligned += m_blockSize) {
-          for (int32_t dy = dyAligned; dy < dyAligned + m_blockSize; dy++) {
-            for (int32_t dx = dxAligned; dx < dxAligned + m_blockSize; dx++) {
+      for (int32_t dyAligned = 0; dyAligned < h; dyAligned += m_config.blockSize) {
+        for (int32_t dxAligned = 0; dxAligned < w; dxAligned += m_config.blockSize) {
+          for (int32_t dy = dyAligned; dy < dyAligned + m_config.blockSize; dy++) {
+            for (int32_t dx = dxAligned; dx < dxAligned + m_config.blockSize; dx++) {
               Common::Vec2i pView = {xM + dx, yM + dy};
               Common::Vec2i pAtlas = patch.viewToAtlas(pView);
 
-              int32_t ay = pAtlas.y() / m_blockSize;
-              int32_t ax = pAtlas.x() / m_blockSize;
+              int32_t ay = pAtlas.y() / m_config.blockSize;
+              int32_t ax = pAtlas.x() / m_config.blockSize;
 
-              if (ay < 0 || ax < 0 || ay >= AH || ax >= AW || pAtlas.y() % m_blockSize != 0 ||
-                  pAtlas.x() % m_blockSize != 0) {
+              if (ay < 0 || ax < 0 || ay >= AH || ax >= AW ||
+                  pAtlas.y() % m_config.blockSize != 0 || pAtlas.x() % m_config.blockSize != 0) {
                 continue;
               }
 
@@ -1138,8 +1129,8 @@ private:
     if (!m_config.patchRedundancyRemoval) {
       return false;
     }
-    bottomRight.x() = std::min(topLeft.x() + m_blockSize, bottomRight.x());
-    bottomRight.y() = std::min(topLeft.y() + m_blockSize, bottomRight.y());
+    bottomRight.x() = std::min(topLeft.x() + m_config.blockSize, bottomRight.x());
+    bottomRight.y() = std::min(topLeft.y() + m_config.blockSize, bottomRight.y());
 
     for (int32_t y = topLeft.y(); y < bottomRight.y(); ++y) {
       for (int32_t x = topLeft.x(); x < bottomRight.x(); ++x) {
@@ -1158,15 +1149,15 @@ private:
     const auto posU = patchParams.atlasPatch3dOffsetU();
     const auto posV = patchParams.atlasPatch3dOffsetV();
 
-    for (int32_t vBlock = 0; vBlock < sizeV; vBlock += m_blockSize) {
-      for (int32_t uBlock = 0; uBlock < sizeU; uBlock += m_blockSize) {
+    for (int32_t vBlock = 0; vBlock < sizeV; vBlock += m_config.blockSize) {
+      for (int32_t uBlock = 0; uBlock < sizeU; uBlock += m_config.blockSize) {
         const auto viewIdx = m_params.viewParamsList.indexOf(patchParams.atlasPatchProjectionId());
         const auto redundant =
             m_config.haveGeometry &&
             isRedundantBlock({posU + uBlock, posV + vBlock}, {posU + sizeU, posV + sizeV}, viewIdx);
 
-        for (int32_t v = vBlock; v < vBlock + m_blockSize && v < sizeV; ++v) {
-          for (int32_t u = uBlock; u < uBlock + m_blockSize && u < sizeU; ++u) {
+        for (int32_t v = vBlock; v < vBlock + m_config.blockSize && v < sizeV; ++v) {
+          for (int32_t u = uBlock; u < uBlock + m_config.blockSize && u < sizeU; ++u) {
             const auto pView = Common::Vec2i{posU + u, posV + v};
             const auto pAtlas = patchParams.viewToAtlas(pView);
 
@@ -1368,7 +1359,6 @@ private:
   int32_t m_semiBasicViewCount{};
   std::vector<Common::DeepFrameList> m_transportViews;
 
-  int32_t m_blockSize{};
   EncoderParams m_params;
   int32_t m_firstIdx{};
   int32_t m_lastIdx{};

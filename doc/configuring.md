@@ -7,7 +7,7 @@ The TMIV configuration files use the [JSON](http://json.org) file format. The ma
 ```json
 {
   "intraPeriod": 32,
-  "blockSizeDepthQualityDependent": [ 16, 32 ]
+  "blockSize": 16
 }
 ```
 

@@ -22,7 +22,7 @@
     "PrunerMethod": "NoPruner",
     "ViewOptimizerMethod": "BasicViewAllocator",
     "bitDepthTextureVideo": 10,
-    "blockSizeDepthQualityDependent": [16, 32],
+    "blockSize": 16,
     "chromaScaleEnabledFlag": false,
     "codecGroupIdc": "VVC Main10",
     "configDirectory": "config",

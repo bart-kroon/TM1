@@ -47,8 +47,7 @@ using MivBitstream::PtlProfileToolsetIdc;
 Configuration::Configuration(const Common::Json &componentNode)
     : intraPeriod{componentNode.require("intraPeriod").as<int32_t>()}
     , interPeriod{intraPeriod}
-    , blockSizeDepthQualityDependent{componentNode.require("blockSizeDepthQualityDependent")
-                                         .asVec<int32_t, 2>()}
+    , blockSize{componentNode.require("blockSize").as<int32_t>()}
     , haveTexture{componentNode.require("haveTextureVideo").as<bool>()}
     , haveGeometry{componentNode.require("haveGeometryVideo").as<bool>()}
     , haveOccupancy{componentNode.require("haveOccupancyVideo").as<bool>()}
@@ -168,11 +167,7 @@ void Configuration::querySeiParameters(const Common::Json &componentNode) {
 }
 
 void Configuration::verifyValid() const {
-  for (const auto blockSize : blockSizeDepthQualityDependent) {
-    VERIFY(2 <= blockSize);
-    VERIFY((blockSize & (blockSize - 1)) == 0);
-  }
-
+  VERIFY(2 <= blockSize && (blockSize & (blockSize - 1)) == 0);
   VERIFY(intraPeriod <= maxIntraPeriod);
 }
 } // namespace TMIV::Encoder

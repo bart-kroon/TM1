@@ -56,7 +56,7 @@ struct Configuration {
   // Main parameters
   int32_t intraPeriod;
   int32_t interPeriod;
-  Common::Vec2i blockSizeDepthQualityDependent;
+  int32_t blockSize;
   Common::Vec2d depthOccThresholdIfSet;
   double maxLumaSampleRate{};
   int32_t maxLumaPictureSize{};
@@ -99,10 +99,6 @@ struct Configuration {
   }
 
   bool informationPruning;
-
-  [[nodiscard]] auto blockSize(bool depthLowQualityFlag_) const noexcept {
-    return blockSizeDepthQualityDependent[static_cast<int32_t>(depthLowQualityFlag_)];
-  }
 
 private:
   void queryMainParameters(const Common::Json &componentNode);

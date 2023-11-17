@@ -57,7 +57,7 @@
     "ViewOptimizerMethod": "ServerSideInpainter",
     "bitDepthGeometryVideo": 10,
     "bitDepthTextureVideo": 10,
-    "blockSizeDepthQualityDependent": [16, 16],
+    "blockSize": 16,
     "chromaScaleEnabledFlag": false,
     "codecGroupIdc": "VVC Main10",
     "configDirectory": "config",

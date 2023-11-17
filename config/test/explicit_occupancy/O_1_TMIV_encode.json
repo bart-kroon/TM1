@@ -58,7 +58,7 @@
     "bitDepthGeometryVideo": 10,
     "bitDepthOccupancyVideo": 10,
     "bitDepthTextureVideo": 10,
-    "blockSizeDepthQualityDependent": [16, 32],
+    "blockSize": 32,
     "chromaScaleEnabledFlag": false,
     "codecGroupIdc": "VVC Main10",
     "configDirectory": "config",

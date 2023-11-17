@@ -18,6 +18,7 @@ COPY source /dependencies/source
 COPY HM /dependencies/build/HM
 COPY build_dependencies.json /dependencies/build/build_dependencies.json
 COPY build_dependencies.py /dependencies/build/build_dependencies.py
+COPY probe_compiler_features /dependencies/build/probe_compiler_features
 
 # Build the dependencies in the Docker environment (Clang 14)
 ENV CXX=clang++-14\ -w\ -stdlib=libc++

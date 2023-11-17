@@ -1,5 +1,6 @@
 /tmiv_integration_test
 /build_dependencies.json
 /build_dependencies.py
+/probe_compiler_features/
 /source
 /HM

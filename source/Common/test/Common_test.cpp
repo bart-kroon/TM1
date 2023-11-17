@@ -258,4 +258,6 @@ TEST_CASE("quantizeValue", "[quantize_and_expand]") {
   REQUIRE(quantizeValue(INFINITY, 10) == 1023U);
   REQUIRE(quantizeValue(1e20F, 10) == 1023U);
 }
+
+TEST_CASE("logStacktrace") { TMIV::Common::logStacktrace(); }
 } // namespace TMIV::Common

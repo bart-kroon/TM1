@@ -45,7 +45,7 @@ namespace TMIV::Common {
 // `std::format` syntax which is similar to Python `str.format`:
 //
 //   * https://en.cppreference.com/w/cpp/utility/format/format
-//   * https://fmt.dev/9.1.0/syntax.html
+//   * https://fmt.dev/latest/index.html
 //
 // The message is typically one but sometimes more lines and shall not be terminated by a new line
 // character. The message shall not include formatting relating to the log level, e.g. "ERROR:"
@@ -63,8 +63,8 @@ auto logMessage(LogLevel level, fmt::format_string<Args...> fmt, Args &&...args)
     logMessage(level, fmt::format(fmt, std::forward<Args>(args)...));
   } catch (fmt::format_error &e) {
     logMessage(LogLevel::error,
-               fmt::format("TMIV::Common::logMessage({}, \"{}\", {} arguments): {}", level, fmt,
-                           sizeof...(args), e.what()));
+               fmt::format("TMIV::Common::logMessage({}, \"{}\", {} arguments): {}", level,
+                           fmt.get(), sizeof...(args), e.what()));
   } catch (...) {
     handleLogMessageException();
   }

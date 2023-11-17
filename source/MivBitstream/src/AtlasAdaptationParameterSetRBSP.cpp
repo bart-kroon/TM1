@@ -128,7 +128,7 @@ auto operator<<(std::ostream &stream, const AtlasAdaptationParameterSetRBSP &x) 
     stream << x.aaps_vpcc_extension();
   }
   if (x.aaps_extension_7bits() != 0U) {
-    for (auto bit : x.aapsExtensionData()) {
+    for (bool bit : x.aapsExtensionData()) {
       stream << "aaps_extension_data_flag=" << std::boolalpha << bit << '\n';
     }
   }

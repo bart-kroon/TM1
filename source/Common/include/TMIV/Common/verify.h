@@ -204,9 +204,12 @@ inline auto message(char const *introduction, char const *condition, char const 
   throw BitstreamError{message("Failed to parse/decode bitstream", condition, file, line)};
 }
 
+void logStacktrace();
+
 [[noreturn]] inline void assertionFailed(char const *condition, char const *file,
                                          int32_t line) noexcept {
   try {
+    logStacktrace();
     logError(message("Assertion failed", condition, file, line));
   } catch (...) {
   }

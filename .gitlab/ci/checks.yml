@@ -1,6 +1,6 @@
 Python formatting:
   stage: formatting
-  image: tmiv-checks:20230306
+  image: tmiv-checks:20231117
   tags: [ linux-short ]
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
@@ -14,7 +14,7 @@ Python formatting:
 
 Python unit tests:
   stage: checks
-  image: tmiv-checks:20230306
+  image: tmiv-checks:20231117
   tags: [ linux-short ]
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
@@ -33,7 +33,7 @@ Python unit tests:
 
 C++ formatting:
   stage: formatting
-  image: tmiv-checks:20230306
+  image: tmiv-checks:20231117
   tags: [ linux-short ]
   script:
     - ./scripts/check/clang_format.py
@@ -42,7 +42,7 @@ C++ formatting:
 
 CMake formatting:
   stage: formatting
-  image: tmiv-checks:20230306
+  image: tmiv-checks:20231117
   tags: [ linux-short ]
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
@@ -59,7 +59,7 @@ CMake formatting:
 No multi-line commit messages:
   stage: checks
   image:
-    name: tmiv-checks:20230306
+    name: tmiv-checks:20231117
   tags: [ linux-short ]
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
@@ -71,7 +71,7 @@ No multi-line commit messages:
 
 Code quality rules:
   stage: checks
-  image: tmiv-checks:20230306
+  image: tmiv-checks:20231117
   tags: [ linux-short ]
   script:
     - ./scripts/check/code_quality_rules.py
@@ -80,7 +80,7 @@ Code quality rules:
 
 JSON formatting:
   stage: formatting
-  image: tmiv-checks:20230306
+  image: tmiv-checks:20231117
   tags: [ linux-short ]
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH

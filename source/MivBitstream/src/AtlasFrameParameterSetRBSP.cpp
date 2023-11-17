@@ -364,7 +364,7 @@ auto operator<<(std::ostream &stream, const AtlasFrameParameterSetRBSP &x) -> st
     stream << x.afps_miv_extension();
   }
   if (x.afps_extension_7bits() != 0) {
-    for (auto bit : x.afpsExtensionData()) {
+    for (bool bit : x.afpsExtensionData()) {
       stream << "afps_extension_data_flag=" << std::boolalpha << bit << '\n';
     }
   }

@@ -31,14 +31,25 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef TMIV_COMMON_VERSION_H
-#define TMIV_COMMON_VERSION_H
+#include <TMIV/Common/Formatters.h>
+#include <TMIV/Common/LoggingStrategyFmt.h>
+#include <TMIV/Common/Version.h>
+#include <TMIV/Common/verify.h>
+
+#if HAVE_STD_VERSION
+#include <version>
+#endif
+
+#define HAVE_STD_STACKTRACE (202011L <= __cpp_lib_stacktrace && 202302L <= __cpp_lib_formatters)
+
+#if HAVE_STD_STACKTRACE
+#include <stacktrace>
+#endif
 
 namespace TMIV::Common {
-// CMake parses this to create a Version.h file containing the project version defined in CMake
-static constexpr auto version = "@PROJECT_VERSION@";
-
-#define HAVE_STD_VERSION (20 <= @CMAKE_CXX_STANDARD@)
+void logStacktrace() {
+#if HAVE_STD_STACKTRACE
+  logInfo("Stacktrace:\n{}", to_string(std::stacktrace::current(1)));
+#endif
+}
 } // namespace TMIV::Common
-
-#endif // TMIV_COMMON_VERSION_H

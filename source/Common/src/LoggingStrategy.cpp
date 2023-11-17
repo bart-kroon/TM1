@@ -62,6 +62,8 @@ auto operator<<(std::ostream &stream, LogLevel value) -> std::ostream & {
 }
 
 namespace {
+void defaultStrategy(LogLevel level, std::string_view what);
+
 struct LoggerSingleton {
   using Clock = std::chrono::steady_clock;
 
@@ -72,28 +74,31 @@ struct LoggerSingleton {
 
   Clock::time_point start = Clock::now();
 
-  LoggingStrategy strategy = [this](LogLevel level, std::string_view what) {
-    const std::chrono::duration<double> duration = Clock::now() - start;
-
-    const auto prefix = [level]() {
-      switch (level) {
-      case LogLevel::error:
-        return "ERROR: "sv;
-      case LogLevel::warning:
-        return "WARNING: "sv;
-      case LogLevel::debug:
-        return "DEBUG: "sv;
-      default:
-        return ""sv;
-      }
-    }();
-
-    circumventLogger("{:013.6f}  {:7}  {}{}\n", duration.count(), level, prefix, what);
-    std::fflush(stdout);
-  };
+  LoggingStrategy strategy = defaultStrategy;
 
   LogLevel maxLevel = LogLevel::info;
 };
+
+void defaultStrategy(LogLevel level, std::string_view what) {
+  const std::chrono::duration<double> duration =
+      LoggerSingleton::Clock::now() - LoggerSingleton::instance().start;
+
+  const auto prefix = [level]() {
+    switch (level) {
+    case LogLevel::error:
+      return "ERROR: "sv;
+    case LogLevel::warning:
+      return "WARNING: "sv;
+    case LogLevel::debug:
+      return "DEBUG: "sv;
+    default:
+      return ""sv;
+    }
+  }();
+
+  circumventLogger("{:013.6f}  {:7}  {}{}\n", duration.count(), level, prefix, what);
+  std::fflush(stdout);
+}
 } // namespace
 
 void changeMaxLogLevel(LogLevel value) { LoggerSingleton::instance().maxLevel = value; }

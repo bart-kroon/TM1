@@ -49,6 +49,10 @@ template <typename T, size_t N>
 struct formatter<TMIV::Common::stack::Vector<T, N>> : ostream_formatter {};
 } // namespace fmt
 
+namespace std {
+inline auto format_as(streampos value) { return streamoff{value}; }
+} // namespace std
+
 namespace TMIV::Common {
 template <typename Idc, size_t N>
 auto queryEnum(const Json &node, const std::string &key, const std::string &name,

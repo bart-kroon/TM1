@@ -6,9 +6,21 @@ project(
     VERSION 18.0.0
     LANGUAGES C CXX)
 
-if(NOT CMAKE_CXX_STANDARD)
+if(NOT DEFINED CMAKE_CXX_EXTENSIONS)
     set(CMAKE_CXX_EXTENSIONS OFF)
-    set(CMAKE_CXX_STANDARD 17)
+endif()
+
+if(NOT DEFINED CMAKE_CXX_STANDARD)
+    list(FIND CMAKE_CXX_COMPILE_FEATURES cxx_std_20 have_cxx_std_20)
+    list(FIND CMAKE_CXX_COMPILE_FEATURES cxx_std_23 have_cxx_std_23)
+
+    if(${have_cxx_std_23} GREATER_EQUAL 0)
+        set(CMAKE_CXX_STANDARD 23)
+    elseif(${have_cxx_std_20} GREATER_EQUAL 0)
+        set(CMAKE_CXX_STANDARD 20)
+    else()
+        set(CMAKE_CXX_STANDARD 17)
+    endif()
 endif()
 
 option(ENABLE_IPO

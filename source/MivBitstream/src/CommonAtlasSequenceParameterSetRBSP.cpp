@@ -268,7 +268,7 @@ auto operator<<(std::ostream &stream, const CommonAtlasSequenceParameterSetRBSP 
     stream << x.casps_miv_2_extension();
   }
   if (x.casps_extension_6bits() != 0) {
-    for (auto bit : x.caspsExtensionData()) {
+    for (bool bit : x.caspsExtensionData()) {
       fmt::print(stream, "casps_extension_data_flag={}\n", bit);
     }
   }

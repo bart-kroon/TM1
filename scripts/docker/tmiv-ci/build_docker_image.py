@@ -13,6 +13,11 @@ def main():
     shutil.copytree(
         workingDir.parent.parent / "build" / "HM", workingDir / "HM", dirs_exist_ok=True
     )
+    shutil.copytree(
+        workingDir.parent.parent / "build" / "probe_compiler_features",
+        workingDir / "probe_compiler_features",
+        dirs_exist_ok=True,
+    )
     run(["docker", "build", "-t", tag(), "."], workingDir)
 
 

@@ -11,6 +11,11 @@ from argparse import ArgumentParser, Namespace
 def main():
     args = parse_args()
 
+    features = probe_compiler_features(args)
+
+    if args.cxx_standard:
+        features['cxx_standard'] = args.cxx_standard
+
     with open(args.build_dependencies_file, encoding="utf8") as stream:
         build_dependencies = json.load(stream)
 
@@ -21,7 +26,7 @@ def main():
         return
 
     for d in build_dependencies:
-        build_dependency(d, args)
+        build_dependency(d, args, features)
 
     print_prebuild_variables(args)
 
@@ -69,6 +74,12 @@ def parse_args():
         default="RelWithDebInfo",
     )
     parser.add_argument(
+        "--cxx-standard",
+        type=int,
+        help="set CMAKE_CXX_STANDARD, defaults to latest available C++ standard",
+        default=None,
+    )
+    parser.add_argument(
         "--thread-count",
         "-j",
         type=str,
@@ -89,6 +100,23 @@ def parse_args():
     return args
 
 
+def probe_compiler_features(args: Namespace) -> dict:
+    features = {}
+
+    source_dir = Path(__file__).parent / "probe_compiler_features"
+    build_dir = args.build_dir / "probe_compiler_features"
+    cmake_cache_file = build_dir / "CMakeCache.txt"
+
+    run(["cmake", "-G", "Ninja", "-S", source_dir.as_posix(), "-B", build_dir.as_posix()])
+
+    with open(cmake_cache_file) as stream:
+        for line in stream.readlines():
+            if line.startswith("HAVE_CXX_STANDARD:STRING="):
+                features["cxx_standard"] = int(line.split("=")[1].rstrip())
+
+    return features
+
+
 def download_dependency(dep: dict, args: Namespace):
     source_dir = args.source_dir / qualified_name(dep)
 
@@ -96,13 +124,17 @@ def download_dependency(dep: dict, args: Namespace):
         run(["git", "clone", dep["git_url"], "-b", dep["git_ref"], source_dir])
 
 
-def build_dependency(dep: dict, args: Namespace):
+def build_dependency(dep: dict, args: Namespace, features: dict):
     source_dir = prepare_source_dir(dep, args)
     build_dir = args.build_dir / qualified_name(dep)
     install_dir = args.install_dir
     thread_count_a = ["-j", args.thread_count] if args.thread_count else []
+    variables = [
+        {"name": "CMAKE_CXX_STANDARD", "type": "STRING", "value": features["cxx_standard"]},
+        {"name": "CMAKE_CXX_EXTENSIONS", "type": "BOOL", "value": "OFF"},
+    ] + dep["variables"]
 
-    cmake_configure(source_dir, build_dir, install_dir, args.build_type, dep["variables"])
+    cmake_configure(source_dir, build_dir, install_dir, args.build_type, variables)
     run(["ninja", "-C", build_dir] + thread_count_a)
     run(["ninja", "-C", build_dir, "install"])
 

@@ -83,7 +83,7 @@ auto CommonAtlasFrameRBSP::printTo(
     caf_miv_extension().printTo(stream, casps);
   }
   if (caf_extension_7bits() != 0U) {
-    for (const auto bit : cafExtensionData()) {
+    for (bool bit : cafExtensionData()) {
       fmt::print(stream, "caf_extension_data_flag={}\n", bit);
     }
   }

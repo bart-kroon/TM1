@@ -13,6 +13,7 @@ create_tmiv_library(
     "src/handleException.cpp"
     "src/Frame.cpp"
     "src/LoggingStrategy.cpp"
+    "src/verify.cpp"
     PRIVATE
     Threads::Threads)
 
@@ -28,7 +29,6 @@ target_include_directories(CommonLib PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BI
                                             "$<INSTALL_INTERFACE:include>")
 
 target_compile_features(CommonLib PUBLIC cxx_std_17)
-target_compile_definitions(CommonLib PUBLIC _SILENCE_ALL_MS_EXT_DEPRECATION_WARNINGS)
 
 create_catch2_unit_test(
     TARGET

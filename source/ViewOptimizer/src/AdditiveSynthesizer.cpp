@@ -103,11 +103,19 @@ public:
 
           // Skip non-occupant samples
           if (!occupancyTransform.occupant(level)) {
+            result.emplace_back();
+            continue;
+          }
+
+          const auto d = depthTransform.expandDepth(level);
+
+          // Skip samples with invalid depth
+          if (!(0.F < d)) {
+            result.emplace_back();
             continue;
           }
 
           // Reproject and calculate ray angle
-          const auto d = depthTransform.expandDepth(level);
           const auto xyz = R_t(projector.unprojectVertex(uv + Common::Vec2f({0.5F, 0.5F}), d));
           const auto rayAngle = angle(xyz, xyz - R_t.translation());
           result.push_back({xyz, rayAngle});

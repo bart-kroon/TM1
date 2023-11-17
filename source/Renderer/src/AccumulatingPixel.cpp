@@ -56,18 +56,10 @@ template <typename T> auto blendValues(float w_a, T a, float w_b, T b) -> T {
 
 PixelAccumulator::PixelAccumulator(Common::Vec3f color_, float normWeight_, float normDisp_,
                                    float stretching_)
-    : color{color_}, normWeight{normWeight_}, normDisp{normDisp_}, stretching{stretching_} {
-  ASSERT(normWeight_ >= 0.F);
-  ASSERT(normDisp_ >= 0.F);
-  ASSERT(stretching_ > 0.F);
-}
+    : color{color_}, normWeight{normWeight_}, normDisp{normDisp_}, stretching{stretching_} {}
 
 PixelValue::PixelValue(Common::Vec3f color_, float normDisp_, float normWeight_, float stretching_)
-    : color{color_}, normDisp{normDisp_}, normWeight{normWeight_}, stretching{stretching_} {
-  ASSERT(normDisp_ >= 0.F);
-  ASSERT(normWeight_ >= 0.F);
-  ASSERT(stretching_ >= 0.F);
-}
+    : color{color_}, normDisp{normDisp_}, normWeight{normWeight_}, stretching{stretching_} {}
 
 AccumulatingPixel::AccumulatingPixel(float rayAngleParam_, float depthParam_,
                                      float stretchingParam_, float maxStretching_)
@@ -78,7 +70,6 @@ AccumulatingPixel::AccumulatingPixel(float rayAngleParam_, float depthParam_,
 
 auto AccumulatingPixel::construct(Common::Vec3f color, float normDisp, float rayAngle,
                                   float stretching) const -> PixelAccumulator {
-  ASSERT(normDisp >= 0.F);
   return {color, rayAngleWeight(rayAngle) * stretchingWeight(stretching), normDisp, stretching};
 }
 
@@ -106,7 +97,6 @@ auto AccumulatingPixel::blend(const PixelAccumulator &a, const PixelAccumulator 
     // a is in front of b
     const float w_a =
         a.normWeight / (a.normWeight + b.normWeight * normDispWeight(b.normDisp - a.normDisp));
-    ASSERT(w_a >= 0.F);
     const float w_b = 1.F - w_a;
 
     // Optimization: No alpha blending when w_b is almost zero
@@ -120,7 +110,6 @@ auto AccumulatingPixel::blend(const PixelAccumulator &a, const PixelAccumulator 
   // b is in front of a
   const float w_b =
       b.normWeight / (b.normWeight + a.normWeight * normDispWeight(a.normDisp - b.normDisp));
-  ASSERT(w_b >= 0.F);
   const float w_a = 1.F - w_b;
 
   // Optimization: No alpha blending when w_a is almost zero

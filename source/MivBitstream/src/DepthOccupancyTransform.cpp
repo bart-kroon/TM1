@@ -33,7 +33,7 @@
 
 #include <TMIV/MivBitstream/DepthOccupancyTransform.h>
 
-#include <fmt/format.h>
+#include <TMIV/Common/format.h>
 
 namespace TMIV::MivBitstream {
 DepthTransform::DepthTransform(const DepthQuantization &dq, uint32_t bitDepth)
@@ -45,8 +45,8 @@ DepthTransform::DepthTransform(const DepthQuantization &dq, uint32_t bitDepth)
 
   if (!std::isfinite(m_normDispLow) || !std::isfinite(m_normDispHigh) ||
       m_normDispLow == m_normDispHigh || std::max(m_normDispLow, m_normDispHigh) <= 0.F) {
-    throw std::runtime_error(
-        fmt::format("Invalid normalized disparity range [{}, {}]", m_normDispLow, m_normDispHigh));
+    throw std::runtime_error(TMIV_FMT::format("Invalid normalized disparity range [{}, {}]",
+                                              m_normDispLow, m_normDispHigh));
   }
 
   const auto [far, near] = std::minmax(m_normDispLow, m_normDispHigh);

@@ -65,7 +65,7 @@ public:
     // for a non-conformant bitstream and otherwise the PTL warning may go unnoticed.
     m_checker->replaceLogger([](const std::string &message) {
       throw std::runtime_error(
-          fmt::format("ERROR: A profile-tier-level check has failed: {}", message));
+          TMIV_FMT::format("ERROR: A profile-tier-level check has failed: {}", message));
     });
   }
 
@@ -113,8 +113,8 @@ private:
     if (result) {
       return result;
     }
-    throw std::runtime_error(
-        fmt::format("Failed to initialize a video decoder for codec group IDC {}", codecGroupIdc));
+    throw std::runtime_error(TMIV_FMT::format(
+        "Failed to initialize a video decoder for codec group IDC {}", codecGroupIdc));
   }
 
   auto commonAtlasDecoderFactory() -> CommonAtlasDecoderFactory {

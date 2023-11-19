@@ -33,10 +33,10 @@
 
 #include <TMIV/IO/IO.h>
 
+#include <TMIV/Common/format.h>
+
 #include "DependencyInjector.h"
 #include "Filesystem.h"
-
-#include <fmt/format.h>
 
 using namespace std::string_literals;
 
@@ -91,8 +91,8 @@ auto videoFormatString(Common::ColorFormat colorFormat, uint32_t bitDepth) -> st
     return colorFormatString;
   }
   if (bitDepth < 8) {
-    return fmt::format("{}{}", colorFormatString, bitDepth);
+    return TMIV_FMT::format("{}{}", colorFormatString, bitDepth);
   }
-  return fmt::format("{}{}le", colorFormatString, bitDepth);
+  return TMIV_FMT::format("{}{}le", colorFormatString, bitDepth);
 }
 } // namespace TMIV::IO

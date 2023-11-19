@@ -221,10 +221,10 @@ void CameraIntrinsics::encodeTo(Common::OutputBitstream &bitstream) const {
 }
 
 auto ChromaScaling::printTo(std::ostream &stream, uint16_t viewIdx) const -> std::ostream & {
-  fmt::print(stream, "cs_u_min[ {} ]={}\n", viewIdx, cs_u_min());
-  fmt::print(stream, "cs_u_max[ {} ]={}\n", viewIdx, cs_u_max());
-  fmt::print(stream, "cs_v_min[ {} ]={}\n", viewIdx, cs_v_min());
-  fmt::print(stream, "cs_v_max[ {} ]={}\n", viewIdx, cs_v_max());
+  TMIV_FMT::print(stream, "cs_u_min[ {} ]={}\n", viewIdx, cs_u_min());
+  TMIV_FMT::print(stream, "cs_u_max[ {} ]={}\n", viewIdx, cs_u_max());
+  TMIV_FMT::print(stream, "cs_v_min[ {} ]={}\n", viewIdx, cs_v_min());
+  TMIV_FMT::print(stream, "cs_v_max[ {} ]={}\n", viewIdx, cs_v_max());
   return stream;
 }
 
@@ -253,12 +253,12 @@ void ChromaScaling::encodeTo(Common::OutputBitstream &bitstream,
 }
 
 auto CameraExtrinsics::printTo(std::ostream &stream, uint16_t viewIdx) const -> std::ostream & {
-  fmt::print(stream, "ce_view_pos_x[ {} ]={}\n", viewIdx, ce_view_pos_x());
-  fmt::print(stream, "ce_view_pos_y[ {} ]={}\n", viewIdx, ce_view_pos_y());
-  fmt::print(stream, "ce_view_pos_z[ {} ]={}\n", viewIdx, ce_view_pos_z());
-  fmt::print(stream, "ce_view_quat_x[ {} ]={}\n", viewIdx, ce_view_quat_x());
-  fmt::print(stream, "ce_view_quat_y[ {} ]={}\n", viewIdx, ce_view_quat_y());
-  fmt::print(stream, "ce_view_quat_z[ {} ]={}\n", viewIdx, ce_view_quat_z());
+  TMIV_FMT::print(stream, "ce_view_pos_x[ {} ]={}\n", viewIdx, ce_view_pos_x());
+  TMIV_FMT::print(stream, "ce_view_pos_y[ {} ]={}\n", viewIdx, ce_view_pos_y());
+  TMIV_FMT::print(stream, "ce_view_pos_z[ {} ]={}\n", viewIdx, ce_view_pos_z());
+  TMIV_FMT::print(stream, "ce_view_quat_x[ {} ]={}\n", viewIdx, ce_view_quat_x());
+  TMIV_FMT::print(stream, "ce_view_quat_y[ {} ]={}\n", viewIdx, ce_view_quat_y());
+  TMIV_FMT::print(stream, "ce_view_quat_z[ {} ]={}\n", viewIdx, ce_view_quat_z());
   return stream;
 }
 
@@ -638,12 +638,12 @@ auto MivViewParamsList::light_source_extrinsics(uint16_t v, uint16_t s) -> Light
 auto MivViewParamsList::printTo(std::ostream &stream,
                                 const CommonAtlasSequenceParameterSetRBSP &casps) const
     -> std::ostream & {
-  fmt::print(stream, "mvp_num_views_minus1={}\n", mvp_num_views_minus1());
-  fmt::print(stream, "mvp_explicit_view_id_flag={}\n", mvp_explicit_view_id_flag());
+  TMIV_FMT::print(stream, "mvp_num_views_minus1={}\n", mvp_num_views_minus1());
+  TMIV_FMT::print(stream, "mvp_explicit_view_id_flag={}\n", mvp_explicit_view_id_flag());
 
   if (mvp_explicit_view_id_flag()) {
     for (uint16_t v = 0; v <= mvp_num_views_minus1(); ++v) {
-      fmt::print(stream, "mvp_view_id[ {} ]={}\n", v, mvp_view_id(v));
+      TMIV_FMT::print(stream, "mvp_view_id[ {} ]={}\n", v, mvp_view_id(v));
     }
   }
 
@@ -656,11 +656,11 @@ auto MivViewParamsList::printTo(std::ostream &stream,
 
   for (uint16_t v = 0; v <= mvp_num_views_minus1(); ++v) {
     camera_extrinsics(v).printTo(stream, v);
-    fmt::print(stream, "mvp_inpaint_flag[ {} ]={}\n", v, mvp_inpaint_flag(v));
+    TMIV_FMT::print(stream, "mvp_inpaint_flag[ {} ]={}\n", v, mvp_inpaint_flag(v));
 
     if (casps.casps_miv_2_extension_present_flag() &&
         casps.casps_miv_2_extension().casme_capture_device_information_present_flag()) {
-      fmt::print(stream, "mvp_device_model_id[ {} ]={}\n", v, mvp_device_model_id(v));
+      TMIV_FMT::print(stream, "mvp_device_model_id[ {} ]={}\n", v, mvp_device_model_id(v));
       auto i = mvp_device_model_id(v);
 
       for (uint16_t s = 0; s < cdi_semantics.sensorCount[i]; s++) {
@@ -675,7 +675,8 @@ auto MivViewParamsList::printTo(std::ostream &stream,
     }
   }
 
-  fmt::print(stream, "mvp_intrinsic_params_equal_flag={}\n", mvp_intrinsic_params_equal_flag());
+  TMIV_FMT::print(stream, "mvp_intrinsic_params_equal_flag={}\n",
+                  mvp_intrinsic_params_equal_flag());
 
   if (mvp_intrinsic_params_equal_flag()) {
     camera_intrinsics(0).printTo(stream, 0);
@@ -686,8 +687,8 @@ auto MivViewParamsList::printTo(std::ostream &stream,
   }
 
   if (m_mvp_depth_quantization_params_equal_flag) {
-    fmt::print(stream, "mvp_depth_quantization_params_equal_flag={}\n",
-               mvp_depth_quantization_params_equal_flag());
+    TMIV_FMT::print(stream, "mvp_depth_quantization_params_equal_flag={}\n",
+                    mvp_depth_quantization_params_equal_flag());
 
     if (mvp_depth_quantization_params_equal_flag()) {
       depth_quantization(0).printTo(stream, 0);
@@ -697,8 +698,8 @@ auto MivViewParamsList::printTo(std::ostream &stream,
       }
     }
   }
-  fmt::print(stream, "mvp_pruning_graph_params_present_flag={}\n",
-             mvp_pruning_graph_params_present_flag());
+  TMIV_FMT::print(stream, "mvp_pruning_graph_params_present_flag={}\n",
+                  mvp_pruning_graph_params_present_flag());
 
   if (mvp_pruning_graph_params_present_flag()) {
     for (uint16_t v = 0; v <= mvp_num_views_minus1(); ++v) {
@@ -707,7 +708,7 @@ auto MivViewParamsList::printTo(std::ostream &stream,
   }
 
   if (m_mvp_depth_reprojection_flag) {
-    fmt::print(stream, "mvp_depth_reprojection_flag={}\n", mvp_depth_reprojection_flag());
+    TMIV_FMT::print(stream, "mvp_depth_reprojection_flag={}\n", mvp_depth_reprojection_flag());
   }
 
   for (uint16_t v = 0; v <= mvp_num_views_minus1(); ++v) {
@@ -715,7 +716,7 @@ auto MivViewParamsList::printTo(std::ostream &stream,
   }
 
   for (uint16_t v = 0; v <= mvp_num_views_minus1(); ++v) {
-    fmt::print(stream, "mvp_view_background_flag[ {} ]={}\n", v, mvp_view_background_flag(v));
+    TMIV_FMT::print(stream, "mvp_view_background_flag[ {} ]={}\n", v, mvp_view_background_flag(v));
   }
 
   return stream;
@@ -1138,29 +1139,30 @@ auto CafMivExtension::printTo(std::ostream &stream,
                               const CommonAtlasSequenceParameterSetRBSP &casps) const
     -> std::ostream & {
   if (m_miv_view_params_list) {
-    fmt::print(stream, "miv_view_params_list=");
+    TMIV_FMT::print(stream, "miv_view_params_list=");
     miv_view_params_list().printTo(stream, casps);
   } else {
-    fmt::print(stream, "came_update_extrinsics_flag={}\n", came_update_extrinsics_flag());
-    fmt::print(stream, "came_update_intrinsics_flag={}\n", came_update_intrinsics_flag());
+    TMIV_FMT::print(stream, "came_update_extrinsics_flag={}\n", came_update_extrinsics_flag());
+    TMIV_FMT::print(stream, "came_update_intrinsics_flag={}\n", came_update_intrinsics_flag());
     if (m_came_update_depth_quantization_flag) {
-      fmt::print(stream, "came_update_depth_quantization_flag={}\n",
-                 came_update_depth_quantization_flag());
+      TMIV_FMT::print(stream, "came_update_depth_quantization_flag={}\n",
+                      came_update_depth_quantization_flag());
     }
     if (m_came_update_chroma_scaling_flag) {
-      fmt::print(stream, "came_update_chroma_scaling_flag={}\n", came_update_chroma_scaling_flag());
+      TMIV_FMT::print(stream, "came_update_chroma_scaling_flag={}\n",
+                      came_update_chroma_scaling_flag());
     }
     if (m_came_update_sensor_extrinsics_flag) {
-      fmt::print(stream, "came_update_sensor_extrinsics_flag={}\n",
-                 came_update_sensor_extrinsics_flag());
+      TMIV_FMT::print(stream, "came_update_sensor_extrinsics_flag={}\n",
+                      came_update_sensor_extrinsics_flag());
     }
     if (m_came_update_distortion_parameters_flag) {
-      fmt::print(stream, "came_update_distortion_parameters_flag={}\n",
-                 came_update_distortion_parameters_flag());
+      TMIV_FMT::print(stream, "came_update_distortion_parameters_flag={}\n",
+                      came_update_distortion_parameters_flag());
     }
     if (m_came_update_light_source_extrinsics_flag) {
-      fmt::print(stream, "came_update_light_source_extrinsics_flag={}\n",
-                 came_update_light_source_extrinsics_flag());
+      TMIV_FMT::print(stream, "came_update_light_source_extrinsics_flag={}\n",
+                      came_update_light_source_extrinsics_flag());
     }
     if (came_update_extrinsics_flag()) {
       stream << miv_view_params_update_extrinsics();
@@ -1660,12 +1662,12 @@ auto MivViewParamsUpdateChromaScaling::operator!=(
 
 auto SensorExtrinsics::printTo(std::ostream &stream, uint16_t v, uint16_t s) const
     -> std::ostream & {
-  fmt::print(stream, "se_sensor_pos_x[ {} ][ {} ]={}\n", v, s, se_sensor_pos_x());
-  fmt::print(stream, "se_sensor_pos_y[ {} ][ {} ]={}\n", v, s, se_sensor_pos_y());
-  fmt::print(stream, "se_sensor_pos_z[ {} ][ {} ]={}\n", v, s, se_sensor_pos_z());
-  fmt::print(stream, "se_sensor_quat_x[ {} ][ {} ]={}\n", v, s, se_sensor_quat_x());
-  fmt::print(stream, "se_sensor_quat_y[ {} ][ {} ]={}\n", v, s, se_sensor_quat_y());
-  fmt::print(stream, "se_sensor_quat_z[ {} ][ {} ]={}\n", v, s, se_sensor_quat_z());
+  TMIV_FMT::print(stream, "se_sensor_pos_x[ {} ][ {} ]={}\n", v, s, se_sensor_pos_x());
+  TMIV_FMT::print(stream, "se_sensor_pos_y[ {} ][ {} ]={}\n", v, s, se_sensor_pos_y());
+  TMIV_FMT::print(stream, "se_sensor_pos_z[ {} ][ {} ]={}\n", v, s, se_sensor_pos_z());
+  TMIV_FMT::print(stream, "se_sensor_quat_x[ {} ][ {} ]={}\n", v, s, se_sensor_quat_x());
+  TMIV_FMT::print(stream, "se_sensor_quat_y[ {} ][ {} ]={}\n", v, s, se_sensor_quat_y());
+  TMIV_FMT::print(stream, "se_sensor_quat_z[ {} ][ {} ]={}\n", v, s, se_sensor_quat_z());
   return stream;
 }
 
@@ -1814,12 +1816,18 @@ auto MivViewParamsUpdateSensorExtrinsics::operator!=(
 
 auto LightSourceExtrinsics::printTo(std::ostream &stream, uint16_t v, uint16_t s) const
     -> std::ostream & {
-  fmt::print(stream, "lse_light_source_pos_x[ {} ][ {} ]={}\n", v, s, lse_light_source_pos_x());
-  fmt::print(stream, "lse_light_source_pos_y[ {} ][ {} ]={}\n", v, s, lse_light_source_pos_y());
-  fmt::print(stream, "lse_light_source_pos_z[ {} ][ {} ]={}\n", v, s, lse_light_source_pos_z());
-  fmt::print(stream, "lse_light_source_quat_x[ {} ][ {} ]={}\n", v, s, lse_light_source_quat_x());
-  fmt::print(stream, "lse_light_source_quat_y[ {} ][ {} ]={}\n", v, s, lse_light_source_quat_y());
-  fmt::print(stream, "lse_light_source_quat_z[ {} ][ {} ]={}\n", v, s, lse_light_source_quat_z());
+  TMIV_FMT::print(stream, "lse_light_source_pos_x[ {} ][ {} ]={}\n", v, s,
+                  lse_light_source_pos_x());
+  TMIV_FMT::print(stream, "lse_light_source_pos_y[ {} ][ {} ]={}\n", v, s,
+                  lse_light_source_pos_y());
+  TMIV_FMT::print(stream, "lse_light_source_pos_z[ {} ][ {} ]={}\n", v, s,
+                  lse_light_source_pos_z());
+  TMIV_FMT::print(stream, "lse_light_source_quat_x[ {} ][ {} ]={}\n", v, s,
+                  lse_light_source_quat_x());
+  TMIV_FMT::print(stream, "lse_light_source_quat_y[ {} ][ {} ]={}\n", v, s,
+                  lse_light_source_quat_y());
+  TMIV_FMT::print(stream, "lse_light_source_quat_z[ {} ][ {} ]={}\n", v, s,
+                  lse_light_source_quat_z());
   return stream;
 }
 
@@ -1990,8 +1998,11 @@ auto DistortionParameters::dp_coefficient(uint8_t i, const float value) -> Disto
 }
 auto DistortionParameters::printTo(std::ostream &stream, uint16_t v, uint16_t s) const
     -> std::ostream & {
-  fmt::print(stream, "dp_model_id[ {} ][ {} ]={}\n", v, s, dp_model_id());
-  fmt::print(stream, "dp_coefficient[ {} ][ {} ]={}\n", v, s, fmt::join(m_dp_coefficient, ", "));
+  TMIV_FMT::print(stream, "dp_model_id[ {} ][ {} ]={}\n", v, s, dp_model_id());
+
+  for (size_t i = 0; i < m_dp_coefficient.size(); ++i) {
+    TMIV_FMT::print(stream, "dp_coefficient[ {} ][ {} ][ {} ]={}\n", v, s, i, m_dp_coefficient[i]);
+  }
   return stream;
 }
 
@@ -2077,12 +2088,12 @@ auto MivViewParamsUpdateDistortionParameters::mvpudp_sensor_idx(const uint16_t i
 
 auto operator<<(std::ostream &stream, const MivViewParamsUpdateDistortionParameters &x)
     -> std::ostream & {
-  fmt::print(stream, "mvpudp_num_updates_minus1={}\n", x.mvpudp_num_updates_minus1());
+  TMIV_FMT::print(stream, "mvpudp_num_updates_minus1={}\n", x.mvpudp_num_updates_minus1());
   for (uint16_t i = 0; i <= x.mvpudp_num_updates_minus1(); ++i) {
     auto v = x.mvpudp_view_idx(i);
     auto s = x.mvpudp_sensor_idx(i);
-    fmt::print(stream, "mvpudp_view_idx[ {} ]={}\n", i, v);
-    fmt::print(stream, "mvpudp_sensor_idx[ {} ]={}\n", i, s);
+    TMIV_FMT::print(stream, "mvpudp_view_idx[ {} ]={}\n", i, v);
+    TMIV_FMT::print(stream, "mvpudp_sensor_idx[ {} ]={}\n", i, s);
     x.distortion_parameters(v, s).printTo(stream, v, s);
   }
   return stream;

@@ -34,9 +34,9 @@
 #ifndef TMIV_COMMON_LOGGING_STRATEGY_FMT_H
 #define TMIV_COMMON_LOGGING_STRATEGY_FMT_H
 
-#include "LoggingStrategy.h"
+#include <TMIV/Common/format.h>
 
-#include <fmt/format.h>
+#include "LoggingStrategy.h"
 
 namespace TMIV::Common {
 // Provide a log message of specified log level.
@@ -58,13 +58,9 @@ namespace TMIV::Common {
 // and the function returns normally. All other exceptions are handled by
 // `handleLogMessageException`.
 template <typename... Args, typename = std::enable_if_t<0 != sizeof...(Args)>>
-auto logMessage(LogLevel level, fmt::format_string<Args...> fmt, Args &&...args) noexcept {
+auto logMessage(LogLevel level, TMIV_FMT::format_string<Args...> fmt, Args &&...args) noexcept {
   try {
-    logMessage(level, fmt::format(fmt, std::forward<Args>(args)...));
-  } catch (fmt::format_error &e) {
-    logMessage(LogLevel::error,
-               fmt::format("TMIV::Common::logMessage({}, \"{}\", {} arguments): {}", level,
-                           fmt.get(), sizeof...(args), e.what()));
+    logMessage(level, TMIV_FMT::format(fmt, std::forward<Args>(args)...));
   } catch (...) {
     handleLogMessageException();
   }
@@ -72,37 +68,38 @@ auto logMessage(LogLevel level, fmt::format_string<Args...> fmt, Args &&...args)
 
 // Equivalent to logMessage(LogLevel::error, fmt, args...)
 template <typename... Args, typename = std::enable_if_t<0 != sizeof...(Args)>>
-void logError(fmt::format_string<Args...> fmt, Args &&...args) noexcept {
+void logError(TMIV_FMT::format_string<Args...> fmt, Args &&...args) noexcept {
   logMessage(LogLevel::error, fmt, std::forward<Args>(args)...);
 }
 
 // Equivalent to logMessage(LogLevel::warning, fmt, args...)
 template <typename... Args, typename = std::enable_if_t<0 != sizeof...(Args)>>
-void logWarning(fmt::format_string<Args...> fmt, Args &&...args) noexcept {
+void logWarning(TMIV_FMT::format_string<Args...> fmt, Args &&...args) noexcept {
   logMessage(LogLevel::warning, fmt, std::forward<Args>(args)...);
 }
 
 // Equivalent to logMessage(LogLevel::info, fmt, args...)
 template <typename... Args, typename = std::enable_if_t<0 != sizeof...(Args)>>
-void logInfo(fmt::format_string<Args...> fmt, Args &&...args) noexcept {
+void logInfo(TMIV_FMT::format_string<Args...> fmt, Args &&...args) noexcept {
   logMessage(LogLevel::info, fmt, std::forward<Args>(args)...);
 }
 
 // Equivalent to logMessage(LogLevel::verbose, fmt, args...)
 template <typename... Args, typename = std::enable_if_t<0 != sizeof...(Args)>>
-void logVerbose(fmt::format_string<Args...> fmt, Args &&...args) noexcept {
+void logVerbose(TMIV_FMT::format_string<Args...> fmt, Args &&...args) noexcept {
   logMessage(LogLevel::verbose, fmt, std::forward<Args>(args)...);
 }
 
 // Equivalent to logMessage(LogLevel::debug, fmt, args...)
 template <typename... Args, typename = std::enable_if_t<0 != sizeof...(Args)>>
-void logDebug(fmt::format_string<Args...> fmt, Args &&...args) noexcept {
+void logDebug(TMIV_FMT::format_string<Args...> fmt, Args &&...args) noexcept {
   logMessage(LogLevel::debug, fmt, std::forward<Args>(args)...);
 }
 
-// Like fmt::print(fmt, args...), but document that it is desired to circumvent the logger
-template <typename... Args> void circumventLogger(fmt::format_string<Args...> fmt, Args &&...args) {
-  using fmt::print; // Circumvent code quality check
+// Like std::print(fmt, args...), but document that it is desired to circumvent the logger
+template <typename... Args>
+void circumventLogger(TMIV_FMT::format_string<Args...> fmt, Args &&...args) {
+  using TMIV_FMT::print; // Circumvent code quality check
   print(fmt, std::forward<Args>(args)...);
 }
 } // namespace TMIV::Common

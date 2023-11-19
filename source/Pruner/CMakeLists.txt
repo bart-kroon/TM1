@@ -11,7 +11,7 @@ create_tmiv_library(
     "src/PrunedMesh.cpp"
     PRIVATE
     RendererLib
-    fmt::fmt)
+    ${TMIV_FMT_TARGET})
 
 create_catch2_unit_test(
     TARGET

@@ -82,11 +82,11 @@ Application::Application(const char *tool, std::vector<const char *> argv, Optio
         const auto *const arg = take();
 
         for (const auto level : allLogLevels) {
-          if (fmt::format("{}", level) == arg) {
+          if (TMIV_FMT::format("{}", level) == arg) {
             return changeMaxLogLevel(level);
           }
         }
-        throw std::runtime_error(fmt::format("Unknown log level {}", arg));
+        throw std::runtime_error(TMIV_FMT::format("Unknown log level {}", arg));
       }();
     } else if ("--version"sv == option) {
       Common::logInfo("TMIV {} {}", tool, version);
@@ -103,10 +103,11 @@ Application::Application(const char *tool, std::vector<const char *> argv, Optio
                             [option](const auto &o_) { return o_.option == option; });
       if (o == m_options.end()) {
         throw std::runtime_error(
-            fmt::format("Stray argument or unknown option \"{}\" (try --help)", option));
+            TMIV_FMT::format("Stray argument or unknown option \"{}\" (try --help)", option));
       }
       if (!o->multiple && !o->values.empty()) {
-        throw std::runtime_error(fmt::format("Option {} may not occur multiple times", o->option));
+        throw std::runtime_error(
+            TMIV_FMT::format("Option {} may not occur multiple times", o->option));
       }
       o->values.emplace_back(take());
     }
@@ -125,8 +126,8 @@ Application::Application(const char *tool, std::vector<const char *> argv, Optio
     }
     what << "]\n\nOptions are:";
     for (const auto &o : m_options) {
-      what << fmt::format("\n  {:3} {:47} {}", o.option, o.description,
-                          o.multiple ? "zero or more allowed" : "required exactly once");
+      what << TMIV_FMT::format("\n  {:3} {:47} {}", o.option, o.description,
+                               o.multiple ? "zero or more allowed" : "required exactly once");
     }
     what << R"(
 
@@ -153,8 +154,9 @@ auto Application::optionValues(std::string_view option) const -> const std::vect
 void Application::add_file(const std::filesystem::path &path) {
   std::ifstream stream(path);
   if (!stream.good()) {
-    throw std::runtime_error(fmt::format("Failed to open {} for reading (with current path {})",
-                                         path, std::filesystem::current_path()));
+    throw std::runtime_error(
+        TMIV_FMT::format("Failed to open {} for reading (with current path {})", path,
+                         std::filesystem::current_path()));
   }
   add_stream(stream);
 }

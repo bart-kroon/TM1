@@ -33,7 +33,7 @@
 
 #include <TMIV/Decoder/V3cUnitBuffer.h>
 
-#include <fmt/format.h>
+#include <TMIV/Common/format.h>
 
 #include <utility>
 
@@ -67,8 +67,8 @@ auto V3cUnitBuffer::operator()(MivBitstream::V3cUnitHeader vuh)
       i = m_buffer.erase(i);
       m_onVps(vu);
     } else if (vuh == MivBitstream::V3cUnitHeader::vps()) {
-      throw V3cUnitBufferError(fmt::format("Expected a VPS but found the following V3C unit: {}",
-                                           i->v3c_unit_header().summary()));
+      throw V3cUnitBufferError(TMIV_FMT::format(
+          "Expected a VPS but found the following V3C unit: {}", i->v3c_unit_header().summary()));
     } else {
       ++i;
     }

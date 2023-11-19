@@ -86,7 +86,9 @@ auto HashFunction::consumeF(float value) noexcept -> HashFunction & {
 
 constexpr auto HashFunction::result() const noexcept { return ~m_hash; }
 
-auto HashFunction::toString(uint32_t value) -> std::string { return fmt::format("{:08x}", value); }
+auto HashFunction::toString(uint32_t value) -> std::string {
+  return TMIV_FMT::format("{:08x}", value);
+}
 
 auto videoDataHash(const Common::Frame<> &frame) noexcept -> HashFunction::Result {
   auto hash = HashFunction{};
@@ -247,39 +249,37 @@ void writeFrameToOutputLog(const MivBitstream::AccessUnit &frame, std::ostream &
   for (uint8_t k = 0; k <= frame.vps.vps_atlas_count_minus1(); ++k) {
     const auto &atlas = frame.atlas[k];
 
-    fmt::print(stream, FMT_STRING("{} {} {} {}"), frame.foc, frame.vps.vps_atlas_id(k),
-               atlas.asps.asps_frame_width(), atlas.asps.asps_frame_height());
+    TMIV_FMT::print(stream, "{} {} {} {}", frame.foc, frame.vps.vps_atlas_id(k),
+                    atlas.asps.asps_frame_width(), atlas.asps.asps_frame_height());
 
     if (!atlas.decOccFrame.empty()) {
-      fmt::print(stream, FMT_STRING(" O {}"),
-                 HashFunction::toString(videoDataHash(yuv400(atlas.decOccFrame))));
+      TMIV_FMT::print(stream, " O {}",
+                      HashFunction::toString(videoDataHash(yuv400(atlas.decOccFrame))));
     }
 
     if (!atlas.decGeoFrame.empty()) {
-      fmt::print(stream, FMT_STRING(" G {}"),
-                 HashFunction::toString(videoDataHash(yuv400(atlas.decGeoFrame))));
+      TMIV_FMT::print(stream, " G {}",
+                      HashFunction::toString(videoDataHash(yuv400(atlas.decGeoFrame))));
     }
 
     if (!atlas.decAttrFrame.empty()) {
-      fmt::print(stream, FMT_STRING(" A"));
+      TMIV_FMT::print(stream, " A");
 
       for (size_t attrIdx = 0; attrIdx < atlas.decAttrFrame.size(); ++attrIdx) {
-        fmt::print(stream, FMT_STRING(" {} {}"), attrIdx,
-                   HashFunction::toString(videoDataHash(atlas.decAttrFrame[attrIdx])));
+        TMIV_FMT::print(stream, " {} {}", attrIdx,
+                        HashFunction::toString(videoDataHash(atlas.decAttrFrame[attrIdx])));
       }
     }
 
     if (!atlas.decPckFrame.empty()) {
-      fmt::print(stream, FMT_STRING(" P {}"),
-                 HashFunction::toString(videoDataHash(atlas.decPckFrame)));
+      TMIV_FMT::print(stream, " P {}", HashFunction::toString(videoDataHash(atlas.decPckFrame)));
     }
 
-    fmt::print(stream, FMT_STRING(" {} {} {} {} {} {}\n"),
-               HashFunction::toString(blockToPatchMapHash(atlas)),
-               HashFunction::toString(patchParamsListHash(atlas.patchParamsList)), vplHashString,
-               HashFunction::toString(asmeHash(frame.atlas[k])),
-               HashFunction::toString(afmeHash(frame.atlas[k])),
-               HashFunction::toString(casmeHash(frame)));
+    TMIV_FMT::print(
+        stream, " {} {} {} {} {} {}\n", HashFunction::toString(blockToPatchMapHash(atlas)),
+        HashFunction::toString(patchParamsListHash(atlas.patchParamsList)), vplHashString,
+        HashFunction::toString(asmeHash(frame.atlas[k])),
+        HashFunction::toString(afmeHash(frame.atlas[k])), HashFunction::toString(casmeHash(frame)));
   }
 }
 } // namespace TMIV::Decoder

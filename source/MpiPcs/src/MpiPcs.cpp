@@ -91,9 +91,9 @@ Reader::Reader(const Common::Json &config, const IO::Placeholders &placeholders,
 
   m_size = cameraConfig.viewParams.ci.projectionPlaneSize();
   m_path =
-      inputDir / fmt::format(fmt::runtime(node.as<std::string>()), placeholders.numberOfInputFrames,
-                             placeholders.contentId, placeholders.testId, cameraName, m_size.x(),
-                             m_size.y(), videoFormat);
+      inputDir / Common::runtimeFormat(node.as<std::string>(), placeholders.numberOfInputFrames,
+                                       placeholders.contentId, placeholders.testId, cameraName,
+                                       m_size.x(), m_size.y(), videoFormat);
 
   if (buildIndexOn) {
     buildIndex();
@@ -103,7 +103,7 @@ Reader::Reader(const Common::Json &config, const IO::Placeholders &placeholders,
 auto Reader::read(std::istream &stream, std::streampos posId, Common::Vec2i size) -> Frame {
   stream.seekg(posId);
   if (!stream.good()) {
-    throw std::runtime_error(fmt::format("Failed to seek stream at position {}", posId));
+    throw std::runtime_error(TMIV_FMT::format("Failed to seek stream at position {}", posId));
   }
 
   std::vector<Pixel> pixelList(size.x() * size.y());
@@ -130,7 +130,7 @@ auto Reader::read(std::istream &stream, std::streampos posId, Common::Vec2i size
 auto Reader::read(int32_t frameIdx) -> Frame {
   std::ifstream stream{m_path, std::ifstream::binary};
   if (!stream.good()) {
-    throw std::runtime_error(fmt::format("Failed to open {} for reading", m_path));
+    throw std::runtime_error(TMIV_FMT::format("Failed to open {} for reading", m_path));
   }
 
   Common::logInfo("Loading MPI pcs frame {0} with start frame offset {1} (= {2}).", frameIdx,
@@ -142,19 +142,19 @@ auto Reader::read(int32_t frameIdx) -> Frame {
 void Reader::buildIndex() {
   std::ifstream stream{m_path, std::ifstream::binary};
   if (!stream.good()) {
-    throw std::runtime_error(fmt::format("Failed to open {} for reading", m_path));
+    throw std::runtime_error(TMIV_FMT::format("Failed to open {} for reading", m_path));
   }
 
   stream.seekg(0, std::ifstream::end);
   if (!stream.good()) {
-    throw std::runtime_error(fmt::format("Failed to seekg from {}", m_path));
+    throw std::runtime_error(TMIV_FMT::format("Failed to seekg from {}", m_path));
   }
 
   const auto length = stream.tellg();
 
   stream.seekg(0, std::ifstream::beg);
   if (!stream.good()) {
-    throw std::runtime_error(fmt::format("Failed to seekg from {}", m_path));
+    throw std::runtime_error(TMIV_FMT::format("Failed to seekg from {}", m_path));
   }
 
   FileHeader::read(stream);
@@ -168,7 +168,7 @@ void Reader::buildIndex() {
 
     stream.seekg(pos);
     if (!stream.good()) {
-      throw std::runtime_error(fmt::format("Failed to seekg from {}", m_path));
+      throw std::runtime_error(TMIV_FMT::format("Failed to seekg from {}", m_path));
     }
 
     std::string attributeCountBuffer(countList.size() * sizeof(Attribute::Count), '0');
@@ -176,7 +176,7 @@ void Reader::buildIndex() {
     stream.read(attributeCountBuffer.data(),
                 Common::downCast<std::streamsize>(attributeCountBuffer.size()));
     if (!stream.good()) {
-      throw std::runtime_error(fmt::format("Failed to read from {}", m_path));
+      throw std::runtime_error(TMIV_FMT::format("Failed to read from {}", m_path));
     }
 
     std::memcpy(countList.data(), attributeCountBuffer.data(), attributeCountBuffer.size());
@@ -201,15 +201,15 @@ Writer::Writer(const Common::Json &config, const IO::Placeholders &placeholders,
 
   const auto size = cameraConfig.viewParams.ci.projectionPlaneSize();
   m_path =
-      outputDir / fmt::format(fmt::runtime(node.as<std::string>()),
-                              placeholders.numberOfInputFrames, placeholders.contentId,
-                              placeholders.testId, cameraName, size.x(), size.y(), videoFormat);
+      outputDir / Common::runtimeFormat(node.as<std::string>(), placeholders.numberOfInputFrames,
+                                        placeholders.contentId, placeholders.testId, cameraName,
+                                        size.x(), size.y(), videoFormat);
 
   create_directories(m_path.parent_path());
 
   std::ofstream stream{m_path, std::ofstream::binary};
   if (!stream.good()) {
-    throw std::runtime_error(fmt::format("Failed to open {} for writing", m_path));
+    throw std::runtime_error(TMIV_FMT::format("Failed to open {} for writing", m_path));
   }
 
   FileHeader::write(stream);
@@ -238,14 +238,14 @@ void Writer::writeToStream(std::ostream &stream, std::vector<T> &items) const {
 
   stream.write(itemBuffer.data(), Common::downCast<std::streamsize>(itemBuffer.size()));
   if (!stream.good()) {
-    throw std::runtime_error(fmt::format("Failed to write to {}", m_path));
+    throw std::runtime_error(TMIV_FMT::format("Failed to write to {}", m_path));
   }
 }
 
 void Writer::append(const Frame &mpiPcsFrame) {
   std::ofstream stream{m_path, std::ofstream::binary | std::ofstream::app};
   if (!stream.good()) {
-    throw std::runtime_error(fmt::format("Failed to open {} for appending", m_path));
+    throw std::runtime_error(TMIV_FMT::format("Failed to open {} for appending", m_path));
   }
 
   append(stream, mpiPcsFrame);

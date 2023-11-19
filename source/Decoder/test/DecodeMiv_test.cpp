@@ -164,8 +164,8 @@ struct FramePattern {
 using Pattern = std::vector<FramePattern>;
 
 auto operator<<(std::ostream &stream, FramePattern x) -> std::ostream & {
-  fmt::print(stream, "(v:{}, cad:{}, ad:{})\n           ", x.videoIrap, x.commonAtlasFoc,
-             x.atlasFoc);
+  TMIV_FMT::print(stream, "(v:{}, cad:{}, ad:{})\n           ", x.videoIrap, x.commonAtlasFoc,
+                  x.atlasFoc);
   return stream;
 }
 

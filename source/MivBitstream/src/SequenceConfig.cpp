@@ -35,8 +35,7 @@
 
 #include <TMIV/Common/Math.h>
 #include <TMIV/Common/Quaternion.h>
-
-#include <fmt/format.h>
+#include <TMIV/Common/format.h>
 
 #include <regex>
 
@@ -207,7 +206,7 @@ SequenceConfig::operator Common::Json() const {
   });
   if (i == cameras.cend()) {
     throw std::runtime_error(
-        fmt::format("There is no camera named {} in the sequence configuration", name));
+        TMIV_FMT::format("There is no camera named {} in the sequence configuration", name));
   }
   return *i;
 }

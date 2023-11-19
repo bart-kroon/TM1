@@ -58,20 +58,21 @@ auto loadFrame(const std::filesystem::path &path, int32_t frameIdx, Common::Vec2
       auto &stream = *stream_;
 
       if (!stream.good()) {
-        throw std::runtime_error(fmt::format("Failed to open {} for reading", path));
+        throw std::runtime_error(TMIV_FMT::format("Failed to open {} for reading", path));
       }
 
       stream.seekg(std::streampos(frameIdx) * frame.getByteCount());
 
       if (!stream.good()) {
         throw std::runtime_error(
-            fmt::format("Failed to seek for reading to frame {} from {}", frameIdx, path));
+            TMIV_FMT::format("Failed to seek for reading to frame {} from {}", frameIdx, path));
       }
 
       frame.readFrom(stream);
 
       if (!stream.good()) {
-        throw std::runtime_error(fmt::format("Failed to read frame {} from {}", frameIdx, path));
+        throw std::runtime_error(
+            TMIV_FMT::format("Failed to read frame {} from {}", frameIdx, path));
       }
 
       return frame;
@@ -96,7 +97,8 @@ auto loadInputFrame(const LoadInputFrameParams &params, Common::ColorFormat colo
                     uint32_t bitDepth, MivBitstream::VuhUnitType vuhUnitType,
                     MivBitstream::AiAttributeTypeId attrTypeId =
                         MivBitstream::AiAttributeTypeId::ATTR_UNSPECIFIED) -> Common::Frame<> {
-  const auto configKey = fmt::format("input{}PathFmt", videoComponentName(vuhUnitType, attrTypeId));
+  const auto configKey =
+      TMIV_FMT::format("input{}PathFmt", videoComponentName(vuhUnitType, attrTypeId));
 
   if (const auto &node = params.config.optional(configKey)) {
     const auto inputDir = params.config.require("inputDirectory").as<std::filesystem::path>();
@@ -104,9 +106,9 @@ auto loadInputFrame(const LoadInputFrameParams &params, Common::ColorFormat colo
 
     const auto path =
         inputDir /
-        fmt::format(fmt::runtime(node.as<std::string>()), params.placeholders.numberOfInputFrames,
-                    params.placeholders.contentId, params.placeholders.testId, params.name,
-                    params.frameSize.x(), params.frameSize.y(), videoFormat);
+        Common::runtimeFormat(node.as<std::string>(), params.placeholders.numberOfInputFrames,
+                              params.placeholders.contentId, params.placeholders.testId,
+                              params.name, params.frameSize.x(), params.frameSize.y(), videoFormat);
 
     return loadFrame<>(path, params.placeholders.startFrame + params.frameIdx, params.frameSize,
                        bitDepth, colorFormat);
@@ -114,7 +116,8 @@ auto loadInputFrame(const LoadInputFrameParams &params, Common::ColorFormat colo
   if (params.isOptional) {
     return {};
   }
-  throw std::runtime_error(fmt::format("The required configuration key {} is missing", configKey));
+  throw std::runtime_error(
+      TMIV_FMT::format("The required configuration key {} is missing", configKey));
 }
 
 auto loadEntityFrame(const LoadInputFrameParams &params, Common::ColorFormat colorFormat,
@@ -127,9 +130,9 @@ auto loadEntityFrame(const LoadInputFrameParams &params, Common::ColorFormat col
 
     const auto path =
         inputDir /
-        fmt::format(fmt::runtime(node.as<std::string>()), params.placeholders.numberOfInputFrames,
-                    params.placeholders.contentId, params.placeholders.testId, params.name,
-                    params.frameSize.x(), params.frameSize.y(), videoFormat);
+        Common::runtimeFormat(node.as<std::string>(), params.placeholders.numberOfInputFrames,
+                              params.placeholders.contentId, params.placeholders.testId,
+                              params.name, params.frameSize.x(), params.frameSize.y(), videoFormat);
 
     return loadFrame<>(path, params.placeholders.startFrame + params.frameIdx, params.frameSize,
                        bitDepth, colorFormat);
@@ -161,11 +164,11 @@ void touchLoadMultiviewFrameKeys(const Common::Json &config) {
   using ATI = MivBitstream::AiAttributeTypeId;
 
   config.require("inputDirectory");
-  config.optional(fmt::format("input{}PathFmt", videoComponentName(VUT::V3C_GVD)));
+  config.optional(TMIV_FMT::format("input{}PathFmt", videoComponentName(VUT::V3C_GVD)));
   config.optional(
-      fmt::format("input{}PathFmt", videoComponentName(VUT::V3C_AVD, ATI::ATTR_TEXTURE)));
+      TMIV_FMT::format("input{}PathFmt", videoComponentName(VUT::V3C_AVD, ATI::ATTR_TEXTURE)));
   config.optional(
-      fmt::format("input{}PathFmt", videoComponentName(VUT::V3C_AVD, ATI::ATTR_TRANSPARENCY)));
+      TMIV_FMT::format("input{}PathFmt", videoComponentName(VUT::V3C_AVD, ATI::ATTR_TRANSPARENCY)));
   config.optional("inputEntityPathFmt");
 }
 
@@ -275,15 +278,16 @@ auto loadViewportMetadata(const Common::Json &config, const Placeholders &placeh
     -> MivBitstream::CameraConfig {
   const auto viewportParamsPath =
       config.require("configDirectory").as<std::filesystem::path>() /
-      fmt::format(fmt::runtime(config.require("inputViewportParamsPathFmt").as<std::string>()),
-                  placeholders.numberOfInputFrames, placeholders.contentId, placeholders.testId);
+      Common::runtimeFormat(config.require("inputViewportParamsPathFmt").as<std::string>(),
+                            placeholders.numberOfInputFrames, placeholders.contentId,
+                            placeholders.testId);
 
   auto &filesystem = DependencyInjector::getInstance().filesystem();
   auto stream = filesystem.ifstream(viewportParamsPath);
 
   if (!stream->good()) {
     throw std::runtime_error(
-        fmt::format("Failed to load viewport parameters from {}", viewportParamsPath));
+        TMIV_FMT::format("Failed to load viewport parameters from {}", viewportParamsPath));
   }
 
   const auto sequenceConfig = MivBitstream::SequenceConfig{*stream};
@@ -295,13 +299,13 @@ auto loadViewportMetadata(const Common::Json &config, const Placeholders &placeh
   if (isPoseTrace) {
     const auto poseTracePath =
         config.require("configDirectory").as<std::filesystem::path>() /
-        fmt::format(fmt::runtime(config.require("inputPoseTracePathFmt").as<std::string>()),
-                    placeholders.numberOfInputFrames, placeholders.contentId, placeholders.testId,
-                    cameraName);
+        Common::runtimeFormat(config.require("inputPoseTracePathFmt").as<std::string>(),
+                              placeholders.numberOfInputFrames, placeholders.contentId,
+                              placeholders.testId, cameraName);
     auto stream2 = filesystem.ifstream(poseTracePath);
     if (!stream2->good()) {
       throw std::runtime_error(
-          fmt::format("Failed to load pose trace file from {}", poseTracePath));
+          TMIV_FMT::format("Failed to load pose trace file from {}", poseTracePath));
     }
 
     const auto pose = loadPoseFromCSV(*stream2, frameIdx);
@@ -342,7 +346,7 @@ auto loadVuhFromJson(const Common::Json &node) -> MivBitstream::V3cUnitHeader {
     return MivBitstream::V3cUnitHeader::pvd(vuh_v3c_parameter_set_id, vuh_atlas_id);
 
   default:
-    throw std::runtime_error(fmt::format("Invalid V3C unit type ID {}", vuh_unit_type));
+    throw std::runtime_error(TMIV_FMT::format("Invalid V3C unit type ID {}", vuh_unit_type));
   }
 }
 
@@ -375,7 +379,8 @@ auto loadOutOfbandMetadata(const Common::Json &config, const Placeholders &place
   auto stream = filesystem.ifstream(file);
 
   if (!stream->good()) {
-    throw std::runtime_error(fmt::format("Failed to load the out-of-band metadata from {}", file));
+    throw std::runtime_error(
+        TMIV_FMT::format("Failed to load the out-of-band metadata from {}", file));
   }
 
   const auto metadata = Common::Json::loadFrom(*stream);
@@ -387,7 +392,7 @@ auto loadOutOfbandMetadata(const Common::Json &config, const Placeholders &place
   }
 
   throw std::runtime_error(
-      fmt::format("Missing V3C unit header in out-of-band metadata file:\n{}", vuh));
+      TMIV_FMT::format("Missing V3C unit header in out-of-band metadata file:\n{}", vuh));
 }
 } // namespace
 
@@ -399,15 +404,16 @@ auto loadOutOfBandVideoFrame(const Common::Json &config, const Placeholders &pla
   }
 
   const auto metadata = loadOutOfbandMetadata(config, placeholders, vuh);
-  const auto configKey = fmt::format("input{}VideoFramePathFmt",
-                                     videoComponentName(vuh.vuh_unit_type(), metadata.attrTypeId));
+  const auto configKey = TMIV_FMT::format(
+      "input{}VideoFramePathFmt", videoComponentName(vuh.vuh_unit_type(), metadata.attrTypeId));
   const auto videoFormat = videoFormatString(metadata.colorFormat, metadata.bitDepth);
 
-  const auto path = config.require("inputDirectory").as<std::filesystem::path>() /
-                    fmt::format(fmt::runtime(config.require(configKey).as<std::string>()),
-                                placeholders.numberOfInputFrames, placeholders.contentId,
-                                placeholders.testId, vuh.vuh_atlas_id().asInt(),
-                                metadata.frameSize.x(), metadata.frameSize.y(), videoFormat);
+  const auto path =
+      config.require("inputDirectory").as<std::filesystem::path>() /
+      Common::runtimeFormat(config.require(configKey).as<std::string>(),
+                            placeholders.numberOfInputFrames, placeholders.contentId,
+                            placeholders.testId, vuh.vuh_atlas_id().asInt(), metadata.frameSize.x(),
+                            metadata.frameSize.y(), videoFormat);
 
   return {loadFrame<>(path, frameIdx, metadata.frameSize, metadata.bitDepth, metadata.colorFormat),
           Common::contains(metadata.irapFrameIndices, frameIdx)};
@@ -434,8 +440,8 @@ auto tryLoadSequenceConfig_(const Common::Json &config, const Placeholders &plac
                           MivBitstream::SequenceConfig> {
   auto &filesystem = DependencyInjector::getInstance().filesystem();
 
-  const auto relPath = fmt::format(
-      fmt::runtime(config.require("inputSequenceConfigPathFmt").as<std::string>()),
+  const auto relPath = Common::runtimeFormat(
+      config.require("inputSequenceConfigPathFmt").as<std::string>(),
       placeholders.numberOfInputFrames, placeholders.contentId, placeholders.testId, frameIdx);
   const auto path1 = config.require("inputDirectory").as<std::filesystem::path>() / relPath;
   const auto path2 = config.require("configDirectory").as<std::filesystem::path>() / relPath;
@@ -446,14 +452,15 @@ auto tryLoadSequenceConfig_(const Common::Json &config, const Placeholders &plac
       return std::nullopt;
     } else {
       throw std::runtime_error(
-          fmt::format("Source camera parameter paths {} and {} do not exist", path1, path2));
+          TMIV_FMT::format("Source camera parameter paths {} and {} do not exist", path1, path2));
     }
   }
 
   auto stream = filesystem.ifstream(path);
 
   if (!stream->good()) {
-    throw std::runtime_error(fmt::format("Failed to load source camera parameters from {}", path));
+    throw std::runtime_error(
+        TMIV_FMT::format("Failed to load source camera parameters from {}", path));
   }
 
   return MivBitstream::SequenceConfig{*stream};
@@ -479,8 +486,9 @@ void touchLoadSequenceConfigKeys(const Common::Json &config) {
 auto inputBitstreamPath(const Common::Json &config, const Placeholders &placeholders)
     -> std::filesystem::path {
   return config.require("inputDirectory").as<std::filesystem::path>() /
-         fmt::format(fmt::runtime(config.require("inputBitstreamPathFmt").as<std::string>()),
-                     placeholders.numberOfInputFrames, placeholders.contentId, placeholders.testId);
+         Common::runtimeFormat(config.require("inputBitstreamPathFmt").as<std::string>(),
+                               placeholders.numberOfInputFrames, placeholders.contentId,
+                               placeholders.testId);
 }
 
 void touchInputBitstreamPathKeys(const Common::Json &config) {
@@ -492,17 +500,17 @@ auto inputVideoSubBitstreamPath(const Common::Json &config, const Placeholders &
                                 MivBitstream::V3cUnitHeader vuh,
                                 MivBitstream::AiAttributeTypeId attrTypeId)
     -> std::filesystem::path {
-  const auto configKey = fmt::format("input{}VideoSubBitstreamPathFmt",
-                                     videoComponentName(vuh.vuh_unit_type(), attrTypeId));
+  const auto configKey = TMIV_FMT::format("input{}VideoSubBitstreamPathFmt",
+                                          videoComponentName(vuh.vuh_unit_type(), attrTypeId));
 
   const auto attrIdx = vuh.vuh_unit_type() == MivBitstream::VuhUnitType::V3C_AVD
                            ? vuh.vuh_attribute_index()
                            : uint8_t{};
 
   return config.require("inputDirectory").as<std::filesystem::path>() /
-         fmt::format(fmt::runtime(config.require(configKey).as<std::string>()),
-                     placeholders.numberOfInputFrames, placeholders.contentId, placeholders.testId,
-                     vuh.vuh_atlas_id().asInt(), attrIdx);
+         Common::runtimeFormat(config.require(configKey).as<std::string>(),
+                               placeholders.numberOfInputFrames, placeholders.contentId,
+                               placeholders.testId, vuh.vuh_atlas_id().asInt(), attrIdx);
 }
 
 void touchInputVideoSubBitstreamPathKeys(const Common::Json &config) {

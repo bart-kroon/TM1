@@ -102,7 +102,7 @@ auto parseObject(std::string_view &text) -> Json::Object {
     auto value = parseValue(text);
 
     if (!x.emplace(key, std::move(value)).second) {
-      throw std::runtime_error(fmt::format("JSON parser: duplicate key '{}'", key));
+      throw std::runtime_error(TMIV_FMT::format("JSON parser: duplicate key '{}'", key));
     }
   }
 
@@ -209,7 +209,7 @@ auto parseString(std::string_view &text) -> std::string {
         throw std::logic_error("JSON parser: unicode character codes are not yet supported");
       } else {
         throw std::runtime_error(
-            fmt::format("JSON parser: invalid string escape character '{}'", ch2));
+            TMIV_FMT::format("JSON parser: invalid string escape character '{}'", ch2));
       }
     } else if ('\0' <= ch1 && ch1 < ' ') {
       throw std::runtime_error("JSON parser: control character within string");
@@ -416,13 +416,13 @@ void Json::mergeObject(Json::Object &first, const Json::Object &second) {
 void Json::checkForUnusedKeys(const std::string &here) const {
   if (!wasAccessed()) {
     throw std::runtime_error(
-        fmt::format("The parameter {} has no part in this configuration.", here));
+        TMIV_FMT::format("The parameter {} has no part in this configuration.", here));
   }
 
   if (const auto *object = std::any_cast<Object>(&m_node)) {
     for (const auto &kvp : *object) {
       kvp.second.checkForUnusedKeys(here.empty() ? kvp.first
-                                                 : fmt::format("{}.{}", here, kvp.first));
+                                                 : TMIV_FMT::format("{}.{}", here, kvp.first));
     }
   }
 }

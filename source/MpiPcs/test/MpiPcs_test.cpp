@@ -35,9 +35,8 @@
 #include <catch2/matchers/catch_matchers_contains.hpp>
 
 #include <TMIV/Common/Frame.h>
+#include <TMIV/Common/format.h>
 #include <TMIV/MpiPcs/MpiPcs.h>
-
-#include <fmt/format.h>
 
 #include <sstream>
 
@@ -99,7 +98,7 @@ TEST_CASE("MpiPcs writer and reader") {
     for (std::streamoff idx = 0; idx < expected_number_of_bytes; idx++) {
       std::array<char, 1> n{};
       ss.read(n.data(), n.size());
-      ss2 << fmt::format("{:02X}", static_cast<uint8_t>(n[0]));
+      ss2 << TMIV_FMT::format("{:02X}", static_cast<uint8_t>(n[0]));
     }
     REQUIRE(ss2.str() == expected_string);
 
@@ -115,7 +114,7 @@ TEST_CASE("MpiPcs writer and reader") {
     for (std::streamoff idx = 0; idx < expected_number_of_bytes; idx++) {
       std::array<char, 1> n{};
       ss.read(n.data(), n.size());
-      ss3 << fmt::format("{:02X}", static_cast<uint8_t>(n[0]));
+      ss3 << TMIV_FMT::format("{:02X}", static_cast<uint8_t>(n[0]));
     }
     REQUIRE(ss3.str() == expected_string);
   }
@@ -168,7 +167,7 @@ TEST_CASE("MpiPcs writer and reader") {
     for (std::streamoff idx = 0; idx < expected_number_of_bytes; idx++) {
       std::array<char, 1> n{};
       ss.read(n.data(), n.size());
-      ss2 << fmt::format("{:02X}", int32_t{n[0]});
+      ss2 << TMIV_FMT::format("{:02X}", int32_t{n[0]});
     }
     REQUIRE(ss2.str() == expected_string);
   }

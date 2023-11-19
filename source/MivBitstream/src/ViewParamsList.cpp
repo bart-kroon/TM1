@@ -45,10 +45,10 @@ using namespace std::string_literals;
 
 namespace TMIV::MivBitstream {
 auto Pose::printTo(std::ostream &stream, uint16_t viewIdx) const -> std::ostream & {
-  fmt::print(stream, "position[ {} ]=({}, {}, {})\n", viewIdx, position.x(), position.y(),
-             position.z());
-  fmt::print(stream, "orientation[ {} ]={} + i {} + j {} + k {}\n", viewIdx, orientation.w(),
-             orientation.x(), orientation.y(), orientation.z());
+  TMIV_FMT::print(stream, "position[ {} ]=({}, {}, {})\n", viewIdx, position.x(), position.y(),
+                  position.z());
+  TMIV_FMT::print(stream, "orientation[ {} ]={} + i {} + j {} + k {}\n", viewIdx, orientation.w(),
+                  orientation.x(), orientation.y(), orientation.z());
   return stream;
 }
 
@@ -99,7 +99,7 @@ auto Pose::encodeToCameraExtrinsics() const -> CameraExtrinsics {
 }
 
 auto ViewParams::printTo(std::ostream &stream, uint16_t viewIdx) const -> std::ostream & {
-  fmt::print(stream, "viewId[ {} ]={}\n", viewIdx, viewId);
+  TMIV_FMT::print(stream, "viewId[ {} ]={}\n", viewIdx, viewId);
   if (!name.empty()) {
     stream << "name[ " << viewIdx << " ]=\"" << name << "\"  # informative\n";
   }

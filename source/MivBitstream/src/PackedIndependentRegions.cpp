@@ -77,20 +77,21 @@ auto PackedIndependentRegions::pir_subpic_id(uint8_t k, uint8_t i) const -> size
 }
 
 auto operator<<(std::ostream &stream, const PackedIndependentRegions &x) -> std::ostream & {
-  fmt::print(stream, "pir_num_packed_frames_minus1={}\n", x.pir_num_packed_frames_minus1());
+  TMIV_FMT::print(stream, "pir_num_packed_frames_minus1={}\n", x.pir_num_packed_frames_minus1());
   for (uint8_t j = 0; j <= x.pir_num_packed_frames_minus1(); ++j) {
-    fmt::print(stream, "pir_packed_frame_id[ {} ]={}\n", j, x.pir_packed_frame_id(j));
+    TMIV_FMT::print(stream, "pir_packed_frame_id[ {} ]={}\n", j, x.pir_packed_frame_id(j));
     const auto k = x.pir_packed_frame_id(j);
-    fmt::print(stream, "pir_description_type_idc[ {} ]={}\n", k, x.pir_description_type_idc(k));
-    fmt::print(stream, "pir_num_regions_minus1[ {} ]={}\n", k, x.pir_num_regions_minus1(k));
+    TMIV_FMT::print(stream, "pir_description_type_idc[ {} ]={}\n", k,
+                    x.pir_description_type_idc(k));
+    TMIV_FMT::print(stream, "pir_num_regions_minus1[ {} ]={}\n", k, x.pir_num_regions_minus1(k));
     for (uint8_t i = 0; i <= x.pir_num_regions_minus1(k); ++i) {
       if (x.pir_description_type_idc(k) == 0) {
-        fmt::print(stream, "pir_top_left_tile_idx[ {} ][ {} ]={}\n", k, i,
-                   x.pir_top_left_tile_idx(k, i));
-        fmt::print(stream, "pir_bottom_right_tile_idx[ {} ][ {} ]={}\n", k, i,
-                   x.pir_bottom_right_tile_idx(k, i));
+        TMIV_FMT::print(stream, "pir_top_left_tile_idx[ {} ][ {} ]={}\n", k, i,
+                        x.pir_top_left_tile_idx(k, i));
+        TMIV_FMT::print(stream, "pir_bottom_right_tile_idx[ {} ][ {} ]={}\n", k, i,
+                        x.pir_bottom_right_tile_idx(k, i));
       } else {
-        fmt::print(stream, "pir_subpic_id[ {} ][ {} ]={}\n", k, i, x.pir_subpic_id(k, i));
+        TMIV_FMT::print(stream, "pir_subpic_id[ {} ][ {} ]={}\n", k, i, x.pir_subpic_id(k, i));
       }
     }
   }

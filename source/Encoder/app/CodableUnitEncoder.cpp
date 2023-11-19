@@ -73,7 +73,8 @@ CodableUnitEncoder::CodableUnitEncoder(const Common::Json &config, IO::Placehold
     , m_mivEncoder{encodeMiv(v3cSampleSink(m_outputBitstream),
                              config.require("rewriteParameterSets").as<bool>())} {
   if (!m_outputBitstream.good()) {
-    throw std::runtime_error(fmt::format("Failed to open {} for writing.", m_outputBitstreamPath));
+    throw std::runtime_error(
+        TMIV_FMT::format("Failed to open {} for writing.", m_outputBitstreamPath));
   }
 
   touchKeys(config);

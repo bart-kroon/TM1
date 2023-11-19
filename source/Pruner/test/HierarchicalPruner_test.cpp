@@ -37,7 +37,7 @@
 
 #include <TMIV/Pruner/HierarchicalPruner.h>
 
-#include <fmt/format.h>
+#include <TMIV/Common/format.h>
 
 using Catch::Matchers::ContainsSubstring;
 using TMIV::Common::Json;
@@ -94,7 +94,7 @@ TEST_CASE("TMIV::Pruner::HierarchicalPruner") {
         const auto viewCount = GENERATE(size_t{1}, size_t{3});
 
         for (size_t i = 0; i < viewCount; ++i) {
-          params.viewParamsList.emplace_back().name = fmt::format("v{:02}", i);
+          params.viewParamsList.emplace_back().name = TMIV_FMT::format("v{:02}", i);
         }
 
         WHEN("preparing the sequence") {

@@ -36,8 +36,9 @@ function(create_catch2_unit_test)
     if(NOT TARGET ${TEST_CREATOR_TARGET})
         add_executable(${TEST_CREATOR_TARGET} ${TEST_CREATOR_SOURCES})
 
-        target_link_libraries(${TEST_CREATOR_TARGET} PRIVATE Catch2::Catch2WithMain fmt::fmt
-                                                             ${TEST_CREATOR_PRIVATE})
+        target_link_libraries(
+            ${TEST_CREATOR_TARGET} PRIVATE Catch2::Catch2WithMain ${TMIV_FMT_TARGET}
+                                           ${TEST_CREATOR_PRIVATE})
 
         if(CLANG_TIDY_PATH)
             set_target_properties(

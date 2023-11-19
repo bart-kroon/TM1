@@ -141,9 +141,9 @@ public:
         const auto range = m_inputToOutputFrameIdMap.equal_range(frame->frameIdx);
         m_renderer.renderMultipleFrames(*frame, range.first, range.second);
       } else {
-        throw std::runtime_error(
-            fmt::format("The input frame count was set to {} but the bitstream only has {} frames.",
-                        m_placeholders.numberOfInputFrames, inputFrameIdx));
+        throw std::runtime_error(TMIV_FMT::format(
+            "The input frame count was set to {} but the bitstream only has {} frames.",
+            m_placeholders.numberOfInputFrames, inputFrameIdx));
       }
     }
   }
@@ -151,7 +151,8 @@ public:
 private:
   auto decodeMiv() -> Common::Source<MivBitstream::AccessUnit> {
     if (!m_inputBitstream.good()) {
-      throw std::runtime_error(fmt::format("Failed to open {} for reading", m_inputBitstreamPath));
+      throw std::runtime_error(
+          TMIV_FMT::format("Failed to open {} for reading", m_inputBitstreamPath));
     }
     return Decoder::decodeMiv(decodeV3cSampleStream(m_inputBitstream), videoDecoderFactory(),
                               m_checker, commonAtlasDecoderFactory(), atlasDecoderFactory());
@@ -193,8 +194,8 @@ private:
     if (result) {
       return result;
     }
-    throw std::runtime_error(
-        fmt::format("Failed to initialize a video decoder for codec group IDC {}", codecGroupIdc));
+    throw std::runtime_error(TMIV_FMT::format(
+        "Failed to initialize a video decoder for codec group IDC {}", codecGroupIdc));
   }
 
   auto loadOutOfBandVideo(MivBitstream::V3cUnitHeader vuh) -> Common::Source<Common::DecodedFrame> {
@@ -228,7 +229,7 @@ private:
 
       if (!m_outputLog) {
         throw std::runtime_error(
-            fmt::format("Failed to open output log \"{}\" for writing", outputLogPath));
+            TMIV_FMT::format("Failed to open output log \"{}\" for writing", outputLogPath));
       }
     }
   }

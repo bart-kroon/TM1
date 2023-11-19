@@ -39,13 +39,40 @@
 #include <TMIV/Common/Formatters.h>
 #include <TMIV/Common/LoggingStrategyFmt.h>
 
+#include <sstream>
+
 namespace test {
 using TMIV::Common::contains;
 using TMIV::Common::logInfo;
 
+[[nodiscard]] auto openmodeToString(std::ios_base::openmode mode) {
+  std::ostringstream stream;
+  auto once = true;
+
+  const auto test = [&, mode](std::ios_base::openmode flag, std::string_view name) {
+    if ((mode & flag) != 0) {
+      if (once) {
+        once = false;
+        stream << name;
+      } else {
+        stream << '|' << name;
+      }
+    }
+  };
+
+  test(std::ios_base::app, "app");
+  test(std::ios_base::binary, "binary");
+  test(std::ios_base::in, "in");
+  test(std::ios_base::out, "out");
+  test(std::ios_base::trunc, "trunc");
+  test(std::ios_base::ate, "ate");
+
+  return std::move(stream).str();
+}
+
 auto FakeFilesystem::ifstream(const std::filesystem::path &path, std::ios_base::openmode mode)
     -> std::shared_ptr<std::istream> {
-  logInfo("FakeFilesystem: ifstream {} mode {}\n", path, mode);
+  logInfo("FakeFilesystem: ifstream {} mode {}", path, openmodeToString(mode));
 
   REQUIRE(haveFile(path));
   return m_files[path];
@@ -53,7 +80,7 @@ auto FakeFilesystem::ifstream(const std::filesystem::path &path, std::ios_base::
 
 auto FakeFilesystem::ofstream(const std::filesystem::path &path, std::ios_base::openmode mode)
     -> std::shared_ptr<std::ostream> {
-  logInfo("FakeFilesystem: ofstream {} mode {}\n", path, mode);
+  logInfo("FakeFilesystem: ofstream {} mode {}", path, openmodeToString(mode));
 
   REQUIRE_FALSE(haveFile(path));
   CHECK(contains(m_directories, path.parent_path()));
@@ -64,7 +91,7 @@ auto FakeFilesystem::ofstream(const std::filesystem::path &path, std::ios_base::
 }
 
 void FakeFilesystem::create_directories(const std::filesystem::path &p) {
-  logInfo("FakeFilesystem: create_directories {}\n", p);
+  logInfo("FakeFilesystem: create_directories {}", p);
 
   if (!contains(m_directories, p)) {
     m_directories.push_back(p);
@@ -74,7 +101,7 @@ void FakeFilesystem::create_directories(const std::filesystem::path &p) {
 auto FakeFilesystem::exists(const std::filesystem::path &p) -> bool {
   const auto result = haveFile(p) || haveDir(p);
 
-  logInfo("FakeFilesystem: exists {} -> {}\n", p, result);
+  logInfo("FakeFilesystem: exists {} -> {}", p, result);
 
   return result;
 }

@@ -64,40 +64,6 @@ TEST_CASE("TMIV::Common::logError(fmt, args...)") {
   CHECK(callCount == 1);
 }
 
-TEST_CASE("Format errors are handled by printing and returning normally") {
-  auto callCount = 0;
-  static constexpr auto before = "Before causing a format error"sv;
-  static constexpr auto after = "After causing a format error"sv;
-
-  changeMaxLogLevel(LogLevel::debug);
-  replaceLoggingStrategy([&callCount](LogLevel level, std::string_view what) {
-    ++callCount;
-    CAPTURE(callCount, level, what);
-
-    switch (callCount) {
-    case 1:
-      CHECK(level == LogLevel::info);
-      CHECK(what == before);
-      break;
-    case 2:
-      CHECK(level == LogLevel::error);
-      circumventLogger("{}\n", what);
-      break;
-    case 3:
-      CHECK(level == LogLevel::info);
-      CHECK(what == after);
-      break;
-    default:
-      FAIL("Too many calls");
-    }
-  });
-
-  logInfo(before);
-  logMessage(LogLevel::warning, fmt::runtime("Three arguments {} {} {}"), 1, 2);
-  logInfo(after);
-  CHECK(callCount == 3);
-}
-
 TEST_CASE("TMIV::Common::logWarning(fmt, args...)") {
   auto callCount = 0;
 

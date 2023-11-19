@@ -72,16 +72,16 @@ auto V3cUnitHeader::summary() const -> std::string {
   stream << vuh_unit_type();
 
   if (vuh_unit_type() != VuhUnitType::V3C_VPS) {
-    fmt::print(stream, " vps:{}", vuh_v3c_parameter_set_id());
+    TMIV_FMT::print(stream, " vps:{}", vuh_v3c_parameter_set_id());
   }
   if (vuh_unit_type() != VuhUnitType::V3C_VPS && vuh_unit_type() != VuhUnitType::V3C_CAD) {
-    fmt::print(stream, " atlas:{}", vuh_atlas_id());
+    TMIV_FMT::print(stream, " atlas:{}", vuh_atlas_id());
   }
   if (vuh_unit_type() == VuhUnitType::V3C_AVD) {
-    fmt::print(stream, " attr:{} part:{} map:{} aux:{}", vuh_attribute_index(),
-               vuh_attribute_partition_index(), vuh_map_index(), vuh_auxiliary_video_flag());
+    TMIV_FMT::print(stream, " attr:{} part:{} map:{} aux:{}", vuh_attribute_index(),
+                    vuh_attribute_partition_index(), vuh_map_index(), vuh_auxiliary_video_flag());
   } else if (vuh_unit_type() == VuhUnitType::V3C_GVD) {
-    fmt::print(stream, " map:{} aux:{}", vuh_map_index(), vuh_auxiliary_video_flag());
+    TMIV_FMT::print(stream, " map:{} aux:{}", vuh_map_index(), vuh_auxiliary_video_flag());
   }
   return stream.str();
 }

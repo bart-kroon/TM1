@@ -141,24 +141,24 @@ auto MaxCodedVideoResolution::mcv_attribute_height(int32_t value) -> MaxCodedVid
 }
 
 auto operator<<(std::ostream &stream, const MaxCodedVideoResolution &x) -> std::ostream & {
-  fmt::print(stream, "mcv_occupancy_resolution_present_flag={}\n",
-             x.mcv_occupancy_resolution_present_flag());
-  fmt::print(stream, "mcv_geometry_resolution_present_flag={}\n",
-             x.mcv_geometry_resolution_present_flag());
-  fmt::print(stream, "mcv_attribute_resolution_present_flag={}\n",
-             x.mcv_attribute_resolution_present_flag());
+  TMIV_FMT::print(stream, "mcv_occupancy_resolution_present_flag={}\n",
+                  x.mcv_occupancy_resolution_present_flag());
+  TMIV_FMT::print(stream, "mcv_geometry_resolution_present_flag={}\n",
+                  x.mcv_geometry_resolution_present_flag());
+  TMIV_FMT::print(stream, "mcv_attribute_resolution_present_flag={}\n",
+                  x.mcv_attribute_resolution_present_flag());
 
   if (x.mcv_occupancy_resolution_present_flag()) {
-    fmt::print(stream, "mcv_occupancy_width={}\n", x.mcv_occupancy_width());
-    fmt::print(stream, "mcv_occupancy_height={}\n", x.mcv_occupancy_height());
+    TMIV_FMT::print(stream, "mcv_occupancy_width={}\n", x.mcv_occupancy_width());
+    TMIV_FMT::print(stream, "mcv_occupancy_height={}\n", x.mcv_occupancy_height());
   }
   if (x.mcv_geometry_resolution_present_flag()) {
-    fmt::print(stream, "mcv_geometry_width={}\n", x.mcv_geometry_width());
-    fmt::print(stream, "mcv_geometry_height={}\n", x.mcv_geometry_height());
+    TMIV_FMT::print(stream, "mcv_geometry_width={}\n", x.mcv_geometry_width());
+    TMIV_FMT::print(stream, "mcv_geometry_height={}\n", x.mcv_geometry_height());
   }
   if (x.mcv_attribute_resolution_present_flag()) {
-    fmt::print(stream, "mcv_attribute_width={}\n", x.mcv_attribute_width());
-    fmt::print(stream, "mcv_attribute_height={}\n", x.mcv_attribute_height());
+    TMIV_FMT::print(stream, "mcv_attribute_width={}\n", x.mcv_attribute_width());
+    TMIV_FMT::print(stream, "mcv_attribute_height={}\n", x.mcv_attribute_height());
   }
   return stream;
 }
@@ -484,8 +484,8 @@ auto operator<<(std::ostream &stream, const VuiParameters &x) -> std::ostream & 
     stream << "vui_max_num_tiles_per_atlas_minus1=" << x.vui_max_num_tiles_per_atlas_minus1()
            << '\n';
   }
-  fmt::print(stream, "vui_max_coded_video_resolution_present_flag={}\n",
-             x.vui_max_coded_video_resolution_present_flag());
+  TMIV_FMT::print(stream, "vui_max_coded_video_resolution_present_flag={}\n",
+                  x.vui_max_coded_video_resolution_present_flag());
 
   if (x.vui_max_coded_video_resolution_present_flag()) {
     stream << x.max_coded_video_resolution();

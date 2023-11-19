@@ -9,7 +9,7 @@ create_tmiv_executable(
     "app/EgaInserter_main.cpp"
     PRIVATE
     EgaInserterLib
-    fmt::fmt)
+    ${TMIV_FMT_TARGET})
 
 create_catch2_unit_test(TARGET EgaInserterTest SOURCES "test/EgaInserter_test.cpp" PRIVATE
                         EgaInserterLib)

@@ -756,7 +756,14 @@ mvpudp_num_updates_minus1=0
 mvpudp_view_idx[ 0 ]=0
 mvpudp_sensor_idx[ 0 ]=0
 dp_model_id[ 0 ][ 0 ]=3
-dp_coefficient[ 0 ][ 0 ]=1, 0, 0, 0, 0, 0, 0, 0
+dp_coefficient[ 0 ][ 0 ][ 0 ]=1
+dp_coefficient[ 0 ][ 0 ][ 1 ]=0
+dp_coefficient[ 0 ][ 0 ][ 2 ]=0
+dp_coefficient[ 0 ][ 0 ][ 3 ]=0
+dp_coefficient[ 0 ][ 0 ][ 4 ]=0
+dp_coefficient[ 0 ][ 0 ][ 5 ]=0
+dp_coefficient[ 0 ][ 0 ][ 6 ]=0
+dp_coefficient[ 0 ][ 0 ][ 7 ]=0
 )");
 
     bitCodingTest(unit, 314, nalCaf, casps);
@@ -1077,11 +1084,14 @@ TEST_CASE("miv_view_params_update_distortion_parameters", "[Common Atlas Frame M
 mvpudp_view_idx[ 0 ]=0
 mvpudp_sensor_idx[ 0 ]=0
 dp_model_id[ 0 ][ 0 ]=0
-dp_coefficient[ 0 ][ 0 ]=
 mvpudp_view_idx[ 1 ]=1
 mvpudp_sensor_idx[ 1 ]=2
 dp_model_id[ 1 ][ 2 ]=2
-dp_coefficient[ 1 ][ 2 ]=0, 0, 0, 0, 0
+dp_coefficient[ 1 ][ 2 ][ 0 ]=0
+dp_coefficient[ 1 ][ 2 ][ 1 ]=0
+dp_coefficient[ 1 ][ 2 ][ 2 ]=0
+dp_coefficient[ 1 ][ 2 ][ 3 ]=0
+dp_coefficient[ 1 ][ 2 ][ 4 ]=0
 )");
     bitCodingTest(unit, 244);
   }

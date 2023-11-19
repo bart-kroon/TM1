@@ -57,7 +57,7 @@ struct PtlChecker::Impl {
   void ptlCheck(bool condition, const char *what, const char *document,
                 const char *numberedItem) const {
     if (!condition) {
-      m_logger(fmt::format("{} [{} {}]", what, document, numberedItem));
+      m_logger(TMIV_FMT::format("{} [{} {}]", what, document, numberedItem));
     }
   }
 
@@ -73,8 +73,8 @@ struct PtlChecker::Impl {
     if (Integer{value} <= Integer{limit}) {
       logVerbose("Level check: {} <= {} = {}", value, identifier, limit);
     } else {
-      m_logger(
-          fmt::format("{} <= {} = {} [{} {}]", value, identifier, limit, document, numberedItem));
+      m_logger(TMIV_FMT::format("{} <= {} = {} [{} {}]", value, identifier, limit, document,
+                                numberedItem));
     }
     return value;
   }

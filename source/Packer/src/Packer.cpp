@@ -91,7 +91,7 @@ Packer::Packer(const Common::Json &rootNode, const Common::Json &componentNode) 
     m_sortingMethod = VIEW_ID_ASCENDING;
     break;
   default:
-    throw std::runtime_error(fmt::format("Sorting method {} is not available", sortingMethod));
+    throw std::runtime_error(TMIV_FMT::format("Sorting method {} is not available", sortingMethod));
   }
   m_enableRecursiveSplit = componentNode.require("enableRecursiveSplit").as<bool>();
 

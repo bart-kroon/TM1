@@ -43,27 +43,27 @@
 #include "V3cUnit.h"
 #include "ViewId.h"
 
-namespace fmt {
+namespace TMIV_FMT {
 namespace miv = ::TMIV::MivBitstream;
 
-template <> struct formatter<miv::AiAttributeTypeId> : ostream_formatter {};
-template <> struct formatter<miv::AthType> : ostream_formatter {};
-template <> struct formatter<miv::AtlasId> : ostream_formatter {};
-template <> struct formatter<miv::FlexiblePatchOrientation> : ostream_formatter {};
-template <> struct formatter<miv::NalUnit> : ostream_formatter {};
-template <> struct formatter<miv::NalUnitHeader> : ostream_formatter {};
-template <> struct formatter<miv::NalUnitType> : ostream_formatter {};
-template <> struct formatter<miv::PtlLevelIdc> : ostream_formatter {};
-template <> struct formatter<miv::PtlMaxDecodesIdc> : ostream_formatter {};
-template <> struct formatter<miv::PtlProfileCodecGroupIdc> : ostream_formatter {};
-template <> struct formatter<miv::PtlProfileReconstructionIdc> : ostream_formatter {};
-template <> struct formatter<miv::PtlProfileToolsetIdc> : ostream_formatter {};
-template <> struct formatter<miv::V3cUnit> : ostream_formatter {};
-template <> struct formatter<miv::V3cUnitHeader> : ostream_formatter {};
-template <> struct formatter<miv::V3cUnitPayload> : ostream_formatter {};
-template <> struct formatter<miv::ViewId> : ostream_formatter {};
-template <> struct formatter<miv::VpsExtensionType> : ostream_formatter {};
-template <> struct formatter<miv::VuhUnitType> : ostream_formatter {};
-} // namespace fmt
+template <> struct formatter<miv::AiAttributeTypeId> : TMIV::Common::OstreamFormatter {};
+template <> struct formatter<miv::AthType> : TMIV::Common::OstreamFormatter {};
+template <> struct formatter<miv::AtlasId> : TMIV::Common::OstreamFormatter {};
+template <> struct formatter<miv::FlexiblePatchOrientation> : TMIV::Common::OstreamFormatter {};
+template <> struct formatter<miv::NalUnit> : TMIV::Common::OstreamFormatter {};
+template <> struct formatter<miv::NalUnitHeader> : TMIV::Common::OstreamFormatter {};
+template <> struct formatter<miv::NalUnitType> : TMIV::Common::OstreamFormatter {};
+template <> struct formatter<miv::PtlLevelIdc> : TMIV::Common::OstreamFormatter {};
+template <> struct formatter<miv::PtlMaxDecodesIdc> : TMIV::Common::OstreamFormatter {};
+template <> struct formatter<miv::PtlProfileCodecGroupIdc> : TMIV::Common::OstreamFormatter {};
+template <> struct formatter<miv::PtlProfileReconstructionIdc> : TMIV::Common::OstreamFormatter {};
+template <> struct formatter<miv::PtlProfileToolsetIdc> : TMIV::Common::OstreamFormatter {};
+template <> struct formatter<miv::V3cUnit> : TMIV::Common::OstreamFormatter {};
+template <> struct formatter<miv::V3cUnitHeader> : TMIV::Common::OstreamFormatter {};
+template <> struct formatter<miv::V3cUnitPayload> : TMIV::Common::OstreamFormatter {};
+template <> struct formatter<miv::ViewId> : TMIV::Common::OstreamFormatter {};
+template <> struct formatter<miv::VpsExtensionType> : TMIV::Common::OstreamFormatter {};
+template <> struct formatter<miv::VuhUnitType> : TMIV::Common::OstreamFormatter {};
+} // namespace TMIV_FMT
 
 #endif

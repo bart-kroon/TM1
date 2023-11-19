@@ -138,11 +138,11 @@ auto queryEnum(const Common::Json &node, const std::string &key, const std::stri
   const auto text = node.require(key).as<std::string>();
 
   for (auto i : known) {
-    if (fmt::format("{}", i) == text) {
+    if (TMIV_FMT::format("{}", i) == text) {
       return i;
     }
   }
-  throw std::runtime_error(fmt::format("The configured {} IDC {} is unknown", name, text));
+  throw std::runtime_error(TMIV_FMT::format("The configured {} IDC {} is unknown", name, text));
 }
 } // namespace
 

@@ -27,7 +27,7 @@ RUN /dependencies/build/build_dependencies.py \
   --source-dir /dependencies/source \
   --build-dir /dependencies/build/clang-Debug \
   --install-dir /dependencies/install/clang-Debug \
-  --build-type Debug -j 2
+  --build-type Debug -j 2 --cxx-standard 17
 
 # Build the dependencies in the Docker environment (GCC 12)
 ENV CXX=g++-12\ -w

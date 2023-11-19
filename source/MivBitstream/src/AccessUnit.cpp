@@ -101,9 +101,9 @@ void requireAllPatchesWithinProjectionPlaneBounds(const ViewParamsList &vpl,
     const auto v_2 = v_1 + pp.atlasPatch3dSizeV();
 
     if (u_1 < 0 || u_1 > u_2 || u_2 > size_u || v_1 < 0 || v_1 > v_2 || v_2 > size_v) {
-      throw std::runtime_error(
-          fmt::format("Patch with index {} and projection ID {} is out of projection plane bounds",
-                      patchIdx, pp.atlasPatchProjectionId()));
+      throw std::runtime_error(TMIV_FMT::format(
+          "Patch with index {} and projection ID {} is out of projection plane bounds", patchIdx,
+          pp.atlasPatchProjectionId()));
     }
 
     ++patchIdx;
@@ -128,8 +128,8 @@ void requireAllPatchesWithinAtlasFrameBounds(const PatchParamsList &ppl,
 
     if (x_1 < 0 || x_2 > size_x || y_1 < 0 || y_2 > size_y) {
       throw std::runtime_error(
-          fmt::format("Patch with index {} and projection ID {} is out of atlas frame bounds",
-                      patchIdx, pp.atlasPatchProjectionId()));
+          TMIV_FMT::format("Patch with index {} and projection ID {} is out of atlas frame bounds",
+                           patchIdx, pp.atlasPatchProjectionId()));
     }
   }
 }

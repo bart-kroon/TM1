@@ -141,41 +141,44 @@ auto AspsMivExtension::asme_patch_texture_offset_bit_depth_minus1() const -> uin
 }
 
 auto operator<<(std::ostream &stream, const AspsMivExtension &x) -> std::ostream & {
-  fmt::print(stream, "asme_ancillary_atlas_flag={}\n", x.asme_ancillary_atlas_flag());
-  fmt::print(stream, "asme_embedded_occupancy_enabled_flag={}\n",
-             x.asme_embedded_occupancy_enabled_flag());
+  TMIV_FMT::print(stream, "asme_ancillary_atlas_flag={}\n", x.asme_ancillary_atlas_flag());
+  TMIV_FMT::print(stream, "asme_embedded_occupancy_enabled_flag={}\n",
+                  x.asme_embedded_occupancy_enabled_flag());
 
   if (x.asme_embedded_occupancy_enabled_flag()) {
-    fmt::print(stream, "asme_depth_occ_map_threshold_flag={}\n", x.asme_depth_occ_threshold_flag());
+    TMIV_FMT::print(stream, "asme_depth_occ_map_threshold_flag={}\n",
+                    x.asme_depth_occ_threshold_flag());
   }
-  fmt::print(stream, "asme_geometry_scale_enabled_flag={}\n", x.asme_geometry_scale_enabled_flag());
+  TMIV_FMT::print(stream, "asme_geometry_scale_enabled_flag={}\n",
+                  x.asme_geometry_scale_enabled_flag());
 
   if (x.asme_geometry_scale_enabled_flag()) {
-    fmt::print(stream, "asme_geometry_scale_factor_x_minus1={}\n",
-               x.asme_geometry_scale_factor_x_minus1());
-    fmt::print(stream, "asme_geometry_scale_factor_y_minus1={}\n",
-               x.asme_geometry_scale_factor_y_minus1());
+    TMIV_FMT::print(stream, "asme_geometry_scale_factor_x_minus1={}\n",
+                    x.asme_geometry_scale_factor_x_minus1());
+    TMIV_FMT::print(stream, "asme_geometry_scale_factor_y_minus1={}\n",
+                    x.asme_geometry_scale_factor_y_minus1());
   }
   if (!x.asme_embedded_occupancy_enabled_flag()) {
-    fmt::print(stream, "asme_occupancy_scale_enabled_flag={}\n",
-               x.asme_occupancy_scale_enabled_flag());
+    TMIV_FMT::print(stream, "asme_occupancy_scale_enabled_flag={}\n",
+                    x.asme_occupancy_scale_enabled_flag());
   }
   if (!x.asme_embedded_occupancy_enabled_flag() && x.asme_occupancy_scale_enabled_flag()) {
-    fmt::print(stream, "asme_occupancy_scale_factor_x_minus1={}\n",
-               x.asme_occupancy_scale_factor_x_minus1());
-    fmt::print(stream, "asme_occupancy_scale_factor_y_minus1={}\n",
-               x.asme_occupancy_scale_factor_y_minus1());
+    TMIV_FMT::print(stream, "asme_occupancy_scale_factor_x_minus1={}\n",
+                    x.asme_occupancy_scale_factor_x_minus1());
+    TMIV_FMT::print(stream, "asme_occupancy_scale_factor_y_minus1={}\n",
+                    x.asme_occupancy_scale_factor_y_minus1());
   }
-  fmt::print(stream, "asme_patch_constant_depth_flag={}\n", x.asme_patch_constant_depth_flag());
-  fmt::print(stream, "asme_patch_texture_offset_enabled_flag={}\n",
-             x.asme_patch_texture_offset_enabled_flag());
+  TMIV_FMT::print(stream, "asme_patch_constant_depth_flag={}\n",
+                  x.asme_patch_constant_depth_flag());
+  TMIV_FMT::print(stream, "asme_patch_texture_offset_enabled_flag={}\n",
+                  x.asme_patch_texture_offset_enabled_flag());
 
   if (x.asme_patch_texture_offset_enabled_flag()) {
-    fmt::print(stream, "asme_patch_texture_offset_bit_depth_minus1={}\n",
-               x.asme_patch_texture_offset_bit_depth_minus1());
+    TMIV_FMT::print(stream, "asme_patch_texture_offset_bit_depth_minus1={}\n",
+                    x.asme_patch_texture_offset_bit_depth_minus1());
   }
-  fmt::print(stream, "asme_max_entity_id={}\n", x.asme_max_entity_id());
-  fmt::print(stream, "asme_inpaint_enabled_flag={}\n", x.asme_inpaint_enabled_flag());
+  TMIV_FMT::print(stream, "asme_max_entity_id={}\n", x.asme_max_entity_id());
+  TMIV_FMT::print(stream, "asme_inpaint_enabled_flag={}\n", x.asme_inpaint_enabled_flag());
   return stream;
 }
 
@@ -236,7 +239,8 @@ void AspsMivExtension::encodeTo(Common::OutputBitstream &bitstream) const {
 }
 
 auto operator<<(std::ostream &stream, const AspsMiv2Extension &x) -> std::ostream & {
-  fmt::print(stream, "asme_patch_margin_enabled_flag={}\n", x.asme_patch_margin_enabled_flag());
+  TMIV_FMT::print(stream, "asme_patch_margin_enabled_flag={}\n",
+                  x.asme_patch_margin_enabled_flag());
   return stream;
 }
 

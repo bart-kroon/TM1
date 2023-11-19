@@ -33,10 +33,10 @@
 
 #include <TMIV/MivBitstream/CommonAtlasFrameRBSP.h>
 
+#include <TMIV/Common/format.h>
 #include <TMIV/Common/verify.h>
 
 #include <cmath>
-#include <fmt/ostream.h>
 
 namespace TMIV::MivBitstream {
 auto CommonAtlasFrameRBSP::caf_miv_extension() const -> const CafMivExtension & {
@@ -70,21 +70,22 @@ auto CommonAtlasFrameRBSP::printTo(
     std::ostream &stream, const std::vector<CommonAtlasSequenceParameterSetRBSP> &caspsV) const
     -> std::ostream & {
   const auto &casps = caspsById(caspsV, caf_common_atlas_sequence_parameter_set_id());
-  fmt::print(stream, "caf_common_atlas_sequence_parameter_set_id={}\n",
-             int32_t{caf_common_atlas_sequence_parameter_set_id()});
-  fmt::print(stream, "caf_common_atlas_frm_order_cnt_lsb={}\n",
-             caf_common_atlas_frm_order_cnt_lsb());
-  fmt::print(stream, "caf_extension_present_flag={}\n", caf_extension_present_flag());
+  TMIV_FMT::print(stream, "caf_common_atlas_sequence_parameter_set_id={}\n",
+                  int32_t{caf_common_atlas_sequence_parameter_set_id()});
+  TMIV_FMT::print(stream, "caf_common_atlas_frm_order_cnt_lsb={}\n",
+                  caf_common_atlas_frm_order_cnt_lsb());
+  TMIV_FMT::print(stream, "caf_extension_present_flag={}\n", caf_extension_present_flag());
   if (caf_extension_present_flag()) {
-    fmt::print(stream, "caf_miv_extension_present_flag={}\n", caf_miv_extension_present_flag());
-    fmt::print(stream, "caf_extension_7bits={}\n", int32_t{caf_extension_7bits()});
+    TMIV_FMT::print(stream, "caf_miv_extension_present_flag={}\n",
+                    caf_miv_extension_present_flag());
+    TMIV_FMT::print(stream, "caf_extension_7bits={}\n", int32_t{caf_extension_7bits()});
   }
   if (caf_miv_extension_present_flag()) {
     caf_miv_extension().printTo(stream, casps);
   }
   if (caf_extension_7bits() != 0U) {
     for (bool bit : cafExtensionData()) {
-      fmt::print(stream, "caf_extension_data_flag={}\n", bit);
+      TMIV_FMT::print(stream, "caf_extension_data_flag={}\n", bit);
     }
   }
   return stream;

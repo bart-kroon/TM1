@@ -40,56 +40,57 @@
 
 namespace TMIV::MivBitstream {
 auto operator<<(std::ostream &stream, const AtlasFrameTileInformation &x) -> std::ostream & {
-  fmt::print(stream, "afti_single_tile_in_atlas_frame_flag={}\n",
-             x.afti_single_tile_in_atlas_frame_flag());
+  TMIV_FMT::print(stream, "afti_single_tile_in_atlas_frame_flag={}\n",
+                  x.afti_single_tile_in_atlas_frame_flag());
 
   if (!x.afti_single_tile_in_atlas_frame_flag()) {
-    fmt::print(stream, "afti_uniform_partition_spacing_flag={}\n",
-               x.afti_uniform_partition_spacing_flag());
+    TMIV_FMT::print(stream, "afti_uniform_partition_spacing_flag={}\n",
+                    x.afti_uniform_partition_spacing_flag());
 
     if (x.afti_uniform_partition_spacing_flag()) {
-      fmt::print(stream, "afti_partition_cols_width_minus1={}\n",
-                 x.afti_partition_cols_width_minus1());
-      fmt::print(stream, "afti_partition_rows_height_minus1={}\n",
-                 x.afti_partition_rows_height_minus1());
+      TMIV_FMT::print(stream, "afti_partition_cols_width_minus1={}\n",
+                      x.afti_partition_cols_width_minus1());
+      TMIV_FMT::print(stream, "afti_partition_rows_height_minus1={}\n",
+                      x.afti_partition_rows_height_minus1());
     } else {
-      fmt::print(stream, "afti_num_partition_columns_minus1={}\n",
-                 x.afti_num_partition_columns_minus1());
-      fmt::print(stream, "afti_num_partition_rows_minus1={}\n", x.afti_num_partition_rows_minus1());
+      TMIV_FMT::print(stream, "afti_num_partition_columns_minus1={}\n",
+                      x.afti_num_partition_columns_minus1());
+      TMIV_FMT::print(stream, "afti_num_partition_rows_minus1={}\n",
+                      x.afti_num_partition_rows_minus1());
 
       for (uint8_t i = 0; i < x.afti_num_partition_columns_minus1(); ++i) {
-        fmt::print(stream, "afti_partition_column_width_minus1[ {} ]={}\n", i,
-                   x.afti_partition_column_width_minus1(i));
+        TMIV_FMT::print(stream, "afti_partition_column_width_minus1[ {} ]={}\n", i,
+                        x.afti_partition_column_width_minus1(i));
       }
       for (uint8_t i = 0; i < x.afti_num_partition_rows_minus1(); ++i) {
-        fmt::print(stream, "afti_partition_row_height_minus1[ {} ]={}\n", i,
-                   x.afti_partition_row_height_minus1(i));
+        TMIV_FMT::print(stream, "afti_partition_row_height_minus1[ {} ]={}\n", i,
+                        x.afti_partition_row_height_minus1(i));
       }
     }
-    fmt::print(stream, "afti_single_partition_per_tile_flag={}\n",
-               x.afti_single_partition_per_tile_flag());
+    TMIV_FMT::print(stream, "afti_single_partition_per_tile_flag={}\n",
+                    x.afti_single_partition_per_tile_flag());
 
     if (!x.afti_single_partition_per_tile_flag()) {
-      fmt::print(stream, "afti_num_tiles_in_atlas_frame_minus1={}\n",
-                 x.afti_num_tiles_in_atlas_frame_minus1());
+      TMIV_FMT::print(stream, "afti_num_tiles_in_atlas_frame_minus1={}\n",
+                      x.afti_num_tiles_in_atlas_frame_minus1());
 
       for (uint8_t i = 0; i <= x.afti_num_tiles_in_atlas_frame_minus1(); ++i) {
-        fmt::print(stream, "afti_top_left_partition_idx[ {} ]={}\n", i,
-                   x.afti_top_left_partition_idx(i));
-        fmt::print(stream, "afti_bottom_right_partition_column_offset[ {} ]={}\n", i,
-                   x.afti_bottom_right_partition_column_offset(i));
-        fmt::print(stream, "afti_bottom_right_partition_row_offset[ {} ]={}\n", i,
-                   x.afti_bottom_right_partition_row_offset(i));
+        TMIV_FMT::print(stream, "afti_top_left_partition_idx[ {} ]={}\n", i,
+                        x.afti_top_left_partition_idx(i));
+        TMIV_FMT::print(stream, "afti_bottom_right_partition_column_offset[ {} ]={}\n", i,
+                        x.afti_bottom_right_partition_column_offset(i));
+        TMIV_FMT::print(stream, "afti_bottom_right_partition_row_offset[ {} ]={}\n", i,
+                        x.afti_bottom_right_partition_row_offset(i));
       }
     } else {
-      fmt::print(stream, "afti_num_tiles_in_atlas_frame_minus1={}\n",
-                 x.afti_num_tiles_in_atlas_frame_minus1());
+      TMIV_FMT::print(stream, "afti_num_tiles_in_atlas_frame_minus1={}\n",
+                      x.afti_num_tiles_in_atlas_frame_minus1());
     }
   } else {
-    fmt::print(stream, "afti_num_tiles_in_atlas_frame_minus1={}\n",
-               x.afti_num_tiles_in_atlas_frame_minus1());
+    TMIV_FMT::print(stream, "afti_num_tiles_in_atlas_frame_minus1={}\n",
+                    x.afti_num_tiles_in_atlas_frame_minus1());
   }
-  fmt::print(stream, "afti_signalled_tile_id_flag={}\n", x.afti_signalled_tile_id_flag());
+  TMIV_FMT::print(stream, "afti_signalled_tile_id_flag={}\n", x.afti_signalled_tile_id_flag());
   LIMITATION(!x.afti_signalled_tile_id_flag());
 
   return stream;
@@ -260,11 +261,13 @@ auto AfpsMivExtension::afme_inpaint_lod_scale_y_idc(uint32_t value) noexcept -> 
 
 auto operator<<(std::ostream &stream, const AfpsMivExtension &x) -> std::ostream & {
   if (x.m_afme_inpaint_lod_enabled_flag) {
-    fmt::print(stream, "afme_inpaint_lod_enabled_flag={}\n", x.afme_inpaint_lod_enabled_flag());
+    TMIV_FMT::print(stream, "afme_inpaint_lod_enabled_flag={}\n",
+                    x.afme_inpaint_lod_enabled_flag());
     if (x.afme_inpaint_lod_enabled_flag()) {
-      fmt::print(stream, "afme_inpaint_lod_scale_x_minus1={}\n",
-                 x.afme_inpaint_lod_scale_x_minus1());
-      fmt::print(stream, "afme_inpaint_lod_scale_y_idc={}\n", x.afme_inpaint_lod_scale_y_idc());
+      TMIV_FMT::print(stream, "afme_inpaint_lod_scale_x_minus1={}\n",
+                      x.afme_inpaint_lod_scale_x_minus1());
+      TMIV_FMT::print(stream, "afme_inpaint_lod_scale_y_idc={}\n",
+                      x.afme_inpaint_lod_scale_y_idc());
     }
   }
   return stream;

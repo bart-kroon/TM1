@@ -75,17 +75,17 @@ void Hash::printTo(std::string_view prefix, std::string_view index, std::ostream
                    uint8_t hashType) const {
   switch (hashType) {
   case 0:
-    fmt::print(stream, "{}_md5{}=", prefix, index);
+    TMIV_FMT::print(stream, "{}_md5{}=", prefix, index);
 
     for (uint8_t i = 0; i < 16; ++i) {
-      fmt::print(stream, "{:02x}", md5(i));
+      TMIV_FMT::print(stream, "{:02x}", md5(i));
     }
-    fmt::print(stream, " (hex)\n");
+    TMIV_FMT::print(stream, " (hex)\n");
     return;
   case 1:
-    return fmt::print(stream, "{}_crc{}={:04x} (hex)\n", prefix, index, crc());
+    return TMIV_FMT::print(stream, "{}_crc{}={:04x} (hex)\n", prefix, index, crc());
   case 2:
-    return fmt::print(stream, "{}_checksum{}={:08x} (hex)\n", prefix, index, checksum());
+    return TMIV_FMT::print(stream, "{}_checksum{}={:08x} (hex)\n", prefix, index, checksum());
   }
 }
 
@@ -132,11 +132,11 @@ void Hash::encodeTo(Common::OutputBitstream &bitstream, uint8_t hashType) const 
 }
 
 void DecodedAtlasTileHash::printTo(std::ostream &stream, uint8_t hashType, uint8_t j) const {
-  return m_hash.printTo("daih_atlas_tile", fmt::format("[ {} ]", j), stream, hashType);
+  return m_hash.printTo("daih_atlas_tile", TMIV_FMT::format("[ {} ]", j), stream, hashType);
 }
 
 void DecodedAtlasTileB2pHash::printTo(std::ostream &stream, uint8_t hashType, uint8_t j) const {
-  return m_hash.printTo("daih_atlas_tile_b2p", fmt::format("[ {} ]", j), stream, hashType);
+  return m_hash.printTo("daih_atlas_tile_b2p", TMIV_FMT::format("[ {} ]", j), stream, hashType);
 }
 
 auto DecodedAtlasInformationHash::daih_cancel_flag() const -> bool { return m_daih_cancel_flag; }
@@ -353,21 +353,21 @@ auto DecodedAtlasInformationHash::decoded_atlas_tile_b2p_hash(uint8_t j,
 }
 
 auto operator<<(std::ostream &stream, const DecodedAtlasInformationHash &x) -> std::ostream & {
-  fmt::print(stream, "daih_cancel_flag={}\n", x.daih_cancel_flag());
+  TMIV_FMT::print(stream, "daih_cancel_flag={}\n", x.daih_cancel_flag());
 
   if (!x.daih_cancel_flag()) {
-    fmt::print(stream, "daih_persistence_flag={}\n", x.daih_persistence_flag());
-    fmt::print(stream, "daih_hash_type={}\n", x.daih_hash_type());
-    fmt::print(stream, "daih_decoded_high_level_hash_present_flag={}\n",
-               x.daih_decoded_high_level_hash_present_flag());
-    fmt::print(stream, "daih_decoded_atlas_hash_present_flag={}\n",
-               x.daih_decoded_atlas_hash_present_flag());
-    fmt::print(stream, "daih_decoded_atlas_b2p_hash_present_flag={}\n",
-               x.daih_decoded_atlas_b2p_hash_present_flag());
-    fmt::print(stream, "daih_decoded_atlas_tiles_hash_present_flag={}\n",
-               x.daih_decoded_atlas_tiles_hash_present_flag());
-    fmt::print(stream, "daih_decoded_atlas_tiles_b2p_hash_present_flag={}\n",
-               x.daih_decoded_atlas_tiles_b2p_hash_present_flag());
+    TMIV_FMT::print(stream, "daih_persistence_flag={}\n", x.daih_persistence_flag());
+    TMIV_FMT::print(stream, "daih_hash_type={}\n", x.daih_hash_type());
+    TMIV_FMT::print(stream, "daih_decoded_high_level_hash_present_flag={}\n",
+                    x.daih_decoded_high_level_hash_present_flag());
+    TMIV_FMT::print(stream, "daih_decoded_atlas_hash_present_flag={}\n",
+                    x.daih_decoded_atlas_hash_present_flag());
+    TMIV_FMT::print(stream, "daih_decoded_atlas_b2p_hash_present_flag={}\n",
+                    x.daih_decoded_atlas_b2p_hash_present_flag());
+    TMIV_FMT::print(stream, "daih_decoded_atlas_tiles_hash_present_flag={}\n",
+                    x.daih_decoded_atlas_tiles_hash_present_flag());
+    TMIV_FMT::print(stream, "daih_decoded_atlas_tiles_b2p_hash_present_flag={}\n",
+                    x.daih_decoded_atlas_tiles_b2p_hash_present_flag());
 
     if (x.daih_decoded_high_level_hash_present_flag()) {
       x.decoded_high_level_hash().printTo(stream, x.daih_hash_type());
@@ -380,11 +380,11 @@ auto operator<<(std::ostream &stream, const DecodedAtlasInformationHash &x) -> s
     }
     if (x.daih_decoded_atlas_tiles_hash_present_flag() ||
         x.daih_decoded_atlas_tiles_b2p_hash_present_flag()) {
-      fmt::print(stream, "daih_num_tiles_minus1={}\n", x.daih_num_tiles_minus1());
-      fmt::print(stream, "daih_tile_id_len_minus1={}\n", x.daih_tile_id_len_minus1());
+      TMIV_FMT::print(stream, "daih_num_tiles_minus1={}\n", x.daih_num_tiles_minus1());
+      TMIV_FMT::print(stream, "daih_tile_id_len_minus1={}\n", x.daih_tile_id_len_minus1());
 
       for (uint8_t t = 0; t <= x.daih_num_tiles_minus1(); ++t) {
-        fmt::print(stream, "daih_tile_id[ {} ]={}\n", t, x.daih_tile_id(t));
+        TMIV_FMT::print(stream, "daih_tile_id[ {} ]={}\n", t, x.daih_tile_id(t));
       }
       for (uint8_t t = 0; t <= x.daih_num_tiles_minus1(); ++t) {
         const auto j = x.daih_tile_id(t);

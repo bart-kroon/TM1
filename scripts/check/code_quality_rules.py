@@ -151,12 +151,12 @@ class CodeQualityRules:
         )
 
     def detect_fmt_print(self, text):
-        return re.sub(r"fmt::print\(\"", self.detect_fmt_print_replace, text)
+        return re.sub(r"::print\(\"", self.detect_fmt_print_replace, text)
 
     def detect_fmt_print_replace(self, match):
         raise RuntimeError(
-            "Replace `fmt::print(fmt, args...)` with `Common::logInfo(fmt, args...)`. "
-            "Note that `fmt::print(stream, fmt, args...)` with `std::ostringstream &stream` is allowed."
+            "Replace `TMIV_FMT::print(fmt, args...)` with `Common::logInfo(fmt, args...)`. "
+            "Note that `TMIV_FMT::print(stream, fmt, args...)` with `std::ostringstream &stream` is allowed."
         )
 
     ### other logic ###

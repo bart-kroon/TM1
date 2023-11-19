@@ -60,19 +60,19 @@ void saveFrame(const std::filesystem::path &path, const Common::Frame<Element> &
       auto &stream = *stream_;
 
       if (!stream.good()) {
-        throw std::runtime_error(fmt::format("Failed to open {} for writing", path));
+        throw std::runtime_error(TMIV_FMT::format("Failed to open {} for writing", path));
       }
 
       stream.seekp(int64_t{frameIdx} * frame.getByteCount());
       if (!stream.good()) {
         throw std::runtime_error(
-            fmt::format("Failed to seek for writing to frame {} of {}", frameIdx, path));
+            TMIV_FMT::format("Failed to seek for writing to frame {} of {}", frameIdx, path));
       }
 
       frame.writeTo(stream);
 
       if (!stream.good()) {
-        throw std::runtime_error(fmt::format("Failed to write to {}", path));
+        throw std::runtime_error(TMIV_FMT::format("Failed to write to {}", path));
       }
     } else {
       saveFrame(path, Common::elementCast<NativeElement>(frame), frameIdx);
@@ -123,14 +123,14 @@ auto saveOutOfBandVideoFrame(const Common::Json &config, const Placeholders &pla
 
   const auto outputDir = config.require("outputDirectory").as<std::filesystem::path>();
 
-  const auto configKey =
-      fmt::format("output{}VideoDataPathFmt", videoComponentName(vuh.vuh_unit_type(), attrTypeId));
+  const auto configKey = TMIV_FMT::format("output{}VideoDataPathFmt",
+                                          videoComponentName(vuh.vuh_unit_type(), attrTypeId));
 
-  const auto path =
-      outputDir / fmt::format(fmt::runtime(config.require(configKey).as<std::string>()),
-                              placeholders.numberOfInputFrames, placeholders.contentId,
-                              placeholders.testId, vuh.vuh_atlas_id().asInt(), frame.getWidth(),
-                              frame.getHeight(), videoFormatString(frame));
+  const auto path = outputDir / Common::runtimeFormat(config.require(configKey).as<std::string>(),
+                                                      placeholders.numberOfInputFrames,
+                                                      placeholders.contentId, placeholders.testId,
+                                                      vuh.vuh_atlas_id().asInt(), frame.getWidth(),
+                                                      frame.getHeight(), videoFormatString(frame));
 
   saveFrame(path, frame, frameIdx);
 
@@ -168,7 +168,7 @@ auto saveOutOfBandVideoFrame(const Common::Json &config, const Placeholders &pla
 void touchSaveOutOfBandVideoFrameKeys(const Common::Json &config, MivBitstream::VuhUnitType vut,
                                       MivBitstream::AiAttributeTypeId attrTypeId) {
   config.require("outputDirectory");
-  config.require(fmt::format("output{}VideoDataPathFmt", videoComponentName(vut, attrTypeId)));
+  config.require(TMIV_FMT::format("output{}VideoDataPathFmt", videoComponentName(vut, attrTypeId)));
 }
 
 void saveViewport(const Common::Json &config, const Placeholders &placeholders, int32_t frameIdx,
@@ -177,20 +177,20 @@ void saveViewport(const Common::Json &config, const Placeholders &placeholders, 
   auto saved = false;
 
   if (const auto &node = config.optional("outputViewportTexturePathFmt")) {
-    saveFrame(outputDir / fmt::format(fmt::runtime(node.as<std::string>()),
-                                      placeholders.numberOfInputFrames, placeholders.contentId,
-                                      placeholders.testId, placeholders.numberOfOutputFrames, name,
-                                      frame.texture.getWidth(), frame.texture.getHeight(),
-                                      videoFormatString(frame.texture)),
+    saveFrame(outputDir / Common::runtimeFormat(
+                              node.as<std::string>(), placeholders.numberOfInputFrames,
+                              placeholders.contentId, placeholders.testId,
+                              placeholders.numberOfOutputFrames, name, frame.texture.getWidth(),
+                              frame.texture.getHeight(), videoFormatString(frame.texture)),
               frame.texture, frameIdx);
     saved = true;
   }
   if (const auto &node = config.optional("outputViewportGeometryPathFmt")) {
-    saveFrame(outputDir / fmt::format(fmt::runtime(node.as<std::string>()),
-                                      placeholders.numberOfInputFrames, placeholders.contentId,
-                                      placeholders.testId, placeholders.numberOfOutputFrames, name,
-                                      frame.geometry.getWidth(), frame.geometry.getHeight(),
-                                      videoFormatString(frame.geometry)),
+    saveFrame(outputDir / Common::runtimeFormat(
+                              node.as<std::string>(), placeholders.numberOfInputFrames,
+                              placeholders.contentId, placeholders.testId,
+                              placeholders.numberOfOutputFrames, name, frame.geometry.getWidth(),
+                              frame.geometry.getHeight(), videoFormatString(frame.geometry)),
               frame.geometry, frameIdx);
     saved = true;
   }
@@ -215,10 +215,10 @@ void optionalSaveBlockToPatchMaps(const Common::Json &config, const Placeholders
   if (const auto &node = config.optional("outputBlockToPatchMapPathFmt")) {
     for (size_t k = 0; k < frame.atlas.size(); ++k) {
       const auto &btpm = frame.atlas[k].blockToPatchMap;
-      saveFrame(outputDir / fmt::format(fmt::runtime(node.as<std::string>()),
-                                        placeholders.numberOfInputFrames, placeholders.contentId,
-                                        placeholders.testId, k, btpm.getWidth(), btpm.getHeight(),
-                                        videoFormatString(btpm)),
+      saveFrame(outputDir / Common::runtimeFormat(
+                                node.as<std::string>(), placeholders.numberOfInputFrames,
+                                placeholders.contentId, placeholders.testId, k, btpm.getWidth(),
+                                btpm.getHeight(), videoFormatString(btpm)),
                 btpm, frameIdx);
     }
   }
@@ -238,14 +238,14 @@ void optionalSavePrunedFrame(const Common::Json &config, const Placeholders &pla
   }
 
   const auto configKey =
-      fmt::format("outputMultiview{}PathFmt", videoComponentName(vut, attrTypeId));
+      TMIV_FMT::format("outputMultiview{}PathFmt", videoComponentName(vut, attrTypeId));
 
   if (const auto &node = config.optional(configKey)) {
     const auto outputDir = config.require("outputDirectory").as<std::filesystem::path>();
-    saveFrame(outputDir / fmt::format(fmt::runtime(node.as<std::string>()),
-                                      placeholders.numberOfInputFrames, placeholders.contentId,
-                                      placeholders.testId, frameViewIdx.second, frame.getWidth(),
-                                      frame.getHeight(), videoFormatString(frame)),
+    saveFrame(outputDir / Common::runtimeFormat(
+                              node.as<std::string>(), placeholders.numberOfInputFrames,
+                              placeholders.contentId, placeholders.testId, frameViewIdx.second,
+                              frame.getWidth(), frame.getHeight(), videoFormatString(frame)),
               frame, frameViewIdx.first);
   }
 }
@@ -253,7 +253,8 @@ void optionalSavePrunedFrame(const Common::Json &config, const Placeholders &pla
 void touchOptionalSavePrunedFrameKeys(const Common::Json &config, MivBitstream::VuhUnitType vut,
                                       MivBitstream::AiAttributeTypeId attrTypeId) {
   config.require("outputDirectory");
-  config.optional(fmt::format("outputMultiview{}PathFmt", videoComponentName(vut, attrTypeId)));
+  config.optional(
+      TMIV_FMT::format("outputMultiview{}PathFmt", videoComponentName(vut, attrTypeId)));
 }
 
 void optionalSaveSequenceConfig(const Common::Json &config, const Placeholders &placeholders,
@@ -261,8 +262,8 @@ void optionalSaveSequenceConfig(const Common::Json &config, const Placeholders &
   if (const auto &node = config.optional("outputSequenceConfigPathFmt")) {
     const auto path =
         config.require("outputDirectory").as<std::filesystem::path>() /
-        fmt::format(fmt::runtime(node.as<std::string>()), placeholders.numberOfInputFrames,
-                    placeholders.contentId, placeholders.testId, frameIdx);
+        Common::runtimeFormat(node.as<std::string>(), placeholders.numberOfInputFrames,
+                              placeholders.contentId, placeholders.testId, frameIdx);
 
     auto &filesystem = DependencyInjector::getInstance().filesystem();
     filesystem.create_directories(path.parent_path());
@@ -284,10 +285,10 @@ auto outputBitstreamPath(const Common::Json &config, const Placeholders &placeho
     -> std::filesystem::path {
   auto &filesystem = DependencyInjector::getInstance().filesystem();
 
-  auto path =
-      config.require("outputDirectory").as<std::filesystem::path>() /
-      fmt::format(fmt::runtime(config.require("outputBitstreamPathFmt").as<std::string>()),
-                  placeholders.numberOfInputFrames, placeholders.contentId, placeholders.testId);
+  auto path = config.require("outputDirectory").as<std::filesystem::path>() /
+              Common::runtimeFormat(config.require("outputBitstreamPathFmt").as<std::string>(),
+                                    placeholders.numberOfInputFrames, placeholders.contentId,
+                                    placeholders.testId);
 
   filesystem.create_directories(path.parent_path());
 

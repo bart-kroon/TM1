@@ -33,9 +33,8 @@
 
 #include <catch2/catch_test_macros.hpp>
 
+#include <TMIV/Common/format.h>
 #include <TMIV/ViewOptimizer/BasicViewAllocator.h>
-
-#include <fmt/format.h>
 
 #include <random>
 
@@ -68,7 +67,7 @@ const auto sourceParams = TMIV::ViewOptimizer::SourceParams{
         vp.ci.ci_projection_plane_width_minus1(W - 1);
         vp.dq.dq_norm_disp_high(100.0F);
         vp.dq.dq_norm_disp_low(1.0F);
-        vp.name = fmt::format("v{:02}", c);
+        vp.name = TMIV_FMT::format("v{:02}", c);
       }
       vpl.constructViewIdIndex();
       return vpl;

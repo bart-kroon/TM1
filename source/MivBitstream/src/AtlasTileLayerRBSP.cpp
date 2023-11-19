@@ -333,26 +333,29 @@ auto PduMivExtension::pdu_texture_offset(uint8_t c) const -> Common::SampleValue
 auto PduMivExtension::printTo(std::ostream &stream, uint32_t tileId, size_t patchIdx) const
     -> std::ostream & {
   if (m_pdu_entity_id) {
-    fmt::print(stream, "pdu_entity_id[ {} ][ {} ]={}\n", tileId, patchIdx, pdu_entity_id());
+    TMIV_FMT::print(stream, "pdu_entity_id[ {} ][ {} ]={}\n", tileId, patchIdx, pdu_entity_id());
   }
   if (m_pdu_depth_occ_threshold) {
-    fmt::print(stream, "pdu_depth_occ_threshold[ {} ][ {} ]={}\n", tileId, patchIdx,
-               pdu_depth_occ_threshold());
+    TMIV_FMT::print(stream, "pdu_depth_occ_threshold[ {} ][ {} ]={}\n", tileId, patchIdx,
+                    pdu_depth_occ_threshold());
   }
   if (m_pdu_texture_offset) {
     for (uint8_t c = 0; c < 3; ++c) {
-      fmt::print(stream, "pdu_texture_offset[ {} ][ {} ][ {} ]={}\n", tileId, patchIdx, c,
-                 pdu_texture_offset(c));
+      TMIV_FMT::print(stream, "pdu_texture_offset[ {} ][ {} ][ {} ]={}\n", tileId, patchIdx, c,
+                      pdu_texture_offset(c));
     }
   }
   if (m_pdu_inpaint_flag) {
-    fmt::print(stream, "pdu_inpaint_flag[ {} ][ {} ]={}\n", tileId, patchIdx, pdu_inpaint_flag());
+    TMIV_FMT::print(stream, "pdu_inpaint_flag[ {} ][ {} ]={}\n", tileId, patchIdx,
+                    pdu_inpaint_flag());
   }
   if (m_pdu_2d_margin_u) {
-    fmt::print(stream, "pdu_2d_margin_u[ {} ][ {} ]={}\n", tileId, patchIdx, pdu_2d_margin_u());
+    TMIV_FMT::print(stream, "pdu_2d_margin_u[ {} ][ {} ]={}\n", tileId, patchIdx,
+                    pdu_2d_margin_u());
   }
   if (m_pdu_2d_margin_v) {
-    fmt::print(stream, "pdu_2d_margin_v[ {} ][ {} ]={}\n", tileId, patchIdx, pdu_2d_margin_v());
+    TMIV_FMT::print(stream, "pdu_2d_margin_v[ {} ][ {} ]={}\n", tileId, patchIdx,
+                    pdu_2d_margin_v());
   }
   return stream;
 }
@@ -445,33 +448,34 @@ auto PatchDataUnit::pdu_miv_extension(const PduMivExtension &value) noexcept -> 
 
 auto PatchDataUnit::printTo(std::ostream &stream, uint32_t tileId, size_t patchIdx) const
     -> std::ostream & {
-  fmt::print(stream, "pdu_2d_pos_x[ {} ][ {} ]={}\n", tileId, patchIdx, pdu_2d_pos_x());
-  fmt::print(stream, "pdu_2d_pos_y[ {} ][ {} ]={}\n", tileId, patchIdx, pdu_2d_pos_y());
-  fmt::print(stream, "pdu_2d_size_x_minus1[ {} ][ {} ]={}\n", tileId, patchIdx,
-             pdu_2d_size_x_minus1());
-  fmt::print(stream, "pdu_2d_size_y_minus1[ {} ][ {} ]={}\n", tileId, patchIdx,
-             pdu_2d_size_y_minus1());
-  fmt::print(stream, "pdu_3d_offset_u[ {} ][ {} ]={}\n", tileId, patchIdx, pdu_3d_offset_u());
-  fmt::print(stream, "pdu_3d_offset_v[ {} ][ {} ]={}\n", tileId, patchIdx, pdu_3d_offset_v());
-  fmt::print(stream, "pdu_3d_offset_d[ {} ][ {} ]={}\n", tileId, patchIdx, pdu_3d_offset_d());
+  TMIV_FMT::print(stream, "pdu_2d_pos_x[ {} ][ {} ]={}\n", tileId, patchIdx, pdu_2d_pos_x());
+  TMIV_FMT::print(stream, "pdu_2d_pos_y[ {} ][ {} ]={}\n", tileId, patchIdx, pdu_2d_pos_y());
+  TMIV_FMT::print(stream, "pdu_2d_size_x_minus1[ {} ][ {} ]={}\n", tileId, patchIdx,
+                  pdu_2d_size_x_minus1());
+  TMIV_FMT::print(stream, "pdu_2d_size_y_minus1[ {} ][ {} ]={}\n", tileId, patchIdx,
+                  pdu_2d_size_y_minus1());
+  TMIV_FMT::print(stream, "pdu_3d_offset_u[ {} ][ {} ]={}\n", tileId, patchIdx, pdu_3d_offset_u());
+  TMIV_FMT::print(stream, "pdu_3d_offset_v[ {} ][ {} ]={}\n", tileId, patchIdx, pdu_3d_offset_v());
+  TMIV_FMT::print(stream, "pdu_3d_offset_d[ {} ][ {} ]={}\n", tileId, patchIdx, pdu_3d_offset_d());
 
   if (m_pdu_3d_range_d) {
-    fmt::print(stream, "pdu_3d_range_d[ {} ][ {} ]={}\n", tileId, patchIdx, pdu_3d_range_d());
+    TMIV_FMT::print(stream, "pdu_3d_range_d[ {} ][ {} ]={}\n", tileId, patchIdx, pdu_3d_range_d());
   }
 
-  fmt::print(stream, "pdu_projection_id[ {} ][ {} ]={}\n", tileId, patchIdx, pdu_projection_id());
-  fmt::print(stream, "pdu_orientation_index[ {} ][ {} ]={}\n", tileId, patchIdx,
-             pdu_orientation_index());
+  TMIV_FMT::print(stream, "pdu_projection_id[ {} ][ {} ]={}\n", tileId, patchIdx,
+                  pdu_projection_id());
+  TMIV_FMT::print(stream, "pdu_orientation_index[ {} ][ {} ]={}\n", tileId, patchIdx,
+                  pdu_orientation_index());
 
   if (m_pdu_lod_enabled_flag) {
-    fmt::print(stream, "pdu_lod_enabled_flag[ {} ][ {} ]={}\n", tileId, patchIdx,
-               pdu_lod_enabled_flag());
+    TMIV_FMT::print(stream, "pdu_lod_enabled_flag[ {} ][ {} ]={}\n", tileId, patchIdx,
+                    pdu_lod_enabled_flag());
 
     if (pdu_lod_enabled_flag()) {
-      fmt::print(stream, "pdu_lod_scale_x_minus1[ {} ][ {} ]={}\n", tileId, patchIdx,
-                 pdu_lod_scale_x_minus1());
-      fmt::print(stream, "pdu_lod_scale_y_idc[ {} ][ {} ]={}\n", tileId, patchIdx,
-                 pdu_lod_scale_y_idc());
+      TMIV_FMT::print(stream, "pdu_lod_scale_x_minus1[ {} ][ {} ]={}\n", tileId, patchIdx,
+                      pdu_lod_scale_x_minus1());
+      TMIV_FMT::print(stream, "pdu_lod_scale_y_idc[ {} ][ {} ]={}\n", tileId, patchIdx,
+                      pdu_lod_scale_y_idc());
     }
   }
   if (m_pdu_miv_extension) {
@@ -661,21 +665,26 @@ auto InterPatchDataUnit::ipdu_3d_range_d(int32_t value) -> InterPatchDataUnit & 
 auto InterPatchDataUnit::printTo(std::ostream &stream, uint32_t tileId, size_t patchIdx) const
     -> std::ostream & {
   if (m_ipdu_ref_index) {
-    fmt::print(stream, "ipdu_ref_index[ {} ][ {} ]={}\n", tileId, patchIdx, *m_ipdu_ref_index);
+    TMIV_FMT::print(stream, "ipdu_ref_index[ {} ][ {} ]={}\n", tileId, patchIdx, *m_ipdu_ref_index);
   }
-  fmt::print(stream, "ipdu_patch_index[ {} ][ {} ]={}\n", tileId, patchIdx, m_ipdu_patch_index);
-  fmt::print(stream, "ipdu_2d_pos_x[ {} ][ {} ]={}\n", tileId, patchIdx, m_ipdu_2d_pos_x);
-  fmt::print(stream, "ipdu_2d_pos_y[ {} ][ {} ]={}\n", tileId, patchIdx, m_ipdu_2d_pos_y);
-  fmt::print(stream, "ipdu_2d_delta_size_x[ {} ][ {} ]={}\n", tileId, patchIdx,
-             m_ipdu_2d_delta_size_x);
-  fmt::print(stream, "ipdu_2d_delta_size_y[ {} ][ {} ]={}\n", tileId, patchIdx,
-             m_ipdu_2d_delta_size_y);
-  fmt::print(stream, "ipdu_3d_offset_u[ {} ][ {} ]={}\n", tileId, patchIdx, m_ipdu_3d_offset_u);
-  fmt::print(stream, "ipdu_3d_offset_v[ {} ][ {} ]={}\n", tileId, patchIdx, m_ipdu_3d_offset_v);
-  fmt::print(stream, "ipdu_3d_offset_d[ {} ][ {} ]={}\n", tileId, patchIdx, m_ipdu_3d_offset_d);
+  TMIV_FMT::print(stream, "ipdu_patch_index[ {} ][ {} ]={}\n", tileId, patchIdx,
+                  m_ipdu_patch_index);
+  TMIV_FMT::print(stream, "ipdu_2d_pos_x[ {} ][ {} ]={}\n", tileId, patchIdx, m_ipdu_2d_pos_x);
+  TMIV_FMT::print(stream, "ipdu_2d_pos_y[ {} ][ {} ]={}\n", tileId, patchIdx, m_ipdu_2d_pos_y);
+  TMIV_FMT::print(stream, "ipdu_2d_delta_size_x[ {} ][ {} ]={}\n", tileId, patchIdx,
+                  m_ipdu_2d_delta_size_x);
+  TMIV_FMT::print(stream, "ipdu_2d_delta_size_y[ {} ][ {} ]={}\n", tileId, patchIdx,
+                  m_ipdu_2d_delta_size_y);
+  TMIV_FMT::print(stream, "ipdu_3d_offset_u[ {} ][ {} ]={}\n", tileId, patchIdx,
+                  m_ipdu_3d_offset_u);
+  TMIV_FMT::print(stream, "ipdu_3d_offset_v[ {} ][ {} ]={}\n", tileId, patchIdx,
+                  m_ipdu_3d_offset_v);
+  TMIV_FMT::print(stream, "ipdu_3d_offset_d[ {} ][ {} ]={}\n", tileId, patchIdx,
+                  m_ipdu_3d_offset_d);
 
   if (m_ipdu_3d_range_d) {
-    fmt::print(stream, "ipdu_3d_range_d[ {} ][ {} ]={}\n", tileId, patchIdx, *m_ipdu_3d_range_d);
+    TMIV_FMT::print(stream, "ipdu_3d_range_d[ {} ][ {} ]={}\n", tileId, patchIdx,
+                    *m_ipdu_3d_range_d);
   }
   return stream;
 }
@@ -959,9 +968,9 @@ auto AtlasTileDataUnit::printTo(std::ostream &stream, const AtlasTileHeader &ath
     auto p = size_t{};
     auto isEnd_ = bool{};
     do {
-      fmt::print(stream, "atdu_patch_mode[ {} ][ {} ]=", ath.ath_id(), p);
+      TMIV_FMT::print(stream, "atdu_patch_mode[ {} ][ {} ]=", ath.ath_id(), p);
       MivBitstream::printTo(stream, atdu_patch_mode(p), ath.ath_type());
-      fmt::print(stream, "\n");
+      TMIV_FMT::print(stream, "\n");
       isEnd_ = isEnd(ath.ath_type(), atdu_patch_mode(p));
 
       if (!isEnd_) {
@@ -969,7 +978,7 @@ auto AtlasTileDataUnit::printTo(std::ostream &stream, const AtlasTileHeader &ath
         ++p;
       }
     } while (!isEnd_);
-    fmt::print(stream, "AtduTotalNumPatches[ {} ]={}\n", ath.ath_id(), p);
+    TMIV_FMT::print(stream, "AtduTotalNumPatches[ {} ]={}\n", ath.ath_id(), p);
   }
   return stream;
 }

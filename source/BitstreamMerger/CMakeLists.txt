@@ -9,7 +9,7 @@ create_tmiv_library(
     MivBitstreamLib
     PRIVATE
     DecoderLib
-    fmt::fmt)
+    ${TMIV_FMT_TARGET})
 
 create_tmiv_executable(
     TARGET
@@ -20,4 +20,4 @@ create_tmiv_executable(
     BitstreamMergerLib
     DecoderLib
     IOLib
-    fmt::fmt)
+    ${TMIV_FMT_TARGET})

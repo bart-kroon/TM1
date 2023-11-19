@@ -31,10 +31,11 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/Common/verify.h>
 #include <TMIV/MivBitstream/CaptureDeviceInformation.h>
 
-#include <fmt/ostream.h>
+#include <TMIV/Common/format.h>
+#include <TMIV/Common/verify.h>
+
 #include <set>
 
 namespace TMIV::MivBitstream {
@@ -178,30 +179,30 @@ auto CaptureDeviceInformation::cdi_depth_confidence_flag(uint16_t m, uint16_t s,
 }
 
 auto operator<<(std::ostream &stream, const CaptureDeviceInformation &x) -> std::ostream & {
-  fmt::print(stream, "cdi_device_model_count_minus1={}\n", x.cdi_device_model_count_minus1());
+  TMIV_FMT::print(stream, "cdi_device_model_count_minus1={}\n", x.cdi_device_model_count_minus1());
   for (uint16_t m = 0; m <= x.cdi_device_model_count_minus1(); m++) {
-    fmt::print(stream, "cdi_device_model_id[{}]={}\n", m, x.cdi_device_model_id(m));
-    fmt::print(stream, "cdi_device_class_id[{}]={}\n", m, x.cdi_device_class_id(m));
+    TMIV_FMT::print(stream, "cdi_device_model_id[{}]={}\n", m, x.cdi_device_model_id(m));
+    TMIV_FMT::print(stream, "cdi_device_class_id[{}]={}\n", m, x.cdi_device_class_id(m));
     if (x.cdi_device_class_id(m) != 0) {
-      fmt::print(stream, "cdi_sensor_count_minus1[{}]={}\n", m, x.cdi_sensor_count_minus1(m));
+      TMIV_FMT::print(stream, "cdi_sensor_count_minus1[{}]={}\n", m, x.cdi_sensor_count_minus1(m));
       for (uint16_t s = 0; s <= x.cdi_sensor_count_minus1(m); s++) {
-        fmt::print(stream, "cdi_sensor_component_id[{}][{}]={}\n", m, s,
-                   x.cdi_sensor_component_id(m, s));
+        TMIV_FMT::print(stream, "cdi_sensor_component_id[{}][{}]={}\n", m, s,
+                        x.cdi_sensor_component_id(m, s));
       }
 
-      fmt::print(stream, "cdi_intra_sensor_parallax_flag[{}]={}\n", m,
-                 x.cdi_intra_sensor_parallax_flag(m));
-      fmt::print(stream, "cdi_light_source_count[{}]={}\n", m, x.cdi_light_source_count(m));
-      fmt::print(stream, "cdi_infrared_image_present_flag[{}]={}\n", m,
-                 x.cdi_infrared_image_present_flag(m));
-      fmt::print(stream, "cdi_depth_confidence_present_flag[{}]={}\n", m,
-                 x.cdi_depth_confidence_present_flag(m));
+      TMIV_FMT::print(stream, "cdi_intra_sensor_parallax_flag[{}]={}\n", m,
+                      x.cdi_intra_sensor_parallax_flag(m));
+      TMIV_FMT::print(stream, "cdi_light_source_count[{}]={}\n", m, x.cdi_light_source_count(m));
+      TMIV_FMT::print(stream, "cdi_infrared_image_present_flag[{}]={}\n", m,
+                      x.cdi_infrared_image_present_flag(m));
+      TMIV_FMT::print(stream, "cdi_depth_confidence_present_flag[{}]={}\n", m,
+                      x.cdi_depth_confidence_present_flag(m));
 
       if (x.cdi_depth_confidence_present_flag(m)) {
         for (uint16_t s = 0; s <= x.cdi_sensor_count_minus1(m); s++) {
           if (x.cdi_sensor_component_id(m, s) == 0) {
-            fmt::print(stream, "cdi_depth_confidence_flag[{}][{}]={}\n", m, s,
-                       x.cdi_depth_confidence_flag(m, s));
+            TMIV_FMT::print(stream, "cdi_depth_confidence_flag[{}][{}]={}\n", m, s,
+                            x.cdi_depth_confidence_flag(m, s));
           }
         }
       }

@@ -33,7 +33,7 @@
 
 #include <TMIV/Decoder/DecodeViewParamsList.h>
 
-#include <fmt/format.h>
+#include <TMIV/Common/format.h>
 
 namespace TMIV::Decoder {
 namespace {
@@ -58,7 +58,7 @@ void decodeMvpl(const MivBitstream::MivViewParamsList &mvpl, bool dqParamsPresen
       vp.pp = mvpl.pruning_parent(viewIdx);
     }
 
-    vp.name = fmt::format("pv{:02}", viewIdx);
+    vp.name = TMIV_FMT::format("pv{:02}", viewIdx);
   }
   vpl.constructViewIdIndex();
 }

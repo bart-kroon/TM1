@@ -262,20 +262,21 @@ auto ProfileTierLevel::ptl_profile_toolset_constraints_information(
 }
 
 auto operator<<(std::ostream &stream, const ProfileTierLevel &x) -> std::ostream & {
-  fmt::print(stream, "ptl_tier_flag={}\n", x.ptl_tier_flag());
-  fmt::print(stream, "ptl_profile_codec_group_idc={}\n", x.ptl_profile_codec_group_idc());
-  fmt::print(stream, "ptl_profile_toolset_idc={}\n", x.ptl_profile_toolset_idc());
-  fmt::print(stream, "ptl_profile_reconstruction_idc={}\n", x.ptl_profile_reconstruction_idc());
-  fmt::print(stream, "ptl_max_decodes_idc={}\n", x.ptl_max_decodes_idc());
-  fmt::print(stream, "ptl_level_idc={}\n", x.ptl_level_idc());
-  fmt::print(stream, "ptl_num_sub_profiles={}\n", x.ptl_num_sub_profiles());
-  fmt::print(stream, "ptl_extended_sub_profile_flag={}\n", x.ptl_extended_sub_profile_flag());
+  TMIV_FMT::print(stream, "ptl_tier_flag={}\n", x.ptl_tier_flag());
+  TMIV_FMT::print(stream, "ptl_profile_codec_group_idc={}\n", x.ptl_profile_codec_group_idc());
+  TMIV_FMT::print(stream, "ptl_profile_toolset_idc={}\n", x.ptl_profile_toolset_idc());
+  TMIV_FMT::print(stream, "ptl_profile_reconstruction_idc={}\n",
+                  x.ptl_profile_reconstruction_idc());
+  TMIV_FMT::print(stream, "ptl_max_decodes_idc={}\n", x.ptl_max_decodes_idc());
+  TMIV_FMT::print(stream, "ptl_level_idc={}\n", x.ptl_level_idc());
+  TMIV_FMT::print(stream, "ptl_num_sub_profiles={}\n", x.ptl_num_sub_profiles());
+  TMIV_FMT::print(stream, "ptl_extended_sub_profile_flag={}\n", x.ptl_extended_sub_profile_flag());
 
   for (uint8_t i = 0; i < x.ptl_num_sub_profiles(); ++i) {
-    fmt::print(stream, "ptl_sub_profile_idc[ {} ]={}\n", i, x.ptl_sub_profile_idc(i));
+    TMIV_FMT::print(stream, "ptl_sub_profile_idc[ {} ]={}\n", i, x.ptl_sub_profile_idc(i));
   }
-  fmt::print(stream, "ptl_toolset_constraints_present_flag={}\n",
-             x.ptl_toolset_constraints_present_flag());
+  TMIV_FMT::print(stream, "ptl_toolset_constraints_present_flag={}\n",
+                  x.ptl_toolset_constraints_present_flag());
   if (x.ptl_toolset_constraints_present_flag()) {
     stream << x.ptl_profile_toolset_constraints_information();
   }
@@ -359,33 +360,33 @@ void ProfileTierLevel::encodeTo(Common::OutputBitstream &bitstream) const {
 auto ProfileTierLevel::profile() const -> std::string {
   std::ostringstream stream;
 
-  fmt::print(stream, "{} {}", ptl_profile_codec_group_idc(), ptl_profile_toolset_idc());
+  TMIV_FMT::print(stream, "{} {}", ptl_profile_codec_group_idc(), ptl_profile_toolset_idc());
 
   if (ptl_toolset_constraints_present_flag()) {
     const auto &ptci = ptl_profile_toolset_constraints_information();
 
     if (ptci.ptc_restricted_geometry_flag()) {
-      fmt::print(stream, " Restricted Geometry");
+      TMIV_FMT::print(stream, " Restricted Geometry");
     }
     if (ptci.ptc_one_v3c_frame_only_flag()) {
-      fmt::print(stream, " Still");
+      TMIV_FMT::print(stream, " Still");
     }
   }
 
   if (ptl_profile_reconstruction_idc() != PtlProfileReconstructionIdc::Rec_Unconstrained) {
-    fmt::print(stream, " {}", ptl_profile_reconstruction_idc());
+    TMIV_FMT::print(stream, " {}", ptl_profile_reconstruction_idc());
   }
   return stream.str();
 }
 
 auto OccupancyInformation::printTo(std::ostream &stream, AtlasId atlasId) const -> std::ostream & {
-  fmt::print(stream, "oi_occupancy_codec_id[ {} ]={}\n", atlasId, oi_occupancy_codec_id());
-  fmt::print(stream, "oi_lossy_occupancy_compression_threshold[ {} ]={}\n", atlasId,
-             oi_lossy_occupancy_compression_threshold());
-  fmt::print(stream, "oi_occupancy_2d_bit_depth_minus1[ {} ]={}\n", atlasId,
-             oi_occupancy_2d_bit_depth_minus1());
-  fmt::print(stream, "oi_occupancy_MSB_align_flag[ {} ]={}\n", atlasId,
-             oi_occupancy_MSB_align_flag());
+  TMIV_FMT::print(stream, "oi_occupancy_codec_id[ {} ]={}\n", atlasId, oi_occupancy_codec_id());
+  TMIV_FMT::print(stream, "oi_lossy_occupancy_compression_threshold[ {} ]={}\n", atlasId,
+                  oi_lossy_occupancy_compression_threshold());
+  TMIV_FMT::print(stream, "oi_occupancy_2d_bit_depth_minus1[ {} ]={}\n", atlasId,
+                  oi_occupancy_2d_bit_depth_minus1());
+  TMIV_FMT::print(stream, "oi_occupancy_MSB_align_flag[ {} ]={}\n", atlasId,
+                  oi_occupancy_MSB_align_flag());
   return stream;
 }
 
@@ -418,18 +419,18 @@ void OccupancyInformation::encodeTo(Common::OutputBitstream &bitstream) const {
 }
 
 auto GeometryInformation::printTo(std::ostream &stream, AtlasId atlasId) const -> std::ostream & {
-  fmt::print(stream, "gi_geometry_codec_id[ {} ]={}\n", atlasId, gi_geometry_codec_id());
+  TMIV_FMT::print(stream, "gi_geometry_codec_id[ {} ]={}\n", atlasId, gi_geometry_codec_id());
 
   if (m_gi_auxiliary_geometry_codec_id) {
-    fmt::print(stream, "gi_auxiliary_geometry_codec_id[ {} ]={}\n", atlasId,
-               gi_auxiliary_geometry_codec_id());
+    TMIV_FMT::print(stream, "gi_auxiliary_geometry_codec_id[ {} ]={}\n", atlasId,
+                    gi_auxiliary_geometry_codec_id());
   }
-  fmt::print(stream, "gi_geometry_2d_bit_depth_minus1[ {} ]={}\n", atlasId,
-             gi_geometry_2d_bit_depth_minus1());
-  fmt::print(stream, "gi_geometry_msb_align_flag[ {} ]={}\n", atlasId,
-             gi_geometry_msb_align_flag());
-  fmt::print(stream, "gi_geometry_3d_coordinates_bit_depth_minus1[ {} ]={}\n", atlasId,
-             gi_geometry_3d_coordinates_bit_depth_minus1());
+  TMIV_FMT::print(stream, "gi_geometry_2d_bit_depth_minus1[ {} ]={}\n", atlasId,
+                  gi_geometry_2d_bit_depth_minus1());
+  TMIV_FMT::print(stream, "gi_geometry_msb_align_flag[ {} ]={}\n", atlasId,
+                  gi_geometry_msb_align_flag());
+  TMIV_FMT::print(stream, "gi_geometry_3d_coordinates_bit_depth_minus1[ {} ]={}\n", atlasId,
+                  gi_geometry_3d_coordinates_bit_depth_minus1());
   return stream;
 }
 
@@ -598,35 +599,35 @@ auto AttributeInformation::ai_attribute_msb_align_flag(uint8_t i, bool value)
 }
 
 auto AttributeInformation::printTo(std::ostream &stream, AtlasId atlasId) const -> std::ostream & {
-  fmt::print(stream, "ai_attribute_count[ {} ]={}\n", atlasId, ai_attribute_count());
+  TMIV_FMT::print(stream, "ai_attribute_count[ {} ]={}\n", atlasId, ai_attribute_count());
 
   for (uint8_t i = 0; i < ai_attribute_count(); ++i) {
-    fmt::print(stream, "ai_attribute_type_id[ {} ][ {} ]={}\n", atlasId, i,
-               ai_attribute_type_id(i));
-    fmt::print(stream, "ai_attribute_codec_id[ {} ][ {} ]={}\n", atlasId, i,
-               ai_attribute_codec_id(i));
+    TMIV_FMT::print(stream, "ai_attribute_type_id[ {} ][ {} ]={}\n", atlasId, i,
+                    ai_attribute_type_id(i));
+    TMIV_FMT::print(stream, "ai_attribute_codec_id[ {} ][ {} ]={}\n", atlasId, i,
+                    ai_attribute_codec_id(i));
 
     if (m_aiAttributes[i].ai_auxiliary_attribute_codec_id) {
-      fmt::print(stream, "ai_auxiliary_attribute_codec_id[ {} ][ {} ]={}\n", atlasId, i,
-                 ai_auxiliary_attribute_codec_id(i));
+      TMIV_FMT::print(stream, "ai_auxiliary_attribute_codec_id[ {} ][ {} ]={}\n", atlasId, i,
+                      ai_auxiliary_attribute_codec_id(i));
     }
     if (m_aiAttributes[i].ai_attribute_map_absolute_coding_persistence_flag) {
-      fmt::print(stream, "ai_attribute_map_absolute_coding_persistence_flag[ {} ][ {} ]={}\n",
-                 atlasId, i, ai_attribute_map_absolute_coding_persistence_flag(i));
+      TMIV_FMT::print(stream, "ai_attribute_map_absolute_coding_persistence_flag[ {} ][ {} ]={}\n",
+                      atlasId, i, ai_attribute_map_absolute_coding_persistence_flag(i));
     }
-    fmt::print(stream, "ai_attribute_dimension_minus1[ {} ][ {} ]={}\n", atlasId, i,
-               ai_attribute_dimension_minus1(i));
-    fmt::print(stream, "ai_attribute_dimension_partitions_minus1[ {} ][ {} ]={}\n", atlasId, i,
-               ai_attribute_dimension_partitions_minus1(i));
+    TMIV_FMT::print(stream, "ai_attribute_dimension_minus1[ {} ][ {} ]={}\n", atlasId, i,
+                    ai_attribute_dimension_minus1(i));
+    TMIV_FMT::print(stream, "ai_attribute_dimension_partitions_minus1[ {} ][ {} ]={}\n", atlasId, i,
+                    ai_attribute_dimension_partitions_minus1(i));
 
     for (uint8_t k = 0; k <= ai_attribute_dimension_partitions_minus1(i); ++k) {
-      fmt::print(stream, "ai_attribute_partition_channels_minus1[ {} ][ {} ][ {} ]={}\n", atlasId,
-                 i, k, ai_attribute_partition_channels_minus1(i, k));
+      TMIV_FMT::print(stream, "ai_attribute_partition_channels_minus1[ {} ][ {} ][ {} ]={}\n",
+                      atlasId, i, k, ai_attribute_partition_channels_minus1(i, k));
     }
-    fmt::print(stream, "ai_attribute_2d_bit_depth_minus1[ {} ][ {} ]={}\n", atlasId, i,
-               ai_attribute_2d_bit_depth_minus1(i));
-    fmt::print(stream, "ai_attribute_msb_align_flag[ {} ][ {} ]={}\n", atlasId, i,
-               ai_attribute_msb_align_flag(i));
+    TMIV_FMT::print(stream, "ai_attribute_2d_bit_depth_minus1[ {} ][ {} ]={}\n", atlasId, i,
+                    ai_attribute_2d_bit_depth_minus1(i));
+    TMIV_FMT::print(stream, "ai_attribute_msb_align_flag[ {} ][ {} ]={}\n", atlasId, i,
+                    ai_attribute_msb_align_flag(i));
   }
   return stream;
 }
@@ -754,24 +755,24 @@ void AttributeInformation::encodeTo(Common::OutputBitstream &bitstream, const V3
 }
 auto operator<<(std::ostream &stream, const ProfileToolsetConstraintsInformation &x)
     -> std::ostream & {
-  fmt::print(stream, "ptc_one_v3c_frame_only_flag={}\n", x.ptc_one_v3c_frame_only_flag());
-  fmt::print(stream, "ptc_eom_constraint_flag={}\n", x.ptc_eom_constraint_flag());
-  fmt::print(stream, "ptc_max_map_count_minus1={}\n", x.ptc_max_map_count_minus1());
-  fmt::print(stream, "ptc_max_atlas_count_minus1={}\n", x.ptc_max_atlas_count_minus1());
-  fmt::print(stream, "ptc_multiple_map_streams_constraint_flag={}\n",
-             x.ptc_multiple_map_streams_constraint_flag());
-  fmt::print(stream, "ptc_plr_constraint_flag={}\n", x.ptc_plr_constraint_flag());
-  fmt::print(stream, "ptc_attribute_max_dimension_minus1={}\n",
-             x.ptc_attribute_max_dimension_minus1());
-  fmt::print(stream, "ptc_attribute_max_dimension_partitions_minus1={}\n",
-             x.ptc_attribute_max_dimension_partitions_minus1());
-  fmt::print(stream, "ptc_no_eight_orientations_constraint_flag={}\n",
-             x.ptc_no_eight_orientations_constraint_flag());
-  fmt::print(stream, "ptc_no_45degree_projection_patch_constraint_flag={}\n",
-             x.ptc_no_45degree_projection_patch_constraint_flag());
-  fmt::print(stream, "ptc_restricted_geometry_flag={}\n", x.ptc_restricted_geometry_flag());
-  fmt::print(stream, "ptc_num_reserved_constraint_bytes={}\n",
-             x.ptc_num_reserved_constraint_bytes());
+  TMIV_FMT::print(stream, "ptc_one_v3c_frame_only_flag={}\n", x.ptc_one_v3c_frame_only_flag());
+  TMIV_FMT::print(stream, "ptc_eom_constraint_flag={}\n", x.ptc_eom_constraint_flag());
+  TMIV_FMT::print(stream, "ptc_max_map_count_minus1={}\n", x.ptc_max_map_count_minus1());
+  TMIV_FMT::print(stream, "ptc_max_atlas_count_minus1={}\n", x.ptc_max_atlas_count_minus1());
+  TMIV_FMT::print(stream, "ptc_multiple_map_streams_constraint_flag={}\n",
+                  x.ptc_multiple_map_streams_constraint_flag());
+  TMIV_FMT::print(stream, "ptc_plr_constraint_flag={}\n", x.ptc_plr_constraint_flag());
+  TMIV_FMT::print(stream, "ptc_attribute_max_dimension_minus1={}\n",
+                  x.ptc_attribute_max_dimension_minus1());
+  TMIV_FMT::print(stream, "ptc_attribute_max_dimension_partitions_minus1={}\n",
+                  x.ptc_attribute_max_dimension_partitions_minus1());
+  TMIV_FMT::print(stream, "ptc_no_eight_orientations_constraint_flag={}\n",
+                  x.ptc_no_eight_orientations_constraint_flag());
+  TMIV_FMT::print(stream, "ptc_no_45degree_projection_patch_constraint_flag={}\n",
+                  x.ptc_no_45degree_projection_patch_constraint_flag());
+  TMIV_FMT::print(stream, "ptc_restricted_geometry_flag={}\n", x.ptc_restricted_geometry_flag());
+  TMIV_FMT::print(stream, "ptc_num_reserved_constraint_bytes={}\n",
+                  x.ptc_num_reserved_constraint_bytes());
   return stream;
 }
 
@@ -1013,49 +1014,51 @@ auto PackingInformation::pin_attribute_partition_channels_minus1(size_t i, uint8
 }
 
 auto PackingInformation::printTo(std::ostream &stream, AtlasId j) const -> std::ostream & {
-  fmt::print(stream, "pin_codec_id[ {} ]={}\n", j, pin_codec_id());
-  fmt::print(stream, "pin_occupancy_present_flag[ {} ]={}\n", j, pin_occupancy_present_flag());
-  fmt::print(stream, "pin_geometry_present_flag[ {} ]={}\n", j, pin_geometry_present_flag());
-  fmt::print(stream, "pin_attribute_present_flag[ {} ]={}\n", j, pin_attribute_present_flag());
+  TMIV_FMT::print(stream, "pin_codec_id[ {} ]={}\n", j, pin_codec_id());
+  TMIV_FMT::print(stream, "pin_occupancy_present_flag[ {} ]={}\n", j, pin_occupancy_present_flag());
+  TMIV_FMT::print(stream, "pin_geometry_present_flag[ {} ]={}\n", j, pin_geometry_present_flag());
+  TMIV_FMT::print(stream, "pin_attribute_present_flag[ {} ]={}\n", j, pin_attribute_present_flag());
   if (pin_occupancy_present_flag()) {
-    fmt::print(stream, "pin_occupancy_2d_bit_depth_minus1[ {} ]={}\n", j,
-               pin_occupancy_2d_bit_depth_minus1());
-    fmt::print(stream, "pin_occupancy_MSB_align_flag[ {} ]={}\n", j,
-               pin_occupancy_MSB_align_flag());
-    fmt::print(stream, "pin_lossy_occupancy_compression_threshold[ {} ]={}\n", j,
-               pin_lossy_occupancy_compression_threshold());
+    TMIV_FMT::print(stream, "pin_occupancy_2d_bit_depth_minus1[ {} ]={}\n", j,
+                    pin_occupancy_2d_bit_depth_minus1());
+    TMIV_FMT::print(stream, "pin_occupancy_MSB_align_flag[ {} ]={}\n", j,
+                    pin_occupancy_MSB_align_flag());
+    TMIV_FMT::print(stream, "pin_lossy_occupancy_compression_threshold[ {} ]={}\n", j,
+                    pin_lossy_occupancy_compression_threshold());
   }
   if (pin_geometry_present_flag()) {
-    fmt::print(stream, "pin_geometry_2d_bit_depth_minus1[ {} ]={}\n", j,
-               pin_geometry_2d_bit_depth_minus1());
-    fmt::print(stream, "pin_geometry_MSB_align_flag[ {} ]={}\n", j, pin_geometry_MSB_align_flag());
-    fmt::print(stream, "pin_geometry_3d_coordinates_bit_depth_minus1[ {} ]={}\n", j,
-               pin_geometry_3d_coordinates_bit_depth_minus1());
+    TMIV_FMT::print(stream, "pin_geometry_2d_bit_depth_minus1[ {} ]={}\n", j,
+                    pin_geometry_2d_bit_depth_minus1());
+    TMIV_FMT::print(stream, "pin_geometry_MSB_align_flag[ {} ]={}\n", j,
+                    pin_geometry_MSB_align_flag());
+    TMIV_FMT::print(stream, "pin_geometry_3d_coordinates_bit_depth_minus1[ {} ]={}\n", j,
+                    pin_geometry_3d_coordinates_bit_depth_minus1());
   }
   if (pin_attribute_present_flag()) {
-    fmt::print(stream, "pin_attribute_count[ {} ]={}\n", j, pin_attribute_count());
+    TMIV_FMT::print(stream, "pin_attribute_count[ {} ]={}\n", j, pin_attribute_count());
     for (size_t i = 0; i < pin_attribute_count(); i++) {
-      fmt::print(stream, "pin_attribute_type_id[ {} ][ {} ]={}\n", j, i, pin_attribute_type_id(i));
-      fmt::print(stream, "pin_attribute_2d_bit_depth_minus1[ {} ][ {} ]={}\n", j, i,
-                 pin_attribute_2d_bit_depth_minus1(i));
-      fmt::print(stream, "pin_attribute_MSB_align_flag[ {} ][ {} ]={}\n", j, i,
-                 pin_attribute_MSB_align_flag(i));
-      fmt::print(stream, "pin_attribute_map_absolute_coding_persistence_flag[ {} ][ {} ]={}\n", j,
-                 i, pin_attribute_map_absolute_coding_persistence_flag(i));
-      fmt::print(stream, "pin_attribute_dimension_minus1[ {} ][ {} ]={}\n", j, i,
-                 pin_attribute_dimension_minus1(i));
+      TMIV_FMT::print(stream, "pin_attribute_type_id[ {} ][ {} ]={}\n", j, i,
+                      pin_attribute_type_id(i));
+      TMIV_FMT::print(stream, "pin_attribute_2d_bit_depth_minus1[ {} ][ {} ]={}\n", j, i,
+                      pin_attribute_2d_bit_depth_minus1(i));
+      TMIV_FMT::print(stream, "pin_attribute_MSB_align_flag[ {} ][ {} ]={}\n", j, i,
+                      pin_attribute_MSB_align_flag(i));
+      TMIV_FMT::print(stream, "pin_attribute_map_absolute_coding_persistence_flag[ {} ][ {} ]={}\n",
+                      j, i, pin_attribute_map_absolute_coding_persistence_flag(i));
+      TMIV_FMT::print(stream, "pin_attribute_dimension_minus1[ {} ][ {} ]={}\n", j, i,
+                      pin_attribute_dimension_minus1(i));
       auto d = pin_attribute_dimension_minus1(i);
       uint8_t m = 0;
       if (d != 0) {
-        fmt::print(stream, "pin_attribute_dimension_partitions_minus1[ {} ][ {} ]={}\n", j, i,
-                   pin_attribute_dimension_partitions_minus1(i));
+        TMIV_FMT::print(stream, "pin_attribute_dimension_partitions_minus1[ {} ][ {} ]={}\n", j, i,
+                        pin_attribute_dimension_partitions_minus1(i));
         m = pin_attribute_dimension_partitions_minus1(i);
       }
       for (uint8_t k = 0; k < m; k++) {
         uint8_t n = 0;
         if (k + d != m) {
-          fmt::print(stream, "pin_attribute_partition_channels_minus1[ {} ][ {} ] [ {} ]={}\n", j,
-                     i, k, pin_attribute_partition_channels_minus1(i, k));
+          TMIV_FMT::print(stream, "pin_attribute_partition_channels_minus1[ {} ][ {} ] [ {} ]={}\n",
+                          j, i, k, pin_attribute_partition_channels_minus1(i, k));
           n = pin_attribute_partition_channels_minus1(i, k);
         }
         d -= Common::downCast<uint8_t>(n + 1);
@@ -1063,35 +1066,39 @@ auto PackingInformation::printTo(std::ostream &stream, AtlasId j) const -> std::
     }
   }
 
-  fmt::print(stream, "pin_regions_count_minus1[ {} ]={}\n", j, pin_regions_count_minus1());
+  TMIV_FMT::print(stream, "pin_regions_count_minus1[ {} ]={}\n", j, pin_regions_count_minus1());
   for (size_t i = 0; i <= pin_regions_count_minus1(); ++i) {
-    fmt::print(stream, "pin_region_tile_id[ {} ][ {} ]={}\n", j, i, pin_region_tile_id(i));
-    fmt::print(stream, "pin_region_type_id_minus2[ {} ][ {} ]={} ({})\n", j, i,
-               pin_region_type_id_minus2(i), pinRegionTypeId(i));
-    fmt::print(stream, "pin_region_top_left_x[ {} ][ {} ]={}\n", j, i, pin_region_top_left_x(i));
-    fmt::print(stream, "pin_region_top_left_y[ {} ][ {} ]={}\n", j, i, pin_region_top_left_y(i));
-    fmt::print(stream, "pin_region_width_minus1[ {} ][ {} ]={}\n", j, i,
-               pin_region_width_minus1(i));
-    fmt::print(stream, "pin_region_height_minus1[ {} ][ {} ]={}\n", j, i,
-               pin_region_height_minus1(i));
-    fmt::print(stream, "pin_region_unpack_top_left_x[ {} ][ {} ]={}\n", j, i,
-               pin_region_unpack_top_left_x(i));
-    fmt::print(stream, "pin_region_unpack_top_left_y[ {} ][ {} ]={}\n", j, i,
-               pin_region_unpack_top_left_y(i));
-    fmt::print(stream, "pin_region_rotation_flag[ {} ][ {} ]={}\n", j, i,
-               pin_region_rotation_flag(i));
+    TMIV_FMT::print(stream, "pin_region_tile_id[ {} ][ {} ]={}\n", j, i, pin_region_tile_id(i));
+    TMIV_FMT::print(stream, "pin_region_type_id_minus2[ {} ][ {} ]={} ({})\n", j, i,
+                    pin_region_type_id_minus2(i), pinRegionTypeId(i));
+    TMIV_FMT::print(stream, "pin_region_top_left_x[ {} ][ {} ]={}\n", j, i,
+                    pin_region_top_left_x(i));
+    TMIV_FMT::print(stream, "pin_region_top_left_y[ {} ][ {} ]={}\n", j, i,
+                    pin_region_top_left_y(i));
+    TMIV_FMT::print(stream, "pin_region_width_minus1[ {} ][ {} ]={}\n", j, i,
+                    pin_region_width_minus1(i));
+    TMIV_FMT::print(stream, "pin_region_height_minus1[ {} ][ {} ]={}\n", j, i,
+                    pin_region_height_minus1(i));
+    TMIV_FMT::print(stream, "pin_region_unpack_top_left_x[ {} ][ {} ]={}\n", j, i,
+                    pin_region_unpack_top_left_x(i));
+    TMIV_FMT::print(stream, "pin_region_unpack_top_left_y[ {} ][ {} ]={}\n", j, i,
+                    pin_region_unpack_top_left_y(i));
+    TMIV_FMT::print(stream, "pin_region_rotation_flag[ {} ][ {} ]={}\n", j, i,
+                    pin_region_rotation_flag(i));
     if (pinRegionTypeId(i) == VuhUnitType::V3C_AVD || pinRegionTypeId(i) == VuhUnitType::V3C_GVD) {
-      fmt::print(stream, "pin_region_map_index[ {} ][ {} ]={}\n", j, i, pin_region_map_index(i));
-      fmt::print(stream, "pin_region_auxiliary_data_flag[ {} ][ {} ]={}\n", j, i,
-                 pin_region_auxiliary_data_flag(i));
+      TMIV_FMT::print(stream, "pin_region_map_index[ {} ][ {} ]={}\n", j, i,
+                      pin_region_map_index(i));
+      TMIV_FMT::print(stream, "pin_region_auxiliary_data_flag[ {} ][ {} ]={}\n", j, i,
+                      pin_region_auxiliary_data_flag(i));
     }
     if (pinRegionTypeId(i) == VuhUnitType::V3C_AVD) {
-      fmt::print(stream, "pin_region_attr_index[ {} ][ {} ]={}\n", j, i, pin_region_attr_index(i));
+      TMIV_FMT::print(stream, "pin_region_attr_index[ {} ][ {} ]={}\n", j, i,
+                      pin_region_attr_index(i));
       const auto k = pin_region_attr_index(i);
 
       if (pin_attribute_dimension_minus1(k) > 0) {
-        fmt::print(stream, "pin_region_attr_partition_index[ {} ][ {} ]={}\n", j, i,
-                   pin_region_attr_partition_index(i));
+        TMIV_FMT::print(stream, "pin_region_attr_partition_index[ {} ][ {} ]={}\n", j, i,
+                        pin_region_attr_partition_index(i));
       }
     }
   }
@@ -1279,10 +1286,10 @@ auto GroupMapping::gm_group_id(size_t i, uint8_t value) -> GroupMapping & {
 }
 
 auto operator<<(std::ostream &stream, const GroupMapping &x) -> std::ostream & {
-  fmt::print(stream, "gm_group_count={}\n", x.gm_group_count());
+  TMIV_FMT::print(stream, "gm_group_count={}\n", x.gm_group_count());
   if (x.gm_group_count() > 0) {
     for (size_t i = 0; i < x.m_gm_group_id.size(); ++i) {
-      fmt::print(stream, "gm_group_id[ {} ]={}\n", i, x.gm_group_id(i));
+      TMIV_FMT::print(stream, "gm_group_id[ {} ]={}\n", i, x.gm_group_id(i));
     }
   }
   return stream;
@@ -1324,12 +1331,13 @@ auto VpsMivExtension::vme_occupancy_scale_enabled_flag(bool value) noexcept -> V
 }
 
 auto operator<<(std::ostream &stream, const VpsMivExtension &x) -> std::ostream & {
-  fmt::print(stream, "vme_geometry_scale_enabled_flag={}\n", x.vme_geometry_scale_enabled_flag());
-  fmt::print(stream, "vme_embedded_occupancy_enabled_flag={}\n",
-             x.vme_embedded_occupancy_enabled_flag());
+  TMIV_FMT::print(stream, "vme_geometry_scale_enabled_flag={}\n",
+                  x.vme_geometry_scale_enabled_flag());
+  TMIV_FMT::print(stream, "vme_embedded_occupancy_enabled_flag={}\n",
+                  x.vme_embedded_occupancy_enabled_flag());
   if (!x.vme_embedded_occupancy_enabled_flag()) {
-    fmt::print(stream, "vme_occupancy_scale_enabled_flag={}\n",
-               x.vme_occupancy_scale_enabled_flag());
+    TMIV_FMT::print(stream, "vme_occupancy_scale_enabled_flag={}\n",
+                    x.vme_occupancy_scale_enabled_flag());
   }
   stream << x.group_mapping();
   return stream;
@@ -1373,11 +1381,11 @@ auto VpsMiv2Extension::capture_device_information() -> CaptureDeviceInformation 
 
 auto operator<<(std::ostream &stream, const VpsMiv2Extension &x) -> std::ostream & {
   stream << x.vps_miv_extension();
-  fmt::print(stream, "vme_decoder_side_depth_estimation_flag={}\n",
-             x.vme_decoder_side_depth_estimation_flag());
-  fmt::print(stream, "vme_patch_margin_enabled_flag={}\n", x.vme_patch_margin_enabled_flag());
-  fmt::print(stream, "vme_capture_device_information_present_flag={}\n",
-             x.vme_capture_device_information_present_flag());
+  TMIV_FMT::print(stream, "vme_decoder_side_depth_estimation_flag={}\n",
+                  x.vme_decoder_side_depth_estimation_flag());
+  TMIV_FMT::print(stream, "vme_patch_margin_enabled_flag={}\n", x.vme_patch_margin_enabled_flag());
+  TMIV_FMT::print(stream, "vme_capture_device_information_present_flag={}\n",
+                  x.vme_capture_device_information_present_flag());
   if (x.vme_capture_device_information_present_flag()) {
     stream << x.capture_device_information();
   }
@@ -1457,7 +1465,7 @@ auto VpsPackedVideoExtension::packing_information(AtlasId atlasId) -> PackingInf
 
 auto operator<<(std::ostream &stream, const VpsPackedVideoExtension &x) -> std::ostream & {
   for (const auto &[j, pi] : x.m_packing_information) {
-    fmt::print(stream, "vps_packed_video_present_flag[ {} ]={}\n", j, pi.has_value());
+    TMIV_FMT::print(stream, "vps_packed_video_present_flag[ {} ]={}\n", j, pi.has_value());
     if (pi) {
       pi->printTo(stream, j);
     }
@@ -1539,7 +1547,7 @@ auto operator<<(std::ostream &stream, const VpsExtension &x) -> std::ostream & {
   std::visit(Common::overload(
                  [&stream](const VpsExtensionDataBytes &alternative) {
                    for (int32_t byte : alternative) {
-                     fmt::print(stream, "vps_extension_data_byte={}\n", byte);
+                     TMIV_FMT::print(stream, "vps_extension_data_byte={}\n", byte);
                    }
                  },
                  [&stream](const auto &alternative) { stream << alternative; }),
@@ -2002,42 +2010,42 @@ auto V3cParameterSet::attrIdxOf(AtlasId atlasId, AiAttributeTypeId attrTypeId) c
 
 auto operator<<(std::ostream &stream, const V3cParameterSet &x) -> std::ostream & {
   stream << x.profile_tier_level();
-  fmt::print(stream, "vps_v3c_parameter_set_id={}\n", x.vps_v3c_parameter_set_id());
-  fmt::print(stream, "vps_atlas_count_minus1={}\n", x.vps_atlas_count_minus1());
+  TMIV_FMT::print(stream, "vps_v3c_parameter_set_id={}\n", x.vps_v3c_parameter_set_id());
+  TMIV_FMT::print(stream, "vps_atlas_count_minus1={}\n", x.vps_atlas_count_minus1());
 
   for (size_t k = 0; k <= x.vps_atlas_count_minus1(); ++k) {
     const auto j = x.vps_atlas_id(k);
-    fmt::print(stream, "vps_atlas_id[ {} ]={}\n", k, j);
-    fmt::print(stream, "vps_frame_width[ {} ]={}\n", j, x.vps_frame_width(j));
-    fmt::print(stream, "vps_frame_height[ {} ]={}\n", j, x.vps_frame_height(j));
-    fmt::print(stream, "vps_map_count_minus1[ {} ]={}\n", j, x.vps_map_count_minus1(j));
+    TMIV_FMT::print(stream, "vps_atlas_id[ {} ]={}\n", k, j);
+    TMIV_FMT::print(stream, "vps_frame_width[ {} ]={}\n", j, x.vps_frame_width(j));
+    TMIV_FMT::print(stream, "vps_frame_height[ {} ]={}\n", j, x.vps_frame_height(j));
+    TMIV_FMT::print(stream, "vps_map_count_minus1[ {} ]={}\n", j, x.vps_map_count_minus1(j));
 
     if (x.vps_map_count_minus1(j) > 0) {
-      fmt::print(stream, "vps_multiple_map_streams_present_flag[ {} ]={}\n", j,
-                 x.vps_multiple_map_streams_present_flag(j));
+      TMIV_FMT::print(stream, "vps_multiple_map_streams_present_flag[ {} ]={}\n", j,
+                      x.vps_multiple_map_streams_present_flag(j));
     }
-    fmt::print(stream, "vps_map_absolute_coding_enabled_flag[ {} ][ 0 ]={}\n", j,
-               x.vps_map_absolute_coding_enabled_flag(j, 0));
-    fmt::print(stream, "vps_map_predictor_index_diff[ {} ][ 0 ]={}\n", j,
-               x.vps_map_predictor_index_diff(j, 0));
+    TMIV_FMT::print(stream, "vps_map_absolute_coding_enabled_flag[ {} ][ 0 ]={}\n", j,
+                    x.vps_map_absolute_coding_enabled_flag(j, 0));
+    TMIV_FMT::print(stream, "vps_map_predictor_index_diff[ {} ][ 0 ]={}\n", j,
+                    x.vps_map_predictor_index_diff(j, 0));
 
     for (uint8_t i = 1; i <= x.vps_map_count_minus1(j); ++i) {
-      fmt::print(stream, "vps_map_absolute_coding_enabled_flag[ {} ][ {} ]={}\n", j, i,
-                 x.vps_map_absolute_coding_enabled_flag(j, i));
+      TMIV_FMT::print(stream, "vps_map_absolute_coding_enabled_flag[ {} ][ {} ]={}\n", j, i,
+                      x.vps_map_absolute_coding_enabled_flag(j, i));
 
       if (!x.vps_map_absolute_coding_enabled_flag(j, i)) {
-        fmt::print(stream, "vps_map_predictor_index_diff[ {} ][ {} ]={}\n", j, i,
-                   x.vps_map_predictor_index_diff(j, i));
+        TMIV_FMT::print(stream, "vps_map_predictor_index_diff[ {} ][ {} ]={}\n", j, i,
+                        x.vps_map_predictor_index_diff(j, i));
       }
     }
-    fmt::print(stream, "vps_auxiliary_video_present_flag[ {} ]={}\n", j,
-               x.vps_auxiliary_video_present_flag(j));
-    fmt::print(stream, "vps_occupancy_video_present_flag[ {} ]={}\n", j,
-               x.vps_occupancy_video_present_flag(j));
-    fmt::print(stream, "vps_geometry_video_present_flag[ {} ]={}\n", j,
-               x.vps_geometry_video_present_flag(j));
-    fmt::print(stream, "vps_attribute_video_present_flag[ {} ]={}\n", j,
-               x.vps_attribute_video_present_flag(j));
+    TMIV_FMT::print(stream, "vps_auxiliary_video_present_flag[ {} ]={}\n", j,
+                    x.vps_auxiliary_video_present_flag(j));
+    TMIV_FMT::print(stream, "vps_occupancy_video_present_flag[ {} ]={}\n", j,
+                    x.vps_occupancy_video_present_flag(j));
+    TMIV_FMT::print(stream, "vps_geometry_video_present_flag[ {} ]={}\n", j,
+                    x.vps_geometry_video_present_flag(j));
+    TMIV_FMT::print(stream, "vps_attribute_video_present_flag[ {} ]={}\n", j,
+                    x.vps_attribute_video_present_flag(j));
     if (x.vps_occupancy_video_present_flag(j)) {
       x.occupancy_information(j).printTo(stream, j);
     }
@@ -2049,18 +2057,18 @@ auto operator<<(std::ostream &stream, const V3cParameterSet &x) -> std::ostream 
     }
   }
 
-  fmt::print(stream, "vps_extension_present_flag={}\n", x.vps_extension_present_flag());
+  TMIV_FMT::print(stream, "vps_extension_present_flag={}\n", x.vps_extension_present_flag());
 
   if (x.vps_extension_present_flag()) {
-    fmt::print(stream, "vps_extension_count={}\n", x.vps_extension_count());
+    TMIV_FMT::print(stream, "vps_extension_count={}\n", x.vps_extension_count());
   }
 
   if (0 < x.vps_extension_count()) {
-    fmt::print(stream, "vps_extensions_length_minus1={}\n", x.vps_extensions_length_minus1());
+    TMIV_FMT::print(stream, "vps_extensions_length_minus1={}\n", x.vps_extensions_length_minus1());
 
     for (uint8_t n = 0; n < x.vps_extension_count(); ++n) {
-      fmt::print(stream, "vps_extension_type[ {} ]={}\n", n, x.vps_extension_type(n));
-      fmt::print(stream, "vps_extension_length[ {} ]={}\n", n, x.vps_extension_length(n));
+      TMIV_FMT::print(stream, "vps_extension_type[ {} ]={}\n", n, x.vps_extension_type(n));
+      TMIV_FMT::print(stream, "vps_extension_length[ {} ]={}\n", n, x.vps_extension_length(n));
       stream << x.m_vps_extension[n];
     }
   }
@@ -2070,54 +2078,55 @@ auto operator<<(std::ostream &stream, const V3cParameterSet &x) -> std::ostream 
 auto V3cParameterSet::summary() const -> std::string {
   std::ostringstream stream;
 
-  fmt::print(stream, "V3C parameter set {}:", vps_v3c_parameter_set_id());
+  TMIV_FMT::print(stream, "V3C parameter set {}:", vps_v3c_parameter_set_id());
 
   const auto &ptl = profile_tier_level();
-  fmt::print(stream, "\n  {}, tier {}, level {}, decodes {}", ptl.profile(), ptl.ptl_tier_flag(),
-             ptl.ptl_level_idc(), ptl.ptl_max_decodes_idc());
+  TMIV_FMT::print(stream, "\n  {}, tier {}, level {}, decodes {}", ptl.profile(),
+                  ptl.ptl_tier_flag(), ptl.ptl_level_idc(), ptl.ptl_max_decodes_idc());
 
   for (size_t k = 0; k <= vps_atlas_count_minus1(); ++k) {
     const auto j = vps_atlas_id(k);
-    fmt::print(stream, "\n  Atlas {}: {} x {}", j, vps_frame_width(j), vps_frame_height(j));
+    TMIV_FMT::print(stream, "\n  Atlas {}: {} x {}", j, vps_frame_width(j), vps_frame_height(j));
     if (vps_occupancy_video_present_flag(j)) {
       const auto &oi = occupancy_information(j);
-      fmt::print(stream, "; [OI: codec {}, {}, 2D {}, align {}]", oi.oi_occupancy_codec_id(),
-                 oi.oi_lossy_occupancy_compression_threshold(),
-                 oi.oi_occupancy_2d_bit_depth_minus1() + 1, oi.oi_occupancy_MSB_align_flag());
+      TMIV_FMT::print(stream, "; [OI: codec {}, {}, 2D {}, align {}]", oi.oi_occupancy_codec_id(),
+                      oi.oi_lossy_occupancy_compression_threshold(),
+                      oi.oi_occupancy_2d_bit_depth_minus1() + 1, oi.oi_occupancy_MSB_align_flag());
     }
 
     if (vps_geometry_video_present_flag(j)) {
       const auto &gi = geometry_information(j);
-      fmt::print(stream, "; [GI: codec {}, 2D {}, algin {}, 3D {}]", gi.gi_geometry_codec_id(),
-                 gi.gi_geometry_2d_bit_depth_minus1() + 1, gi.gi_geometry_msb_align_flag(),
-                 gi.gi_geometry_3d_coordinates_bit_depth_minus1() + 1);
+      TMIV_FMT::print(stream, "; [GI: codec {}, 2D {}, algin {}, 3D {}]", gi.gi_geometry_codec_id(),
+                      gi.gi_geometry_2d_bit_depth_minus1() + 1, gi.gi_geometry_msb_align_flag(),
+                      gi.gi_geometry_3d_coordinates_bit_depth_minus1() + 1);
     }
 
     if (vps_attribute_video_present_flag(j)) {
       const auto &ai = attribute_information(j);
-      fmt::print(stream, "; [AI: {}", ai.ai_attribute_count());
+      TMIV_FMT::print(stream, "; [AI: {}", ai.ai_attribute_count());
       for (uint8_t i = 0; i < ai.ai_attribute_count(); ++i) {
-        fmt::print(stream, ", {}, codec {}, dims {}, 2D {}, align {}", ai.ai_attribute_type_id(i),
-                   ai.ai_attribute_codec_id(i), ai.ai_attribute_dimension_minus1(i) + 1,
-                   ai.ai_attribute_2d_bit_depth_minus1(i) + 1, ai.ai_attribute_msb_align_flag(i));
+        TMIV_FMT::print(
+            stream, ", {}, codec {}, dims {}, 2D {}, align {}", ai.ai_attribute_type_id(i),
+            ai.ai_attribute_codec_id(i), ai.ai_attribute_dimension_minus1(i) + 1,
+            ai.ai_attribute_2d_bit_depth_minus1(i) + 1, ai.ai_attribute_msb_align_flag(i));
         if (i + 1 == ai.ai_attribute_count()) {
-          fmt::print(stream, "]");
+          TMIV_FMT::print(stream, "]");
         }
       }
     }
 
     if (vps_packed_video_present_flag(j)) {
       const auto &pin = packing_information(j);
-      fmt::print(stream, "; [PIN: regions {}]", pin.pin_regions_count_minus1() + 1);
+      TMIV_FMT::print(stream, "; [PIN: regions {}]", pin.pin_regions_count_minus1() + 1);
     }
   }
 
   if (vpsMivOrMiv2ExtensionPresentFlag()) {
     const auto &vme = vps_miv_extension();
-    fmt::print(stream,
-               "\n, geometry scaling {}, groups {}, embedded occupancy {}, occupancy scaling {}",
-               vme.vme_geometry_scale_enabled_flag(), vme.group_mapping().gm_group_count(),
-               vme.vme_embedded_occupancy_enabled_flag(), vme.vme_occupancy_scale_enabled_flag());
+    TMIV_FMT::print(
+        stream, "\n, geometry scaling {}, groups {}, embedded occupancy {}, occupancy scaling {}",
+        vme.vme_geometry_scale_enabled_flag(), vme.group_mapping().gm_group_count(),
+        vme.vme_embedded_occupancy_enabled_flag(), vme.vme_occupancy_scale_enabled_flag());
   }
 
   return stream.str();

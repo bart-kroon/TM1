@@ -34,10 +34,9 @@
 #include <TMIV/Quantizer/GeometryQuantizer.h>
 
 #include <TMIV/Common/LoggingStrategyFmt.h>
+#include <TMIV/Common/format.h>
 #include <TMIV/MivBitstream/DepthOccupancyTransform.h>
 #include <TMIV/MivBitstream/Formatters.h>
-
-#include <fmt/ostream.h>
 
 namespace TMIV::Quantizer {
 void GeometryDistributions::report(const EncoderParams &params) const {

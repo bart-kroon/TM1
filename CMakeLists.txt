@@ -58,6 +58,7 @@ find_package(Threads REQUIRED)
 
 message(STATUS "TMIV: Building in C++${CMAKE_CXX_STANDARD} mode.")
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+include(cmake/fmt.cmake)
 include(cmake/tmiv_module_creation.cmake)
 include(cmake/test_creation.cmake)
 

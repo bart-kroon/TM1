@@ -23,7 +23,7 @@ create_tmiv_library(
     PRIVATE
     ViewingSpaceLib
     Threads::Threads
-    fmt::fmt)
+    ${TMIV_FMT_TARGET})
 
 create_tmiv_library(
     TARGET

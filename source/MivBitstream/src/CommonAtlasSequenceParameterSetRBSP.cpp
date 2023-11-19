@@ -33,9 +33,8 @@
 
 #include <TMIV/MivBitstream/CommonAtlasSequenceParameterSetRBSP.h>
 
+#include <TMIV/Common/format.h>
 #include <TMIV/Common/verify.h>
-
-#include <fmt/ostream.h>
 
 #include <algorithm>
 
@@ -53,10 +52,10 @@ auto CaspsMivExtension::vui_parameters(const VuiParameters &value) noexcept -> C
 }
 
 auto operator<<(std::ostream &stream, const CaspsMivExtension &x) -> std::ostream & {
-  fmt::print(stream, "casme_depth_low_quality_flag={}\n", x.casme_depth_low_quality_flag());
-  fmt::print(stream, "casme_depth_quantization_params_present_flag={}\n",
-             x.casme_depth_quantization_params_present_flag());
-  fmt::print(stream, "casme_vui_params_present_flag={}\n", x.casme_vui_params_present_flag());
+  TMIV_FMT::print(stream, "casme_depth_low_quality_flag={}\n", x.casme_depth_low_quality_flag());
+  TMIV_FMT::print(stream, "casme_depth_quantization_params_present_flag={}\n",
+                  x.casme_depth_quantization_params_present_flag());
+  TMIV_FMT::print(stream, "casme_vui_params_present_flag={}\n", x.casme_vui_params_present_flag());
 
   if (x.casme_vui_params_present_flag()) {
     stream << x.vui_parameters();
@@ -111,17 +110,17 @@ auto CaspsMiv2Extension::capture_device_information() -> CaptureDeviceInformatio
 }
 
 auto operator<<(std::ostream &stream, const CaspsMiv2Extension &x) -> std::ostream & {
-  fmt::print(stream, "casme_decoder_side_depth_estimation_flag={}\n",
-             x.casme_decoder_side_depth_estimation_flag());
-  fmt::print(stream, "casme_chroma_scaling_present_flag={}\n",
-             x.casme_chroma_scaling_present_flag());
-  fmt::print(stream, "casme_capture_device_information_present_flag={}\n",
-             x.casme_capture_device_information_present_flag());
+  TMIV_FMT::print(stream, "casme_decoder_side_depth_estimation_flag={}\n",
+                  x.casme_decoder_side_depth_estimation_flag());
+  TMIV_FMT::print(stream, "casme_chroma_scaling_present_flag={}\n",
+                  x.casme_chroma_scaling_present_flag());
+  TMIV_FMT::print(stream, "casme_capture_device_information_present_flag={}\n",
+                  x.casme_capture_device_information_present_flag());
   if (x.casme_capture_device_information_present_flag()) {
     stream << x.capture_device_information();
   }
-  fmt::print(stream, "casme_background_separation_enable_flag={}\n",
-             x.casme_background_separation_enable_flag());
+  TMIV_FMT::print(stream, "casme_background_separation_enable_flag={}\n",
+                  x.casme_background_separation_enable_flag());
   return stream;
 }
 
@@ -248,18 +247,18 @@ auto CommonAtlasSequenceParameterSetRBSP::caspsExtensionData(std::vector<bool> v
 
 auto operator<<(std::ostream &stream, const CommonAtlasSequenceParameterSetRBSP &x)
     -> std::ostream & {
-  fmt::print(stream, "casps_common_atlas_sequence_parameter_set_id={}\n",
-             x.casps_common_atlas_sequence_parameter_set_id());
-  fmt::print(stream, "casps_log2_max_common_atlas_frame_order_cnt_lsb_minus4={}\n",
-             x.casps_log2_max_common_atlas_frame_order_cnt_lsb_minus4());
-  fmt::print(stream, "casps_extension_present_flag={}\n", x.casps_extension_present_flag());
+  TMIV_FMT::print(stream, "casps_common_atlas_sequence_parameter_set_id={}\n",
+                  x.casps_common_atlas_sequence_parameter_set_id());
+  TMIV_FMT::print(stream, "casps_log2_max_common_atlas_frame_order_cnt_lsb_minus4={}\n",
+                  x.casps_log2_max_common_atlas_frame_order_cnt_lsb_minus4());
+  TMIV_FMT::print(stream, "casps_extension_present_flag={}\n", x.casps_extension_present_flag());
 
   if (x.casps_extension_present_flag()) {
-    fmt::print(stream, "casps_miv_extension_present_flag={}\n",
-               x.casps_miv_extension_present_flag());
-    fmt::print(stream, "casps_miv_2_extension_present_flag={}\n",
-               x.casps_miv_2_extension_present_flag());
-    fmt::print(stream, "casps_extension_6bits={}\n", x.casps_extension_6bits());
+    TMIV_FMT::print(stream, "casps_miv_extension_present_flag={}\n",
+                    x.casps_miv_extension_present_flag());
+    TMIV_FMT::print(stream, "casps_miv_2_extension_present_flag={}\n",
+                    x.casps_miv_2_extension_present_flag());
+    TMIV_FMT::print(stream, "casps_extension_6bits={}\n", x.casps_extension_6bits());
   }
   if (x.casps_miv_extension_present_flag()) {
     stream << x.casps_miv_extension();
@@ -269,7 +268,7 @@ auto operator<<(std::ostream &stream, const CommonAtlasSequenceParameterSetRBSP 
   }
   if (x.casps_extension_6bits() != 0) {
     for (bool bit : x.caspsExtensionData()) {
-      fmt::print(stream, "casps_extension_data_flag={}\n", bit);
+      TMIV_FMT::print(stream, "casps_extension_data_flag={}\n", bit);
     }
   }
   return stream;

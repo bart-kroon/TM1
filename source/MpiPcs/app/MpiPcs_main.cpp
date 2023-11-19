@@ -150,34 +150,33 @@ private:
     const auto textureVideoFormat =
         IO::videoFormatString(cameraConfig.colorFormatTexture, cameraConfig.bitDepthTexture);
 
-    auto texturePath =
-        outputDir /
-        fmt::format(fmt::runtime(json().require(outputTexturePathFmt).as<std::string>()),
-                    placeholders().numberOfInputFrames, placeholders().contentId,
-                    placeholders().testId, cameraName, viewSize.x(), viewSize.y(),
-                    textureVideoFormat);
+    auto texturePath = outputDir / Common::runtimeFormat(
+                                       json().require(outputTexturePathFmt).as<std::string>(),
+                                       placeholders().numberOfInputFrames, placeholders().contentId,
+                                       placeholders().testId, cameraName, viewSize.x(),
+                                       viewSize.y(), textureVideoFormat);
 
     const auto transparencyVideoFormat = IO::videoFormatString(cameraConfig.colorFormatTransparency,
                                                                cameraConfig.bitDepthTransparency);
 
     auto transparencyPath =
         outputDir /
-        fmt::format(fmt::runtime(json().require(outputTransparencyPathFmt).as<std::string>()),
-                    placeholders().numberOfInputFrames, placeholders().contentId,
-                    placeholders().testId, cameraName, viewSize.x(), viewSize.y(),
-                    transparencyVideoFormat);
+        Common::runtimeFormat(json().require(outputTransparencyPathFmt).as<std::string>(),
+                              placeholders().numberOfInputFrames, placeholders().contentId,
+                              placeholders().testId, cameraName, viewSize.x(), viewSize.y(),
+                              transparencyVideoFormat);
 
     create_directories(texturePath.parent_path());
     create_directories(transparencyPath.parent_path());
 
     std::ofstream textureStream{texturePath, std::ofstream::binary};
     if (!textureStream.good()) {
-      throw std::runtime_error(fmt::format("Failed to open {} for writing", texturePath));
+      throw std::runtime_error(TMIV_FMT::format("Failed to open {} for writing", texturePath));
     }
 
     std::ofstream transparencyStream{transparencyPath, std::ofstream::binary};
     if (!transparencyStream.good()) {
-      throw std::runtime_error(fmt::format("Failed to open {} for writing", transparencyPath));
+      throw std::runtime_error(TMIV_FMT::format("Failed to open {} for writing", transparencyPath));
     }
 
     Common::logInfo("PCS to RAW conversion: {} frames ({} layers)", m_numberOfInputFrames,
@@ -197,13 +196,13 @@ private:
 
         textureLayer.writeTo(textureStream);
         if (!textureStream.good()) {
-          throw std::runtime_error(fmt::format("Failed to write to {}", texturePath));
+          throw std::runtime_error(TMIV_FMT::format("Failed to write to {}", texturePath));
         }
 
         transparencyLayer.writeTo(transparencyStream);
 
         if (!transparencyStream.good()) {
-          throw std::runtime_error(fmt::format("Failed to write to {}", transparencyPath));
+          throw std::runtime_error(TMIV_FMT::format("Failed to write to {}", transparencyPath));
         }
       }
 

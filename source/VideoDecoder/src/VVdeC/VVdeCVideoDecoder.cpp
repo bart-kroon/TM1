@@ -198,7 +198,7 @@ private:
       return true;
     }
     throw std::runtime_error(
-        fmt::format("Failed to decode VVC frame: {}", vvdec_get_error_msg(err)));
+        TMIV_FMT::format("Failed to decode VVC frame: {}", vvdec_get_error_msg(err)));
   }
 
   auto flushFrame() -> bool {
@@ -206,7 +206,7 @@ private:
 
     if (err != VVDEC_OK && err != VVDEC_EOF) {
       throw std::runtime_error(
-          fmt::format("Failed to flush VVC frame: {}", vvdec_get_error_msg(err)));
+          TMIV_FMT::format("Failed to flush VVC frame: {}", vvdec_get_error_msg(err)));
     }
     return m_frame != nullptr;
   }

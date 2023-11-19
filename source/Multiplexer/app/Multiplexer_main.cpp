@@ -110,7 +110,8 @@ private:
     if (m_istream.good()) {
       return Decoder::decodeV3cSampleStream(m_istream);
     }
-    throw std::runtime_error(fmt::format("Failed to open input bitstream {} for reading.", path));
+    throw std::runtime_error(
+        TMIV_FMT::format("Failed to open input bitstream {} for reading.", path));
   }
 
   auto codedVideoSequenceSourceFactory() -> CodedVideoSequenceSourceFactory {
@@ -123,7 +124,7 @@ private:
         return partitionVideoSubBitstream(vps, decodeAnnexBStream(stream));
       }
       throw std::runtime_error(
-          fmt::format("Failed to open input video sub-bitstream {} for reading.", path));
+          TMIV_FMT::format("Failed to open input video sub-bitstream {} for reading.", path));
     };
   }
 
@@ -143,23 +144,24 @@ private:
       case MivBitstream::PtlProfileCodecGroupIdc::VVC_Main10:
         return VideoDecoder::partitionVvcMain10(std::move(source));
       case MivBitstream::PtlProfileCodecGroupIdc::MP4RA:
-        throw std::runtime_error(fmt::format("Codec group IDC {} is not supported", codecGroupIdc));
+        throw std::runtime_error(
+            TMIV_FMT::format("Codec group IDC {} is not supported", codecGroupIdc));
       default:
-        throw std::runtime_error(fmt::format("Unknown codec group IDC {}", codecGroupIdc));
+        throw std::runtime_error(TMIV_FMT::format("Unknown codec group IDC {}", codecGroupIdc));
       }
     }();
     if (result) {
       return result;
     }
     throw std::runtime_error(
-        fmt::format("No built-in support for the {} codec group IDC", codecGroupIdc));
+        TMIV_FMT::format("No built-in support for the {} codec group IDC", codecGroupIdc));
   }
 
   auto openOutputBitstream() -> std::unique_ptr<std::ostream> {
     const auto path = IO::outputBitstreamPath(json(), placeholders());
     auto stream = std::make_unique<std::ofstream>(path, std::ios::binary);
     if (!stream->good()) {
-      throw std::runtime_error(fmt::format("Failed to open {} for writing", path));
+      throw std::runtime_error(TMIV_FMT::format("Failed to open {} for writing", path));
     }
     return stream;
   }

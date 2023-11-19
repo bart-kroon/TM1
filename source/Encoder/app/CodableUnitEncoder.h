@@ -40,6 +40,8 @@
 #include <TMIV/IO/IO.h>
 #include <TMIV/MivBitstream/Formatters.h>
 
+#include <fstream>
+
 namespace TMIV::Encoder {
 using MivBitstream::EncoderParams;
 

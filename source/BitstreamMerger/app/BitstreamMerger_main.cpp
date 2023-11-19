@@ -33,10 +33,9 @@
 
 #include <TMIV/BitstreamMerger/BitstreamMerger.h>
 #include <TMIV/Common/Application.h>
+#include <TMIV/Common/format.h>
 #include <TMIV/IO/IO.h>
 #include <TMIV/MivBitstream/Formatters.h>
-
-#include <fmt/ostream.h>
 
 #include <filesystem>
 #include <fstream>
@@ -94,7 +93,8 @@ private:
     if (m_istream.good()) {
       m_bitstreamMerger->readInputBitstream(m_istream);
     } else {
-      throw std::runtime_error(fmt::format("Failed to open input bitstream {} for reading.", path));
+      throw std::runtime_error(
+          TMIV_FMT::format("Failed to open input bitstream {} for reading.", path));
     }
   }
 
@@ -105,7 +105,8 @@ private:
       const auto metadata = Common::Json::loadFrom(m_imstream);
       m_bitstreamMerger->readOutofBandMetadata(metadata.as<Common::Json::Array>().at(0));
     } else {
-      throw std::runtime_error(fmt::format("Failed to open the out-of-band metadata {}.", path));
+      throw std::runtime_error(
+          TMIV_FMT::format("Failed to open the out-of-band metadata {}.", path));
     }
   }
 
@@ -115,7 +116,7 @@ private:
     const auto path = IO::outputBitstreamPath(json(), placeholders());
     std::ofstream stream{path, std::ios::binary};
     if (!stream.good()) {
-      throw std::runtime_error(fmt::format("Failed to open {} for writing", path));
+      throw std::runtime_error(TMIV_FMT::format("Failed to open {} for writing", path));
     }
     m_bitstreamMerger->writeOutputBitstream(stream);
     m_bitstreamMerger->reportSummary(stream.tellp());
@@ -125,7 +126,7 @@ private:
     const auto path = IO::outputBitstreamPath(json(), placeholders()).replace_extension(".json");
     std::ofstream stream{path, std::ios::binary};
     if (!stream.good()) {
-      throw std::runtime_error(fmt::format("Failed to open {} for writing", path));
+      throw std::runtime_error(TMIV_FMT::format("Failed to open {} for writing", path));
     }
     m_bitstreamMerger->writeOutOfBandMetadata(stream);
   }

@@ -1,6 +1,7 @@
 stages:
   - formatting
   - checks
+  - debug build
   - release build
   - static analysis
   - integration tests

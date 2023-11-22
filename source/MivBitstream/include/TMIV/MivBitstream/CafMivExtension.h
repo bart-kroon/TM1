@@ -262,9 +262,98 @@ private:
   std::vector<uint16_t> m_pp_parent_id;
 };
 
-class SensorExtrinsics;
-class DistortionParameters;
-class LightSourceExtrinsics;
+// 23090-12: sensor_extrinsics(v, s)
+class SensorExtrinsics {
+public:
+  [[nodiscard]] constexpr auto se_sensor_pos_x() const noexcept;
+  [[nodiscard]] constexpr auto se_sensor_pos_y() const noexcept;
+  [[nodiscard]] constexpr auto se_sensor_pos_z() const noexcept;
+  [[nodiscard]] constexpr auto se_sensor_quat_x() const noexcept;
+  [[nodiscard]] constexpr auto se_sensor_quat_y() const noexcept;
+  [[nodiscard]] constexpr auto se_sensor_quat_z() const noexcept;
+
+  constexpr auto se_sensor_pos_x(float value) noexcept -> auto &;
+  constexpr auto se_sensor_pos_y(float value) noexcept -> auto &;
+  constexpr auto se_sensor_pos_z(float value) noexcept -> auto &;
+  constexpr auto se_sensor_quat_x(int32_t value) noexcept -> auto &;
+  constexpr auto se_sensor_quat_y(int32_t value) noexcept -> auto &;
+  constexpr auto se_sensor_quat_z(int32_t value) noexcept -> auto &;
+
+  auto printTo(std::ostream &stream, uint16_t v, uint16_t s) const -> std::ostream &;
+
+  constexpr auto operator==(const SensorExtrinsics &other) const noexcept;
+  constexpr auto operator!=(const SensorExtrinsics &other) const noexcept;
+
+  static auto decodeFrom(Common::InputBitstream &bitstream) -> SensorExtrinsics;
+
+  void encodeTo(Common::OutputBitstream &bitstream) const;
+
+private:
+  float m_se_sensor_pos_x{};
+  float m_se_sensor_pos_y{};
+  float m_se_sensor_pos_z{};
+  int32_t m_se_sensor_quat_x{};
+  int32_t m_se_sensor_quat_y{};
+  int32_t m_se_sensor_quat_z{};
+};
+
+// 23090-12: light_source_extrinsics(v, s)
+class LightSourceExtrinsics {
+public:
+  [[nodiscard]] constexpr auto lse_light_source_pos_x() const noexcept;
+  [[nodiscard]] constexpr auto lse_light_source_pos_y() const noexcept;
+  [[nodiscard]] constexpr auto lse_light_source_pos_z() const noexcept;
+  [[nodiscard]] constexpr auto lse_light_source_quat_x() const noexcept;
+  [[nodiscard]] constexpr auto lse_light_source_quat_y() const noexcept;
+  [[nodiscard]] constexpr auto lse_light_source_quat_z() const noexcept;
+
+  constexpr auto lse_light_source_pos_x(float value) noexcept -> auto &;
+  constexpr auto lse_light_source_pos_y(float value) noexcept -> auto &;
+  constexpr auto lse_light_source_pos_z(float value) noexcept -> auto &;
+  constexpr auto lse_light_source_quat_x(int32_t value) noexcept -> auto &;
+  constexpr auto lse_light_source_quat_y(int32_t value) noexcept -> auto &;
+  constexpr auto lse_light_source_quat_z(int32_t value) noexcept -> auto &;
+
+  auto printTo(std::ostream &stream, uint16_t v, uint16_t s) const -> std::ostream &;
+
+  constexpr auto operator==(const LightSourceExtrinsics &other) const noexcept;
+  constexpr auto operator!=(const LightSourceExtrinsics &other) const noexcept;
+
+  static auto decodeFrom(Common::InputBitstream &bitstream) -> LightSourceExtrinsics;
+
+  void encodeTo(Common::OutputBitstream &bitstream) const;
+
+private:
+  float m_lse_light_source_pos_x{};
+  float m_lse_light_source_pos_y{};
+  float m_lse_light_source_pos_z{};
+  int32_t m_lse_light_source_quat_x{};
+  int32_t m_lse_light_source_quat_y{};
+  int32_t m_lse_light_source_quat_z{};
+};
+
+// 23090-12: DistortionParameters(v, s)
+class DistortionParameters {
+public:
+  [[nodiscard]] constexpr auto dp_model_id() const noexcept;
+  [[nodiscard]] auto dp_coefficient(uint8_t i) const -> float;
+
+  auto dp_model_id(uint8_t value) -> DistortionParameters &;
+  auto dp_coefficient(uint8_t i, float value) -> DistortionParameters &;
+
+  auto printTo(std::ostream &stream, uint16_t v, uint16_t s) const -> std::ostream &;
+
+  constexpr auto operator==(const DistortionParameters &other) const noexcept;
+  constexpr auto operator!=(const DistortionParameters &other) const noexcept;
+
+  static auto decodeFrom(Common::InputBitstream &bitstream) -> DistortionParameters;
+
+  void encodeTo(Common::OutputBitstream &bitstream) const;
+
+private:
+  uint8_t m_dp_model_id{};
+  std::vector<float> m_dp_coefficient{};
+};
 
 // 23090-12: miv_view_params_list()
 class MivViewParamsList {
@@ -480,41 +569,6 @@ private:
   std::vector<ChromaScaling> m_chroma_scaling;
 };
 
-// 23090-12: sensor_extrinsics(v, s)
-class SensorExtrinsics {
-public:
-  [[nodiscard]] constexpr auto se_sensor_pos_x() const noexcept;
-  [[nodiscard]] constexpr auto se_sensor_pos_y() const noexcept;
-  [[nodiscard]] constexpr auto se_sensor_pos_z() const noexcept;
-  [[nodiscard]] constexpr auto se_sensor_quat_x() const noexcept;
-  [[nodiscard]] constexpr auto se_sensor_quat_y() const noexcept;
-  [[nodiscard]] constexpr auto se_sensor_quat_z() const noexcept;
-
-  constexpr auto se_sensor_pos_x(float value) noexcept -> auto &;
-  constexpr auto se_sensor_pos_y(float value) noexcept -> auto &;
-  constexpr auto se_sensor_pos_z(float value) noexcept -> auto &;
-  constexpr auto se_sensor_quat_x(int32_t value) noexcept -> auto &;
-  constexpr auto se_sensor_quat_y(int32_t value) noexcept -> auto &;
-  constexpr auto se_sensor_quat_z(int32_t value) noexcept -> auto &;
-
-  auto printTo(std::ostream &stream, uint16_t v, uint16_t s) const -> std::ostream &;
-
-  constexpr auto operator==(const SensorExtrinsics &other) const noexcept;
-  constexpr auto operator!=(const SensorExtrinsics &other) const noexcept;
-
-  static auto decodeFrom(Common::InputBitstream &bitstream) -> SensorExtrinsics;
-
-  void encodeTo(Common::OutputBitstream &bitstream) const;
-
-private:
-  float m_se_sensor_pos_x{};
-  float m_se_sensor_pos_y{};
-  float m_se_sensor_pos_z{};
-  int32_t m_se_sensor_quat_x{};
-  int32_t m_se_sensor_quat_y{};
-  int32_t m_se_sensor_quat_z{};
-};
-
 // 23090-12
 class MivViewParamsUpdateSensorExtrinsics {
 public:
@@ -545,41 +599,6 @@ private:
   std::vector<uint16_t> m_mvpuse_view_idx{};
   std::vector<uint16_t> m_mvpuse_sensor_idx{};
   std::vector<std::vector<SensorExtrinsics>> m_sensor_extrinsics{};
-};
-
-// 23090-12: light_source_extrinsics(v, s)
-class LightSourceExtrinsics {
-public:
-  [[nodiscard]] constexpr auto lse_light_source_pos_x() const noexcept;
-  [[nodiscard]] constexpr auto lse_light_source_pos_y() const noexcept;
-  [[nodiscard]] constexpr auto lse_light_source_pos_z() const noexcept;
-  [[nodiscard]] constexpr auto lse_light_source_quat_x() const noexcept;
-  [[nodiscard]] constexpr auto lse_light_source_quat_y() const noexcept;
-  [[nodiscard]] constexpr auto lse_light_source_quat_z() const noexcept;
-
-  constexpr auto lse_light_source_pos_x(float value) noexcept -> auto &;
-  constexpr auto lse_light_source_pos_y(float value) noexcept -> auto &;
-  constexpr auto lse_light_source_pos_z(float value) noexcept -> auto &;
-  constexpr auto lse_light_source_quat_x(int32_t value) noexcept -> auto &;
-  constexpr auto lse_light_source_quat_y(int32_t value) noexcept -> auto &;
-  constexpr auto lse_light_source_quat_z(int32_t value) noexcept -> auto &;
-
-  auto printTo(std::ostream &stream, uint16_t v, uint16_t s) const -> std::ostream &;
-
-  constexpr auto operator==(const LightSourceExtrinsics &other) const noexcept;
-  constexpr auto operator!=(const LightSourceExtrinsics &other) const noexcept;
-
-  static auto decodeFrom(Common::InputBitstream &bitstream) -> LightSourceExtrinsics;
-
-  void encodeTo(Common::OutputBitstream &bitstream) const;
-
-private:
-  float m_lse_light_source_pos_x{};
-  float m_lse_light_source_pos_y{};
-  float m_lse_light_source_pos_z{};
-  int32_t m_lse_light_source_quat_x{};
-  int32_t m_lse_light_source_quat_y{};
-  int32_t m_lse_light_source_quat_z{};
 };
 
 // 23090-12
@@ -615,29 +634,6 @@ private:
   std::vector<uint16_t> m_mvpulse_view_idx{};
   std::vector<uint16_t> m_mvpulse_sensor_idx{};
   std::vector<std::vector<LightSourceExtrinsics>> m_light_source_extrinsics{};
-};
-
-// 23090-12: DistortionParameters(v, s)
-class DistortionParameters {
-public:
-  [[nodiscard]] constexpr auto dp_model_id() const noexcept;
-  [[nodiscard]] auto dp_coefficient(uint8_t i) const -> float;
-
-  auto dp_model_id(uint8_t value) -> DistortionParameters &;
-  auto dp_coefficient(uint8_t i, float value) -> DistortionParameters &;
-
-  auto printTo(std::ostream &stream, uint16_t v, uint16_t s) const -> std::ostream &;
-
-  constexpr auto operator==(const DistortionParameters &other) const noexcept;
-  constexpr auto operator!=(const DistortionParameters &other) const noexcept;
-
-  static auto decodeFrom(Common::InputBitstream &bitstream) -> DistortionParameters;
-
-  void encodeTo(Common::OutputBitstream &bitstream) const;
-
-private:
-  uint8_t m_dp_model_id{};
-  std::vector<float> m_dp_coefficient{};
 };
 
 // 23090-12

@@ -54,7 +54,7 @@
 #endif
 
 namespace TMIV::Common {
-template <typename... Args> [[nodiscard]] auto runtimeFormat(std::string_view fmt, Args &&...args) {
+template <typename... Args> [[nodiscard]] auto runtimeFormat(std::string_view fmt, Args... args) {
   return TMIV_FMT::vformat(fmt, TMIV_FMT::make_format_args(args...));
 }
 } // namespace TMIV::Common

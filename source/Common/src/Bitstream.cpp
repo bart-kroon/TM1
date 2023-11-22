@@ -41,7 +41,7 @@
 
 namespace TMIV::Common {
 auto InputBitstream::tellg() const -> std::streampos {
-  return m_stream.tellg() * charBits - m_size;
+  return m_stream.get().tellg() * charBits - m_size;
 }
 
 auto InputBitstream::getUint64() -> uint64_t {
@@ -102,15 +102,15 @@ void InputBitstream::rbspTrailingBits() {
   }
 }
 
-auto InputBitstream::moreData() -> bool {
-  VERIFY_BITSTREAM(m_stream.good() && !m_stream.eof());
+auto InputBitstream::moreData() const -> bool {
+  VERIFY_BITSTREAM(m_stream.get().good() && !m_stream.get().eof());
 
   if (m_size > 0) {
     return true;
   }
-  m_stream.peek();
-  auto result = !m_stream.eof();
-  m_stream.clear();
+  m_stream.get().peek();
+  auto result = !m_stream.get().eof();
+  m_stream.get().clear();
   return result;
 }
 
@@ -121,7 +121,7 @@ auto InputBitstream::moreRbspData() -> bool {
   }
 
   // Store bitstream state.
-  const auto streamPos = m_stream.tellg();
+  const auto streamPos = m_stream.get().tellg();
   const auto size = m_size;
   const auto buffer = m_buffer;
 
@@ -131,8 +131,8 @@ auto InputBitstream::moreRbspData() -> bool {
   while (moreData()) {
     if (getFlag()) {
       // We found a one bit beyond the first bit. Restore bitstream state and return true.
-      m_stream.seekg(streamPos);
-      m_stream.clear();
+      m_stream.get().seekg(streamPos);
+      m_stream.get().clear();
       m_size = size;
       m_buffer = buffer;
       return true;
@@ -140,8 +140,8 @@ auto InputBitstream::moreRbspData() -> bool {
   }
 
   // We did not found a one bit beyond the first bit. Restore bitstream state and return false.
-  m_stream.seekg(streamPos);
-  m_stream.clear();
+  m_stream.get().seekg(streamPos);
+  m_stream.get().clear();
   m_size = size;
   m_buffer = buffer;
   return false;

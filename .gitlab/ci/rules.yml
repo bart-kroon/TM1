@@ -22,23 +22,26 @@ C++ formatting:
 Code quality rules:
   <<: *cpp_rules_definition
 
-Release build (GCC 12):
+C++23 Release build (GCC):
   <<: *cpp_rules_definition
 
-Debug build and static analysis (Clang 14):
+C++23 Debug build (Clang):
   <<: *cpp_rules_definition
 
-Decoder conformance test (GCC 12):
+C++17 Debug build and static analysis (Clang):
+  <<: *cpp_rules_definition
+
+Decoder conformance test (GCC):
   <<: *cpp_rules_definition
   dependencies:
-    - Release build (GCC 12)
+    - C++23 Release build (GCC)
 
-Parser test on V-PCC conformance bitstreams (GCC 12):
+Parser test on V-PCC conformance bitstreams (GCC):
   <<: *cpp_rules_definition
   dependencies:
-    - Release build (GCC 12)
+    - C++23 Release build (GCC)
 
-Integration test (GCC 12):
+Integration test (GCC):
   <<: *cpp_rules_definition
   dependencies:
-    - Release build (GCC 12)
+    - C++23 Release build (GCC)

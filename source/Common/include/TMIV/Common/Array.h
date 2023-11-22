@@ -450,9 +450,12 @@ public:
   [[nodiscard]] constexpr auto data() noexcept -> auto * { return m_v.data(); }
   [[nodiscard]] constexpr auto data() const noexcept -> const auto * { return m_v.data(); }
 
-  [[nodiscard]] constexpr auto operator[](size_t k) noexcept -> decltype(auto) { return m_v[k]; }
+  [[nodiscard]] constexpr auto operator[](size_t k) noexcept -> decltype(auto) {
+    return at(m_v, k);
+  }
+
   [[nodiscard]] constexpr auto operator[](size_t k) const noexcept -> decltype(auto) {
-    return m_v[k];
+    return at(m_v, k);
   }
 
   [[nodiscard]] constexpr auto begin() noexcept {
@@ -539,13 +542,13 @@ public:
   template <size_t L>
   [[nodiscard]] constexpr auto operator()(const std::array<size_t, L> &index) const noexcept
       -> decltype(auto) {
-    return m_v[position(index)];
+    return at(m_v, position(index));
   }
 
   template <size_t L>
   [[nodiscard]] constexpr auto operator()(const std::array<size_t, L> &index) noexcept
       -> decltype(auto) {
-    return m_v[position(index)];
+    return at(m_v, position(index));
   }
 
   template <typename... SizeT>
@@ -721,7 +724,7 @@ public:
   }
 
   // Swap operator
-  void swap(Array &that) {
+  void swap(Array &that) noexcept {
     std::swap(m_size, that.m_size);
     std::swap(m_step, that.m_step);
     m_v.swap(that.m_v);

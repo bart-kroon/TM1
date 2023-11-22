@@ -211,9 +211,10 @@ void logStacktrace();
   try {
     logStacktrace();
     logError(message("Assertion failed", condition, file, line));
+    std::abort();
   } catch (...) {
+    std::abort();
   }
-  std::abort();
 }
 
 // Down cast with bounds preconditions (internal error cause)

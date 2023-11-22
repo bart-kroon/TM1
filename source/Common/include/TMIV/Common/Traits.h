@@ -40,19 +40,21 @@
 
 namespace TMIV::Common {
 template <typename T>
-using NumericChecker = typename std::enable_if<std::is_arithmetic<T>::value ||
-                                               std::is_same<T, std::complex<float>>::value ||
-                                               std::is_same<T, std::complex<double>>::value>::type;
+using NumericChecker =
+    typename std::enable_if_t<std::is_arithmetic_v<T> || std::is_same_v<T, std::complex<float>> ||
+                              std::is_same_v<T, std::complex<double>>>;
 
 template <typename... Tn> struct same_type {};
 template <typename T1, typename T2> struct same_type<T1, T2> {
-  static constexpr bool value = std::is_same<T1, T2>::value;
+  static constexpr bool value = std::is_same_v<T1, T2>;
 };
+
 template <typename T1, typename T2, typename... Tn> struct same_type<T1, T2, Tn...> {
-  static constexpr bool value = std::is_same<T1, T2>::value && same_type<T1, Tn...>::value;
+  static constexpr bool value = std::is_same_v<T1, T2> && same_type<T1, Tn...>::value;
 };
+
 template <typename... Tn>
-using SameTypeChecker = typename std::enable_if<same_type<Tn...>::value>::type;
+using SameTypeChecker = typename std::enable_if_t<same_type<Tn...>::value>;
 } // namespace TMIV::Common
 
 #endif

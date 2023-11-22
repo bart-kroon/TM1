@@ -1,24 +1,22 @@
-FROM ubuntu:22.04
+FROM ubuntu:23.10
 
-RUN apt-get update -qq \
-  && apt-get upgrade -qqy \
-  && apt-get install -qqy --no-install-recommends \
+RUN apt-get update -qq
+RUN apt-get upgrade -qqy
+RUN apt-get install -qqy --no-install-recommends \
     build-essential \
     ccache \
-    clang-14 \
-    clang-tidy-14 \
-    clang-format-14 \
-    cmake \
-    g++-12 \
-    gcc-12 \
+    clang-17 \
+    clang-tidy-17 \
+    clang-format-17 \
+    g++-13 \
+    gcc-13 \
     git \
     lcov \
-    libc++-14-dev \
-    libc++abi-14-dev \
-    llvm-14 \
-    ninja-build \
+    libc++-17-dev \
+    libc++abi-17-dev \
+    libclang-rt-17-dev \
+    llvm-17 \
     python3-pip
 
 COPY requirements.txt /requirements.txt
-RUN python3 -m pip install --upgrade pip
-RUN python3 -m pip install -r /requirements.txt
+RUN pip3 install -r /requirements.txt --break-system-packages

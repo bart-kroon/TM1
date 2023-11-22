@@ -36,11 +36,11 @@
 import json
 import sys
 from pathlib import Path
-from subprocess import CompletedProcess, run
+from subprocess import run
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 
-CLANG_TIDY = "clang-tidy-14"
+CLANG_TIDY = "clang-tidy-17"
 
 error_count = 0
 

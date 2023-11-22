@@ -113,7 +113,7 @@ template <typename Mat1, typename Mat2> auto transpose(const Mat1 &in, Mat2 &out
 template <typename Mat> auto transpose(const Mat &m) -> decltype(transpose_type(Mat()));
 
 // Visit all pixels in a bounded plane
-template <typename Visitor> void forPixels(std::array<size_t, 2> sizes, Visitor &&f) {
+template <typename Visitor> void forPixels(std::array<size_t, 2> sizes, Visitor f) {
   for (size_t i = 0; i < sizes[0]; ++i) {
     for (size_t j = 0; j < sizes[1]; ++j) {
       f(i, j);
@@ -123,7 +123,7 @@ template <typename Visitor> void forPixels(std::array<size_t, 2> sizes, Visitor 
 
 // Visit all pixel neighbors (in between 3 and 8)
 template <typename Visitor>
-auto forNeighbors(size_t i, size_t j, std::array<size_t, 2> sizes, Visitor &&f) -> bool {
+auto forNeighbors(size_t i, size_t j, std::array<size_t, 2> sizes, Visitor f) -> bool {
   const auto n1 = std::max(size_t{1}, i) - 1;
   const auto n2 = std::min(sizes[0], i + 2);
   const auto m1 = std::max(size_t{1}, j) - 1;

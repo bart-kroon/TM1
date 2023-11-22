@@ -581,7 +581,7 @@ struct PtlChecker::Impl {
       break;
     }
 
-    // NOTE(BK): Name idrNuts to work around what appears to be a GCC 12 false alarm:
+    // NOTE(BK): Name idrNuts to work around what appears to be a GCC false alarm:
     // error: dangling pointer to an unnamed temporary may be used [-Werror=dangling-pointer=]
     static constexpr auto idrNuts = std::array{NUT::NAL_IDR_W_RADL, NUT::NAL_IDR_N_LP,
                                                NUT::NAL_GIDR_W_RADL, NUT::NAL_GIDR_N_LP};

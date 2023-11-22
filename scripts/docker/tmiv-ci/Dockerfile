@@ -1,4 +1,4 @@
-FROM tmiv-checks:20230216
+FROM tmiv-checks:20231122
 
 # Copy the test material for the integration test
 COPY tmiv_integration_test /tmiv_integration_test
@@ -20,18 +20,18 @@ COPY build_dependencies.json /dependencies/build/build_dependencies.json
 COPY build_dependencies.py /dependencies/build/build_dependencies.py
 COPY probe_compiler_features /dependencies/build/probe_compiler_features
 
-# Build the dependencies in the Docker environment (Clang 14)
-ENV CXX=clang++-14\ -w\ -stdlib=libc++
-ENV CC=clang-14\ -w
+# Build the dependencies in the Docker environment (Clang)
+ENV CXX=clang++-17\ -w\ -stdlib=libc++
+ENV CC=clang-17\ -w
 RUN /dependencies/build/build_dependencies.py \
   --source-dir /dependencies/source \
   --build-dir /dependencies/build/clang-Debug \
   --install-dir /dependencies/install/clang-Debug \
   --build-type Debug -j 2 --cxx-standard 17
 
-# Build the dependencies in the Docker environment (GCC 12)
-ENV CXX=g++-12\ -w
-ENV CC=gcc-12\ -w
+# Build the dependencies in the Docker environment (GCC)
+ENV CXX=g++-13\ -w
+ENV CC=gcc-13\ -w
 RUN /dependencies/build/build_dependencies.py \
   --source-dir /dependencies/source \
   --build-dir /dependencies/build/gcc-Release \

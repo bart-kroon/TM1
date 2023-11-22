@@ -50,9 +50,9 @@ template <typename Integer> auto InputBitstream::readBits(uint32_t bits) -> Inte
 
   while (m_size < bits) {
     VERIFY_BITSTREAM(m_size + charBits <= std::numeric_limits<uint64_t>::digits);
-    VERIFY_BITSTREAM(m_stream.good());
+    VERIFY_BITSTREAM(m_stream.get().good());
 
-    const auto value = m_stream.get();
+    const auto value = m_stream.get().get();
     m_buffer = (m_buffer << charBits) | static_cast<uchar>(value);
     m_size += charBits;
   }

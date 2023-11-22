@@ -73,11 +73,11 @@ public:
   void byteAlignment();
   void zeroAlign();
   void rbspTrailingBits();
-  auto moreData() -> bool;
+  [[nodiscard]] auto moreData() const -> bool;
   auto moreRbspData() -> bool;
   void reset();
 
-  std::istream &m_stream;
+  std::reference_wrapper<std::istream> m_stream;
   uint64_t m_buffer{};
   uint32_t m_size{};
 };

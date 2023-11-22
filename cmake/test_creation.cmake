@@ -1,5 +1,5 @@
 if(BUILD_TESTING)
-    find_package(Catch2 3 REQUIRED)
+    find_package(Catch2 REQUIRED)
     message(STATUS "TMIV: Building on Catch ${Catch2_VERSION}, found at ${Catch2_DIR}.")
     include("${Catch2_DIR}/Catch.cmake")
 endif()

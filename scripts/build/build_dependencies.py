@@ -2,7 +2,6 @@
 
 import json
 import hashlib
-import re
 import shutil
 import subprocess
 from pathlib import Path

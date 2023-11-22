@@ -37,8 +37,6 @@
 namespace TMIV::Common {
 // CMake parses this to create a Version.h file containing the project version defined in CMake
 static constexpr auto version = "@PROJECT_VERSION@";
-
-#define HAVE_STD_VERSION (20 <= @CMAKE_CXX_STANDARD@)
 } // namespace TMIV::Common
 
 #endif // TMIV_COMMON_VERSION_H

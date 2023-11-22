@@ -31,10 +31,11 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/Common/Formatters.h>
-#include <TMIV/Common/LoggingStrategyFmt.h>
-#include <TMIV/Common/Version.h>
-#include <TMIV/Common/verify.h>
+// https://en.cppreference.com/w/cpp/feature_test
+
+#include <cctype>
+#include <fstream>
+#include <string_view>
 
 #ifdef __has_include
 #if __has_include(<version>)
@@ -42,16 +43,30 @@
 #endif
 #endif
 
-#define HAVE_STD_STACKTRACE (202011L <= __cpp_lib_stacktrace && 202302L <= __cpp_lib_formatters)
-
-#if HAVE_STD_STACKTRACE
-#include <stacktrace>
-#endif
-
-namespace TMIV::Common {
-void logStacktrace() {
-#if HAVE_STD_STACKTRACE
-  logInfo("Stacktrace:\n{}", to_string(std::stacktrace::current(1)));
-#endif
+[[nodiscard]] auto take_int(std::string_view text) {
+  while (!text.empty() && !std::isdigit(text.back())) {
+    text.remove_suffix(1);
+  }
+  if (text.empty()) {
+    return std::string_view{"0"};
+  }
+  return text;
 }
-} // namespace TMIV::Common
+
+#define VALUE(name) #name
+#define ENTRY(name) stream << ",\n    \"" << #name << "\": " << take_int(VALUE(name));
+
+auto main(int argc, char *argv[]) -> int32_t {
+  if (argc != 2) {
+    return 1;
+  }
+  std::ofstream stream(argv[1]);
+  stream << "{\n";
+  stream << "    \"cxx_standard\": " << cxx_standard;
+  ENTRY(__cpp_lib_format);
+  ENTRY(__cpp_lib_print);
+  ENTRY(__cpp_lib_stacktrace);
+  ENTRY(__cpp_core_TODO);
+  stream << "\n}\n";
+  return 0;
+}

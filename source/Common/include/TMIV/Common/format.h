@@ -36,13 +36,13 @@
 
 #include <TMIV/Common/Version.h>
 
-#if HAVE_STD_VERSION
+#ifdef __has_include
+#if __has_include(<version>)
 #include <version>
 #endif
+#endif
 
-#define HAVE_STD_PRINT (202207L <= __cpp_lib_format && 202207L <= __cpp_lib_print)
-
-#if HAVE_STD_PRINT
+#if 202207L <= __cpp_lib_format && 202207L <= __cpp_lib_print
 #include <format>
 #include <print>
 

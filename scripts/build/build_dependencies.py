@@ -13,11 +13,12 @@ def main():
     args = parse_args()
 
     features = probe_compiler_features(args)
+    print(json.dumps(features, indent=4))
 
     with open(args.build_dependencies_file, encoding="utf8") as stream:
         build_dependencies = json.load(stream)
 
-    if features.have_std_print:
+    if 202207 <= features["__cpp_lib_format"] and 202207 <= features["__cpp_lib_print"]:
         build_dependencies = [d for d in build_dependencies if d["name"] != "FMT"]
 
     for d in build_dependencies:
@@ -101,52 +102,24 @@ def parse_args():
     return args
 
 
-def probe_compiler_features(args: Namespace) -> Namespace:
-    features = Namespace()
-
+def probe_compiler_features(args: Namespace) -> dict:
     source_dir = Path(__file__).parent / "probe_compiler_features"
-    build_dir = args.build_dir / "probe_compiler_features"
-    cmake_cache_file = build_dir / "CMakeCache.txt"
+    build_dir = args.build_dir / "probe_compiler_features-build"
+    install_dir = build_dir / "probe_compiler_features-install"
+    compiler_features_file = args.build_dir / "compiler_features.json"
 
-    run(["cmake", "-G", "Ninja", "-S", source_dir.as_posix(), "-B", build_dir.as_posix()])
-
-    with open(cmake_cache_file) as stream:
-        for line in stream.readlines():
-            if line.startswith("CMAKE_CXX_COMPILE_FEATURES:STRING="):
-                features.cxx_compile_features = set(line.split("=")[1].rstrip().split(";"))
-            elif line.startswith("CMAKE_CXX_COMPILER_ID:STRING="):
-                features.cxx_compiler_id = line.split("=")[1].rstrip()
-            elif line.startswith("CMAKE_CXX_COMPILER_VERSION:STRING="):
-                features.cxx_compiler_version = line.split("=")[1].rstrip()
-
-    if args.cxx_standard:
-        features.cxx_standard = args.cxx_standard
-    else:
-        features.cxx_standard = 0
-
-        for feature in features.cxx_compile_features:
-            match = re.match(r"cxx_std_([0-9]+)", feature)
-
-            if match and match[1] != "98":
-                features.cxx_standard = max(features.cxx_standard, int(match[1]))
-
-    if features.cxx_standard < 17:
-        raise RuntimeError("TMIV requires C++17 or newer")
-
-    # https://en.cppreference.com/w/cpp/compiler_support
-    features.have_std_print = (
-        23 <= features.cxx_standard
-        and features.cxx_compiler_id == "MSVC"
-        and "19.37" <= features.cxx_compiler_version
+    run(
+        ["cmake", "-G", "Ninja"]
+        + ["-S", source_dir.as_posix()]
+        + ["-B", build_dir.as_posix()]
+        + ["--install-prefix", install_dir]
     )
+    run(["ninja", "-C", build_dir])
+    run(["ninja", "-C", build_dir, "install"])
+    run([install_dir / "bin" / "probe_compiler_features", compiler_features_file])
 
-    print("Probed compiler features:")
-    print(f"  Standard         : C++{features.cxx_standard}")
-    print(f"  Compiler ID      : {features.cxx_compiler_id}")
-    print(f"  Compiler version : {features.cxx_compiler_version}")
-    print(f"  <print> header   : {features.have_std_print}")
-
-    return features
+    with open(compiler_features_file) as stream:
+        return json.load(stream)
 
 
 def download_dependency(dep: dict, args: Namespace):
@@ -162,7 +135,7 @@ def build_dependency(dep: dict, args: Namespace, features: dict):
     install_dir = args.install_dir
     thread_count_a = ["-j", args.thread_count] if args.thread_count else []
     variables = [
-        {"name": "CMAKE_CXX_STANDARD", "type": "STRING", "value": features.cxx_standard},
+        {"name": "CMAKE_CXX_STANDARD", "type": "STRING", "value": features["cxx_standard"]},
         {"name": "CMAKE_CXX_EXTENSIONS", "type": "BOOL", "value": "OFF"},
     ] + dep["variables"]
 

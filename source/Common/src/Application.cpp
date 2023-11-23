@@ -73,7 +73,7 @@ Application::Application(const char *tool, std::vector<const char *> argv, Optio
     } else if ("-j"sv == option) {
       const auto arg = std::atoi(take());
       if (0 < arg) {
-        Common::threadCount() = arg;
+        Common::threadCount() = downCast<uint32_t>(arg);
       } else {
         throw std::runtime_error("The -j option has as argument a positive number");
       }
@@ -162,10 +162,11 @@ void Application::add_file(const std::filesystem::path &path) {
 }
 
 void Application::add_parameter(std::string key, std::string_view value) {
-  auto json = Json{value};
+  auto json = Json{};
   try {
     json = Json::parse(value);
   } catch (std::runtime_error & /* unused */) {
+    json = Json{value};
   }
   Common::logInfo("Override {}: {}", key, json.format());
 

@@ -62,8 +62,13 @@ private:
   ptrdiff_t m_step;
 
 public:
-  constexpr explicit SteppedIterator(Iter begin, ptrdiff_t offset, ptrdiff_t step) noexcept
-      : m_begin{begin}, m_offset{offset}, m_step{step} {
+  template <typename Integral1, typename Integral2,
+            typename = std::enable_if_t<
+                std::conjunction_v<std::is_integral<Integral1>, std::is_integral<Integral2>>>>
+  constexpr explicit SteppedIterator(Iter begin, Integral1 offset, Integral2 step) noexcept
+      : m_begin{begin}
+      , m_offset{static_cast<ptrdiff_t>(offset)}
+      , m_step{static_cast<ptrdiff_t>(step)} {
     ASSERT(0 < step);
   }
 
@@ -123,12 +128,14 @@ public:
     return out;
   }
 
-  [[nodiscard]] constexpr auto operator+(ptrdiff_t a) const noexcept {
-    return SteppedIterator{m_begin, m_offset + a * m_step, this->m_step};
+  template <typename Integral, typename = std::enable_if_t<std::is_integral_v<Integral>>>
+  [[nodiscard]] constexpr auto operator+(Integral a) const noexcept {
+    return SteppedIterator{m_begin, m_offset + static_cast<ptrdiff_t>(a) * m_step, this->m_step};
   }
 
-  constexpr auto operator+=(ptrdiff_t a) noexcept -> decltype(auto) {
-    m_offset += a * m_step;
+  template <typename Integral, typename = std::enable_if_t<std::is_integral_v<Integral>>>
+  constexpr auto operator+=(Integral a) noexcept -> decltype(auto) {
+    m_offset += static_cast<ptrdiff_t>(a) * m_step;
     return *this;
   }
 
@@ -137,24 +144,28 @@ public:
     return (m_offset - rhs.m_offset) / m_step;
   }
 
-  [[nodiscard]] constexpr auto operator-(ptrdiff_t a) const noexcept -> decltype(auto) {
-    return SteppedIterator{m_begin, m_offset - a * m_step, this->m_step};
+  template <typename Integral, typename = std::enable_if_t<std::is_integral_v<Integral>>>
+  [[nodiscard]] constexpr auto operator-(Integral a) const noexcept -> decltype(auto) {
+    return SteppedIterator{m_begin, m_offset - static_cast<ptrdiff_t>(a) * m_step, this->m_step};
   }
 
-  constexpr auto operator-=(ptrdiff_t a) noexcept -> decltype(auto) {
-    m_offset -= a * m_step;
+  template <typename Integral, typename = std::enable_if_t<std::is_integral_v<Integral>>>
+  constexpr auto operator-=(Integral a) noexcept -> decltype(auto) {
+    m_offset -= static_cast<ptrdiff_t>(a) * m_step;
     return *this;
   }
 
-  [[nodiscard]] constexpr auto operator[](ptrdiff_t a) const noexcept -> decltype(auto) {
-    return m_begin[m_offset + a * m_step];
+  template <typename Integral, typename = std::enable_if_t<std::is_integral_v<Integral>>>
+  [[nodiscard]] constexpr auto operator[](Integral a) const noexcept -> decltype(auto) {
+    return m_begin[m_offset + static_cast<ptrdiff_t>(a) * m_step];
   }
 
   constexpr void swap(SteppedIterator &a, SteppedIterator &b) noexcept { std::swap(a, b); }
 };
 
-template <typename Iter>
-constexpr auto operator+(ptrdiff_t a, const SteppedIterator<Iter> &rhs) noexcept {
+template <typename Integral, typename Iter,
+          typename = std::enable_if_t<std::is_integral_v<Integral>>>
+constexpr auto operator+(Integral a, const SteppedIterator<Iter> &rhs) noexcept {
   return rhs + a;
 }
 
@@ -230,12 +241,14 @@ public:
     return out;
   }
 
-  [[nodiscard]] constexpr auto operator+(ptrdiff_t a) const noexcept {
-    return ArrayIterator(*m_array, m_offset + a);
+  template <typename Integral, typename = std::enable_if_t<std::is_integral_v<Integral>>>
+  [[nodiscard]] constexpr auto operator+(Integral a) const noexcept {
+    return ArrayIterator(*m_array, m_offset + static_cast<ptrdiff_t>(a));
   }
 
-  constexpr auto operator+=(ptrdiff_t a) noexcept -> decltype(auto) {
-    m_offset += a;
+  template <typename Integral, typename = std::enable_if_t<std::is_integral_v<Integral>>>
+  constexpr auto operator+=(Integral a) noexcept -> decltype(auto) {
+    m_offset += static_cast<ptrdiff_t>(a);
     return *this;
   }
 
@@ -244,24 +257,28 @@ public:
     return m_offset - rhs.m_offset;
   }
 
-  [[nodiscard]] constexpr auto operator-(ptrdiff_t a) const noexcept -> decltype(auto) {
-    return ArrayIterator{*m_array, m_offset - a};
+  template <typename Integral, typename = std::enable_if_t<std::is_integral_v<Integral>>>
+  [[nodiscard]] constexpr auto operator-(Integral a) const noexcept -> decltype(auto) {
+    return ArrayIterator{*m_array, m_offset - static_cast<ptrdiff_t>(a)};
   }
 
-  constexpr auto operator-=(ptrdiff_t a) noexcept -> decltype(auto) {
-    m_offset -= a;
+  template <typename Integral, typename = std::enable_if_t<std::is_integral_v<Integral>>>
+  constexpr auto operator-=(Integral a) noexcept -> decltype(auto) {
+    m_offset -= static_cast<ptrdiff_t>(a);
     return *this;
   }
 
-  [[nodiscard]] constexpr auto operator[](ptrdiff_t a) const noexcept -> decltype(auto) {
-    return Common::at(*m_array, m_offset + a);
+  template <typename Integral, typename = std::enable_if_t<std::is_integral_v<Integral>>>
+  [[nodiscard]] constexpr auto operator[](Integral a) const noexcept -> decltype(auto) {
+    return Common::at(*m_array, m_offset + static_cast<Integral>(a));
   }
 
   constexpr void swap(ArrayIterator &a, ArrayIterator &b) noexcept { std::swap(a, b); }
 };
 
-template <typename Iter>
-constexpr auto operator+(ptrdiff_t a, const ArrayIterator<Iter> &rhs) noexcept {
+template <typename Integral, typename Iter,
+          typename = std::enable_if_t<std::is_integral_v<Integral>>>
+constexpr auto operator+(Integral a, const ArrayIterator<Iter> &rhs) noexcept {
   return rhs + a;
 }
 } // namespace Array
@@ -321,7 +338,7 @@ private:
     for (size_t i = K + 1; i < m_dim; ++i) {
       result += at(m_step, i) * at(index, i);
     }
-    return result;
+    return static_cast<ptrdiff_t>(result);
   }
 
   using InternalArray = std::array<T, (M * ... * N)>;
@@ -450,11 +467,13 @@ public:
   [[nodiscard]] constexpr auto data() noexcept -> auto * { return m_v.data(); }
   [[nodiscard]] constexpr auto data() const noexcept -> const auto * { return m_v.data(); }
 
-  [[nodiscard]] constexpr auto operator[](size_t k) noexcept -> decltype(auto) {
+  template <typename Integral, typename = std::enable_if_t<std::is_integral_v<Integral>>>
+  [[nodiscard]] constexpr auto operator[](Integral k) noexcept -> decltype(auto) {
     return at(m_v, k);
   }
 
-  [[nodiscard]] constexpr auto operator[](size_t k) const noexcept -> decltype(auto) {
+  template <typename Integral, typename = std::enable_if_t<std::is_integral_v<Integral>>>
+  [[nodiscard]] constexpr auto operator[](Integral k) const noexcept -> decltype(auto) {
     return at(m_v, k);
   }
 
@@ -551,16 +570,16 @@ public:
     return at(m_v, position(index));
   }
 
-  template <typename... SizeT>
-  [[nodiscard]] constexpr auto operator()(SizeT... i) const noexcept -> decltype(auto) {
-    static_assert(std::conjunction_v<std::is_integral<SizeT>...>);
-    return operator()(std::array<size_t, sizeof...(SizeT)>{static_cast<size_t>(i)...});
+  template <typename... Integral,
+            typename = std::enable_if_t<std::conjunction_v<std::is_integral<Integral>...>>>
+  [[nodiscard]] constexpr auto operator()(Integral... i) const noexcept -> decltype(auto) {
+    return operator()(std::array<size_t, sizeof...(Integral)>{static_cast<size_t>(i)...});
   }
 
-  template <typename... SizeT>
-  [[nodiscard]] constexpr auto operator()(SizeT... i) noexcept -> decltype(auto) {
-    static_assert(std::conjunction_v<std::is_integral<SizeT>...>);
-    return operator()(std::array<size_t, sizeof...(SizeT)>{static_cast<size_t>(i)...});
+  template <typename... Integral,
+            typename = std::enable_if_t<std::conjunction_v<std::is_integral<Integral>...>>>
+  [[nodiscard]] constexpr auto operator()(Integral... i) noexcept -> decltype(auto) {
+    return operator()(std::array<size_t, sizeof...(Integral)>{static_cast<size_t>(i)...});
   }
 
   [[nodiscard]] constexpr auto operator-() const noexcept {
@@ -792,8 +811,15 @@ public:
   [[nodiscard]] auto data() noexcept -> auto * { return m_v.data(); }
   [[nodiscard]] auto data() const noexcept -> const auto * { return m_v.data(); }
 
-  [[nodiscard]] auto operator[](size_t k) noexcept -> decltype(auto) { return m_v[k]; }
-  [[nodiscard]] auto operator[](size_t k) const noexcept -> decltype(auto) { return m_v[k]; }
+  template <typename Integral, typename = std::enable_if_t<std::is_integral_v<Integral>>>
+  [[nodiscard]] auto operator[](Integral k) noexcept -> decltype(auto) {
+    return m_v[static_cast<size_t>(k)];
+  }
+
+  template <typename Integral, typename = std::enable_if_t<std::is_integral_v<Integral>>>
+  [[nodiscard]] auto operator[](Integral k) const noexcept -> decltype(auto) {
+    return m_v[static_cast<size_t>(k)];
+  }
 
   [[nodiscard]] auto begin() noexcept { return m_v.begin(); }
   [[nodiscard]] auto begin() const noexcept { return m_v.begin(); }
@@ -861,13 +887,16 @@ public:
   // Returns a const iterator to the first element after the last diagonal element
   [[nodiscard]] auto cdiag_end() const noexcept { return diag_end(); }
 
-  // Returns m(i, j, k, ..)
-  template <typename... I>
-  auto operator()(size_t first, I... next) const noexcept -> decltype(auto) {
-    return m_v[pos(1, first, next...)];
+  template <typename... Integral,
+            typename = std::enable_if_t<std::conjunction_v<std::is_integral<Integral>...>>>
+  auto operator()(Integral... index) const noexcept -> decltype(auto) {
+    return m_v[pos(1, static_cast<size_t>(index)...)];
   }
-  template <typename... I> auto operator()(size_t first, I... next) noexcept -> decltype(auto) {
-    return m_v[pos(1, first, next...)];
+
+  template <typename... Integral,
+            typename = std::enable_if_t<std::conjunction_v<std::is_integral<Integral>...>>>
+  auto operator()(Integral... index) noexcept -> decltype(auto) {
+    return m_v[pos(1, static_cast<size_t>(index)...)];
   }
 
   // Returns distance of m(i, j, k, ...) from m(0, 0, 0, ..)

@@ -331,7 +331,7 @@ auto saveValue(const std::tuple<Json::Object> & /* tag */, std::ostream &stream,
   if (object.empty()) {
     return stream << "{ }";
   }
-  const auto indent = std::string(size_t{4} * level, ' ');
+  const auto indent = std::string(4 * downCast<size_t>(level), ' ');
   auto sep = "{\n"sv;
   for (const auto &[key, value] : object) {
     stream << sep << indent << "    ";

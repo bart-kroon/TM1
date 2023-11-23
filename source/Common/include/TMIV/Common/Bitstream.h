@@ -35,6 +35,8 @@
 #define TMIV_COMMON_BITSTREAM_H
 
 #include "Half.h"
+#include "Traits.h"
+#include "verify.h"
 
 #include <cstdint>
 #include <istream>
@@ -42,7 +44,8 @@
 #include <type_traits>
 
 namespace TMIV::Common {
-auto ceilLog2(uint64_t range) -> uint8_t;
+template <typename Integral, typename = std::enable_if_t<std::is_integral_v<Integral>>>
+auto ceilLog2(Integral range) -> uint8_t;
 
 class InputBitstream {
 public:
@@ -51,7 +54,9 @@ public:
   // Input bit position indicator
   [[nodiscard]] auto tellg() const -> std::streampos;
 
-  template <typename Integer> auto readBits(uint32_t bits) -> Integer;
+  template <typename Ordinal, typename Integral,
+            typename = std::enable_if_t<std::is_integral_v<Integral>>>
+  auto readBits(Integral bits) -> Ordinal;
 
   auto getFlag() -> bool { return readBits<uint8_t>(1) > 0; }
   auto getUint8() { return readBits<uint8_t>(8); }
@@ -63,11 +68,13 @@ public:
   auto getFloat16() -> Common::Half;
   auto getFloat32() -> float;
 
-  template <typename Integer> auto getUVar(uint64_t range) -> Integer;
+  template <typename Ordinal1, typename Ordinal2,
+            typename = std::enable_if_t<is_ordinal_v<Ordinal2>>>
+  auto getUVar(Ordinal2 range) -> Ordinal1;
 
-  template <typename Integer> auto getUExpGolomb() -> Integer;
+  template <typename Ordinal> auto getUExpGolomb() -> Ordinal;
 
-  template <typename Integer> auto getSExpGolomb() -> Integer;
+  template <typename Ordinal> auto getSExpGolomb() -> Ordinal;
 
   [[nodiscard]] auto byteAligned() const -> bool;
   void byteAlignment();
@@ -95,7 +102,10 @@ public:
   // Output bit position indicator
   [[nodiscard]] auto tellp() const -> std::streampos;
 
-  template <typename Integer> void writeBits(const Integer &value, uint32_t bits);
+  template <typename Ordinal, typename Integral,
+            typename = std::enable_if_t<
+                std::conjunction_v<is_ordinal<Ordinal>, std::is_integral<Integral>>>>
+  void writeBits(Ordinal value, Integral bits);
 
   void putFlag(bool value) { writeBits(static_cast<int32_t>(value), 1); }
   void putUint8(uint8_t value) { writeBits(value, 8); }
@@ -107,9 +117,13 @@ public:
   void putFloat16(Common::Half value);
   void putFloat32(float value);
 
-  template <typename Integer> void putUVar(const Integer &value, uint64_t range);
+  template <
+      typename Ordinal1, typename Ordinal2,
+      typename = std::enable_if_t<std::conjunction_v<is_ordinal<Ordinal1>, is_ordinal<Ordinal2>>>>
+  void putUVar(Ordinal1 value, Ordinal2 range);
 
-  template <typename Integer> void putUExpGolomb(const Integer &value);
+  template <typename Ordinal, typename = std::enable_if_t<is_ordinal_v<Ordinal>>>
+  void putUExpGolomb(Ordinal value);
 
   void putSExpGolomb(int64_t value);
 

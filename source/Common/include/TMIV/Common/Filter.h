@@ -97,7 +97,7 @@ auto boxBlur(const Mat<Element> &in, int32_t k) -> Mat<Element> {
       const auto p_1 = Vec2i{j - k, i - k};
       const auto p_2 = Vec2i{j + k + 1, i + k + 1};
       const auto sum = sumRect(ii, p_1, p_2);
-      const auto count = countRect(ii, p_1, p_2);
+      const auto count = downCast<size_t>(countRect(ii, p_1, p_2));
       if (0 < count) {
         if (0 <= sum) {
           out(i, j) = static_cast<Element>((sum + count / 2) / count);

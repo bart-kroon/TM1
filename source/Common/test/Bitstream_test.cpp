@@ -178,7 +178,7 @@ TEST_CASE("ceilLog2") {
                                 ValuePair{21, 5}, ValuePair{64, 6}, ValuePair{100, 7}}));
 
   const auto input = std::get<0>(values);
-  const uint32_t expected_result = std::get<1>(values);
+  const auto expected_result = std::get<1>(values);
 
   REQUIRE(TMIV::Common::ceilLog2(input) == expected_result);
 }

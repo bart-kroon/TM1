@@ -211,6 +211,8 @@ TEST_CASE("PushPull") {
 
     const auto w = GENERATE(uint16_t{}, uint16_t{1}, uint16_t{13}, uint16_t{12});
     const auto h = GENERATE(uint16_t{}, uint16_t{1}, uint16_t{7}, uint16_t{8});
+    CAPTURE(w, h);
+
     const auto in = encodeCoordinates(w, h);
 
     WHEN("Filtering the frame") {

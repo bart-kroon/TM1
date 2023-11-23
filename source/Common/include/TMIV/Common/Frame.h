@@ -110,9 +110,15 @@ public:
   [[nodiscard]] auto getPlanes() const noexcept -> const auto & { return m_planes; }
 
   // Mutable access to a plane. The caller shall not resize the plane
-  [[nodiscard]] auto getPlane(size_t index) -> auto & { return at(m_planes, index); }
+  template <typename Integral, typename = std::enable_if_t<std::is_integral_v<Integral>>>
+  [[nodiscard]] auto getPlane(Integral index) -> auto & {
+    return at(m_planes, index);
+  }
 
-  [[nodiscard]] auto getPlane(size_t index) const -> const auto & { return at(m_planes, index); }
+  template <typename Integral, typename = std::enable_if_t<std::is_integral_v<Integral>>>
+  [[nodiscard]] auto getPlane(Integral index) const -> const auto & {
+    return at(m_planes, index);
+  }
 
   [[nodiscard]] auto getWidth() const noexcept {
     PRECONDITION(!empty());

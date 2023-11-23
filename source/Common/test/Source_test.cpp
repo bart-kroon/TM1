@@ -74,11 +74,11 @@ TEST_CASE("TMIV::Common::emptySource()") {
 TEST_CASE("TMIV::Common::uniformSource(n, x)") {
   using TMIV::Common::uniformSource;
 
-  const auto n = GENERATE(0, 1, 4);
+  const auto n = GENERATE(0U, 1U, 4U);
   const auto x = GENERATE(-1, 5);
 
   auto source = uniformSource<int32_t>(n, x);
-  for (auto i = 0; i < n; ++i) {
+  for (auto i = 0U; i < n; ++i) {
     REQUIRE(source() == x);
   }
   REQUIRE_FALSE(source().has_value());

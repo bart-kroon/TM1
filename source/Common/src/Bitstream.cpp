@@ -59,19 +59,6 @@ auto InputBitstream::getFloat32() -> float {
   return value;
 }
 
-auto ceilLog2(uint64_t range) -> uint8_t {
-  if (range == 0) {
-    return 0;
-  }
-  --range;
-  auto bits = uint8_t{};
-  while (range > 0) {
-    ++bits;
-    range /= 2;
-  }
-  return bits;
-}
-
 auto InputBitstream::byteAligned() const -> bool { return m_size % 8 == 0; }
 
 void InputBitstream::byteAlignment() {

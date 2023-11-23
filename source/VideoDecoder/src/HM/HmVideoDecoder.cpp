@@ -230,12 +230,12 @@ private:
     PRECONDITION(comPicYuv != nullptr);
 
     auto outFrame = Common::Frame<>{};
-    outFrame.setBitDepth(Common::at(m_outputBitDepth, toChannelType(COMPONENT_Y)));
+    outFrame.setBitDepth(Common::at(m_outputBitDepth, int32_t{toChannelType(COMPONENT_Y)}));
     outFrame.getPlanes().resize(comPicYuv->getNumberValidComponents());
 
     for (const auto d : {COMPONENT_Y, COMPONENT_Cb, COMPONENT_Cr}) {
       if (d < comPicYuv->getNumberValidComponents()) {
-        const auto planeBitDepth = Common::at(m_outputBitDepth, toChannelType(d));
+        const auto planeBitDepth = Common::at(m_outputBitDepth, int32_t{toChannelType(d)});
         LIMITATION(planeBitDepth == outFrame.getBitDepth());
 
         const auto *row = comPicYuv->getAddr(d);
@@ -243,7 +243,7 @@ private:
         const auto width = comPicYuv->getWidth(d);
         const auto height = comPicYuv->getHeight(d);
 
-        auto &outPlane = outFrame.getPlane(d);
+        auto &outPlane = outFrame.getPlane(int32_t{d});
         outPlane.resize({static_cast<size_t>(height), static_cast<size_t>(width)});
 
         for (int32_t i = 0; i < height; ++i) {

@@ -290,24 +290,29 @@ template <typename Out, typename In> constexpr auto assertDownCast(In input) noe
 }
 
 // Like gsl::at but prints a message before abnormal program termination and supports nested arrays
-template <typename Container>
-constexpr auto at(Container &container, size_t index) noexcept -> decltype(auto) {
+template <typename Container, typename Integral,
+          typename = std::enable_if_t<std::is_integral_v<Integral>>>
+constexpr auto at(Container &container, Integral index) noexcept -> decltype(auto) {
   using std::size;
-  PRECONDITION(index < size(container));
+  PRECONDITION(static_cast<size_t>(index) < size(container));
   // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index)
-  return container[index];
+  return container[static_cast<size_t>(index)];
 }
 
 // Like gsl::at but prints a message before abnormal program termination and supports nested arrays
-template <typename T>
-constexpr auto at(const std::initializer_list<T> init, size_t index) noexcept -> decltype(auto) {
-  PRECONDITION(index < init.size());
-  return *(init.begin() + index);
+template <typename T, typename Integral, typename = std::enable_if_t<std::is_integral_v<Integral>>>
+constexpr auto at(const std::initializer_list<T> init, Integral index) noexcept -> decltype(auto) {
+  PRECONDITION(static_cast<size_t>(index) < init.size());
+  return *(init.begin() + static_cast<ptrdiff_t>(index));
 }
 
 // Like gsl::at but prints a message before abnormal program termination and supports nested arrays
-template <typename Container, typename... SizeT>
-constexpr auto at(Container &container, size_t index0, SizeT... index) noexcept -> decltype(auto) {
+template <typename Container, typename Integral0, typename... Integral,
+          typename = std::enable_if_t<
+              0 < sizeof...(Integral) &&
+              std::conjunction_v<std::is_integral<Integral0>, std::is_integral<Integral>...>>>
+constexpr auto at(Container &container, Integral0 index0, Integral... index) noexcept
+    -> decltype(auto) {
   return at(at(container, index0), index...);
 }
 

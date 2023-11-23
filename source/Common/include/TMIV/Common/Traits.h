@@ -55,6 +55,11 @@ template <typename T1, typename T2, typename... Tn> struct same_type<T1, T2, Tn.
 
 template <typename... Tn>
 using SameTypeChecker = typename std::enable_if_t<same_type<Tn...>::value>;
+
+template <typename T>
+struct is_ordinal : public std::disjunction<std::is_integral<T>, std::is_enum<T>> {};
+
+template <typename T> static constexpr bool is_ordinal_v = is_ordinal<T>::value;
 } // namespace TMIV::Common
 
 #endif

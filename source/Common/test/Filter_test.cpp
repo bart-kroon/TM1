@@ -92,8 +92,8 @@ TEST_CASE("integralImage") {
 
   const auto out = TMIV::Common::integralImage<uint64_t>(in);
 
-  REQUIRE(out.width() == cols + size_t{1});
-  REQUIRE(out.height() == rows + size_t{1});
+  REQUIRE(out.width() == static_cast<size_t>(cols) + 1);
+  REQUIRE(out.height() == static_cast<size_t>(rows) + 1);
 
   for (int32_t i = 0; i < rows; ++i) {
     for (int32_t j = 0; j < cols; ++j) {

@@ -237,11 +237,11 @@ auto Cluster::splitnUnevenInformationPatchVertically(const ClusteringMap &cluste
     -> bool {
   auto [information, clusterToPackWithInformation, space, greater] = reference;
   auto splitThresholdInformation = static_cast<int32_t>(0.01 * 65535);
-  auto nonSplitInformation = clusterToPackWithInformation.top().getInformationDensity();
+  auto nonSplitInformation = clusterToPackWithInformation.get().top().getInformationDensity();
 
   const Cluster &c = (*this);
   const auto &clusteringBuffer = clusteringMap.getPlane(0);
-  const auto &informationBuffer = information[c.getViewIdx()].getPlane(0);
+  const auto &informationBuffer = information.get()[c.getViewIdx()].getPlane(0);
 
   std::vector<int32_t> numActivePixels;
   std::vector<int64_t> valueInformations;
@@ -454,11 +454,11 @@ auto Cluster::splitUnevenInformationPatchHorizontally(const ClusteringMap &clust
     -> bool {
   auto [information, clusterToPackWithInformation, space, greater] = reference;
   auto splitThresholdInformation = static_cast<int32_t>(0.01 * 65535);
-  auto nonSplitInformation = clusterToPackWithInformation.top().getInformationDensity();
+  auto nonSplitInformation = clusterToPackWithInformation.get().top().getInformationDensity();
 
   const Cluster &c = (*this);
   const auto &clusteringBuffer = clusteringMap.getPlane(0);
-  const auto &informationBuffer = information[c.getViewIdx()].getPlane(0);
+  const auto &informationBuffer = information.get()[c.getViewIdx()].getPlane(0);
 
   std::vector<int32_t> numActivePixels;
   std::vector<int64_t> valueInformations;
@@ -632,7 +632,7 @@ void Cluster::recursiveInformationSplit(const ClusteringMap &clusteringMap,
   bool splitted = false;
   const int32_t maxNonSplitTableSize = 64;
   auto &clu = (*this);
-  clu.calculateInformationDensity(clusteringMap, information[clu.getViewIdx()]);
+  clu.calculateInformationDensity(clusteringMap, information.get()[clu.getViewIdx()]);
 
   if (width() > height()) { // split vertically
     if (width() > maxNonSplitTableSize) {
@@ -648,13 +648,13 @@ void Cluster::recursiveInformationSplit(const ClusteringMap &clusteringMap,
 
   if (!splitted) {
     auto &c = (*this);
-    if ((c.getInformationDensity() < clusterToPackWithInformation.top().getInformationDensity()) ==
-        greater) {
-      clusterToPackWithInformation.push(c);
+    if ((c.getInformationDensity() <
+         clusterToPackWithInformation.get().top().getInformationDensity()) == greater) {
+      clusterToPackWithInformation.get().push(c);
       greater ? space += c.getArea() : space -= c.getArea();
       while ((space > 0) == greater) {
-        auto cluster = clusterToPackWithInformation.top();
-        clusterToPackWithInformation.pop();
+        auto cluster = clusterToPackWithInformation.get().top();
+        clusterToPackWithInformation.get().pop();
         greater ? space -= cluster.getArea() : space += cluster.getArea();
         if (cluster.getClusterId() == c.getClusterId()) {
           out.push_back(cluster);

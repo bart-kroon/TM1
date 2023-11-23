@@ -42,7 +42,7 @@ C++23 Debug build (Clang):
     - >
       cmake
       -G Ninja
-      -DCMAKE_CXX_FLAGS="-stdlib=libc++ -Wall -Wextra -Wpedantic -Werror -Wunreachable-code-aggressive -Wimplicit-int-conversion"
+      -DCMAKE_CXX_FLAGS="-stdlib=libc++ -Wall -Wextra -Wshadow -Wimplicit-int-conversion -Wpedantic -Wunreachable-code-aggressive -Werror"
       -DCMAKE_CXX_STANDARD=23
       -DCMAKE_BUILD_TYPE=Debug
       -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
@@ -72,7 +72,7 @@ C++17 Debug build and static analysis (Clang):
       cmake
       -G Ninja
       -DCMAKE_CXX_FLAGS="-stdlib=libc++
-      -Wall -Wextra -Wpedantic -Werror -Wunreachable-code-aggressive -Wimplicit-int-conversion
+      -Wall -Wextra -Wshadow -Wimplicit-int-conversion -Wpedantic -Wunreachable-code-aggressive -Werror
       -fprofile-arcs -ftest-coverage"
       -DCMAKE_CXX_STANDARD=17
       -DCMAKE_BUILD_TYPE=Debug

@@ -91,9 +91,9 @@ public:
   void recursiveSplit(const ClusteringMap &clusteringMap, std::vector<Cluster> &out,
                       int32_t alignment, int32_t minPatchSize) const;
   struct InformationSplitReference {
-    const Common::FrameList<uint32_t> &information;
-    ClusterInformationPriorityQueue &clustertopackWithInformation;
-    int32_t &space;
+    std::reference_wrapper<const Common::FrameList<uint32_t>> information;
+    std::reference_wrapper<ClusterInformationPriorityQueue> clustertopackWithInformation;
+    std::reference_wrapper<int32_t> space;
     bool order;
     InformationSplitReference(const Common::FrameList<uint32_t> &info,
                               ClusterInformationPriorityQueue &queue, int32_t &sp, bool ord)

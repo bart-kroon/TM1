@@ -48,7 +48,7 @@ inline auto threadCount() -> auto & {
 }
 
 template <typename Fun, typename = std::enable_if_t<std::is_invocable_v<Fun, size_t>>>
-void parallelFor(size_t size, Fun &&fun) {
+void parallelFor(size_t size, Fun fun) {
   auto next = std::atomic<size_t>{};
   auto threads = std::vector<std::thread>(std::min(size, size_t{threadCount()}));
 
@@ -65,7 +65,7 @@ void parallelFor(size_t size, Fun &&fun) {
 }
 
 template <typename Fun, typename = std::enable_if_t<std::is_invocable_v<Fun, size_t, size_t>>>
-void parallelFor(size_t columns, size_t rows, Fun &&fun) {
+void parallelFor(size_t columns, size_t rows, Fun fun) {
   parallelFor(rows, [columns, fun](size_t i) {
     for (size_t j = 0; j < columns; ++j) {
       fun(i, j);

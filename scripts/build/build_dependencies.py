@@ -111,7 +111,7 @@ def probe_compiler_features(args: Namespace) -> dict:
         ["cmake", "-G", "Ninja"]
         + ["-S", source_dir.as_posix()]
         + ["-B", build_dir.as_posix()]
-        + ["--install-prefix", install_dir]
+        + ["--install-prefix", install_dir.resolve().as_posix()]
     )
     run(["ninja", "-C", build_dir])
     run(["ninja", "-C", build_dir, "install"])

@@ -56,19 +56,6 @@ CMake formatting:
     - git diff
     - if [[ $(git diff) ]]; then echo "CMake formatting is wrong. Please see above."; return 1; fi
 
-No multi-line commit messages:
-  stage: checks
-  image:
-    name:  tmiv-checks:20231122
-  tags: [ linux-short ]
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-  script:
-    - git fetch --all -p
-    - NUM_COMMIT_MESSAGE_LINES=$(git log --pretty=format:%B remotes/origin/main..HEAD | sed '/^\s*$/d' | grep -c "")
-    - NUM_COMMITS=$(git rev-list --count remotes/origin/main..HEAD)
-    - if [[ "$NUM_COMMIT_MESSAGE_LINES" -ne "$NUM_COMMITS" ]]; then echo "Merge requests with multi-line commit messages result in a wrong commit message on main. Please rewrite the commit message(s) to have only one line."; fail; fi
-
 Code quality rules:
   stage: checks
   image:  tmiv-checks:20231122

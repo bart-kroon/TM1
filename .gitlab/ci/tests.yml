@@ -7,7 +7,7 @@ Decoder conformance test (GCC):
       python3 scripts/test/decoder_conformance_test.py
       --bitstreams-dir /tmiv_integration_test/conformance
       --output-dir decoder_conformance_test
-      --tmiv-dir /builds/software/MPEG/Video/MIV/Software/TMIV/install
+      --tmiv-dir /builds/MPEG/Video/MIV/Software/TMIV/install
   artifacts:
     when: always
     paths:
@@ -23,7 +23,7 @@ Parser test on V-PCC conformance bitstreams (GCC):
       python3 scripts/test/vpcc_conformance_parse_test.py
       --bitstreams-dir /tmiv_integration_test/vpcc_conformance
       --output-dir vpcc_conformance_parse_test
-      --tmiv-dir /builds/software/MPEG/Video/MIV/Software/TMIV/install
+      --tmiv-dir /builds/MPEG/Video/MIV/Software/TMIV/install
   artifacts:
     when: always
     paths:
@@ -38,11 +38,11 @@ Integration test (GCC):
   script:
     - >
       python3 scripts/test/integration_test.py
-      /builds/software/MPEG/Video/MIV/Software/TMIV/install
-      /builds/software/MPEG/Video/MIV/Software/TMIV
+      /builds/MPEG/Video/MIV/Software/TMIV/install
+      /builds/MPEG/Video/MIV/Software/TMIV
       /tmiv_integration_test
-      /builds/software/MPEG/Video/MIV/Software/TMIV/integration_test
-      -r /builds/software/MPEG/Video/MIV/Software/TMIV/test/integration_test.md5
+      /builds/MPEG/Video/MIV/Software/TMIV/integration_test
+      -r /builds/MPEG/Video/MIV/Software/TMIV/test/integration_test.md5
       --deps-install-dir /dependencies/install/gcc-Release
   artifacts:
     when: always

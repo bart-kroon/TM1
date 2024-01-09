@@ -611,7 +611,7 @@ def parse_arguments():
         "--tmiv-url",
         type=str,
         help="Git URL of TMIV",
-        default="http://mpeg.expert/software/MPEG/MIV/RS/TM1.git",
+        default="https://git.mpeg.expert/MPEG/MIV/RS/TM1.git",
     )
     parser.add_argument(
         "-r",

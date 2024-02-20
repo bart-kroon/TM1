@@ -268,7 +268,6 @@ private:
     if (!config.embeddedOccupancy) {
       vme.vme_occupancy_scale_enabled_flag(config.haveOccupancy);
     }
-    vme2.vme_patch_margin_enabled_flag(true);
     return vme2;
   }
 
@@ -1143,7 +1142,7 @@ private:
   }
 
   template <typename Invocable>
-  void visitPatch(const MivBitstream::PatchParams &patchParams, Invocable &&visit) const {
+  void visitPatch(const MivBitstream::PatchParams &patchParams, Invocable visit) const {
     const auto sizeU = patchParams.atlasPatch3dSizeU();
     const auto sizeV = patchParams.atlasPatch3dSizeV();
     const auto posU = patchParams.atlasPatch3dOffsetU();

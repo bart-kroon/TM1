@@ -41,7 +41,8 @@ TEST_CASE("PayloadType", "[Supplemental Enhancement Information RBSP]") {
     REQUIRE(toString(PayloadType::viewing_space_handling) == "viewing_space_handling");
     REQUIRE(toString(PayloadType::geometry_upscaling_parameters) ==
             "geometry_upscaling_parameters");
-    REQUIRE(toString(PayloadType(42)) == "reserved_sei_message (42)");
+    REQUIRE(toString(PayloadType(42)) == "unknown SEI message (42)");
+    REQUIRE(toString(PayloadType(200)) == "unknown SEI message (200)");
   }
 
   SECTION("Integer conversion - as specified in V3C/V-PCC FDIS d224") {
@@ -51,7 +52,7 @@ TEST_CASE("PayloadType", "[Supplemental Enhancement Information RBSP]") {
     REQUIRE(3U == static_cast<uint32_t>(PayloadType::user_data_registered_itu_t_t35));
     REQUIRE(4U == static_cast<uint32_t>(PayloadType::user_data_unregistered));
     REQUIRE(5U == static_cast<uint32_t>(PayloadType::recovery_point));
-    REQUIRE(6U == static_cast<uint32_t>(PayloadType::no_display));
+    REQUIRE(6U == static_cast<uint32_t>(PayloadType::no_reconstruction));
     REQUIRE(7U == static_cast<uint32_t>(PayloadType::time_code));
     REQUIRE(8U == static_cast<uint32_t>(PayloadType::sei_manifest));
     REQUIRE(9U == static_cast<uint32_t>(PayloadType::sei_prefix_indication));
@@ -66,10 +67,13 @@ TEST_CASE("PayloadType", "[Supplemental Enhancement Information RBSP]") {
     REQUIRE(18U == static_cast<uint32_t>(PayloadType::viewport_position));
     REQUIRE(19U == static_cast<uint32_t>(PayloadType::decoded_atlas_information_hash));
     REQUIRE(20U == static_cast<uint32_t>(PayloadType::packed_independent_regions));
+
     REQUIRE(64U == static_cast<uint32_t>(PayloadType::attribute_transformation_params));
     REQUIRE(65U == static_cast<uint32_t>(PayloadType::occupancy_synthesis));
     REQUIRE(66U == static_cast<uint32_t>(PayloadType::geometry_smoothing));
     REQUIRE(67U == static_cast<uint32_t>(PayloadType::attribute_smoothing));
+    REQUIRE(68U == static_cast<uint32_t>(PayloadType::vpcc_registered_sei_message));
+
     REQUIRE(128U == static_cast<uint32_t>(PayloadType::viewing_space));
     REQUIRE(129U == static_cast<uint32_t>(PayloadType::viewing_space_handling));
     REQUIRE(130U == static_cast<uint32_t>(PayloadType::geometry_upscaling_parameters));
@@ -77,6 +81,31 @@ TEST_CASE("PayloadType", "[Supplemental Enhancement Information RBSP]") {
     REQUIRE(132U == static_cast<uint32_t>(PayloadType::omaf_v1_compatible));
     REQUIRE(133U == static_cast<uint32_t>(PayloadType::geometry_assistance));
     REQUIRE(134U == static_cast<uint32_t>(PayloadType::extended_geometry_assistance));
+    REQUIRE(135U == static_cast<uint32_t>(PayloadType::miv_registered_sei_message));
+  }
+}
+
+TEST_CASE("MivPayloadType", "[Supplemental Enhancement Information RBSP]") {
+  SECTION("String conversion") {
+    REQUIRE(toString(MivPayloadType(10)) == "unknown MIV registered SEI message (10)");
+    REQUIRE(toString(MivPayloadType(21)) == "unknown MIV registered SEI message (21)");
+  }
+}
+
+TEST_CASE("miv_registered_sei_message", "[Supplemental Enhancement Information RBSP]") {
+  SECTION("Default Constructor") {
+    const auto message = MivRegisteredSeiMessage{};
+    REQUIRE(toString(message) == R"(mivPayloadType=unknown MIV registered SEI message (0)
+)");
+    REQUIRE_THROWS(byteCodingTest(message, 2));
+  }
+
+  SECTION("Unknown message") {
+    const auto message = MivRegisteredSeiMessage{static_cast<MivPayloadType>(56),
+                                                 MivRegisteredSeiPayload{"unknown payload"}};
+    REQUIRE(toString(message) == R"(mivPayloadType=unknown MIV registered SEI message (56)
+)");
+    byteCodingTest(message, 16);
   }
 }
 
@@ -93,6 +122,17 @@ TEST_CASE("sei_message", "[Supplemental Enhancement Information RBSP]") {
     REQUIRE(toString(message) == R"(payloadType=time_code
 )");
     byteCodingTest(message, 11, NalUnitType::NAL_PREFIX_NSEI);
+  }
+
+  SECTION("MIV registered SEI message") {
+    const auto message = SeiMessage{
+        PayloadType::miv_registered_sei_message,
+        SeiPayload{MivRegisteredSeiMessage{static_cast<MivPayloadType>(7),
+                                           MivRegisteredSeiPayload{std::string("something")}}}};
+    REQUIRE(toString(message) == R"(payloadType=miv_registered_sei_message
+mivPayloadType=unknown MIV registered SEI message (7)
+)");
+    byteCodingTest(message, 12, NalUnitType::NAL_SUFFIX_NSEI);
   }
 }
 

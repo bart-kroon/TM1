@@ -60,7 +60,7 @@ enum class PayloadType : uint16_t {
   user_data_registered_itu_t_t35,
   user_data_unregistered,
   recovery_point,
-  no_display,
+  no_reconstruction,
   time_code,
   sei_manifest,
   sei_prefix_indication,
@@ -79,26 +79,74 @@ enum class PayloadType : uint16_t {
   occupancy_synthesis,
   geometry_smoothing,
   attribute_smoothing,
+  vpcc_registered_sei_message,
   viewing_space = 128, // MIV
   viewing_space_handling,
   geometry_upscaling_parameters,
   atlas_view_enabled,
   omaf_v1_compatible,
   geometry_assistance,
-  extended_geometry_assistance
+  extended_geometry_assistance,
+  miv_registered_sei_message
 };
 
 auto operator<<(std::ostream &stream, PayloadType pt) -> std::ostream &;
+
+enum class MivPayloadType : uint16_t {};
+
+auto operator<<(std::ostream &stream, MivPayloadType mpt) -> std::ostream &;
+
+// 23090-12: miv_registered_sei_payload( mivPayloadType, mivPayloadSize )
+struct MivRegisteredSeiPayload {
+  using UnsupportedPayload = std::string;
+
+  using Payload = std::variant<std::monostate, UnsupportedPayload>;
+
+  Payload payload;
+
+  friend auto operator<<(std::ostream &stream, const MivRegisteredSeiPayload &x) -> std::ostream &;
+
+  auto operator==(const MivRegisteredSeiPayload &other) const noexcept -> bool;
+  auto operator!=(const MivRegisteredSeiPayload &other) const noexcept -> bool;
+
+  static auto decodeFromString(const std::string &payload, MivPayloadType payloadType)
+      -> MivRegisteredSeiPayload;
+
+  [[nodiscard]] auto encodeToString(MivPayloadType payloadType) const -> std::string;
+};
+
+// 23090-12: miv_registered_sei_message( payloadSize )
+class MivRegisteredSeiMessage {
+public:
+  MivRegisteredSeiMessage() = default;
+  MivRegisteredSeiMessage(MivPayloadType mivPayloadType, MivRegisteredSeiPayload payload);
+
+  [[nodiscard]] auto mivPayloadType() const noexcept -> MivPayloadType;
+  [[nodiscard]] auto mivRegisteredSeiPayload() const noexcept -> const MivRegisteredSeiPayload &;
+
+  friend auto operator<<(std::ostream &stream, const MivRegisteredSeiMessage &x) -> std::ostream &;
+
+  auto operator==(const MivRegisteredSeiMessage &other) const noexcept -> bool;
+  auto operator!=(const MivRegisteredSeiMessage &other) const noexcept -> bool;
+
+  static auto decodeFrom(std::istream &stream) -> MivRegisteredSeiMessage;
+
+  void encodeTo(std::ostream &stream) const;
+
+private:
+  MivPayloadType m_mivPayloadType{};
+  MivRegisteredSeiPayload m_mivRegisteredSeiPayload;
+};
 
 // 23090-5: sei_payload( payloadType, payloadSize )
 struct SeiPayload {
   using UnsupportedPayload = std::string;
 
-  using Payload = std::variant<std::monostate, UnsupportedPayload, SceneObjectInformation,
-                               AtlasObjectAssociation, ViewportCameraParameters, ViewportPosition,
-                               PackedIndependentRegions, ViewingSpace, ViewingSpaceHandling,
-                               GeometryUpscalingParameters, AtlasViewEnabled, GeometryAssistance,
-                               ExtendedGeometryAssistance, DecodedAtlasInformationHash>;
+  using Payload = std::variant<
+      std::monostate, UnsupportedPayload, SceneObjectInformation, AtlasObjectAssociation,
+      ViewportCameraParameters, ViewportPosition, PackedIndependentRegions, ViewingSpace,
+      ViewingSpaceHandling, GeometryUpscalingParameters, AtlasViewEnabled, GeometryAssistance,
+      ExtendedGeometryAssistance, DecodedAtlasInformationHash, MivRegisteredSeiMessage>;
 
   Payload payload;
 

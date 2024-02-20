@@ -56,8 +56,8 @@ auto operator<<(std::ostream &stream, PayloadType pt) -> std::ostream & {
     return stream << "user_data_unregistered";
   case PayloadType::recovery_point:
     return stream << "recovery_point";
-  case PayloadType::no_display:
-    return stream << "no_display";
+  case PayloadType::no_reconstruction:
+    return stream << "no_reconstruction";
   case PayloadType::time_code:
     return stream << "time_code";
   case PayloadType::sei_manifest:
@@ -94,6 +94,8 @@ auto operator<<(std::ostream &stream, PayloadType pt) -> std::ostream & {
     return stream << "geometry_smoothing";
   case PayloadType::attribute_smoothing:
     return stream << "attribute_smoothing";
+  case PayloadType::vpcc_registered_sei_message:
+    return stream << "vpcc_registered_sei_message";
   case PayloadType::viewing_space:
     return stream << "viewing_space";
   case PayloadType::viewing_space_handling:
@@ -108,9 +110,115 @@ auto operator<<(std::ostream &stream, PayloadType pt) -> std::ostream & {
     return stream << "geometry_assistance";
   case PayloadType::extended_geometry_assistance:
     return stream << "extended_geometry_assistance";
+  case PayloadType::miv_registered_sei_message:
+    return stream << "miv_registered_sei_message";
   default:
-    return stream << "reserved_sei_message (" << static_cast<int32_t>(pt) << ")";
+    return stream << "unknown SEI message (" << static_cast<int32_t>(pt) << ")";
   }
+}
+
+auto operator<<(std::ostream &stream, MivPayloadType mpt) -> std::ostream & {
+  return stream << "unknown MIV registered SEI message (" << static_cast<int32_t>(mpt) << ")";
+}
+
+auto operator<<(std::ostream &stream, const MivRegisteredSeiPayload &x) -> std::ostream & {
+  return std::visit(
+      [&stream](const auto &payload) -> std::ostream & {
+        if constexpr (std::is_same_v<decltype(payload), const std::monostate &> ||
+                      std::is_same_v<decltype(payload), const std::string &>) {
+          return stream; // no or unknown payload
+        } else {
+          return stream << payload;
+        }
+      },
+      x.payload);
+}
+
+auto MivRegisteredSeiPayload::operator==(const MivRegisteredSeiPayload &other) const noexcept
+    -> bool {
+  return payload == other.payload;
+}
+
+auto MivRegisteredSeiPayload::operator!=(const MivRegisteredSeiPayload &other) const noexcept
+    -> bool {
+  return payload != other.payload;
+}
+
+auto MivRegisteredSeiPayload::decodeFromString(const std::string &payload,
+                                               MivPayloadType /* mivPayloadType */)
+    -> MivRegisteredSeiPayload {
+  return {payload};
+}
+
+auto MivRegisteredSeiPayload::encodeToString(MivPayloadType /* mivPayloadType */) const
+    -> std::string {
+  const auto &payload_ = std::get_if<UnsupportedPayload>(&payload);
+  VERIFY(payload_ != nullptr);
+  return *payload_;
+}
+
+MivRegisteredSeiMessage::MivRegisteredSeiMessage(MivPayloadType mivPayloadType,
+                                                 MivRegisteredSeiPayload payload)
+    : m_mivPayloadType{mivPayloadType}, m_mivRegisteredSeiPayload{std::move(payload)} {}
+
+auto MivRegisteredSeiMessage::mivPayloadType() const noexcept -> MivPayloadType {
+  return m_mivPayloadType;
+}
+
+auto MivRegisteredSeiMessage::mivRegisteredSeiPayload() const noexcept
+    -> const MivRegisteredSeiPayload & {
+  return m_mivRegisteredSeiPayload;
+}
+
+auto operator<<(std::ostream &stream, const MivRegisteredSeiMessage &x) -> std::ostream & {
+  stream << "mivPayloadType=" << x.mivPayloadType() << '\n';
+  stream << x.mivRegisteredSeiPayload();
+  return stream;
+}
+
+auto MivRegisteredSeiMessage::operator==(const MivRegisteredSeiMessage &other) const noexcept
+    -> bool {
+  return m_mivPayloadType == other.m_mivPayloadType &&
+         m_mivRegisteredSeiPayload == other.m_mivRegisteredSeiPayload;
+}
+
+auto MivRegisteredSeiMessage::operator!=(const MivRegisteredSeiMessage &other) const noexcept
+    -> bool {
+  return !operator==(other);
+}
+
+auto MivRegisteredSeiMessage::decodeFrom(std::istream &stream) -> MivRegisteredSeiMessage {
+  auto mivPayloadType_ = size_t{};
+  auto mrsm_payload_type_byte = uint8_t{};
+
+  do {
+    mrsm_payload_type_byte = Common::getUint8(stream);
+    mivPayloadType_ += mrsm_payload_type_byte;
+  } while (mrsm_payload_type_byte == 0xFF);
+
+  const auto mivPayloadType = static_cast<MivPayloadType>(mivPayloadType_);
+
+  std::ostringstream buffer;
+  buffer << stream.rdbuf();
+  const auto payload = std::move(buffer).str();
+
+  return MivRegisteredSeiMessage{
+      mivPayloadType, MivRegisteredSeiPayload::decodeFromString(payload, mivPayloadType)};
+}
+
+void MivRegisteredSeiMessage::encodeTo(std::ostream &stream) const {
+  const auto payload = mivRegisteredSeiPayload().encodeToString(mivPayloadType());
+
+  auto mivPayloadType_ = static_cast<size_t>(mivPayloadType());
+  auto mrsm_payload_type_byte = uint8_t{};
+
+  do {
+    mrsm_payload_type_byte = static_cast<uint8_t>(std::min(size_t{0xFF}, mivPayloadType_));
+    Common::putUint8(stream, mrsm_payload_type_byte);
+    mivPayloadType_ -= mrsm_payload_type_byte;
+  } while (mrsm_payload_type_byte == 0xFF);
+
+  stream.write(payload.data(), Common::assertDownCast<std::streamsize>(payload.size()));
 }
 
 auto operator<<(std::ostream &stream, const SeiPayload &x) -> std::ostream & {
@@ -163,6 +271,8 @@ auto SeiPayload::decodeFromString(const std::string &payload, PayloadType payloa
       return {GeometryAssistance::decodeFrom(bitstream)};
     case PayloadType::extended_geometry_assistance:
       return {ExtendedGeometryAssistance::decodeFrom(bitstream)};
+    case PayloadType::miv_registered_sei_message:
+      return {MivRegisteredSeiMessage::decodeFrom(stream)};
     default:
       std::ostringstream buffer;
       buffer << stream.rdbuf();
@@ -172,6 +282,8 @@ auto SeiPayload::decodeFromString(const std::string &payload, PayloadType payloa
     switch (payloadType) {
     case PayloadType::decoded_atlas_information_hash:
       return {DecodedAtlasInformationHash::decodeFrom(bitstream)};
+    case PayloadType::miv_registered_sei_message:
+      return {MivRegisteredSeiMessage::decodeFrom(stream)};
     default:
       std::ostringstream buffer;
       buffer << stream.rdbuf();
@@ -219,15 +331,24 @@ auto SeiPayload::encodeToString(PayloadType payloadType, NalUnitType nut) const 
     case PayloadType::extended_geometry_assistance:
       std::get<ExtendedGeometryAssistance>(payload).encodeTo(bitstream);
       break;
+    case PayloadType::miv_registered_sei_message:
+      std::get<MivRegisteredSeiMessage>(payload).encodeTo(stream);
+      break;
     default:
       const auto &payload_ = std::get_if<UnsupportedPayload>(&payload);
       VERIFY(payload_ != nullptr);
       stream.write(payload_->data(), Common::assertDownCast<std::streamsize>(payload_->size()));
     }
   } else {
-    const auto &payload_ = std::get_if<UnsupportedPayload>(&payload);
-    VERIFY(payload_ != nullptr);
-    stream.write(payload_->data(), Common::assertDownCast<std::streamsize>(payload_->size()));
+    switch (payloadType) {
+    case PayloadType::miv_registered_sei_message:
+      std::get<MivRegisteredSeiMessage>(payload).encodeTo(stream);
+      break;
+    default:
+      const auto &payload_ = std::get_if<UnsupportedPayload>(&payload);
+      VERIFY(payload_ != nullptr);
+      stream.write(payload_->data(), Common::assertDownCast<std::streamsize>(payload_->size()));
+    }
   }
 
   if (!bitstream.byteAligned()) {

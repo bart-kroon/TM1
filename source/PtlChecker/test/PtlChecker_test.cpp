@@ -874,6 +874,9 @@ TEST_CASE("PtlChecker ISO/IEC 23090-12 Table A-1") {
     if (constantDepth && packedGeometry) {
       return;
     }
+    if (restrictedGeometry && packedGeometry) {
+      return;
+    }
 
     for (uint8_t k = 0; k <= vps.vps_atlas_count_minus1(); ++k) {
       const auto j = vps.vps_atlas_id(k);
@@ -1130,6 +1133,10 @@ TEST_CASE("PtlChecker ISO/IEC 23090-5 A.6.1 level limits") {
 
     if (level == LV::Level_8_5 && fail) {
       return; // Syntactically impossible
+    }
+
+    if (16 < maxMapCount && !fail) {
+      return; // Not possible
     }
 
     auto vps = test::vps(TS::VPCC_Extended, false);

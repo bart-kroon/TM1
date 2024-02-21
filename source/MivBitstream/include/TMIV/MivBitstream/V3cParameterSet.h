@@ -199,14 +199,20 @@ public:
   void encodeTo(Common::OutputBitstream &bitstream) const;
 
 private:
+  static constexpr auto inferred_ptc_max_map_count_minus1 = 15;
+  static constexpr auto inferred_ptc_max_atlas_count_minus1 = 15;
+  static constexpr auto inferred_ptc_attribute_max_dimension_minus1 = 63;
+  static constexpr auto inferred_ptc_attribute_max_dimension_partitions_minus1 = 63;
+
   bool m_ptc_one_v3c_frame_only_flag{};
   bool m_ptc_eom_constraint_flag{};
-  uint8_t m_ptc_max_map_count_minus1{};
-  uint8_t m_ptc_max_atlas_count_minus1{};
+  uint8_t m_ptc_max_map_count_minus1{inferred_ptc_max_map_count_minus1};
+  uint8_t m_ptc_max_atlas_count_minus1{inferred_ptc_max_atlas_count_minus1};
   bool m_ptc_multiple_map_streams_constraint_flag{};
   bool m_ptc_plr_constraint_flag{};
-  uint8_t m_ptc_attribute_max_dimension_minus1{};
-  uint8_t m_ptc_attribute_max_dimension_partitions_minus1{};
+  uint8_t m_ptc_attribute_max_dimension_minus1{inferred_ptc_attribute_max_dimension_minus1};
+  uint8_t m_ptc_attribute_max_dimension_partitions_minus1{
+      inferred_ptc_attribute_max_dimension_partitions_minus1};
   bool m_ptc_no_eight_orientations_constraint_flag{};
   bool m_ptc_no_45degree_projection_patch_constraint_flag{};
   bool m_ptc_restricted_geometry_flag{};

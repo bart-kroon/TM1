@@ -1,6 +1,6 @@
 Decoder conformance test (GCC):
   stage: integration tests
-  image: tmiv-ci:20231122
+  image: tmiv-ci:20240222
   tags: [ linux-long ]
   script:
     - >
@@ -16,7 +16,7 @@ Decoder conformance test (GCC):
 
 Parser test on V-PCC conformance bitstreams (GCC):
   stage: integration tests
-  image: tmiv-ci:20231122
+  image: tmiv-ci:20240222
   tags: [ linux-long ]
   script:
     - >
@@ -33,7 +33,7 @@ Parser test on V-PCC conformance bitstreams (GCC):
 
 Integration test (GCC):
   stage: integration tests
-  image: tmiv-ci:20231122
+  image: tmiv-ci:20240222
   tags: [ linux-long ]
   script:
     - >

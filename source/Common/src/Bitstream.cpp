@@ -63,12 +63,12 @@ auto InputBitstream::byteAligned() const -> bool { return m_size % 8 == 0; }
 
 void InputBitstream::byteAlignment() {
   if (!getFlag()) {
-    Common::logWarning("alignment_bit_equal_to_one == 0");
+    throw std::runtime_error("alignment_bit_equal_to_one == 0");
   }
 
   while (!byteAligned()) {
     if (getFlag()) {
-      Common::logWarning("alignment_bit_equal_to_one == 1");
+      throw std::runtime_error("alignment_bit_equal_to_one == 1");
     }
   }
 }

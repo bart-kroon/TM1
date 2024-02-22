@@ -1,6 +1,6 @@
 C++23 Release build (GCC):
   stage: release build
-  image: tmiv-ci:20231122
+  image: tmiv-ci:20240222
   tags: [ linux-long ]
   before_script:
     - export CXX=g++-13
@@ -32,7 +32,7 @@ C++23 Release build (GCC):
 
 C++23 Debug build (Clang):
   stage: debug build
-  image: tmiv-ci:20231122
+  image: tmiv-ci:20240222
   tags: [ linux-long ]
   before_script:
     - export CXX=clang++-17
@@ -61,7 +61,7 @@ C++23 Debug build (Clang):
 
 C++17 Debug build and static analysis (Clang):
   stage: static analysis
-  image: tmiv-ci:20231122
+  image: tmiv-ci:20240222
   tags: [ linux-long ]
   before_script:
     - export CXX=clang++-17
@@ -107,7 +107,7 @@ C++17 Debug build and static analysis (Clang):
 
 Full static analysis (Clang):
   stage: static analysis
-  image: tmiv-ci:20231122
+  image: tmiv-ci:20240222
   tags: [ linux-long ]
   before_script:
     - export CXX=clang++-17

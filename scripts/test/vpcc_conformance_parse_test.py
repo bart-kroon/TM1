@@ -3,45 +3,69 @@ import os
 from pathlib import Path
 import subprocess
 
-# Text of ISO/IEC FDIS 23090-20 Conformance for V-PCC [ISO/IEC JTC 1/SC 29/WG 07 N 00465]
+# Draft V-PCC conformance bitstreams obtained from https://git.mpeg.expert/MPEG/PCC/Specs/23090-20/-/branches
+
+# Excluding older ones that are known to be invalid:
+#
+#   * CCMSEIJMHHVTM-MC2_loot
+#   * CCMSEIHM-MC1_loot
+#   * CCMSEIHM-MC2_loot
+#   * PLR-MC1PLR1_redandblack
+#   * PTRAW-ECM1_redandblack
+#   * PTEOM-ECM1LOSGEO1_redandblack
+#   * PTRAX-ECM1LOSGEO1_redandblack
 
 CONFORMANCE_BITSTREAMS = [
-    "HEVCMain10_Basic_Rec0_CCMSEIJMHHVTM_MC2_INTERDIGITAL.bit",
+    "HEVC444_Basic_Rec2_PTRAW_INTERDIGITAL.bin",
+    "HEVC444_Extended_Rec1_PTEOM_LOSGEO_INTERDIGITAL.bin",
+    "HEVC444_Extended_Rec1_PTRAX_LOSGEO_INTERDIGITAL.bin",
+    "HEVCMAIN10BASIC_MTLNONUNI_1MAP_SS_basketball_player.bit",
+    "HEVCMAIN10BASIC_MTLNONUNI_2MAP_MS_basketball_player.bit",
+    "HEVCMAIN10BASIC_MTL_1MAP_SS_basketball_player.bit",
+    "HEVCMAIN10BASIC_MTL_2MAP_MS_basketball_player.bit",
+    "HEVCMAIN10BASIC_STL_1MAP_SS_basketball_player.bit",
+    "HEVCMAIN10BASIC_STL_1MAP_SS_longdress.bit",
+    "HEVCMAIN10BASIC_STL_2MAP_MS_basketball_player.bit",
     "HEVCMain10_Basic_Rec0_LOSSYOM_SAMSUNG_v1.bit",
-    "HEVCMain10_Basic_Rec0_MTLINTRA_tileT2M2P21MC1_INTERDIGITAL.bit",
-    "HEVCMain10_Basic_Rec0_MTLINTRA_tileT2M2P21MC2_INTERDIGITAL.bit",
-    "HEVCMain10_Basic_Rec0_MTLINTRA_tileT2M3P11MC1_INTERDIGITAL.bit",
-    "HEVCMain10_Basic_Rec0_MTLINTRA_tileT2M3P11MC2_INTERDIGITAL.bit",
-    "HEVCMain10_Basic_Rec0_MTLINTRA_tileT2M3P21MC1_INTERDIGITAL.bit",
-    "HEVCMain10_Basic_Rec0_MTLINTRA_tileT2M3P21MC2_INTERDIGITAL.bit",
-    "HEVCMain10_Basic_Rec0_MTLLRA_tileT2M2P21MC1_INTERDIGITAL.bit",
-    "HEVCMain10_Basic_Rec0_MTLLRA_tileT2M2P21MC2_INTERDIGITAL.bit",
-    "HEVCMain10_Basic_Rec0_MTLLRA_tileT2M3P21MC1_INTERDIGITAL.bit",
-    "HEVCMain10_Basic_Rec0_SEICCM_MC1_INTERDIGITAL.bit",
-    "HEVCMain10_Basic_Rec0_SEICCM_MC2_INTERDIGITAL.bit",
-    "HEVCMain10_Basic_Rec0_STLINTRA_MC1_INTERDIGITAL.bit",
-    "HEVCMain10_Basic_Rec0_STLINTRA_MC2_INTERDIGITAL.bit",
-    "HEVCMain10_Basic_Rec0_STLINTRA_SONY.bit",
-    "HEVCMain10_Basic_Rec0_STLLRA_MC1_INTERDIGITAL.bit",
-    "HEVCMain10_Basic_Rec0_STLLRA_MC2_INTERDIGITAL.bit",
+    "HEVCMain10_Basic_Rec0_MTLINTRA_tileT2M2P21MC1_INTERDIGITAL.bin",
+    "HEVCMain10_Basic_Rec0_MTLINTRA_tileT2M2P21MC2_INTERDIGITAL.bin",
+    "HEVCMain10_Basic_Rec0_MTLINTRA_tileT2M3P11MC1_INTERDIGITAL.bin",
+    "HEVCMain10_Basic_Rec0_MTLINTRA_tileT2M3P11MC2_INTERDIGITAL.bin",
+    "HEVCMain10_Basic_Rec0_MTLINTRA_tileT2M3P21MC1_INTERDIGITAL.bin",
+    "HEVCMain10_Basic_Rec0_MTLINTRA_tileT2M3P21MC2_INTERDIGITAL.bin",
+    "HEVCMain10_Basic_Rec0_MTLLRA_tileT2M2P21MC1_INTERDIGITAL.bin",
+    "HEVCMain10_Basic_Rec0_MTLLRA_tileT2M2P21MC2_INTERDIGITAL.bin",
+    "HEVCMain10_Basic_Rec0_MTLLRA_tileT2M3P21MC1_INTERDIGITAL.bin",
+    "HEVCMain10_Basic_Rec0_MTLLRA_tileT2M3P21MC2_INTERDIGITAL.bin",
+    "HEVCMain10_Basic_Rec0_STLINTRA_MC1_INTERDIGITAL.bin",
+    "HEVCMain10_Basic_Rec0_STLINTRA_MC2_INTERDIGITAL.bin",
+    "HEVCMain10_Basic_Rec0_STLINTRA_SONY.bin",
+    "HEVCMain10_Basic_Rec0_STLLRA_MC1_INTERDIGITAL.bin",
+    "HEVCMain10_Basic_Rec0_STLLRA_MC2_INTERDIGITAL.bin",
     "HEVCMain10_Basic_Rec1_ATTRSM_SAMSUNG_v1.bit",
-    "HEVCMain10_Basic_Rec1_GEOSM_SONY.bit",
-    "HEVCMain10_Basic_Rec1_PDI_INTERDIGITAL.bit",
+    "HEVCMain10_Basic_Rec1_GEOSM_SONY.bin",
+    "HEVCMain10_Basic_Rec1_PDI_INTERDIGITAL.bin",
     "HEVCMain10_Basic_Rec2_ATTRSM_SAMSUNG_v1.bit",
-    "HEVCMain10_Basic_Rec2_OCCSY_PBF_INTERDIGITAL.bit",
-    "HEVCMain10_Basic_Rec2_PLR_MC1PLR1_INTERDIGITAL.bit",
-    "HEVCMain10_Basic_Rec2_PTRAW_INTERDIGITAL.bit",
-    "HEVCMain10_Extended_Rec0_PEXT_SONY.bit",
-    "HEVCMain10_Extended_Rec1_PTEOM_LOSGEO_INTERDIGITAL.bit",
-    "HEVCMain10_Extended_Rec1_PTRAX_LOSGEO_INTERDIGITAL.bit",
+    "HEVCMain10_Basic_Rec2_OCCSY_PBF_INTERDIGITAL.bin",
+    "HEVCMAIN10_BASIC_STILL_MTL_2MAP_MS_basketball_player.bit",
+    "HEVCMAIN10_BASIC_STILL_MTL_2MAP_MS_longdress.bit",
+    "HEVCMAIN10_BASIC_STILL_STL_1MAP_SS_basketball_player.bit",
+    "HEVCMAIN10_BASIC_STILL_STL_1MAP_SS_longdress.bit",
+    "HEVCMain10_Extended_Rec0_PEXT_SONY.bin",
+    "HEVCMain10_Extended_Rec1_PLR_MC1PLR1_INTERDIGITAL.bin",
+    "HEVCMain10_Extended_Rec2_PLR_MC1PLR1_OCCSY_PBF_INTERDIGITAL.bin",
+    "MP4RA_Basic_Rec0_SEICCM_MC1_INTERDIGITAL.bin",
+    "MP4RA_Basic_Rec0_SEICCM_MC2_INTERDIGITAL.bin",
+    "redandblack_vox10_GOF0.bin",
 ]
 
 KNOWN_REASONS = {
-    "HEVCMain10_Basic_Rec1_PDI_INTERDIGITAL.bit": "asps_pixel_deinterleaving_enabled_flag",
-    "HEVCMain10_Basic_Rec2_PLR_MC1PLR1_INTERDIGITAL.bit": "asps_plr_enabled_flag",
-    "HEVCMain10_Basic_Rec2_PTRAW_INTERDIGITAL.bit": "asps_raw_patch_enabled_flag",
-    "HEVCMain10_Extended_Rec1_PTEOM_LOSGEO_INTERDIGITAL.bit": "asps_raw_patch_enabled_flag",
-    "HEVCMain10_Extended_Rec1_PTRAX_LOSGEO_INTERDIGITAL.bit": "asps_raw_patch_enabled_flag",
+    "HEVC444_Basic_Rec2_PTRAW_INTERDIGITAL.bin": "asps_raw_patch_enabled_flag",
+    "HEVC444_Extended_Rec1_PTEOM_LOSGEO_INTERDIGITAL.bin": "asps_raw_patch_enabled_flag",
+    "HEVC444_Extended_Rec1_PTRAX_LOSGEO_INTERDIGITAL.bin": "asps_raw_patch_enabled_flag",
+    "HEVCMain10_Basic_Rec1_PDI_INTERDIGITAL.bin": "asps_pixel_deinterleaving_enabled_flag",
+    "HEVCMain10_Extended_Rec1_PLR_MC1PLR1_INTERDIGITAL.bin": "asps_plr_enabled_flag",
+    "HEVCMain10_Extended_Rec2_PLR_MC1PLR1_OCCSY_PBF_INTERDIGITAL.bin": "asps_plr_enabled_flag",
 }
 
 

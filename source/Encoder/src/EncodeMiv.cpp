@@ -299,22 +299,6 @@ private:
         std::all_of(vpl.begin(), vpl.end(), [&](const auto &x) { return x.dq == vpl.front().dq; }));
     mvpl.mvp_pruning_graph_params_present_flag(vpl.front().pp.has_value());
 
-    const auto &vps = m_params.vps;
-    uint8_t chromaScalingBitDepthMinus1 = 0;
-    for (size_t i = 0; i <= vps.vps_atlas_count_minus1(); ++i) {
-      if (vps.vps_attribute_video_present_flag(vps.vps_atlas_id(i))) {
-        for (uint8_t j = 0; j < vps.attrCount(vps.vps_atlas_id(i)); ++j) {
-          if (vps.attribute_information(vps.vps_atlas_id(i)).ai_attribute_type_id(j) ==
-              MivBitstream::AiAttributeTypeId::ATTR_TEXTURE) {
-            chromaScalingBitDepthMinus1 = std::max(
-                chromaScalingBitDepthMinus1,
-                vps.attribute_information(vps.vps_atlas_id(i)).ai_attribute_2d_bit_depth_minus1(j));
-          }
-        }
-      }
-    }
-    mvpl.mvp_chroma_scaling_bit_depth_minus1(chromaScalingBitDepthMinus1);
-
     for (uint16_t i = 0; i <= mvpl.mvp_num_views_minus1(); ++i) {
       const auto &vp = vpl[i];
       mvpl.camera_extrinsics(i) = vp.pose.encodeToCameraExtrinsics();
@@ -465,7 +449,7 @@ private:
   void writeNalUnit(MivBitstream::AtlasSubBitstream &asb, MivBitstream::NalUnitHeader nuh,
                     Payload &&payload, Args &&...args) {
     std::ostringstream substream1;
-    payload.encodeTo(substream1, std::forward<Args>(args)...);
+    std::forward<Payload>(payload).encodeTo(substream1, std::forward<Args>(args)...);
     asb.nal_units().emplace_back(nuh, substream1.str());
   }
 

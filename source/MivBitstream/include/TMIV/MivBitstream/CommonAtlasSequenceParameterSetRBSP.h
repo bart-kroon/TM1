@@ -77,12 +77,13 @@ class CaspsMiv2Extension {
 public:
   [[nodiscard]] constexpr auto casme_decoder_side_depth_estimation_flag() const noexcept;
   [[nodiscard]] constexpr auto casme_chroma_scaling_present_flag() const noexcept;
+  [[nodiscard]] auto casme_chroma_scaling_bit_depth_minus1() const -> uint8_t;
   [[nodiscard]] constexpr auto casme_capture_device_information_present_flag() const noexcept;
   [[nodiscard]] constexpr auto casme_background_separation_enable_flag() const noexcept;
   [[nodiscard]] auto capture_device_information() const -> const CaptureDeviceInformation &;
 
   constexpr auto casme_decoder_side_depth_estimation_flag(bool value) noexcept -> auto &;
-  constexpr auto casme_chroma_scaling_present_flag(bool value) noexcept -> auto &;
+  constexpr auto casme_chroma_scaling_bit_depth_minus1(uint8_t value) noexcept -> auto &;
   constexpr auto casme_capture_device_information_present_flag(bool value) noexcept -> auto &;
   constexpr auto casme_background_separation_enable_flag(bool value) noexcept -> auto &;
   [[nodiscard]] auto capture_device_information() -> CaptureDeviceInformation &;
@@ -98,7 +99,7 @@ public:
 
 private:
   bool m_casme_decoder_side_depth_estimation_flag{};
-  bool m_casme_chroma_scaling_present_flag{};
+  std::optional<uint8_t> m_casme_chroma_scaling_bit_depth_minus1;
   bool m_casme_capture_device_information_present_flag{};
   bool m_casme_background_separation_enable_flag{};
   std::optional<CaptureDeviceInformation> m_capture_device_information;

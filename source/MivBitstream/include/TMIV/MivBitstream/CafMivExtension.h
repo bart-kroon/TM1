@@ -69,10 +69,10 @@ public:
   constexpr auto operator==(const ChromaScaling &other) const noexcept;
   constexpr auto operator!=(const ChromaScaling &other) const noexcept;
 
-  static auto decodeFrom(Common::InputBitstream &bitstream, const MivViewParamsList &mvpl)
+  static auto decodeFrom(Common::InputBitstream &bitstream, const CaspsMiv2Extension &casme2)
       -> ChromaScaling;
 
-  void encodeTo(Common::OutputBitstream &bitstream, const MivViewParamsList &mvpl) const;
+  void encodeTo(Common::OutputBitstream &bitstream, const CaspsMiv2Extension &casme2) const;
 
 private:
   uint16_t m_cs_u_min{};
@@ -367,7 +367,6 @@ public:
   [[nodiscard]] auto mvp_depth_quantization_params_equal_flag() const -> bool;
   [[nodiscard]] constexpr auto mvp_pruning_graph_params_present_flag() const noexcept;
   [[nodiscard]] constexpr auto mvp_depth_reprojection_flag() const noexcept;
-  [[nodiscard]] auto mvp_chroma_scaling_bit_depth_minus1() const -> uint8_t;
   [[nodiscard]] auto mvp_view_background_flag(uint16_t viewIdx) const -> bool;
 
   [[nodiscard]] auto camera_extrinsics(uint16_t viewIdx) const -> const CameraExtrinsics &;
@@ -408,8 +407,6 @@ public:
   // Calling this function will allocate the pruning graph list
   auto mvp_pruning_graph_params_present_flag(bool value) -> MivViewParamsList &;
 
-  auto mvp_chroma_scaling_bit_depth_minus1(uint8_t value) -> MivViewParamsList &;
-
   auto mvp_view_background_flag(uint16_t viewIdx, bool value) -> MivViewParamsList &;
 
   [[nodiscard]] auto camera_extrinsics(uint16_t viewIdx) noexcept -> CameraExtrinsics &;
@@ -448,7 +445,6 @@ private:
   std::vector<PruningParents> m_pruning_parent{};
   std::vector<ChromaScaling> m_mvp_chroma_scaling_values{{}};
   std::optional<bool> m_mvp_depth_reprojection_flag{};
-  std::optional<uint8_t> m_mvp_chroma_scaling_bit_depth_minus1{};
 
   std::vector<uint8_t> m_mvp_device_model_id{0};
   std::vector<std::vector<SensorExtrinsics>> m_sensor_extrinsics{{}};
@@ -558,10 +554,10 @@ public:
   auto operator==(const MivViewParamsUpdateChromaScaling &other) const noexcept -> bool;
   auto operator!=(const MivViewParamsUpdateChromaScaling &other) const noexcept -> bool;
 
-  static auto decodeFrom(Common::InputBitstream &bitstream, const MivViewParamsList &mvpl)
+  static auto decodeFrom(Common::InputBitstream &bitstream, const CaspsMiv2Extension &casme2)
       -> MivViewParamsUpdateChromaScaling;
 
-  void encodeTo(Common::OutputBitstream &bitstream, const MivViewParamsList &mvpl) const;
+  void encodeTo(Common::OutputBitstream &bitstream, const CaspsMiv2Extension &casme2) const;
 
 private:
   uint16_t m_mvpucs_num_view_updates_minus1{};

@@ -69,7 +69,7 @@ constexpr auto CaspsMiv2Extension::casme_decoder_side_depth_estimation_flag() co
 }
 
 constexpr auto CaspsMiv2Extension::casme_chroma_scaling_present_flag() const noexcept {
-  return m_casme_chroma_scaling_present_flag;
+  return m_casme_chroma_scaling_bit_depth_minus1.has_value();
 }
 
 constexpr auto CaspsMiv2Extension::casme_background_separation_enable_flag() const noexcept {
@@ -86,9 +86,9 @@ constexpr auto CaspsMiv2Extension::casme_decoder_side_depth_estimation_flag(bool
   return *this;
 }
 
-constexpr auto CaspsMiv2Extension::casme_chroma_scaling_present_flag(bool value) noexcept
+constexpr auto CaspsMiv2Extension::casme_chroma_scaling_bit_depth_minus1(uint8_t value) noexcept
     -> auto & {
-  m_casme_chroma_scaling_present_flag = value;
+  m_casme_chroma_scaling_bit_depth_minus1 = value;
   return *this;
 }
 

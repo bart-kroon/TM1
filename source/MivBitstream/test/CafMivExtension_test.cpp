@@ -194,7 +194,7 @@ dq_depth_occ_threshold_default[ 2 ]=200
 TEST_CASE("chroma_scaling", "[Common Atlas Frame MIV Extension]") {
   auto unit = ChromaScaling{};
 
-  const auto mvpl = MivViewParamsList{}.mvp_chroma_scaling_bit_depth_minus1(9);
+  const auto mvpl = CaspsMiv2Extension{}.casme_chroma_scaling_bit_depth_minus1(9);
 
   REQUIRE(toString(unit, uint16_t{7}) == R"(cs_u_min[ 7 ]=0
 cs_u_max[ 7 ]=0
@@ -282,7 +282,7 @@ mvp_view_background_flag[ 0 ]=false
 
   SECTION("Example 1") {
     casps.casps_miv_extension().casme_depth_quantization_params_present_flag(true);
-    casps.casps_miv_2_extension().casme_chroma_scaling_present_flag(true);
+    casps.casps_miv_2_extension().casme_chroma_scaling_bit_depth_minus1(9);
     unit.mvp_num_views_minus1(0)
         .mvp_explicit_view_id_flag(false)
         .mvp_intrinsic_params_equal_flag(false)
@@ -292,7 +292,6 @@ mvp_view_background_flag[ 0 ]=false
         .ci_cam_type(CiCamType::orthographic)
         .ci_ortho_width(4.F)
         .ci_ortho_height(3.F);
-    unit.mvp_chroma_scaling_bit_depth_minus1(9);
     unit.chroma_scaling(0).cs_u_min(10).cs_u_max(300).cs_v_min(111).cs_v_max(400);
 
     REQUIRE(toString(unit, casps) == R"(mvp_num_views_minus1=0
@@ -323,12 +322,12 @@ cs_v_max[ 0 ]=400
 mvp_view_background_flag[ 0 ]=false
 )");
 
-    bitCodingTest(unit, 428, casps);
+    bitCodingTest(unit, 423, casps);
   }
 
   SECTION("Example 2") {
     casps.casps_miv_extension().casme_depth_quantization_params_present_flag(true);
-    casps.casps_miv_2_extension().casme_chroma_scaling_present_flag(false);
+    casps.casps_miv_2_extension() = {};
     unit.mvp_num_views_minus1(2)
         .mvp_view_id(0, ViewId{})
         .mvp_view_id(1, ViewId{2})
@@ -505,7 +504,7 @@ TEST_CASE("caf_miv_extension", "[Common Atlas Frame MIV Extension]") {
   SECTION("Initialize view parameters") {
     casps.casps_miv_extension().casme_depth_quantization_params_present_flag(true);
     casps.casps_miv_2_extension()
-        .casme_chroma_scaling_present_flag(true)
+        .casme_chroma_scaling_bit_depth_minus1(9)
         .casme_background_separation_enable_flag(true);
     unit.miv_view_params_list()
         .mvp_num_views_minus1(2)
@@ -513,7 +512,6 @@ TEST_CASE("caf_miv_extension", "[Common Atlas Frame MIV Extension]") {
         .mvp_intrinsic_params_equal_flag(true)
         .mvp_depth_quantization_params_equal_flag(true)
         .mvp_pruning_graph_params_present_flag(true)
-        .mvp_chroma_scaling_bit_depth_minus1(9)
         .mvp_view_background_flag(1, true)
         .mvp_view_background_flag(2, true)
         .camera_intrinsics(0)
@@ -576,12 +574,12 @@ mvp_view_background_flag[ 1 ]=true
 mvp_view_background_flag[ 2 ]=true
 )");
 
-    bitCodingTest(unit, 900, nalIdrCaf, casps);
+    bitCodingTest(unit, 895, nalIdrCaf, casps);
   }
 
   SECTION("Update extrinsics") {
     casps.casps_miv_extension().casme_depth_quantization_params_present_flag(true);
-    casps.casps_miv_2_extension().casme_chroma_scaling_present_flag(true);
+    casps.casps_miv_2_extension().casme_chroma_scaling_bit_depth_minus1(9);
     unit.came_update_depth_quantization_flag(false)
         .came_update_intrinsics_flag(false)
         .came_update_extrinsics_flag(true)
@@ -616,7 +614,7 @@ ce_view_quat_z[ 0 ]=1
 
   SECTION("Update camera intrinsics") {
     casps.casps_miv_extension().casme_depth_quantization_params_present_flag(true);
-    casps.casps_miv_2_extension().casme_chroma_scaling_present_flag(true);
+    casps.casps_miv_2_extension().casme_chroma_scaling_bit_depth_minus1(5);
     unit.came_update_depth_quantization_flag(false)
         .came_update_intrinsics_flag(true)
         .came_update_extrinsics_flag(false)
@@ -651,7 +649,7 @@ ci_erp_theta_max[ 0 ]=1
 
   SECTION("Update depth quantization") {
     casps.casps_miv_extension().casme_depth_quantization_params_present_flag(true);
-    casps.casps_miv_2_extension().casme_chroma_scaling_present_flag(true);
+    casps.casps_miv_2_extension().casme_chroma_scaling_bit_depth_minus1(9);
     unit.came_update_depth_quantization_flag(true)
         .came_update_extrinsics_flag(false)
         .came_update_intrinsics_flag(false)
@@ -694,9 +692,7 @@ came_update_intrinsics_flag=false
 
   SECTION("Update sensor extrinsics") {
     casps.casps_miv_extension().casme_depth_quantization_params_present_flag(false);
-    casps.casps_miv_2_extension()
-        .casme_chroma_scaling_present_flag(false)
-        .casme_capture_device_information_present_flag(true);
+    casps.casps_miv_2_extension().casme_capture_device_information_present_flag(true);
     unit.came_update_extrinsics_flag(false)
         .came_update_intrinsics_flag(false)
         .came_update_sensor_extrinsics_flag(true)
@@ -734,9 +730,7 @@ se_sensor_quat_z[ 0 ][ 0 ]=3
 
   SECTION("Update Distortion Parameters") {
     casps.casps_miv_extension().casme_depth_quantization_params_present_flag(false);
-    casps.casps_miv_2_extension()
-        .casme_chroma_scaling_present_flag(false)
-        .casme_capture_device_information_present_flag(true);
+    casps.casps_miv_2_extension().casme_capture_device_information_present_flag(true);
     unit.came_update_extrinsics_flag(false)
         .came_update_intrinsics_flag(false)
         .miv_view_params_update_distortion_parameters()
@@ -771,9 +765,7 @@ dp_coefficient[ 0 ][ 0 ][ 7 ]=0
 
   SECTION("Update light source extrinsics") {
     casps.casps_miv_extension().casme_depth_quantization_params_present_flag(false);
-    casps.casps_miv_2_extension()
-        .casme_chroma_scaling_present_flag(false)
-        .casme_capture_device_information_present_flag(true);
+    casps.casps_miv_2_extension().casme_capture_device_information_present_flag(true);
     unit.came_update_extrinsics_flag(false)
         .came_update_intrinsics_flag(false)
         .miv_view_params_update_light_source_extrinsics()

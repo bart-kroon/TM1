@@ -440,6 +440,24 @@ private:
     return atlas;
   }
 
+  [[nodiscard]] static auto chromaScalingBitDepthMinus1(const MivBitstream::V3cParameterSet &vps) {
+    uint8_t result = 0;
+
+    for (size_t i = 0; i <= vps.vps_atlas_count_minus1(); ++i) {
+      if (vps.vps_attribute_video_present_flag(vps.vps_atlas_id(i))) {
+        for (uint8_t j = 0; j < vps.attrCount(vps.vps_atlas_id(i)); ++j) {
+          if (vps.attribute_information(vps.vps_atlas_id(i)).ai_attribute_type_id(j) ==
+              MivBitstream::AiAttributeTypeId::ATTR_TEXTURE) {
+            result = std::max(
+                result,
+                vps.attribute_information(vps.vps_atlas_id(i)).ai_attribute_2d_bit_depth_minus1(j));
+          }
+        }
+      }
+    }
+    return result;
+  }
+
   [[nodiscard]] static auto createEncoderParams(const Configuration &config,
                                                 const MivBitstream::SequenceConfig &sequenceConfig,
                                                 const MivBitstream::ViewParamsList &viewParamsList,
@@ -454,8 +472,8 @@ private:
         createCommonAtlasSequenceParameterSet(config, sequenceConfig, depthLowQualityFlag);
 
     if (config.chromaScaleEnabledFlag) {
-      params.casps.casps_miv_2_extension().casme_chroma_scaling_present_flag(
-          config.chromaScaleEnabledFlag);
+      params.casps.casps_miv_2_extension().casme_chroma_scaling_bit_depth_minus1(
+          chromaScalingBitDepthMinus1(params.vps));
     }
 
     params.viewingSpace = config.viewingSpace;

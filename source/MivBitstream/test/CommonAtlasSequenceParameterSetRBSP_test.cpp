@@ -97,13 +97,14 @@ casme_background_separation_enable_flag=false
 
   SECTION("Example 2") {
     CaspsMiv2Extension unit{};
-    unit.casme_chroma_scaling_present_flag(true);
+    unit.casme_chroma_scaling_bit_depth_minus1(17);
     unit.casme_capture_device_information_present_flag(true)
         .capture_device_information()
         .cdi_device_model_count_minus1(0);
 
     REQUIRE(toString(unit) == R"(casme_decoder_side_depth_estimation_flag=false
 casme_chroma_scaling_present_flag=true
+casme_chroma_scaling_bit_depth_minus1=17
 casme_capture_device_information_present_flag=true
 cdi_device_model_count_minus1=0
 cdi_device_model_id[0]=0
@@ -111,7 +112,7 @@ cdi_device_class_id[0]=0
 casme_background_separation_enable_flag=false
 )");
 
-    bitCodingTest(unit, 20);
+    bitCodingTest(unit, 25);
   }
 }
 

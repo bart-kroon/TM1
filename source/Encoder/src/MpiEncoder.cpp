@@ -222,8 +222,15 @@ private:
         .ptl_profile_toolset_idc(m_config.toolsetIdc)
         .ptl_profile_toolset_constraints_information([this]() {
           return MivBitstream::ProfileToolsetConstraintsInformation{}
-              .ptc_restricted_geometry_flag(true)
-              .ptc_one_v3c_frame_only_flag(m_config.oneV3cFrameOnly);
+              .ptc_one_v3c_frame_only_flag(m_config.oneV3cFrameOnly)
+              .ptc_eom_constraint_flag(true)
+              .ptc_max_map_count_minus1(0)
+              .ptc_max_atlas_count_minus1(0)
+              .ptc_multiple_map_streams_constraint_flag(true)
+              .ptc_plr_constraint_flag(true)
+              .ptc_attribute_max_dimension_minus1(2)
+              .ptc_attribute_max_dimension_partitions_minus1(0)
+              .ptc_restricted_geometry_flag(true);
         }());
 
     VERIFY_MIVBITSTREAM(!m_config.atlasFrameSizes.empty());

@@ -3,6 +3,25 @@
 include(CMakeFindDependencyMacro)
 
 set(THREADS_PREFER_PTHREAD_FLAG ON)
-find_package(Threads REQUIRED)
 
 include(${CMAKE_CURRENT_LIST_DIR}/TMIVTargets.cmake)
+
+find_dependency(Threads)
+
+get_target_property(TMIV_COMMONLIB_INTERFACE_LINK_LIBRARIES TMIV::CommonLib INTERFACE_LINK_LIBRARIES)
+
+if(TMIV_COMMONLIB_INTERFACE_LINK_LIBRARIES MATCHES fmt::fmt)
+    find_dependency(FMT)
+endif()
+
+unset(TMIV_COMMONLIB_INTERFACE_LINK_LIBRARIES)
+
+if(TARGET TMIV::VideoDecoderHmLib)
+    find_dependency(HM 16.16)
+endif()
+
+if(TARGET TMIV::VideoDecoderVvdecLib)
+    find_dependency(vvdec 1)
+endif()
+
+check_required_components(TMIV)

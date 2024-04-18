@@ -35,30 +35,32 @@
 #define TMIV_COMMON_THREAD_H
 
 #include <algorithm>
-#include <atomic>
 #include <functional>
 #include <future>
 #include <vector>
 
 namespace TMIV::Common {
-inline auto threadCount() -> auto & {
-  static auto singletonValue = std::thread::hardware_concurrency();
+inline auto threadCount() -> unsigned & {
+  static unsigned singletonValue = std::thread::hardware_concurrency();
 
   return singletonValue;
 }
 
 template <typename Fun, typename = std::enable_if_t<std::is_invocable_v<Fun, size_t>>>
 void parallelFor(size_t size, Fun fun) {
-  auto next = std::atomic<size_t>{};
+  PRECONDITION(0 < threadCount());
+
   auto threads = std::vector<std::thread>(std::min(size, size_t{threadCount()}));
 
-  for (auto &thread : threads) {
-    thread = std::thread{[&next, size, fun]() {
-      for (auto idx = next++; idx < size; idx = next++) {
-        fun(idx);
-      }
-    }};
+  for (size_t k = 0; k < threads.size(); ++k) {
+    threads[k] = std::thread{[&fun](size_t first, size_t last) {
+                               for (size_t i = first; i < last; ++i) {
+                                 fun(i);
+                               }
+                             },
+                             k * size / threads.size(), (k + 1) * size / threads.size()};
   }
+
   for (auto &thread : threads) {
     thread.join();
   }
@@ -66,7 +68,7 @@ void parallelFor(size_t size, Fun fun) {
 
 template <typename Fun, typename = std::enable_if_t<std::is_invocable_v<Fun, size_t, size_t>>>
 void parallelFor(size_t columns, size_t rows, Fun fun) {
-  parallelFor(rows, [columns, fun](size_t i) {
+  parallelFor(rows, [columns, &fun](size_t i) {
     for (size_t j = 0; j < columns; ++j) {
       fun(i, j);
     }

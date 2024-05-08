@@ -415,8 +415,7 @@ void Json::mergeObject(Json::Object &first, const Json::Object &second) {
 
 void Json::checkForUnusedKeys(const std::string &here) const {
   if (!wasAccessed()) {
-    throw std::runtime_error(
-        TMIV_FMT::format("The parameter {} has no part in this configuration.", here));
+    Common::logWarning("The parameter {} has no part in this configuration.", here);
   }
 
   if (const auto *object = std::any_cast<Object>(&m_node)) {

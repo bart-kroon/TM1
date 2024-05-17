@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.22 FATAL_ERROR)
 
 # Address this https://en.cppreference.com/w/cpp/filesystem note: Using this library may require
 # additional compiler/linker options. GNU implementation prior to 9.1 requires linking with

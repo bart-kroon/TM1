@@ -40,15 +40,6 @@ function(create_catch2_unit_test)
             ${TEST_CREATOR_TARGET} PRIVATE Catch2::Catch2WithMain ${TMIV_FMT_TARGET}
                                            ${TEST_CREATOR_PRIVATE})
 
-        if(CLANG_TIDY_PATH)
-            set_target_properties(
-                ${TEST_CREATOR_TARGET}
-                PROPERTIES
-                    CXX_CLANG_TIDY
-                    "${CLANG_TIDY_PATH};-checks=-readability-function-size,-readability-magic-numbers,-readability-function-cognitive-complexity"
-            )
-        endif()
-
         set_property(TARGET ${TEST_CREATOR_TARGET} PROPERTY FOLDER "TMIV tests")
 
         catch_discover_tests(${TEST_CREATOR_TARGET})

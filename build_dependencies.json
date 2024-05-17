@@ -3,26 +3,36 @@
         "git_ref": "HM-16.16",
         "git_url": "https://vcgit.hhi.fraunhofer.de/jct-vc/HM.git",
         "name": "HM",
-        "variables": [{"name": "CMAKE_CXX_STANDARD", "type": "STRING", "value": "14"}]
+        "variables": {
+            "CMAKE_CXX_STANDARD": "14"
+        }
     }, {
         "git_ref": "v3.3.1",
         "git_url": "https://github.com/catchorg/Catch2.git",
         "name": "Catch2",
-        "variables": [{"name": "BUILD_TESTING", "type": "STRING", "value": "OFF"}]
+        "variables": {
+            "BUILD_TESTING": "OFF"
+        }
     }, {
         "git_ref": "10.1.1",
         "git_url": "https://github.com/fmtlib/fmt.git",
         "name": "FMT",
-        "variables": [{"name": "FMT_TEST", "type": "BOOL", "value": "OFF"}]
+        "variables": {
+            "FMT_TEST": "OFF"
+        }
     }, {
         "git_ref": "v1.6.0",
         "git_url": "https://github.com/fraunhoferhhi/vvdec",
         "name": "vvdec",
-        "variables": [{"name": "VVDEC_TOPLEVEL_OUTPUT_DIRS", "type": "BOOL", "value": "OFF"}]
+        "variables": {
+            "VVDEC_TOPLEVEL_OUTPUT_DIRS": "OFF"
+        }
     }, {
         "git_ref": "v1.7.0",
         "git_url": "https://github.com/fraunhoferhhi/vvenc",
         "name": "vvenc",
-        "variables": [{"name": "VVENC_TOPLEVEL_OUTPUT_DIRS", "type": "BOOL", "value": "OFF"}]
+        "variables": {
+            "VVENC_TOPLEVEL_OUTPUT_DIRS": "OFF"
+        }
     }
 ]

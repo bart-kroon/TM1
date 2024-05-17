@@ -36,7 +36,6 @@ import argparse
 from pathlib import Path
 import subprocess
 
-
 CONFORMANCE_BITSTREAM_IDS = [
     "CB01",
     "CB02",
@@ -101,7 +100,7 @@ def main(
             output_file=output_dir / f"{id_s}_test.dec",
             reference_file=bitstreams_dir / id_s / f"{id_s}.dec",
         )
-        print(f"Conformance bitstream {id}: OK")
+        print(f"Conformance bitstream {id}: OK", flush=True)
 
 
 def test_decoder_conformance(
@@ -141,7 +140,8 @@ def check_conformance_log(output_file: Path, reference_file: Path):
 
 if __name__ == "__main__":
     try:
-        main(**vars(parse_arguments()))
-    except (RuntimeError, subprocess.CalledProcessError) as e:
-        print(f"ERROR: {e}")
+        args = parse_arguments()
+        main(**vars(args))
+    except (RuntimeError, OSError, subprocess.CalledProcessError) as e:
+        print(e)
         exit(1)

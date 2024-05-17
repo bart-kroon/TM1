@@ -31,6 +31,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <catch2/catch_template_test_macros.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators_range.hpp>
 
@@ -171,11 +172,12 @@ TEST_CASE("Bitstream primitives") {
   }
 }
 
-TEST_CASE("ceilLog2") {
-  using ValuePair = std::pair<uint64_t, int32_t>;
-  auto values = GENERATE(
-      table<uint64_t, int32_t>({ValuePair{0, 0}, ValuePair{1, 0}, ValuePair{2, 1}, ValuePair{10, 4},
-                                ValuePair{21, 5}, ValuePair{64, 6}, ValuePair{100, 7}}));
+TEMPLATE_TEST_CASE("ceilLog2", "", int8_t, uint8_t, uint16_t, uint64_t) {
+  using ValuePair = std::pair<TestType, int32_t>;
+  auto values = GENERATE(table<TestType, int32_t>(
+      {ValuePair{0, 0}, ValuePair{1, 0}, ValuePair{2, 1}, ValuePair{10, 4}, ValuePair{21, 5},
+       ValuePair{64, 6}, ValuePair{100, 7},
+       ValuePair{std::numeric_limits<TestType>::max(), std::numeric_limits<TestType>::digits}}));
 
   const auto input = std::get<0>(values);
   const auto expected_result = std::get<1>(values);

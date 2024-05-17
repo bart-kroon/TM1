@@ -114,7 +114,7 @@ def main(args):
             encoding="utf8",
         )
         if result.returncode == 0:
-            print(f"{name}: OK.")
+            print(f"{name}: OK.", flush=True)
         else:
             if name in KNOWN_REASONS:
                 print(f"{name}: known TMIV limitation: {KNOWN_REASONS[name]}")
@@ -132,4 +132,8 @@ def main(args):
 
 
 if __name__ == "__main__":
-    exit(0 if main(parse_arguments()) else 1)
+    try:
+        exit(0 if main(parse_arguments()) else 1)
+    except (RuntimeError, OSError, subprocess.CalledProcessError) as e:
+        print(e)
+        exit(1)

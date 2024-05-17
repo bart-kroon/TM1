@@ -34,43 +34,47 @@
 
 import argparse
 import concurrent.futures
-from difflib import Differ
 import hashlib
 from pathlib import Path
 import subprocess
 import sys
 import time
+from dataclasses import dataclass
 
 SCRIPTS_DIR = Path(__file__).resolve().parent.parent
 sys.path.append(str(SCRIPTS_DIR))
 
-from common.video_types import Resolution
 
+@dataclass
+class Resolution:
+    width: int
+    height: int
+    __slots__ = ("width", "height")
 
-def dirPath(path_string: str) -> Path:
-    if Path(path_string).is_dir():
-        return Path(path_string)
-    else:
-        raise NotADirectoryError(path_string)
+    def __str__(self):
+        return f"{self.width}x{self.height}"
+
+    def __mul__(self, scaling_factor):
+        return Resolution(int(self.width * scaling_factor), int(self.height * scaling_factor))
 
 
 def parseArguments():
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "tmiv_install_dir", type=dirPath, help="Directory with the TM1 binaries, includes, etc"
+        "tmiv_install_dir", type=Path, help="Directory with the TM1 binaries, includes, etc"
     )
-    parser.add_argument("tmiv_source_dir", type=dirPath, help="Root of the TM1 repository")
-    parser.add_argument("content_dir", type=dirPath)
+    parser.add_argument("tmiv_source_dir", type=Path, help="Root of the TM1 repository")
+    parser.add_argument("content_dir", type=Path)
     parser.add_argument("output_dir", type=Path, help="Output files will be stored here")
     parser.add_argument("-g", "--git-command", type=str)
     parser.add_argument("-j", "--max-workers", type=int)
-    parser.add_argument("-r", "--reference-md5-file", type=Path)
+    parser.add_argument("--md5sums-file", type=Path, help="The generated MD5 sums file")
     parser.add_argument(
         "--dry-run", action="store_true", help="Only print TMIV commands without executing them"
     )
     parser.add_argument(
         "--deps-install-dir",
-        type=dirPath,
+        type=Path,
         help="Directory with the installed TM1 dependencies",
         default=None,
     )
@@ -79,6 +83,9 @@ def parseArguments():
 
     if not args.deps_install_dir:
         args.deps_install_dir = args.tmiv_install_dir
+
+    if not args.md5sums_file:
+        args.md5sums_file = args.output_dir / "integration_test.md5"
 
     return args
 
@@ -106,13 +113,11 @@ class IntegrationTest:
         self.testDir = args.output_dir.absolute().resolve()
         self.gitCommand = args.git_command
         self.maxWorkers = args.max_workers
-        self.referenceMd5File = (
-            args.reference_md5_file.absolute().resolve() if args.reference_md5_file else None
-        )
+
         self.dryRun = args.dry_run
         self.md5sums = []
         self.testDir.mkdir(parents=True, exist_ok=True)
-        self.md5sumsFile = self.testDir / "integration_test.md5"
+        self.md5sumsFile = args.md5sums_file.absolute().resolve()
 
         self.stop = False
 
@@ -144,11 +149,6 @@ class IntegrationTest:
 
         if not self.dryRun:
             self.storeMd5Sums()
-
-            if self.referenceMd5File:
-                return self.compareMd5Files()
-
-        return 0
 
     def inspectEnvironment(self):
         self.checkIfProbeExistsInDir(
@@ -1337,24 +1337,6 @@ class IntegrationTest:
             for md5sum in sorted(self.md5sums, key=lambda pair: pair[1]):
                 stream.write(f"{md5sum[0]} *{md5sum[1]}\n")
 
-    def compareMd5Files(self):
-        assert self.referenceMd5File
-        reference = self.referenceMd5File.read_text().splitlines()
-        actual = self.md5sumsFile.read_text().splitlines()
-
-        haveDifferences = False
-        for line in Differ().compare(reference, actual):
-            if not line.startswith(" "):
-                if not haveDifferences:
-                    haveDifferences = True
-                    print("Different MD5 sums found:")
-                print(line)
-
-        if not haveDifferences:
-            print("All MD5 sums are equal to the reference.")
-
-        return int(haveDifferences)
-
     def checkConformanceLog(self, outputFile: Path, referenceFile: Path):
         with open(outputFile) as stream:
             output = stream.readlines()
@@ -1373,7 +1355,7 @@ class IntegrationTest:
 if __name__ == "__main__":
     try:
         app = IntegrationTest()
-        exit(app.run())
-    except RuntimeError as e:
+        app.run()
+    except (RuntimeError, subprocess.CalledProcessError) as e:
         print(e)
         exit(1)

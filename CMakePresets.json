@@ -1,0 +1,107 @@
+{
+    "cmakeMinimumRequired": {
+        "major": 3,
+        "minor": 22,
+        "patch": 0
+    },
+    "configurePresets": [
+        {
+            "binaryDir": "${sourceDir}/out/build/${presetName}",
+            "cacheVariables": {
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+            },
+            "generator": "Ninja",
+            "hidden": true,
+            "installDir": "${sourceDir}/out/install/${presetName}",
+            "name": "base"
+        }, {
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release"
+            },
+            "hidden": true,
+            "inherits": ["base"],
+            "name": "release"
+        }, {
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "RelWithDebInfo"
+            },
+            "hidden": true,
+            "inherits": ["base"],
+            "name": "develop"
+        }, {
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug"
+            },
+            "hidden": true,
+            "inherits": ["base"],
+            "name": "debug"
+        }, {
+            "cacheVariables": {
+                "CMAKE_CXX_COMPILER": "clang++",
+                "CMAKE_CXX_FLAGS": "-stdlib=libc++ -Wall -Wextra -Wshadow -Wimplicit-int-conversion -Wpedantic -Wunreachable-code-aggressive -Werror"
+            },
+            "condition": {
+                "lhs": "${hostSystemName}",
+                "rhs": "Linux",
+                "type": "equals"
+            },
+            "hidden": true,
+            "name": "clang"
+        }, {
+            "cacheVariables": {
+                "CMAKE_CXX_COMPILER": "g++",
+                "CMAKE_CXX_FLAGS": "-Wall -Wextra -Wpedantic -Werror -Wconversion -Wshadow -Wno-maybe-uninitialized -Wold-style-cast -Wno-alloc-size-larger-than"
+            },
+            "condition": {
+                "lhs": "${hostSystemName}",
+                "rhs": "Linux",
+                "type": "equals"
+            },
+            "hidden": true,
+            "name": "gcc"
+        }, {
+            "cacheVariables": {
+                "CMAKE_CXX_COMPILER": "cl.exe",
+                "CMAKE_CXX_FLAGS": "/DWIN32 /D_WINDOWS /permissive- /W4 /WX /GR /EHsc"
+            },
+            "condition": {
+                "lhs": "$env{VSCMD_VER}",
+                "rhs": "",
+                "type": "notEquals"
+            },
+            "hidden": true,
+            "name": "cl"
+        }, {
+            "inherits": ["clang", "release"],
+            "name": "clang-release"
+        }, {
+            "cacheVariables": {
+                "CMAKE_CXX_CLANG_TIDY": "clang-tidy"
+            },
+            "inherits": ["clang", "develop"],
+            "name": "clang-develop"
+        }, {
+            "inherits": ["clang", "debug"],
+            "name": "clang-debug"
+        }, {
+            "inherits": ["gcc", "release"],
+            "name": "gcc-release"
+        }, {
+            "inherits": ["gcc", "develop"],
+            "name": "gcc-develop"
+        }, {
+            "inherits": ["gcc", "debug"],
+            "name": "gcc-debug"
+        }, {
+            "inherits": ["cl", "release"],
+            "name": "cl-release"
+        }, {
+            "inherits": ["cl", "develop"],
+            "name": "cl-develop"
+        }, {
+            "inherits": ["cl", "debug"],
+            "name": "cl-debug"
+        }
+    ],
+    "version": 3
+}

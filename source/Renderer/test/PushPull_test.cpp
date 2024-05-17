@@ -228,7 +228,7 @@ TEST_CASE("PushPull") {
       }
 
       THEN("The number of layers in the pyramid is accessible") {
-        REQUIRE(pushPull.numLayers() == 1U + TMIV::Common::ceilLog2(std::max(w, h)));
+        REQUIRE(pushPull.numLayers() == 1U + TMIV::Common::ceilLog2(std::max<int32_t>(w, h)));
       }
 
       THEN("Each filtered layer is accessible") {

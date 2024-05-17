@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.22 FATAL_ERROR)
 
 create_tmiv_library(TARGET ParserLib SOURCES "src/Parser.cpp" PUBLIC MivBitstreamLib)
 

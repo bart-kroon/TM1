@@ -108,6 +108,10 @@ void optionalSaveBlockToPatchMaps(const Common::Json &config, const Placeholders
                                   int32_t frameIdx, const MivBitstream::AccessUnit &frame);
 void touchOptionalSaveBlockToPatchMapsKeys(const Common::Json &config);
 
+void optionalSaveDecodedFrame(
+    const Common::Json &config, const Placeholders &placeholders, const Common::Frame<> &frame,
+    MivBitstream::VuhUnitType vut, std::tuple<int32_t, uint8_t, uint8_t> frameAtlasAttrIdx,
+    MivBitstream::AiAttributeTypeId attrTypeId = MivBitstream::AiAttributeTypeId::ATTR_UNSPECIFIED);
 void optionalSavePrunedFrame(
     const Common::Json &config, const Placeholders &placeholders, const Common::Frame<> &frame,
     MivBitstream::VuhUnitType vut, std::pair<int32_t, uint16_t> frameViewIdx,

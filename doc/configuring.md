@@ -146,6 +146,14 @@ Unless specified otherwise, the base directory for these path formats is `output
 * **outputTextureVideoDataPathFmt**: the path format of the uncompressed attribute video data (AVD) with attribute ID `ATTR_TEXTURE`, produced by the Encoder, with the same placeholders as `outputBlockToPatchMapPathFmt`.
 * **outputPackedVideoDataPathFmt**: the path format of the uncompressed packed video data (PVD), produced by the Encoder, with the same placeholders as `outputBlockToPatchMapPathFmt`.
 * **outputTransparencyVideoDataPathFmt**: the path format of the uncompressed attribute video data (AVD) with attribute ID `ATTR_TRANSPARENCY`, with the same placeholders as `outputBlockToPatchMapPathFmt`.
+* **outputDecodedFramesPathFmt**: the path format of the decoded V3C video component frame, with placeholders:
+    * 0: number of input frames,
+    * 1: content ID,
+    * 2: test ID,
+    * 3: atlas index,
+    * 4: attribute index (or 0),
+    * 5: video component name,
+    * 6, 7, 8: frame width, frame height, and video format.
 * **outputMultiviewGeometryPathFmt**: the path format of the reconstructed multiview geometry (depth) data, produced by the Decoder, with placeholders:
     * 0: number of input frames,
     * 1: content ID,

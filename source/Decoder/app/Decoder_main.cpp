@@ -135,6 +135,7 @@ public:
 
         outputSequenceConfig(frame->sequenceConfig(), frame->frameIdx);
         IO::optionalSaveBlockToPatchMaps(json(), m_placeholders, frame->frameIdx, *frame);
+        optionalSaveAtlasFrames(frame->frameIdx, *frame);
         optionalSavePrunedFrame(frame->frameIdx, Renderer::recoverPrunedViews(*frame));
 
         // Render multiple frames
@@ -242,6 +243,28 @@ private:
     if (m_outputSequenceConfig != sc) {
       m_outputSequenceConfig = std::move(sc);
       IO::optionalSaveSequenceConfig(json(), m_placeholders, frameIdx, m_outputSequenceConfig);
+    }
+  }
+
+  void optionalSaveAtlasFrames(int32_t frameIdx, const MivBitstream::AccessUnit &frame) const {
+    for (uint8_t k = 0; k <= frame.vps.vps_atlas_count_minus1(); ++k) {
+      const auto atlasId = frame.vps.vps_atlas_id(k);
+      const auto &atlas = frame.atlas[k];
+
+      IO::optionalSaveDecodedFrame(json(), m_placeholders, atlas.decOccFrame,
+                                   MivBitstream::VuhUnitType::V3C_OVD, {frameIdx, k, 0});
+
+      IO::optionalSaveDecodedFrame(json(), m_placeholders, atlas.decGeoFrame,
+                                   MivBitstream::VuhUnitType::V3C_GVD, {frameIdx, k, 0});
+
+      for (uint8_t i = 0; i < frame.vps.attrCount(atlasId); ++i) {
+        IO::optionalSaveDecodedFrame(
+            json(), m_placeholders, atlas.decAttrFrame[i], MivBitstream::VuhUnitType::V3C_AVD,
+            {frameIdx, k, i}, frame.vps.attribute_information(atlasId).ai_attribute_type_id(i));
+      }
+
+      IO::optionalSaveDecodedFrame(json(), m_placeholders, atlas.decPckFrame,
+                                   MivBitstream::VuhUnitType::V3C_PVD, {frameIdx, k, 0});
     }
   }
 

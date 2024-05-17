@@ -229,6 +229,26 @@ void touchOptionalSaveBlockToPatchMapsKeys(const Common::Json &config) {
   config.optional("outputBlockToPatchMapPathFmt");
 }
 
+void optionalSaveDecodedFrame(const Common::Json &config, const Placeholders &placeholders,
+                              const Common::Frame<> &frame, MivBitstream::VuhUnitType vut,
+                              std::tuple<int32_t, uint8_t, uint8_t> frameAtlasAttrIdx,
+                              MivBitstream::AiAttributeTypeId attrTypeId) {
+  if (frame.empty()) {
+    return;
+  }
+
+  if (const auto &node = config.optional("outputDecodedFramesPathFmt")) {
+    const auto outputDir = config.require("outputDirectory").as<std::filesystem::path>();
+    saveFrame(outputDir / Common::runtimeFormat(
+                              node.as<std::string>(), placeholders.numberOfInputFrames,
+                              placeholders.contentId, placeholders.testId,
+                              std::get<1>(frameAtlasAttrIdx), std::get<2>(frameAtlasAttrIdx),
+                              videoComponentName(vut, attrTypeId), frame.getWidth(),
+                              frame.getHeight(), videoFormatString(frame)),
+              frame, std::get<0>(frameAtlasAttrIdx));
+  }
+}
+
 void optionalSavePrunedFrame(const Common::Json &config, const Placeholders &placeholders,
                              const Common::Frame<> &frame, MivBitstream::VuhUnitType vut,
                              std::pair<int32_t, uint16_t> frameViewIdx,

@@ -1389,6 +1389,8 @@ auto operator<<(std::ostream &stream, const VpsMiv2Extension &x) -> std::ostream
   if (x.vme_capture_device_information_present_flag()) {
     stream << x.capture_device_information();
   }
+  TMIV_FMT::print(stream, "vme_colorized_geometry_enabled_flag={}\n",
+                  x.vme_colorized_geometry_enabled_flag());
   return stream;
 }
 
@@ -1405,6 +1407,8 @@ auto VpsMiv2Extension::decodeFrom(Common::InputBitstream &bitstream, const V3cPa
   if (x.vme_capture_device_information_present_flag()) {
     x.m_capture_device_information = CaptureDeviceInformation::decodeFrom(bitstream);
   }
+
+  x.vme_colorized_geometry_enabled_flag(bitstream.getFlag());
 
   const auto vme_reserved_zero_8bits = bitstream.getUint8();
   VERIFY_MIVBITSTREAM(vme_reserved_zero_8bits == 0);
@@ -1423,6 +1427,8 @@ void VpsMiv2Extension::encodeTo(Common::OutputBitstream &bitstream,
   if (vme_capture_device_information_present_flag()) {
     capture_device_information().encodeTo(bitstream);
   }
+
+  bitstream.putFlag(vme_colorized_geometry_enabled_flag());
 
   static constexpr auto vme_reserved_zero_8bits = 0;
   bitstream.putUint8(vme_reserved_zero_8bits);

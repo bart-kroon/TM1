@@ -228,6 +228,41 @@ constexpr auto AspsMiv2Extension::asme_patch_margin_enabled_flag(bool value) noe
   return *this;
 }
 
+constexpr auto AspsMiv2Extension::asme_background_atlas_flag() const noexcept {
+  return m_asme_background_atlas_flag;
+}
+
+constexpr auto AspsMiv2Extension::asme_background_atlas_flag(bool value) noexcept -> auto & {
+  m_asme_background_atlas_flag = value;
+  return *this;
+}
+
+constexpr auto AspsMiv2Extension::asme_static_background_flag() const noexcept {
+  return m_asme_background_atlas_flag && m_asme_patch_margin_enabled_flag;
+}
+
+constexpr auto AspsMiv2Extension::asme_static_background_flag(bool value) noexcept -> auto & {
+  asme_background_atlas_flag(true);
+  m_asme_static_background_flag = value;
+  return *this;
+}
+
+constexpr auto AspsMiv2Extension::asme_colorized_geometry_enabled_flag() const noexcept {
+  return m_asme_colorized_geometry_enabled_flag;
+}
+
+constexpr auto AspsMiv2Extension::asme_colorized_geometry_enabled_flag(bool value) noexcept
+    -> auto & {
+  m_asme_colorized_geometry_enabled_flag = value;
+  return *this;
+}
+
+constexpr auto AspsMiv2Extension::asme_colorized_geometry_bit_depth_minus1(uint8_t value) noexcept
+    -> auto & {
+  asme_colorized_geometry_enabled_flag(true);
+  m_asme_colorized_geometry_bit_depth_minus1 = value;
+  return *this;
+}
 constexpr auto
 AtlasSequenceParameterSetRBSP::asps_atlas_sequence_parameter_set_id() const noexcept {
   return m_asps_atlas_sequence_parameter_set_id;

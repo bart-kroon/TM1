@@ -530,12 +530,22 @@ private:
     VERIFY_MIVBITSTREAM(vme_decoder_side_depth_estimation_flag ==
                         casme_decoder_side_depth_estimation_flag);
 
+    const auto vme_colorized_geometry_enabled_flag =
+        au.vps.vpsMiv2ExtensionPresentFlag() &&
+        au.vps.vps_miv_2_extension().vme_colorized_geometry_enabled_flag();
+
     for (uint8_t k = 0; k <= au.vps.vps_atlas_count_minus1(); ++k) {
       const auto j = au.vps.vps_atlas_id(k);
       const auto &atlas = au.atlas[k];
       VERIFY_V3CBITSTREAM(au.vps.vps_frame_width(j) == atlas.asps.asps_frame_width());
       VERIFY_V3CBITSTREAM(au.vps.vps_frame_height(j) == atlas.asps.asps_frame_height());
       VERIFY_V3CBITSTREAM(au.vps.vps_map_count_minus1(j) == atlas.asps.asps_map_count_minus1());
+
+      if (!vme_colorized_geometry_enabled_flag) {
+        VERIFY_MIVBITSTREAM(
+            !atlas.asps.asps_miv_2_extension_present_flag() ||
+            !atlas.asps.asps_miv_2_extension().asme_colorized_geometry_enabled_flag());
+      }
     }
   }
 

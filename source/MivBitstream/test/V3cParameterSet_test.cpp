@@ -749,6 +749,7 @@ vme_capture_device_information_present_flag=true
 cdi_device_model_count_minus1=0
 cdi_device_model_id[0]=0
 cdi_device_class_id[0]=0
+vme_colorized_geometry_enabled_flag=false
 vps_extension_type[ 2 ]=[unknown:63]
 vps_extension_length[ 2 ]=3
 vps_extension_data_byte=2

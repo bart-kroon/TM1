@@ -241,11 +241,37 @@ void AspsMivExtension::encodeTo(Common::OutputBitstream &bitstream) const {
 auto operator<<(std::ostream &stream, const AspsMiv2Extension &x) -> std::ostream & {
   TMIV_FMT::print(stream, "asme_patch_margin_enabled_flag={}\n",
                   x.asme_patch_margin_enabled_flag());
+
+  TMIV_FMT::print(stream, "asme_background_atlas_flag={}\n", x.asme_background_atlas_flag());
+
+  if (x.asme_background_atlas_flag()) {
+    TMIV_FMT::print(stream, "asme_static_background_flag={}\n", x.asme_static_background_flag());
+  }
+
+  TMIV_FMT::print(stream, "asme_colorized_geometry_enabled_flag={}\n",
+                  x.asme_colorized_geometry_enabled_flag());
+
+  if (x.asme_colorized_geometry_enabled_flag()) {
+    TMIV_FMT::print(stream, "asme_colorized_geometry_bit_depth_minus1={}\n",
+                    x.asme_colorized_geometry_bit_depth_minus1());
+  }
+
   return stream;
 }
 
+auto AspsMiv2Extension::asme_colorized_geometry_bit_depth_minus1() const -> uint8_t {
+  VERIFY_BITSTREAM(asme_colorized_geometry_enabled_flag());
+  return m_asme_colorized_geometry_bit_depth_minus1;
+}
+
 auto AspsMiv2Extension::operator==(const AspsMiv2Extension &other) const noexcept -> bool {
-  return asme_patch_margin_enabled_flag() == other.asme_patch_margin_enabled_flag();
+  return asme_patch_margin_enabled_flag() == other.asme_patch_margin_enabled_flag() &&
+         asme_background_atlas_flag() == other.asme_background_atlas_flag() &&
+         asme_static_background_flag() == other.asme_static_background_flag() &&
+         asme_colorized_geometry_enabled_flag() == other.asme_colorized_geometry_enabled_flag() &&
+         (!asme_colorized_geometry_enabled_flag() ||
+          asme_colorized_geometry_bit_depth_minus1() ==
+              other.asme_colorized_geometry_bit_depth_minus1());
 }
 
 auto AspsMiv2Extension::operator!=(const AspsMiv2Extension &other) const noexcept -> bool {
@@ -257,6 +283,18 @@ auto AspsMiv2Extension::decodeFrom(Common::InputBitstream &bitstream) -> AspsMiv
 
   x.asme_patch_margin_enabled_flag(bitstream.getFlag());
 
+  x.asme_background_atlas_flag(bitstream.getFlag());
+
+  if (x.asme_background_atlas_flag()) {
+    x.asme_static_background_flag(bitstream.getFlag());
+  }
+
+  x.asme_colorized_geometry_enabled_flag(bitstream.getFlag());
+
+  if (x.asme_colorized_geometry_enabled_flag()) {
+    x.asme_colorized_geometry_bit_depth_minus1(bitstream.getUExpGolomb<uint8_t>());
+  }
+
   const auto asme_reserved_zero_8bits = bitstream.getUint8();
   VERIFY_MIVBITSTREAM(asme_reserved_zero_8bits == 0);
 
@@ -267,6 +305,19 @@ void AspsMiv2Extension::encodeTo(Common::OutputBitstream &bitstream) const {
   static constexpr auto asme_reserved_zero_8bits = 0;
 
   bitstream.putFlag(asme_patch_margin_enabled_flag());
+
+  bitstream.putFlag(asme_background_atlas_flag());
+
+  if (asme_background_atlas_flag()) {
+    bitstream.putFlag(asme_static_background_flag());
+  }
+
+  bitstream.putFlag(asme_colorized_geometry_enabled_flag());
+
+  if (asme_colorized_geometry_enabled_flag()) {
+    bitstream.putUExpGolomb(asme_colorized_geometry_bit_depth_minus1());
+  }
+
   bitstream.putUint8(asme_reserved_zero_8bits);
 }
 

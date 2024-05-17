@@ -103,8 +103,16 @@ private:
 class AspsMiv2Extension {
 public:
   [[nodiscard]] constexpr auto asme_patch_margin_enabled_flag() const noexcept;
+  [[nodiscard]] constexpr auto asme_background_atlas_flag() const noexcept;
+  [[nodiscard]] constexpr auto asme_static_background_flag() const noexcept;
+  [[nodiscard]] constexpr auto asme_colorized_geometry_enabled_flag() const noexcept;
+  [[nodiscard]] auto asme_colorized_geometry_bit_depth_minus1() const -> uint8_t;
 
   constexpr auto asme_patch_margin_enabled_flag(bool value) noexcept -> auto &;
+  constexpr auto asme_background_atlas_flag(bool value) noexcept -> auto &;
+  constexpr auto asme_static_background_flag(bool value) noexcept -> auto &;
+  constexpr auto asme_colorized_geometry_enabled_flag(bool value) noexcept -> auto &;
+  constexpr auto asme_colorized_geometry_bit_depth_minus1(uint8_t value) noexcept -> auto &;
 
   friend auto operator<<(std::ostream &stream, const AspsMiv2Extension & /*x*/) -> std::ostream &;
 
@@ -117,6 +125,10 @@ public:
 
 private:
   bool m_asme_patch_margin_enabled_flag{};
+  bool m_asme_background_atlas_flag{};
+  bool m_asme_static_background_flag{};
+  bool m_asme_colorized_geometry_enabled_flag{};
+  uint8_t m_asme_colorized_geometry_bit_depth_minus1{};
 };
 
 // 23090-12: asps_miv_extension( )

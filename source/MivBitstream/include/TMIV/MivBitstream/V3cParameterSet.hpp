@@ -617,6 +617,10 @@ constexpr auto VpsMiv2Extension::vme_capture_device_information_present_flag() c
   return m_vme_capture_device_information_present_flag;
 }
 
+constexpr auto VpsMiv2Extension::vme_colorized_geometry_enabled_flag() const noexcept {
+  return m_vme_colorized_geometry_enabled_flag;
+}
+
 constexpr auto VpsMiv2Extension::vps_miv_extension() noexcept -> auto & {
   return m_vps_miv_extension;
 }
@@ -638,6 +642,12 @@ constexpr auto VpsMiv2Extension::vme_capture_device_information_present_flag(boo
   return *this;
 }
 
+constexpr auto VpsMiv2Extension::vme_colorized_geometry_enabled_flag(bool value) noexcept
+    -> auto & {
+  m_vme_colorized_geometry_enabled_flag = value;
+  return *this;
+}
+
 constexpr auto VpsMiv2Extension::operator==(const VpsMiv2Extension &other) const noexcept {
   return vps_miv_extension() == other.vps_miv_extension() &&
          vme_decoder_side_depth_estimation_flag() ==
@@ -645,7 +655,8 @@ constexpr auto VpsMiv2Extension::operator==(const VpsMiv2Extension &other) const
          vme_patch_margin_enabled_flag() == other.vme_patch_margin_enabled_flag() &&
          vme_capture_device_information_present_flag() ==
              other.vme_capture_device_information_present_flag() &&
-         m_capture_device_information == other.m_capture_device_information;
+         m_capture_device_information == other.m_capture_device_information &&
+         vme_colorized_geometry_enabled_flag() == other.vme_colorized_geometry_enabled_flag();
 }
 
 constexpr auto VpsMiv2Extension::operator!=(const VpsMiv2Extension &other) const noexcept {

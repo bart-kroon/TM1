@@ -252,19 +252,23 @@ private:
       const auto &atlas = frame.atlas[k];
 
       IO::optionalSaveDecodedFrame(json(), m_placeholders, atlas.decOccFrame,
-                                   MivBitstream::VuhUnitType::V3C_OVD, {frameIdx, k, 0});
+                                   MivBitstream::VuhUnitType::V3C_OVD, {frameIdx, k, {}});
 
       IO::optionalSaveDecodedFrame(json(), m_placeholders, atlas.decGeoFrame,
-                                   MivBitstream::VuhUnitType::V3C_GVD, {frameIdx, k, 0});
+                                   MivBitstream::VuhUnitType::V3C_GVD, {frameIdx, k, {}});
 
-      for (uint8_t i = 0; i < frame.vps.attrCount(atlasId); ++i) {
-        IO::optionalSaveDecodedFrame(
-            json(), m_placeholders, atlas.decAttrFrame[i], MivBitstream::VuhUnitType::V3C_AVD,
-            {frameIdx, k, i}, frame.vps.attribute_information(atlasId).ai_attribute_type_id(i));
+      if (frame.vps.vps_attribute_video_present_flag(atlasId)) {
+        const auto &ai = frame.vps.attribute_information(atlasId);
+
+        for (uint8_t i = 0; i < ai.ai_attribute_count(); ++i) {
+          IO::optionalSaveDecodedFrame(json(), m_placeholders, atlas.decAttrFrame[i],
+                                       MivBitstream::VuhUnitType::V3C_AVD, {frameIdx, k, i},
+                                       ai.ai_attribute_type_id(i));
+        }
       }
 
       IO::optionalSaveDecodedFrame(json(), m_placeholders, atlas.decPckFrame,
-                                   MivBitstream::VuhUnitType::V3C_PVD, {frameIdx, k, 0});
+                                   MivBitstream::VuhUnitType::V3C_PVD, {frameIdx, k, {}});
     }
   }
 

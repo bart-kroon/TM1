@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.22 FATAL_ERROR)
 project(
     TMIV
     DESCRIPTION "Test model for MPEG immersive video (TMIV)"
-    VERSION 19.0.0
+    VERSION 20.0.0
     LANGUAGES C CXX)
 
 if(NOT DEFINED CMAKE_CXX_EXTENSIONS)

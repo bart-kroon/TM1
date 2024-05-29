@@ -37,6 +37,7 @@ function(create_tmiv_library)
     install(
         TARGETS ${TMIV_LIB_CREATOR_TARGET}
         EXPORT TMIVTargets
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
     install(DIRECTORY "include/" DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})

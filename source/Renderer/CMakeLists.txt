@@ -33,7 +33,6 @@ create_tmiv_library(
     "src/Front/MultipleFrameRenderer.cpp"
     PUBLIC
     IOLib
-    PRIVATE
     RendererLib)
 
 create_tmiv_executable(

@@ -48,7 +48,7 @@ TEST_CASE("Json default construction corresponds to JSON null") {
 
 TEST_CASE("Json::explicit operator bool() return true if not null (even for false)") {
   REQUIRE(!Json{});
-  REQUIRE(!Json::null);
+  REQUIRE(!Json::null());
 
   auto json = Json{false};
   REQUIRE(!!json);
@@ -256,7 +256,7 @@ TEST_CASE("Parse a JSON") {
 }
 
 TEST_CASE("Format a JSON") {
-  SECTION("null") { REQUIRE(Json::null.format() == "null"s); }
+  SECTION("null") { REQUIRE(Json::null().format() == "null"s); }
 
   SECTION("false") { REQUIRE(Json{false}.format() == "false"s); }
 
@@ -363,7 +363,7 @@ TEST_CASE("Update a JSON") {
     REQUIRE(a);
 
     a = 3;
-    a.update(Json::null);
+    a.update(Json::null());
     REQUIRE(a.as<int32_t>() == 3);
   }
 
@@ -404,7 +404,7 @@ TEST_CASE("Json::optional()") {
   SECTION("Returns null when a key does not exist") { REQUIRE(!json.optional("w"s)); }
 
   SECTION("Returns null when null") {
-    json = Json::null;
+    json = Json::null();
     REQUIRE_FALSE(json.optional("meaning"s));
   }
 

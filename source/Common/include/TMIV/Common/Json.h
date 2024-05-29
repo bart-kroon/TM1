@@ -67,7 +67,7 @@ public:
   Json() = default;
 
   // An lvalue Json that is default-constructed
-  static const Json null;
+  [[nodiscard]] static auto null() -> const Json &;
 
   // Returns true unless the value is JSON null
   //  * This behaviour is different from previous releases whereby the JSON value `false` also

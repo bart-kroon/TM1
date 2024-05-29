@@ -167,12 +167,12 @@ template <typename T> auto Json::as() const -> decltype(auto) {
 
 inline auto Json::optional(const std::string &key) const -> const Json & {
   if (!m_node.has_value()) {
-    return null;
+    return null();
   }
   const auto &object = as<Object>();
   const auto kvp = object.find(key);
   if (kvp == object.cend()) {
-    return null;
+    return null();
   }
   kvp->second.m_wasAccessed = true;
   return std::get<1>(*kvp);

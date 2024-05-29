@@ -253,7 +253,10 @@ void parseWhitespace(std::string_view &text) {
 }
 } // namespace
 
-const Json Json::null;
+auto Json::null() -> const Json & {
+  static Json impl;
+  return impl;
+}
 
 auto Json::parse(std::string_view text) -> Json {
   auto x = parseValue(text);
